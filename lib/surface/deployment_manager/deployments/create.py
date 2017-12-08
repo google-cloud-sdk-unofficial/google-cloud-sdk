@@ -147,8 +147,7 @@ class Create(base.CreateCommand, dm_base.DmCommand):
         args.deployment_name,
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='deploymentmanager.deployments')
-    if ((not args.IsSpecified('format')) and
-        (args.async or getattr(args, 'automatic_rollback', False))):
+    if (not args.IsSpecified('format')) and (args.async):
       args.format = flags.OPERATION_FORMAT
 
     deployment = self.messages.Deployment(
@@ -204,6 +203,8 @@ class Create(base.CreateCommand, dm_base.DmCommand):
                                               operation,
                                               dm_base.GetProject(),
                                               deployment_ref)
+        if getattr(args, 'automatic_rollback', False):
+          args.format = flags.OPERATION_FORMAT
         return response
 
       return dm_api_util.FetchResourcesAndOutputs(self.client,

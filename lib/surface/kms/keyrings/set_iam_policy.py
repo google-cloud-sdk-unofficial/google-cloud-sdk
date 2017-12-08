@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.kms import flags
 class SetIamPolicy(base.Command):
   """Set the IAM policy for a keyring.
 
-  Sets the IAM policy for the given keyring as defined in a JSON file.
+  Sets the IAM policy for the given keyring as defined in a JSON or YAML file.
 
   See https://cloud.google.com/iam/docs/managing-policies for details of
   the policy file format and contents.
@@ -38,12 +38,14 @@ class SetIamPolicy(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddKeyRingArgument(parser, 'whose IAM policy to update')
-    parser.add_argument('policy_file', help='JSON file with the IAM policy')
+    parser.add_argument('policy_file', help=('JSON or YAML file with '
+                                             'the IAM policy'))
 
   def Run(self, args):
     messages = cloudkms_base.GetMessagesModule()
 
-    policy = iam_util.ParseJsonPolicyFile(args.policy_file, messages.Policy)
+    policy = iam_util.ParseYamlorJsonPolicyFile(args.policy_file,
+                                                messages.Policy)
     update_mask = iam_util.ConstructUpdateMaskFromPolicy(args.policy_file)
 
     keyring_ref = flags.ParseKeyRingName(args)

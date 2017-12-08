@@ -1,4 +1,3 @@
-
 # Copyright 2013 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -59,7 +58,10 @@ class DeployGA(base.SilentCommand):
         base.ReleaseTrack.GA)
     api_client = appengine_api_client.GetApiClientForTrack(self.ReleaseTrack())
     return deploy_util.RunDeploy(
-        args, api_client, runtime_builder_strategy=runtime_builder_strategy)
+        args,
+        api_client,
+        runtime_builder_strategy=runtime_builder_strategy,
+        parallel_build=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -81,7 +83,8 @@ class DeployBeta(base.SilentCommand):
         enable_endpoints=True,
         use_beta_stager=True,
         runtime_builder_strategy=runtime_builder_strategy,
-        use_service_management=True)
+        parallel_build=False)
+
 
 DeployGA.detailed_help = _DETAILED_HELP
 DeployBeta.detailed_help = _DETAILED_HELP

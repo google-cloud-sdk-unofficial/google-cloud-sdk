@@ -13,18 +13,29 @@
 # limitations under the License.
 """Command for listing instance templates."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import lister
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.instance_templates import flags
 
 
-class List(base_classes.GlobalLister):
+class List(base.ListCommand):
   """List Google Compute Engine virtual machine instance templates."""
 
-  @property
-  def service(self):
-    return self.compute.instanceTemplates
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    lister.AddBaseListerArgs(parser)
 
-  @property
-  def resource_type(self):
-    return 'instanceTemplates'
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    request_data = lister.ParseNamesAndRegexpFlags(args, holder.resources)
+
+    list_implementation = lister.GlobalLister(
+        client, client.apitools_client.instanceTemplates)
+
+    return lister.Invoke(request_data, list_implementation)
 
 
 List.detailed_help = base_classes.GetZonalListerHelp('instance templates')

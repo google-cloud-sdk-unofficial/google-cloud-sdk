@@ -69,7 +69,7 @@ class Logpoints(base.Group):
 
           $ log_query=$({command} create product.py:123 \
               "No description for {product.name}" --format="value(logQuery)")
-          $ gcloud beta logging read "$log_query"
+          $ gcloud logging read "$log_query"
       """
   }
 

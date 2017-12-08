@@ -15,7 +15,6 @@
 
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
 
 
@@ -34,9 +33,6 @@ class Get(base.DescribeCommand):
     """
     parser.add_argument(
         'operation', help='Name that uniquely identifies the operation.')
-    # Add superfluous instance flag so that users passing --instance do not see
-    # an error.
-    flags.AddDeprecatedInstance(parser)
 
   def Run(self, args):
     """Retrieves information about a Cloud SQL instance operation.

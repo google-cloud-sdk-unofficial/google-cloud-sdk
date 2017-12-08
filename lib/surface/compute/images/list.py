@@ -16,19 +16,21 @@ import argparse
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
-from googlecloudsdk.api_lib.compute import request_helper
+from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.images import flags
 from googlecloudsdk.command_lib.compute.images import policy
 from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class List(base_classes.BaseLister):
+class List(base.ListCommand):
   """List Google Compute Engine images."""
 
   @staticmethod
   def Args(parser):
-    base_classes.BaseLister.Args(parser)
+    parser.display_info.AddFormat(flags.LIST_FORMAT)
+    lister.AddBaseListerArgs(parser)
 
     parser.add_argument(
         '--show-deprecated',
@@ -66,54 +68,51 @@ class List(base_classes.BaseLister):
        projects are: {0}.
        """.format(', '.join(constants.PUBLIC_IMAGE_PROJECTS)))
 
-  @property
-  def service(self):
-    return self.compute.images
-
-  @property
-  def resource_type(self):
-    return 'images'
-
-  def GetResources(self, args, errors):
+  def Run(self, args):
     """Yields images from (potentially) multiple projects."""
-    filter_expr = self.GetFilterExpr(args)
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-    image_projects = [self.project]
+    request_data = lister.ParseNamesAndRegexpFlags(args, holder.resources)
+
+    def ParseProject(project):
+      return holder.resources.Parse(None, {'project': project},
+                                    collection='compute.projects')
 
     if args.standard_images:
-      image_projects.extend(constants.PUBLIC_IMAGE_PROJECTS)
+      for project in constants.PUBLIC_IMAGE_PROJECTS:
+        request_data.scope_set.add(ParseProject(project))
 
     if args.preview_images:
-      image_projects.extend(constants.PREVIEW_IMAGE_PROJECTS)
+      for project in constants.PREVIEW_IMAGE_PROJECTS:
+        request_data.scope_set.add(ParseProject(project))
 
-    requests = []
-    for project in image_projects:
-      requests.append(
-          (self.service,
-           'List',
-           self.messages.ComputeImagesListRequest(
-               filter=filter_expr,
-               maxResults=constants.MAX_RESULTS_PER_PAGE,
-               project=project)))
+    list_implementation = lister.MultiScopeLister(
+        client, global_service=client.apitools_client.images)
 
-    images = request_helper.ListJson(
-        requests=requests,
-        http=self.http,
-        batch_url=self.batch_url,
-        errors=errors)
+    images = lister.Invoke(request_data, list_implementation)
 
+    return self.AugmentImagesStatus(holder.resources,
+                                    self._FilterDeprecated(args, images))
+
+  def _FilterDeprecated(self, args, images):
     for image in images:
       if not image.get('deprecated', False) or args.show_deprecated:
         yield image
+
+  def AugmentImagesStatus(self, resources, images):
+    """Modify images status if necessary, can be overridden."""
+    del resources  # Unused in AugmentImagesStatus
+    return images
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListBeta(List):
 
-  def ComputeDynamicProperties(self, args, items):
-    del args  # Unused in ComputeDynamicProperties
+  def AugmentImagesStatus(self, resources, images):
+    """Modify images status based on OrgPolicy."""
     return policy.AugmentImagesStatus(
-        self.resources, properties.VALUES.core.project.GetOrFail(), items)
+        resources, properties.VALUES.core.project.GetOrFail(), images)
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp('images')

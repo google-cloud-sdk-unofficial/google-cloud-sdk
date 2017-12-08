@@ -42,7 +42,7 @@ class SetIamPolicy(base.UpdateCommand):
         'name', metavar='REPOSITORY_NAME', help='Name of the repository.')
     parser.add_argument(
         'policy_file',
-        help=('JSON file with IAM policy. '
+        help=('JSON or YAML file with IAM policy. '
               'See https://cloud.google.com/resource-manager/'
               'reference/rest/Shared.Types/Policy'))
     parser.display_info.AddFormat('default')
@@ -63,8 +63,8 @@ class SetIamPolicy(base.UpdateCommand):
         args.name,
         params={'projectsId': properties.VALUES.core.project.GetOrFail},
         collection='sourcerepo.projects.repos')
-    policy = iam_util.ParseJsonPolicyFile(args.policy_file,
-                                          sourcerepo.messages.Policy)
+    policy = iam_util.ParseYamlorJsonPolicyFile(args.policy_file,
+                                                sourcerepo.messages.Policy)
     source = sourcerepo.Source()
     result = source.SetIamPolicy(res, policy)
     iam_util.LogSetIamPolicy(res.Name(), 'repo')

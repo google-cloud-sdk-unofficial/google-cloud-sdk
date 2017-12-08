@@ -264,6 +264,8 @@ class Create(base.CreateCommand):
                args.worker_boot_disk_size_gb)
 
     if args.single_node:
+      # --num-workers and --num-preemptible-workers must be None (unspecified)
+      # or 0
       if args.num_workers:
         raise exceptions.ConflictingArgumentsException(
             '--single-node', '--num-workers')
@@ -345,7 +347,10 @@ class Create(base.CreateCommand):
     preemptible_worker_boot_disk_size_gb = (
         api_utils.BytesToGb(args.preemptible_worker_boot_disk_size))
 
-    if args.single_node:
+    if args.single_node or args.num_workers == 0:
+      # Explicitly specifying --num-workers=0 gives you a single node cluster,
+      # but if --num-workers is omitted, args.num_workers is None (not 0), and
+      # this property will not be set
       args.properties[constants.ALLOW_ZERO_WORKERS_PROPERTY] = 'true'
 
     if args.properties:

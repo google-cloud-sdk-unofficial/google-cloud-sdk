@@ -28,7 +28,7 @@ class UpdateFirewall(base.UpdateCommand):
   traffic to a network. The firewall rule will only be updated for arguments
   that are specifically passed.  Other attributes will remain unaffected.
   """
-  with_egress_firewall = False
+  with_egress_firewall = True
   with_service_account = False
 
   FIREWALL_RULE_ARG = None
@@ -37,7 +37,11 @@ class UpdateFirewall(base.UpdateCommand):
   def Args(cls, parser):
     cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument()
     cls.FIREWALL_RULE_ARG.AddArgument(parser, operation_type='update')
-    firewalls_utils.AddCommonArgs(parser, for_update=True)
+    firewalls_utils.AddCommonArgs(
+        parser,
+        for_update=True,
+        with_egress_support=cls.with_egress_firewall,
+        with_service_account=cls.with_service_account)
 
   def ValidateArgument(self, messages, args):
     self.new_allowed = firewalls_utils.ParseRules(
@@ -58,6 +62,10 @@ class UpdateFirewall(base.UpdateCommand):
     if args_unset:
       raise calliope_exceptions.ToolException(
           'At least one property must be modified.')
+
+    if args.rules and args.allow:
+      raise firewalls_utils.ArgumentValidationError(
+          'Can NOT specify --rules and --allow in the same request.')
 
   def Run(self, args):
     """Issues requests necessary to update the Firewall rules."""
@@ -103,10 +111,13 @@ class UpdateFirewall(base.UpdateCommand):
 
   def Modify(self, client, args, existing, cleared_fields):
     """Returns a modified Firewall message and included fields."""
-    if args.allow is None:
+    if args.allow:
+      allowed = self.new_allowed
+    elif args.allow is None:
       allowed = existing.allowed
     else:
-      allowed = self.new_allowed
+      cleared_fields.append('allowed')
+      allowed = []
 
     if args.description:
       description = args.description
@@ -140,15 +151,49 @@ class UpdateFirewall(base.UpdateCommand):
       cleared_fields.append('targetTags')
       target_tags = []
 
+    denied = []
+    if args.rules:
+      if existing.allowed:
+        allowed = firewalls_utils.ParseRules(args.rules, client.messages,
+                                             firewalls_utils.ActionType.ALLOW)
+      else:
+        denied = firewalls_utils.ParseRules(args.rules, client.messages,
+                                            firewalls_utils.ActionType.DENY)
+    elif args.rules is not None:
+      if existing.allowed:
+        cleared_fields.append('allowed')
+        allowed = []
+      else:
+        cleared_fields.append('denied')
+        denied = []
+
+    direction = existing.direction
+
+    if args.priority is None:
+      priority = existing.priority
+    else:
+      priority = args.priority
+
+    destination_ranges = []
+    if args.destination_ranges:
+      destination_ranges = args.destination_ranges
+    elif args.destination_ranges is None:
+      destination_ranges = existing.destinationRanges
+    else:
+      cleared_fields.append('destinationRanges')
+
     new_firewall = client.messages.Firewall(
         name=existing.name,
+        direction=direction,
+        priority=priority,
         allowed=allowed,
+        denied=denied,
         description=description,
         network=existing.network,
         sourceRanges=source_ranges,
         sourceTags=source_tags,
-        targetTags=target_tags,
-    )
+        destinationRanges=destination_ranges,
+        targetTags=target_tags,)
     return new_firewall
 
 
@@ -163,12 +208,6 @@ class BetaUpdateFirewall(UpdateFirewall):
   """
   with_egress_firewall = True
   with_service_account = True
-
-  def ValidateArgument(self, messages, args):
-    super(BetaUpdateFirewall, self).ValidateArgument(messages, args)
-    if args.rules and args.allow:
-      raise firewalls_utils.ArgumentValidationError(
-          'Can NOT specify --rules and --allow in the same request.')
 
   @classmethod
   def Args(cls, parser):
@@ -186,29 +225,6 @@ class BetaUpdateFirewall(UpdateFirewall):
 
     new_firewall = super(BetaUpdateFirewall, self).Modify(
         client, args, existing, cleared_fields)
-
-    if args.rules:
-      if existing.allowed:
-        new_firewall.allowed = firewalls_utils.ParseRules(
-            args.rules, client.messages, firewalls_utils.ActionType.ALLOW)
-      else:
-        new_firewall.denied = firewalls_utils.ParseRules(
-            args.rules, client.messages, firewalls_utils.ActionType.DENY)
-
-    new_firewall.direction = existing.direction
-
-    if args.priority is None:
-      new_firewall.priority = existing.priority
-    else:
-      new_firewall.priority = args.priority
-
-    if args.destination_ranges:
-      new_firewall.destinationRanges = args.destination_ranges
-    elif args.destination_ranges is None:
-      new_firewall.destinationRanges = existing.destinationRanges
-    else:
-      new_firewall.destinationRanges = []
-      cleared_fields.append('destinationRanges')
 
     if args.source_service_accounts:
       new_firewall.sourceServiceAccounts = args.source_service_accounts

@@ -15,50 +15,76 @@
 
 It's an alias for the instance-groups list-instances command.
 """
+from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.api_lib.compute import request_helper
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 from googlecloudsdk.core import properties
 
 
-class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
+class ListInstances(base.ListCommand):
+  """Lists instances attached to specified Instance Group."""
 
   @staticmethod
   def Args(parser):
+    parser.display_info.AddFormat(
+        'table(instance.basename():label=NAME, status)')
+    parser.display_info.AddUriFunc(
+        instance_groups_utils.UriFuncForListInstances)
     ListInstances.ZonalInstanceGroupArg = (
         instance_groups_flags.MakeZonalInstanceGroupArg())
     ListInstances.ZonalInstanceGroupArg.AddArgument(parser)
     flags.AddRegexArg(parser)
 
-  def GetResources(self, args):
+  def Run(self, args):
     """Retrieves response with instance in the instance group."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
     # Note: only zonal resources parsed here.
-    group_ref = self.resources.Parse(
+    group_ref = holder.resources.Parse(
         args.name,
         params={
             'project': properties.VALUES.core.project.GetOrFail,
             'zone': args.zone
         },
-        collection='compute.' + self.resource_type)
+        collection='compute.instanceGroups')
     if args.regexp:
       filter_expr = 'instance eq {0}'.format(args.regexp)
     else:
       filter_expr = None
 
-    request = self.service.GetRequestType(self.method)(
+    request = client.messages.ComputeInstanceGroupsListInstancesRequest(
         instanceGroup=group_ref.Name(),
         instanceGroupsListInstancesRequest=(
-            self.messages.InstanceGroupsListInstancesRequest()),
+            client.messages.InstanceGroupsListInstancesRequest()),
         zone=group_ref.zone,
         filter=filter_expr,
         project=group_ref.project)
 
     errors = []
-    results = list(request_helper.MakeRequests(
-        requests=[(self.service, self.method, request)],
-        http=self.http,
-        batch_url=self.batch_url,
-        errors=errors))
+    results = list(
+        request_helper.MakeRequests(
+            requests=[(client.apitools_client.instanceGroups, 'ListInstances',
+                       request)],
+            http=client.apitools_client.http,
+            batch_url=client.batch_url,
+            errors=errors))
 
-    return results, errors
+    if errors:
+      utils.RaiseToolException(errors)
+
+    return instance_groups_utils.UnwrapResponse(results, 'items')
+
+
+ListInstances.detailed_help = {
+    'brief':
+        'List instances present in the instance group',
+    'DESCRIPTION':
+        """\
+        *{command}* list instances in an instance group.
+        """,
+}

@@ -27,7 +27,21 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.resource import resource_projector
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+def EpilogText(network_name):
+  """Text for firewall warning."""
+  message = """\
+
+      Instances on this network will not be reachable until firewall rules
+      are created. As an example, you can allow all internal traffic between
+      instances as well as SSH, RDP, and ICMP by running:
+
+      $ gcloud compute firewall-rules create <FIREWALL_NAME> --network {0} --allow tcp,udp,icmp --source-ranges <IP_RANGE>
+      $ gcloud compute firewall-rules create <FIREWALL_NAME> --network {0} --allow tcp:22,tcp:3389,icmp
+      """.format(network_name)
+  log.status.Print(textwrap.dedent(message))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Google Compute Engine network.
 
@@ -93,20 +107,11 @@ class Create(base.CreateCommand):
     return networks_utils.AddMode(responses)
 
   def Epilog(self, resources_were_displayed=True):
-    message = """\
-
-        Instances on this network will not be reachable until firewall rules
-        are created. As an example, you can allow all internal traffic between
-        instances as well as SSH, RDP, and ICMP by running:
-
-        $ gcloud compute firewall-rules create <FIREWALL_NAME> --network {0} --allow tcp,udp,icmp --source-ranges <IP_RANGE>
-        $ gcloud compute firewall-rules create <FIREWALL_NAME> --network {0} --allow tcp:22,tcp:3389,icmp
-        """.format(self._network_name)
-    log.status.Print(textwrap.dedent(message))
+    EpilogText(self._network_name)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(base.CreateCommand):
   """Create a Google Compute Engine network.
 
   *{command}* is used to create virtual networks. A network
@@ -121,10 +126,11 @@ class CreateAlpha(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    parser.display_info.AddFormat(flags.ALPHA_LIST_FORMAT)
+    parser.display_info.AddFormat(flags.ALPHA_BETA_LIST_FORMAT)
     cls.NETWORK_ARG = flags.NetworkArgument()
-    cls.NETWORK_ARG.AddArgument(parser)
-    network_utils.AddCreateAlphaArgs(parser)
+    cls.NETWORK_ARG.AddArgument(parser, operation_type='create')
+
+    network_utils.AddCreateBetaArgs(parser)
 
   def Run(self, args):
     """Issues the request necessary for adding the network."""
@@ -137,16 +143,11 @@ class CreateAlpha(base.CreateCommand):
     network_ref = self.NETWORK_ARG.ResolveAsResource(args, holder.resources)
     self._network_name = network_ref.Name()
     network_resource = networks_utils.CreateNetworkResourceFromArgs(
-        messages=messages,
-        network_ref=network_ref,
-        network_args=args)
+        messages=messages, network_ref=network_ref, network_args=args)
 
-    request = (
-        client.apitools_client.networks,
-        'Insert',
-        client.messages.ComputeNetworksInsertRequest(
-            network=network_resource, project=network_ref.project)
-    )
+    request = (client.apitools_client.networks, 'Insert',
+               client.messages.ComputeNetworksInsertRequest(
+                   network=network_resource, project=network_ref.project))
     response = client.MakeRequests([request])[0]
 
     resource = resource_projector.MakeSerializable(response)
@@ -156,15 +157,24 @@ class CreateAlpha(base.CreateCommand):
     return resource
 
   def Epilog(self, resources_were_displayed=True):
-    message = """\
+    EpilogText(self._network_name)
 
-Instances on this network will not be reachable until firewall rules are
-created. As an example, you can allow all internal traffic between instances as
-well as SSH, RDP, and ICMP by running:
 
-$ gcloud compute firewall-rules create <FIREWALL_NAME> --network {0} --allow \
-tcp,udp,icmp --source-ranges <IP_RANGE>
-$ gcloud compute firewall-rules create <FIREWALL_NAME> --network {0} --allow \
-tcp:22,tcp:3389,icmp
-        """.format(self._network_name)
-    log.status.Print(textwrap.dedent(message))
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a Google Compute Engine network.
+
+  *{command}* is used to create virtual networks. A network
+  performs the same function that a router does in a home
+  network: it describes the network range and gateway IP
+  address, handles communication between instances, and serves
+  as a gateway between instances and callers outside the
+  network.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    parser.display_info.AddFormat(flags.ALPHA_BETA_LIST_FORMAT)
+    cls.NETWORK_ARG = flags.NetworkArgument()
+    cls.NETWORK_ARG.AddArgument(parser)
+    network_utils.AddCreateAlphaArgs(parser)

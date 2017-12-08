@@ -54,7 +54,7 @@ class Create(base.CreateCommand):
   def Args(cls, parser):
     cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
     _Args(parser, include_beta=False, include_alpha=False)
-    flags.ADDRESS_ARG.AddArgument(parser)
+    flags.AddAddressesAndIPVersions(parser, required=False)
     cls.FORWARDING_RULE_ARG.AddArgument(parser, operation_type='create')
 
   def ConstructProtocol(self, messages, args):
@@ -92,6 +92,12 @@ class Create(base.CreateCommand):
     target_ref = utils.GetGlobalTarget(resources, args)
     protocol = self.ConstructProtocol(client.messages, args)
 
+    if args.address is None or args.ip_version:
+      ip_version = client.messages.ForwardingRule.IpVersionValueValuesEnum(
+          args.ip_version or 'IPV4')
+    else:
+      ip_version = None
+
     address = self._ResolveAddress(resources, args,
                                    compute_flags.compute_scope.ScopeEnum.GLOBAL,
                                    forwarding_rule_ref)
@@ -103,6 +109,7 @@ class Create(base.CreateCommand):
         IPProtocol=protocol,
         portRange=port_range,
         target=target_ref.SelfLink(),
+        ipVersion=ip_version,
         loadBalancingScheme=_GetLoadBalancingScheme(args, client.messages))
 
     request = client.messages.ComputeGlobalForwardingRulesInsertRequest(

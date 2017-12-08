@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """'functions deploy' command."""
+import argparse
 import httplib
 
 from apitools.base.py import exceptions as apitools_exceptions
@@ -23,6 +24,7 @@ from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.command_lib.functions.deploy import util as deploy_util
 from googlecloudsdk.core import properties
@@ -52,6 +54,11 @@ def _FunctionArgs(parser):
       help=('The function execution timeout, e.g. 30s for 30 seconds. '
             'Defaults to 60 seconds.'),
       type=arg_parsers.Duration(lower_bound='1s'))
+  parser.add_argument(
+      '--retry',
+      help=argparse.SUPPRESS,
+      action='store_true',
+  )
 
 
 def _SourceCodeArgs(parser):
@@ -295,7 +302,8 @@ class Deploy(base.Command):
     return event_trigger
 
   def _PrepareFunctionWithoutSources(
-      self, name, entry_point, timeout_sec, trigger_http, trigger_params):
+      self, name, entry_point, timeout_sec, trigger_http, trigger_params,
+      retry):
     """Creates a function object without filling in the sources properties.
 
     Args:
@@ -307,6 +315,7 @@ class Deploy(base.Command):
       trigger_params: None or dict from str to str, the dict is assmed to
                       contain exactly the following keys: trigger_provider,
                       trigger_event, trigger_resource.
+      retry: bool, indicates if function should retry.
 
     Returns:
       The specified function with its description and configured filter.
@@ -322,12 +331,16 @@ class Deploy(base.Command):
       function.httpsTrigger = messages.HTTPSTrigger()
     else:
       function.eventTrigger = self._EventTrigger(**trigger_params)
+    if retry:
+      function.eventTrigger.retryPolicy = messages.RetryPolicy()
+      function.eventTrigger.retryPolicy.retryOnFailure = retry
     return function
 
   def _DeployFunction(self, name, location, args, deploy_method,
                       trigger_params):
     function = self._PrepareFunctionWithoutSources(
-        name, args.entry_point, args.timeout, args.trigger_http, trigger_params)
+        name, args.entry_point, args.timeout, args.trigger_http, trigger_params,
+        args.retry)
     if args.source:
       deploy_util.AddSourceToFunction(
           function, args.source, args.include_ignored_files, args.name,
@@ -385,7 +398,11 @@ class Deploy(base.Command):
     Raises:
       FunctionsError if command line parameters are not valid.
     """
+
     trigger_params = deploy_util.DeduceAndCheckArgs(args)
+    if trigger_params is None and args.retry:
+      raise calliope_exceptions.ConflictingArgumentsException(
+          '--trigger-http', '--retry')
     project = properties.VALUES.core.project.Get(required=True)
     location_ref = resources.REGISTRY.Parse(
         properties.VALUES.functions.region.Get(),

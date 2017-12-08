@@ -198,7 +198,8 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
       timeout_str = None
 
     if args.tag:
-      if 'gcr.io/' not in args.tag:
+      if (properties.VALUES.container.build_check_tag.GetBool() and
+          'gcr.io/' not in args.tag):
         raise c_exceptions.InvalidArgumentException(
             '--tag',
             'Tag value must be in the gcr.io/* or *.gcr.io/* namespace.')

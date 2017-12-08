@@ -46,8 +46,22 @@ def _AddArgs(cls, parser):
       help=('Enable/disable access to Google Cloud APIs from this subnet for '
             'instances without a public ip address.'))
 
+  parser.add_argument(
+      '--secondary-range',
+      type=arg_parsers.ArgDict(min_length=1),
+      action='append',
+      metavar='PROPERTY=VALUE',
+      help="""\
+      Adds a secondary IP range to the subnetwork for use in IP aliasing.
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+      For example, `--secondary-range range1=192.168.64.0/24` adds
+      a secondary range 192.168.64.0/24 with name range1.
+
+      * `RANGE_NAME` - Name of the secondary range.
+      * `RANGE` - `IP range in CIDR format.`
+      """)
+
+
 class Create(base.CreateCommand):
   """Define a subnet for a network in custom subnet mode."""
 
@@ -61,55 +75,6 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     """Issues a list of requests necessary for adding a subnetwork."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    network_ref = self.NETWORK_ARG.ResolveAsResource(args, holder.resources)
-    subnet_ref = self.SUBNETWORK_ARG.ResolveAsResource(
-        args,
-        holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
-
-    request = client.messages.ComputeSubnetworksInsertRequest(
-        subnetwork=client.messages.Subnetwork(
-            name=subnet_ref.Name(),
-            description=args.description,
-            network=network_ref.SelfLink(),
-            ipCidrRange=args.range,
-            privateIpGoogleAccess=args.enable_private_ip_google_access,
-        ),
-        region=subnet_ref.region,
-        project=subnet_ref.project)
-
-    return client.MakeRequests([(client.apitools_client.subnetworks,
-                                 'Insert', request)])
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class CreateBeta(Create):
-  """Define a subnet for a network in custom subnet mode."""
-
-  @classmethod
-  def Args(cls, parser):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    _AddArgs(cls, parser)
-    parser.add_argument(
-        '--secondary-range',
-        type=arg_parsers.ArgDict(min_length=1),
-        action='append',
-        metavar='PROPERTY=VALUE',
-        help="""\
-        Adds a secondary IP range to the subnetwork for use in IP aliasing.
-
-        For example, `--secondary-range range1=192.168.64.0/24` adds
-        a secondary range 192.168.64.0/24 with name range1.
-
-        * `RANGE_NAME` - Name of the secondary range.
-        * `RANGE` - `IP range in CIDR format.`
-        """)
-
-  def Run(self, args):
-    """Issues a list of requests for adding a subnetwork. Overrides."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 

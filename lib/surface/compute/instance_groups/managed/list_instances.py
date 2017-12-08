@@ -15,8 +15,10 @@
 
 It's an alias for the instance-groups list-instances command.
 """
+from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.api_lib.compute import request_helper
+from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
@@ -24,66 +26,12 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
+class ListInstances(base.ListCommand):
   """List Google Compute Engine instances present in managed instance group."""
 
   @staticmethod
   def Args(parser):
-    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
-        parser)
-
-  @property
-  def service(self):
-    return self.compute.instanceGroupManagers
-
-  @property
-  def resource_type(self):
-    return 'instanceGroups'
-
-  @property
-  def method(self):
-    return 'ListManagedInstances'
-
-  @property
-  def list_field(self):
-    return 'managedInstances'
-
-  def CreateGroupReference(self, args):
-    return (
-        instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
-        .ResolveAsResource(
-            args, self.resources,
-            default_scope=compute_scope.ScopeEnum.ZONE,
-            scope_lister=flags.GetDefaultScopeLister(self.compute_client)))
-
-  def GetResources(self, args):
-    """Retrieves response with instance in the instance group."""
-    group_ref = self.CreateGroupReference(args)
-
-    if hasattr(group_ref, 'zone'):
-      service = self.compute.instanceGroupManagers
-      request = service.GetRequestType(self.method)(
-          instanceGroupManager=group_ref.Name(),
-          zone=group_ref.zone,
-          project=group_ref.project)
-    elif hasattr(group_ref, 'region'):
-      service = self.compute.regionInstanceGroupManagers
-      request = service.GetRequestType(self.method)(
-          instanceGroupManager=group_ref.Name(),
-          region=group_ref.region,
-          project=group_ref.project)
-
-    errors = []
-    results = list(request_helper.MakeRequests(
-        requests=[(service, self.method, request)],
-        http=self.http,
-        batch_url=self.batch_url,
-        errors=errors))
-
-    return results, errors
-
-  def DeprecatedFormat(self, args):
-    return """\
+    parser.display_info.AddFormat("""\
         table(instance.basename():label=NAME,
               instance.scope().segment(0):label=ZONE,
               instanceStatus:label=STATUS,
@@ -91,14 +39,59 @@ class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
               lastAttempt.errors.errors.map().format(
                 "Error {0}: {1}", code, message).list(separator=", ")
                 :label=LAST_ERROR
-        )"""
+        )""")
+    parser.display_info.AddUriFunc(
+        instance_groups_utils.UriFuncForListInstances)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser)
 
-  detailed_help = {
-      'brief': 'List instances present in the managed instance group',
-      'DESCRIPTION': """\
+  def Run(self, args):
+    """Retrieves response with instance in the instance group."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    group_ref = (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
+                 ResolveAsResource(
+                     args,
+                     holder.resources,
+                     default_scope=compute_scope.ScopeEnum.ZONE,
+                     scope_lister=flags.GetDefaultScopeLister(client)))
+
+    if hasattr(group_ref, 'zone'):
+      service = client.apitools_client.instanceGroupManagers
+      request = (client.messages.
+                 ComputeInstanceGroupManagersListManagedInstancesRequest(
+                     instanceGroupManager=group_ref.Name(),
+                     zone=group_ref.zone,
+                     project=group_ref.project))
+    elif hasattr(group_ref, 'region'):
+      service = client.apitools_client.regionInstanceGroupManagers
+      request = (client.messages.
+                 ComputeRegionInstanceGroupManagersListManagedInstancesRequest(
+                     instanceGroupManager=group_ref.Name(),
+                     region=group_ref.region,
+                     project=group_ref.project))
+
+    errors = []
+    results = list(request_helper.MakeRequests(
+        requests=[(service, 'ListManagedInstances', request)],
+        http=client.apitools_client.http,
+        batch_url=client.batch_url,
+        errors=errors))
+
+    if errors:
+      utils.RaiseToolException(errors)
+    return instance_groups_utils.UnwrapResponse(results, 'managedInstances')
+
+
+ListInstances.detailed_help = {
+    'brief':
+        'List instances present in the managed instance group',
+    'DESCRIPTION':
+        """\
           *{command}* list instances in a managed instance group.
           """,
-  }
+}
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -107,11 +100,7 @@ class ListInstancesBeta(ListInstances):
 
   @staticmethod
   def Args(parser):
-    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
-        parser)
-
-  def DeprecatedFormat(self, args):
-    return """\
+    parser.display_info.AddFormat("""\
         table(instance.basename():label=NAME,
               instance.scope().segment(0):label=ZONE,
               instanceStatus:label=STATUS,
@@ -121,6 +110,11 @@ class ListInstancesBeta(ListInstances):
               lastAttempt.errors.errors.map().format(
                 "Error {0}: {1}", code, message).list(separator=", ")
                 :label=LAST_ERROR
-        )"""
+        )""")
+    parser.display_info.AddUriFunc(
+        instance_groups_utils.UriFuncForListInstances)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser)
+
 
 ListInstancesBeta.detailed_help = ListInstances.detailed_help

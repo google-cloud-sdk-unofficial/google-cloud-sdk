@@ -14,30 +14,39 @@
 """Command for listing users."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.users import utils as user_utils
 
 
-class List(base_classes.GlobalLister):
+class List(base.ListCommand):
   """List Google Compute Engine users."""
 
-  @property
-  def service(self):
-    return self.clouduseraccounts.users
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(user_utils.DEFAULT_LIST_FORMAT)
+    lister.AddBaseListerArgs(parser)
 
-  @property
-  def resource_type(self):
-    return 'users'
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    cua_holder = base_classes.ComputeUserAccountsApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def messages(self):
-    return self.clouduseraccounts.MESSAGES_MODULE
+    request_data = lister.ParseNamesAndRegexpFlags(args, holder.resources)
 
-  def GetResources(self, args, errors):
-    return lister.GetGlobalResourcesDicts(
-        service=self.service,
-        project=self.project,
-        filter_expr=self.GetFilterExpr(args),
-        http=self.http,
+    errors = []
+
+    for item in lister.GetGlobalResourcesDicts(
+        service=cua_holder.client.users,
+        project=list(request_data.scope_set)[0].project,
+        filter_expr=request_data.filter,
+        http=client.apitools_client.http,
         batch_url='https://www.googleapis.com/batch/',
-        errors=errors)
+        errors=errors):
+      yield item
+
+    if errors:
+      utils.RaiseToolException(errors)
+
 
 List.detailed_help = base_classes.GetGlobalListerHelp('users')

@@ -15,33 +15,42 @@
 """Command for listing backend services."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import lister
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
-class List(base_classes.GlobalRegionalLister):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class List(base.ListCommand):
   """List backend services."""
 
-  def Collection(self):
-    return 'compute.backendServices.alpha'
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
 
-  @property
-  def aggregation_service(self):
-    return self.compute.backendServices
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def global_service(self):
-    return self.compute.backendServices
+    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
 
-  @property
-  def regional_service(self):
-    return self.compute.regionBackendServices
+    list_implementation = lister.MultiScopeLister(
+        client,
+        regional_service=client.apitools_client.regionBackendServices,
+        global_service=client.apitools_client.backendServices,
+        aggregation_service=client.apitools_client.backendServices)
 
-  @property
-  def resource_type(self):
-    return 'backendServices'
+    return lister.Invoke(request_data, list_implementation)
 
-  @property
-  def allowed_filtering_types(self):
-    return ['regionBackendServices', 'backendServices']
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ListBeta(List):
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(flags.DEFAULT_BETA_LIST_FORMAT)
+    lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
 
 
 List.detailed_help = base_classes.GetGlobalRegionalListerHelp(

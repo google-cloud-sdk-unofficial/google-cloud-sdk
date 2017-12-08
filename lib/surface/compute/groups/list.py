@@ -14,31 +14,41 @@
 """Command for listing groups."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.groups import flags
 
 
-class List(base_classes.GlobalLister):
+class List(base.ListCommand):
   """List Google Compute Engine groups."""
 
-  @property
-  def service(self):
-    return self.clouduseraccounts.groups
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    lister.AddBaseListerArgs(parser)
 
-  @property
-  def resource_type(self):
-    return 'groups'
+  def Run(self, args):
+    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    cua_holder = base_classes.ComputeUserAccountsApiHolder(self.ReleaseTrack())
+    compute_client = compute_holder.client
+    cua_client = cua_holder.client
 
-  @property
-  def messages(self):
-    return self.clouduseraccounts.MESSAGES_MODULE
+    request_data = lister.ParseNamesAndRegexpFlags(args,
+                                                   compute_holder.resources)
 
-  def GetResources(self, args, errors):
-    return lister.GetGlobalResourcesDicts(
-        service=self.service,
-        project=self.project,
-        filter_expr=self.GetFilterExpr(args),
-        http=self.http,
+    errors = []
+
+    for item in lister.GetGlobalResourcesDicts(
+        service=cua_client.groups,
+        project=list(request_data.scope_set)[0].project,
+        filter_expr=request_data.filter,
+        http=compute_client.apitools_client.http,
         batch_url='https://www.googleapis.com/batch/',
-        errors=errors)
+        errors=errors):
+      yield item
+
+    if errors:
+      utils.RaiseToolException(errors)
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp('groups')

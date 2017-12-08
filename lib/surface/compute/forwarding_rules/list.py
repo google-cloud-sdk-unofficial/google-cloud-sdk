@@ -13,26 +13,41 @@
 # limitations under the License.
 """Command for listing forwarding rules."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import lister
+from googlecloudsdk.calliope import base
 
 
-class List(base_classes.GlobalRegionalLister):
+class List(base.ListCommand):
   """List forwarding rules."""
 
-  @property
-  def global_service(self):
-    return self.compute.globalForwardingRules
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""\
+        table(
+          name,
+          region.basename(),
+          IPAddress,
+          IPProtocol,
+          firstof(
+              target,
+              backendService).scope():label=TARGET
+        )
+        """)
+    lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
 
-  @property
-  def regional_service(self):
-    return self.compute.forwardingRules
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'forwardingRules'
+    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
 
-  @property
-  def allowed_filtering_types(self):
-    return ['globalForwardingRules', 'forwardingRules']
+    list_implementation = lister.MultiScopeLister(
+        client,
+        regional_service=client.apitools_client.forwardingRules,
+        global_service=client.apitools_client.globalForwardingRules,
+        aggregation_service=client.apitools_client.forwardingRules)
+
+    return lister.Invoke(request_data, list_implementation)
 
 
 List.detailed_help = (

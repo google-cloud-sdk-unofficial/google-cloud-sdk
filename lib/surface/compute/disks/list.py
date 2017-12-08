@@ -43,15 +43,11 @@ class List(base.ListCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base_classes.MultiScopeLister):
+class ListAlpha(base.ListCommand):
   """List Google Compute Engine persistent disks."""
 
   @staticmethod
   def Args(parser):
-    base_classes.MultiScopeLister.AddScopeArgs(
-        parser,
-        scopes=[base_classes.ScopeType.zonal_scope,
-                base_classes.ScopeType.regional_scope])
     parser.display_info.AddFormat("""
         table(name,
               location(),
@@ -60,30 +56,21 @@ class ListAlpha(base_classes.MultiScopeLister):
               type.basename(),
               status)
     """)
+    lister.AddMultiScopeListerFlags(parser, zonal=True, regional=True)
 
-  def Collection(self):
-    """Override the default collection from the base class."""
-    return None
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def global_service(self):
-    """The service used to list global resources."""
-    raise NotImplementedError()
+    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
 
-  @property
-  def regional_service(self):
-    """The service used to list regional resources."""
-    return self.compute.regionDisks
+    list_implementation = lister.MultiScopeLister(
+        client,
+        zonal_service=client.apitools_client.disks,
+        regional_service=client.apitools_client.regionDisks,
+        aggregation_service=client.apitools_client.disks)
 
-  @property
-  def zonal_service(self):
-    """The service used to list regional resources."""
-    return self.compute.disks
-
-  @property
-  def aggregation_service(self):
-    """The service used to get aggregated list of resources."""
-    return self.zonal_service
+    return lister.Invoke(request_data, list_implementation)
 
 
 List.detailed_help = base_classes.GetZonalListerHelp('disks')

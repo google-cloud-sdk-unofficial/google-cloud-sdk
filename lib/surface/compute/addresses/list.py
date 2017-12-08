@@ -13,26 +13,37 @@
 # limitations under the License.
 """Command for listing addresses."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import lister
+from googlecloudsdk.calliope import base
 
 
-class List(base_classes.GlobalRegionalLister):
+class List(base.ListCommand):
   """List addresses."""
 
-  @property
-  def global_service(self):
-    return self.compute.globalAddresses
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""\
+        table(
+          name,
+          region.basename(),
+          address,
+          status
+        )""")
+    lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
 
-  @property
-  def regional_service(self):
-    return self.compute.addresses
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'addresses'
+    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
 
-  @property
-  def allowed_filtering_types(self):
-    return ['globalAddresses', 'addresses']
+    list_implementation = lister.MultiScopeLister(
+        client,
+        regional_service=client.apitools_client.addresses,
+        global_service=client.apitools_client.globalAddresses,
+        aggregation_service=client.apitools_client.addresses)
+
+    return lister.Invoke(request_data, list_implementation)
 
 
 List.detailed_help = {

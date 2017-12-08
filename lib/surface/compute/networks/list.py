@@ -14,22 +14,31 @@
 """Command for listing networks."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.api_lib.compute import networks_utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.networks import flags
 
 
-class List(base_classes.GlobalLister):
+class List(base.ListCommand):
   """List Google Compute Engine networks."""
 
-  @property
-  def service(self):
-    return self.compute.networks
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    lister.AddBaseListerArgs(parser)
 
-  @property
-  def resource_type(self):
-    return 'networks'
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  def ComputeDynamicProperties(self, args, items):
-    return networks_utils.AddMode(items)
+    request_data = lister.ParseNamesAndRegexpFlags(args, holder.resources)
+
+    list_implementation = lister.GlobalLister(
+        client, client.apitools_client.networks)
+
+    return networks_utils.AddMode(
+        lister.Invoke(request_data, list_implementation))
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp('networks')

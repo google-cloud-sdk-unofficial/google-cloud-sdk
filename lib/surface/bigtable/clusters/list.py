@@ -58,9 +58,6 @@ class ListClusters(base.ListCommand):
     Yields:
       Some value that we want to have printed later.
     """
-    # TODO(b/33272823): Remove after deprecation period
-    arguments.ProcessInstances(args)
-
     cli = util.GetAdminClient()
     instances = args.instances or ['-']
     for instance in instances:

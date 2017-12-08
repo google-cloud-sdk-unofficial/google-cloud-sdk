@@ -62,12 +62,24 @@ class Create(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     _Args(cls, parser)
-    flags.AddAddresses(parser)
+    flags.AddAddressesAndIPVersions(parser, required=False)
 
   def GetAddress(self, messages, args, address, address_ref, resource_parser):
+    if args.ip_version or (
+        address is None and
+        address_ref.Collection() == 'compute.globalAddresses'):
+      ip_version = messages.Address.IpVersionValueValuesEnum(
+          args.ip_version or 'IPV4')
+    else:
+      # IP version is only specified in global requests if an address is not
+      # specified to determine whether an ipv4 or ipv6 address should be
+      # allocated.
+      ip_version = None
+
     return messages.Address(
         address=address,
         description=args.description,
+        ipVersion=ip_version,
         name=address_ref.Name())
 
   def Run(self, args):

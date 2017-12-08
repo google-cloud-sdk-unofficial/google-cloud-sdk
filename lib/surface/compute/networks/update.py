@@ -21,7 +21,7 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(base.UpdateCommand):
+class Update(base.UpdateCommand):
   """Update a Google Compute Engine Network."""
 
   NETWORK_ARG = None
@@ -66,9 +66,21 @@ class UpdateAlpha(base.UpdateCommand):
     return resource
 
 
-UpdateAlpha.detailed_help = {
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update a Google Compute Engine network."""
+
+  @classmethod
+  def Args(cls, parser):
+    cls.NETWORK_ARG = flags.NetworkArgument()
+    cls.NETWORK_ARG.AddArgument(parser)
+    network_utils.AddUpdateBetaArgs(parser)
+
+
+Update.detailed_help = {
     'brief':
-        'Update a network',
+        'Update a Google Compute Engine network',
     'DESCRIPTION':
         """\
 

@@ -15,6 +15,7 @@
 from googlecloudsdk.calliope import base
 
 
+# TODO(b/64597154): Remove this command group when usage is low.
 @base.Deprecate(
     is_removed=False,
     warning=('This command group is deprecated. Use \'gcloud iot devices '

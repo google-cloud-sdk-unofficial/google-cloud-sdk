@@ -13,18 +13,29 @@
 # limitations under the License.
 """Command for listing target HTTP proxies."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import lister
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.target_http_proxies import flags
 
 
-class List(base_classes.GlobalLister):
+class List(base.ListCommand):
   """List target HTTP proxies."""
 
-  @property
-  def service(self):
-    return self.compute.targetHttpProxies
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    lister.AddBaseListerArgs(parser)
 
-  @property
-  def resource_type(self):
-    return 'targetHttpProxies'
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    request_data = lister.ParseNamesAndRegexpFlags(args, holder.resources)
+
+    list_implementation = lister.GlobalLister(
+        client, client.apitools_client.targetHttpProxies)
+
+    return lister.Invoke(request_data, list_implementation)
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp('target HTTP proxies')

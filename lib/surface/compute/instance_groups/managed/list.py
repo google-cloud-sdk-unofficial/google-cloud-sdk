@@ -13,45 +13,40 @@
 # limitations under the License.
 """Command for listing managed instance groups."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import lister
+from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.instance_groups.managed import flags
 from googlecloudsdk.core import log
 
 
-class List(base_classes.InstanceGroupManagerDynamicProperiesMixin,
-           base_classes.MultiScopeLister):
+class List(base.ListCommand):
   """List Google Compute Engine managed instance groups."""
-
-  SCOPES = [base_classes.ScopeType.regional_scope,
-            base_classes.ScopeType.zonal_scope]
 
   @staticmethod
   def Args(parser):
-    base_classes.MultiScopeLister.AddScopeArgs(parser, List.SCOPES)
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    lister.AddMultiScopeListerFlags(parser, zonal=True, regional=True)
 
-  @property
-  def global_service(self):
-    return None
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def regional_service(self):
-    return self.compute.regionInstanceGroupManagers
+    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
 
-  @property
-  def zonal_service(self):
-    return self.compute.instanceGroupManagers
+    list_implementation = lister.MultiScopeLister(
+        client,
+        zonal_service=client.apitools_client.instanceGroupManagers,
+        regional_service=client.apitools_client.regionInstanceGroupManagers,
+        aggregation_service=client.apitools_client.instanceGroupManagers)
 
-  @property
-  def aggregation_service(self):
-    return self.compute.instanceGroupManagers
+    migs = lister.Invoke(request_data, list_implementation)
 
-  @property
-  def resource_type(self):
-    return 'instanceGroupManagers'
+    (self._had_errors,
+     results) = managed_instance_groups_utils.AddAutoscaledPropertyToMigs(
+         list(migs), client, holder.resources)
 
-  def GetResources(self, args, errors):
-    # GetResources() may set _had_errors True if it encounters errors that don't
-    # stop processing. If True then Epilog() below emits one error message.
-    self._had_errors = False
-    return super(List, self).GetResources(args, errors)
+    return results
 
   def Epilog(self, unused_resources_were_displayed):
     if self._had_errors:
@@ -60,4 +55,5 @@ class List(base_classes.InstanceGroupManagerDynamicProperiesMixin,
 
 
 List.detailed_help = base_classes.GetMultiScopeListerHelp(
-    'managed instance groups', List.SCOPES)
+    'managed instance groups',
+    [base_classes.ScopeType.regional_scope, base_classes.ScopeType.zonal_scope])

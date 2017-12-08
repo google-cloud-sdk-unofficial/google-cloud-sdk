@@ -25,6 +25,10 @@ from googlecloudsdk.command_lib.compute.instances import flags as instances_flag
 from googlecloudsdk.command_lib.util import labels_util
 
 
+@base.Deprecate(is_removed=False,
+                warning='This command is deprecated. Use `gcloud alpha '
+                        'compute instances create-with-container` command '
+                        'instead.')
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateFromContainer(base.CreateCommand):
   """Command for creating VM instances running Docker images."""

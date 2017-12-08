@@ -13,28 +13,12 @@
 # limitations under the License.
 """Command for listing firewall rules."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.firewall_rules import flags
 from googlecloudsdk.core import log
 
 RESOURCE_TYPE = 'firewall rules'
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class List(base_classes.GlobalLister):
-  """List Google Compute Engine firewall rules."""
-
-  @property
-  def service(self):
-    return self.compute.firewalls
-
-  @property
-  def resource_type(self):
-    return 'firewalls'
-
-
-List.detailed_help = base_classes.GetGlobalListerHelp(RESOURCE_TYPE)
-
 
 DETAILED_HELP = {
     'brief':
@@ -60,16 +44,41 @@ EXAMPLE_FORMAT = """\
     """
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class List(base.ListCommand):
+  """List Google Compute Engine firewall rules."""
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(flags.DEFAULT_BETA_LIST_FORMAT)
+    lister.AddBaseListerArgs(parser)
+
+  def Run(self, args):
+    log.status.Print(flags.LIST_NOTICE)
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    request_data = lister.ParseNamesAndRegexpFlags(args, holder.resources)
+
+    list_implementation = lister.GlobalLister(client,
+                                              client.apitools_client.firewalls)
+
+    return lister.Invoke(request_data, list_implementation)
+
+
+List.detailed_help = DETAILED_HELP.copy()
+List.detailed_help['EXAMPLES'] = EXAMPLE_FORMAT.format(
+    RESOURCE_TYPE, flags.LIST_WITH_ALL_FIELDS_FORMAT)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class BetaList(List):
   """List Google Compute Engine firewall rules."""
 
-  def Run(self, args):
-    log.status.Print(flags.LIST_NOTICE)
-    return super(BetaList, self).Run(args)
-
-  def Collection(self):
-    return 'compute.firewalls.beta'
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(flags.DEFAULT_BETA_LIST_FORMAT)
+    lister.AddBaseListerArgs(parser)
 
 
 BetaList.detailed_help = DETAILED_HELP.copy()

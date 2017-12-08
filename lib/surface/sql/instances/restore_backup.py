@@ -44,19 +44,10 @@ class RestoreBackup(base.Command):
         'instance',
         completer=flags.InstanceCompleter,
         help='Cloud SQL instance ID that will be restored.')
-
-    # TODO(b/21877717): Remove backup_id_group after deprecation period.
-    backup_id_group = parser.add_mutually_exclusive_group(required=True)
-    backup_id_group.add_argument(
+    parser.add_argument(
         '--backup-id',
         type=int,
         help='The ID of the backup run to restore from.')
-    # TODO(b/21877717): Remove due-time argument after deprecation period.
-    backup_id_group.add_argument(
-        '--due-time',
-        help='The time when this run was due to start in RFC 3339 format, for '
-        'example 2012-11-15T16:19:00.094Z.')
-
     parser.add_argument(
         '--backup-instance',
         completer=flags.InstanceCompleter,
@@ -89,9 +80,6 @@ class RestoreBackup(base.Command):
         default=True,
         cancel_on_no=True)
 
-    # TODO(b/21877717): Remove due_time handling after deprecation period.
-    if args.due_time:
-      return self._HandleDueTime(args)
     return self._HandleBackupId(args)
 
   def _HandleBackupId(self, args):
@@ -139,60 +127,6 @@ class RestoreBackup(base.Command):
 
     # TODO(b/37302484): Use standard gcloud poller instead of WaitForOperation
     operations.OperationsV1Beta4.WaitForOperation(
-        sql_client, operation_ref, 'Restoring Cloud SQL instance')
-
-    log.status.write('Restored [{instance}].\n'.format(instance=instance_ref))
-
-    return None
-
-  def _HandleDueTime(self, args):
-    """Restores a backup using v1beta3. The backup is specified with due_time.
-
-    Args:
-      args: argparse.Namespace, The arguments that this command was invoked
-          with.
-
-    Returns:
-      A dict object representing the operations resource describing the
-      restoreBackup operation if the restoreBackup was successful.
-    """
-    # If user passed due-time instead of backup-id, use v1beta3.
-    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
-    sql_client = client.sql_client
-    sql_messages = client.sql_messages
-
-    instance_ref = client.resource_parser.Parse(
-        args.instance,
-        params={'project': properties.VALUES.core.project.GetOrFail},
-        collection='sql.instances')
-
-    instance_resource = sql_client.instances.Get(
-        sql_messages.SqlInstancesGetRequest(
-            project=instance_ref.project, instance=instance_ref.instance))
-    # At this point we support only one backup-config. So, just use that id.
-    backup_config = instance_resource.settings.backupConfiguration[0].id
-
-    result = sql_client.instances.RestoreBackup(
-        sql_messages.SqlInstancesRestoreBackupRequest(
-            project=instance_ref.project,
-            instance=instance_ref.instance,
-            backupConfiguration=backup_config,
-            dueTime=args.due_time))
-
-    operation_ref = client.resource_parser.Create(
-        'sql.operations',
-        operation=result.operation,
-        project=instance_ref.project,
-        instance=instance_ref.instance,)
-
-    if args.async:
-      return sql_client.operations.Get(
-          sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project,
-              instance=operation_ref.instance,
-              operation=operation_ref.operation))
-
-    operations.OperationsV1Beta3.WaitForOperation(
         sql_client, operation_ref, 'Restoring Cloud SQL instance')
 
     log.status.write('Restored [{instance}].\n'.format(instance=instance_ref))
