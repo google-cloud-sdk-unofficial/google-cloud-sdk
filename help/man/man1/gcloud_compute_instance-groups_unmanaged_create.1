@@ -1,0 +1,80 @@
+
+.TH "GCLOUD_COMPUTE_INSTANCE\-GROUPS_UNMANAGED_CREATE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute instance\-groups unmanaged create \- create a Compute Engine unmanaged instance group
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute instance\-groups unmanaged create\fR \fINAME\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute instance\-groups unmanaged create\fR creates a new Google
+Compute Engine unmanaged instance group. For example:
+
+.RS 2m
+$ gcloud compute instance\-groups unmanaged create \e
+    example\-instance\-group \-\-zone us\-central1\-a
+.RE
+
+The above example creates one unmanaged instance group called
+\'example\-instance\-group' in the \f5\fIus\-central1\-a\fR\fR zone.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR
+.RS 2m
+The name of the unmanaged instance group to create.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-description\fR \fIDESCRIPTION\fR
+.RS 2m
+Specifies a textual description for the unmanaged instance group.
+
+.RE
+\fB\-\-zone\fR \fIZONE\fR
+.RS 2m
+The zone of the unmanaged instance group to create. If not specified, you will
+be prompted to select a zone.
+
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/zone\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/zone ZONE
+.RE
+
+A list of zones can be fetched by running:
+
+.RS 2m
+$ gcloud compute zones list
+.RE
+
+To unset the property, run:
+
+.RS 2m
+$ gcloud config unset compute/zone
+.RE
+
+Alternatively, the zone can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

@@ -1,0 +1,150 @@
+
+.TH "GCLOUD_TOPIC_ARG\-FILES" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud topic arg\-files \- supplementary help for arg\-files to be used with \fBgcloud test\fR
+
+
+
+.SH "DESCRIPTION"
+
+Supplementary help for arg\-files to be used with \fBgcloud test\fR.
+
+All \fBgcloud test android run\fR arguments may be specified by flags on the
+command line and/or via a YAML\-formatted \fIARG_FILE\fR. The optional,
+positional ARG_SPEC argument on the command line is used to specify a single
+\fIARG_FILE\fR:\fIARG_GROUP_NAME\fR pair, where \fIARG_FILE\fR is the path to
+the YAML argument file, and \fIARG_GROUP_NAME\fR is the name of the argument
+group to load and parse. The \fIARG_FILE\fR must contain valid YAML syntax or
+gcloud will respond with an error.
+
+The basic format of a YAML argument file is:
+
+.RS 2m
+arg\-group1:
+  arg1: value1  # a comment
+  arg2: value2
+  ...
+.RE
+
+.RS 2m
+# Another comment
+arg\-group2:
+  arg3: value3
+  ...
+.RE
+
+List arguments may be specified within square brackets:
+
+.RS 2m
+device\-ids: [Nexus5, Nexus6, Nexus9]
+.RE
+
+or by using the alternate YAML list notation with one dash per list item:
+
+.RS 2m
+device\-ids:
+  \- Nexus5
+  \- Nexus6
+  \- Nexus9
+.RE
+
+If a list argument only contains a single value, you may omit the square
+brackets:
+
+.RS 2m
+device\-ids: Nexus9
+.RE
+
+Note that while the command\-line flags support both singular and plural forms
+of each list\-style argument (e.g. either \-\-device\-id or \-\-device\-ids),
+argument files only support the plural forms.
+
+Composition
+
+A special \fBinclude: [\fIARG_GROUP1\fR, ...]\fR syntax allows merging or
+composition of argument groups (see \fBEXAMPLES\fR below). Included argument
+groups can \fBinclude:\fR other argument groups within the same YAML file, with
+unlimited nesting.
+
+Precedence
+
+An argument which appears on the command line has the highest precedence and
+will override the same argument if it is specified within an argument file.
+
+Any argument defined directly within a group will have higher precedence than an
+identical argument which is merged into that group using the \fBinclude:\fR
+keyword.
+
+
+
+.SH "EXAMPLES"
+
+Here are the contents of a very simple YAML argument file which we'll assume is
+stored in a file named excelsior_args.yaml:
+
+.RS 2m
+# Run a quick 'robo' test on the 'Excelsior' app for
+# 90 seconds using only the default virtual device.
+quick\-robo\-test:
+  app: path/to/excelsior.apk
+  type: robo
+  max\-steps: 100
+  timeout: 90s
+  async: true
+.RE
+
+To invoke this test, run:
+
+.RS 2m
+$ gcloud alpha test android run excelsior_args.yaml:quick\-robo\-test
+.RE
+
+Here is a slightly more complicated example which demonstrates composition of
+argument groups. Assume the following YAML text is appended to the arg\-file
+shown above named excelsior_args.yaml:
+
+.RS 2m
+# Specify some unit tests to be run against a test matrix
+# with one device type, two Android versions, and four
+# locales, for a total of eight test variations (1*2*4).
+unit\-tests:
+  type: instrumentation
+  app: path/to/excelsior.apk
+  test: path/to/excelsior\-test.apk  # the unit tests
+  timeout: 10m
+  device\-ids: Nexus6
+  include: [supported\-versions, supported\-locales]
+.RE
+
+.RS 2m
+supported\-versions:
+  os\-version\-ids: [21, 22]
+.RE
+
+.RS 2m
+supported\-locales:
+  locales: [en, es, fr, it]
+.RE
+
+To invoke this test matrix, run:
+
+.RS 2m
+$ gcloud alpha test android run excelsior_args.yaml:unit\-tests
+.RE
+
+To run these unit tests with the same locales and os\-version\-ids, but
+substituting a sampling of three physical Android devices instead of the single
+virtual Nexus6 device, run:
+
+.RS 2m
+$ gcloud alpha test android run excelsior2.args:unit\-tests \e
+    \-\-device\-ids shamu,m7,g3
+.RE
+
+In the last example, the \-\-device\-ids argument on the command line overrides
+the device\-ids: specification inside the arg\-file because command\-line
+arguments have higher precedence.

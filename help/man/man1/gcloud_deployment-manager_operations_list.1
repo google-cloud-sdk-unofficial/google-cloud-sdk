@@ -1,0 +1,56 @@
+
+.TH "GCLOUD_DEPLOYMENT\-MANAGER_OPERATIONS_LIST" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud deployment\-manager operations list \- list operations in a project
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud deployment\-manager operations list\fR [\fB\-\-limit\fR\ \fILIMIT\fR] [\fB\-\-simple\-list\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Prints a table with summary information on all operations in the project.
+
+
+
+.SH "FLAGS"
+
+\fB\-\-limit\fR \fILIMIT\fR
+.RS 2m
+The maximum number of results to list.
+
+.RE
+\fB\-\-simple\-list\fR
+.RS 2m
+If true, only the list of resource IDs is printed. If false, prints a
+human\-readable table of resource information.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To print out a list of operations with some summary information about each, run:
+
+.RS 2m
+$ gcloud deployment\-manager operations list
+.RE
+
+To print only the name of each operation, run:
+
+.RS 2m
+$ gcloud deployment\-manager operations list \-\-simple\-list
+.RE

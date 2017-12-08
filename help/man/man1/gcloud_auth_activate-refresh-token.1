@@ -1,0 +1,43 @@
+
+.TH "GCLOUD_AUTH_ACTIVATE\-REFRESH\-TOKEN" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud auth activate\-refresh\-token \- get credentials via an existing refresh token
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud auth activate\-refresh\-token\fR \fIACCOUNT\fR [\fITOKEN\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Use an oauth2 refresh token to manufacture credentials for Google APIs. This
+token must have been acquired via some legitimate means to work. The account
+provided is only used locally to help the Cloud SDK keep track of the new
+credentials, so you can activate, list, and revoke the credentials in the
+future.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIACCOUNT\fR
+.RS 2m
+The account to associate with the refresh token.
+
+.RE
+[\fITOKEN\fR]
+.RS 2m
+OAuth2 refresh token. If blank, prompt for value.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

@@ -1,0 +1,44 @@
+
+.TH "GCLOUD_AUTH_REVOKE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud auth revoke \- revoke authorization for credentials
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud auth revoke\fR [\fIACCOUNTS\fR\ ...] [\fB\-\-all\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Revoke credentials. If no account is provided, the currently active account is
+used.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+[\fIACCOUNTS\fR ...]
+.RS 2m
+Accounts whose credentials shall be revoked.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-all\fR
+.RS 2m
+Revoke all known credentials.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

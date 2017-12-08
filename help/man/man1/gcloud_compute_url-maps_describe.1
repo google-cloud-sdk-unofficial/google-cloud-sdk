@@ -1,0 +1,67 @@
+
+.TH "GCLOUD_COMPUTE_URL\-MAPS_DESCRIBE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute url\-maps describe \- describe a URL map
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute url\-maps describe\fR \fINAME\fR [\fB\-\-region\fR\ \fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute url\-maps describe\fR displays all data associated with a URL
+map in a project.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR
+.RS 2m
+The name of the resource to fetch.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-region\fR \fIREGION\fR
+.RS 2m
+The region of the resource to fetch. If not specified, you will be prompted to
+select a region.
+
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/region\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/region REGION
+.RE
+
+A list of regions can be fetched by running:
+
+.RS 2m
+$ gcloud compute regions list
+.RE
+
+To unset the property, run:
+
+.RS 2m
+$ gcloud config unset compute/region
+.RE
+
+Alternatively, the region can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_REGION\fR\fR.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

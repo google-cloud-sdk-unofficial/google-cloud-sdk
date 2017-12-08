@@ -1,0 +1,64 @@
+
+.TH "GCLOUD_DEPLOYMENT\-MANAGER_DEPLOYMENTS_CANCEL\-PREVIEW" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud deployment\-manager deployments cancel\-preview \- cancel a pending or running deployment preview
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud deployment\-manager deployments cancel\-preview\fR \fIDEPLOYMENT_NAME\fR [\fB\-\-async\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+This command will cancel a currently running or pending preview operation on a
+deployment.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIDEPLOYMENT_NAME\fR
+.RS 2m
+Deployment name.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-async\fR
+.RS 2m
+Return immediately and print information about the Operation in progress rather
+than waiting for the Operation to complete. (default=False)
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To cancel a running operation on a deployment, run:
+
+.RS 2m
+$ gcloud deployment\-manager deployments cancel\-preview \e
+    my\-deployment
+.RE
+
+To issue a cancel preview command without waiting for the operation to complete,
+run:
+
+.RS 2m
+$ gcloud deployment\-manager deployments cancel\-preview \e
+    my\-deployment \-\-async
+.RE

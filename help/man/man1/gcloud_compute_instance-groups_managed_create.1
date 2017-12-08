@@ -1,0 +1,104 @@
+
+.TH "GCLOUD_COMPUTE_INSTANCE\-GROUPS_MANAGED_CREATE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute instance\-groups managed create \- create a Compute Engine managed instance group
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute instance\-groups managed create\fR \fINAME\fR \fB\-\-base\-instance\-name\fR \fIBASE_INSTANCE_NAME\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] \fB\-\-size\fR \fISIZE\fR [\fB\-\-target\-pool\fR\ [\fITARGET_POOL\fR,...]] \fB\-\-template\fR \fITEMPLATE\fR [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute instance\-groups managed create\fR creates a Google Compute
+Engine managed instance group.
+
+For example, running:
+
+.RS 2m
+$ gcloud compute instance\-groups managed create \e
+example\-managed\-instance\-group \-\-zone us\-central1\-a
+.RE
+
+will create one managed instance group called
+\'example\-managed\-instance\-group' in the \f5\fIus\-central1\-a\fR\fR zone.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR
+.RS 2m
+Managed instance group name.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-base\-instance\-name\fR \fIBASE_INSTANCE_NAME\fR
+.RS 2m
+The base name to use for the Compute Engine instances that will be created with
+the managed instance group.
+
+.RE
+\fB\-\-description\fR \fIDESCRIPTION\fR
+.RS 2m
+An optional description for this group.
+
+.RE
+\fB\-\-size\fR \fISIZE\fR
+.RS 2m
+The initial number of instances you want in this group.
+
+.RE
+\fB\-\-target\-pool\fR [\fITARGET_POOL\fR,...]
+.RS 2m
+Specifies any target pools you want the instances of this managed instance group
+to be part of.
+
+.RE
+\fB\-\-template\fR \fITEMPLATE\fR
+.RS 2m
+Specifies the instance template to use when creating new instances.
+
+.RE
+\fB\-\-zone\fR \fIZONE\fR
+.RS 2m
+The zone of the instance group manager to create. If not specified, you will be
+prompted to select a zone.
+
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/zone\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/zone ZONE
+.RE
+
+A list of zones can be fetched by running:
+
+.RS 2m
+$ gcloud compute zones list
+.RE
+
+To unset the property, run:
+
+.RS 2m
+$ gcloud config unset compute/zone
+.RE
+
+Alternatively, the zone can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

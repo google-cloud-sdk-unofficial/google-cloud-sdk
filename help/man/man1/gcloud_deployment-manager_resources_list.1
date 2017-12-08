@@ -1,0 +1,68 @@
+
+.TH "GCLOUD_DEPLOYMENT\-MANAGER_RESOURCES_LIST" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud deployment\-manager resources list \- list resources in a deployment
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud deployment\-manager resources list\fR [\fB\-\-deployment\fR\ \fIDEPLOYMENT\fR] [\fB\-\-limit\fR\ \fILIMIT\fR] [\fB\-\-simple\-list\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Prints a table with summary information on all resources in the deployment.
+
+
+
+.SH "FLAGS"
+
+\fB\-\-limit\fR \fILIMIT\fR
+.RS 2m
+The maximum number of results to list.
+
+.RE
+\fB\-\-simple\-list\fR
+.RS 2m
+If true, only the list of resource IDs is printed. If false, prints a
+human\-readable table of resource information.
+
+
+.RE
+
+.SH "GROUP FLAGS"
+
+\fB\-\-deployment\fR \fIDEPLOYMENT\fR
+.RS 2m
+Deployment name
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To print out a list of resources in the deployment with some summary information
+about each, run:
+
+.RS 2m
+$ gcloud deployment\-manager resources list \e
+    \-\-deployment my\-deployment
+.RE
+
+To print only the name of each resource, run:
+
+.RS 2m
+$ gcloud deployment\-manager resources list \e
+    \-\-deployment my\-deployment \-\-simple\-list
+.RE

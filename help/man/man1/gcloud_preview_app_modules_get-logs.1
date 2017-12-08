@@ -1,0 +1,141 @@
+
+.TH "GCLOUD_PREVIEW_APP_MODULES_GET\-LOGS" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud preview app modules get\-logs \- \fB(BETA)\fR gets the logs for the given module
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud preview app modules get\-logs\fR \fIMODULE\fR [\fIOUTPUT_FILE\fR] [\fB\-\-append\fR] [\fB\-\-days\fR\ \fIDAYS\fR] [\fB\-\-details\fR] [\fB\-\-end\-date\fR\ \fIEND_DATE\fR] [\fB\-\-server\fR\ \fISERVER\fR] [\fB\-\-severity\fR\ \fISEVERITY\fR] \fB\-\-version\fR \fIVERSION\fR [\fB\-\-vhost\fR\ \fIVHOST\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fB(BETA)\fR This command gets the logs for the given module. Logs will be
+downloaded to the file given as \f5\fIOUTPUT_FILE\fR\fR. If not provided, the
+logs will be printed to standard out. You can append new logs to an existing
+downloaded log file by using the \f5\fI\-\-append\fR\fR flag.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIMODULE\fR
+.RS 2m
+The module to get the logs for.
+
+.RE
+[\fIOUTPUT_FILE\fR]
+.RS 2m
+The file to write the logs to. If "\-" or if not given, logs are printed to
+standard out.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-append\fR
+.RS 2m
+Append the logs to an existing file.
+
+.RE
+\fB\-\-days\fR \fIDAYS\fR
+.RS 2m
+The number of days worth of logs to get. Use 0 for all available logs; default
+is 1 day. This option cannot be used with \-\-append mode. Append mode will get
+all logs since logs were last retrieved.
+
+.RE
+\fB\-\-details\fR
+.RS 2m
+Include all available data in each log line. Use \fB\-\-no\-details\fR to
+disable.
+
+.RE
+\fB\-\-end\-date\fR \fIEND_DATE\fR
+.RS 2m
+End date (as YYYY\-MM\-DD) of period for log data. Defaults to today.
+
+.RE
+\fB\-\-server\fR \fISERVER\fR
+.RS 2m
+The App Engine server to connect to. You will not typically need to change this
+value.
+
+.RE
+\fB\-\-severity\fR \fISEVERITY\fR
+.RS 2m
+The severity of app level logs to get. If not given, only request logs are
+returned.
+
+.RE
+\fB\-\-version\fR \fIVERSION\fR
+.RS 2m
+The version of the app that you want to operate on.
+
+.RE
+\fB\-\-vhost\fR \fIVHOST\fR
+.RS 2m
+Only return log messages from this virtual host. Defaults to all virtual hosts.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To download and print the last day's worth of request logs for a module, run:
+
+.RS 2m
+$ gcloud preview app modules get\-logs mymodule \-\-version=1
+.RE
+
+By default, this will get only request logs (not application level logs). To get
+your application level logs at a given severity level and higher, use the
+\-\-severity flag:
+
+.RS 2m
+$ gcloud preview app modules get\-logs mymodule \-\-version=1 \e
+    \-\-severity=debug
+.RE
+
+Logs can be saved to a file instead of being printed to standard out by
+specifying a file name:
+
+.RS 2m
+$ gcloud preview app modules get\-logs mymodule \e
+    \-\-version=1 ~/log_file.txt
+.RE
+
+You can append new logs to a previously downloaded log file by using \-\-append
+mode:
+
+.RS 2m
+$ gcloud preview app modules get\-logs mymodule \e
+    \-\-version=1 ~/log_file.txt \-\-append
+.RE
+
+To download all available logs (not just the last day's worth), run:
+
+.RS 2m
+$ gcloud preview app modules get\-logs mymodule \e
+    \-\-version=1 ~/log_file.txt \-\-days=0
+.RE
+
+
+
+.SH "NOTES"
+
+This command is currently in BETA and may change without notice.
+

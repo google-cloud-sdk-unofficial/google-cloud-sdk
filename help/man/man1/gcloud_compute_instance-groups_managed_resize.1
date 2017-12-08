@@ -1,0 +1,79 @@
+
+.TH "GCLOUD_COMPUTE_INSTANCE\-GROUPS_MANAGED_RESIZE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute instance\-groups managed resize \- set managed instance group size
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute instance\-groups managed resize\fR \fINAME\fR \fB\-\-size\fR \fISIZE\fR [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute instance\-groups managed resize\fR resize a managed instance
+group to a provided size.
+
+If you resize down, the Instance Group Manager service deletes instances from
+the group until the group reaches the desired size. To understand in what order
+instances will be deleted, see the API documentation.
+
+If you resize up, the service adds instances to the group using the current
+instance template until the group reaches the desired size.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR
+.RS 2m
+Managed instance group name.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-size\fR \fISIZE\fR
+.RS 2m
+Target number of instances in managed instance group.
+
+.RE
+\fB\-\-zone\fR \fIZONE\fR
+.RS 2m
+The zone of the instance group manager to resize. If not specified, you will be
+prompted to select a zone.
+
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/zone\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/zone ZONE
+.RE
+
+A list of zones can be fetched by running:
+
+.RS 2m
+$ gcloud compute zones list
+.RE
+
+To unset the property, run:
+
+.RS 2m
+$ gcloud config unset compute/zone
+.RE
+
+Alternatively, the zone can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

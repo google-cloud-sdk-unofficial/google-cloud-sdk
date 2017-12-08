@@ -1,0 +1,84 @@
+
+.TH "GCLOUD_COMPONENTS" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud components \- list, install, update, or remove Google Cloud SDK components or packages
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud components\fR \fIGROUP\fR | \fICOMMAND\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+List, install, update, or remove Google Cloud SDK components or packages.
+
+Because you might need only some of the tools in the Cloud SDK to do your work,
+you can control which tools are installed on your workstation. You can install
+new tools on your workstation when you find that you need them, and remove tools
+that you no longer need. The gcloud command regularly checks whether updates are
+available for the tools you already have installed, and gives you the
+opportunity to upgrade to the latest version.
+
+Tools can be installed as individual components or as preconfigured
+\fIpackages\fR of components that are typically all used together to perform a
+particular task (such as developing a PHP application on App Engine).
+
+Certain components \fIdepend\fR on other components. When you install a
+component that you need, all components upon which it directly or indirectly
+depends, and that are not already present on your workstation, are installed
+automatically. When you remove a component, all components that depend on the
+removed component are also removed.
+
+
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "GROUPS"
+
+\f5\fIGROUP\fR\fR is one of the following:
+
+\fBrepositories\fR
+.RS 2m
+Manage additional component repositories for Trusted Tester programs.
+
+
+.RE
+
+.SH "COMMANDS"
+
+\f5\fICOMMAND\fR\fR is one of the following:
+
+\fBlist\fR
+.RS 2m
+List the status of all Cloud SDK components.
+
+.RE
+\fBreinstall\fR
+.RS 2m
+Reinstall the Cloud SDK with the same components you have now.
+
+.RE
+\fBremove\fR
+.RS 2m
+Remove one or more installed components.
+
+.RE
+\fBrestore\fR
+.RS 2m
+Restore the Cloud SDK installation to its previous state.
+
+.RE
+\fBupdate\fR
+.RS 2m
+Update or install one or more Cloud SDK components or packages.
+.RE

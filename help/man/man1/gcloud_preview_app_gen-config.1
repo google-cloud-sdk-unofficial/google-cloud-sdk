@@ -1,0 +1,77 @@
+
+.TH "GCLOUD_PREVIEW_APP_GEN\-CONFIG" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud preview app gen\-config \- \fB(BETA)\fR generate missing configuration files for a source directory
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud preview app gen\-config\fR [\fISOURCE_DIR\fR] [\fB\-\-config\fR\ \fICONFIG\fR] [\fB\-\-custom\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fB(BETA)\fR This command generates all relevant config files (app.yaml,
+Dockerfile and a build Dockerfile) for your application in the current directory
+or emits an error message if the source directory contents are not recognized.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+[\fISOURCE_DIR\fR]
+.RS 2m
+The source directory to fingerprint.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-config\fR \fICONFIG\fR
+.RS 2m
+The yaml file defining the module configuration. This is normally one of the
+generated files, but when generating a custom runtime there can be an app.yaml
+containing parameters.
+
+.RE
+\fB\-\-custom\fR
+.RS 2m
+If true, generate config files for a custom runtime. This will produce a
+Dockerfile, a .dockerignore file and an app.yaml (possibly other files as well,
+depending on the runtime).
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To generate configs for the current directory:
+
+.RS 2m
+$ gcloud preview app gen\-config
+.RE
+
+To generate configs for ~/my_app:
+
+.RS 2m
+$ gcloud preview app gen\-config ~/my_app
+.RE
+
+
+
+.SH "NOTES"
+
+This command is currently in BETA and may change without notice.
+

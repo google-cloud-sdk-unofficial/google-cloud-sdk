@@ -1,0 +1,86 @@
+
+.TH "GCLOUD_COMPUTE_CONFIG\-SSH" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute config\-ssh \- populate SSH config files with Host entries from each instance
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute config\-ssh\fR [\fB\-\-dry\-run\fR] [\fB\-\-remove\fR] [\fB\-\-ssh\-config\-file\fR\ \fISSH_CONFIG_FILE\fR] [\fB\-\-ssh\-key\-file\fR\ \fISSH_KEY_FILE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute config\-ssh\fR makes SSHing to virtual machine instances
+easier by adding an alias for each instance to the user SSH configuration
+(\f5\fI~/.ssh/config\fR\fR) file.
+
+In most cases, it is sufficient to run:
+
+.RS 2m
+$ gcloud compute config\-ssh
+.RE
+
+Each instance will be given an alias of the form \f5\fINAME.ZONE.PROJECT\fR\fR.
+For example, if \f5\fIexample\-instance\fR\fR resides in
+\f5\fIus\-central1\-a\fR\fR, you can SSH to it by running:
+
+.RS 2m
+$ ssh example\-instance.us\-central1\-a.MY\-PROJECT
+.RE
+
+On some platforms, the host alias can be tab\-completed, making the long alias
+less daunting to type.
+
+The aliases created interface with SSH\-based programs like \fBscp(1)\fR, so it
+is possible to use the aliases elsewhere:
+
+.RS 2m
+$ scp ~/MY\-FILE example\-instance.us\-central1\-a.MY\-PROJECT:~
+.RE
+
+Whenever instances are added, removed, or their external IP addresses are
+changed, this command should be re\-executed to update the configuration.
+
+This command ensures that the user's public SSH key is present in the project's
+metadata. If the user does not have a public SSH key, one is generated using
+\fBssh\-keygen(1)\fR (if the \f5\-\-quiet\fR flag is given, the generated key
+will have an empty passphrase).
+
+
+
+.SH "FLAGS"
+
+\fB\-\-dry\-run\fR
+.RS 2m
+If provided, the proposed changes to the SSH config file are printed to standard
+out and no actual changes are made.
+
+.RE
+\fB\-\-remove\fR
+.RS 2m
+If provided, any changes made to the SSH config file by this tool are reverted.
+
+.RE
+\fB\-\-ssh\-config\-file\fR \fISSH_CONFIG_FILE\fR
+.RS 2m
+Specifies an alternative per\-user SSH configuration file. By default, this is
+\f5\fI~/.ssh/config\fR\fR.
+
+.RE
+\fB\-\-ssh\-key\-file\fR \fISSH_KEY_FILE\fR
+.RS 2m
+The path to the SSH key file. By default, this is
+\f5\fI~/.ssh/google_compute_engine\fR\fR.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

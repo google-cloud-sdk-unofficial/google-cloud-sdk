@@ -1,0 +1,73 @@
+
+.TH "GCLOUD_COMPUTE_FORWARDING\-RULES_DELETE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute forwarding\-rules delete \- delete forwarding rules
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute forwarding\-rules delete\fR \fINAME\fR [\fINAME\fR\ ...] [\fB\-\-global\fR\ |\ \fB\-\-region\fR\ \fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute forwarding\-rules delete\fR deletes one or more Google Compute
+Engine forwarding rules.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR [\fINAME\fR ...]
+.RS 2m
+The names of the forwarding rules to delete.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-global\fR
+.RS 2m
+If provided, assume the forwarding rules are global. A forwarding rule is global
+if it references a target HTTP proxy.
+
+.RE
+\fB\-\-region\fR \fIREGION\fR
+.RS 2m
+The region of the forwarding rule to operate on. If not specified, you will be
+prompted to select a region.
+
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/region\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/region REGION
+.RE
+
+A list of regions can be fetched by running:
+
+.RS 2m
+$ gcloud compute regions list
+.RE
+
+To unset the property, run:
+
+.RS 2m
+$ gcloud config unset compute/region
+.RE
+
+Alternatively, the region can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_REGION\fR\fR.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

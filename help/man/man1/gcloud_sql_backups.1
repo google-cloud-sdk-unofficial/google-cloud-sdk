@@ -1,0 +1,51 @@
+
+.TH "GCLOUD_SQL_BACKUPS" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud sql backups \- provide commands for working with backups of Cloud SQL instances
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud sql backups\fR \fICOMMAND\fR [\fB\-\-instance\fR\ \fIINSTANCE\fR,\ \fB\-i\fR\ \fIINSTANCE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Provide commands for working with backups of Cloud SQL instances including
+listing and getting information about backups for a Cloud SQL instance.
+
+
+
+.SH "FLAGS"
+
+\fB\-\-instance\fR \fIINSTANCE\fR, \fB\-i\fR \fIINSTANCE\fR
+.RS 2m
+Cloud SQL instance ID.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "COMMANDS"
+
+\f5\fICOMMAND\fR\fR is one of the following:
+
+\fBdescribe\fR
+.RS 2m
+Retrieves information about a backup.
+
+.RE
+\fBlist\fR
+.RS 2m
+Lists all backups associated with a given instance.
+.RE

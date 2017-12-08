@@ -1,0 +1,110 @@
+
+.TH "GCLOUD_CONTAINER_CLUSTERS_UPGRADE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud container clusters upgrade \- upgrade the Kubernetes version of an existing container cluster
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud container clusters upgrade\fR \fINAME\fR [\fB\-\-cluster\-version\fR\ \fICLUSTER_VERSION\fR] [\fB\-\-wait\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Upgrades the Kubernetes version of an existing container cluster.
+
+This command upgrades the Kubernetes version of the \fBnodes\fR of a cluster.
+The Kubernetes version of the cluster's \fBmaster\fR is periodically upgraded
+automatically as new releases are available.
+
+\fBBy running this command, all of the cluster's nodes will be deleted and\fR
+\fBrecreated one at a time.\fR While persistent Kubernetes resources, such as
+pods backed by replication controllers, will be rescheduled onto new nodes, a
+small cluster may experience a few minutes where there are insufficient nodes
+available to run all of the scheduled Kubernetes resources.
+
+\fBPlease ensure that any data you wish to keep is stored on a persistent\fR
+\fBdisk before upgrading the cluster.\fR Ephemeral Kubernetes resources\-\-in
+particular, pods without replication controllers\-\-will be lost, while
+persistent Kubernetes resources will get rescheduled.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR
+.RS 2m
+The name of the cluster to upgrade.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-cluster\-version\fR \fICLUSTER_VERSION\fR
+.RS 2m
+The Kubernetes release version to which to upgrade the cluster's nodes. Omit to
+upgrade the nodes to the version the cluster's Kubernetes master is running.
+
+If provided, the \-\-cluster\-version must be no greater than the cluster
+master's minor version (x.\fBX\fR.x), and must be a latest patch version
+(x.x.\fBX\fR).
+
+You can find the current master version by running
+
+.RS 2m
+$ gcloud container clusters describe <cluster> | grep MasterVersion
+.RE
+
+You can find the list of allowed node versions for upgrades by running
+
+.RS 2m
+$ gcloud container get\-server\-config
+.RE
+
+and looking at the returned "validNodeVersions".
+
+.RE
+\fB\-\-wait\fR
+.RS 2m
+Poll the operation for completion after issuing an upgrade request. Enabled by
+default, use \fB\-\-no\-wait\fR to disable.
+
+
+.RE
+
+.SH "GROUP FLAGS"
+
+\fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR
+.RS 2m
+The compute zone (e.g. us\-central1\-a) for the cluster
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+Upgrade the nodes of <cluster> to the Kubernetes version of the cluster's
+master.
+
+.RS 2m
+$ gcloud container clusters upgrade <cluster>
+.RE
+
+Upgrade the nodes of <cluster> to Kubernetes version x.y.z.
+
+.RS 2m
+$ gcloud container clusters upgrade <cluster> \e
+    \-\-cluster\-version "x.y.z"
+.RE

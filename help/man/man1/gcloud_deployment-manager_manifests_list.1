@@ -1,0 +1,61 @@
+
+.TH "GCLOUD_DEPLOYMENT\-MANAGER_MANIFESTS_LIST" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud deployment\-manager manifests list \- list manifests in a deployment
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud deployment\-manager manifests list\fR [\fB\-\-deployment\fR\ \fIDEPLOYMENT\fR] [\fB\-\-limit\fR\ \fILIMIT\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Prints a table with summary information on all manifests in the deployment.
+
+
+
+.SH "FLAGS"
+
+\fB\-\-limit\fR \fILIMIT\fR
+.RS 2m
+The maximum number of results to list.
+
+
+.RE
+
+.SH "GROUP FLAGS"
+
+\fB\-\-deployment\fR \fIDEPLOYMENT\fR
+.RS 2m
+Deployment name
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To print out a list of manifests in a deployment, run:
+
+.RS 2m
+$ gcloud deployment\-manager manifests list \e
+    \-\-deployment my\-deployment
+.RE
+
+To print only the name of each manifest, run:
+
+.RS 2m
+$ gcloud deployment\-manager manifests list \e
+    \-\-deployment my\-deployment \-\-simple\-list
+.RE

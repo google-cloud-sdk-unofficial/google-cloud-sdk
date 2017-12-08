@@ -1,0 +1,115 @@
+
+.TH "GCLOUD_DEPLOYMENT\-MANAGER_DEPLOYMENTS" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud deployment\-manager deployments \- commands for Deployment Manager deployments
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud deployment\-manager deployments\fR \fICOMMAND\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Commands to create, update, delete, and examine deployments of resources.
+
+
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "COMMANDS"
+
+\f5\fICOMMAND\fR\fR is one of the following:
+
+\fBcancel\-preview\fR
+.RS 2m
+Cancel a pending or running deployment preview.
+
+.RE
+\fBcreate\fR
+.RS 2m
+Create a deployment.
+
+.RE
+\fBdelete\fR
+.RS 2m
+Delete a deployment.
+
+.RE
+\fBdescribe\fR
+.RS 2m
+Provide information about a deployment.
+
+.RE
+\fBlist\fR
+.RS 2m
+List deployments in a project.
+
+.RE
+\fBstop\fR
+.RS 2m
+Stop a pending or running deployment update or creation.
+
+.RE
+\fBupdate\fR
+.RS 2m
+Update a deployment based on a provided config file.
+
+
+.RE
+
+.SH "EXAMPLES"
+
+To create a deployment, run:
+
+.RS 2m
+$ gcloud deployment\-manager deployments create my\-deployment \e
+    \-\-config config.yaml
+.RE
+
+To update a deployment, run:
+
+.RS 2m
+$ gcloud deployment\-manager deployments update my\-deployment \e
+    \-\-config new_config.yaml
+.RE
+
+To stop a deployment create or update in progress, run:
+
+.RS 2m
+$ gcloud deployment\-manager deployments stop my\-deployment
+.RE
+
+To cancel a previewed create or update, run:
+
+.RS 2m
+$ gcloud deployment\-manager deployments cancel\-preview \e
+    my\-deployment
+.RE
+
+To delete a deployment, run:
+
+.RS 2m
+$ gcloud deployment\-manager deployments delete my\-deployment
+.RE
+
+To view the details of a deployment, run:
+
+.RS 2m
+$ gcloud deployment\-manager deployments describe my\-deployment
+.RE
+
+To see the list of all deployments, run:
+
+.RS 2m
+$ gcloud deployment\-manager deployments list
+.RE

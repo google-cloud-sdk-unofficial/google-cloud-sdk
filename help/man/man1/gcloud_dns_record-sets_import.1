@@ -1,0 +1,88 @@
+
+.TH "GCLOUD_DNS_RECORD\-SETS_IMPORT" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud dns record\-sets import \- import record\-sets into your managed\-zone
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud dns record\-sets import\fR \fIRECORDS_FILE\fR [\fB\-\-delete\-all\-existing\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fB\-\-zone\-file\-format\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+This command imports record\-sets contained within the specified record\-sets
+file into your managed\-zone. Note that NS records and the SOA NS field are not
+imported since name\-servers are managed by Cloud DNS. By default, record\-sets
+cannot be imported if there are any conflicts. A conflict exists if an existing
+record\-set has the same name and type as a record\-set that is being imported.
+In contrast, if the \-\-delete\-all\-existing flag is used, the imported
+record\-sets will replace all the records\-sets currently in the managed\-zone.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIRECORDS_FILE\fR
+.RS 2m
+File from which record\-sets should be imported.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-delete\-all\-existing\fR
+.RS 2m
+Indicates that all existing record\-sets should be deleted before importing the
+record\-sets in the records\-file.
+
+.RE
+\fB\-\-zone\-file\-format\fR
+.RS 2m
+Indicates that the records\-file is in the zone file format.
+
+
+.RE
+
+.SH "GROUP FLAGS"
+
+\fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR
+.RS 2m
+Name of the managed\-zone whose record\-sets you want to manage.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To import record\-sets from a yaml record\-sets file, run:
+
+.RS 2m
+$ gcloud dns record\-sets import YAML_RECORDS_FILE \-z MANAGED_ZONE
+.RE
+
+To import record\-sets from a zone file, run:
+
+.RS 2m
+$ gcloud dns record\-sets import ZONE_FILE \-\-zone\-file\-format \e
+    \-z MANAGED_ZONE
+.RE
+
+To replace all the record\-sets in your zone with records from a yaml file, run:
+
+.RS 2m
+$ gcloud dns record\-sets import YAML_RECORDS_FILE \e
+    \-\-delete\-all\-existing \-z MANAGED_ZONE
+.RE

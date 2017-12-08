@@ -1,0 +1,61 @@
+
+.TH "GCLOUD_SQL_SSL\-CERTS" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud sql ssl\-certs \- provide commands for managing SSL certificates of Cloud SQL instances
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud sql ssl\-certs\fR \fICOMMAND\fR [\fB\-\-instance\fR\ \fIINSTANCE\fR,\ \fB\-i\fR\ \fIINSTANCE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Provide commands for managing SSL certificates of Cloud SQL instances, including
+creating, deleting, listing, and getting information about certificates.
+
+
+
+.SH "FLAGS"
+
+\fB\-\-instance\fR \fIINSTANCE\fR, \fB\-i\fR \fIINSTANCE\fR
+.RS 2m
+Cloud SQL instance ID.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "COMMANDS"
+
+\f5\fICOMMAND\fR\fR is one of the following:
+
+\fBcreate\fR
+.RS 2m
+Creates an SSL certificate for a Cloud SQL instance.
+
+.RE
+\fBdelete\fR
+.RS 2m
+Deletes an SSL certificate for a Cloud SQL instance.
+
+.RE
+\fBdescribe\fR
+.RS 2m
+Retrieves information about an SSL cert for a Cloud SQL instance.
+
+.RE
+\fBlist\fR
+.RS 2m
+Lists all SSL certs for a Cloud SQL instance.
+.RE

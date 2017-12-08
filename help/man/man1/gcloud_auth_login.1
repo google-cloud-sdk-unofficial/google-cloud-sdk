@@ -1,0 +1,62 @@
+
+.TH "GCLOUD_AUTH_LOGIN" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud auth login \- get credentials for the tools in the Google Cloud SDK via a web flow
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud auth login\fR [\fIACCOUNT\fR] [\fB\-\-activate\fR] [\fB\-\-brief\fR] [\fB\-\-force\fR] [\fB\-\-launch\-browser\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Obtains access credentials for the Google Cloud Platform resources of the given
+account, via a web flow. If the account already has valid credentials, it is set
+as active without re\-running the web flow.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+[\fIACCOUNT\fR]
+.RS 2m
+The account to log in as.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-activate\fR
+.RS 2m
+Set the new credentials as active. Enabled by default, use
+\fB\-\-no\-activate\fR to disable.
+
+.RE
+\fB\-\-brief\fR
+.RS 2m
+Minimal user output.
+
+.RE
+\fB\-\-force\fR
+.RS 2m
+Re\-run the web flow even if the given account has valid credentials.
+
+.RE
+\fB\-\-launch\-browser\fR
+.RS 2m
+Launch a web browser instead of printing a URL to be copied. Enabled by default,
+use \fB\-\-no\-launch\-browser\fR to disable.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

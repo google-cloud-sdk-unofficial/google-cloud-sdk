@@ -1,0 +1,169 @@
+
+.TH "GCLOUD_COMPUTE_DISKS_CREATE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute disks create \- create Google Compute Engine persistent disks
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute disks create\fR \fINAME\fR [\fINAME\fR\ ...] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-image\fR\ \fIIMAGE\fR\ |\ \fB\-\-source\-snapshot\fR\ \fISOURCE_SNAPSHOT\fR] [\fB\-\-image\-project\fR\ \fIIMAGE_PROJECT\fR] [\fB\-\-size\fR\ \fISIZE\fR] [\fB\-\-type\fR\ \fITYPE\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute disks create\fR creates one or more Google Compute Engine
+persistent disks. When creating virtual machine instances, disks can be attached
+to the instances through the \f5gcloud compute instances create\fR command.
+Disks can also be attached to instances that are already running using \f5gcloud
+compute instances attach\-disk\fR.
+
+Disks are zonal resources, so they reside in a particular zone for their entire
+lifetime. The contents of a disk can be moved to a different zone by
+snapshotting the disk (using \f5gcloud compute disks snapshot\fR) and creating a
+new disk using \f5\-\-source\-snapshot\fR in the desired zone. The contents of a
+disk can also be moved across project or zone by creating an image (using
+\'gcloud compute images create') and creating a new disk using \f5\-\-image\fR
+in the desired project and/or zone.
+
+When creating disks, be sure to include the \f5\-\-zone\fR option:
+
+.RS 2m
+$ gcloud compute disks create my\-disk\-1 my\-disk\-2 \-\-zone us\-east1\-a
+.RE
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR [\fINAME\fR ...]
+.RS 2m
+The names of the disks to create.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-description\fR \fIDESCRIPTION\fR
+.RS 2m
+An optional, textual description for the disks being created.
+
+.RE
+\fB\-\-image\fR \fIIMAGE\fR
+.RS 2m
+An image to apply to the disks being created. When using this option, the size
+of the disks must be at least as large as the image size. Use
+\f5\fI\-\-size\fR\fR to adjust the size of the disks.
+
+The value for this option can be the name of an image or an alias from the table
+below.
+
+
+.TS
+tab(,);
+lB lB
+l l.
+Alias,Project,Image Name
+centos\-6,centos\-cloud,centos\-6
+centos\-7,centos\-cloud,centos\-7
+container\-vm,google\-containers,container\-vm
+coreos,coreos\-cloud,coreos\-stable
+debian\-7,debian\-cloud,debian\-7\-wheezy
+debian\-7\-backports,debian\-cloud,backports\-debian\-7\-wheezy
+debian\-8,debian\-cloud,debian\-8\-jessie
+opensuse\-13,opensuse\-cloud,opensuse\-13
+rhel\-6,rhel\-cloud,rhel\-6
+rhel\-7,rhel\-cloud,rhel\-7
+sles\-11,suse\-cloud,sles\-11
+sles\-12,suse\-cloud,sles\-12
+ubuntu\-12\-04,ubuntu\-os\-cloud,ubuntu\-1204\-precise
+ubuntu\-14\-04,ubuntu\-os\-cloud,ubuntu\-1404\-trusty
+ubuntu\-15\-04,ubuntu\-os\-cloud,ubuntu\-1504\-vivid
+windows\-2008\-r2,windows\-cloud,windows\-server\-2008\-r2
+windows\-2012\-r2,windows\-cloud,windows\-server\-2012\-r2
+.TE
+
+When the value is an alias, this tool will query the public image project that
+contains the image type to find the latest image matching the alias. The user's
+project is also queried for an image with the same name as the alias. If a
+conflict exists, the user will be prompted to resolve the conflict.
+
+To specify an image in another project for which there is no alias, use
+\f5\-\-image\-project\fR. When \f5\-\-image\-project\fR is present, no API calls
+are made to resolve the image. This property is useful for scripts.
+
+This flag is mutually exclusive with \f5\fI\-\-source\-snapshot\fR\fR.
+
+.RE
+\fB\-\-image\-project\fR \fIIMAGE_PROJECT\fR
+.RS 2m
+The project against which all image references will be resolved. See
+\f5\fI\-\-image\fR\fR for more details.
+
+.RE
+\fB\-\-size\fR \fISIZE\fR
+.RS 2m
+Indicates the size of the disks. The value must be a whole number followed by a
+size unit of \f5\fIKB\fR\fR for kilobyte, \f5\fIMB\fR\fR for megabyte,
+\f5\fIGB\fR\fR for gigabyte, or \f5\fITB\fR\fR for terabyte. For example,
+\f5\fI10GB\fR\fR will produce 10 gigabyte disks. Disk size must be a multiple of
+10 GB.
+
+.RE
+\fB\-\-source\-snapshot\fR \fISOURCE_SNAPSHOT\fR
+.RS 2m
+A source snapshot used to create the disks. It is safe to delete a snapshot
+after a disk has been created from the snapshot. In such cases, the disks will
+no longer reference the deleted snapshot. To get a list of snapshots in your
+current project, run \f5gcloud compute snapshots list\fR. A snapshot from an
+existing disk can be created using the 'gcloud compute disks snapshot' command.
+This flag is mutually exclusive with \f5\fI\-\-image\fR\fR.
+
+When using this option, the size of the disks must be at least as large as the
+snapshot size. Use \f5\fI\-\-size\fR\fR to adjust the size of the disks.
+
+.RE
+\fB\-\-type\fR \fITYPE\fR
+.RS 2m
+Specifies the type of disk to create. To get a list of available disk types, run
+\'gcloud compute disk\-types list'. The default disk type is pd\-standard.
+
+.RE
+\fB\-\-zone\fR \fIZONE\fR
+.RS 2m
+The zone of the disks to create. If not specified, you will be prompted to
+select a zone.
+
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/zone\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/zone ZONE
+.RE
+
+A list of zones can be fetched by running:
+
+.RS 2m
+$ gcloud compute zones list
+.RE
+
+To unset the property, run:
+
+.RS 2m
+$ gcloud config unset compute/zone
+.RE
+
+Alternatively, the zone can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

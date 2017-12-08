@@ -1,0 +1,65 @@
+
+.TH "GCLOUD_CONFIG_CONFIGURATIONS_DESCRIBE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud config configurations describe \- describes a named configuration by listing its properties
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud config configurations describe\fR \fICONFIGURATION_NAME\fR [\fB\-\-all\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Describes a named configuration by listing its properties.
+
+See \f5gcloud topic configurations\fR for an overview of named configurations.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fICONFIGURATION_NAME\fR
+.RS 2m
+Configuration name to descrive
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-all\fR
+.RS 2m
+Include unset properties in output.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To describe esisting named configuration, run:
+
+.RS 2m
+$ gcloud config configurations describe my_config
+.RE
+
+This is similar in content to:
+
+.RS 2m
+$ gcloud config configurations activate my_config
+.RE
+
+.RS 2m
+$ gcloud config list
+.RE

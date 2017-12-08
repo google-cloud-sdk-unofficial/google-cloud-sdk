@@ -1,0 +1,76 @@
+
+.TH "GCLOUD_PREVIEW_APP_MODULES_SET\-DEFAULT" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud preview app modules set\-default \- \fB(BETA)\fR set the default serving version for the given modules
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud preview app modules set\-default\fR \fIMODULES\fR [\fIMODULES\fR\ ...] [\fB\-\-server\fR\ \fISERVER\fR] \fB\-\-version\fR \fIVERSION\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fB(BETA)\fR This command sets the default serving version for the given
+modules. The default version for a module is served when you visit
+mymodule.myapp.appspot.com.'
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIMODULES\fR [\fIMODULES\fR ...]
+.RS 2m
+One or more module names to perform this action on. To select the default module
+for your app, use "default".
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-server\fR \fISERVER\fR
+.RS 2m
+The App Engine server to connect to. You will not typically need to change this
+value.
+
+.RE
+\fB\-\-version\fR \fIVERSION\fR
+.RS 2m
+The version of the app that you want to operate on.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To set the default version for a single module, run:
+
+.RS 2m
+$ gcloud preview app modules set\-default default \-\-version=1
+.RE
+
+To set the default version for multiple modules, run:
+
+.RS 2m
+$ gcloud preview app modules set\-default module1 module2 \e
+    \-\-version=1
+.RE
+
+
+
+.SH "NOTES"
+
+This command is currently in BETA and may change without notice.
+

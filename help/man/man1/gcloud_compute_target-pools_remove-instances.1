@@ -1,0 +1,74 @@
+
+.TH "GCLOUD_COMPUTE_TARGET\-POOLS_REMOVE\-INSTANCES" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute target\-pools remove\-instances \- remove instances from a target pool
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute target\-pools remove\-instances\fR \fINAME\fR \fB\-\-instances\fR \fIINSTANCE\fR,[\fIINSTANCE\fR,...] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute target\-pools remove\-instances\fR is used to remove one or
+more instances from a target pool. For more information on health checks and
+load balancing, see
+https://cloud.google.com/compute/docs/load\-balancing\-and\-autoscaling/.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR
+.RS 2m
+The name of the target pool from which to remove the instances.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-instances\fR \fIINSTANCE\fR,[\fIINSTANCE\fR,...]
+.RS 2m
+Specifies a list of instances to remove from the target pool.
+
+.RE
+\fB\-\-zone\fR \fIZONE\fR
+.RS 2m
+The zone of the instances to remove from the target pool. If not specified, you
+will be prompted to select a zone.
+
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/zone\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/zone ZONE
+.RE
+
+A list of zones can be fetched by running:
+
+.RS 2m
+$ gcloud compute zones list
+.RE
+
+To unset the property, run:
+
+.RS 2m
+$ gcloud config unset compute/zone
+.RE
+
+Alternatively, the zone can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

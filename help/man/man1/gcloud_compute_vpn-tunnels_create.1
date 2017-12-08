@@ -1,0 +1,95 @@
+
+.TH "GCLOUD_COMPUTE_VPN\-TUNNELS_CREATE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute vpn\-tunnels create \- create a VPN tunnel
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute vpn\-tunnels create\fR \fINAME\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-ike\-version\fR\ \fIIKE_VERSION\fR] \fB\-\-peer\-address\fR \fIPEER_ADDRESS\fR [\fB\-\-region\fR\ \fIREGION\fR] \fB\-\-shared\-secret\fR \fISHARED_SECRET\fR \fB\-\-target\-vpn\-gateway\fR \fITARGET_VPN_GATEWAY\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute vpn\-tunnels create\fR is used to create a VPN tunnel between
+a VPN Gateway in Google Cloud Platform and an external gateway that is
+identified by \-\-peer\-address.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR
+.RS 2m
+The name of the VPN tunnel.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-description\fR \fIDESCRIPTION\fR
+.RS 2m
+An optional, textual description for the target VPN tunnel.
+
+.RE
+\fB\-\-ike\-version\fR \fIIKE_VERSION\fR
+.RS 2m
+Internet Key Exchange protocol version number. Valid options are 1 and 2.
+Default is 2.
+
+.RE
+\fB\-\-peer\-address\fR \fIPEER_ADDRESS\fR
+.RS 2m
+A valid IP\-v4 address representing the remote tunnel endpoint
+
+.RE
+\fB\-\-region\fR \fIREGION\fR
+.RS 2m
+The region of the VPN Tunnel to create. If not specified, you will be prompted
+to select a region.
+
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/region\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/region REGION
+.RE
+
+A list of regions can be fetched by running:
+
+.RS 2m
+$ gcloud compute regions list
+.RE
+
+To unset the property, run:
+
+.RS 2m
+$ gcloud config unset compute/region
+.RE
+
+Alternatively, the region can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_REGION\fR\fR.
+
+.RE
+\fB\-\-shared\-secret\fR \fISHARED_SECRET\fR
+.RS 2m
+A shared secret consisting of printable characters. Valid arguments match the
+regular expression [ \-~]+
+
+.RE
+\fB\-\-target\-vpn\-gateway\fR \fITARGET_VPN_GATEWAY\fR
+.RS 2m
+A reference to a target vpn gateway
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

@@ -1,0 +1,52 @@
+
+.TH "GCLOUD_DEPLOYMENT\-MANAGER_OPERATIONS_WAIT" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud deployment\-manager operations wait \- wait for all operations specified to complete before returning
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud deployment\-manager operations wait\fR \fIOPERATION_NAME\fR [\fIOPERATION_NAME\fR\ ...] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Polls until all operations have finished, then prints the resulting operations
+along with any operation errors.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIOPERATION_NAME\fR [\fIOPERATION_NAME\fR ...]
+.RS 2m
+Operation name.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To poll until an operation has completed, run:
+
+.RS 2m
+$ gcloud deployment\-manager operations wait operation\-name
+.RE
+
+To poll until several operations have all completed, run:
+
+.RS 2m
+$ gcloud deployment\-manager operations wait operation\-one \e
+    operation\-two operation\-three
+.RE

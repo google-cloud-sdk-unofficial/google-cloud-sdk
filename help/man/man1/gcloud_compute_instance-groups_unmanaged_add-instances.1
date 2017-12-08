@@ -1,0 +1,80 @@
+
+.TH "GCLOUD_COMPUTE_INSTANCE\-GROUPS_UNMANAGED_ADD\-INSTANCES" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute instance\-groups unmanaged add\-instances \- adds instances to an unmanaged instance group by name
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute instance\-groups unmanaged add\-instances\fR \fINAME\fR \fB\-\-instances\fR \fIINSTANCE\fR,[\fIINSTANCE\fR,...] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute instance\-groups unmanaged add\-instances\fR adds existing
+instances to an unmanaged instance group by name. For example:
+
+.RS 2m
+$ gcloud compute instance\-groups unmanaged add\-instances \e
+    example\-instance\-group                 \e
+    \-\-instances example\-instance\-1 example\-instance\-2              \e
+       \-\-zone us\-central1\-a
+.RE
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR
+.RS 2m
+The name of the unmanaged instance group.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-instances\fR \fIINSTANCE\fR,[\fIINSTANCE\fR,...]
+.RS 2m
+A list of names of instances to add to the instance group. These must exist
+beforehand and must live in the same zone as the instance group.
+
+.RE
+\fB\-\-zone\fR \fIZONE\fR
+.RS 2m
+The zone of the unmanaged instance group to add instances to. If not specified,
+you will be prompted to select a zone.
+
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/zone\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/zone ZONE
+.RE
+
+A list of zones can be fetched by running:
+
+.RS 2m
+$ gcloud compute zones list
+.RE
+
+To unset the property, run:
+
+.RS 2m
+$ gcloud config unset compute/zone
+.RE
+
+Alternatively, the zone can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

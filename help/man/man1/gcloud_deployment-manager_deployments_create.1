@@ -1,0 +1,87 @@
+
+.TH "GCLOUD_DEPLOYMENT\-MANAGER_DEPLOYMENTS_CREATE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud deployment\-manager deployments create \- create a deployment
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud deployment\-manager deployments create\fR \fIDEPLOYMENT_NAME\fR [\fB\-\-async\fR] \fB\-\-config\fR \fICONFIG\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-preview\fR] [\fB\-\-properties\fR\ [\fIPROPERTIES\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+This command inserts (creates) a new deployment based on a provided config file.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIDEPLOYMENT_NAME\fR
+.RS 2m
+Deployment name.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-async\fR
+.RS 2m
+Return immediately and print information about the Operation in progress rather
+than waiting for the Operation to complete. (default=False)
+
+.RE
+\fB\-\-config\fR \fICONFIG\fR
+.RS 2m
+Filename of config which specifies resources to deploy.
+
+.RE
+\fB\-\-description\fR \fIDESCRIPTION\fR
+.RS 2m
+Optional description of the deployment to insert.
+
+.RE
+\fB\-\-preview\fR
+.RS 2m
+Preview the requested create without actually instantiating the underlying
+resources. (default=False)
+
+.RE
+\fB\-\-properties\fR [\fIPROPERTIES\fR,...]
+.RS 2m
+A comma seperated, key=value, map to be used when deploying a template file
+directly.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To create a new deployment, run:
+
+.RS 2m
+$ gcloud deployment\-manager deployments create my\-deployment \e
+    \-\-config config.yaml \-\-description "My deployment"
+.RE
+
+To preview a deployment without actually creating resources, run:
+
+.RS 2m
+$ gcloud deployment\-manager deployments create my\-new\-deployment \e
+    \-\-config config.yaml \-\-preview
+.RE
+
+To instantiate a deployment that has been previewed, issue an update command for
+that deployment without specifying a config file.

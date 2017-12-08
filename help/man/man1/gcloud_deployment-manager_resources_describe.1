@@ -1,0 +1,54 @@
+
+.TH "GCLOUD_DEPLOYMENT\-MANAGER_RESOURCES_DESCRIBE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud deployment\-manager resources describe \- provide information about a resource
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud deployment\-manager resources describe\fR \fIRESOURCE\fR [\fB\-\-deployment\fR\ \fIDEPLOYMENT\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+This command prints out all available details about a resource.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIRESOURCE\fR
+.RS 2m
+Resource name.
+
+
+.RE
+
+.SH "GROUP FLAGS"
+
+\fB\-\-deployment\fR \fIDEPLOYMENT\fR
+.RS 2m
+Deployment name
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To display information about a resource, run:
+
+.RS 2m
+$ gcloud deployment\-manager resources describe \e
+    \-\-deployment my\-deployment my\-resource\-name
+.RE

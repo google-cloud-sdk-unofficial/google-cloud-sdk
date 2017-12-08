@@ -1,0 +1,50 @@
+
+.TH "GCLOUD_COMPONENTS_REMOVE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud components remove \- remove one or more installed components
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud components remove\fR \fICOMPONENT\-ID\fR [\fICOMPONENT\-ID\fR\ ...] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Uninstall all listed components, as well as all components that directly or
+indirectly depend on them. For example, if the component \f5unicorn\-factory\fR
+depends on the component \f5horn\-factory\fR, removing \f5horn\-factory\fR will
+cause \f5unicorn\-factory\fR to be removed as well. The command lists all
+components it is about to remove, and asks for confirmation before proceeding.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fICOMPONENT\-ID\fR [\fICOMPONENT\-ID\fR ...]
+.RS 2m
+The IDs of the components to be removed.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To remove \f5\fICOMPONENT\-1\fR\fR, \f5\fICOMPONENT\-2\fR\fR, and all components
+that directly or indirectly depend on \f5\fICOMPONENT\-1\fR\fR or
+\f5\fICOMPONENT\-2\fR\fR, type the following:
+
+.RS 2m
+$ gcloud components remove COMPONENT\-1 COMPONENT\-2
+.RE

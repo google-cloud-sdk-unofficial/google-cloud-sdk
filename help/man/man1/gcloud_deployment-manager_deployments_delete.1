@@ -1,0 +1,74 @@
+
+.TH "GCLOUD_DEPLOYMENT\-MANAGER_DEPLOYMENTS_DELETE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud deployment\-manager deployments delete \- delete a deployment
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud deployment\-manager deployments delete\fR \fIDEPLOYMENT_NAME\fR [\fIDEPLOYMENT_NAME\fR\ ...] [\fB\-\-async\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+This command deletes a deployment and deletes all associated resources.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIDEPLOYMENT_NAME\fR [\fIDEPLOYMENT_NAME\fR ...]
+.RS 2m
+Deployment name.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-async\fR
+.RS 2m
+Return immediately and print information about the Operation in progress rather
+than waiting for the Operation to complete. (default=False)
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To delete a deployment, run:
+
+.RS 2m
+$ gcloud deployment\-manager deployments delete my\-deployment
+.RE
+
+To issue a delete command without waiting for the operation to complete, run:
+
+.RS 2m
+$ gcloud deployment\-manager deployments delete my\-deployment \e
+    \-\-async
+.RE
+
+To delete several deployments, run:
+
+.RS 2m
+$ gcloud deployment\-manager deployments delete deployment\-one \e
+    deployment\-two deployment\-three
+.RE
+
+To disable the confirmation prompt on delete, run:
+
+.RS 2m
+$ gcloud deployment\-manager deployments delete my\-deployment \-q
+.RE

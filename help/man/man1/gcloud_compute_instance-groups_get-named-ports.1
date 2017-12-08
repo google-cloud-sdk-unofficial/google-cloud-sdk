@@ -1,0 +1,97 @@
+
+.TH "GCLOUD_COMPUTE_INSTANCE\-GROUPS_GET\-NAMED\-PORTS" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute instance\-groups get\-named\-ports \- lists the named ports for an instance group resource
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute instance\-groups get\-named\-ports\fR \fINAME\fR [\fB\-\-limit\fR\ \fILIMIT\fR] [\fB\-\-sort\-by\fR\ \fISORT_BY\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Named ports are key:value pairs metadata representing the service name and the
+port that it's running on. Named ports can be assigned to an instance group,
+which indicates that the service is available on all instances in the group.
+This information is used by the HTTP Load Balancing service.
+
+\fBgcloud compute instance\-groups get\-named\-ports\fR lists the named ports
+(name and port tuples) for an instance group.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR
+.RS 2m
+The name of the instance group.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-limit\fR \fILIMIT\fR
+.RS 2m
+The maximum number of results.
+
+.RE
+\fB\-\-sort\-by\fR \fISORT_BY\fR
+.RS 2m
+A field to sort by. To perform a descending\-order sort, prefix the value of
+this flag with a tilde (``~'').
+
+.RE
+\fB\-\-zone\fR \fIZONE\fR
+.RS 2m
+The zone of the instance or instance group to get named ports for. If not
+specified, you will be prompted to select a zone.
+
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/zone\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/zone ZONE
+.RE
+
+A list of zones can be fetched by running:
+
+.RS 2m
+$ gcloud compute zones list
+.RE
+
+To unset the property, run:
+
+.RS 2m
+$ gcloud config unset compute/zone
+.RE
+
+Alternatively, the zone can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+For example, to list named ports for an instance group:
+
+.RS 2m
+$ gcloud compute instance\-groups get\-named\-ports \e
+    example\-instance\-group \-\-zone us\-central1\-a
+.RE
+
+The above example lists named ports assigned to an instance group named
+\'example\-instance\-group' in the \f5\fIus\-central1\-a\fR\fR zone.

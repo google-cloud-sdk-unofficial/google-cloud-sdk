@@ -1,0 +1,55 @@
+
+.TH "GCLOUD_CONFIG_CONFIGURATIONS_DELETE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud config configurations delete \- deletes a named configuration
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud config configurations delete\fR \fICONFIGURATION_NAME\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Deletes a named configuration. You cannot delete a configuration that is active,
+even when overridden with the \-\-configuration flag. To delete the current
+active configuration, first \f5gcloud config configurations activate\fR another
+one.
+
+See \f5gcloud topic configurations\fR for an overview of named configurations.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fICONFIGURATION_NAME\fR
+.RS 2m
+Configuration name to delete, can not be currently active configuration.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To delete named configuration, run:
+
+.RS 2m
+$ gcloud config configurations delete my_config
+.RE
+
+To list get a list of existing configurations, run:
+
+.RS 2m
+$ gcloud config configurations list
+.RE

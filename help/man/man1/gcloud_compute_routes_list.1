@@ -1,0 +1,79 @@
+
+.TH "GCLOUD_COMPUTE_ROUTES_LIST" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute routes list \- list Google Compute Engine routes
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute routes list\fR [\fINAME\fR\ ...] [\fB\-\-limit\fR\ \fILIMIT\fR] [\fB\-\-regexp\fR\ \fIREGEXP\fR,\ \fB\-r\fR\ \fIREGEXP\fR] [\fB\-\-sort\-by\fR\ \fISORT_BY\fR] [\fB\-\-uri\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute routes list\fR displays all Google Compute Engine routes in a
+project.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+[\fINAME\fR ...]
+.RS 2m
+If provided, show details for the specified names and/or URIs of resources.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-limit\fR \fILIMIT\fR
+.RS 2m
+The maximum number of results.
+
+.RE
+\fB\-\-regexp\fR \fIREGEXP\fR, \fB\-r\fR \fIREGEXP\fR
+.RS 2m
+A regular expression to filter the names of the results on. Any names that do
+not match the entire regular expression will be filtered out.
+
+.RE
+\fB\-\-sort\-by\fR \fISORT_BY\fR
+.RS 2m
+A field to sort by. To perform a descending\-order sort, prefix the value of
+this flag with a tilde (``~'').
+
+.RE
+\fB\-\-uri\fR
+.RS 2m
+If provided, the list command will only print URIs for the resources returned.
+If this flag is not provided, the list command will print a human\-readable
+table of useful resource data.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To list all routes in a project in table form, run:
+
+.RS 2m
+$ gcloud compute routes list
+.RE
+
+To list the URIs of all routes in a project, run:
+
+.RS 2m
+$ gcloud compute routes list \-\-uri
+.RE

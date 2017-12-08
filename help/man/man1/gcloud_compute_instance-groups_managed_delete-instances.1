@@ -1,0 +1,77 @@
+
+.TH "GCLOUD_COMPUTE_INSTANCE\-GROUPS_MANAGED_DELETE\-INSTANCES" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute instance\-groups managed delete\-instances \- delete instances managed by managed instance group
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute instance\-groups managed delete\-instances\fR \fINAME\fR \fB\-\-instances\fR \fIINSTANCE\fR,[\fIINSTANCE\fR,...] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute instance\-groups managed delete\-instances\fR is used to
+deletes one or more instances from a managed instance group. Once the instances
+are deleted, the size of the group is automatically reduced to reflect the
+changes.
+
+If you would like to keep the underlying virtual machines but still remove them
+from the managed instance group, use the abandon\-instances command instead.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR
+.RS 2m
+Managed instance group name.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-instances\fR \fIINSTANCE\fR,[\fIINSTANCE\fR,...]
+.RS 2m
+Names of instances to delete.
+
+.RE
+\fB\-\-zone\fR \fIZONE\fR
+.RS 2m
+The zone of the instance group manager to delete instances. If not specified,
+you will be prompted to select a zone.
+
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/zone\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/zone ZONE
+.RE
+
+A list of zones can be fetched by running:
+
+.RS 2m
+$ gcloud compute zones list
+.RE
+
+To unset the property, run:
+
+.RS 2m
+$ gcloud config unset compute/zone
+.RE
+
+Alternatively, the zone can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

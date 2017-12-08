@@ -1,0 +1,66 @@
+
+.TH "GCLOUD_DNS_RECORD\-SETS_CHANGES" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud dns record\-sets changes \- view details about changes to your Cloud DNS record\-sets
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud dns record\-sets changes\fR \fICOMMAND\fR [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+View details about changes to your Cloud DNS record\-sets.
+
+
+
+.SH "GROUP FLAGS"
+
+\fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR
+.RS 2m
+Name of the managed\-zone whose record\-sets you want to manage.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "COMMANDS"
+
+\f5\fICOMMAND\fR\fR is one of the following:
+
+\fBdescribe\fR
+.RS 2m
+View the details of a change.
+
+.RE
+\fBlist\fR
+.RS 2m
+View the list of changes that have been made to your record\-sets.
+
+
+.RE
+
+.SH "EXAMPLES"
+
+To view the details of a particular change, run:
+
+.RS 2m
+$ gcloud dns record\-sets changes describe CHANGE_ID \-z MANAGED_ZONE
+.RE
+
+To view the list of all changes, run:
+
+.RS 2m
+$ gcloud dns record\-sets changes list \-z MANAGED_ZONE
+.RE

@@ -1,0 +1,72 @@
+
+.TH "GCLOUD_PREVIEW_APP_MODULES_LIST" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud preview app modules list \- \fB(BETA)\fR list your existing deployed modules and versions
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud preview app modules list\fR [\fIMODULES\fR\ ...] [\fB\-\-server\fR\ \fISERVER\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fB(BETA)\fR This command lists all the modules and their versions that are
+currently deployed to the App Engine server. The default serving version for
+each module is indicated with a '\fB'.
+
+
+\fR
+
+.SH "POSITIONAL ARGUMENTS"
+
+[\fIMODULES\fR ...]
+.RS 2m
+An optional list of module names to perform this action on. To select the
+default module for your app, use "default". If no modules are given all modules
+are used.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-server\fR \fISERVER\fR
+.RS 2m
+The App Engine server to connect to. You will not typically need to change this
+value.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To list all modules and versions, run:
+
+.RS 2m
+$ gcloud preview app modules list
+.RE
+
+To list all versions for a specific set of modules, run:
+
+.RS 2m
+$ gcloud preview app modules list module1 module2
+.RE
+
+
+
+.SH "NOTES"
+
+This command is currently in BETA and may change without notice.
+

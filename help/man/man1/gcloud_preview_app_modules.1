@@ -1,0 +1,96 @@
+
+.TH "GCLOUD_PREVIEW_APP_MODULES" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud preview app modules \- \fB(BETA)\fR view and manage your App Engine modules
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud preview app modules\fR \fICOMMAND\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fB(BETA)\fR This set of commands can be used to view and manage your existing
+App Engine modules. To create new deployments of modules, use gcloud preview app
+deploy.
+
+
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "COMMANDS"
+
+\f5\fICOMMAND\fR\fR is one of the following:
+
+\fBcancel\-deployment\fR
+.RS 2m
+\fB(BETA)\fR Cancel an in progress or hung deployment of the given modules.
+
+.RE
+\fBdelete\fR
+.RS 2m
+\fB(BETA)\fR Delete a specific version of the given modules.
+
+.RE
+\fBdownload\fR
+.RS 2m
+\fB(BETA)\fR Download a specific version of the given modules of your app.
+
+.RE
+\fBget\-logs\fR
+.RS 2m
+\fB(BETA)\fR Gets the logs for the given module.
+
+.RE
+\fBlist\fR
+.RS 2m
+\fB(BETA)\fR List your existing deployed modules and versions.
+
+.RE
+\fBset\-default\fR
+.RS 2m
+\fB(BETA)\fR Set the default serving version for the given modules.
+
+.RE
+\fBset\-managed\-by\fR
+.RS 2m
+\fB(BETA)\fR Sets the policy for the Managed VMs of the given modules and
+version.
+
+.RE
+\fBstart\fR
+.RS 2m
+\fB(BETA)\fR Start serving a specific version of the given modules.
+
+.RE
+\fBstop\fR
+.RS 2m
+\fB(BETA)\fR Stop serving a specific version of the given modules.
+
+
+.RE
+
+.SH "EXAMPLES"
+
+To list your deployed modules, run:
+
+.RS 2m
+$ gcloud preview app modules list
+.RE
+
+
+
+.SH "NOTES"
+
+This command is currently in BETA and may change without notice.
+

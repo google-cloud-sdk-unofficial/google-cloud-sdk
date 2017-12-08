@@ -1,0 +1,60 @@
+
+.TH "GCLOUD_DEPLOYMENT\-MANAGER_DEPLOYMENTS_STOP" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud deployment\-manager deployments stop \- stop a pending or running deployment update or creation
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud deployment\-manager deployments stop\fR \fIDEPLOYMENT_NAME\fR [\fB\-\-async\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+This command will stop a currently running or pending operation on a deployment.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIDEPLOYMENT_NAME\fR
+.RS 2m
+Deployment name.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-async\fR
+.RS 2m
+Return immediately and print information about the Operation in progress rather
+than waiting for the Operation to complete. (default=False)
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To stop a running operation on a deployment, run:
+
+.RS 2m
+$ gcloud deployment\-manager deployments stop my\-deployment
+.RE
+
+To issue a stop command without waiting for the operation to complete, run:
+
+.RS 2m
+$ gcloud deployment\-manager deployments stop my\-deployment \-\-async
+.RE

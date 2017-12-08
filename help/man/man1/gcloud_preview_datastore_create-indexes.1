@@ -1,0 +1,52 @@
+
+.TH "GCLOUD_PREVIEW_DATASTORE_CREATE\-INDEXES" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud preview datastore create\-indexes \- \fB(BETA)\fR create new datastore indexes based on your local index configuration
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud preview datastore create\-indexes\fR \fIINDEX_FILE\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fB(BETA)\fR This command creates new datastore indexes based on your local
+index configuration.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIINDEX_FILE\fR
+.RS 2m
+The path to your index.yaml file.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To create new indexes based on your local configuration, run:
+
+.RS 2m
+$ gcloud preview datastore create\-indexes ~/myapp/index.yaml
+.RE
+
+
+
+.SH "NOTES"
+
+This command is currently in BETA and may change without notice.
+

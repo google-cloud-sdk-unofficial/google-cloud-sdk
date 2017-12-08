@@ -1,0 +1,54 @@
+
+.TH "GCLOUD_DEPLOYMENT\-MANAGER_MANIFESTS_DESCRIBE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud deployment\-manager manifests describe \- provide information about a manifest
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud deployment\-manager manifests describe\fR \fIMANIFEST\fR [\fB\-\-deployment\fR\ \fIDEPLOYMENT\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+This command prints out all available details about a manifest.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIMANIFEST\fR
+.RS 2m
+Manifest name.
+
+
+.RE
+
+.SH "GROUP FLAGS"
+
+\fB\-\-deployment\fR \fIDEPLOYMENT\fR
+.RS 2m
+Deployment name
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To display information about a manifest, run:
+
+.RS 2m
+$ gcloud deployment\-manager manifests describe \e
+    \-\-deployment my\-deployment manifest\-name
+.RE

@@ -1,0 +1,69 @@
+
+.TH "GCLOUD_DNS" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud dns \- manage your Cloud DNS managed\-zones and record\-sets
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud dns\fR \fIGROUP\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+This set of commands allows you to create and maintain managed\-zones and their
+record\-sets.
+
+
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "GROUPS"
+
+\f5\fIGROUP\fR\fR is one of the following:
+
+\fBmanaged\-zones\fR
+.RS 2m
+Manage your Cloud DNS managed\-zones.
+
+.RE
+\fBproject\-info\fR
+.RS 2m
+View Cloud DNS related information for a project.
+
+.RE
+\fBrecord\-sets\fR
+.RS 2m
+Manage the record\-sets within your managed\-zones.
+
+
+.RE
+
+.SH "EXAMPLES"
+
+To see how to create and maintain managed\-zones, run:
+
+.RS 2m
+$ gcloud dns managed\-zones
+.RE
+
+To see how to maintain the record\-sets within a managed\-zone, run:
+
+.RS 2m
+$ gcloud dns record\-sets
+.RE
+
+To display Cloud DNS related information for your project, run:
+
+.RS 2m
+$ gcloud dns project\-info describe
+.RE

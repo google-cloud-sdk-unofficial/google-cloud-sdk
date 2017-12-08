@@ -1,0 +1,87 @@
+
+.TH "GCLOUD_COMPUTE_INSTANCES_ADD\-ACCESS\-CONFIG" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute instances add\-access\-config \- create a Google Compute Engine virtual machine access configuration
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute instances add\-access\-config\fR \fINAME\fR [\fB\-\-access\-config\-name\fR\ \fIACCESS_CONFIG_NAME\fR;\ default="external\-nat"] [\fB\-\-address\fR\ \fIADDRESS\fR] [\fB\-\-network\-interface\fR\ \fINETWORK_INTERFACE\fR;\ default="nic0"] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute instances add\-access\-config\fR is used to create access
+configurations for network interfaces of Google Compute Engine virtual machines.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR
+.RS 2m
+The name of the instance to add the access configuration to.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-access\-config\-name\fR \fIACCESS_CONFIG_NAME\fR; default="external\-nat"
+.RS 2m
+Specifies the name of the new access configuration. \f5\fIexternal\-nat\fR\fR is
+used as the default if this flag is not provided.
+
+.RE
+\fB\-\-address\fR \fIADDRESS\fR
+.RS 2m
+Specifies the external IP address of the new access configuration. If this is
+not specified, then the service will choose an available ephemeral IP address.
+If an explicit IP address is given, then that IP address must be reserved by the
+project and not be in use by another resource.
+
+.RE
+\fB\-\-network\-interface\fR \fINETWORK_INTERFACE\fR; default="nic0"
+.RS 2m
+Specifies the name of the network interface on which to add the new access
+configuration. If this is not provided, then "nic0" is used as the default.
+
+.RE
+\fB\-\-zone\fR \fIZONE\fR
+.RS 2m
+The zone of the instance to add an access config to. If not specified, you will
+be prompted to select a zone.
+
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/zone\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/zone ZONE
+.RE
+
+A list of zones can be fetched by running:
+
+.RS 2m
+$ gcloud compute zones list
+.RE
+
+To unset the property, run:
+
+.RS 2m
+$ gcloud config unset compute/zone
+.RE
+
+Alternatively, the zone can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

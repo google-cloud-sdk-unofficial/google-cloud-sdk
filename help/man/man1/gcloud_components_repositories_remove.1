@@ -1,0 +1,62 @@
+
+.TH "GCLOUD_COMPONENTS_REPOSITORIES_REMOVE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud components repositories remove \- remove a registered Trusted Test component repository
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud components repositories remove\fR [\fIURL\fR\ ...] [\fB\-\-all\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Remove a registered Trusted Tester component repository from the list of
+repositories used by the component manager. After removing a repository, you can
+run:.RS 2m
+$ gcloud components update
+ to revert back to the standard version of any components that were
+installed from that repository.
+.RE
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+[\fIURL\fR ...]
+.RS 2m
+Zero or more URLs for the component repositories you want to remove. If none are
+given, you will be prompted to choose which existing repository you want to
+remove.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-all\fR
+.RS 2m
+Remove all registered repositories.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To be prompted for registered Trusted Tester component repositories to remove
+run:
+
+.RS 2m
+$ gcloud components repositories remove
+.RE

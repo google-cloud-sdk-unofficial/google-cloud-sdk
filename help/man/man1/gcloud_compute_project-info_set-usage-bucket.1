@@ -1,0 +1,69 @@
+
+.TH "GCLOUD_COMPUTE_PROJECT\-INFO_SET\-USAGE\-BUCKET" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute project\-info set\-usage\-bucket \- set the usage reporting bucket for a project
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute project\-info set\-usage\-bucket\fR \fB\-\-bucket\fR \fIBUCKET\fR [\fB\-\-prefix\fR\ \fIPREFIX\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute project\-info set\-usage\-bucket\fR is used to configure usage
+reporting for projects.
+
+Setting usage reporting will cause a log of usage per resource to be written to
+a specified Google Cloud Storage bucket daily. For example,
+
+.RS 2m
+$ gcloud compute project\-info set\-usage\-bucket \e
+    \-\-bucket gs://my\-bucket
+.RE
+
+will cause logs of the form usage_gce_YYYYMMDD.csv to be written daily to the
+bucket \f5\fImy\-bucket\fR\fR. To disable this feature, issue the command:
+
+.RS 2m
+$ gcloud compute project\-info set\-usage\-bucket \-\-bucket
+.RE
+
+
+
+.SH "FLAGS"
+
+\fB\-\-bucket\fR \fIBUCKET\fR
+.RS 2m
+The URI of a Google Cloud Storage bucket where the usage report object should be
+stored. The Google Service Account for performing usage reporting is granted
+write access to this bucket. The user running this command must be an owner of
+the bucket.
+
+To clear the usage bucket, specify this flag without an argument:
+
+.RS 2m
+$ gcloud compute project\-info set\-usage\-bucket \-\-bucket
+.RE
+
+.RE
+\fB\-\-prefix\fR \fIPREFIX\fR
+.RS 2m
+An optional prefix for the name of the usage report object stored in the bucket.
+If not supplied, then this defaults to \f5\fIusage\fR\fR. The report is stored
+as a CSV file named PREFIX_gce_YYYYMMDD.csv where YYYYMMDD is the day of the
+usage according to Pacific Time. The prefix should conform to Google Cloud
+Storage object naming conventions. This flag must not be provided when clearing
+the usage bucket.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

@@ -1,0 +1,128 @@
+
+.TH "GCLOUD_COMPUTE_INSTANCE\-GROUPS_MANAGED_SET\-AUTOSCALING" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute instance\-groups managed set\-autoscaling \- set autoscaling parameters of a managed instance group
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute instance\-groups managed set\-autoscaling\fR \fINAME\fR [\fB\-\-cool\-down\-period\fR\ \fICOOL_DOWN_PERIOD\fR] [\fB\-\-custom\-metric\-utilization\fR\ [\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] \fB\-\-max\-num\-replicas\fR \fIMAX_NUM_REPLICAS\fR [\fB\-\-min\-num\-replicas\fR\ \fIMIN_NUM_REPLICAS\fR] [\fB\-\-scale\-based\-on\-cpu\fR] [\fB\-\-scale\-based\-on\-load\-balancing\fR] [\fB\-\-target\-cpu\-utilization\fR\ \fITARGET_CPU_UTILIZATION\fR] [\fB\-\-target\-load\-balancing\-utilization\fR\ \fITARGET_LOAD_BALANCING_UTILIZATION\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute instance\-groups managed set\-autoscaling\fR sets autoscaling
+parameters of specified managed instance group.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR
+.RS 2m
+Managed instance group which autoscaling parameters will be set.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-cool\-down\-period\fR \fICOOL_DOWN_PERIOD\fR
+.RS 2m
+Number of seconds Autoscaler will wait between resizing collection.
+
+.RE
+\fB\-\-custom\-metric\-utilization\fR [\fIPROPERTY\fR=\fIVALUE\fR,...]
+.RS 2m
+Adds a target metric value for the to the Autoscaler.
+
+\fBmetric\fR
+.RS 2m
+Protocol\-free URL of a Google Cloud Monitoring metric.
+
+.RE
+\fButilization\-target\fR
+.RS 2m
+Value of the metric Autoscaler will aim to maintain (greater than 0.0).
+
+.RE
+\fButilization\-target\-type\fR
+.RS 2m
+How target is expressed. Valid values: DELTA_PER_MINUTE, DELTA_PER_SECOND,
+GAUGE.
+.RE
+.RE
+\fB\-\-description\fR \fIDESCRIPTION\fR
+.RS 2m
+Notes about Autoscaler.
+
+.RE
+\fB\-\-max\-num\-replicas\fR \fIMAX_NUM_REPLICAS\fR
+.RS 2m
+Maximum number of replicas Autoscaler will set.
+
+.RE
+\fB\-\-min\-num\-replicas\fR \fIMIN_NUM_REPLICAS\fR
+.RS 2m
+Minimum number of replicas Autoscaler will set.
+
+.RE
+\fB\-\-scale\-based\-on\-cpu\fR
+.RS 2m
+Use autoscaling based on cpu utilization.
+
+.RE
+\fB\-\-scale\-based\-on\-load\-balancing\fR
+.RS 2m
+Use autoscaling based on load balancing utilization.
+
+.RE
+\fB\-\-target\-cpu\-utilization\fR \fITARGET_CPU_UTILIZATION\fR
+.RS 2m
+CPU utilization level Autoscaler will aim to maintain (0.0 to 1.0).
+
+.RE
+\fB\-\-target\-load\-balancing\-utilization\fR \fITARGET_LOAD_BALANCING_UTILIZATION\fR
+.RS 2m
+Load balancing utilization level Autoscaler will aim to maintain (greater than
+0.0).
+
+.RE
+\fB\-\-zone\fR \fIZONE\fR
+.RS 2m
+The zone of the resources to update. If not specified, you will be prompted to
+select a zone.
+
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/zone\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/zone ZONE
+.RE
+
+A list of zones can be fetched by running:
+
+.RS 2m
+$ gcloud compute zones list
+.RE
+
+To unset the property, run:
+
+.RS 2m
+$ gcloud config unset compute/zone
+.RE
+
+Alternatively, the zone can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

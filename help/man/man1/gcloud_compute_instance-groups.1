@@ -1,0 +1,72 @@
+
+.TH "GCLOUD_COMPUTE_INSTANCE\-GROUPS" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute instance\-groups \- read and manipulate Google Compute Engine instance groups
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute instance\-groups\fR \fIGROUP\fR | \fICOMMAND\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Read and manipulate Google Compute Engine instance groups.
+
+
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "GROUPS"
+
+\f5\fIGROUP\fR\fR is one of the following:
+
+\fBmanaged\fR
+.RS 2m
+Read and manipulate Google Compute Engine managed instance groups.
+
+.RE
+\fBunmanaged\fR
+.RS 2m
+Read and manipulate Google Compute Engine unmanaged instance group.
+
+
+.RE
+
+.SH "COMMANDS"
+
+\f5\fICOMMAND\fR\fR is one of the following:
+
+\fBdescribe\fR
+.RS 2m
+Describe an instance group.
+
+.RE
+\fBget\-named\-ports\fR
+.RS 2m
+Lists the named ports for an instance group resource.
+
+.RE
+\fBlist\fR
+.RS 2m
+List Google Compute Engine instance groups.
+
+.RE
+\fBlist\-instances\fR
+.RS 2m
+List instances present in the instance group.
+
+.RE
+\fBset\-named\-ports\fR
+.RS 2m
+Sets the list of named ports for an instance group.
+.RE

@@ -1,0 +1,119 @@
+
+.TH "GCLOUD_COMPUTE_ADDRESSES_CREATE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute addresses create \- reserve IP addresses
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute addresses create\fR [\fINAME\fR\ ...] [\fB\-\-addresses\fR\ \fIADDRESS\fR,[\fIADDRESS\fR,...]] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-global\fR\ |\ \fB\-\-region\fR\ \fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute addresses create\fR is used to reserve one or more IP
+addresses. Once an IP address is reserved, it will be associated with the
+project until it is released using 'gcloud compute addresses delete'. Ephemeral
+IP addresses that are in use by resources in the project, can be reserved using
+the \f5\fI\-\-addresses\fR\fR flag.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+[\fINAME\fR ...]
+.RS 2m
+The names to assign to the reserved IP addresses.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-addresses\fR \fIADDRESS\fR,[\fIADDRESS\fR,...]
+.RS 2m
+Ephemeral IP addresses to promote to reserved status. Only addresses that are
+being used by resources in the project can be promoted. When providing this
+flag, a parallel list of names for the addresses can be provided. For example,
+
+.RS 2m
+$ gcloud compute addresses create ADDRESS\-1 ADDRESS\-2 \e
+    \-\-addresses 162.222.181.197 162.222.181.198 \e
+    \-\-region us\-central1
+.RE
+
+will result in 162.222.181.197 being reserved as 'ADDRESS\-1' and
+162.222.181.198 as 'ADDRESS\-2'. If no names are given, randomly\-generated
+names will be assigned to the IP addresses.
+
+.RE
+\fB\-\-description\fR \fIDESCRIPTION\fR
+.RS 2m
+An optional textual description for the addresses.
+
+.RE
+\fB\-\-global\fR
+.RS 2m
+If provided, it is assumed the addresses are global.
+
+.RE
+\fB\-\-region\fR \fIREGION\fR
+.RS 2m
+The region of the address to operate on. If not specified, you will be prompted
+to select a region.
+
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/region\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/region REGION
+.RE
+
+A list of regions can be fetched by running:
+
+.RS 2m
+$ gcloud compute regions list
+.RE
+
+To unset the property, run:
+
+.RS 2m
+$ gcloud config unset compute/region
+.RE
+
+Alternatively, the region can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_REGION\fR\fR.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To reserve three IP addresses in the \f5\fIus\-central1\fR\fR region, run:
+
+.RS 2m
+$ gcloud compute addresses create ADDRESS\-1 ADDRESS\-2 ADDRESS\-3 \e
+    \-\-region us\-central1
+.RE
+
+To reserve ephemeral IP addresses 162.222.181.198 and 23.251.146.189 which are
+being used by virtual machine instances in the \f5\fIus\-central1\fR\fR region,
+run:
+
+.RS 2m
+$ gcloud compute addresses create \-\-addresses 162.222.181.198 \e
+    23.251.146.189 \-\-region us\-central1
+.RE
+
+In the above invocation, the two addresses will be assigned random names.

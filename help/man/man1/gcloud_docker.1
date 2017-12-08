@@ -1,0 +1,87 @@
+
+.TH "GCLOUD_DOCKER" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud docker \- provides the docker CLI access to the Google Container Registry
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud docker\fR [\fIEXTRA_ARGS\fR\ ...] [\fB\-\-authorize\-only\fR,\ \fB\-a\fR] [\fB\-\-docker\-host\fR\ \fIDOCKER_HOST\fR] [\fB\-\-server\fR\ \fISERVER\fR,[\fISERVER\fR,...],\ \fB\-s\fR\ \fISERVER\fR,[\fISERVER\fR,...];\ default="gcr.io,us.gcr.io,eu.gcr.io,asia.gcr.io,b.gcr.io,bucket.gcr.io,appengine.gcr.io"] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+The docker sub\-command of gcloud wraps docker commands, so that gcloud can
+inject the appropriate fresh authentication token into requests that interact
+with the docker registry. As commands are simply passed through to docker, see
+http://docs.docker.com/reference/commandline/cli/ for a full reference of
+command\-line options that can be supplied after the \-\-.
+
+For more information please visit https://gcr.io/.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+[\fIEXTRA_ARGS\fR ...]
+.RS 2m
+Arguments to pass to docker.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-authorize\-only\fR, \fB\-a\fR
+.RS 2m
+Configure docker authorization only, do not launch the docker command\-line.
+
+.RE
+\fB\-\-docker\-host\fR \fIDOCKER_HOST\fR
+.RS 2m
+The URL to connect to Docker Daemon. Format: tcp://host:port or
+unix:///path/to/socket.
+
+.RE
+\fB\-\-server\fR \fISERVER\fR,[\fISERVER\fR,...], \fB\-s\fR \fISERVER\fR,[\fISERVER\fR,...]; default="gcr.io,us.gcr.io,eu.gcr.io,asia.gcr.io,b.gcr.io,bucket.gcr.io,appengine.gcr.io"
+.RS 2m
+The address of the Google Cloud Registry.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+Pull the image 'gcr.io/google\-containers/pause:1.0' from the docker registry:
+
+.RS 2m
+$ gcloud docker \-\- pull gcr.io/google\-containers/pause:1.0
+.RE
+
+Push the image 'gcr.io/example\-org/example\-image:latest' to our private docker
+registry.
+
+.RS 2m
+$ gcloud docker \-\- push gcr.io/example\-org/example\-image:latest
+.RE
+
+Configure authentication, then simply use docker:
+
+.RS 2m
+$ gcloud docker \-\-authorize\-only
+.RE
+
+.RS 2m
+$ docker push gcr.io/example\-org/example\-image:latest
+.RE

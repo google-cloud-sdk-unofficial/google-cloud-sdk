@@ -1,0 +1,103 @@
+
+.TH "GCLOUD_COMPUTE_TARGET\-POOLS_SET\-BACKUP" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute target\-pools set\-backup \- set a backup pool for a target pool
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute target\-pools set\-backup\fR \fINAME\fR \fB\-\-backup\-pool\fR \fIBACKUP_POOL\fR [\fB\-\-failover\-ratio\fR\ \fIFAILOVER_RATIO\fR] [\fB\-\-region\fR\ \fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute target\-pools set\-backup\fR is used to set a backup target
+pool for a primary target pool, which defines the fallback behavior of the
+primary pool. If the ratio of the healthy instances in the primary pool is at or
+below the specified \f5\fI\-\-failover\-ratio value\fR\fR, then traffic arriving
+at the load\-balanced IP address will be directed to the backup pool.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR
+.RS 2m
+The name of the target pool for which to set the backup pool.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-backup\-pool\fR \fIBACKUP_POOL\fR
+.RS 2m
+Name of the target pool that will serve as backup. If this flag is provided
+without a value, the existing backup pool is removed.
+
+.RE
+\fB\-\-failover\-ratio\fR \fIFAILOVER_RATIO\fR
+.RS 2m
+The new failover ratio value for the target pool. This must be a float in the
+range of [0, 1].
+
+.RE
+\fB\-\-region\fR \fIREGION\fR
+.RS 2m
+The region of the target pool to set a backup pool for. If not specified, you
+will be prompted to select a region.
+
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/region\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/region REGION
+.RE
+
+A list of regions can be fetched by running:
+
+.RS 2m
+$ gcloud compute regions list
+.RE
+
+To unset the property, run:
+
+.RS 2m
+$ gcloud config unset compute/region
+.RE
+
+Alternatively, the region can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_REGION\fR\fR.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To cause \f5\fITARGET\-POOL\fR\fR (in region \f5\fIus\-central1\fR\fR) to fail
+over to \f5\fIBACKUP\-POOL\fR\fR when more than half of the
+\f5\fITARGET\-POOL\fR\fR instances are unhealthy, run:
+
+.RS 2m
+$ gcloud compute target\-pools set\-backup TARGET\-POOL \e
+    \-\-backup\-pool BACKUP\-POOL \-\-failover\-ratio 0.5 \e
+    \-\-region us\-central1
+.RE
+
+To remove \f5\fIBACKUP\-POOL\fR\fR as a backup to \f5\fITARGET\-POOL\fR\fR, run:
+
+.RS 2m
+$ gcloud compute target\-pools set\-backup TARGET\-POOL \-\-backup\-pool \e
+    \-\-region us\-central1
+.RE

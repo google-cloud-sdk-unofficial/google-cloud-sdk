@@ -1,0 +1,65 @@
+
+.TH "GCLOUD_COMPONENTS_REPOSITORIES" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud components repositories \- manage additional component repositories for Trusted Tester programs
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud components repositories\fR \fICOMMAND\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+List, add, and remove component repositories for Trusted Tester programs. If you
+are not participating in a Trusted Tester program, these commands are not
+necessary for updating your Cloud SDK installation.
+
+If you are participating in a Trusted Tester program, you will be instructed on
+the location of repositories that you should add. These commands allow you to
+manage the set of repositories you have registered.
+
+Once you have a repository registered, the component manager will use that
+location to locate new Cloud SDK components that are available, or possibly
+different versions of existing components that can be installed.
+
+If you want to revert to a standard version of the Cloud SDK at any time, you
+may remove all repositories and then run:
+
+.RS 2m
+$ gcloud components update
+.RE
+
+to revert to a standard installation.
+
+
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "COMMANDS"
+
+\f5\fICOMMAND\fR\fR is one of the following:
+
+\fBadd\fR
+.RS 2m
+Add a new Trusted Tester component repository.
+
+.RE
+\fBlist\fR
+.RS 2m
+List any Trusted Tester component repositories you have registered.
+
+.RE
+\fBremove\fR
+.RS 2m
+Remove a registered Trusted Test component repository.
+.RE

@@ -1,0 +1,94 @@
+
+.TH "GCLOUD_COMPUTE_INSTANCES_ATTACH\-DISK" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute instances attach\-disk \- attach a disk to an instance
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute instances attach\-disk\fR \fIINSTANCE\fR [\fB\-\-device\-name\fR\ \fIDEVICE_NAME\fR] \fB\-\-disk\fR \fIDISK\fR [\fB\-\-mode\fR\ \fIMODE\fR;\ default="rw"] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute instances attach\-disk\fR is used to attach a disk to an
+instance. For example,
+
+.RS 2m
+$ gcloud compute instances attach\-disk example\-instance \e
+    \-\-disk DISK \-\-zone us\-central1\-a
+.RE
+
+attaches the disk named 'DISK' to the instance named 'example\-instance' in zone
+\f5\fIus\-central1\-a\fR\fR.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIINSTANCE\fR
+.RS 2m
+The name of the instance to attach the disk to.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-device\-name\fR \fIDEVICE_NAME\fR
+.RS 2m
+An optional name that indicates the disk name the guest operating system will
+see. (Note: Device name does not correspond to mounted volume name)
+
+.RE
+\fB\-\-disk\fR \fIDISK\fR
+.RS 2m
+The name of the disk to attach to the instance.
+
+.RE
+\fB\-\-mode\fR \fIMODE\fR; default="rw"
+.RS 2m
+Specifies the mode of the disk. Supported options are \f5\fIro\fR\fR for
+read\-only and \f5\fIrw\fR\fR for read\-write. If omitted, \f5\fIrw\fR\fR is
+used as a default. It is an error to attach a disk in read\-write mode to more
+than one instance.
+
+.RE
+\fB\-\-zone\fR \fIZONE\fR
+.RS 2m
+The zone of the instance to attach a disk to. If not specified, you will be
+prompted to select a zone.
+
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/zone\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/zone ZONE
+.RE
+
+A list of zones can be fetched by running:
+
+.RS 2m
+$ gcloud compute zones list
+.RE
+
+To unset the property, run:
+
+.RS 2m
+$ gcloud config unset compute/zone
+.RE
+
+Alternatively, the zone can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

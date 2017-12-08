@@ -1,0 +1,70 @@
+
+.TH "GCLOUD_DNS_RECORD\-SETS_EXPORT" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud dns record\-sets export \- export your record\-sets into a file
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud dns record\-sets export\fR \fIRECORDS_FILE\fR [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fB\-\-zone\-file\-format\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+This command exports the record\-sets contained within the specified
+managed\-zone into a file.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIRECORDS_FILE\fR
+.RS 2m
+File to which record\-sets should be exported.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-zone\-file\-format\fR
+.RS 2m
+Indicates that records\-file should be in the zone file format.
+
+
+.RE
+
+.SH "GROUP FLAGS"
+
+\fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR
+.RS 2m
+Name of the managed\-zone whose record\-sets you want to manage.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To export record\-sets into a yaml file, run:
+
+.RS 2m
+$ gcloud dns record\-sets export YAML_RECORDS_FILE \-z MANAGED_ZONE
+.RE
+
+To import record\-sets into a zone file, run:
+
+.RS 2m
+$ gcloud dns record\-sets export ZONE_FILE \-\-zone\-file\-format \e
+    \-z MANAGED_ZONE
+.RE

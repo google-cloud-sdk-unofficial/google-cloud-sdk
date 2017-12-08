@@ -1,0 +1,65 @@
+
+.TH "GCLOUD_DNS_RECORD\-SETS_CHANGES_LIST" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud dns record\-sets changes list \- view the list of changes that have been made to your record\-sets
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud dns record\-sets changes list\fR [\fB\-\-limit\fR\ \fILIMIT\fR] [\fB\-\-sort\-order\fR\ \fISORT_ORDER\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+This command displays the list of changes that have been made to your
+record\-sets.
+
+
+
+.SH "FLAGS"
+
+\fB\-\-limit\fR \fILIMIT\fR
+.RS 2m
+Maximum number of changes to list.
+
+.RE
+\fB\-\-sort\-order\fR \fISORT_ORDER\fR
+.RS 2m
+Sort order for listing (ascending|descending).
+
+
+.RE
+
+.SH "GROUP FLAGS"
+
+\fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR
+.RS 2m
+Name of the managed\-zone whose record\-sets you want to manage.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To see the list of changes, run:
+
+.RS 2m
+$ gcloud dns record\-sets changes list
+.RE
+
+To see the list of first 10 changes, run:
+
+.RS 2m
+$ gcloud dns record\-sets changes list \-\-limit=10
+.RE

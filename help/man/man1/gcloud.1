@@ -1,0 +1,192 @@
+
+.TH "GCLOUD" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud \- manage Google Cloud Platform resources and developer workflow
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud\fR \fIGROUP\fR | \fICOMMAND\fR [\fB\-\-account\fR\ \fIACCOUNT\fR] [\fB\-\-format\fR\ \fIFORMAT\fR] [\fB\-\-help\fR] [\fB\-\-log\-http\fR] [\fB\-\-project\fR\ \fIPROJECT_ID\fR] [\fB\-\-quiet\fR,\ \fB\-q\fR] [\fB\-\-trace\-token\fR\ \fITRACE_TOKEN\fR] [\fB\-\-user\-output\-enabled\fR] [\fB\-\-verbosity\fR\ \fIVERBOSITY\fR] [\fB\-h\fR] [\fB\-v\fR,\ \fB\-\-version\fR]
+
+
+.SH "DESCRIPTION"
+
+The \fBgcloud\fR CLI manages authentication, local configuration, developer
+workflow, and interactions with the Google Cloud Platform APIs.
+
+
+
+.SH "FLAGS"
+
+\fB\-\-account\fR \fIACCOUNT\fR
+.RS 2m
+Google Cloud Platform user account to use for invocation.
+
+.RE
+\fB\-\-format\fR \fIFORMAT\fR
+.RS 2m
+Sets the format for printing command output resources. The default is a
+command\-specific human\-friendly output format. The supported formats are:
+\f5csv\fR, \f5default\fR, \f5flattened\fR, \f5json\fR, \f5list\fR, \f5none\fR,
+\f5table\fR, \f5text\fR, \f5value\fR, \f5yaml\fR. For more details run $ gcloud
+topic formats.
+
+.RE
+\fB\-\-help\fR
+.RS 2m
+Display detailed help.
+
+.RE
+\fB\-\-log\-http\fR
+.RS 2m
+Log all HTTP server requests and responses to stderr. Overrides the default
+\fBlog_http\fR property value for this command invocation. Use
+\fB\-\-no\-log\-http\fR to disable.
+
+.RE
+\fB\-\-project\fR \fIPROJECT_ID\fR
+.RS 2m
+The Google Cloud Platform project name to use for this invocation. If omitted
+then the current project is assumed.
+
+.RE
+\fB\-\-quiet\fR, \fB\-q\fR
+.RS 2m
+Disable all interactive prompts when running gcloud commands. If input is
+required, defaults will be used, or an error will be raised.
+
+.RE
+\fB\-\-trace\-token\fR \fITRACE_TOKEN\fR
+.RS 2m
+Token used to route traces of service requests for investigation of issues.
+
+.RE
+\fB\-\-user\-output\-enabled\fR
+.RS 2m
+Print user intended output to the console. Overrides the default
+\fBuser_output_enabled\fR property value for this command invocation. Use
+\fB\-\-no\-user\-output\-enabled\fR to disable.
+
+.RE
+\fB\-\-verbosity\fR \fIVERBOSITY\fR
+.RS 2m
+Override the default verbosity for this command. This must be a standard logging
+verbosity level: [debug, info, warning, error, critical, none] (Default:
+[warning]).
+
+.RE
+\fB\-h\fR
+.RS 2m
+Print a summary help and exit.
+
+
+.RE
+
+.SH "GROUP FLAGS"
+
+\fB\-v\fR, \fB\-\-version\fR
+.RS 2m
+Print version information.
+
+
+.RE
+
+.SH "GROUPS"
+
+\f5\fIGROUP\fR\fR is one of the following:
+
+\fBauth\fR
+.RS 2m
+Manage oauth2 credentials for the Google Cloud SDK.
+
+.RE
+\fBcomponents\fR
+.RS 2m
+List, install, update, or remove Google Cloud SDK components or packages.
+
+.RE
+\fBcompute\fR
+.RS 2m
+Read and manipulate Google Compute Engine resources.
+
+.RE
+\fBconfig\fR
+.RS 2m
+View and edit Google Cloud SDK properties.
+
+.RE
+\fBcontainer\fR
+.RS 2m
+Deploy and manage clusters of machines for running containers.
+
+.RE
+\fBdeployment\-manager\fR
+.RS 2m
+Manage deployments of cloud resources.
+
+.RE
+\fBdns\fR
+.RS 2m
+Manage your Cloud DNS managed\-zones and record\-sets.
+
+.RE
+\fBpreview\fR
+.RS 2m
+Manage Preview CLI command groups.
+
+.RE
+\fBsource\fR
+.RS 2m
+Cloud git repository commands.
+
+.RE
+\fBsql\fR
+.RS 2m
+Manage Cloud SQL databases.
+
+.RE
+\fBtopic\fR
+.RS 2m
+gcloud supplementary help.
+
+
+.RE
+
+.SH "COMMANDS"
+
+\f5\fICOMMAND\fR\fR is one of the following:
+
+\fBdocker\fR
+.RS 2m
+Provides the docker CLI access to the Google Container Registry.
+
+.RE
+\fBfeedback\fR
+.RS 2m
+Provide feedback to the Google Cloud SDK team.
+
+.RE
+\fBhelp\fR
+.RS 2m
+Prints detailed help messages for the specified commands.
+
+.RE
+\fBinfo\fR
+.RS 2m
+Display information about the current gcloud environment.
+
+.RE
+\fBinit\fR
+.RS 2m
+Initialize or reinitialize gcloud.
+
+.RE
+\fBversion\fR
+.RS 2m
+Print version information for Cloud SDK components.
+.RE

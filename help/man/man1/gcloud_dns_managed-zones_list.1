@@ -1,0 +1,50 @@
+
+.TH "GCLOUD_DNS_MANAGED\-ZONES_LIST" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud dns managed\-zones list \- view the list of all your managed\-zones
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud dns managed\-zones list\fR [\fB\-\-limit\fR\ \fILIMIT\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+This command displays the list of your managed\-zones.
+
+
+
+.SH "FLAGS"
+
+\fB\-\-limit\fR \fILIMIT\fR
+.RS 2m
+Maximum number of managed\-zones to list.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To see the list of all managed\-zones, run:
+
+.RS 2m
+$ gcloud dns managed\-zones list
+.RE
+
+To see the list of first 10 managed\-zones, run:
+
+.RS 2m
+$ gcloud dns managed\-zones list \-\-limit=10
+.RE

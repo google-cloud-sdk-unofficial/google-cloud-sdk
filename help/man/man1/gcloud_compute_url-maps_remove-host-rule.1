@@ -1,0 +1,64 @@
+
+.TH "GCLOUD_COMPUTE_URL\-MAPS_REMOVE\-HOST\-RULE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute url\-maps remove\-host\-rule \- remove a host rule from a URL map
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute url\-maps remove\-host\-rule\fR \fINAME\fR [\fB\-\-delete\-orphaned\-path\-matcher\fR] \fB\-\-host\fR \fIHOST\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute url\-maps remove\-host\-rule\fR is used to remove a host rule
+from a URL map. When a host rule is removed, its path matcher is only removed if
+it is not referenced by any other host rules and
+\f5\fI\-\-delete\-orphaned\-path\-matcher\fR\fR is provided.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR
+.RS 2m
+The name of the URL map.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-delete\-orphaned\-path\-matcher\fR
+.RS 2m
+If provided and a path matcher is orphaned as a result of this command, the
+command removes the orphaned path matcher instead of failing.
+
+.RE
+\fB\-\-host\fR \fIHOST\fR
+.RS 2m
+One of the hosts in the host rule to remove.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To remove a host rule that contains the host \f5\fIgoogle.com\fR\fR from the URL
+map named \f5\fIMY\-URL\-MAP\fR\fR, you can use this command:
+
+.RS 2m
+$ gcloud compute url\-maps remove\-host\-rule MY\-URL\-MAP \e
+    \-\-host google.com
+.RE

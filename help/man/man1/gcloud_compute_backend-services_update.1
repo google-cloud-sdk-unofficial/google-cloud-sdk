@@ -1,0 +1,81 @@
+
+.TH "GCLOUD_COMPUTE_BACKEND\-SERVICES_UPDATE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute backend\-services update \- update a backend service
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute backend\-services update\fR \fINAME\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-http\-health\-checks\fR\ \fIHTTP_HEALTH_CHECK\fR,[\fIHTTP_HEALTH_CHECK\fR,...]] [\fB\-\-port\fR\ \fIPORT\fR] [\fB\-\-port\-name\fR\ \fIPORT_NAME\fR] [\fB\-\-protocol\fR\ \fIPROTOCOL\fR] [\fB\-\-timeout\fR\ \fITIMEOUT\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute backend\-services update\fR is used to update backend
+services.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR
+.RS 2m
+The name of the backend service to update.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-description\fR \fIDESCRIPTION\fR
+.RS 2m
+An optional, textual description for the backend service.
+
+.RE
+\fB\-\-http\-health\-checks\fR \fIHTTP_HEALTH_CHECK\fR,[\fIHTTP_HEALTH_CHECK\fR,...]
+.RS 2m
+Specifies a list of HTTP health check objects for checking the health of the
+backend service.
+
+.RE
+\fB\-\-port\fR \fIPORT\fR
+.RS 2m
+The TCP port to use when connecting to the backend. \-\-port is being deprecated
+in favor of \-\-port\-name.
+
+.RE
+\fB\-\-port\-name\fR \fIPORT_NAME\fR
+.RS 2m
+The name of a service that has been added to an instance group in this backend.
+Instance group services map a name to a port number which is used by the load
+balancing service. Only one \f5\fIport\-name\fR\fR may be added to a backend
+service, and that name must exist as a service on all instance groups that are a
+part of this backend service. The port number associated with the name may
+differ between instances. If you do not specify this flag, your instance groups
+must have a service named \f5\fIhttp\fR\fR configured. See **gcloud preview
+instance\-groups add\-service\fB(1)\fR for details.
+
+.RE
+\fB\-\-protocol\fR \fIPROTOCOL\fR
+.RS 2m
+The protocol for incoming requests.
+
+.RE
+\fB\-\-timeout\fR \fITIMEOUT\fR
+.RS 2m
+The amount of time to wait for a backend to respond to a request before
+considering the request failed. For example, specifying \f5\fI10s\fR\fR will
+give backends 10 seconds to respond to requests. Valid units for this flag are
+``s'' for seconds, ``m'' for minutes, and ``h'' for hours.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

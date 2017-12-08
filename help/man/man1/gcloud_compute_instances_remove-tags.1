@@ -1,0 +1,90 @@
+
+.TH "GCLOUD_COMPUTE_INSTANCES_REMOVE\-TAGS" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute instances remove\-tags \- remove tags from Google Compute Engine virtual machine instances
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute instances remove\-tags\fR \fINAME\fR [\fB\-\-all\fR\ |\ \fB\-\-tags\fR\ \fITAG\fR,[\fITAG\fR,...]] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute instances remove\-tags\fR is used to remove tags to Google
+Compute Engine virtual machine instances. For example:
+
+.RS 2m
+$ gcloud compute instances remove\-tags example\-instance \e
+    \-\-tags tag\-1 tag\-2
+.RE
+
+will remove tags \f5\fItag\-1\fR\fR and \f5\fItag\-2\fR\fR from the existing
+tags of 'example\-instance'.
+
+Tags can be used to identify instances when adding network firewall rules. Tags
+can also be used to get firewall rules that already exist to be applied to the
+instance. See \fBgcloud compute firewall\-rules create\fR(1) for more details.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR
+.RS 2m
+The name of the instance whose tags should be modified.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-all\fR
+.RS 2m
+Remove all tags from the instance.
+
+.RE
+\fB\-\-tags\fR \fITAG\fR,[\fITAG\fR,...]
+.RS 2m
+Specifies strings to be removed from the instance tags. Multiple tags can be
+removed by repeating this flag.
+
+.RE
+\fB\-\-zone\fR \fIZONE\fR
+.RS 2m
+The zone of the instance to set tags on. If not specified, you will be prompted
+to select a zone.
+
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/zone\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/zone ZONE
+.RE
+
+A list of zones can be fetched by running:
+
+.RS 2m
+$ gcloud compute zones list
+.RE
+
+To unset the property, run:
+
+.RS 2m
+$ gcloud config unset compute/zone
+.RE
+
+Alternatively, the zone can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

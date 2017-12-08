@@ -1,0 +1,68 @@
+
+.TH "GCLOUD_CONFIG_LIST" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud config list \- view Google Cloud SDK properties
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud config list\fR [\fISECTION\fR/\fIPROPERTY\fR] [\fB\-\-all\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+List all currently available Cloud SDK properties associated with your current
+workspace or global configuration.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+[\fISECTION\fR/\fIPROPERTY\fR]
+.RS 2m
+The property to be listed. Note that SECTION/ is optional while referring to
+properties in the core section.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-all\fR
+.RS 2m
+List all set and unset properties that match the arguments.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To list the project property in the core section, run:
+
+.RS 2m
+$ gcloud config list project
+.RE
+
+To list the zone property in the compute section, run:
+
+.RS 2m
+$ gcloud config list compute/zone
+.RE
+
+To list all the properties, run:.RS 2m
+$ gcloud config list \-\-all
+
+.RE
+
+Note you cannot specify both \-\-all and a property name.

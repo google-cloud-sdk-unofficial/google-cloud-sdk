@@ -1,0 +1,50 @@
+
+.TH "GCLOUD_COMPONENTS_REPOSITORIES_ADD" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud components repositories add \- add a new Trusted Tester component repository
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud components repositories add\fR \fIURL\fR [\fIURL\fR\ ...] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Add a new Trusted Tester component repository to the list of repositories used
+by the component manager. This will allow you to install and update components
+found in this repository.
+
+If you are participating in a Trusted Tester program, you will be instructed on
+the location of repositories with additional versions of one or more Cloud SDK
+components.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIURL\fR [\fIURL\fR ...]
+.RS 2m
+One or more URLs for the component repositories you want to add.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To add the Trusted Tester component repository http://repo.location.com run:
+
+.RS 2m
+$ gcloud components repositories add http://repo.location.com
+.RE

@@ -1,0 +1,106 @@
+
+.TH "GCLOUD_PREVIEW_APP_MODULES_SET\-MANAGED\-BY" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud preview app modules set\-managed\-by \- \fB(BETA)\fR sets the policy for the Managed VMs of the given modules and version
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud preview app modules set\-managed\-by\fR \fIMODULES\fR [\fIMODULES\fR\ ...] [\fB\-\-google\fR\ |\ \fB\-\-self\fR] [\fB\-\-instance\fR\ \fIINSTANCE\fR] [\fB\-\-server\fR\ \fISERVER\fR] \fB\-\-version\fR \fIVERSION\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fB(BETA)\fR This command sets the policy for the Managed VMs of the given
+modules and version. When your module uses VM runtimes, you can use this command
+to change the management mode for a set of your VMs. If you switch to
+self\-managed, SSH will be enabled on the VMs, and they will be removed from the
+health checking pools, but will still receive requests. When you switch back to
+Google\-managed mode, any local changes on the VMs are lost and they are
+restarted and added back into the normal pools.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIMODULES\fR [\fIMODULES\fR ...]
+.RS 2m
+One or more module names to perform this action on. To select the default module
+for your app, use "default".
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-google\fR
+.RS 2m
+Switch the VMs back to being Google managed. Any local changes on the VMs will
+be lost.
+
+.RE
+\fB\-\-instance\fR \fIINSTANCE\fR
+.RS 2m
+The instance name to set the management policy on. If not given, all instances
+will be set.
+
+.RE
+\fB\-\-self\fR
+.RS 2m
+Switch the VMs to self managed mode. This will allow you SSH into, and debug
+your app on these machines.
+
+.RE
+\fB\-\-server\fR \fISERVER\fR
+.RS 2m
+The App Engine server to connect to. You will not typically need to change this
+value.
+
+.RE
+\fB\-\-version\fR \fIVERSION\fR
+.RS 2m
+The version of the app that you want to operate on.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To switch to self\-managed mode for a module, run:
+
+.RS 2m
+$ gcloud preview app modules set\-managed\-by default \-\-version=1 \e
+    \-\-self
+.RE
+
+To switch back to Google\-managed mode for a module, run:
+
+.RS 2m
+$ gcloud preview app modules set\-managed\-by default \-\-version=1 \e
+    \-\-google
+.RE
+
+To set just a single VM instance of a module to self\-managed mode, run:
+
+.RS 2m
+$ gcloud preview app modules set\-managed\-by default \-\-version=1 \e
+    \-\-self \-\-instance=INSTANCE\-NAME
+.RE
+
+
+
+.SH "NOTES"
+
+This command is currently in BETA and may change without notice.
+

@@ -1,0 +1,81 @@
+
+.TH "GCLOUD_COMPUTE_INSTANCES_DELETE\-ACCESS\-CONFIG" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute instances delete\-access\-config \- delete an access configuration from a virtual machine network interface
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute instances delete\-access\-config\fR \fINAME\fR [\fB\-\-access\-config\-name\fR\ \fIACCESS_CONFIG_NAME\fR;\ default="external\-nat"] [\fB\-\-network\-interface\fR\ \fINETWORK_INTERFACE\fR;\ default="nic0"] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute instances delete\-access\-config\fR is used to delete access
+configurations from network interfaces of Google Compute Engine virtual
+machines.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR
+.RS 2m
+The name of the instance from which to delete the access configuration.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-access\-config\-name\fR \fIACCESS_CONFIG_NAME\fR; default="external\-nat"
+.RS 2m
+Specifies the name of the access configuration to delete.
+\f5\fIexternal\-nat\fR\fR is used as the default if this flag is not provided.
+
+.RE
+\fB\-\-network\-interface\fR \fINETWORK_INTERFACE\fR; default="nic0"
+.RS 2m
+Specifies the name of the network interface from which to delete the access
+configuration. If this is not provided, then \f5\fInic0\fR\fR is used as the
+default.
+
+.RE
+\fB\-\-zone\fR \fIZONE\fR
+.RS 2m
+The zone of the instance to delete an access config from. If not specified, you
+will be prompted to select a zone.
+
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/zone\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/zone ZONE
+.RE
+
+A list of zones can be fetched by running:
+
+.RS 2m
+$ gcloud compute zones list
+.RE
+
+To unset the property, run:
+
+.RS 2m
+$ gcloud config unset compute/zone
+.RE
+
+Alternatively, the zone can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

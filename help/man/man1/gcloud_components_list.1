@@ -1,0 +1,67 @@
+
+.TH "GCLOUD_COMPONENTS_LIST" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud components list \- list the status of all Cloud SDK components
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud components list\fR [\fB\-\-show\-versions\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+This command lists all the tools in the Cloud SDK (both individual components
+and preconfigured packages of components). For each component, the command lists
+the following information:
+
+.RS 2m
+.IP "\(bu" 2m
+Status on your local workstation: not installed, installed (and up to date), and
+update available (installed, but not up to date)
+.RE
+.RS 2m
+.IP "\(bu" 2m
+Name of the component (a description)
+.RE
+.RS 2m
+.IP "\(bu" 2m
+ID of the component (used to refer to the component in other [gcloud components]
+commands)
+.RE
+.RS 2m
+.IP "\(bu" 2m
+Size of the component
+.RE
+
+In addition, if the \f5\-\-show\-versions\fR flag is specified, the command
+lists the currently installed version (if any) and the latest available version
+of each individual component.
+
+
+
+.SH "FLAGS"
+
+\fB\-\-show\-versions\fR
+.RS 2m
+Show installed and available versions of all components.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+$ gcloud components list
+
+$ gcloud components list \-\-show\-versions

@@ -1,0 +1,96 @@
+
+.TH "GCLOUD_PREVIEW_APP" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud preview app \- \fB(BETA)\fR manage your App Engine app
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud preview app\fR \fIGROUP\fR | \fICOMMAND\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fB(BETA)\fR This set of commands allows you to deploy your app, manage your
+existing deployments, and also run your app locally. These commands replace
+their equivalents in the appcfg tool.
+
+
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "GROUPS"
+
+\f5\fIGROUP\fR\fR is one of the following:
+
+\fBmodules\fR
+.RS 2m
+\fB(BETA)\fR View and manage your App Engine modules.
+
+
+.RE
+
+.SH "COMMANDS"
+
+\f5\fICOMMAND\fR\fR is one of the following:
+
+\fBdeploy\fR
+.RS 2m
+\fB(BETA)\fR Deploy the local code and/or configuration of your app to App
+Engine.
+
+.RE
+\fBgen\-config\fR
+.RS 2m
+\fB(BETA)\fR Generate missing configuration files for a source directory.
+
+.RE
+\fBrun\fR
+.RS 2m
+\fB(BETA)\fR Run one or more modules in the local development application
+server.
+
+
+.RE
+
+.SH "EXAMPLES"
+
+To run your app locally in the development application server, run:
+
+.RS 2m
+$ gcloud preview app run DEPLOYABLES
+.RE
+
+To create a new deployment of one or more modules, run:
+
+.RS 2m
+$ gcloud preview app deploy DEPLOYABLES
+.RE
+
+To list your existing deployments, run:
+
+.RS 2m
+$ gcloud preview app modules list
+.RE
+
+To generate config files for your source directory:
+
+.RS 2m
+$ gcloud preview app gen\-config
+.RE
+
+
+
+.SH "NOTES"
+
+This command is currently in BETA and may change without notice.
+

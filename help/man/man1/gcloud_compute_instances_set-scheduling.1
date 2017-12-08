@@ -1,0 +1,83 @@
+
+.TH "GCLOUD_COMPUTE_INSTANCES_SET\-SCHEDULING" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute instances set\-scheduling \- set scheduling options for Google Compute Engine virtual machines
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute instances set\-scheduling\fR \fIINSTANCE\fR [\fB\-\-maintenance\-policy\fR\ \fIMAINTENANCE_POLICY\fR] [\fB\-\-restart\-on\-failure\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fB$gcloud compute instances set\-scheduling\fR is used to configure scheduling
+options for Google Compute Engine virtual machines.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIINSTANCE\fR
+.RS 2m
+The name of the instance for which to change scheduling options.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-maintenance\-policy\fR \fIMAINTENANCE_POLICY\fR
+.RS 2m
+Specifies the behavior of the instances when their host machines undergo
+maintenance. TERMINATE indicates that the instances should be terminated.
+MIGRATE indicates that the instances should be migrated to a new host. Choosing
+MIGRATE will temporarily impact the performance of instances during a migration
+event.
+
+.RE
+\fB\-\-restart\-on\-failure\fR
+.RS 2m
+The instances will be restarted if they are terminated by Compute ' Engine. This
+does not affect terminations performed by the user.'. Use
+\fB\-\-no\-restart\-on\-failure\fR to disable.
+
+.RE
+\fB\-\-zone\fR \fIZONE\fR
+.RS 2m
+The zone of the instance to set scheduling settings for. If not specified, you
+will be prompted to select a zone.
+
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/zone\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/zone ZONE
+.RE
+
+A list of zones can be fetched by running:
+
+.RS 2m
+$ gcloud compute zones list
+.RE
+
+To unset the property, run:
+
+.RS 2m
+$ gcloud config unset compute/zone
+.RE
+
+Alternatively, the zone can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

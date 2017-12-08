@@ -1,0 +1,53 @@
+
+.TH "GCLOUD_SQL_SSL\-CERTS_DELETE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud sql ssl\-certs delete \- deletes an SSL certificate for a Cloud SQL instance
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud sql ssl\-certs delete\fR \fICOMMON_NAME\fR [\fB\-\-async\fR] [\fB\-\-instance\fR\ \fIINSTANCE\fR,\ \fB\-i\fR\ \fIINSTANCE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Deletes an SSL certificate for a Cloud SQL instance.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fICOMMON_NAME\fR
+.RS 2m
+User supplied name. Constrained to [a\-zA\-Z.\-\fI ]+.
+
+
+\fR
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-async\fR
+.RS 2m
+Do not wait for the operation to complete.
+
+
+.RE
+
+.SH "GROUP FLAGS"
+
+\fB\-\-instance\fR \fIINSTANCE\fR, \fB\-i\fR \fIINSTANCE\fR
+.RS 2m
+Cloud SQL instance ID.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

@@ -1,0 +1,67 @@
+
+.TH "GCLOUD_PREVIEW_DATASTORE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud preview datastore \- \fB(BETA)\fR manage your Cloud Datastore
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud preview datastore\fR \fICOMMAND\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fB(BETA)\fR This set of commands allows you to create and delete datastore
+indexes.
+
+
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "COMMANDS"
+
+\f5\fICOMMAND\fR\fR is one of the following:
+
+\fBcleanup\-indexes\fR
+.RS 2m
+\fB(BETA)\fR Remove unused datastore indexes based on your local index
+configuration.
+
+.RE
+\fBcreate\-indexes\fR
+.RS 2m
+\fB(BETA)\fR Create new datastore indexes based on your local index
+configuration.
+
+
+.RE
+
+.SH "EXAMPLES"
+
+To create new indexes from a file, run:
+
+.RS 2m
+$ gcloud preview datastore create\-indexes index.yaml
+.RE
+
+To clean up unused indexes from a file, run:
+
+.RS 2m
+$ gcloud preview datastore cleanup\-indexes index.yaml
+.RE
+
+
+
+.SH "NOTES"
+
+This command is currently in BETA and may change without notice.
+

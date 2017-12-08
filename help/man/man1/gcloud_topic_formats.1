@@ -1,0 +1,204 @@
+
+.TH "GCLOUD_TOPIC_FORMATS" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud topic formats \- resource formats supplementary help
+
+
+
+.SH "DESCRIPTION"
+
+Most \fBgcloud\fR commands return a list of resources on success. By default
+they are pretty\-printed on the standard output. The
+\fB\-\-format=\fR\fINAME\fR[\fIATTRIBUTES\fR](\fIPROJECTION\fR) flag changes the
+default output:
+
+\fINAME\fR
+.RS 2m
+The format name.
+.RE
+\fIATTRIBUTES\fR
+.RS 2m
+Format specific attributes. Resource formats are described in detail below.
+.RE
+\fIPROJECTION\fR
+.RS 2m
+A list of resource keys that selects the data listed. For details run $ gcloud
+topic projections.
+.RE
+\fIresource keys\fR
+.RS 2m
+Keys are names for resource resource items. For details run $ gcloud topic
+resource\-keys.
+
+.RE
+
+.SH "Formats"
+
+A format expression has 3 parts:
+
+\fINAME\fR
+.RS 2m
+\fIname\fR
+.RE
+\fIATTRIBUTES\fR
+.RS 2m
+\fB[\fR [no\-]\fIattribute\-name\fR[=\fIvalue\fR] [, ... ] \fB]\fR
+.RE
+\fIPROJECTION\fR
+.RS 2m
+\fB(\fR \fIresource\-key\fR [, ...] \fB)\fR \fINAME\fR is required,
+\fIATTRIBUTES\fR are optional, and \fIPROJECTIONS\fR may be required for some
+formats. Unknown attribute names are silently ignored.
+
+.RE
+Each \fBgcloud\fR \fBlist\fR command has a default format expression. The
+\fB\-\-format\fR flag can alter or replace the default. For example,
+
+.RS 2m
+\-\-format='[box]'
+.RE
+
+adds box decorations to a default table, and
+
+.RS 2m
+\-\-format=json
+.RE
+
+lists the resource in \fBjson\fR format.
+
+The supported formats and format specific attributes are:
+
+\fBcsv\fR
+.RS 2m
+Comma Separated Values with no keys. This format requires a projection to define
+the values to be printed.
+
+.RE
+\fBdefault\fR
+.RS 2m
+An alias for the \fByaml\fR format.
+
+.RE
+\fBflattened\fR
+.RS 2m
+A flattened tree. Each output line contains one \fBkey\fR:\fBvalue\fR pair.
+
+The format attributes are:
+
+\fBno\-pad\fR
+.RS 2m
+bool, Print only one space after ':'. The default adjusts the space to align the
+values into the same output column. Use \fBno\-pad\fR for comparing resource
+outputs.
+
+.RE
+.RE
+\fBjson\fR
+.RS 2m
+JSON, JavaScript Object Notation.
+
+.RE
+\fBlist\fR
+.RS 2m
+An ordered list of items.
+
+.RE
+\fBnone\fR
+.RS 2m
+Disables formatted output.
+
+.RE
+\fBtable\fR
+.RS 2m
+Aligned left\-adjusted columns with optional title, column headings and sorting.
+This format requires a projection to define the table columns. The default
+column headings are the disambiguated right hand components of the column keys
+in ANGRY_SNAKE_CASE. For example, the projection keys (first.name, last.name)
+produce the default column heading ('NAME', 'LAST_NAME').
+
+The format attributes are:
+
+\fBbox\fR
+.RS 2m
+Prints a box around the entire table and each cell, including the title if any.
+.RE
+\fBempty\-legend=\fISENTENCES\fR\fR
+.RS 2m
+Prints \fISENTENCES\fR after the table if the table has no rows. The default
+\fBempty\-legend\fR is "Listed 0 items.". \fBno\-empty\-legend\fR disables the
+default.
+.RE
+\fBno\-heading\fR
+.RS 2m
+Disables the column headings.
+.RE
+\fBlegend=\fISENTENCES\fR\fR
+.RS 2m
+Prints \fISENTENCES\fR after the table if the table has at least one row. The
+legend is not included in the table box.
+.RE
+\fBpad=N\fR
+.RS 2m
+Sets the column horizontal pad to \fIN\fR spaces. The default is 1 for box, 2
+otherwise.
+.RE
+\fBtitle=\fITITLE\fR\fR
+.RS 2m
+Prints a centered \fITITLE\fR at the top of the table, within the table box if
+\fBbox\fR is enabled.
+
+.RE
+.RE
+\fBtext\fR
+.RS 2m
+An alias for the \fBflattened\fR format.
+
+.RE
+\fBvalue\fR
+.RS 2m
+CSV with no heading and <TAB> delimiter instead of <COMMA>. Used to retrieve
+individual resource values. This format requires a projection to define the
+value(s) to be printed.
+
+.RE
+\fByaml\fR
+.RS 2m
+YAML, YAML ain't markup language.
+
+
+.RE
+
+.SH "EXAMPLES"
+
+List a table of compute instance resources sorted by \fBname\fR with box
+decorations and title \fBInstances\fR:
+
+.RS 2m
+$ gcloud compute instances list \e
+    \-\-format='table[box,title=Instances](name:sort=1, zone:title=z\e
+one, status)'
+.RE
+
+List the disk interfaces for all compute instances as a compact comma separated
+list:
+
+.RS 2m
+$ gcloud compute instances list \e
+    \-\-format='value(disks[].interface.list())'
+.RE
+
+List the URIs for all compute instances:
+
+.RS 2m
+$ gcloud compute instances list \-\-format='value(uri())'
+.RE
+
+List the project authenticated user email address:
+
+.RS 2m
+$ gcloud info \-\-format='value(config.account)'
+.RE

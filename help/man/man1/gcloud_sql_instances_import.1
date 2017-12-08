@@ -1,0 +1,56 @@
+
+.TH "GCLOUD_SQL_INSTANCES_IMPORT" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud sql instances import \- imports data into a Cloud SQL instance from Google Cloud Storage
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud sql instances import\fR \fIINSTANCE\fR \fIURI\fR [\fIURI\fR\ ...] [\fB\-\-async\fR] [\fB\-\-database\fR\ \fIDATABASE\fR,\ \fB\-d\fR\ \fIDATABASE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Imports data into a Cloud SQL instance from Google Cloud Storage.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIINSTANCE\fR
+.RS 2m
+Cloud SQL instance ID.
+
+.RE
+\fIURI\fR [\fIURI\fR ...]
+.RS 2m
+Path to the MySQL dump file in Google Cloud Storage from which the import is
+made. The URI is in the form gs://bucketName/fileName. Compressed gzip files
+(.gz) are also supported.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-async\fR
+.RS 2m
+Do not wait for the operation to complete.
+
+.RE
+\fB\-\-database\fR \fIDATABASE\fR, \fB\-d\fR \fIDATABASE\fR
+.RS 2m
+The database (for example, guestbook) to which the import is made. If not set,
+it is assumed that the database is specified in the file to be imported.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

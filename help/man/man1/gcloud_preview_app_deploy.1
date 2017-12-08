@@ -1,0 +1,108 @@
+
+.TH "GCLOUD_PREVIEW_APP_DEPLOY" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud preview app deploy \- \fB(BETA)\fR deploy the local code and/or configuration of your app to App Engine
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud preview app deploy\fR \fIDEPLOYABLES\fR [\fIDEPLOYABLES\fR\ ...] [\fB\-\-docker\-build\fR\ \fIDOCKER_BUILD\fR] [\fB\-\-force\fR] [\fB\-\-image\-url\fR\ \fIIMAGE_URL\fR] [\fB\-\-promote\fR\ |\ \fB\-\-set\-default\fR] [\fB\-\-server\fR\ \fISERVER\fR] [\fB\-\-version\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fB(BETA)\fR This command is used to deploy both code and configuration to the
+App Engine server. As an input it takes one or more \f5\fIDEPLOYABLES\fR\fR that
+should be uploaded. A \f5\fIDEPLOYABLE\fR\fR can be a module's .yaml file or a
+configuration's .yaml file.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIDEPLOYABLES\fR [\fIDEPLOYABLES\fR ...]
+.RS 2m
+The yaml files for the modules or configurations you want to deploy.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-docker\-build\fR \fIDOCKER_BUILD\fR
+.RS 2m
+Perform a hosted ('remote') or local ('local') Docker build. To perform a local
+build, you must have your local docker environment configured correctly. The
+default is a hosted build.
+
+.RE
+\fB\-\-force\fR
+.RS 2m
+Force deploying, overriding any previous in\-progress deployments to this
+version.
+
+.RE
+\fB\-\-image\-url\fR \fIIMAGE_URL\fR
+.RS 2m
+Deploy with a specific Docker image. Docker url must be from one of the valid
+gcr hostnames.
+
+.RE
+\fB\-\-promote\fR
+.RS 2m
+Promote the deployed version to receive all traffic. Use \fB\-\-no\-promote\fR
+to disable.
+
+.RE
+\fB\-\-server\fR \fISERVER\fR
+.RS 2m
+The App Engine server to connect to. You will not typically need to change this
+value.
+
+.RE
+\fB\-\-set\-default\fR
+.RS 2m
+Set the deployed version to be the default serving version (deprecated; use
+\-\-promote instead). Use \fB\-\-no\-set\-default\fR to disable.
+
+.RE
+\fB\-\-version\fR \fIVERSION\fR
+.RS 2m
+The version of the app that will be created or replaced by this deployment. If
+you do not specify a version, one will be generated for you.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To deploy a single module, run:
+
+.RS 2m
+$ gcloud preview app deploy ~/my_app/app.yaml
+.RE
+
+To deploy multiple modules, run:
+
+.RS 2m
+$ gcloud preview app deploy ~/my_app/app.yaml \e
+    ~/my_app/another_module.yaml
+.RE
+
+
+
+.SH "NOTES"
+
+This command is currently in BETA and may change without notice.
+

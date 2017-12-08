@@ -1,0 +1,83 @@
+
+.TH "GCLOUD_COMPUTE_DISKS_MOVE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute disks move \- move a disk between zones
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute disks move\fR \fIDISK\fR \fB\-\-destination\-zone\fR \fIDESTINATION_ZONE\fR [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute disks move\fR facilitates moving a Google Compute Engine disk
+volume from one zone to another. You cannot move a disk if it is attached to a
+running or stopped instance; use the gcloud compute instances move command
+instead.
+
+For example, running:.RS 2m
+$ gcloud compute disks move example\-disk\-1 \-\-zone us\-central1\-b \e
+   \-\-destination\-zone us\-central1\-f
+
+.RE
+
+will move the disk called example\-disk\-1, currently running in
+us\-central1\-b, to us\-central1\-f.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIDISK\fR
+.RS 2m
+The name of the disk to move.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-destination\-zone\fR \fIDESTINATION_ZONE\fR
+.RS 2m
+The zone to move the disk to.
+
+.RE
+\fB\-\-zone\fR \fIZONE\fR
+.RS 2m
+The zone of the disk to move. If not specified, you will be prompted to select a
+zone.
+
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/zone\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/zone ZONE
+.RE
+
+A list of zones can be fetched by running:
+
+.RS 2m
+$ gcloud compute zones list
+.RE
+
+To unset the property, run:
+
+.RS 2m
+$ gcloud config unset compute/zone
+.RE
+
+Alternatively, the zone can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

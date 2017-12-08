@@ -1,0 +1,57 @@
+
+.TH "GCLOUD_INIT" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud init \- initialize or reinitialize gcloud
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud init\fR [\fB\-\-console\-only\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Initialize or reinitialize gcloud.
+
+gcloud init launches a interactive getting\-started gcloud workflow, and
+replaces \f5gcloud auth login\fR as the recommended command to execute after
+newly installing gcloud. This workflow performs a variety of setup tasks,
+including the following:
+
+.RS 2m
+.IP "\(bu" 2m
+launching an authorization flow or selecting credentials
+.RE
+.RS 2m
+.IP "\(bu" 2m
+setting properties including project, default GCE zone, and default GCE region
+.RE
+.RS 2m
+.IP "\(bu" 2m
+suggesting cloning a source repository
+.RE
+
+Most users will run gcloud init to get started with gcloud. Subsequent gcloud
+init invocations can be use to create new gcloud configurations or to
+reinitialize existing configurations. See \f5gcloud topic configurations\fR for
+additional information.
+
+
+
+.SH "FLAGS"
+
+\fB\-\-console\-only\fR
+.RS 2m
+Don't launch a browser for authentication.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

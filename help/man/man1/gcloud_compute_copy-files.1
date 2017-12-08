@@ -1,0 +1,102 @@
+
+.TH "GCLOUD_COMPUTE_COPY\-FILES" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute copy\-files \- copy files to and from Google Compute Engine virtual machines
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute copy\-files\fR [[\fIUSER\fR@]\fIINSTANCE\fR:]\fISRC\fR [[[\fIUSER\fR@]\fIINSTANCE\fR:]\fISRC\fR\ ...] [[\fIUSER\fR@]\fIINSTANCE\fR:]\fIDEST\fR [\fB\-\-dry\-run\fR] [\fB\-\-plain\fR] [\fB\-\-ssh\-key\-file\fR\ \fISSH_KEY_FILE\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute copy\-files\fR copies files between a virtual machine instance
+and your local machine.
+
+To denote a remote file, prefix the file name with the virtual machine instance
+name (e.g., \fIexample\-instance\fR:~/\fIFILE\fR). To denote a local file, do
+not add a prefix to the file name (e.g., ~/\fIFILE\fR). For example, to copy a
+remote directory to your local host, run:
+
+.RS 2m
+$ gcloud compute copy\-files example\-instance:~/REMOTE\-DIR \e
+    ~/LOCAL\-DIR \-\-zone us\-central1\-a
+.RE
+
+In the above example, \f5\fI~/REMOTE\-DIR\fR\fR from
+\f5\fIexample\-instance\fR\fR is copied into the ~/\fILOCAL\-DIR\fR directory.
+
+Conversely, files from your local computer can be copied to a virtual machine:
+
+.RS 2m
+$ gcloud compute copy\-files ~/LOCAL\-FILE\-1 ~/LOCAL\-FILE\-2 \e
+    example\-instance:~/REMOTE\-DIR \-\-zone us\-central1\-a
+.RE
+
+If a file contains a colon (``:''), you must specify it by either using an
+absolute path or a path that begins with ``./''.
+
+Under the covers, \fBscp(1)\fR is used to facilitate the transfer.
+
+When the destination is local, all sources must be the same virtual machine
+instance. When the destination is remote, all source must be local.
+
+This command ensures that the user's public SSH key is present in the project's
+metadata. If the user does not have a public SSH key, one is generated using
+\fBssh\-keygen(1)\fR (if the the \f5\-\-quiet\fR flag is given, the generated
+key will have an empty passphrase).
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+[[\fIUSER\fR@]\fIINSTANCE\fR:]\fISRC\fR [[[\fIUSER\fR@]\fIINSTANCE\fR:]\fISRC\fR ...]
+.RS 2m
+Specifies a source file.
+
+.RE
+[[\fIUSER\fR@]\fIINSTANCE\fR:]\fIDEST\fR
+.RS 2m
+Specifies a destination for the source files.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-dry\-run\fR
+.RS 2m
+If provided, prints the command that would be run to standard out instead of
+executing it.
+
+.RE
+\fB\-\-plain\fR
+.RS 2m
+Suppresses the automatic addition of \fBssh(1)\fR/\fBscp(1)\fR flags. This flag
+is useful if you want to take care of authentication yourself or re\-enable
+strict host checking.
+
+.RE
+\fB\-\-ssh\-key\-file\fR \fISSH_KEY_FILE\fR
+.RS 2m
+The path to the SSH key file. By default, this is
+\f5\fI~/.ssh/google_compute_engine\fR\fR.
+
+.RE
+\fB\-\-zone\fR \fIZONE\fR
+.RS 2m
+The zone of the instance to copy files to/from. If omitted, you will be prompted
+to select a zone.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

@@ -1,0 +1,74 @@
+
+.TH "GCLOUD_PREVIEW_APP_MODULES_DELETE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud preview app modules delete \- \fB(BETA)\fR delete a specific version of the given modules
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud preview app modules delete\fR \fIMODULES\fR [\fIMODULES\fR\ ...] [\fB\-\-server\fR\ \fISERVER\fR] \fB\-\-version\fR \fIVERSION\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fB(BETA)\fR This command deletes the specified version of the given modules
+from the App Engine server.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIMODULES\fR [\fIMODULES\fR ...]
+.RS 2m
+One or more module names to perform this action on. To select the default module
+for your app, use "default".
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-server\fR \fISERVER\fR
+.RS 2m
+The App Engine server to connect to. You will not typically need to change this
+value.
+
+.RE
+\fB\-\-version\fR \fIVERSION\fR
+.RS 2m
+The version of the app that you want to operate on.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To delete a version from a single module, run:
+
+.RS 2m
+$ gcloud preview app modules delete default \-\-version=1
+.RE
+
+To delete a single version from multiple modules, run:
+
+.RS 2m
+$ gcloud preview app modules delete module1 module2 \-\-version=1
+.RE
+
+
+
+.SH "NOTES"
+
+This command is currently in BETA and may change without notice.
+
