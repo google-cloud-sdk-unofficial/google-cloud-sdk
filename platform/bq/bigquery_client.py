@@ -895,7 +895,7 @@ class BigqueryClient(object):
       if print_format == 'list':
         formatter.AddColumns(('jobId',))
       formatter.AddColumns(
-          ('Job Type', 'State', 'Start Time', 'Duration',))
+          ('Job Type', 'State', 'Start Time', 'Duration', 'User Email',))
       if print_format == 'show':
         formatter.AddColumns(('Bytes Processed',))
         formatter.AddColumns(('Bytes Billed',))
@@ -1103,6 +1103,7 @@ class BigqueryClient(object):
       result['Start Time'] = BigqueryClient.FormatTime(start)
     result['Job Type'] = BigqueryClient.GetJobTypeName(result)
     result['State'] = result['status']['state']
+    result['User Email'] = result['user_email']
     if result['State'] == 'DONE':
       try:
         BigqueryClient.RaiseIfJobError(result)

@@ -13,7 +13,17 @@ if os.path.isdir(_THIRD_PARTY_DIR):
 
 def main():
   # pylint:disable=g-import-not-at-top
-  import googlecloudsdk.gcloud_main
+  try:
+    import googlecloudsdk.gcloud_main
+  except ImportError as err:
+    # We DON'T want to suggest `gcloud components reinstall` here, as we know
+    # that no commands will work.
+    sys.stderr.write(
+        ('ERROR: gcloud failed to load: {0}\n\n'
+         'This usually indicates corruption in your gcloud installation. '
+         'Please reinstall the Cloud SDK using the instructions here:\n'
+         '    https://cloud.google.com/sdk/\n').format(err))
+    sys.exit(1)
   sys.exit(googlecloudsdk.gcloud_main.main())
 
 
