@@ -18,10 +18,9 @@
 from googlecloudsdk.api_lib.bigquery import bigquery
 from googlecloudsdk.api_lib.bigquery import job_display
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 
 
-class JobsDescribe(base.Command):
+class JobsDescribe(base.DescribeCommand):
   """Shows information about a specified job.
 
   The job's job type, state, start time, duration, and number of bytes
@@ -32,6 +31,9 @@ class JobsDescribe(base.Command):
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument('job_id', help='The ID of the job to be described.')
+
+  def Collection(self):
+    return 'bigquery.jobs.describe'
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -46,16 +48,5 @@ class JobsDescribe(base.Command):
     Returns:
       A Job message.
     """
-    job = bigquery.Job.ResolveFromId(args.job_id)
-    return job.GetRaw()
-
-  def Display(self, args, job):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      job: A Job message.
-    """
-    info = job_display.DisplayInfo(job)
-    # Print information in the form of a one-row table:
-    list_printer.PrintResourceList('bigquery.jobs.describe', [info])
+    return job_display.Synthesize(
+        [bigquery.Job.ResolveFromId(args.job_id).GetRaw()])

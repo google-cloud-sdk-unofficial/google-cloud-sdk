@@ -28,8 +28,8 @@ class TailSerialPortOutputException(exceptions.Error):
   """An error occurred while tailing the serial port."""
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class TailSerialPortOutputAlpha(base_classes.BaseCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class TailSerialPortOutput(base_classes.BaseCommand):
   """Tail output from a virtual machine instance's serial port."""
 
   POLL_SLEEP_SECS = 10
@@ -98,12 +98,12 @@ class TailSerialPortOutputAlpha(base_classes.BaseCommand):
         time.sleep(self.POLL_SLEEP_SECS)
 
 
-TailSerialPortOutputAlpha.detailed_help = {
+TailSerialPortOutput.detailed_help = {
     'brief': """Periodically fetch new output from a virtual machine instance's
     serial port and display it as it becomes available""",
     'DESCRIPTION': """\
         {command} is used to tail the output from a Google Compute
-        Engine virtual machine's serial port. The serial port output
+        Engine virtual machine instance's serial port. The serial port output
         from the instance will be printed to standard output. This
         information can be useful for diagnostic purposes.
         """,

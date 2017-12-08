@@ -14,69 +14,74 @@
 """Command for adding a path matcher to a URL map."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.third_party.py27 import py27_collections as collections
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
-class AddPathMatcher(base_classes.ReadWriteCommand):
+def _Args(parser):
+  """Common arguments to add-path-matcher commands for each release track."""
+  parser.add_argument(
+      '--description',
+      help='An optional, textual description for the path matcher.')
+
+  parser.add_argument(
+      '--path-matcher-name',
+      required=True,
+      help='The name to assign to the path matcher.')
+
+  parser.add_argument(
+      '--path-rules',
+      type=arg_parsers.ArgDict(min_length=1),
+      action=arg_parsers.FloatingListValuesCatcher(),
+      default={},
+      metavar='PATH=SERVICE',
+      help='Rules for mapping request paths to services.')
+
+  host_rule = parser.add_mutually_exclusive_group()
+  host_rule.add_argument(
+      '--new-hosts',
+      type=arg_parsers.ArgList(min_length=1),
+      action=arg_parsers.FloatingListValuesCatcher(),
+      metavar='NEW_HOST',
+      help=('If specified, a new host rule with the given hosts is created '
+            'and the path matcher is tied to the new host rule.'))
+
+  existing_host = host_rule.add_argument(
+      '--existing-host',
+      help='An existing host rule to tie the new path matcher to.')
+  existing_host.detailed_help = """\
+      An existing host rule to tie the new path matcher to. Although
+      host rules can contain more than one host, only a single host
+      is needed to uniquely identify the host rule.
+      """
+
+  parser.add_argument(
+      '--delete-orphaned-path-matcher',
+      action='store_true',
+      default=False,
+      help=('If provided and a path matcher is orphaned as a result of this '
+            'command, the command removes the orphaned path matcher instead '
+            'of failing.'))
+
+  parser.add_argument(
+      'name',
+      help='The name of the URL map.')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class AddPathMatcherGA(base_classes.ReadWriteCommand):
   """Add a path matcher to a URL map."""
 
   @staticmethod
   def Args(parser):
+    _Args(parser)
     parser.add_argument(
         '--default-service',
         required=True,
         help=('A backend service that will be used for requests that the path '
               'matcher cannot match.'))
-
-    parser.add_argument(
-        '--description',
-        help='An optional, textual description for the path matcher.')
-
-    parser.add_argument(
-        '--path-matcher-name',
-        required=True,
-        help='The name to assign to the path matcher.')
-
-    parser.add_argument(
-        '--path-rules',
-        type=arg_parsers.ArgDict(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
-        default={},
-        metavar='PATH=SERVICE',
-        help='Rules for mapping request paths to services.')
-
-    host_rule = parser.add_mutually_exclusive_group()
-
-    host_rule.add_argument(
-        '--new-hosts',
-        type=arg_parsers.ArgList(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
-        metavar='NEW_HOST',
-        help=('If specified, a new host rule with the given hosts is created '
-              'and the path matcher is tied to the new host rule.'))
-
-    existing_host = host_rule.add_argument(
-        '--existing-host',
-        help='An existing host rule to tie the new path matcher to.')
-    existing_host.detailed_help = """\
-        An existing host rule to tie the new path matcher to. Although
-        host rules can contain more than one host, only a single host
-        is needed to uniquely identify the host rule.
-        """
-
-    parser.add_argument(
-        '--delete-orphaned-path-matcher',
-        action='store_true',
-        default=False,
-        help=('If provided and a path matcher is orphaned as a result of this '
-              'command, the command removes the orphaned path matcher instead '
-              'of failing.'))
-
-    parser.add_argument(
-        'name',
-        help='The name of the URL map.')
 
   @property
   def service(self):
@@ -105,8 +110,16 @@ class AddPathMatcher(base_classes.ReadWriteCommand):
                 urlMapResource=replacement,
                 project=self.project))
 
-  def Modify(self, args, existing):
-    """Returns a modified URL map message."""
+  def _ModifyBase(self, args, existing):
+    """Modifications to the URL map that are shared between release tracks.
+
+    Args:
+      args: the argparse arguments that this command was invoked with.
+      existing: the existing URL map message.
+
+    Returns:
+      A modified URL map message.
+    """
     replacement = copy.deepcopy(existing)
 
     if not args.new_hosts and not args.existing_host:
@@ -177,6 +190,12 @@ class AddPathMatcher(base_classes.ReadWriteCommand):
               'url-maps edit] to modify the URL map by hand.'.format(
                   host_rule.pathMatcher))
 
+    return replacement
+
+  def Modify(self, args, existing):
+    """Returns a modified URL map message."""
+    replacement = self._ModifyBase(args, existing)
+
     # Creates PathRule objects from --path-rules.
     service_map = collections.defaultdict(set)
     for path, service in args.path_rules.iteritems():
@@ -199,7 +218,87 @@ class AddPathMatcher(base_classes.ReadWriteCommand):
     return replacement
 
 
-AddPathMatcher.detailed_help = {
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AddPathMatcherAlpha(AddPathMatcherGA):
+  """Add a path matcher to a URL map."""
+
+  @staticmethod
+  def Args(parser):
+    _Args(parser)
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
+        '--default-service',
+        help=('A backend service that will be used for requests that the path '
+              'matcher cannot match. Exactly one of --default-service or '
+              '--default-backend-bucket is required.'))
+    group.add_argument(
+        '--default-backend-bucket',
+        help=('A backend bucket that will be used for requests that the path '
+              'matcher cannot match. Exactly one of --default-service or '
+              '--default-backend-bucket is required.'))
+
+    parser.add_argument('--backend-service-path-rules',
+                        type=arg_parsers.ArgDict(min_length=1),
+                        action=arg_parsers.FloatingListValuesCatcher(),
+                        default={},
+                        metavar='PATH=SERVICE',
+                        help='Rules for mapping request paths to services.')
+    parser.add_argument(
+        '--backend-bucket-path-rules',
+        type=arg_parsers.ArgDict(min_length=1),
+        action=arg_parsers.FloatingListValuesCatcher(),
+        default={},
+        metavar='PATH=BUCKET',
+        help='Rules for mapping request paths to backend buckets.')
+
+  def Modify(self, args, existing):
+    """Returns a modified URL map message."""
+    replacement = self._ModifyBase(args, existing)
+
+    # Creates PathRule objects from --path-rules, --backend-service-path-rules,
+    # and --backend-bucket-path-rules.
+    service_map = collections.defaultdict(set)
+    bucket_map = collections.defaultdict(set)
+    for path, service in args.path_rules.iteritems():
+      service_map[service].add(path)
+    for path, service in args.backend_service_path_rules.iteritems():
+      service_map[service].add(path)
+    for path, bucket in args.backend_bucket_path_rules.iteritems():
+      bucket_map[bucket].add(path)
+    path_rules = []
+    for service, paths in sorted(service_map.iteritems()):
+      path_rules.append(self.messages.PathRule(
+          paths=sorted(paths),
+          service=self.CreateGlobalReference(service,
+                                             resource_type=
+                                             'backendServices').SelfLink()))
+    for bucket, paths in sorted(bucket_map.iteritems()):
+      path_rules.append(self.messages.PathRule(
+          paths=sorted(paths),
+          service=self.CreateGlobalReference(bucket,
+                                             resource_type=
+                                             'backendBuckets').SelfLink()))
+
+    if args.default_service:
+      default_backend_uri = self.CreateGlobalReference(
+          args.default_service,
+          resource_type='backendServices').SelfLink()
+    else:
+      default_backend_uri = self.CreateGlobalReference(
+          args.default_backend_bucket,
+          resource_type='backendBuckets').SelfLink()
+
+    new_path_matcher = self.messages.PathMatcher(
+        defaultService=default_backend_uri,
+        description=args.description,
+        name=args.path_matcher_name,
+        pathRules=path_rules)
+
+    replacement.pathMatchers.append(new_path_matcher)
+    return replacement
+
+
+AddPathMatcherGA.detailed_help = {
     'brief': 'Add a path matcher to a URL map',
     'DESCRIPTION': """\
         *{command}* is used to add a path matcher to a URL map. A path
@@ -222,5 +321,31 @@ AddPathMatcher.detailed_help = {
 
         Note that a default service must be provided to handle paths
         for which there is no mapping.
+        """,
+}
+AddPathMatcherAlpha.detailed_help = {
+    'brief': 'Add a path matcher to a URL map',
+    'DESCRIPTION': """\
+        *{command}* is used to add a path matcher to a URL map. A path
+        matcher maps HTTP request paths to backend services or backend
+        buckets. Each path matcher must be referenced by at least one
+        host rule. This command can create a new host rule through the
+        ``--new-hosts'' flag or it can reconfigure an existing host rule
+        to point to the newly added path matcher using ``--existing-host''.
+        In the latter case, if a path matcher is orphaned as a result
+        of the operation, this command will fail unless
+        ``--delete-orphaned-path-matcher'' is provided.
+        """,
+    'EXAMPLES': """\
+        To create a rule for mapping the path ```/search/*``` to the
+        hypothetical ```search-service```, ```/static/*``` to the
+        ```static-bucket``` backend bucket and ```/images/*``` to the
+        ```images-service``` under the hosts ```google.com``` and
+        ```*.google.com```, run:
+
+          $ {command} MY-URL-MAP --path-matcher-name MY-MATCHER --default-service MY-DEFAULT-SERVICE --backend-service-path-rules '/search/*=search_service,/images/*=images-service' --backend-bucket-path-rules '/static/*=static-bucket' --new-hosts google.com '*.google.com'
+
+        Note that a default service or default backend bucket must be
+        provided to handle paths for which there is no mapping.
         """,
 }

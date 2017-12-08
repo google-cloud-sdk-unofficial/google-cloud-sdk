@@ -47,6 +47,9 @@ class Wait(base.Command):
     operation_ref = adapter.ParseOperation(args.operation_id)
 
     try:
+      # Try fetching it first to ensure we have permissions and the op exists.
+      adapter.GetOperation(operation_ref)
+
       return adapter.WaitForOperation(
           operation_ref,
           'Waiting for {0} to complete'.format(operation_ref.operationId))

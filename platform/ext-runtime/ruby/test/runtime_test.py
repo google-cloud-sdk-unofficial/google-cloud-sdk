@@ -75,7 +75,10 @@ class RuntimeTestCase(testutil.TestBase):
         self.write_file('index.rb', 'class Index; end')
         self.write_file('Gemfile', 'source "https://rubygems.org"')
         self.write_file('config.ru', 'run Index.app')
+
+        unstub = self.stub_response('bundle exec rackup -p $PORT -E deployment')
         cleaner = self.generate_configs()
+        unstub()
 
         app_yaml = self.file_contents('app.yaml')
         self.assertIn('runtime: ruby\n', app_yaml)
@@ -91,7 +94,10 @@ class RuntimeTestCase(testutil.TestBase):
         self.write_file('Gemfile', 'source "https://rubygems.org"')
         self.write_file('config.ru', 'run Index.app')
         self.write_file('.ruby-version', 'rbx-3.9')
+
+        unstub = self.stub_response('bundle exec rackup -p $PORT -E deployment')
         cleaner = self.generate_configs(deploy=True)
+        unstub()
 
         dockerfile = self.file_contents('Dockerfile')
         self.assertEqual(dockerfile, textwrap.dedent('''\
@@ -110,7 +116,7 @@ class RuntimeTestCase(testutil.TestBase):
                 git pull && \\
                 rbenv install -s rbx-3.9 && \\
                 rbenv global rbx-3.9 && \\
-                gem install -q --no-rdoc --no-ri bundler --version 1.11
+                gem install -q --no-rdoc --no-ri bundler --version 1.11.2
             ENV RBENV_VERSION rbx-3.9
 
             # Copy the application files.
@@ -118,6 +124,16 @@ class RuntimeTestCase(testutil.TestBase):
 
             # Install required gems.
             RUN bundle install --deployment && rbenv rehash
+
+            # Temporary. Will be moved to base image later.
+            ENV RACK_ENV=production \\
+                RAILS_ENV=production \\
+                RAILS_SERVE_STATIC_FILES=true
+
+            # Run asset pipeline if we're in a Rails app.
+            RUN if test -d app/assets -a -f config/application.rb; then \\
+                bundle exec rake assets:precompile; \\
+                fi
 
             # BUG: Reset entrypoint to override base image.
             ENTRYPOINT []
@@ -138,7 +154,10 @@ class RuntimeTestCase(testutil.TestBase):
         self.write_file('index.rb', 'class Index; end')
         self.write_file('Gemfile', 'source "https://rubygems.org"')
         self.write_file('config.ru', 'run Index.app')
+
+        unstub = self.stub_response('bundle exec rackup -p $PORT -E deployment')
         cleaner = self.generate_configs(custom=True)
+        unstub()
 
         app_yaml = self.file_contents('app.yaml')
         self.assertIn('runtime: custom\n', app_yaml)
@@ -162,7 +181,7 @@ class RuntimeTestCase(testutil.TestBase):
                 git pull && \\
                 rbenv install -s 2.3.0 && \\
                 rbenv global 2.3.0 && \\
-                gem install -q --no-rdoc --no-ri bundler --version 1.11
+                gem install -q --no-rdoc --no-ri bundler --version 1.11.2
             ENV RBENV_VERSION 2.3.0
 
             # Copy the application files.
@@ -170,6 +189,16 @@ class RuntimeTestCase(testutil.TestBase):
 
             # Install required gems.
             RUN bundle install --deployment && rbenv rehash
+
+            # Temporary. Will be moved to base image later.
+            ENV RACK_ENV=production \\
+                RAILS_ENV=production \\
+                RAILS_SERVE_STATIC_FILES=true
+
+            # Run asset pipeline if we're in a Rails app.
+            RUN if test -d app/assets -a -f config/application.rb; then \\
+                bundle exec rake assets:precompile; \\
+                fi
 
             # BUG: Reset entrypoint to override base image.
             ENTRYPOINT []
@@ -215,7 +244,7 @@ class RuntimeTestCase(testutil.TestBase):
                 git pull && \\
                 rbenv install -s 2.3.0 && \\
                 rbenv global 2.3.0 && \\
-                gem install -q --no-rdoc --no-ri bundler --version 1.11
+                gem install -q --no-rdoc --no-ri bundler --version 1.11.2
             ENV RBENV_VERSION 2.3.0
 
             # Copy the application files.
@@ -223,6 +252,80 @@ class RuntimeTestCase(testutil.TestBase):
 
             # Install required gems.
             RUN bundle install --deployment && rbenv rehash
+
+            # Temporary. Will be moved to base image later.
+            ENV RACK_ENV=production \\
+                RAILS_ENV=production \\
+                RAILS_SERVE_STATIC_FILES=true
+
+            # Run asset pipeline if we're in a Rails app.
+            RUN if test -d app/assets -a -f config/application.rb; then \\
+                bundle exec rake assets:precompile; \\
+                fi
+
+            # BUG: Reset entrypoint to override base image.
+            ENTRYPOINT []
+
+            # Start application on port $PORT.
+            CMD bundle exec ruby index.rb $PORT
+            '''))
+
+        dockerignore = self.file_contents('.dockerignore')
+        self.assertIn('.dockerignore\n', dockerignore)
+        self.assertIn('Dockerfile\n', dockerignore)
+        self.assertIn('.git\n', dockerignore)
+        self.assertIn('.hg\n', dockerignore)
+        self.assertIn('.svn\n', dockerignore)
+        cleaner()
+
+    def test_generate_with_ruby_version(self):
+        self.write_file('index.rb', 'class Index; end')
+        self.write_file('Gemfile', 'source "https://rubygems.org"')
+        self.write_file('config.ru', 'run Index.app')
+        self.write_file('.ruby-version', '2.3.1\n')
+        appinfo = testutil.AppInfoFake(
+                entrypoint='bundle exec ruby index.rb $PORT',
+                runtime='ruby',
+                vm=True)
+        cleaner = self.generate_configs(appinfo=appinfo, deploy=True)
+
+        self.assertFalse(os.path.exists(self.full_path('app.yaml')))
+
+        dockerfile = self.file_contents('Dockerfile')
+        self.assertEqual(dockerfile, textwrap.dedent('''\
+            # This Dockerfile for a Ruby application was generated by gcloud.
+
+            # The base Dockerfile installs:
+            # * A number of packages needed by the Ruby runtime and by gems
+            #   commonly used in Ruby web apps (such as libsqlite3)
+            # * A recent version of NodeJS
+            # * A recent version of the standard Ruby runtime to use by default
+            # * The bundler gem
+            FROM gcr.io/google_appengine/ruby
+
+            # Install 2.3.1 if not already preinstalled by the base image
+            RUN cd /rbenv/plugins/ruby-build && \\
+                git pull && \\
+                rbenv install -s 2.3.1 && \\
+                rbenv global 2.3.1 && \\
+                gem install -q --no-rdoc --no-ri bundler --version 1.11.2
+            ENV RBENV_VERSION 2.3.1
+
+            # Copy the application files.
+            COPY . /app/
+
+            # Install required gems.
+            RUN bundle install --deployment && rbenv rehash
+
+            # Temporary. Will be moved to base image later.
+            ENV RACK_ENV=production \\
+                RAILS_ENV=production \\
+                RAILS_SERVE_STATIC_FILES=true
+
+            # Run asset pipeline if we're in a Rails app.
+            RUN if test -d app/assets -a -f config/application.rb; then \\
+                bundle exec rake assets:precompile; \\
+                fi
 
             # BUG: Reset entrypoint to override base image.
             ENTRYPOINT []
@@ -244,8 +347,8 @@ class RuntimeTestCase(testutil.TestBase):
         self.write_file('Gemfile', 'source "https://rubygems.org"')
 
         unstub = self.stub_response('bundle exec ruby index.rb $PORT')
-
         cleaner = self.generate_configs(deploy=True)
+        unstub()
 
         dockerfile = self.file_contents('Dockerfile')
         self.assertEqual(dockerfile, textwrap.dedent('''\
@@ -264,7 +367,7 @@ class RuntimeTestCase(testutil.TestBase):
                 git pull && \\
                 rbenv install -s 2.3.0 && \\
                 rbenv global 2.3.0 && \\
-                gem install -q --no-rdoc --no-ri bundler --version 1.11
+                gem install -q --no-rdoc --no-ri bundler --version 1.11.2
             ENV RBENV_VERSION 2.3.0
 
             # Copy the application files.
@@ -272,6 +375,16 @@ class RuntimeTestCase(testutil.TestBase):
 
             # Install required gems.
             RUN bundle install --deployment && rbenv rehash
+
+            # Temporary. Will be moved to base image later.
+            ENV RACK_ENV=production \\
+                RAILS_ENV=production \\
+                RAILS_SERVE_STATIC_FILES=true
+
+            # Run asset pipeline if we're in a Rails app.
+            RUN if test -d app/assets -a -f config/application.rb; then \\
+                bundle exec rake assets:precompile; \\
+                fi
 
             # BUG: Reset entrypoint to override base image.
             ENTRYPOINT []
@@ -287,7 +400,6 @@ class RuntimeTestCase(testutil.TestBase):
         self.assertIn('.hg\n', dockerignore)
         self.assertIn('.svn\n', dockerignore)
         cleaner()
-        unstub()
 
 if __name__ == '__main__':
       unittest.main()

@@ -18,11 +18,18 @@ from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import list_printer
 
 
 class _BaseWait(object):
   """Base class for sql wait operations."""
+  pass
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Wait(_BaseWait, base.Command):
+  """Waits for one or more operations to complete."""
 
   @staticmethod
   def Args(parser):
@@ -37,11 +44,7 @@ class _BaseWait(object):
         'operation',
         nargs='+',
         help='An identifier that uniquely identifies the operation.')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Wait(_BaseWait, base.Command):
-  """Waits for one or more operations to complete."""
+    flags.INSTANCE_FLAG.AddToParser(parser)
 
   @errors.ReraiseHttpException
   def Run(self, args):
@@ -83,6 +86,20 @@ class Wait(_BaseWait, base.Command):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class WaitBeta(_BaseWait, base.Command):
   """Waits for one or more operations to complete."""
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Args:
+      parser: An argparse parser that you can use it to add arguments that go
+          on the command line after this command. Positional arguments are
+          allowed.
+    """
+    parser.add_argument(
+        'operation',
+        nargs='+',
+        help='An identifier that uniquely identifies the operation.')
 
   @errors.ReraiseHttpException
   def Run(self, args):

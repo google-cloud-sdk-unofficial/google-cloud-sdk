@@ -166,12 +166,3 @@ class Copy(base.Command):
     else:
       log.status.Print('Table [{0}] successfully copied to [{1}]'.format(
           source_reference, destination_resource))
-
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    pass

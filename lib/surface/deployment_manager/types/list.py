@@ -16,6 +16,7 @@
 
 import types
 
+from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -56,8 +57,9 @@ class List(base.Command):
     project = properties.VALUES.core.project.Get(required=True)
 
     request = messages.DeploymentmanagerTypesListRequest(project=project)
-    return list_pager.YieldFromList(client.types, request, field='types',
-                                    batch_size=500)
+    return dm_v2_util.YieldWithHttpExceptions(
+        list_pager.YieldFromList(client.types, request, field='types',
+                                 batch_size=500))
 
   def Display(self, args, result):
     """Display prints information about what just happened to stdout.

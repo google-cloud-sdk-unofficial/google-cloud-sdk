@@ -28,7 +28,7 @@ sys.path.append(os.path.join(
 from gae_ext_runtime import comm
 
 DEFAULT_RUBY_RUNTIME = '2.3.0'
-DEFAULT_BUNDLER_VERSION = '1.11'
+DEFAULT_BUNDLER_VERSION = '1.11.2'
 
 def main(args):
     if len(args) != 2:
@@ -50,25 +50,19 @@ def main(args):
 
     try:
         with open(os.path.join(directory, '.ruby-version')) as f:
-          ruby_version = f.read()
+          ruby_version = f.read().strip()
     except IOError:
         ruby_version = DEFAULT_RUBY_RUNTIME
 
     config = comm.get_config()
     appinfo = config.params.appinfo
-    entrypoint = ''
 
     if appinfo and appinfo.entrypoint:
         entrypoint = appinfo.entrypoint
-
-    if not entrypoint and gemfile and configru:
-        entrypoint = 'bundle exec rackup -p $PORT -E deployment'
-
-    if not entrypoint:
-        prompt = ('This looks like a Ruby application, but we were unable '
-                  'to determine the entrypoint. Please enter the command to '
-                  'run as the entrypoint:')
-        default = 'bundle exec rackup -p $PORT -E deployment'
+    else:
+        default = 'bundle exec rackup -p $PORT'
+        prompt = ('This looks like a Ruby application. Please confirm the '
+                  'command to run as the entrypoint:')
         entrypoint = comm.query_user(prompt, default)
 
     runtime_data = {

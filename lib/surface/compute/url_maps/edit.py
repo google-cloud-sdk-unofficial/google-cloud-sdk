@@ -14,9 +14,20 @@
 """Command for modifying URL maps."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.core import resources
 
 
-class Edit(base_classes.BaseEdit):
+class InvalidResourceError(exceptions.ToolException):
+  # Normally we'd want to subclass core.exceptions.Error, but base_classes.Edit
+  # abuses ToolException to classify errors when displaying messages to users,
+  # and we should continue to fit in that framework for now.
+  pass
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class EditGA(base_classes.BaseEdit):
   """Modify URL maps."""
 
   @staticmethod
@@ -122,7 +133,105 @@ class Edit(base_classes.BaseEdit):
             urlMapResource=replacement))
 
 
-Edit.detailed_help = {
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class EditAlpha(EditGA):
+  """Modify URL maps."""
+
+  @property
+  def example_resource(self):
+    backend_service_uri_prefix = (
+        'https://www.googleapis.com/compute/alpha/projects/'
+        'my-project/global/backendServices/')
+    backend_bucket_uri_prefix = (
+        'https://www.googleapis.com/compute/alpha/projects/'
+        'my-project/global/backendBuckets/')
+    return self.messages.UrlMap(
+        name='site-map',
+        defaultService=backend_service_uri_prefix + 'default-service',
+        hostRules=[
+            self.messages.HostRule(hosts=['*.google.com', 'google.com'],
+                                   pathMatcher='www'),
+            self.messages.HostRule(hosts=['*.youtube.com', 'youtube.com',
+                                          '*-youtube.com'],
+                                   pathMatcher='youtube'),
+        ],
+        pathMatchers=[
+            self.messages.PathMatcher(
+                name='www',
+                defaultService=backend_service_uri_prefix + 'www-default',
+                pathRules=[
+                    self.messages.PathRule(paths=['/search', '/search/*'],
+                                           service=backend_service_uri_prefix +
+                                           'search'),
+                    self.messages.PathRule(
+                        paths=['/search/ads', '/search/ads/*'],
+                        service=backend_service_uri_prefix + 'ads'),
+                    self.messages.PathRule(paths=['/images/*'],
+                                           service=backend_bucket_uri_prefix +
+                                           'images'),
+                ]),
+            self.messages.PathMatcher(
+                name='youtube',
+                defaultService=backend_service_uri_prefix + 'youtube-default',
+                pathRules=[
+                    self.messages.PathRule(paths=['/search', '/search/*'],
+                                           service=backend_service_uri_prefix +
+                                           'youtube-search'),
+                    self.messages.PathRule(
+                        paths=['/watch', '/view', '/preview'],
+                        service=backend_service_uri_prefix + 'youtube-watch'),
+                ]),
+        ],
+        tests=[
+            self.messages.UrlMapTest(host='www.google.com',
+                                     path='/search/ads/inline?q=flowers',
+                                     service=backend_service_uri_prefix +
+                                     'ads'),
+            self.messages.UrlMapTest(host='youtube.com',
+                                     path='/watch/this',
+                                     service=backend_service_uri_prefix +
+                                     'youtube-default'),
+            self.messages.UrlMapTest(host='youtube.com',
+                                     path='/images/logo.png',
+                                     service=backend_bucket_uri_prefix +
+                                     'images'),
+        ],)
+
+  @property
+  def reference_normalizers(self):
+
+    def MakeReferenceNormalizer(field_name, allowed_collections):
+      """Returns a function to normalize resource references."""
+      def NormalizeReference(reference):
+        """Returns normalized URI for field_name."""
+        try:
+          value_ref = self.resources.Parse(reference)
+        except resources.UnknownCollectionException:
+          raise InvalidResourceError(
+              '[{field_name}] must be referenced using URIs.'.format(
+                  field_name=field_name))
+
+        if value_ref.Collection() not in allowed_collections:
+          raise InvalidResourceError(
+              'Invalid [{field_name}] reference: [{value}].'. format(
+                  field_name=field_name, value=reference))
+        return value_ref.SelfLink()
+      return NormalizeReference
+
+    allowed_collections = ['compute.backendServices', 'compute.backendBuckets']
+    return [
+        ('defaultService', MakeReferenceNormalizer(
+            'defaultService', allowed_collections)),
+        ('pathMatchers[].defaultService', MakeReferenceNormalizer(
+            'defaultService', allowed_collections)),
+        ('pathMatchers[].pathRules[].service', MakeReferenceNormalizer(
+            'service', allowed_collections)),
+        ('tests[].service', MakeReferenceNormalizer(
+            'service', allowed_collections)),
+    ]
+
+
+EditGA.detailed_help = {
     'brief': 'Modify URL maps',
     'DESCRIPTION': """\
         *{command}* can be used to modify a URL map. The URL map
@@ -135,3 +244,4 @@ Edit.detailed_help = {
         the ``EDITOR'' environment variable.
         """,
 }
+EditAlpha.detailed_help = EditGA.detailed_help

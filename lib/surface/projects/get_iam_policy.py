@@ -59,7 +59,7 @@ class GetIamPolicy(base.ListCommand):
     return """\
         table[box](
           version,
-          etag.encode(base64),
+          etag,
           bindings:format="table[no-heading](
             role,
             members:format=list

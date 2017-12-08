@@ -143,8 +143,9 @@ class Deploy(base.Command):
     try:
       archive.MakeZipFromDir(zip_file_name, args.source)
     except ValueError as e:
-      raise exceptions.FunctionsError('Error creating a ZIP archive'
-                                      ' with the source code: ' + str(e))
+      raise exceptions.FunctionsError(
+          'Error creating a ZIP archive with the source code '
+          'for directory {0}: {1}'.format(args.source, str(e)))
     return zip_file_name
 
   def _PrepareFunctionWithoutSources(self, name, args):

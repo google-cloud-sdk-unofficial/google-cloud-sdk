@@ -17,23 +17,11 @@
 from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.sql import flags
 
 
 class _BaseGet(object):
   """Base class for sql get operations."""
-
-  @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use it to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
-    parser.add_argument(
-        'operation',
-        help='Name that uniquely identifies the operation.')
 
   def Display(self, unused_args, result):
     """Display prints information about what just happened to stdout.
@@ -49,6 +37,20 @@ class _BaseGet(object):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Get(_BaseGet, base.Command):
   """Retrieves information about a Cloud SQL instance operation."""
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Args:
+      parser: An argparse parser that you can use it to add arguments that go
+          on the command line after this command. Positional arguments are
+          allowed.
+    """
+    parser.add_argument(
+        'operation',
+        help='Name that uniquely identifies the operation.')
+    flags.INSTANCE_FLAG.AddToParser(parser)
 
   @errors.ReraiseHttpException
   def Run(self, args):
@@ -85,6 +87,19 @@ class Get(_BaseGet, base.Command):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class GetBeta(_BaseGet, base.Command):
   """Retrieves information about a Cloud SQL instance operation."""
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Args:
+      parser: An argparse parser that you can use it to add arguments that go
+          on the command line after this command. Positional arguments are
+          allowed.
+    """
+    parser.add_argument(
+        'operation',
+        help='Name that uniquely identifies the operation.')
 
   @errors.ReraiseHttpException
   def Run(self, args):

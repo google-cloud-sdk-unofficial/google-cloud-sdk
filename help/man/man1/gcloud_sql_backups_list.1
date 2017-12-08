@@ -11,7 +11,7 @@ gcloud sql backups list \- lists all backups associated with a given instance
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud sql backups list\fR [\fB\-\-instance\fR\ \fIINSTANCE\fR,\ \fB\-i\fR\ \fIINSTANCE\fR] [\fB\-\-limit\fR\ \fILIMIT\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud sql backups list\fR \fB\-\-instance\fR \fIINSTANCE\fR, \fB\-i\fR \fIINSTANCE\fR [\fB\-\-limit\fR\ \fILIMIT\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -21,13 +21,17 @@ in the reverse chronological order of the enqueued time.
 
 
 
-.SH "FLAGS"
+.SH "REQUIRED FLAGS"
 
 \fB\-\-instance\fR \fIINSTANCE\fR, \fB\-i\fR \fIINSTANCE\fR
 .RS 2m
 Cloud SQL instance ID.
 
+
 .RE
+
+.SH "OPTIONAL FLAGS"
+
 \fB\-\-limit\fR \fILIMIT\fR
 .RS 2m
 Maximum number of backups to list.

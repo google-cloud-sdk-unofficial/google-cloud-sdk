@@ -11,7 +11,7 @@ gcloud compute instances create \- create Google Compute Engine virtual machine 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances create\fR \fINAME\fR [\fINAME\fR\ ...] [\fB\-\-boot\-disk\-auto\-delete\fR] [\fB\-\-boot\-disk\-device\-name\fR\ \fIBOOT_DISK_DEVICE_NAME\fR] [\fB\-\-boot\-disk\-size\fR\ \fIBOOT_DISK_SIZE\fR] [\fB\-\-boot\-disk\-type\fR\ \fIBOOT_DISK_TYPE\fR] [\fB\-\-can\-ip\-forward\fR] [\fB\-\-custom\-cpu\fR\ \fICUSTOM_CPU\fR] [\fB\-\-custom\-memory\fR\ \fICUSTOM_MEMORY\fR] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-disk\fR\ [\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fB\-\-image\fR\ \fIIMAGE\fR\ |\ \fIcentos\-6\fR\ |\ \fIcentos\-7\fR\ |\ \fIcontainer\-vm\fR\ |\ \fIcoreos\fR\ |\ \fIdebian\-7\fR\ |\ \fIdebian\-7\-backports\fR\ |\ \fIdebian\-8\fR\ |\ \fIopensuse\-13\fR\ |\ \fIrhel\-6\fR\ |\ \fIrhel\-7\fR\ |\ \fIsles\-11\fR\ |\ \fIsles\-12\fR\ |\ \fIubuntu\-12\-04\fR\ |\ \fIubuntu\-14\-04\fR\ |\ \fIubuntu\-15\-04\fR\ |\ \fIubuntu\-15\-10\fR\ |\ \fIwindows\-2008\-r2\fR\ |\ \fIwindows\-2012\-r2\fR] [\fB\-\-image\-project\fR\ \fIIMAGE_PROJECT\fR] [\fB\-\-local\-ssd\fR\ [\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fB\-\-machine\-type\fR\ \fIMACHINE_TYPE\fR] [\fB\-\-maintenance\-policy\fR\ \fIMAINTENANCE_POLICY\fR] [\fB\-\-metadata\fR\ \fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-metadata\-from\-file\fR\ \fIKEY\fR=\fILOCAL_FILE_PATH\fR,[\fIKEY\fR=\fILOCAL_FILE_PATH\fR,...]] [\fB\-\-network\fR\ \fINETWORK\fR;\ default="default"\ |\ \fB\-\-subnet\fR\ \fISUBNET\fR] [\fB\-\-address\fR\ \fIADDRESS\fR\ |\ \fB\-\-no\-address\fR] [\fB\-\-preemptible\fR] [\fB\-\-restart\-on\-failure\fR] [\fB\-\-no\-scopes\fR\ |\ \fB\-\-scopes\fR\ [\fIACCOUNT\fR=]\fISCOPE\fR,[[\fIACCOUNT\fR=]\fISCOPE\fR,...]] [\fB\-\-tags\fR\ \fITAG\fR,[\fITAG\fR,...]] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instances create\fR \fINAME\fR [\fINAME\fR\ ...] [\fB\-\-boot\-disk\-auto\-delete\fR] [\fB\-\-boot\-disk\-device\-name\fR\ \fIBOOT_DISK_DEVICE_NAME\fR] [\fB\-\-boot\-disk\-size\fR\ \fIBOOT_DISK_SIZE\fR] [\fB\-\-boot\-disk\-type\fR\ \fIBOOT_DISK_TYPE\fR] [\fB\-\-can\-ip\-forward\fR] [\fB\-\-custom\-cpu\fR\ \fICUSTOM_CPU\fR] [\fB\-\-custom\-memory\fR\ \fICUSTOM_MEMORY\fR] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-disk\fR\ [\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fB\-\-image\fR\ \fIIMAGE\fR\ |\ \fIcentos\-6\fR\ |\ \fIcentos\-7\fR\ |\ \fIcontainer\-vm\fR\ |\ \fIcoreos\fR\ |\ \fIdebian\-7\fR\ |\ \fIdebian\-7\-backports\fR\ |\ \fIdebian\-8\fR\ |\ \fIopensuse\-13\fR\ |\ \fIrhel\-6\fR\ |\ \fIrhel\-7\fR\ |\ \fIsles\-11\fR\ |\ \fIsles\-12\fR\ |\ \fIubuntu\-12\-04\fR\ |\ \fIubuntu\-14\-04\fR\ |\ \fIubuntu\-15\-04\fR\ |\ \fIubuntu\-15\-10\fR\ |\ \fIwindows\-2008\-r2\fR\ |\ \fIwindows\-2012\-r2\fR\ |\ \fB\-\-image\-family\fR\ \fIIMAGE_FAMILY\fR] [\fB\-\-image\-project\fR\ \fIIMAGE_PROJECT\fR] [\fB\-\-local\-ssd\fR\ [\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fB\-\-machine\-type\fR\ \fIMACHINE_TYPE\fR] [\fB\-\-maintenance\-policy\fR\ \fIMAINTENANCE_POLICY\fR] [\fB\-\-metadata\fR\ \fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-metadata\-from\-file\fR\ \fIKEY\fR=\fILOCAL_FILE_PATH\fR,[\fIKEY\fR=\fILOCAL_FILE_PATH\fR,...]] [\fB\-\-network\fR\ \fINETWORK\fR;\ default="default"\ |\ \fB\-\-subnet\fR\ \fISUBNET\fR] [\fB\-\-address\fR\ \fIADDRESS\fR\ |\ \fB\-\-no\-address\fR] [\fB\-\-preemptible\fR] [\fB\-\-private\-network\-ip\fR\ \fIPRIVATE_NETWORK_IP\fR] [\fB\-\-restart\-on\-failure\fR] [\fB\-\-no\-scopes\fR\ |\ \fB\-\-scopes\fR\ [\fIACCOUNT\fR=]\fISCOPE\fR,[[\fIACCOUNT\fR=]\fISCOPE\fR,...]] [\fB\-\-tags\fR\ \fITAG\fR,[\fITAG\fR,...]] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -208,6 +208,13 @@ name and size, respectively.
 By default, \f5\fIdebian\-8\fR\fR is assumed for this flag.
 
 .RE
+\fB\-\-image\-family\fR \fIIMAGE_FAMILY\fR
+.RS 2m
+The family of the image that the boot disk will be initialized with. When a
+family is specified instead of an image, the latest non\-deprecated image
+associated with that family is used.
+
+.RE
 \fB\-\-image\-project\fR \fIIMAGE_PROJECT\fR
 .RS 2m
 The project against which all image references will be resolved. See
@@ -315,6 +322,12 @@ If provided, instances will be preemptible and time\-limited. Instances may be
 preempted to free up resources for standard VM instances, and will only be able
 to run for a limited amount of time. Preemptible instances can not be restarted
 and will not migrate.
+
+.RE
+\fB\-\-private\-network\-ip\fR \fIPRIVATE_NETWORK_IP\fR
+.RS 2m
+Specifies the RFC1918 IP to assign to the instance. The IP should be in the
+subnet or legacy network IP range.
 
 .RE
 \fB\-\-restart\-on\-failure\fR

@@ -112,12 +112,3 @@ class TablesPatch(base.Command):
     except exceptions.HttpError as e:
       raise bigquery.Error.ForHttpError(e)
     log.UpdatedResource(reference)
-
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    pass

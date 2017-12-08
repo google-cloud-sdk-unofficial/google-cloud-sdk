@@ -116,6 +116,31 @@ class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(services_util.GetError(error))
 
+    # Validate the response type to avoid surprise errors below
+    services_util.RaiseIfResultNotTypeOf(
+        result, self.services_messages.Operation)
+
+    service_name = None
+    config_id = None
+    # Fish the serviceName and serviceConfig.id fields from the proto Any
+    # that is returned in result.response
+    for prop in result.response.additionalProperties:
+      if prop.key == 'serviceName':
+        service_name = prop.value.string_value
+      elif prop.key == 'serviceConfig':
+        for item in prop.value.object_value.properties:
+          if item.key == 'id':
+            config_id = item.value.string_value
+            break
+
+    if service_name and config_id:
+      log.status.Print(
+          ('\nService Configuration with version "{0}" uploaded '
+           'for service "{1}"\n').format(config_id, service_name))
+    else:
+      log.error('Failed to retrieve Service Name and '
+                'Service Configuration Version')
+
     # Remove the response portion of the resulting operation since
     # it can be extremely large.
     result.response = None

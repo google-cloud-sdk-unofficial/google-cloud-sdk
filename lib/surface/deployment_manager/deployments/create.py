@@ -19,10 +19,8 @@ from googlecloudsdk.api_lib.deployment_manager import importer
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resource_printer
 from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 # Number of seconds (approximately) to wait for create operation to complete.
@@ -97,6 +95,12 @@ class Create(base.Command):
         default=False,
         action='store_true')
 
+  def Collection(self):
+    return 'deploymentmanager.resources_and_outputs'
+
+  def Format(self, args):
+    return self.ListFormat(args)
+
   def Run(self, args):
     """Run 'deployments create'.
 
@@ -106,7 +110,8 @@ class Create(base.Command):
 
     Returns:
       If --async=true, returns Operation to poll.
-      Else, returns boolean indicating whether create operation succeeded.
+      Else, returns a struct containing the list of resources and list of
+        outputs in the deployment.
 
     Raises:
       HttpException: An http error response was received while executing api
@@ -153,40 +158,6 @@ class Create(base.Command):
                   + str(OPERATION_TIMEOUT) + ' seconds.')
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(dm_v2_util.GetError(error))
-      try:
-        # Fetch a list of the previewed or updated resources.
-        response = client.resources.List(
-            messages.DeploymentmanagerResourcesListRequest(
-                project=project,
-                deployment=args.deployment_name,
-            )
-        )
-        # TODO(user): Pagination
-        return response.resources if response.resources else []
-      except apitools_exceptions.HttpError as error:
-        raise exceptions.HttpException(dm_v2_util.GetError(error))
 
-  def Display(self, unused_args, result):
-    """Display prints information about what just happened to stdout.
-
-    Args:
-      unused_args: The same as the args in Run.
-
-      result: an Operation (may be in progress or completed) to display
-        or a list of Resources, if a synchronous preview or create completed.
-
-    Raises:
-      ValueError: if result is not a list of Resources or an Operation
-    """
-    messages = self.context['deploymentmanager-messages']
-    if isinstance(result, messages.Operation):
-      resource_printer.Print(resources=result,
-                             print_format=unused_args.format or 'yaml',
-                             out=log.out)
-    elif isinstance(result, list) and not result:
-      log.Print('No Deployments were found in your project!')
-    elif isinstance(result, list) and isinstance(result[0], messages.Resource):
-      list_printer.PrintResourceList('deploymentmanagerv2.resources',
-                                     result)
-    else:
-      raise ValueError('result must be an Operation or list of Resources')
+      return dm_v2_util.FetchResourcesAndOutputs(client, messages, project,
+                                                 args.deployment_name)

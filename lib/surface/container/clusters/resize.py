@@ -13,7 +13,6 @@
 # limitations under the License.
 """Resize cluster command."""
 from os import path
-
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
@@ -42,6 +41,7 @@ class Resize(base.Command):
         default=True,
         help='Poll the operation for completion after issuing an resize '
         'request.')
+    parser.add_argument('--node-pool', help='The node pool to resize.')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -50,44 +50,40 @@ class Resize(base.Command):
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
 
-    Returns:
-      Some value that we want to have printed later.
     """
     adapter = self.context['api_adapter']
     cluster_ref = adapter.ParseCluster(args.name)
     cluster = adapter.GetCluster(cluster_ref)
-    if cluster.currentNodeCount == args.size:
-      log.status.Print('Cluster [{cluster_name}] already has a size of '
-                       '{current_size}. Please specify a different size.'
-                       .format(cluster_name=cluster.name,
-                               current_size=cluster.currentNodeCount))
-      return
-
+    pool = adapter.FindNodePool(cluster, args.node_pool)
     console_io.PromptContinue(
-        message=('Cluster [{cluster_name}] will be resized from '
-                 '{current_size} nodes to {new_size} nodes.')
-        .format(cluster_name=cluster.name,
-                current_size=cluster.currentNodeCount,
-                new_size=args.size),
+        message=('Pool [{pool}] for [{cluster_name}] will be resized to '
+                 '{new_size}.').format(pool=pool.name,
+                                       cluster_name=cluster.name,
+                                       new_size=args.size),
         throw_if_unattended=True,
         cancel_on_no=True)
-
-    # TODO(user): Fix this hack when we support multiple instance groups
-    group = path.basename(cluster.instanceGroupUrls[0])
-
-    op_ref = adapter.ResizeCluster(cluster_ref.projectId, cluster.zone, group,
-                                   args.size)
+    ops = []
+    for ig in pool.instanceGroupUrls:
+      group = path.basename(ig)
+      op_ref = adapter.ResizeCluster(cluster_ref.projectId, cluster.zone, group,
+                                     args.size)
+      ops.append(op_ref)
 
     if args.wait:
-      op_ref = adapter.WaitForComputeOperation(
-          cluster_ref.projectId, cluster.zone, op_ref.name,
+      adapter.WaitForComputeOperations(
+          cluster_ref.projectId, cluster.zone, [op.name for op in ops],
           'Resizing {0}'.format(cluster_ref.clusterId))
-    return op_ref
+    log.UpdatedResource(cluster_ref)
+
 
 Resize.detailed_help = {
     'brief': 'Resizes an existing cluster for running containers.',
     'DESCRIPTION': """
-        *{command}* resize an existing cluster to a provided size.
+        Resize an existing cluster to a provided size.
+
+If you have multiple node pools, you must specify which node pool to resize by
+using the --node-pool flag. You are not required to use the flag if you have
+a single node pool.
 
 When increasing the size of a container cluster, the new instances are created
 with the same configuration as the existing instances.

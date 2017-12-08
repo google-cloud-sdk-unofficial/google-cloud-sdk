@@ -16,7 +16,6 @@
 from googlecloudsdk.api_lib.app import logs_util
 from googlecloudsdk.api_lib.logging import common
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
@@ -33,9 +32,10 @@ class Read(base.Command):
     """Register flags for this command."""
     parser.add_argument('--service', '-s', help='Limit to specific service.')
     parser.add_argument('--version', '-v', help='Limit to specific version.')
-    parser.add_argument('--numlines', '-n', required=False, type=int,
+    parser.add_argument('--limit', required=False, type=int,
                         default=200, help='Number of log entries to show.')
     parser.add_argument('--level', required=False, default='any',
+                        choices=LOG_LEVELS,
                         help='Filter entries with severity equal to or higher '
                              'than a given level. Must be one of `{0}`.'
                         .format('|'.join(LOG_LEVELS)))
@@ -68,10 +68,6 @@ class Read(base.Command):
       filters.append('resource.labels.module_id="{0}"'.format(args.service))
     if args.version:
       filters.append('resource.labels.version_id="{0}"'.format(args.version))
-    if args.level:
-      args.level = args.level.lower()
-    if args.level not in LOG_LEVELS:
-      raise calliope_exceptions.UnknownArgumentException('--level', args.level)
     if args.level != 'any':
       filters.append('severity>={0}'.format(args.level.upper()))
 
@@ -84,7 +80,7 @@ class Read(base.Command):
     for entry in common.FetchLogs(log_filter=' AND '.join(filters),
                                   log_ids=sorted(formatters.keys()),
                                   order_by='DESC',
-                                  limit=args.numlines):
+                                  limit=args.limit):
       lines.append(printer.Format(entry))
     for line in reversed(lines):
       log.out.Print(line)
@@ -109,6 +105,6 @@ Read.detailed_help = {
 
         To show only the 10 latest log entries for the default service, run:
 
-          $ {command} -n 10 --service=default
+          $ {command} --limit 10 --service=default
     """,
 }

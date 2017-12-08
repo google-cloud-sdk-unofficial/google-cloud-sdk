@@ -11,7 +11,7 @@ gcloud sql operations list \- lists all instance operations for the given Cloud 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud sql operations list\fR [\fB\-\-instance\fR\ \fIINSTANCE\fR,\ \fB\-i\fR\ \fIINSTANCE\fR] [\fB\-\-limit\fR\ \fILIMIT\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud sql operations list\fR \fB\-\-instance\fR \fIINSTANCE\fR, \fB\-i\fR \fIINSTANCE\fR [\fB\-\-limit\fR\ \fILIMIT\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -20,13 +20,17 @@ Lists all instance operations for the given Cloud SQL instance.
 
 
 
-.SH "FLAGS"
+.SH "REQUIRED FLAGS"
 
 \fB\-\-instance\fR \fIINSTANCE\fR, \fB\-i\fR \fIINSTANCE\fR
 .RS 2m
 Cloud SQL instance ID.
 
+
 .RE
+
+.SH "OPTIONAL FLAGS"
+
 \fB\-\-limit\fR \fILIMIT\fR
 .RS 2m
 Maximum number of operations to list.

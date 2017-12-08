@@ -14,6 +14,7 @@
 
 """operations list command."""
 
+from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
@@ -79,9 +80,9 @@ class List(base.Command):
     request = messages.DeploymentmanagerOperationsListRequest(
         project=project,
     )
-    return list_pager.YieldFromList(
+    return dm_v2_util.YieldWithHttpExceptions(list_pager.YieldFromList(
         client.operations, request, field='operations', limit=args.limit,
-        batch_size=500)
+        batch_size=500))
 
   def Display(self, args, result):
     """Display prints information about what just happened to stdout.

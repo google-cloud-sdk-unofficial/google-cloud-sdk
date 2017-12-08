@@ -21,9 +21,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.third_party.apis.compute.alpha import compute_alpha_messages
-from googlecloudsdk.third_party.apis.compute.beta import compute_beta_messages
-from googlecloudsdk.third_party.apis.compute.v1 import compute_v1_messages
+from googlecloudsdk.core import apis as core_apis
 
 
 def _Args(parser, messages):
@@ -41,7 +39,7 @@ class CreateGA(base_classes.BaseAsyncCreator):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, compute_v1_messages)
+    _Args(parser, core_apis.GetMessagesModule('compute', 'v1'))
 
   @property
   def service(self):
@@ -122,7 +120,8 @@ class CreateAlpha(CreateGA):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, compute_alpha_messages)
+    alpha_messages = core_apis.GetMessagesModule('compute', 'alpha')
+    _Args(parser, alpha_messages)
 
     connection_draining_timeout = parser.add_argument(
         '--connection-draining-timeout',
@@ -165,7 +164,7 @@ class CreateAlpha(CreateGA):
     session_affinity = parser.add_argument(
         '--session-affinity',
         choices=CreateAlpha.AffinityOptions(
-            compute_alpha_messages.BackendService),
+            alpha_messages.BackendService),
         default='none',
         type=lambda x: x.upper(),
         help='The type of session affinity to use.')
@@ -220,7 +219,7 @@ class CreateBeta(CreateGA):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, compute_beta_messages)
+    _Args(parser, core_apis.GetMessagesModule('compute', 'beta'))
 
     enable_cdn = parser.add_argument(
         '--enable-cdn',

@@ -15,10 +15,10 @@
 """The Stop command."""
 
 from googlecloudsdk.api_lib.app import appengine_api_client
-from googlecloudsdk.api_lib.app import appengine_client
-from googlecloudsdk.api_lib.app import util
 from googlecloudsdk.api_lib.app import version_util
+from googlecloudsdk.api_lib.app.api import operations
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
@@ -91,13 +91,13 @@ class Stop(base.Command):
     else:
       log.warn('No matching versions found.')
 
-    client = appengine_client.AppengineClient()
     errors = []
     for version in sorted(versions):
       try:
         with console_io.ProgressTracker('Stopping [{0}]'.format(version)):
-          client.StopService(service=version.service, version=version.id)
-      except util.RPCError as err:
+          api_client.StopVersion(version.service, version.id)
+      except (calliope_exceptions.HttpException, operations.OperationError,
+              operations.OperationTimeoutError) as err:
         errors.append(str(err))
     if errors:
       raise VersionsStopError('\n\n'.join(errors))

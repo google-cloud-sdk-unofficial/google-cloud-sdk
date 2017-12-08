@@ -17,7 +17,7 @@ from googlecloudsdk.api_lib.compute import forwarding_rules_utils as utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.forwarding_rules import flags
-from googlecloudsdk.third_party.apis.compute.v1 import compute_v1_messages
+from googlecloudsdk.core import apis as core_apis
 
 
 def _SupportedProtocols(messages):
@@ -44,16 +44,16 @@ def _Args(parser, include_alpha_targets):
       target pool or target instance. If this flag is omitted, an
       ephemeral IP address is assigned.
       """
-
+  v1_messages = core_apis.GetMessagesModule('compute', 'v1')
   ip_protocol = parser.add_argument(
       '--ip-protocol',
-      choices=_SupportedProtocols(compute_v1_messages),
+      choices=_SupportedProtocols(v1_messages),
       type=lambda x: x.upper(),
       help='The IP protocol that the rule will serve.')
   ip_protocol.detailed_help = """\
       The IP protocol that the rule will serve. If left empty, TCP
       is used. Supported protocols are: {0}.
-      """.format(', '.join(_SupportedProtocols(compute_v1_messages)))
+      """.format(', '.join(_SupportedProtocols(v1_messages)))
 
   parser.add_argument(
       '--description',

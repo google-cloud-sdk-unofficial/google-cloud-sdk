@@ -44,6 +44,7 @@ def _CommonArgs(parser):
   instance_utils.AddScopeArgs(parser)
   instance_utils.AddTagsArgs(parser)
   instance_utils.AddCustomMachineTypeArgs(parser)
+  instance_utils.AddImageArgs(parser)
 
   instance_utils.AddNetworkArgs(parser)
   flags.AddRegionFlag(
@@ -79,7 +80,6 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
-    instance_utils.AddImageArgs(parser)
 
   @property
   def service(self):
@@ -436,4 +436,3 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
-    instance_utils.AddImageArgsBeta(parser)

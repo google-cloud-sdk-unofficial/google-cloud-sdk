@@ -17,8 +17,8 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.core import apis as core_apis
 from googlecloudsdk.core import log
-from googlecloudsdk.third_party.apis.compute.v1 import compute_v1_messages
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
@@ -29,7 +29,7 @@ class AddBackend(base_classes.ReadWriteCommand):
   @staticmethod
   def Args(parser):
     backend_services_utils.AddUpdatableBackendArgs(
-        parser, compute_v1_messages, multizonal=False)
+        parser, core_apis.GetMessagesModule('compute', 'v1'), multizonal=False)
     parser.add_argument(
         'name',
         help='The name of the backend service.')
@@ -111,7 +111,7 @@ class AddBackendAlpha(AddBackend,
   @staticmethod
   def Args(parser):
     backend_services_utils.AddUpdatableBackendArgs(
-        parser, compute_v1_messages, multizonal=True)
+        parser, core_apis.GetMessagesModule('compute', 'v1'), multizonal=True)
     parser.add_argument(
         'name',
         help='The name of the backend service.')

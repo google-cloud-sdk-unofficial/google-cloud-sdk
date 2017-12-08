@@ -27,18 +27,6 @@ class Operations(base.Group):
   instance.
   """
 
-  @staticmethod
-  def Args(parser):
-    parser.add_argument(
-        '--instance',
-        '-i',
-        completion_resource='sql.instances',
-        help='Cloud SQL instance ID.')
-
-  def Filter(self, tool_context, args):
-    if not args.instance:
-      raise exceptions.ToolException('argument --instance/-i is required')
-
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class OperationsBeta(base.Group):

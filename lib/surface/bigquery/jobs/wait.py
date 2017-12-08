@@ -18,12 +18,10 @@
 import itertools
 import sys
 from googlecloudsdk.api_lib.bigquery import bigquery
-from googlecloudsdk.api_lib.bigquery import job_control
 from googlecloudsdk.api_lib.bigquery import job_display
 from googlecloudsdk.api_lib.bigquery import job_progress
 from googlecloudsdk.api_lib.bigquery import message_conversions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from surface import bigquery as commands
@@ -62,6 +60,9 @@ class JobsWait(base.Command):
         'and there is exactly one running job, that job is used. '
         'It is an error if the argument is omitted and there is not exactly '
         'one running job.')
+
+  def Collection(self):
+    return 'bigquery.jobs.wait'
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -157,27 +158,5 @@ class JobsWait(base.Command):
           None,
           [])
     progress_reporter.Done()
-    return job
-
-  def Display(self, args, job):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      job: A Job message.
-
-    Raises:
-      bigquery.BackendError: if job has failed.
-    """
-    info = job_display.DisplayInfo(job)
-    # Print information in the form of a one-row table:
-    list_printer.PrintResourceList('bigquery.jobs.wait', [info])
-    if job_control.IsFailedJob(job):
-      if args.ignore_error:
-        log.err.Print(
-            '\nFAILURE (ignored): {0}'.format(job.status.errorResult.message))
-      else:
-        log.err.Print()
-        raise bigquery.BackendError(
-            job.status.errorResult.message, job.status.errorResult, [],
-            job.jobReference)
+    return job_display.Synthesize(
+        [job], log_errors=True, ignore_errors=args.ignore_error)

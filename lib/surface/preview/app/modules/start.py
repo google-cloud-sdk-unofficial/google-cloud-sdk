@@ -24,7 +24,7 @@ class Start(base.Command):
   """Start serving a specific version of the given modules.
 
   This command is deprecated. Please use
-  `gcloud preview app services set-traffic` instead.
+  `gcloud preview app versions start` instead.
 
   This command starts serving a specific version of the given modules.  It may
   only be used if the scaling module for your module has been set to manual.

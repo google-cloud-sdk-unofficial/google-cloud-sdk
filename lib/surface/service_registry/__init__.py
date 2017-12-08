@@ -54,9 +54,9 @@ class ServiceRegistry(base.Group):
     """
 
     context[constants.CLIENT] = apis.GetClientInstance(
-        'serviceregistry', 'beta')
+        'serviceregistry', 'v1alpha')
     context[constants.MESSAGES] = apis.GetMessagesModule(
-        'serviceregistry', 'beta')
+        'serviceregistry', 'v1alpha')
 
     project = properties.VALUES.core.project
     resolver = resolvers.FromProperty(project)

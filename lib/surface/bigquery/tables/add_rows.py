@@ -148,12 +148,3 @@ class TablesAddRows(base.Command):
       return apitools_client.tabledata.InsertAll(outer_request)
     except exceptions.HttpError as server_error:
       raise bigquery.Error.ForHttpError(server_error)
-
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    pass

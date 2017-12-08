@@ -11,13 +11,16 @@ gcloud container clusters resize \- resizes an existing cluster for running cont
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud container clusters resize\fR \fINAME\fR \fB\-\-size\fR \fISIZE\fR [\fB\-\-wait\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud container clusters resize\fR \fINAME\fR \fB\-\-size\fR \fISIZE\fR [\fB\-\-node\-pool\fR\ \fINODE_POOL\fR] [\fB\-\-wait\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
 
-\fBgcloud container clusters resize\fR resize an existing cluster to a provided
-size.
+Resize an existing cluster to a provided size.
+
+If you have multiple node pools, you must specify which node pool to resize by
+using the \-\-node\-pool flag. You are not required to use the flag if you have
+a single node pool.
 
 When increasing the size of a container cluster, the new instances are created
 with the same configuration as the existing instances. Existing pods are not
@@ -54,6 +57,11 @@ Target number of nodes in the cluster.
 
 .SH "OPTIONAL FLAGS"
 
+\fB\-\-node\-pool\fR \fINODE_POOL\fR
+.RS 2m
+The node pool to resize.
+
+.RE
 \fB\-\-wait\fR
 .RS 2m
 Poll the operation for completion after issuing an resize request. Enabled by

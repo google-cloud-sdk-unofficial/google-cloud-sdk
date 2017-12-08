@@ -58,8 +58,7 @@ class Bigquery(base.Group):
 
     # Inject bigquery backend params.
     bigquery.Bigquery.SetResourceParser(resources.REGISTRY)
-    bigquery.Bigquery.SetApiEndpoint(
-        self.Http(), properties.VALUES.api_endpoint_overrides.bigquery.Get())
+    bigquery.Bigquery.SetApiEndpoint()
 
   @staticmethod
   def Args(parser):

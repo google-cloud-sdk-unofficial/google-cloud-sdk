@@ -524,55 +524,65 @@ class BigqueryClient(object):
     discovery_url = self.api + '/discovery/v1/apis/{api}/{apiVersion}/rest'
     return discovery_url
 
+  def BuildApiClient(self):
+    """Build and return BigQuery Dynamic client from discovery document."""
+    http = self.credentials.authorize(self.GetHttp())
+    bigquery_model = BigqueryModel(
+        trace=self.trace)
+    bigquery_http = BigqueryHttp.Factory(
+        bigquery_model)
+    discovery_document = self.discovery_document
+    if discovery_document == _DEFAULT:
+      # Use the api description packed with this client, if one exists.
+      try:
+        discovery_document = pkgutil.get_data(
+            'bigquery_client', 'discovery/%s.bigquery.%s.rest.json'
+            % (_ToFilename(self.api), self.api_version))
+      except IOError:
+        discovery_document = None
+    if discovery_document is None:
+      try:
+        new_apiclient = discovery.build(
+            'bigquery', self.api_version, http=http,
+            discoveryServiceUrl=self.GetDiscoveryUrl(),
+            model=bigquery_model,
+            requestBuilder=bigquery_http)
+      except (httplib2.HttpLib2Error, apiclient.errors.HttpError), e:
+        # We can't find the specified server. This can be thrown for
+        # multiple reasons, so inspect the error.
+        if hasattr(e, 'content'):
+          raise BigqueryCommunicationError(
+              'Cannot contact server. Please try again.\nError: %r'
+              '\nContent: %s' % (e, e.content))
+        else:
+          raise BigqueryCommunicationError(
+              'Cannot contact server. Please try again.\n'
+              'Traceback: %s' % (traceback.format_exc(),))
+      except IOError, e:
+        raise BigqueryCommunicationError(
+            'Cannot contact server. Please try again.\nError: %r' % (e,))
+      except apiclient.errors.UnknownApiNameOrVersion, e:
+        # We can't resolve the discovery url for the given server.
+        raise BigqueryCommunicationError(
+            'Invalid API name or version: %s' % (str(e),))
+    else:
+      new_apiclient = discovery.build_from_document(
+          discovery_document, http=http,
+          model=bigquery_model,
+          requestBuilder=bigquery_http)
+    return new_apiclient
+
   @property
   def apiclient(self):
     """Return the apiclient attached to self."""
     if self._apiclient is None:
-      http = self.credentials.authorize(self.GetHttp())
-      bigquery_model = BigqueryModel(
-          trace=self.trace)
-      bigquery_http = BigqueryHttp.Factory(
-          bigquery_model)
-      discovery_document = self.discovery_document
-      if discovery_document == _DEFAULT:
-        # Use the api description packed with this client, if one exists.
-        try:
-          discovery_document = pkgutil.get_data(
-              'bigquery_client', 'discovery/%s.bigquery.%s.rest.json'
-              % (_ToFilename(self.api), self.api_version))
-        except IOError:
-          discovery_document = None
-      if discovery_document is None:
-        try:
-          self._apiclient = discovery.build(
-              'bigquery', self.api_version, http=http,
-              discoveryServiceUrl=self.GetDiscoveryUrl(),
-              model=bigquery_model,
-              requestBuilder=bigquery_http)
-        except (httplib2.HttpLib2Error, apiclient.errors.HttpError), e:
-          # We can't find the specified server. This can be thrown for
-          # multiple reasons, so inspect the error.
-          if hasattr(e, 'content'):
-            raise BigqueryCommunicationError(
-                'Cannot contact server. Please try again.\nError: %r'
-                '\nContent: %s' % (e, e.content))
-          else:
-            raise BigqueryCommunicationError(
-                'Cannot contact server. Please try again.\n'
-                'Traceback: %s' % (traceback.format_exc(),))
-        except IOError, e:
-          raise BigqueryCommunicationError(
-              'Cannot contact server. Please try again.\nError: %r' % (e,))
-        except apiclient.errors.UnknownApiNameOrVersion, e:
-          # We can't resolve the discovery url for the given server.
-          raise BigqueryCommunicationError(
-              'Invalid API name or version: %s' % (str(e),))
-      else:
-        self._apiclient = discovery.build_from_document(
-            discovery_document, http=http,
-            model=bigquery_model,
-            requestBuilder=bigquery_http)
+      self._apiclient = self.BuildApiClient()
     return self._apiclient
+
+  def GetInsertApiClient(self):
+    """Return the apiclient that supports insert operation."""
+    insert_client = self.apiclient
+    return insert_client
 
   #################################
   ## Utility methods
@@ -855,7 +865,7 @@ class BigqueryClient(object):
       if insert.insert_id:
         encoded['insertId'] = insert.insert_id
       return encoded
-    op = self.apiclient.tabledata().insertAll(
+    op = self.GetInsertApiClient().tabledata().insertAll(
         body=dict(skipInvalidRows=skip_invalid_rows,
                   ignoreUnknownValues=ignore_unknown_values,
                   templateSuffix=template_suffix,
@@ -1435,8 +1445,7 @@ class BigqueryClient(object):
   def TableExists(self, reference):
     _Typecheck(reference, ApiClientHelper.TableReference, method='TableExists')
     try:
-      self.apiclient.tables().get(**dict(reference)).execute()
-      return True
+      return self.apiclient.tables().get(**dict(reference)).execute()
     except BigqueryNotFoundError:
       return False
 
@@ -1486,10 +1495,17 @@ class BigqueryClient(object):
       if not ignore_existing:
         raise
 
-  def CreateTable(self, reference, ignore_existing=False, schema=None,
-                  description=None, friendly_name=None, expiration=None,
-                  view_query=None, external_data_config=None,
-                  view_udf_resources=None
+  def CreateTable(self,
+                  reference,
+                  ignore_existing=False,
+                  schema=None,
+                  description=None,
+                  friendly_name=None,
+                  expiration=None,
+                  view_query=None,
+                  external_data_config=None,
+                  view_udf_resources=None,
+                  time_partitioning=None
                  ):
     """Create a table corresponding to TableReference.
 
@@ -1507,6 +1523,8 @@ class BigqueryClient(object):
         an external table. For example, a BigQuery table backed by CSV files
         in GCS.
       view_udf_resources: optional UDF resources used in a view.
+      time_partitioning: if set, enables time based partitioning on the table
+        and configures the partitioning.
 
     Raises:
       TypeError: if reference is not a TableReference.
@@ -1532,6 +1550,8 @@ class BigqueryClient(object):
         body['view'] = view_args
       if external_data_config is not None:
         body['externalDataConfiguration'] = external_data_config
+      if time_partitioning is not None:
+        body['timePartitioning'] = time_partitioning
       self.apiclient.tables().insert(
           body=body,
           **dict(reference.GetDatasetReference())).execute()
@@ -1547,7 +1567,8 @@ class BigqueryClient(object):
                   expiration=None,
                   view_query=None,
                   external_data_config=None,
-                  view_udf_resources=None
+                  view_udf_resources=None,
+                  time_partitioning=None
                  ):
     """Updates a table.
 
@@ -1563,6 +1584,8 @@ class BigqueryClient(object):
         an external table. For example, a BigQuery table backed by CSV files
         in GCS.
       view_udf_resources: optional UDF resources used in a view.
+      time_partitioning: if set, enables time based partitioning on the table
+        and configures the partitioning.
 
     Raises:
       TypeError: if reference is not a TableReference.
@@ -1588,6 +1611,8 @@ class BigqueryClient(object):
       body['view'] = view_args
     if external_data_config is not None:
       body['externalDataConfiguration'] = external_data_config
+    if time_partitioning is not None:
+      body['timePartitioning'] = time_partitioning
 
     self.apiclient.tables().patch(body=body, **dict(reference)).execute()
 
@@ -1784,6 +1809,7 @@ class BigqueryClient(object):
                      project_id=None,
                      external_table_definitions_json=None,
                      udf_resources=None,
+                     use_legacy_sql=None,
                      **kwds):
     """Executes the given query using the rpc-style query api.
 
@@ -1805,6 +1831,8 @@ class BigqueryClient(object):
       external_table_definitions_json: Json representation of external table
           definitions.
       udf_resources: Array of inline and external UDF code resources.
+      use_legacy_sql: Whether to use Legacy SQL. If not set, the default value
+          is true.
       **kwds: Extra keyword arguments passed directly to jobs.Query().
 
     Returns:
@@ -1832,6 +1860,7 @@ class BigqueryClient(object):
         use_query_cache=use_cache,
         timeout_ms=timeout_ms,
         max_results=max_results,
+        use_legacy_sql=use_legacy_sql,
         min_completion_ratio=min_completion_ratio)
     _ApplyParameters(request, dry_run=dry_run)
     return self.apiclient.jobs().query(
@@ -2225,6 +2254,7 @@ class BigqueryClient(object):
             external_table_definitions_json=None,
             udf_resources=None,
             maximum_billing_tier=None,
+            use_legacy_sql=None,
             **kwds):
     # pylint: disable=g-doc-args
     """Execute the given query, returning the created job.
@@ -2260,6 +2290,8 @@ class BigqueryClient(object):
         definitions.
       udf_resources: Array of inline and remote UDF resources.
       maximum_billing_tier: Upper limit for billing tier.
+      use_legacy_sql: Whether to use Legacy SQL. If not set, the default value
+          is true.
       **kwds: Passed on to self.ExecuteJob.
 
     Raises:
@@ -2294,6 +2326,7 @@ class BigqueryClient(object):
         use_query_cache=use_cache,
         flatten_results=flatten_results,
         maximum_billing_tier=maximum_billing_tier,
+        use_legacy_sql=use_legacy_sql,
         min_completion_ratio=min_completion_ratio)
     request = {'query': query_config}
     _ApplyParameters(request, dry_run=dry_run)
@@ -2305,6 +2338,7 @@ class BigqueryClient(object):
            quote=None, max_bad_records=None, allow_quoted_newlines=None,
            source_format=None, allow_jagged_rows=None,
            ignore_unknown_values=None, projection_fields=None,
+           autodetect=None,
            **kwds):
     """Load the given data into BigQuery.
 
@@ -2339,6 +2373,8 @@ class BigqueryClient(object):
       projection_fields: Optional. If sourceFormat is set to "DATASTORE_BACKUP",
           indicates which entity properties to load into BigQuery from a Cloud
           Datastore backup.
+      autodetect: Optional. If true, then we automatically infer the schema
+          and options of the source files if they are CSV or JSON formats.
       **kwds: Passed on to self.ExecuteJob.
 
     Returns:
@@ -2363,7 +2399,8 @@ class BigqueryClient(object):
         allow_quoted_newlines=allow_quoted_newlines,
         allow_jagged_rows=allow_jagged_rows,
         ignore_unknown_values=ignore_unknown_values,
-        projection_fields=projection_fields)
+        projection_fields=projection_fields,
+        autodetect=autodetect)
     return self.ExecuteJob(configuration={'load': load_config},
                            upload_file=upload_file, **kwds)
 

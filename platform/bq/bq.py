@@ -73,6 +73,7 @@ ProjectReference = bigquery_client.ApiClientHelper.ProjectReference
 DatasetReference = bigquery_client.ApiClientHelper.DatasetReference
 TableReference = bigquery_client.ApiClientHelper.TableReference
 BigqueryClient = bigquery_client.BigqueryClient
+JobIdGenerator = bigquery_client.JobIdGenerator
 JobIdGeneratorIncrementing = bigquery_client.JobIdGeneratorIncrementing
 JobIdGeneratorRandom = bigquery_client.JobIdGeneratorRandom
 JobIdGeneratorFingerprint = bigquery_client.JobIdGeneratorFingerprint
@@ -952,6 +953,11 @@ class _Load(BigqueryCmd):
         'Property names are case sensitive and must refer to top-level '
         'properties.',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'autodetect', None,
+        'Enable auto detection of schema and options for formats that are not '
+        'self describing like CSV and JSON.',
+        flag_values=fv)
 
   def RunWithArgs(self, destination_table, source, schema=None):
     """Perform a load operation of source into destination_table.
@@ -1015,6 +1021,8 @@ class _Load(BigqueryCmd):
       opts['allow_jagged_rows'] = self.allow_jagged_rows
     if self.ignore_unknown_values is not None:
       opts['ignore_unknown_values'] = self.ignore_unknown_values
+    if self.autodetect is not None:
+      opts['autodetect'] = self.autodetect
     job = client.Load(table_reference, source, schema=schema, **opts)
     if FLAGS.sync:
       _PrintJobMessages(client.FormatJobInfo(job))
@@ -1022,17 +1030,27 @@ class _Load(BigqueryCmd):
       self.PrintJobStartInfo(job)
 
 
-def _CreateExternalTableDefinition(source_format, source_uris, schema):
+def _CreateExternalTableDefinition(
+    source_format, source_uris, schema, autodetect):
   """Create an external table definition with the given URIs and the schema.
 
   Arguments:
     source_format: Format of source data.
       For CSV files, specify 'CSV'.
+      For Google spreadsheet files, specify 'GOOGLE_SHEETS'
       For newline-delimited JSON, specify 'NEWLINE_DELIMITED_JSON'.
       For Cloud Datastore backup, specify 'DATASTORE_BACKUP'
       For Avro files, specify 'AVRO'
     source_uris: Comma separated list of URIs that contain data for this table.
     schema: Either an inline schema or path to a schema file.
+    autodetect: Indicates if format options, compression mode and schema be auto
+      detected from the source data. True - means that autodetect is on,
+      False means that it is off. None means format specific default:
+        - For CSV it means autodetect is OFF
+        - For JSON it means that autodetect is ON.
+      For JSON, defaulting to autodetection is safer because the only option
+      autodetected is compression. If a schema is passed,
+      then the user-supplied schema is used.
 
   Returns:
     A python dictionary that contains a external table definition for the given
@@ -1040,20 +1058,44 @@ def _CreateExternalTableDefinition(source_format, source_uris, schema):
   """
   try:
     supported_formats = ['CSV', 'NEWLINE_DELIMITED_JSON', 'DATASTORE_BACKUP',
-                         'AVRO']
+                         'AVRO', 'GOOGLE_SHEETS']
 
     if source_format not in supported_formats:
       raise app.UsageError(('%s is not a supported format.') % source_format)
     external_table_def = {'sourceFormat': source_format}
 
-    external_table_def['autodetect'] = True
-
     if external_table_def['sourceFormat'] == 'CSV':
-      external_table_def['csvOptions'] = yaml.load("""
-          {
-              "encoding": "UTF-8"
-          }
-      """)
+      if autodetect:
+        external_table_def['autodetect'] = True
+        external_table_def['csvOptions'] = yaml.load("""
+            {
+                "quote": '"',
+                "encoding": "UTF-8"
+            }
+        """)
+      else:
+        external_table_def['csvOptions'] = yaml.load("""
+            {
+                "allowJaggedRows": false,
+                "fieldDelimiter": ",",
+                "allowQuotedNewlines": false,
+                "quote": '"',
+                "skipLeadingRows": 0,
+                "encoding": "UTF-8"
+            }
+        """)
+    elif external_table_def['sourceFormat'] == 'NEWLINE_DELIMITED_JSON':
+      if autodetect is None or autodetect:
+        external_table_def['autodetect'] = True
+    elif external_table_def['sourceFormat'] == 'GOOGLE_SHEETS':
+      if autodetect is None or autodetect:
+        external_table_def['autodetect'] = True
+      else:
+        external_table_def['googleSheetsOptions'] = yaml.load("""
+            {
+                "containsColumnNames": false
+            }
+        """)
 
     if schema:
       fields = BigqueryClient.ReadSchema(schema)
@@ -1071,12 +1113,18 @@ class _MakeExternalTableDefinition(BigqueryCmd):
 
   def __init__(self, name, fv):
     super(_MakeExternalTableDefinition, self).__init__(name, fv)
+    flags.DEFINE_boolean(
+        'autodetect',
+        None, 'Should schema and format options be autodetected.',
+        flag_values=fv)
     flags.DEFINE_enum(
         'source_format',
         'CSV',
-        ['CSV', 'NEWLINE_DELIMITED_JSON', 'DATASTORE_BACKUP', 'AVRO'],
+        ['CSV', 'GOOGLE_SHEETS', 'NEWLINE_DELIMITED_JSON',
+         'DATASTORE_BACKUP', 'AVRO'],
         'Format of source data. Options include:'
         '\n CSV'
+        '\n GOOGLE_SHEETS'
         '\n NEWLINE_DELIMITED_JSON'
         '\n DATASTORE_BACKUP'
         '\n AVRO',
@@ -1116,7 +1164,7 @@ class _MakeExternalTableDefinition(BigqueryCmd):
         text schema.
     """
     json.dump(_CreateExternalTableDefinition(self.source_format, source_uris,
-                                             schema),
+                                             schema, self.autodetect),
               sys.stdout,
               sort_keys=True,
               indent=2)
@@ -1203,6 +1251,11 @@ class _Query(BigqueryCmd):
         'maximum_billing_tier', None,
         'The upper limit of billing tier for the query.',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'use_legacy_sql', None,
+        ('Whether to use Legacy SQL for the query. If not set, the default '
+         'value is true.'),
+        flag_values=fv)
 
   def RunWithArgs(self, *args):
     # pylint: disable=g-doc-exception
@@ -1239,6 +1292,7 @@ class _Query(BigqueryCmd):
     if not query:
       query = sys.stdin.read()
     client = Client.Get()
+    kwds['use_legacy_sql'] = self.use_legacy_sql
     if self.rpc:
       if self.allow_large_results:
         raise app.UsageError(
@@ -1340,8 +1394,10 @@ def _GetExternalDataConfig(file_path_or_simple_spec):
 
     if not uri:
       raise app.UsageError(error_msg)
-
-    return _CreateExternalTableDefinition(source_format, uri, schema)
+    # When using short notation for external table definition
+    # autodetect is always performed.
+    return _CreateExternalTableDefinition(
+        source_format, uri, schema, autodetect=True)
 
 
 class _Extract(BigqueryCmd):
@@ -1402,7 +1458,9 @@ class _Extract(BigqueryCmd):
       self.PrintJobStartInfo(job)
 
 
-class _List(BigqueryCmd):
+
+
+class _List(BigqueryCmd):  # pylint: disable=missing-docstring
   usage = """ls [(-j|-p|-d)] [-a] [-n <number>] [<identifier>]"""
 
   def __init__(self, name, fv):
@@ -1660,6 +1718,40 @@ class _Copy(BigqueryCmd):
       _PrintJobMessages(client.FormatJobInfo(job))
 
 
+def _ParseTimePartitioning(partitioning_type=None,
+                           partitioning_expiration=None):
+  """Parses time partitioning from the arguments.
+
+  Args:
+    partitioning_type: type for the time partitioning. The default value is DAY
+      when other arguments are specified, which generates one partition per day.
+    partitioning_expiration: number of seconds to keep the storage for a
+      partition. A negative value clears this setting.
+
+  Returns:
+    Time partitioning if any of the arguments is not None, otherwise None.
+
+  Raises:
+    UsageError: when failed to parse.
+  """
+
+  time_partitioning = {}
+  key_type = 'type'
+  key_expiration = 'expirationMs'
+  if partitioning_type is not None:
+    time_partitioning[key_type] = partitioning_type
+  if partitioning_expiration is not None:
+    time_partitioning[key_expiration] = partitioning_expiration * 1000
+
+  if time_partitioning:
+    if key_type not in time_partitioning:
+      time_partitioning[key_type] = 'DAY'
+    if (key_expiration in time_partitioning
+        and time_partitioning[key_expiration] < 0):
+      time_partitioning[key_expiration] = None
+    return time_partitioning
+  else:
+    return None
 
 
 class _Make(BigqueryCmd):
@@ -1719,6 +1811,20 @@ class _Make(BigqueryCmd):
         'The URI or local filesystem path of a code file to load and '
         'evaluate immediately as a User-Defined Function resource used '
         'by the view.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'time_partitioning_type',
+        None,
+        'Enables time based partitioning on the table and set the type. The '
+        'only type accepted is DAY, which will generate one partition per day',
+        flag_values=fv)
+    flags.DEFINE_integer(
+        'time_partitioning_expiration',
+        None,
+        'Enables time based partitioning on the table and set the number of '
+        'seconds for which to keep the storage for a partition. The storage '
+        'will have an expiration time of its creation time plus this value. '
+        'A negative number means no expiration.',
         flag_values=fv)
 
   def RunWithArgs(self, identifier='', schema=''):
@@ -1811,15 +1917,19 @@ class _Make(BigqueryCmd):
       view_udf_resources = None
       if self.view_udf_resource:
         view_udf_resources = _ParseUdfResources(self.view_udf_resource)
-      client.CreateTable(reference,
-                         ignore_existing=True,
-                         schema=schema,
-                         description=self.description,
-                         expiration=expiration,
-                         view_query=query_arg,
-                         view_udf_resources=view_udf_resources,
-                         external_data_config=external_data_config # pylint: disable=line-too-long
-                        )
+      time_partitioning = _ParseTimePartitioning(
+          self.time_partitioning_type, self.time_partitioning_expiration)
+      client.CreateTable(
+          reference,
+          ignore_existing=True,
+          schema=schema,
+          description=self.description,
+          expiration=expiration,
+          view_query=query_arg,
+          view_udf_resources=view_udf_resources,
+          external_data_config=external_data_config,
+          time_partitioning=time_partitioning
+      )
       print "%s '%s' successfully created." % (object_name, reference,)
 
 
@@ -1877,6 +1987,20 @@ class _Update(BigqueryCmd):
         'The URI or local filesystem path of a code file to load and '
         'evaluate immediately as a User-Defined Function resource used '
         'by the view.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'time_partitioning_type',
+        None,
+        'Enables time based partitioning on the table and set the type. The '
+        'only type accepted is DAY, which will generate one partition per day',
+        flag_values=fv)
+    flags.DEFINE_integer(
+        'time_partitioning_expiration',
+        None,
+        'Enables time based partitioning on the table and set the number of '
+        'seconds for which to keep the storage for a partition. The storage '
+        'will have an expiration time of its creation time plus this value. '
+        'A negative number means no expiration.',
         flag_values=fv)
 
   def RunWithArgs(self, identifier='', schema=''):
@@ -1962,6 +2086,8 @@ class _Update(BigqueryCmd):
       view_udf_resources = None
       if self.view_udf_resource:
         view_udf_resources = _ParseUdfResources(self.view_udf_resource)
+      time_partitioning = _ParseTimePartitioning(
+          self.time_partitioning_type, self.time_partitioning_expiration)
       client.UpdateTable(
           reference,
           schema=schema,
@@ -1969,7 +2095,8 @@ class _Update(BigqueryCmd):
           expiration=expiration,
           view_query=query_arg,
           view_udf_resources=view_udf_resources,
-          external_data_config=external_data_config
+          external_data_config=external_data_config,
+          time_partitioning=time_partitioning
       )
 
       print "%s '%s' successfully updated." % (object_name, reference,)
@@ -2302,7 +2429,8 @@ class _Insert(BigqueryCmd):
           len(batch) == FLAGS.max_rows_per_request):
         result, errors = Flush()
       if errors: break
-    if batch and errors is None:
+    # Send rest of the batched rows if insertErrors does exist or is empty.
+    if batch and not errors:
       result, errors = Flush()
 
     if FLAGS.format in ['prettyjson', 'json']:

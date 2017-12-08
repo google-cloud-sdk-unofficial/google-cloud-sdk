@@ -18,6 +18,7 @@
 from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import list_printer
 
 
@@ -33,7 +34,7 @@ class _BaseList(object):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    pass
+    flags.INSTANCE_FLAG.AddToParser(parser)
 
   @errors.ReraiseHttpException
   def Run(self, args):

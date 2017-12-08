@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.sql import flags
 
 
 class _BaseDescribe(object):
@@ -53,6 +54,7 @@ class Describe(_BaseDescribe, base.Command):
         'due_time',
         help='The time when this run is due to start in RFC 3339 format, for '
         'example 2012-11-15T16:19:00.094Z.')
+    flags.INSTANCE_FLAG.AddToParser(parser)
 
   @errors.ReraiseHttpException
   def Run(self, args):
@@ -109,6 +111,7 @@ class DescribeBeta(_BaseDescribe, base.Command):
         'id',
         type=arg_parsers.BoundedInt(1, sys.maxint),
         help='The ID of the Backup Run.')
+    flags.INSTANCE_FLAG.AddToParser(parser)
 
   @errors.ReraiseHttpException
   def Run(self, args):

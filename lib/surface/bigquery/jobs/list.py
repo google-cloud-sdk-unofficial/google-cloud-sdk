@@ -18,11 +18,10 @@
 from googlecloudsdk.api_lib.bigquery import bigquery
 from googlecloudsdk.api_lib.bigquery import job_display
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import properties
 
 
-class JobsList(base.Command):
+class JobsList(base.ListCommand):
   """Lists all jobs in a particular project.
 
   By default, jobs in the current project are listed; this can be overridden
@@ -33,22 +32,15 @@ class JobsList(base.Command):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
+    base.LIMIT_FLAG.SetDefault(parser, bigquery.DEFAULT_RESULTS_LIMIT)
     parser.add_argument(
         '--all-users',
         action='store_true',
         help=('Whether to display jobs owned by all users in the project. '
               'Default false (boolean)'))
-    # TODO(user): add back state filter support once b/22224569 is resolved.
-    # parser.add_argument(
-    #    '--state-filter',
-    #    default=['running', 'pending'],
-    #    type=arg_parsers.ArgList(choices=['done', 'running', 'pending'],
-    #                             min_length=1))
-    parser.add_argument(
-        '--limit',
-        type=int,
-        default=bigquery.DEFAULT_RESULTS_LIMIT,
-        help='The maximum number of datasets to list')
+
+  def Collection(self):
+    return 'bigquery.jobs.list'
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -62,19 +54,6 @@ class JobsList(base.Command):
     """
     project = bigquery.Project(
         properties.VALUES.core.project.Get(required=True))
-    return project.GetCurrentRawJobsListGenerator(
+    return job_display.Synthesize(project.GetCurrentRawJobsListGenerator(
         all_users=args.all_users,
-        max_results=args.limit)
-
-  def Display(self, args, jobs):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      jobs: The iterator over JobsValueListEntry messages returned from the
-        Run()
-        method.
-    """
-    list_printer.PrintResourceList(
-        'bigquery.jobs.list',
-        [job_display.DisplayInfo(entry) for entry in jobs])
+        max_results=args.limit or -1))

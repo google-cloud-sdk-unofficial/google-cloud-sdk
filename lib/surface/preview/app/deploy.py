@@ -441,9 +441,10 @@ class Deploy(base.Command):
         appengine_client.AppengineClient(args.server,
                                          args.ignore_bad_certs),
         appengine_api_client.GetApiClient())
+    # pylint: disable=protected-access
     log.debug('API endpoint: [{endpoint}], API version: [{version}]'.format(
         endpoint=clients.api.client.url,
-        version=clients.api.api_version))
+        version=clients.api.client._VERSION))
     cloudbuild_client = apis.GetClientInstance('cloudbuild', 'v1')
     storage_client = apis.GetClientInstance('storage', 'v1')
     promote = properties.VALUES.app.promote_by_default.GetBool()

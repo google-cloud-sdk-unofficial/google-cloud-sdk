@@ -49,7 +49,7 @@ def _AddArgs(parser, multizonal, creation_retries):
         operation_type='resize')
   if creation_retries:
     parser.add_argument('--creation-retries', action='store_true', default=True,
-                        help='When instance creation fails do not retry it.')
+                        help='When instance creation fails retry it.')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

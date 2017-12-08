@@ -63,6 +63,13 @@ class Create(base_classes.BaseAsyncCreator):
         """ + flags.ZONE_PROPERTY_EXPLANATION)
 
     parser.add_argument(
+        '--family',
+        help=('The family of the image. When creating an instance or disk, '
+              'specifying a family will cause the latest non-deprecated image '
+              'in the family to be used.')
+    )
+
+    parser.add_argument(
         'name',
         metavar='NAME',
         help='The name of the image to create.')
@@ -85,11 +92,8 @@ class Create(base_classes.BaseAsyncCreator):
     image = self.messages.Image(
         name=args.name,
         description=args.description,
-        sourceType=self.messages.Image.SourceTypeValueValuesEnum.RAW)
-
-    # TODO(user): consolidate when image family goes GA
-    if hasattr(args, 'family') and hasattr(image, 'family'):
-      image.family = args.family
+        sourceType=self.messages.Image.SourceTypeValueValuesEnum.RAW,
+        family=args.family)
 
     # Validate parameters.
     if args.source_disk_zone and not args.source_disk:
@@ -121,9 +125,6 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     Create.Args(parser)
-    parser.add_argument(
-        '--family',
-        help='The family of the image.')
 
 
 Create.detailed_help = {

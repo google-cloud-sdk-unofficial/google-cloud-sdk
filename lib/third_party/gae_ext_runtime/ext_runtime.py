@@ -130,6 +130,15 @@ class Configurator(object):
     The base class version of this does nothing.
     """
 
+  def Prebuild(self):
+    """Run additional build behavior before the application is deployed.
+
+    This is called after the runtime type has been detected and after any
+    additional data has been collected.
+
+    The base class version of this does nothing.
+    """
+
   def GenerateConfigs(self):
     """Generate all configuration files for the module.
 
@@ -268,6 +277,9 @@ class ExternalRuntimeConfigurator(Configurator):
   def CollectData(self):
     self.runtime.CollectData(self)
 
+  def Prebuild(self):
+    self.runtime.Prebuild(self)
+
   def GenerateConfigs(self):
     self.MaybeWriteAppYaml()
 
@@ -375,8 +387,8 @@ _RUNTIME_SCHEMA = schema.Message(
         ),
     detect=_EXEC_SECTION,
     collect_data=_EXEC_SECTION,
-    pre_build=_EXEC_SECTION,
-    post_build=_EXEC_SECTION)
+    prebuild=_EXEC_SECTION,
+    postbuild=_EXEC_SECTION)
 
 _MISSING_FIELD_ERROR = 'Missing [{0}] field in [{1}] message'
 _NO_DEFAULT_ERROR = ('User input requested: [{0}] while running '
@@ -509,6 +521,12 @@ class ExternalizedRuntime(object):
           logging.error(_NO_DEFAULT_ERROR.format(prompt))
 
       SendResponse({'type': 'query_user_response', 'result': result})
+    elif msg_type == 'set_docker_context':
+      try:
+        result.docker_context = message['path']
+      except KeyError:
+        logging.error(_MISSING_FIELD_ERROR.format('path', msg_type))
+        return
     # TODO(user): implement remaining message types.
     else:
       logging.error('Unknown message type %s' % msg_type)
@@ -634,6 +652,21 @@ class ExternalizedRuntime(object):
                               runtime_data=configurator.data)
       if result.generated_appinfo:
         configurator.SetGeneratedAppInfo(result.generated_appinfo)
+
+  def Prebuild(self, configurator):
+    """Perform any additional build behavior before the application is deployed.
+
+    Args:
+      configurator: (ExternalRuntimeConfiguration) The configurator returned by
+      Detect().
+    """
+    prebuild = self.config.get('prebuild')
+    if prebuild:
+      result = self.RunPlugin('prebuild', prebuild, configurator.params,
+          args=[configurator.path], runtime_data=configurator.data)
+
+      if result.docker_context:
+        configurator.path = result.docker_context
 
   # The legacy runtimes use "Fingerprint" for this function, the externalized
   # runtime code uses "Detect" to mirror the name in runtime.yaml, so alias it.

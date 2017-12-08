@@ -83,6 +83,8 @@ class TestBase(unittest.TestCase):
         if not configurator:
             return None
 
+        configurator.Prebuild()
+
         return configurator.GenerateConfigs()
 
     def full_path(self, *path_components):

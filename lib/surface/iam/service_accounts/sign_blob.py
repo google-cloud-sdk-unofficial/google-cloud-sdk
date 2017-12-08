@@ -69,6 +69,5 @@ class SignBlob(base_classes.BaseIamCommand):
 
     self.WriteFile(args.output, response.signature)
     log.status.Print(
-        'signed blob [{0}] as [{1}] for [{2}]'.format(args.input,
-                                                      args.output,
-                                                      args.iam_account))
+        'signed blob [{0}] as [{1}] for [{2}] using key [{3}]'.format(
+            args.input, args.output, args.iam_account, response.keyId))

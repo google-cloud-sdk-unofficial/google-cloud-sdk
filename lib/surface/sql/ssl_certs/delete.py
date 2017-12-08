@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import log
 
 
@@ -42,6 +43,7 @@ class _BaseDelete(object):
         '--async',
         action='store_true',
         help='Do not wait for the operation to complete.')
+    flags.INSTANCE_FLAG.AddToParser(parser)
 
   def Display(self, unused_args, result):
     self.format(result)

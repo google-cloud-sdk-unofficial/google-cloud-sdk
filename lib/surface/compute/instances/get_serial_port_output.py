@@ -74,9 +74,9 @@ GetSerialPortOutputBase.detailed_help = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base_classes.BaseCommand)
-class GetSerialPortOutputAlpha(GetSerialPortOutputBase,
-                               base_classes.BaseCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class GetSerialPortOutputBeta(GetSerialPortOutputBase,
+                              base_classes.BaseCommand):
   """Read output from a virtual machine instance's serial port."""
 
   @staticmethod
@@ -138,7 +138,7 @@ class GetSerialPortOutputAlpha(GetSerialPortOutputBase,
             self._response.next))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetSerialPortOutput(GetSerialPortOutputBase,
                           base_classes.BaseCommand):
   """Read output from a virtual machine instance's serial port."""

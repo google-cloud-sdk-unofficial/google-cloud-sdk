@@ -17,7 +17,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 class Logpoints(base.Group):
   """Commands for interacting with Cloud Debugger logpoints.
 

@@ -156,4 +156,4 @@ class GetLogs(base.ListCommand):
     if args.show_timestamps:
       fields.append('time_utc')
     fields.append('log')
-    return 'table[box]({0})'.format(','.join(fields))
+    return 'table({0})'.format(','.join(fields))

@@ -21,6 +21,7 @@ in the reverse chronological order of the enqueued time.
 from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import list_printer
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
@@ -43,6 +44,7 @@ class _BaseList(object):
         required=False,
         default=None,
         help='Maximum number of backups to list.')
+    flags.INSTANCE_FLAG.AddToParser(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

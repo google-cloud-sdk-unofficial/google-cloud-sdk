@@ -14,10 +14,8 @@
 
 """Command for getting the latest image from a family."""
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class DescribeFromFamily(base_classes.GlobalDescriber):
   """Describe the latest image from an image family.
 

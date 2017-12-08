@@ -227,15 +227,6 @@ class Import(base.Command):
           jobId=job.jobReference.jobId)
       log.CreatedResource(job_resource)
 
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    pass
-
 
 def _ProcessSources(source_string):
   """Take a source string and return a list of URIs.

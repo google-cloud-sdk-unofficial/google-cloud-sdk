@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
@@ -43,6 +44,7 @@ class _BaseAddCert(object):
         default=None,
         help=('Location of file which the private key of the created ssl-cert'
               ' will be written to.'))
+    flags.INSTANCE_FLAG.AddToParser(parser)
 
   @errors.ReraiseHttpException
   def Run(self, args):

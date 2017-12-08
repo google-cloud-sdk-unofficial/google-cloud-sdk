@@ -18,15 +18,13 @@
 from googlecloudsdk.api_lib.bigquery import bigquery
 from googlecloudsdk.api_lib.bigquery import message_conversions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 from surface import bigquery as commands
 from googlecloudsdk.third_party.apitools.base.py import exceptions
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
 class TablesList(base.Command):
-  """Lists the name of each table or view in a specified dataset.
-  """
+  """Lists the name of each table or view in a specified dataset."""
 
   @staticmethod
   def Args(parser):
@@ -35,6 +33,9 @@ class TablesList(base.Command):
         'dataset_name',
         help='The dataset whose tables and views are to be listed.')
 
+  def Collection(self):
+    return 'bigquery.tables.list'
+
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -42,8 +43,8 @@ class TablesList(base.Command):
       args: an argparse namespeace, All the arguments that were provided to this
         command invocation.
 
-    Returns:
-      An iterator over TableList.TablesValueListEntry messages.
+    Yields:
+      TableList.TablesValueListEntry messages.
     """
     apitools_client = self.context[commands.APITOOLS_CLIENT_KEY]
     bigquery_messages = self.context[commands.BIGQUERY_MESSAGES_MODULE_KEY]
@@ -55,20 +56,12 @@ class TablesList(base.Command):
     request = bigquery_messages.BigqueryTablesListRequest(
         projectId=reference.projectId,
         datasetId=reference.datasetId)
-    return list_pager.YieldFromList(
-        apitools_client.tables,
-        request,
-        batch_size=None,  # Use server default.
-        field='tables')
-
-  def Display(self, args, tables):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      tables: An iterator over TableList.TablesValueListEntry messages.
-    """
     try:
-      list_printer.PrintResourceList('bigquery.tables.list', tables)
+      for resource in list_pager.YieldFromList(
+          apitools_client.tables,
+          request,
+          batch_size=None,  # Use server default.
+          field='tables'):
+        yield resource
     except exceptions.HttpError as server_error:
       raise bigquery.Error.ForHttpError(server_error)

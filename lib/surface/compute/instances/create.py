@@ -73,6 +73,8 @@ def _CommonArgs(parser):
   instance_utils.AddTagsArgs(parser)
   instance_utils.AddCustomMachineTypeArgs(parser)
   instance_utils.AddNetworkArgs(parser)
+  instance_utils.AddPrivateNetworkIpArgs(parser)
+  instance_utils.AddImageArgs(parser)
 
   parser.add_argument(
       '--description',
@@ -179,7 +181,6 @@ class CreateGA(base_classes.BaseAsyncCreator,
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
-    instance_utils.AddImageArgs(parser)
 
   @property
   def service(self):
@@ -354,8 +355,7 @@ class CreateGA(base_classes.BaseAsyncCreator,
       network_interface = self.messages.NetworkInterface(
           network=network_ref.SelfLink())
 
-    # TODO(user): Remove this before GA launch.
-    if getattr(args, 'private_network_ip', None):
+    if args.private_network_ip is not None:
       network_interface.networkIP = args.private_network_ip
 
     if not args.no_address:
@@ -515,8 +515,6 @@ class CreateBeta(CreateGA):
   def Args(parser):
     _CommonArgs(parser)
     csek_utils.AddCsekKeyArgs(parser)
-    instance_utils.AddImageArgsBeta(parser)
-    instance_utils.AddNetworkArgsBeta(parser)
 
 
 CreateBeta.detailed_help = DETAILED_HELP

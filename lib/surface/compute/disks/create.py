@@ -51,7 +51,7 @@ DETAILED_HELP = {
 }
 
 
-def _SourceArgs(parser, image_family=False):
+def _SourceArgs(parser):
   """Add mutually exclusive source args."""
 
   source_group = parser.add_mutually_exclusive_group()
@@ -78,13 +78,12 @@ def _SourceArgs(parser, image_family=False):
 
   image_utils.AddImageProjectFlag(parser)
 
-  if image_family:
-    source_group.add_argument(
-        '--image-family',
-        help=('The family of the image that the boot disk will be initialized '
-              'with. When a family is used instead of an image, the latest '
-              'non-deprecated image associated with that family is used.')
-    )
+  source_group.add_argument(
+      '--image-family',
+      help=('The family of the image that the boot disk will be initialized '
+            'with. When a family is used instead of an image, the latest '
+            'non-deprecated image associated with that family is used.')
+  )
 
   source_snapshot = source_group.add_argument(
       '--source-snapshot',
@@ -139,6 +138,8 @@ def _CommonArgs(parser):
       disk-types list'. The default disk type is pd-standard.
       """
 
+  _SourceArgs(parser)
+
   flags.AddZoneFlag(
       parser,
       resource_type='disks',
@@ -153,7 +154,6 @@ class CreateGA(base_classes.BaseAsyncCreator, image_utils.ImageExpander,
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
-    _SourceArgs(parser)
 
   @property
   def service(self):
@@ -171,8 +171,7 @@ class CreateGA(base_classes.BaseAsyncCreator, image_utils.ImageExpander,
     """Returns a list of requests necessary for adding disks."""
     size_gb = utils.BytesToGb(args.size)
 
-    # TODO(user): remove getattr on image family GA
-    from_image = args.image or getattr(args, 'image_family', None)
+    from_image = args.image or args.image_family
     if not size_gb and not args.source_snapshot and not from_image:
       if args.type and 'pd-ssd' in args.type:
         size_gb = constants.DEFAULT_SSD_DISK_SIZE_GB
@@ -255,7 +254,6 @@ class CreateAlphaBeta(CreateGA):
   def Args(parser):
     _CommonArgs(parser)
     csek_utils.AddCsekKeyArgs(parser)
-    _SourceArgs(parser, image_family=True)
 
 
 CreateGA.detailed_help = DETAILED_HELP
