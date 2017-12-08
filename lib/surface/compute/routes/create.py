@@ -18,7 +18,11 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.command_lib.compute.networks import flags as network_flags
+from googlecloudsdk.command_lib.compute.routes import flags
+from googlecloudsdk.command_lib.compute.vpn_tunnels import flags as vpn_flags
 from googlecloudsdk.core import properties
 
 
@@ -117,32 +121,28 @@ def _Args(parser):
       action=actions.StoreProperty(properties.VALUES.compute.zone))
   next_hop_instance_zone.detailed_help = ("""\
       The zone of the next hop instance.
-      """ + flags.ZONE_PROPERTY_EXPLANATION)
+      """ + compute_flags.ZONE_PROPERTY_EXPLANATION)
 
   next_hop_vpn_tunnel_region = parser.add_argument(
       '--next-hop-vpn-tunnel-region',
       help='The region of the next hop vpn tunnel.')
   next_hop_vpn_tunnel_region.detailed_help = ("""\
      The region of the next hop vpn tunnel.
-     """ + flags.REGION_PROPERTY_EXPLANATION)
-
-  parser.add_argument(
-      'name',
-      help='The name to assign to the route.')
+     """ + compute_flags.REGION_PROPERTY_EXPLANATION)
 
 
 def _CreateRequests(cmd, args):
   """Make API requests for route creation, callable from multiple tracks."""
 
-  network_uri = cmd.CreateGlobalReference(
-      args.network, resource_type='networks').SelfLink()
+  network_uri = cmd.NETWORK_ARG.ResolveAsResource(args,
+                                                  cmd.resources).SelfLink()
 
   if args.next_hop_instance:
-    next_hop_instance_uri = cmd.CreateZonalReference(
-        args.next_hop_instance,
-        args.next_hop_instance_zone,
-        flag_names=['--next-hop-instance-zone'],
-        resource_type='instances').SelfLink()
+    next_hop_instance_uri = cmd.INSTANCE_ARG.ResolveAsResource(
+        args,
+        cmd.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(
+            cmd.compute_client, cmd.project)).SelfLink()
   else:
     if args.next_hop_instance_zone:
       raise exceptions.ToolException(
@@ -165,16 +165,16 @@ def _CreateRequests(cmd, args):
   else:
     next_hop_gateway_uri = None
 
-  route_ref = cmd.CreateGlobalReference(args.name)
+  route_ref = cmd.ROUTE_ARG.ResolveAsResource(args, cmd.resources)
 
   next_hop_vpn_tunnel_uri = None
 
   if args.next_hop_vpn_tunnel:
-    next_hop_vpn_tunnel_uri = cmd.CreateRegionalReference(
-        args.next_hop_vpn_tunnel,
-        args.next_hop_vpn_tunnel_region,
-        flag_names=['--next-hop-vpn-tunnel'],
-        resource_type='vpnTunnels').SelfLink()
+    next_hop_vpn_tunnel_uri = cmd.VPN_TUNNEL_ARG.ResolveAsResource(
+        args,
+        cmd.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(
+            cmd.compute_client, cmd.project)).SelfLink()
   elif args.next_hop_vpn_tunnel_region:
     raise exceptions.ToolException(
         '[--next-hop-vpn-tunnel-region] can only be specified in '
@@ -200,8 +200,18 @@ def _CreateRequests(cmd, args):
 class Create(base_classes.BaseAsyncCreator):
   """Create a new route."""
 
-  @staticmethod
-  def Args(parser):
+  NETWORK_ARG = None
+  INSTANCE_ARG = None
+  VPN_TUNNEL_ARG = None
+  ROUTE_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.NETWORK_ARG = network_flags.NetworkArgumentForRoute(required=False)
+    cls.INSTANCE_ARG = instance_flags.InstanceArgumentForRoute(required=False)
+    cls.VPN_TUNNEL_ARG = vpn_flags.VpnTunnelArgumentForRoute(required=False)
+    cls.ROUTE_ARG = flags.RouteArgument()
+    cls.ROUTE_ARG.AddArgument(parser)
     _Args(parser)
 
   @property

@@ -11,7 +11,7 @@ gcloud app open\-console \- open the App Engine dashboard, or log viewer, in a w
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud app open\-console\fR [\fB\-\-logs\fR,\ \fB\-l\fR] [\fB\-\-service\fR\ \fISERVICE\fR,\ \fB\-s\fR\ \fISERVICE\fR] [\fB\-\-version\fR\ \fIVERSION\fR,\ \fB\-v\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud app open\-console\fR [\fB\-\-logs\fR,\ \fB\-l\fR] [\fB\-\-service\fR=\fISERVICE\fR,\ \fB\-s\fR\ \fISERVICE\fR] [\fB\-\-version\fR=\fIVERSION\fR,\ \fB\-v\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -28,12 +28,12 @@ Open the App Engine dashboard, or log viewer, in a web browser.
 Open the log viewer instead of the App Engine dashboard.
 
 .RE
-\fB\-\-service\fR \fISERVICE\fR, \fB\-s\fR \fISERVICE\fR
+\fB\-\-service\fR=\fISERVICE\fR, \fB\-s\fR \fISERVICE\fR
 .RS 2m
 The service to consider. If not specified, use the default service.
 
 .RE
-\fB\-\-version\fR \fIVERSION\fR, \fB\-v\fR \fIVERSION\fR
+\fB\-\-version\fR=\fIVERSION\fR, \fB\-v\fR \fIVERSION\fR
 .RS 2m
 The version to consider. If not specified, all versions for the given service
 are considered.

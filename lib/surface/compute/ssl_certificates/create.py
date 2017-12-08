@@ -15,6 +15,7 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import file_utils
+from googlecloudsdk.command_lib.compute.ssl_certificates import flags
 
 
 class Create(base_classes.BaseAsyncCreator):
@@ -26,8 +27,13 @@ class Create(base_classes.BaseAsyncCreator):
   stored.
   """
 
-  @staticmethod
-  def Args(parser):
+  SSL_CERTIFICATE_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument()
+    cls.SSL_CERTIFICATE_ARG.AddArgument(parser)
+
     parser.add_argument(
         '--description',
         help='An optional, textual description for the SSL certificate.')
@@ -53,10 +59,6 @@ class Create(base_classes.BaseAsyncCreator):
         format and must use RSA or ECDSA encryption.
         """
 
-    parser.add_argument(
-        'name',
-        help='The name of the SSL certificate.')
-
   @property
   def service(self):
     return self.compute.sslCertificates
@@ -72,8 +74,8 @@ class Create(base_classes.BaseAsyncCreator):
   def CreateRequests(self, args):
     """Returns the request necessary for adding the SSL certificate."""
 
-    ssl_certificate_ref = self.CreateGlobalReference(
-        args.name, resource_type='sslCertificates')
+    ssl_certificate_ref = self.SSL_CERTIFICATE_ARG.ResolveAsResource(
+        args, self.resources)
     certificate = file_utils.ReadFile(args.certificate, 'certificate')
     private_key = file_utils.ReadFile(args.private_key, 'private key')
 

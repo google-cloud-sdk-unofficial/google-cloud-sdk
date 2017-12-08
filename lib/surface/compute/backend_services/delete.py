@@ -22,8 +22,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class Delete(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Delete(base.DeleteCommand):
   """Delete backend services.
 
     *{command}* deletes one or more backend services.
@@ -57,8 +57,8 @@ class Delete(base.Command):
     return resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(Delete):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class DeleteBeta(Delete):
   """Delete backend services.
 
     *{command}* deletes one or more backend services.

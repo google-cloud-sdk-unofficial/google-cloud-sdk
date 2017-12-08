@@ -26,7 +26,7 @@ class BadConfigListInvocation(exceptions.Error):
   """Exception for incorrect invocations of `config list`."""
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """View Cloud SDK properties.
 
   Lists all properties in your active configuration. These include the
@@ -70,6 +70,8 @@ class List(base.Command):
         help='The property to be listed. Note that SECTION/ is optional while '
         'referring to properties in the core section.')
     property_arg.completer = completers.PropertiesCompleter
+    base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
 
   def _GetPropertiesToDisplay(self, args):
     """List available regular properties."""

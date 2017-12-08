@@ -11,7 +11,7 @@ gcloud app deploy \- deploy the local code and/or configuration of your app to A
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud app deploy\fR [\fIDEPLOYABLES\fR\ ...] [\fB\-\-bucket\fR\ \fIBUCKET\fR] [\fB\-\-image\-url\fR\ \fIIMAGE_URL\fR] [\fB\-\-no\-promote\fR] [\fB\-\-no\-stop\-previous\-version\fR] [\fB\-\-version\fR\ \fIVERSION\fR,\ \fB\-v\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud app deploy\fR [\fIDEPLOYABLES\fR\ ...] [\fB\-\-bucket\fR=\fIBUCKET\fR] [\fB\-\-image\-url\fR=\fIIMAGE_URL\fR] [\fB\-\-no\-promote\fR] [\fB\-\-no\-stop\-previous\-version\fR] [\fB\-\-version\fR=\fIVERSION\fR,\ \fB\-v\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -38,14 +38,14 @@ app.yaml) in the current directory.
 
 .SH "FLAGS"
 
-\fB\-\-bucket\fR \fIBUCKET\fR
+\fB\-\-bucket\fR=\fIBUCKET\fR
 .RS 2m
 The Google Cloud Storage bucket used to stage files associated with the
 deployment. If this argument is not specified, the application's default code
 bucket is used.
 
 .RE
-\fB\-\-image\-url\fR \fIIMAGE_URL\fR
+\fB\-\-image\-url\fR=\fIIMAGE_URL\fR
 .RS 2m
 Deploy with a specific Docker image. Docker url must be from one of the valid
 gcr hostnames.
@@ -74,7 +74,7 @@ for this command invocation. Use \fB\-\-no\-stop\-previous\-version\fR to
 disable.
 
 .RE
-\fB\-\-version\fR \fIVERSION\fR, \fB\-v\fR \fIVERSION\fR
+\fB\-\-version\fR=\fIVERSION\fR, \fB\-v\fR \fIVERSION\fR
 .RS 2m
 The version of the app that will be created or replaced by this deployment. If
 you do not specify a version, one will be generated for you.

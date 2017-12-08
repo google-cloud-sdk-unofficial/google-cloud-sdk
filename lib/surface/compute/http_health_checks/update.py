@@ -16,6 +16,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute.http_health_checks import flags
 
 THRESHOLD_UPPER_BOUND = 10
 THRESHOLD_LOWER_BOUND = 1
@@ -26,11 +27,15 @@ CHECK_INTERVAL_LOWER_BOUND_SEC = 1
 
 
 class Update(base_classes.ReadWriteCommand):
-
   """Update an HTTP health check."""
 
-  @staticmethod
-  def Args(parser):
+  HTTP_HEALTH_CHECKS_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.HTTP_HEALTH_CHECKS_ARG = flags.HttpHealthCheckArgument()
+    cls.HTTP_HEALTH_CHECKS_ARG.AddArgument(parser)
+
     host = parser.add_argument(
         '--host',
         help='The value of the host header used by the HTTP health check.')
@@ -104,10 +109,6 @@ class Update(base_classes.ReadWriteCommand):
         help=('A textual description for the HTTP health check. Pass in an '
               'empty string to unset.'))
 
-    parser.add_argument(
-        'name',
-        help='The name of the HTTP health check.')
-
   @property
   def service(self):
     return self.compute.httpHealthChecks
@@ -117,8 +118,8 @@ class Update(base_classes.ReadWriteCommand):
     return 'httpHealthChecks'
 
   def CreateReference(self, args):
-    return self.CreateGlobalReference(
-        args.name, resource_type='httpHealthChecks')
+    return self.HTTP_HEALTH_CHECKS_ARG.ResolveAsResource(
+        args, self.resources)
 
   def GetGetRequest(self, args):
     """Returns a request for fetching the existing HTTP health check."""

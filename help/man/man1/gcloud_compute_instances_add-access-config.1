@@ -11,7 +11,7 @@ gcloud compute instances add\-access\-config \- create a Google Compute Engine v
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances add\-access\-config\fR \fINAME\fR [\fB\-\-access\-config\-name\fR\ \fIACCESS_CONFIG_NAME\fR;\ default="external\-nat"] [\fB\-\-address\fR\ \fIADDRESS\fR] [\fB\-\-network\-interface\fR\ \fINETWORK_INTERFACE\fR;\ default="nic0"] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instances add\-access\-config\fR \fINAME\fR [\fB\-\-access\-config\-name\fR=\fIACCESS_CONFIG_NAME\fR;\ default="external\-nat"] [\fB\-\-address\fR=\fIADDRESS\fR] [\fB\-\-network\-interface\fR=\fINETWORK_INTERFACE\fR;\ default="nic0"] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -33,13 +33,13 @@ The name of the instance.
 
 .SH "FLAGS"
 
-\fB\-\-access\-config\-name\fR \fIACCESS_CONFIG_NAME\fR; default="external\-nat"
+\fB\-\-access\-config\-name\fR=\fIACCESS_CONFIG_NAME\fR; default="external\-nat"
 .RS 2m
 Specifies the name of the new access configuration. \f5\fIexternal\-nat\fR\fR is
 used as the default if this flag is not provided.
 
 .RE
-\fB\-\-address\fR \fIADDRESS\fR
+\fB\-\-address\fR=\fIADDRESS\fR
 .RS 2m
 Specifies the external IP address of the new access configuration. If this is
 not specified, then the service will choose an available ephemeral IP address.
@@ -47,13 +47,13 @@ If an explicit IP address is given, then that IP address must be reserved by the
 project and not be in use by another resource.
 
 .RE
-\fB\-\-network\-interface\fR \fINETWORK_INTERFACE\fR; default="nic0"
+\fB\-\-network\-interface\fR=\fINETWORK_INTERFACE\fR; default="nic0"
 .RS 2m
 Specifies the name of the network interface on which to add the new access
 configuration. If this is not provided, then "nic0" is used as the default.
 
 .RE
-\fB\-\-zone\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
 The zone of the instance to operate on. If not specified, you will be prompted
 to select a zone.

@@ -35,7 +35,6 @@ class Predict(base.Command):
         '--instances',
         required=True,
         type=arg_parsers.BufferedFileInput(),
-        # TODO(user): add example and/or link to online doc.
         help='Path to a local file from which instances are read. '
         'Instances are in text format; newline delimited.')
     instances_flag.detailed_help = """

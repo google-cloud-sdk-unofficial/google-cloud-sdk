@@ -11,7 +11,7 @@ gcloud compute instance\-groups managed set\-autoscaling \- set autoscaling para
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instance\-groups managed set\-autoscaling\fR \fINAME\fR \fB\-\-max\-num\-replicas\fR \fIMAX_NUM_REPLICAS\fR [\fB\-\-cool\-down\-period\fR\ \fICOOL_DOWN_PERIOD\fR] [\fB\-\-custom\-metric\-utilization\fR\ [\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-min\-num\-replicas\fR\ \fIMIN_NUM_REPLICAS\fR] [\fB\-\-scale\-based\-on\-cpu\fR] [\fB\-\-scale\-based\-on\-load\-balancing\fR] [\fB\-\-target\-cpu\-utilization\fR\ \fITARGET_CPU_UTILIZATION\fR] [\fB\-\-target\-load\-balancing\-utilization\fR\ \fITARGET_LOAD_BALANCING_UTILIZATION\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instance\-groups managed set\-autoscaling\fR \fINAME\fR \fB\-\-max\-num\-replicas\fR=\fIMAX_NUM_REPLICAS\fR [\fB\-\-cool\-down\-period\fR=\fICOOL_DOWN_PERIOD\fR] [\fB\-\-custom\-metric\-utilization\fR=[\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-min\-num\-replicas\fR=\fIMIN_NUM_REPLICAS\fR] [\fB\-\-scale\-based\-on\-cpu\fR] [\fB\-\-scale\-based\-on\-load\-balancing\fR] [\fB\-\-target\-cpu\-utilization\fR=\fITARGET_CPU_UTILIZATION\fR] [\fB\-\-target\-load\-balancing\-utilization\fR=\fITARGET_LOAD_BALANCING_UTILIZATION\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -19,6 +19,10 @@ gcloud compute instance\-groups managed set\-autoscaling \- set autoscaling para
 
 \fBgcloud compute instance\-groups managed set\-autoscaling\fR sets autoscaling
 parameters of specified managed instance group.
+
+Autoscalers can use one or more policies listed below. Information on using
+multiple policies can be found here:
+https://cloud.google.com/compute/docs/autoscaler/multiple\-policies
 
 
 
@@ -33,7 +37,7 @@ Managed instance group which autoscaling parameters will be set.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-max\-num\-replicas\fR \fIMAX_NUM_REPLICAS\fR
+\fB\-\-max\-num\-replicas\fR=\fIMAX_NUM_REPLICAS\fR
 .RS 2m
 Maximum number of replicas Autoscaler will set.
 
@@ -42,12 +46,14 @@ Maximum number of replicas Autoscaler will set.
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-cool\-down\-period\fR \fICOOL_DOWN_PERIOD\fR
+\fB\-\-cool\-down\-period\fR=\fICOOL_DOWN_PERIOD\fR
 .RS 2m
-Number of seconds Autoscaler will wait between resizing collection.
+Number of seconds Autoscaler will wait between resizing collection. Note: The
+Autoscaler waits 10 minutes before scaling down, the value entered here is in
+addition to the initial 10 minute period.
 
 .RE
-\fB\-\-custom\-metric\-utilization\fR [\fIPROPERTY\fR=\fIVALUE\fR,...]
+\fB\-\-custom\-metric\-utilization\fR=[\fIPROPERTY\fR=\fIVALUE\fR,...]
 .RS 2m
 Adds a target metric value for the to the Autoscaler.
 
@@ -67,19 +73,19 @@ How target is expressed. Valid values: DELTA_PER_MINUTE, DELTA_PER_SECOND,
 GAUGE.
 .RE
 .RE
-\fB\-\-description\fR \fIDESCRIPTION\fR
+\fB\-\-description\fR=\fIDESCRIPTION\fR
 .RS 2m
 Notes about Autoscaler.
 
 .RE
-\fB\-\-min\-num\-replicas\fR \fIMIN_NUM_REPLICAS\fR
+\fB\-\-min\-num\-replicas\fR=\fIMIN_NUM_REPLICAS\fR
 .RS 2m
 Minimum number of replicas Autoscaler will set.
 
 .RE
 \fB\-\-scale\-based\-on\-cpu\fR
 .RS 2m
-Use autoscaling based on cpu utilization.
+Autoscaler will be based on CPU utilization.
 
 .RE
 \fB\-\-scale\-based\-on\-load\-balancing\fR
@@ -87,18 +93,18 @@ Use autoscaling based on cpu utilization.
 Use autoscaling based on load balancing utilization.
 
 .RE
-\fB\-\-target\-cpu\-utilization\fR \fITARGET_CPU_UTILIZATION\fR
+\fB\-\-target\-cpu\-utilization\fR=\fITARGET_CPU_UTILIZATION\fR
 .RS 2m
-CPU utilization level Autoscaler will aim to maintain (0.0 to 1.0).
+Autoscaler will aim to maintain CPU utilization at target level (0.0 to 1.0).
 
 .RE
-\fB\-\-target\-load\-balancing\-utilization\fR \fITARGET_LOAD_BALANCING_UTILIZATION\fR
+\fB\-\-target\-load\-balancing\-utilization\fR=\fITARGET_LOAD_BALANCING_UTILIZATION\fR
 .RS 2m
-Load balancing utilization level Autoscaler will aim to maintain (greater than
-0.0).
+Autoscaler will aim to maintain the load balancing utilization level (greater
+than 0.0).
 
 .RE
-\fB\-\-zone\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
 The zone of the resources to update. If not specified, you will be prompted to
 select a zone.

@@ -11,7 +11,7 @@ gcloud projects remove\-iam\-policy\-binding \- remove IAM policy binding for a 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud projects remove\-iam\-policy\-binding\fR \fIPROJECT_ID\fR \fB\-\-member\fR \fIMEMBER\fR \fB\-\-role\fR \fIROLE\fR [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud projects remove\-iam\-policy\-binding\fR \fIPROJECT_ID\fR \fB\-\-member\fR=\fIMEMBER\fR \fB\-\-role\fR=\fIROLE\fR [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -33,12 +33,12 @@ ID for the project you want to remove IAM policy binding from.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-member\fR \fIMEMBER\fR
+\fB\-\-member\fR=\fIMEMBER\fR
 .RS 2m
 The member to remove from the binding.
 
 .RE
-\fB\-\-role\fR \fIROLE\fR
+\fB\-\-role\fR=\fIROLE\fR
 .RS 2m
 The role to remove the member from.
 

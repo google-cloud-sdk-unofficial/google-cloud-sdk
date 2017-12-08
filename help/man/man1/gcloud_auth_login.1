@@ -11,7 +11,7 @@ gcloud auth login \- authorize gcloud to access Google Cloud Platform
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud auth login\fR [\fIACCOUNT\fR] [\fB\-\-activate\fR] [\fB\-\-brief\fR] [\fB\-\-enable\-gdrive\-access\fR] [\fB\-\-force\fR] [\fB\-\-no\-launch\-browser\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud auth login\fR [\fIACCOUNT\fR] [\fB\-\-no\-activate\fR] [\fB\-\-brief\fR] [\fB\-\-enable\-gdrive\-access\fR] [\fB\-\-force\fR] [\fB\-\-no\-launch\-browser\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -26,11 +26,6 @@ If valid credentials for an account are already available from a prior
 authorization, the account is set to active without rerunning the flow.
 
 Use \f5gcloud auth list\fR to view credentialed accounts.
-
-Deprecated behavior: This command also saves the credentials for Application
-Default Credentials. This behavior has been taken over by \f5gcloud auth
-application\-default login\fR, so prefer to use that command instead for that
-purpose.
 
 
 

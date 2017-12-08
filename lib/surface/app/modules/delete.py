@@ -22,7 +22,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-class Delete(base.Command):
+class Delete(base.DeleteCommand):
   """Delete a specific version of the given modules.
 
   This command is deprecated. Please use `gcloud app versions delete` instead.

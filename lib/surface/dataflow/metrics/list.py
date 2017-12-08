@@ -64,7 +64,6 @@ class List(base.ListCommand):
     """Register flags for this command."""
     job_utils.ArgsForJobRef(parser)
 
-    base.FLATTEN_FLAG.RemoveFromParser(parser)
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.SORT_BY_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)

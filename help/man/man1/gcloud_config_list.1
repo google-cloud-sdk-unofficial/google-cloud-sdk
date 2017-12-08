@@ -11,7 +11,7 @@ gcloud config list \- view Cloud SDK properties
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud config list\fR [\fISECTION\fR/\fIPROPERTY\fR] [\fB\-\-all\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud config list\fR [\fISECTION\fR/\fIPROPERTY\fR] [\fB\-\-all\fR] [\fB\-\-filter\fR=\fIEXPRESSION\fR] [\fB\-\-limit\fR=\fILIMIT\fR] [\fB\-\-sort\-by\fR=[\fIFIELD\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -39,6 +39,31 @@ properties in the core section.
 \fB\-\-all\fR
 .RS 2m
 List all set and unset properties that match the arguments.
+
+
+.RE
+
+.SH "LIST COMMAND FLAGS"
+
+\fB\-\-filter\fR=\fIEXPRESSION\fR
+.RS 2m
+Apply a Boolean filter \fIEXPRESSION\fR to each resource item to be listed. If
+the expression evaluates True then that item is listed. For more details run $
+gcloud topic filters. If \fB\-\-limit\fR is also specified then it is applied
+after \fB\-\-filter\fR.
+
+.RE
+\fB\-\-limit\fR=\fILIMIT\fR
+.RS 2m
+The maximum number of resources to list. The default is \fBunlimited\fR. If
+\fB\-\-filter\fR is also specified then it is applied before \fB\-\-limit\fR.
+
+.RE
+\fB\-\-sort\-by\fR=[\fIFIELD\fR,...]
+.RS 2m
+A comma\-separated list of resource field key names to sort by. The default
+order is ascending. Prefix a field with ``~'' for descending order on that
+field.
 
 
 .RE
@@ -198,7 +223,8 @@ If True, the Cloud SDK will not automatically check for updates.
 .RS 2m
 The default region to use when working with regional Compute Engine resources.
 When a \f5\-\-region\fR flag is required but not provided, the command will fall
-back to this value, if set.
+back to this value, if set. To see valid choices, run \f5gcloud compute regions
+list\fR.
 
 
 .RE
@@ -206,7 +232,7 @@ back to this value, if set.
 .RS 2m
 The default zone to use when working with zonal Compute Engine resources. When a
 \f5\-\-zone\fR flag is required but not provided, the command will fall back to
-this value, if set.
+this value, if set. To see valid choices, run \f5gcloud compute zones list\fR.
 
 
 .RE

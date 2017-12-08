@@ -11,7 +11,7 @@ gcloud app services set\-traffic \- set traffic splitting settings
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud app services set\-traffic\fR [\fISERVICES\fR\ ...] \fB\-\-splits\fR \fISPLITS\fR,[\fISPLITS\fR,...] [\fB\-\-migrate\fR] [\fB\-\-split\-by\fR\ \fISPLIT_BY\fR;\ default="ip"] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud app services set\-traffic\fR [\fISERVICES\fR\ ...] \fB\-\-splits\fR=\fISPLITS\fR,[\fISPLITS\fR,...] [\fB\-\-migrate\fR] [\fB\-\-split\-by\fR=\fISPLIT_BY\fR;\ default="ip"] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -32,7 +32,7 @@ The services to modify.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-splits\fR \fISPLITS\fR,[\fISPLITS\fR,...]
+\fB\-\-splits\fR=\fISPLITS\fR,[\fISPLITS\fR,...]
 .RS 2m
 Key\-value pairs describing what proportion of traffic should go to each
 version. The split values are added together and used as weights. The exact
@@ -54,7 +54,7 @@ https://cloud.google.com/appengine/docs/python/console/trafficmigration for more
 information.
 
 .RE
-\fB\-\-split\-by\fR \fISPLIT_BY\fR; default="ip"
+\fB\-\-split\-by\fR=\fISPLIT_BY\fR; default="ip"
 .RS 2m
 Whether to split traffic based on cookies or IP addresses. \fISPLIT_BY\fR must
 be one of: \fBcookie\fR, \fBip\fR.

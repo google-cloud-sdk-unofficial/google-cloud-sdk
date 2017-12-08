@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Cloud logging logs group."""
+"""Stackdriver logging metrics group."""
 
 from googlecloudsdk.calliope import base
 
 
 @base.Hidden
 class Metrics(base.Group):
-  """Manages log-based metrics."""
+  """Manages logs-based metrics."""

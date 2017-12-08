@@ -40,14 +40,14 @@ DETAILED_HELP = {
         To create a new node pool "node-pool-1" with the default options in the
         cluster "sample-cluster", run:
 
-          $ {command} node-pool-1 --cluster=sample-cluster
+          $ {command} node-pool-1 --cluster=example-cluster
 
         The new node pool will show up in the cluster after all the nodes have
         been provisioned.
 
         To create a node pool with 5 nodes, run:
 
-          $ {command} node-pool-1 --cluster=sample-cluster --num-nodes=5
+          $ {command} node-pool-1 --cluster=example-cluster --num-nodes=5
         """,
 }
 
@@ -98,9 +98,9 @@ def _Args(parser):
 Specifies scopes for the node instances. The project's default
 service account is used. Examples:
 
-  $ {{command}} example-cluster --scopes https://www.googleapis.com/auth/devstorage.read_only
+  $ {{command}} node-pool-1 --cluster=example-cluster --scopes https://www.googleapis.com/auth/devstorage.read_only
 
-  $ {{command}} example-cluster --scopes bigquery,storage-rw,compute-ro
+  $ {{command}} node-pool-1 --cluster=example-cluster --scopes bigquery,storage-rw,compute-ro
 
 Multiple SCOPEs can specified, separated by commas. The scopes
 necessary for the cluster to function properly (compute-rw, storage-ro),
@@ -132,6 +132,7 @@ class Create(base.CreateCommand):
     _Args(parser)
     flags.AddClusterAutoscalingFlags(parser, suppressed=True)
     flags.AddLocalSSDFlag(parser, suppressed=True)
+    flags.AddNodeLabelsFlag(parser, suppressed=True, for_node_pool=True)
 
   def ParseCreateNodePoolOptions(self, args):
     return api_adapter.CreateNodePoolOptions(
@@ -142,6 +143,7 @@ class Create(base.CreateCommand):
         num_nodes=args.num_nodes,
         local_ssd_count=args.local_ssd_count,
         tags=args.tags,
+        node_labels=args.node_labels,
         enable_autoscaling=args.enable_autoscaling,
         max_nodes=args.max_nodes,
         min_nodes=args.min_nodes,
@@ -199,6 +201,7 @@ class CreateBeta(Create):
     _Args(parser)
     flags.AddClusterAutoscalingFlags(parser, suppressed=True)
     flags.AddLocalSSDFlag(parser)
+    flags.AddNodeLabelsFlag(parser, suppressed=False, for_node_pool=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -210,6 +213,7 @@ class CreateAlpha(Create):
     _Args(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDFlag(parser)
+    flags.AddNodeLabelsFlag(parser, suppressed=False, for_node_pool=True)
 
 
 Create.detailed_help = DETAILED_HELP

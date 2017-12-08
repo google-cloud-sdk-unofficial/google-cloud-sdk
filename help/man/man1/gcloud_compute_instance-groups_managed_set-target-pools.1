@@ -11,7 +11,7 @@ gcloud compute instance\-groups managed set\-target\-pools \- set target pools o
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instance\-groups managed set\-target\-pools\fR \fINAME\fR \fB\-\-target\-pools\fR [\fITARGET_POOL\fR,...] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instance\-groups managed set\-target\-pools\fR \fINAME\fR \fB\-\-target\-pools\fR=[\fITARGET_POOL\fR,...] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -39,7 +39,7 @@ Managed instance group name.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-target\-pools\fR [\fITARGET_POOL\fR,...]
+\fB\-\-target\-pools\fR=[\fITARGET_POOL\fR,...]
 .RS 2m
 Compute Engine Target Pools to add the instances to. Target Pools must be
 specified by name or by URL. Example: \-\-target\-pool
@@ -50,7 +50,7 @@ target\-pool\-1,target\-pool\-2.
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-zone\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
 The zone of the instance group manager to set target pools. If not specified,
 you will be prompted to select a zone.

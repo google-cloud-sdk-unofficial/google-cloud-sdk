@@ -43,8 +43,8 @@ OR
 """,
   }
 
-  @classmethod
-  def Args(cls, parser):
+  @staticmethod
+  def Args(parser):
     """Args is called by calliope to gather arguments for this command.
 
     Args:

@@ -1,0 +1,85 @@
+
+.TH "GCLOUD_AUTH_APPLICATION\-DEFAULT" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud auth application\-default \- manage your active Application Default Credentials
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud auth application\-default\fR \fICOMMAND\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+
+.SH "DESCRIPTION"
+
+Application Default Credentials provide a simple way to get authorization
+credentials for use in calling Google APIs. These commands assist in managing
+the active credentials on your machine that are used for testing purposes during
+local application development.
+
+These credentials are strictly used by Google client libraries in your own
+application. They are not used for any API calls made by the \f5gcloud\fR CLI,
+nor do they have any interaction with the credentials acquired by \f5gcloud auth
+login\fR.
+
+For more information on ADC and how they work, see:
+
+.RS 2m
+https://developers.google.com/identity/protocols/application\-default\-credentials
+.RE
+
+
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "COMMANDS"
+
+\f5\fICOMMAND\fR\fR is one of the following:
+
+\fBlogin\fR
+.RS 2m
+Acquire new user credentials to use for Application Default Credentials.
+
+.RE
+\fBprint\-access\-token\fR
+.RS 2m
+Print an access token for the your current Application Default Credentials.
+
+.RE
+\fBrevoke\fR
+.RS 2m
+Revoke previously generated Application Default Credentials.
+
+
+.RE
+
+.SH "EXAMPLES"
+
+To create a service account and have your application use it for API access,
+run:
+
+.RS 2m
+$ gcloud iam service\-accounts create my\-account
+$ gcloud iam service\-accounts keys create key.json
+  \-\-iam\-account=my\-account@my\-project.iam.gserviceaccount.com
+$ export GOOGLE_APPLICATION_CREDENTIALS=key.json
+$ ./my_applicaiton.sh
+.RE
+
+If you want your local application to temporarily use your own user credentials,
+run:
+
+.RS 2m
+$ gcloud auth application\-default login
+.RE
+
+which will take you through a web flow to acquire new user credentials.

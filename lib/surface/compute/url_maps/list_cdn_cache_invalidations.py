@@ -21,10 +21,8 @@ from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
-from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListCacheInvalidations(base_classes.BaseLister):
   """List Cloud CDN cache invalidations for a URL map."""
 
@@ -79,8 +77,6 @@ which have completed.
           errors,
           error_message='Could not fetch resource:')
     urlmap_id = objects[0].id
-    # Here we use multiple filter expressions, which is a beta feature. Should
-    # be ok, since ListCacheInvalidations is a beta feature.
     filter_expr = ('(operationType eq invalidateCache) (targetId eq '
                    '{urlmap_id})').format(urlmap_id=urlmap_id)
     max_results = args.limit or constants.MAX_RESULTS_PER_PAGE

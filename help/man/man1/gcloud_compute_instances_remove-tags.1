@@ -11,7 +11,7 @@ gcloud compute instances remove\-tags \- remove tags from Google Compute Engine 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances remove\-tags\fR \fINAME\fR [\fB\-\-all\fR\ |\ \fB\-\-tags\fR\ \fITAG\fR,[\fITAG\fR,...]] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instances remove\-tags\fR \fINAME\fR (\fB\-\-all\fR\ |\ \fB\-\-tags\fR=\fITAG\fR,[\fITAG\fR,...]) [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -43,20 +43,26 @@ The name of the instance whose tags should be modified.
 
 .RE
 
-.SH "FLAGS"
+.SH "REQUIRED FLAGS"
+
+Exactly one of these must be specified:
 
 \fB\-\-all\fR
 .RS 2m
 Remove all tags from the instance.
 
 .RE
-\fB\-\-tags\fR \fITAG\fR,[\fITAG\fR,...]
+\fB\-\-tags\fR=\fITAG\fR,[\fITAG\fR,...]
 .RS 2m
 Specifies strings to be removed from the instance tags. Multiple tags can be
 removed by repeating this flag.
 
+
 .RE
-\fB\-\-zone\fR \fIZONE\fR
+
+.SH "OPTIONAL FLAGS"
+
+\fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
 The zone of the instance to set tags on. If not specified, you will be prompted
 to select a zone.

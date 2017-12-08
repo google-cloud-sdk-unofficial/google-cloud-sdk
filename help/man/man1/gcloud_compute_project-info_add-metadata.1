@@ -11,7 +11,7 @@ gcloud compute project\-info add\-metadata \- add or update project\-wide metada
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute project\-info add\-metadata\fR [\fB\-\-metadata\fR\ \fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-metadata\-from\-file\fR\ \fIKEY\fR=\fILOCAL_FILE_PATH\fR,[\fIKEY\fR=\fILOCAL_FILE_PATH\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute project\-info add\-metadata\fR [\fB\-\-metadata\fR=\fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-metadata\-from\-file\fR=\fIKEY\fR=\fILOCAL_FILE_PATH\fR,[\fIKEY\fR=\fILOCAL_FILE_PATH\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -31,7 +31,7 @@ remain unaffected.
 
 .SH "FLAGS"
 
-\fB\-\-metadata\fR \fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]
+\fB\-\-metadata\fR=\fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]
 .RS 2m
 Metadata to be made available to the guest operating system running on the
 instances. Each metadata entry is a key/value pair separated by an equals sign.
@@ -61,7 +61,7 @@ from a publicly\-accessible location on the web.
 .RE
 At least one of [\-\-metadata] or [\-\-metadata\-from\-file] is required.
 
-\fB\-\-metadata\-from\-file\fR \fIKEY\fR=\fILOCAL_FILE_PATH\fR,[\fIKEY\fR=\fILOCAL_FILE_PATH\fR,...]
+\fB\-\-metadata\-from\-file\fR=\fIKEY\fR=\fILOCAL_FILE_PATH\fR,[\fIKEY\fR=\fILOCAL_FILE_PATH\fR,...]
 .RS 2m
 Same as \f5\fI\-\-metadata\fR\fR except that the value for the entry will be
 read from a local file. This is useful for values that are too large such as

@@ -11,7 +11,7 @@ gcloud sql instances restore\-backup \- restores a backup of a Cloud SQL instanc
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud sql instances restore\-backup\fR \fIINSTANCE\fR \fB\-\-due\-time\fR \fIDUE_TIME\fR, \fB\-d\fR \fIDUE_TIME\fR [\fB\-\-async\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud sql instances restore\-backup\fR \fIINSTANCE\fR \fB\-\-due\-time\fR=\fIDUE_TIME\fR, \fB\-d\fR \fIDUE_TIME\fR [\fB\-\-async\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -32,7 +32,7 @@ Cloud SQL instance ID.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-due\-time\fR \fIDUE_TIME\fR, \fB\-d\fR \fIDUE_TIME\fR
+\fB\-\-due\-time\fR=\fIDUE_TIME\fR, \fB\-d\fR \fIDUE_TIME\fR
 .RS 2m
 The time when this run was due to start in RFC 3339 format, for example
 2012\-11\-15T16:19:00.094Z.

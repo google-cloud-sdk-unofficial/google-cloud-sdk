@@ -88,13 +88,9 @@ Read.detailed_help = {
         order of decreasing timestamps, most-recent entries first.  If the log
         entries come from multiple logs, then entries from different logs
         might be intermingled in the results.
-
-        Log entries are retained in Cloud Logging for 30 days, so the only log
-        entires available to be read are those written within the last 30
-        days.
     """,
     'EXAMPLES': """\
-        To read log entries from Google Cloud Compute, run:
+        To read log entries from Google Compute Engine instances, run:
 
           $ {command} "resource.type=gce_instance"
 
@@ -104,7 +100,7 @@ Read.detailed_help = {
 
         To read log entries written in a specific time window, run:
 
-          $ {command} "timestamp<='2015-05-31T23:59:59Z' AND timestamp>='2015-05-31T00:00:00Z'"
+          $ {command} 'timestamp<="2015-05-31T23:59:59Z" AND timestamp>="2015-05-31T00:00:00Z"'
 
         Detailed information about filters can be found at:
         [](https://cloud.google.com/logging/docs/view/advanced_filters)

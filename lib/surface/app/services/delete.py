@@ -21,7 +21,7 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import text
 
 
-class Delete(base.Command):
+class Delete(base.DeleteCommand):
   """Delete services in the current project."""
 
   detailed_help = {

@@ -134,7 +134,7 @@ Create.detailed_help = {
         An empty filter will match all logs.
         The sink's destination can be a Cloud Storage bucket,
         a BigQuery dataset, or a Cloud Pub/Sub topic.
-        The destination must already exist and Cloud Logging must have
+        The destination must already exist and Stackdriver Logging must have
         permission to write to it.
         Log entries are exported as soon as the sink is created.
     """,
@@ -149,7 +149,7 @@ Create.detailed_help = {
 
         To export Google App Engine logs with ERROR severity, run:
 
-          $ {command} my-error-logs bigquery.googleapis.com/project/my-project/dataset/my_dataset --log-filter='metadata.serviceName="appengine.googleapis.com" AND metadata.severity=ERROR'
+          $ {command} my-error-logs bigquery.googleapis.com/projects/my-project/datasets/my_dataset --log-filter='metadata.serviceName="appengine.googleapis.com" AND metadata.severity=ERROR'
 
         Detailed information about filters can be found at:
         [](https://cloud.google.com/logging/docs/view/advanced_filters)

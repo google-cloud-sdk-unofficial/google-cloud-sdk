@@ -26,7 +26,7 @@ class Write(base.SilentCommand):
   SEVERITY_ENUM = ('DEFAULT', 'DEBUG', 'INFO', 'NOTICE', 'WARNING',
                    'ERROR', 'CRITICAL', 'ALERT', 'EMERGENCY')
 
-  PAYLOAD_TYPE = ('text', 'struct')
+  PAYLOAD_TYPE = ('text', 'json', 'struct')
 
   @staticmethod
   def Args(parser):
@@ -36,11 +36,12 @@ class Write(base.SilentCommand):
                           'be written.'))
     parser.add_argument(
         'message', help=('The message to put in the log entry. It can be '
-                         'JSON if you include --payload-type=struct.'))
+                         'JSON if you include --payload-type=json.'))
     parser.add_argument(
         '--payload-type',
         choices=Write.PAYLOAD_TYPE, default='text',
-        help='Type of the log entry message.')
+        help=('Type of the log entry payload. Note that "json" and "struct" '
+              'are equivalent.'))
     parser.add_argument(
         '--severity', required=False,
         choices=Write.SEVERITY_ENUM, default='DEFAULT',
@@ -66,7 +67,7 @@ class Write(base.SilentCommand):
         resource=messages.MonitoredResource(type='global'),
         severity=severity_value)
 
-    if args.payload_type == 'struct':
+    if args.payload_type == 'json' or args.payload_type == 'struct':
       json_object = util.ConvertToJsonObject(args.message)
       struct = messages.LogEntry.JsonPayloadValue()
       # Protobufs in Python do strict type-checking. We have to change the
@@ -92,11 +93,12 @@ Write.detailed_help = {
         {index}
         If the destination log does not exist, it will be created.
         All log entries written with this command are considered to be from
-        the "custom.googleapis.com" service.
-        The log entries will be listed in the Logs Viewer under that service.
+        the "custom.googleapis.com" v1 service or the "global" v2 resource type.
+        The log entries will be listed in the Logs Viewer under that service or
+        resource type.
 
         {command} should be used for simple testing purposes.
-        Check Cloud Logging agent for a proper way to send log entries:
+        Check Stackdriver Logging agent for a proper way to send log entries:
         [](https://cloud.google.com/logging/docs/agent/)
     """,
     'EXAMPLES': """\
@@ -110,6 +112,6 @@ Write.detailed_help = {
 
         To create a structured log, run:
 
-          $ {command} LOG_NAME '{"key": "value"}' --payload-type=struct
+          $ {command} LOG_NAME '{"key": "value"}' --payload-type=json
     """,
 }

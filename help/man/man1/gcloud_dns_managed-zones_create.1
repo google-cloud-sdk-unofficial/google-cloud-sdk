@@ -11,7 +11,7 @@ gcloud dns managed\-zones create \- create a Cloud DNS managed\-zone
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud dns managed\-zones create\fR \fIZONE_NAME\fR \fB\-\-description\fR \fIDESCRIPTION\fR \fB\-\-dns\-name\fR \fIDNS_NAME\fR [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud dns managed\-zones create\fR \fIZONE_NAME\fR \fB\-\-description\fR=\fIDESCRIPTION\fR \fB\-\-dns\-name\fR=\fIDNS_NAME\fR [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -32,12 +32,12 @@ Name of the managed\-zone to be created.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-description\fR \fIDESCRIPTION\fR
+\fB\-\-description\fR=\fIDESCRIPTION\fR
 .RS 2m
 Short description for the managed\-zone.
 
 .RE
-\fB\-\-dns\-name\fR \fIDNS_NAME\fR
+\fB\-\-dns\-name\fR=\fIDNS_NAME\fR
 .RS 2m
 The DNS name suffix that will be managed with the created zone.
 

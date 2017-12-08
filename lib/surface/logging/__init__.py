@@ -25,7 +25,7 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Logging(base.Group):
-  """Manage Google Cloud Logging."""
+  """Manage Stackdriver Logging."""
 
   def Filter(self, context, args):
     """Modify the context that will be given to this group's commands when run.

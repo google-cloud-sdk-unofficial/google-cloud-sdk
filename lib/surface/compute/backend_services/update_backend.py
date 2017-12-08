@@ -164,7 +164,7 @@ class UpdateBackendBeta(UpdateBackend):
 
   @classmethod
   def Args(cls, parser):
-    flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     backend_flags.AddDescription(parser)
     backend_flags.AddInstanceGroup(
         parser, operation_type='update', multizonal=True,

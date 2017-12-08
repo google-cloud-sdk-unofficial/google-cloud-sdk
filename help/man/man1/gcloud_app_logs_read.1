@@ -11,7 +11,7 @@ gcloud app logs read \- reads log entries for the current App Engine app
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud app logs read\fR [\fB\-\-level\fR\ \fILEVEL\fR;\ default="any"] [\fB\-\-limit\fR\ \fILIMIT\fR;\ default="200"] [\fB\-\-logs\fR\ \fIAPP_LOG\fR,[\fIAPP_LOG\fR,...];\ default="stderr,stdout,crash.log"] [\fB\-\-service\fR\ \fISERVICE\fR,\ \fB\-s\fR\ \fISERVICE\fR] [\fB\-\-version\fR\ \fIVERSION\fR,\ \fB\-v\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud app logs read\fR [\fB\-\-level\fR=\fILEVEL\fR;\ default="any"] [\fB\-\-limit\fR=\fILIMIT\fR;\ default="200"] [\fB\-\-logs\fR=\fIAPP_LOG\fR,[\fIAPP_LOG\fR,...];\ default="stderr,stdout,crash.log"] [\fB\-\-service\fR=\fISERVICE\fR,\ \fB\-s\fR\ \fISERVICE\fR] [\fB\-\-version\fR=\fIVERSION\fR,\ \fB\-v\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -24,30 +24,30 @@ Google App Engine app in a human readable format.
 
 .SH "FLAGS"
 
-\fB\-\-level\fR \fILEVEL\fR; default="any"
+\fB\-\-level\fR=\fILEVEL\fR; default="any"
 .RS 2m
 Filter entries with severity equal to or higher than a given level. \fILEVEL\fR
 must be one of: \fBcritical\fR, \fBerror\fR, \fBwarning\fR, \fBinfo\fR,
 \fBdebug\fR, \fBany\fR.
 
 .RE
-\fB\-\-limit\fR \fILIMIT\fR; default="200"
+\fB\-\-limit\fR=\fILIMIT\fR; default="200"
 .RS 2m
 Number of log entries to show.
 
 .RE
-\fB\-\-logs\fR \fIAPP_LOG\fR,[\fIAPP_LOG\fR,...]; default="stderr,stdout,crash.log"
+\fB\-\-logs\fR=\fIAPP_LOG\fR,[\fIAPP_LOG\fR,...]; default="stderr,stdout,crash.log"
 .RS 2m
 Filter entries from a particular set of logs. Must be a comma\-separated list of
 log names (request_log, stdout, stderr, etc).
 
 .RE
-\fB\-\-service\fR \fISERVICE\fR, \fB\-s\fR \fISERVICE\fR
+\fB\-\-service\fR=\fISERVICE\fR, \fB\-s\fR \fISERVICE\fR
 .RS 2m
 Limit to specific service.
 
 .RE
-\fB\-\-version\fR \fIVERSION\fR, \fB\-v\fR \fIVERSION\fR
+\fB\-\-version\fR=\fIVERSION\fR, \fB\-v\fR \fIVERSION\fR
 .RS 2m
 Limit to specific version.
 

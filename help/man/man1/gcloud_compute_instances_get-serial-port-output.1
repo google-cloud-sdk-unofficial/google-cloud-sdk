@@ -11,7 +11,7 @@ gcloud compute instances get\-serial\-port\-output \- read output from a virtual
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances get\-serial\-port\-output\fR \fINAME\fR [\fB\-\-port\fR\ \fIPORT\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instances get\-serial\-port\-output\fR \fINAME\fR [\fB\-\-port\fR=\fIPORT\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -35,14 +35,14 @@ The name of the instance.
 
 .SH "FLAGS"
 
-\fB\-\-port\fR \fIPORT\fR
+\fB\-\-port\fR=\fIPORT\fR
 .RS 2m
 Instances can support up to four serial port outputs, numbered 1 through 4. By
 default, this command will return the output of the first serial port. Setting
 this flag will return the output of the requested serial port.
 
 .RE
-\fB\-\-zone\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
 The zone of the instance to operate on. If not specified, you will be prompted
 to select a zone.

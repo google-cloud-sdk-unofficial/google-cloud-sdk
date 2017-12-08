@@ -15,36 +15,32 @@
 """Command for creating subnetworks."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.networks import flags as network_flags
+from googlecloudsdk.command_lib.compute.networks.subnets import flags
 
 
 class Create(base_classes.BaseAsyncCreator):
   """Define a subnet for a network in custom subnet mode."""
 
-  @staticmethod
-  def Args(parser):
+  NETWORK_ARG = None
+  SUBNETWORK_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.SUBNETWORK_ARG = flags.SubnetworkArgument()
+    cls.NETWORK_ARG = network_flags.NetworkArgumentForSubnetwork()
+    cls.SUBNETWORK_ARG.AddArgument(parser)
+    cls.NETWORK_ARG.AddArgument(parser)
+
     parser.add_argument(
         '--description',
         help='An optional description of this subnetwork.')
 
     parser.add_argument(
-        '--network',
-        required=True,
-        help='The network to which the subnetwork belongs.')
-
-    parser.add_argument(
         '--range',
         required=True,
         help='The IP space allocated to this subnetwork in CIDR format.')
-
-    flags.AddRegionFlag(
-        parser,
-        resource_type='subnetwork',
-        operation_type='create')
-
-    parser.add_argument(
-        'name',
-        help='The name of the subnetwork.')
 
   @property
   def service(self):
@@ -61,9 +57,12 @@ class Create(base_classes.BaseAsyncCreator):
   def CreateRequests(self, args):
     """Returns a list of requests necessary for adding a subnetwork."""
 
-    network_ref = self.CreateGlobalReference(
-        args.network, resource_type='networks')
-    subnet_ref = self.CreateRegionalReference(args.name, args.region)
+    network_ref = self.NETWORK_ARG.ResolveAsResource(args, self.resources)
+    subnet_ref = self.SUBNETWORK_ARG.ResolveAsResource(
+        args,
+        self.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
+                                                         self.project))
 
     request = self.messages.ComputeSubnetworksInsertRequest(
         subnetwork=self.messages.Subnetwork(

@@ -11,7 +11,7 @@ gcloud docker \- provides the docker CLI access to the Google Container Registry
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud docker\fR [\fIEXTRA_ARGS\fR\ ...] [\fB\-\-authorize\-only\fR,\ \fB\-a\fR] [\fB\-\-docker\-host\fR\ \fIDOCKER_HOST\fR] [\fB\-\-server\fR\ \fISERVER\fR,[\fISERVER\fR,...],\ \fB\-s\fR\ \fISERVER\fR,[\fISERVER\fR,...];\ default="gcr.io,us.gcr.io,eu.gcr.io,asia.gcr.io,b.gcr.io,bucket.gcr.io,appengine.gcr.io,gcr.kubernetes.io"] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud docker\fR [\fB\-\-authorize\-only\fR,\ \fB\-a\fR] [\fB\-\-docker\-host\fR=\fIDOCKER_HOST\fR] [\fB\-\-server\fR=\fISERVER\fR,[\fISERVER\fR,...],\ \fB\-s\fR\ \fISERVER\fR,[\fISERVER\fR,...];\ default="gcr.io,us.gcr.io,eu.gcr.io,asia.gcr.io,b.gcr.io,bucket.gcr.io,appengine.gcr.io,gcr.kubernetes.io"] [\fIGLOBAL\-FLAG\ ...\fR] [\-\-\ \fIIMPLEMENTATION\-ARGS\fR\ ...]
 
 
 
@@ -29,9 +29,14 @@ For more information please visit https://gcr.io/
 
 .SH "POSITIONAL ARGUMENTS"
 
-[\fIEXTRA_ARGS\fR ...]
+[\-\- \fIIMPLEMENTATION\-ARGS\fR ...]
 .RS 2m
 Arguments to pass to docker.
+
+The '\-\-' argument must be specified between gcloud specific args on the left
+and IMPLEMENTATION\-ARGS on the right. IMPORTANT: previously, commands allowed
+the omission of the \-\-, and unparsed arguments were treated as implementation
+args. This usage is being deprecated and will be removed in March 2017.
 
 
 .RE
@@ -43,13 +48,13 @@ Arguments to pass to docker.
 Configure docker authorization only, do not launch the docker command\-line.
 
 .RE
-\fB\-\-docker\-host\fR \fIDOCKER_HOST\fR
+\fB\-\-docker\-host\fR=\fIDOCKER_HOST\fR
 .RS 2m
 The URL to connect to Docker Daemon. Format: tcp://host:port or
 unix:///path/to/socket.
 
 .RE
-\fB\-\-server\fR \fISERVER\fR,[\fISERVER\fR,...], \fB\-s\fR \fISERVER\fR,[\fISERVER\fR,...]; default="gcr.io,us.gcr.io,eu.gcr.io,asia.gcr.io,b.gcr.io,bucket.gcr.io,appengine.gcr.io,gcr.kubernetes.io"
+\fB\-\-server\fR=\fISERVER\fR,[\fISERVER\fR,...], \fB\-s\fR \fISERVER\fR,[\fISERVER\fR,...]; default="gcr.io,us.gcr.io,eu.gcr.io,asia.gcr.io,b.gcr.io,bucket.gcr.io,appengine.gcr.io,gcr.kubernetes.io"
 .RS 2m
 The address of the Google Cloud Registry.
 

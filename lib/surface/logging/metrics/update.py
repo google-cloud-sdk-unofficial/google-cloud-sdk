@@ -20,7 +20,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-class Update(base.Command):
+class Update(base.UpdateCommand):
   """Updates the definition of a logs-based metric."""
 
   @staticmethod

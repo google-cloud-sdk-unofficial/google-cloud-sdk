@@ -241,9 +241,8 @@ class ExternalRuntimeConfigurator(Configurator):
 
   def MaybeWriteAppYaml(self):
     """Generates the app.yaml file if it doesn't already exist."""
+
     if not self.generated_appinfo:
-      logging.warn('No configuration information provided by runtime '
-                   '[{0}].'.format(self.runtime.name))
       return
 
     notify = logging.info if self.params.deploy else self.env.Print

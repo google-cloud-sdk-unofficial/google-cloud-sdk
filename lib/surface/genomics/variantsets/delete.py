@@ -22,7 +22,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-class Delete(base.Command):
+class Delete(base.DeleteCommand):
   """Deletes a variant set.
   """
 

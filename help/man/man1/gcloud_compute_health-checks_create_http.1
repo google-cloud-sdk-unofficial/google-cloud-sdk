@@ -11,7 +11,7 @@ gcloud compute health\-checks create http \- create a HTTP health check to monit
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute health\-checks create http\fR \fINAME\fR [\fB\-\-check\-interval\fR\ \fICHECK_INTERVAL\fR;\ default="5s"] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-healthy\-threshold\fR\ \fIHEALTHY_THRESHOLD\fR;\ default="2"] [\fB\-\-host\fR\ \fIHOST\fR] [\fB\-\-port\fR\ \fIPORT\fR;\ default="80"] [\fB\-\-port\-name\fR\ \fIPORT_NAME\fR] [\fB\-\-proxy\-header\fR\ \fIPROXY_HEADER\fR;\ default="NONE"] [\fB\-\-request\-path\fR\ \fIREQUEST_PATH\fR;\ default="/"] [\fB\-\-timeout\fR\ \fITIMEOUT\fR;\ default="5s"] [\fB\-\-unhealthy\-threshold\fR\ \fIUNHEALTHY_THRESHOLD\fR;\ default="2"] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute health\-checks create http\fR \fINAME\fR [\fB\-\-check\-interval\fR=\fICHECK_INTERVAL\fR;\ default="5s"] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-healthy\-threshold\fR=\fIHEALTHY_THRESHOLD\fR;\ default="2"] [\fB\-\-host\fR=\fIHOST\fR] [\fB\-\-port\fR=\fIPORT\fR;\ default="80"] [\fB\-\-port\-name\fR=\fIPORT_NAME\fR] [\fB\-\-proxy\-header\fR=\fIPROXY_HEADER\fR;\ default="NONE"] [\fB\-\-request\-path\fR=\fIREQUEST_PATH\fR;\ default="/"] [\fB\-\-timeout\fR=\fITIMEOUT\fR;\ default="5s"] [\fB\-\-unhealthy\-threshold\fR=\fIUNHEALTHY_THRESHOLD\fR;\ default="2"] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -36,7 +36,7 @@ The name of the HTTP health check.
 
 .SH "FLAGS"
 
-\fB\-\-check\-interval\fR \fICHECK_INTERVAL\fR; default="5s"
+\fB\-\-check\-interval\fR=\fICHECK_INTERVAL\fR; default="5s"
 .RS 2m
 How often to perform a health check for an instance. For example, specifying
 \f5\fI10s\fR\fR will run the check every 10 seconds. Valid units for this flag
@@ -44,18 +44,18 @@ are ``s'' for seconds and ``m'' for minutes. The default value is
 \f5\fI5s\fR\fR.
 
 .RE
-\fB\-\-description\fR \fIDESCRIPTION\fR
+\fB\-\-description\fR=\fIDESCRIPTION\fR
 .RS 2m
 An optional, textual description for the HTTP health check.
 
 .RE
-\fB\-\-healthy\-threshold\fR \fIHEALTHY_THRESHOLD\fR; default="2"
+\fB\-\-healthy\-threshold\fR=\fIHEALTHY_THRESHOLD\fR; default="2"
 .RS 2m
 The number of consecutive successful health checks before an unhealthy instance
 is marked as healthy. The default is 2.
 
 .RE
-\fB\-\-host\fR \fIHOST\fR
+\fB\-\-host\fR=\fIHOST\fR
 .RS 2m
 The value of the host header used in this HTTP health check request. By default,
 this is empty and Google Compute Engine automatically sets the host header in
@@ -63,17 +63,17 @@ health requests to the same external IP address as the forwarding rule
 associated with the target pool.
 
 .RE
-\fB\-\-port\fR \fIPORT\fR; default="80"
+\fB\-\-port\fR=\fIPORT\fR; default="80"
 .RS 2m
 The TCP port number that this health check monitors. The default value is 80.
 
 .RE
-\fB\-\-port\-name\fR \fIPORT_NAME\fR
+\fB\-\-port\-name\fR=\fIPORT_NAME\fR
 .RS 2m
 The port name that this health check monitors. By default, this is empty.
 
 .RE
-\fB\-\-proxy\-header\fR \fIPROXY_HEADER\fR; default="NONE"
+\fB\-\-proxy\-header\fR=\fIPROXY_HEADER\fR; default="NONE"
 .RS 2m
 The type of proxy protocol header to be sent to the backend. \fIPROXY_HEADER\fR
 must be one of:
@@ -88,13 +88,13 @@ Adds the header "PROXY UNKNOWN\er\en".
 
 .RE
 .RE
-\fB\-\-request\-path\fR \fIREQUEST_PATH\fR; default="/"
+\fB\-\-request\-path\fR=\fIREQUEST_PATH\fR; default="/"
 .RS 2m
 The request path that this health check monitors. For example,
 \f5\fI/healthcheck\fR\fR. The default value is ``/''.
 
 .RE
-\fB\-\-timeout\fR \fITIMEOUT\fR; default="5s"
+\fB\-\-timeout\fR=\fITIMEOUT\fR; default="5s"
 .RS 2m
 If Google Compute Engine doesn't receive a healthy response from the instance by
 the time specified by the value of this flag, the health check request is
@@ -104,7 +104,7 @@ units for this flag are ``s'' for seconds and ``m'' for minutes. The default
 value is \f5\fI5s\fR\fR.
 
 .RE
-\fB\-\-unhealthy\-threshold\fR \fIUNHEALTHY_THRESHOLD\fR; default="2"
+\fB\-\-unhealthy\-threshold\fR=\fIUNHEALTHY_THRESHOLD\fR; default="2"
 .RS 2m
 The number of consecutive health check failures before a healthy instance is
 marked as unhealthy. The default is 2.

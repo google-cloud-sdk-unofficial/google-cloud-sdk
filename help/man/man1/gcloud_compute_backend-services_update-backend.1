@@ -11,7 +11,7 @@ gcloud compute backend\-services update\-backend \- update an existing backend i
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute backend\-services update\-backend\fR \fINAME\fR \fB\-\-instance\-group\fR \fIINSTANCE_GROUP\fR [\fB\-\-balancing\-mode\fR\ \fIBALANCING_MODE\fR] [\fB\-\-capacity\-scaler\fR\ \fICAPACITY_SCALER\fR] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-max\-connections\fR\ \fIMAX_CONNECTIONS\fR\ |\ \fB\-\-max\-connections\-per\-instance\fR\ \fIMAX_CONNECTIONS_PER_INSTANCE\fR\ |\ \fB\-\-max\-rate\fR\ \fIMAX_RATE\fR\ |\ \fB\-\-max\-rate\-per\-instance\fR\ \fIMAX_RATE_PER_INSTANCE\fR] [\fB\-\-max\-utilization\fR\ \fIMAX_UTILIZATION\fR] [\fB\-\-instance\-group\-zone\fR\ \fIINSTANCE_GROUP_ZONE\fR\ |\ \fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute backend\-services update\-backend\fR \fINAME\fR \fB\-\-instance\-group\fR=\fIINSTANCE_GROUP\fR [\fB\-\-balancing\-mode\fR=\fIBALANCING_MODE\fR] [\fB\-\-capacity\-scaler\fR=\fICAPACITY_SCALER\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-max\-utilization\fR=\fIMAX_UTILIZATION\fR] [\fB\-\-instance\-group\-zone\fR=\fIINSTANCE_GROUP_ZONE\fR\ |\ \fB\-\-zone\fR=\fIZONE\fR] [\fB\-\-max\-connections\fR=\fIMAX_CONNECTIONS\fR\ |\ \fB\-\-max\-connections\-per\-instance\fR=\fIMAX_CONNECTIONS_PER_INSTANCE\fR\ |\ \fB\-\-max\-rate\fR=\fIMAX_RATE\fR\ |\ \fB\-\-max\-rate\-per\-instance\fR=\fIMAX_RATE_PER_INSTANCE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -46,7 +46,7 @@ The name of the backend service.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-instance\-group\fR \fIINSTANCE_GROUP\fR
+\fB\-\-instance\-group\fR=\fIINSTANCE_GROUP\fR
 .RS 2m
 The name or URI of a Google Cloud Instance Group.
 
@@ -55,7 +55,7 @@ The name or URI of a Google Cloud Instance Group.
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-balancing\-mode\fR \fIBALANCING_MODE\fR
+\fB\-\-balancing\-mode\fR=\fIBALANCING_MODE\fR
 .RS 2m
 Defines the strategy for balancing load.
 
@@ -95,19 +95,27 @@ based on connections (for TCP/SSL) in addition to CPU by setting
 
 .RE
 .RE
-\fB\-\-capacity\-scaler\fR \fICAPACITY_SCALER\fR
+\fB\-\-capacity\-scaler\fR=\fICAPACITY_SCALER\fR
 .RS 2m
 A float in the range [0.0, 1.0] that scales the maximum parameters for the group
 (e.g., max rate). A value of 0.0 will cause no requests to be sent to the group
 (i.e., it adds the group in a \f5\fIdrained\fR\fR state).
 
 .RE
-\fB\-\-description\fR \fIDESCRIPTION\fR
+\fB\-\-description\fR=\fIDESCRIPTION\fR
 .RS 2m
 An optional, textual description for the backend.
 
 .RE
-\fB\-\-instance\-group\-zone\fR \fIINSTANCE_GROUP_ZONE\fR
+\fB\-\-max\-utilization\fR=\fIMAX_UTILIZATION\fR
+.RS 2m
+The target CPU utilization for the group as a float in the range [0.0, 1.0].
+This flag can only be provided when the balancing mode is \fBUTILIZATION\fR.
+
+.RE
+At most one of these may be specified:
+
+\fB\-\-instance\-group\-zone\fR=\fIINSTANCE_GROUP_ZONE\fR
 .RS 2m
 The zone of the instance group to update the backend service. If not specified,
 you will be prompted to select a zone.
@@ -135,36 +143,32 @@ Alternatively, the zone can be stored in the environment variable
 \f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
 
 .RE
-\fB\-\-max\-connections\fR \fIMAX_CONNECTIONS\fR
+\fB\-\-zone\fR=\fIZONE\fR
+.RS 2m
+The zone of the instance group to update the backend service. DEPRECATED, use
+\-\-instance\-group\-zone flag instead.
+
+.RE
+At most one of these may be specified:
+
+\fB\-\-max\-connections\fR=\fIMAX_CONNECTIONS\fR
 .RS 2m
 Maximum concurrent connections that the group can handle.
 
 .RE
-\fB\-\-max\-connections\-per\-instance\fR \fIMAX_CONNECTIONS_PER_INSTANCE\fR
+\fB\-\-max\-connections\-per\-instance\fR=\fIMAX_CONNECTIONS_PER_INSTANCE\fR
 .RS 2m
 The maximum concurrent connections per\-instance.
 
 .RE
-\fB\-\-max\-rate\fR \fIMAX_RATE\fR
+\fB\-\-max\-rate\fR=\fIMAX_RATE\fR
 .RS 2m
 Maximum requests per second (RPS) that the group can handle.
 
 .RE
-\fB\-\-max\-rate\-per\-instance\fR \fIMAX_RATE_PER_INSTANCE\fR
+\fB\-\-max\-rate\-per\-instance\fR=\fIMAX_RATE_PER_INSTANCE\fR
 .RS 2m
 The maximum per\-instance requests per second (RPS).
-
-.RE
-\fB\-\-max\-utilization\fR \fIMAX_UTILIZATION\fR
-.RS 2m
-The target CPU utilization for the group as a float in the range [0.0, 1.0].
-This flag can only be provided when the balancing mode is \fBUTILIZATION\fR.
-
-.RE
-\fB\-\-zone\fR \fIZONE\fR
-.RS 2m
-The zone of the instance group to update the backend service. DEPRECATED, use
-\-\-instance\-group\-zone flag instead.
 
 
 .RE

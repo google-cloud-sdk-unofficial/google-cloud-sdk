@@ -13,46 +13,12 @@
 # limitations under the License.
 """ml models versions delete command."""
 
+from googlecloudsdk.api_lib.ml import operations
 from googlecloudsdk.api_lib.ml import versions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
 from googlecloudsdk.core import apis
-from googlecloudsdk.core import resources
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Delete(base.DeleteCommand):
-  """Delete an existing Cloud ML version."""
-
-  def Collection(self):
-    return 'ml.models.versions'
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    flags.GetModelName(positional=False).AddToParser(parser)
-    flags.VERSION_NAME.AddToParser(parser)
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-    client = apis.GetClientInstance('ml', 'v1alpha3')
-    msgs = apis.GetMessagesModule('ml', 'v1alpha3')
-    res = resources.REGISTRY.Parse(
-        args.version,
-        params={'modelsId': args.model},
-        collection='ml.projects.models.versions')
-    req = msgs.MlProjectsModelsVersionsDeleteRequest(
-        projectsId=res.projectsId, modelsId=res.modelsId, versionsId=res.Name())
-    resp = client.projects_models_versions.Delete(req)
-    return resp
+from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -78,4 +44,9 @@ class BetaDelete(base.DeleteCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    return versions.Delete(args.model, args.version)
+    op = versions.Delete(args.model, args.version)
+    client = apis.GetClientInstance('ml', 'v1beta1')
+
+    with console_io.ProgressTracker('Deleting version...'):
+      operations.WaitForOperation(client.projects_operations, op)
+    return op.response

@@ -11,7 +11,7 @@ gcloud compute target\-pools create \- define a load\-balanced pool of virtual m
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute target\-pools create\fR \fINAME\fR [\fB\-\-backup\-pool\fR\ \fIBACKUP_POOL\fR] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-failover\-ratio\fR\ \fIFAILOVER_RATIO\fR] [\fB\-\-health\-check\fR\ \fIHEALTH_CHECK\fR] [\fB\-\-region\fR\ \fIREGION\fR] [\fB\-\-session\-affinity\fR\ \fISESSION_AFFINITY\fR;\ default="NONE"] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute target\-pools create\fR \fINAME\fR [\fB\-\-backup\-pool\fR=\fIBACKUP_POOL\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-failover\-ratio\fR=\fIFAILOVER_RATIO\fR] [\fB\-\-health\-check\fR=\fIHEALTH_CHECK\fR] [\fB\-\-region\fR=\fIREGION\fR] [\fB\-\-session\-affinity\fR=\fISESSION_AFFINITY\fR;\ default="NONE"] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -41,7 +41,7 @@ The name of the target pool.
 
 .SH "FLAGS"
 
-\fB\-\-backup\-pool\fR \fIBACKUP_POOL\fR
+\fB\-\-backup\-pool\fR=\fIBACKUP_POOL\fR
 .RS 2m
 Together with \f5\fI\-\-failover\-ratio\fR\fR, this flag defines the fallback
 behavior of the target pool (primary pool) to be created by this command. If the
@@ -51,12 +51,12 @@ load\-balanced IP address will be directed to the backup pool. If this flag is
 provided, then \f5\fI\-\-failover\-ratio\fR\fR is required.
 
 .RE
-\fB\-\-description\fR \fIDESCRIPTION\fR
+\fB\-\-description\fR=\fIDESCRIPTION\fR
 .RS 2m
 An optional description of this target pool.
 
 .RE
-\fB\-\-failover\-ratio\fR \fIFAILOVER_RATIO\fR
+\fB\-\-failover\-ratio\fR=\fIFAILOVER_RATIO\fR
 .RS 2m
 Together with \f5\fI\-\-backup\-pool\fR\fR, defines the fallback behavior of the
 target pool (primary pool) to be created by this command. If the ratio of the
@@ -70,7 +70,7 @@ with the best effort, or to all instances when no instance is healthy. If this
 flag is provided, then \f5\fI\-\-backup\-pool\fR\fR is required.
 
 .RE
-\fB\-\-health\-check\fR \fIHEALTH_CHECK\fR
+\fB\-\-health\-check\fR=\fIHEALTH_CHECK\fR
 .RS 2m
 Specifies an HTTP health check resource to use to determine the health of
 instances in this pool. If no health check is specified, traffic will be sent to
@@ -79,7 +79,7 @@ health status of this pool will appear as unhealthy as a warning that this
 target pool does not have a health check.
 
 .RE
-\fB\-\-region\fR \fIREGION\fR
+\fB\-\-region\fR=\fIREGION\fR
 .RS 2m
 The region of the target pool to create. If not specified, you will be prompted
 to select a region.
@@ -107,7 +107,7 @@ Alternatively, the region can be stored in the environment variable
 \f5\fICLOUDSDK_COMPUTE_REGION\fR\fR.
 
 .RE
-\fB\-\-session\-affinity\fR \fISESSION_AFFINITY\fR; default="NONE"
+\fB\-\-session\-affinity\fR=\fISESSION_AFFINITY\fR; default="NONE"
 .RS 2m
 The type of session affinity to use for this backend service.
 \fISESSION_AFFINITY\fR must be one of:

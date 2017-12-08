@@ -13,11 +13,8 @@
 # limitations under the License.
 
 """rolling-updates describe command."""
-from apitools.base.py import exceptions as apitools_exceptions
-
 from googlecloudsdk.api_lib.compute import rolling_updates_util as updater_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import resources
 
 
@@ -63,10 +60,7 @@ class Describe(base.Command):
         zone=ref.zone,
         rollingUpdate=ref.rollingUpdate)
 
-    try:
-      return client.rollingUpdates.Get(request)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(updater_util.GetError(error))
+    return client.rollingUpdates.Get(request)
 
 
 Describe.detailed_help = {

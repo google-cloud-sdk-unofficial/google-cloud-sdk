@@ -27,7 +27,6 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    base.FLATTEN_FLAG.RemoveFromParser(parser)
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
     parser.add_argument(

@@ -11,7 +11,7 @@ gcloud compute instance\-groups list \- list Google Compute Engine instance grou
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instance\-groups list\fR [\fINAME\fR\ ...] [\fB\-\-only\-managed\fR\ |\ \fB\-\-only\-unmanaged\fR] [\fB\-\-regexp\fR\ \fIREGEXP\fR,\ \fB\-r\fR\ \fIREGEXP\fR] [\fB\-\-zones\fR\ \fIZONE\fR,[\fIZONE\fR,...]] [\fB\-\-filter\fR\ \fIEXPRESSION\fR] [\fB\-\-flatten\fR\ [\fIKEY\fR,...]] [\fB\-\-limit\fR\ \fILIMIT\fR] [\fB\-\-page\-size\fR\ \fIPAGE_SIZE\fR] [\fB\-\-sort\-by\fR\ \fIFIELDS\fR] [\fB\-\-uri\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instance\-groups list\fR [\fINAME\fR\ ...] [\fB\-\-regexp\fR=\fIREGEXP\fR,\ \fB\-r\fR\ \fIREGEXP\fR] [\fB\-\-zones\fR=\fIZONE\fR,[\fIZONE\fR,...]] [\fB\-\-only\-managed\fR\ |\ \fB\-\-only\-unmanaged\fR] [\fB\-\-filter\fR=\fIEXPRESSION\fR] [\fB\-\-limit\fR=\fILIMIT\fR] [\fB\-\-page\-size\fR=\fIPAGE_SIZE\fR] [\fB\-\-sort\-by\fR=[\fIFIELD\fR,...]] [\fB\-\-uri\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -36,6 +36,19 @@ If provided, show details for the specified names and/or URIs of resources.
 
 .SH "FLAGS"
 
+\fB\-\-regexp\fR=\fIREGEXP\fR, \fB\-r\fR \fIREGEXP\fR
+.RS 2m
+A regular expression to filter the names of the results on. Any names that do
+not match the entire regular expression will be filtered out.
+
+.RE
+\fB\-\-zones\fR=\fIZONE\fR,[\fIZONE\fR,...]
+.RS 2m
+If provided, only resources from the given zones are queried.
+
+.RE
+At most one of these may be specified:
+
 \fB\-\-only\-managed\fR
 .RS 2m
 If provided, a list of managed instance groups will be returned.
@@ -45,23 +58,12 @@ If provided, a list of managed instance groups will be returned.
 .RS 2m
 If provided, a list of unmanaged instance groups will be returned.
 
-.RE
-\fB\-\-regexp\fR \fIREGEXP\fR, \fB\-r\fR \fIREGEXP\fR
-.RS 2m
-A regular expression to filter the names of the results on. Any names that do
-not match the entire regular expression will be filtered out.
-
-.RE
-\fB\-\-zones\fR \fIZONE\fR,[\fIZONE\fR,...]
-.RS 2m
-If provided, only resources from the given zones are queried.
-
 
 .RE
 
 .SH "LIST COMMAND FLAGS"
 
-\fB\-\-filter\fR \fIEXPRESSION\fR
+\fB\-\-filter\fR=\fIEXPRESSION\fR
 .RS 2m
 Apply a Boolean filter \fIEXPRESSION\fR to each resource item to be listed. If
 the expression evaluates True then that item is listed. For more details run $
@@ -69,22 +71,13 @@ gcloud topic filters. If \fB\-\-limit\fR is also specified then it is applied
 after \fB\-\-filter\fR.
 
 .RE
-\fB\-\-flatten\fR [\fIKEY\fR,...]
-.RS 2m
-Flatten \fIname\fR[] resource slices in \fIKEY\fR to separate records for each
-item in each slice. Multiple keys and slices may be specified. This also
-flattens keys for \fB\-\-format\fR and \fB\-\-filter\fR. For example,
-\fB\-\-flatten=abc.def[]\fR flattens \fBabc.def[].ghi\fR references to
-\fBabc.def.ghi\fR.
-
-.RE
-\fB\-\-limit\fR \fILIMIT\fR
+\fB\-\-limit\fR=\fILIMIT\fR
 .RS 2m
 The maximum number of resources to list. The default is \fBunlimited\fR. If
 \fB\-\-filter\fR is also specified then it is applied before \fB\-\-limit\fR.
 
 .RE
-\fB\-\-page\-size\fR \fIPAGE_SIZE\fR
+\fB\-\-page\-size\fR=\fIPAGE_SIZE\fR
 .RS 2m
 Some services group resource list output into pages. This flag specifies the
 maximum number of resources per page. The default is determined by the service
@@ -93,7 +86,7 @@ be applied before or after \fB\-\-filter\fR and \fB\-\-limit\fR depending on the
 service.
 
 .RE
-\fB\-\-sort\-by\fR \fIFIELDS\fR
+\fB\-\-sort\-by\fR=[\fIFIELD\fR,...]
 .RS 2m
 A comma\-separated list of resource field key names to sort by. The default
 order is ascending. Prefix a field with ``~'' for descending order on that

@@ -11,7 +11,7 @@ gcloud container node\-pools delete \- delete an existing node pool in a running
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud container node\-pools delete\fR \fINAME\fR [\fB\-\-cluster\fR\ \fICLUSTER\fR] [\fB\-\-no\-wait\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud container node\-pools delete\fR \fINAME\fR [\fB\-\-cluster\fR=\fICLUSTER\fR] [\fB\-\-no\-wait\fR] [\fB\-\-zone\fR=\fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -33,7 +33,7 @@ The name of the node pool to delete.
 
 .SH "FLAGS"
 
-\fB\-\-cluster\fR \fICLUSTER\fR
+\fB\-\-cluster\fR=\fICLUSTER\fR
 .RS 2m
 The cluster from which to delete the node pool.
 
@@ -44,7 +44,7 @@ Poll the operation for completion after issuing a delete request. Enabled by
 default, use \fB\-\-no\-wait\fR to disable.
 
 .RE
-\fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR, \fB\-z\fR \fIZONE\fR
 .RS 2m
 The compute zone (e.g. us\-central1\-a) for the cluster
 

@@ -11,7 +11,7 @@ gcloud dataproc jobs submit hive \- submit a Hive job to a cluster
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud dataproc jobs submit hive\fR \fB\-\-cluster\fR \fICLUSTER\fR [\fB\-\-async\fR] [\fB\-\-bucket\fR\ \fIBUCKET\fR] [\fB\-\-continue\-on\-failure\fR] [\fB\-\-execute\fR\ \fIQUERY\fR,\ \fB\-e\fR\ \fIQUERY\fR] [\fB\-\-file\fR\ \fIFILE\fR,\ \fB\-f\fR\ \fIFILE\fR] [\fB\-\-jars\fR\ [\fIJAR\fR,...]] [\fB\-\-params\fR\ [\fIPARAM\fR=\fIVALUE\fR,...]] [\fB\-\-properties\fR\ [\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud dataproc jobs submit hive\fR \fB\-\-cluster\fR=\fICLUSTER\fR [\fB\-\-async\fR] [\fB\-\-bucket\fR=\fIBUCKET\fR] [\fB\-\-continue\-on\-failure\fR] [\fB\-\-execute\fR=\fIQUERY\fR,\ \fB\-e\fR\ \fIQUERY\fR] [\fB\-\-file\fR=\fIFILE\fR,\ \fB\-f\fR\ \fIFILE\fR] [\fB\-\-jars\fR=[\fIJAR\fR,...]] [\fB\-\-params\fR=[\fIPARAM\fR=\fIVALUE\fR,...]] [\fB\-\-properties\fR=[\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -23,7 +23,7 @@ Submit a Hive job to a cluster.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-cluster\fR \fICLUSTER\fR
+\fB\-\-cluster\fR=\fICLUSTER\fR
 .RS 2m
 The Dataproc cluster to submit the job to.
 
@@ -37,7 +37,7 @@ The Dataproc cluster to submit the job to.
 Does not wait for the job to run.
 
 .RE
-\fB\-\-bucket\fR \fIBUCKET\fR
+\fB\-\-bucket\fR=\fIBUCKET\fR
 .RS 2m
 The Cloud Storage bucket to stage files in. Defaults to the cluster's configured
 bucket.
@@ -48,28 +48,28 @@ bucket.
 Whether to continue if a single query fails.
 
 .RE
-\fB\-\-execute\fR \fIQUERY\fR, \fB\-e\fR \fIQUERY\fR
+\fB\-\-execute\fR=\fIQUERY\fR, \fB\-e\fR \fIQUERY\fR
 .RS 2m
 A Hive query to execute as part of the job.
 
 .RE
-\fB\-\-file\fR \fIFILE\fR, \fB\-f\fR \fIFILE\fR
+\fB\-\-file\fR=\fIFILE\fR, \fB\-f\fR \fIFILE\fR
 .RS 2m
 HCFS URI of file containing Hive script to execute as the job.
 
 .RE
-\fB\-\-jars\fR [\fIJAR\fR,...]
+\fB\-\-jars\fR=[\fIJAR\fR,...]
 .RS 2m
 Comma separated list of jar files to be provided to the Hive and MR. May contain
 UDFs.
 
 .RE
-\fB\-\-params\fR [\fIPARAM\fR=\fIVALUE\fR,...]
+\fB\-\-params\fR=[\fIPARAM\fR=\fIVALUE\fR,...]
 .RS 2m
 A list of key value pairs to set variables in the Hive queries.
 
 .RE
-\fB\-\-properties\fR [\fIPROPERTY\fR=\fIVALUE\fR,...]
+\fB\-\-properties\fR=[\fIPROPERTY\fR=\fIVALUE\fR,...]
 .RS 2m
 A list of key value pairs to configure Hive.
 

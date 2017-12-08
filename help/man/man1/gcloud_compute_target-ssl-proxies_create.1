@@ -11,7 +11,7 @@ gcloud compute target\-ssl\-proxies create \- create a target SSL proxy
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute target\-ssl\-proxies create\fR \fINAME\fR \fB\-\-backend\-service\fR \fIBACKEND_SERVICE\fR \fB\-\-ssl\-certificate\fR \fISSL_CERTIFICATE\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-proxy\-header\fR\ \fIPROXY_HEADER\fR;\ default="NONE"] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute target\-ssl\-proxies create\fR \fINAME\fR \fB\-\-backend\-service\fR=\fIBACKEND_SERVICE\fR \fB\-\-ssl\-certificate\fR=\fISSL_CERTIFICATE\fR [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-proxy\-header\fR=\fIPROXY_HEADER\fR;\ default="NONE"] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -36,12 +36,12 @@ The name of the target SSL proxy.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-backend\-service\fR \fIBACKEND_SERVICE\fR
+\fB\-\-backend\-service\fR=\fIBACKEND_SERVICE\fR
 .RS 2m
 A backend service that will be used for connections to the target SSL proxy.
 
 .RE
-\fB\-\-ssl\-certificate\fR \fISSL_CERTIFICATE\fR
+\fB\-\-ssl\-certificate\fR=\fISSL_CERTIFICATE\fR
 .RS 2m
 A reference to an SSL certificate resource that is used for server\-side
 authentication. The SSL certificate must exist and cannot be deleted while
@@ -52,12 +52,12 @@ referenced by a target SSL proxy.
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-description\fR \fIDESCRIPTION\fR
+\fB\-\-description\fR=\fIDESCRIPTION\fR
 .RS 2m
 An optional, textual description for the target SSL proxy.
 
 .RE
-\fB\-\-proxy\-header\fR \fIPROXY_HEADER\fR; default="NONE"
+\fB\-\-proxy\-header\fR=\fIPROXY_HEADER\fR; default="NONE"
 .RS 2m
 The type of proxy protocol header to be sent to the backend. \fIPROXY_HEADER\fR
 must be one of:

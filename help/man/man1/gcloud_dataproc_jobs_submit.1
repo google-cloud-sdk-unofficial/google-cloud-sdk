@@ -11,7 +11,7 @@ gcloud dataproc jobs submit \- submit Google Cloud Dataproc jobs to execute on a
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud dataproc jobs submit\fR \fICOMMAND\fR [\fB\-\-async\fR] [\fB\-\-bucket\fR\ \fIBUCKET\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud dataproc jobs submit\fR \fICOMMAND\fR [\fB\-\-async\fR] [\fB\-\-bucket\fR=\fIBUCKET\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -28,7 +28,7 @@ Submit Google Cloud Dataproc jobs to execute on a cluster.
 Does not wait for the job to run.
 
 .RE
-\fB\-\-bucket\fR \fIBUCKET\fR
+\fB\-\-bucket\fR=\fIBUCKET\fR
 .RS 2m
 The Cloud Storage bucket to stage files in. Defaults to the cluster's configured
 bucket.

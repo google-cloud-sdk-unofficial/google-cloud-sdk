@@ -11,7 +11,7 @@ gcloud compute instance\-groups unmanaged create \- create a Compute Engine unma
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instance\-groups unmanaged create\fR \fINAME\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instance\-groups unmanaged create\fR \fINAME\fR [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -41,12 +41,12 @@ The name of the instance group.
 
 .SH "FLAGS"
 
-\fB\-\-description\fR \fIDESCRIPTION\fR
+\fB\-\-description\fR=\fIDESCRIPTION\fR
 .RS 2m
 Specifies a textual description for the unmanaged instance group.
 
 .RE
-\fB\-\-zone\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
 The zone of the instance group to operate on. If not specified, you will be
 prompted to select a zone.

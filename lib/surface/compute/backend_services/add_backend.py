@@ -156,7 +156,7 @@ class AddBackendBeta(AddBackend):
 
   @staticmethod
   def Args(parser):
-    flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     backend_flags.AddDescription(parser)
     backend_flags.AddInstanceGroup(
         parser, operation_type='add to',
@@ -164,6 +164,11 @@ class AddBackendBeta(AddBackend):
     backend_flags.AddBalancingMode(parser)
     backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
+
+  def CreateReference(self, args):
+    return flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
+        args, self.resources,
+        default_scope=compute_flags.ScopeEnum.GLOBAL)
 
   def CreateGroupReference(self, args):
     return instance_groups_utils.CreateInstanceGroupReference(
@@ -191,11 +196,6 @@ class AddBackendAlpha(AddBackendBeta):
     backend_flags.AddBalancingMode(parser)
     backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
-
-  def CreateReference(self, args):
-    return flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, self.resources,
-        default_scope=compute_flags.ScopeEnum.GLOBAL)
 
   def CreateGroupReference(self, args):
     return instance_groups_utils.CreateInstanceGroupReference(

@@ -65,7 +65,6 @@ class List(base.ListCommand, base_classes.BaseServiceManagementCommand):
 
     # Remove unneeded list-related flags from parser
     base.URI_FLAG.RemoveFromParser(parser)
-    base.FLATTEN_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     """Run 'service-management list'.

@@ -18,52 +18,7 @@ from googlecloudsdk.api_lib.ml import versions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
 from googlecloudsdk.core import apis
-from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.CreateCommand):
-  """Create a new Cloud ML version."""
-
-  def Collection(self):
-    return 'ml.models.versions'
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    flags.GetModelName(positional=False).AddToParser(parser)
-    flags.VERSION_NAME.AddToParser(parser)
-    flags.VERSION_DATA.AddToParser(parser)
-    base.ASYNC_FLAG.AddToParser(parser)
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-    client = apis.GetClientInstance('ml', 'v1alpha3')
-    msgs = apis.GetMessagesModule('ml', 'v1alpha3')
-    res = resources.REGISTRY.Parse(
-        args.version,
-        params={'modelsId': args.model},
-        collection='ml.projects.models.versions')
-    req = msgs.MlProjectsModelsCreateVersionRequest(
-        projectsId=res.projectsId,
-        modelsId=res.modelsId,
-        googleCloudMlV1alpha3Version=msgs.GoogleCloudMlV1alpha3Version(
-            name=res.Name(), originUri=args.origin))
-    op = client.projects_models.CreateVersion(req)
-    if args.async:
-      return op
-    with console_io.ProgressTracker('Creating version...'):
-      operations.WaitForOperation(client.projects_operations, op)
-    return op.response
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -95,14 +50,10 @@ class BetaCreate(base.CreateCommand):
     if args.async:
       return op
     client = apis.GetClientInstance('ml', 'v1beta1')
-    registry = resources.REGISTRY.Clone()
-    registry.RegisterApiByName('ml', 'v1beta1')
 
     with console_io.ProgressTracker(
         'Creating version (this might take a few minutes)...'):
       operations.WaitForOperation(
           client.projects_operations,
-          op,
-          # TODO(b/31062835): remove CloneAndSwitchAPI
-          registry=registry)
+          op)
     return op.response

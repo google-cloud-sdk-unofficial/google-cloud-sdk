@@ -56,7 +56,7 @@ class V22FromV2(v2_2_image.DockerImage):
       # created_by in history is the cmd which was run to create the layer.
       # Cmd in container config may be empty array.
       histories += [{
-          'created': v1_compatibility.get('created'),
+          'created': v1_compatibility.get('created', ''),
           'created_by': v1_compatibility.get('container_config', {})
                         .get('Cmd', [''])[0],
       }]
@@ -64,14 +64,14 @@ class V22FromV2(v2_2_image.DockerImage):
     v1_compatibility = json.loads(
         manifest_schema1.get('history', [''])[0].get('v1Compatibility', {}))
     config = {
-        'architecture': v1_compatibility.get('architecture'),
+        'architecture': v1_compatibility.get('architecture', ''),
         'config': v1_compatibility.get('config', {}),
-        'container': v1_compatibility.get('container'),
+        'container': v1_compatibility.get('container', ''),
         'container_config': v1_compatibility.get('container_config', {}),
-        'created': v1_compatibility.get('created'),
-        'docker_version': v1_compatibility.get('docker_version'),
+        'created': v1_compatibility.get('created', ''),
+        'docker_version': v1_compatibility.get('docker_version', ''),
         'history': histories,
-        'os': v1_compatibility.get('os'),
+        'os': v1_compatibility.get('os', ''),
         'rootfs': rootfs
     }
 

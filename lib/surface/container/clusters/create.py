@@ -14,8 +14,6 @@
 
 """Create cluster command."""
 import argparse
-import random
-import string
 
 from apitools.base.py import exceptions as apitools_exceptions
 
@@ -67,7 +65,7 @@ specify `--num-nodes=4` and choose one additional zone, 8 nodes will be created.
 
 Multiple locations can be specified, separated by commas. For example:
 
-  $ {{command}} example-cluster --zone us-central1-a --additional-zones us-central1-b,us-central1-c
+  $ {command} example-cluster --zone us-central1-a --additional-zones us-central1-b,us-central1-c
 """)
   parser.add_argument(
       '--machine-type', '-m',
@@ -100,7 +98,7 @@ Multiple locations can be specified, separated by commas. For example:
   parser.add_argument(
       '--password',
       help='The password to use for cluster auth. Defaults to a '
-      'randomly-generated string.')
+      'server-specified randomly-generated string.')
   parser.add_argument(
       '--scopes',
       type=arg_parsers.ArgList(min_length=1),
@@ -179,7 +177,7 @@ Alias,URI
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Create(base.Command):
+class Create(base.CreateCommand):
   """Create a cluster for running containers."""
 
   @staticmethod
@@ -188,6 +186,7 @@ class Create(base.Command):
     flags.AddClusterAutoscalingFlags(parser, suppressed=True)
     flags.AddLocalSSDFlag(parser, suppressed=True)
     flags.AddEnableKubernetesAlphaFlag(parser, suppressed=True)
+    flags.AddNodeLabelsFlag(parser, suppressed=True)
 
   def ParseCreateOptions(self, args):
     if not args.scopes:
@@ -212,6 +211,7 @@ class Create(base.Command):
         disable_addons=args.disable_addons,
         local_ssd_count=args.local_ssd_count,
         tags=args.tags,
+        node_labels=args.node_labels,
         enable_autoscaling=args.enable_autoscaling,
         max_nodes=args.max_nodes,
         min_nodes=args.min_nodes,
@@ -238,9 +238,6 @@ class Create(base.Command):
       util.Error, if creation failed.
     """
     util.CheckKubectlInstalled()
-    if not args.password:
-      args.password = ''.join(random.SystemRandom().choice(
-          string.ascii_letters + string.digits) for _ in range(16))
 
     adapter = self.context['api_adapter']
 
@@ -292,6 +289,7 @@ class CreateBeta(Create):
     flags.AddClusterAutoscalingFlags(parser, suppressed=True)
     flags.AddLocalSSDFlag(parser)
     flags.AddEnableKubernetesAlphaFlag(parser)
+    flags.AddNodeLabelsFlag(parser, suppressed=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -304,3 +302,4 @@ class CreateAlpha(Create):
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDFlag(parser)
     flags.AddEnableKubernetesAlphaFlag(parser)
+    flags.AddNodeLabelsFlag(parser, suppressed=False)

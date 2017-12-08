@@ -11,7 +11,7 @@ gcloud compute forwarding\-rules delete \- delete forwarding rules
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute forwarding\-rules delete\fR \fINAME\fR [\fINAME\fR\ ...] [\fB\-\-global\fR\ |\ \fB\-\-region\fR\ \fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute forwarding\-rules delete\fR \fINAME\fR [\fINAME\fR\ ...] [\fB\-\-global\fR\ |\ \fB\-\-region\fR=\fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -33,13 +33,15 @@ The names of the forwarding rules to delete.
 
 .SH "FLAGS"
 
+At most one of these may be specified:
+
 \fB\-\-global\fR
 .RS 2m
 If provided, assume the forwarding rules are global. A forwarding rule is global
 if it references a target HTTP proxy.
 
 .RE
-\fB\-\-region\fR \fIREGION\fR
+\fB\-\-region\fR=\fIREGION\fR
 .RS 2m
 The region of the forwarding rule to operate on. If not specified, you will be
 prompted to select a region.

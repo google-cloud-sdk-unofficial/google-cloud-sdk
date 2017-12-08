@@ -15,13 +15,19 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.command_lib.compute.http_health_checks import flags
 
 
 class Create(base_classes.BaseAsyncCreator):
   """Create an HTTP health check to monitor load balanced instances."""
 
-  @staticmethod
-  def Args(parser):
+  HTTP_HEALTH_CHECKS_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.HTTP_HEALTH_CHECKS_ARG = flags.HttpHealthCheckArgument()
+    cls.HTTP_HEALTH_CHECKS_ARG.AddArgument(parser)
+
     host = parser.add_argument(
         '--host',
         help='The value of the host header used by the HTTP health check.')
@@ -101,10 +107,6 @@ class Create(base_classes.BaseAsyncCreator):
         '--description',
         help='An optional, textual description for the HTTP health check.')
 
-    parser.add_argument(
-        'name',
-        help='The name of the HTTP health check.')
-
   @property
   def service(self):
     return self.compute.httpHealthChecks
@@ -118,10 +120,10 @@ class Create(base_classes.BaseAsyncCreator):
     return 'httpHealthChecks'
 
   def CreateRequests(self, args):
-    """Returnst the request necessary for adding the health check."""
+    """Returns the request necessary for adding the health check."""
 
-    health_check_ref = self.CreateGlobalReference(
-        args.name, resource_type='httpHealthChecks')
+    health_check_ref = self.HTTP_HEALTH_CHECKS_ARG.ResolveAsResource(
+        args, self.resources)
 
     request = self.messages.ComputeHttpHealthChecksInsertRequest(
         httpHealthCheck=self.messages.HttpHealthCheck(

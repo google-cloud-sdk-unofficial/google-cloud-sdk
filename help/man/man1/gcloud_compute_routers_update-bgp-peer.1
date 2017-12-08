@@ -11,7 +11,7 @@ gcloud compute routers update\-bgp\-peer \- update a BGP peer on a router
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute routers update\-bgp\-peer\fR \fINAME\fR \fB\-\-peer\-name\fR \fIPEER_NAME\fR [\fB\-\-advertised\-route\-priority\fR\ \fIADVERTISED_ROUTE_PRIORITY\fR] [\fB\-\-interface\fR\ \fIINTERFACE\fR] [\fB\-\-ip\-address\fR\ \fIIP_ADDRESS\fR] [\fB\-\-peer\-asn\fR\ \fIPEER_ASN\fR] [\fB\-\-peer\-ip\-address\fR\ \fIPEER_IP_ADDRESS\fR] [\fB\-\-region\fR\ \fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute routers update\-bgp\-peer\fR \fINAME\fR \fB\-\-peer\-name\fR=\fIPEER_NAME\fR [\fB\-\-advertised\-route\-priority\fR=\fIADVERTISED_ROUTE_PRIORITY\fR] [\fB\-\-interface\fR=\fIINTERFACE\fR] [\fB\-\-ip\-address\fR=\fIIP_ADDRESS\fR] [\fB\-\-peer\-asn\fR=\fIPEER_ASN\fR] [\fB\-\-peer\-ip\-address\fR=\fIPEER_IP_ADDRESS\fR] [\fB\-\-region\fR=\fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -33,7 +33,7 @@ The name of the router.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-peer\-name\fR \fIPEER_NAME\fR
+\fB\-\-peer\-name\fR=\fIPEER_NAME\fR
 .RS 2m
 The name of the peer being modified.
 
@@ -42,34 +42,34 @@ The name of the peer being modified.
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-advertised\-route\-priority\fR \fIADVERTISED_ROUTE_PRIORITY\fR
+\fB\-\-advertised\-route\-priority\fR=\fIADVERTISED_ROUTE_PRIORITY\fR
 .RS 2m
 The priority of routes advertised to this BGP peer. In the case where there is
 more than one matching route of maximum length, the routes with lowest priority
 value win. 0 <= priority <= 65535.
 
 .RE
-\fB\-\-interface\fR \fIINTERFACE\fR
+\fB\-\-interface\fR=\fIINTERFACE\fR
 .RS 2m
 The new interface of the peer being modified.
 
 .RE
-\fB\-\-ip\-address\fR \fIIP_ADDRESS\fR
+\fB\-\-ip\-address\fR=\fIIP_ADDRESS\fR
 .RS 2m
 The new link local address of the router for this peer.
 
 .RE
-\fB\-\-peer\-asn\fR \fIPEER_ASN\fR
+\fB\-\-peer\-asn\fR=\fIPEER_ASN\fR
 .RS 2m
 The new asn of the peer being modified.
 
 .RE
-\fB\-\-peer\-ip\-address\fR \fIPEER_IP_ADDRESS\fR
+\fB\-\-peer\-ip\-address\fR=\fIPEER_IP_ADDRESS\fR
 .RS 2m
 The new link local address of the peer.
 
 .RE
-\fB\-\-region\fR \fIREGION\fR
+\fB\-\-region\fR=\fIREGION\fR
 .RS 2m
 The region of the router to update. If not specified, you will be prompted to
 select a region.

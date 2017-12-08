@@ -11,7 +11,7 @@ gcloud compute target\-https\-proxies create \- create a target HTTPS proxy
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute target\-https\-proxies create\fR \fINAME\fR \fB\-\-ssl\-certificate\fR \fISSL_CERTIFICATE\fR \fB\-\-url\-map\fR \fIURL_MAP\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute target\-https\-proxies create\fR \fINAME\fR \fB\-\-ssl\-certificate\fR=\fISSL_CERTIFICATE\fR \fB\-\-url\-map\fR=\fIURL_MAP\fR [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -38,14 +38,14 @@ The name of the target HTTPS proxy.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-ssl\-certificate\fR \fISSL_CERTIFICATE\fR
+\fB\-\-ssl\-certificate\fR=\fISSL_CERTIFICATE\fR
 .RS 2m
 A reference to an SSL certificate resource that is used for server\-side
 authentication. The SSL certificate must exist and cannot be deleted while
 referenced by a target HTTPS proxy.
 
 .RE
-\fB\-\-url\-map\fR \fIURL_MAP\fR
+\fB\-\-url\-map\fR=\fIURL_MAP\fR
 .RS 2m
 A reference to a URL map resource that defines the mapping of URLs to backend
 services. The URL map must exist and cannot be deleted while referenced by a
@@ -56,7 +56,7 @@ target HTTPS proxy.
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-description\fR \fIDESCRIPTION\fR
+\fB\-\-description\fR=\fIDESCRIPTION\fR
 .RS 2m
 An optional, textual description for the target HTTPS proxy.
 

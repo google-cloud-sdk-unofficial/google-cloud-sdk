@@ -17,14 +17,20 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import name_generator
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.addresses import flags
 
 
 class Create(base_classes.BaseAsyncMutator):
   """Reserve IP addresses."""
 
-  @staticmethod
-  def Args(parser):
+  ADDRESSES_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.ADDRESSES_ARG = flags.AddressArgument(required=False)
+    cls.ADDRESSES_ARG.AddArgument(parser)
+
     addresses = parser.add_argument(
         '--addresses',
         metavar='ADDRESS',
@@ -48,24 +54,6 @@ class Create(base_classes.BaseAsyncMutator):
         '--description',
         help='An optional textual description for the addresses.')
 
-    parser.add_argument(
-        'names',
-        metavar='NAME',
-        nargs='*',
-        help='The names to assign to the reserved IP addresses.')
-
-    scope = parser.add_mutually_exclusive_group()
-
-    flags.AddRegionFlag(
-        scope,
-        resource_type='address',
-        operation_type='operate on')
-
-    scope.add_argument(
-        '--global',
-        action='store_true',
-        help='If provided, it is assumed the addresses are global.')
-
   @property
   def service(self):
     if self.global_request:
@@ -81,14 +69,14 @@ class Create(base_classes.BaseAsyncMutator):
   def method(self):
     return 'Insert'
 
-  def GetNamesAndAddresses(self, args):
+  def _GetNamesAndAddresses(self, args):
     """Returns names and addresses provided in args."""
-    if not args.addresses and not args.names:
+    if not args.addresses and not args.name:
       raise exceptions.ToolException(
           'At least one name or address must be provided.')
 
-    if args.names:
-      names = args.names
+    if args.name:
+      names = args.name
     else:
       # If we dont have any names then we must some addresses.
       names = [name_generator.GenerateRandomName() for _ in args.addresses]
@@ -97,7 +85,7 @@ class Create(base_classes.BaseAsyncMutator):
       addresses = args.addresses
     else:
       # If we dont have any addresses then we must some names.
-      addresses = [None] * len(args.names)
+      addresses = [None] * len(args.name)
 
     if len(addresses) != len(names):
       raise exceptions.ToolException(
@@ -108,47 +96,32 @@ class Create(base_classes.BaseAsyncMutator):
 
   def CreateRequests(self, args):
     """Overrides."""
-    self.global_request = getattr(args, 'global')
+    names, addresses = self._GetNamesAndAddresses(args)
+    if not args.name:
+      args.name = names
 
-    if self.global_request:
-      return self._CreateGlobalRequests(args)
+    address_refs = self.ADDRESSES_ARG.ResolveAsResource(
+        args, self.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(
+            self.compute_client, self.project))
 
-    return self._CreateRegionalRequests(args)
-
-  def _CreateGlobalRequests(self, args):
-    names, addresses = self.GetNamesAndAddresses(args)
-    address_refs = self.CreateGlobalReferences(
-        names, resource_type='globalAddresses')
-
-    requests = []
-    for address, address_ref in zip(addresses, address_refs):
-      request = self.messages.ComputeGlobalAddressesInsertRequest(
-          address=self.messages.Address(
-              address=address,
-              description=args.description,
-              name=address_ref.Name(),
-          ),
-          project=self.project)
-      requests.append(request)
-
-    return requests
-
-  def _CreateRegionalRequests(self, args):
-    names, addresses = self.GetNamesAndAddresses(args)
-    address_refs = self.CreateRegionalReferences(names, args.region)
+    self.global_request = getattr(address_refs[0], 'region', None) is None
 
     requests = []
     for address, address_ref in zip(addresses, address_refs):
-      request = self.messages.ComputeAddressesInsertRequest(
-          address=self.messages.Address(
-              address=address,
-              description=args.description,
-              name=address_ref.Name(),
-          ),
-          project=self.project,
-          region=address_ref.region)
-      requests.append(request)
+      address_msg = self.messages.Address(
+          address=address,
+          description=args.description,
+          name=address_ref.Name())
 
+      if self.global_request:
+        requests.append(self.messages.ComputeGlobalAddressesInsertRequest(
+            address=address_msg, project=address_ref.project))
+      else:
+        requests.append(self.messages.ComputeAddressesInsertRequest(
+            address=address_msg,
+            region=address_ref.region,
+            project=address_ref.project))
     return requests
 
 

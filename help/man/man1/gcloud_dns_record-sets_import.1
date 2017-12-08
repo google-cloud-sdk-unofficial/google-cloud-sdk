@@ -11,7 +11,7 @@ gcloud dns record\-sets import \- import record\-sets into your managed\-zone
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud dns record\-sets import\fR \fIRECORDS_FILE\fR \fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR [\fB\-\-delete\-all\-existing\fR] [\fB\-\-replace\-origin\-ns\fR] [\fB\-\-zone\-file\-format\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud dns record\-sets import\fR \fIRECORDS_FILE\fR \fB\-\-zone\fR=\fIZONE\fR, \fB\-z\fR \fIZONE\fR [\fB\-\-delete\-all\-existing\fR] [\fB\-\-replace\-origin\-ns\fR] [\fB\-\-zone\-file\-format\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -39,7 +39,7 @@ File from which record\-sets should be imported.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR, \fB\-z\fR \fIZONE\fR
 .RS 2m
 Name of the managed\-zone whose record\-sets you want to manage.
 

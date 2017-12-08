@@ -200,9 +200,6 @@ class CreateBeta(CreateGA):
       region_link = self.CreateRegionalReference(
           group_ref.region, group_ref.region, resource_type='regions')
       instance_group_manager.region = region_link.SelfLink()
-      instance_group_manager.failoverAction = (
-          self.messages.InstanceGroupManager.FailoverActionValueValuesEnum
-          .NO_FAILOVER)
       return self.messages.ComputeRegionInstanceGroupManagersInsertRequest(
           instanceGroupManager=instance_group_manager,
           project=self.project,

@@ -20,6 +20,7 @@ import random
 import string
 from apitools.base.py import exceptions as apitools_exceptions
 
+from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.functions import cloud_storage as storage
 from googlecloudsdk.api_lib.functions import exceptions
 from googlecloudsdk.api_lib.functions import operations
@@ -41,6 +42,16 @@ class Deploy(base.Command):
     parser.add_argument(
         'name', help='Intended name of the new function.',
         type=util.ValidateFunctionNameOrRaise)
+    memory = parser.add_argument(
+        '--memory', help='Amount of memory available to the function.',
+        type=arg_parsers.BinarySize(
+            suggested_binary_size_scales=['KB', 'MB', 'MiB', 'GB', 'GiB']))
+    memory.detailed_help = """\
+      The value must be a whole number followed by a size unit of ``KB'' for
+      kilobyte, ``MB'' for megabyte, or ``GB'' for gigabyte.
+
+      Allowed values are: 128MB, 256MB, 512MB, and 1024MB.
+      """
     path_group = parser.add_mutually_exclusive_group()
     path_group.add_argument(
         '--source',
@@ -208,6 +219,9 @@ class Deploy(base.Command):
           sourcePath=source_path)
     else:
       function.gcsUrl = self._PrepareSourcesOnGcs(args)
+    memory_mb = utils.BytesToMb(args.memory)
+    if memory_mb:
+      function.availableMemoryMb = memory_mb
     return deploy_method(location, function)
 
   def _PrepareSourcesOnGcs(self, args):

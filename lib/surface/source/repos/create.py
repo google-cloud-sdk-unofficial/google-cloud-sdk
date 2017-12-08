@@ -27,7 +27,7 @@ from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.Command):
+class Create(base.CreateCommand):
   """Create a named git repo for the project in the current directory."""
 
   detailed_help = {

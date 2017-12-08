@@ -14,36 +14,13 @@
 """ml jobs describe command."""
 
 from googlecloudsdk.api_lib.ml import jobs
-from googlecloudsdk.api_lib.ml import jobs_v1beta1
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(base.DescribeCommand):
-  """Describe an existing Cloud ML job."""
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    flags.JOB_NAME.AddToParser(parser)
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-    return jobs.Get(args.job)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DescribeBeta(base.DescribeCommand):
-  """Do it."""
+  """Describe a Cloud ML job."""
 
   @staticmethod
   def Args(parser):
@@ -51,4 +28,4 @@ class DescribeBeta(base.DescribeCommand):
     flags.JOB_NAME.AddToParser(parser)
 
   def Run(self, args):
-    return jobs_v1beta1.Get(args.job)
+    return jobs.Get(args.job)

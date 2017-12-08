@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Implements the command for SSHing into an instance."""
+import argparse
 import sys
 
 from googlecloudsdk.api_lib.compute import gaia_utils
@@ -75,21 +76,15 @@ def _Args(parser):
       $USER from the environment is selected.
       """
 
-  implementation_args = parser.add_argument(
+  parser.add_argument(
       'implementation_args',
-      nargs='*',
+      nargs=argparse.REMAINDER,
       help="""\
           Flags and positionals passed to the underlying ssh implementation.
           """,
-      metavar='-- IMPLEMENTATION-ARGS')
-  implementation_args.detailed_help = """\
-      Flags and positionals passed to the underlying ssh implementation.
-
-      The '--' argument must be specified between gcloud specific args on
-      the left and IMPLEMENTATION-ARGS on the right. Example:
-
+      example="""\
         $ {command} example-instance --zone us-central1-a -- -vvv -L 80:%INSTANCE%:80
-      """
+      """)
 
   flags.AddZoneFlag(
       parser,

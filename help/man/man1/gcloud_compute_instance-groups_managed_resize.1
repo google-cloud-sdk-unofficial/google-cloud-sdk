@@ -11,7 +11,7 @@ gcloud compute instance\-groups managed resize \- set managed instance group siz
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instance\-groups managed resize\fR \fINAME\fR \fB\-\-size\fR \fISIZE\fR [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instance\-groups managed resize\fR \fINAME\fR \fB\-\-size\fR=\fISIZE\fR [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -40,7 +40,7 @@ Managed instance group name.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-size\fR \fISIZE\fR
+\fB\-\-size\fR=\fISIZE\fR
 .RS 2m
 Target number of instances in managed instance group.
 
@@ -49,7 +49,7 @@ Target number of instances in managed instance group.
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-zone\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
 The zone of the instance group manager to resize. If not specified, you will be
 prompted to select a zone.

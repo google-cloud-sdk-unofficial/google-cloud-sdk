@@ -1,0 +1,46 @@
+
+.TH "GCLOUD_COMPUTE_URL\-MAPS_LIST\-CDN\-CACHE\-INVALIDATIONS" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute url\-maps list\-cdn\-cache\-invalidations \- list Cloud CDN cache invalidations for a URL map
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute url\-maps list\-cdn\-cache\-invalidations\fR \fIURLMAP\fR [\fB\-\-limit\fR=\fILIMIT\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+
+.SH "DESCRIPTION"
+
+List Cloud CDN cache invalidations for a URL map. A cache invalidation instructs
+Cloud CDN to stop using cached content. You can list invalidations to check
+which have completed.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIURLMAP\fR
+.RS 2m
+The name of the URL map.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-limit\fR=\fILIMIT\fR
+.RS 2m
+The maximum number of invalidations to list.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

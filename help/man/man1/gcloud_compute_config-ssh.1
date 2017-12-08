@@ -11,7 +11,7 @@ gcloud compute config\-ssh \- populate SSH config files with Host entries from e
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute config\-ssh\fR [\fB\-\-dry\-run\fR] [\fB\-\-remove\fR] [\fB\-\-ssh\-config\-file\fR\ \fISSH_CONFIG_FILE\fR] [\fB\-\-ssh\-key\-file\fR\ \fISSH_KEY_FILE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute config\-ssh\fR [\fB\-\-dry\-run\fR] [\fB\-\-remove\fR] [\fB\-\-ssh\-config\-file\fR=\fISSH_CONFIG_FILE\fR] [\fB\-\-ssh\-key\-file\fR=\fISSH_KEY_FILE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -68,13 +68,13 @@ output and no actual changes are made.
 If provided, any changes made to the SSH config file by this tool are reverted.
 
 .RE
-\fB\-\-ssh\-config\-file\fR \fISSH_CONFIG_FILE\fR
+\fB\-\-ssh\-config\-file\fR=\fISSH_CONFIG_FILE\fR
 .RS 2m
 Specifies an alternative per\-user SSH configuration file. By default, this is
 \f5\fI~/.ssh/config\fR\fR.
 
 .RE
-\fB\-\-ssh\-key\-file\fR \fISSH_KEY_FILE\fR
+\fB\-\-ssh\-key\-file\fR=\fISSH_KEY_FILE\fR
 .RS 2m
 The path to the SSH key file. By default, this is
 \f5\fI~/.ssh/google_compute_engine\fR\fR.

@@ -35,7 +35,7 @@ _COMPONENTS_REPOSITORIES_TRANSFORMS = {
 }
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """List any Trusted Tester component repositories you have registered.
   """
   detailed_help = {
@@ -48,13 +48,16 @@ class List(base.Command):
       """,
   }
 
+  @staticmethod
+  def Args(parser):
+    """Adds/removes args for this command."""
+    base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
+
   def Run(self, args):
     """Runs the list command."""
     repos = update_manager.UpdateManager.GetAdditionalRepositories()
     return repos if repos else []
-
-  def Format(self, args):
-    return self.ListFormat(args)
 
   def ResourceInfo(self, args):
     return resource_registry.ResourceInfo(

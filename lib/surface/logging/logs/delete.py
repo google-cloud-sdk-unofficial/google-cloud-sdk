@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""'logging sinks delete' command."""
+"""'logging logs delete' command."""
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -21,7 +21,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
-class Delete(base.Command):
+class Delete(base.DeleteCommand):
   """Deletes all entries from a log."""
 
   @staticmethod

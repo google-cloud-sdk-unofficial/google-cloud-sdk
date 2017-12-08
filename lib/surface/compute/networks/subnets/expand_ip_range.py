@@ -18,7 +18,7 @@ from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as exceptions
-from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.networks.subnets import flags
 from googlecloudsdk.core.console import console_io
 import ipaddr
 
@@ -27,12 +27,13 @@ import ipaddr
 class ExpandIpRange(base_classes.NoOutputAsyncMutator):
   """Expand IP range of a subnetwork."""
 
-  @staticmethod
-  def Args(parser):
-    flags.AddRegionFlag(
-        parser,
-        resource_type='subnetwork',
-        operation_type='expand IP range for')
+  SUBNETWORK_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.SUBNETWORK_ARG = flags.SubnetworkArgument()
+    cls.SUBNETWORK_ARG.AddArgument(parser)
+
     parser.add_argument(
         '--prefix-length',
         type=int,
@@ -41,10 +42,6 @@ class ExpandIpRange(base_classes.NoOutputAsyncMutator):
             'original and in the private address space 10.0.0.0/8, '
             '172.16.0.0/12 or 192.168.0.0/16 defined in RFC 1918.'),
         required=True)
-    parser.add_argument(
-        'name',
-        completion_resource='compute.subnetworks',
-        help='The name of the subnetwork for which to expand IP range.')
 
   @property
   def service(self):
@@ -61,7 +58,7 @@ class ExpandIpRange(base_classes.NoOutputAsyncMutator):
   def CreateRequests(self, args):
     """Returns requests for expanding IP CIDR range."""
     new_prefix_length = self._ValidatePrefixLength(args.prefix_length)
-    subnetwork_ref = self.CreateRegionalReference(args.name, args.region)
+    subnetwork_ref = self.SUBNETWORK_ARG.ResolveAsResource(args, self.resources)
     original_ip_cidr_range = self._GetOriginalIpCidrRange(subnetwork_ref)
     new_ip_cidr_range = self._InferNewIpCidrRange(
         subnetwork_ref.Name(), original_ip_cidr_range, new_prefix_length)

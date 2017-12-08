@@ -11,7 +11,7 @@ gcloud compute instance\-groups managed delete\-instances \- delete instances ma
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instance\-groups managed delete\-instances\fR \fINAME\fR \fB\-\-instances\fR \fIINSTANCE\fR,[\fIINSTANCE\fR,...] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instance\-groups managed delete\-instances\fR \fINAME\fR \fB\-\-instances\fR=\fIINSTANCE\fR,[\fIINSTANCE\fR,...] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -38,7 +38,7 @@ Managed instance group name.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-instances\fR \fIINSTANCE\fR,[\fIINSTANCE\fR,...]
+\fB\-\-instances\fR=\fIINSTANCE\fR,[\fIINSTANCE\fR,...]
 .RS 2m
 Names of instances to delete.
 
@@ -47,7 +47,7 @@ Names of instances to delete.
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-zone\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
 The zone of the instance group manager to delete instances. If not specified,
 you will be prompted to select a zone.

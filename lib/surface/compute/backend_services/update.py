@@ -223,7 +223,7 @@ class UpdateBeta(UpdateGA):
 
   @staticmethod
   def Args(parser):
-    flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddDescription(parser)
     flags.AddHealthChecks(parser)
     flags.AddHttpHealthChecks(parser)
@@ -234,7 +234,7 @@ class UpdateBeta(UpdateGA):
 
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddEnableCdn(parser, default=None)
-    flags.AddSessionAffinity(parser)
+    flags.AddSessionAffinity(parser, internal_lb=True)
     flags.AddAffinityCookieTtl(parser)
 
   def Modify(self, args, existing):

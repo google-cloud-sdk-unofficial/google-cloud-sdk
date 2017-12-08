@@ -11,7 +11,7 @@ gcloud compute routers add\-bgp\-peer \- add a BGP peer to a router
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute routers add\-bgp\-peer\fR \fINAME\fR \fB\-\-interface\fR \fIINTERFACE\fR \fB\-\-peer\-asn\fR \fIPEER_ASN\fR \fB\-\-peer\-name\fR \fIPEER_NAME\fR [\fB\-\-advertised\-route\-priority\fR\ \fIADVERTISED_ROUTE_PRIORITY\fR] [\fB\-\-peer\-ip\-address\fR\ \fIPEER_IP_ADDRESS\fR] [\fB\-\-region\fR\ \fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute routers add\-bgp\-peer\fR \fINAME\fR \fB\-\-interface\fR=\fIINTERFACE\fR \fB\-\-peer\-asn\fR=\fIPEER_ASN\fR \fB\-\-peer\-name\fR=\fIPEER_NAME\fR [\fB\-\-advertised\-route\-priority\fR=\fIADVERTISED_ROUTE_PRIORITY\fR] [\fB\-\-peer\-ip\-address\fR=\fIPEER_IP_ADDRESS\fR] [\fB\-\-region\fR=\fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -33,17 +33,17 @@ The name of the router.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-interface\fR \fIINTERFACE\fR
+\fB\-\-interface\fR=\fIINTERFACE\fR
 .RS 2m
 The interface of the peer being added.
 
 .RE
-\fB\-\-peer\-asn\fR \fIPEER_ASN\fR
+\fB\-\-peer\-asn\fR=\fIPEER_ASN\fR
 .RS 2m
 The asn of the peer being added.
 
 .RE
-\fB\-\-peer\-name\fR \fIPEER_NAME\fR
+\fB\-\-peer\-name\fR=\fIPEER_NAME\fR
 .RS 2m
 The name of the peer being added.
 
@@ -52,19 +52,19 @@ The name of the peer being added.
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-advertised\-route\-priority\fR \fIADVERTISED_ROUTE_PRIORITY\fR
+\fB\-\-advertised\-route\-priority\fR=\fIADVERTISED_ROUTE_PRIORITY\fR
 .RS 2m
 The priority of routes advertised to this BGP peer. In the case where there is
 more than one matching route of maximum length, the routes with lowest priority
 value win. 0 <= priority <= 65535.
 
 .RE
-\fB\-\-peer\-ip\-address\fR \fIPEER_IP_ADDRESS\fR
+\fB\-\-peer\-ip\-address\fR=\fIPEER_IP_ADDRESS\fR
 .RS 2m
 The link local address of the peer.
 
 .RE
-\fB\-\-region\fR \fIREGION\fR
+\fB\-\-region\fR=\fIREGION\fR
 .RS 2m
 The region of the router to update. If not specified, you will be prompted to
 select a region.

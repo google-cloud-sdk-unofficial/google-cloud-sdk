@@ -13,7 +13,7 @@
 # limitations under the License.
 """ml jobs submit batch prediction command."""
 
-from googlecloudsdk.api_lib.ml import jobs_v1beta1
+from googlecloudsdk.api_lib.ml import jobs
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 
@@ -65,7 +65,7 @@ class Prediction(base.Command):
     Returns:
       Some value that we want to have printed later.
     """
-    job = jobs_v1beta1.BuildBatchPredictionJob(
+    job = jobs.BuildBatchPredictionJob(
         job_name=args.job,
         model_name=args.model,
         version_name=args.version,
@@ -73,4 +73,4 @@ class Prediction(base.Command):
         data_format=args.data_format,
         output_path=args.output_path,
         region=args.region)
-    return jobs_v1beta1.Create(job)
+    return jobs.Create(job)

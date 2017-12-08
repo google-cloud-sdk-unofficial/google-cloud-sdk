@@ -22,7 +22,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-class Delete(base.Command):
+class Delete(base.DeleteCommand):
   """Delete an endpoint.
 
   This command deletes an endpoint entry in Service Registry.

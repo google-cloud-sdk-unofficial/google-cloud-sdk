@@ -246,6 +246,7 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
+    parser.add_argument('--num-masters', type=int, help=argparse.SUPPRESS)
 
   @staticmethod
   def ValidateArgs(args):
@@ -323,6 +324,7 @@ class Create(base.CreateCommand):
         configBucket=args.bucket,
         gceClusterConfig=gce_cluster_config,
         masterConfig=messages.InstanceGroupConfig(
+            numInstances=args.num_masters,
             imageUri=compute_uris['image'],
             machineTypeUri=compute_uris['master_machine_type'],
             diskConfig=messages.DiskConfig(
@@ -392,3 +394,17 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
+    num_masters = parser.add_argument(
+        '--num-masters',
+        type=int,
+        help='The number of master nodes in the cluster.')
+    num_masters.detailed_help = """\
+      The number of master nodes in the cluster.
+
+      [format="csv",options="header"]
+      |========
+      Number of Masters,Cluster Mode
+      1,Standard
+      3,High Availability
+      |========
+      """

@@ -16,10 +16,11 @@
 from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
+from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-class UpdateInstance(base.Command):
+class UpdateInstance(base.UpdateCommand):
   """Modify an existing Bigtable instance."""
 
   @staticmethod
@@ -52,4 +53,5 @@ class UpdateInstance(base.Command):
         instancesId=ref.Name(),
         instance=instance)
     instance = cli.projects_instances.Update(msg)
+    log.UpdatedResource(instance.name, kind='instance')
     return instance

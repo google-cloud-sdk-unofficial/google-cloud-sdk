@@ -18,7 +18,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
-class Delete(base.Command):
+class Delete(base.DeleteCommand):
   """Delete an empty Cloud DNS managed-zone.
 
   This command deletes an empty Cloud DNS managed-zone. An empty managed-zone

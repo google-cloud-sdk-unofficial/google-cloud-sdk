@@ -11,7 +11,7 @@ gcloud compute instances delete\-access\-config \- delete an access configuratio
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances delete\-access\-config\fR \fINAME\fR [\fB\-\-access\-config\-name\fR\ \fIACCESS_CONFIG_NAME\fR;\ default="external\-nat"] [\fB\-\-network\-interface\fR\ \fINETWORK_INTERFACE\fR;\ default="nic0"] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instances delete\-access\-config\fR \fINAME\fR [\fB\-\-access\-config\-name\fR=\fIACCESS_CONFIG_NAME\fR;\ default="external\-nat"] [\fB\-\-network\-interface\fR=\fINETWORK_INTERFACE\fR;\ default="nic0"] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -34,20 +34,20 @@ The name of the instance.
 
 .SH "FLAGS"
 
-\fB\-\-access\-config\-name\fR \fIACCESS_CONFIG_NAME\fR; default="external\-nat"
+\fB\-\-access\-config\-name\fR=\fIACCESS_CONFIG_NAME\fR; default="external\-nat"
 .RS 2m
 Specifies the name of the access configuration to delete.
 \f5\fIexternal\-nat\fR\fR is used as the default if this flag is not provided.
 
 .RE
-\fB\-\-network\-interface\fR \fINETWORK_INTERFACE\fR; default="nic0"
+\fB\-\-network\-interface\fR=\fINETWORK_INTERFACE\fR; default="nic0"
 .RS 2m
 Specifies the name of the network interface from which to delete the access
 configuration. If this is not provided, then \f5\fInic0\fR\fR is used as the
 default.
 
 .RE
-\fB\-\-zone\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
 The zone of the instance to operate on. If not specified, you will be prompted
 to select a zone.

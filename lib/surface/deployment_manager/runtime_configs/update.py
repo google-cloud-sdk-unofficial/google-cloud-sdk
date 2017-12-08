@@ -19,7 +19,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
-class Update(base.Command):
+class Update(base.UpdateCommand):
   """Update runtime-config resources.
 
   This command updates the runtime-config resource with the specified

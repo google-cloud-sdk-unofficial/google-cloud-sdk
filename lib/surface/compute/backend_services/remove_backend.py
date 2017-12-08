@@ -149,7 +149,7 @@ class RemoveBackendBeta(RemoveBackend):
   backend-services edit'.
   """
 
-  _BACKEND_SERVICE_ARG = flags.GLOBAL_BACKEND_SERVICE_ARG
+  _BACKEND_SERVICE_ARG = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG
 
   @classmethod
   def Args(cls, parser):
@@ -182,8 +182,6 @@ class RemoveBackendAlpha(RemoveBackendBeta):
   capacity scaler to zero through 'gcloud compute
   backend-services edit'.
   """
-
-  _BACKEND_SERVICE_ARG = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG
 
   @classmethod
   def Args(cls, parser):

@@ -29,7 +29,7 @@ class ArgumentError(exceptions.Error):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(base.Command):
+class UpdateAlpha(base.UpdateCommand):
   """Update the name and/or labels of a project.
 
   Update the the name and/or labels of the given project.
@@ -79,7 +79,7 @@ class UpdateAlpha(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class Update(base.Command):
+class Update(base.UpdateCommand):
   """Update the name of a project.
 
   Update the the name of the given project.

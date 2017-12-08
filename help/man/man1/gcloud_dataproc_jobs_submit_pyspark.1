@@ -11,7 +11,7 @@ gcloud dataproc jobs submit pyspark \- submit a PySpark job to a cluster
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud dataproc jobs submit pyspark\fR \fIPY_FILE\fR \fB\-\-cluster\fR \fICLUSTER\fR [\fB\-\-archives\fR\ [\fIARCHIVE\fR,...]] [\fB\-\-async\fR] [\fB\-\-bucket\fR\ \fIBUCKET\fR] [\fB\-\-driver\-log\-levels\fR\ [\fIPACKAGE\fR=\fILEVEL\fR,...]] [\fB\-\-files\fR\ [\fIFILE\fR,...]] [\fB\-\-properties\fR\ [\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fB\-\-py\-files\fR\ [\fIPY_FILE\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR] [\fIJOB_ARGS\fR\ ...]
+\f5gcloud dataproc jobs submit pyspark\fR \fIPY_FILE\fR \fB\-\-cluster\fR=\fICLUSTER\fR [\fB\-\-archives\fR=[\fIARCHIVE\fR,...]] [\fB\-\-async\fR] [\fB\-\-bucket\fR=\fIBUCKET\fR] [\fB\-\-driver\-log\-levels\fR=[\fIPACKAGE\fR=\fILEVEL\fR,...]] [\fB\-\-files\fR=[\fIFILE\fR,...]] [\fB\-\-properties\fR=[\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fB\-\-py\-files\fR=[\fIPY_FILE\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR] [\-\-\ \fIIMPLEMENTATION\-ARGS\fR\ ...]
 
 
 
@@ -28,16 +28,21 @@ Submit a PySpark job to a cluster.
 The main .py file to run as the driver.
 
 .RE
-[\fIJOB_ARGS\fR ...]
+[\-\- \fIIMPLEMENTATION\-ARGS\fR ...]
 .RS 2m
 The arguments to pass to the driver.
+
+The '\-\-' argument must be specified between gcloud specific args on the left
+and IMPLEMENTATION\-ARGS on the right. IMPORTANT: previously, commands allowed
+the omission of the \-\-, and unparsed arguments were treated as implementation
+args. This usage is being deprecated and will be removed in March 2017.
 
 
 .RE
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-cluster\fR \fICLUSTER\fR
+\fB\-\-cluster\fR=\fICLUSTER\fR
 .RS 2m
 The Dataproc cluster to submit the job to.
 
@@ -46,7 +51,7 @@ The Dataproc cluster to submit the job to.
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-archives\fR [\fIARCHIVE\fR,...]
+\fB\-\-archives\fR=[\fIARCHIVE\fR,...]
 .RS 2m
 Comma separated list of archives to be provided to the job. must be one of the
 following file formats: .zip, .tar, .tar.gz, or .tgz.
@@ -57,29 +62,29 @@ following file formats: .zip, .tar, .tar.gz, or .tgz.
 Does not wait for the job to run.
 
 .RE
-\fB\-\-bucket\fR \fIBUCKET\fR
+\fB\-\-bucket\fR=\fIBUCKET\fR
 .RS 2m
 The Cloud Storage bucket to stage files in. Defaults to the cluster's configured
 bucket.
 
 .RE
-\fB\-\-driver\-log\-levels\fR [\fIPACKAGE\fR=\fILEVEL\fR,...]
+\fB\-\-driver\-log\-levels\fR=[\fIPACKAGE\fR=\fILEVEL\fR,...]
 .RS 2m
 A list of package to log4j log level pairs to configure driver logging. For
 example: root=FATAL,com.example=INFO
 
 .RE
-\fB\-\-files\fR [\fIFILE\fR,...]
+\fB\-\-files\fR=[\fIFILE\fR,...]
 .RS 2m
 Comma separated list of files to be provided to the job.
 
 .RE
-\fB\-\-properties\fR [\fIPROPERTY\fR=\fIVALUE\fR,...]
+\fB\-\-properties\fR=[\fIPROPERTY\fR=\fIVALUE\fR,...]
 .RS 2m
 A list of key value pairs to configure PySpark.
 
 .RE
-\fB\-\-py\-files\fR [\fIPY_FILE\fR,...]
+\fB\-\-py\-files\fR=[\fIPY_FILE\fR,...]
 .RS 2m
 Comma separated list of Python files to be provided to the job.Must be one of
 the following file formats" .py, ,.zip, or .egg

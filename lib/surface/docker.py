@@ -18,6 +18,8 @@ Sets docker up to authenticate with the Google Container Registry,
 and passes all flags after -- to the docker CLI.
 """
 
+import argparse
+
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -90,7 +92,7 @@ class Docker(base.Command):
         'unix:///path/to/socket.')
 
     parser.add_argument(
-        'extra_args', nargs='*', default=[],
+        'implementation_args', nargs=argparse.REMAINDER, default=[],
         help='Arguments to pass to docker.')
 
   def Run(self, args):
@@ -120,10 +122,10 @@ class Docker(base.Command):
 
     # TODO(user): reconcile with the 'gcloud app' docker stuff,
     # which should be using a gcloud config property.
-    extra_args = (args.extra_args if not args.docker_host else
-                  ['-H', args.docker_host] + args.extra_args)
+    implementation_args = (args.implementation_args if not args.docker_host else
+                           ['-H', args.docker_host] + args.implementation_args)
 
-    result = docker.Execute(extra_args)
+    result = docker.Execute(implementation_args)
     # Explicitly avoid displaying an error message that might
     # distract from the docker error message already displayed.
     if result:

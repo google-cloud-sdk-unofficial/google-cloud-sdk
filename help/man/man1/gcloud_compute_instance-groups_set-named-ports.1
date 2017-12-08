@@ -11,7 +11,7 @@ gcloud compute instance\-groups set\-named\-ports \- sets the list of named port
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instance\-groups set\-named\-ports\fR \fIGROUP\fR \fB\-\-named\-ports\fR [\fINAME\fR:\fIPORT\fR,...] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instance\-groups set\-named\-ports\fR \fIGROUP\fR \fB\-\-named\-ports\fR=[\fINAME\fR:\fIPORT\fR,...] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -38,7 +38,7 @@ The name of the instance group.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-named\-ports\fR [\fINAME\fR:\fIPORT\fR,...]
+\fB\-\-named\-ports\fR=[\fINAME\fR:\fIPORT\fR,...]
 .RS 2m
 The comma\-separated list of key:value pairs representing the service name and
 the port that it is running on.
@@ -56,7 +56,7 @@ $ gcloud compute instance\-groups set\-named\-ports \e
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-zone\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
 The zone of the instance group to set named ports for. If not specified, you
 will be prompted to select a zone.

@@ -14,31 +14,8 @@
 """ml jobs cancel command."""
 
 from googlecloudsdk.api_lib.ml import jobs
-from googlecloudsdk.api_lib.ml import jobs_v1beta1
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Cancel(base.Command):
-  """Cancel a running Cloud ML job."""
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    flags.JOB_NAME.AddToParser(parser)
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-    return jobs.Cancel(args.job)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -60,4 +37,4 @@ class CancelBeta(base.Command):
     Returns:
       Some value that we want to have printed later.
     """
-    return jobs_v1beta1.Cancel(args.job)
+    return jobs.Cancel(args.job)

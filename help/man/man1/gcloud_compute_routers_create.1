@@ -11,7 +11,7 @@ gcloud compute routers create \- create a router
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute routers create\fR \fINAME\fR \fB\-\-asn\fR \fIASN\fR \fB\-\-network\fR \fINETWORK\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-region\fR\ \fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute routers create\fR \fINAME\fR \fB\-\-asn\fR=\fIASN\fR \fB\-\-network\fR=\fINETWORK\fR [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-region\fR=\fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -33,12 +33,12 @@ The name of the router.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-asn\fR \fIASN\fR
+\fB\-\-asn\fR=\fIASN\fR
 .RS 2m
 The BGP asn for this router
 
 .RE
-\fB\-\-network\fR \fINETWORK\fR
+\fB\-\-network\fR=\fINETWORK\fR
 .RS 2m
 The network for this router
 
@@ -47,12 +47,12 @@ The network for this router
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-description\fR \fIDESCRIPTION\fR
+\fB\-\-description\fR=\fIDESCRIPTION\fR
 .RS 2m
 An optional description of this router.
 
 .RE
-\fB\-\-region\fR \fIREGION\fR
+\fB\-\-region\fR=\fIREGION\fR
 .RS 2m
 The region of the router to create. If not specified, you will be prompted to
 select a region.

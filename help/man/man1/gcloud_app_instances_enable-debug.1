@@ -11,7 +11,7 @@ gcloud app instances enable\-debug \- enables debug mode for an instance
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud app instances enable\-debug\fR [\fIINSTANCE\fR] [\fB\-\-service\fR\ \fISERVICE\fR,\ \fB\-s\fR\ \fISERVICE\fR] [\fB\-\-version\fR\ \fIVERSION\fR,\ \fB\-v\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud app instances enable\-debug\fR [\fIINSTANCE\fR] [\fB\-\-service\fR=\fISERVICE\fR,\ \fB\-s\fR\ \fISERVICE\fR] [\fB\-\-version\fR=\fIVERSION\fR,\ \fB\-v\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -39,13 +39,13 @@ interactively. Must uniquely specify (with other flags) exactly one instance
 
 .SH "FLAGS"
 
-\fB\-\-service\fR \fISERVICE\fR, \fB\-s\fR \fISERVICE\fR
+\fB\-\-service\fR=\fISERVICE\fR, \fB\-s\fR \fISERVICE\fR
 .RS 2m
 If specified, only match instances belonging to the given service. This affects
 both interactive and non\-interactive selection.
 
 .RE
-\fB\-\-version\fR \fIVERSION\fR, \fB\-v\fR \fIVERSION\fR
+\fB\-\-version\fR=\fIVERSION\fR, \fB\-v\fR \fIVERSION\fR
 .RS 2m
 If specified, only match instances belonging to the given version. This affects
 both interactive and non\-interactive selection.

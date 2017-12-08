@@ -11,7 +11,7 @@ gcloud app versions delete \- delete a specified version
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud app versions delete\fR \fIVERSIONS\fR [\fIVERSIONS\fR\ ...] [\fB\-\-service\fR\ \fISERVICE\fR,\ \fB\-s\fR\ \fISERVICE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud app versions delete\fR \fIVERSIONS\fR [\fIVERSIONS\fR\ ...] [\fB\-\-service\fR=\fISERVICE\fR,\ \fB\-s\fR\ \fISERVICE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -32,7 +32,7 @@ The versions to delete (optionally filtered by the \-\-service flag).
 
 .SH "FLAGS"
 
-\fB\-\-service\fR \fISERVICE\fR, \fB\-s\fR \fISERVICE\fR
+\fB\-\-service\fR=\fISERVICE\fR, \fB\-s\fR \fISERVICE\fR
 .RS 2m
 If specified, only delete versions from the given service.
 
@@ -53,7 +53,7 @@ To delete a specific version of a specific service, run:
 $ gcloud app versions delete \-\-service myService v1
 .RE
 
-To delete a named version accross all services, run:
+To delete a named version across all services, run:
 
 .RS 2m
 $ gcloud app versions delete v1
@@ -62,11 +62,11 @@ $ gcloud app versions delete v1
 To delete multiple versions of a specific service, run:
 
 .RS 2m
-$ gcloud app versions delete delete \-\-service myService v1 v2
+$ gcloud app versions delete \-\-service myService v1 v2
 .RE
 
-To delete multiple named versions accross all services, run:
+To delete multiple named versions across all services, run:
 
 .RS 2m
-$ gcloud app versions delete delete v1 v2
+$ gcloud app versions delete v1 v2
 .RE

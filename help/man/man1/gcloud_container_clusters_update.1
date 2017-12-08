@@ -11,7 +11,7 @@ gcloud container clusters update \- update cluster settings for an existing cont
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud container clusters update\fR \fINAME\fR [\fB\-\-async\fR] [\fB\-\-monitoring\-service\fR\ \fIMONITORING_SERVICE\fR\ |\ \fB\-\-update\-addons\fR\ [\fIADDON\fR=\fIENABLED\fR|\fIDISABLED\fR,...]] [\fB\-\-node\-pool\fR\ \fINODE_POOL\fR] [\fB\-\-wait\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud container clusters update\fR \fINAME\fR (\fB\-\-monitoring\-service\fR=\fIMONITORING_SERVICE\fR\ |\ \fB\-\-update\-addons\fR=[\fIADDON\fR=\fIENABLED\fR|\fIDISABLED\fR,...]) [\fB\-\-async\fR] [\fB\-\-node\-pool\fR=\fINODE_POOL\fR] [\fB\-\-wait\fR] [\fB\-\-zone\fR=\fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -30,29 +30,35 @@ The name of the cluster to update.
 
 .RE
 
-.SH "FLAGS"
+.SH "REQUIRED FLAGS"
 
-\fB\-\-async\fR
-.RS 2m
-Don't wait for the operation to complete. Use \fB\-\-no\-async\fR to disable.
+Exactly one of these must be specified:
 
-.RE
-\fB\-\-monitoring\-service\fR \fIMONITORING_SERVICE\fR
+\fB\-\-monitoring\-service\fR=\fIMONITORING_SERVICE\fR
 .RS 2m
 The monitoring service to use for the cluster. Options are:
 "monitoring.googleapis.com" (the Google Cloud Monitoring service), "none" (no
 metrics will be exported from the cluster)
 
 .RE
-\fB\-\-node\-pool\fR \fINODE_POOL\fR
-.RS 2m
-Node pool to be updated.
-
-.RE
-\fB\-\-update\-addons\fR [\fIADDON\fR=\fIENABLED\fR|\fIDISABLED\fR,...]
+\fB\-\-update\-addons\fR=[\fIADDON\fR=\fIENABLED\fR|\fIDISABLED\fR,...]
 .RS 2m
 Cluster addons to enable or disable. Options are
 HorizontalPodAutoscaling=ENABLED|DISABLED HttpLoadBalancing=ENABLED|DISABLED
+
+
+.RE
+
+.SH "OPTIONAL FLAGS"
+
+\fB\-\-async\fR
+.RS 2m
+Don't wait for the operation to complete. Use \fB\-\-no\-async\fR to disable.
+
+.RE
+\fB\-\-node\-pool\fR=\fINODE_POOL\fR
+.RS 2m
+Node pool to be updated.
 
 .RE
 \fB\-\-wait\fR
@@ -61,7 +67,7 @@ DEPRECATED, use \-\-no\-async. Poll the operation for completion after issuing a
 create request. Use \fB\-\-no\-wait\fR to disable.
 
 .RE
-\fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR, \fB\-z\fR \fIZONE\fR
 .RS 2m
 The compute zone (e.g. us\-central1\-a) for the cluster
 

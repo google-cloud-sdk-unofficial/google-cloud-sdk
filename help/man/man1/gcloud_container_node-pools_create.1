@@ -11,7 +11,7 @@ gcloud container node\-pools create \- create a node pool in a running cluster
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud container node\-pools create\fR \fINAME\fR [\fB\-\-cluster\fR\ \fICLUSTER\fR] [\fB\-\-disk\-size\fR\ \fIDISK_SIZE\fR] [\fB\-\-no\-enable\-cloud\-endpoints\fR] [\fB\-\-image\-type\fR\ \fIIMAGE_TYPE\fR] [\fB\-\-machine\-type\fR\ \fIMACHINE_TYPE\fR,\ \fB\-m\fR\ \fIMACHINE_TYPE\fR] [\fB\-\-num\-nodes\fR\ \fINUM_NODES\fR;\ default="3"] [\fB\-\-scopes\fR\ \fISCOPE\fR,[\fISCOPE\fR,...]] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud container node\-pools create\fR \fINAME\fR [\fB\-\-cluster\fR=\fICLUSTER\fR] [\fB\-\-disk\-size\fR=\fIDISK_SIZE\fR] [\fB\-\-no\-enable\-cloud\-endpoints\fR] [\fB\-\-image\-type\fR=\fIIMAGE_TYPE\fR] [\fB\-\-machine\-type\fR=\fIMACHINE_TYPE\fR,\ \fB\-m\fR\ \fIMACHINE_TYPE\fR] [\fB\-\-num\-nodes\fR=\fINUM_NODES\fR;\ default="3"] [\fB\-\-scopes\fR=\fISCOPE\fR,[\fISCOPE\fR,...]] [\fB\-\-zone\fR=\fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -34,12 +34,12 @@ The name of the node pool to create.
 
 .SH "FLAGS"
 
-\fB\-\-cluster\fR \fICLUSTER\fR
+\fB\-\-cluster\fR=\fICLUSTER\fR
 .RS 2m
 The cluster to add the node pool to.
 
 .RE
-\fB\-\-disk\-size\fR \fIDISK_SIZE\fR
+\fB\-\-disk\-size\fR=\fIDISK_SIZE\fR
 .RS 2m
 Size in GB for node VM boot disks. Defaults to 100GB.
 
@@ -51,7 +51,7 @@ features. Enabled by default, use \fB\-\-no\-enable\-cloud\-endpoints\fR to
 disable.
 
 .RE
-\fB\-\-image\-type\fR \fIIMAGE_TYPE\fR
+\fB\-\-image\-type\fR=\fIIMAGE_TYPE\fR
 .RS 2m
 The image type to use for the node pool. Defaults to server\-specified.
 
@@ -69,28 +69,30 @@ $ gcloud container get\-server\-config
 
 
 .RE
-\fB\-\-machine\-type\fR \fIMACHINE_TYPE\fR, \fB\-m\fR \fIMACHINE_TYPE\fR
+\fB\-\-machine\-type\fR=\fIMACHINE_TYPE\fR, \fB\-m\fR \fIMACHINE_TYPE\fR
 .RS 2m
 The type of machine to use for nodes. Defaults to server\-specified
 
 .RE
-\fB\-\-num\-nodes\fR \fINUM_NODES\fR; default="3"
+\fB\-\-num\-nodes\fR=\fINUM_NODES\fR; default="3"
 .RS 2m
 The number of nodes in the node pool in each of the cluster's zones.
 
 .RE
-\fB\-\-scopes\fR \fISCOPE\fR,[\fISCOPE\fR,...]
+\fB\-\-scopes\fR=\fISCOPE\fR,[\fISCOPE\fR,...]
 .RS 2m
 Specifies scopes for the node instances. The project's default service account
 is used. Examples:
 
 .RS 2m
-$ gcloud container node\-pools create example\-cluster \e
+$ gcloud container node\-pools create node\-pool\-1 \e
+    \-\-cluster=example\-cluster \e
     \-\-scopes https://www.googleapis.com/auth/devstorage.read_only
 .RE
 
 .RS 2m
-$ gcloud container node\-pools create example\-cluster \e
+$ gcloud container node\-pools create node\-pool\-1 \e
+    \-\-cluster=example\-cluster \e
     \-\-scopes bigquery,storage\-rw,compute\-ro
 .RE
 
@@ -103,6 +105,7 @@ are:
 
 Alias,URI bigquery,https://www.googleapis.com/auth/bigquery
 cloud\-platform,https://www.googleapis.com/auth/cloud\-platform
+cloud\-source\-repos,https://www.googleapis.com/auth/source.full_control
 compute\-ro,https://www.googleapis.com/auth/compute.readonly
 compute\-rw,https://www.googleapis.com/auth/compute
 datastore,https://www.googleapis.com/auth/datastore
@@ -123,7 +126,7 @@ userinfo\-email,https://www.googleapis.com/auth/userinfo.email
 
 
 .RE
-\fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR, \fB\-z\fR \fIZONE\fR
 .RS 2m
 The compute zone (e.g. us\-central1\-a) for the cluster
 
@@ -143,7 +146,7 @@ cluster "sample\-cluster", run:
 
 .RS 2m
 $ gcloud container node\-pools create node\-pool\-1 \e
-    \-\-cluster=sample\-cluster
+    \-\-cluster=example\-cluster
 .RE
 
 The new node pool will show up in the cluster after all the nodes have been
@@ -153,5 +156,5 @@ To create a node pool with 5 nodes, run:
 
 .RS 2m
 $ gcloud container node\-pools create node\-pool\-1 \e
-    \-\-cluster=sample\-cluster \-\-num\-nodes=5
+    \-\-cluster=example\-cluster \-\-num\-nodes=5
 .RE

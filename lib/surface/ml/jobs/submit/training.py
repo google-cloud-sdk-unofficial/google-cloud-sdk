@@ -12,62 +12,56 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """ml jobs submit training command."""
-
 from googlecloudsdk.api_lib.ml import jobs
-from googlecloudsdk.api_lib.ml import jobs_v1beta1
-from googlecloudsdk.api_lib.ml import operations
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.ml import flags
-from googlecloudsdk.core import apis
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Train(base.Command):
-  """Start a Cloud ML training job."""
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    flags.JOB_NAME.AddToParser(parser)
-    flags.MODULE_NAME.AddToParser(parser)
-    flags.TRAINER_URI.AddToParser(parser)
-    flags.CONFIG.AddToParser(parser)
-    base.ASYNC_FLAG.AddToParser(parser)
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-    config = jobs.BuildTrainingConfig(
-        path=args.config,
-        module_name=args.module,
-        job_name=args.job,
-        trainer_uri=args.trainer_uri)
-    op = jobs.Train(config)
-    if args.async:
-      return op
-    return operations.WaitForOperation(
-        apis.GetClientInstance('ml', 'v1alpha3').projects_operations, op)
+from googlecloudsdk.command_lib.ml import jobs as jobs_prep
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class BetaTrain(base.Command):
-  """Start a Cloud ML training job."""
+  r"""Submits a Cloud Machine Learning training job.
+
+  This creates temporary files and executes Python code staged
+  by a user on Google Cloud Storage. Model code can either be
+  specified with a path, e.g.:
+
+      $ {command} my_job \
+              --module-name trainer.task \
+              --staging-bucket gs://my-bucket \
+              --package-path /my/code/path/trainer \
+              --packages additional-dependency1.tar.gz \
+                         additional-dependency2.tar.gz
+
+  Or by specifying an already built package:
+
+      $ {command} my_job \
+              --module-name trainer.task \
+              --staging-bucket gs://my-bucket \
+              --packages trainer-0.0.1.tar.gz \
+                         additional-dependency1.tar.gz \
+                         additional-dependency2.tar.gz
+
+  If --package-path /my/code/path/trainer is specified and there is a
+  setup.py file at /my/code/path/setup.py then that file will be invoked
+  with [sdist] and the generated tar files will be uploaded to Cloud Storage.
+  Otherwise a temporary setup.py file will be generated for the build.
+  """
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
     flags.JOB_NAME.AddToParser(parser)
+    flags.PACKAGE_PATH.AddToParser(parser)
+    flags.PACKAGES.AddToParser(parser)
     flags.MODULE_NAME.AddToParser(parser)
-    flags.TRAINER_URI.AddToParser(parser)
-    flags.REGION.AddToParser(parser)
+    compute_flags.AddRegionFlag(
+        parser, 'machine learning training job', 'submit')
     flags.CONFIG.AddToParser(parser)
+    flags.STAGING_BUCKET.AddToParser(parser)
+    flags.USER_ARGS.AddToParser(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -79,10 +73,14 @@ class BetaTrain(base.Command):
     Returns:
       Some value that we want to have printed later.
     """
-    job = jobs_v1beta1.BuildTrainingJob(
+    uris = jobs_prep.RunSetupAndUpload(
+        args.packages, args.staging_bucket, args.package_path)
+    log.debug('Using {0} as trainer uris'.format(uris))
+    job = jobs.BuildTrainingJob(
         path=args.config,
-        module_name=args.module,
+        module_name=args.module_name,
         job_name=args.job,
-        trainer_uri=args.trainer_uri,
-        region=args.region)
-    return jobs_v1beta1.Create(job)
+        trainer_uri=uris,
+        region=args.region,
+        user_args=args.user_args)
+    return jobs.Create(job)

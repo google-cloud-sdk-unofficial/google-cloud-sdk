@@ -99,7 +99,7 @@ to the flag. For example:
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Update(base.Command):
+class Update(base.UpdateCommand):
   """Update cluster settings for an existing container cluster."""
 
   @staticmethod

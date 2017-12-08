@@ -28,7 +28,7 @@ from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Delete(base.Command):
+class Delete(base.DeleteCommand):
   """Delete project git repository in the current directory."""
 
   detailed_help = {

@@ -11,7 +11,7 @@ gcloud container node\-pools describe \- describe an existing node pool for a cl
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud container node\-pools describe\fR \fINAME\fR [\fB\-\-cluster\fR\ \fICLUSTER\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud container node\-pools describe\fR \fINAME\fR [\fB\-\-cluster\fR=\fICLUSTER\fR] [\fB\-\-zone\fR=\fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -33,12 +33,12 @@ The name of the node pool.
 
 .SH "FLAGS"
 
-\fB\-\-cluster\fR \fICLUSTER\fR
+\fB\-\-cluster\fR=\fICLUSTER\fR
 .RS 2m
 The name of the cluster.
 
 .RE
-\fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR, \fB\-z\fR \fIZONE\fR
 .RS 2m
 The compute zone (e.g. us\-central1\-a) for the cluster
 

@@ -11,7 +11,7 @@ gcloud deployment\-manager deployments update \- update a deployment based on a 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud deployment\-manager deployments update\fR \fIDEPLOYMENT_NAME\fR [\fB\-\-async\fR] [\fB\-\-config\fR\ \fICONFIG\fR] [\fB\-\-create\-policy\fR\ \fICREATE_POLICY\fR;\ default="CREATE_OR_ACQUIRE"] [\fB\-\-delete\-policy\fR\ \fIDELETE_POLICY\fR;\ default="DELETE"] [\fB\-\-preview\fR] [\fB\-\-properties\fR\ [\fIPROPERTIES\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud deployment\-manager deployments update\fR \fIDEPLOYMENT_NAME\fR [\fB\-\-async\fR] [\fB\-\-config\fR=\fICONFIG\fR] [\fB\-\-create\-policy\fR=\fICREATE_POLICY\fR;\ default="CREATE_OR_ACQUIRE"] [\fB\-\-delete\-policy\fR=\fIDELETE_POLICY\fR;\ default="DELETE"] [\fB\-\-preview\fR] [\fB\-\-properties\fR=[\fIPROPERTIES\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -39,19 +39,19 @@ Return immediately and print information about the Operation in progress rather
 than waiting for the Operation to complete. (default=False)
 
 .RE
-\fB\-\-config\fR \fICONFIG\fR
+\fB\-\-config\fR=\fICONFIG\fR
 .RS 2m
 Filename of config which specifies resources to deploy. Required unless
 launching an already\-previewed update to this deployment.
 
 .RE
-\fB\-\-create\-policy\fR \fICREATE_POLICY\fR; default="CREATE_OR_ACQUIRE"
+\fB\-\-create\-policy\fR=\fICREATE_POLICY\fR; default="CREATE_OR_ACQUIRE"
 .RS 2m
 Create policy for resources that have changed in the update. \fICREATE_POLICY\fR
 must be one of: \fBACQUIRE\fR, \fBCREATE_OR_ACQUIRE\fR.
 
 .RE
-\fB\-\-delete\-policy\fR \fIDELETE_POLICY\fR; default="DELETE"
+\fB\-\-delete\-policy\fR=\fIDELETE_POLICY\fR; default="DELETE"
 .RS 2m
 Delete policy for resources that have changed in the update. \fIDELETE_POLICY\fR
 must be one of: \fBABANDON\fR, \fBDELETE\fR.
@@ -63,7 +63,7 @@ Preview the requested update without making any changes to theunderlying
 resources. (default=False)
 
 .RE
-\fB\-\-properties\fR [\fIPROPERTIES\fR,...]
+\fB\-\-properties\fR=[\fIPROPERTIES\fR,...]
 .RS 2m
 A comma seperated, key=value, map to be used when deploying a template file
 directly.

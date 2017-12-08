@@ -46,7 +46,6 @@ class List(base.ListCommand):
   def Args(parser):
     job_utils.ArgsForJobRef(parser)
 
-    base.FLATTEN_FLAG.RemoveFromParser(parser)
     base.SORT_BY_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
     base.ASYNC_FLAG.RemoveFromParser(parser)

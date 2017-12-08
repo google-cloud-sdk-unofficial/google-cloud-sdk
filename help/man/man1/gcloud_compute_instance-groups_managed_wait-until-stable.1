@@ -11,7 +11,7 @@ gcloud compute instance\-groups managed wait\-until\-stable \- waits until state
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instance\-groups managed wait\-until\-stable\fR \fINAME\fR [\fB\-\-timeout\fR\ \fITIMEOUT\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instance\-groups managed wait\-until\-stable\fR \fINAME\fR [\fB\-\-timeout\fR=\fITIMEOUT\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -32,12 +32,12 @@ Name of the managed instance group.
 
 .SH "FLAGS"
 
-\fB\-\-timeout\fR \fITIMEOUT\fR
+\fB\-\-timeout\fR=\fITIMEOUT\fR
 .RS 2m
 Timeout in seconds for waiting for group becoming stable.
 
 .RE
-\fB\-\-zone\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
 The zone of the managed instance group to wait until stable. If not specified,
 you will be prompted to select a zone.

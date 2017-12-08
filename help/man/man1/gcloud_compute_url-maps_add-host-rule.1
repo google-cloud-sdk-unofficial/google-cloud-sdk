@@ -11,7 +11,7 @@ gcloud compute url\-maps add\-host\-rule \- add a rule to a URL map to map hosts
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute url\-maps add\-host\-rule\fR \fINAME\fR \fB\-\-hosts\fR \fIHOST\fR,[\fIHOST\fR,...] \fB\-\-path\-matcher\-name\fR \fIPATH_MATCHER_NAME\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute url\-maps add\-host\-rule\fR \fINAME\fR \fB\-\-hosts\fR=\fIHOST\fR,[\fIHOST\fR,...] \fB\-\-path\-matcher\-name\fR=\fIPATH_MATCHER_NAME\fR [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -38,7 +38,7 @@ The name of the URL map.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-hosts\fR \fIHOST\fR,[\fIHOST\fR,...]
+\fB\-\-hosts\fR=\fIHOST\fR,[\fIHOST\fR,...]
 .RS 2m
 The set of hosts to match requests against. Each host must be a fully qualified
 domain name (FQDN) with the exception that the host can begin with a ``*'' or
@@ -46,7 +46,7 @@ domain name (FQDN) with the exception that the host can begin with a ``*'' or
 where an atom is separated by dots (``.'') or dashes (``\-'').
 
 .RE
-\fB\-\-path\-matcher\-name\fR \fIPATH_MATCHER_NAME\fR
+\fB\-\-path\-matcher\-name\fR=\fIPATH_MATCHER_NAME\fR
 .RS 2m
 The name of the patch matcher to use if a request matches this host rule. The
 patch matcher must already exist in the URL map (see \f5gcloud compute url\-maps
@@ -57,7 +57,7 @@ add\-path\-matcher\fR).
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-description\fR \fIDESCRIPTION\fR
+\fB\-\-description\fR=\fIDESCRIPTION\fR
 .RS 2m
 An optional, textual description for the host rule.
 

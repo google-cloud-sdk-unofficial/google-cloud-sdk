@@ -109,28 +109,36 @@ This value is returned if r or the collection is empty.
 .RE
 \fBcolor\fR(red, yellow, green, blue)
 .RS 2m
-Colorizes the resource string value. The resource string is searched for an RE
-pattern match in Roy.G.Biv order. The first pattern that matches colorizes the
-resource string with that color.
+Colorizes the resource string value. The \fBred\fR, \fByellow\fR, \fBgreen\fR
+and \fBblue\fR args are RE patterns, matched against the resource in order. The
+first pattern that matches colorizes the matched substring with that color, and
+the other patterns are skipped.
 
 
 The arguments are:
 
 \fB\f5red\fR\fR
 .RS 2m
-Color red resource value pattern.
+The substring pattern for the color red.
 .RE
 \fB\f5yellow\fR\fR
 .RS 2m
-Color yellow resource value pattern.
+The substring pattern for the color yellow.
 .RE
 \fB\f5green\fR\fR
 .RS 2m
-Color green resource value pattern.
+The substring pattern for the color green.
 .RE
 \fB\f5blue\fR\fR
 .RS 2m
-Color blue resource value pattern.
+The substring pattern for the color blue.
+
+.RE
+For example\f5:\fR
+.RS 2m
+For the resource string "CAUTION means GO FASTER", the
+\fBcolor(red=STOP,yellow=CAUTION,green=GO)\fR transform will display the
+substring "CAUTION" in yellow.
 
 .RE
 .RE
@@ -232,6 +240,13 @@ Divide the resource numeric value by \fIunit\fR to yield seconds.
 \fB\f5undefined\fR\fR
 .RS 2m
 Returns this value if the resource is not a valid timestamp.
+
+.RE
+For example\f5:\fR
+.RS 2m
+\fBduration(start=createTime,end=updateTime)\fR is the duration from resource
+creation to the most recent update. \fBupdateTime.duration()\fR is the duration
+since the most recent resource update.
 
 .RE
 .RE
@@ -484,15 +499,25 @@ The list item separator string.
 
 .RE
 .RE
-\fBmap\fR()
+\fBmap\fR(depth=1)
 .RS 2m
 Applies the next transform in the sequence to each resource list item.
 
+
+The arguments are:
+
+\fB\f5depth\fR\fR
+.RS 2m
+The list nesting depth.
+
+.RE
 For example\f5:\fR
 .RS 2m
-list_field.map().foo().bar() applies foo() to each item in list_field and then
-bar() to the resulting value. list_field.map().foo().map().bar() applies foo()
-to each item in list_field and then bar() to each item in the resulting list.
+list_field.map().foo().list() applies foo() to each item in list_field and then
+list() to the resulting value to return a compact comma\-separated list.
+list_field.map().foo().map().bar() applies foo() to each item in list_field and
+then bar() to each item in the resulting list. abc[].xyz[].map(2).foo() applies
+foo() to each item in xyz[] for all items in abc[].
 
 .RE
 .RE

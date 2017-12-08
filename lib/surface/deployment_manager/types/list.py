@@ -38,7 +38,6 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    base.FLATTEN_FLAG.RemoveFromParser(parser)
     base.SORT_BY_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
 

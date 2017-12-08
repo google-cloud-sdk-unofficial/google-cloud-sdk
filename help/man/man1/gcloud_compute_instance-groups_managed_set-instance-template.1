@@ -11,7 +11,7 @@ gcloud compute instance\-groups managed set\-instance\-template \- set instance 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instance\-groups managed set\-instance\-template\fR \fINAME\fR \fB\-\-template\fR \fITEMPLATE\fR [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instance\-groups managed set\-instance\-template\fR \fINAME\fR \fB\-\-template\fR=\fITEMPLATE\fR [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -37,7 +37,7 @@ Managed instance group name.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-template\fR \fITEMPLATE\fR
+\fB\-\-template\fR=\fITEMPLATE\fR
 .RS 2m
 Compute Engine instance template resource to be used.
 
@@ -46,7 +46,7 @@ Compute Engine instance template resource to be used.
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-zone\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
 The zone of the instance group manager to set instance template. If not
 specified, you will be prompted to select a zone.

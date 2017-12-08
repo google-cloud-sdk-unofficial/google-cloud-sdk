@@ -11,7 +11,7 @@ gcloud app browse \- open the current app in a web browser
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud app browse\fR [\fB\-\-service\fR\ \fISERVICE\fR,\ \fB\-s\fR\ \fISERVICE\fR] [\fB\-\-version\fR\ \fIVERSION\fR,\ \fB\-v\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud app browse\fR [\fB\-\-service\fR=\fISERVICE\fR,\ \fB\-s\fR\ \fISERVICE\fR] [\fB\-\-version\fR=\fIVERSION\fR,\ \fB\-v\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -23,13 +23,13 @@ Open the current app in a web browser.
 
 .SH "FLAGS"
 
-\fB\-\-service\fR \fISERVICE\fR, \fB\-s\fR \fISERVICE\fR
+\fB\-\-service\fR=\fISERVICE\fR, \fB\-s\fR \fISERVICE\fR
 .RS 2m
 The service that should be opened. If not specified, use the default service.
 May be used in conjunction with \f5\-\-version\fR.
 
 .RE
-\fB\-\-version\fR \fIVERSION\fR, \fB\-v\fR \fIVERSION\fR
+\fB\-\-version\fR=\fIVERSION\fR, \fB\-v\fR \fIVERSION\fR
 .RS 2m
 The version of the app that should be opened. If not specified, choose a version
 based on the service's traffic split.

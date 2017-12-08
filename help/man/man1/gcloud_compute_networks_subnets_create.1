@@ -11,7 +11,7 @@ gcloud compute networks subnets create \- define a subnet for a network in custo
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute networks subnets create\fR \fINAME\fR \fB\-\-network\fR \fINETWORK\fR \fB\-\-range\fR \fIRANGE\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-region\fR\ \fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute networks subnets create\fR \fINAME\fR \fB\-\-network\fR=\fINETWORK\fR \fB\-\-range\fR=\fIRANGE\fR [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-region\fR=\fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -32,12 +32,12 @@ The name of the subnetwork.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-network\fR \fINETWORK\fR
+\fB\-\-network\fR=\fINETWORK\fR
 .RS 2m
 The network to which the subnetwork belongs.
 
 .RE
-\fB\-\-range\fR \fIRANGE\fR
+\fB\-\-range\fR=\fIRANGE\fR
 .RS 2m
 The IP space allocated to this subnetwork in CIDR format.
 
@@ -46,15 +46,15 @@ The IP space allocated to this subnetwork in CIDR format.
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-description\fR \fIDESCRIPTION\fR
+\fB\-\-description\fR=\fIDESCRIPTION\fR
 .RS 2m
 An optional description of this subnetwork.
 
 .RE
-\fB\-\-region\fR \fIREGION\fR
+\fB\-\-region\fR=\fIREGION\fR
 .RS 2m
-The region of the subnetwork to create. If not specified, you will be prompted
-to select a region.
+The region of the subnetwork to operate on. If not specified, you will be
+prompted to select a region.
 
 To avoid prompting when this flag is omitted, you can set the
 \f5\fIcompute/region\fR\fR property:

@@ -19,7 +19,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base_classes.GlobalDescriber):
   """Describe a backend service."""
 
@@ -45,8 +45,8 @@ Describe.detailed_help = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(base_classes.MultiScopeDescriber):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class DescribeBeta(base_classes.MultiScopeDescriber):
   """Describe a backend service."""
 
   SCOPES = [base_classes.ScopeType.regional_scope,
@@ -55,7 +55,7 @@ class DescribeAlpha(base_classes.MultiScopeDescriber):
   @staticmethod
   def Args(parser):
     base_classes.MultiScopeDescriber.AddScopeArgs(
-        parser, 'backendServices', DescribeAlpha.SCOPES,
+        parser, 'backendServices', DescribeBeta.SCOPES,
         command='alpha compute backend-services list')
 
   def CreateReference(self, args):
@@ -65,7 +65,7 @@ class DescribeAlpha(base_classes.MultiScopeDescriber):
             getattr(args, 'global', None) is None and
             getattr(args, 'region', None) is None)):
       default_scope = base_classes.ScopeType.regional_scope
-    return super(DescribeAlpha, self).CreateReference(
+    return super(DescribeBeta, self).CreateReference(
         args, default=default_scope)
 
   @property
@@ -93,5 +93,5 @@ class DescribeAlpha(base_classes.MultiScopeDescriber):
     return None
 
 
-DescribeAlpha.detailed_help = base_classes.GetMultiScopeDescriberHelp(
-    'backend service', DescribeAlpha.SCOPES)
+DescribeBeta.detailed_help = base_classes.GetMultiScopeDescriberHelp(
+    'backend service', DescribeBeta.SCOPES)

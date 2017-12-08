@@ -22,7 +22,7 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class Create(base.Command):
+class Create(base.CreateCommand):
   """Create an App Engine app within the current Google Cloud Project."""
 
   detailed_help = {

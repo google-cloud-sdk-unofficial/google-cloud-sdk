@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetHealth(base.ListCommand):
   """Gets health status."""
 
@@ -77,8 +77,8 @@ GetHealth.detailed_help = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class GetHealthAlpha(GetHealth):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class GetHealthBeta(GetHealth):
   _BACKEND_SERVICE_ARG = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG
 
   def GetReference(self, holder, args):

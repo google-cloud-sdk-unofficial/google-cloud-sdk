@@ -11,7 +11,7 @@ gcloud dataproc clusters create \- create a cluster
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud dataproc clusters create\fR \fINAME\fR [\fB\-\-async\fR] [\fB\-\-bucket\fR\ \fIBUCKET\fR] [\fB\-\-image\-version\fR\ \fIVERSION\fR] [\fB\-\-initialization\-action\-timeout\fR\ \fITIMEOUT\fR;\ default="10m"] [\fB\-\-initialization\-actions\fR\ \fICLOUD_STORAGE_URI\fR,[\fICLOUD_STORAGE_URI\fR,...]] [\fB\-\-master\-boot\-disk\-size\fR\ \fIMASTER_BOOT_DISK_SIZE\fR] [\fB\-\-master\-machine\-type\fR\ \fIMASTER_MACHINE_TYPE\fR] [\fB\-\-metadata\fR\ \fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-network\fR\ \fINETWORK\fR\ |\ \fB\-\-subnet\fR\ \fISUBNET\fR] [\fB\-\-num\-master\-local\-ssds\fR\ \fINUM_MASTER_LOCAL_SSDS\fR] [\fB\-\-num\-preemptible\-workers\fR\ \fINUM_PREEMPTIBLE_WORKERS\fR] [\fB\-\-num\-worker\-local\-ssds\fR\ \fINUM_WORKER_LOCAL_SSDS\fR] [\fB\-\-num\-workers\fR\ \fINUM_WORKERS\fR] [\fB\-\-preemptible\-worker\-boot\-disk\-size\fR\ \fIPREEMPTIBLE_WORKER_BOOT_DISK_SIZE\fR] [\fB\-\-properties\fR\ [\fIPREFIX\fR:\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fB\-\-scopes\fR\ \fISCOPE\fR,[\fISCOPE\fR,...]] [\fB\-\-tags\fR\ \fITAG\fR,[\fITAG\fR,...]] [\fB\-\-worker\-boot\-disk\-size\fR\ \fIWORKER_BOOT_DISK_SIZE\fR] [\fB\-\-worker\-machine\-type\fR\ \fIWORKER_MACHINE_TYPE\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud dataproc clusters create\fR \fINAME\fR [\fB\-\-async\fR] [\fB\-\-bucket\fR=\fIBUCKET\fR] [\fB\-\-image\-version\fR=\fIVERSION\fR] [\fB\-\-initialization\-action\-timeout\fR=\fITIMEOUT\fR;\ default="10m"] [\fB\-\-initialization\-actions\fR=\fICLOUD_STORAGE_URI\fR,[\fICLOUD_STORAGE_URI\fR,...]] [\fB\-\-master\-boot\-disk\-size\fR=\fIMASTER_BOOT_DISK_SIZE\fR] [\fB\-\-master\-machine\-type\fR=\fIMASTER_MACHINE_TYPE\fR] [\fB\-\-metadata\fR=\fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-num\-master\-local\-ssds\fR=\fINUM_MASTER_LOCAL_SSDS\fR] [\fB\-\-num\-preemptible\-workers\fR=\fINUM_PREEMPTIBLE_WORKERS\fR] [\fB\-\-num\-worker\-local\-ssds\fR=\fINUM_WORKER_LOCAL_SSDS\fR] [\fB\-\-num\-workers\fR=\fINUM_WORKERS\fR] [\fB\-\-preemptible\-worker\-boot\-disk\-size\fR=\fIPREEMPTIBLE_WORKER_BOOT_DISK_SIZE\fR] [\fB\-\-properties\fR=[\fIPREFIX\fR:\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fB\-\-scopes\fR=\fISCOPE\fR,[\fISCOPE\fR,...]] [\fB\-\-tags\fR=\fITAG\fR,[\fITAG\fR,...]] [\fB\-\-worker\-boot\-disk\-size\fR=\fIWORKER_BOOT_DISK_SIZE\fR] [\fB\-\-worker\-machine\-type\fR=\fIWORKER_MACHINE_TYPE\fR] [\fB\-\-zone\fR=\fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fB\-\-network\fR=\fINETWORK\fR\ |\ \fB\-\-subnet\fR=\fISUBNET\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -38,29 +38,29 @@ Display information about the operation in progress and don't wait for the
 operation to complete.
 
 .RE
-\fB\-\-bucket\fR \fIBUCKET\fR
+\fB\-\-bucket\fR=\fIBUCKET\fR
 .RS 2m
 The Google Cloud Storage bucket to use with the Google Cloud Storage connector.
 A bucket is auto created when this parameter is not specified.
 
 .RE
-\fB\-\-image\-version\fR \fIVERSION\fR
+\fB\-\-image\-version\fR=\fIVERSION\fR
 .RS 2m
 The image version to use for the cluster. Defaults to the latest version.
 
 .RE
-\fB\-\-initialization\-action\-timeout\fR \fITIMEOUT\fR; default="10m"
+\fB\-\-initialization\-action\-timeout\fR=\fITIMEOUT\fR; default="10m"
 .RS 2m
 The maximum duration of each initialization action.
 
 .RE
-\fB\-\-initialization\-actions\fR \fICLOUD_STORAGE_URI\fR,[\fICLOUD_STORAGE_URI\fR,...]
+\fB\-\-initialization\-actions\fR=\fICLOUD_STORAGE_URI\fR,[\fICLOUD_STORAGE_URI\fR,...]
 .RS 2m
 A list of Google Cloud Storage URIs of executables to run on each node in the
 cluster.
 
 .RE
-\fB\-\-master\-boot\-disk\-size\fR \fIMASTER_BOOT_DISK_SIZE\fR
+\fB\-\-master\-boot\-disk\-size\fR=\fIMASTER_BOOT_DISK_SIZE\fR
 .RS 2m
 The size of the boot disk. The value must be a whole number followed by a size
 unit of \f5\fIKB\fR\fR for kilobyte, \f5\fIMB\fR\fR for megabyte, \f5\fIGB\fR\fR
@@ -69,45 +69,38 @@ produce a 10 gigabyte disk. The minimum size a boot disk can have is 10 GB. Disk
 size must be a multiple of 1 GB.
 
 .RE
-\fB\-\-master\-machine\-type\fR \fIMASTER_MACHINE_TYPE\fR
+\fB\-\-master\-machine\-type\fR=\fIMASTER_MACHINE_TYPE\fR
 .RS 2m
 The type of machine to use for the master. Defaults to server\-specified.
 
 .RE
-\fB\-\-metadata\fR \fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]
+\fB\-\-metadata\fR=\fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]
 .RS 2m
 Metadata to be made available to the guest operating system running on the
 instances
 
 .RE
-\fB\-\-network\fR \fINETWORK\fR
-.RS 2m
-The Compute Engine network that the VM instances of the cluster will be part of.
-This is mutually exclusive with \-\-subnet. If neither is specified, this
-defaults to the "default" network.
-
-.RE
-\fB\-\-num\-master\-local\-ssds\fR \fINUM_MASTER_LOCAL_SSDS\fR
+\fB\-\-num\-master\-local\-ssds\fR=\fINUM_MASTER_LOCAL_SSDS\fR
 .RS 2m
 The number of local SSDs to attach to the master in a cluster.
 
 .RE
-\fB\-\-num\-preemptible\-workers\fR \fINUM_PREEMPTIBLE_WORKERS\fR
+\fB\-\-num\-preemptible\-workers\fR=\fINUM_PREEMPTIBLE_WORKERS\fR
 .RS 2m
 The number of preemptible worker nodes in the cluster.
 
 .RE
-\fB\-\-num\-worker\-local\-ssds\fR \fINUM_WORKER_LOCAL_SSDS\fR
+\fB\-\-num\-worker\-local\-ssds\fR=\fINUM_WORKER_LOCAL_SSDS\fR
 .RS 2m
 The number of local SSDs to attach to each worker in a cluster.
 
 .RE
-\fB\-\-num\-workers\fR \fINUM_WORKERS\fR
+\fB\-\-num\-workers\fR=\fINUM_WORKERS\fR
 .RS 2m
 The number of worker nodes in the cluster. Defaults to server\-specified.
 
 .RE
-\fB\-\-preemptible\-worker\-boot\-disk\-size\fR \fIPREEMPTIBLE_WORKER_BOOT_DISK_SIZE\fR
+\fB\-\-preemptible\-worker\-boot\-disk\-size\fR=\fIPREEMPTIBLE_WORKER_BOOT_DISK_SIZE\fR
 .RS 2m
 The size of the boot disk. The value must be a whole number followed by a size
 unit of \f5\fIKB\fR\fR for kilobyte, \f5\fIMB\fR\fR for megabyte, \f5\fIGB\fR\fR
@@ -116,7 +109,7 @@ produce a 10 gigabyte disk. The minimum size a boot disk can have is 10 GB. Disk
 size must be a multiple of 1 GB.
 
 .RE
-\fB\-\-properties\fR [\fIPREFIX\fR:\fIPROPERTY\fR=\fIVALUE\fR,...]
+\fB\-\-properties\fR=[\fIPREFIX\fR:\fIPROPERTY\fR=\fIVALUE\fR,...]
 .RS 2m
 Specifies configuration properties for installed packages, such as Hadoop and
 Spark.
@@ -142,7 +135,7 @@ spark,spark\-defaults.conf
 
 
 .RE
-\fB\-\-scopes\fR \fISCOPE\fR,[\fISCOPE\fR,...]
+\fB\-\-scopes\fR=\fISCOPE\fR,[\fISCOPE\fR,...]
 .RS 2m
 Specifies scopes for the node instances. The project's default service account
 is used. Multiple SCOPEs can specified, separated by commas. Examples:
@@ -196,6 +189,7 @@ l l.
 Alias,URI
 bigquery,https://www.googleapis.com/auth/bigquery
 cloud\-platform,https://www.googleapis.com/auth/cloud\-platform
+cloud\-source\-repos,https://www.googleapis.com/auth/source.full_control
 compute\-ro,https://www.googleapis.com/auth/compute.readonly
 compute\-rw,https://www.googleapis.com/auth/compute
 datastore,https://www.googleapis.com/auth/datastore
@@ -216,20 +210,14 @@ userinfo\-email,https://www.googleapis.com/auth/userinfo.email
 .TE
 
 .RE
-\fB\-\-subnet\fR \fISUBNET\fR
-.RS 2m
-Specifies the subnet that the cluster will be part of. This is mutally exclusive
-with \-\-network.
-
-.RE
-\fB\-\-tags\fR \fITAG\fR,[\fITAG\fR,...]
+\fB\-\-tags\fR=\fITAG\fR,[\fITAG\fR,...]
 .RS 2m
 Specifies a list of tags to apply to the instances for identifying the instances
 to which network firewall rules will apply. See \fBgcloud compute
 firewall\-rules create\fR(1) for more details.
 
 .RE
-\fB\-\-worker\-boot\-disk\-size\fR \fIWORKER_BOOT_DISK_SIZE\fR
+\fB\-\-worker\-boot\-disk\-size\fR=\fIWORKER_BOOT_DISK_SIZE\fR
 .RS 2m
 The size of the boot disk. The value must be a whole number followed by a size
 unit of \f5\fIKB\fR\fR for kilobyte, \f5\fIMB\fR\fR for megabyte, \f5\fIGB\fR\fR
@@ -238,14 +226,29 @@ produce a 10 gigabyte disk. The minimum size a boot disk can have is 10 GB. Disk
 size must be a multiple of 1 GB.
 
 .RE
-\fB\-\-worker\-machine\-type\fR \fIWORKER_MACHINE_TYPE\fR
+\fB\-\-worker\-machine\-type\fR=\fIWORKER_MACHINE_TYPE\fR
 .RS 2m
 The type of machine to use for workers. Defaults to server\-specified.
 
 .RE
-\fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR, \fB\-z\fR \fIZONE\fR
 .RS 2m
 The compute zone (e.g. us\-central1\-a) for the cluster.
+
+.RE
+At most one of these may be specified:
+
+\fB\-\-network\fR=\fINETWORK\fR
+.RS 2m
+The Compute Engine network that the VM instances of the cluster will be part of.
+This is mutually exclusive with \-\-subnet. If neither is specified, this
+defaults to the "default" network.
+
+.RE
+\fB\-\-subnet\fR=\fISUBNET\fR
+.RS 2m
+Specifies the subnet that the cluster will be part of. This is mutally exclusive
+with \-\-network.
 
 
 .RE

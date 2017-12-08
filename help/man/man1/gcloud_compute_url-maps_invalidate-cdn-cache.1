@@ -11,7 +11,7 @@ gcloud compute url\-maps invalidate\-cdn\-cache \- invalidate specified objects 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute url\-maps invalidate\-cdn\-cache\fR \fIURLMAP\fR \fB\-\-path\fR \fIPATH\fR [\fB\-\-async\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute url\-maps invalidate\-cdn\-cache\fR \fIURLMAP\fR \fB\-\-path\fR=\fIPATH\fR [\fB\-\-async\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -37,7 +37,7 @@ The name of the URL map.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-path\fR \fIPATH\fR
+\fB\-\-path\fR=\fIPATH\fR
 .RS 2m
 A path specifying which objects to invalidate. PATH must start with ``/'' and
 the only place a ``*'' is allowed is at the end following a ``/''. It will be

@@ -14,42 +14,32 @@
 """Command for creating target HTTPS proxies."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.command_lib.compute.ssl_certificates import (
+    flags as ssl_certificates_flags)
+from googlecloudsdk.command_lib.compute.target_https_proxies import flags
+from googlecloudsdk.command_lib.compute.url_maps import flags as url_maps_flags
 
 
 class Create(base_classes.BaseAsyncCreator):
   """Create a target HTTPS proxy."""
 
-  @staticmethod
-  def Args(parser):
+  SSL_CERTIFICATE_ARG = None
+  TARGET_HTTPS_PROXY_ARG = None
+  URL_MAP_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.SSL_CERTIFICATE_ARG = (
+        ssl_certificates_flags.SslCertificateArgumentForTargetHttpsProxies())
+    cls.SSL_CERTIFICATE_ARG.AddArgument(parser)
+    cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument()
+    cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser)
+    cls.URL_MAP_ARG = url_maps_flags.UrlMapArgumentForTargetHttpsProxy()
+    cls.URL_MAP_ARG.AddArgument(parser)
+
     parser.add_argument(
         '--description',
         help='An optional, textual description for the target HTTPS proxy.')
-
-    ssl_certificate = parser.add_argument(
-        '--ssl-certificate',
-        required=True,
-        help=('A reference to an SSL certificate resource that is used for '
-              'server-side authentication.'))
-    ssl_certificate.detailed_help = """\
-        A reference to an SSL certificate resource that is used for
-        server-side authentication. The SSL certificate must exist and cannot
-        be deleted while referenced by a target HTTPS proxy.
-        """
-
-    url_map = parser.add_argument(
-        '--url-map',
-        required=True,
-        help=('A reference to a URL map resource that defines the mapping of '
-              'URLs to backend services.'))
-    url_map.detailed_help = """\
-        A reference to a URL map resource that defines the mapping of
-        URLs to backend services. The URL map must exist and cannot be
-        deleted while referenced by a target HTTPS proxy.
-        """
-
-    parser.add_argument(
-        'name',
-        help='The name of the target HTTPS proxy.')
 
   @property
   def service(self):
@@ -64,14 +54,13 @@ class Create(base_classes.BaseAsyncCreator):
     return 'targetHttpsProxies'
 
   def CreateRequests(self, args):
-    ssl_certificate_ref = self.CreateGlobalReference(
-        args.ssl_certificate, resource_type='sslCertificates')
+    ssl_certificate_ref = self.SSL_CERTIFICATE_ARG.ResolveAsResource(
+        args, self.resources)
 
-    url_map_ref = self.CreateGlobalReference(
-        args.url_map, resource_type='urlMaps')
+    url_map_ref = self.URL_MAP_ARG.ResolveAsResource(args, self.resources)
 
-    target_https_proxy_ref = self.CreateGlobalReference(
-        args.name, resource_type='targetHttpsProxies')
+    target_https_proxy_ref = self.TARGET_HTTPS_PROXY_ARG.ResolveAsResource(
+        args, self.resources)
 
     request = self.messages.ComputeTargetHttpsProxiesInsertRequest(
         project=self.project,

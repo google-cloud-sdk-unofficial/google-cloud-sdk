@@ -16,11 +16,12 @@
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBackupBeta(base.Command):
+class CreateBackupBeta(base.CreateCommand):
   """Creates a backup of a Cloud SQL instance."""
 
   @staticmethod
@@ -32,10 +33,7 @@ class CreateBackupBeta(base.Command):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    parser.add_argument(
-        '--instance',
-        completion_resource='sql.instances',
-        help='The ID of the instance to back up.')
+    flags.INSTANCE_FLAG.AddToParser(parser)
     parser.add_argument(
         '--description', help='A friendly description of the backup.')
     parser.add_argument(

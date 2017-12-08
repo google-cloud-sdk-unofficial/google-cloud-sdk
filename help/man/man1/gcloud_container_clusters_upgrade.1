@@ -11,7 +11,7 @@ gcloud container clusters upgrade \- upgrade the Kubernetes version of an existi
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud container clusters upgrade\fR \fINAME\fR [\fB\-\-async\fR] [\fB\-\-cluster\-version\fR\ \fICLUSTER_VERSION\fR] [\fB\-\-image\-type\fR\ \fIIMAGE_TYPE\fR] [\fB\-\-master\fR] [\fB\-\-node\-pool\fR\ \fINODE_POOL\fR] [\fB\-\-wait\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud container clusters upgrade\fR \fINAME\fR [\fB\-\-async\fR] [\fB\-\-cluster\-version\fR=\fICLUSTER_VERSION\fR] [\fB\-\-image\-type\fR=\fIIMAGE_TYPE\fR] [\fB\-\-master\fR] [\fB\-\-node\-pool\fR=\fINODE_POOL\fR] [\fB\-\-wait\fR] [\fB\-\-zone\fR=\fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -52,7 +52,7 @@ The name of the cluster to upgrade.
 Don't wait for the operation to complete. Use \fB\-\-no\-async\fR to disable.
 
 .RE
-\fB\-\-cluster\-version\fR \fICLUSTER_VERSION\fR
+\fB\-\-cluster\-version\fR=\fICLUSTER_VERSION\fR
 .RS 2m
 The Kubernetes release version to which to upgrade the cluster's nodes. Omit to
 upgrade the nodes to the version the cluster's Kubernetes master is running.
@@ -76,7 +76,7 @@ $ gcloud container get\-server\-config
 and looking at the returned "validNodeVersions".
 
 .RE
-\fB\-\-image\-type\fR \fIIMAGE_TYPE\fR
+\fB\-\-image\-type\fR=\fIIMAGE_TYPE\fR
 .RS 2m
 The image type to use for the cluster/node pool. Defaults to server\-specified.
 
@@ -100,7 +100,7 @@ Upgrade the cluster's master to the latest version of Kubernetes supported on
 Container Engine. Nodes cannot be upgraded at the same time as the master.
 
 .RE
-\fB\-\-node\-pool\fR \fINODE_POOL\fR
+\fB\-\-node\-pool\fR=\fINODE_POOL\fR
 .RS 2m
 The node pool to upgrade.
 
@@ -111,7 +111,7 @@ DEPRECATED, use \-\-no\-async. Poll the operation for completion after issuing a
 create request. Use \fB\-\-no\-wait\fR to disable.
 
 .RE
-\fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR, \fB\-z\fR \fIZONE\fR
 .RS 2m
 The compute zone (e.g. us\-central1\-a) for the cluster
 

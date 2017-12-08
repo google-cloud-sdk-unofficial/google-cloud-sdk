@@ -28,8 +28,8 @@ from googlecloudsdk.core import log
 class _BaseExport(object):
   """Exports data from a Cloud SQL instance."""
 
-  @classmethod
-  def Args(cls, parser):
+  @staticmethod
+  def Args(parser):
     """Args is called by calliope to gather arguments for this command.
 
     Args:

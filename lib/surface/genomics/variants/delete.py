@@ -20,7 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
-class Delete(base.Command):
+class Delete(base.DeleteCommand):
   """Deletes a variant.
   """
 

@@ -40,7 +40,8 @@ class List(base.ListCommand):
           """,
   }
 
-  def GetUriCacheUpdateOp(self):
+  @staticmethod
+  def GetUriCacheUpdateOp():
     # TODO((b/29539463) Resources of this API are not parsible.
     return None
 

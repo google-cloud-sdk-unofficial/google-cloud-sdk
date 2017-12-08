@@ -11,7 +11,7 @@ gcloud container clusters create \- create a cluster for running containers
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud container clusters create\fR \fINAME\fR [\fB\-\-additional\-zones\fR\ \fIZONE\fR,[\fIZONE\fR,...]] [\fB\-\-async\fR] [\fB\-\-cluster\-ipv4\-cidr\fR\ \fICLUSTER_IPV4_CIDR\fR] [\fB\-\-disable\-addons\fR\ [\fIDISABLE_ADDONS\fR,...]] [\fB\-\-disk\-size\fR\ \fIDISK_SIZE\fR] [\fB\-\-no\-enable\-cloud\-endpoints\fR] [\fB\-\-no\-enable\-cloud\-logging\fR] [\fB\-\-no\-enable\-cloud\-monitoring\fR] [\fB\-\-image\-type\fR\ \fIIMAGE_TYPE\fR] [\fB\-\-machine\-type\fR\ \fIMACHINE_TYPE\fR,\ \fB\-m\fR\ \fIMACHINE_TYPE\fR] [\fB\-\-max\-nodes\-per\-pool\fR\ \fIMAX_NODES_PER_POOL\fR] [\fB\-\-network\fR\ \fINETWORK\fR] [\fB\-\-num\-nodes\fR\ \fINUM_NODES\fR;\ default="3"] [\fB\-\-password\fR\ \fIPASSWORD\fR] [\fB\-\-scopes\fR\ \fISCOPE\fR,[\fISCOPE\fR,...]] [\fB\-\-subnetwork\fR\ \fISUBNETWORK\fR] [\fB\-\-username\fR\ \fIUSERNAME\fR,\ \fB\-u\fR\ \fIUSERNAME\fR;\ default="admin"] [\fB\-\-wait\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud container clusters create\fR \fINAME\fR [\fB\-\-additional\-zones\fR=\fIZONE\fR,[\fIZONE\fR,...]] [\fB\-\-async\fR] [\fB\-\-cluster\-ipv4\-cidr\fR=\fICLUSTER_IPV4_CIDR\fR] [\fB\-\-disable\-addons\fR=[\fIDISABLE_ADDONS\fR,...]] [\fB\-\-disk\-size\fR=\fIDISK_SIZE\fR] [\fB\-\-no\-enable\-cloud\-endpoints\fR] [\fB\-\-no\-enable\-cloud\-logging\fR] [\fB\-\-no\-enable\-cloud\-monitoring\fR] [\fB\-\-image\-type\fR=\fIIMAGE_TYPE\fR] [\fB\-\-machine\-type\fR=\fIMACHINE_TYPE\fR,\ \fB\-m\fR\ \fIMACHINE_TYPE\fR] [\fB\-\-max\-nodes\-per\-pool\fR=\fIMAX_NODES_PER_POOL\fR] [\fB\-\-network\fR=\fINETWORK\fR] [\fB\-\-num\-nodes\fR=\fINUM_NODES\fR;\ default="3"] [\fB\-\-password\fR=\fIPASSWORD\fR] [\fB\-\-scopes\fR=\fISCOPE\fR,[\fISCOPE\fR,...]] [\fB\-\-subnetwork\fR=\fISUBNETWORK\fR] [\fB\-\-username\fR=\fIUSERNAME\fR,\ \fB\-u\fR\ \fIUSERNAME\fR;\ default="admin"] [\fB\-\-wait\fR] [\fB\-\-zone\fR=\fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -32,7 +32,7 @@ The name of this cluster.
 
 .SH "FLAGS"
 
-\fB\-\-additional\-zones\fR \fIZONE\fR,[\fIZONE\fR,...]
+\fB\-\-additional\-zones\fR=\fIZONE\fR,[\fIZONE\fR,...]
 .RS 2m
 The set of additional zones in which the specified node footprint should be
 replicated. All zones must be in the same region as the cluster's primary zone.
@@ -46,7 +46,8 @@ created.
 Multiple locations can be specified, separated by commas. For example:
 
 .RS 2m
-$ {command} example\-cluster \-\-zone us\-central1\-a \e
+$ gcloud container clusters create example\-cluster \e
+    \-\-zone us\-central1\-a \e
     \-\-additional\-zones us\-central1\-b,us\-central1\-c
 .RE
 
@@ -57,21 +58,21 @@ $ {command} example\-cluster \-\-zone us\-central1\-a \e
 Don't wait for the operation to complete. Use \fB\-\-no\-async\fR to disable.
 
 .RE
-\fB\-\-cluster\-ipv4\-cidr\fR \fICLUSTER_IPV4_CIDR\fR
+\fB\-\-cluster\-ipv4\-cidr\fR=\fICLUSTER_IPV4_CIDR\fR
 .RS 2m
 The IP address range for the pods in this cluster in CIDR notation (e.g.
 10.0.0.0/14). Due to kube\-proxy limitations, this range must be a subset of the
 10.0.0.0/8 space. Defaults to server\-specified
 
 .RE
-\fB\-\-disable\-addons\fR [\fIDISABLE_ADDONS\fR,...]
+\fB\-\-disable\-addons\fR=[\fIDISABLE_ADDONS\fR,...]
 .RS 2m
 List of cluster addons to disable. Options are HttpLoadBalancing,
 HorizontalPodAutoscaling. \fIDISABLE_ADDONS\fR must be one of:
 \fBHttpLoadBalancing\fR, \fBHorizontalPodAutoscaling\fR.
 
 .RE
-\fB\-\-disk\-size\fR \fIDISK_SIZE\fR
+\fB\-\-disk\-size\fR=\fIDISK_SIZE\fR
 .RS 2m
 Size in GB for node VM boot disks. Defaults to 100GB.
 
@@ -97,7 +98,7 @@ of this setting. Enabled by default, use \fB\-\-no\-enable\-cloud\-monitoring\fR
 to disable.
 
 .RE
-\fB\-\-image\-type\fR \fIIMAGE_TYPE\fR
+\fB\-\-image\-type\fR=\fIIMAGE_TYPE\fR
 .RS 2m
 The image type to use for the cluster. Defaults to server\-specified.
 
@@ -115,12 +116,12 @@ $ gcloud container get\-server\-config
 
 
 .RE
-\fB\-\-machine\-type\fR \fIMACHINE_TYPE\fR, \fB\-m\fR \fIMACHINE_TYPE\fR
+\fB\-\-machine\-type\fR=\fIMACHINE_TYPE\fR, \fB\-m\fR \fIMACHINE_TYPE\fR
 .RS 2m
 The type of machine to use for nodes. Defaults to server\-specified
 
 .RE
-\fB\-\-max\-nodes\-per\-pool\fR \fIMAX_NODES_PER_POOL\fR
+\fB\-\-max\-nodes\-per\-pool\fR=\fIMAX_NODES_PER_POOL\fR
 .RS 2m
 The maximum number of nodes to allocate per default initial node pool. Container
 engine will automatically create enough nodes pools such that each node pool
@@ -128,24 +129,25 @@ contains less than \-\-max\-nodes\-per\-pool nodes. Defaults to 1000 nodes, but
 can be set as low as 100 nodes per pool on initial create.
 
 .RE
-\fB\-\-network\fR \fINETWORK\fR
+\fB\-\-network\fR=\fINETWORK\fR
 .RS 2m
 The Compute Engine Network that the cluster will connect to. Google Container
 Engine will use this network when creating routes and firewalls for the
 clusters. Defaults to the 'default' network.
 
 .RE
-\fB\-\-num\-nodes\fR \fINUM_NODES\fR; default="3"
+\fB\-\-num\-nodes\fR=\fINUM_NODES\fR; default="3"
 .RS 2m
 The number of nodes to be created in each of the cluster's zones.
 
 .RE
-\fB\-\-password\fR \fIPASSWORD\fR
+\fB\-\-password\fR=\fIPASSWORD\fR
 .RS 2m
-The password to use for cluster auth. Defaults to a randomly\-generated string.
+The password to use for cluster auth. Defaults to a server\-specified
+randomly\-generated string.
 
 .RE
-\fB\-\-scopes\fR \fISCOPE\fR,[\fISCOPE\fR,...]
+\fB\-\-scopes\fR=\fISCOPE\fR,[\fISCOPE\fR,...]
 .RS 2m
 Specifies scopes for the node instances. The project's default service account
 is used. Examples:
@@ -175,6 +177,7 @@ l l.
 Alias,URI
 bigquery,https://www.googleapis.com/auth/bigquery
 cloud\-platform,https://www.googleapis.com/auth/cloud\-platform
+cloud\-source\-repos,https://www.googleapis.com/auth/source.full_control
 compute\-ro,https://www.googleapis.com/auth/compute.readonly
 compute\-rw,https://www.googleapis.com/auth/compute
 datastore,https://www.googleapis.com/auth/datastore
@@ -196,7 +199,7 @@ userinfo\-email,https://www.googleapis.com/auth/userinfo.email
 
 
 .RE
-\fB\-\-subnetwork\fR \fISUBNETWORK\fR
+\fB\-\-subnetwork\fR=\fISUBNETWORK\fR
 .RS 2m
 The name of the Google Compute Engine subnetwork
 (https://cloud.google.com/compute/docs/subnetworks) to which the cluster is
@@ -205,7 +208,7 @@ network. Specification of subnetworks is an alpha feature, and requires that the
 Google Compute Engine alpha API be enabled.
 
 .RE
-\fB\-\-username\fR \fIUSERNAME\fR, \fB\-u\fR \fIUSERNAME\fR; default="admin"
+\fB\-\-username\fR=\fIUSERNAME\fR, \fB\-u\fR \fIUSERNAME\fR; default="admin"
 .RS 2m
 The user name to use for cluster auth.
 
@@ -216,7 +219,7 @@ DEPRECATED, use \-\-no\-async. Poll the operation for completion after issuing a
 create request. Use \fB\-\-no\-wait\fR to disable.
 
 .RE
-\fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR, \fB\-z\fR \fIZONE\fR
 .RS 2m
 The compute zone (e.g. us\-central1\-a) for the cluster
 

@@ -28,15 +28,15 @@ COMPUTE_SERVICE_ACCOUNT_PATTERN = ('serviceAccount:{0}-compute'
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class InitProject(base.Command):
-  """Initialize Cloud Machine Learning project."""
+  """Initialize project for Cloud ML."""
 
   detailed_help = {
       'DESCRIPTION': """\
           {description}
 
-          {command} initializes the current project for using with Google Cloud
+          {command} initializes the current project for use with Google Cloud
           Machine Learning. Specifically, it adds the required Cloud Machine
-          Learning service accounts to the current project as an editor.
+          Learning service accounts to the current project as editors.
     """
   }
 

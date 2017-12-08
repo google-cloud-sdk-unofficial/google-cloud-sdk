@@ -11,7 +11,7 @@ gcloud compute instances start \- start a stopped virtual machine instance
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances start\fR \fINAMES\fR [\fINAMES\fR\ ...] [\fB\-\-csek\-key\-file\fR\ \fIFILE\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instances start\fR \fINAMES\fR [\fINAMES\fR\ ...] [\fB\-\-csek\-key\-file\fR=\fIFILE\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -35,7 +35,7 @@ The names of the instances.
 
 .SH "FLAGS"
 
-\fB\-\-csek\-key\-file\fR \fIFILE\fR
+\fB\-\-csek\-key\-file\fR=\fIFILE\fR
 .RS 2m
 Path to a Customer\-Supplied Encryption Key (CSEK) key file, mapping Google
 Compute Engine resources to user managed keys to be used when creating,
@@ -44,7 +44,7 @@ https://cloud.google.com/compute/docs/disks/customer\-supplied\-encryption for
 more details.
 
 .RE
-\fB\-\-zone\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
 The zone of the instance to operate on. If not specified, you will be prompted
 to select a zone.

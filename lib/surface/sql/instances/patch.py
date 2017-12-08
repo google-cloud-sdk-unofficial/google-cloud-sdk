@@ -37,8 +37,8 @@ class _Result(object):
 class _BasePatch(object):
   """Updates the settings of a Cloud SQL instance."""
 
-  @classmethod
-  def Args(cls, parser):
+  @staticmethod
+  def Args(parser):
     """Args is called by calliope to gather arguments for this command.
 
     Please add arguments in alphabetical order except for no- or a clear-
@@ -366,7 +366,7 @@ class PatchBeta(_BasePatch, base.Command):
     original_instance_resource = sql_client.instances.Get(
         instance_ref.Request())
 
-    patch_instance = instances.InstancesV1Beta3.ConstructInstanceFromArgs(
+    patch_instance = instances.InstancesV1Beta4.ConstructInstanceFromArgs(
         sql_messages, args, original=original_instance_resource)
     patch_instance.project = instance_ref.project
     patch_instance.name = instance_ref.instance

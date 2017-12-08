@@ -29,7 +29,7 @@ from googlecloudsdk.core.console import console_io
 OPERATION_TIMEOUT = 20 * 60  # 20 mins
 
 
-class Delete(base.Command):
+class Delete(base.DeleteCommand):
   """Delete a deployment.
 
   This command deletes a deployment and deletes all associated resources.

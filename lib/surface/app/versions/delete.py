@@ -32,7 +32,7 @@ class VersionsDeleteError(exceptions.Error):
   pass
 
 
-class Delete(base.Command):
+class Delete(base.DeleteCommand):
   """Delete a specified version.
 
   You cannot delete a version of a service that is currently receiving traffic.
@@ -45,17 +45,17 @@ class Delete(base.Command):
 
             $ {command} --service myService v1
 
-          To delete a named version accross all services, run:
+          To delete a named version across all services, run:
 
             $ {command} v1
 
           To delete multiple versions of a specific service, run:
 
-            $ {command} delete --service myService v1 v2
+            $ {command} --service myService v1 v2
 
-          To delete multiple named versions accross all services, run:
+          To delete multiple named versions across all services, run:
 
-            $ {command} delete v1 v2
+            $ {command} v1 v2
           """,
   }
 

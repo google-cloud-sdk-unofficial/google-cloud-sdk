@@ -26,7 +26,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
-class Delete(base.Command):
+class Delete(base.DeleteCommand):
   """Delete an existing cluster for running containers."""
 
   @staticmethod

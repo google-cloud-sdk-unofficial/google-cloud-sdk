@@ -11,7 +11,7 @@ gcloud compute firewall\-rules create \- create a Google Compute Engine firewall
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute firewall\-rules create\fR \fINAME\fR \fB\-\-allow\fR \fIPROTOCOL\fR[:\fIPORT\fR[\-\fIPORT\fR]],[\fIPROTOCOL\fR[:\fIPORT\fR[\-\fIPORT\fR]],...] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-network\fR\ \fINETWORK\fR;\ default="default"] [\fB\-\-source\-ranges\fR\ \fICIDR_RANGE\fR,[\fICIDR_RANGE\fR,...]] [\fB\-\-source\-tags\fR\ \fITAG\fR,[\fITAG\fR,...]] [\fB\-\-target\-tags\fR\ \fITAG\fR,[\fITAG\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute firewall\-rules create\fR \fINAME\fR \fB\-\-allow\fR=\fIPROTOCOL\fR[:\fIPORT\fR[\-\fIPORT\fR]],[\fIPROTOCOL\fR[:\fIPORT\fR[\-\fIPORT\fR]],...] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-network\fR=\fINETWORK\fR;\ default="default"] [\fB\-\-source\-ranges\fR=\fICIDR_RANGE\fR,[\fICIDR_RANGE\fR,...]] [\fB\-\-source\-tags\fR=\fITAG\fR,[\fITAG\fR,...]] [\fB\-\-target\-tags\fR=\fITAG\fR,[\fITAG\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -33,7 +33,7 @@ The name of the firewall rule to create.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-allow\fR \fIPROTOCOL\fR[:\fIPORT\fR[\-\fIPORT\fR]],[\fIPROTOCOL\fR[:\fIPORT\fR[\-\fIPORT\fR]],...]
+\fB\-\-allow\fR=\fIPROTOCOL\fR[:\fIPORT\fR[\-\fIPORT\fR]],[\fIPROTOCOL\fR[:\fIPORT\fR[\-\fIPORT\fR]],...]
 .RS 2m
 A list of protocols and ports whose traffic will be allowed.
 
@@ -58,18 +58,18 @@ TCP and UDP rules must include a port or port range.
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-description\fR \fIDESCRIPTION\fR
+\fB\-\-description\fR=\fIDESCRIPTION\fR
 .RS 2m
 A textual description for the firewall rule.
 
 .RE
-\fB\-\-network\fR \fINETWORK\fR; default="default"
+\fB\-\-network\fR=\fINETWORK\fR; default="default"
 .RS 2m
 The network to which this rule is attached. If omitted, the rule is attached to
 the \f5\fIdefault\fR\fR network.
 
 .RE
-\fB\-\-source\-ranges\fR \fICIDR_RANGE\fR,[\fICIDR_RANGE\fR,...]
+\fB\-\-source\-ranges\fR=\fICIDR_RANGE\fR,[\fICIDR_RANGE\fR,...]
 .RS 2m
 A list of IP address blocks that are allowed to make inbound connections that
 match the firewall rule to the instances on the network. The IP address blocks
@@ -81,7 +81,7 @@ will default to 0.0.0.0/0, allowing all sources. Multiple IP address blocks can
 be specified if they are separated by spaces.
 
 .RE
-\fB\-\-source\-tags\fR \fITAG\fR,[\fITAG\fR,...]
+\fB\-\-source\-tags\fR=\fITAG\fR,[\fITAG\fR,...]
 .RS 2m
 A list of instance tags indicating the set of instances on the network which may
 make network connections that match the firewall rule. If omitted, all instances
@@ -90,7 +90,7 @@ on the network can make connections that match the rule.
 Tags can be assigned to instances during instance creation.
 
 .RE
-\fB\-\-target\-tags\fR \fITAG\fR,[\fITAG\fR,...]
+\fB\-\-target\-tags\fR=\fITAG\fR,[\fITAG\fR,...]
 .RS 2m
 A list of instance tags indicating the set of instances on the network which may
 accept inbound connections that match the firewall rule. If omitted, all

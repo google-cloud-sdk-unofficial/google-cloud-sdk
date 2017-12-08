@@ -11,7 +11,7 @@ gcloud compute forwarding\-rules describe \- display detailed information about 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute forwarding\-rules describe\fR \fINAME\fR [\fB\-\-global\fR\ |\ \fB\-\-region\fR\ \fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute forwarding\-rules describe\fR \fINAME\fR [\fB\-\-global\fR\ |\ \fB\-\-region\fR=\fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -33,12 +33,14 @@ The name of the resource to fetch.
 
 .SH "FLAGS"
 
+At most one of these may be specified:
+
 \fB\-\-global\fR
 .RS 2m
 If provided, it is assumed that the requested resource is global.
 
 .RE
-\fB\-\-region\fR \fIREGION\fR
+\fB\-\-region\fR=\fIREGION\fR
 .RS 2m
 The region of the resource to fetch.
 

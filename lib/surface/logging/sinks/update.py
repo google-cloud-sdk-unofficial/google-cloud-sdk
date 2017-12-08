@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import log
 
 
-class Update(base.Command):
+class Update(base.UpdateCommand):
   """Updates a sink."""
 
   @staticmethod
@@ -161,23 +161,21 @@ class Update(base.Command):
     if args.log:
       result = util.TypedLogSink(self.UpdateLogSink(sink_data),
                                  log_name=args.log)
+      kind = 'log sink'
     elif args.service:
       result = util.TypedLogSink(self.UpdateLogServiceSink(sink_data),
                                  service_name=args.service)
+      kind = 'service log sink'
     else:
       if args.output_version_format:
         sink_data['outputVersionFormat'] = args.output_version_format
       else:
         sink_data['outputVersionFormat'] = sink.outputVersionFormat.name
       result = util.TypedLogSink(self.UpdateProjectSink(sink_data))
-    log.UpdatedResource(sink_ref)
-    self._epilog_result_destination = result.destination
-    self._writer_identity = result.writer_identity
+      kind = 'project sink'
+    log.UpdatedResource(sink_ref, kind=kind)
+    util.PrintPermissionInstructions(result.destination, result.writer_identity)
     return result
-
-  def Epilog(self, unused_resources_were_displayed):
-    util.PrintPermissionInstructions(self._epilog_result_destination,
-                                     self._writer_identity)
 
 
 Update.detailed_help = {
@@ -185,7 +183,7 @@ Update.detailed_help = {
         Changes the *[destination]* or *--log-filter* associated with a sink.
         If you don't include one of the *--log* or *--log-service* flags,
         this command updates a project sink.
-        The new destination must already exist and Cloud Logging must have
+        The new destination must already exist and Stackdriver Logging must have
         permission to write to it.
         Log entries are exported to the new destination immediately.
     """,

@@ -16,41 +16,6 @@
 from googlecloudsdk.api_lib.ml import versions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
-from googlecloudsdk.core import apis
-from googlecloudsdk.core import resources
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(base.DescribeCommand):
-  """Describe an existing Cloud ML version."""
-
-  def Collection(self):
-    return 'ml.models.versions'
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    flags.GetModelName(positional=False).AddToParser(parser)
-    flags.VERSION_NAME.AddToParser(parser)
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-    client = apis.GetClientInstance('ml', 'v1alpha3')
-    res = resources.REGISTRY.Parse(
-        args.version,
-        params={'modelsId': args.model},
-        collection='ml.projects.models.versions')
-    req = res.Request()
-    resp = client.projects_models_versions.Get(req)
-    return resp
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

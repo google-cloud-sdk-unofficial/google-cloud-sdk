@@ -13,45 +13,9 @@
 # limitations under the License.
 """ml models versions list command."""
 
-from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.ml import versions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
-from googlecloudsdk.core import apis
-from googlecloudsdk.core import resources
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(base.ListCommand):
-  """List existing Cloud ML versions."""
-
-  def Collection(self):
-    return 'ml.beta.models.versions'
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    flags.GetModelName(positional=False, required=True).AddToParser(parser)
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-    client = apis.GetClientInstance('ml', 'v1alpha3')
-    msgs = apis.GetMessagesModule('ml', 'v1alpha3')
-    res = resources.REGISTRY.Parse(args.model, collection='ml.projects.models')
-    req = msgs.MlProjectsModelsVersionsListRequest(
-        projectsId=res.projectsId, modelsId=res.Name())
-    return list_pager.YieldFromList(client.projects_models_versions,
-                                    req,
-                                    field='versions',
-                                    batch_size_attribute='pageSize')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

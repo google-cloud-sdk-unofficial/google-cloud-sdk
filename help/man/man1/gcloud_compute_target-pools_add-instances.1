@@ -11,7 +11,7 @@ gcloud compute target\-pools add\-instances \- add instances to a target pool
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute target\-pools add\-instances\fR \fINAME\fR \fB\-\-instances\fR \fIINSTANCE\fR,[\fIINSTANCE\fR,...] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute target\-pools add\-instances\fR \fINAME\fR \fB\-\-instances\fR=\fIINSTANCE\fR,[\fIINSTANCE\fR,...] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -35,7 +35,7 @@ The name of the target pool to which to add the instances.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-instances\fR \fIINSTANCE\fR,[\fIINSTANCE\fR,...]
+\fB\-\-instances\fR=\fIINSTANCE\fR,[\fIINSTANCE\fR,...]
 .RS 2m
 Specifies a list of instances to add to the target pool.
 
@@ -44,7 +44,7 @@ Specifies a list of instances to add to the target pool.
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-zone\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
 The zone of the instances to add to the target pool. If not specified, you will
 be prompted to select a zone.

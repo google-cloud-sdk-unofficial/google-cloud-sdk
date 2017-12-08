@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 
 
-class Update(base.Command):
+class Update(base.UpdateCommand):
   """Update the number of worker nodes in a cluster."""
 
   detailed_help = {

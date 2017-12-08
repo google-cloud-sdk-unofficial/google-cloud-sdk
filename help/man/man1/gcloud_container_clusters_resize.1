@@ -11,7 +11,7 @@ gcloud container clusters resize \- resizes an existing cluster for running cont
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud container clusters resize\fR \fINAME\fR \fB\-\-size\fR \fISIZE\fR [\fB\-\-async\fR] [\fB\-\-node\-pool\fR\ \fINODE_POOL\fR] [\fB\-\-wait\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud container clusters resize\fR \fINAME\fR \fB\-\-size\fR=\fISIZE\fR [\fB\-\-async\fR] [\fB\-\-node\-pool\fR=\fINODE_POOL\fR] [\fB\-\-wait\fR] [\fB\-\-zone\fR=\fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -49,7 +49,7 @@ The name of this cluster.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-size\fR \fISIZE\fR
+\fB\-\-size\fR=\fISIZE\fR
 .RS 2m
 Target number of nodes in the cluster.
 
@@ -63,7 +63,7 @@ Target number of nodes in the cluster.
 Don't wait for the operation to complete. Use \fB\-\-no\-async\fR to disable.
 
 .RE
-\fB\-\-node\-pool\fR \fINODE_POOL\fR
+\fB\-\-node\-pool\fR=\fINODE_POOL\fR
 .RS 2m
 The node pool to resize.
 
@@ -74,7 +74,7 @@ DEPRECATED, use \-\-no\-async. Poll the operation for completion after issuing a
 create request. Use \fB\-\-no\-wait\fR to disable.
 
 .RE
-\fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR, \fB\-z\fR \fIZONE\fR
 .RS 2m
 The compute zone (e.g. us\-central1\-a) for the cluster
 

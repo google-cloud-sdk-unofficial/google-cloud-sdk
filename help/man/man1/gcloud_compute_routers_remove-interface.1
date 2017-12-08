@@ -11,7 +11,7 @@ gcloud compute routers remove\-interface \- remove an interface from a router
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute routers remove\-interface\fR \fINAME\fR \fB\-\-interface\-name\fR \fIINTERFACE_NAME\fR [\fB\-\-region\fR\ \fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute routers remove\-interface\fR \fINAME\fR \fB\-\-interface\-name\fR=\fIINTERFACE_NAME\fR [\fB\-\-region\fR=\fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -33,7 +33,7 @@ The name of the router.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-interface\-name\fR \fIINTERFACE_NAME\fR
+\fB\-\-interface\-name\fR=\fIINTERFACE_NAME\fR
 .RS 2m
 The name of the interface being removed.
 
@@ -42,7 +42,7 @@ The name of the interface being removed.
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-region\fR \fIREGION\fR
+\fB\-\-region\fR=\fIREGION\fR
 .RS 2m
 The region of the router to update. If not specified, you will be prompted to
 select a region.

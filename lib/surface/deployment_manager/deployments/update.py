@@ -31,7 +31,7 @@ OPERATION_TIMEOUT = 20 * 60  # 20 mins
 
 @base.UnicodeIsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Update(base.Command):
+class Update(base.UpdateCommand):
   """Update a deployment based on a provided config file.
 
   This command will update a deployment with the new config file provided.

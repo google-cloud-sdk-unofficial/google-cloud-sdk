@@ -11,7 +11,7 @@ gcloud compute copy\-files \- copy files to and from Google Compute Engine virtu
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute copy\-files\fR [[\fIUSER\fR@]\fIINSTANCE\fR:]\fISRC\fR [[[\fIUSER\fR@]\fIINSTANCE\fR:]\fISRC\fR\ ...] [[\fIUSER\fR@]\fIINSTANCE\fR:]\fIDEST\fR [\fB\-\-dry\-run\fR] [\fB\-\-plain\fR] [\fB\-\-ssh\-key\-file\fR\ \fISSH_KEY_FILE\fR] [\fB\-\-strict\-host\-key\-checking\fR\ \fISTRICT_HOST_KEY_CHECKING\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute copy\-files\fR [[\fIUSER\fR@]\fIINSTANCE\fR:]\fISRC\fR [[[\fIUSER\fR@]\fIINSTANCE\fR:]\fISRC\fR\ ...] [[\fIUSER\fR@]\fIINSTANCE\fR:]\fIDEST\fR [\fB\-\-dry\-run\fR] [\fB\-\-plain\fR] [\fB\-\-ssh\-key\-file\fR=\fISSH_KEY_FILE\fR] [\fB\-\-strict\-host\-key\-checking\fR=\fISTRICT_HOST_KEY_CHECKING\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -84,13 +84,13 @@ is useful if you want to take care of authentication yourself or use specific
 ssh/scp features.
 
 .RE
-\fB\-\-ssh\-key\-file\fR \fISSH_KEY_FILE\fR
+\fB\-\-ssh\-key\-file\fR=\fISSH_KEY_FILE\fR
 .RS 2m
 The path to the SSH key file. By default, this is
 \f5\fI~/.ssh/google_compute_engine\fR\fR.
 
 .RE
-\fB\-\-strict\-host\-key\-checking\fR \fISTRICT_HOST_KEY_CHECKING\fR
+\fB\-\-strict\-host\-key\-checking\fR=\fISTRICT_HOST_KEY_CHECKING\fR
 .RS 2m
 Override the default behavior of StrictHostKeyChecking. By default,
 StrictHostKeyChecking is set to 'no' the first time you connect to an instance
@@ -99,7 +99,7 @@ specify a value for the connection. \fISTRICT_HOST_KEY_CHECKING\fR must be one
 of: \fByes\fR, \fBno\fR, \fBask\fR.
 
 .RE
-\fB\-\-zone\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
 The zone of the instance to copy files to/from. If omitted, you will be prompted
 to select a zone.

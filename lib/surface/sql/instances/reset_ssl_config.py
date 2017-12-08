@@ -22,8 +22,8 @@ from googlecloudsdk.core import log
 class _BaseResetSslConfig(object):
   """Deletes all client certificates and generates a new server certificate."""
 
-  @classmethod
-  def Args(cls, parser):
+  @staticmethod
+  def Args(parser):
     """Args is called by calliope to gather arguments for this command.
 
     Args:

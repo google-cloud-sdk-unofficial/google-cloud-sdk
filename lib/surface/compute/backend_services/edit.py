@@ -28,7 +28,7 @@ class InvalidResourceError(exceptions.ToolException):
   pass
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Edit(base_classes.BaseEdit):
   """Modify backend services."""
 
@@ -175,6 +175,6 @@ Edit.detailed_help = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class EditAlpha(Edit):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class EditBeta(Edit):
   _BACKEND_SERVICE_ARG = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG

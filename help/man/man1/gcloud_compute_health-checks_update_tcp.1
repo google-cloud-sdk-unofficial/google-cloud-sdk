@@ -11,7 +11,7 @@ gcloud compute health\-checks update tcp \- update a TCP health check
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute health\-checks update tcp\fR \fINAME\fR [\fB\-\-check\-interval\fR\ \fICHECK_INTERVAL\fR] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-healthy\-threshold\fR\ \fIHEALTHY_THRESHOLD\fR] [\fB\-\-port\fR\ \fIPORT\fR] [\fB\-\-port\-name\fR\ \fIPORT_NAME\fR] [\fB\-\-proxy\-header\fR\ \fIPROXY_HEADER\fR] [\fB\-\-request\fR\ \fIREQUEST\fR] [\fB\-\-response\fR\ \fIRESPONSE\fR] [\fB\-\-timeout\fR\ \fITIMEOUT\fR] [\fB\-\-unhealthy\-threshold\fR\ \fIUNHEALTHY_THRESHOLD\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute health\-checks update tcp\fR \fINAME\fR [\fB\-\-check\-interval\fR=\fICHECK_INTERVAL\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-healthy\-threshold\fR=\fIHEALTHY_THRESHOLD\fR] [\fB\-\-port\fR=\fIPORT\fR] [\fB\-\-port\-name\fR=\fIPORT_NAME\fR] [\fB\-\-proxy\-header\fR=\fIPROXY_HEADER\fR] [\fB\-\-request\fR=\fIREQUEST\fR] [\fB\-\-response\fR=\fIRESPONSE\fR] [\fB\-\-timeout\fR=\fITIMEOUT\fR] [\fB\-\-unhealthy\-threshold\fR=\fIUNHEALTHY_THRESHOLD\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -34,37 +34,37 @@ The name of the TCP health check.
 
 .SH "FLAGS"
 
-\fB\-\-check\-interval\fR \fICHECK_INTERVAL\fR
+\fB\-\-check\-interval\fR=\fICHECK_INTERVAL\fR
 .RS 2m
 How often to perform a health check for an instance. For example, specifying
 \f5\fI10s\fR\fR will run the check every 10 seconds. Valid units for this flag
 are ``s'' for seconds and ``m'' for minutes.
 
 .RE
-\fB\-\-description\fR \fIDESCRIPTION\fR
+\fB\-\-description\fR=\fIDESCRIPTION\fR
 .RS 2m
 A textual description for the TCP health check. Pass in an empty string to
 unset.
 
 .RE
-\fB\-\-healthy\-threshold\fR \fIHEALTHY_THRESHOLD\fR
+\fB\-\-healthy\-threshold\fR=\fIHEALTHY_THRESHOLD\fR
 .RS 2m
 The number of consecutive successful health checks before an unhealthy instance
 is marked as healthy.
 
 .RE
-\fB\-\-port\fR \fIPORT\fR
+\fB\-\-port\fR=\fIPORT\fR
 .RS 2m
 The TCP port number that this health check monitors.
 
 .RE
-\fB\-\-port\-name\fR \fIPORT_NAME\fR
+\fB\-\-port\-name\fR=\fIPORT_NAME\fR
 .RS 2m
 The port name that this health check monitors. By default, this is empty.
 Setting this to an empty string will clear any existing port\-name value.
 
 .RE
-\fB\-\-proxy\-header\fR \fIPROXY_HEADER\fR
+\fB\-\-proxy\-header\fR=\fIPROXY_HEADER\fR
 .RS 2m
 The type of proxy protocol header to be sent to the backend. \fIPROXY_HEADER\fR
 must be one of:
@@ -79,7 +79,7 @@ Adds the header "PROXY UNKNOWN\er\en".
 
 .RE
 .RE
-\fB\-\-request\fR \fIREQUEST\fR
+\fB\-\-request\fR=\fIREQUEST\fR
 .RS 2m
 Application data to send once the TCP connection has been established. By
 default, this is empty. If both request and response are empty, the connection
@@ -88,14 +88,14 @@ establishment alone will indicate health of the TCP connection.
 Setting this to an empty string will clear any existing request value.
 
 .RE
-\fB\-\-response\fR \fIRESPONSE\fR
+\fB\-\-response\fR=\fIRESPONSE\fR
 .RS 2m
 The bytes to match against the beginning of the response data. By default, this
 is empty. If empty, any response will indicate health of the TCP connection.
 Setting this to an empty string will clear any existing response value.
 
 .RE
-\fB\-\-timeout\fR \fITIMEOUT\fR
+\fB\-\-timeout\fR=\fITIMEOUT\fR
 .RS 2m
 If Google Compute Engine doesn't receive a healthy response from the instance by
 the time specified by the value of this flag, the health check request is
@@ -104,7 +104,7 @@ check to wait for 10 seconds before considering the request a failure. Valid
 units for this flag are ``s'' for seconds and ``m'' for minutes.
 
 .RE
-\fB\-\-unhealthy\-threshold\fR \fIUNHEALTHY_THRESHOLD\fR
+\fB\-\-unhealthy\-threshold\fR=\fIUNHEALTHY_THRESHOLD\fR
 .RS 2m
 The number of consecutive health check failures before a healthy instance is
 marked as unhealthy.

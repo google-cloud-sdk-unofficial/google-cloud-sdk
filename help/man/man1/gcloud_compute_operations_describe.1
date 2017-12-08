@@ -11,7 +11,7 @@ gcloud compute operations describe \- describe a Google Compute Engine operation
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute operations describe\fR \fINAME\fR [\fB\-\-global\fR\ |\ \fB\-\-region\fR\ \fIREGION\fR\ |\ \fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute operations describe\fR \fINAME\fR [\fB\-\-global\fR\ |\ \fB\-\-region\fR=\fIREGION\fR\ |\ \fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -33,17 +33,19 @@ The name of the resource to fetch.
 
 .SH "FLAGS"
 
+At most one of these may be specified:
+
 \fB\-\-global\fR
 .RS 2m
 If provided, it is assumed that the requested operation is global.
 
 .RE
-\fB\-\-region\fR \fIREGION\fR
+\fB\-\-region\fR=\fIREGION\fR
 .RS 2m
 The region of the operation to fetch.
 
 .RE
-\fB\-\-zone\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
 The zone of the operation to fetch.
 

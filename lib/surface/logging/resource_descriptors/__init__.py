@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Cloud logging resource-descriptors group."""
+"""Stackdriver logging resource-descriptors group."""
 
 from googlecloudsdk.calliope import base
 

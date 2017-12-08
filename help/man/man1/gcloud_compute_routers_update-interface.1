@@ -11,7 +11,7 @@ gcloud compute routers update\-interface \- update an interface on a router
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute routers update\-interface\fR \fINAME\fR \fB\-\-interface\-name\fR \fIINTERFACE_NAME\fR [\fB\-\-ip\-address\fR\ \fIIP_ADDRESS\fR] [\fB\-\-mask\-length\fR\ \fIMASK_LENGTH\fR] [\fB\-\-region\fR\ \fIREGION\fR] [\fB\-\-vpn\-tunnel\fR\ \fIVPN_TUNNEL\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute routers update\-interface\fR \fINAME\fR \fB\-\-interface\-name\fR=\fIINTERFACE_NAME\fR [\fB\-\-ip\-address\fR=\fIIP_ADDRESS\fR] [\fB\-\-mask\-length\fR=\fIMASK_LENGTH\fR] [\fB\-\-region\fR=\fIREGION\fR] [\fB\-\-vpn\-tunnel\fR=\fIVPN_TUNNEL\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -33,7 +33,7 @@ The name of the router.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-interface\-name\fR \fIINTERFACE_NAME\fR
+\fB\-\-interface\-name\fR=\fIINTERFACE_NAME\fR
 .RS 2m
 The name of the interface being updated.
 
@@ -42,17 +42,17 @@ The name of the interface being updated.
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-ip\-address\fR \fIIP_ADDRESS\fR
+\fB\-\-ip\-address\fR=\fIIP_ADDRESS\fR
 .RS 2m
 The link local address of the router for this interface.
 
 .RE
-\fB\-\-mask\-length\fR \fIMASK_LENGTH\fR
+\fB\-\-mask\-length\fR=\fIMASK_LENGTH\fR
 .RS 2m
 The mask for network used for the server IP address.
 
 .RE
-\fB\-\-region\fR \fIREGION\fR
+\fB\-\-region\fR=\fIREGION\fR
 .RS 2m
 The region of the router to update. If not specified, you will be prompted to
 select a region.
@@ -80,7 +80,7 @@ Alternatively, the region can be stored in the environment variable
 \f5\fICLOUDSDK_COMPUTE_REGION\fR\fR.
 
 .RE
-\fB\-\-vpn\-tunnel\fR \fIVPN_TUNNEL\fR
+\fB\-\-vpn\-tunnel\fR=\fIVPN_TUNNEL\fR
 .RS 2m
 The tunnel of the interface being updated.
 

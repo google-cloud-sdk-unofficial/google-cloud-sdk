@@ -11,7 +11,7 @@ gcloud compute instances stop \- stop a virtual machine instance
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances stop\fR \fINAMES\fR [\fINAMES\fR\ ...] [\fB\-\-discard\-local\-ssd\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instances stop\fR \fINAMES\fR [\fINAMES\fR\ ...] [\fB\-\-discard\-local\-ssd\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -40,7 +40,7 @@ The names of the instances.
 If provided, local SSD data is discarded.
 
 .RE
-\fB\-\-zone\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
 The zone of the instance to operate on. If not specified, you will be prompted
 to select a zone.

@@ -11,7 +11,7 @@ gcloud compute instance\-groups unmanaged add\-instances \- adds instances to an
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instance\-groups unmanaged add\-instances\fR \fINAME\fR \fB\-\-instances\fR \fIINSTANCE\fR,[\fIINSTANCE\fR,...] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instance\-groups unmanaged add\-instances\fR \fINAME\fR \fB\-\-instances\fR=\fIINSTANCE\fR,[\fIINSTANCE\fR,...] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -39,7 +39,7 @@ The name of the instance group.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-instances\fR \fIINSTANCE\fR,[\fIINSTANCE\fR,...]
+\fB\-\-instances\fR=\fIINSTANCE\fR,[\fIINSTANCE\fR,...]
 .RS 2m
 A list of names of instances to add to the instance group. These must exist
 beforehand and must live in the same zone as the instance group.
@@ -49,7 +49,7 @@ beforehand and must live in the same zone as the instance group.
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-zone\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
 The zone of the instance group to operate on. If not specified, you will be
 prompted to select a zone.

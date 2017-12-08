@@ -21,8 +21,8 @@ from googlecloudsdk.calliope import base
 class _BaseGet(object):
   """Retrieves information about a Cloud SQL instance."""
 
-  @classmethod
-  def Args(cls, parser):
+  @staticmethod
+  def Args(parser):
     """Args is called by calliope to gather arguments for this command.
 
     Args:

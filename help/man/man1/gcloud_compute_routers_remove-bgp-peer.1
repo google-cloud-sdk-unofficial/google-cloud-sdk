@@ -11,7 +11,7 @@ gcloud compute routers remove\-bgp\-peer \- remove a BGP peer from a router
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute routers remove\-bgp\-peer\fR \fINAME\fR \fB\-\-peer\-name\fR \fIPEER_NAME\fR [\fB\-\-region\fR\ \fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute routers remove\-bgp\-peer\fR \fINAME\fR \fB\-\-peer\-name\fR=\fIPEER_NAME\fR [\fB\-\-region\fR=\fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -32,7 +32,7 @@ The name of the router.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-peer\-name\fR \fIPEER_NAME\fR
+\fB\-\-peer\-name\fR=\fIPEER_NAME\fR
 .RS 2m
 The name of the peer being removed.
 
@@ -41,7 +41,7 @@ The name of the peer being removed.
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-region\fR \fIREGION\fR
+\fB\-\-region\fR=\fIREGION\fR
 .RS 2m
 The region of the router to update. If not specified, you will be prompted to
 select a region.

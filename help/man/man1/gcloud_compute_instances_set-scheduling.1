@@ -11,7 +11,7 @@ gcloud compute instances set\-scheduling \- set scheduling options for Google Co
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances set\-scheduling\fR \fINAME\fR [\fB\-\-maintenance\-policy\fR\ \fIMAINTENANCE_POLICY\fR] [\fB\-\-restart\-on\-failure\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instances set\-scheduling\fR \fINAME\fR [\fB\-\-maintenance\-policy\fR=\fIMAINTENANCE_POLICY\fR] [\fB\-\-restart\-on\-failure\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -33,7 +33,7 @@ The name of the instance.
 
 .SH "FLAGS"
 
-\fB\-\-maintenance\-policy\fR \fIMAINTENANCE_POLICY\fR
+\fB\-\-maintenance\-policy\fR=\fIMAINTENANCE_POLICY\fR
 .RS 2m
 Specifies the behavior of the instances when their host machines undergo
 maintenance. The default is MIGRATE. \fIMAINTENANCE_POLICY\fR must be one of:
@@ -56,7 +56,7 @@ does not affect terminations performed by the user.'. Use
 \fB\-\-no\-restart\-on\-failure\fR to disable.
 
 .RE
-\fB\-\-zone\fR \fIZONE\fR
+\fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
 The zone of the instance to operate on. If not specified, you will be prompted
 to select a zone.

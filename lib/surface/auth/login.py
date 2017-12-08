@@ -41,11 +41,6 @@ class Login(base.Command):
   authorization, the account is set to active without rerunning the flow.
 
   Use `gcloud auth list` to view credentialed accounts.
-
-  Deprecated behavior: This command also saves the credentials for
-  Application Default Credentials. This behavior has been taken over by
-  `gcloud auth application-default login`, so prefer to use that command
-  instead for that purpose.
   """
 
   @staticmethod
@@ -154,15 +149,11 @@ class Login(base.Command):
     if project:
       properties.PersistProperty(properties.VALUES.core.project, project)
 
-    auth_util.SaveCredentialsAsADC(creds)
     if not brief:
-      log.status.write('Saved Application Default Credentials.\n')
       log.warning(
-          '`gcloud auth login` will stop writing application default '
-          'credentials\nin a future release. See:\n    '
-          'https://developers.google.com/identity/protocols/'
-          'application-default-credentials#toolcloudsdk'
-          '\nfor more information.')
+          '`gcloud auth login` no longer writes application default '
+          'credentials.\nIf you need to use ADC, see:\n'
+          '  gcloud auth application-default --help')
 
     if not brief:
       log.status.write(

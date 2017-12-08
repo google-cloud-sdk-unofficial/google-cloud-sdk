@@ -23,13 +23,12 @@ from oauth2client import client
 
 
 class PrintAccessToken(base.Command):
-  """Print an access token for the active credentials.
+  """Print an access token for the your current Application Default Credentials.
 
-  The scopes argument is only used for service account credentials, because
-  user credentials will already be bound to a scope. The scopes argument
-  is simply ignored for user credentials. If it is not provided when service
-  account credentials are used, then it is defaulted to
-  'https://www.googleapis.com/auth/cloud-platform'.
+  Once you have generated Application Default Credentials using
+  `{parent_command} login`, you can use this command to generate and print
+  an access token that can be directly used for making an API call. This can be
+  useful for manually testing out APIs via curl.
   """
 
   @staticmethod

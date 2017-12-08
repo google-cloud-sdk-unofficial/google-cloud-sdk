@@ -28,6 +28,7 @@ from mako import template
 _COLLECTION_SUB_RE = r'[a-zA-Z_]+(?:\.[a-zA-Z0-9_]+)+'
 _METHOD_ID_RE = re.compile(r'(?P<collection>{collection})\.get'.format(
     collection=_COLLECTION_SUB_RE))
+_DEFAULT_PATH_NAME = ''
 
 _INIT_FILE_CONTENT = """\
 # Copyright 2016 Google Inc. All Rights Reserved.
@@ -198,11 +199,16 @@ def _ExtractResources(api_name, api_version, base_url, infos):
         match = _METHOD_ID_RE.match(method_id)
         if match:
           collection_name = match.group('collection')
+          request_type = ''.join(
+              [s[0].upper() + s[1:]
+               for s in re.findall(r'[^\._]+', collection_name)]) + 'GetRequest'
           # Remove api name from collection. It might not match passed in, or
           # even api name in url. We choose to use api name as defined by url.
           collection_name = collection_name.split('.', 1)[1]
           flat_path = get_method.get('flatPath')
           path = get_method.get('path')
+          if flat_path == path:
+            flat_path = None
           # Normalize base url so it includes api_version.
           url = base_url + path
           url_api_name, _, path = resource_util.SplitDefaultEndpointUrl(url)
@@ -215,8 +221,8 @@ def _ExtractResources(api_name, api_version, base_url, infos):
           url = url[:-len(path)]
           collection_info = resource_util.CollectionInfo(
               url_api_name, api_version, url, collection_name,
-              get_method.get('requestType'), path,
-              [flat_path] if flat_path else [],
+              request_type, path,
+              {_DEFAULT_PATH_NAME: flat_path} if flat_path else {},
               _GetPathParams(path))
           collections.append(collection_info)
     else:
@@ -263,7 +269,11 @@ def GenerateResourceModule(base_dir, root_dir, api_config):
       if custom_resources:
         for collection in resource_collections:
           if collection.name in custom_resources:
-            collection.flat_paths.extend(custom_resources[collection.name])
+            custom_path = custom_resources[collection.name]
+            if isinstance(custom_path, dict):
+              collection.flat_paths.update(custom_path)
+            elif isinstance(custom_path, basestring):
+              collection.flat_paths[_DEFAULT_PATH_NAME] = custom_path
 
       api_dir = os.path.join(base_dir, root_dir, api_name, api_version)
       if not os.path.exists(api_dir):

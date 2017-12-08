@@ -24,11 +24,11 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Delete(base.Command):
+class Delete(base.DeleteCommand):
   """Deletes a Cloud SQL instance."""
 
-  @classmethod
-  def Args(cls, parser):
+  @staticmethod
+  def Args(parser):
     """Args is called by calliope to gather arguments for this command.
 
     Args:
@@ -94,8 +94,8 @@ class Delete(base.Command):
 class DeleteBeta(base.Command):
   """Deletes a Cloud SQL instance."""
 
-  @classmethod
-  def Args(cls, parser):
+  @staticmethod
+  def Args(parser):
     """Args is called by calliope to gather arguments for this command.
 
     Args:

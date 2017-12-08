@@ -11,7 +11,7 @@ gcloud compute project\-info set\-usage\-bucket \- set the usage reporting bucke
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute project\-info set\-usage\-bucket\fR \fB\-\-bucket\fR \fIBUCKET\fR [\fB\-\-prefix\fR\ \fIPREFIX\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute project\-info set\-usage\-bucket\fR \fB\-\-bucket\fR=\fIBUCKET\fR [\fB\-\-prefix\fR=\fIPREFIX\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -39,7 +39,7 @@ $ gcloud compute project\-info set\-usage\-bucket \-\-bucket
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-bucket\fR \fIBUCKET\fR
+\fB\-\-bucket\fR=\fIBUCKET\fR
 .RS 2m
 The URI of a Google Cloud Storage bucket where the usage report object should be
 stored. The Google Service Account for performing usage reporting is granted
@@ -57,7 +57,7 @@ $ gcloud compute project\-info set\-usage\-bucket \-\-bucket
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-prefix\fR \fIPREFIX\fR
+\fB\-\-prefix\fR=\fIPREFIX\fR
 .RS 2m
 An optional prefix for the name of the usage report object stored in the bucket.
 If not supplied, then this defaults to \f5\fIusage\fR\fR. The report is stored

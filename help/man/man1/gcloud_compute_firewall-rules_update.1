@@ -11,7 +11,7 @@ gcloud compute firewall\-rules update \- update a firewall rule
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute firewall\-rules update\fR \fINAME\fR [\fB\-\-allow\fR\ [\fIPROTOCOL\fR[:\fIPORT\fR[\-\fIPORT\fR]],...]] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-source\-ranges\fR\ [\fICIDR_RANGE\fR,...]] [\fB\-\-source\-tags\fR\ [\fITAG\fR,...]] [\fB\-\-target\-tags\fR\ [\fITAG\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute firewall\-rules update\fR \fINAME\fR [\fB\-\-allow\fR=[\fIPROTOCOL\fR[:\fIPORT\fR[\-\fIPORT\fR]],...]] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-source\-ranges\fR=[\fICIDR_RANGE\fR,...]] [\fB\-\-source\-tags\fR=[\fITAG\fR,...]] [\fB\-\-target\-tags\fR=[\fITAG\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -34,7 +34,7 @@ The name of the firewall rule to update.
 
 .SH "FLAGS"
 
-\fB\-\-allow\fR [\fIPROTOCOL\fR[:\fIPORT\fR[\-\fIPORT\fR]],...]
+\fB\-\-allow\fR=[\fIPROTOCOL\fR[:\fIPORT\fR[\-\fIPORT\fR]],...]
 .RS 2m
 A list of protocols and ports whose traffic will be allowed.
 
@@ -57,13 +57,13 @@ TCP and UDP rules must include a port or port range.
 Setting this will override the current values.
 
 .RE
-\fB\-\-description\fR \fIDESCRIPTION\fR
+\fB\-\-description\fR=\fIDESCRIPTION\fR
 .RS 2m
 A textual description for the firewall rule. Set to an empty string to clear
 existing.
 
 .RE
-\fB\-\-source\-ranges\fR [\fICIDR_RANGE\fR,...]
+\fB\-\-source\-ranges\fR=[\fICIDR_RANGE\fR,...]
 .RS 2m
 A list of IP address blocks that are allowed to make inbound connections that
 match the firewall rule to the instances on the network. The IP address blocks
@@ -75,7 +75,7 @@ following will clear the existing source ranges: $ gcloud compute
 firewall\-rules update MY\-RULE \-\-source\-ranges
 
 .RE
-\fB\-\-source\-tags\fR [\fITAG\fR,...]
+\fB\-\-source\-tags\fR=[\fITAG\fR,...]
 .RS 2m
 A list of instance tags indicating the set of instances on the network which may
 make network connections that match the firewall rule. If omitted, all instances
@@ -88,7 +88,7 @@ following will clear the existing source tags: $ gcloud compute firewall\-rules
 update MY\-RULE \-\-source\-tags
 
 .RE
-\fB\-\-target\-tags\fR [\fITAG\fR,...]
+\fB\-\-target\-tags\fR=[\fITAG\fR,...]
 .RS 2m
 A list of instance tags indicating the set of instances on the network which may
 accept inbound connections that match the firewall rule. If omitted, all

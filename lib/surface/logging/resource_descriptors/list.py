@@ -24,7 +24,6 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    base.FLATTEN_FLAG.RemoveFromParser(parser)
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
 
@@ -53,7 +52,8 @@ class List(base.ListCommand):
 
 List.detailed_help = {
     'DESCRIPTION': """\
-        Lists all available resource descriptors that are used by Cloud Logging.
-        Each log entry must be associated with a valid resource descriptor.
+        Lists all available resource descriptors that are used by Stackdriver
+        Logging. Each log entry must be associated with a valid resource
+        descriptor.
     """,
 }

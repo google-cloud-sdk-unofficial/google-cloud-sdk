@@ -11,7 +11,7 @@ gcloud compute images deprecate \- manage deprecation status of Google Compute E
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute images deprecate\fR \fINAME\fR \fB\-\-state\fR \fISTATE\fR [\fB\-\-delete\-in\fR\ \fIDELETE_IN\fR\ |\ \fB\-\-delete\-on\fR\ \fIDELETE_ON\fR] [\fB\-\-obsolete\-in\fR\ \fIOBSOLETE_IN\fR\ |\ \fB\-\-obsolete\-on\fR\ \fIOBSOLETE_ON\fR] [\fB\-\-replacement\fR\ \fIREPLACEMENT\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute images deprecate\fR \fINAME\fR \fB\-\-state\fR=\fISTATE\fR [\fB\-\-replacement\fR=\fIREPLACEMENT\fR] [\fB\-\-delete\-in\fR=\fIDELETE_IN\fR\ |\ \fB\-\-delete\-on\fR=\fIDELETE_ON\fR] [\fB\-\-obsolete\-in\fR=\fIOBSOLETE_IN\fR\ |\ \fB\-\-obsolete\-on\fR=\fIOBSOLETE_ON\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -32,7 +32,7 @@ The name of the disk image.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-state\fR \fISTATE\fR
+\fB\-\-state\fR=\fISTATE\fR
 .RS 2m
 The deprecation state to set on the image. \fISTATE\fR must be one of:
 
@@ -62,7 +62,20 @@ New uses result in an error.
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-delete\-in\fR \fIDELETE_IN\fR
+\fB\-\-replacement\fR=\fIREPLACEMENT\fR
+.RS 2m
+Specifies a Compute Engine image as a replacement for the image being phased
+out. Users of the deprecated image will be advised to switch to this
+replacement. For example, \fB\-\-replacement example\-image\fR or
+\fB\-\-replacement projects/google/global/images/example\-image\fR. This flag is
+required when setting the image state to anything other than \f5\fIACTIVE\fR\fR
+or when \fB\-\-delete\-in\fR, \fB\-\-delete\-on\fR, \fB\-\-obsolete\-in\fR, or
+\fB\-\-obsolete\-on\fR is provided.
+
+.RE
+At most one of these may be specified:
+
+\fB\-\-delete\-in\fR=\fIDELETE_IN\fR
 .RS 2m
 Specifies the amount of time until the image's status should be set to DELETED.
 For instance, specifying \f5\fI30d\fR\fR will set the status to DELETED in 30
@@ -76,7 +89,7 @@ to remove it from the image list. This flag is mutually exclusive with
 \fB\-\-delete\-on\fR.
 
 .RE
-\fB\-\-delete\-on\fR \fIDELETE_ON\fR
+\fB\-\-delete\-on\fR=\fIDELETE_ON\fR
 .RS 2m
 Similar to \fB\-\-delete\-in\fR, but specifies an absolute time when the status
 should be set to DELETED. The date and time specified must be a valid RFC 3339
@@ -86,7 +99,9 @@ midnight on January 2, 2020 in UTC. This flag is mutually exclusive with
 \fB\-\-delete\-in\fR.
 
 .RE
-\fB\-\-obsolete\-in\fR \fIOBSOLETE_IN\fR
+At most one of these may be specified:
+
+\fB\-\-obsolete\-in\fR=\fIOBSOLETE_IN\fR
 .RS 2m
 Specifies time (in the same format as \fB\-\-delete\-in\fR) until this image's
 status should become OBSOLETE. Obsolete images will cause an error whenever an
@@ -94,22 +109,11 @@ attempt is made to apply the image to a new disk. This flag is mutually
 exclusive with \fB\-\-obsolete\-on\fR.
 
 .RE
-\fB\-\-obsolete\-on\fR \fIOBSOLETE_ON\fR
+\fB\-\-obsolete\-on\fR=\fIOBSOLETE_ON\fR
 .RS 2m
 Specifies time (in the same format as \fB\-\-delete\-on\fR) when this image's
 status should become OBSOLETE. This flag is mutually exclusive with
 \fB\-\-obsolete\-in\fR.
-
-.RE
-\fB\-\-replacement\fR \fIREPLACEMENT\fR
-.RS 2m
-Specifies a Compute Engine image as a replacement for the image being phased
-out. Users of the deprecated image will be advised to switch to this
-replacement. For example, \fB\-\-replacement example\-image\fR or
-\fB\-\-replacement projects/google/global/images/example\-image\fR. This flag is
-required when setting the image state to anything other than \f5\fIACTIVE\fR\fR
-or when \fB\-\-delete\-in\fR, \fB\-\-delete\-on\fR, \fB\-\-obsolete\-in\fR, or
-\fB\-\-obsolete\-on\fR is provided.
 
 
 .RE

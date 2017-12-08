@@ -11,7 +11,7 @@ gcloud \- manage Google Cloud Platform resources and developer workflow
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud\fR \fIGROUP\fR | \fICOMMAND\fR [\fB\-\-account\fR\ \fIACCOUNT\fR] [\fB\-\-configuration\fR\ \fICONFIGURATION\fR] [\fB\-\-format\fR\ \fIFORMAT\fR] [\fB\-\-help\fR] [\fB\-\-project\fR\ \fIPROJECT_ID\fR] [\fB\-\-quiet\fR,\ \fB\-q\fR] [\fB\-\-verbosity\fR\ \fIVERBOSITY\fR;\ default="warning"] [\fB\-h\fR] [\fB\-v\fR,\ \fB\-\-version\fR] [\fB\-\-log\-http\fR] [\fB\-\-trace\-token\fR\ \fITRACE_TOKEN\fR] [\fB\-\-no\-user\-output\-enabled\fR]
+\f5gcloud\fR \fIGROUP\fR | \fICOMMAND\fR [\fB\-\-account\fR=\fIACCOUNT\fR] [\fB\-\-configuration\fR=\fICONFIGURATION\fR] [\fB\-\-flatten\fR=[\fIKEY\fR,...]] [\fB\-\-format\fR=\fIFORMAT\fR] [\fB\-\-help\fR] [\fB\-\-project\fR=\fIPROJECT_ID\fR] [\fB\-\-quiet\fR,\ \fB\-q\fR] [\fB\-\-verbosity\fR=\fIVERBOSITY\fR;\ default="warning"] [\fB\-h\fR] [\fB\-v\fR,\ \fB\-\-version\fR] [\fB\-\-log\-http\fR] [\fB\-\-trace\-token\fR=\fITRACE_TOKEN\fR] [\fB\-\-no\-user\-output\-enabled\fR]
 
 
 
@@ -22,14 +22,14 @@ workflow, and interactions with the Google Cloud Platform APIs.
 
 
 
-.SH "COMMONLY USED FLAGS"
+.SH "GLOBAL FLAGS"
 
-\fB\-\-account\fR \fIACCOUNT\fR
+\fB\-\-account\fR=\fIACCOUNT\fR
 .RS 2m
 Google Cloud Platform user account to use for invocation.
 
 .RE
-\fB\-\-configuration\fR \fICONFIGURATION\fR
+\fB\-\-configuration\fR=\fICONFIGURATION\fR
 .RS 2m
 The configuration to use for this command invocation. For more information on
 how to use configurations, run: \f5gcloud topic configurations\fR. You can also
@@ -37,7 +37,17 @@ use the [CLOUDSDK_ACTIVE_CONFIG_NAME] environment variable to set the equivalent
 of this flag for a terminal session.
 
 .RE
-\fB\-\-format\fR \fIFORMAT\fR
+\fB\-\-flatten\fR=[\fIKEY\fR,...]
+.RS 2m
+Flatten \fIname\fR[] output resource slices in \fIKEY\fR into separate records
+for each item in each slice. Multiple keys and slices may be specified. This
+also flattens keys for \fB\-\-format\fR and \fB\-\-filter\fR. For example,
+\fB\-\-flatten=abc.def[]\fR flattens \fBabc.def[].ghi\fR references to
+\fBabc.def.ghi\fR. A resource record containing \fBabc.def[]\fR with N elements
+will expand to N records in the flattened output.
+
+.RE
+\fB\-\-format\fR=\fIFORMAT\fR
 .RS 2m
 Sets the format for printing command output resources. The default is a
 command\-specific human\-friendly output format. The supported formats are:
@@ -52,7 +62,7 @@ topic formats.
 Display detailed help.
 
 .RE
-\fB\-\-project\fR \fIPROJECT_ID\fR
+\fB\-\-project\fR=\fIPROJECT_ID\fR
 .RS 2m
 The Google Cloud Platform project name to use for this invocation. If omitted
 then the current project is assumed.
@@ -64,7 +74,7 @@ Disable all interactive prompts when running gcloud commands. If input is
 required, defaults will be used, or an error will be raised.
 
 .RE
-\fB\-\-verbosity\fR \fIVERBOSITY\fR; default="warning"
+\fB\-\-verbosity\fR=\fIVERBOSITY\fR; default="warning"
 .RS 2m
 Override the default verbosity for this command. \fIVERBOSITY\fR must be one of:
 \fBdebug\fR, \fBinfo\fR, \fBwarning\fR, \fBerror\fR, \fBcritical\fR, \fBnone\fR.
@@ -92,7 +102,7 @@ Log all HTTP server requests and responses to stderr. Overrides the default
 \fB\-\-no\-log\-http\fR to disable.
 
 .RE
-\fB\-\-trace\-token\fR \fITRACE_TOKEN\fR
+\fB\-\-trace\-token\fR=\fITRACE_TOKEN\fR
 .RS 2m
 Token used to route traces of service requests for investigation of issues.
 

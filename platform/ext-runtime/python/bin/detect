@@ -93,7 +93,7 @@ def Main(args):
   # Query the user for the WSGI entrypoint:
   if not entrypoint:
     entrypoint = comm.query_user('This looks like a Python app.  If so, please '
-                                 'enter the command to run to run the app in '
+                                 'enter the command to run the app in '
                                  "production (enter nothing if it's not a "
                                  'python app): ')
     if not entrypoint:

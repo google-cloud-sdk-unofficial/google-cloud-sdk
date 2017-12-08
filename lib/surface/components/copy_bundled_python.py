@@ -32,8 +32,7 @@ class CopyBundledPython(base.Command):
   installation.
   """
 
-  @staticmethod
-  def Format(args):
+  def Format(self, unused_args):
     return 'value(python_location)'
 
   def Run(self, args):

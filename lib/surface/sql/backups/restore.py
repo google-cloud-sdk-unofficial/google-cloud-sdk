@@ -20,7 +20,7 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class RestoreBackupBeta(base.Command):
+class RestoreBackupBeta(base.RestoreCommand):
   """Restores a backup of a Cloud SQL instance."""
 
   @staticmethod

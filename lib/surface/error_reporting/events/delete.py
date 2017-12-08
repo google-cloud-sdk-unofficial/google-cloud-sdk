@@ -21,7 +21,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
-class Delete(base.Command):
+class Delete(base.DeleteCommand):
   """Deletes all error events of the project."""
 
   def Run(self, args):

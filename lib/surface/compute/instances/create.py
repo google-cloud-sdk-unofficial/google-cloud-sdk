@@ -46,7 +46,7 @@ DETAILED_HELP = {
         To create an instance with the latest ``Red Hat Enterprise Linux
         6'' image available, run:
 
-          $ {command} example-instance --image rhel-6 --zone us-central1-a
+          $ {command} example-instance --image-family rhel-7 --image-project rhel-cloud --zone us-central1-a
         """,
 }
 

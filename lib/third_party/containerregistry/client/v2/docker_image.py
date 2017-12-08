@@ -219,8 +219,9 @@ def extract(image, tar):
             tar.addfile(member, fileobj=None)
 
 # _EMPTY_LAYER_TAR_ID is the sha256 of an empty tarball.
-_EMPTY_LAYER_TAR_ID = 'sha256:'
-'a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4'
+_EMPTY_LAYER_TAR_ID = (
+    'sha256:'
+    'a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4')
 
 
 class AppendLayer(DockerImage):

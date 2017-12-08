@@ -14,28 +14,7 @@
 """ml jobs list command."""
 
 from googlecloudsdk.api_lib.ml import jobs
-from googlecloudsdk.api_lib.ml import jobs_v1beta1
 from googlecloudsdk.calliope import base
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(base.ListCommand):
-  """List existing Cloud ML jobs."""
-
-  def Collection(self):
-    return 'ml.jobs'
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-    return jobs.List()
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -55,4 +34,4 @@ class ListBeta(base.ListCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    return jobs_v1beta1.List()
+    return jobs.List()

@@ -11,7 +11,7 @@ gcloud compute addresses create \- reserve IP addresses
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute addresses create\fR [\fINAME\fR\ ...] [\fB\-\-addresses\fR\ \fIADDRESS\fR,[\fIADDRESS\fR,...]] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-global\fR\ |\ \fB\-\-region\fR\ \fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute addresses create\fR [\fINAME\fR\ ...] [\fB\-\-addresses\fR=\fIADDRESS\fR,[\fIADDRESS\fR,...]] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-global\fR\ |\ \fB\-\-region\fR=\fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -29,14 +29,14 @@ the \f5\fI\-\-addresses\fR\fR flag.
 
 [\fINAME\fR ...]
 .RS 2m
-The names to assign to the reserved IP addresses.
+The address names to operate on.
 
 
 .RE
 
 .SH "FLAGS"
 
-\fB\-\-addresses\fR \fIADDRESS\fR,[\fIADDRESS\fR,...]
+\fB\-\-addresses\fR=\fIADDRESS\fR,[\fIADDRESS\fR,...]
 .RS 2m
 Ephemeral IP addresses to promote to reserved status. Only addresses that are
 being used by resources in the project can be promoted. When providing this
@@ -52,20 +52,22 @@ will result in 162.222.181.197 being reserved as 'ADDRESS\-1' and
 names will be assigned to the IP addresses.
 
 .RE
-\fB\-\-description\fR \fIDESCRIPTION\fR
+\fB\-\-description\fR=\fIDESCRIPTION\fR
 .RS 2m
 An optional textual description for the addresses.
 
 .RE
+At most one of these may be specified:
+
 \fB\-\-global\fR
 .RS 2m
-If provided, it is assumed the addresses are global.
+If provided, it is assumed the address name is global.
 
 .RE
-\fB\-\-region\fR \fIREGION\fR
+\fB\-\-region\fR=\fIREGION\fR
 .RS 2m
-The region of the address to operate on. If not specified, you will be prompted
-to select a region.
+The region of the address name to operate on. If not specified, you will be
+prompted to select a region.
 
 To avoid prompting when this flag is omitted, you can set the
 \f5\fIcompute/region\fR\fR property:

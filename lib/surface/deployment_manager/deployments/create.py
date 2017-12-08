@@ -29,7 +29,7 @@ OPERATION_TIMEOUT = 20 * 60  # 20 mins
 
 
 @base.UnicodeIsSupported
-class Create(base.Command):
+class Create(base.CreateCommand):
   """Create a deployment.
 
   This command inserts (creates) a new deployment based on a provided config

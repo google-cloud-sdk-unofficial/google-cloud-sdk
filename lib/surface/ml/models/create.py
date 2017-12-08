@@ -16,41 +16,6 @@
 from googlecloudsdk.api_lib.ml import models
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
-from googlecloudsdk.core import apis
-from googlecloudsdk.core import resources
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.CreateCommand):
-  """Create a new Cloud ML model."""
-
-  def Collection(self):
-    return 'ml.models'
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    flags.GetModelName().AddToParser(parser)
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-    client = apis.GetClientInstance('ml', 'v1alpha3')
-    msgs = apis.GetMessagesModule('ml', 'v1alpha3')
-    res = resources.REGISTRY.Parse(args.model, collection='ml.projects.models')
-    req = msgs.MlProjectsModelsCreateRequest(
-        projectsId=res.projectsId,
-        googleCloudMlV1alpha3Model=msgs.GoogleCloudMlV1alpha3Model(
-            name=res.Name()))
-    resp = client.projects_models.Create(req)
-    return resp
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

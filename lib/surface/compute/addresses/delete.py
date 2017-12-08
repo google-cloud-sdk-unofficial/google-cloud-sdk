@@ -15,32 +15,19 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
-from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.addresses import flags
 
 
 class Delete(base_classes.BaseAsyncMutator):
   """Release reserved IP addresses."""
 
-  @staticmethod
-  def Args(parser):
-    parser.add_argument(
-        'names',
-        metavar='NAME',
-        nargs='+',
-        completion_resource='compute.addresses',
-        help='The names of the addresses to delete.')
+  ADDRESSES_ARG = None
 
-    scope = parser.add_mutually_exclusive_group()
-
-    flags.AddRegionFlag(
-        scope,
-        resource_type='address',
-        operation_type='operate on')
-
-    scope.add_argument(
-        '--global',
-        action='store_true',
-        help='If provided, it is assumed the addresses are global.')
+  @classmethod
+  def Args(cls, parser):
+    cls.ADDRESSES_ARG = flags.AddressArgument(required=True)
+    cls.ADDRESSES_ARG.AddArgument(parser)
 
   @property
   def service(self):
@@ -59,20 +46,24 @@ class Delete(base_classes.BaseAsyncMutator):
 
   def CreateRequests(self, args):
     """Overrides."""
-    self.global_request = getattr(args, 'global')
+    address_refs = self.ADDRESSES_ARG.ResolveAsResource(
+        args, self.resources,
+        default_scope=compute_flags.ScopeEnum.REGION,
+        scope_lister=compute_flags.GetDefaultScopeLister(
+            self.compute_client, self.project))
+
+    self.global_request = getattr(address_refs[0], 'region', None) is None
 
     if self.global_request:
-      return self._CreateGlobalRequests(args)
+      return self._CreateGlobalRequests(address_refs)
 
-    return self._CreateRegionalRequests(args)
+    return self._CreateRegionalRequests(address_refs)
 
-  def _CreateGlobalRequests(self, args):
+  def _CreateGlobalRequests(self, address_refs):
     """Create a globally scoped request."""
 
     # TODO(user): In the future we should support concurrently deleting both
     # region and global addresses
-    address_refs = self.CreateGlobalReferences(
-        args.names, resource_type='globalAddresses')
     utils.PromptForDeletion(address_refs)
     requests = []
     for address_ref in address_refs:
@@ -84,11 +75,9 @@ class Delete(base_classes.BaseAsyncMutator):
 
     return requests
 
-  def _CreateRegionalRequests(self, args):
+  def _CreateRegionalRequests(self, address_refs):
     """Create a regionally scoped request."""
 
-    address_refs = (
-        self.CreateRegionalReferences(args.names, args.region))
     utils.PromptForDeletion(address_refs, scope_name='region')
     requests = []
     for address_ref in address_refs:

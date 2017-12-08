@@ -18,16 +18,14 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.forwarding_rules import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Set(utils.ForwardingRulesTargetMutator):
   """Modify a forwarding rule to direct network traffic to a new target."""
 
   @staticmethod
   def Args(parser):
     flags.AddCommonFlags(parser)
-    flags.AddUpdateArgs(parser,
-                        include_alpha_targets=False,
-                        include_beta_targets=False)
+    flags.AddUpdateArgs(parser, include_beta_targets=False)
 
   @property
   def method(self):
@@ -69,16 +67,14 @@ class Set(utils.ForwardingRulesTargetMutator):
     return [request]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SetAlpha(Set):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class SetBeta(Set):
   """Modify a forwarding rule to direct network traffic to a new target."""
 
   @staticmethod
   def Args(parser):
     flags.AddCommonFlags(parser)
-    flags.AddUpdateArgs(parser,
-                        include_alpha_targets=True,
-                        include_beta_targets=True)
+    flags.AddUpdateArgs(parser, include_beta_targets=True)
 
 
 Set.detailed_help = {
@@ -94,4 +90,4 @@ Set.detailed_help = {
         """.format(overview=flags.FORWARDING_RULES_OVERVIEW)),
 }
 
-SetAlpha.detailed_help = Set.detailed_help
+SetBeta.detailed_help = Set.detailed_help

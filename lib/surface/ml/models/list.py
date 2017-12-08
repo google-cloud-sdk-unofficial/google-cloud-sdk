@@ -13,39 +13,8 @@
 # limitations under the License.
 """ml models list command."""
 
-from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.ml import models
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import apis
-from googlecloudsdk.core import properties
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(base.ListCommand):
-  """List existing Cloud ML models."""
-
-  def Collection(self):
-    return 'ml.models'
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-    client = apis.GetClientInstance('ml', 'v1alpha3')
-    msgs = apis.GetMessagesModule('ml', 'v1alpha3')
-    req = msgs.MlProjectsModelsListRequest(
-        projectsId=properties.VALUES.core.project.Get())
-    return list_pager.YieldFromList(
-        client.projects_models,
-        req,
-        field='models',
-        batch_size_attribute='pageSize')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

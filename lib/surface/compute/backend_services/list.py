@@ -18,7 +18,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base_classes.GlobalLister):
   """List backend services."""
 
@@ -34,8 +34,8 @@ class List(base_classes.GlobalLister):
 List.detailed_help = base_classes.GetGlobalListerHelp('backend services')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base_classes.GlobalRegionalLister):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class ListBeta(base_classes.GlobalRegionalLister):
   """List backend services."""
 
   def Collection(self):
@@ -62,5 +62,5 @@ class ListAlpha(base_classes.GlobalRegionalLister):
     return ['regionBackendServices', 'backendServices']
 
 
-ListAlpha.detailed_help = base_classes.GetGlobalRegionalListerHelp(
+ListBeta.detailed_help = base_classes.GetGlobalRegionalListerHelp(
     'backend services')

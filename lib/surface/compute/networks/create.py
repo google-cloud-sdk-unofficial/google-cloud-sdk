@@ -18,6 +18,7 @@ import textwrap
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import networks_utils
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute.networks import flags
 from googlecloudsdk.core import log
 
 
@@ -31,6 +32,8 @@ class Create(base_classes.BaseAsyncCreator):
   as a gateway between instances and callers outside the
   network.
   """
+
+  NETWORK_ARG = None
 
   @property
   def service(self):
@@ -48,16 +51,14 @@ class Create(base_classes.BaseAsyncCreator):
     self._network_name = args.name
     return networks_utils.AddMode(items)
 
-  @staticmethod
-  def Args(parser):
-    """Arguments for command."""
+  @classmethod
+  def Args(cls, parser):
+    cls.NETWORK_ARG = flags.NetworkArgument()
+    cls.NETWORK_ARG.AddArgument(parser)
+
     parser.add_argument(
         '--description',
         help='An optional, textual description for the network.')
-
-    parser.add_argument(
-        'name',
-        help='The name of the network.')
 
     parser.add_argument(
         '--mode',
@@ -87,7 +88,7 @@ class Create(base_classes.BaseAsyncCreator):
   def CreateRequests(self, args):
     """Returns the request necessary for adding the network."""
 
-    # TODO(user): after one month, make default auto.
+    # TODO(b/31649473): after one month, make default auto.
     if args.mode is None:
       if args.range is not None:
         log.warn('You are creating a legacy network. Using --mode=legacy will '
@@ -100,8 +101,7 @@ class Create(base_classes.BaseAsyncCreator):
       raise exceptions.InvalidArgumentException(
           '--range', '--range can only be used if --mode=legacy')
 
-    network_ref = self.CreateGlobalReference(
-        args.name, resource_type='networks')
+    network_ref = self.NETWORK_ARG.ResolveAsResource(args, self.resources)
 
     if args.mode == 'legacy':
       return [self.messages.ComputeNetworksInsertRequest(

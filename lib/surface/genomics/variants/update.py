@@ -19,7 +19,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 
 
-class Update(base.Command):
+class Update(base.UpdateCommand):
   """Updates variant names."""
 
   @staticmethod

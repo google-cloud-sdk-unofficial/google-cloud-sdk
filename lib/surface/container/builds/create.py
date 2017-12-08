@@ -34,7 +34,7 @@ from googlecloudsdk.core.util import times
 _ALLOWED_SOURCE_EXT = ['.zip', '.tgz', '.gz']
 
 
-class Create(base.Command):
+class Create(base.CreateCommand):
   """Create a build using the Google Container Builder service."""
 
   @staticmethod
@@ -66,7 +66,10 @@ class Create(base.Command):
     build_config = parser.add_mutually_exclusive_group(required=True)
     build_config.add_argument(
         '--tag', '-t',
-        help='The tag to use with a "docker build" image creation.',
+        help='The tag to use with a "docker build" image creation. The '
+             'Container Builder service will run a remote "docker build -t '
+             '$TAG .", where $TAG is the tag provided by this flag. The tag '
+             'must be in the gcr.io/* or *.gcr.io/* namespaces.',
     )
     build_config.add_argument(
         '--config',
@@ -108,6 +111,10 @@ class Create(base.Command):
       timeout_str = None
 
     if args.tag:
+      if 'gcr.io/' not in args.tag:
+        raise c_exceptions.InvalidArgumentException(
+            '--tag',
+            'Tag value must be in the gcr.io/* or *.gcr.io/* namespace.')
       build_config = messages.Build(
           images=[args.tag],
           steps=[

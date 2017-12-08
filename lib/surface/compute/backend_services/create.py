@@ -135,8 +135,6 @@ class CreateAlpha(CreateGA):
     flags.AddConnectionDrainingTimeout(parser)
 
     # These are in beta
-
-    # These are added for alpha
     flags.AddLoadBalancingScheme(parser)
 
   def CreateGlobalRequests(self, args):
@@ -201,22 +199,26 @@ class CreateBeta(CreateGA):
 
   @staticmethod
   def Args(parser):
-    flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddDescription(parser)
     flags.AddHealthChecks(parser)
     flags.AddHttpHealthChecks(parser)
     flags.AddHttpsHealthChecks(parser)
     flags.AddTimeout(parser)
     flags.AddPortName(parser)
-    flags.AddProtocol(parser)
+    flags.AddProtocol(parser, default=None)
     flags.AddEnableCdn(parser, default=False)
-    flags.AddSessionAffinity(parser)
+    flags.AddSessionAffinity(parser, internal_lb=True)
     flags.AddAffinityCookieTtl(parser)
     flags.AddConnectionDrainingTimeout(parser)
 
     # These are added for beta
+    flags.AddLoadBalancingScheme(parser)
 
   def CreateGlobalRequests(self, args):
+    if args.load_balancing_scheme == 'INTERNAL':
+      raise exceptions.ToolException(
+          'Must specify --region for internal load balancer.')
     backend_service = self._CreateBackendService(args)
 
     if args.connection_draining_timeout is not None:
@@ -234,6 +236,36 @@ class CreateBeta(CreateGA):
         project=self.project)
 
     return [request]
+
+  def CreateRegionalRequests(self, args):
+    backend_services_ref = self.CreateRegionalReference(
+        args.name, args.region, resource_type='regionBackendServices')
+    backend_service = self._CreateRegionBackendService(args)
+    if args.connection_draining_timeout is not None:
+      backend_service.connectionDraining = self.messages.ConnectionDraining(
+          drainingTimeoutSec=args.connection_draining_timeout)
+
+    request = self.messages.ComputeRegionBackendServicesInsertRequest(
+        backendService=backend_service,
+        region=backend_services_ref.region,
+        project=backend_services_ref.project)
+
+    return [request]
+
+  def _CreateRegionBackendService(self, args):
+    health_checks = backend_services_utils.GetHealthChecks(args, self)
+    if not health_checks:
+      raise exceptions.ToolException('At least one health check required.')
+
+    return self.messages.BackendService(
+        description=args.description,
+        name=args.name,
+        healthChecks=health_checks,
+        loadBalancingScheme=(
+            self.messages.BackendService.LoadBalancingSchemeValueValuesEnum(
+                args.load_balancing_scheme)),
+        protocol=_ResolveProtocol(self.messages, args, default='TCP'),
+        timeoutSec=args.timeout)
 
 
 CreateGA.detailed_help = {

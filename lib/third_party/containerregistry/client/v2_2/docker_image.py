@@ -18,7 +18,7 @@ class DockerImage(object):
   def fs_layers(self):
     """The ordered collection of filesystem layers that comprise this image."""
     manifest = json.loads(self.manifest())
-    return [x['digest'] for x in manifest['layers']]
+    return [x['digest'] for x in reversed(manifest['layers'])]
 
   def config_blob(self):
     manifest = json.loads(self.manifest())

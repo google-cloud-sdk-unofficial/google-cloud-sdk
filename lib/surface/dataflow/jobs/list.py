@@ -43,7 +43,6 @@ class List(base.ListCommand):
   def Args(parser):
     """Register flags for this command."""
 
-    base.FLATTEN_FLAG.RemoveFromParser(parser)
     base.ASYNC_FLAG.RemoveFromParser(parser)
 
     # Flags for filtering jobs.

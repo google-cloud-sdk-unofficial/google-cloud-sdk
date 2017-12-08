@@ -11,7 +11,7 @@ gcloud compute target\-ssl\-proxies update \- update a target SSL proxy
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute target\-ssl\-proxies update\fR \fINAME\fR [\fB\-\-backend\-service\fR\ \fIBACKEND_SERVICE\fR] [\fB\-\-proxy\-header\fR\ \fIPROXY_HEADER\fR] [\fB\-\-ssl\-certificate\fR\ \fISSL_CERTIFICATE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute target\-ssl\-proxies update\fR \fINAME\fR [\fB\-\-backend\-service\fR=\fIBACKEND_SERVICE\fR] [\fB\-\-proxy\-header\fR=\fIPROXY_HEADER\fR] [\fB\-\-ssl\-certificate\fR=\fISSL_CERTIFICATE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -37,12 +37,12 @@ The name of the target SSL proxy.
 
 .SH "FLAGS"
 
-\fB\-\-backend\-service\fR \fIBACKEND_SERVICE\fR
+\fB\-\-backend\-service\fR=\fIBACKEND_SERVICE\fR
 .RS 2m
 A backend service that will be used for connections to the target SSL proxy.
 
 .RE
-\fB\-\-proxy\-header\fR \fIPROXY_HEADER\fR
+\fB\-\-proxy\-header\fR=\fIPROXY_HEADER\fR
 .RS 2m
 The type of proxy protocol header to be sent to the backend. \fIPROXY_HEADER\fR
 must be one of:
@@ -57,7 +57,7 @@ Adds the header "PROXY UNKNOWN\er\en".
 
 .RE
 .RE
-\fB\-\-ssl\-certificate\fR \fISSL_CERTIFICATE\fR
+\fB\-\-ssl\-certificate\fR=\fISSL_CERTIFICATE\fR
 .RS 2m
 A reference to an SSL certificate resource that is used for server\-side
 authentication. The SSL certificate must exist and cannot be deleted while

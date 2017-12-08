@@ -15,39 +15,30 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute.ssl_certificates import (
+    flags as ssl_certificates_flags)
+from googlecloudsdk.command_lib.compute.target_https_proxies import flags
+from googlecloudsdk.command_lib.compute.url_maps import flags as url_maps_flags
 
 
 class Update(base_classes.NoOutputAsyncMutator):
   """Update a target HTTPS proxy."""
 
-  @staticmethod
-  def Args(parser):
+  SSL_CERTIFICATE_ARG = None
+  TARGET_HTTPS_PROXY_ARG = None
+  URL_MAP_ARG = None
 
-    ssl_certificate = parser.add_argument(
-        '--ssl-certificate',
-        help=('A reference to an SSL certificate resource that is used for '
-              'server-side authentication.'))
-    ssl_certificate.detailed_help = """\
-        A reference to an SSL certificate resource that is used for
-        server-side authentication. The SSL certificate must exist and cannot
-        be deleted while referenced by a target HTTPS proxy.
-        """
-
-    url_map = parser.add_argument(
-        '--url-map',
-        completion_resource='compute.urlMap',
-        help=('A reference to a URL map resource that defines the mapping of '
-              'URLs to backend services.'))
-    url_map.detailed_help = """\
-        A reference to a URL map resource that defines the mapping of
-        URLs to backend services. The URL map must exist and cannot be
-        deleted while referenced by a target HTTPS proxy.
-        """
-
-    parser.add_argument(
-        'name',
-        completion_resource='TargetHttpsProxies',
-        help='The name of the target HTTPS proxy.')
+  @classmethod
+  def Args(cls, parser):
+    cls.SSL_CERTIFICATE_ARG = (
+        ssl_certificates_flags.SslCertificateArgumentForTargetHttpsProxies(
+            required=False))
+    cls.SSL_CERTIFICATE_ARG.AddArgument(parser)
+    cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument()
+    cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser)
+    cls.URL_MAP_ARG = url_maps_flags.UrlMapArgumentForTargetHttpsProxy(
+        required=False)
+    cls.URL_MAP_ARG.AddArgument(parser)
 
   @property
   def service(self):
@@ -69,12 +60,12 @@ class Update(base_classes.NoOutputAsyncMutator):
           '[--url-map].')
 
     requests = []
-    target_https_proxy_ref = self.CreateGlobalReference(
-        args.name, resource_type='targetHttpsProxies')
+    target_https_proxy_ref = self.TARGET_HTTPS_PROXY_ARG.ResolveAsResource(
+        args, self.resources)
 
     if args.ssl_certificate:
-      ssl_certificate_ref = self.CreateGlobalReference(
-          args.ssl_certificate, resource_type='sslCertificates')
+      ssl_certificate_ref = self.SSL_CERTIFICATE_ARG.ResolveAsResource(
+          args, self.resources)
       requests.append(
           ('SetSslCertificates',
            self.messages.ComputeTargetHttpsProxiesSetSslCertificatesRequest(
@@ -85,8 +76,7 @@ class Update(base_classes.NoOutputAsyncMutator):
                        sslCertificates=[ssl_certificate_ref.SelfLink()])))))
 
     if args.url_map:
-      url_map_ref = self.CreateGlobalReference(
-          args.url_map, resource_type='urlMaps')
+      url_map_ref = self.URL_MAP_ARG.ResolveAsResource(args, self.resources)
       requests.append(
           ('SetUrlMap',
            self.messages.ComputeTargetHttpsProxiesSetUrlMapRequest(
