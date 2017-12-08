@@ -15,8 +15,9 @@
 
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.projects import flags
+from googlecloudsdk.command_lib.projects import flags as project_flags
 from googlecloudsdk.command_lib.projects import util as command_lib_util
+from googlecloudsdk.command_lib.resource_manager import flags as folder_flags
 from googlecloudsdk.core import log
 
 
@@ -28,7 +29,13 @@ class Move(base.Command):
 
   This command can fail for the following reasons:
       * There is no project with the given ID.
-      * There is no organization with the given ID.
+      * There is no organization with the given ID, if an organization is given
+        as the destination.
+      * There is no folder with the given ID, if a folder is given as the
+        destination.
+      * More than one of organization or folder is provided.
+      * The new destination is not in the same organization as the project, if
+        the project is already in an organization.
       * The active account does not have  the
         resourcemanager.projects.update permission for the given
         project.
@@ -53,20 +60,18 @@ class Move(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.GetProjectFlag('move').AddToParser(parser)
-    parser.add_argument(
-        '--organization',
-        metavar='ORGANIZATION_ID',
-        completion_resource='cloudresourcemanager.organizations',
-        list_command_path='organizations',
-        required=True,
-        help='ID of the organization to move the project into.')
+    project_flags.GetProjectFlag('move').AddToParser(parser)
+    folder_flags.AddParentFlagsToParser(parser)
 
   def Format(self, args):
     return self.ListFormat(args)
 
   def Run(self, args):
+    folder_flags.CheckParentFlags(args)
     project_ref = command_lib_util.ParseProject(args.id)
-    result = projects_api.Update(project_ref, organization=args.organization)
+    result = projects_api.Update(
+        project_ref,
+        parent=projects_api.ParentNameToResourceId(
+            folder_flags.GetParentFromFlags(args)))
     log.UpdatedResource(project_ref)
     return result

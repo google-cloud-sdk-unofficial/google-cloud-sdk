@@ -19,6 +19,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import apis as core_apis
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class StreamLogs(base.Command):
   """Stream the logs for a build."""
 
@@ -32,7 +33,9 @@ class StreamLogs(base.Command):
     """
     parser.add_argument(
         'build',
-        help='The build whose logs shall be streamed.',
+        help=('The build whose logs shall be streamed. The ID of the build is '
+              'printed at the end of the build submission process, or in the '
+              'ID column when listing builds.'),
     )
 
   def Run(self, args):

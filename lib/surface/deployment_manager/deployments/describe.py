@@ -19,7 +19,7 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import properties
+from googlecloudsdk.command_lib.deployment_manager import dm_base
 
 
 class _Results(object):
@@ -31,7 +31,7 @@ class _Results(object):
     self.outputs = outputs
 
 
-class Describe(base.DescribeCommand):
+class Describe(base.DescribeCommand, dm_base.DeploymentManagerCommand):
   """Provide information about a deployment.
 
   This command prints out all available details about a deployment.
@@ -78,23 +78,17 @@ class Describe(base.DescribeCommand):
       HttpException: An http error response was received while executing api
           request.
     """
-    client = self.context['deploymentmanager-client']
-    messages = self.context['deploymentmanager-messages']
-    project = properties.VALUES.core.project.Get(required=True)
-
     try:
-      deployment = client.deployments.Get(
-          messages.DeploymentmanagerDeploymentsGetRequest(
-              project=project, deployment=args.deployment_name))
+      deployment = self.client.deployments.Get(
+          self.messages.DeploymentmanagerDeploymentsGetRequest(
+              project=self.project, deployment=args.deployment_name))
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
 
-    # Get resources belonging to the deployment to display
-    project = properties.VALUES.core.project.Get(required=True)
     try:
-      response = client.resources.List(
-          messages.DeploymentmanagerResourcesListRequest(
-              project=project, deployment=deployment.name))
+      response = self.client.resources.List(
+          self.messages.DeploymentmanagerResourcesListRequest(
+              project=self.project, deployment=deployment.name))
       resources = response.resources
     except apitools_exceptions.HttpError:
       # Couldn't get resources, skip adding them to the table.
@@ -106,9 +100,9 @@ class Describe(base.DescribeCommand):
     manifest = dm_v2_util.ExtractManifestName(deployment)
 
     if manifest:
-      manifest_response = client.manifests.Get(
-          messages.DeploymentmanagerManifestsGetRequest(
-              project=project,
+      manifest_response = self.client.manifests.Get(
+          self.messages.DeploymentmanagerManifestsGetRequest(
+              project=self.project,
               deployment=args.deployment_name,
               manifest=manifest,
           )

@@ -15,7 +15,6 @@
 
 from apitools.base.py import exceptions
 
-from googlecloudsdk.api_lib.iam import utils
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
 
@@ -49,8 +48,8 @@ class SetIamPolicy(base_classes.BaseIamCommand):
 
       return self.iam_client.projects_serviceAccounts.SetIamPolicy(
           self.messages.IamProjectsServiceAccountsSetIamPolicyRequest(
-              resource=utils.EmailToAccountResourceName(args.account),
+              resource=iam_util.EmailToAccountResourceName(args.account),
               setIamPolicyRequest=self.messages.SetIamPolicyRequest(
                   policy=policy)))
     except exceptions.HttpError as error:
-      raise utils.ConvertToServiceAccountException(error, args.account)
+      raise iam_util.ConvertToServiceAccountException(error, args.account)

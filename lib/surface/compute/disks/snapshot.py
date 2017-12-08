@@ -60,7 +60,7 @@ def _CommonArgs(parser):
   csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class SnapshotDisks(base_classes.NoOutputAsyncMutator):
   """Create snapshots of Google Compute Engine persistent disks."""
 
@@ -144,8 +144,8 @@ class SnapshotDisks(base_classes.NoOutputAsyncMutator):
     return requests
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SnapshotDisksAlpha(SnapshotDisks):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class SnapshotDisksAlphaBeta(SnapshotDisks):
   """Create snapshots of Google Compute Engine persistent disks."""
 
   @staticmethod
@@ -162,4 +162,4 @@ class SnapshotDisksAlpha(SnapshotDisks):
 
 
 SnapshotDisks.detailed_help = DETAILED_HELP
-SnapshotDisksAlpha.detailed_help = DETAILED_HELP
+SnapshotDisksAlphaBeta.detailed_help = DETAILED_HELP

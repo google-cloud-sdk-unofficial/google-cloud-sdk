@@ -56,14 +56,16 @@ def _IsZonalGroup(ref):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class CreateGA(base_classes.BaseAsyncCreator, zone_utils.ZoneResourceFetcher,
+class CreateGA(base_classes.BaseAsyncCreator,
+               zone_utils.ZoneResourceFetcher,
                base_classes.InstanceGroupManagerDynamicProperiesMixin):
   """Create Google Compute Engine managed instance groups."""
 
   @staticmethod
   def Args(parser):
     _AddInstanceGroupManagerArgs(parser=parser)
-    instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG.AddArgument(parser)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser)
 
   @property
   def service(self):
@@ -78,26 +80,43 @@ class CreateGA(base_classes.BaseAsyncCreator, zone_utils.ZoneResourceFetcher,
     return 'instanceGroupManagers'
 
   def CreateGroupReference(self, args):
-    group_ref = (instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG.
-                 ResolveAsResource)(
-                     args, self.resources, default_scope=flags.ScopeEnum.ZONE,
-                     scope_lister=flags.GetDefaultScopeLister(
-                         self.compute_client, self.project))
-    self.WarnForZonalCreation([group_ref])
+    group_ref = group_ref = (
+        instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
+        ResolveAsResource)(args, self.resources,
+                           default_scope=flags.ScopeEnum.ZONE,
+                           scope_lister=flags.GetDefaultScopeLister(
+                               self.compute_client, self.project))
+    if _IsZonalGroup(group_ref):
+      self.WarnForZonalCreation([group_ref])
     return group_ref
 
   def GetRegionForGroup(self, group_ref):
-    return utils.ZoneNameToRegionName(group_ref.zone)
+    if _IsZonalGroup(group_ref):
+      return utils.ZoneNameToRegionName(group_ref.zone)
+    else:
+      return group_ref.region
 
   def GetServiceForGroup(self, group_ref):
-    return self.compute.instanceGroupManagers
+    if _IsZonalGroup(group_ref):
+      return self.compute.instanceGroupManagers
+    else:
+      return self.compute.regionInstanceGroupManagers
 
   def CreateResourceRequest(self, group_ref, instance_group_manager):
-    instance_group_manager.zone = group_ref.zone
-    return self.messages.ComputeInstanceGroupManagersInsertRequest(
-        instanceGroupManager=instance_group_manager,
-        project=self.project,
-        zone=group_ref.zone)
+    if _IsZonalGroup(group_ref):
+      instance_group_manager.zone = group_ref.zone
+      return self.messages.ComputeInstanceGroupManagersInsertRequest(
+          instanceGroupManager=instance_group_manager,
+          project=self.project,
+          zone=group_ref.zone)
+    else:
+      region_link = self.CreateRegionalReference(
+          group_ref.region, group_ref.region, resource_type='regions')
+      instance_group_manager.region = region_link.SelfLink()
+      return self.messages.ComputeRegionInstanceGroupManagersInsertRequest(
+          instanceGroupManager=instance_group_manager,
+          project=self.project,
+          region=group_ref.region)
 
   def ComputeDynamicProperties(self, args, items):
     return (base_classes.InstanceGroupManagerDynamicProperiesMixin
@@ -158,45 +177,6 @@ class CreateBeta(CreateGA):
     managed_instance_groups_utils.AddAutohealingArgs(parser)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
-
-  def CreateGroupReference(self, args):
-    group_ref = group_ref = (
-        instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
-        ResolveAsResource)(args, self.resources,
-                           default_scope=flags.ScopeEnum.ZONE,
-                           scope_lister=flags.GetDefaultScopeLister(
-                               self.compute_client, self.project))
-    if _IsZonalGroup(group_ref):
-      self.WarnForZonalCreation([group_ref])
-    return group_ref
-
-  def GetRegionForGroup(self, group_ref):
-    if _IsZonalGroup(group_ref):
-      return utils.ZoneNameToRegionName(group_ref.zone)
-    else:
-      return group_ref.region
-
-  def GetServiceForGroup(self, group_ref):
-    if _IsZonalGroup(group_ref):
-      return self.compute.instanceGroupManagers
-    else:
-      return self.compute.regionInstanceGroupManagers
-
-  def CreateResourceRequest(self, group_ref, instance_group_manager):
-    if _IsZonalGroup(group_ref):
-      instance_group_manager.zone = group_ref.zone
-      return self.messages.ComputeInstanceGroupManagersInsertRequest(
-          instanceGroupManager=instance_group_manager,
-          project=self.project,
-          zone=group_ref.zone)
-    else:
-      region_link = self.CreateRegionalReference(
-          group_ref.region, group_ref.region, resource_type='regions')
-      instance_group_manager.region = region_link.SelfLink()
-      return self.messages.ComputeRegionInstanceGroupManagersInsertRequest(
-          instanceGroupManager=instance_group_manager,
-          project=self.project,
-          region=group_ref.region)
 
 
 DETAILED_HELP = {

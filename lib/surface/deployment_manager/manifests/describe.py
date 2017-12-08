@@ -19,10 +19,10 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import properties
+from googlecloudsdk.command_lib.deployment_manager import dm_base
 
 
-class Describe(base.DescribeCommand):
+class Describe(base.DescribeCommand, dm_base.DeploymentManagerCommand):
   """Provide information about a manifest.
 
   This command prints out all available details about a manifest.
@@ -67,15 +67,11 @@ class Describe(base.DescribeCommand):
       HttpException: An http error response was received while executing api
           request.
     """
-    client = self.context['deploymentmanager-client']
-    messages = self.context['deploymentmanager-messages']
-    project = properties.VALUES.core.project.Get(required=True)
-
     if not args.manifest:
       try:
-        deployment = client.deployments.Get(
-            messages.DeploymentmanagerDeploymentsGetRequest(
-                project=project,
+        deployment = self.client.deployments.Get(
+            self.messages.DeploymentmanagerDeploymentsGetRequest(
+                project=self.project,
                 deployment=args.deployment
             )
         )
@@ -87,9 +83,9 @@ class Describe(base.DescribeCommand):
         args.manifest = manifest
 
     try:
-      return client.manifests.Get(
-          messages.DeploymentmanagerManifestsGetRequest(
-              project=project,
+      return self.client.manifests.Get(
+          self.messages.DeploymentmanagerManifestsGetRequest(
+              project=self.project,
               deployment=args.deployment,
               manifest=args.manifest,
           )

@@ -17,10 +17,10 @@ import textwrap
 
 from apitools.base.py import exceptions
 
-from googlecloudsdk.api_lib.iam import utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import base_classes
+from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core.util import times
 
 
@@ -62,8 +62,8 @@ class List(base_classes.BaseIamCommand, base.ListCommand):
     try:
       result = self.iam_client.projects_serviceAccounts_keys.List(
           self.messages.IamProjectsServiceAccountsKeysListRequest(
-              name=utils.EmailToAccountResourceName(args.iam_account),
-              keyTypes=utils.ManagedByFromString(args.managed_by)))
+              name=iam_util.EmailToAccountResourceName(args.iam_account),
+              keyTypes=iam_util.ManagedByFromString(args.managed_by)))
 
       keys = result.keys
       if args.created_before:
@@ -74,4 +74,4 @@ class List(base_classes.BaseIamCommand, base.ListCommand):
 
       return keys
     except exceptions.HttpError as error:
-      raise utils.ConvertToServiceAccountException(error, args.iam_account)
+      raise iam_util.ConvertToServiceAccountException(error, args.iam_account)

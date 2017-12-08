@@ -15,10 +15,10 @@
 
 from apitools.base.py import list_pager
 
-from googlecloudsdk.api_lib.iam import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.iam import base_classes
+from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import properties
 
 
@@ -43,7 +43,7 @@ class List(base_classes.BaseIamCommand, base.ListCommand):
     for item in list_pager.YieldFromList(
         self.iam_client.projects_serviceAccounts,
         self.messages.IamProjectsServiceAccountsListRequest(
-            name=utils.ProjectToProjectResourceName(project)),
+            name=iam_util.ProjectToProjectResourceName(project)),
         field='accounts',
         limit=args.limit,
         batch_size_attribute='pageSize'):

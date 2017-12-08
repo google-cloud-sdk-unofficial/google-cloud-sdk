@@ -40,6 +40,7 @@ class List(base_classes.ZonalLister):
             name,
             zone.basename(),
             network.basename(),
+            network.segment(-4):label=NETWORK_PROJECT,
             isManaged:label=MANAGED,
             size:label=INSTANCES
           )

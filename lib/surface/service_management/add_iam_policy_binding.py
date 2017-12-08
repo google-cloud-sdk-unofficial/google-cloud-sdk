@@ -46,9 +46,7 @@ class AddIamPolicyBinding(
         suffix='to which the member is to be added')
     service_flag.AddToParser(parser)
 
-    parser.add_argument(
-        '--member', required=True,
-        help='The member to add to the binding.')
+    iam_util.AddArgsForAddIamPolicyBinding(parser)
 
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
@@ -81,8 +79,7 @@ class AddIamPolicyBinding(
         raise
 
     iam_util.AddBindingToIamPolicy(
-        self.services_messages, policy, args.member,
-        'roles/servicemanagement.serviceConsumer')
+        self.services_messages, policy, args.member, args.role)
 
     # Send updated access policy to backend
     request = (self.services_messages

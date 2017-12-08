@@ -37,7 +37,7 @@ def _AddArgs(parser, multizonal):
     instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG.AddArgument(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class WaitUntilStable(base_classes.BaseCommand):
   """Waits until state of managed instance group is stable."""
 
@@ -45,7 +45,7 @@ class WaitUntilStable(base_classes.BaseCommand):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, multizonal=False)
+    _AddArgs(parser=parser, multizonal=True)
 
   @property
   def service(self):
@@ -56,8 +56,8 @@ class WaitUntilStable(base_classes.BaseCommand):
     return 'instanceGroupManagers'
 
   def CreateGroupReference(self, args):
-    return (instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG
-            .ResolveAsResource)(
+    return (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
+            ResolveAsResource)(
                 args, self.resources, default_scope=flags.ScopeEnum.ZONE,
                 scope_lister=flags.GetDefaultScopeLister(
                     self.compute_client, self.project))
@@ -81,11 +81,18 @@ class WaitUntilStable(base_classes.BaseCommand):
     log.out.Print('Group is stable')
 
   def GetRequestForGroup(self, group_ref):
-    service = self.compute.instanceGroupManagers
-    request = service.GetRequestType('Get')(
-        instanceGroupManager=group_ref.Name(),
-        zone=group_ref.zone,
-        project=self.project)
+    if group_ref.Collection() == 'compute.regionInstanceGroupManagers':
+      service = self.compute.regionInstanceGroupManagers
+      request = service.GetRequestType('Get')(
+          instanceGroupManager=group_ref.Name(),
+          region=group_ref.region,
+          project=self.project)
+    else:
+      service = self.compute.instanceGroupManagers
+      request = service.GetRequestType('Get')(
+          instanceGroupManager=group_ref.Name(),
+          zone=group_ref.zone,
+          project=self.project)
     return (service, request)
 
   def _GetResources(self, group_ref):
@@ -102,39 +109,8 @@ class WaitUntilStable(base_classes.BaseCommand):
     return results, errors
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class WaitUntilStableBeta(WaitUntilStable):
-  """Waits until state of managed instance group is stable."""
-
-  @staticmethod
-  def Args(parser):
-    _AddArgs(parser=parser, multizonal=True)
-
-  def CreateGroupReference(self, args):
-    return (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
-            ResolveAsResource)(
-                args, self.resources, default_scope=flags.ScopeEnum.ZONE,
-                scope_lister=flags.GetDefaultScopeLister(
-                    self.compute_client, self.project))
-
-  def GetRequestForGroup(self, group_ref):
-    if group_ref.Collection() == 'compute.regionInstanceGroupManagers':
-      service = self.compute.regionInstanceGroupManagers
-      request = service.GetRequestType('Get')(
-          instanceGroupManager=group_ref.Name(),
-          region=group_ref.region,
-          project=self.project)
-    else:
-      service = self.compute.instanceGroupManagers
-      request = service.GetRequestType('Get')(
-          instanceGroupManager=group_ref.Name(),
-          zone=group_ref.zone,
-          project=self.project)
-    return (service, request)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class WaitUntilStableAlpha(WaitUntilStableBeta):
+class WaitUntilStableAlpha(WaitUntilStable):
   """Waits until state of managed instance group is stable."""
 
   def Run(self, args):

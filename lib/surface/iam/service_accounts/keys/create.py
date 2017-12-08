@@ -16,8 +16,8 @@
 
 import textwrap
 
-from googlecloudsdk.api_lib.iam import utils
 from googlecloudsdk.command_lib.iam import base_classes
+from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import log
 
 
@@ -58,17 +58,17 @@ class Create(base_classes.BaseIamCommand):
   def Run(self, args):
     result = self.iam_client.projects_serviceAccounts_keys.Create(
         self.messages.IamProjectsServiceAccountsKeysCreateRequest(
-            name=utils.EmailToAccountResourceName(args.iam_account),
+            name=iam_util.EmailToAccountResourceName(args.iam_account),
             createServiceAccountKeyRequest=
             self.messages.CreateServiceAccountKeyRequest(
-                privateKeyType=utils.KeyTypeToCreateKeyType(
-                    utils.KeyTypeFromString(args.key_file_type)))))
+                privateKeyType=iam_util.KeyTypeToCreateKeyType(
+                    iam_util.KeyTypeFromString(args.key_file_type)))))
 
     # Only the creating user has access. Set file permission to "-rw-------".
     self.WriteFile(args.output, result.privateKeyData, make_private=True)
     log.status.Print(
         'created key [{0}] of type [{1}] as [{2}] for [{3}]'.format(
-            utils.GetKeyIdFromResourceName(result.name),
-            utils.KeyTypeToString(result.privateKeyType),
+            iam_util.GetKeyIdFromResourceName(result.name),
+            iam_util.KeyTypeToString(result.privateKeyType),
             args.output,
             args.iam_account))

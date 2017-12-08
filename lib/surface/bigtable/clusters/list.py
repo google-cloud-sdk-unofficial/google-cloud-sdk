@@ -79,8 +79,7 @@ class ListClusters(base.ListCommand):
           instance, collection='bigtableadmin.projects.instances')
       msg = (util.GetAdminMessages()
              .BigtableadminProjectsInstancesClustersListRequest(
-                 projectsId=ref.projectsId,
-                 instancesId=ref.Name()))
+                 parent=ref.RelativeName()))
       for cluster in list_pager.YieldFromList(
           cli.projects_instances_clusters,
           msg,

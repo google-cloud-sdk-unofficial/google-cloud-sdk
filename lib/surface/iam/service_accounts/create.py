@@ -16,9 +16,9 @@
 
 import textwrap
 
-from googlecloudsdk.api_lib.iam import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import base_classes
+from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
@@ -50,7 +50,7 @@ class Create(base_classes.BaseIamCommand, base.CreateCommand):
 
     parser.add_argument('name',
                         metavar='NAME',
-                        type=utils.AccountNameValidator(),
+                        type=iam_util.AccountNameValidator(),
                         help='The internal name of the new service account. '
                         'Used to generate an IAM-ACCOUNT (an IAM internal '
                         'email address used as an identifier of service '
@@ -62,7 +62,7 @@ class Create(base_classes.BaseIamCommand, base.CreateCommand):
 
     result = self.iam_client.projects_serviceAccounts.Create(
         self.messages.IamProjectsServiceAccountsCreateRequest(
-            name=utils.ProjectToProjectResourceName(project),
+            name=iam_util.ProjectToProjectResourceName(project),
             createServiceAccountRequest=
             self.messages.CreateServiceAccountRequest(
                 accountId=args.name,

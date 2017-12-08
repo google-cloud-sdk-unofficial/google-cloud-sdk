@@ -29,16 +29,16 @@ _DETAILED_HELP = """
 
   The binary log coordinates, if specified, act as the point up to which the
   source instance is cloned. If not specified, the source instance is
-  cloned up to the most recent binary log coordintes at the time the command is
+  cloned up to the most recent binary log coordinates at the time the command is
   executed.
 
   ## EXAMPLES
 
-  To clone a source instance to the most recent binary log coordintes:
+  To clone a source instance to the most recent binary log coordinates:
 
     $ {command} instance-foo instance-bar
 
-  or to clone at specific binary log coordintes:
+  or to clone at specific binary log coordinates:
 
     $ {command} instance-foo instance-bar --bin-log-file-name mysql-bin.000020 --bin-log-position 170
 """

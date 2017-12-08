@@ -16,29 +16,22 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import arg_parsers
-from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
-def _AddArgs(parser):
-  """Adds args."""
-  parser.add_argument(
-      '--instances',
-      type=arg_parsers.ArgList(min_length=1),
-      metavar='INSTANCE',
-      required=True,
-      help='Names of instances to delete.')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class DeleteInstances(base_classes.BaseAsyncMutator):
   """Delete instances managed by managed instance group."""
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser)
-    instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG.AddArgument(parser)
+    parser.add_argument('--instances',
+                        type=arg_parsers.ArgList(min_length=1),
+                        metavar='INSTANCE',
+                        required=True,
+                        help='Names of instances to delete.')
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser)
 
   @property
   def method(self):
@@ -51,39 +44,6 @@ class DeleteInstances(base_classes.BaseAsyncMutator):
   @property
   def resource_type(self):
     return 'instanceGroupManagers'
-
-  def CreateRequests(self, args):
-    resource_arg = instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG
-    default_scope = flags.ScopeEnum.ZONE
-    scope_lister = flags.GetDefaultScopeLister(
-        self.compute_client, self.project)
-    igm_ref = resource_arg.ResolveAsResource(
-        args, self.resources, default_scope=default_scope,
-        scope_lister=scope_lister)
-    instances = instance_groups_utils.CreateInstanceReferences(
-        self.resources, self.compute_client, igm_ref, args.instances)
-    return [(self.method,
-             self.messages.ComputeInstanceGroupManagersDeleteInstancesRequest(
-                 instanceGroupManager=igm_ref.Name(),
-                 instanceGroupManagersDeleteInstancesRequest=(
-                     self.messages.InstanceGroupManagersDeleteInstancesRequest(
-                         instances=instances,
-                     )
-                 ),
-                 project=self.project,
-                 zone=igm_ref.zone,
-             ))]
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class DeleteInstancesAlpha(DeleteInstances):
-  """Delete instances managed by managed instance group."""
-
-  @staticmethod
-  def Args(parser):
-    _AddArgs(parser=parser)
-    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
-        parser)
 
   def CreateRequests(self, args):
     resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
@@ -140,4 +100,3 @@ If you would like to keep the underlying virtual machines but still remove them
 from the managed instance group, use the abandon-instances command instead.
 """,
 }
-DeleteInstancesAlpha.detailed_help = DeleteInstances.detailed_help

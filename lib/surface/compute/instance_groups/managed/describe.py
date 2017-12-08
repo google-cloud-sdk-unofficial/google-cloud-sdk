@@ -14,39 +14,9 @@
 """Command for describing managed instance groups."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
-from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Describe(base_classes.ZonalDescriber):
-  """Describe a managed instance group."""
-
-  @staticmethod
-  def Args(parser):
-    base_classes.ZonalDescriber.Args(parser)
-
-  @property
-  def service(self):
-    return self.compute.instanceGroupManagers
-
-  @property
-  def resource_type(self):
-    return 'instanceGroupManagers'
-
-  def ComputeDynamicProperties(self, args, items):
-    """Add Autoscaler information if Autoscaler is defined for the item."""
-    # Items are expected to be IGMs.
-    return managed_instance_groups_utils.AddAutoscalersToMigs(
-        migs_iterator=items,
-        project=self.project,
-        compute=self.compute,
-        http=self.http,
-        batch_url=self.batch_url,
-        fail_when_api_not_supported=False)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class DescribeBeta(base_classes.MultiScopeDescriber):
+class Describe(base_classes.MultiScopeDescriber):
   """Describe a managed instance group."""
 
   SCOPES = [base_classes.ScopeType.regional_scope,
@@ -79,7 +49,7 @@ class DescribeBeta(base_classes.MultiScopeDescriber):
   @staticmethod
   def Args(parser):
     base_classes.MultiScopeDescriber.AddScopeArgs(
-        parser, 'instanceGroupManagers', DescribeBeta.SCOPES)
+        parser, 'instanceGroupManagers', Describe.SCOPES)
 
   def ComputeDynamicProperties(self, args, items):
     """Add Autoscaler information if Autoscaler is defined for the item."""
@@ -93,12 +63,5 @@ class DescribeBeta(base_classes.MultiScopeDescriber):
         fail_when_api_not_supported=False)
 
 
-Describe.detailed_help = {
-    'brief': 'Describe a managed instance group',
-    'DESCRIPTION': """\
-        *{command}* displays all data associated with a Google Compute Engine
-managed instance group.
-""",
-}
-DescribeBeta.detailed_help = base_classes.GetMultiScopeDescriberHelp(
-    'managed instance group', DescribeBeta.SCOPES)
+Describe.detailed_help = base_classes.GetMultiScopeDescriberHelp(
+    'managed instance group', Describe.SCOPES)

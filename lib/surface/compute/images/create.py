@@ -65,6 +65,8 @@ class Create(base_classes.BaseAsyncCreator):
         metavar='NAME',
         help='The name of the image to create.')
 
+    csek_utils.AddCsekKeyArgs(parser, resource_type='image')
+
   @property
   def service(self):
     return self.compute.images
@@ -86,12 +88,8 @@ class Create(base_classes.BaseAsyncCreator):
         sourceType=self.messages.Image.SourceTypeValueValuesEnum.RAW,
         family=args.family)
 
-    if hasattr(args, 'csek_key_file'):
-      csek_keys = csek_utils.CsekKeyStore.FromArgs(
-          args, self._ALLOW_RSA_ENCRYPTED_CSEK_KEYS)
-    else:
-      csek_keys = None
-
+    csek_keys = csek_utils.CsekKeyStore.FromArgs(
+        args, self._ALLOW_RSA_ENCRYPTED_CSEK_KEYS)
     if csek_keys:
       image_ref = self.resources.Parse(args.name, collection='compute.images')
       image.imageEncryptionKey = csek_utils.MaybeToMessage(
@@ -138,11 +136,6 @@ class CreateBeta(Create):
   # Used in CreateRequests. We only want to allow RSA key wrapping in
   # alpha/beta, *not* GA.
   _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = True
-
-  @staticmethod
-  def Args(parser):
-    Create.Args(parser)
-    csek_utils.AddCsekKeyArgs(parser, resource_type='image')
 
 
 Create.detailed_help = {

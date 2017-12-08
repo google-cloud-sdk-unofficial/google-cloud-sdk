@@ -16,13 +16,43 @@
 It's an alias for the instance-groups list-instances command.
 """
 from googlecloudsdk.api_lib.compute import instance_groups_utils
+from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
-class ListInstances(instance_groups_utils.InstanceGroupListInstances):
+class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
 
   @staticmethod
   def Args(parser):
     instance_groups_flags.ZONAL_INSTANCE_GROUP_ARG.AddArgument(parser)
     flags.AddRegexArg(parser)
+
+  def GetResources(self, args):
+    """Retrieves response with instance in the instance group."""
+    group_ref = self.resources.Parse(
+        args.name,
+        collection='compute.' + self.resource_type,
+        params={'zone': args.zone})
+    if args.regexp:
+      filter_expr = 'instance eq {0}'.format(args.regexp)
+    else:
+      filter_expr = None
+
+    request = self.service.GetRequestType(self.method)(
+        instanceGroup=group_ref.Name(),
+        instanceGroupsListInstancesRequest=(
+            self.messages.InstanceGroupsListInstancesRequest()),
+        zone=group_ref.zone,
+        filter=filter_expr,
+        project=group_ref.project)
+
+    errors = []
+    results = list(request_helper.MakeRequests(
+        requests=[(self.service, self.method, request)],
+        http=self.http,
+        batch_url=self.batch_url,
+        errors=errors,
+        custom_get_requests=None))
+
+    return results, errors

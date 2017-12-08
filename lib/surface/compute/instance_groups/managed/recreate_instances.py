@@ -16,7 +16,6 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import arg_parsers
-from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
@@ -31,14 +30,14 @@ def _AddArgs(parser):
       help='Names of instances to recreate.')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class RecreateInstances(base_classes.BaseAsyncMutator):
   """Recreate instances managed by a managed instance group."""
 
   @staticmethod
   def Args(parser):
     _AddArgs(parser=parser)
-    instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG.AddArgument(parser)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser)
 
   @property
   def method(self):
@@ -51,40 +50,6 @@ class RecreateInstances(base_classes.BaseAsyncMutator):
   @property
   def resource_type(self):
     return 'instanceGroupManagers'
-
-  def CreateRequests(self, args):
-    resource_arg = instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG
-    default_scope = flags.ScopeEnum.ZONE
-    scope_lister = flags.GetDefaultScopeLister(
-        self.compute_client, self.project)
-    igm_ref = resource_arg.ResolveAsResource(
-        args, self.resources, default_scope=default_scope,
-        scope_lister=scope_lister)
-    instances = instance_groups_utils.CreateInstanceReferences(
-        self.resources, self.compute_client, igm_ref, args.instances)
-    return [(self.method,
-             self.messages.ComputeInstanceGroupManagersRecreateInstancesRequest(
-                 instanceGroupManager=igm_ref.Name(),
-                 instanceGroupManagersRecreateInstancesRequest=(
-                     self.messages.
-                     InstanceGroupManagersRecreateInstancesRequest(
-                         instances=instances,
-                     )
-                 ),
-                 project=self.project,
-                 zone=igm_ref.zone,
-             ),),]
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class RecreateInstancesAlpha(RecreateInstances):
-  """Recreate instances managed by a managed instance group."""
-
-  @staticmethod
-  def Args(parser):
-    _AddArgs(parser=parser)
-    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
-        parser)
 
   def CreateRequests(self, args):
     resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
@@ -136,4 +101,3 @@ recreated based on the latest instance template configured for the managed
 instance group.
 """,
 }
-RecreateInstancesAlpha.detailed_help = RecreateInstances.detailed_help

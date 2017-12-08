@@ -19,15 +19,15 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.deployment_manager import dm_base
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 
 # Number of seconds (approximately) to wait for cancel operation to complete.
 OPERATION_TIMEOUT = 20 * 60  # 20 mins
 
 
-class CancelPreview(base.Command):
+class CancelPreview(base.Command, dm_base.DeploymentManagerCommand):
   """Cancel a pending or running deployment preview.
 
   This command will cancel a currently running or pending preview operation on
@@ -82,17 +82,12 @@ class CancelPreview(base.Command):
     Raises:
       HttpException: An http error response was received while executing api
           request.
-      ToolException: The cancel preview operation encountered an error.
     """
-    client = self.context['deploymentmanager-client']
-    messages = self.context['deploymentmanager-messages']
-    project = properties.VALUES.core.project.Get(required=True)
-
     # Get the fingerprint from the previewing deployment to cancel.
     try:
-      current_deployment = client.deployments.Get(
-          messages.DeploymentmanagerDeploymentsGetRequest(
-              project=project,
+      current_deployment = self.client.deployments.Get(
+          self.messages.DeploymentmanagerDeploymentsGetRequest(
+              project=self.project,
               deployment=args.deployment_name
           )
       )
@@ -104,12 +99,12 @@ class CancelPreview(base.Command):
       raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
 
     try:
-      operation = client.deployments.CancelPreview(
-          messages.DeploymentmanagerDeploymentsCancelPreviewRequest(
-              project=project,
+      operation = self.client.deployments.CancelPreview(
+          self.messages.DeploymentmanagerDeploymentsCancelPreviewRequest(
+              project=self.project,
               deployment=args.deployment_name,
               deploymentsCancelPreviewRequest=
-              messages.DeploymentsCancelPreviewRequest(
+              self.messages.DeploymentsCancelPreviewRequest(
                   fingerprint=fingerprint,
               ),
           )
@@ -121,23 +116,21 @@ class CancelPreview(base.Command):
     else:
       op_name = operation.name
       try:
-        dm_v2_util.WaitForOperation(client, messages, op_name, project,
-                                    'cancel-preview', OPERATION_TIMEOUT)
+        dm_v2_util.WaitForOperation(self.client,
+                                    self.messages,
+                                    op_name,
+                                    self.project,
+                                    'cancel-preview',
+                                    OPERATION_TIMEOUT)
         log.status.Print('Cancel preview operation ' + op_name
                          + ' completed successfully.')
-      except exceptions.ToolException:
-        # Operation timed out or had errors. Print this warning, then still
-        # show whatever operation can be gotten.
-        log.error('Cancel preview operation ' + op_name
-                  + ' has errors or failed to complete within '
-                  + str(OPERATION_TIMEOUT) + ' seconds.')
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
       try:
         # Fetch a list of the canceled resources.
-        response = client.resources.List(
-            messages.DeploymentmanagerResourcesListRequest(
-                project=project,
+        response = self.client.resources.List(
+            self.messages.DeploymentmanagerResourcesListRequest(
+                project=self.project,
                 deployment=args.deployment_name,
             )
         )

@@ -11,7 +11,7 @@ gcloud compute instances get\-serial\-port\-output \- read output from a virtual
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances get\-serial\-port\-output\fR \fINAME\fR [\fB\-\-port\fR=\fIPORT\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instances get\-serial\-port\-output\fR \fINAME\fR [\fB\-\-port\fR=\fIPORT\fR] [\fB\-\-start\fR=\fISTART\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -40,6 +40,14 @@ The name of the instance.
 Instances can support up to four serial port outputs, numbered 1 through 4. By
 default, this command will return the output of the first serial port. Setting
 this flag will return the output of the requested serial port.
+
+.RE
+\fB\-\-start\fR=\fISTART\fR
+.RS 2m
+Specifies the byte index (zero\-based) of the first byte you want returned. Use
+this flag if you want to continue getting the output from a previous request
+that was too long to return in one attempt. The last byte returned in a request
+will be reported on STDERR.
 
 .RE
 \fB\-\-zone\fR=\fIZONE\fR

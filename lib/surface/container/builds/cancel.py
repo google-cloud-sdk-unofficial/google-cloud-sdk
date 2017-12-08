@@ -31,7 +31,9 @@ class Cancel(base.Command):
     """
     parser.add_argument(
         'build',
-        help='The build to cancel.',
+        help=('The build to cancel. The ID of the build is printed at the end '
+              'of the build submission process, or in the ID column when '
+              'listing builds.'),
     )
 
   def Run(self, args):

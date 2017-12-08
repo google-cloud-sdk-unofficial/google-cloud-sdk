@@ -50,7 +50,7 @@ class DeployGA(base.SilentCommand):
     deploy_util.ArgsDeploy(parser)
 
   def Run(self, args):
-    return deploy_util.RunDeploy(self, args)
+    return deploy_util.RunDeploy(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -63,8 +63,8 @@ class DeployBeta(base.SilentCommand):
     deploy_util.ArgsDeploy(parser)
 
   def Run(self, args):
-    return deploy_util.RunDeploy(self, args, enable_endpoints=True,
-                                 app_create=True)
+    return deploy_util.RunDeploy(args, enable_endpoints=True,
+                                 app_create=True, use_beta_stager=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.PREVIEW)
@@ -77,7 +77,7 @@ class DeployPreview(base.SilentCommand):
     deploy_util.ArgsDeploy(parser)
 
   def Run(self, args):
-    return deploy_util.RunDeploy(self, args, enable_endpoints=True)
+    return deploy_util.RunDeploy(args, enable_endpoints=True)
 
 DeployGA.detailed_help = _DETAILED_HELP
 DeployBeta.detailed_help = _DETAILED_HELP

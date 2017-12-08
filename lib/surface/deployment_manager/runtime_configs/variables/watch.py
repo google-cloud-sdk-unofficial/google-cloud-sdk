@@ -18,10 +18,10 @@ import socket
 
 from apitools.base.py import exceptions as apitools_exceptions
 
+from googlecloudsdk.api_lib.deployment_manager import exceptions
 from googlecloudsdk.api_lib.deployment_manager.runtime_configs import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as base_exceptions
 from googlecloudsdk.command_lib.deployment_manager.runtime_configs import flags
 from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.util import times
@@ -157,5 +157,5 @@ class Watch(base.Command):
 
 
 def _RaiseTimeout():
-  raise base_exceptions.ToolException(
+  raise exceptions.OperationTimeoutError(
       'Variable did not change prior to timeout.', exit_code=2)

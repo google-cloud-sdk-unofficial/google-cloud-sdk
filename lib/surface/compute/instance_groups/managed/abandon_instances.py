@@ -16,72 +16,20 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import arg_parsers
-from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
-def _AddArgs(parser):
-  """Adds args."""
-  parser.add_argument(
-      '--instances',
-      type=arg_parsers.ArgList(min_length=1),
-      metavar='INSTANCE',
-      required=True,
-      help='Names of instances to abandon.')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class AbandonInstances(base_classes.BaseAsyncMutator):
   """Abandon instances owned by a managed instance group."""
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser)
-    instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG.AddArgument(parser)
-
-  @property
-  def method(self):
-    return 'AbandonInstances'
-
-  @property
-  def service(self):
-    return self.compute.instanceGroupManagers
-
-  @property
-  def resource_type(self):
-    return 'instanceGroupManagers'
-
-  def CreateRequests(self, args):
-    resource_arg = instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG
-    default_scope = flags.ScopeEnum.ZONE
-    scope_lister = flags.GetDefaultScopeLister(
-        self.compute_client, self.project)
-    igm_ref = resource_arg.ResolveAsResource(
-        args, self.resources, default_scope=default_scope,
-        scope_lister=scope_lister)
-    instances = instance_groups_utils.CreateInstanceReferences(
-        self.resources, self.compute_client, igm_ref, args.instances)
-    return [(self.method,
-             self.messages.ComputeInstanceGroupManagersAbandonInstancesRequest(
-                 instanceGroupManager=igm_ref.Name(),
-                 instanceGroupManagersAbandonInstancesRequest=(
-                     self.messages.InstanceGroupManagersAbandonInstancesRequest(
-                         instances=instances,
-                     )
-                 ),
-                 project=self.project,
-                 zone=igm_ref.zone,
-             ),),]
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class AbandonInstancesAlpha(base_classes.BaseAsyncMutator):
-  """Abandon instances owned by a managed instance group."""
-
-  @staticmethod
-  def Args(parser):
-    _AddArgs(parser=parser)
+    parser.add_argument('--instances',
+                        type=arg_parsers.ArgList(min_length=1),
+                        metavar='INSTANCE',
+                        required=True,
+                        help='Names of instances to abandon.')
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 
@@ -154,4 +102,3 @@ but just removes the instances from the instance group. If you would like the
 delete the underlying instances, use the delete-instances command instead.
 """,
 }
-AbandonInstancesAlpha.detailed_help = AbandonInstances.detailed_help

@@ -83,7 +83,7 @@ class Wait(base.Command):
     Raises:
       HttpException: An http error response was received while executing api
           request.
-      ToolException: If the waiter doesn't complete in time.
+      OperationTimeoutError: If the waiter doesn't complete in time.
     """
     waiter_resource = util.ParseWaiterName(args.name, args)
     result = util.WaitForWaiter(waiter_resource, max_wait=args.max_wait)

@@ -15,8 +15,8 @@
 
 from apitools.base.py import exceptions
 
-from googlecloudsdk.api_lib.iam import utils
 from googlecloudsdk.command_lib.iam import base_classes
+from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -43,12 +43,13 @@ class Delete(base_classes.BaseIamCommand):
           cancel_on_no=True)
       self.iam_client.projects_serviceAccounts_keys.Delete(
           self.messages.IamProjectsServiceAccountsKeysDeleteRequest(
-              name=utils.EmailAndKeyToResourceName(args.iam_account, args.key)))
+              name=iam_util.EmailAndKeyToResourceName(args.iam_account,
+                                                      args.key)))
 
       log.status.Print(
           'deleted key [{1}] for service account [{0}]'.format(
               args.iam_account,
               args.key))
     except exceptions.HttpError as error:
-      raise utils.ConvertToServiceAccountException(
+      raise iam_util.ConvertToServiceAccountException(
           error, args.iam_account, args.key)

@@ -18,9 +18,9 @@ import textwrap
 
 from apitools.base.py import exceptions
 
-from googlecloudsdk.api_lib.iam import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import base_classes
+from googlecloudsdk.command_lib.iam import iam_util
 
 
 class Describe(base_classes.BaseIamCommand, base.DescribeCommand):
@@ -53,6 +53,6 @@ class Describe(base_classes.BaseIamCommand, base.DescribeCommand):
       # TODO(b/25212870): use resource parsing.
       return self.iam_client.projects_serviceAccounts.Get(
           self.messages.IamProjectsServiceAccountsGetRequest(
-              name=utils.EmailToAccountResourceName(args.account)))
+              name=iam_util.EmailToAccountResourceName(args.account)))
     except exceptions.HttpError as error:
-      raise utils.ConvertToServiceAccountException(error, args.account)
+      raise iam_util.ConvertToServiceAccountException(error, args.account)

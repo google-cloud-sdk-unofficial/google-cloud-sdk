@@ -36,7 +36,7 @@ class AddBackend(base_classes.ReadWriteCommand):
     backend_flags.AddDescription(parser)
     backend_flags.AddInstanceGroup(
         parser, operation_type='add to',
-        multizonal=False, with_deprecated_zone=True)
+        with_deprecated_zone=True)
     backend_flags.AddBalancingMode(parser)
     backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
@@ -88,10 +88,16 @@ class AddBackend(base_classes.ReadWriteCommand):
                 project=self.project))
 
   def CreateGroupReference(self, args):
-    return self.CreateZonalReference(
-        args.instance_group,
-        args.instance_group_zone,
-        resource_type='instanceGroups')
+    return instance_groups_utils.CreateInstanceGroupReference(
+        scope_prompter=self,
+        compute=self.compute,
+        resources=self.resources,
+        name=args.instance_group,
+        region=args.instance_group_region,
+        zone=(args.instance_group_zone
+              if args.instance_group_zone else args.zone),
+        zonal_resource_type='instanceGroups',
+        regional_resource_type='regionInstanceGroups')
 
   def CreateBackendMessage(self, group_uri, balancing_mode, args):
     """Create a backend message.
@@ -161,7 +167,7 @@ class AddBackendBeta(AddBackend):
     backend_flags.AddDescription(parser)
     backend_flags.AddInstanceGroup(
         parser, operation_type='add to',
-        multizonal=True, with_deprecated_zone=True)
+        with_deprecated_zone=True)
     backend_flags.AddBalancingMode(parser)
     backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)

@@ -18,10 +18,10 @@ from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
+from googlecloudsdk.command_lib.deployment_manager import dm_base
 
 
-class List(base.ListCommand):
+class List(base.ListCommand, dm_base.DeploymentManagerCommand):
   """List resources in a deployment.
 
   Prints a table with summary information on all resources in the deployment.
@@ -67,16 +67,12 @@ class List(base.ListCommand):
       HttpException: An http error response was received while executing api
           request.
     """
-    client = self.context['deploymentmanager-client']
-    messages = self.context['deploymentmanager-messages']
-    project = properties.VALUES.core.project.Get(required=True)
-
-    request = messages.DeploymentmanagerResourcesListRequest(
-        project=project,
+    request = self.messages.DeploymentmanagerResourcesListRequest(
+        project=self.project,
         deployment=args.deployment,
     )
     return dm_v2_util.YieldWithHttpExceptions(
-        list_pager.YieldFromList(client.resources,
+        list_pager.YieldFromList(self.client.resources,
                                  request,
                                  field='resources',
                                  limit=args.limit,

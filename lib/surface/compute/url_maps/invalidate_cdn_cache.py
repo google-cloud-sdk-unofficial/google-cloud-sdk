@@ -153,7 +153,7 @@ class InvalidateCdnCacheAlpha(InvalidateCdnCacheGA):
 
     host.detailed_help = """\
         If set, this invalidation will apply only to requests to the
-        specified host. If empty, this invalidation will apply to all hosts.
+        specified host.
         """
 
 

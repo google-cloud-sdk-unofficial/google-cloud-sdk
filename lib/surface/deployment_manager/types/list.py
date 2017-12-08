@@ -1,4 +1,4 @@
-# Copyright 2014 Google Inc. All Rights Reserved.
+# Copyright 2016 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,20 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""operations list command."""
+"""types list command."""
 
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.deployment_manager import dm_base
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 
-class List(base.ListCommand):
+class List(base.ListCommand, dm_base.DeploymentManagerCommand):
   """List types in a project.
 
-  Prints a a list of the available resource types.
+  Prints a list of the available resource types.
   """
 
   detailed_help = {
@@ -55,18 +55,16 @@ class List(base.ListCommand):
       HttpException: An http error response was received while executing api
           request.
     """
-    client = self.context['deploymentmanager-client']
-    messages = self.context['deploymentmanager-messages']
-    project = properties.VALUES.core.project.Get(required=True)
-
-    request = messages.DeploymentmanagerTypesListRequest(project=project)
+    request = self.messages.DeploymentmanagerTypesListRequest(
+        project=self.project)
     return dm_v2_util.YieldWithHttpExceptions(
-        list_pager.YieldFromList(client.types, request, field='types',
+        list_pager.YieldFromList(self.client.types, request, field='types',
                                  batch_size=args.page_size, limit=args.limit))
 
-  def Format(self, unused_args):
-    return 'value(name)'
+  def Collection(self):
+    return 'deploymentmanager.types'
 
   def Epilog(self, resources_were_displayed):
     if not resources_were_displayed:
       log.status.Print('No types were found for your project!')
+

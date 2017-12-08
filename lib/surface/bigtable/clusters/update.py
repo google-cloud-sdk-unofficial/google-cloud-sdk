@@ -83,12 +83,7 @@ class UpdateCluster(base.UpdateCommand):
         args.cluster,
         params={'instancesId': args.instance},
         collection='bigtableadmin.projects.instances.clusters')
-    msg = msgs.BigtableadminProjectsInstancesClustersUpdateRequest(
-        projectsId=ref.projectsId,
-        instancesId=ref.instancesId,
-        clustersId=ref.Name(),
-        cluster=msgs.Cluster(name=ref.Name(),
-                             serveNodes=args.num_nodes))
+    msg = msgs.Cluster(name=ref.RelativeName(), serveNodes=args.num_nodes)
     result = cli.projects_instances_clusters.Update(msg)
     if not args.async:
       # TODO(user): enable this line when b/29563942 is fixed in apitools

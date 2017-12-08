@@ -14,8 +14,8 @@
 
 """Deployment Manager resources sub-group."""
 
+from googlecloudsdk.api_lib.deployment_manager import exceptions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 
 
 class Resources(base.Group):
@@ -50,4 +50,4 @@ class Resources(base.Group):
 
   def Filter(self, unused_tool_context, args):
     if not args.deployment:
-      raise exceptions.ToolException('argument --deployment is required')
+      raise exceptions.ArgumentError('argument --deployment is required')

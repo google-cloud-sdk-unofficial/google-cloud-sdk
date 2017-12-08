@@ -41,7 +41,6 @@ class DescribeInstance(base.DescribeCommand):
     ref = resources.REGISTRY.Parse(
         args.instance, collection='bigtableadmin.projects.instances')
     msg = util.GetAdminMessages().BigtableadminProjectsInstancesGetRequest(
-        projectsId=ref.projectsId,
-        instancesId=ref.Name())
+        name=ref.RelativeName())
     instance = cli.projects_instances.Get(msg)
     return instance

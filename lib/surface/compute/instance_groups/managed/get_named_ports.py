@@ -20,35 +20,7 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetNamedPorts(base.ListCommand):
-  """Implements get-named-ports command, GA version."""
-
-  def Format(self, unused_args):
-    return 'table(name, port)'
-
-  @staticmethod
-  def Args(parser):
-    instance_groups_flags.ZONAL_INSTANCE_GROUP_ARG.AddArgument(parser)
-
-  def Run(self, args):
-    """Retrieves response with named ports."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    project = properties.VALUES.core.project.Get(required=True)
-    group_ref = (
-        instance_groups_flags.ZONAL_INSTANCE_GROUP_ARG.ResolveAsResource(
-            args, holder.resources,
-            scope_lister=flags.GetDefaultScopeLister(
-                holder.client, project)))
-    return instance_groups_utils.OutputNamedPortsForGroup(
-        group_ref, holder.client)
-
-  detailed_help = (
-      instance_groups_utils.INSTANCE_GROUP_GET_NAMED_PORT_DETAILED_HELP)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class GetNamedPortsBeta(base.ListCommand):
   """Implements get-named-ports command, alpha, and beta versions."""
 
   def Format(self, unused_args):

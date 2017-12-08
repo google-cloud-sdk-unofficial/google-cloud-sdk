@@ -18,14 +18,16 @@ import sys
 
 from apitools.base.py import exceptions as apitools_exceptions
 
-from googlecloudsdk.api_lib.cloudresourcemanager import operations
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
+from googlecloudsdk.api_lib.resource_manager import operations
 from googlecloudsdk.api_lib.service_management import enable_api as services_enable_api
 from googlecloudsdk.api_lib.service_management import services_util
+
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.projects import util as command_lib_util
+from googlecloudsdk.command_lib.resource_manager import flags
 from googlecloudsdk.command_lib.util import labels_util
 
 from googlecloudsdk.core import apis
@@ -48,6 +50,16 @@ class Create(base.CreateCommand):
   `Happy project` and label `type=happy`:
 
     $ {command} example-foo-bar-1 --name="Happy project" --labels=type=happy
+
+  The following command creates a project with ID `example-2` with parent
+  `folders/12345`:
+
+    $ {command} example-2 --folder=12345
+
+  The following command creates a project with ID `example-3` with parent
+  `organizations/2048`:
+
+    $ {command} example-3 --organization=2048
   """
 
   def Collection(self):
@@ -76,13 +88,18 @@ class Create(base.CreateCommand):
         action='store_true',
         default=True,
         help='Enable cloudapis.googleapis.com during creation.')
+    flags.AddParentFlagsToParser(parser)
 
   def Run(self, args):
+    flags.CheckParentFlags(args, parent_required=False)
     project_ref = command_lib_util.ParseProject(args.id)
+
     try:
       create_op = projects_api.Create(
           project_ref,
           display_name=args.name,
+          parent=projects_api.ParentNameToResourceId(
+              flags.GetParentFromFlags(args)),
           update_labels=labels_util.GetUpdateLabelsDictFromArgs(args))
     except apitools_exceptions.HttpError as error:
       if error.status_code == httplib.CONFLICT:

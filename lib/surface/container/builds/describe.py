@@ -30,7 +30,9 @@ class Describe(base.DescribeCommand):
     """
     parser.add_argument(
         'build',
-        help='The build to describe.',
+        help=('The build to describe. The ID of the build is printed at the '
+              'end of the build submission process, or in the ID column when '
+              'listing builds.'),
     )
 
   def Run(self, args):

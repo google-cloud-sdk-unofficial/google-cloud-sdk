@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 class List(base.ListCommand, base_classes.BaseServiceManagementCommand):
-  """List service-management for the consumer project."""
+  """List services for a given project."""
 
   @staticmethod
   def Args(parser):

@@ -11,7 +11,7 @@ gcloud compute images create \- create Google Compute Engine images
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute images create\fR \fINAME\fR [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-family\fR=\fIFAMILY\fR] [\fB\-\-licenses\fR=[\fILICENSES\fR,...]] [\fB\-\-source\-disk\fR=\fISOURCE_DISK\fR] [\fB\-\-source\-disk\-zone\fR=\fISOURCE_DISK_ZONE\fR] [\fB\-\-source\-uri\fR=\fISOURCE_URI\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute images create\fR \fINAME\fR [\fB\-\-csek\-key\-file\fR=\fIFILE\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-family\fR=\fIFAMILY\fR] [\fB\-\-licenses\fR=[\fILICENSES\fR,...]] [\fB\-\-no\-require\-csek\-key\-create\fR] [\fB\-\-source\-disk\fR=\fISOURCE_DISK\fR] [\fB\-\-source\-disk\-zone\fR=\fISOURCE_DISK_ZONE\fR] [\fB\-\-source\-uri\fR=\fISOURCE_URI\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -43,6 +43,15 @@ The name of the image to create.
 
 .SH "FLAGS"
 
+\fB\-\-csek\-key\-file\fR=\fIFILE\fR
+.RS 2m
+Path to a Customer\-Supplied Encryption Key (CSEK) key file, mapping Google
+Compute Engine images to user managed keys to be used when creating, mounting,
+or snapshotting disks. See
+https://cloud.google.com/compute/docs/disks/customer\-supplied\-encryption for
+more details.
+
+.RE
 \fB\-\-description\fR=\fIDESCRIPTION\fR
 .RS 2m
 An optional, textual description for the image being created.
@@ -57,6 +66,18 @@ will cause the latest non\-deprecated image in the family to be used.
 \fB\-\-licenses\fR=[\fILICENSES\fR,...]
 .RS 2m
 Comma\-separated list of URIs to license resources.
+
+.RE
+\fB\-\-require\-csek\-key\-create\fR
+.RS 2m
+Refuse to create images not protected by a user managed key in the key file when
+\-\-csek\-key\-file is given. This behavior is enabled by default to prevent
+incorrect gcloud invocations from accidentally creating images with no user
+managed key. Disabling the check allows creation of some images without a
+matching Customer\-Supplied Encryption Key in the supplied \-\-csek\-key\-file.
+See https://cloud.google.com/compute/docs/disks/customer\-supplied\-encryption
+for more details. Enabled by default, use
+\fB\-\-no\-require\-csek\-key\-create\fR to disable.
 
 .RE
 \fB\-\-source\-disk\fR=\fISOURCE_DISK\fR

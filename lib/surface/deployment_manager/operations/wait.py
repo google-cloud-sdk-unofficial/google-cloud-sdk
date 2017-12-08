@@ -15,16 +15,16 @@
 """operations wait command."""
 
 from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
-from googlecloudsdk.api_lib.deployment_manager.exceptions import DeploymentManagerError
+from googlecloudsdk.api_lib.deployment_manager import exceptions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.deployment_manager import dm_base
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 # Number of seconds (approximately) to wait for each operation to complete.
 OPERATION_TIMEOUT = 20 * 60  # 20 mins
 
 
-class Wait(base.Command):
+class Wait(base.Command, dm_base.DeploymentManagerCommand):
   """Wait for all operations specified to complete before returning.
 
   Polls until all operations have finished, then prints the resulting operations
@@ -66,25 +66,22 @@ class Wait(base.Command):
       HttpException: An http error response was received while executing api
           request.
     Raises:
-      DeploymentManagerError: Operation finished with error(s) or timed out.
+      OperationError: Operation finished with error(s) or timed out.
     """
-    client = self.context['deploymentmanager-client']
-    messages = self.context['deploymentmanager-messages']
-    project = properties.VALUES.core.project.Get(required=True)
     failed_ops = []
     for operation_name in args.operation_name:
       try:
-        dm_v2_util.WaitForOperation(client, messages,
-                                    operation_name, project, '',
+        dm_v2_util.WaitForOperation(self.client, self.messages,
+                                    operation_name, self.project, '',
                                     OPERATION_TIMEOUT)
-      except DeploymentManagerError:
+      except exceptions.OperationError:
         failed_ops.append(operation_name)
     if failed_ops:
       if len(failed_ops) == 1:
-        raise DeploymentManagerError(
+        raise exceptions.OperationError(
             'Operation %s failed to complete or has errors.' % failed_ops[0])
       else:
-        raise DeploymentManagerError(
+        raise exceptions.OperationError(
             'Some operations failed to complete without errors:\n'
             + '\n'.join(failed_ops))
     else:

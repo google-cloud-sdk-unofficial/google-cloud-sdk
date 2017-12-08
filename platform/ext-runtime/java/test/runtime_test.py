@@ -53,8 +53,7 @@ class RuntimeTests(testutil.TestBase):
         self.assertFalse(os.path.exists(self.full_path(*path)))
 
     def make_app_yaml(self, runtime):
-        return self.read_runtime_def_file('data', 'app.yaml.template').format(
-            runtime=runtime)
+        return 'runtime: {runtime}\nvm: true\n'.format(runtime=runtime)
 
     def test_java_all_defaults(self):
         self.write_file('foo.jar', '')
@@ -536,6 +535,16 @@ class RuntimeTests(testutil.TestBase):
             cfg_files,
             '.dockerignore',
             self.read_runtime_def_file('data', 'dockerignore'))
+
+    def test_detect_appinfo_war(self):
+        self.write_file('foo.war', '')
+        configurator = self.detect()
+        self.assertEqual(configurator.generated_appinfo, {'runtime':'java', 'vm':True})
+
+    def test_detect_appinfo_jar(self):
+        self.write_file('foo.jar', '')
+        configurator = self.detect()
+        self.assertEqual(configurator.generated_appinfo, {'runtime':'java', 'vm':True})
 
 if __name__ == '__main__':
   unittest.main()

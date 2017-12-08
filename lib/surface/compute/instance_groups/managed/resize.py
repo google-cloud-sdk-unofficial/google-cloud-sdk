@@ -42,7 +42,8 @@ class Resize(base_classes.BaseAsyncMutator):
   @staticmethod
   def Args(parser):
     _AddArgs(parser=parser, creation_retries=False)
-    instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG.AddArgument(parser)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser)
 
   @property
   def method(self):
@@ -57,20 +58,30 @@ class Resize(base_classes.BaseAsyncMutator):
     return 'instanceGroupManagers'
 
   def CreateGroupReference(self, args):
-    return (instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG.
+    return (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
             ResolveAsResource)(
                 args, self.resources, default_scope=flags.ScopeEnum.ZONE,
                 scope_lister=flags.GetDefaultScopeLister(
                     self.compute_client, self.project))
 
   def CreateRequests(self, args):
-    ref = self.CreateGroupReference(args)
-    return [(self.method,
-             self.messages.ComputeInstanceGroupManagersResizeRequest(
-                 instanceGroupManager=ref.Name(),
-                 size=args.size,
-                 project=self.project,
-                 zone=ref.zone,))]
+    group_ref = self.CreateGroupReference(args)
+    if group_ref.Collection() == 'compute.instanceGroupManagers':
+      service = self.compute.instanceGroupManagers
+      request = self.messages.ComputeInstanceGroupManagersResizeRequest(
+          instanceGroupManager=group_ref.Name(),
+          size=args.size,
+          project=self.project,
+          zone=group_ref.zone,)
+    else:
+      service = self.compute.regionInstanceGroupManagers
+      request = self.messages.ComputeRegionInstanceGroupManagersResizeRequest(
+          instanceGroupManager=group_ref.Name(),
+          size=args.size,
+          project=self.project,
+          region=group_ref.region,)
+
+    return [(service, self.method, request)]
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
@@ -86,13 +97,6 @@ class ResizeBeta(Resize):
     _AddArgs(parser=parser, creation_retries=True)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
-
-  def CreateGroupReference(self, args):
-    return (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
-            ResolveAsResource)(
-                args, self.resources, default_scope=flags.ScopeEnum.ZONE,
-                scope_lister=flags.GetDefaultScopeLister(
-                    self.compute_client, self.project))
 
   def CreateRequests(self, args):
     group_ref = self.CreateGroupReference(args)

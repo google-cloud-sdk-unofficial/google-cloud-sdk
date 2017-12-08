@@ -87,11 +87,10 @@ def main(args):
     if not appinfo:
         appinfo = {'runtime': 'custom' if config.params.custom else 'java'}
 
-    # TODO(mmuller): Add back "appinfo" as soon as we can deal with the "env"
-    # param.
     comm.send_runtime_params({'entrypoint': entrypoint, 'server': server,
                               'openjdk': openjdk,
-                              'artifact_to_deploy': artifact_to_deploy})
+                              'artifact_to_deploy': artifact_to_deploy},
+                              appinfo)
     return 0
 
 

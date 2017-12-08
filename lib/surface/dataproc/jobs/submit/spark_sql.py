@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class SparkSql(base_classes.JobSubmitter):
-  """Submit a SparkSql job to a cluster."""
+  """Submit a Spark SQL job to a cluster."""
 
   @staticmethod
   def Args(parser):
@@ -44,7 +44,7 @@ class SparkSql(base_classes.JobSubmitter):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SparkSqlBeta(base_classes.JobSubmitterBeta):
-  """Submit a SparkSql job to a cluster using Beta features."""
+  """Submit a Spark SQL job to a cluster using Beta features."""
 
   @staticmethod
   def Args(parser):

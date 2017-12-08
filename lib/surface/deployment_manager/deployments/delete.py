@@ -17,11 +17,11 @@
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
-from googlecloudsdk.api_lib.deployment_manager.exceptions import DeploymentManagerError
+from googlecloudsdk.api_lib.deployment_manager import exceptions
+from googlecloudsdk.api_lib.util import exceptions as api_exceptions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.deployment_manager import dm_base
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 # Number of seconds (approximately) to wait for each delete operation to
@@ -29,7 +29,7 @@ from googlecloudsdk.core.console import console_io
 OPERATION_TIMEOUT = 20 * 60  # 20 mins
 
 
-class Delete(base.DeleteCommand):
+class Delete(base.DeleteCommand, dm_base.DeploymentManagerCommand):
   """Delete a deployment.
 
   This command deletes a deployment and deletes all associated resources.
@@ -89,53 +89,52 @@ class Delete(base.DeleteCommand):
     Raises:
       HttpException: An http error response was received while executing api
           request.
-      ToolException: The deployment deletion operation encountered an error.
     """
-    client = self.context['deploymentmanager-client']
-    messages = self.context['deploymentmanager-messages']
-    project = properties.VALUES.core.project.Get(required=True)
-
     prompt_message = ('The following deployments will be deleted:\n- '
                       + '\n- '.join(args.deployment_name))
     if not args.quiet:
       if not console_io.PromptContinue(message=prompt_message, default=False):
-        raise exceptions.ToolException('Deletion aborted by user.')
+        raise exceptions.OperationError('Deletion aborted by user.')
 
     operations = []
     for deployment_name in args.deployment_name:
       try:
-        operation = client.deployments.Delete(
-            messages.DeploymentmanagerDeploymentsDeleteRequest(
-                project=project,
+        operation = self.client.deployments.Delete(
+            self.messages.DeploymentmanagerDeploymentsDeleteRequest(
+                project=self.project,
                 deployment=deployment_name,
             )
         )
       except apitools_exceptions.HttpError as error:
-        raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
+        raise api_exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
       if args.async:
         operations.append(operation)
       else:
         op_name = operation.name
         try:
-          dm_v2_util.WaitForOperation(client, messages, op_name, project,
-                                      'delete', OPERATION_TIMEOUT)
+          dm_v2_util.WaitForOperation(self.client,
+                                      self.messages,
+                                      op_name,
+                                      self.project,
+                                      'delete',
+                                      OPERATION_TIMEOUT)
           log.status.Print('Delete operation ' + op_name
                            + ' completed successfully.')
-        except (exceptions.ToolException, DeploymentManagerError):
-          log.error('Delete operation ' + op_name
-                    + ' has errors or failed to complete within in '
-                    + str(OPERATION_TIMEOUT) + ' seconds.')
+        except exceptions.OperationError as e:
+          log.error(u'Delete operation {0} failed.\n{1}'.format(op_name, e))
         except apitools_exceptions.HttpError as error:
-          raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
+          raise api_exceptions.HttpException(error,
+                                             dm_v2_util.HTTP_ERROR_FORMAT)
         try:
-          completed_operation = client.operations.Get(
-              messages.DeploymentmanagerOperationsGetRequest(
-                  project=project,
+          completed_operation = self.client.operations.Get(
+              self.messages.DeploymentmanagerOperationsGetRequest(
+                  project=self.project,
                   operation=op_name,
               )
           )
         except apitools_exceptions.HttpError as error:
-          raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
+          raise api_exceptions.HttpException(error,
+                                             dm_v2_util.HTTP_ERROR_FORMAT)
         operations.append(completed_operation)
 
     return operations

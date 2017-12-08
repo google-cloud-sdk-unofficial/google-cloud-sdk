@@ -17,6 +17,7 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 class ListInstances(base.ListCommand):
@@ -38,8 +39,11 @@ class ListInstances(base.ListCommand):
       Some value that we want to have printed later.
     """
     cli = util.GetAdminClient()
+    project_ref = resources.REGISTRY.Parse(
+        properties.VALUES.core.project.Get(required=True),
+        collection='bigtableadmin.projects')
     msg = util.GetAdminMessages().BigtableadminProjectsInstancesListRequest(
-        projectsId=properties.VALUES.core.project.Get())
+        parent=project_ref.RelativeName())
     return list_pager.YieldFromList(
         cli.projects_instances,
         msg,

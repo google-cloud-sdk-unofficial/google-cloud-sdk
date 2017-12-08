@@ -19,10 +19,10 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import properties
+from googlecloudsdk.command_lib.deployment_manager import dm_base
 
 
-class Describe(base.DescribeCommand):
+class Describe(base.DescribeCommand, dm_base.DeploymentManagerCommand):
   """Provide information about a resource.
 
   This command prints out all available details about a resource.
@@ -62,14 +62,10 @@ class Describe(base.DescribeCommand):
       HttpException: An http error response was received while executing api
           request.
     """
-    client = self.context['deploymentmanager-client']
-    messages = self.context['deploymentmanager-messages']
-    project = properties.VALUES.core.project.Get(required=True)
-
     try:
-      return client.resources.Get(
-          messages.DeploymentmanagerResourcesGetRequest(
-              project=project,
+      return self.client.resources.Get(
+          self.messages.DeploymentmanagerResourcesGetRequest(
+              project=self.project,
               deployment=args.deployment,
               resource=args.resource
           )

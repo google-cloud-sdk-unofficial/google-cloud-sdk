@@ -14,48 +14,10 @@
 """Command for setting named ports in instance groups."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
-from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instance_groups import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class SetNamedPorts(base_classes.NoOutputAsyncMutator):
-  """Sets named ports for instance groups."""
-
-  @property
-  def service(self):
-    return self.compute.instanceGroups
-
-  @property
-  def method(self):
-    return 'SetNamedPorts'
-
-  @property
-  def resource_type(self):
-    return 'instanceGroups'
-
-  @staticmethod
-  def Args(parser):
-    flags.ZONAL_INSTANCE_GROUP_ARG.AddArgument(parser)
-    flags.AddNamedPortsArgs(parser)
-
-  def CreateRequests(self, args):
-    group_ref = flags.ZONAL_INSTANCE_GROUP_ARG.ResolveAsResource(
-        args, self.resources, default_scope=compute_flags.ScopeEnum.ZONE,
-        scope_lister=compute_flags.GetDefaultScopeLister(
-            self.compute_client, self.project))
-    ports = instance_groups_utils.ValidateAndParseNamedPortsArgs(
-        self.messages, args.named_ports)
-    # service should be always zonal
-    request, _ = instance_groups_utils.GetSetNamedPortsRequestForGroup(
-        self.compute_client, group_ref, ports)
-    return [(self.service, self.method, request)]
-
-  detailed_help = instance_groups_utils.SET_NAMED_PORTS_HELP
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class SetNamedPortsAlpha(base_classes.NoOutputAsyncMutator):
   """Sets named ports for instance groups."""
 

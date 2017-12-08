@@ -5,20 +5,20 @@
 
 .SH "NAME"
 .HP
-gcloud compute instance\-groups managed describe \- describe a managed instance group
+gcloud compute instance\-groups managed describe \- display detailed information about a managed instance group
 
 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instance\-groups managed describe\fR \fINAME\fR [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instance\-groups managed describe\fR \fINAME\fR [\fB\-\-region\fR=\fIREGION\fR\ |\ \fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
 .SH "DESCRIPTION"
 
 \fBgcloud compute instance\-groups managed describe\fR displays all data
-associated with a Google Compute Engine managed instance group.
+associated with a managed instance group in a project.
 
 
 
@@ -33,32 +33,16 @@ The name of the resource to fetch.
 
 .SH "FLAGS"
 
+At most one of these may be specified:
+
+\fB\-\-region\fR=\fIREGION\fR
+.RS 2m
+The region of the resource to fetch.
+
+.RE
 \fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
-The zone of the resource to fetch. If not specified, you will be prompted to
-select a zone.
-
-To avoid prompting when this flag is omitted, you can set the
-\f5\fIcompute/zone\fR\fR property:
-
-.RS 2m
-$ gcloud config set compute/zone ZONE
-.RE
-
-A list of zones can be fetched by running:
-
-.RS 2m
-$ gcloud compute zones list
-.RE
-
-To unset the property, run:
-
-.RS 2m
-$ gcloud config unset compute/zone
-.RE
-
-Alternatively, the zone can be stored in the environment variable
-\f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
+The zone of the resource to fetch.
 
 
 .RE
@@ -66,3 +50,23 @@ Alternatively, the zone can be stored in the environment variable
 .SH "GLOBAL FLAGS"
 
 Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To get details about a regional managed instance group in the
+\f5\fIus\-central1\fR\fR regions, run:
+
+.RS 2m
+$ gcloud compute instance\-groups managed describe \e
+    \-\-region us\-central1
+.RE
+
+To get details about a zonal managed instance group in the
+\f5\fIus\-central1\-b\fR\fR zone, run:
+
+.RS 2m
+$ gcloud compute instance\-groups managed describe \e
+    \-\-zone us\-central1\-b
+.RE

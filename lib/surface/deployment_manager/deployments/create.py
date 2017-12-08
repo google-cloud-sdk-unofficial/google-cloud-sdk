@@ -21,15 +21,15 @@ from googlecloudsdk.api_lib.deployment_manager import importer
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.deployment_manager import dm_base
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 # Number of seconds (approximately) to wait for create operation to complete.
 OPERATION_TIMEOUT = 20 * 60  # 20 mins
 
 
 @base.UnicodeIsSupported
-class Create(base.CreateCommand):
+class Create(base.CreateCommand, dm_base.DeploymentManagerCommand):
   """Create a deployment.
 
   This command inserts (creates) a new deployment based on a provided config
@@ -127,25 +127,21 @@ class Create(base.CreateCommand):
     Raises:
       HttpException: An http error response was received while executing api
           request.
-      ToolException: Config file could not be read or parsed, or the deployment
-          creation operation encountered an error.
+      ConfigError: Config file could not be read or parsed, or the
+          deployment creation operation encountered an error.
     """
-    client = self.context['deploymentmanager-client']
-    messages = self.context['deploymentmanager-messages']
-    project = properties.VALUES.core.project.Get(required=True)
-
-    deployment = messages.Deployment(
+    deployment = self.messages.Deployment(
         name=args.deployment_name,
         target=importer.BuildTargetConfig(
-            messages, args.config, args.properties),
+            self.messages, args.config, args.properties),
     )
     if args.description:
       deployment.description = args.description
 
     try:
-      operation = client.deployments.Insert(
-          messages.DeploymentmanagerDeploymentsInsertRequest(
-              project=project,
+      operation = self.client.deployments.Insert(
+          self.messages.DeploymentmanagerDeploymentsInsertRequest(
+              project=self.project,
               deployment=deployment,
               preview=args.preview,
           )
@@ -157,18 +153,18 @@ class Create(base.CreateCommand):
     else:
       op_name = operation.name
       try:
-        dm_v2_util.WaitForOperation(client, messages, op_name, project,
-                                    'create', OPERATION_TIMEOUT)
+        dm_v2_util.WaitForOperation(self.client,
+                                    self.messages,
+                                    op_name,
+                                    self.project,
+                                    'create',
+                                    OPERATION_TIMEOUT)
         log.status.Print('Create operation ' + op_name
                          + ' completed successfully.')
-      except exceptions.ToolException:
-        # Operation timed out or had errors. Print this warning, then still
-        # show whatever operation can be gotten.
-        log.error('Create operation ' + op_name
-                  + ' has errors or failed to complete within '
-                  + str(OPERATION_TIMEOUT) + ' seconds.')
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
 
-      return dm_v2_util.FetchResourcesAndOutputs(client, messages, project,
+      return dm_v2_util.FetchResourcesAndOutputs(self.client,
+                                                 self.messages,
+                                                 self.project,
                                                  args.deployment_name)

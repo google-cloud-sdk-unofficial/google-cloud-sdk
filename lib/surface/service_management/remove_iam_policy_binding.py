@@ -43,9 +43,7 @@ class RemoveIamPolicyBinding(
         suffix='from which the member is to be removed')
     service_flag.AddToParser(parser)
 
-    parser.add_argument(
-        '--member', required=True,
-        help='The member to remove from the binding.')
+    iam_util.AddArgsForRemoveIamPolicyBinding(parser)
 
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
@@ -70,7 +68,7 @@ class RemoveIamPolicyBinding(
     policy = self.services_client.services.GetIamPolicy(request)
 
     iam_util.RemoveBindingFromIamPolicy(
-        policy, args.member, 'roles/servicemanagement.serviceConsumer')
+        policy, args.member, args.role)
 
     # Send updated access policy to backend
     request = (self.services_messages

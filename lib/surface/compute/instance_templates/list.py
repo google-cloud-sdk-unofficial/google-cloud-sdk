@@ -27,4 +27,4 @@ class List(base_classes.GlobalLister):
     return 'instanceTemplates'
 
 
-List.detailed_help = base_classes.GetZonalListerHelp('instance tempates')
+List.detailed_help = base_classes.GetZonalListerHelp('instance templates')

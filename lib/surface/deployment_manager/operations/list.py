@@ -17,10 +17,10 @@ from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
+from googlecloudsdk.command_lib.deployment_manager import dm_base
 
 
-class List(base.ListCommand):
+class List(base.ListCommand, dm_base.DeploymentManagerCommand):
   """List operations in a project.
 
   Prints a table with summary information on all operations in the project.
@@ -66,13 +66,9 @@ class List(base.ListCommand):
       HttpException: An http error response was received while executing api
           request.
     """
-    client = self.context['deploymentmanager-client']
-    messages = self.context['deploymentmanager-messages']
-    project = properties.VALUES.core.project.Get(required=True)
-
-    request = messages.DeploymentmanagerOperationsListRequest(
-        project=project,
+    request = self.messages.DeploymentmanagerOperationsListRequest(
+        project=self.project,
     )
     return dm_v2_util.YieldWithHttpExceptions(list_pager.YieldFromList(
-        client.operations, request, field='operations', limit=args.limit,
+        self.client.operations, request, field='operations', limit=args.limit,
         batch_size=args.page_size))

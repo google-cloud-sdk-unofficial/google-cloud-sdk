@@ -43,7 +43,6 @@ class DeleteInstance(base.DeleteCommand):
       ref = resources.REGISTRY.Parse(
           instance, collection='bigtableadmin.projects.instances')
       msg = msgs.BigtableadminProjectsInstancesDeleteRequest(
-          projectsId=ref.projectsId,
-          instancesId=ref.Name())
+          name=ref.RelativeName())
       cli.projects_instances.Delete(msg)
     return None

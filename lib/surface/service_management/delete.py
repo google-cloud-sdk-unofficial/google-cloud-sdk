@@ -22,7 +22,7 @@ from googlecloudsdk.core.console import console_io
 
 
 class Delete(base.Command, base_classes.BaseServiceManagementCommand):
-  """Deletes a service configuration given the service name."""
+  """Deletes a service."""
 
   @staticmethod
   def Args(parser):

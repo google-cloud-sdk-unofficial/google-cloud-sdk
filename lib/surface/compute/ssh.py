@@ -134,10 +134,11 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
 
     if args.ssh_flag:
       for flag in args.ssh_flag:
-        dereferenced_flag = (
-            flag.replace('%USER%', user)
-            .replace('%INSTANCE%', external_ip_address))
-        ssh_args.append(dereferenced_flag)
+        for flag_part in flag.split():  # We want grouping here
+          dereferenced_flag = (
+              flag_part.replace('%USER%', user)
+              .replace('%INSTANCE%', external_ip_address))
+          ssh_args.append(dereferenced_flag)
 
     ssh_args.extend(self.GetHostKeyArgs(args, instance))
 

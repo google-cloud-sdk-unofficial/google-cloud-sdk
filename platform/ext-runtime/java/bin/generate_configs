@@ -70,20 +70,12 @@ class JavaConfigurator(object):
         self.artifact_to_deploy = artifact_to_deploy
 
     def GenerateConfigs(self):
-        """Generates all config files for the module."""
-        if not self.appinfo:
-            self._GenerateAppYaml()
+        """Generates config files for the module, not including app.yaml.
+           For app.yaml generation, see gae-xrt-java/bin/detect.
+        """
         if self.custom or self.deploy:
             self._GenerateDockerfile()
             self._GenerateDockerignore()
-
-    def _GenerateAppYaml(self):
-        """Generates an app.yaml file appropriate to this application."""
-        runtime = 'custom' if self.custom else 'java'
-        comm.gen_file(
-            'app.yaml',
-            ROOT.read_file('data', 'app.yaml.template').format(
-                           runtime=runtime))
 
     def _GenerateDockerfile(self):
       """Generates a Dockerfile appropriate to this application.

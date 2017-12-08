@@ -44,25 +44,26 @@ class CreateInstance(base.CreateCommand):
     cli = util.GetAdminClient()
     ref = resources.REGISTRY.Parse(
         args.instance, collection='bigtableadmin.projects.instances')
+    parent_ref = resources.REGISTRY.Create(
+        'bigtableadmin.projects', projectId=ref.projectsId)
     msgs = util.GetAdminMessages()
-    msg = msgs.BigtableadminProjectsInstancesCreateRequest(
-        projectsId=ref.projectsId,
-        createInstanceRequest=msgs.CreateInstanceRequest(
-            instanceId=ref.Name(),
-            instance=msgs.Instance(displayName=args.description),
-            clusters=msgs.CreateInstanceRequest.ClustersValue(
-                additionalProperties=[
-                    msgs.CreateInstanceRequest.ClustersValue.AdditionalProperty(
-                        key=args.cluster,
-                        value=msgs.Cluster(
-                            serveNodes=args.cluster_num_nodes,
-                            defaultStorageType=(
-                                msgs.Cluster.DefaultStorageTypeValueValuesEnum(
-                                    args.cluster_storage_type)),
-                            # TODO(user): switch location to resource
-                            # when b/29566669 is fixed on API
-                            location=util.LocationUrl(args.cluster_zone)))
-                ])))
+    msg = msgs.CreateInstanceRequest(
+        instanceId=ref.Name(),
+        parent=parent_ref.RelativeName(),
+        instance=msgs.Instance(displayName=args.description),
+        clusters=msgs.CreateInstanceRequest.ClustersValue(
+            additionalProperties=[
+                msgs.CreateInstanceRequest.ClustersValue.AdditionalProperty(
+                    key=args.cluster,
+                    value=msgs.Cluster(
+                        serveNodes=args.cluster_num_nodes,
+                        defaultStorageType=(
+                            msgs.Cluster.DefaultStorageTypeValueValuesEnum(
+                                args.cluster_storage_type)),
+                        # TODO(user): switch location to resource
+                        # when b/29566669 is fixed on API
+                        location=util.LocationUrl(args.cluster_zone)))
+            ]))
     result = cli.projects_instances.Create(msg)
     if not args.async:
       # TODO(user): enable this line when b/29563942 is fixed in apitools

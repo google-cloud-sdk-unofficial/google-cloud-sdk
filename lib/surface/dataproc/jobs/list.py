@@ -45,7 +45,20 @@ class TypedJob(util.Bunch):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """List all jobs in a project."""
+  """List jobs in a project.
+
+  List jobs in a project.
+
+  ## EXAMPLES
+
+  To see the list of all jobs, run:
+
+    $ {command}
+
+  To see the list of all active jobs in a cluster, run:
+
+    $ {command} --state-filter active --cluster my_cluster
+  """
 
   @staticmethod
   def Args(parser):
@@ -98,23 +111,33 @@ class List(base.ListCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListBeta(List):
-  """List all jobs in a project."""
+  """List jobs in a project.
+
+  List jobs in a project.
+
+  ## EXAMPLES
+
+  To see the list of all jobs, run:
+
+    $ {command}
+
+  To see the list of all active jobs in a cluster, run:
+
+    $ {command} --state-filter active --cluster my_cluster
+
+  To see the list of all jobs with particular labels, run:
+
+    $ {command} --filter='labels.env = staging AND labels.starred'
+  """
 
   @staticmethod
   def GetRequest(messages, project, region, args):
+    # Explicitly null out args.filter if present because by default args.filter
+    # also acts as a postfilter to the things coming back from the backend
+    backend_filter = None
+    if args.filter:
+      backend_filter = args.filter
+      args.filter = None
+
     return messages.DataprocProjectsRegionsJobsListRequest(
-        projectId=project, region=region, filter=args.filter)
-
-List.detailed_help = {
-    'DESCRIPTION': '{description}',
-    'EXAMPLES': """\
-        To see the list of all jobs, run:
-
-          $ {command}
-
-        To see the list of all active jobs in a cluster, run:
-
-          $ {command} --state-filter active --cluster my_cluster
-        """,
-}
-ListBeta.detailed_help = List.detailed_help
+        projectId=project, region=region, filter=backend_filter)

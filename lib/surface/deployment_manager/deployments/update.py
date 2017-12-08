@@ -21,9 +21,9 @@ from googlecloudsdk.api_lib.deployment_manager import importer
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.deployment_manager import dm_base
 from googlecloudsdk.core import apis as core_apis
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 # Number of seconds (approximately) to wait for update operation to complete.
 OPERATION_TIMEOUT = 20 * 60  # 20 mins
@@ -31,7 +31,7 @@ OPERATION_TIMEOUT = 20 * 60  # 20 mins
 
 @base.UnicodeIsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Update(base.UpdateCommand):
+class Update(base.UpdateCommand, dm_base.DeploymentManagerCommand):
   """Update a deployment based on a provided config file.
 
   This command will update a deployment with the new config file provided.
@@ -115,6 +115,8 @@ class Update(base.UpdateCommand):
         default=False,
         action='store_true')
 
+    # TODO(user): eventually this should live closer to our base command
+    # classes
     v2_messages = core_apis.GetMessagesModule('deploymentmanager', 'v2')
     parser.add_argument(
         '--create-policy',
@@ -160,31 +162,25 @@ class Update(base.UpdateCommand):
     Raises:
       HttpException: An http error response was received while executing api
           request.
-      ToolException: Config file could not be read or parsed, or the deployment
-          creation operation encountered an error.
     """
-    client = self.context['deploymentmanager-client']
-    messages = self.context['deploymentmanager-messages']
-    project = properties.VALUES.core.project.Get(required=True)
-
-    deployment = messages.Deployment(
+    deployment = self.messages.Deployment(
         name=args.deployment_name,
     )
 
     if args.config:
       deployment.target = importer.BuildTargetConfig(
-          messages, args.config, args.properties)
+          self.messages, args.config, args.properties)
     elif (self.ReleaseTrack() in [base.ReleaseTrack.ALPHA,
                                   base.ReleaseTrack.BETA]
           and args.manifest_id):
       deployment.target = importer.BuildTargetConfigFromManifest(
-          client, messages, project, args.deployment_name, args.manifest_id,
-          args.properties)
+          self.client, self.messages, self.project, args.deployment_name,
+          args.manifest_id, args.properties)
     # Get the fingerprint from the deployment to update.
     try:
-      current_deployment = client.deployments.Get(
-          messages.DeploymentmanagerDeploymentsGetRequest(
-              project=project,
+      current_deployment = self.client.deployments.Get(
+          self.messages.DeploymentmanagerDeploymentsGetRequest(
+              project=self.project,
               deployment=args.deployment_name
           )
       )
@@ -196,15 +192,17 @@ class Update(base.UpdateCommand):
       raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
 
     try:
-      operation = client.deployments.Update(
-          messages.DeploymentmanagerDeploymentsUpdateRequest(
+      operation = self.client.deployments.Update(
+          self.messages.DeploymentmanagerDeploymentsUpdateRequest(
               deploymentResource=deployment,
-              project=project,
+              project=self.project,
               deployment=args.deployment_name,
               preview=args.preview,
-              createPolicy=(messages.DeploymentmanagerDeploymentsUpdateRequest
+              createPolicy=(self.messages
+                            .DeploymentmanagerDeploymentsUpdateRequest
                             .CreatePolicyValueValuesEnum(args.create_policy)),
-              deletePolicy=(messages.DeploymentmanagerDeploymentsUpdateRequest
+              deletePolicy=(self.messages
+                            .DeploymentmanagerDeploymentsUpdateRequest
                             .DeletePolicyValueValuesEnum(args.delete_policy)),
           )
       )
@@ -215,20 +213,16 @@ class Update(base.UpdateCommand):
     else:
       op_name = operation.name
       try:
-        dm_v2_util.WaitForOperation(client, messages, op_name, project,
-                                    'update', OPERATION_TIMEOUT)
+        dm_v2_util.WaitForOperation(self.client, self.messages, op_name,
+                                    self.project, 'update', OPERATION_TIMEOUT)
         log.status.Print('Update operation ' + op_name
                          + ' completed successfully.')
-      except exceptions.ToolException:
-        # Operation timed out or had errors. Print this warning, then still
-        # show whatever operation can be gotten.
-        log.error('Update operation ' + op_name
-                  + ' has errors or failed to complete within '
-                  + str(OPERATION_TIMEOUT) + ' seconds.')
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
 
-      return dm_v2_util.FetchResourcesAndOutputs(client, messages, project,
+      return dm_v2_util.FetchResourcesAndOutputs(self.client,
+                                                 self.messages,
+                                                 self.project,
                                                  args.deployment_name)
 
 

@@ -11,7 +11,7 @@ gcloud compute instance\-groups managed list \- list Google Compute Engine manag
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instance\-groups managed list\fR [\fINAME\fR\ ...] [\fB\-\-regexp\fR=\fIREGEXP\fR,\ \fB\-r\fR\ \fIREGEXP\fR] [\fB\-\-zones\fR=\fIZONE\fR,[\fIZONE\fR,...]] [\fB\-\-filter\fR=\fIEXPRESSION\fR] [\fB\-\-limit\fR=\fILIMIT\fR] [\fB\-\-page\-size\fR=\fIPAGE_SIZE\fR] [\fB\-\-sort\-by\fR=[\fIFIELD\fR,...]] [\fB\-\-uri\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instance\-groups managed list\fR [\fINAME\fR\ ...] [\fB\-\-regexp\fR=\fIREGEXP\fR,\ \fB\-r\fR\ \fIREGEXP\fR] [\fB\-\-regions\fR=[\fIREGION\fR,...]\ |\ \fB\-\-zones\fR=[\fIZONE\fR,...]] [\fB\-\-filter\fR=\fIEXPRESSION\fR] [\fB\-\-limit\fR=\fILIMIT\fR] [\fB\-\-page\-size\fR=\fIPAGE_SIZE\fR] [\fB\-\-sort\-by\fR=[\fIFIELD\fR,...]] [\fB\-\-uri\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -20,8 +20,9 @@ gcloud compute instance\-groups managed list \- list Google Compute Engine manag
 \fBgcloud compute instance\-groups managed list\fR displays all Google Compute
 Engine managed instance groups in a project.
 
-By default, managed instance groups from all zones are listed. The results can
-be narrowed down by providing the \f5\fI\-\-zones\fR\fR flag.
+By default, managed instance groups from all regions and managed instance groups
+from all zones are listed. The results can be narrowed down by providing the
+\f5\fI\-\-regions\fR\fR or \f5\fI\-\-zones\fR\fR flag.
 
 
 
@@ -42,9 +43,18 @@ A regular expression to filter the names of the results on. Any names that do
 not match the entire regular expression will be filtered out.
 
 .RE
-\fB\-\-zones\fR=\fIZONE\fR,[\fIZONE\fR,...]
+At most one of these may be specified:
+
+\fB\-\-regions\fR=[\fIREGION\fR,...]
 .RS 2m
-If provided, only resources from the given zones are queried.
+If provided, only regional resources are shown. If arguments are provided, only
+resources from the given regions are shown.
+
+.RE
+\fB\-\-zones\fR=[\fIZONE\fR,...]
+.RS 2m
+If provided, only zonal resources are shown. If arguments are provided, only
+resources from the given zones are shown.
 
 
 .RE
@@ -108,10 +118,18 @@ To list the URIs of all managed instance groups in a project, run:
 $ gcloud compute instance\-groups managed list \-\-uri
 .RE
 
-To list all managed instance groups in the \f5\fIus\-central1\-b\fR\fR and
-\f5\fIeurope\-west1\-d\fR\fR zones, run:
+To list all managed instance groups in the \f5\fIus\-central1\fR\fR and
+\f5\fIeurope\-west1\fR\fR regions, run:
 
 .RS 2m
 $ gcloud compute instance\-groups managed list \e
-    \-\-zones us\-central1\-b europe\-west1\-d
+    \-\-regions us\-central1,europe\-west1
+.RE
+
+To list all managed instance groups in zones \f5\fIus\-central1\-b\fR\fR and
+\f5\fIeurope\-west1\-d\fR\fR, run:
+
+.RS 2m
+$ gcloud compute instance\-groups managed list \e
+    \-\-zones us\-central1,europe\-west1
 .RE

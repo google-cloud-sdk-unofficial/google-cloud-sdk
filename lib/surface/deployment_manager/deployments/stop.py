@@ -18,14 +18,14 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.deployment_manager import dm_base
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 # Number of seconds (approximately) to wait for stop operation to complete.
 OPERATION_TIMEOUT = 20 * 60  # 20 mins
 
 
-class Stop(base.Command):
+class Stop(base.Command, dm_base.DeploymentManagerCommand):
   """Stop a pending or running deployment update or creation.
 
   This command will stop a currently running or pending operation on
@@ -78,17 +78,12 @@ class Stop(base.Command):
     Raises:
       HttpException: An http error response was received while executing api
           request.
-      ToolException: The stop operation encountered an error.
     """
-    client = self.context['deploymentmanager-client']
-    messages = self.context['deploymentmanager-messages']
-    project = properties.VALUES.core.project.Get(required=True)
-
     # Get the fingerprint from the deployment to stop.
     try:
-      current_deployment = client.deployments.Get(
-          messages.DeploymentmanagerDeploymentsGetRequest(
-              project=project,
+      current_deployment = self.client.deployments.Get(
+          self.messages.DeploymentmanagerDeploymentsGetRequest(
+              project=self.project,
               deployment=args.deployment_name
           )
       )
@@ -100,11 +95,11 @@ class Stop(base.Command):
       raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
 
     try:
-      operation = client.deployments.Stop(
-          messages.DeploymentmanagerDeploymentsStopRequest(
-              project=project,
+      operation = self.client.deployments.Stop(
+          self.messages.DeploymentmanagerDeploymentsStopRequest(
+              project=self.project,
               deployment=args.deployment_name,
-              deploymentsStopRequest=messages.DeploymentsStopRequest(
+              deploymentsStopRequest=self.messages.DeploymentsStopRequest(
                   fingerprint=fingerprint,
               ),
           )
@@ -116,23 +111,21 @@ class Stop(base.Command):
     else:
       op_name = operation.name
       try:
-        dm_v2_util.WaitForOperation(client, messages, op_name, project, 'stop',
+        dm_v2_util.WaitForOperation(self.client,
+                                    self.messages,
+                                    op_name,
+                                    self.project,
+                                    'stop',
                                     OPERATION_TIMEOUT)
         log.status.Print('Stop operation ' + op_name
                          + ' completed successfully.')
-      except exceptions.ToolException:
-        # Operation timed out or had errors. Print this warning, then still
-        # show whatever operation can be gotten.
-        log.error('Stop operation ' + op_name
-                  + ' has errors or failed to complete within '
-                  + str(OPERATION_TIMEOUT) + ' seconds.')
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
       try:
         # Fetch a list of the stopped resources.
-        response = client.resources.List(
-            messages.DeploymentmanagerResourcesListRequest(
-                project=project,
+        response = self.client.resources.List(
+            self.messages.DeploymentmanagerResourcesListRequest(
+                project=self.project,
                 deployment=args.deployment_name,
             )
         )

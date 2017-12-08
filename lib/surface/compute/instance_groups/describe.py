@@ -15,16 +15,9 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
-from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Describe(instance_groups_utils.InstanceGroupDescribe):
-  pass
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class DescribeAlpha(base_classes.MultiScopeDescriber):
+class Describe(base_classes.MultiScopeDescriber):
   """Describe an instance group."""
 
   SCOPES = (base_classes.ScopeType.regional_scope,
@@ -57,7 +50,7 @@ class DescribeAlpha(base_classes.MultiScopeDescriber):
   @staticmethod
   def Args(parser):
     base_classes.MultiScopeDescriber.AddScopeArgs(
-        parser, 'instanceGroups', DescribeAlpha.SCOPES)
+        parser, 'instanceGroups', Describe.SCOPES)
 
   def ComputeDynamicProperties(self, args, items):
     return instance_groups_utils.ComputeInstanceGroupManagerMembership(
@@ -69,5 +62,5 @@ class DescribeAlpha(base_classes.MultiScopeDescriber):
         filter_mode=instance_groups_utils.InstanceGroupFilteringMode.ALL_GROUPS)
 
 
-DescribeAlpha.detailed_help = base_classes.GetMultiScopeDescriberHelp(
-    'instance group', DescribeAlpha.SCOPES)
+Describe.detailed_help = base_classes.GetMultiScopeDescriberHelp(
+    'instance group', Describe.SCOPES)

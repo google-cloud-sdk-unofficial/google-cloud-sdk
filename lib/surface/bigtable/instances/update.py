@@ -42,16 +42,11 @@ class UpdateInstance(base.UpdateCommand):
     ref = resources.REGISTRY.Parse(
         args.instance, collection='bigtableadmin.projects.instances')
     msg = util.GetAdminMessages().BigtableadminProjectsInstancesGetRequest(
-        projectsId=ref.projectsId,
-        instancesId=ref.Name())
+        name=ref.RelativeName())
     instance = cli.projects_instances.Get(msg)
     instance.state = None  # must be unset when calling Update
     if args.description:
       instance.displayName = args.description
-    msg = util.GetAdminMessages().BigtableadminProjectsInstancesUpdateRequest(
-        projectsId=ref.projectsId,
-        instancesId=ref.Name(),
-        instance=instance)
-    instance = cli.projects_instances.Update(msg)
+    instance = cli.projects_instances.Update(instance)
     log.UpdatedResource(instance.name, kind='instance')
     return instance

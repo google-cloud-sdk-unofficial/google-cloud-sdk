@@ -18,77 +18,11 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
 from googlecloudsdk.api_lib.compute import path_simplifier
 from googlecloudsdk.api_lib.compute import utils
-from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Delete(base_classes.ZonalDeleter):
-  """Delete Google Compute Engine managed instance group."""
-
-  @staticmethod
-  def Args(parser):
-    instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGERS_ARG.AddArgument(parser)
-
-  @property
-  def service(self):
-    return self.compute.instanceGroupManagers
-
-  @property
-  def resource_type(self):
-    return 'instanceGroupManagers'
-
-  def _GenerateAutoscalerDeleteRequests(self, mig_requests):
-    """Generates Delete requestes for autoscalers attached to instance groups.
-
-    Args:
-      mig_requests: Messages which will be sent to delete instance group
-        managers.
-
-    Returns:
-      Messages, which will be sent to delete autoscalers.
-    """
-    migs = [(request.instanceGroupManager, 'zone', request.zone)
-            for request in mig_requests]
-    zones = sorted(set(zip(*migs)[2]))
-    autoscalers_to_delete = managed_instance_groups_utils.AutoscalersForMigs(
-        migs=migs,
-        autoscalers=managed_instance_groups_utils.AutoscalersForZones(
-            zones=zones,
-            project=self.project,
-            compute=self.compute,
-            http=self.http,
-            batch_url=self.batch_url),
-        project=self.project)
-    requests = []
-    for autoscaler in autoscalers_to_delete:
-      as_ref = self.resources.Parse(
-          autoscaler.name, collection='compute.autoscalers',
-          params={'zone': autoscaler.zone})
-
-      request = self.messages.ComputeAutoscalersDeleteRequest(
-          project=self.project)
-      request.zone = as_ref.zone
-      request.autoscaler = as_ref.Name()
-      requests.append(request)
-    return requests
-
-  def Run(self, args):
-    # CreateRequests() propmpts user to confirm deletion so it should be a first
-    # thing to be executed in this function.
-    delete_managed_instance_groups_requests = self.CreateRequests(args)
-    super(Delete, self).Run(
-        args,
-        request_protobufs=self._GenerateAutoscalerDeleteRequests(
-            mig_requests=delete_managed_instance_groups_requests),
-        service=self.compute.autoscalers)
-    super(Delete, self).Run(
-        args, request_protobufs=delete_managed_instance_groups_requests)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class DeleteAlpha(base_classes.BaseAsyncMutator):
+class Delete(base_classes.BaseAsyncMutator):
   """Delete Google Compute Engine managed instance group."""
 
   @staticmethod
@@ -217,4 +151,3 @@ Delete.detailed_help = {
 groups.
         """,
 }
-DeleteAlpha.detailed_help = Delete.detailed_help

@@ -20,7 +20,16 @@ from googlecloudsdk.core import properties
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """View a list of all clusters in a project."""
+  """View a list of clusters in a project.
+
+  View a list of clusters in a project.
+
+  ## EXAMPLES
+
+  To see the list of all clusters, run:
+
+    $ {command}
+  """
 
   @staticmethod
   def Args(parser):
@@ -44,7 +53,20 @@ class List(base.ListCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListBeta(List):
-  """View a list of all clusters in a project."""
+  """View a list of clusters in a project.
+
+  View a list of clusters in a project.
+
+  ## EXAMPLES
+
+  To see the list of all clusters, run:
+
+    $ {command}
+
+  To see the list of all clusters with particular labels, run:
+
+    $ {command} --filter='labels.env = staging AND labels.starred'
+  """
 
   def Run(self, args):
     client = self.context['dataproc_client']
@@ -53,17 +75,14 @@ class ListBeta(List):
     project = properties.VALUES.core.project.Get(required=True)
     region = self.context['dataproc_region']
 
+    # Explicitly null out args.filter if present because by default args.filter
+    # also acts as a postfilter to the things coming back from the backend
+    backend_filter = None
+    if args.filter:
+      backend_filter = args.filter
+      args.filter = None
+
     request = messages.DataprocProjectsRegionsClustersListRequest(
-        projectId=project, region=region, filter=args.filter)
+        projectId=project, region=region, filter=backend_filter)
     response = client.projects_regions_clusters.List(request)
     return response.clusters
-
-List.detailed_help = {
-    'DESCRIPTION': '{description}',
-    'EXAMPLES': """\
-      To see the list of all clusters, run:
-
-        $ {command}
-      """,
-}
-ListBeta.detailed_help = List.detailed_help
