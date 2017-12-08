@@ -16,7 +16,6 @@
 
 import argparse
 import os
-import types
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
@@ -140,7 +139,7 @@ class Init(base.Command):
     new_credentials = False
     auth_info = self._RunCmd(['auth', 'list'])
     if auth_info:
-      accounts = [a.account for a in auth_info]
+      accounts = [a['account'] for a in auth_info]
     else:
       accounts = None
     if accounts:
@@ -468,13 +467,7 @@ information about configuring Google Cloud Storage.
       if properties.VALUES.core.log_http.GetBool():
         args.append('--log-http')
 
-      result = self.cli.Execute(args)
-      # Best effort to force result of Execute eagerly.  Don't just check
-      # that result is iterable to avoid category errors (e.g., accidently
-      # converting a string or dict to a list).
-      if isinstance(result, types.GeneratorType):
-        return list(result)
-      return result
+      return resource_projector.MakeSerializable(self.cli.Execute(args))
 
     except SystemExit as exc:
       log.info('[%s] has failed\n', ' '.join(cmd + params))
