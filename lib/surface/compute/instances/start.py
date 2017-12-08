@@ -47,13 +47,14 @@ def _CommonArgs(parser):
       completion_resource='compute.instances',
       help='The names of the instances to start.')
 
+  csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
+
 
 class FailedToFetchInstancesError(exceptions.Error):
   pass
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class StartGA(base_classes.NoOutputAsyncMutator):
+class Start(base_classes.NoOutputAsyncMutator):
   """Start a stopped virtual machine instance."""
 
   @staticmethod
@@ -97,7 +98,7 @@ class StartGA(base_classes.NoOutputAsyncMutator):
     return instances
 
   def CreateRequests(self, args):
-    csek_key_file = getattr(args, 'csek_key_file', None)
+    csek_key_file = args.csek_key_file
     request_list = []
     instance_refs = [self.CreateZonalReference(name, args.zone)
                      for name in args.name]
@@ -110,7 +111,9 @@ class StartGA(base_classes.NoOutputAsyncMutator):
       disks = []
 
       if csek_key_file:
-        csek_keys = csek_utils.CsekKeyStore.FromArgs(args)
+        allow_rsa_encrypted = self.ReleaseTrack() in [base.ReleaseTrack.ALPHA,
+                                                      base.ReleaseTrack.BETA]
+        csek_keys = csek_utils.CsekKeyStore.FromArgs(args, allow_rsa_encrypted)
         for disk in instance.disks:
           disk_resource = resources.Parse(disk.source)
 
@@ -153,15 +156,4 @@ class StartGA(base_classes.NoOutputAsyncMutator):
     return 'none'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class StartAlphaBeta(StartGA):
-  """Start a stopped virtual machine instance."""
-
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser)
-    csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
-
-
-StartGA.detailed_help = DETAILED_HELP
-StartAlphaBeta.detailed_help = DETAILED_HELP
+Start.detailed_help = DETAILED_HELP

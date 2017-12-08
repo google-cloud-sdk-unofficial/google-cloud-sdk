@@ -5,7 +5,7 @@
 
 .SH "NAME"
 .HP
-gcloud preview app versions start \- \fB(BETA)\fR start serving specified versions
+gcloud preview app versions start \- start serving specified versions
 
 
 
@@ -16,8 +16,8 @@ gcloud preview app versions start \- \fB(BETA)\fR start serving specified versio
 
 .SH "DESCRIPTION"
 
-\fB(BETA)\fR This command starts serving the specified versions. It may only be
-used if the scaling module for your service has been set to manual.
+\fB(PREVIEW)\fR This command starts serving the specified versions. It may only
+be used if the scaling module for your service has been set to manual.
 
 
 
@@ -25,9 +25,7 @@ used if the scaling module for your service has been set to manual.
 
 \fIVERSIONS\fR [\fIVERSIONS\fR ...]
 .RS 2m
-The versions to start. (optionally filtered by the \-\-service flag). Can also
-be a resource path (<service name>/<version name> or <project name>/<service
-name>/<version name>).
+The versions to start. (optionally filtered by the \-\-service flag).
 
 
 .RE
@@ -64,12 +62,6 @@ $ gcloud preview app versions start v1 v2
 To start a single version on a single service, run:
 
 .RS 2m
-$ gcloud preview app versions start servicename/v1
-.RE
-
-or
-
-.RS 2m
 $ gcloud preview app versions start \-\-service servicename v1
 .RE
 
@@ -83,5 +75,5 @@ $ gcloud preview app versions start \-\-service servicename v1 v2
 
 .SH "NOTES"
 
-This command is currently in BETA and may change without notice.
+This command is currently in DEVELOPER PREVIEW and may change without notice.
 

@@ -11,7 +11,7 @@ gcloud compute disks snapshot \- create snapshots of Google Compute Engine persi
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute disks snapshot\fR \fIDISK_NAME\fR [\fIDISK_NAME\fR\ ...] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-snapshot\-names\fR\ \fISNAPSHOT_NAME\fR,[\fISNAPSHOT_NAME\fR,...]] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute disks snapshot\fR \fIDISK_NAME\fR [\fIDISK_NAME\fR\ ...] [\fB\-\-csek\-key\-file\fR\ \fIFILE\fR] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-snapshot\-names\fR\ \fISNAPSHOT_NAME\fR,[\fISNAPSHOT_NAME\fR,...]] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -36,6 +36,15 @@ The names of the disks to snapshot.
 
 .SH "FLAGS"
 
+\fB\-\-csek\-key\-file\fR \fIFILE\fR
+.RS 2m
+Path to a Customer\-Supplied Encryption Key (CSEK) key file, mapping Google
+Compute Engine resources to user managed keys to be used when creating,
+mounting, or snapshotting disks. See
+https://cloud.google.com/compute/docs/disks/customer\-supplied\-encryption for
+more details.
+
+.RE
 \fB\-\-description\fR \fIDESCRIPTION\fR
 .RS 2m
 An optional, textual description for the snapshots being created.

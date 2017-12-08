@@ -5,7 +5,7 @@
 
 .SH "NAME"
 .HP
-gcloud preview app services set\-traffic \- \fB(BETA)\fR set traffic splitting settings
+gcloud preview app services set\-traffic \- set traffic splitting settings
 
 
 
@@ -16,8 +16,8 @@ gcloud preview app services set\-traffic \- \fB(BETA)\fR set traffic splitting s
 
 .SH "DESCRIPTION"
 
-\fB(BETA)\fR This command sets the traffic split of versions across a service or
-a project.
+\fB(PREVIEW)\fR This command sets the traffic split of versions across a service
+or a project.
 
 
 
@@ -25,8 +25,7 @@ a project.
 
 [\fISERVICES\fR ...]
 .RS 2m
-The services to modify. Can also be a resource path (<project name>/<service
-name>).
+The services to modify.
 
 
 .RE
@@ -92,5 +91,5 @@ $ gcloud preview app services set\-traffic \-\-splits v2=.5,v1=.5
 
 .SH "NOTES"
 
-This command is currently in BETA and may change without notice.
+This command is currently in DEVELOPER PREVIEW and may change without notice.
 

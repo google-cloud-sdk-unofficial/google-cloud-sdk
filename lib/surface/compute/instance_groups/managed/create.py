@@ -75,7 +75,8 @@ def _IsZonalGroup(ref):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class CreateGA(base_classes.BaseAsyncCreator, zone_utils.ZoneResourceFetcher):
+class CreateGA(base_classes.BaseAsyncCreator, zone_utils.ZoneResourceFetcher,
+               base_classes.InstanceGroupManagerDynamicProperiesMixin):
   """Create Google Compute Engine managed instance groups."""
 
   @staticmethod
@@ -111,6 +112,10 @@ class CreateGA(base_classes.BaseAsyncCreator, zone_utils.ZoneResourceFetcher):
         instanceGroupManager=instance_group_manager,
         project=self.project,
         zone=group_ref.zone)
+
+  def ComputeDynamicProperties(self, args, items):
+    return (base_classes.InstanceGroupManagerDynamicProperiesMixin
+            .ComputeDynamicProperties(self, args, items))
 
   def CreateRequests(self, args):
     """Creates and returns an instanceGroupManagers.Insert request.

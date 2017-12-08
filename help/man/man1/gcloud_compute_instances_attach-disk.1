@@ -11,7 +11,7 @@ gcloud compute instances attach\-disk \- attach a disk to an instance
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances attach\-disk\fR \fIINSTANCE\fR \fB\-\-disk\fR \fIDISK\fR [\fB\-\-device\-name\fR\ \fIDEVICE_NAME\fR] [\fB\-\-mode\fR\ \fIMODE\fR;\ default="rw"] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instances attach\-disk\fR \fIINSTANCE\fR \fB\-\-disk\fR \fIDISK\fR [\fB\-\-csek\-key\-file\fR\ \fIFILE\fR] [\fB\-\-device\-name\fR\ \fIDEVICE_NAME\fR] [\fB\-\-mode\fR\ \fIMODE\fR;\ default="rw"] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -49,6 +49,15 @@ The name of the disk to attach to the instance.
 
 .SH "OPTIONAL FLAGS"
 
+\fB\-\-csek\-key\-file\fR \fIFILE\fR
+.RS 2m
+Path to a Customer\-Supplied Encryption Key (CSEK) key file, mapping Google
+Compute Engine resources to user managed keys to be used when creating,
+mounting, or snapshotting disks. See
+https://cloud.google.com/compute/docs/disks/customer\-supplied\-encryption for
+more details.
+
+.RE
 \fB\-\-device\-name\fR \fIDEVICE_NAME\fR
 .RS 2m
 An optional name that indicates the disk name the guest operating system will

@@ -20,11 +20,13 @@ from googlecloudsdk.api_lib.projects import util
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.api_lib.util import http_retry
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.projects import flags
+from googlecloudsdk.command_lib.projects import util as command_lib_util
 from googlecloudsdk.core.iam import iam_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class RemoveIamPolicyBinding(util.ProjectCommand):
+class RemoveIamPolicyBinding(base.Command):
   """Remove IAM policy binding for a project.
 
   Removes a policy binding to the IAM policy of a project, given a project ID
@@ -34,12 +36,15 @@ class RemoveIamPolicyBinding(util.ProjectCommand):
   detailed_help = iam_util.GetDetailedHelpForRemoveIamPolicyBinding(
       'project', 'example-project-id-1')
 
+  def Collection(self):
+    return command_lib_util.PROJECTS_COLLECTION
+
+  def GetUriFunc(self):
+    return command_lib_util.ProjectsUriFunc
+
   @staticmethod
   def Args(parser):
-    parser.add_argument('id', metavar='PROJECT_ID',
-                        completion_resource='cloudresourcemanager.projects',
-                        list_command_path='projects',
-                        help='ID for the project you want to update.')
+    flags.GetProjectFlag('remove IAM policy binding from').AddToParser(parser)
     iam_util.AddArgsForRemoveIamPolicyBinding(
         parser, 'id', 'cloudresourcemanager.projects')
 
@@ -52,7 +57,7 @@ class RemoveIamPolicyBinding(util.ProjectCommand):
     projects = util.GetClient()
     messages = util.GetMessages()
 
-    project_ref = self.GetProject(args.id)
+    project_ref = command_lib_util.ParseProject(args.id)
 
     policy_request = messages.CloudresourcemanagerProjectsGetIamPolicyRequest(
         resource=project_ref.Name(),

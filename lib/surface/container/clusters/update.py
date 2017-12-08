@@ -13,11 +13,14 @@
 # limitations under the License.
 
 """Update cluster command."""
+import argparse
+
 from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
@@ -79,6 +82,10 @@ class Update(base.Command):
         default=True,
         help='Poll the operation for completion after issuing an update '
         'request.')
+    parser.add_argument(
+        '--node-pool',
+        help=argparse.SUPPRESS)
+    flags.AddClusterAutoscalingFlags(parser, group)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -98,7 +105,11 @@ class Update(base.Command):
 
     options = api_adapter.UpdateClusterOptions(
         monitoring_service=args.monitoring_service,
-        disable_addons=args.disable_addons)
+        disable_addons=args.disable_addons,
+        enable_autoscaling=args.enable_autoscaling,
+        min_nodes=args.min_nodes,
+        max_nodes=args.max_nodes,
+        node_pool=args.node_pool)
 
     try:
       op_ref = adapter.UpdateCluster(cluster_ref, options)

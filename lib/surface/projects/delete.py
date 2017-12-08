@@ -14,16 +14,17 @@
 
 """Command to delete a project."""
 
-import textwrap
 from googlecloudsdk.api_lib.projects import util
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.projects import flags
+from googlecloudsdk.command_lib.projects import util as command_lib_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class Delete(util.ProjectCommand, base.DeleteCommand):
+class Delete(base.DeleteCommand):
   """Delete a project.
 
   Deletes the project with the given project ID.
@@ -34,20 +35,23 @@ class Delete(util.ProjectCommand, base.DeleteCommand):
   """
 
   detailed_help = {
-      'EXAMPLES': textwrap.dedent("""\
+      'EXAMPLES': """
           The following command deletes the project with the ID
           `example-foo-bar-1`:
 
             $ {command} example-foo-bar-1
-    """),
+      """,
   }
+
+  def Collection(self):
+    return command_lib_util.PROJECTS_COLLECTION
+
+  def GetUriFunc(self):
+    return command_lib_util.ProjectsUriFunc
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('id', metavar='PROJECT_ID',
-                        completion_resource='cloudresourcemanager.projects',
-                        list_command_path='projects',
-                        help='ID for the project you want to delete.')
+    flags.GetProjectFlag('delete').AddToParser(parser)
 
   # util.HandleKnownHttpErrors needs to be the first one to handle errors.
   # It needs to be placed after http_error_handler.HandleHttpErrors.
@@ -56,7 +60,7 @@ class Delete(util.ProjectCommand, base.DeleteCommand):
   def Run(self, args):
     projects = util.GetClient()
     messages = util.GetMessages()
-    project_ref = self.GetProject(args.id)
+    project_ref = command_lib_util.ParseProject(args.id)
     if not console_io.PromptContinue('Your project will be deleted.'):
       return None
     projects.projects.Delete(

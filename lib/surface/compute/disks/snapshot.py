@@ -70,9 +70,11 @@ def _CommonArgs(parser):
       resource_type='disks',
       operation_type='snapshot')
 
+  csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class SnapshotDisksGA(base_classes.NoOutputAsyncMutator):
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class SnapshotDisks(base_classes.NoOutputAsyncMutator):
   """Create snapshots of Google Compute Engine persistent disks."""
 
   @staticmethod
@@ -119,14 +121,12 @@ class SnapshotDisksGA(base_classes.NoOutputAsyncMutator):
         args.disk_names, args.zone, resource_type='disks')
 
     for disk_ref, snapshot_ref in zip(disk_refs, snapshot_refs):
-      # TODO(user) drop test after CSEK goes GA
-      if hasattr(args, 'csek_key_file'):
-        csek_keys = csek_utils.CsekKeyStore.FromArgs(args)
-        disk_key_or_none = csek_utils.MaybeLookupKeyMessage(csek_keys, disk_ref,
-                                                            self.compute)
-        kwargs = {'sourceDiskEncryptionKey': disk_key_or_none}
-      else:
-        kwargs = {}
+      # This feature is only exposed in alpha/beta
+      allow_rsa_encrypted = self.ReleaseTrack() in [base.ReleaseTrack.ALPHA,
+                                                    base.ReleaseTrack.BETA]
+      csek_keys = csek_utils.CsekKeyStore.FromArgs(args, allow_rsa_encrypted)
+      disk_key_or_none = csek_utils.MaybeLookupKeyMessage(csek_keys, disk_ref,
+                                                          self.compute)
 
       # TODO(user) drop test after 'guestFlush' goes GA
       if hasattr(args, 'guest_flush') and args.guest_flush:
@@ -139,7 +139,7 @@ class SnapshotDisksGA(base_classes.NoOutputAsyncMutator):
           snapshot=self.messages.Snapshot(
               name=snapshot_ref.Name(),
               description=args.description,
-              **kwargs
+              sourceDiskEncryptionKey=disk_key_or_none
           ),
           project=self.project,
           zone=disk_ref.zone,
@@ -156,25 +156,13 @@ class SnapshotDisksGA(base_classes.NoOutputAsyncMutator):
     return requests
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class SnapshotDisksBeta(SnapshotDisksGA):
-  """Create snapshots of Google Compute Engine persistent disks."""
-
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser)
-    csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SnapshotDisksAlpha(SnapshotDisksBeta):
+class SnapshotDisksAlpha(SnapshotDisks):
   """Create snapshots of Google Compute Engine persistent disks."""
 
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
-    csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
-
     parser.add_argument(
         '--guest-flush',
         action='store_true',
@@ -185,6 +173,5 @@ class SnapshotDisksAlpha(SnapshotDisksBeta):
               '(VSS).'))
 
 
-SnapshotDisksGA.detailed_help = DETAILED_HELP
-SnapshotDisksBeta.detailed_help = DETAILED_HELP
+SnapshotDisks.detailed_help = DETAILED_HELP
 SnapshotDisksAlpha.detailed_help = DETAILED_HELP

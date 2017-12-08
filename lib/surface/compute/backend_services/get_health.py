@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.compute.backend_services import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
 class GetHealth(base.ListCommand):
@@ -42,14 +43,9 @@ class GetHealth(base.ListCommand):
   so will have no health status.
   """
 
-  _BACKEND_SERVICE_ARG = compute_flags.ResourceArgument(
-      resource_name='backend service',
-      completion_resource_id='compute.backendService',
-      global_collection='compute.backendServices')
-
   @staticmethod
   def Args(parser):
-    GetHealth._BACKEND_SERVICE_ARG.AddArgument(parser)
+    flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
 
   def Run(self, args):
     """Returns a list of backendServiceGroupHealth objects."""
@@ -57,8 +53,9 @@ class GetHealth(base.ListCommand):
       args.uri = False
       self.SetFormat('value(status.healthStatus[].instance)')
 
-    ref = GetHealth._BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, self.context['resources'], default_scope='global')
+    ref = flags.GLOBAL_BACKEND_SERVICE_ARG.ResolveAsResource(
+        args, self.context['resources'],
+        default_scope=compute_flags.ScopeEnum.GLOBAL)
 
     backend_service = client.BackendService(
         ref, compute_client=self.context['client'])

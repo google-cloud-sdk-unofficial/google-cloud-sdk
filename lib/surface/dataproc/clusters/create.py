@@ -16,13 +16,13 @@
 
 import argparse
 
-from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.api_lib.dataproc import compute_helpers
 from googlecloudsdk.api_lib.dataproc import constants
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.third_party.apitools.base.py import encoding
@@ -42,7 +42,7 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    instance_utils.AddTagsArgs(parser)
+    instances_flags.AddTagsArgs(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     parser.add_argument(
         '--metadata',

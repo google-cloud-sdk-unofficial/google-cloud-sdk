@@ -5,18 +5,18 @@
 
 .SH "NAME"
 .HP
-gcloud preview app modules set\-managed\-by \- \fB(BETA)\fR sets the policy for the Managed VMs of the given modules and version
+gcloud preview app modules set\-managed\-by \- sets the policy for the Managed VMs of the given modules and version
 
 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud preview app modules set\-managed\-by\fR \fIMODULES\fR [\fIMODULES\fR\ ...] \fB\-\-version\fR \fIVERSION\fR [\fB\-\-google\fR\ |\ \fB\-\-self\fR] [\fB\-\-instance\fR\ \fIINSTANCE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud preview app modules set\-managed\-by\fR \fIMODULES\fR [\fIMODULES\fR\ ...] \fB\-\-version\fR \fIVERSION\fR [\fB\-\-google\fR\ |\ \fB\-\-self\fR] [\fB\-\-instance\fR\ \fIVM_NAME\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
 
-\fB(BETA)\fR This command is deprecated. Please use the \f5gcloud preview app
+\fB(PREVIEW)\fR This command is deprecated. Please use the \f5gcloud preview app
 instances enable\-debug\fR and \f5gcloud preview app instances disable\-debug\fR
 commands instead.
 
@@ -57,10 +57,10 @@ Switch the VMs back to being Google managed. Any local changes on the VMs will
 be lost.
 
 .RE
-\fB\-\-instance\fR \fIINSTANCE\fR
+\fB\-\-instance\fR \fIVM_NAME\fR
 .RS 2m
-The instance name to set the management policy on. If not given, all instances
-will be set.
+The VM name for the instance to set the management policy on. If not given, all
+instances will be set.
 
 .RE
 \fB\-\-self\fR
@@ -97,12 +97,12 @@ To set just a single VM instance of a module to self\-managed mode, run:
 
 .RS 2m
 $ gcloud preview app modules set\-managed\-by default \-\-version=1 \e
-    \-\-self \-\-instance=INSTANCE\-NAME
+    \-\-self \-\-instance=VM_NAME
 .RE
 
 
 
 .SH "NOTES"
 
-This command is currently in BETA and may change without notice.
+This command is currently in DEVELOPER PREVIEW and may change without notice.
 

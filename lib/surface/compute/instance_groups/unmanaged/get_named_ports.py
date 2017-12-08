@@ -18,9 +18,15 @@ It's an alias for the instance-groups get-named-ports command.
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 
 
-class GetNamedPorts(instance_groups_utils.InstanceGroupGetNamedPorts):
+class GetNamedPorts(instance_groups_utils.InstanceGroupGetNamedPortsBase):
 
   @staticmethod
   def Args(parser):
-    instance_groups_utils.InstanceGroupGetNamedPorts.AddArgs(
+    instance_groups_utils.InstanceGroupGetNamedPortsBase.AddArgs(
         parser=parser, multizonal=False)
+
+  def Run(self, args):
+    """Retrieves response with named ports."""
+    group_ref = self.CreateZonalReference(args.name, args.zone)
+    return instance_groups_utils.OutputNamedPortsForGroup(
+        group_ref, self.compute_client)

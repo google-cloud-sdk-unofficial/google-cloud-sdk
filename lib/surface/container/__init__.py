@@ -39,10 +39,6 @@ class Container(base.Group):
         '--api-version', help=argparse.SUPPRESS,
         action=actions.StoreProperty(
             properties.VALUES.api_client_overrides.container))
-    parser.add_argument(
-        '--zone', '-z',
-        help='The compute zone (e.g. us-central1-a) for the cluster',
-        action=actions.StoreProperty(properties.VALUES.compute.zone))
 
   def Filter(self, context, args):
     """Modify the context that will be given to this group's commands when run.

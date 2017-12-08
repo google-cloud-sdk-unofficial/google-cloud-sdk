@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute.backend_services import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
 class Delete(base.Command):
@@ -26,19 +27,14 @@ class Delete(base.Command):
     *{command}* deletes one or more backend services.
   """
 
-  _BACKEND_SERVICE_ARG = compute_flags.ResourceArgument(
-      resource_name='backend service',
-      completion_resource_id='compute.backendServices',
-      plural=True,
-      global_collection='compute.backendServices')
-
   @staticmethod
   def Args(parser):
-    Delete._BACKEND_SERVICE_ARG.AddArgument(parser)
+    flags.GLOBAL_MULTI_BACKEND_SERVICE_ARG.AddArgument(parser)
 
   def Run(self, args):
-    refs = Delete._BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, self.context['resources'], default_scope='global')
+    refs = flags.GLOBAL_MULTI_BACKEND_SERVICE_ARG.ResolveAsResource(
+        args, self.context['resources'],
+        default_scope=compute_flags.ScopeEnum.GLOBAL)
     utils.PromptForDeletion(refs)
 
     compute_client = self.context['client']

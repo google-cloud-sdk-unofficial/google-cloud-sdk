@@ -19,6 +19,7 @@
 from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
@@ -57,7 +58,7 @@ class CreateGA(backend_services_utils.BackendServiceMutator):
 
   @staticmethod
   def Args(parser):
-    flags.AddBackendServiceName(parser)
+    flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddDescription(parser)
     flags.AddHttpHealthChecks(parser)
     flags.AddHttpsHealthChecks(parser)
@@ -70,7 +71,10 @@ class CreateGA(backend_services_utils.BackendServiceMutator):
     return 'Insert'
 
   def _CreateBackendService(self, args):
-    backend_services_ref = self.CreateGlobalReference(args.name)
+    backend_services_ref = flags.GLOBAL_BACKEND_SERVICE_ARG.ResolveAsResource(
+        args, self.context['resources'],
+        default_scope=compute_flags.ScopeEnum.GLOBAL)
+
     health_checks = backend_services_utils.GetHealthChecks(args, self)
     if not health_checks:
       raise exceptions.ToolException('At least one health check required.')
@@ -98,7 +102,7 @@ class CreateAlpha(CreateGA):
 
   @staticmethod
   def Args(parser):
-    flags.AddBackendServiceName(parser)
+    flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddDescription(parser)
     flags.AddHttpHealthChecks(parser)
     flags.AddHttpsHealthChecks(parser)
@@ -107,7 +111,7 @@ class CreateAlpha(CreateGA):
     flags.AddProtocol(parser)
 
     # These are in beta
-    flags.AddEnableCdn(parser)
+    flags.AddEnableCdn(parser, default=False)
     flags.AddSessionAffinity(parser)
     flags.AddAffinityCookieTtl(parser)
 
@@ -121,7 +125,7 @@ class CreateAlpha(CreateGA):
       backend_service.connectionDraining = self.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
 
-    if args.enable_cdn is not None:
+    if args.enable_cdn:
       backend_service.enableCDN = args.enable_cdn
 
     if args.session_affinity is not None:
@@ -144,7 +148,7 @@ class CreateBeta(CreateGA):
 
   @staticmethod
   def Args(parser):
-    flags.AddBackendServiceName(parser)
+    flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddDescription(parser)
     flags.AddHttpHealthChecks(parser)
     flags.AddHttpsHealthChecks(parser)
@@ -153,13 +157,13 @@ class CreateBeta(CreateGA):
     flags.AddProtocol(parser)
 
     # These are added for beta
-    flags.AddEnableCdn(parser)
+    flags.AddEnableCdn(parser, default=False)
     flags.AddSessionAffinity(parser)
     flags.AddAffinityCookieTtl(parser)
 
   def CreateGlobalRequests(self, args):
     backend_service = self._CreateBackendService(args)
-    if args.enable_cdn is not None:
+    if args.enable_cdn:
       backend_service.enableCDN = args.enable_cdn
 
     if args.session_affinity is not None:

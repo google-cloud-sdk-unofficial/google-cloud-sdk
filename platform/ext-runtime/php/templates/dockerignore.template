@@ -17,4 +17,3 @@ Dockerfile
 .git
 .hg
 .svn
-vendor/

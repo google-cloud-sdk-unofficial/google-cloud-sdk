@@ -22,6 +22,8 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.credentials import store as c_store
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Source(base.Group):
   """Cloud git repository commands."""
 

@@ -62,7 +62,10 @@ class InvalidateCache(base_classes.BaseCommand):
         - ``/x/y/*'': ``/x/y/'' and everything under it
         """
 
-    parser.add_argument('urlmap', help='The name of the URL map.')
+    parser.add_argument(
+        'urlmap',
+        completion_resource='compute.urlMaps',
+        help='The name of the URL map.')
 
   @property
   def method(self):

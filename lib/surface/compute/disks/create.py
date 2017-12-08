@@ -63,13 +63,10 @@ def _SourceArgs(parser):
         this option, the size of the disks must be at least as large as
         the image size. Use ``--size'' to adjust the size of the disks.
 
-        {alias_table}
-
-        This flag is mutually exclusive with ``--source-snapshot''.
+        This flag is mutually exclusive with ``--source-snapshot'' and
+        ``--image-family''.
         """
-    indent = template.find(template.lstrip()[0])
-    return template.format(
-        alias_table=image_utils.GetImageAliasTable(indent=indent))
+    return template
 
   image = source_group.add_argument(
       '--image',
@@ -145,10 +142,11 @@ def _CommonArgs(parser):
       resource_type='disks',
       operation_type='create')
 
+  csek_utils.AddCsekKeyArgs(parser)
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class CreateGA(base_classes.BaseAsyncCreator, image_utils.ImageExpander,
-               zone_utils.ZoneResourceFetcher):
+
+class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander,
+             zone_utils.ZoneResourceFetcher):
   """Create Google Compute Engine persistent disks."""
 
   @staticmethod
@@ -200,10 +198,10 @@ class CreateGA(base_classes.BaseAsyncCreator, image_utils.ImageExpander,
     else:
       snapshot_uri = None
 
-    if hasattr(args, 'csek_key_file'):
-      csek_keys = csek_utils.CsekKeyStore.FromArgs(args)
-    else:
-      csek_keys = None
+    # This feature is only exposed in alpha/beta
+    allow_rsa_encrypted = self.ReleaseTrack() in [base.ReleaseTrack.ALPHA,
+                                                  base.ReleaseTrack.BETA]
+    csek_keys = csek_utils.CsekKeyStore.FromArgs(args, allow_rsa_encrypted)
 
     image_key_message_or_none, snapshot_key_message_or_none = (
         csek_utils.MaybeLookupKeyMessagesByUri(
@@ -246,15 +244,4 @@ class CreateGA(base_classes.BaseAsyncCreator, image_utils.ImageExpander,
     return requests
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateAlphaBeta(CreateGA):
-  """Create Google Compute Engine persistent disks."""
-
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser)
-    csek_utils.AddCsekKeyArgs(parser)
-
-
-CreateGA.detailed_help = DETAILED_HELP
-CreateAlphaBeta.detailed_help = DETAILED_HELP
+Create.detailed_help = DETAILED_HELP

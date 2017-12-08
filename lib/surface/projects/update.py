@@ -14,16 +14,17 @@
 
 """Command to update a new project."""
 
-import textwrap
 from googlecloudsdk.api_lib.projects import util
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.projects import flags
+from googlecloudsdk.command_lib.projects import util as command_lib_util
 from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class Update(util.ProjectCommand):
+class Update(base.Command):
   """Update the name of a project.
 
   Updates the given project with new name.
@@ -35,20 +36,23 @@ class Update(util.ProjectCommand):
   """
 
   detailed_help = {
-      'EXAMPLES': textwrap.dedent("""\
+      'EXAMPLES': """
           The following command updates a project with the ID
           `example-foo-bar-1` to have the name "Foo Bar and Grill":
 
             $ {command} example-foo-bar-1 --name="Foo Bar and Grill"
-    """),
+      """,
   }
+
+  def Collection(self):
+    return command_lib_util.PROJECTS_COLLECTION
+
+  def GetUriFunc(self):
+    return command_lib_util.ProjectsUriFunc
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('id', metavar='PROJECT_ID',
-                        completion_resource='cloudresourcemanager.projects',
-                        list_command_path='projects',
-                        help='ID for the project you want to update.')
+    flags.GetProjectFlag('update').AddToParser(parser)
     parser.add_argument('--name', required=True,
                         help='New name for the project.')
 
@@ -58,7 +62,7 @@ class Update(util.ProjectCommand):
   @util.HandleKnownHttpErrors
   def Run(self, args):
     projects = util.GetClient()
-    project_ref = self.GetProject(args.id)
+    project_ref = command_lib_util.ParseProject(args.id)
     project = projects.projects.Get(project_ref.Request())
     project.name = args.name
     result = projects.projects.Update(project)
@@ -72,4 +76,5 @@ class Update(util.ProjectCommand):
       args: The arguments that command was run with.
       result: The value returned from the Run() method.
     """
-    list_printer.PrintResourceList('cloudresourcemanager.projects', [result])
+    list_printer.PrintResourceList(command_lib_util.PROJECTS_COLLECTION,
+                                   [result])

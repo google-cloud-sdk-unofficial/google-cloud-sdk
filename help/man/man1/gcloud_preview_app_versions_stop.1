@@ -5,7 +5,7 @@
 
 .SH "NAME"
 .HP
-gcloud preview app versions stop \- \fB(BETA)\fR stop serving specified versions
+gcloud preview app versions stop \- stop serving specified versions
 
 
 
@@ -16,8 +16,8 @@ gcloud preview app versions stop \- \fB(BETA)\fR stop serving specified versions
 
 .SH "DESCRIPTION"
 
-\fB(BETA)\fR This command stops serving the specified versions. It may only be
-used if the scaling module for your service has been set to manual.
+\fB(PREVIEW)\fR This command stops serving the specified versions. It may only
+be used if the scaling module for your service has been set to manual.
 
 
 
@@ -25,9 +25,7 @@ used if the scaling module for your service has been set to manual.
 
 \fIVERSIONS\fR [\fIVERSIONS\fR ...]
 .RS 2m
-The versions to stop (optionally filtered by the \-\-service flag). Can also be
-a resource path (<service name>/<version name> or <project name>/<service
-name>/<version name>).
+The versions to stop (optionally filtered by the \-\-service flag).
 
 
 .RE
@@ -64,12 +62,6 @@ $ gcloud preview app versions stop v1 v2
 To stop a single version on a single service, run:
 
 .RS 2m
-$ gcloud preview app versions stop servicename/v1
-.RE
-
-or
-
-.RS 2m
 $ gcloud preview app versions stop \-\-service servicename v1
 .RE
 
@@ -86,5 +78,5 @@ stop\fR command (see its documentation for details).
 
 .SH "NOTES"
 
-This command is currently in BETA and may change without notice.
+This command is currently in DEVELOPER PREVIEW and may change without notice.
 

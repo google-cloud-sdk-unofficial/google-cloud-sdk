@@ -5,7 +5,7 @@
 
 .SH "NAME"
 .HP
-gcloud preview app instances disable\-debug \- \fB(BETA)\fR disables debug mode for an instance
+gcloud preview app instances disable\-debug \- disables debug mode for an instance
 
 
 
@@ -16,8 +16,8 @@ gcloud preview app instances disable\-debug \- \fB(BETA)\fR disables debug mode 
 
 .SH "DESCRIPTION"
 
-\fB(BETA)\fR When not in debug mode, SSH will be disabled on the VMs. They will
-be included in the health checking pools.
+\fB(PREVIEW)\fR When not in debug mode, SSH will be disabled on the VMs. They
+will be included in the health checking pools.
 
 Note that any local changes to an instance will be **lost** and the instance
 restarted if debug mode is disabled on the instance.
@@ -28,8 +28,7 @@ restarted if debug mode is disabled on the instance.
 
 [\fIINSTANCE\fR]
 .RS 2m
-The instance to disable debug mode on (either an instance name or a resource
-path (<service>/<version>/<instance>). If not specified, select instance
+The instance ID to disable debug mode on. If not specified, select instance
 interactively. Must uniquely specify (with other flags) exactly one instance
 
 
@@ -62,14 +61,8 @@ Run \fB$ gcloud help\fR for a description of flags available to all commands.
 To disable debug mode for a particular instance, run:
 
 .RS 2m
-$ gcloud preview app instances disable\-debug service/version/nwz0
-.RE
-
-or
-
-.RS 2m
 $ gcloud preview app instances disable\-debug \-\-service=service \e
-  \-\-version=version nwz0
+  \-\-version=version gae\-default\-v1\-nwz0
 .RE
 
 To disable debug mode for an instance chosen interactively, run:
@@ -82,5 +75,5 @@ $ gcloud preview app instances disable\-debug
 
 .SH "NOTES"
 
-This command is currently in BETA and may change without notice.
+This command is currently in DEVELOPER PREVIEW and may change without notice.
 

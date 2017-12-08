@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 
 
 class SetMachineType(base_classes.NoOutputAsyncMutator):
@@ -31,8 +32,8 @@ class SetMachineType(base_classes.NoOutputAsyncMutator):
         completion_resource='compute.instances',
         help='The name of the instance to change the machine type for.')
 
-    instance_utils.AddMachineTypeArgs(parser)
-    instance_utils.AddCustomMachineTypeArgs(parser)
+    instances_flags.AddMachineTypeArgs(parser)
+    instances_flags.AddCustomMachineTypeArgs(parser)
 
     flags.AddZoneFlag(
         parser,
@@ -55,9 +56,13 @@ class SetMachineType(base_classes.NoOutputAsyncMutator):
     """Returns a list of request necessary for setting scheduling options."""
     instance_ref = self.CreateZonalReference(args.name, args.zone)
 
-    machine_type = instance_utils.InterpretMachineType(args)
+    machine_type = instance_utils.InterpretMachineType(
+        machine_type=args.machine_type,
+        custom_cpu=args.custom_cpu,
+        custom_memory=args.custom_memory)
 
-    instance_utils.CheckCustomCpuRamRatio(self, instance_ref.zone, machine_type)
+    instance_utils.CheckCustomCpuRamRatio(
+        self.compute_client, self.project, instance_ref.zone, machine_type)
 
     machine_type_uri = self.CreateZonalReference(
         machine_type, instance_ref.zone,

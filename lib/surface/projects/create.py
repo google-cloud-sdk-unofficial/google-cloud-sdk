@@ -14,32 +14,38 @@
 
 """Command to create a new project."""
 
-import textwrap
 from googlecloudsdk.api_lib.projects import util
 from googlecloudsdk.api_lib.service_management import enable_api
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.projects import util as command_lib_util
 from googlecloudsdk.core import apis
 from googlecloudsdk.core import log
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(util.ProjectCommand, base.CreateCommand):
+class Create(base.CreateCommand):
   """Create a new project.
 
   Creates a new project with the given project ID.
   """
 
   detailed_help = {
-      'EXAMPLES': textwrap.dedent("""\
+      'EXAMPLES': """
           The following command creates a project with the ID
           `example-foo-bar-1` and the name `Happy project`:
 
             $ {command} example-foo-bar-1 --name="Happy project"
-    """),
+      """,
   }
+
+  def Collection(self):
+    return command_lib_util.PROJECTS_COLLECTION
+
+  def GetUriFunc(self):
+    return command_lib_util.ProjectsUriFunc
 
   @staticmethod
   def Args(parser):
@@ -61,7 +67,7 @@ class Create(util.ProjectCommand, base.CreateCommand):
     projects = util.GetClient()
     messages = util.GetMessages()
 
-    project_ref = self.GetProject(args.id)
+    project_ref = command_lib_util.ParseProject(args.id)
 
     # Create project.
     project_creation_result = projects.projects.Create(

@@ -63,12 +63,15 @@ def main(args):
     template_dir = os.path.join(os.path.dirname(__file__), '..', 'templates')
 
     # Generate Dockerfile
-    path = os.path.join(template_dir, 'Dockerfile.template')
+    entrypoint = config['runtime_data']['entrypoint']
+    template_name = 'Dockerfile.entrypoint.template' if entrypoint else 'Dockerfile.template'
+    path = os.path.join(template_dir, template_name)
     with open(path, 'r') as f:
         data = f.read()
         document_root = config['runtime_data']['document_root']
 
-        send_file('Dockerfile', data.format(document_root=document_root))
+        send_file('Dockerfile', data.format(document_root=document_root,
+            entrypoint=entrypoint))
 
     # Generate .dockerignore
     path = os.path.join(template_dir, 'dockerignore.template')

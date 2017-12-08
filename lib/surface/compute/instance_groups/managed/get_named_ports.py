@@ -16,56 +16,42 @@
 It's an alias for the instance-groups get-named-ports command.
 """
 from googlecloudsdk.api_lib.compute import instance_groups_utils
-from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class GetNamedPorts(instance_groups_utils.InstanceGroupGetNamedPorts):
+class GetNamedPorts(instance_groups_utils.InstanceGroupGetNamedPortsBase):
 
   @staticmethod
   def Args(parser):
-    instance_groups_utils.InstanceGroupGetNamedPorts.AddArgs(
+    instance_groups_utils.InstanceGroupGetNamedPortsBase.AddArgs(
         parser=parser, multizonal=False)
+
+  def Run(self, args):
+    """Retrieves response with named ports."""
+    group_ref = self.CreateZonalReference(args.name, args.zone)
+    return instance_groups_utils.OutputNamedPortsForGroup(
+        group_ref, self.compute_client)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class GetNamedPortsAlpha(instance_groups_utils.InstanceGroupGetNamedPorts):
+class GetNamedPortsAlpha(
+    instance_groups_utils.InstanceGroupGetNamedPortsBase):
 
   @staticmethod
   def Args(parser):
-    instance_groups_utils.InstanceGroupGetNamedPorts.AddArgs(
+    instance_groups_utils.InstanceGroupGetNamedPortsBase.AddArgs(
         parser=parser, multizonal=True)
 
-  def GetResources(self, args):
+  def Run(self, args):
     """Retrieves response with named ports."""
     group_ref = instance_groups_utils.CreateInstanceGroupReference(
         scope_prompter=self, compute=self.compute, resources=self.resources,
         name=args.name, region=args.region, zone=args.zone,
         zonal_resource_type='instanceGroups',
         regional_resource_type='regionInstanceGroups')
-    if group_ref.Collection() == 'compute.instanceGroups':
-      service = self.compute.instanceGroups
-      request = service.GetRequestType('Get')(
-          instanceGroup=group_ref.Name(),
-          zone=group_ref.zone,
-          project=self.project)
-    else:
-      service = self.compute.regionInstanceGroups
-      request = service.GetRequestType('Get')(
-          instanceGroup=group_ref.Name(),
-          region=group_ref.region,
-          project=self.project)
-
-    errors = []
-    results = list(request_helper.MakeRequests(
-        requests=[(service, 'Get', request)],
-        http=self.http,
-        batch_url=self.batch_url,
-        errors=errors,
-        custom_get_requests=None))
-
-    return results, errors
+    return instance_groups_utils.OutputNamedPortsForGroup(
+        group_ref, self.compute_client)
 
 
 GetNamedPorts.detailed_help = {

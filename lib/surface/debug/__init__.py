@@ -22,7 +22,7 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.credentials import store as c_store
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Debug(base.Group):
   """Commands for interacting with the Cloud Debugger.
 

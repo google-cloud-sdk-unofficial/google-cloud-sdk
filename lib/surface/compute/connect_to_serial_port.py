@@ -40,7 +40,8 @@ DEFAULT_HOST_KEY = ('ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDkOOCaBZVTxzvjJ7+7'
                     'oQFQl5aCwcS8UQnzzwMDflQ+JgsynYN08dLIRGcwkJe9')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
   """Class for connecting through a gateway to the interactive serial port."""
 
@@ -53,8 +54,8 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
     parser.add_argument(
         '--dry-run',
         action='store_true',
-        help=('If provided, prints the command that would be run to standard '
-              'out instead of executing it.'))
+        help=('If provided, the ssh command is printed to standard out '
+              'rather than being executed.'))
 
     # This flag should be hidden for this command, but needs to exist.
     parser.add_argument(
@@ -193,8 +194,8 @@ ConnectToSerialPort.detailed_help = {
       protocol.
 
       The user must first enable serial port access to a given VM by setting
-      the 'serialPortEnable=true' metadata key-value pair. Setting
-      'serialPortEnable' on the project-level metadata enables serial port
+      the 'serial-port-enable=true' metadata key-value pair. Setting
+      'serial-port-enable' on the project-level metadata enables serial port
       access to all VMs in the project.
 
       This command uses the same SSH key pair as the 'gcloud compute ssh'

@@ -14,7 +14,10 @@
 
 """The command group for cloud container clusters."""
 
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container import flags
+from googlecloudsdk.core import properties
 
 
 class Clusters(base.Group):
@@ -29,7 +32,7 @@ class Clusters(base.Group):
         which you can register arguments.  See the public argparse documentation
         for its capabilities.
     """
-    pass
+    flags.AddZoneFlag(parser)
 
   def Filter(self, context, args):
     """Modify the context that will be given to this group's commands when run.

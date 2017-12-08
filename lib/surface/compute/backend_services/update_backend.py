@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import backend_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.third_party.py27 import py27_copy as copy
@@ -30,7 +31,7 @@ class UpdateBackend(base_classes.ReadWriteCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddBackendServiceName(parser)
+    flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     backend_flags.AddDescription(parser)
     backend_flags.AddInstanceGroup(
         parser, operation_type='update', multizonal=False,
@@ -48,7 +49,9 @@ class UpdateBackend(base_classes.ReadWriteCommand):
     return 'backendServices'
 
   def CreateReference(self, args):
-    return self.CreateGlobalReference(args.name)
+    return flags.GLOBAL_BACKEND_SERVICE_ARG.ResolveAsResource(
+        args, self.context['resources'],
+        default_scope=compute_flags.ScopeEnum.GLOBAL)
 
   def GetGetRequest(self, args):
     return (self.service,
@@ -163,9 +166,9 @@ class UpdateBackend(base_classes.ReadWriteCommand):
 class UpdateBackendAlpha(UpdateBackend):
   """Update an existing backend in a backend service."""
 
-  @staticmethod
-  def Args(parser):
-    flags.AddBackendServiceName(parser)
+  @classmethod
+  def Args(cls, parser):
+    flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     backend_flags.AddDescription(parser)
     backend_flags.AddInstanceGroup(
         parser, operation_type='update', multizonal=True)

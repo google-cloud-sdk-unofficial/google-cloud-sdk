@@ -13,13 +13,26 @@
 # limitations under the License.
 
 """Get Server Config."""
+
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
 class GetServerConfig(base.Command):
   """Get Container Engine server config."""
+
+  @staticmethod
+  def Args(parser):
+    """Add arguments to the parser.
+
+    Args:
+      parser: argparse.ArgumentParser, This is a standard argparser parser with
+        which you can register arguments.  See the public argparse documentation
+        for its capabilities.
+    """
+    flags.AddZoneFlag(parser)
 
   def Run(self, args):
     adapter = self.context['api_adapter']

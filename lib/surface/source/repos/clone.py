@@ -182,7 +182,7 @@ class CloneAlpha(base.Command):
                  'exist.'.format(src=args.src, prj=project_id))
       prompt_string = 'Would you like to create it'
       if args.autocreate or console_io.PromptContinue(
-          message=message, prompt_string=prompt_string, default=False):
+          message=message, prompt_string=prompt_string, default=True):
         try:
           project.CreateRepo(args.src)
         except exceptions.HttpError as e:

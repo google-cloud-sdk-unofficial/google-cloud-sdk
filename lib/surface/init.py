@@ -31,6 +31,8 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import platforms
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Init(base.Command):
   """Initialize or reinitialize gcloud."""
 
@@ -104,10 +106,10 @@ class Init(base.Command):
     log.status.write('Your current configuration has been set to: [{0}]\n\n'
                      .format(configuration_name))
 
-    if not self._PickAccount(args.console_only):
+    if not self._PickAccount(args.console_only, preselected=args.account):
       return
 
-    project_id = self._PickProject()
+    project_id = self._PickProject(preselected=args.project)
     if not project_id:
       return
 
@@ -117,45 +119,69 @@ class Init(base.Command):
 
     self._Summarize()
 
-  def _PickAccount(self, console_only):
+  def _PickAccount(self, console_only, preselected=None):
     """Checks if current credentials are valid, if not runs auth login.
 
     Args:
       console_only: bool, True if the auth flow shouldn't use the browser
+      preselected: str, disable prompts and use this value if not None
 
     Returns:
       bool, True if valid credentials are setup.
     """
 
+    new_credentials = False
     auth_info = self._RunCmd(['auth', 'list'])
     if auth_info and auth_info.accounts:
-      idx = console_io.PromptChoice(
-          auth_info.accounts + ['Log in with a new account'],
-          message='Choose the account you would like use to perform operations '
-                  'for this configuration:',
-          prompt_string=None)
-      if idx is None:
-        return None
-      new_credentials = idx == len(auth_info.accounts)
+      # There is at least one credentialed account.
+      if preselected:
+        # Try to use the preselected account. Fail if its not credentialed.
+        account = preselected
+        if account not in auth_info.accounts:
+          log.status.write('\n[{0}] is not one of your credentialed accounts '
+                           '[{1}].\n'.format(account,
+                                             ','.join(auth_info.accounts)))
+          return False
+        # Fall through to the set the account property.
+      else:
+        # Prompt for the account to use.
+        idx = console_io.PromptChoice(
+            auth_info.accounts + ['Log in with a new account'],
+            message='Choose the account you would like use to perform '
+                    'operations for this configuration:',
+            prompt_string=None)
+        if idx is None:
+          return False
+        if idx < len(auth_info.accounts):
+          account = auth_info.accounts[idx]
+        else:
+          new_credentials = True
+    elif preselected:
+      # Preselected account specified but there are no credentialed accounts.
+      log.status.write('\n[{0}] is not a credentialed account.\n'.format(
+          preselected))
+      return False
     else:
+      # Must log in with new credentials.
       answer = console_io.PromptContinue(
-          prompt_string='To continue, you must log in. Would you like to log '
-                        'in')
+          prompt_string='You must log in to continue. Would you like to log in')
       if not answer:
         return False
       new_credentials = True
     if new_credentials:
-      # gcloud auth login may have user interaction, do not suppress it.
+      # Call `gcloud auth login` to get new credentials.
+      # `gcloud auth login` may have user interaction, do not suppress it.
       browser_args = ['--no-launch-browser'] if console_only else []
       if not self._RunCmd(['auth', 'login'],
                           ['--force', '--brief'] + browser_args,
                           disable_user_output=False):
-        return None
+        return False
+      # `gcloud auth login` already did `gcloud config set account`.
     else:
-      account = auth_info.accounts[idx]
+      # Set the config account to the already credentialed account.
       self._RunCmd(['config', 'set'], ['account', account])
 
-    log.status.write('You are now logged in as: [{0}]\n\n'
+    log.status.write('You are logged in as: [{0}].\n\n'
                      .format(properties.VALUES.core.account.Get()))
     return True
 
@@ -220,8 +246,11 @@ class Init(base.Command):
     self._RunCmd(['config', 'configurations', 'activate'], [config_name])
     return config_name
 
-  def _PickProject(self):
+  def _PickProject(self, preselected=None):
     """Allows user to select a project.
+
+    Args:
+      preselected: str, use this value if not None
 
     Returns:
       str, project_id or None if was not selected.
@@ -233,7 +262,7 @@ class Init(base.Command):
       projects = None
 
     if projects is None:  # Failed to get the list.
-      project_id = console_io.PromptResponse(
+      project_id = preselected or console_io.PromptResponse(
           'Enter project id you would like to use:  ')
       if not project_id:
         return None
@@ -246,7 +275,15 @@ class Init(base.Command):
                          '(https://console.developers.google.com/project) '
                          'before running this command.\n')
         return None
-      if len(choices) == 1:
+      if preselected:
+        project_id = preselected
+        project_names = [project.projectId for project in projects]
+        if project_id not in project_names:
+          log.status.write(
+              '\n[{0}] is not one of your projects [{1}].\n'.format(
+                  project_id, ','.join(project_names)))
+          return None
+      elif len(choices) == 1:
         project_id = projects[0].projectId
       else:
         idx = console_io.PromptChoice(
@@ -254,7 +291,7 @@ class Init(base.Command):
             message='Pick cloud project to use: ',
             prompt_string=None)
         if idx is None:
-          return
+          return None
         project_id = projects[idx].projectId
 
     self._RunCmd(['config', 'set'], ['project', project_id])

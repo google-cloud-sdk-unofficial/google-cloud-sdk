@@ -13,15 +13,15 @@
 # limitations under the License.
 """Command to list all project IDs associated with the active user."""
 
-import textwrap
 from googlecloudsdk.api_lib.projects import projects_api
 from googlecloudsdk.api_lib.projects import util
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.projects import util as command_lib_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class List(util.ProjectCommand, base.ListCommand):
+class List(base.ListCommand):
   """List projects accessible by the active account.
 
   Lists all active projects, where the active account has Owner, Editor or
@@ -33,13 +33,19 @@ class List(util.ProjectCommand, base.ListCommand):
   """
 
   detailed_help = {
-      'EXAMPLES': textwrap.dedent("""\
+      'EXAMPLES': """
           The following command lists a maximum of five projects sorted
           alphabetically by name:
 
             $ {command} --limit=5
-      """),
+      """,
   }
+
+  def Collection(self):
+    return command_lib_util.PROJECTS_COLLECTION
+
+  def GetUriFunc(self):
+    return command_lib_util.ProjectsUriFunc
 
   # util.HandleKnownHttpErrors needs to be the first one to handle errors.
   # It needs to be placed after http_error_handler.HandleHttpErrors.

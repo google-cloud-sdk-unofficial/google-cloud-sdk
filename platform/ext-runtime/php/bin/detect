@@ -42,6 +42,11 @@ def main(args):
     config = get_config()
     params = config['params']
     appinfo = params['appinfo']
+    entrypoint = None
+    if appinfo and 'entrypoint' in appinfo:
+        entrypoint = appinfo['entrypoint']
+        if isinstance(entrypoint, list):
+          entrypoint = json.dumps(entrypoint)
 
     root = '.'
     document_root = '/app'
@@ -59,11 +64,13 @@ def main(args):
                     'appinfo': {
                         'runtime': 'custom' if params['custom'] else 'php',
                         'vm': True,
+                        'entrypoint': entrypoint,
                         'runtime_config': {
                             'document_root': root,
                         },
                     },
                     'runtime_data': {
+                        'entrypoint': entrypoint,
                         'document_root': document_root,
                     },
                 }, sys.stdout)

@@ -16,7 +16,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Commands(base.Group):
-  """Manage Preview CLI command groups."""
-
+@base.ReleaseTracks(base.ReleaseTrack.PREVIEW)
+class Preview(base.Group):
+  """Preview versions of gcloud commands."""

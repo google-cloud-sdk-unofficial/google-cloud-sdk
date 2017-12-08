@@ -5,21 +5,21 @@
 
 .SH "NAME"
 .HP
-gcloud preview app deploy \- \fB(BETA)\fR deploy the local code and/or configuration of your app to App Engine
+gcloud preview app deploy \- deploy the local code and/or configuration of your app to App Engine
 
 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud preview app deploy\fR [\fIDEPLOYABLES\fR\ ...] [\fB\-\-bucket\fR\ \fIBUCKET\fR] [\fB\-\-force\fR] [\fB\-\-image\-url\fR\ \fIIMAGE_URL\fR] [\fB\-\-promote\fR] [\fB\-\-stop\-previous\-version\fR] [\fB\-\-version\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud preview app deploy\fR [\fIDEPLOYABLES\fR\ ...] [\fB\-\-bucket\fR\ \fIBUCKET\fR] [\fB\-\-image\-url\fR\ \fIIMAGE_URL\fR] [\fB\-\-no\-promote\fR] [\fB\-\-no\-stop\-previous\-version\fR] [\fB\-\-version\fR\ \fIVERSION\fR,\ \fB\-v\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
 
-\fB(BETA)\fR This command is used to deploy both code and configuration to the
-App Engine server. As an input it takes one or more \f5\fIDEPLOYABLES\fR\fR that
-should be uploaded. A \f5\fIDEPLOYABLE\fR\fR can be a service's .yaml file or a
-configuration's .yaml file.
+\fB(PREVIEW)\fR This command is used to deploy both code and configuration to
+the App Engine server. As an input it takes one or more \f5\fIDEPLOYABLES\fR\fR
+that should be uploaded. A \f5\fIDEPLOYABLE\fR\fR can be a service's .yaml file
+or a configuration's .yaml file.
 
 
 
@@ -42,12 +42,6 @@ app.yaml) in the current directory.
 The Google Cloud Storage bucket used to stage files associated with the
 deployment. If this argument is not specified, the application's default code
 bucket is used.
-
-.RE
-\fB\-\-force\fR
-.RS 2m
-Force deploying, overriding any previous in\-progress deployments to this
-version.
 
 .RE
 \fB\-\-image\-url\fR \fIIMAGE_URL\fR
@@ -74,12 +68,12 @@ invocation. Use \fB\-\-no\-promote\fR to disable.
 \fB\-\-stop\-previous\-version\fR
 .RS 2m
 Stop the previously running version when deploying a new version that receives
-all traffic (off by default). Overrides the default \fBstop_previous_version\fR
-property value for this command invocation. Use
-\fB\-\-no\-stop\-previous\-version\fR to disable.
+all traffic. Overrides the default \fBstop_previous_version\fR property value
+for this command invocation. Use \fB\-\-no\-stop\-previous\-version\fR to
+disable.
 
 .RE
-\fB\-\-version\fR \fIVERSION\fR
+\fB\-\-version\fR \fIVERSION\fR, \fB\-v\fR \fIVERSION\fR
 .RS 2m
 The version of the app that will be created or replaced by this deployment. If
 you do not specify a version, one will be generated for you.
@@ -112,5 +106,5 @@ $ gcloud preview app deploy ~/my_app/app.yaml \e
 
 .SH "NOTES"
 
-This command is currently in BETA and may change without notice.
+This command is currently in DEVELOPER PREVIEW and may change without notice.
 

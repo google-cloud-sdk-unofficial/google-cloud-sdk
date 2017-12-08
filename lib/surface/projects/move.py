@@ -13,18 +13,18 @@
 # limitations under the License.
 """Command to move a project into an organization."""
 
-import textwrap
-
 from googlecloudsdk.api_lib.projects import errors
 from googlecloudsdk.api_lib.projects import util
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.projects import flags
+from googlecloudsdk.command_lib.projects import util as command_lib_util
 from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Move(util.ProjectCommand):
+class Move(base.Command):
   """Move a project into an organization.
 
   Moves the given project into the given organization.
@@ -42,21 +42,23 @@ class Move(util.ProjectCommand):
   """
 
   detailed_help = {
-      'EXAMPLES': textwrap.dedent("""\
+      'EXAMPLES': """
           The following command moves a project with the ID
           `super-awesome-project` into the organization `25872158`:
 
             $ {command} super-awesome-project --organization=25872158
-    """),
+      """,
   }
+
+  def Collection(self):
+    return command_lib_util.PROJECTS_COLLECTION
+
+  def GetUriFunc(self):
+    return command_lib_util.ProjectsUriFunc
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('id',
-                        metavar='PROJECT_ID',
-                        completion_resource='cloudresourcemanager.projects',
-                        list_command_path='projects',
-                        help='ID for the project you want to update.')
+    flags.GetProjectFlag('move').AddToParser(parser)
     parser.add_argument(
         '--organization',
         metavar='ORGANIZATION_ID',
@@ -72,7 +74,7 @@ class Move(util.ProjectCommand):
   def Run(self, args):
     projects = util.GetClient()
     messages = util.GetMessages()
-    project_ref = self.GetProject(args.id)
+    project_ref = command_lib_util.ParseProject(args.id)
     project = projects.projects.Get(project_ref.Request())
     if project.parent is not None:
       raise errors.ProjectMoveError(project, args.organization)

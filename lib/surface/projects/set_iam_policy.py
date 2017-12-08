@@ -17,11 +17,13 @@
 from googlecloudsdk.api_lib.projects import util
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.projects import flags
+from googlecloudsdk.command_lib.projects import util as command_lib_util
 from googlecloudsdk.core.iam import iam_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class SetIamPolicy(util.ProjectCommand):
+class SetIamPolicy(base.Command):
   """Set IAM policy for a project.
 
   Sets the IAM policy for a project, given a project ID and a file that
@@ -29,9 +31,7 @@ class SetIamPolicy(util.ProjectCommand):
   """
 
   detailed_help = {
-      'brief': 'Set IAM policy for a project.',
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
+      'EXAMPLES': """
           The following command reads an IAM policy defined in a JSON file
           `policy.json` and sets it for a project with the ID
           `example-project-id-1`:
@@ -40,13 +40,15 @@ class SetIamPolicy(util.ProjectCommand):
           """,
   }
 
+  def Collection(self):
+    return command_lib_util.PROJECTS_COLLECTION
+
+  def GetUriFunc(self):
+    return command_lib_util.ProjectsUriFunc
+
   @staticmethod
   def Args(parser):
-    parser.add_argument('id', metavar='PROJECT_ID',
-                        completion_resource='cloudresourcemanager.projects',
-                        list_command_path='projects',
-                        help='ID for the project you want to set '
-                             'IAM policy.')
+    flags.GetProjectFlag('set IAM policy for').AddToParser(parser)
     parser.add_argument('policy_file', help='JSON file with the IAM policy')
 
   # util.HandleKnownHttpErrors needs to be the first one to handle errors.
@@ -57,7 +59,7 @@ class SetIamPolicy(util.ProjectCommand):
     projects = util.GetClient()
     messages = util.GetMessages()
 
-    project_ref = self.GetProject(args.id)
+    project_ref = command_lib_util.ParseProject(args.id)
 
     policy = iam_util.ParseJsonPolicyFile(args.policy_file, messages.Policy)
 

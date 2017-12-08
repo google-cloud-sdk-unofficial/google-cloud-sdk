@@ -200,6 +200,7 @@ class Create(base.Command):
   def Args(parser):
     _Args(parser)
     flags.AddImageTypeFlag(parser, 'cluster', True)
+    flags.AddClusterAutoscalingFlags(parser)
 
   def ParseCreateOptions(self, args):
     if not args.scopes:
@@ -223,6 +224,9 @@ class Create(base.Command):
         disable_addons=args.disable_addons,
         local_ssd_count=args.local_ssd_count,
         tags=args.tags,
+        enable_autoscaling=args.enable_autoscaling,
+        max_nodes=args.max_nodes,
+        min_nodes=args.min_nodes,
         image_type=args.image_type,
         max_nodes_per_pool=args.max_nodes_per_pool)
 
@@ -296,6 +300,7 @@ class CreateBeta(Create):
   def Args(parser):
     _Args(parser)
     flags.AddImageTypeFlag(parser, 'cluster', False)
+    flags.AddClusterAutoscalingFlags(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -306,3 +311,4 @@ class CreateAlpha(Create):
   def Args(parser):
     _Args(parser)
     flags.AddImageTypeFlag(parser, 'cluster', False)
+    flags.AddClusterAutoscalingFlags(parser)

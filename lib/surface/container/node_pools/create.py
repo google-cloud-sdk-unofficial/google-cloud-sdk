@@ -134,6 +134,7 @@ class Create(base.CreateCommand):
   def Args(parser):
     _Args(parser)
     flags.AddImageTypeFlag(parser, 'node pool', False)
+    flags.AddClusterAutoscalingFlags(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     return api_adapter.CreateNodePoolOptions(
@@ -144,6 +145,9 @@ class Create(base.CreateCommand):
         num_nodes=args.num_nodes,
         local_ssd_count=args.local_ssd_count,
         tags=args.tags,
+        enable_autoscaling=args.enable_autoscaling,
+        max_nodes=args.max_nodes,
+        min_nodes=args.min_nodes,
         image_type=args.image_type)
 
   def Run(self, args):

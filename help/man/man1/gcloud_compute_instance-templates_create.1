@@ -11,7 +11,7 @@ gcloud compute instance\-templates create \- create a Compute Engine virtual mac
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instance\-templates create\fR \fINAME\fR [\fB\-\-boot\-disk\-auto\-delete\fR] [\fB\-\-boot\-disk\-device\-name\fR\ \fIBOOT_DISK_DEVICE_NAME\fR] [\fB\-\-boot\-disk\-size\fR\ \fIBOOT_DISK_SIZE\fR] [\fB\-\-boot\-disk\-type\fR\ \fIBOOT_DISK_TYPE\fR] [\fB\-\-can\-ip\-forward\fR] [\fB\-\-custom\-cpu\fR\ \fICUSTOM_CPU\fR] [\fB\-\-custom\-memory\fR\ \fICUSTOM_MEMORY\fR] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-disk\fR\ [\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fB\-\-image\fR\ \fIIMAGE\fR\ |\ \fIcentos\-6\fR\ |\ \fIcentos\-7\fR\ |\ \fIcontainer\-vm\fR\ |\ \fIcoreos\fR\ |\ \fIdebian\-7\fR\ |\ \fIdebian\-7\-backports\fR\ |\ \fIdebian\-8\fR\ |\ \fIopensuse\-13\fR\ |\ \fIrhel\-6\fR\ |\ \fIrhel\-7\fR\ |\ \fIsles\-11\fR\ |\ \fIsles\-12\fR\ |\ \fIubuntu\-12\-04\fR\ |\ \fIubuntu\-14\-04\fR\ |\ \fIubuntu\-15\-04\fR\ |\ \fIubuntu\-15\-10\fR\ |\ \fIwindows\-2008\-r2\fR\ |\ \fIwindows\-2012\-r2\fR\ |\ \fB\-\-image\-family\fR\ \fIIMAGE_FAMILY\fR] [\fB\-\-image\-project\fR\ \fIIMAGE_PROJECT\fR] [\fB\-\-local\-ssd\fR\ [\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fB\-\-machine\-type\fR\ \fIMACHINE_TYPE\fR] [\fB\-\-maintenance\-policy\fR\ \fIMAINTENANCE_POLICY\fR] [\fB\-\-metadata\fR\ \fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-metadata\-from\-file\fR\ \fIKEY\fR=\fILOCAL_FILE_PATH\fR,[\fIKEY\fR=\fILOCAL_FILE_PATH\fR,...]] [\fB\-\-network\fR\ \fINETWORK\fR;\ default="default"\ |\ \fB\-\-subnet\fR\ \fISUBNET\fR] [\fB\-\-address\fR\ \fIADDRESS\fR\ |\ \fB\-\-no\-address\fR] [\fB\-\-preemptible\fR] [\fB\-\-region\fR\ \fIREGION\fR] [\fB\-\-restart\-on\-failure\fR] [\fB\-\-no\-scopes\fR\ |\ \fB\-\-scopes\fR\ [\fIACCOUNT\fR=]\fISCOPE\fR,[[\fIACCOUNT\fR=]\fISCOPE\fR,...]] [\fB\-\-tags\fR\ \fITAG\fR,[\fITAG\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instance\-templates create\fR \fINAME\fR [\fB\-\-no\-boot\-disk\-auto\-delete\fR] [\fB\-\-boot\-disk\-device\-name\fR\ \fIBOOT_DISK_DEVICE_NAME\fR] [\fB\-\-boot\-disk\-size\fR\ \fIBOOT_DISK_SIZE\fR] [\fB\-\-boot\-disk\-type\fR\ \fIBOOT_DISK_TYPE\fR] [\fB\-\-can\-ip\-forward\fR] [\fB\-\-custom\-cpu\fR\ \fICUSTOM_CPU\fR] [\fB\-\-custom\-memory\fR\ \fICUSTOM_MEMORY\fR] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-disk\fR\ [\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fB\-\-image\fR\ \fIIMAGE\fR\ |\ \fB\-\-image\-family\fR\ \fIIMAGE_FAMILY\fR] [\fB\-\-image\-project\fR\ \fIIMAGE_PROJECT\fR] [\fB\-\-local\-ssd\fR\ [\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fB\-\-machine\-type\fR\ \fIMACHINE_TYPE\fR] [\fB\-\-maintenance\-policy\fR\ \fIMAINTENANCE_POLICY\fR] [\fB\-\-metadata\fR\ \fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-metadata\-from\-file\fR\ \fIKEY\fR=\fILOCAL_FILE_PATH\fR,[\fIKEY\fR=\fILOCAL_FILE_PATH\fR,...]] [\fB\-\-network\fR\ \fINETWORK\fR;\ default="default"\ |\ \fB\-\-subnet\fR\ \fISUBNET\fR] [\fB\-\-address\fR\ \fIADDRESS\fR\ |\ \fB\-\-no\-address\fR] [\fB\-\-preemptible\fR] [\fB\-\-region\fR\ \fIREGION\fR] [\fB\-\-no\-restart\-on\-failure\fR] [\fB\-\-no\-scopes\fR\ |\ \fB\-\-scopes\fR\ [\fIACCOUNT\fR=]\fISCOPE\fR,[[\fIACCOUNT\fR=]\fISCOPE\fR,...]] [\fB\-\-tags\fR\ \fITAG\fR,[\fITAG\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -148,49 +148,11 @@ this option won't apply. The default value for this is \f5\fIno\fR\fR.
 
 .RE
 .RE
-\fB\-\-image\fR \fIIMAGE\fR | \fIcentos\-6\fR | \fIcentos\-7\fR | \fIcontainer\-vm\fR | \fIcoreos\fR | \fIdebian\-7\fR | \fIdebian\-7\-backports\fR | \fIdebian\-8\fR | \fIopensuse\-13\fR | \fIrhel\-6\fR | \fIrhel\-7\fR | \fIsles\-11\fR | \fIsles\-12\fR | \fIubuntu\-12\-04\fR | \fIubuntu\-14\-04\fR | \fIubuntu\-15\-04\fR | \fIubuntu\-15\-10\fR | \fIwindows\-2008\-r2\fR | \fIwindows\-2012\-r2\fR
+\fB\-\-image\fR \fIIMAGE\fR
 .RS 2m
 Specifies the boot image for the instances. For each instance, a new boot disk
 will be created from the given image. Each boot disk will have the same name as
 the instance.
-
-The value for this option can be the name of an image or an alias from the table
-below.
-
-
-.TS
-tab(,);
-lB lB
-l l.
-Alias,Project,Image Name
-centos\-6,centos\-cloud,centos\-6
-centos\-7,centos\-cloud,centos\-7
-container\-vm,google\-containers,container\-vm
-coreos,coreos\-cloud,coreos\-stable
-debian\-7,debian\-cloud,debian\-7\-wheezy
-debian\-7\-backports,debian\-cloud,backports\-debian\-7\-wheezy
-debian\-8,debian\-cloud,debian\-8\-jessie
-opensuse\-13,opensuse\-cloud,opensuse\-13
-rhel\-6,rhel\-cloud,rhel\-6
-rhel\-7,rhel\-cloud,rhel\-7
-sles\-11,suse\-cloud,sles\-11
-sles\-12,suse\-cloud,sles\-12
-ubuntu\-12\-04,ubuntu\-os\-cloud,ubuntu\-1204\-precise
-ubuntu\-14\-04,ubuntu\-os\-cloud,ubuntu\-1404\-trusty
-ubuntu\-15\-04,ubuntu\-os\-cloud,ubuntu\-1504\-vivid
-ubuntu\-15\-10,ubuntu\-os\-cloud,ubuntu\-1510\-wily
-windows\-2008\-r2,windows\-cloud,windows\-server\-2008\-r2
-windows\-2012\-r2,windows\-cloud,windows\-server\-2012\-r2
-.TE
-
-When the value is an alias, this tool will query the public image project that
-contains the image type to find the latest image matching the alias. The user's
-project is also queried for an image with the same name as the alias. If a
-conflict exists, the user will be prompted to resolve the conflict.
-
-To specify an image in another project for which there is no alias, use
-\f5\-\-image\-project\fR. When \f5\-\-image\-project\fR is present, no API calls
-are made to resolve the image. This property is useful for scripts.
 
 When using this option, \f5\fI\-\-boot\-disk\-device\-name\fR\fR and
 \f5\fI\-\-boot\-disk\-size\fR\fR can be used to override the boot disk's device
@@ -208,8 +170,8 @@ associated with that family is used.
 .RE
 \fB\-\-image\-project\fR \fIIMAGE_PROJECT\fR
 .RS 2m
-The project against which all image references will be resolved. See
-\f5\fI\-\-image\fR\fR for more details.
+The project against which all image and image family references will be
+resolved. See \f5\fI\-\-image\fR\fR for more details.
 
 .RE
 \fB\-\-local\-ssd\fR [\fIPROPERTY\fR=\fIVALUE\fR,...]

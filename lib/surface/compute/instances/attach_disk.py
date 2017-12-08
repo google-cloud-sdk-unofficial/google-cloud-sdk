@@ -69,9 +69,10 @@ def _CommonArgs(parser):
       resource_type='instance',
       operation_type='attach a disk to')
 
+  csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class AttachDiskGA(base_classes.NoOutputAsyncMutator):
+
+class AttachDisk(base_classes.NoOutputAsyncMutator):
   """Attach a disk to an instance."""
 
   @staticmethod
@@ -101,14 +102,11 @@ class AttachDiskGA(base_classes.NoOutputAsyncMutator):
     else:
       mode = self.messages.AttachedDisk.ModeValueValuesEnum.READ_ONLY
 
-    # TODO(user) drop test after CSEK goes GA
-    if hasattr(args, 'csek_key_file'):
-      csek_keys = csek_utils.CsekKeyStore.FromArgs(args)
-      disk_key_or_none = csek_utils.MaybeLookupKeyMessage(csek_keys, disk_ref,
-                                                          self.compute)
-      kwargs = {'diskEncryptionKey': disk_key_or_none}
-    else:
-      kwargs = {}
+    allow_rsa_encrypted = self.ReleaseTrack() in [base.ReleaseTrack.ALPHA,
+                                                  base.ReleaseTrack.BETA]
+    csek_keys = csek_utils.CsekKeyStore.FromArgs(args, allow_rsa_encrypted)
+    disk_key_or_none = csek_utils.MaybeLookupKeyMessage(csek_keys, disk_ref,
+                                                        self.compute)
 
     request = self.messages.ComputeInstancesAttachDiskRequest(
         instance=instance_ref.Name(),
@@ -118,21 +116,10 @@ class AttachDiskGA(base_classes.NoOutputAsyncMutator):
             mode=mode,
             source=disk_ref.SelfLink(),
             type=self.messages.AttachedDisk.TypeValueValuesEnum.PERSISTENT,
-            **kwargs),
+            diskEncryptionKey=disk_key_or_none),
         zone=instance_ref.zone)
 
     return [request]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class AttachDiskAlphaBeta(AttachDiskGA):
-  """Attach a disk to an instance."""
-
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser)
-    csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
-
-
-AttachDiskAlphaBeta.detailed_help = DETAILED_HELP
-AttachDiskGA.detailed_help = DETAILED_HELP
+AttachDisk.detailed_help = DETAILED_HELP

@@ -11,7 +11,7 @@ gcloud compute disks create \- create Google Compute Engine persistent disks
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute disks create\fR \fINAME\fR [\fINAME\fR\ ...] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-image\fR\ \fIIMAGE\fR\ |\ \fB\-\-image\-family\fR\ \fIIMAGE_FAMILY\fR\ |\ \fB\-\-source\-snapshot\fR\ \fISOURCE_SNAPSHOT\fR] [\fB\-\-image\-project\fR\ \fIIMAGE_PROJECT\fR] [\fB\-\-size\fR\ \fISIZE\fR] [\fB\-\-type\fR\ \fITYPE\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute disks create\fR \fINAME\fR [\fINAME\fR\ ...] [\fB\-\-csek\-key\-file\fR\ \fIFILE\fR] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-image\fR\ \fIIMAGE\fR\ |\ \fB\-\-image\-family\fR\ \fIIMAGE_FAMILY\fR\ |\ \fB\-\-source\-snapshot\fR\ \fISOURCE_SNAPSHOT\fR] [\fB\-\-image\-project\fR\ \fIIMAGE_PROJECT\fR] [\fB\-\-no\-require\-csek\-key\-create\fR] [\fB\-\-size\fR\ \fISIZE\fR] [\fB\-\-type\fR\ \fITYPE\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -49,6 +49,15 @@ The names of the disks to create.
 
 .SH "FLAGS"
 
+\fB\-\-csek\-key\-file\fR \fIFILE\fR
+.RS 2m
+Path to a Customer\-Supplied Encryption Key (CSEK) key file, mapping Google
+Compute Engine resources to user managed keys to be used when creating,
+mounting, or snapshotting disks. See
+https://cloud.google.com/compute/docs/disks/customer\-supplied\-encryption for
+more details.
+
+.RE
 \fB\-\-description\fR \fIDESCRIPTION\fR
 .RS 2m
 An optional, textual description for the disks being created.
@@ -60,45 +69,8 @@ An image to apply to the disks being created. When using this option, the size
 of the disks must be at least as large as the image size. Use
 \f5\fI\-\-size\fR\fR to adjust the size of the disks.
 
-The value for this option can be the name of an image or an alias from the table
-below.
-
-
-.TS
-tab(,);
-lB lB
-l l.
-Alias,Project,Image Name
-centos\-6,centos\-cloud,centos\-6
-centos\-7,centos\-cloud,centos\-7
-container\-vm,google\-containers,container\-vm
-coreos,coreos\-cloud,coreos\-stable
-debian\-7,debian\-cloud,debian\-7\-wheezy
-debian\-7\-backports,debian\-cloud,backports\-debian\-7\-wheezy
-debian\-8,debian\-cloud,debian\-8\-jessie
-opensuse\-13,opensuse\-cloud,opensuse\-13
-rhel\-6,rhel\-cloud,rhel\-6
-rhel\-7,rhel\-cloud,rhel\-7
-sles\-11,suse\-cloud,sles\-11
-sles\-12,suse\-cloud,sles\-12
-ubuntu\-12\-04,ubuntu\-os\-cloud,ubuntu\-1204\-precise
-ubuntu\-14\-04,ubuntu\-os\-cloud,ubuntu\-1404\-trusty
-ubuntu\-15\-04,ubuntu\-os\-cloud,ubuntu\-1504\-vivid
-ubuntu\-15\-10,ubuntu\-os\-cloud,ubuntu\-1510\-wily
-windows\-2008\-r2,windows\-cloud,windows\-server\-2008\-r2
-windows\-2012\-r2,windows\-cloud,windows\-server\-2012\-r2
-.TE
-
-When the value is an alias, this tool will query the public image project that
-contains the image type to find the latest image matching the alias. The user's
-project is also queried for an image with the same name as the alias. If a
-conflict exists, the user will be prompted to resolve the conflict.
-
-To specify an image in another project for which there is no alias, use
-\f5\-\-image\-project\fR. When \f5\-\-image\-project\fR is present, no API calls
-are made to resolve the image. This property is useful for scripts.
-
-This flag is mutually exclusive with \f5\fI\-\-source\-snapshot\fR\fR.
+This flag is mutually exclusive with \f5\fI\-\-source\-snapshot\fR\fR and
+\f5\fI\-\-image\-family\fR\fR.
 
 .RE
 \fB\-\-image\-family\fR \fIIMAGE_FAMILY\fR
@@ -110,8 +82,21 @@ with that family is used.
 .RE
 \fB\-\-image\-project\fR \fIIMAGE_PROJECT\fR
 .RS 2m
-The project against which all image references will be resolved. See
-\f5\fI\-\-image\fR\fR for more details.
+The project against which all image and image family references will be
+resolved. See \f5\fI\-\-image\fR\fR for more details.
+
+.RE
+\fB\-\-require\-csek\-key\-create\fR
+.RS 2m
+Refuse to create resources not protected by a user managed key in the key file
+when \-\-csek\-key\-file is given. This behavior is enabled by default to
+prevent incorrect gcloud invocations from accidentally creating resources with
+no user managed key. Disabling the check allows creation of some resources
+without a matching Customer\-Supplied Encryption Key in the supplied
+\-\-csek\-key\-file. See
+https://cloud.google.com/compute/docs/disks/customer\-supplied\-encryption for
+more details. Enabled by default, use \fB\-\-no\-require\-csek\-key\-create\fR
+to disable.
 
 .RE
 \fB\-\-size\fR \fISIZE\fR

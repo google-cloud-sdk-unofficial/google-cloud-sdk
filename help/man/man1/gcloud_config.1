@@ -153,16 +153,8 @@ using the global \f5\-\-verbosity\fR flag.
 
 \fBcloud_build_timeout\fR
 .RS 2m
-The timeout, in seconds, for gcloud managed VM deployment builds when using the
-Container Builder API (that is, app/use_cloud_build is True) to perform docker
-builds.
-
-
-.RE
-\fBdocker_build\fR
-.RS 2m
-Set to \f5local\fR to run \f5docker build\fR using a local docker installation,
-or \f5remote\fR to do the build on a Google Compute Engine VM.
+The timeout, in seconds, to wait for Docker builds to complete during
+deployments. All Docker builds now use the Container Builder API.
 
 
 .RE
@@ -170,14 +162,6 @@ or \f5remote\fR to do the build on a Google Compute Engine VM.
 .RS 2m
 If True, when deploying a new version of a service, the previously deployed
 version is stopped. If False, older versions must be stopped manually.
-
-
-.RE
-\fBuse_cloud_build\fR
-.RS 2m
-If False, use a temporary VM rather than the Container Builder API to perform
-docker builds. See https://cloud.google.com/container\-builder/docs/ for more
-information.
 
 
 .RE

@@ -14,15 +14,15 @@
 
 """Command to undelete a project."""
 
-import textwrap
 from googlecloudsdk.api_lib.projects import util
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.projects import util as command_lib_util
 from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class Undelete(util.ProjectCommand, base.CreateCommand):
+class Undelete(base.CreateCommand):
   """Undelete a project.
 
   Undeletes the project with the given project ID.
@@ -34,13 +34,19 @@ class Undelete(util.ProjectCommand, base.CreateCommand):
   """
 
   detailed_help = {
-      'EXAMPLES': textwrap.dedent("""\
+      'EXAMPLES': """
           The following command undeletes the project with the ID
           `example-foo-bar-1`:
 
             $ {command} example-foo-bar-1
-    """),
+      """,
   }
+
+  def Collection(self):
+    return command_lib_util.PROJECTS_COLLECTION
+
+  def GetUriFunc(self):
+    return command_lib_util.ProjectsUriFunc
 
   @staticmethod
   def Args(parser):
@@ -54,7 +60,7 @@ class Undelete(util.ProjectCommand, base.CreateCommand):
   def Run(self, args):
     projects = util.GetClient()
     messages = util.GetMessages()
-    project_ref = self.GetProject(args.id)
+    project_ref = command_lib_util.ParseProject(args.id)
     projects.projects.Undelete(
         messages.CloudresourcemanagerProjectsUndeleteRequest(
             projectId=project_ref.Name()))
