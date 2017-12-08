@@ -19,6 +19,10 @@ from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
 
 
+@base.Deprecate(
+    is_removed=True,
+    error=('The command group cryptokeys is deprecated, please'
+           ' use the keys command group.'))
 class CryptoKeys(base.Group):
   """Create and manage CryptoKeys.
 

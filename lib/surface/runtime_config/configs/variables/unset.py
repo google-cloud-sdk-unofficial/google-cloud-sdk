@@ -54,7 +54,7 @@ class Unset(base.DeleteCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    flags.AddConfigFlag(parser)
+    flags.AddRequiredConfigFlag(parser)
 
     parser.add_argument(
         '--fail-if-absent',

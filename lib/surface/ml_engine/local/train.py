@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """ml-engine local train command."""
-
 import os
 
 from googlecloudsdk.calliope import base
@@ -58,6 +57,7 @@ class RunLocal(base.Command):
     flags.MODULE_NAME.AddToParser(parser)
     flags.DISTRIBUTED.AddToParser(parser)
     flags.PARAM_SERVERS.AddToParser(parser)
+    flags.GetJobDirFlag(upload_help=False).AddToParser(parser)
     flags.WORKERS.AddToParser(parser)
     flags.START_PORT.AddToParser(parser)
     flags.GetUserArgs(local=True).AddToParser(parser)
@@ -75,6 +75,9 @@ class RunLocal(base.Command):
     package_path = args.package_path or os.getcwd()
     # Mimic behavior of ml-engine jobs submit training
     package_root = os.path.dirname(os.path.abspath(package_path))
+    user_args = args.user_args or []
+    if args.job_dir:
+      user_args.extend(('--job-dir', args.job_dir.ToUrl()))
     if args.distributed:
       retval = local_train.RunDistributed(
           args.module_name,
@@ -82,7 +85,7 @@ class RunLocal(base.Command):
           args.parameter_server_count or 2,
           args.worker_count or 2,
           args.start_port,
-          user_args=args.user_args or [])
+          user_args=user_args)
     else:
       if args.parameter_server_count:
         log.warn(_BAD_FLAGS_WARNING_MESSAGE.format(
@@ -91,7 +94,7 @@ class RunLocal(base.Command):
         log.warn(_BAD_FLAGS_WARNING_MESSAGE.format(flag='--worker-count'))
       retval = local_train.MakeProcess(args.module_name,
                                        package_root,
-                                       args=args.user_args,
+                                       args=user_args,
                                        task_type='master')
     # Don't raise an exception because the users will already see the message.
     # We want this to mimic calling the script directly as much as possible.

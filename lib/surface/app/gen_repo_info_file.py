@@ -67,7 +67,7 @@ class GenRepoInfoFile(base.Command):
         '--source-directory',
         default='.',
         help='The path to directory containing the source code for the build.')
-    # TODO((b/25215149) Remove this option.
+    # TODO(b/25215149) Remove this option.
     parser.add_argument(
         '--output-file',
         help=(

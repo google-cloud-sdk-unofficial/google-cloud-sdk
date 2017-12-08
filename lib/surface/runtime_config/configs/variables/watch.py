@@ -74,7 +74,7 @@ class Watch(base.Command):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    flags.AddConfigFlag(parser)
+    flags.AddRequiredConfigFlag(parser)
 
     parser.add_argument('--newer-than',
                         help='''Return immediately if the stored

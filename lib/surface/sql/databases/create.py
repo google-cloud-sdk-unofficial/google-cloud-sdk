@@ -72,7 +72,7 @@ class _BaseAddDatabase(object):
         charset=args.charset,
         collation=args.collation)
 
-    # TODO(user): Move this API call logic per b/35386183.
+    # TODO(b/36052521): Move this API call logic per b/35386183.
 
     result_operation = sql_client.databases.Insert(new_database)
 
@@ -91,7 +91,7 @@ class _BaseAddDatabase(object):
         operations.OperationsV1Beta4.WaitForOperation(
             sql_client, operation_ref, 'Creating Cloud SQL database')
 
-      # TODO(user): Refactor when b/35156765 is resolved.
+      # TODO(b/36051979): Refactor when b/35156765 is resolved.
       except errors.OperationError:
         log.Print('Database creation failed. Check if a database named {0} '
                   'already exists.'.format(args.database))

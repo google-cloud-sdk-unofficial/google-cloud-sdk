@@ -31,7 +31,6 @@ class Import(base.Command):
   Imports read group sets from a set of BAM files in Google Cloud Storage. See
   [](https://cloud.google.com/genomics/managing-reads for more details)
   """
-  # TODO(user): Improve line-wrap formatting of examples.
   detailed_help = {
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\

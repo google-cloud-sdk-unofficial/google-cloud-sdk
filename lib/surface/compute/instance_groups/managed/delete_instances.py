@@ -93,7 +93,7 @@ class DeleteInstances(base_classes.BaseAsyncMutator):
 DeleteInstances.detailed_help = {
     'brief': 'Delete instances managed by managed instance group.',
     'DESCRIPTION': """
-        *{command}* is used to deletes one or more instances from a managed
+        *{command}* is used to delete one or more instances from a managed
 instance group. Once the instances are deleted, the size of the group is
 automatically reduced to reflect the changes.
 

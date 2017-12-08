@@ -14,6 +14,7 @@
 """Command to list all lien IDs associated for the specified project."""
 
 from apitools.base.py import list_pager
+from googlecloudsdk.api_lib.resource_manager import error
 from googlecloudsdk.api_lib.resource_manager import liens
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_manager import liens_base
@@ -27,6 +28,7 @@ class List(liens_base.LienCommand, base.ListCommand):
   List all liens which are associated with the specified project.
   """
 
+  @error.YieldErrorDetails
   def Run(self, args):
     """Run the list command."""
     parent = 'projects/' + properties.VALUES.core.project.Get(required=True)

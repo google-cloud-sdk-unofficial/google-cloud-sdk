@@ -48,7 +48,7 @@ class Describe(base.DescribeCommand):
         args.name, params={'projectsId': project, 'locationsId': args.region},
         collection='cloudfunctions.projects.locations.functions')
 
-    # TODO(user): Use resources.py here after b/21908671 is fixed.
+    # TODO(b/36055860): Use resources.py here after b/21908671 is fixed.
     return client.projects_locations_functions.Get(
         messages.CloudfunctionsProjectsLocationsFunctionsGetRequest(
             name=function_ref.RelativeName()))

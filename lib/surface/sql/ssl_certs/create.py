@@ -87,7 +87,7 @@ class _BaseAddCert(object):
     validate.ValidateInstanceName(args.instance)
     instance_ref = resources.Parse(args.instance, collection='sql.instances')
 
-    # TODO(user): figure out how to rectify the common_name and the
+    # TODO(b/36049399): figure out how to rectify the common_name and the
     # sha1fingerprint, so that things can work with the resource parser.
 
     result = sql_client.sslCerts.Insert(

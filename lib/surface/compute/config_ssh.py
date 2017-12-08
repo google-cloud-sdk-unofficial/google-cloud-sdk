@@ -238,7 +238,7 @@ class ConfigSSH(ssh_utils.BaseSSHCommand):
             ssh_config_perms & stat.S_IWOTH == 0):
           log.warn('Invalid permissions on [{0}]. Please change to match ssh '
                    'requirements (see man 5 ssh).')
-      # TODO(user): This write will not work very well if there is
+      # TODO(b/36050483): This write will not work very well if there is
       # a lot of write contention for the SSH config file. We should
       # add a function to do a better job at "atomic file writes".
       with files.OpenForWritingPrivate(ssh_config_file) as f:

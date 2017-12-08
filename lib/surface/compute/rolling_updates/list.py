@@ -66,7 +66,8 @@ class List(base.ListCommand):
     try:
       for item in list_pager.YieldFromList(
           client.rollingUpdates, request, limit=args.limit):
-        # TODO(user): Consider getting rid of instance group manager in api.
+        # TODO(b/36050943): Consider getting rid of instance group manager in
+        # api.
         if item.instanceGroup:
           item.instanceGroupManager = item.instanceGroup
         yield item

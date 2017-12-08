@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.compute.images import flags
 def _ResolveTime(absolute, relative_sec, current_time):
   """Get the RFC 3339 time string for a provided absolute or relative time."""
   if absolute:
-    # TODO(user): It's unfortunate that datetime.datetime cannot
+    # TODO(b/36057353): It's unfortunate that datetime.datetime cannot
     # parse from RFC 3339, but it can output to it. It would be
     # super cool if we could verify the validity of the user's
     # input here and fail fast if an invalid date/time is given.

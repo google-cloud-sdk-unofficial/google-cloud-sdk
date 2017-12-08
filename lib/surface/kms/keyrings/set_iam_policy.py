@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Set the IAM policy for a KeyRing."""
+"""Set the IAM policy for a keyring."""
 
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.api_lib.cloudkms import iam
@@ -21,16 +21,16 @@ from googlecloudsdk.command_lib.kms import flags
 
 
 class SetIamPolicy(base.Command):
-  """Set the IAM policy for a KeyRing.
+  """Set the IAM policy for a keyring.
 
-  Sets the IAM policy for the given CryptoKey as defined in a JSON file.
+  Sets the IAM policy for the given keyring as defined in a JSON file.
 
   See https://cloud.google.com/iam/docs/managing-policies for details of
   the policy file format and contents.
 
   ## EXAMPLES
   The following command will read am IAM policy defined in a JSON file
-  'policy.json' and set it for the KeyRing `fellowship` with Location `global`:
+  'policy.json' and set it for the keyring `fellowship` with location `global`:
 
     $ {command} fellowship policy.json --location global
   """

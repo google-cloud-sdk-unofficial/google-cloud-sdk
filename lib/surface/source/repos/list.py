@@ -14,9 +14,11 @@
 
 """List project repositories."""
 
-from googlecloudsdk.api_lib.source import source
+from googlecloudsdk.api_lib.sourcerepo import sourcerepo
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resolvers
+from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -27,14 +29,33 @@ class List(base.ListCommand):
   with the gcloud --project flag.
   """
 
-  def Collection(self):
-    return 'source.jobs'
-
   @staticmethod
   def Args(parser):
     base.URI_FLAG.RemoveFromParser(parser)
 
+  def Format(self, args):
+    # Here's some sample output (with the URL cut short)
+    # REPO_NAME                     PROJECT_ID     SIZE      URL
+    # ANewRepo                      kris-csr-test  0         https://...
+
+    # The resource name looks like projects/<projectid>/repos/reponame
+    # We extract the project name as segment 1 and the repo name as segment 3
+    # This will need to be modified when we allow repo names with slashes
+    # to be listed via this interface.
+    return """table(
+            name.segment(3):label=REPO_NAME,
+            name.segment(1):label=PROJECT_ID,
+            size.yesno(no=0),
+            firstof(mirror_config.url, url):label=URL
+            )
+        """
+
   def Run(self, args):
     """Run the list command."""
-    project = source.Project(properties.VALUES.core.project.Get(required=True))
-    return project.ListRepos()
+    project_id = resolvers.FromProperty(properties.VALUES.core.project)
+    res = resources.REGISTRY.Parse(
+        None,
+        params={'projectsId': project_id},
+        collection='sourcerepo.projects')
+    source_handler = sourcerepo.Source()
+    return source_handler.ListRepos(res)

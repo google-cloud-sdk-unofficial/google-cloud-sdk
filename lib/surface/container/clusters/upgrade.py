@@ -55,7 +55,7 @@ class VersionVerifier(object):
 
   def Compare(self, current_master_version, current_cluster_version):
     """Compares the cluster and master versions and returns an enum."""
-    # TODO(user):update the if condition when we roll the master version
+    # TODO(b/36051978):update the if condition when we roll the master version
     if current_master_version == current_cluster_version:
       return self.UP_TO_DATE
     master_version = SemVer(current_master_version)

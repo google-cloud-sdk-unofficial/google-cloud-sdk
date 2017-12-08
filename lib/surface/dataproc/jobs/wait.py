@@ -50,7 +50,7 @@ class Wait(base.Command):
             region=job_ref.region,
             jobId=job_ref.jobId))
 
-    # TODO(user) Check if Job is still running and fail or handle 401.
+    # TODO(b/36050945) Check if Job is still running and fail or handle 401.
 
     job = util.WaitForJobTermination(
         job,

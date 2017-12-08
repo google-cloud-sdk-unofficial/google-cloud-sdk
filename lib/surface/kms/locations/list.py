@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""List Locations."""
+"""List locations."""
 
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base

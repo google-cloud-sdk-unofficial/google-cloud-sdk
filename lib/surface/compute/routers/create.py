@@ -41,7 +41,7 @@ class Create(base_classes.BaseAsyncCreator):
         '--asn',
         required=True,
         type=int,
-        # TODO(user): improve this help
+        # TODO(b/36051028): improve this help
         help='The BGP asn for this router')
 
   @property

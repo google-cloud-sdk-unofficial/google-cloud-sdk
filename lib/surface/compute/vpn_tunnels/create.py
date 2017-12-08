@@ -100,7 +100,7 @@ class _BaseCreate(object):
         required=True,
         help='A valid IP-v4 address representing the remote tunnel endpoint')
 
-    # TODO(user) Add other group members
+    # TODO(b/36053573) Add other group members
     parser.add_argument(
         '--shared-secret',
         type=ValidateSimpleSharedSecret,

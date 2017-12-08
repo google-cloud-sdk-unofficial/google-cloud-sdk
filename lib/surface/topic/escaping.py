@@ -46,6 +46,9 @@ class Escaping(base.TopicCommand):
           where _DELIM_ is a sequence of one or more characters that may not
           appear in any value in the list.
 
+          NOTE: In cmd.exe and PowerShell on Windows, `^` is a special character
+          and you must escape it by repeating it. In the following examples,
+          every time you see `^`, replace it with `^^^^`.
           """,
 
       'EXAMPLES': """\
@@ -78,6 +81,6 @@ class Escaping(base.TopicCommand):
           Dictionary-type arguments work exactly the same as list-type
           arguments:
 
-              --dict-flag=^:^a=b,c:d=f,g # => {'a: 'b,c', 'd': 'f,g'}
+              --dict-flag=^:^a=b,c:d=f,g # => {'a': 'b,c', 'd': 'f,g'}
           """,
       }

@@ -52,7 +52,7 @@ class List(base.ListCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    flags.AddConfigFlag(parser)
+    flags.AddRequiredConfigFlag(parser)
 
   def Collection(self):
     """Returns the default collection path string.

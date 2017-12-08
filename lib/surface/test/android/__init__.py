@@ -22,27 +22,39 @@ class Android(base.Group):
 
   detailed_help = {
       'DESCRIPTION': """\
-          Explore physical and virtual Android devices and Android OS versions
-          which are available as test targets. Also run tests against your
-          Android app on these devices, monitor your test progress, and view
-          detailed test results in the Firebase console.
+          Explore physical and virtual Android models, Android OS versions, and
+          Android locales which are available as test targets. Also run tests
+          against your Android app on these devices, monitor your test progress,
+          and view detailed test results in the Firebase console.
           """,
 
       'EXAMPLES': """\
           To see a list of available Android devices, their form factors, and
           supported Android OS versions, run:
 
-            $ {command} devices list
+            $ {command} models list
+
+          To view more detailed information about a specific Android model, run:
+
+            $ {command} models describe MODEL_ID
 
           To view details about available Android OS versions, such as their
           code names and release dates, run:
 
             $ {command} versions list
 
+          To view information about a specific Android OS version, run:
+
+            $ {command} versions describe VERSION_ID
+
           To view the list of available Android locales which can be used for
           testing internationalized applications, run:
 
             $ {command} locales list
+
+          To view information about a specific locale, run:
+
+            $ {command} locales describe LOCALE
 
           To view all options available for running Android tests, run:
 

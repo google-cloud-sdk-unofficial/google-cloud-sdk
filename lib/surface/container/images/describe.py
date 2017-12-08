@@ -32,9 +32,9 @@ class Describe(base.DescribeCommand):
 
   Describe container analysis data for a specified image:
 
-    $ {{command}} gcr.io/myproject/myimage@digest
+    $ {command} gcr.io/myproject/myimage@digest
           OR
-    $ {{command}} gcr.io/myproject/myimage:tag
+    $ {command} gcr.io/myproject/myimage:tag
   """
 
   def Collection(self):

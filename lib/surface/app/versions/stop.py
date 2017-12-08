@@ -71,7 +71,7 @@ class Stop(base.Command):
                               'given service.'))
 
   def Run(self, args):
-    # TODO(user): This fails with "module/version does not exist" even
+    # TODO(b/36057452): This fails with "module/version does not exist" even
     # when it exists if the scaling mode is set to auto.  It would be good
     # to improve that error message.
     api_client = appengine_api_client.GetApiClient()

@@ -65,9 +65,7 @@ Name of the job.
 Additional user arguments to be forwarded to user code
 
 The '\-\-' argument must be specified between gcloud specific args on the left
-and USER_ARGS on the right. IMPORTANT: previously, commands allowed the omission
-of the \-\-, and unparsed arguments were treated as implementation args. This
-usage is being deprecated and will be removed in March 2017.
+and USER_ARGS on the right.
 
 
 .RE
@@ -96,7 +94,7 @@ operation to complete.
 \fB\-\-config\fR=\fICONFIG\fR
 Path to the job configuration file. The file should be a YAML document (JSON
 also accepted) containing a Job resource as defined in the API (all fields are
-optional): https://cloud.google.com/ml/reference/rest/v1/projects.jobs
+optional): https://cloud.google.com/ml/reference/rest/v1beta1/projects.jobs
 
 If an option is specified both in the configuration file \fBand\fR via command
 line arguments, the command line arguments override the configuration file.

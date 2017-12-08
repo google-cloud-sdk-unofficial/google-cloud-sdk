@@ -71,7 +71,7 @@ class ListBeta(_BaseList, base.ListCommand):
         required=False,
         choices=['MYSQL_5_5', 'MYSQL_5_6', 'MYSQL_5_7', 'POSTGRES_9_6'],
         help='Only list flags that apply to the specified database version.',
-        hidden='True'  # TODO(user): unhide the week of GCP Next 2017
+        hidden='True'  # TODO(b/36057350): unhide the week of GCP Next 2017
     )
 
   def Run(self, args):

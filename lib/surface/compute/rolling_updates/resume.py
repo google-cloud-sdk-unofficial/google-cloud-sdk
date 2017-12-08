@@ -45,7 +45,8 @@ class Resume(base.Command):
           allowed.
     """
     parser.add_argument('update', help='Update id.')
-    # TODO(user): Support --async which does not wait for state transition.
+    # TODO(b/36049931): Support --async which does not wait for state
+    # transition.
 
   def Run(self, args):
     """Run 'rolling-updates resume'.

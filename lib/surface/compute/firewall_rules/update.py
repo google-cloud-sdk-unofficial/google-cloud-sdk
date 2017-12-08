@@ -179,7 +179,6 @@ class AlphaUpdateFirewall(UpdateFirewall):
   def Modify(self, args, existing, cleared_fields):
     """Returns a modified Firewall message."""
 
-    # TODO(user): Remove the check once allow was deprecated.
     new_firewall = super(AlphaUpdateFirewall, self).Modify(
         args, existing, cleared_fields)
 

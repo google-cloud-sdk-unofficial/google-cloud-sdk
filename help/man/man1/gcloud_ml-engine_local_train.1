@@ -11,7 +11,7 @@ gcloud ml\-engine local train \- run a Cloud ML Engine training job locally
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud ml\-engine local train\fR \fB\-\-module\-name\fR=\fIMODULE_NAME\fR [\fB\-\-distributed\fR] [\fB\-\-package\-path\fR=\fIPACKAGE_PATH\fR] [\fB\-\-parameter\-server\-count\fR=\fIPARAMETER_SERVER_COUNT\fR] [\fB\-\-start\-port\fR=\fISTART_PORT\fR;\ default="27182"] [\fB\-\-worker\-count\fR=\fIWORKER_COUNT\fR] [\fIGLOBAL\-FLAG\ ...\fR] [\-\-\ \fIUSER_ARGS\fR\ ...]
+\f5gcloud ml\-engine local train\fR \fB\-\-module\-name\fR=\fIMODULE_NAME\fR [\fB\-\-distributed\fR] [\fB\-\-job\-dir\fR=\fIJOB_DIR\fR] [\fB\-\-package\-path\fR=\fIPACKAGE_PATH\fR] [\fB\-\-parameter\-server\-count\fR=\fIPARAMETER_SERVER_COUNT\fR] [\fB\-\-start\-port\fR=\fISTART_PORT\fR;\ default="27182"] [\fB\-\-worker\-count\fR=\fIWORKER_COUNT\fR] [\fIGLOBAL\-FLAG\ ...\fR] [\-\-\ \fIUSER_ARGS\fR\ ...]
 
 
 
@@ -53,9 +53,7 @@ be relative to the \fBparent\fR directory of \f5\-\-package\-path\fR.
 .RE
 .sp
 The '\-\-' argument must be specified between gcloud specific args on the left
-and USER_ARGS on the right. IMPORTANT: previously, commands allowed the omission
-of the \-\-, and unparsed arguments were treated as implementation args. This
-usage is being deprecated and will be removed in March 2017.
+and USER_ARGS on the right.
 
 
 
@@ -77,6 +75,15 @@ Name of the module to run
 \fB\-\-distributed\fR
 Runs the provided code in distributed mode by providing cluster configurations
 as environment variables to subprocesses
+
+.TP 2m
+\fB\-\-job\-dir\fR=\fIJOB_DIR\fR
+A Google Cloud Storage path in which to store training outputs and other data
+needed for training.
+
+This path will be passed to your TensorFlow program as \f5\-\-job_dir\fR
+command\-line arg. The benefit of specifying this field is that Cloud ML Engine
+will validate the path for use in training.
 
 .TP 2m
 \fB\-\-package\-path\fR=\fIPACKAGE_PATH\fR

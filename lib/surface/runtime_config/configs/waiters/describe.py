@@ -45,7 +45,7 @@ class Describe(base.DescribeCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    flags.AddConfigFlag(parser)
+    flags.AddRequiredConfigFlag(parser)
     parser.add_argument('name', help='The waiter name.')
 
   def Collection(self):

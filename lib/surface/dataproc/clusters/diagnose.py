@@ -45,7 +45,7 @@ class Diagnose(base.Command):
         projectId=cluster_ref.projectId)
 
     operation = client.projects_regions_clusters.Diagnose(request)
-    # TODO(user): Stream output during polling.
+    # TODO(b/36052522): Stream output during polling.
     operation = util.WaitForOperation(
         operation, self.context,
         message='Waiting for cluster diagnose operation')

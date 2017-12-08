@@ -200,7 +200,7 @@ class Deploy(base.Command):
     client = self.context['functions_client']
     messages = self.context['functions_messages']
     try:
-      # TODO(user): Use resources.py here after b/21908671 is fixed.
+      # TODO(b/36052474): Use resources.py here after b/21908671 is fixed.
       # We got response for a get request so a function exists.
       return client.projects_locations_functions.Get(
           messages.CloudfunctionsProjectsLocationsFunctionsGetRequest(
@@ -323,7 +323,7 @@ class Deploy(base.Command):
   def _CreateFunction(self, location, function):
     client = self.context['functions_client']
     messages = self.context['functions_messages']
-    # TODO(user): Use resources.py here after b/21908671 is fixed.
+    # TODO(b/36049691): Use resources.py here after b/21908671 is fixed.
     op = client.projects_locations_functions.Create(
         messages.CloudfunctionsProjectsLocationsFunctionsCreateRequest(
             location=location, cloudFunction=function))
@@ -336,7 +336,7 @@ class Deploy(base.Command):
   def _UpdateFunction(self, unused_location, function):
     client = self.context['functions_client']
     messages = self.context['functions_messages']
-    # TODO(user): Use resources.py here after b/21908671 is fixed.
+    # TODO(b/36056504): Use resources.py here after b/21908671 is fixed.
     op = client.projects_locations_functions.Update(function)
     with progress_tracker.ProgressTracker(
         'Deploying function (may take a while - up to 2 minutes)'):

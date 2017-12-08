@@ -13,6 +13,7 @@
 # limitations under the License.
 """Command to create a new Lien."""
 
+from googlecloudsdk.api_lib.resource_manager import error
 from googlecloudsdk.api_lib.resource_manager import liens
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_manager import liens_base
@@ -44,6 +45,7 @@ class Create(liens_base.LienCommand):
         help='The originator of for this Lien. Defaults to user identy.'
     ).AddToParser(parser)
 
+  @error.EmitErrorDetails
   def Run(self, args):
     parent = 'projects/' + properties.VALUES.core.project.Get(required=True)
 

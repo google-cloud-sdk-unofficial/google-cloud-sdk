@@ -83,8 +83,6 @@ class Docker(base.Command):
         help='The address of the Google Cloud Registry.',
         required=False,
         default=_DEFAULT_REGISTRIES)
-    # TODO(user): This should evolve into something that launches an
-    # auth daemon process, or utilizes a more permanent credential.
     parser.add_argument(
         '--authorize-only', '-a',
         help='Configure docker authorization only, do not launch the '
@@ -128,8 +126,6 @@ class Docker(base.Command):
           server=args.server))
       return
 
-    # TODO(user): reconcile with the 'gcloud app' docker stuff,
-    # which should be using a gcloud config property.
     docker_args = args.docker_args or []
     docker_args = (docker_args if not args.docker_host else
                    ['-H', args.docker_host] + docker_args)

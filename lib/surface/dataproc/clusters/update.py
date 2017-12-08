@@ -14,8 +14,6 @@
 
 """Update cluster command."""
 
-import argparse
-
 from googlecloudsdk.api_lib.dataproc import exceptions
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
@@ -68,14 +66,6 @@ class Update(base.UpdateCommand):
         '--num-preemptible-workers',
         type=int,
         help='The new number of preemptible worker nodes in the cluster.')
-    # Leaving this option here since it was in public announcement.
-    # Hiding it so new users see the preferred --num-workers
-    # option in help.
-    # TODO(user): remove before public beta launch.
-    parser.add_argument(
-        '--new-num-workers',
-        type=int,
-        help=argparse.SUPPRESS)
 
   def Run(self, args):
     client = self.context['dataproc_client']
@@ -87,11 +77,6 @@ class Update(base.UpdateCommand):
     changed_fields = []
 
     has_changes = False
-
-    if args.new_num_workers is not None:
-      log.warn('--new-num-workers parameter is deprecated and will be removed '
-               'in a future release. Please use --num-workers instead')
-      args.num_workers = args.new_num_workers
 
     if args.num_workers is not None:
       worker_config = messages.InstanceGroupConfig(

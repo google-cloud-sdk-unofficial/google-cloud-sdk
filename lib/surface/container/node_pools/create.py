@@ -80,8 +80,7 @@ def _Args(parser):
       default=3)
   parser.add_argument(
       '--machine-type', '-m',
-      help='The type of machine to use for nodes. Defaults to '
-      'server-specified.')
+      help='The type of machine to use for nodes. Defaults to n1-standard-1')
   parser.add_argument(
       '--disk-size',
       type=int,
@@ -222,7 +221,7 @@ class CreateBeta(Create):
     flags.AddClusterAutoscalingFlags(parser, hidden=True)
     flags.AddLocalSSDFlag(parser)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
-    flags.AddEnableAutoRepairFlag(parser, for_node_pool=True, suppressed=True)
+    flags.AddEnableAutoRepairFlag(parser, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True)
     flags.AddServiceAccountFlag(parser)
 
@@ -237,7 +236,7 @@ class CreateAlpha(Create):
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDFlag(parser)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
-    flags.AddEnableAutoRepairFlag(parser, for_node_pool=True, suppressed=True)
+    flags.AddEnableAutoRepairFlag(parser, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True)
     flags.AddServiceAccountFlag(parser)
 

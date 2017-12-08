@@ -119,7 +119,7 @@ class SnapshotDisks(base.SilentCommand):
       disk_key_or_none = csek_utils.MaybeLookupKeyMessage(
           csek_keys, disk_ref, client)
 
-      # TODO(user) drop test after 'guestFlush' goes GA
+      # TODO(b/35852475) drop test after 'guestFlush' goes GA.
       if hasattr(args, 'guest_flush') and args.guest_flush:
         request_kwargs = {'guestFlush': True}
       else:
@@ -152,6 +152,10 @@ class SnapshotDisks(base.SilentCommand):
 
     errors_to_collect = []
     responses = holder.client.BatchRequests(requests, errors_to_collect)
+    for r in responses:
+      err = getattr(r, 'error', None)
+      if err:
+        errors_to_collect.append(poller.OperationErrors(err.errors))
     if errors_to_collect:
       raise core_exceptions.MultiError(errors_to_collect)
 

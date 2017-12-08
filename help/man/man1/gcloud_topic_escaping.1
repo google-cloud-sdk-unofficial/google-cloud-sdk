@@ -37,6 +37,10 @@ using the following syntax:
 where \fIDELIM\fR is a sequence of one or more characters that may not appear in
 any value in the list.
 
+NOTE: In cmd.exe and PowerShell on Windows, \f5^\fR is a special character and
+you must escape it by repeating it. In the following examples, every time you
+see \f5^\fR, replace it with \f5^^^^\fR.
+
 
 
 .SH "EXAMPLES"
@@ -79,5 +83,5 @@ A '^' anywhere but the start has no special meaning:
 Dictionary\-type arguments work exactly the same as list\-type arguments:
 
 .RS 2m
-\-\-dict\-flag=^:^a=b,c:d=f,g # => {'a: 'b,c', 'd': 'f,g'}
+\-\-dict\-flag=^:^a=b,c:d=f,g # => {'a': 'b,c', 'd': 'f,g'}
 .RE

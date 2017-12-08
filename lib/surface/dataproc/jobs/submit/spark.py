@@ -154,8 +154,8 @@ class SparkBase(object):
   @staticmethod
   def GetFilesByType(args):
     """Returns a dict of files by their type (jars, archives, etc.)."""
-    # TODO(user): Move arg manipulation elsewhere.
-    # TODO(user): Remove with GA flags 2017-04-01 (b/33298024).
+    # TODO(b/36051981): Move arg manipulation elsewhere.
+    # TODO(b/36057252): Remove with GA flags 2017-04-01 (b/33298024).
     if not args.main_class and not args.main_jar:
       raise exceptions.ArgumentError('Must either specify --class or JAR.')
     if args.main_class and args.main_jar:

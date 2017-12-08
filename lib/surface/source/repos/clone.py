@@ -26,7 +26,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
-from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.credentials import store as c_store
 
 
@@ -137,12 +136,6 @@ class CloneAlpha(base.Command):
         help=('If provided, prints the command that would be run to standard '
               'out instead of executing it.'))
     parser.add_argument(
-        '--autocreate',
-        action='store_true',
-        help=('If true, creates a named repo without prompting the user if the '
-              'repo does not already exist.'))
-
-    parser.add_argument(
         'src',
         metavar='REPOSITORY_NAME',
         help=('Name of the repository. '
@@ -179,25 +172,22 @@ class CloneAlpha(base.Command):
         collection='sourcerepo.projects.repos')
     source_handler = sourcerepo.Source()
 
-    # Check for the existence of the named repo in the project and maybe ask
-    # the user whether they want to create it if it does not already exist.
-    #
-    # Note that repo creation can fail if there is a concurrent attempt to
-    # create the repo (e.g. through another call to gcloud or a concurrent
-    # attempt in the developer console through a browser).
     repo = source_handler.GetRepo(res)
     if not repo:
-      message = ('Repository "{src}" in project "{prj}" does not yet '
-                 'exist.'.format(src=args.src, prj=res.projectsId))
-      prompt_string = 'Would you like to create it'
-      if args.autocreate or console_io.PromptContinue(
-          message=message, prompt_string=prompt_string, default=True):
-        repo = source_handler.CreateRepo(res)
-      else:
-        message = ('Cannot clone from a non-existent repo. Please create it '
-                   'with:\n  $ gcloud alpha source repos create {src}\n and '
-                   'try cloning again.'.format(src=args.src))
-        raise exceptions.InvalidUserInputError(message)
+      message = ('Repository "{src}" in project "{prj}" does not '
+                 'exist.\nList current repos with\n'
+                 '$ gcloud alpha source repos list\n'
+                 'or create with\n'
+                 '$ gcloud alpha source repos create {src}'.format(
+                     src=args.src, prj=res.projectsId))
+      raise exceptions.InvalidUserInputError(message)
+    if hasattr(repo, 'mirrorConfig') and repo.mirrorConfig:
+      mirror_url = repo.mirrorConfig.url
+      message = ('Repository "{src}" in project "{prj}" is a mirror. Clone the '
+                 'mirrored repository directly with \n$ git clone '
+                 '{url}'.format(
+                     src=args.src, prj=res.projectsId, url=mirror_url))
+      raise exceptions.Error(message)
     # do the actual clone
     git_helper = git.Git(res.projectsId, args.src, uri=repo.url)
     path = git_helper.Clone(

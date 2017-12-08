@@ -70,8 +70,7 @@ Multiple locations can be specified, separated by commas. For example:
 """)
   parser.add_argument(
       '--machine-type', '-m',
-      help='The type of machine to use for nodes. Defaults to '
-      'server-specified.')
+      help='The type of machine to use for nodes. Defaults to n1-standard-1.')
   parser.add_argument(
       '--subnetwork',
       help='The name of the Google Compute Engine subnetwork '
@@ -308,7 +307,7 @@ class CreateBeta(Create):
     flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddClusterVersionFlag(parser)
     flags.AddPreemptibleFlag(parser)
-    flags.AddEnableAutoRepairFlag(parser, suppressed=True)
+    flags.AddEnableAutoRepairFlag(parser)
     flags.AddEnableAutoUpgradeFlag(parser)
     flags.AddServiceAccountFlag(parser)
 
@@ -325,6 +324,6 @@ class CreateAlpha(Create):
     flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddClusterVersionFlag(parser)
     flags.AddPreemptibleFlag(parser)
-    flags.AddEnableAutoRepairFlag(parser, suppressed=True)
+    flags.AddEnableAutoRepairFlag(parser)
     flags.AddEnableAutoUpgradeFlag(parser)
     flags.AddServiceAccountFlag(parser)

@@ -262,7 +262,7 @@ class CreateBeta(Create):
         parser,
         multiple_network_interface_cards=True,
         release_track=base.ReleaseTrack.BETA,
-        support_alias_ip_ranges=False)
+        support_alias_ip_ranges=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

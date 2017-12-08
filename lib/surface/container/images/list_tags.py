@@ -43,7 +43,11 @@ class ListTags(base.ListCommand):
           """\
           List the tags in a specified image:
 
-            $ {{command}} gcr.io/myproject/myimage
+            $ {command} gcr.io/myproject/myimage
+
+          To receive the full, JSON-formatted output (with untruncated digests):
+
+            $ {command} gcr.io/myproject/myimage --format=json
 
       """,
   }

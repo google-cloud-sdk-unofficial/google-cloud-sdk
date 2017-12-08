@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Fetch the IAM policy for a KeyRing."""
+"""Fetch the IAM policy for a keyring."""
 
 from googlecloudsdk.api_lib.cloudkms import iam
 from googlecloudsdk.calliope import base
@@ -19,15 +19,15 @@ from googlecloudsdk.command_lib.kms import flags
 
 
 class GetIamPolicy(base.Command):
-  """Get the IAM policy for a KeyRing.
+  """Get the IAM policy for a keyring.
 
-  Gets the IAM policy for the given KeyRing.
+  Gets the IAM policy for the given keyring.
 
   Returns an empty policy if the resource does not have a policy set.
 
   ## EXAMPLES
 
-  The following command gets the IAM policy for the KeyRing `fellowship`
+  The following command gets the IAM policy for the keyring `fellowship`
   within the location `us-central1`:
 
     $ {command} fellowship --location us-central1

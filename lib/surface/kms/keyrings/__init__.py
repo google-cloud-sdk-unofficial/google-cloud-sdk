@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command group for KeyRings."""
+"""The command group for keyrings."""
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import flags
@@ -20,9 +20,9 @@ from googlecloudsdk.core import resources
 
 
 class KeyRings(base.Group):
-  """Create and manage KeyRings.
+  """Create and manage keyrings.
 
-  A KeyRings is a toplevel logical grouping of CryptoKeys.
+  A keyring is a toplevel logical grouping of keys.
   """
 
   @staticmethod

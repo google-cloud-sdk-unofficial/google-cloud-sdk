@@ -89,6 +89,12 @@ class Deploy(base.Command):
     """
     _CommonArgs(parser)
 
+  def Format(self, unused_args):
+    return 'none'
+
+  def ValidateOnlyFormat(self, args):
+    return args.format or 'default'
+
   def MakeConfigFileMessage(self, file_contents, filename, file_type):
     """Constructs a ConfigFile message from a config file.
 
@@ -133,6 +139,11 @@ class Deploy(base.Command):
 
     # TODO(b/33947551): Simplify this when --validate-only goes GA
     self.validate_only = getattr(args, 'validate_only', False)
+
+    # If doing a validate-only run, restore the default formatting
+    # (or whatever the user has entered as an override).
+    if self.validate_only:
+      self.Format = self.ValidateOnlyFormat  # pylint: disable=invalid-name
 
     for service_config_file in args.service_config_file:
       config_contents = services_util.ReadServiceConfigFile(service_config_file)
@@ -213,18 +224,16 @@ class Deploy(base.Command):
       push_config_result = services_util.PushMultipleServiceConfigFiles(
           self.service_name, config_files, args.async,
           validate_only=self.validate_only)
-      if self.validate_only:
-        return push_config_result
-      else:
-        self.service_config_id = (
-            services_util.GetServiceConfigIdFromSubmitConfigSourceResponse(
-                push_config_result)
-        )
+      self.service_config_id = (
+          services_util.GetServiceConfigIdFromSubmitConfigSourceResponse(
+              push_config_result)
+      )
     else:
-      self.service_config_id = services_util.PushNormalizedGoogleServiceConfig(
+      push_config_result = services_util.PushNormalizedGoogleServiceConfig(
           self.service_name,
           properties.VALUES.core.project.Get(required=True),
           config_contents)
+      self.service_config_id = push_config_result.id
 
     if not self.service_config_id:
       raise calliope_exceptions.ToolException(
@@ -249,6 +258,8 @@ class Deploy(base.Command):
           properties.VALUES.core.project.Get(required=True),
           self.service_name,
           args.async)
+
+    return push_config_result
 
   def Epilog(self, resources_were_displayed):
     # Print this to screen not to the log because the output is needed by the

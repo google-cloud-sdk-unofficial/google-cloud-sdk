@@ -49,7 +49,7 @@ class UpdateCluster(base.UpdateCommand):
     msg = msgs.Cluster(name=ref.RelativeName(), serveNodes=args.num_nodes)
     result = cli.projects_instances_clusters.Update(msg)
     if not args.async:
-      # TODO(user): enable this line when b/29563942 is fixed in apitools
+      # TODO(b/36051980): enable this line when b/29563942 is fixed in apitools
       pass
       # util.WaitForOpV2(result, 'Updating cluster')
     log.UpdatedResource(args.cluster, kind='cluster', async=args.async)

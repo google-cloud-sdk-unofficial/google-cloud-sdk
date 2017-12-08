@@ -28,8 +28,6 @@ class Create(base_classes.BaseAsyncCreator):
     parser.add_argument(
         '--description',
         help='Specifies a textual description of the hosts.')
-    # TODO(user): If host type becomes required in API this flag should
-    # become reqiured too.
     parser.add_argument(
         '--host-type',
         help=('Specifies a type of the hosts. Type of a host determines '

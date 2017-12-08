@@ -42,7 +42,7 @@ class Create(base.CreateCommand):
         '--variant-set-id',
         required=True,
         help='Variant set that this call set belongs to.')
-    # TODO(user): Add the info command.
+    # TODO(b/36053574): Add the info command.
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

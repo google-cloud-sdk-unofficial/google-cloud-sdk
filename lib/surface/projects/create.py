@@ -36,35 +36,13 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
-
 ID_DESCRIPTION = ('Project IDs must start with a lowercase letter and can '
                   'have lowercase ASCII letters, digits or hyphens. '
                   'Project IDs must be between 6 and 30 characters.')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.CreateCommand):
-  """Create a new project.
-
-  Creates a new project with the given project ID.
-
-  ## EXAMPLES
-
-  The following command creates a project with ID `example-foo-bar-1`, name
-  `Happy project` and label `type=happy`:
-
-    $ {command} example-foo-bar-1 --name="Happy project" --labels=type=happy
-
-  The following command creates a project with ID `example-2` with parent
-  `folders/12345`:
-
-    $ {command} example-2 --folder=12345
-
-  The following command creates a project with ID `example-3` with parent
-  `organizations/2048`:
-
-    $ {command} example-3 --organization=2048
-  """
+class _BaseCreate(object):
+  """Create command base for all release tracks of project create."""
 
   def Collection(self):
     return command_lib_util.PROJECTS_COLLECTION
@@ -74,6 +52,8 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
+    """Default argument specification."""
+
     labels_util.AddCreateLabelsFlags(parser)
     type_ = arg_parsers.RegexpValidator(r'[a-z][a-z0-9-]{5,29}', ID_DESCRIPTION)
     parser.add_argument(
@@ -97,9 +77,11 @@ class Create(base.CreateCommand):
         action='store_true',
         default=False,
         help='Set newly created project as [core.project] property.')
-    flags.AddParentFlagsToParser(parser)
+    flags.OrganizationIdFlag('to use as a parent').AddToParser(parser)
 
   def Run(self, args):
+    """Default Run method implementation."""
+
     flags.CheckParentFlags(args, parent_required=False)
     project_id = args.id
     if not project_id and args.name:
@@ -138,10 +120,8 @@ class Create(base.CreateCommand):
       enable_operation = services_enable_api.EnableServiceApiCall(
           project_ref.Name(), 'cloudapis.googleapis.com')
       enable_operation_ref = resources.REGISTRY.Parse(
-          enable_operation.name,
-          collection='servicemanagement.operations')
+          enable_operation.name, collection='servicemanagement.operations')
       services_util.WaitForOperation(enable_operation_ref, services_client)
-      # TODO(user): Retry in case it failed?
 
     if args.set_as_default:
       project_property = properties.FromString('core/project')
@@ -149,5 +129,57 @@ class Create(base.CreateCommand):
       log.status.Print('Updated property [core/project] to [{0}].'
                        .format(args.id))
 
-    return operations.ExtractOperationResponse(
-        create_op, apis.GetMessagesModule('cloudresourcemanager', 'v1').Project)
+    return operations.ExtractOperationResponse(create_op,
+                                               apis.GetMessagesModule(
+                                                   'cloudresourcemanager',
+                                                   'v1').Project)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Create(_BaseCreate, base.CreateCommand):
+  """Create a new project.
+
+  Creates a new project with the given project ID.
+
+  ## EXAMPLES
+
+  The following command creates a project with ID `example-foo-bar-1`, name
+  `Happy project` and label `type=happy`:
+
+    $ {command} example-foo-bar-1 --name="Happy project" --labels=type=happy
+
+  The following command creates a project with ID `example-3` with parent
+  `organizations/2048`:
+
+    $ {command} example-3 --organization=2048
+  """
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(_BaseCreate, base.CreateCommand):
+  """Create a new project.
+
+  Creates a new project with the given project ID.
+
+  ## EXAMPLES
+
+  The following command creates a project with ID `example-foo-bar-1`, name
+  `Happy project` and label `type=happy`:
+
+    $ {command} example-foo-bar-1 --name="Happy project" --labels=type=happy
+
+  The following command creates a project with ID `example-2` with parent
+  `folders/12345`:
+
+    $ {command} example-2 --folder=12345
+
+  The following command creates a project with ID `example-3` with parent
+  `organizations/2048`:
+
+    $ {command} example-3 --organization=2048
+  """
+
+  @staticmethod
+  def Args(parser):
+    _BaseCreate.Args(parser)
+    flags.FolderIdFlag('to use as a parent').AddToParser(parser)

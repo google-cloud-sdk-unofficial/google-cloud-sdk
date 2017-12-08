@@ -321,7 +321,7 @@ class CreateBeta(_BaseCreate, base.Command):
         '--cpu',
         type=int,
         required=False,
-        help='A whole number value indicating how many cores are desired in'
+        help='A whole number value indicating how many cores are desired in '
         'the machine. Both --cpu and --memory must be specified if a custom '
         'machine type is desired, and the --tier flag must be omitted.')
     parser.add_argument(

@@ -59,7 +59,7 @@ class Create(base.CreateCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    flags.AddConfigFlag(parser)
+    flags.AddRequiredConfigFlag(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
     parser.add_argument(

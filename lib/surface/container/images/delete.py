@@ -45,7 +45,7 @@ class Delete(base.DeleteCommand):
           """\
           Deletes the tag or digest from the input IMAGE_NAME:
 
-            $ {{command}} <IMAGE_NAME>
+            $ {command} <IMAGE_NAME>
 
       """,
   }

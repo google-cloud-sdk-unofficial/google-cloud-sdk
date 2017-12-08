@@ -66,7 +66,7 @@ class Update(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddEnableAutoRepairFlag(parser, for_node_pool=True, suppressed=True)
+    flags.AddEnableAutoRepairFlag(parser, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True)
 
   def ParseUpdateNodePoolOptions(self, args):
@@ -91,10 +91,9 @@ class Update(base.UpdateCommand):
     pool_ref = adapter.ParseNodePool(args.name)
     options = self.ParseUpdateNodePoolOptions(args)
     if options.enable_autorepair is None and options.enable_autoupgrade is None:
-      exceptions.RequiredArgumentException(
-          'You must provide --[no-]enable-autoupgrade or '
-          '--[no-]enable_autorepair')
-      return None
+      raise exceptions.MinimumArgumentException(
+          ['--[no-]enable-autoupgrade', '--[no-]enable-autorepair'],
+          'Please reformat your request.')
 
     if options.enable_autorepair is not None:
       log.status.Print(messages.AutoUpdateUpgradeRepairMessage(

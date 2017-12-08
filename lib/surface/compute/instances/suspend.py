@@ -33,7 +33,7 @@ class Suspend(base_classes.NoOutputAsyncMutator):
         '--discard-local-ssd',
         action='store_true',
         help=('If provided, local SSD data is discarded.'))
-    # TODO(user): consider adding detailed help.
+    # TODO(b/36057354): consider adding detailed help.
 
   @property
   def service(self):

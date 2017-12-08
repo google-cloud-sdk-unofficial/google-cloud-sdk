@@ -69,7 +69,7 @@ class DeleteBeta(base.DeleteCommand):
     validate.ValidateInstanceName(args.instance)
     instance_ref = resources.Parse(args.instance, collection='sql.instances')
 
-    # TODO(user): validate on FE that a backup run id is valid.
+    # TODO(b/36051078): validate on FE that a backup run id is valid.
 
     console_io.PromptContinue(
         message='The backup will be deleted. You cannot undo this action.',

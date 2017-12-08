@@ -17,14 +17,13 @@
 
 import textwrap
 
-from apitools.base.py import exceptions
-
-from googlecloudsdk.api_lib.source import git
-from googlecloudsdk.api_lib.source import source
+from googlecloudsdk.api_lib.sourcerepo import sourcerepo
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resolvers
+from googlecloudsdk.core import resources
+from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -47,13 +46,15 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    # TODO(user): consider adding autocomplete logic for the repository name.
     parser.add_argument(
         'name',
         metavar='REPOSITORY_NAME',
         help=('Name of the repository.'))
+    parser.add_argument(
+        '--force',
+        action='store_true',
+        help=('If provided, skip the delete confirmation prompt.'))
 
-  @c_exc.RaiseToolExceptionInsteadOf(git.Error)
   def Run(self, args):
     """Delete a named GCP repository in the current project.
 
@@ -66,15 +67,20 @@ class Delete(base.DeleteCommand):
     Raises:
       ToolException: on project initialization errors.
     """
-
-    project_id = properties.VALUES.core.project.Get(required=True)
-    project = source.Project(project_id)
-    try:
-      project.DeleteRepo(args.name)
-      log.DeletedResource(args.name)
-      return args.name
-    except exceptions.HttpError as e:
-      message = ('Failed to delete repository [{name}] for Project '
-                 '[{prj}] with error [{err}].\n'.format(
-                     prj=project_id, name=args.name, err=e))
-      raise source.RepoDeletionError(message)
+    project_id = resolvers.FromProperty(properties.VALUES.core.project)
+    res = resources.REGISTRY.Parse(
+        args.name,
+        params={'projectsId': project_id},
+        collection='sourcerepo.projects.repos')
+    delete_warning = ('If {repo} is deleted, the name cannot be reused for up '
+                      'to seven days.'.format(repo=res.Name()))
+    prompt_string = ('Delete "{repo}" in project "{prj}"'.format(
+        repo=res.Name(), prj=res.projectsId))
+    if args.force or console_io.PromptContinue(
+        message=delete_warning, prompt_string=prompt_string, default=True):
+      sourcerepo_handler = sourcerepo.Source()
+      # This returns an empty proto buffer as a response, so there's
+      # nothing to return.
+      sourcerepo_handler.DeleteRepo(res)
+      log.DeletedResource(res.Name())
+      return res.Name()

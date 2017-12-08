@@ -51,7 +51,7 @@ class CopyFiles(ssh_utils.BaseSSHCLICommand):
         help='Specifies a destination for the source files.',
         metavar='[[USER@]INSTANCE:]DEST')
 
-    # TODO(user): Use flags.AddZoneFlag when copy_files supports URIs
+    # TODO(b/36053572): Use flags.AddZoneFlag when copy_files supports URIs
     parser.add_argument(
         '--zone',
         action=actions.StoreProperty(properties.VALUES.compute.zone),
@@ -85,7 +85,7 @@ you will be prompted to select a zone.
     log.debug('Normalized arguments: %s', file_specs)
 
     # Validates the positional arguments.
-    # TODO(user): Look into relaxing these conditions.
+    # TODO(b/36057400): Look into relaxing these conditions.
     sources = file_specs[:-1]
     destination = file_specs[-1]
     if isinstance(destination, LocalFile):

@@ -21,7 +21,19 @@ from googlecloudsdk.calliope import base
 class List(base.ListCommand):
   """List all Android locales available for testing internationalized apps."""
 
-  # TODO(user): add command examples with --filter when it is available
+  detailed_help = {
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
+          To list all available locales which can be used for testing
+          internationalized Android applications, run:
+
+            $ {command}
+
+          To filter the locales to see only Spanish-speaking regions, run:
+
+            $ {command} --filter Spanish
+          """,
+  }
 
   @staticmethod
   def Args(parser):

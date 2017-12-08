@@ -95,6 +95,9 @@ aren't a first-class Cloud Storage concept) of `my-bucket`.
 class PredictionBeta(base.Command):
   """Start a Cloud ML Engine batch prediction job."""
 
+  def Format(self, args):
+    return jobs_util.JOB_FORMAT
+
   @staticmethod
   def Args(parser):
     _AddSubmitPredictionArgs(parser)
@@ -116,6 +119,9 @@ class PredictionBeta(base.Command):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class PredictionGa(base.Command):
   """Start a Cloud ML Engine batch prediction job."""
+
+  def Format(self, args):
+    return jobs_util.JOB_FORMAT
 
   @staticmethod
   def Args(parser):

@@ -28,6 +28,10 @@ class Versions(base.Group):
           release date, run:
 
             $ {command} list
+
+          To view information about a specific Android OS version, run:
+
+            $ {command} describe VERSION_ID
           """,
   }
 

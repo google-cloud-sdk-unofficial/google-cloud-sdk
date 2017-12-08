@@ -42,7 +42,7 @@ class Export(base.Command):
         help=('If provided, only variant call information '
               'from the specified call sets will be exported. '
               'By default all variant call sets are exported. '))
-    # TODO(user) Use resource parser for beta b/22357346
+    # TODO(b/36057052) Use resource parser for beta b/22357346
     parser.add_argument(
         '--bigquery-project',
         type=str,

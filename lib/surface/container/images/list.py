@@ -34,11 +34,11 @@ class List(base.ListCommand):
       'EXAMPLES': """\
           List the images in a specified repository:
 
-            $ {{command}} --repository=gcr.io/myproject
+            $ {command} --repository=gcr.io/myproject
 
           List the images in the default repository:
 
-            $ {{command}}
+            $ {command}
 
       """,
   }

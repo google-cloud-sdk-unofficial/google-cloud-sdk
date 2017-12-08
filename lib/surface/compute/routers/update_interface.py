@@ -67,7 +67,7 @@ class UpdateInterface(base_classes.ReadWriteCommand):
     parser.add_argument(
         '--mask-length',
         type=int,
-        # TODO(user): better help
+        # TODO(b/36051080): better help
         help='The mask for network used for the server IP address.')
 
   @property

@@ -71,7 +71,7 @@ class CreateInstance(base.CreateCommand):
                     defaultStorageType=(
                         msgs.Cluster.DefaultStorageTypeValueValuesEnum(
                             args.cluster_storage_type)),
-                    # TODO(user): switch location to resource
+                    # TODO(b/36056455): switch location to resource
                     # when b/29566669 is fixed on API
                     location=bigtable_util.LocationUrl(args.cluster_zone)))
         ]))

@@ -87,45 +87,8 @@ class Create(base_classes.BaseAsyncCreator):
     return [request]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CreateBeta(Create):
-  """Define a subnet for a network in custom subnet mode."""
-
-  @classmethod
-  def Args(cls, parser):
-    _AddArgs(cls, parser)
-    parser.add_argument(
-        '--enable-private-ip-google-access',
-        action='store_true',
-        default=False,
-        help=('Enable/disable access to Google Cloud APIs from this subnet for '
-              'instances without a public ip address.'))
-
-  def CreateRequests(self, args):
-    """Returns a list of requests for adding a subnetwork."""
-    network_ref = self.NETWORK_ARG.ResolveAsResource(args, self.resources)
-    subnet_ref = self.SUBNETWORK_ARG.ResolveAsResource(
-        args,
-        self.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
-                                                         self.project))
-
-    request = self.messages.ComputeSubnetworksInsertRequest(
-        subnetwork=self.messages.Subnetwork(
-            name=subnet_ref.Name(),
-            description=args.description,
-            network=network_ref.SelfLink(),
-            ipCidrRange=args.range,
-            privateIpGoogleAccess=args.enable_private_ip_google_access,
-        ),
-        region=subnet_ref.region,
-        project=self.project)
-
-    return [request]
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
   """Define a subnet for a network in custom subnet mode."""
 
   @classmethod
@@ -143,7 +106,7 @@ class CreateAlpha(CreateBeta):
         action='append',
         metavar='PROPERTY=VALUE',
         help="""\
-        Adds a secondary IP range to the Subnetwork for use in IP aliasing.
+        Adds a secondary IP range to the subnetwork for use in IP aliasing.
 
         For example, `--secondary-range name=range1,range=192.168.64.0/24` adds
         a secondary range 192.168.64.0/24 with name range1.

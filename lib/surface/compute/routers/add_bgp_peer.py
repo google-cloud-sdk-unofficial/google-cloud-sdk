@@ -51,7 +51,7 @@ class AddBgpPeer(base_classes.ReadWriteCommand):
         help='The link local address of the peer.')
 
     parser.add_argument(
-        # TODO(user): document the default priority if any
+        # TODO(b/36057451): document the default priority if any
         '--advertised-route-priority',
         type=int,
         help='The priority of routes advertised to this BGP peer. In the case '

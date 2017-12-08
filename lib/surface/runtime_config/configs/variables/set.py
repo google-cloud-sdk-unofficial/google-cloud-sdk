@@ -75,7 +75,7 @@ class Set(base.CreateCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    flags.AddConfigFlag(parser)
+    flags.AddRequiredConfigFlag(parser)
 
     fail_group = parser.add_mutually_exclusive_group()
     fail_group.add_argument(

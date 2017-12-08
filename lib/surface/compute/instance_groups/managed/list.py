@@ -16,9 +16,6 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.core import log
 
 
-# TODO(user): This acts like
-# instance-groups list --only-managed
-# so they should share code.
 class List(base_classes.InstanceGroupManagerDynamicProperiesMixin,
            base_classes.MultiScopeLister):
   """List Google Compute Engine managed instance groups."""

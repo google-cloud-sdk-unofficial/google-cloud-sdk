@@ -89,12 +89,12 @@ to spread across 2 more zones, 8 additional nodes will be created.
 
 Multiple locations can be specified, separated by commas. For example:
 
-  $ {{command}} example-cluster --zone us-central1-a --additional-zones us-central1-b,us-central1-c
+  $ {command} example-cluster --zone us-central1-a --additional-zones us-central1-b,us-central1-c
 
 To remove all zones other than the cluster's primary zone, pass the empty string
 to the flag. For example:
 
-  $ {{command}} example-cluster --zone us-central1-a --additional-zones ""
+  $ {command} example-cluster --zone us-central1-a --additional-zones ""
 """)
 
 

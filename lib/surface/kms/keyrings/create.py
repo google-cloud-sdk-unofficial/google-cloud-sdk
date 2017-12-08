@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Create a KeyRing."""
+"""Create a keyring."""
 
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
@@ -19,14 +19,14 @@ from googlecloudsdk.command_lib.kms import flags
 
 
 class Create(base.CreateCommand):
-  """Create a new KeyRing.
+  """Create a new keyring.
 
-  Creates a new KeyRing within the given Location.
+  Creates a new keyring within the given location.
 
   ## Examples
 
-  The following command creates a KeyRing named `fellowship` within the
-  Location `global`:
+  The following command creates a keyring named `fellowship` within the
+  location `global`:
 
     $ {command} fellowship --location global
   """

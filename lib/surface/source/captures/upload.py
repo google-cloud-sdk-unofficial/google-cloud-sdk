@@ -14,7 +14,7 @@
 
 """Capture a project repository.
 
-TODO(user) make capture a group with "create", "list", etc.
+TODO(b/36053571) make capture a group with "create", "list", etc.
 """
 
 import json

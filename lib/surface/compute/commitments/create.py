@@ -15,7 +15,6 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import request_helper
-from googlecloudsdk.api_lib.compute import waiters
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
@@ -87,20 +86,8 @@ class Create(base.Command):
     batch_url = holder.client.batch_url
     http = holder.client.apitools_client.http
     errors = []
-    operations = list(
-        request_helper.MakeRequests(
-            requests=[(service, 'Insert', create_request)],
-            http=http,
-            batch_url=batch_url,
-            errors=errors))
-
-    operation_service = holder.client.apitools_client.regionOperations
-    return waiters.WaitForOperations(
-        operations=operations,
-        project=project,
-        operation_service=operation_service,
-        resource_service=service,
+    return request_helper.MakeRequests(
+        requests=[(service, 'Insert', create_request)],
         http=http,
         batch_url=batch_url,
-        warnings=[],
         errors=errors)

@@ -27,6 +27,10 @@ class Locales(base.Group):
           international applications, run:
 
             $ {command} list
+
+          To view information about a specific locale, run:
+
+            $ {command} describe LOCALE
           """,
   }
 

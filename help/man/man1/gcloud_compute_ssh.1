@@ -46,9 +46,7 @@ Flags and positionals passed to the underlying ssh implementation.
 .RE
 .sp
 The '\-\-' argument must be specified between gcloud specific args on the left
-and SSH_ARGS on the right. IMPORTANT: previously, commands allowed the omission
-of the \-\-, and unparsed arguments were treated as implementation args. This
-usage is being deprecated and will be removed in March 2017. Example:
+and SSH_ARGS on the right. Example:
 
 .RS 2m
 $ gcloud compute ssh example\-instance \-\-zone us\-central1\-a \-\- \-vvv \e

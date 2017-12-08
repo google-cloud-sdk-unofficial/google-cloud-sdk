@@ -41,22 +41,22 @@ class Create(base.CreateCommand):
           """\
           Add a tag to another tag:
 
-            $ {{command}} gcr.io/myproject/myimage:mytag1
+            $ {command} gcr.io/myproject/myimage:mytag1
               gcr.io/myproject/myimage:mytag2
 
           Add a tag to a digest
 
-            $ {{command}} gcr.io/myproject/myimage@sha256:digest
+            $ {command} gcr.io/myproject/myimage@sha256:digest
               gcr.io/myproject/myimage:mytag2
 
           Add a tag to latest
 
-            $ {{command}} gcr.io/myproject/myimage
+            $ {command} gcr.io/myproject/myimage
               gcr.io/myproject/myimage:mytag2
 
           Promote a tag to latest
 
-            $ {{command}} gcr.io/myproject/myimage:mytag1
+            $ {command} gcr.io/myproject/myimage:mytag1
               gcr.io/myproject/myimage:latest
 
       """,

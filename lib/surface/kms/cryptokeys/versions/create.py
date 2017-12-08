@@ -58,7 +58,7 @@ class Create(base.CreateCommand):
     new_version = ckv.Create(req)
 
     if args.primary:
-      # TODO(user): Find a better way to parse this.
+      # TODO(b/35914817): Find a better way to parse this.
       version_id = os.path.basename(new_version.name)
 
       req = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysUpdatePrimaryVersionRequest(

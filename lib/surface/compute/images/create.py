@@ -119,7 +119,7 @@ class Create(base_classes.BaseAsyncCreator):
           'URI of the disk image.'
       )
 
-    # TODO(user): use resources.REGISTRY.Parse() for GCS URIs (b/30086260).
+    # TODO(b/30086260): use resources.REGISTRY.Parse() for GCS URIs.
     if args.source_uri:
       source_uri = utils.NormalizeGoogleStorageUri(args.source_uri)
       image.rawDisk = self.messages.Image.RawDiskValue(source=source_uri)

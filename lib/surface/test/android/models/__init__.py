@@ -27,6 +27,10 @@ class Models(base.Group):
           their basic characteristics and supported Android OS versions, run:
 
             $ {command} list
+
+          To view more detailed information about a specific Android model, run:
+
+            $ {command} describe MODEL_ID
           """,
   }
 

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""List KeyRings within a Location."""
+"""List keyrings within a location."""
 
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
@@ -21,13 +21,13 @@ from googlecloudsdk.core import resources
 
 
 class List(base.ListCommand):
-  """List KeyRings within a Location.
+  """List keyrings within a location.
 
-  Lists all KeyRings within the given Location.
+  Lists all keyrings within the given location.
 
   ## EXAMPLES
 
-  The following command lists a maximum of five KeyRings in the Location
+  The following command lists a maximum of five keyrings in the location
   `global`:
 
     $ {command} --location global --limit=5

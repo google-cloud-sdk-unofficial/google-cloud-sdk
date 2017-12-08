@@ -63,8 +63,8 @@ class Delete(base_classes.BaseAsyncMutator):
   def _CreateGlobalRequests(self, address_refs):
     """Create a globally scoped request."""
 
-    # TODO(user): In the future we should support concurrently deleting both
-    # region and global addresses
+    # TODO(b/36056502): In the future we should support concurrently deleting
+    # both region and global addresses
     utils.PromptForDeletion(address_refs)
     requests = []
     for address_ref in address_refs:

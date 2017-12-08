@@ -256,6 +256,13 @@ class Patch(_BasePatch, base.Command):
     validate.ValidateInstanceName(args.instance)
     instance_ref = resources.Parse(args.instance, collection='sql.instances')
 
+    console_io.PromptContinue(
+        message='When adding a new IP address to authorized networks, include '
+                'existing authorized IP addresses. Any existing authorized IP '
+                'address not included will be de-authorized.',
+        default=True,
+        cancel_on_no=True)
+
     original_instance_resource = sql_client.instances.Get(
         sql_messages.SqlInstancesGetRequest(
             project=instance_ref.project,
@@ -350,7 +357,7 @@ class PatchBeta(_BasePatch, base.Command):
         '--cpu',
         type=int,
         required=False,
-        help='A whole number value indicating how many cores are desired in'
+        help='A whole number value indicating how many cores are desired in '
         'the machine. Both --cpu and --memory must be specified if a custom '
         'machine type is desired, and the --tier flag must be omitted.')
     parser.add_argument(
@@ -386,6 +393,13 @@ class PatchBeta(_BasePatch, base.Command):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = resources.Parse(args.instance, collection='sql.instances')
+
+    console_io.PromptContinue(
+        message='When adding a new IP address to authorized networks, include '
+                'existing authorized IP addresses. Any existing authorized IP '
+                'address not included will be de-authorized.',
+        default=True,
+        cancel_on_no=True)
 
     original_instance_resource = sql_client.instances.Get(
         sql_messages.SqlInstancesGetRequest(

@@ -197,7 +197,7 @@ class Connect(base.Command):
       if instance_info.settings.ipConfiguration.ipv4Enabled:
         ip_address = instance_info.ipAddresses[0].ipAddress
       else:
-        # TODO(user): ask user if we should enable ipv4 addressing
+        # TODO(b/36049930): ask user if we should enable ipv4 addressing
         message = ('It seems your client does not have ipv6 connectivity and '
                    'the database instance does not have an ipv4 address. '
                    'Please request an ipv4 address for this database instance.')

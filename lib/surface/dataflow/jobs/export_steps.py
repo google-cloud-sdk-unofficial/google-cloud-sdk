@@ -61,6 +61,6 @@ class ExportSteps(base.Command):
     """
     if steps:
       for line in step_graph.YieldGraphviz(steps, 'StepGraph'):
-        # TODO(user): Write this to a file rather than stdout.
+        # TODO(b/36056456): Write this to a file rather than stdout.
         log.out.write(line)
         log.out.write('\n')

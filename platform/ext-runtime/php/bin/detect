@@ -60,12 +60,13 @@ def main(args):
     for dirpath, _, filenames in os.walk(directory):
         for filename in filenames:
             if filename.endswith('.php'):
-                json.dump({
+                # "appinfo" writes to the app.yaml when it's generated, and
+		# "runtime_data" writes to the Dockerfile
+                json_config = {
                     'type': 'runtime_parameters',
                     'appinfo': {
                         'runtime': 'custom' if params['custom'] else 'php',
                         'env': 'flex',
-                        'entrypoint': entrypoint,
                         'runtime_config': {
                             'document_root': root,
                         },
@@ -74,7 +75,11 @@ def main(args):
                         'entrypoint': entrypoint,
                         'document_root': document_root,
                     },
-                }, sys.stdout)
+                }
+                # Prevent "entrypoint: null" in generated app.yaml
+                #if entrypoint:
+                #    json_config['appinfo']['entrypoint'] = entrypoint
+                json.dump(json_config, sys.stdout)
                 sys.stdout.write('\n')
                 sys.stdout.flush()
                 return 0

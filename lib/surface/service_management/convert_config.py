@@ -68,7 +68,7 @@ class ConvertConfig(base.Command):
     messages = services_util.GetMessagesModule()
     client = services_util.GetClientInstance()
 
-    # TODO(user): Add support for swagger file references later
+    # TODO(b/36057355): Add support for swagger file references later
     # This requires the API to support multiple files first. b/23353397
     try:
       with open(args.open_api_file) as f:

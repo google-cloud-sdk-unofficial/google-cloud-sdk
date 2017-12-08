@@ -116,7 +116,6 @@ class AlphaCreate(Create):
   def CreateRequests(self, args):
     """Returns a list of requests necessary for adding firewall rules."""
 
-    # TODO(user): remove the check once allow was deprecated.
     if args.rules and args.allow:
       raise firewalls_utils.ArgumentValidationError(
           'Can NOT specify --rules and --allow in the same request.')

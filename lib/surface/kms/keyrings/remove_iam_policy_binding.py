@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to remove a policy binding from a KeyRing."""
+"""Command to remove a policy binding from a keyring."""
 
 from googlecloudsdk.api_lib.cloudkms import iam
 from googlecloudsdk.calliope import base
@@ -20,17 +20,17 @@ from googlecloudsdk.command_lib.kms import flags
 
 
 class RemoveIamPolicyBinding(base.Command):
-  r"""Remove a policy binding from a KeyRing.
+  r"""Remove a policy binding from a keyring.
 
-  Removes an IAM policy binding from the given KeyRing.
+  Removes an IAM policy binding from the given keyring.
 
   See https://cloud.google.com/iam/docs/managing-policies for details of
   policy role and member types.
 
   ## EXAMPLES
   The following command will remove an IAM policy binding for the role of
-  'roles/editor' for the user 'test-user@gmail.com' on the KeyRing
-  `fellowship` with Location `global`:
+  'roles/editor' for the user 'test-user@gmail.com' on the keyring
+  `fellowship` with location `global`:
 
     $ {command} fellowship --location global \
   --member='user:test-user@gmail.com' \

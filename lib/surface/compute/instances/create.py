@@ -283,7 +283,7 @@ class Create(base.CreateCommand):
 
     # A mapping of zone to boot disk references for all existing boot
     # disks that are being attached.
-    # TODO(user): Simplify this once resources.Resource becomes
+    # TODO(b/36050875): Simplify this once resources.Resource becomes
     # hashable.
     existing_boot_disks = {}
 
@@ -438,7 +438,7 @@ class CreateBeta(Create):
         parser,
         multiple_network_interface_cards=True,
         release_track=base.ReleaseTrack.BETA,
-        support_alias_ip_ranges=False,
+        support_alias_ip_ranges=True,
         support_public_dns=cls._support_public_dns,
         support_network_tier=cls._support_network_tier)
 

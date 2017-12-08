@@ -25,7 +25,7 @@ class Describe(base_classes.RegionalDescriber):
 
   @staticmethod
   def Args(parser):
-    # TODO(user): autocomplete
+    # TODO(b/36052473): autocomplete
     # cli = Describe.GetCLIGenerator()
     base_classes.RegionalDescriber.Args(parser, 'compute.routers')
 

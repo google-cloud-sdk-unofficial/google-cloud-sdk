@@ -78,6 +78,7 @@ class RuntimeTestCase(testutil.TestBase):
         self.assertIn('runtime: php\n', app_yaml)
         self.assertIn('env: flex\n', app_yaml)
         self.assertIn('runtime_config:\n  document_root: .\n', app_yaml)
+        self.assertNotIn('entrypoint', app_yaml)
 
         self.assertFalse(os.path.exists(self.full_path('Dockerfile')))
         self.assertFalse(os.path.exists(self.full_path('.dockerignore')))

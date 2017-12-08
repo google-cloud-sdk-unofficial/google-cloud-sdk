@@ -11,12 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """The 'gcloud test android run' command."""
-
-import datetime
-import random
-import string
 
 from googlecloudsdk.api_lib.test import arg_util
 from googlecloudsdk.api_lib.test import ctrl_c_handler
@@ -145,7 +140,7 @@ class Run(base.ListCommand):
     storage_client = self.context['storage_client']
 
     bucket_ops = results_bucket.ResultsBucketOps(
-        project, args.results_bucket, _UniqueGcsObjectName(),
+        project, args.results_bucket, args.results_dir,
         tr_client, tr_messages, storage_client)
     bucket_ops.UploadFileToGcs(args.app)
     if args.test:
@@ -199,21 +194,6 @@ class Run(base.ListCommand):
     """
     log.debug('gcloud test command exit_code is: {0}'.format(self.exit_code))
     return 'test.android.run.outcomes'
-
-
-def _UniqueGcsObjectName():
-  """Create a unique GCS object name to hold test results.
-
-  The Testing back-end needs a unique GCS object name within the results
-  bucket to prevent race conditions while processing test results. The gcloud
-  client uses the current time down to the microsecond in ISO format plus a
-  random 4-letter suffix. The format is: "YYYY-MM-DD_hh:mm:ss.ssssss_rrrr".
-
-  Returns:
-    A string with the unique GCS object name.
-  """
-  return '{0}_{1}'.format(datetime.datetime.now().isoformat('_'),
-                          ''.join(random.sample(string.letters, 4)))
 
 
 def PickHistoryName(args):

@@ -51,6 +51,6 @@ class Cancel(base.Command):
         cancel_string='Cancellation aborted by user.')
 
     client.projects_regions_operations.Cancel(request)
-    # TODO(user) Check that operation was cancelled.
+    # TODO(b/36050484) Check that operation was cancelled.
 
     log.status.write('Cancelled [{0}].\n'.format(args.operation))

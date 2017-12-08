@@ -127,8 +127,8 @@ class ListGA(base_classes.BaseLister):
     max_results = constants.MAX_RESULTS_PER_PAGE
     project = self.project
 
-    # TODO(user): Start using aggregatedList for zones and regions when the
-    # operations list API supports them.
+    # TODO(b/36050874): Start using aggregatedList for zones and regions when
+    # the operations list API supports them.
     if no_scope_flags:
       requests.append(
           (self.global_service,

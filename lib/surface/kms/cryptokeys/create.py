@@ -76,7 +76,7 @@ class Create(base.CreateCommand):
         parent=parent_ref.RelativeName(),
         cryptoKeyId=crypto_key_ref.Name(),
         cryptoKey=messages.CryptoKey(
-            # TODO(user): Find a better way to get the enum value by name.
+            # TODO(b/35914817): Find a better way to get the enum value by name.
             purpose=getattr(messages.CryptoKey.PurposeValueValuesEnum,
                             PURPOSE_MAP[args.purpose]),),)
 

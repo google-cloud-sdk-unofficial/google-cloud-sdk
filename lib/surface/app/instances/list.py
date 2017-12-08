@@ -43,7 +43,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def GetUriCacheUpdateOp():
-    # TODO((b/29539463) Resources of this API are not parsible.
+    # TODO(b/29539463) Resources of this API are not parsable.
     return None
 
   def Collection(self):
@@ -51,8 +51,8 @@ class List(base.ListCommand):
 
   def GetUriFunc(self):
     def _GetUri(resource):
-      # TODO(user): Use parser when instances collection adds simple URIs
-      # (b/29539463) and a Get method
+      # TODO(b/29539463): Use parser when instances collection adds simple URIs
+      # and a Get method
       return APPENGINE_PATH_START + resource.instance.name
     return _GetUri
 

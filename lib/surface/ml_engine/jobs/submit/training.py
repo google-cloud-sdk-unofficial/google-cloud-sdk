@@ -13,14 +13,10 @@
 # limitations under the License.
 """ml-engine jobs submit training command."""
 from googlecloudsdk.api_lib.ml import jobs
-from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.ml import flags
 from googlecloudsdk.command_lib.ml import jobs_util
-
-
-_FORMAT = 'yaml(jobId,state,startTime.date(tz=LOCAL),endTime.date(tz=LOCAL))'
 
 
 def _AddSubmitTrainingArgs(parser):
@@ -33,20 +29,7 @@ def _AddSubmitTrainingArgs(parser):
                               'submit')
   flags.CONFIG.AddToParser(parser)
   flags.STAGING_BUCKET.AddToParser(parser)
-  parser.add_argument(
-      '--job-dir',
-      type=storage_util.ObjectReference.FromUrl,
-      help="""\
-          A Google Cloud Storage path in which to store training outputs and
-          other data needed for training.
-
-          This path will be passed to your TensorFlow program as `--job_dir`
-          command-line arg. The benefit of specifying this field is that Cloud
-          ML Engine will validate the path for use in training.
-
-          If packages must be uploaded and `--staging-bucket` is not provided,
-          this path will be used instead.
-      """)
+  flags.GetJobDirFlag(upload_help=True).AddToParser(parser)
   flags.GetUserArgs(local=False).AddToParser(parser)
   flags.SCALE_TIER.AddToParser(parser)
   flags.RUNTIME_VERSION.AddToParser(parser)
@@ -62,7 +45,7 @@ class TrainBeta(base.Command):
     _AddSubmitTrainingArgs(parser)
 
   def Format(self, args):
-    return _FORMAT
+    return jobs_util.JOB_FORMAT
 
   def Run(self, args):
     job = jobs_util.SubmitTraining(
@@ -92,7 +75,7 @@ class TrainGa(base.Command):
     _AddSubmitTrainingArgs(parser)
 
   def Format(self, args):
-    return _FORMAT
+    return jobs_util.JOB_FORMAT
 
   def Run(self, args):
     job = jobs_util.SubmitTraining(

@@ -106,7 +106,7 @@ class StartUpdate(base.Command):
     managed_instance_groups_utils.ValidateVersions(igm_info, versions,
                                                    args.force)
 
-    # TODO(user): Decide what we should do when two versions have the same
+    # TODO(b/36049787): Decide what we should do when two versions have the same
     #              instance template (this can happen with canary restart
     #              performed using tags).
     igm_version_names = {

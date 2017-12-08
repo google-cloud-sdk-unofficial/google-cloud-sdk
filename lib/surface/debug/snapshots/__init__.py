@@ -27,7 +27,7 @@ class Snapshots(base.Group):
   """
 
   detailed_help = {
-      # TODO(user) Add some examples
+      # TODO(b/36056503) Add some examples
       # 'EXAMPLES': ''
   }
 

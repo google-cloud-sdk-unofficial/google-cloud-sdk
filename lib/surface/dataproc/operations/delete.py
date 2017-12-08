@@ -51,6 +51,6 @@ class Delete(base.DeleteCommand):
 
     client.projects_regions_operations.Delete(request)
 
-    # TODO(user) Check that operation was deleted.
+    # TODO(b/36051082) Check that operation was deleted.
 
     log.DeletedResource(args.operation)

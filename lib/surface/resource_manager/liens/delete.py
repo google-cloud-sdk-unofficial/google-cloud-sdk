@@ -13,6 +13,7 @@
 # limitations under the License.
 """Command to delete a lien."""
 
+from googlecloudsdk.api_lib.resource_manager import error
 from googlecloudsdk.api_lib.resource_manager import liens
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_manager import flags
@@ -41,6 +42,7 @@ class Delete(liens_base.LienCommand):
   def Args(parser):
     flags.LienIdArg('you want to delete.').AddToParser(parser)
 
+  @error.EmitErrorDetails
   def Run(self, args):
     service = liens.LiensService()
     messages = liens.LiensMessages()

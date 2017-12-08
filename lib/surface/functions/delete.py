@@ -58,7 +58,7 @@ class Delete(base.DeleteCommand):
     prompt_message = 'Resource [{0}] will be deleted.'.format(function__url)
     if not console_io.PromptContinue(message=prompt_message):
       raise exceptions.FunctionsError('Deletion aborted by user.')
-    # TODO(user): Use resources.py here after b/21908671 is fixed.
+    # TODO(b/36050337): Use resources.py here after b/21908671 is fixed.
     op = client.projects_locations_functions.Delete(
         messages.CloudfunctionsProjectsLocationsFunctionsDeleteRequest(
             name=function__url))

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Describe a KeyRing."""
+"""Describe a keyring."""
 
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
@@ -19,13 +19,13 @@ from googlecloudsdk.command_lib.kms import flags
 
 
 class Describe(base.DescribeCommand):
-  """Get metadata for a KeyRing.
+  """Get metadata for a keyring.
 
-  Returns metadata for the given KeyRing.
+  Returns metadata for the given keyring.
 
   ## EXAMPLES
 
-  The following command returns the metadata for the KeyRing `towers`
+  The following command returns the metadata for the keyring `towers`
   in the location `us-east1`:
 
     $ {command} towers --location us-east1

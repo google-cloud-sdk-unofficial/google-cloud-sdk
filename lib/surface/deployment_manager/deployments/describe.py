@@ -93,7 +93,6 @@ class Describe(base.DescribeCommand):
       resources = response.resources
     except apitools_exceptions.HttpError:
       # Couldn't get resources, skip adding them to the table.
-      # TODO(user): Why not raise HTTP exception here?
       resources = None
 
     outputs = []

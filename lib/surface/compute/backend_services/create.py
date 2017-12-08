@@ -171,6 +171,18 @@ class CreateGA(base_classes.BaseAsyncMutator):
           self.messages.BackendService.ProtocolValueValuesEnum.HTTPS):
         log.warning(backend_services_utils.IapHttpWarning())
 
+  def _ApplyCustomCacheKeysArgs(self, args, backend_service):
+    cache_key_policy = self.messages.CacheKeyPolicy()
+    backend_services_utils.ValidateCacheKeyPolicyArgs(args)
+    backend_services_utils.UpdateCacheKeyPolicy(args, cache_key_policy)
+    if (not args.cache_key_include_host or
+        not args.cache_key_include_protocol or
+        not args.cache_key_include_query_string or
+        args.cache_key_query_string_blacklist is not None or
+        args.cache_key_query_string_whitelist is not None):
+      backend_service.cdnPolicy = self.messages.BackendServiceCdnPolicy(
+          cacheKeyPolicy=cache_key_policy)
+
   def CreateRequests(self, args):
     ref = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
         args,
@@ -238,16 +250,7 @@ class CreateAlpha(CreateGA):
     if args.enable_cdn:
       backend_service.enableCDN = args.enable_cdn
 
-    cache_key_policy = self.messages.CacheKeyPolicy()
-    backend_services_utils.ValidateCacheKeyPolicyArgs(args)
-    backend_services_utils.UpdateCacheKeyPolicy(args, cache_key_policy)
-    if (not args.cache_key_include_host or
-        not args.cache_key_include_protocol or
-        not args.cache_key_include_query_string or
-        args.cache_key_query_string_blacklist is not None or
-        args.cache_key_query_string_whitelist is not None):
-      backend_service.cdnPolicy = self.messages.BackendServiceCdnPolicy(
-          cacheKeyPolicy=cache_key_policy)
+    self._ApplyCustomCacheKeysArgs(args, backend_service)
 
     if args.session_affinity is not None:
       backend_service.sessionAffinity = (
@@ -319,6 +322,10 @@ class CreateBeta(CreateGA):
     flags.AddAffinityCookieTtl(parser)
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddLoadBalancingScheme(parser)
+    flags.AddCacheKeyIncludeProtocol(parser, default=True)
+    flags.AddCacheKeyIncludeHost(parser, default=True)
+    flags.AddCacheKeyIncludeQueryString(parser, default=True)
+    flags.AddCacheKeyQueryStringList(parser)
     AddIapFlag(parser)
 
   def CreateGlobalRequests(self, args, backend_services_ref):
@@ -336,6 +343,8 @@ class CreateBeta(CreateGA):
               args.session_affinity))
     if args.session_affinity is not None:
       backend_service.affinityCookieTtlSec = args.affinity_cookie_ttl
+
+    self._ApplyCustomCacheKeysArgs(args, backend_service)
 
     self._ApplyIapArgs(args.iap, backend_service)
 

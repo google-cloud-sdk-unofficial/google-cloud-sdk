@@ -87,14 +87,14 @@ class Delete(base.DeleteCommand):
 
     for version in versions:
       if version.traffic_split:
-        # TODO(user): mention `migrate` once it's implemented.
         # TODO(b/32869800): collect info on all versions before raising.
         raise VersionsDeleteError(
             'Version [{version}] is currently serving {allocation:.2f}% of '
             'traffic for service [{service}].\n\n'
-            'Please move all traffic away by deploying a new version with the'
-            '`--promote` argument or running `gcloud app services '
-            'set-traffic`.'.format(
+            'Please move all traffic away via one of the following methods:\n'
+            ' - deploying a new version with the `--promote` argument\n'
+            ' - running `gcloud app services set-traffic`\n'
+            ' - running `gcloud app versions migrate`'.format(
                 version=version.id,
                 allocation=version.traffic_split * 100,
                 service=version.service))

@@ -133,9 +133,9 @@ class UpdateInstancesAlpha(base_classes.BaseCommand):
       managed_instance_groups_utils.ValidateVersions(
           igm_info, versions, args.force)
 
-      # TODO(user): Decide what we should do when two versions have the same
-      #              instance template (this can happen with canary restart
-      #              performed using tags).
+      # TODO(b/36056457): Decide what we should do when two versions have the
+      # same instance template (this can happen with canary restart performed
+      # using tags).
       igm_version_names = {
           version.instanceTemplate: version.name
           for version in igm_info.versions

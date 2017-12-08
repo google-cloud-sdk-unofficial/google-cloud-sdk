@@ -147,7 +147,7 @@ class PySparkBase(object):
 
   @staticmethod
   def GetFilesByType(args):
-    # TODO(user): Move arg manipulation elsewhere.
+    # TODO(b/36057053): Move arg manipulation elsewhere.
     return {
         'py_file': args.py_file,
         'py_files': args.py_files,
