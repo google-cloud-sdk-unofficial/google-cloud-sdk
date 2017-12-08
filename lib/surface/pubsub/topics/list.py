@@ -12,32 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Cloud Pub/Sub topics list command."""
-import re
 from googlecloudsdk.api_lib.pubsub import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as sdk_ex
-from googlecloudsdk.core.console import console_io as io
+from googlecloudsdk.core.resource import resource_printer_base
+from googlecloudsdk.core.resource import resource_projector
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """Lists Cloud Pub/Sub topics within a project.
 
   Lists all of the Cloud Pub/Sub topics that exist in a given project that
   match the given topic name filter.
   """
 
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
+  detailed_help = {
+      'EXAMPLES': """\
+          To filter results by topic name (ie. only show topic 'mytopic'), run:
 
-    parser.add_argument(
-        '--name-filter', default='',
-        help=('A regular expression that will limit which topics are returned'
-              ' by matching on topic name.'))
-    parser.add_argument(
-        '--max-results', type=int, default=0,
-        help=('The maximum number of topics that this command may return.'
-              'This option is ignored if --name-filter is set.'))
+            $ {command} --filter=topicId:mytopic
+
+          To combine multiple filters (with AND or OR), run:
+
+            $ {command} --filter="topicId:mytopic AND topicId:myothertopic"
+
+          To filter topics that match an expression:
+
+            $ {command} --filter="topicId:mytopic_*"
+          """,
+  }
 
   @util.MapHttpError
   def Run(self, args):
@@ -53,50 +55,37 @@ class List(base.Command):
     msgs = self.context['pubsub_msgs']
     pubsub = self.context['pubsub']
 
+    page_size = None
     page_token = None
-    topics_listed = 0
-    should_truncate_resp = args.max_results and not args.name_filter
 
-    try:
-      while True:
-        list_topics_request = msgs.PubsubProjectsTopicsListRequest(
-            project=util.ProjectFormat(),
-            pageToken=page_token)
+    if args.page_size:
+      page_size = min(args.page_size, util.MAX_LIST_RESULTS)
 
-        if should_truncate_resp:
-          list_topics_request.pageSize = min(args.max_results,
-                                             util.MAX_LIST_RESULTS)
+    if not args.filter and args.limit:
+      page_size = min(args.limit, page_size or util.MAX_LIST_RESULTS)
 
-        list_topics_response = pubsub.projects_topics.List(
-            list_topics_request)
+    while True:
+      list_topics_request = msgs.PubsubProjectsTopicsListRequest(
+          project=util.ProjectFormat(),
+          pageToken=page_token,
+          pageSize=page_size)
 
-        for topic in list_topics_response.topics:
-          if not util.TopicMatches(topic.name, args.name_filter):
-            continue
+      list_topics_response = pubsub.projects_topics.List(
+          list_topics_request)
 
-          # If max_results > 0 and we have already sent that
-          # amount of subscriptions, just raise (StopIteration) iff name_filter
-          # is not set, else this limit wouldn't make sense.
-          if should_truncate_resp and topics_listed >= args.max_results:
-            raise StopIteration()
+      for topic in list_topics_response.topics:
+        yield TopicDict(topic)
 
-          topics_listed += 1
-          yield topic
+      page_token = list_topics_response.nextPageToken
+      if not page_token:
+        break
+      yield resource_printer_base.PageMarker()
 
-        page_token = list_topics_response.nextPageToken
-        if not page_token:
-          break
 
-    except re.error as e:
-      raise sdk_ex.HttpException(str(e))
-
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    topics = [topic.name for topic in result]
-    printer = io.ListPrinter('{0} topic(s) found'.format(len(topics)))
-    printer.Print(topics)
+def TopicDict(topic):
+  topic_dict = resource_projector.MakeSerializable(topic)
+  topic_info = util.TopicIdentifier(topic.name)
+  topic_dict['topic'] = topic.name
+  topic_dict['topicId'] = topic_info.resource_name
+  del topic_dict['name']
+  return topic_dict

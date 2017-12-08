@@ -27,6 +27,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
+from googlecloudsdk.core.util import platforms
 
 
 class Init(base.Command):
@@ -183,9 +184,9 @@ class Init(base.Command):
         properties.PropertiesFile.Invalidate()
       return new_config_name
 
-    config_names = [cfg.name for cfg in configs]
-    active_configs = [cfg.name for cfg in configs
-                      if getattr(cfg, 'is_active', False)]
+    config_names = [cfg['name'] for cfg in configs]
+    active_configs = [cfg['name'] for cfg in configs
+                      if cfg.get('is_active', False)]
     if not active_configs:
       return None
     choices = []
@@ -377,7 +378,7 @@ https://console.developers.google.com/apis page.
       if os.path.exists(clone_path):
         log.status.write('Directory [{0}] already exists\n'.format(clone_path))
         continue
-      clone_path = os.path.abspath(clone_path)
+      clone_path = os.path.abspath(platforms.ExpandHomePath(clone_path))
       parent_dir = os.path.dirname(clone_path)
       if not os.path.isdir(parent_dir):
         log.status.write('No such directory [{0}]\n'.format(parent_dir))

@@ -12,19 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Cloud Pub/Sub topics list_subscriptions command."""
-import re
 from googlecloudsdk.api_lib.pubsub import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as sdk_ex
-from googlecloudsdk.core.console import console_io as io
+from googlecloudsdk.core.resource import resource_printer_base
+from googlecloudsdk.core.resource import resource_projector
 
 
-class ListSubscriptions(base.Command):
+class ListSubscriptions(base.ListCommand):
   """Lists Cloud Pub/Sub subscriptions from a given topic.
 
   Lists all of the Cloud Pub/Sub subscriptions attached to the given topic and
   that match the given filter.
   """
+
+  detailed_help = {
+      'EXAMPLES': """\
+          To filter results by subscription name
+          (ie. only show subscription 'mysubs'), run:
+
+            $ {command} --topic mytopic --filter=subscriptionId:mysubs
+
+          To combine multiple filters (with AND or OR), run:
+
+            $ {command} --topic mytopic --filter="subscriptionId:mysubs1 AND subscriptionId:mysubs2"
+
+          To filter subscriptions that match an expression:
+
+            $ {command} --topic mytopic --filter="subscriptionId:subs_*"
+          """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -33,15 +49,6 @@ class ListSubscriptions(base.Command):
     parser.add_argument(
         'topic',
         help=('The name of the topic to list subscriptions for.'))
-    parser.add_argument(
-        '--name-filter', '-f', default='',
-        help=('A regular expression that will limit which subscriptions are'
-              ' returned by matching on subscription name.'))
-    parser.add_argument(
-        '--max-results', type=int, default=0,
-        help=('The maximum number of subscriptions that this'
-              ' command may return.'
-              'This option is ignored if --name-filter is set.'))
 
   @util.MapHttpError
   def Run(self, args):
@@ -57,52 +64,41 @@ class ListSubscriptions(base.Command):
     msgs = self.context['pubsub_msgs']
     pubsub = self.context['pubsub']
 
+    page_size = None
     page_token = None
-    subscriptions_listed = 0
-    should_truncate_res = args.max_results and not args.name_filter
 
-    try:
-      while True:
-        list_subscriptions_req = (
-            msgs.PubsubProjectsTopicsSubscriptionsListRequest(
-                topic=util.TopicFormat(args.topic),
-                pageToken=page_token))
+    if args.page_size:
+      page_size = min(args.page_size, util.MAX_LIST_RESULTS)
 
-        if should_truncate_res:
-          list_subscriptions_req.pageSize = min(args.max_results,
-                                                util.MAX_LIST_RESULTS)
+    if not args.filter and args.limit:
+      page_size = min(args.limit, page_size or util.MAX_LIST_RESULTS)
 
-        list_subscriptions_result = pubsub.projects_topics_subscriptions.List(
-            list_subscriptions_req)
+    while True:
+      list_subscriptions_req = (
+          msgs.PubsubProjectsTopicsSubscriptionsListRequest(
+              topic=util.TopicFormat(args.topic),
+              pageSize=page_size,
+              pageToken=page_token))
 
-        for subscription in list_subscriptions_result.subscriptions:
-          if not util.SubscriptionMatches(subscription, args.name_filter):
-            continue
+      list_subscriptions_result = pubsub.projects_topics_subscriptions.List(
+          list_subscriptions_req)
 
-          # If max_results > 0 and we have already sent that
-          # amount of subscriptions, just raise (StopIteration) iff name_filter
-          # is not set, else this limit wouldn't make sense.
-          if should_truncate_res and subscriptions_listed >= args.max_results:
-            raise StopIteration()
+      for subscription in list_subscriptions_result.subscriptions:
+        yield TopicSubscriptionDict(subscription)
 
-          subscriptions_listed += 1
-          yield subscription
+      page_token = list_subscriptions_result.nextPageToken
+      if not page_token:
+        break
 
-        page_token = list_subscriptions_result.nextPageToken
-        if not page_token:
-          break
+      yield resource_printer_base.PageMarker()
 
-    except re.error as e:
-      raise sdk_ex.HttpException(str(e))
 
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
+def TopicSubscriptionDict(topic_subscription):
+  """Returns a topic_subscription dict with additional fields."""
+  result = resource_projector.MakeSerializable(
+      {'subscription': topic_subscription})
 
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    subscriptions = [subscription for subscription in result]
-    printer = io.ListPrinter(
-        '{0} subscriptions(s) found'.format(len(subscriptions)))
-    printer.Print(subscriptions)
+  subscription_info = util.SubscriptionIdentifier(topic_subscription)
+  result['projectId'] = subscription_info.project.project_name
+  result['subscriptionId'] = subscription_info.resource_name
+  return result

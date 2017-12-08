@@ -294,11 +294,11 @@ class Deploy(base.Command):
       'DESCRIPTION': """\
           {description}
 
-          To use the Container Builder API to perform docker builds, rather than
-          a temporary VM (with the default `--docker-build=remote` setting),
-          run:
+          To use a temporary VM (with the default `--docker-build=remote`
+          setting), rather than the Container Builder API to perform docker
+          builds, run:
 
-              $ gcloud config set app/use_cloud_build true
+              $ gcloud config set app/use_cloud_build false
 
           See https://cloud.google.com/container-builder/docs/ for more
           information.
@@ -391,6 +391,8 @@ class Deploy(base.Command):
     project = properties.VALUES.core.project.Get(required=True)
     version = args.version or util.GenerateVersionId()
     use_cloud_build = properties.VALUES.app.use_cloud_build.GetBool()
+    if use_cloud_build is None:
+      use_cloud_build = True
 
     config_cleanup = None
     if args.deployables:

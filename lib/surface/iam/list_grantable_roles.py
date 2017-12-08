@@ -18,6 +18,8 @@ import textwrap
 
 from googlecloudsdk.api_lib.iam import base_classes
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.core import log
+from googlecloudsdk.core import resource_printer
 
 
 class ListGrantableRoles(base_classes.BaseIamCommand):
@@ -74,4 +76,11 @@ class ListGrantableRoles(base_classes.BaseIamCommand):
         self.messages.QueryGrantableRolesRequest(
             fullResourceName=resource))
 
-    return result
+    return result.roles
+
+  def Display(self, args, resources):
+    if not resources:
+      return
+    resource_printer.Print(resources=resources,
+                           print_format='yaml',
+                           out=log.out)

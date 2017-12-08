@@ -18,6 +18,7 @@ import errno
 import getpass
 import os
 import re
+import stat
 import textwrap
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -28,6 +29,8 @@ from googlecloudsdk.api_lib.compute import ssh_utils
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.util import files
+from googlecloudsdk.core.util import platforms
 
 
 # DO NOT CHANGE THE NEXT TWO LINES.
@@ -226,10 +229,24 @@ class ConfigSSH(ssh_utils.BaseSSHCommand):
       return
 
     if new_content != existing_content:
+      if (os.path.exists(ssh_config_file) and
+          platforms.OperatingSystem.Current() is not
+          platforms.OperatingSystem.WINDOWS):
+        ssh_config_perms = os.stat(ssh_config_file).st_mode
+        # From `man 5 ssh_config`:
+        #    this file must have strict permissions: read/write for the user,
+        #    and not accessible by others.
+        # We check that here:
+        if not (
+            ssh_config_perms & stat.S_IRWXU == stat.S_IWUSR | stat.S_IRUSR and
+            ssh_config_perms & stat.S_IWGRP == 0 and
+            ssh_config_perms & stat.S_IWOTH == 0):
+          log.warn('Invalid permissions on [{0}]. Please change to match ssh '
+                   'requirements (see man 5 ssh).')
       # TODO(user): This write will not work very well if there is
       # a lot of write contention for the SSH config file. We should
       # add a function to do a better job at "atomic file writes".
-      with open(ssh_config_file, 'w') as f:
+      with files.OpenForWritingPrivate(ssh_config_file) as f:
         f.write(new_content)
 
     if compute_section:

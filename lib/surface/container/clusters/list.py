@@ -55,6 +55,11 @@ class List(base.Command):
     try:
       clusters = adapter.ListClusters(project, zone)
 
+      if clusters.missingZones:
+        log.warning(
+            'The following zones did not respond: {0}. List results may be '
+            'incomplete.'.format(', '.join(clusters.missingZones)))
+
       upgrade_available = False
       support_ending = False
       unsupported = False

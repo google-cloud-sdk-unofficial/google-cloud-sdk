@@ -15,6 +15,7 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import forwarding_rules_utils as utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.third_party.apis.compute.v1 import compute_v1_messages
 
@@ -24,9 +25,9 @@ def _SupportedProtocols(messages):
       messages.ForwardingRule.IPProtocolValueValuesEnum.to_dict().keys())
 
 
-def _Args(parser):
+def _Args(parser, include_alpha_targets):
   """Argument parsing."""
-  utils.ForwardingRulesTargetMutator.Args(parser)
+  utils.ForwardingRulesTargetMutator.BaseArgs(parser, include_alpha_targets)
 
   address = parser.add_argument(
       '--address',
@@ -73,13 +74,14 @@ def _Args(parser):
       """
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base_classes.ListOutputMixin,
              utils.ForwardingRulesTargetMutator):
   """Create a forwarding rule to direct network traffic to a load balancer."""
 
   @staticmethod
   def Args(parser):
-    _Args(parser)
+    _Args(parser, False)
 
   @property
   def method(self):
@@ -138,6 +140,21 @@ class Create(base_classes.ListOutputMixin,
     return [request]
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a forwarding rule to direct network traffic to a load balancer."""
+
+  @staticmethod
+  def Args(parser):
+    _Args(parser, True)
+
+  def GetGlobalTarget(self, args):
+    if args.target_ssl_proxy:
+      return self.CreateGlobalReference(
+          args.target_ssl_proxy, resource_type='targetSslProxies')
+    return super(CreateAlpha, self).GetGlobalTarget(args)
+
+
 Create.detailed_help = {
     'DESCRIPTION': ("""\
         *{{command}}* is used to create a forwarding rule. {overview}
@@ -145,5 +162,15 @@ Create.detailed_help = {
         When creating a forwarding rule, exactly one of  ``--target-instance'',
         ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
         or ``--target-vpn-gateway'' must be specified.
+        """.format(overview=utils.FORWARDING_RULES_OVERVIEW)),
+}
+
+CreateAlpha.detailed_help = {
+    'DESCRIPTION': ("""\
+        *{{command}}* is used to create a forwarding rule. {overview}
+
+        When creating a forwarding rule, exactly one of  ``--target-instance'',
+        ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
+        ``--target-ssl-proxy'', or ``--target-vpn-gateway'' must be specified.
         """.format(overview=utils.FORWARDING_RULES_OVERVIEW)),
 }

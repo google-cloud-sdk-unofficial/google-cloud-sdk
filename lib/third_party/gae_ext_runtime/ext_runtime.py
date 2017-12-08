@@ -187,22 +187,6 @@ class DefaultExecutionEnvironment(ExecutionEnvironment):
     print message
 
 
-def _AugmentAppInfo(appinfo):
-  """Augment appinfo with required fields.
-
-  Adds a set of required fields to an appinfo dictionary.
-
-  Args:
-    appinfo: ({str: object, ...})
-
-  Returns:
-    ({str: object, ...}) The original object with all required fields.
-  """
-  appinfo['vm'] = True
-  appinfo['api_version'] = 1
-  return appinfo
-
-
 class ExternalRuntimeConfigurator(Configurator):
   """Configurator for general externalized runtimes.
 
@@ -232,8 +216,18 @@ class ExternalRuntimeConfigurator(Configurator):
     self.runtime = runtime
     self.params = params
     self.data = data
-    self.generated_appinfo = (
-        _AugmentAppInfo(generated_appinfo) if generated_appinfo else None)
+    if generated_appinfo:
+
+      # Provide api_version as a default.  Add vm: true if we don't have an
+      # "env" field.
+      self.generated_appinfo = {'api_version': 1}
+      if not generated_appinfo.has_key('env'):
+        self.generated_appinfo['vm'] = True
+
+      # And then update with the values provided by the runtime def.
+      self.generated_appinfo.update(generated_appinfo)
+    else:
+      self.generated_appinfo = None
     self.path = path
     self.env = env
 

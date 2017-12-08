@@ -16,7 +16,7 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import named_configs
-from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core import properties
 
 
 class List(base.Command):
@@ -38,10 +38,23 @@ class List(base.Command):
 
   def Run(self, args):
     configs = named_configs.ListNamedConfigs(log_warnings=True)
-    return configs
+    for config in configs:
+      fname = named_configs.GetPathForConfigName(config.name)
+      config_props = properties.VALUES.AllValues(
+          list_unset=True,
+          properties_file=properties.PropertiesFile([fname]),
+          only_file_contents=True)
+      yield {
+          'name': config.name,
+          'is_active': config.is_active,
+          'properties': config_props,
+      }
 
-  def Display(self, _, resources):
-    # Custom selector to format configs as a table
-    selectors = (('NAME', lambda x: x.name),
-                 ('IS_ACTIVE', lambda x: x.is_active))
-    console_io.PrintExtendedList(resources, selectors)
+  def Format(self, args):
+    return ('table('
+            'name,'
+            'is_active,'
+            'properties.core.account,'
+            'properties.core.project,'
+            'properties.compute.zone:label=DEFAULT_ZONE,'
+            'properties.compute.region:label=DEFAULT_REGION)')

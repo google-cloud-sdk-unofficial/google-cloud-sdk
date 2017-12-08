@@ -52,17 +52,17 @@ def main(args):
         # Customize the dockerfile.
         out = StringIO.StringIO()
         out.write(ROOT.read_file('data', 'Dockerfile'))
-        out.write('COPY . /app/\n')
-        # Generate npm install if there is a package.json.
-        if runtime_data.got_package_json:
-            out.write(ROOT.read_file('data/package-json-install'))
-
-
         if runtime_data.node_version:
             # Let node check to see if it satisfies the version constraint and
             # try to install the correct version if not.
             out.write(INSTALL_NODE_TEMPLATE %
                       {'version_spec': pipes.quote(runtime_data.node_version)})
+
+        out.write('COPY . /app/\n')
+
+        # Generate npm install if there is a package.json.
+        if runtime_data.got_package_json:
+            out.write(ROOT.read_file('data/package-json-install'))
 
         # Generate the appropriate start command.
         if runtime_data.got_npm_start:

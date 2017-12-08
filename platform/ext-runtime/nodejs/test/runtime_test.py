@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import mock
 import os
 import re
 import sys
@@ -8,6 +9,7 @@ import tempfile
 import textwrap
 import unittest
 
+from gae_ext_runtime import ext_runtime
 from gae_ext_runtime import testutil
 
 RUNTIME_DEF_ROOT = os.path.dirname(os.path.dirname(__file__))
@@ -126,6 +128,100 @@ class RuntimeTests(testutil.TestBase):
         self.write_file('server.js', '')
         self.generate_configs()
         self.assertFalse(self.generate_configs())
+
+    # Tests that verify that the generated files match verbatim output.
+    # These will need to be maintained whenever the code generation changes,
+    # but this ensures that any diffs we introduce in the generate files will
+    # be reviewed.
+
+    def test_node_js_with_engines_retroactive(self):
+        self.write_file('foo.js', 'bogus contents')
+        self.write_file('package.json',
+                        '{"scripts": {"start": "foo.js"},'
+                        '"engines": {"node": "0.12.3"}}')
+        self.generate_configs(deploy=True)
+        self.assert_file_exists_with_contents(
+            'Dockerfile',
+            textwrap.dedent("""\
+                # Dockerfile extending the generic Node image with application files for a
+                # single application.
+                FROM gcr.io/google_appengine/nodejs
+                # Check to see if the the version included in the base runtime satisfies
+                # 0.12.3, if not then do an npm install of the latest available
+                # version that satisfies it.
+                RUN /usr/local/bin/install_node 0.12.3
+                COPY . /app/
+                # You have to specify "--unsafe-perm" with npm install
+                # when running as root.  Failing to do this can cause
+                # install to appear to succeed even if a preinstall
+                # script fails, and may have other adverse consequences
+                # as well.
+                # This command will also cat the npm-debug.log file after the
+                # build, if it exists.
+                RUN npm install --unsafe-perm || \\
+                  ((if [ -f npm-debug.log ]; then \\
+                      cat npm-debug.log; \\
+                    fi) && false)
+                CMD npm start
+                """))
+
+
+class FailureLoggingTests(testutil.TestBase):
+
+    def setUp(self):
+        self.runtime_def_root = RUNTIME_DEF_ROOT
+        super(FailureLoggingTests, self).setUp()
+
+        self.errors = []
+        self.debug = []
+
+    def error_fake(self, message):
+        self.errors.append(message)
+
+    def debug_fake(self, message):
+        self.debug.append(message)
+
+    def test_invalid_package_json(self):
+        self.write_file('package.json', '')
+        self.write_file('server.js', '')
+        with mock.patch.dict(ext_runtime._LOG_FUNCS,
+                             {'debug': self.debug_fake}):
+            self.generate_configs()
+        self.assertTrue(self.debug[0].startswith(
+            'node.js checker: error accesssing package.json'))
+
+        variations = [
+            (testutil.AppInfoFake(runtime='nodejs'), None),
+            (None, 'nodejs'),
+        ]
+        for appinfo, runtime in variations:
+            self.errors = []
+            with mock.patch.dict(ext_runtime._LOG_FUNCS,
+                                 {'error': self.error_fake}):
+                self.generate_configs(appinfo=appinfo, runtime=runtime)
+
+            self.assertTrue(self.errors[0].startswith(
+                'node.js checker: error accesssing package.json'))
+
+    def test_no_startup_script(self):
+        with mock.patch.dict(ext_runtime._LOG_FUNCS,
+                             {'debug': self.debug_fake}):
+            self.generate_configs()
+        print self.debug
+        self.assertTrue(self.debug[1].startswith(
+            'node.js checker: No npm start and no server.js'))
+
+        variations = [
+            (testutil.AppInfoFake(runtime='nodejs'), None),
+            (None, 'nodejs'),
+        ]
+        for appinfo, runtime in variations:
+            self.errors = []
+            with mock.patch.dict(ext_runtime._LOG_FUNCS,
+                                 {'error': self.error_fake}):
+                self.generate_configs(appinfo=appinfo, runtime=runtime)
+            self.assertTrue(self.errors[0].startswith(
+                'node.js checker: No npm start and no server.js'))
 
 
 if __name__ == '__main__':

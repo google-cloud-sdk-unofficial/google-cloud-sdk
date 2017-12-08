@@ -160,6 +160,23 @@ US/Pacific, UTC, WEST.
 
 .RE
 .RE
+\fBdecode\fR(encoding, undefined="")
+.RS 2m
+Returns the decoded value of the resource that was encoded by encoding.
+
+
+The arguments are:
+
+\fB\f5encoding\fR\fR
+.RS 2m
+The encoding name. \fBbase64\fR and \fButf\-8\fR are supported.
+.RE
+\fB\f5undefined\fR\fR
+.RS 2m
+Returns this value if the decoding fails.
+
+.RE
+.RE
 \fBduration\fR(unit=1, undefined="")
 .RS 2m
 Formats the resource as a duration string.
@@ -174,6 +191,23 @@ Divide the resource numeric value by \fIunit\fR to yield seconds.
 \fB\f5undefined\fR\fR
 .RS 2m
 Returns this value if the resource is not a valid timestamp.
+
+.RE
+.RE
+\fBencode\fR(encoding, undefined="")
+.RS 2m
+Returns the encoded value of the resource using encoding.
+
+
+The arguments are:
+
+\fB\f5encoding\fR\fR
+.RS 2m
+The encoding name. \fBbase64\fR and \fButf\-8\fR are supported.
+.RE
+\fB\f5undefined\fR\fR
+.RS 2m
+Returns this value if the encoding fails.
 
 .RE
 .RE

@@ -126,6 +126,10 @@ class UpdateAlpha(UpdateGA):
   """Update a backend service."""
 
   @staticmethod
+  def AffinityOptions(backend_service):
+    return sorted(backend_service.SessionAffinityValueValuesEnum.to_dict())
+
+  @staticmethod
   def Args(parser):
     _Args(parser, compute_alpha_messages)
 
@@ -153,11 +157,48 @@ class UpdateAlpha(UpdateGA):
         as that of the backend service.
         """
 
+    session_affinity = parser.add_argument(
+        '--session-affinity',
+        choices=UpdateAlpha.AffinityOptions(
+            compute_alpha_messages.BackendService),
+        type=lambda x: x.upper(),
+        default=None,
+        help='The type of session affinity to use.')
+    session_affinity.detailed_help = """\
+        The type of session affinity to use for this backend service.  Possible
+        values are:
+
+          * none: Session affinity is disabled.
+          * client_ip: Route requests to instances based on the hash of the
+            client's IP address.
+          * generated_cookie: Route requests to instances based on the contents
+            of the "GCLB" cookie set by the load balancer.
+        """
+
+    affinity_cookie_ttl = parser.add_argument(
+        '--affinity-cookie-ttl',
+        type=int,
+        default=None,
+        help=('TTL in seconds of the GCLB cookie, if any'))
+    affinity_cookie_ttl.detailed_helpr = """\
+        If generated_cookie session affinity is in use, set the TTL of the
+        resulting cookie.  A setting of 0 indicates that the cookie should
+        be transient.
+        """
+
   def Modify(self, args, existing):
     replacement = super(UpdateAlpha, self).Modify(args, existing)
 
     if args.enable_cdn is not None:
       replacement.enableCDN = args.enable_cdn
+
+    if args.session_affinity is not None:
+      replacement.sessionAffinity = (
+          self.messages.BackendService.SessionAffinityValueValuesEnum(
+              args.session_affinity))
+
+    if args.affinity_cookie_ttl is not None:
+      replacement.affinityCookieTtlSec = args.affinity_cookie_ttl
 
     return replacement
 
@@ -172,6 +213,8 @@ class UpdateAlpha(UpdateGA):
         args.port,
         args.port_name,
         args.enable_cdn is not None,
+        args.session_affinity is not None,
+        args.affinity_cookie_ttl is not None
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
 

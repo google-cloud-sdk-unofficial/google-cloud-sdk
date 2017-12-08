@@ -72,16 +72,22 @@ class CreateGA(base_classes.BaseAsyncCreator):
     if args.port:
       port = args.port
     else:
+      # Default to port 80, which is used for HTTP and TCP.
       port = 80
-      if args.protocol == 'HTTPS':
+      if args.protocol in ['HTTPS', 'SSL']:
         port = 443
 
     if args.port_name:
       port_name = args.port_name
     else:
+      # args.protocol == 'HTTP'
       port_name = 'http'
       if args.protocol == 'HTTPS':
         port_name = 'https'
+      elif args.protocol == 'SSL':
+        port_name = 'ssl'
+      elif args.protocol == 'TCP':
+        port_name = 'tcp'
 
     protocol = self.messages.BackendService.ProtocolValueValuesEnum(
         args.protocol)
@@ -113,6 +119,10 @@ class CreateAlpha(CreateGA):
   """Create a backend service."""
 
   @staticmethod
+  def AffinityOptions(backend_service):
+    return sorted(backend_service.SessionAffinityValueValuesEnum.to_dict())
+
+  @staticmethod
   def Args(parser):
     _Args(parser, compute_alpha_messages)
 
@@ -140,10 +150,46 @@ class CreateAlpha(CreateGA):
         as that of the backend service.
         """
 
+    session_affinity = parser.add_argument(
+        '--session-affinity',
+        choices=CreateAlpha.AffinityOptions(
+            compute_alpha_messages.BackendService),
+        default='none',
+        type=lambda x: x.upper(),
+        help='The type of session affinity to use.')
+    session_affinity.detailed_help = """\
+        The type of session affinity to use for this backend service.  Possible
+        values are:
+
+          * none: Session affinity is disabled.
+          * client_ip: Route requests to instances based on the hash of the
+            client's IP address.
+          * generated_cookie: Route requests to instances based on the contents
+            of the "GCLB" cookie set by the load balancer.
+        """
+
+    affinity_cookie_ttl = parser.add_argument('--affinity-cookie-ttl',
+                                              type=int,
+                                              default=0,
+                                              help=("""\
+        If session-affinity is set to "generated_cookie", this flag sets
+        the TTL, in seconds, of the resulting cookie.
+        """))
+    affinity_cookie_ttl.detailed_helpr = """\
+        If session-affinity is set to "generated_cookie", this flag sets
+        the TTL, in seconds, of the resulting cookie.  A setting of 0
+        indicates that the cookie should be transient.
+    """
+
   def CreateRequests(self, args):
     kwargs = self._CommonBackendServiceKwargs(args)
     if args.enable_cdn is not None:
       kwargs['enableCDN'] = args.enable_cdn
+
+    kwargs['sessionAffinity'] = (
+        self.messages.BackendService.SessionAffinityValueValuesEnum(
+            args.session_affinity))
+    kwargs['affinityCookieTtlSec'] = args.affinity_cookie_ttl
 
     request = self.messages.ComputeBackendServicesInsertRequest(
         backendService=self.messages.BackendService(**kwargs),

@@ -16,7 +16,6 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.config import completers
-from googlecloudsdk.core import log
 from googlecloudsdk.core import named_configs
 from googlecloudsdk.core import properties
 
@@ -63,12 +62,12 @@ class Describe(base.Command):
           'Reading named configuration [{0}] failed because [{1}] cannot '
           'be read.'.format(args.configuration_name, fname))
 
-    return properties.VALUES.AllValues(
-        list_unset=args.all,
-        properties_file=properties.PropertiesFile([fname]),
-        only_file_contents=True)
-
-  def Display(self, _, result):
-    if not result:
-      log.err.Print('(empty configuration)')
-    properties.DisplayProperties(log.out, result)
+    return {
+        'name': args.configuration_name,
+        'is_active': (args.configuration_name ==
+                      named_configs.GetNameOfActiveNamedConfig()),
+        'properties': properties.VALUES.AllValues(
+            list_unset=args.all,
+            properties_file=properties.PropertiesFile([fname]),
+            only_file_contents=True),
+    }

@@ -14,14 +14,16 @@
 """Command for modifying the target of forwarding rules."""
 
 from googlecloudsdk.api_lib.compute import forwarding_rules_utils as utils
+from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Set(utils.ForwardingRulesTargetMutator):
   """Modify a forwarding rule to direct network traffic to a new target."""
 
   @staticmethod
   def Args(parser):
-    utils.ForwardingRulesTargetMutator.Args(parser)
+    utils.ForwardingRulesTargetMutator.BaseArgs(parser, False)
 
   @property
   def method(self):
@@ -63,6 +65,21 @@ class Set(utils.ForwardingRulesTargetMutator):
     return [request]
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SetAlpha(Set):
+  """Modify a forwarding rule to direct network traffic to a new target."""
+
+  @staticmethod
+  def Args(parser):
+    utils.ForwardingRulesTargetMutator.BaseArgs(parser, True)
+
+  def GetGlobalTarget(self, args):
+    if args.target_ssl_proxy:
+      return self.CreateGlobalReference(
+          args.target_ssl_proxy, resource_type='targetSslProxies')
+    return super(SetAlpha, self).GetGlobalTarget(args)
+
+
 Set.detailed_help = {
     'brief': ('Modify a forwarding rule to direct network traffic to a new '
               'target'),
@@ -73,5 +90,18 @@ Set.detailed_help = {
         When creating a forwarding rule, exactly one of  ``--target-instance'',
         ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
         or ``--target-vpn-gateway'' must be specified.
+        """.format(overview=utils.FORWARDING_RULES_OVERVIEW)),
+}
+
+SetAlpha.detailed_help = {
+    'brief': ('Modify a forwarding rule to direct network traffic to a new '
+              'target'),
+    'DESCRIPTION': ("""\
+        *{{command}}* is used to set a new target for a forwarding
+        rule. {overview}
+
+        When creating a forwarding rule, exactly one of  ``--target-instance'',
+        ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
+        ``--target-ssl-proxy'', or ``--target-vpn-gateway'' must be specified.
         """.format(overview=utils.FORWARDING_RULES_OVERVIEW)),
 }
