@@ -202,6 +202,9 @@ ObjectFromTracker = namedtuple('ObjectFromTracker',
 # Chunk size to use while zipping/unzipping gzip files.
 GZIP_CHUNK_SIZE = 8192
 
+# Indicates that all files should be gzipped, in _UploadFileToObject
+GZIP_ALL_FILES = 'GZIP_ALL_FILES'
+
 # Number of bytes to wait before updating a sliced download component tracker
 # file.
 TRACKERFILE_UPDATE_THRESHOLD = TEN_MIB
@@ -1157,6 +1160,11 @@ def ExpandUrlToSingleBlr(url_str, gsutil_api, debug, project_id,
     # If this case becomes common, we could heurestically abort the
     # listing operation after the first page of results and just query for the
     # _$folder$ object directly using GetObjectMetadata.
+    # TODO: curently the ListObjects iterator yields objects before prefixes,
+    # because ls depends on this iteration order for proper display.  We could
+    # save up to 1ms in determining that a destination is a prefix if we had a
+    # way to yield prefixes first, but this would require poking a major hole
+    # through the abstraction to control this iteration order.
     expansion_empty = False
 
     if obj_or_prefix.datatype == CloudApi.CsObjectOrPrefixType.PREFIX:
@@ -1544,6 +1552,7 @@ def _UploadFileToObject(src_url, src_obj_filestream, src_obj_size,
     command_obj: command object for use in Apply in parallel composite uploads.
     copy_exception_handler: For handling copy exceptions during Apply.
     gzip_exts: List of file extensions to gzip prior to upload, if any.
+               If gzip_exts is GZIP_ALL_FILES, gzip all files.
     allow_splitting: Whether to allow the file to be split into component
                      pieces for an parallel composite upload.
 
@@ -1564,7 +1573,8 @@ def _UploadFileToObject(src_url, src_obj_filestream, src_obj_size,
   upload_stream = src_obj_filestream
   upload_size = src_obj_size
   zipped_file = False
-  if gzip_exts and len(fname_parts) > 1 and fname_parts[-1] in gzip_exts:
+  if (gzip_exts == GZIP_ALL_FILES or
+         (gzip_exts and len(fname_parts) > 1 and fname_parts[-1] in gzip_exts)):
     upload_url, upload_size = _CompressFileForUpload(
         src_url, src_obj_filestream, src_obj_size, logger)
     upload_stream = open(upload_url.object_name, 'rb')
@@ -2630,7 +2640,8 @@ def PerformCopy(logger, src_url, dst_url, gsutil_api, command_obj,
                      pieces for an parallel composite upload or download.
     headers: optional headers to use for the copy operation.
     manifest: optional manifest for tracking copy operations.
-    gzip_exts: List of file extensions to gzip for uploads, if any.
+    gzip_exts: List of file extensions to gzip prior to upload, if any.
+               If gzip_exts is GZIP_ALL_FILES, gzip all files.
 
   Returns:
     (elapsed_time, bytes_transferred, version-specific dst_url) excluding
@@ -2710,6 +2721,10 @@ def PerformCopy(logger, src_url, dst_url, gsutil_api, command_obj,
     src_obj_size = src_obj_metadata.size
     dst_obj_metadata.contentType = src_obj_metadata.contentType
     if global_copy_helper_opts.preserve_acl:
+      if src_url.scheme == 'gs' and not src_obj_metadata.acl:
+        raise CommandException(
+            'No OWNER permission found for object %s. OWNER permission is '
+            'required for preserving ACLs.' % src_url)
       dst_obj_metadata.acl = src_obj_metadata.acl
       # Special case for S3-to-S3 copy URLs using
       # global_copy_helper_opts.preserve_acl.

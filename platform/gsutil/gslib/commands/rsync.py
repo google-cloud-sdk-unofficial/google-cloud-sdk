@@ -290,7 +290,15 @@ _DETAILED_HELP_TEXT = ("""
                 what would be copied or deleted without actually doing any
                 copying/deleting.
 
-  -p            Causes ACLs to be preserved when synchronizing in the cloud.
+  -p            Causes ACLs to be preserved when objects are copied. Note that
+                rsync will decide whether or not to perform a copy based only
+                on object size and checksum, not current ACL state. Thus, if
+                the source and destination differ in size or checksum and you
+                run gsutil rsync -p, the file will be copied and ACL preserved.
+                However, if the source and destination don't differ in size or
+                checksum but have different ACLs, running gsutil rsync -p will
+                have no effect.
+
                 Note that this option has performance and cost implications when
                 using the XML API, as it requires separate HTTP calls for
                 interacting with ACLs. The performance issue can be mitigated to
@@ -303,10 +311,11 @@ _DETAILED_HELP_TEXT = ("""
                 end up with the same ACL by setting a default object ACL on that
                 bucket instead of using rsync -p. See 'help gsutil defacl'.
 
-  -R, -r        Causes directories, buckets, and bucket subdirectories to be
-                synchronized recursively. If you neglect to use this option
-                gsutil will make only the top-level directory in the source
-                and destination URLs match, skipping any sub-directories.
+  -R, -r        The -R and -r options are synonymous. Causes directories,
+                buckets, and bucket subdirectories to be synchronized
+                recursively. If you neglect to use this option gsutil will make
+                only the top-level directory in the source and destination URLs
+                match, skipping any sub-directories.
 
   -U            Skip objects with unsupported object types instead of failing.
                 Unsupported object types are Amazon S3 Objects in the GLACIER
@@ -316,18 +325,18 @@ _DETAILED_HELP_TEXT = ("""
                 matching files/objects will not be copied or deleted. Note that
                 the pattern is a Python regular expression, not a wildcard (so,
                 matching any string ending in 'abc' would be specified using
-                '.*abc' rather than '*abc'). Note also that the exclude path is
+                '.*abc$' rather than '*abc'). Note also that the exclude path is
                 always relative (similar to Unix rsync or tar exclude options).
                 For example, if you run the command:
 
-                  gsutil rsync -x 'data./.*\\.txt' dir gs://my-bucket
+                  gsutil rsync -x 'data./.*\\.txt$' dir gs://my-bucket
 
                 it will skip the file dir/data1/a.txt.
 
                 You can use regex alternation to specify multiple exclusions,
                 for example:
 
-                  gsutil rsync -x '.*\\.txt|.*\\.jpg' dir gs://my-bucket
+                  gsutil rsync -x '.*\\.txt$|.*\\.jpg$' dir gs://my-bucket
 """)
 
 
@@ -638,7 +647,7 @@ def _BatchSort(in_iter, out_file):
       output_chunk = io.open('%s-%06i' % (out_file.name, len(chunk_files)),
                              mode='w+', encoding=UTF8)
       chunk_files.append(output_chunk)
-      output_chunk.writelines(unicode(''.join(current_chunk)))
+      output_chunk.write(unicode(''.join(current_chunk)))
       output_chunk.flush()
       output_chunk.seek(0)
     out_file.writelines(heapq.merge(*chunk_files))

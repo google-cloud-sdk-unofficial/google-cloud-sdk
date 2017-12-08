@@ -1,4 +1,19 @@
 #!/usr/bin/env python
+#
+# Copyright 2015 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Base script for generated CLI."""
 
 import atexit
@@ -58,11 +73,6 @@ def DeclareBaseFlags():
 
     _BASE_FLAGS_DECLARED = True
 
-# NOTE: This is specified here so that it can be read by other files
-# without depending on the flag to be registered.
-TRACE_HELP = (
-    'A tracing token of the form "token:<tokenid>" '
-    'to include in api requests.')
 FLAGS = flags.FLAGS
 
 

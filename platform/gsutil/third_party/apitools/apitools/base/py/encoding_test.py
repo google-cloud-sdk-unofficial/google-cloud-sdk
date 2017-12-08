@@ -1,13 +1,28 @@
+#
+# Copyright 2015 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import base64
 import datetime
 import json
 import sys
 
-from protorpc import message_types
-from protorpc import messages
-from protorpc import util
 import unittest2
 
+from apitools.base.protorpclite import message_types
+from apitools.base.protorpclite import messages
+from apitools.base.protorpclite import util
 from apitools.base.py import encoding
 from apitools.base.py import exceptions
 from apitools.base.py import extra_types
@@ -331,7 +346,18 @@ class EncodingTest(unittest2.TestCase):
         self.assertEqual(
             msg, encoding.JsonToMessage(MessageWithRemappings, json_message))
 
-    def testNoRepeatedRemapping(self):
+    def testRepeatedRemapping(self):
+        # Should allow remapping if the mapping remains the same.
+        encoding.AddCustomJsonEnumMapping(MessageWithRemappings.SomeEnum,
+                                          'enum_value', 'wire_name')
+        encoding.AddCustomJsonFieldMapping(MessageWithRemappings,
+                                           'double_encoding', 'doubleEncoding')
+        encoding.AddCustomJsonFieldMapping(MessageWithRemappings,
+                                           'another_field', 'anotherField')
+        encoding.AddCustomJsonFieldMapping(MessageWithRemappings,
+                                           'repeated_field', 'repeatedField')
+
+        # Should raise errors if the remapping changes the mapping.
         self.assertRaises(
             exceptions.InvalidDataError,
             encoding.AddCustomJsonFieldMapping,
@@ -371,7 +397,7 @@ class EncodingTest(unittest2.TestCase):
             encoding.MessageToRepr(msg, multiline=True),
             ('%s.TimeMessage(\n    '
              'timefield=datetime.datetime(2014, 7, 2, 23, 33, 25, 541000, '
-             'tzinfo=protorpc.util.TimeZoneOffset('
+             'tzinfo=apitools.base.protorpclite.util.TimeZoneOffset('
              'datetime.timedelta(0))),\n)') % __name__)
         self.assertEqual(
             encoding.MessageToRepr(msg, multiline=True, no_modules=True),

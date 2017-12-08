@@ -1,12 +1,26 @@
 #!/usr/bin/env python
+#
+# Copyright 2015 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Command registry for apitools."""
 
 import logging
 import textwrap
 
-from protorpc import descriptor
-from protorpc import messages
-
+from apitools.base.protorpclite import descriptor
+from apitools.base.protorpclite import messages
 from apitools.gen import extended_descriptor
 
 # This is a code generator; we're purposely verbose.
@@ -102,7 +116,8 @@ class CommandRegistry(object):
     """Registry for CLI commands."""
 
     def __init__(self, package, version, client_info, message_registry,
-                 root_package, base_files_package, base_url, names):
+                 root_package, base_files_package, protorpc_package,
+                 base_url, names):
         self.__package = package
         self.__version = version
         self.__client_info = client_info
@@ -110,6 +125,7 @@ class CommandRegistry(object):
         self.__message_registry = message_registry
         self.__root_package = root_package
         self.__base_files_package = base_files_package
+        self.__protorpc_package = protorpc_package
         self.__base_url = base_url
         self.__command_list = []
         self.__global_flags = []
@@ -216,7 +232,7 @@ class CommandRegistry(object):
 
         type_name = ''
         if field.variant in (messages.Variant.MESSAGE, messages.Variant.ENUM):
-            if field.type_name.startswith('protorpc.'):
+            if field.type_name.startswith('apitools.base.protorpclite.'):
                 type_name = field.type_name
             else:
                 field_message = self.__LookupMessage(extended_message, field)
@@ -462,9 +478,8 @@ class CommandRegistry(object):
         printer('import platform')
         printer('import sys')
         printer()
-        printer('import protorpc')
-        printer('from protorpc import message_types')
-        printer('from protorpc import messages')
+        printer('from %s import message_types', self.__protorpc_package)
+        printer('from %s import messages', self.__protorpc_package)
         printer()
         appcommands_import = 'from google.apputils import appcommands'
         printer(appcommands_import)

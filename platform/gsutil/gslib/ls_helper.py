@@ -20,6 +20,7 @@ import fnmatch
 
 from gslib.exception import CommandException
 from gslib.plurality_checkable_iterator import PluralityCheckableIterator
+from gslib.util import IS_WINDOWS
 from gslib.util import UTF8
 from gslib.wildcard_iterator import StorageUrlFromString
 
@@ -80,7 +81,13 @@ def PrintObject(bucket_listing_ref):
   Returns:
     (num_objects, num_bytes).
   """
-  print bucket_listing_ref.url_string.encode(UTF8)
+  try:
+    print bucket_listing_ref.url_string.encode(UTF8)
+  except IOError as e:
+    # Windows throws an IOError 0 here for object names containing Unicode
+    # chars. Ignore it.
+    if not (IS_WINDOWS and e.errno == 0):
+      raise
   return (1, 0)
 
 
@@ -95,7 +102,8 @@ class LsHelper(object):
                print_dir_summary_func=PrintDirSummary,
                print_newline_func=PrintNewLine,
                all_versions=False, should_recurse=False,
-               exclude_patterns=None, fields=('name',)):
+               exclude_patterns=None, fields=('name',),
+               list_subdir_contents=True):
     """Initializes the helper class to prepare for listing.
 
     Args:
@@ -123,6 +131,8 @@ class LsHelper(object):
                          objects so they can be listed. Can be set to None
                          to retrieve all object fields. Defaults to short
                          listing fields.
+      list_subdir_contents: If true, return the directory and any contents,
+                            otherwise return only the directory itself.
     """
     self._iterator_func = iterator_func
     self.logger = logger
@@ -136,6 +146,7 @@ class LsHelper(object):
     self.should_recurse = should_recurse
     self.exclude_patterns = exclude_patterns
     self.bucket_listing_fields = fields
+    self.list_subdir_contents = list_subdir_contents
 
   def ExpandUrlAndPrint(self, url):
     """Iterates over the given URL and calls print functions.
@@ -179,10 +190,13 @@ class LsHelper(object):
             self._print_newline_func()
           else:
             print_newline = True
-          if plurality:
+          if plurality and self.list_subdir_contents:
             self._print_dir_header_func(blr)
+          elif plurality and not self.list_subdir_contents:
+            print_newline = False
           expansion_url_str = StorageUrlFromString(
-              blr.url_string).CreatePrefixUrl(wildcard_suffix='*')
+              blr.url_string).CreatePrefixUrl(
+                  wildcard_suffix='*' if self.list_subdir_contents else None)
           nd, no, nb = self._RecurseExpandUrlAndPrint(expansion_url_str)
           self._print_dir_summary_func(nb, blr)
         else:

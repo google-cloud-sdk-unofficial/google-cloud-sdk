@@ -35,10 +35,19 @@ from gslib.storage_url import StorageUrlFromString
 from gslib.storage_url import StripOneSlash
 from gslib.storage_url import WILDCARD_REGEX
 from gslib.translation_helper import GenerationFromUrlAndString
+from gslib.util import FixWindowsEncodingIfNeeded
 from gslib.util import UTF8
 
 
 FLAT_LIST_REGEX = re.compile(r'(?P<before>.*?)\*\*(?P<after>.*)')
+
+_UNICODE_EXCEPTION_TEXT = (
+    'Invalid Unicode path encountered (%s). gsutil cannot proceed '
+    'with such files present. Please remove or rename this file and '
+    'try again. NOTE: the path printed above replaces the '
+    'problematic characters with a hex-encoded printable '
+    'representation. For more details (including how to convert to a '
+    'gsutil-compatible encoding) see `gsutil help encoding`.')
 
 
 class WildcardIterator(object):
@@ -211,6 +220,17 @@ class CloudWildcardIterator(WildcardIterator):
                             self.all_versions or single_version_request))
             else:  # CloudApi.CsObjectOrPrefixType.PREFIX
               prefix = obj_or_prefix.data
+
+              if ContainsWildcard(prefix):
+                # TODO: Disambiguate user-supplied strings from iterated
+                # prefix and object names so that we can better reason
+                # about wildcards and handle this case without raising an error.
+                raise CommandException(
+                    'Cloud folder %s%s contains a wildcard; gsutil does '
+                    'not currently support objects with wildcards in their '
+                    'name.'
+                    % (bucket_url_string, prefix))
+
               # If the prefix ends with a slash, remove it.  Note that we only
               # remove one slash so that we can successfully enumerate dirs
               # containing multiple slashes.
@@ -522,10 +542,14 @@ class FileWildcardIterator(WildcardIterator):
       filepaths = glob.iglob(wildcard)
     for filepath in filepaths:
       expanded_url = StorageUrlFromString(filepath)
-      if os.path.isdir(filepath):
-        yield BucketListingPrefix(expanded_url)
-      else:
-        yield BucketListingObject(expanded_url)
+      try:
+        if os.path.isdir(filepath):
+          yield BucketListingPrefix(expanded_url)
+        else:
+          yield BucketListingObject(expanded_url)
+      except UnicodeEncodeError:
+        raise CommandException('\n'.join(textwrap.wrap(
+            _UNICODE_EXCEPTION_TEXT % repr(filepath))))
 
   def _IterDir(self, directory, wildcard):
     """An iterator over the specified dir and wildcard."""
@@ -537,7 +561,8 @@ class FileWildcardIterator(WildcardIterator):
     for dirpath, unused_dirnames, filenames in os.walk(directory.encode(UTF8)):
       for f in fnmatch.filter(filenames, wildcard):
         try:
-          yield os.path.join(dirpath, f).decode(UTF8)
+          yield os.path.join(dirpath,
+                             FixWindowsEncodingIfNeeded(f)).decode(UTF8)
         except UnicodeDecodeError:
           # Note: We considered several ways to deal with this, but each had
           # problems:
@@ -566,13 +591,7 @@ class FileWildcardIterator(WildcardIterator):
           # Instead we chose to abort when one such file is encountered, and
           # require the user to remove or rename the files and try again.
           raise CommandException('\n'.join(textwrap.wrap(
-              'Invalid Unicode path encountered (%s). gsutil cannot proceed '
-              'with such files present. Please remove or rename this file and '
-              'try again. NOTE: the path printed above replaces the '
-              'problematic characters with a hex-encoded printable '
-              'representation. For more details (including how to convert to a '
-              'gsutil-compatible encoding) see `gsutil help encoding`.' %
-              repr(os.path.join(dirpath, f)))))
+              _UNICODE_EXCEPTION_TEXT % repr(os.path.join(dirpath, f)))))
 
   # pylint: disable=unused-argument
   def IterObjects(self, bucket_listing_fields=None):

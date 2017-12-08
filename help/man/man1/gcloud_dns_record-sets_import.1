@@ -11,7 +11,7 @@ gcloud dns record\-sets import \- import record\-sets into your managed\-zone
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud dns record\-sets import\fR \fIRECORDS_FILE\fR [\fB\-\-delete\-all\-existing\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fB\-\-zone\-file\-format\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud dns record\-sets import\fR \fIRECORDS_FILE\fR [\fB\-\-delete\-all\-existing\fR] [\fB\-\-replace\-origin\-ns\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fB\-\-zone\-file\-format\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -41,6 +41,11 @@ File from which record\-sets should be imported.
 .RS 2m
 Indicates that all existing record\-sets should be deleted before importing the
 record\-sets in the records\-file.
+
+.RE
+\fB\-\-replace\-origin\-ns\fR
+.RS 2m
+Indicates that NS records for the origin of a zone should be imported if defined
 
 .RE
 \fB\-\-zone\-file\-format\fR

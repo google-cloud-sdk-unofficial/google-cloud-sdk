@@ -1,4 +1,19 @@
 #!/usr/bin/env python
+#
+# Copyright 2015 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Assorted utilities shared between parts of apitools."""
 from __future__ import print_function
 
@@ -107,7 +122,9 @@ class Names(object):
             return name
         # TODO(craigcitro): This is a hack to handle the case of specific
         # protorpc class names; clean this up.
-        if name.startswith('protorpc.') or name.startswith('message_types.'):
+        if name.startswith(('protorpc.', 'message_types.',
+                            'apitools.base.protorpclite.',
+                            'apitools.base.protorpclite.message_types.')):
             return name
         name = self.__StripName(name)
         name = self.__ToCamel(name, separator=separator)
@@ -141,9 +158,11 @@ def Chdir(dirname, create=True):
         else:
             os.mkdir(dirname)
     previous_directory = os.getcwd()
-    os.chdir(dirname)
-    yield
-    os.chdir(previous_directory)
+    try:
+        os.chdir(dirname)
+        yield
+    finally:
+        os.chdir(previous_directory)
 
 
 def NormalizeVersion(version):
@@ -219,11 +238,6 @@ class ClientInfo(collections.namedtuple('ClientInfo', (
     @property
     def services_proto_file_name(self):
         return '%s.proto' % self.services_rule_name
-
-
-def GetPackage(path):
-    path_components = path.split(os.path.sep)
-    return '.'.join(path_components)
 
 
 def CleanDescription(description):

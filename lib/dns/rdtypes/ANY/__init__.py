@@ -17,6 +17,7 @@
 
 __all__ = [
     'AFSDB',
+    'CDS',
     'CERT',
     'CNAME',
     'DLV',
@@ -34,6 +35,7 @@ __all__ = [
     'NSEC',
     'NSEC3',
     'NSEC3PARAM',
+    'TLSA',
     'NXT',
     'PTR',
     'RP',

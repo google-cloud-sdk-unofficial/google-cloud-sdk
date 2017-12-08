@@ -1,4 +1,19 @@
 #!/usr/bin/env python
+#
+# Copyright 2015 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Base class for api services."""
 
 import base64
@@ -8,13 +23,13 @@ import logging
 import pprint
 
 
-from protorpc import message_types
-from protorpc import messages
 import six
 from six.moves import http_client
 from six.moves import urllib
 
 
+from apitools.base.protorpclite import message_types
+from apitools.base.protorpclite import messages
 from apitools.base.py import credentials_lib
 from apitools.base.py import encoding
 from apitools.base.py import exceptions
@@ -222,7 +237,8 @@ class BaseApiClient(object):
     def __init__(self, url, credentials=None, get_credentials=True, http=None,
                  model=None, log_request=False, log_response=False,
                  num_retries=5, max_retry_wait=60, credentials_args=None,
-                 default_global_params=None, additional_http_headers=None):
+                 default_global_params=None, additional_http_headers=None,
+                 check_response_func=None):
         _RequireClassAttrs(self, ('_package', '_scopes', 'messages_module'))
         if default_global_params is not None:
             util.Typecheck(default_global_params, self.params_type)
@@ -248,6 +264,7 @@ class BaseApiClient(object):
         self.__include_fields = None
 
         self.additional_http_headers = additional_http_headers or {}
+        self.__check_response_func = check_response_func
 
         # TODO(craigcitro): Finish deprecating these fields.
         _ = model
@@ -361,6 +378,14 @@ class BaseApiClient(object):
         self.__num_retries = value
 
     @property
+    def check_response_func(self):
+        return self.__check_response_func
+
+    @check_response_func.setter
+    def check_response_func(self, value):
+        self.__check_response_func = value
+
+    @property
     def max_retry_wait(self):
         return self.__max_retry_wait
 
@@ -419,7 +444,7 @@ class BaseApiClient(object):
         try:
             message = encoding.JsonToMessage(response_type, data)
         except (exceptions.InvalidDataFromServerError,
-                messages.ValidationError) as e:
+                messages.ValidationError, ValueError) as e:
             raise exceptions.InvalidDataFromServerError(
                 'Error decoding response "%s" as type %s: %s' % (
                     data, response_type.__name__, e))
@@ -670,9 +695,14 @@ class BaseApiService(object):
             http = self.__client.http
             if upload and upload.bytes_http:
                 http = upload.bytes_http
+            opts = {
+                'retries': self.__client.num_retries,
+                'max_retry_wait': self.__client.max_retry_wait,
+            }
+            if self.__client.check_response_func:
+                opts['check_response_func'] = self.__client.check_response_func
             http_response = http_wrapper.MakeRequest(
-                http, http_request, retries=self.__client.num_retries,
-                max_retry_wait=self.__client.max_retry_wait)
+                http, http_request, **opts)
 
         return self.ProcessHttpResponse(method_config, http_response)
 

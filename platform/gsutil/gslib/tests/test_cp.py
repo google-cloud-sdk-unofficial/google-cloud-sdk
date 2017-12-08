@@ -1205,6 +1205,54 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
       with open(fpath4, 'r') as f:
         self.assertEqual(f.read(), contents)
 
+  @SequentialAndParallelTransfer
+  def test_gzip_all_upload_and_download(self):
+    bucket_uri = self.CreateBucket()
+    contents = 'x' * 10000
+    tmpdir = self.CreateTempDir()
+    self.CreateTempFile(file_name='test.html', tmpdir=tmpdir, contents=contents)
+    self.CreateTempFile(file_name='test.js', tmpdir=tmpdir, contents=contents)
+    self.CreateTempFile(file_name='test.txt', tmpdir=tmpdir, contents=contents)
+    self.CreateTempFile(file_name='test', tmpdir=tmpdir, contents=contents)
+    # Test that all files are compressed.
+    self.RunGsUtil(['cp', '-Z',
+                    os.path.join(tmpdir, 'test*'), suri(bucket_uri)])
+    self.AssertNObjectsInBucket(bucket_uri, 4)
+    uri1 = suri(bucket_uri, 'test.html')
+    uri2 = suri(bucket_uri, 'test.js')
+    uri3 = suri(bucket_uri, 'test.txt')
+    uri4 = suri(bucket_uri, 'test')
+    stdout = self.RunGsUtil(['stat', uri1], return_stdout=True)
+    self.assertRegexpMatches(stdout, r'Content-Encoding:\s+gzip')
+    stdout = self.RunGsUtil(['stat', uri2], return_stdout=True)
+    self.assertRegexpMatches(stdout, r'Content-Encoding:\s+gzip')
+    stdout = self.RunGsUtil(['stat', uri3], return_stdout=True)
+    self.assertRegexpMatches(stdout, r'Content-Encoding:\s+gzip')
+    stdout = self.RunGsUtil(['stat', uri4], return_stdout=True)
+    self.assertRegexpMatches(stdout, r'Content-Encoding:\s+gzip')
+    fpath4 = self.CreateTempFile()
+    for uri in (uri1, uri2, uri3, uri4):
+      self.RunGsUtil(['cp', uri, suri(fpath4)])
+      with open(fpath4, 'r') as f:
+        self.assertEqual(f.read(), contents)
+
+  def test_both_gzip_options_error(self):
+    # Test with -Z and -z
+    stderr = self.RunGsUtil(['cp', '-Z', '-z', 'html, js', 'a.js', 'b.js'],
+                            return_stderr=True, expected_status=1)
+
+    self.assertIn('CommandException', stderr)
+    self.assertIn('Specifying both the -z and -Z options together is invalid.',
+                  stderr)
+
+    # Same test, but with arguments in the opposite order.
+    stderr = self.RunGsUtil(['cp', '-z', 'html, js', '-Z', 'a.js', 'b.js'],
+                            return_stderr=True, expected_status=1)
+
+    self.assertIn('CommandException', stderr)
+    self.assertIn('Specifying both the -z and -Z options together is invalid.',
+                  stderr)
+
   def test_upload_with_subdir_and_unexpanded_wildcard(self):
     fpath1 = self.CreateTempFile(file_name=('tmp', 'x', 'y', 'z'))
     bucket_uri = self.CreateBucket()
@@ -1350,6 +1398,20 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
            suri(bucket_uri, 'foo')],
           stdin='a' * 512 * ONE_KIB, return_stderr=1)
       self.assertIn('Retrying', stderr)
+
+  @SkipForS3('preserve_acl flag not supported for S3.')
+  def test_cp_preserve_no_owner(self):
+    bucket_uri = self.CreateBucket()
+    object_uri = self.CreateObject(bucket_uri=bucket_uri, contents='foo')
+    # Anonymous user can read the object and write to the bucket, but does
+    # not own the object.
+    self.RunGsUtil(['acl', 'ch', '-u', 'AllUsers:R', suri(object_uri)])
+    self.RunGsUtil(['acl', 'ch', '-u', 'AllUsers:W', suri(bucket_uri)])
+    with self.SetAnonymousBotoCreds():
+      stderr = self.RunGsUtil(['cp', '-p', suri(object_uri),
+                               suri(bucket_uri, 'foo')],
+                              return_stderr=True, expected_status=1)
+      self.assertIn('OWNER permission is required for preserving ACLs', stderr)
 
   @SkipForS3('No resumable upload support for S3.')
   def test_cp_resumable_upload(self):
@@ -2409,7 +2471,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
 
       new_obj_metadata = gsutil_api.GetObjectMetadata(
           dst_obj_metadata.bucket, dst_obj_metadata.name,
-          fields=['acl,md5Hash'])
+          fields=['acl', 'md5Hash'])
       self.assertEqual(
           gsutil_api.GetObjectMetadata(src_obj_metadata.bucket,
                                        src_obj_metadata.name,

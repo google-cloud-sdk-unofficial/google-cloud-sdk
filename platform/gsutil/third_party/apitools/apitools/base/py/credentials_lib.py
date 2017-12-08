@@ -1,4 +1,19 @@
 #!/usr/bin/env python
+#
+# Copyright 2015 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Common credentials classes and constructors."""
 from __future__ import print_function
 
@@ -527,19 +542,22 @@ def _GetServiceAccountCredentials(
 
 
 @_RegisterCredentialsMethod
-def _GetGaeServiceAccount(unused_client_info, scopes, **unused_kwds):
+def _GetGaeServiceAccount(client_info, **unused_kwds):
+    scopes = client_info['scope'].split(' ')
     return GaeAssertionCredentials.Get(scopes=scopes)
 
 
 @_RegisterCredentialsMethod
-def _GetGceServiceAccount(unused_client_info, scopes, **unused_kwds):
+def _GetGceServiceAccount(client_info, **unused_kwds):
+    scopes = client_info['scope'].split(' ')
     return GceAssertionCredentials.Get(scopes=scopes)
 
 
 @_RegisterCredentialsMethod
 def _GetApplicationDefaultCredentials(
-        unused_client_info, scopes, skip_application_default_credentials=False,
+        client_info, skip_application_default_credentials=False,
         **unused_kwds):
+    scopes = client_info['scope'].split()
     if skip_application_default_credentials:
         return None
     gc = oauth2client.client.GoogleCredentials

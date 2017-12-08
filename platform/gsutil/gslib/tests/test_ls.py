@@ -154,6 +154,32 @@ class TestLs(testcase.GsUtilIntegrationTestCase):
       self.assertEqual('%s\n' % suri(k1_uri), stdout)
     _Check1()
 
+  def test_subdir_nocontents(self):
+    """Tests listing a bucket subdirectory using -d.
+
+    Result will display subdirectory names instead of contents. Uses a wildcard
+    to show multiple matching subdirectories.
+    """
+    bucket_uri = self.CreateBucket(test_objects=1)
+    k1_uri = bucket_uri.clone_replace_name('foo')
+    k1_uri.set_contents_from_string('baz')
+    k2_uri = bucket_uri.clone_replace_name('dir/foo')
+    k2_uri.set_contents_from_string('bar')
+    k3_uri = bucket_uri.clone_replace_name('dir/foo2')
+    k3_uri.set_contents_from_string('foo')
+    k4_uri = bucket_uri.clone_replace_name('dir2/foo3')
+    k4_uri.set_contents_from_string('foo2')
+    # Use @Retry as hedge against bucket listing eventual consistency.
+    @Retry(AssertionError, tries=3, timeout_secs=1)
+    def _Check1():
+      stdout = self.RunGsUtil(['ls', '-d', '%s/dir*' % suri(bucket_uri)],
+                              return_stdout=True)
+      self.assertEqual('%s/dir/\n%s/dir2/\n' %
+                       (suri(bucket_uri), suri(bucket_uri)), stdout)
+      stdout = self.RunGsUtil(['ls', suri(k1_uri)], return_stdout=True)
+      self.assertEqual('%s\n' % suri(k1_uri), stdout)
+    _Check1()
+
   def test_versioning(self):
     """Tests listing a versioned bucket."""
     bucket1_uri = self.CreateBucket(test_objects=1)
@@ -423,6 +449,30 @@ class TestLs(testcase.GsUtilIntegrationTestCase):
     # Note: The suri function normalizes the URI, so the double slash gets
     # removed.
     self.assertIn(suri(bucket_uri) + '//', stdout)
+
+  def test_wildcard_prefix(self):
+    """Tests that an object name with a wildcard does not infinite loop."""
+    bucket_uri = self.CreateBucket()
+    wildcard_folder_object = 'wildcard*/'
+    object_matching_folder = 'wildcard10/foo'
+    self.CreateObject(bucket_uri=bucket_uri, object_name=wildcard_folder_object,
+                      contents='foo')
+    self.CreateObject(bucket_uri=bucket_uri, object_name=object_matching_folder,
+                      contents='foo')
+    self.AssertNObjectsInBucket(bucket_uri, 2)
+    stderr = self.RunGsUtil(['ls', suri(bucket_uri, 'wildcard*')],
+                            return_stderr=True, expected_status=1)
+    self.assertIn('Cloud folder %s%s contains a wildcard' %
+                  (suri(bucket_uri), '/wildcard*/'), stderr)
+
+    # Listing with a flat wildcard should still succeed.
+    # Use @Retry as hedge against bucket listing eventual consistency.
+    @Retry(AssertionError, tries=3, timeout_secs=1)
+    def _Check():
+      stdout = self.RunGsUtil(['ls', '-l', suri(bucket_uri, '**')],
+                              return_stdout=True)
+      self.assertNumLines(stdout, 3)  # 2 object lines, one summary line.
+    _Check()
 
   @SkipForS3('S3 anonymous access is not supported.')
   def test_get_object_without_list_bucket_permission(self):

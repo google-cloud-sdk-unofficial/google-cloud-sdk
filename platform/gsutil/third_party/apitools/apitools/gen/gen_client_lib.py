@@ -1,4 +1,19 @@
 #!/usr/bin/env python
+#
+# Copyright 2015 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Simple tool for generating a client library.
 
 Relevant links:
@@ -9,7 +24,6 @@ import datetime
 
 from six.moves import urllib_parse
 
-from apitools.base.py import base_cli
 from apitools.gen import command_registry
 from apitools.gen import message_registry
 from apitools.gen import service_registry
@@ -27,7 +41,8 @@ def _StandardQueryParametersSchema(discovery_doc):
     # We add an entry for the trace, since Discovery doesn't.
     standard_query_schema['properties']['trace'] = {
         'type': 'string',
-        'description': base_cli.TRACE_HELP,
+        'description': ('A tracing token of the form "token:<tokenid>" '
+                        'to include in api requests.'),
         'location': 'query',
     }
     return standard_query_schema
@@ -48,8 +63,8 @@ class DescriptorGenerator(object):
     """Code generator for a given discovery document."""
 
     def __init__(self, discovery_doc, client_info, names, root_package, outdir,
-                 base_package, generate_cli=False, use_proto2=False,
-                 unelidable_request_methods=None):
+                 base_package, protorpc_package, generate_cli=False,
+                 use_proto2=False, unelidable_request_methods=None):
         self.__discovery_doc = discovery_doc
         self.__client_info = client_info
         self.__outdir = outdir
@@ -62,8 +77,7 @@ class DescriptorGenerator(object):
         self.__generate_cli = generate_cli
         self.__root_package = root_package
         self.__base_files_package = base_package
-        self.__base_files_target = (
-            '//cloud/bigscience/apitools/base/py:apitools_base')
+        self.__protorpc_package = protorpc_package
         self.__names = names
         self.__base_url, self.__base_path = _ComputePaths(
             self.__package, self.__client_info.url_version,
@@ -73,7 +87,8 @@ class DescriptorGenerator(object):
         # define the services.
         self.__message_registry = message_registry.MessageRegistry(
             self.__client_info, self.__names, self.__description,
-            self.__root_package, self.__base_files_package)
+            self.__root_package, self.__base_files_package,
+            self.__protorpc_package)
         schemas = self.__discovery_doc.get('schemas', {})
         for schema_name, schema in schemas.items():
             self.__message_registry.AddDescriptorFromSchema(
@@ -92,7 +107,8 @@ class DescriptorGenerator(object):
         self.__command_registry = command_registry.CommandRegistry(
             self.__package, self.__version, self.__client_info,
             self.__message_registry, self.__root_package,
-            self.__base_files_package, self.__base_url, self.__names)
+            self.__base_files_package, self.__protorpc_package,
+            self.__base_url, self.__names)
         self.__command_registry.AddGlobalParameters(
             self.__message_registry.LookupDescriptorOrDie(
                 'StandardQueryParameters'))
@@ -211,7 +227,6 @@ class DescriptorGenerator(object):
             printer('"google-apitools>=0.4.8",')
             printer('"httplib2>=0.9",')
             printer('"oauth2client>=1.4.12",')
-            printer('"protorpc>=0.10.0",')
         printer(']')
         printer('_PACKAGE = "apitools.clients.%s"' % self.__package)
         printer()

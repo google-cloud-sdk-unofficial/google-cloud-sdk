@@ -30,7 +30,6 @@ except ImportError:
 REQUIRED_PACKAGES = [
     'httplib2>=0.8',
     'oauth2client>=1.4.8',
-    'protorpc>=0.9.1',
     'six>=1.9.0',
     ]
 
@@ -46,7 +45,7 @@ TESTING_PACKAGES = [
 ]
 
 CONSOLE_SCRIPTS = [
-    'gen_client = apitools.gen.gen_client:run_main',
+    'gen_client = apitools.gen.gen_client:main',
     'oauth2l = apitools.scripts.oauth2l:run_main [cli]',
 ]
 
@@ -55,7 +54,7 @@ py_version = platform.python_version()
 if py_version < '2.7':
     REQUIRED_PACKAGES.append('argparse>=1.2.1')
 
-_APITOOLS_VERSION = '0.4.10'
+_APITOOLS_VERSION = '0.4.12'
 
 with open('README.rst') as fileobj:
     README = fileobj.read()

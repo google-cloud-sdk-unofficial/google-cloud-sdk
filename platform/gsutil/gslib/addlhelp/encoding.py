@@ -51,10 +51,40 @@ _DETAILED_HELP_TEXT = ("""
   character encoding to UTF-8. One such tool is `native2ascii
   <http://docs.oracle.com/javase/7/docs/technotes/tools/solaris/native2ascii.html>`_.
 
+  Unicode errors for valid Unicode filepaths can be caused by lack of Python
+  locale configuration on Linux and Mac OSes. If your file paths are Unicode
+  and you get encoding errors, ensure the LANG environment variable is set
+  correctly. Typically, the LANG variable should be set to something like
+  "en_US.UTF-8" or "de_DE.UTF-8".
+
   Note also that there's no restriction on the character encoding used in file
   content - it can be UTF-8, a different encoding, or non-character
   data (like audio or video content). The gsutil UTF-8 character encoding
   requirement applies only to filenames.
+
+
+<B>USING UNICODE FILENAMES ON WINDOWS</B>
+  Windows support for Unicode in the command shell (cmd.exe or powershell) is
+  somewhat painful, because Windows uses a Windows-specific character encoding
+  called `cp1252 <https://en.wikipedia.org/wiki/Windows-1252>`_. To use Unicode
+  characters you need to run this command in the command shell before the first
+  time you use gsutil in that shell:
+
+    chcp 65001
+
+  If you neglect to do this before using gsutil, the progress messages while
+  uploading files with Unicode names or listing buckets with Unicode object
+  names will look garbled (i.e., with different glyphs than you expect in the
+  output). If you simply run the chcp command and re-run the gsutil command, the
+  output should no longer look garbled.
+
+  gsutil attempts to translate between cp1252 encoding and UTF-8 in the main
+  places that Unicode encoding/decoding problems have been encountered to date
+  (traversing the local file system while uploading files, and printing Unicode
+  names while listing buckets). However, because gsutil must perform
+  translation, it is likely there are other erroneous edge cases when using
+  Windows with Unicode. If you encounter problems, you might consider instead
+  using cygwin (on Windows) or Linux or MacOS - all of which support Unicode.
 
 
 <B>CROSS-PLATFORM ENCODING PROBLEMS OF WHICH TO BE AWARE</B>
@@ -87,6 +117,14 @@ _DETAILED_HELP_TEXT = ("""
   There is one precaution users can exercise to prevent some of these problems:
   When using the Windows console specify wildcards or folders (using the -R
   option) rather than explicitly named individual files.
+
+
+<B>CONVERTING FILENAMES TO UNICODE</B>
+  Open-source tools are available to convert filenames for non-Unicode files.
+  For example, to convert from latin1 (a common Windows encoding) to Unicode,
+  you can use
+  `Windows iconv <http://gnuwin32.sourceforge.net/packages/libiconv.htm>`_. For
+  *nix systems, you can use `libiconv https://www.gnu.org/software/libiconv/`_.
 """)
 
 

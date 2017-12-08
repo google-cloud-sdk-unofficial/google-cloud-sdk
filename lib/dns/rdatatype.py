@@ -78,7 +78,9 @@ DNSKEY = 48
 DHCID = 49
 NSEC3 = 50
 NSEC3PARAM = 51
+TLSA = 52
 HIP = 55
+CDS = 59
 SPF = 99
 UNSPEC = 103
 TKEY = 249
@@ -140,7 +142,9 @@ _by_text = {
     'DHCID' : DHCID,
     'NSEC3' : NSEC3,
     'NSEC3PARAM' : NSEC3PARAM,
+    'TLSA' : TLSA,
     'HIP' : HIP,
+    'CDS' : CDS,
     'SPF' : SPF,
     'UNSPEC' : UNSPEC,
     'TKEY' : TKEY,

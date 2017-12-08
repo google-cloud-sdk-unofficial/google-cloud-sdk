@@ -15,9 +15,13 @@ docs/_build
 .coverage
 coverage.xml
 nosetests.xml
+htmlcov/
 
 # Files with private / local data
 scripts/local_test_setup
 tests/data/key.json
 tests/data/key.p12
 tests/data/user-key.json
+
+# PyCharm configuration:
+.idea
