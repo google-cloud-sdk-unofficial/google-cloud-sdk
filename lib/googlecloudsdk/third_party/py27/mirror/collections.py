@@ -2,8 +2,8 @@
 __all__ = ['Counter', 'deque', 'defaultdict', 'namedtuple', 'OrderedDict']
 # For bootstrapping reasons, the collection ABCs are defined in _abcoll.py.
 # They should however be considered an integral part of collections.py.
-from googlecloudsdk.third_party.py27._abcoll import *
-from googlecloudsdk.third_party.py27 import _abcoll
+from googlecloudsdk.third_party.py27.mirror._abcoll import *
+from googlecloudsdk.third_party.py27.mirror import _abcoll
 __all__ += _abcoll.__all__
 
 from _collections import deque, defaultdict

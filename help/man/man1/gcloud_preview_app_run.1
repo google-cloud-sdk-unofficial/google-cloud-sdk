@@ -5,212 +5,26 @@
 
 .SH "NAME"
 .HP
-gcloud preview app run \- \fB(BETA)\fR (DEPRECATED) Run one or more modules in the local development application server
+gcloud preview app run \- \fB(BETA)\fR (REMOVED) Run one or more modules in the local development server
 
 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud preview app run\fR \fIRUNNABLES\fR [\fIRUNNABLES\fR\ ...] [\fB\-\-admin\-host\fR\ \fIADMIN_HOST\fR] [\fB\-\-allow\-skipped\-files\fR] [\fB\-\-api\-host\fR\ \fIAPI_HOST\fR] [\fB\-\-appidentity\-email\-address\fR\ \fIAPPIDENTITY_EMAIL_ADDRESS\fR] [\fB\-\-appidentity\-private\-key\-path\fR\ \fIAPPIDENTITY_PRIVATE_KEY_PATH\fR] [\fB\-\-auth\-domain\fR\ \fIAUTH_DOMAIN\fR;\ default="gmail.com"] [\fB\-\-blobstore\-path\fR\ \fIBLOBSTORE_PATH\fR] [\fB\-\-clear\-datastore\fR] [\fB\-\-custom\-entrypoint\fR\ \fICUSTOM_ENTRYPOINT\fR] [\fB\-\-datastore\-consistency\-policy\fR\ \fIDATASTORE_CONSISTENCY_POLICY\fR;\ default="time"] [\fB\-\-datastore\-path\fR\ \fIDATASTORE_PATH\fR] [\fB\-\-default\-gcs\-bucket\-name\fR\ \fIDEFAULT_GCS_BUCKET_NAME\fR] [\fB\-\-enable\-mvm\-logs\fR] [\fB\-\-enable\-sendmail\fR] [\fB\-\-host\fR\ \fIHOST\fR] [\fB\-\-jvm\-flag\fR\ \fIJVM_FLAG\fR] [\fB\-\-log\-level\fR\ \fILOG_LEVEL\fR] [\fB\-\-logs\-path\fR\ \fILOGS_PATH\fR] [\fB\-\-max\-module\-instances\fR\ \fIMAX_MODULE_INSTANCES\fR] [\fB\-\-php\-executable\-path\fR\ \fIPHP_EXECUTABLE_PATH\fR] [\fB\-\-python\-startup\-script\fR\ \fIPYTHON_STARTUP_SCRIPT\fR] [\fB\-\-require\-indexes\fR] [\fB\-\-show\-mail\-body\fR] [\fB\-\-smtp\-allow\-tls\fR] [\fB\-\-smtp\-host\fR\ \fISMTP_HOST\fR] [\fB\-\-smtp\-password\fR\ \fISMTP_PASSWORD\fR] [\fB\-\-smtp\-user\fR\ \fISMTP_USER\fR] [\fB\-\-storage\-path\fR\ \fISTORAGE_PATH\fR] [\fB\-\-use\-mtime\-file\-watcher\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud preview app run\fR [\fIGLOBAL\-FLAG\ ...\fR] [\fIUNUSED\fR\ ...]
 
 
 .SH "DESCRIPTION"
 
-\fB(BETA)\fR This comamand is deprecated, and will soon be removed. Please use
-\f5dev_appserver.py\fR (in the same directory as the \f5gcloud\fR command)
-instead.
-
-This command is used to run one or more of your modules in the local development
-application server. This allows you to test and debug your app before deploying.
-As an input it takes one or more \f5\fIRUNNABLES\fR\fR that should be run
-locally. A \f5\fIRUNNABLE\fR\fR can be a module's .yaml file, or a directory. If
-given a directory, all modules found will be run. You can run multiple modules
-at the same time, even if they are implemented in different languages.
+\fB(BETA)\fR (REMOVED) Run one or more modules in the local development server.
 
 
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fIRUNNABLES\fR [\fIRUNNABLES\fR ...]
+[\fIUNUSED\fR ...]
 .RS 2m
-The yaml files for the modules you want to run. This also accepts any yaml
-configuration files needed to run your modules.
 
-
-.RE
-
-.SH "FLAGS"
-
-\fB\-\-admin\-host\fR \fIADMIN_HOST\fR
-.RS 2m
-The host and port on which to start the admin server (in the format host:port)
-
-.RE
-\fB\-\-allow\-skipped\-files\fR
-.RS 2m
-Make files specified in the app.yaml "skip_files" or "static" clauses readable
-by the application.
-
-.RE
-\fB\-\-api\-host\fR \fIAPI_HOST\fR
-.RS 2m
-The host and port on which to start the API server (in the format host:port)
-
-.RE
-\fB\-\-appidentity\-email\-address\fR \fIAPPIDENTITY_EMAIL_ADDRESS\fR
-.RS 2m
-Email address associated with a service account that has a downloadable key. May
-be None for no local application identity.
-
-.RE
-\fB\-\-appidentity\-private\-key\-path\fR \fIAPPIDENTITY_PRIVATE_KEY_PATH\fR
-.RS 2m
-Path to private key file associated with service account (.pem format). Must be
-set if appidentity\-email\-address is set.
-
-.RE
-\fB\-\-auth\-domain\fR \fIAUTH_DOMAIN\fR; default="gmail.com"
-.RS 2m
-Name of the authorization domain to use
-
-.RE
-\fB\-\-blobstore\-path\fR \fIBLOBSTORE_PATH\fR
-.RS 2m
-Path to directory used to store blob contents (defaults to a subdirectory of
-\-\-storage\-path if not set)
-
-.RE
-\fB\-\-clear\-datastore\fR
-.RS 2m
-Clear the datastore on startup
-
-.RE
-\fB\-\-custom\-entrypoint\fR \fICUSTOM_ENTRYPOINT\fR
-.RS 2m
-Specify an entrypoint for custom runtime modules. This is required when such
-modules are present. Include "{port}" in the string (without quotes) to pass the
-port number in as an argument. For instance: \-\-custom_entrypoint="gunicorn \-b
-localhost:{port} mymodule:application"
-
-.RE
-\fB\-\-datastore\-consistency\-policy\fR \fIDATASTORE_CONSISTENCY_POLICY\fR; default="time"
-.RS 2m
-The policy to apply when deciding whether a datastore write should appear in
-global queries
-
-.RE
-\fB\-\-datastore\-path\fR \fIDATASTORE_PATH\fR
-.RS 2m
-Path to a file used to store datastore contents (defaults to a file in
-\-\-storage\-path if not set)
-
-.RE
-\fB\-\-default\-gcs\-bucket\-name\fR \fIDEFAULT_GCS_BUCKET_NAME\fR
-.RS 2m
-Default Google Cloud Storage bucket name
-
-.RE
-\fB\-\-enable\-mvm\-logs\fR
-.RS 2m
-Enable logs collection and display in local Admin Console for Managed VM
-modules.
-
-.RE
-\fB\-\-enable\-sendmail\fR
-.RS 2m
-Use the "sendmail" tool to transmit e\-mail sent using the Mail API (ignored if
-\-\-smtp\-host is set)
-
-.RE
-\fB\-\-host\fR \fIHOST\fR
-.RS 2m
-The host and port on which to start the local web server (in the format
-host:port)
-
-.RE
-\fB\-\-jvm\-flag\fR \fIJVM_FLAG\fR
-.RS 2m
-Additional arguments to pass to the java command when launching an instance of
-the app. May be specified more than once. Example: \-\-jvm\-flag=\-Xmx1024m
-\-\-jvm\-flag=\-Xms256m
-
-.RE
-\fB\-\-log\-level\fR \fILOG_LEVEL\fR
-.RS 2m
-The minimum verbosity of logs from your app that will be displayed in the
-terminal. (debug, info, warning, critical, error) Defaults to current verbosity
-setting.
-
-.RE
-\fB\-\-logs\-path\fR \fILOGS_PATH\fR
-.RS 2m
-Path to a file used to store request logs (defaults to a file in
-\-\-storage\-path if not set)
-
-.RE
-\fB\-\-max\-module\-instances\fR \fIMAX_MODULE_INSTANCES\fR
-.RS 2m
-The maximum number of runtime instances that can be started for a particular
-module \- the value can be an integer, in which case all modules are limited to
-that number of instances, or a comma\-separated list of module:max_instances,
-e.g. default:5,backend:3
-
-.RE
-\fB\-\-php\-executable\-path\fR \fIPHP_EXECUTABLE_PATH\fR
-.RS 2m
-The full path to the PHP executable to use to run your PHP module.
-
-.RE
-\fB\-\-python\-startup\-script\fR \fIPYTHON_STARTUP_SCRIPT\fR
-.RS 2m
-The script to run at the startup of new Python runtime instances (useful for
-tools such as debuggers)
-
-.RE
-\fB\-\-require\-indexes\fR
-.RS 2m
-Generate an error on datastore queries that require a composite index not found
-in index.yaml
-
-.RE
-\fB\-\-show\-mail\-body\fR
-.RS 2m
-Logs the contents of e\-mails sent using the Mail API
-
-.RE
-\fB\-\-smtp\-allow\-tls\fR
-.RS 2m
-Allow TLS to be used when the SMTP server announces TLS support (ignored if
-\-\-smtp\-host is not set)
-
-.RE
-\fB\-\-smtp\-host\fR \fISMTP_HOST\fR
-.RS 2m
-The host and port of an SMTP server to use to transmit e\-mail sent using the
-Mail API, in the format host:port
-
-.RE
-\fB\-\-smtp\-password\fR \fISMTP_PASSWORD\fR
-.RS 2m
-Password to use when connecting to the SMTP server specified with \-\-smtp\-host
-
-.RE
-\fB\-\-smtp\-user\fR \fISMTP_USER\fR
-.RS 2m
-Username to use when connecting to the SMTP server specified with \-\-smtp\-host
-
-.RE
-\fB\-\-storage\-path\fR \fISTORAGE_PATH\fR
-.RS 2m
-The default location for storing application data. Can be overridden for
-specific kinds of data using \-\-datastore\-path, \-\-blobstore\-path, and/or
-\-\-logs\-path
-
-.RE
-\fB\-\-use\-mtime\-file\-watcher\fR
-.RS 2m
-Use mtime polling for detecting source code changes \- useful if modifying code
-from a remote machine using a distributed file system
 
 
 .RE
@@ -223,27 +37,7 @@ Run \fB$ gcloud help\fR for a description of flags available to all commands.
 
 .SH "EXAMPLES"
 
-To run a single module, run:
-
-.RS 2m
-$ gcloud preview app run ~/my_app/app.yaml
-.RE
-
-To run multiple modules, run:
-
-.RS 2m
-$ gcloud preview app run ~/my_app/app.yaml \e
-    ~/my_app/another_module.yaml
-.RE
-
-OR
-
-.RS 2m
-$ gcloud preview app run ~/my_app/
-.RE
-
-To run a Java module, please use Maven and the gcloud\-maven\-plugin:
-https://cloud.google.com/appengine/docs/java/managed\-vms/maven
+This command is deprecated. Please use the dev_appserver.py script instead.
 
 
 

@@ -5,44 +5,42 @@
 
 .SH "NAME"
 .HP
-gcloud components update \- update or install one or more Cloud SDK components or packages
+gcloud components update \- update all of your installed components to the latest version
 
 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud components update\fR [\fICOMPONENT\-IDS\fR\ ...] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud components update\fR [\fB\-\-version\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
 
-Ensure that the latest version of each specified component, and the latest
-version of all components upon which the specified components directly or
-indirectly depend, is installed on the local workstation. If the command
-includes one or more names of components or packages, the specified components
-are the named components and the components contained in the named packages; if
-the command does not name any components or packages, the specified components
-are all installed components.
+Ensure that the latest version of all installed components is installed on the
+local workstation.
 
-The items may be individual components or preconfigured packages. If a
-downloaded component was not previously installed, the downloaded version is
-installed. If an earlier version of the component was previously installed, that
-version is replaced by the downloaded version.
-
-If, for example, the component \f5\fIUNICORN\-FACTORY\fR\fR depends on the
-component \f5\fIHORN\-FACTORY\fR\fR, installing the latest version of
-\f5\fIUNICORN\-FACTORY\fR\fR will cause the version of \f5\fIHORN\-FACTORY\fR\fR
-upon which it depends to be installed as well, if it is not already installed.
-The command lists all components it is about to install, and asks for
+The command lists all components it is about to update, and asks for
 confirmation before proceeding.
 
+By default, this command will update all components to their latest version.
+This can be configured by using the \-\-version flag to choose a specific
+version to update to. This version may also be a version older than the one that
+is currently installed.
 
+You can see your current Cloud SDK version by running:
 
-.SH "POSITIONAL ARGUMENTS"
-
-[\fICOMPONENT\-IDS\fR ...]
 .RS 2m
-The IDs of the components to be updated or installed.
+$ gcloud version
+.RE
+
+
+
+.SH "FLAGS"
+
+\fB\-\-version\fR \fIVERSION\fR
+.RS 2m
+An optional Cloud SDK version to update your components to. By default,
+components are updated to the latest available version.
 
 
 .RE
@@ -55,11 +53,14 @@ Run \fB$ gcloud help\fR for a description of flags available to all commands.
 
 .SH "EXAMPLES"
 
-The following command ensures that the latest version is installed for
-\f5\fICOMPONENT\-1\fR\fR, \f5\fICOMPONENT\-2\fR\fR, and all components that
-depend, directly or indirectly, on either \f5\fICOMPONENT\-1\fR\fR or
-\f5\fICOMPONENT\-2\fR\fR:
+To update all installed components to the latest version:
 
 .RS 2m
-$ gcloud components update COMPONENT\-1 COMPONENT\-2
+$ gcloud components update
+.RE
+
+To update all installed components to version 1.2.3:
+
+.RS 2m
+$ gcloud components update \-\-version 1.2.3
 .RE

@@ -8,9 +8,19 @@ START_TIME = time.time()
 # pylint:disable=g-bad-import-order
 # pylint:disable=g-import-not-at-top, We want to get the start time first.
 import os
-import re
 import signal
 import sys
+
+from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import cli
+from googlecloudsdk.core import config
+from googlecloudsdk.core import log
+from googlecloudsdk.core import metrics
+from googlecloudsdk.core import properties
+from googlecloudsdk.core.updater import local_state
+from googlecloudsdk.core.updater import update_manager
+from googlecloudsdk.core.util import platforms
+import googlecloudsdk.surface
 
 
 # Disable stack traces when people kill a command.
@@ -41,59 +51,13 @@ if hasattr(signal, 'SIGPIPE'):
   signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 
-def _GetRootContainingGoogle():
-  match = None
-  for match in re.finditer('{0}google.{0}cloud{0}sdk{0}'
-                           .format(re.escape(os.sep)), __file__):
-    pass
-  pos = match.start() if match else __file__.rfind(
-      '{0}googlecloudsdk{0}'.format(os.sep))
-  return __file__[:pos] if pos >= 0 else None
-
-
-def _SetPriorityCloudSDKPath():
-  """Put google-cloud-sdk/lib at the beginning of sys.path.
-
-  Modifying sys.path in this way allows us to always use our bundled versions
-  of libraries, even when other versions have been installed. It also allows the
-  user to install extra libraries that we cannot bundle (ie PyOpenSSL), and
-  gcloud commands can use those libraries.
-  """
-
-  module_root = _GetRootContainingGoogle()
-
-  # check if we're already set
-  if (not module_root) or (sys.path and module_root == sys.path[0]):
-    return
-  sys.path.insert(0, module_root)
-
-
 def _DoStartupChecks():
-  from googlecloudsdk.core.util import platforms
-  if not platforms.PythonVersion().IsSupported():
+  if not platforms.PythonVersion().IsCompatible():
     sys.exit(1)
   if not platforms.Platform.Current().IsSupported():
     sys.exit(1)
 
-
-_SetPriorityCloudSDKPath()
 _DoStartupChecks()
-
-
-# pylint:disable=g-import-not-at-top, We want the _SetPriorityCloudSDKPath()
-# function to be called before we try to import any CloudSDK modules.
-import googlecloudsdk
-from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import cli
-from googlecloudsdk.core import config
-from googlecloudsdk.core import log
-from googlecloudsdk.core import metrics
-from googlecloudsdk.core import properties
-from googlecloudsdk.core.updater import local_state
-from googlecloudsdk.core.updater import update_manager
-
-
-
 
 if not config.Paths().sdk_root:
   # Don't do update checks if there is no install root.
@@ -109,13 +73,20 @@ def UpdateCheck(command_path, **unused_kwargs):
     log.debug('Failed to perform update check.', exc_info=True)
 
 
-def VersionFunc():
-  _cli.Execute(['version'])
+def CreateCLI(surfaces):
+  """Generates the gcloud CLI from 'surface' folder with extra surfaces.
 
+  Args:
+    surfaces: list(tuple(dot_path, dir_path)), extra commands or subsurfaces
+              to add, where dot_path is calliope command path and dir_path
+              path to command group or command.
+  Returns:
+    calliope cli object.
+  """
+  def VersionFunc():
+    generated_cli.Execute(['version'])
 
-def CreateCLI():
-  """Generates the gcloud CLI."""
-  pkg_root = os.path.dirname(googlecloudsdk.__file__)
+  pkg_root = os.path.dirname(os.path.dirname(googlecloudsdk.surface.__file__))
   loader = cli.CLILoader(
       name='gcloud',
       command_root_directory=os.path.join(pkg_root, 'surface'),
@@ -128,30 +99,30 @@ def CreateCLI():
                          os.path.join(pkg_root, 'surface', 'beta'),
                          component='beta')
 
-  loader.AddModule('services',
-                   os.path.join(pkg_root, 'service_management', 'subcommands'),
-                   component=None)
+  for dot_path, dir_path in surfaces:
+    loader.AddModule(dot_path, dir_path, component=None)
 
   # Check for updates on shutdown but not for any of the updater commands.
   loader.RegisterPostRunHook(UpdateCheck,
                              exclude_commands=r'gcloud\.components\..*')
-  return loader.Generate()
+  generated_cli = loader.Generate()
+  return generated_cli
 
-_cli = CreateCLI()
 
-
-def main():
+def main(gcloud_cli=None):
   metrics.Started(START_TIME)
-  # TODO(user): Put a real version number here
+  # TODO(markpell): Put a real version number here
   metrics.Executions(
       'gcloud',
       local_state.InstallationState.VersionForInstalledComponent('core'))
+  if gcloud_cli is None:
+    gcloud_cli = CreateCLI([])
   try:
-    _cli.Execute()
+    gcloud_cli.Execute()
   except Exception as e:  # pylint:disable=broad-except
     log.error('gcloud crashed ({0}): {1}'.format(
         getattr(e, 'error_name', type(e).__name__),
-        _cli.SafeExceptionToString(e)))
+        gcloud_cli.SafeExceptionToString(e)))
     log.err.Print('\nIf you would like to report this issue, please run the '
                   'following command:')
     log.err.Print('  gcloud feedback')
