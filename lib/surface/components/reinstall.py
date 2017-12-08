@@ -15,6 +15,7 @@
 """The command to install/update gcloud components."""
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.components import util
 
 
 class Reinstall(base.SilentCommand):
@@ -33,4 +34,5 @@ class Reinstall(base.SilentCommand):
 
   def Run(self, args):
     """Runs the list command."""
-    self.group.update_manager.Reinstall()
+    update_manager = util.GetUpdateManager(args)
+    update_manager.Reinstall()

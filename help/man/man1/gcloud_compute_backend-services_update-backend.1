@@ -11,7 +11,7 @@ gcloud compute backend\-services update\-backend \- update an existing backend i
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute backend\-services update\-backend\fR \fINAME\fR \fB\-\-instance\-group\fR \fIINSTANCE_GROUP\fR [\fB\-\-balancing\-mode\fR\ \fIBALANCING_MODE\fR] [\fB\-\-capacity\-scaler\fR\ \fICAPACITY_SCALER\fR] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-max\-rate\fR\ \fIMAX_RATE\fR\ |\ \fB\-\-max\-rate\-per\-instance\fR\ \fIMAX_RATE_PER_INSTANCE\fR] [\fB\-\-max\-utilization\fR\ \fIMAX_UTILIZATION\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute backend\-services update\-backend\fR \fINAME\fR \fB\-\-instance\-group\fR \fIINSTANCE_GROUP\fR [\fB\-\-balancing\-mode\fR\ \fIBALANCING_MODE\fR] [\fB\-\-capacity\-scaler\fR\ \fICAPACITY_SCALER\fR] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-max\-rate\fR\ \fIMAX_RATE\fR\ |\ \fB\-\-max\-rate\-per\-instance\fR\ \fIMAX_RATE_PER_INSTANCE\fR] [\fB\-\-max\-utilization\fR\ \fIMAX_UTILIZATION\fR] [\fB\-\-instance\-group\-zone\fR\ \fIINSTANCE_GROUP_ZONE\fR\ |\ \fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -82,24 +82,7 @@ A float in the range [0, 1.0] that scales the maximum parameters for the group
 An optional, textual description for the backend.
 
 .RE
-\fB\-\-max\-rate\fR \fIMAX_RATE\fR
-.RS 2m
-Maximum requests per second (RPS) that the group can handle.
-
-.RE
-\fB\-\-max\-rate\-per\-instance\fR \fIMAX_RATE_PER_INSTANCE\fR
-.RS 2m
-The maximum per\-instance requests per second (RPS).
-
-.RE
-\fB\-\-max\-utilization\fR \fIMAX_UTILIZATION\fR
-.RS 2m
-The target CPU utilization for the group as a float in the range [0.0, 1.0].
-This flag can only be provided when the balancing mode is
-\f5\fIUTILIZATION\fR\fR.
-
-.RE
-\fB\-\-zone\fR \fIZONE\fR
+\fB\-\-instance\-group\-zone\fR \fIINSTANCE_GROUP_ZONE\fR
 .RS 2m
 The zone of the instance group to update the backend service. If not specified,
 you will be prompted to select a zone.
@@ -125,6 +108,29 @@ $ gcloud config unset compute/zone
 
 Alternatively, the zone can be stored in the environment variable
 \f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
+
+.RE
+\fB\-\-max\-rate\fR \fIMAX_RATE\fR
+.RS 2m
+Maximum requests per second (RPS) that the group can handle.
+
+.RE
+\fB\-\-max\-rate\-per\-instance\fR \fIMAX_RATE_PER_INSTANCE\fR
+.RS 2m
+The maximum per\-instance requests per second (RPS).
+
+.RE
+\fB\-\-max\-utilization\fR \fIMAX_UTILIZATION\fR
+.RS 2m
+The target CPU utilization for the group as a float in the range [0.0, 1.0].
+This flag can only be provided when the balancing mode is
+\f5\fIUTILIZATION\fR\fR.
+
+.RE
+\fB\-\-zone\fR \fIZONE\fR
+.RS 2m
+The zone of the instance group to update the backend service. DEPRECATED, use
+\-\-instance\-group\-zone flag instead.
 
 
 .RE

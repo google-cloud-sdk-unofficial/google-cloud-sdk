@@ -16,8 +16,8 @@
 
 import textwrap
 
-from googlecloudsdk.api_lib.iam import base_classes
 from googlecloudsdk.api_lib.iam import utils
+from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.core import log
 
 
@@ -65,7 +65,8 @@ class Create(base_classes.BaseIamCommand):
                 privateKeyType=utils.KeyTypeToCreateKeyType(
                     utils.KeyTypeFromString(args.key_file_type)))))
 
-    self.WriteFile(args.output, result.privateKeyData)
+    # Only the creating user has access. Set file permission to "-rw-------".
+    self.WriteFile(args.output, result.privateKeyData, make_private=True)
     log.status.Print(
         'created key [{0}] of type [{1}] as [{2}] for [{3}]'.format(
             utils.GetKeyIdFromResourceName(result.name),

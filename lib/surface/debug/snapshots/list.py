@@ -15,13 +15,12 @@
 """List command for gcloud debug snapshots command group."""
 
 import datetime
-import re
-
-import dateutil.parser
 
 from googlecloudsdk.api_lib.debug import debug
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.util import times
 
 
 class List(base.ListCommand):
@@ -37,11 +36,11 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'location_regexp', metavar='LOCATION-REGEXP', nargs='*',
+        'id_or_location_regexp', metavar='(ID|LOCATION-REGEXP)', nargs='*',
         help="""\
-            Zero or more snapshot location regular expressions. Only snapshots
-            whose locations contain one or more of these expressions will be
-            displayed.
+            Zero or more snapshot IDs, resource identifiers, or regular
+            expressions to match against snapshot locations. If present, only
+            snapshots matching one or more of these values will be displayed.
         """)
     parser.add_argument(
         '--all-users', action='store_true', default=False,
@@ -50,64 +49,46 @@ class List(base.ListCommand):
             current user.
         """)
     parser.add_argument(
-        '--include-expired', action='store_true', default=False,
+        '--include-inactive', default=300,
+        type=arg_parsers.BoundedInt(lower_bound=0, unlimited=True),
         help="""\
-            If set, include snapshots which are no longer active.
+            Include snapshots which have completed in the last INCLUDE_INACTIVE
+            seconds. If the value is "unlimited", all inactive snapshots will
+            be included.
         """)
-
-  def _ShouldInclude(self, args, snapshot):
-    """Determines if a snapshot should be included in the output.
-
-    Args:
-      args: The command-line arguments.
-      snapshot: a Breakpoint message desciribing a snapshot.
-    Returns:
-      True if the snapshot should be included based on the criteria in args.
-    """
-    # Exclude expired snapshots.
-    if not args.include_expired and snapshot.createTime:
-      age = (datetime.datetime.now(dateutil.tz.tzutc()) -
-             dateutil.parser.parse(snapshot.createTime))
-      if age.days:
-        return False
-
-    # Check if the snapshot matches the location regular expressions.
-    if not args.location_regexp:
-      return True
-    for pattern in args.location_regexp:
-      if re.search(pattern, snapshot.location):
-        return True
-    return False
 
   def Run(self, args):
     """Run the list command."""
     project_id = properties.VALUES.core.project.Get(required=True)
     debugger = debug.Debugger(project_id)
     debuggee = debugger.FindDebuggee(args.target)
-    return [
-        l for l in debuggee.ListBreakpoints(
-            include_all_users=args.all_users,
-            include_inactive=args.include_expired,
-            restrict_to_type=debugger.SNAPSHOT_TYPE)
-        if self._ShouldInclude(args, l)]
+    snapshots = debuggee.ListBreakpoints(
+        args.id_or_location_regexp, include_all_users=args.all_users,
+        include_inactive=(args.include_inactive != 0),
+        restrict_to_type=debugger.SNAPSHOT_TYPE)
+    # Filter any results more than include_inactive seconds old.
+    # include_inactive may be None, which means we do not want to filter the
+    # results.
+    if args.include_inactive > 0:
+      cutoff_time = (times.Now(times.UTC) -
+                     datetime.timedelta(seconds=args.include_inactive))
+      snapshots = [s for s in snapshots if _ShouldInclude(s, cutoff_time)]
+    return snapshots
 
   def Collection(self):
     return 'debug.snapshots'
 
-  def Format(self, args):
-    """Format for printing the results of the Run() method.
 
-    Args:
-      args: The arguments that command was run with.
-    Returns:
-      A format string
-    """
-    fields = ['id']
-    if args.all_users:
-      fields.append('userEmail:label=USER')
-    fields.append('location')
-    fields.append('short_status():label=STATUS')
-    if args.include_expired:
-      fields.append('createTime')
-    fields.append('consoleViewUrl:label=VIEW')
-    return 'table({0})'.format(','.join(fields))
+def _ShouldInclude(snapshot, cutoff_time):
+  """Determines if a snapshot should be included in the output.
+
+  Args:
+    snapshot: a Breakpoint message desciribing a snapshot.
+    cutoff_time: The oldest finalTime to include for completed snapshots.
+  Returns:
+    True if the snapshot should be included based on the criteria in args.
+  """
+  if not snapshot.isFinalState or not snapshot.finalTime:
+    return True
+  final_time = times.ParseDateTime(snapshot.finalTime, times.UTC)
+  return final_time >= cutoff_time

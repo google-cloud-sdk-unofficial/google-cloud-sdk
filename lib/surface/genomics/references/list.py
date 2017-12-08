@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import genomics_util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import list_printer
 from googlecloudsdk.third_party.apitools.base.py import list_pager
@@ -36,16 +37,15 @@ class List(base.Command):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    parser.add_argument(
-        '--md5checksums',
-        nargs='+',
-        default=[],
-        help='Only return reference sets with this checksum.')
+    parser.add_argument('--md5checksums',
+                        default=[],
+                        type=arg_parsers.ArgList(),
+                        help='Only return reference sets with this checksum.')
 
     parser.add_argument(
         '--accessions',
-        nargs='+',
         default=[],
+        type=arg_parsers.ArgList(),
         help='Only return reference sets from these accessions.')
 
     parser.add_argument(

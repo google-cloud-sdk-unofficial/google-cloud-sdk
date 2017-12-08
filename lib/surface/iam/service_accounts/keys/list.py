@@ -16,16 +16,17 @@
 from datetime import datetime
 import textwrap
 
-from googlecloudsdk.api_lib.iam import base_classes
-from googlecloudsdk.api_lib.iam import data_formats
 from googlecloudsdk.api_lib.iam import utils
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.iam import base_classes
+from googlecloudsdk.third_party.apitools.base.py import exceptions
 
 
 ZULU_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 
 
-class List(base_classes.BaseIamCommand):
+class List(base_classes.BaseIamCommand, base.ListCommand):
   """List the keys for a service account."""
 
   detailed_help = {
@@ -43,7 +44,7 @@ class List(base_classes.BaseIamCommand):
     parser.add_argument('--managed-by',
                         choices=['user', 'system', 'any'],
                         default='any',
-                        help='The types of keys to list. Can be "any", "user"'
+                        help='The types of keys to list. Can be "any", "user" '
                         'or "system". When not specified, defaults to "any".')
 
     parser.add_argument(
@@ -56,23 +57,23 @@ class List(base_classes.BaseIamCommand):
                         required=True,
                         help='A textual name to display for the account.')
 
-  @utils.CatchServiceAccountErrors
+  def Collection(self):
+    return 'iam.service_accounts.keys'
+
   def Run(self, args):
-    self.SetAddress(args.iam_account)
-    result = self.iam_client.projects_serviceAccounts_keys.List(
-        self.messages.IamProjectsServiceAccountsKeysListRequest(
-            name=utils.EmailToAccountResourceName(args.iam_account),
-            keyTypes=utils.ManagedByFromString(args.managed_by)))
+    try:
+      result = self.iam_client.projects_serviceAccounts_keys.List(
+          self.messages.IamProjectsServiceAccountsKeysListRequest(
+              name=utils.EmailToAccountResourceName(args.iam_account),
+              keyTypes=utils.ManagedByFromString(args.managed_by)))
 
-    keys = result.keys
-    if args.created_before:
-      timestamp = args.created_before
-      keys = [key
-              for key in keys
-              if datetime.strptime(key.validAfterTime, ZULU_FORMAT) < timestamp]
+      keys = result.keys
+      if args.created_before:
+        ts = args.created_before
+        keys = [key
+                for key in keys
+                if datetime.strptime(key.validAfterTime, ZULU_FORMAT) < ts]
 
-    # TODO(user): We can't use the default list printing functions until
-    # there is support for atomic names. This property is the equivalent of
-    # a COLUMN_MAP for the list printer. To be removed in the future.
-    self.data_format = data_formats.SERVICE_ACCOUNT_KEY_COLUMNS
-    return keys
+      return keys
+    except exceptions.HttpError as error:
+      raise utils.ConvertToServiceAccountException(error, args.iam_account)

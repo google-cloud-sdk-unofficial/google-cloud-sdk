@@ -17,10 +17,10 @@
 import json
 import os
 
-from googlecloudsdk.api_lib.source import context_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
+from googlecloudsdk.third_party.appengine.tools import context_util
 
 OLD_SOURCE_CONTEXT_FILENAME = 'source-context.json'
 SOURCE_CONTEXTS_FILENAME = 'source-contexts.json'

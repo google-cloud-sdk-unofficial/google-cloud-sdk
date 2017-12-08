@@ -63,7 +63,8 @@ class Filters(base.Command):
           *Terms*::
 
           A term is a _key_ _operator_ _value_ tuple, where _key_ is a dotted
-          name for a resource attribute, and _value_ may be:
+          name that evaluates to the value of a resource attribute, and _value_
+          may be:
 
           *number*:::: integer or floating point numeric constant
 
@@ -79,50 +80,63 @@ class Filters(base.Command):
 
           _key_ *=* _value_:::
 
-          True if the value of _key_ is _value_.
+          True if _key_ is equal to _value_.
+
+          _key_ *=(* _value_ ... *)*:::
+
+          True if _key_ is equal to any _value_ in the
+          (space, tab, newline, *,*) separated list.
 
           _key_ *!=* _value_:::
 
-          True if the value of _key_ is not _value_. Equivalent to
+          True if _key_ is not _value_. Equivalent to
           -_key_=_value_ and NOT _key_=_value_.
 
           _key_ *<* _value_:::
 
-          True if the value of _key_ is less than _value_. If both _key_ and
+          True if _key_ is less than _value_. If both _key_ and
           _value_ are numeric then numeric comparison is used, otherwise
           lexicographic string comparison is used.
 
           _key_ *<=* _value_:::
 
-          True if the value of _key_ is less than or equal to _value_. If both
+          True if _key_ is less than or equal to _value_. If both
           _key_ and _value_ are numeric then numeric comparison is used,
           otherwise lexicographic string comparison is used.
 
           _key_ *>=* _value_:::
 
-          True if the value of _key_ is greater than or equal to _value_. If
+          True if _key_ is greater than or equal to _value_. If
           both _key_ and _value_ are numeric then numeric comparison is used,
           otherwise lexicographic string comparison is used.
 
           _key_ *>* _value_:::
 
-          True if the value of _key_ is greater than _value_. If both _key_ and
+          True if _key_ is greater than _value_. If both _key_ and
           _value_ are numeric then numeric comparison is used, otherwise
           lexicographic string comparison is used.
 
-          _key_ *:* _value_:::
+          _key_ *:* _simple-pattern_:::
 
-          True if _value_ contains the value of _key_ using case insensitive
-          string comparison.
+          True if _key_ matches _simple-pattern_. The match is anchored (all
+          characters must match), case insensitive, and allows one *\\**
+          operator that matches any sequence of 0 or more characters. The
+          pattern `abc` matches `abc`, the pattern `abc\\*` matches `abc` and
+          `abcxyz`, the pattern `\\*xyz` matches `xyz` and `abcxyz`, and the
+          pattern `\\*` matches any non-empty string.
+
+          _key_ *:(* _simple-pattern_ ... *)*:::
+
+          True if _key_ any _simple-pattern_ in the (space, tab, newline, *,*)
+          separated list.
 
           _key_ *~* _value_:::
 
-          True if the value of _key_ matches the RE (regular expression)
-          pattern _value_.
+          True if _key_ matches the RE (regular expression) pattern _value_.
 
           _key_ *!*~ _value_:::
 
-          True if the value of _key_ does not match the RE (regular expression)
+          True if _key_ does not match the RE (regular expression)
           pattern _value_.
 
           """).format(

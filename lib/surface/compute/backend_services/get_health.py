@@ -11,16 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Command for getting health status of backend(s) in a backend service."""
 
-from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.core import exceptions
 
 
-class GetHealth(base_classes.BaseCommand):
+class GetHealth(base.Command):
   """Get backend health statuses from a backend service.
 
   *{command}* is used to request the current health status of
@@ -47,26 +48,19 @@ class GetHealth(base_classes.BaseCommand):
   def Args(parser):
     flags.AddBackendServiceName(parser)
 
-  @property
-  def service(self):
-    return self.compute.backendServices
-
-  @property
-  def resource_type(self):
-    return 'backendServiceGroupHealth'
-
-  def GetBackendService(self, _):
+  def _GetBackendService(self, client, backend_service_ref):
     """Fetches the backend service resource."""
     errors = []
+    messages = client.MESSAGES_MODULE
     objects = list(request_helper.MakeRequests(
-        requests=[(self.service,
+        requests=[(client.backendServices,
                    'Get',
-                   self.messages.ComputeBackendServicesGetRequest(
-                       project=self.project,
-                       backendService=self.backend_service_ref.Name()
+                   messages.ComputeBackendServicesGetRequest(
+                       project=backend_service_ref.project,
+                       backendService=backend_service_ref.Name()
                    ))],
-        http=self.http,
-        batch_url=self.batch_url,
+        http=client.http,
+        batch_url=self.context['batch-url'],
         errors=errors,
         custom_get_requests=None))
     if errors:
@@ -77,21 +71,24 @@ class GetHealth(base_classes.BaseCommand):
 
   def Run(self, args):
     """Returns a list of backendServiceGroupHealth objects."""
-    self.backend_service_ref = self.CreateGlobalReference(
-        args.name, resource_type='backendServices')
-    backend_service = self.GetBackendService(args)
+    backend_service_ref = self.context['resources'].Parse(
+        args.name,
+        collection='compute.backendServices')
+    client = self.context['compute']
+    backend_service = self._GetBackendService(client, backend_service_ref)
     if not backend_service.backends:
       return
 
+    messages = client.MESSAGES_MODULE
     # Call GetHealth for each group in the backend service
     requests = []
     for backend in backend_service.backends:
-      request_message = self.messages.ComputeBackendServicesGetHealthRequest(
-          resourceGroupReference=self.messages.ResourceGroupReference(
+      request_message = messages.ComputeBackendServicesGetHealthRequest(
+          resourceGroupReference=messages.ResourceGroupReference(
               group=backend.group),
-          project=self.project,
-          backendService=self.backend_service_ref.Name())
-      requests.append((self.service, 'GetHealth', request_message))
+          project=backend_service_ref.project,
+          backendService=backend_service_ref.Name())
+      requests.append((client.backendServices, 'GetHealth', request_message))
 
     # Instead of batching-up all requests and making a single
     # request_helper.MakeRequests call, go one backend at a time.
@@ -110,8 +107,8 @@ class GetHealth(base_classes.BaseCommand):
       # expected.  Having a list simplifies some of the checks that follow.
       resources = list(request_helper.MakeRequests(
           requests=[request],
-          http=self.http,
-          batch_url=self.batch_url,
+          http=client.http,
+          batch_url=self.context['batch-url'],
           errors=errors,
           custom_get_requests=None))
 

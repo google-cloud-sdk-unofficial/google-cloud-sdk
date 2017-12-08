@@ -50,21 +50,27 @@ class Delete(base.Command):
       None
     """
 
+    apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
+    genomics_messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
+
+    get_request = genomics_messages.GenomicsVariantsetsGetRequest(
+        variantSetId=str(args.variant_set_id))
+
+    variant_set = apitools_client.variantsets.Get(get_request)
+
     prompt_message = (
-        'Deleting variant set {0} will also delete all its contents '
-        '(variants, callsets, and calls).'
-        ).format(args.variant_set_id)
+        'Deleting variant set {0}: "{1}" will also delete all its contents '
+        '(variants, callsets, and calls).').format(args.variant_set_id,
+                                                   variant_set.name)
 
     if not console_io.PromptContinue(message=prompt_message):
       raise GenomicsError('Deletion aborted by user.')
-
-    apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
-    genomics_messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
 
     req = genomics_messages.GenomicsVariantsetsDeleteRequest(
         variantSetId=str(args.variant_set_id),
     )
 
     ret = apitools_client.variantsets.Delete(req)
-    log.DeletedResource('{0}'.format(args.variant_set_id))
+    log.DeletedResource('{0}: "{1}"'.format(args.variant_set_id,
+                                            variant_set.name))
     return ret

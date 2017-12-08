@@ -17,12 +17,13 @@
 import argparse
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.components import util
 from googlecloudsdk.core.console import console_io
 
 
 # This command is silent as does not produce any resource output.
 # In fact it should not run any display code, as the installation has changed
-# and current run state is invalid in relation to new instalation.
+# and current run state is invalid in relation to new installation.
 class Update(base.SilentCommand):
   """Update all of your installed components to the latest version.
 
@@ -76,6 +77,8 @@ class Update(base.SilentCommand):
   def Run(self, args):
     """Runs the list command."""
 
+    update_manager = util.GetUpdateManager(args)
+
     if args.component_ids and not args.version:
       install = console_io.PromptContinue(
           message='You have specified individual components to update.  If you '
@@ -87,10 +90,10 @@ class Update(base.SilentCommand):
           throw_if_unattended=False,
           cancel_on_no=False)
       if install:
-        self.group.update_manager.Install(
+        update_manager.Install(
             args.component_ids, allow_no_backup=args.allow_no_backup)
         return
 
-    self.group.update_manager.Update(
+    update_manager.Update(
         args.component_ids, allow_no_backup=args.allow_no_backup,
         version=args.version)

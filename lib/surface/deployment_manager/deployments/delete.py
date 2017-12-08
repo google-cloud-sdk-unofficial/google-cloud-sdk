@@ -20,7 +20,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resource_printer
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
@@ -139,21 +138,3 @@ class Delete(base.Command):
         operations.append(completed_operation)
 
     return operations
-
-  def Display(self, unused_args, result):
-    """Display prints information about what just happened to stdout.
-
-    Args:
-      unused_args: The same as the args in Run.
-
-      result: a list of delete operations
-
-    Raises:
-      ValueError: if result is None or not a list
-    """
-    if not isinstance(result, list):
-      raise ValueError('result must be a list')
-
-    resource_printer.Print(resources=result,
-                           print_format=unused_args.format or 'yaml',
-                           out=log.out)

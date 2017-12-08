@@ -1,0 +1,56 @@
+
+.TH "GCLOUD_IAM_LIST\-GRANTABLE\-ROLES" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud iam list\-grantable\-roles \- list IAM grantable roles for a resource
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud iam list\-grantable\-roles\fR \fIRESOURCE\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+This command displays the list of grantable roles for a resource. The resource
+can be referenced either via the full resource name or via a URI. User can then
+add IAM policy bindings to grant the roles.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIRESOURCE\fR
+.RS 2m
+The full resource name to get the list of roles for.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+List grantable roles for a resource identified via full resource name:
+
+.RS 2m
+$ gcloud iam list\-grantable\-roles \e
+    //compute.googleapis.com/projects/example\-project/zones/\e
+us\-central1\-f/instances/example\-instance
+.RE
+
+List grantable roles for a resource identified via URI:
+
+.RS 2m
+$ gcloud iam list\-grantable\-roles \e
+    https://www.googleapis.com/compute/v1/projects/example\-project/\e
+zones/us\-central1\-f/instances/example\-instance
+.RE

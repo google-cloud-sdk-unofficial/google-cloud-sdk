@@ -100,7 +100,7 @@ class Update(base.Command):
             description=args.description,
             addresses=args.target,
             dnsIntegration=messages.EndpointDnsIntegration(
-                networks=args.networks),
+                networks=arg_support.ExpandNetworks(args.networks, project)),
             fingerprint=fingerprint
         )
     )

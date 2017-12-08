@@ -15,6 +15,7 @@
 """The command to restore a backup of a Cloud SDK installation."""
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.components import util
 
 
 class Restore(base.SilentCommand):
@@ -33,6 +34,7 @@ class Restore(base.SilentCommand):
   def Args(_):
     pass
 
-  def Run(self, unused_args):
+  def Run(self, args):
     """Runs the list command."""
-    self.group.update_manager.Restore()
+    update_manager = util.GetUpdateManager(args)
+    update_manager.Restore()

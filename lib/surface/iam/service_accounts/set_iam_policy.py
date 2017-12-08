@@ -14,9 +14,10 @@
 """Command for setting IAM policies for service accounts."""
 
 
-from googlecloudsdk.api_lib.iam import base_classes
 from googlecloudsdk.api_lib.iam import utils
+from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.core.iam import iam_util
+from googlecloudsdk.third_party.apitools.base.py import exceptions
 
 
 class SetIamPolicy(base_classes.BaseIamCommand):
@@ -40,15 +41,16 @@ class SetIamPolicy(base_classes.BaseIamCommand):
                         help='Path to a local JSON formatted file containing '
                         'a valid policy.')
 
-  @utils.CatchServiceAccountErrors
   def Run(self, args):
-    self.SetAddress(args.account)
-    policy = iam_util.ParseJsonPolicyFile(
-        args.policy_file,
-        self.messages.Policy)
+    try:
+      policy = iam_util.ParseJsonPolicyFile(
+          args.policy_file,
+          self.messages.Policy)
 
-    return self.iam_client.projects_serviceAccounts.SetIamPolicy(
-        self.messages.IamProjectsServiceAccountsSetIamPolicyRequest(
-            resource=utils.EmailToAccountResourceName(args.account),
-            setIamPolicyRequest=self.messages.SetIamPolicyRequest(
-                policy=policy)))
+      return self.iam_client.projects_serviceAccounts.SetIamPolicy(
+          self.messages.IamProjectsServiceAccountsSetIamPolicyRequest(
+              resource=utils.EmailToAccountResourceName(args.account),
+              setIamPolicyRequest=self.messages.SetIamPolicyRequest(
+                  policy=policy)))
+    except exceptions.HttpError as error:
+      raise utils.ConvertToServiceAccountException(error, args.account)

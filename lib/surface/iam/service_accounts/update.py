@@ -15,9 +15,10 @@
 
 import httplib
 
-from googlecloudsdk.api_lib.iam import base_classes
 from googlecloudsdk.api_lib.iam import utils
 from googlecloudsdk.api_lib.util import http_retry
+from googlecloudsdk.command_lib.iam import base_classes
+from googlecloudsdk.third_party.apitools.base.py import exceptions
 
 
 class Update(base_classes.BaseIamCommand):
@@ -32,16 +33,17 @@ class Update(base_classes.BaseIamCommand):
                         metavar='IAM-ACCOUNT',
                         help='The IAM service account to update.')
 
-  @utils.CatchServiceAccountErrors
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
-    self.SetAddress(args.account)
-    current = self.iam_client.projects_serviceAccounts.Get(
-        self.messages.IamProjectsServiceAccountsGetRequest(
-            name=utils.EmailToAccountResourceName(args.account)))
+    try:
+      current = self.iam_client.projects_serviceAccounts.Get(
+          self.messages.IamProjectsServiceAccountsGetRequest(
+              name=utils.EmailToAccountResourceName(args.account)))
 
-    return self.iam_client.projects_serviceAccounts.Update(
-        self.messages.ServiceAccount(
-            name=utils.EmailToAccountResourceName(args.account),
-            etag=current.etag,
-            displayName=args.display_name))
+      return self.iam_client.projects_serviceAccounts.Update(
+          self.messages.ServiceAccount(
+              name=utils.EmailToAccountResourceName(args.account),
+              etag=current.etag,
+              displayName=args.display_name))
+    except exceptions.HttpError as error:
+      raise utils.ConvertToServiceAccountException(error, args.account)

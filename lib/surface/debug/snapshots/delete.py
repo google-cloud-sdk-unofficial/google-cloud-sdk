@@ -16,8 +16,10 @@
 
 from googlecloudsdk.api_lib.debug import debug
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import console_io
 
 
 class Delete(base.DeleteCommand):
@@ -31,10 +33,9 @@ class Delete(base.DeleteCommand):
     parser.add_argument(
         'id_or_location_regexp', metavar='(ID|LOCATION-REGEXP)', nargs='+',
         help="""\
-            A snapshot ID or a regular expression to match against snapshot
-            locations. The snapshot with the given ID, or all snapshots whose
-            locations (file:line) contain the regular expression, will be
-            deleted.
+            One or more snapshot IDs, resource identifiers, or regular
+            expressions to match against snapshot locations. All snapshots
+            matching any of these values will be deleted.
         """)
     parser.add_argument(
         '--all-users', action='store_true', default=False,
@@ -54,35 +55,23 @@ class Delete(base.DeleteCommand):
     project_id = properties.VALUES.core.project.Get(required=True)
     debugger = debug.Debugger(project_id)
     debuggee = debugger.FindDebuggee(args.target)
-    snapshots = debuggee.ListMatchingBreakpoints(
+    snapshots = debuggee.ListBreakpoints(
         args.id_or_location_regexp, include_all_users=args.all_users,
         include_inactive=args.include_inactive,
         restrict_to_type=debugger.SNAPSHOT_TYPE)
-    print 'Deleting snapshots: {0}\n----'.format(snapshots)
+    if not console_io.PromptContinue(
+        message='This command will delete {0} snapshots.'.format(
+            len(snapshots))):
+      raise calliope_exceptions.ToolException('Delete aborted by user.')
     for s in snapshots:
       debuggee.DeleteBreakpoint(s.id)
+    # Guaranteed we have at least one snapshot, since ListMatchingBreakpoints
+    # would raise an exception otherwise.
+    if len(snapshots) == 1:
+      log.status.write('Deleted 1 snapshot.\n')
+    else:
+      log.status.write('Deleted {0} snapshots.\n'.format(len(snapshots)))
     return snapshots
 
   def Collection(self):
     return 'debug.snapshots'
-
-  def Format(self, args):
-    """Format for printing the results of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-    Returns:
-      A format string
-    """
-    fields = ['id']
-    if args.all_users:
-      fields.append('userEmail:label=USER')
-    fields.append('location.format("{0}:{1}", path, line):label=LOCATION')
-    fields.append('short_status():label="STATUS BEFORE DELETION"')
-    return 'table({0})'.format(','.join(fields))
-
-  def Epilog(self, resources_were_displayed):
-    if resources_were_displayed:
-      log.status.write('Deleted Snapshots')
-    else:
-      log.status.write('No snapshots matched the requested values')

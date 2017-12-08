@@ -43,9 +43,8 @@ class Start(base.Command):
         help='The host:port to which the emulator should be bound.')
     parser.add_argument(
         '--store-on-disk',
-        required=False,
-        type=bool,
         default=True,
+        action='store_true',
         help='Whether data should be persisted to disk.')
     parser.add_argument(
         '--consistency',

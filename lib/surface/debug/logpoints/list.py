@@ -14,14 +14,11 @@
 
 """List command for gcloud debug logpoints command group."""
 
-import datetime
-import re
-
-import dateutil.parser
 
 from googlecloudsdk.api_lib.debug import debug
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.util import times
 
 
 class List(base.ListCommand):
@@ -37,11 +34,11 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'location_regexp', metavar='LOCATION-REGEXP', nargs='*',
+        'id_or_location_regexp', metavar='(ID|LOCATION-REGEXP)', nargs='*',
         help="""\
-            Zero or more logpoint location regular expressions. If present,
-            only logpoints whose locations contain one or more of these
-            expressions will be displayed.
+            Zero or more logpoint IDs, resource identifiers, or regular
+            expressions to match against logpoint locations. If present, only
+            logpoints matching one or more of these values will be displayed.
         """)
     parser.add_argument(
         '--all-users', action='store_true', default=False,
@@ -50,9 +47,10 @@ class List(base.ListCommand):
             current user.
         """)
     parser.add_argument(
-        '--include-inactive', action='store_true', default=False,
+        '--include-expired', action='store_true', default=False,
         help="""\
-            If set, include logpoints which are no longer active.
+            If set, include logpoints which have expired and are no longer
+            active.
         """)
 
   def _ShouldInclude(self, args, logpoint):
@@ -65,21 +63,12 @@ class List(base.ListCommand):
       True if the logpoint should be included based on the criteria in args.
     """
     # Exclude expired logpoints.
-    if not args.include_inactive and logpoint.createTime:
-      create_time = dateutil.parser.parse(logpoint.createTime)
-      if not create_time.tzinfo:
-        create_time.replace(tzinfo=dateutil.tz.tzutc())
-      age = (datetime.datetime.now(dateutil.tz.tzutc()) - create_time)
+    if not args.include_expired and logpoint.createTime:
+      create_time = times.ParseDateTime(logpoint.createTime, tzinfo=times.UTC)
+      age = times.Now(times.UTC) - create_time
       if age.days:
         return False
-
-    # Check if the logpoint matches the location regular expressions.
-    if not args.location_regexp:
-      return True
-    for pattern in args.location_regexp:
-      if re.search(pattern, logpoint.location):
-        return True
-    return False
+    return True
 
   def Run(self, args):
     """Run the list command."""
@@ -88,30 +77,10 @@ class List(base.ListCommand):
     debuggee = debugger.FindDebuggee(args.target)
     return [
         l for l in debuggee.ListBreakpoints(
-            include_all_users=args.all_users,
-            include_inactive=args.include_inactive,
+            args.id_or_location_regexp, include_all_users=args.all_users,
+            include_inactive=args.include_expired,
             restrict_to_type=debugger.LOGPOINT_TYPE)
         if self._ShouldInclude(args, l)]
 
   def Collection(self):
     return 'debug.logpoints'
-
-  def Format(self, args):
-    """Format for printing the results of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-    Returns:
-      A format string
-    """
-    fields = ['id']
-    if args.all_users:
-      fields.append('userEmail:label=USER')
-    fields.append('location')
-    fields.append('logLevel:label=LEVEL')
-    if args.include_inactive:
-      fields.append('createTime')
-    fields.append('short_status():label=STATUS')
-    fields.append('condition')
-    fields.append('log_message_format')
-    return 'table({0})'.format(','.join(fields))

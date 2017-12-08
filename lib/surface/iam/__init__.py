@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The super-group for the compute CLI."""
+"""The super-group for the IAM CLI."""
 import argparse
 import sys
 
@@ -23,8 +23,12 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Iam(base.Group):
+  """Manage IAM service accounts and keys."""
+  detailed_help = {
+      'brief': 'Manage IAM service accounts and keys.',
+  }
 
   def Filter(self, context, args):
     context['iam-client'] = apis.GetClientInstance('iam', 'v1')

@@ -15,6 +15,7 @@
 """The command to list installed/available gcloud components."""
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.components import util
 from googlecloudsdk.core import log
 from googlecloudsdk.core.resource import resource_printer_base
 
@@ -81,7 +82,8 @@ class List(base.ListCommand):
 
   def Run(self, args):
     """Runs the list command."""
-    result = self.group.update_manager.List()
+    update_manager = util.GetUpdateManager(args)
+    result = update_manager.List()
     (to_print, self._current_version, self._latest_version) = result
     if not to_print:
       raise StopIteration

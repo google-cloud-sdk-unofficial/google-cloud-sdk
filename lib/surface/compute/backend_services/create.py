@@ -108,12 +108,12 @@ class CreateAlpha(CreateGA):
 
     # These are in beta
     flags.AddEnableCdn(parser)
+    flags.AddSessionAffinity(parser)
+    flags.AddAffinityCookieTtl(parser)
 
     # These are added for alpha
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddHealthChecks(parser)
-    flags.AddSessionAffinity(parser)
-    flags.AddAffinityCookieTtl(parser)
 
   def CreateGlobalRequests(self, args):
     backend_service = self._CreateBackendService(args)
@@ -124,10 +124,12 @@ class CreateAlpha(CreateGA):
     if args.enable_cdn is not None:
       backend_service.enableCDN = args.enable_cdn
 
-    backend_service.sessionAffinity = (
-        self.messages.BackendService.SessionAffinityValueValuesEnum(
-            args.session_affinity))
-    backend_service.affinityCookieTtlSec = args.affinity_cookie_ttl
+    if args.session_affinity is not None:
+      backend_service.sessionAffinity = (
+          self.messages.BackendService.SessionAffinityValueValuesEnum(
+              args.session_affinity))
+    if args.affinity_cookie_ttl is not None:
+      backend_service.affinityCookieTtlSec = args.affinity_cookie_ttl
 
     request = self.messages.ComputeBackendServicesInsertRequest(
         backendService=backend_service,
@@ -152,11 +154,20 @@ class CreateBeta(CreateGA):
 
     # These are added for beta
     flags.AddEnableCdn(parser)
+    flags.AddSessionAffinity(parser)
+    flags.AddAffinityCookieTtl(parser)
 
   def CreateGlobalRequests(self, args):
     backend_service = self._CreateBackendService(args)
     if args.enable_cdn is not None:
       backend_service.enableCDN = args.enable_cdn
+
+    if args.session_affinity is not None:
+      backend_service.sessionAffinity = (
+          self.messages.BackendService.SessionAffinityValueValuesEnum(
+              args.session_affinity))
+    if args.session_affinity is not None:
+      backend_service.affinityCookieTtlSec = args.affinity_cookie_ttl
 
     request = self.messages.ComputeBackendServicesInsertRequest(
         backendService=backend_service,

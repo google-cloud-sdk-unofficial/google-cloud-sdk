@@ -15,10 +15,11 @@
 
 import httplib
 
-from googlecloudsdk.api_lib.iam import base_classes
 from googlecloudsdk.api_lib.iam import utils
 from googlecloudsdk.api_lib.util import http_retry
+from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.core.iam import iam_util
+from googlecloudsdk.third_party.apitools.base.py import exceptions
 
 
 class AddIamPolicyBinding(base_classes.BaseIamCommand):
@@ -39,18 +40,19 @@ class AddIamPolicyBinding(base_classes.BaseIamCommand):
                         'add bindings to.')
     iam_util.AddArgsForAddIamPolicyBinding(parser)
 
-  @utils.CatchServiceAccountErrors
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
-    self.SetAddress(args.account)
-    policy = self.iam_client.projects_serviceAccounts.GetIamPolicy(
-        self.messages.IamProjectsServiceAccountsGetIamPolicyRequest(
-            resource=utils.EmailToAccountResourceName(args.account)))
+    try:
+      policy = self.iam_client.projects_serviceAccounts.GetIamPolicy(
+          self.messages.IamProjectsServiceAccountsGetIamPolicyRequest(
+              resource=utils.EmailToAccountResourceName(args.account)))
 
-    iam_util.AddBindingToIamPolicy(self.messages, policy, args)
+      iam_util.AddBindingToIamPolicy(self.messages, policy, args)
 
-    return self.iam_client.projects_serviceAccounts.SetIamPolicy(
-        self.messages.IamProjectsServiceAccountsSetIamPolicyRequest(
-            resource=utils.EmailToAccountResourceName(args.account),
-            setIamPolicyRequest=self.messages.SetIamPolicyRequest(
-                policy=policy)))
+      return self.iam_client.projects_serviceAccounts.SetIamPolicy(
+          self.messages.IamProjectsServiceAccountsSetIamPolicyRequest(
+              resource=utils.EmailToAccountResourceName(args.account),
+              setIamPolicyRequest=self.messages.SetIamPolicyRequest(
+                  policy=policy)))
+    except exceptions.HttpError as error:
+      raise utils.ConvertToServiceAccountException(error, args.account)

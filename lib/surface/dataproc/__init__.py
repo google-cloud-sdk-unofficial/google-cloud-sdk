@@ -44,7 +44,6 @@ class Dataproc(base.Group):
   }
 
   def Filter(self, context, args):
-    context['http'] = self.Http()
     context['dataproc_messages'] = apis.GetMessagesModule('dataproc', 'v1')
     context['resources'] = resources
 

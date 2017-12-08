@@ -29,10 +29,10 @@ DETAILED_HELP = {
 }
 
 
-def _DoFilter(context, http, api_client_default):
+def _DoFilter(context, api_client_default):
   """Set up paramter defaults."""
   utils.SetResourceParamDefaults()
-  utils.UpdateContextEndpointEntries(context, http, api_client_default)
+  utils.UpdateContextEndpointEntries(context, api_client_default)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -45,7 +45,7 @@ class Compute(base.Group):
     pass
 
   def Filter(self, context, unused_args):
-    _DoFilter(context, self.Http(), 'v1')
+    _DoFilter(context, 'v1')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -58,7 +58,7 @@ class ComputeBeta(base.Group):
     pass
 
   def Filter(self, context, unused_args):
-    _DoFilter(context, self.Http(), 'beta')
+    _DoFilter(context, 'beta')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -71,4 +71,4 @@ class ComputeAlpha(base.Group):
     pass
 
   def Filter(self, context, unused_args):
-    _DoFilter(context, self.Http(), 'alpha')
+    _DoFilter(context, 'alpha')

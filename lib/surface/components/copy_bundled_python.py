@@ -17,6 +17,7 @@
 import sys
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.components import util
 from googlecloudsdk.core.updater import update_manager
 
 
@@ -36,7 +37,8 @@ class CopyBundledPython(base.Command):
     return 'value(python_location)'
 
   def Run(self, args):
-    if self.group.update_manager.IsPythonBundled():
+    manager = util.GetUpdateManager(args)
+    if manager.IsPythonBundled():
       python_location = update_manager.CopyPython()
     else:
       python_location = sys.executable

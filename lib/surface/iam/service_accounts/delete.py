@@ -16,13 +16,16 @@
 
 import textwrap
 
-from googlecloudsdk.api_lib.iam import base_classes
 from googlecloudsdk.api_lib.iam import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
+from googlecloudsdk.third_party.apitools.base.py import exceptions
 
 
-class Delete(base_classes.BaseIamCommand):
-  """Delete an service account from a project."""
+class Delete(base_classes.BaseIamCommand, base.DeleteCommand):
+  """Delete a service account from a project."""
 
   detailed_help = {
       'DESCRIPTION': '{description}',
@@ -35,15 +38,20 @@ class Delete(base_classes.BaseIamCommand):
 
   @staticmethod
   def Args(parser):
+    # TODO(user): add tab completion.
     parser.add_argument('account',
                         metavar='IAM-ACCOUNT',
                         help='The service account to delete.')
 
-  @utils.CatchServiceAccountErrors
   def Run(self, args):
-    self.SetAddress(args.account)
-    self.iam_client.projects_serviceAccounts.Delete(
-        self.messages.IamProjectsServiceAccountsDeleteRequest(
-            name=utils.EmailToAccountResourceName(args.account)))
+    try:
+      console_io.PromptContinue(message='You are about to delete service '
+                                        'account [{0}].'.format(args.account),
+                                cancel_on_no=True)
+      self.iam_client.projects_serviceAccounts.Delete(
+          self.messages.IamProjectsServiceAccountsDeleteRequest(
+              name=utils.EmailToAccountResourceName(args.account)))
 
-    log.status.Print('deleted service account [{0}]'.format(args.account))
+      log.status.Print('deleted service account [{0}]'.format(args.account))
+    except exceptions.HttpError as error:
+      raise utils.ConvertToServiceAccountException(error, args.account)

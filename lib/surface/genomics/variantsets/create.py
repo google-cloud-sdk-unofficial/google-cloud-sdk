@@ -29,9 +29,18 @@ class Create(base.Command):
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument(
+        '--name', type=str,
+        help='The user-defined name of the variant set. '
+        'Name does not uniquely identify a variant set. '
+        'It is for descriptive purposes only.')
+    parser.add_argument(
         '--dataset-id',
-        type=int, help='The ID of the dataset the variant set will belong to.',
+        type=str,
+        help='The ID of the dataset the variant set will belong to.',
         required=True)
+    parser.add_argument('--description',
+                        type=str,
+                        help='A description of the variant set.')
     parser.add_argument(
         '--reference-set-id',
         type=str, help='The reference set the variant set will be associated '
@@ -56,9 +65,10 @@ class Create(base.Command):
     genomics_messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
 
     variantset = genomics_messages.VariantSet(
-        datasetId=str(args.dataset_id),
+        datasetId=args.dataset_id,
         referenceSetId=args.reference_set_id,
-    )
+        name=args.name,
+        description=args.description)
 
     return apitools_client.variantsets.Create(variantset)
 
@@ -69,6 +79,6 @@ class Create(base.Command):
       args_unused: The arguments that command was run with.
       variantset: The value returned from the Run() method.
     """
-    log.Print('Created variant set id: {0}, belonging to dataset id: {1}'
-              .format(variantset.id, variantset.datasetId))
+    log.Print('Created variant set id: {0} "{1}", belonging to dataset id: {2}'
+              .format(variantset.id, variantset.name, variantset.datasetId))
     log.CreatedResource(variantset.id)

@@ -16,12 +16,15 @@
 
 import textwrap
 
-from googlecloudsdk.api_lib.iam import base_classes
 from googlecloudsdk.api_lib.iam import utils
-from googlecloudsdk.calliope.exceptions import ToolException
+from googlecloudsdk.api_lib.util import http_error_handler
+from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope.exceptions import InvalidArgumentException
+from googlecloudsdk.command_lib.iam import base_classes
+from googlecloudsdk.core import properties
 
 
-class Create(base_classes.BaseIamCommand):
+class Create(base_classes.BaseIamCommand, base.CreateCommand):
   """Create an service account for a project.
 
   This command creates a service account with the provided name. For
@@ -49,20 +52,21 @@ class Create(base_classes.BaseIamCommand):
     parser.add_argument('name',
                         metavar='NAME',
                         help='The internal name of the new service account. '
-                        'Used to generate an IAM-ACCOUNT, which must be passed '
-                        'to subsequent commands.')
+                        'Used to generate an IAM-ACCOUNT (an IAM internal '
+                        'email address used as an identifier of service '
+                        'account), which must be passed to subsequent '
+                        'commands.')
 
-  @utils.CatchHttpErrors
+  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     if not utils.ValidateAccountId(args.name):
-      raise ToolException('[{0}] is an invalid name'.format(args.name))
+      raise InvalidArgumentException(args.name, 'invalid name')
 
-    if not self.project or not self.project.Get():
-      raise ToolException('No project id set')
+    project = properties.VALUES.core.project.Get(required=True)
 
     return self.iam_client.projects_serviceAccounts.Create(
         self.messages.IamProjectsServiceAccountsCreateRequest(
-            name=utils.ProjectToProjectResourceName(self.project.Get()),
+            name=utils.ProjectToProjectResourceName(project),
             createServiceAccountRequest=
             self.messages.CreateServiceAccountRequest(
                 accountId=args.name,

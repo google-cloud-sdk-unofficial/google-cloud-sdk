@@ -32,7 +32,8 @@ class UpdateBackend(base_classes.ReadWriteCommand):
     flags.AddBackendServiceName(parser)
     backend_flags.AddDescription(parser)
     backend_flags.AddInstanceGroup(
-        parser, operation_type='update', multizonal=False)
+        parser, operation_type='update', multizonal=False,
+        with_deprecated_zone=True)
     backend_flags.AddBalancingMode(parser)
     backend_flags.AddMaxUtilization(parser)
     backend_flags.AddRate(parser)
@@ -66,9 +67,12 @@ class UpdateBackend(base_classes.ReadWriteCommand):
 
   def CreateGroupReference(self, args):
     return self.CreateZonalReference(
-        args.instance_group, args.zone, resource_type='instanceGroups')
+        args.instance_group,
+        args.instance_group_zone,
+        resource_type='instanceGroups')
 
   def Modify(self, args, existing):
+    backend_flags.WarnOnDeprecatedFlags(args)
     replacement = copy.deepcopy(existing)
 
     group_ref = self.CreateGroupReference(args)
@@ -164,7 +168,9 @@ class UpdateBackendAlpha(UpdateBackend,
 
   def CreateGroupReference(self, args):
     return self.CreateInstanceGroupReference(
-        name=args.instance_group, region=args.region, zone=args.zone,
+        name=args.instance_group,
+        region=args.instance_group_region,
+        zone=args.instance_group_zone,
         zonal_resource_type='instanceGroups',
         regional_resource_type='regionInstanceGroups')
 

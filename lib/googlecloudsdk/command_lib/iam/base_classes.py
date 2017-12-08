@@ -14,15 +14,11 @@
 """Base classes for abstracting away common logic."""
 
 import abc
-import os.path
+import os
 
-from googlecloudsdk.api_lib.iam import utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope.exceptions import ToolException
-from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resource_printer
-from googlecloudsdk.core.console import console_io
+from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.core.util import files
 
 
 class BaseIamCommand(base.Command):
@@ -35,16 +31,6 @@ class BaseIamCommand(base.Command):
     self.key_id = None
     self.data_format = None
     super(BaseIamCommand, self).__init__(*args, **kwargs)
-
-  @property
-  def http(self):
-    """Specifies the http client to be used for requests."""
-    return self.context['http']
-
-  @property
-  def project(self):
-    """Specifies the user's project."""
-    return properties.VALUES.core.project
 
   @property
   def iam_client(self):
@@ -60,48 +46,6 @@ class BaseIamCommand(base.Command):
   def messages(self):
     """Specifies the iam messages namespace."""
     return self.context['iam-messages']
-
-  def Display(self, args, resources):
-    """Prints the given resources; uses a list printer if Run gave us a list."""
-    if not resources:
-      return
-
-    if isinstance(resources, list):
-      console_io.PrintExtendedList(resources, self.data_format)
-    else:
-      resource_printer.Print(resources=resources,
-                             print_format='yaml',
-                             out=log.out)
-
-  def SetAddress(self, address):
-    """Sets the IAM address for error handling.
-
-    Args:
-      address: An IAM email address.
-
-    Raises:
-      ToolException: The given address was not a valid email.
-    """
-    if not utils.ValidateEmail(address):
-      raise ToolException('IAM address must be an email, given [{0}]'.format(
-          address))
-    self.address = address
-
-  def SetAddressAndKey(self, address, key_id):
-    """Sets the IAM address and key for error handling.
-
-    Args:
-      address: An IAM email address.
-      key_id: A key id.
-
-    Raises:
-      ToolException: The given address was not a valid email, or the given key
-        wasn't a valid key.
-    """
-    self.SetAddress(address)
-    if not utils.ValidateKeyId(key_id):
-      raise ToolException('[{0}] is not a valid key'.format(address))
-    self.key_id = key_id
 
   # TODO(user): b/25212870
   # We don't yet have support for atomic names in gcloud resources. When we
@@ -126,29 +70,36 @@ class BaseIamCommand(base.Command):
       ToolException: An error occurred when trying to read the file.
     """
     if not os.path.exists(file_name):
-      raise ToolException('The given file could not be found: {0}'.format(
-          file_name))
+      raise exceptions.ToolException(
+          'The given file could not be found: {0}'.format(file_name))
 
     try:
       with open(file_name, 'rb') as handle:
         return handle.read()
     except EnvironmentError:
-      raise ToolException('The given file could not be read: {0}'.format(
-          file_name))
+      raise exceptions.ToolException(
+          'The given file could not be read: {0}'.format(file_name))
 
-  def WriteFile(self, file_name, contents):
+  def WriteFile(self, file_name, contents, make_private=False):
     """Writes a file, automatically handling all relevant errors.
 
     Args:
       file_name: The file to write
       contents: The data to write into the file
+      make_private: If True, set the permission of the file to user
+                    read/write only. Otherwise set it as public.
+                    Default to False.
 
     Raises:
       ToolException: An error occurred when trying to write the file.
     """
     try:
-      with open(file_name, 'wb') as handle:
-        handle.write(contents)
+      if make_private:
+        with files.OpenForWritingPrivate(file_name, access_mode='wb') as handle:
+          handle.write(contents)
+      else:
+        with open(file_name, 'wb') as handle:
+          handle.write(contents)
     except EnvironmentError:
-      raise ToolException('The given file could not be written: {0}'.format(
-          file_name))
+      raise exceptions.ToolException(
+          'The given file could not be written: {0}'.format(file_name))

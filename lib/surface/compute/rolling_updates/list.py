@@ -61,11 +61,10 @@ class List(base.ListCommand):
         zone=properties.VALUES.compute.zone.Get(required=True))
     if args.group:
       request.filter = 'instanceGroup eq %s' % args.group
-    limit = updater_util.SanitizeLimitFlag(args.limit)
 
     try:
       for item in list_pager.YieldFromList(
-          client.rollingUpdates, request, limit=limit):
+          client.rollingUpdates, request, limit=args.limit):
         # TODO(user): Consider getting rid of instance group manager in api.
         if item.instanceGroup:
           item.instanceGroupManager = item.instanceGroup

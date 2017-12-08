@@ -27,8 +27,41 @@ class Logpoints(base.Group):
   """
 
   detailed_help = {
-      # TODO(user) Add some examples
-      # 'EXAMPLES': ''
+      'EXAMPLES': """
+      The following command would log the value of the "name" attribute
+      of the "product" variable whenever any request executes line 123 of
+      the file product.py:
+
+          $ {command} create product.py:123 \
+              "No description for {product.name}"
+
+      The log output will appear wherever explicit logging output from your
+      program is normally written. For example, for an App Engine Standard
+      application, the output would appear in the request log.
+
+      If you want to log output only when certain runtime conditions are met,
+      you can add a "--condition" option:
+
+          $ {command} create product.py:123 \
+              "Suspicious price: {product.name} costs {price}" \
+              --condition "price < .50"
+
+      Logpoints remain active for 24 hours after creation. If you want to
+      disable a logpoint, use the logpoints delete command:
+
+          $ {command} delete product.*
+
+      The above command would delete all logpoints in any file whose name
+      begins with "product". If you want to delete only a single logpoint, you
+      should first determine the logpoint ID using the logpoints list command,
+      then delete that specific ID:
+
+          $ {command} list
+          ID                        LOCATION    ...
+          567890abcdef1-1234-56789  product.py:123  ...
+          $ {command} delete 567890abcdef1-1234-56789
+
+      """
   }
 
   @staticmethod

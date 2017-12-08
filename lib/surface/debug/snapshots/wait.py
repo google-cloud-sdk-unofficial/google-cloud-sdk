@@ -14,34 +14,14 @@
 
 """Wait command for gcloud debug snapshots command group."""
 
-import re
-
 from googlecloudsdk.api_lib.debug import debug
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-def _MatchesIdOrRegexp(snapshot, ids, patterns):
-  """Check if a snapshot matches any of the given IDs or regexps.
-
-  Args:
-    snapshot: Any debug snapshot object.
-    ids: A set of strings to search for exact matches on snapshot ID.
-    patterns: A list of regular expressions to match against the file:line
-      location of the snapshot.
-  Returns:
-    True if the snapshot matches any ID or pattern.
-  """
-  if snapshot.id in ids:
-    return True
-  for p in patterns:
-    if p.search(snapshot.location):
-      return True
-  return False
-
-
-class Wait(base.Command):
+class Wait(base.ListCommand):
   """Wait for debug snapshots to complete."""
 
   detailed_help = {
@@ -56,12 +36,11 @@ class Wait(base.Command):
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'id_or_location_regexp', nargs='+',
+        'id_or_location_regexp', metavar='(ID|LOCATION-REGEXP)', nargs='+',
         help="""\
-            A snapshot ID or a regular expression to match against snapshot
-            locations. The command will wait for a snapshot with one of the
-            given IDs, or any snapshot whose location (file:line) contains the
-            regular expression, to complete.
+            One or more snapshot IDs, resource identifiers, or regular
+            expressions to match against snapshot locations. The command will
+            wait for any snapshots matching these criteria to complete.
         """)
     parser.add_argument(
         '--all', action='store_true', default=False,
@@ -76,9 +55,12 @@ class Wait(base.Command):
             only the current user.
         """)
     parser.add_argument(
-        '--timeout', default=5, type=int,
+        '--timeout',
+        type=arg_parsers.BoundedInt(lower_bound=0, unlimited=True),
+        default='unlimited',
         help="""\
-            Maximum number of seconds to wait for a snapshot to complete.
+            Maximum number of seconds to wait for a snapshot to complete. By
+            default, wait indefinitely.
         """)
 
   def Run(self, args):
@@ -86,26 +68,12 @@ class Wait(base.Command):
     project_id = properties.VALUES.core.project.Get(required=True)
     debugger = debug.Debugger(project_id)
     debuggee = debugger.FindDebuggee(args.target)
-    ids = set(args.id_or_location_regexp)
-    patterns = [re.compile(r) for r in args.id_or_location_regexp]
     snapshots = [
         s for s in debuggee.ListBreakpoints(
-            include_all_users=args.all_users,
-            include_inactive=True)
-        if _MatchesIdOrRegexp(s, ids, patterns)]
-    all_ids = set([s.id for s in snapshots])
-    explicit_ids = [i for i in args.id_or_location_regexp if i in all_ids]
+            args.id_or_location_regexp,
+            include_all_users=args.all_users)]
 
-    # Look for all explicitly-requested snapshots plus any matching snapshots
-    # that are not completed. Completed snapshots which were not requested would
-    # just be noise in the output.
-    snapshots = [s for s in snapshots
-                 if s.id in explicit_ids or not s.isFinalState]
-
-    # Preserve the order of any explicitly-requested ids. Put the others in
-    # any order.
-    ids = explicit_ids + [s.id for s in snapshots if s.id not in explicit_ids]
-
+    ids = [s.id for s in snapshots]
     if not ids:
       self._is_partial = False
       return []
@@ -128,19 +96,3 @@ class Wait(base.Command):
       log.status.Print('No snapshots completed before timeout')
     elif self._is_partial:
       log.status.Print('Partial results - Not all snapshots completed')
-
-  def Format(self, args):
-    """Format for printing the results of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-    Returns:
-      A format string
-    """
-    fields = ['id']
-    if args.all_users:
-      fields.append('userEmail:label=USER')
-    fields.append('location')
-    fields.append('short_status():label=STATUS')
-    fields.append('consoleViewUrl:label=VIEW')
-    return 'table({0})'.format(','.join(fields))

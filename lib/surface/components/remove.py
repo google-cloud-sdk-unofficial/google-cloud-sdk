@@ -17,6 +17,7 @@
 import argparse
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.components import util
 
 
 class Remove(base.SilentCommand):
@@ -58,5 +59,6 @@ class Remove(base.SilentCommand):
 
   def Run(self, args):
     """Runs the list command."""
-    self.group.update_manager.Remove(
+    update_manager = util.GetUpdateManager(args)
+    update_manager.Remove(
         args.component_ids, allow_no_backup=args.allow_no_backup)

@@ -62,8 +62,6 @@ class Run(base.Command):
 
     parser.add_argument(
         '--inputs',
-        nargs='+',
-        default=[],
         category=base.COMMONLY_USED_FLAGS,
         type=arg_parsers.ArgDict(),
         help='''Map of input PipelineParameter names to values.
@@ -74,8 +72,6 @@ class Run(base.Command):
 
     parser.add_argument(
         '--outputs',
-        nargs='+',
-        default=[],
         category=base.COMMONLY_USED_FLAGS,
         type=arg_parsers.ArgDict(),
         help='''Map of output PipelineParameter names to values.
@@ -130,7 +126,7 @@ class Run(base.Command):
 
     parser.add_argument(
         '--service-account-scopes',
-        nargs='+',
+        type=arg_parsers.ArgList(),
         default=[],
         help='''List of additional scopes to be made available for this service
              account. The following scopes are always requested:

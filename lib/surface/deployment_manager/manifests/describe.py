@@ -17,13 +17,11 @@
 from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resource_printer
 from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
-class Describe(base.Command):
+class Describe(base.DescribeCommand):
   """Provide information about a manifest.
 
   This command prints out all available details about a manifest.
@@ -77,22 +75,3 @@ class Describe(base.Command):
       )
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(dm_v2_util.GetError(error))
-
-  def Display(self, unused_args, result):
-    """Display prints information about what just happened to stdout.
-
-    Args:
-      unused_args: The same as the args in Run.
-
-      result: a Manifest object to display.
-
-    Raises:
-      ValueError: if result is None or not a Manifest
-    """
-    messages = self.context['deploymentmanager-messages']
-    if not isinstance(result, messages.Manifest):
-      raise ValueError('result must be a Manifest')
-
-    resource_printer.Print(resources=result,
-                           print_format=unused_args.format or 'yaml',
-                           out=log.out)

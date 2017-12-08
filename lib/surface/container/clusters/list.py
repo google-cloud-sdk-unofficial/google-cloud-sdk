@@ -51,9 +51,11 @@ class List(base.Command):
     zone = None
     if args.zone:
       zone = adapter.registry.Parse(args.zone, collection='compute.zones').zone
-
+    def sort_key(cluster):
+      return (cluster.zone, cluster.name)
     try:
       clusters = adapter.ListClusters(project, zone)
+      clusters.clusters = sorted(clusters.clusters, key=sort_key)
 
       if clusters.missingZones:
         log.warning(
@@ -84,7 +86,8 @@ class List(base.Command):
       if unsupported:
         self._upgrade_hint += UpgradeHelpText.UNSUPPORTED
       if self._upgrade_hint:
-        self._upgrade_hint += UpgradeHelpText.UPGRADE_COMMAND.format(name='NAME')
+        self._upgrade_hint += UpgradeHelpText.UPGRADE_COMMAND.format(
+            name='NAME')
       return clusters
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(util.GetError(error))

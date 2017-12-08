@@ -16,8 +16,9 @@
 
 import textwrap
 
-from googlecloudsdk.api_lib.iam import base_classes
 from googlecloudsdk.api_lib.iam import utils
+from googlecloudsdk.command_lib.iam import base_classes
+from googlecloudsdk.third_party.apitools.base.py import exceptions
 
 
 class GetIamPolicy(base_classes.BaseIamCommand):
@@ -39,9 +40,10 @@ class GetIamPolicy(base_classes.BaseIamCommand):
                         help='The service account whose policy to '
                         'get.')
 
-  @utils.CatchServiceAccountErrors
   def Run(self, args):
-    self.SetAddress(args.account)
-    return self.iam_client.projects_serviceAccounts.GetIamPolicy(
-        self.messages.IamProjectsServiceAccountsGetIamPolicyRequest(
-            resource=utils.EmailToAccountResourceName(args.account)))
+    try:
+      return self.iam_client.projects_serviceAccounts.GetIamPolicy(
+          self.messages.IamProjectsServiceAccountsGetIamPolicyRequest(
+              resource=utils.EmailToAccountResourceName(args.account)))
+    except exceptions.HttpError as error:
+      raise utils.ConvertToServiceAccountException(error, args.account)

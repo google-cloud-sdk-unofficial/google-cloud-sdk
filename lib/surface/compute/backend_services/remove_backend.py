@@ -23,13 +23,6 @@ from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
-def _AddArgs(parser, multizonal=False):
-  """Adds args."""
-  backend_flags.AddInstanceGroup(
-      parser, operation_type='remove from', multizonal=multizonal)
-  flags.AddBackendServiceName(parser)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class RemoveBackend(base_classes.ReadWriteCommand):
   """Remove a backend from a backend service.
@@ -45,7 +38,10 @@ class RemoveBackend(base_classes.ReadWriteCommand):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser, multizonal=False)
+    backend_flags.AddInstanceGroup(
+        parser, operation_type='remove from', multizonal=False,
+        with_deprecated_zone=True)
+    flags.AddBackendServiceName(parser)
 
   @property
   def service(self):
@@ -75,9 +71,12 @@ class RemoveBackend(base_classes.ReadWriteCommand):
 
   def CreateGroupReference(self, args):
     return self.CreateZonalReference(
-        args.instance_group, args.zone, resource_type='instanceGroups')
+        args.instance_group,
+        args.instance_group_zone,
+        resource_type='instanceGroups')
 
   def Modify(self, args, existing):
+    backend_flags.WarnOnDeprecatedFlags(args)
     replacement = copy.deepcopy(existing)
 
     group_ref = self.CreateGroupReference(args)
@@ -92,7 +91,9 @@ class RemoveBackend(base_classes.ReadWriteCommand):
     if backend_idx is None:
       raise exceptions.ToolException(
           'Backend [{0}] in zone [{1}] is not a backend of backend service '
-          '[{2}].'.format(args.instance_group, args.zone, args.name))
+          '[{2}].'.format(group_ref.Name(),
+                          group_ref.zone,
+                          args.name))
     else:
       replacement.backends.pop(backend_idx)
 
@@ -115,10 +116,14 @@ class RemoveBackendAlpha(RemoveBackend,
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser, multizonal=True)
+    backend_flags.AddInstanceGroup(
+        parser, operation_type='remove from', multizonal=True)
+    flags.AddBackendServiceName(parser)
 
   def CreateGroupReference(self, args):
     return self.CreateInstanceGroupReference(
-        name=args.instance_group, region=args.region, zone=args.zone,
+        name=args.instance_group,
+        region=args.instance_group_region,
+        zone=args.instance_group_zone,
         zonal_resource_type='instanceGroups',
         regional_resource_type='regionInstanceGroups')

@@ -16,11 +16,13 @@
 
 import textwrap
 
-from googlecloudsdk.api_lib.iam import base_classes
 from googlecloudsdk.api_lib.iam import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.iam import base_classes
+from googlecloudsdk.third_party.apitools.base.py import exceptions
 
 
-class Describe(base_classes.BaseIamCommand):
+class Describe(base_classes.BaseIamCommand, base.DescribeCommand):
   """Show metadata for a service account from a project."""
 
   detailed_help = {
@@ -45,14 +47,15 @@ class Describe(base_classes.BaseIamCommand):
                         metavar='IAM-ACCOUNT',
                         help='The service account to describe.')
 
-  @utils.CatchServiceAccountErrors
   def Run(self, args):
-    self.SetAddress(args.account)
-    # TODO(user): b/25212870
-    # gcloud's resource support doesn't yet work for atomic names. When it does
-    # this needs to be rewritten to use it.
-    # ref = self.ParseServiceAccount(args.account)
-    # return self.iam_client.projects_serviceAccounts.Get(ref.Request())
-    return self.iam_client.projects_serviceAccounts.Get(
-        self.messages.IamProjectsServiceAccountsGetRequest(
-            name=utils.EmailToAccountResourceName(args.account)))
+    try:
+      # TODO(user): b/25212870
+      # gcloud's resource support doesn't yet work for atomic names. When it
+      # does this needs to be rewritten to use it.
+      # ref = self.ParseServiceAccount(args.account)
+      # return self.iam_client.projects_serviceAccounts.Get(ref.Request())
+      return self.iam_client.projects_serviceAccounts.Get(
+          self.messages.IamProjectsServiceAccountsGetRequest(
+              name=utils.EmailToAccountResourceName(args.account)))
+    except exceptions.HttpError as error:
+      raise utils.ConvertToServiceAccountException(error, args.account)

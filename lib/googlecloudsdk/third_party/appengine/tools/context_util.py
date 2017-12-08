@@ -15,14 +15,10 @@
 """The implementation of generating a source context file."""
 
 import json
+import logging
 import os
 import re
 import subprocess
-
-from googlecloudsdk.core import exceptions
-from googlecloudsdk.core import log
-from googlecloudsdk.core.util import files
-from googlecloudsdk.third_party.py27 import py27_subprocess as subprocess
 
 
 _REMOTE_URL_PATTERN = r'remote\.(.*)\.url'
@@ -41,7 +37,7 @@ CONTEXT_FILENAME = 'source-context.json'
 EXT_CONTEXT_FILENAME = 'source-contexts.json'
 
 
-class GenerateSourceContextError(exceptions.Error):
+class GenerateSourceContextError(Exception):
   """An error occurred while trying to create the source context."""
   pass
 
@@ -175,7 +171,8 @@ def GenerateSourceContext(source_directory, output_file):
   # Spit out the JSON source context blob.
   output_file = os.path.abspath(output_file)
   output_dir, unused_name = os.path.split(output_file)
-  files.MakeDir(output_dir)
+  if not os.path.isdir(output_dir):
+    os.makedirs(output_dir, mode=0777)
   with open(output_file, 'w') as f:
     json.dump(source_context, f, indent=2, sort_keys=True)
 
@@ -266,10 +263,10 @@ def CreateContextFiles(output_dir, source_contexts, overwrite=False,
           json.dump(context_object, f)
         created.append(context_filename)
   except IOError as e:
-    log.warn('Could not generate [{0}]: {1}'.format(context_filename, e))
+    logging.warn('Could not generate [%s]: %s', context_filename, e)
   except GenerateSourceContextError as e:
-    log.info('Could not select best source context [{0}]: {1}'.format(
-        source_contexts, e))
+    logging.info('Could not select best source context [%s]: %s',
+                 source_contexts, e)
 
   return created
 
@@ -286,7 +283,7 @@ def _CallGit(cwd, *args):
   try:
     return subprocess.check_output(['git'] + list(args), cwd=cwd)
   except (OSError, subprocess.CalledProcessError) as e:
-    log.debug('Could not call git with args %s: %s', args, e)
+    logging.debug('Could not call git with args %s: %s', args, e)
     return None
 
 
@@ -323,8 +320,8 @@ def _GetGitRemoteUrls(source_directory):
     # Each line looks like "remote.<name>.url <url>.
     config_line_parts = config_line.split(' ')
     if len(config_line_parts) != 2:
-      log.debug('Skipping unexpected config line, incorrect segments: %s',
-                config_line)
+      logging.debug('Skipping unexpected config line, incorrect segments: %s',
+                    config_line)
       continue
 
     # Extract the two parts, then find the name of the remote.
@@ -333,8 +330,8 @@ def _GetGitRemoteUrls(source_directory):
     remote_url_name_match = re.match(
         _REMOTE_URL_PATTERN, remote_url_config_name)
     if not remote_url_name_match:
-      log.debug('Skipping unexpected config line, could not match remote: %s',
-                config_line)
+      logging.debug('Skipping unexpected config line, could not match '
+                    'remote: %s', config_line)
       continue
     remote_url_name = remote_url_name_match.group(1)
 
@@ -425,7 +422,7 @@ def _GetJsonFileCreator(name, json_object):
     cleanup function that will delete the file.
   """
   if os.path.exists(name):
-    log.warn('{0} already exists. It will not be updated.'.format(name))
+    logging.warn('%s already exists. It will not be updated.', name)
   def Cleanup():
     os.remove(name)
   def Generate():
@@ -433,7 +430,7 @@ def _GetJsonFileCreator(name, json_object):
       with open(name, 'w') as f:
         json.dump(json_object, f)
     except IOError as e:
-      log.warn('Could not generate [{0}]: {1}'.format(name, e))
+      logging.warn('Could not generate [%s]: %s', name, e)
     return Cleanup
   return Generate
 
@@ -453,7 +450,7 @@ def _GetContextFileCreator(output_dir, contexts):
   try:
     context = BestSourceContext(contexts, output_dir)
   except GenerateSourceContextError as e:
-    log.info('Could not generate [{0}]: {1}'.format(name, e))
+    logging.warn('Could not generate [%s]: %s', name, e)
     # Return a no-op creator function with a no-op cleaner.
     return lambda: (lambda: None)
   return _GetJsonFileCreator(name, context)
@@ -491,8 +488,8 @@ def _GetSourceContexts(source_dir):
     # No valid source contexts.
     source_contexts = []
   if not source_contexts:
-    log.info(
-        'Could not find any remote repositories associated with [{0}]. '
+    logging.info(
+        'Could not find any remote repositories associated with [%s]. '
         'Cloud diagnostic tools may not be able to display the correct '
-        'source code for this deployment.'.format(source_dir))
+        'source code for this deployment.', source_dir)
   return source_contexts

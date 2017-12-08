@@ -17,10 +17,8 @@
 from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resource_printer
 from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 # Number of seconds (approximately) to wait for stop operation to complete.
@@ -142,29 +140,3 @@ class Stop(base.Command):
         return response.resources if response.resources else []
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(dm_v2_util.GetError(error))
-
-  def Display(self, unused_args, result):
-    """Display prints information about what just happened to stdout.
-
-    Args:
-      unused_args: The same as the args in Run.
-
-      result: an Operation (may be in progress or completed) to display
-          or a list of Resources, if a synchronous stop completed
-          successfully.
-
-    Raises:
-      ValueError: if result is None or not a dict
-    """
-    messages = self.context['deploymentmanager-messages']
-    if isinstance(result, messages.Operation):
-      resource_printer.Print(resources=result,
-                             print_format=unused_args.format or 'yaml',
-                             out=log.out)
-    elif isinstance(result, list) and (
-        not result or isinstance(result[0], messages.Resource)):
-      list_printer.PrintResourceList('deploymentmanagerv2.resources',
-                                     result)
-    else:
-      raise ValueError('result must be an Operation or list of Resources')
-

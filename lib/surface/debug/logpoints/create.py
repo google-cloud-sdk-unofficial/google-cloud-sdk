@@ -76,7 +76,7 @@ class Create(base.CreateCommand):
             can be "info", "warning", or "error".
         """)
     parser.add_argument(
-        '--wait', default=5,
+        '--wait', default=10,
         help="""\
             The number of seconds to wait to ensure that no error is returned
             from a debugger agent when creating the logpoint. When a logpoint
@@ -103,7 +103,7 @@ class Create(base.CreateCommand):
     return final_logpoint or logpoint
 
   def Collection(self):
-    return 'debug.logpoints'
+    return 'debug.logpoints.create'
 
   def Format(self, args):
     return self.ListFormat(args)

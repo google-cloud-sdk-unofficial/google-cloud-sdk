@@ -16,8 +16,10 @@
 
 from googlecloudsdk.api_lib.debug import debug
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import console_io
 
 
 class Delete(base.DeleteCommand):
@@ -31,10 +33,9 @@ class Delete(base.DeleteCommand):
     parser.add_argument(
         'id_or_location_regexp', metavar='(ID|LOCATION-REGEXP)', nargs='+',
         help="""\
-            A logpoint ID or a regular expression to match against logpoint
-            locations. The logpoint with the given ID, or all logpoints whose
-            locations (file:line) contain the regular expression, will be
-            deleted.
+            One or more logpoint IDs, resource identifiers, or regular
+            expressions to match against logpoint locations. All logpoints
+            matching any of these values will be deleted.
         """)
     parser.add_argument(
         '--all-users', action='store_true', default=False,
@@ -57,35 +58,23 @@ class Delete(base.DeleteCommand):
     project_id = properties.VALUES.core.project.Get(required=True)
     debugger = debug.Debugger(project_id)
     debuggee = debugger.FindDebuggee(args.target)
-    logpoints = debuggee.ListMatchingBreakpoints(
+    logpoints = debuggee.ListBreakpoints(
         args.id_or_location_regexp, include_all_users=args.all_users,
         include_inactive=args.include_inactive,
         restrict_to_type=debugger.LOGPOINT_TYPE)
+    if not console_io.PromptContinue(
+        message='This command will delete {0} logpoints.'.format(
+            len(logpoints))):
+      raise calliope_exceptions.ToolException('Delete aborted by user.')
     for s in logpoints:
       debuggee.DeleteBreakpoint(s.id)
+    # Guaranteed we have at least one logpoint, since ListMatchingBreakpoints
+    # would raise an exception otherwise.
+    if len(logpoints) == 1:
+      log.status.write('Deleted 1 logpoint.\n')
+    else:
+      log.status.write('Deleted {0} logpoints.\n'.format(len(logpoints)))
     return logpoints
 
   def Collection(self):
     return 'debug.logpoints'
-
-  def Format(self, args):
-    """Format for printing the results of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-    Returns:
-      A format string
-    """
-    fields = ['id']
-    if args.all_users:
-      fields.append('userEmail:label=USER')
-    fields.append('location')
-    fields.append('logLevel:label=LEVEL')
-    fields.append('short_status():label="STATUS BEFORE DELETION"')
-    return 'table({0})'.format(','.join(fields))
-
-  def Epilog(self, resources_were_displayed):
-    if resources_were_displayed:
-      log.status.write('Deleted Logpoints')
-    else:
-      log.status.write('No logpoints matched the requested values')

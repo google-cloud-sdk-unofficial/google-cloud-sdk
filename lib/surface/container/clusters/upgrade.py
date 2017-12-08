@@ -66,62 +66,66 @@ class VersionVerifier(object):
       return self.UPGRADE_AVAILABLE
 
 
+def _Args(parser):
+  """Register flags for this command.
+
+  Args:
+    parser: An argparse.ArgumentParser-like object. It is mocked out in order
+        to capture some information, but behaves like an ArgumentParser.
+  """
+  parser.add_argument(
+      'name',
+      metavar='NAME',
+      help='The name of the cluster to upgrade.')
+  cv = parser.add_argument(
+      '--cluster-version',
+      help='The Kubernetes release version to which to upgrade the'
+      ' cluster\'s nodes. Omit to upgrade the nodes to the version the'
+      ' cluster\'s Kubernetes master is running.')
+  cv.detailed_help = """\
+    The Kubernetes release version to which to upgrade the cluster's nodes.
+    Omit to upgrade the nodes to the version the cluster's Kubernetes master
+    is running.
+
+    If provided, the --cluster-version must be no greater than the cluster
+    master's minor version (x.*X*.x), and must be a latest patch version
+    (x.x.*X*).
+
+    You can find the current master version by running
+
+      $ gcloud container clusters describe <cluster> | grep MasterVersion
+
+    You can find the list of allowed node versions for upgrades by running
+
+      $ gcloud container get-server-config
+
+    and looking at the returned "validNodeVersions".
+  """
+  parser.add_argument(
+      '--node-pool',
+      help='The node pool to upgrade.')
+  parser.add_argument(
+      '--master',
+      help='Upgrade the cluster\'s master to the latest version of Kubernetes'
+      ' supported on Container Engine. Nodes cannot be upgraded at the same'
+      ' time as the master.',
+      action='store_true')
+  parser.add_argument(
+      '--wait',
+      action='store_true',
+      default=True,
+      help='Poll the operation for completion after issuing an upgrade '
+      'request.')
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Upgrade(base.Command):
   """Upgrade the Kubernetes version of an existing container cluster."""
 
   @staticmethod
   def Args(parser):
-    """Register flags for this command.
-
-    Args:
-      parser: An argparse.ArgumentParser-like object. It is mocked out in order
-          to capture some information, but behaves like an ArgumentParser.
-    """
-    parser.add_argument(
-        'name',
-        metavar='NAME',
-        help='The name of the cluster to upgrade.')
-    cv = parser.add_argument(
-        '--cluster-version',
-        help='The Kubernetes release version to which to upgrade the'
-        ' cluster\'s nodes. Omit to upgrade the nodes to the version the'
-        ' cluster\'s Kubernetes master is running.')
-    cv.detailed_help = """\
-      The Kubernetes release version to which to upgrade the cluster's nodes.
-      Omit to upgrade the nodes to the version the cluster's Kubernetes master
-      is running.
-
-      If provided, the --cluster-version must be no greater than the cluster
-      master's minor version (x.*X*.x), and must be a latest patch version
-      (x.x.*X*).
-
-      You can find the current master version by running
-
-        $ gcloud container clusters describe <cluster> | grep MasterVersion
-
-      You can find the list of allowed node versions for upgrades by running
-
-        $ gcloud container get-server-config
-
-      and looking at the returned "validNodeVersions".
-    """
-    parser.add_argument(
-        '--node-pool',
-        help='The node pool to upgrade.')
-    parser.add_argument(
-        '--master',
-        help='Upgrade the cluster\'s master to the latest version of Kubernetes'
-        ' supported on Container Engine. Nodes cannot be upgraded at the same'
-        ' time as the master.',
-        action='store_true')
-    parser.add_argument(
-        '--wait',
-        action='store_true',
-        default=True,
-        help='Poll the operation for completion after issuing an upgrade '
-        'request.')
-    flags.AddImageFamilyFlag(parser)
+    _Args(parser)
+    flags.AddImageTypeFlag(parser, 'cluster/node pool', True)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -145,7 +149,7 @@ class Upgrade(base.Command):
         update_master=args.master,
         update_nodes=(not args.master),
         node_pool=args.node_pool,
-        image_family=args.image_family)
+        image_type=args.image_type)
 
     if options.version:
       new_version = options.version
@@ -220,7 +224,17 @@ Upgrade.detailed_help = {
 class UpgradeBeta(Upgrade):
   """Upgrade the Kubernetes version of an existing container cluster."""
 
+  @staticmethod
+  def Args(parser):
+    _Args(parser)
+    flags.AddImageTypeFlag(parser, 'cluster/node pool', False)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpgradeAlpha(Upgrade):
   """Upgrade the Kubernetes version of an existing container cluster."""
+
+  @staticmethod
+  def Args(parser):
+    _Args(parser)
+    flags.AddImageTypeFlag(parser, 'cluster/node pool', False)

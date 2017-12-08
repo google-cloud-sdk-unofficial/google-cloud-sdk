@@ -46,8 +46,8 @@ class Edit(base_classes.BaseEdit):
   def example_resource(self):
     uri_prefix = ('https://www.googleapis.com/compute/v1/projects/'
                   'my-project/')
-    resource_views_uri_prefix = (
-        'https://www.googleapis.com/resourceviews/v1beta1/projects/'
+    instance_groups_uri_prefix = (
+        'https://www.googleapis.com/compute/v1/projects/'
         'my-project/zones/')
 
     return self.messages.BackendService(
@@ -56,15 +56,15 @@ class Edit(base_classes.BaseEdit):
                 balancingMode=(
                     self.messages.Backend.BalancingModeValueValuesEnum.RATE),
                 group=(
-                    resource_views_uri_prefix +
-                    'us-central1-a/resourceViews/group-1'),
+                    instance_groups_uri_prefix +
+                    'us-central1-a/instanceGroups/group-1'),
                 maxRate=100),
             self.messages.Backend(
                 balancingMode=(
                     self.messages.Backend.BalancingModeValueValuesEnum.RATE),
                 group=(
-                    resource_views_uri_prefix +
-                    'europe-west1-a/resourceViews/group-2'),
+                    instance_groups_uri_prefix +
+                    'europe-west1-a/instanceGroups/group-2'),
                 maxRate=150),
         ],
         description='My backend service',
@@ -104,22 +104,20 @@ class Edit(base_classes.BaseEdit):
         return value_ref.SelfLink()
       return NormalizeReference
 
-    # Ensure group is a uri or full collection path representing a resource
-    # view or an instance group.  Full uris/paths are required because if the
-    # user gives us less, we don't want to be in the business of guessing
-    # resource view or instance group.  The same applies, mutatis mutandis,
-    # to health checks.
+    # Ensure group is a uri or full collection path representing an instance
+    # group. Full uris/paths are required because if the user gives us less, we
+    # don't want to be in the business of guessing health checks.
     return [
         ('healthChecks[]',
          MakeReferenceNormalizer(
              'healthChecks',
              ('compute.httpHealthChecks', 'compute.httpsHealthChecks',
               'compute.healthChecks'))),
-
         ('backends[].group',
          MakeReferenceNormalizer(
              'group',
-             ('resourceviews.zoneViews', 'compute.instanceGroups')))]
+             ('compute.instanceGroups'))),
+    ]
 
   def GetGetRequest(self, args):
     return (

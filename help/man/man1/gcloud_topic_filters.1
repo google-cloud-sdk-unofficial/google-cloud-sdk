@@ -74,7 +74,8 @@ lower precedence than \fBOR\fR.
 \fBTerms\fR
 .RS 2m
 A term is a \fIkey\fR \fIoperator\fR \fIvalue\fR tuple, where \fIkey\fR is a
-dotted name for a resource attribute, and \fIvalue\fR may be:
+dotted name that evaluates to the value of a resource attribute, and \fIvalue\fR
+may be:
 
 \fBnumber\fR
 .RS 2m
@@ -96,61 +97,77 @@ literal quotes and vice versa.
 .RS 2m
 \fIkey\fR \fB=\fR \fIvalue\fR
 .RS 2m
-True if the value of \fIkey\fR is \fIvalue\fR.
+True if \fIkey\fR is equal to \fIvalue\fR.
+
+.RE
+\fIkey\fR \fB=(\fR \fIvalue\fR ... \fB)\fR
+.RS 2m
+True if \fIkey\fR is equal to any \fIvalue\fR in the (space, tab, newline,
+\fB,\fR) separated list.
 
 .RE
 \fIkey\fR \fB!=\fR \fIvalue\fR
 .RS 2m
-True if the value of \fIkey\fR is not \fIvalue\fR. Equivalent to
-\-\fIkey\fR=\fIvalue\fR and NOT \fIkey\fR=\fIvalue\fR.
+True if \fIkey\fR is not \fIvalue\fR. Equivalent to \-\fIkey\fR=\fIvalue\fR and
+NOT \fIkey\fR=\fIvalue\fR.
 
 .RE
 \fIkey\fR \fB<\fR \fIvalue\fR
 .RS 2m
-True if the value of \fIkey\fR is less than \fIvalue\fR. If both \fIkey\fR and
-\fIvalue\fR are numeric then numeric comparison is used, otherwise lexicographic
-string comparison is used.
+True if \fIkey\fR is less than \fIvalue\fR. If both \fIkey\fR and \fIvalue\fR
+are numeric then numeric comparison is used, otherwise lexicographic string
+comparison is used.
 
 .RE
 \fIkey\fR \fB<=\fR \fIvalue\fR
 .RS 2m
-True if the value of \fIkey\fR is less than or equal to \fIvalue\fR. If both
-\fIkey\fR and \fIvalue\fR are numeric then numeric comparison is used, otherwise
-lexicographic string comparison is used.
+True if \fIkey\fR is less than or equal to \fIvalue\fR. If both \fIkey\fR and
+\fIvalue\fR are numeric then numeric comparison is used, otherwise lexicographic
+string comparison is used.
 
 .RE
 \fIkey\fR \fB>=\fR \fIvalue\fR
 .RS 2m
-True if the value of \fIkey\fR is greater than or equal to \fIvalue\fR. If both
-\fIkey\fR and \fIvalue\fR are numeric then numeric comparison is used, otherwise
-lexicographic string comparison is used.
+True if \fIkey\fR is greater than or equal to \fIvalue\fR. If both \fIkey\fR and
+\fIvalue\fR are numeric then numeric comparison is used, otherwise lexicographic
+string comparison is used.
 
 .RE
 \fIkey\fR \fB>\fR \fIvalue\fR
 .RS 2m
-True if the value of \fIkey\fR is greater than \fIvalue\fR. If both \fIkey\fR
-and \fIvalue\fR are numeric then numeric comparison is used, otherwise
-lexicographic string comparison is used.
+True if \fIkey\fR is greater than \fIvalue\fR. If both \fIkey\fR and \fIvalue\fR
+are numeric then numeric comparison is used, otherwise lexicographic string
+comparison is used.
 
 .RE
-\fIkey\fR \fB:\fR \fIvalue\fR
+\fIkey\fR \fB:\fR \fIsimple\-pattern\fR
 .RS 2m
-True if \fIvalue\fR contains the value of \fIkey\fR using case insensitive
-string comparison.
+True if \fIkey\fR matches \fIsimple\-pattern\fR. The match is anchored (all
+characters must match), case insensitive, and allows one \fB\e** operator that
+matches any sequence of 0 or more characters. The pattern \f5abc\fR matches
+\f5abc\fR, the pattern \f5abc\e\fR\fR matches \f5abc\fR and \f5abcxyz\fR, the
+pattern \f5\e*xyz\fR matches \f5xyz\fR and \f5abcxyz\fR, and the pattern
+\f5\e\fB\fR matches any non\-empty string.
 
 .RE
-\fIkey\fR \fB~\fR \fIvalue\fR
+\fIkey\fR \fR:(\fB \fIsimple\-pattern\fR ... \fR)\fB
 .RS 2m
-True if the value of \fIkey\fR matches the RE (regular expression) pattern
+True if \fIkey\fR any \fIsimple\-pattern\fR in the (space, tab, newline,
+\fR,\fB) separated list.
+
+.RE
+\fIkey\fR \fR~\fB \fIvalue\fR
+.RS 2m
+True if \fIkey\fR matches the RE (regular expression) pattern \fIvalue\fR.
+
+.RE
+\fIkey\fR \fR!\fB~ \fIvalue\fR
+.RS 2m
+True if \fIkey\fR does not match the RE (regular expression) pattern
 \fIvalue\fR.
 
-.RE
-\fIkey\fR \fB!\fR~ \fIvalue\fR
-.RS 2m
-True if the value of \fIkey\fR does not match the RE (regular expression)
-pattern \fIvalue\fR.
 
-
+\fR
 .RE
 .RE
 

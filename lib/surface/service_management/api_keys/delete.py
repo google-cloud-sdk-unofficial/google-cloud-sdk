@@ -19,8 +19,6 @@ from googlecloudsdk.api_lib.service_management import services_util
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import log
-from googlecloudsdk.core import resource_printer
 from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
@@ -60,24 +58,10 @@ class Delete(base.Command, base_classes.BaseServiceManagementCommand):
         keyId=args.key)
 
     try:
-      return self.apikeys_client.projects_apiKeys.Delete(request)
+      result = self.apikeys_client.projects_apiKeys.Delete(request)
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(services_util.GetError(error))
 
-  def Display(self, args, result):
-    """Display prints information about what just happened to stdout.
-
-    Args:
-      args: The same as the args in Run.
-
-      result: an Operation object
-
-    Raises:
-      TypeError: if result is not of type Operation
-    """
     # Note that we expect an empty proto as a result (google.protobuf.Empty).
     # If that's what we receive, we can assume success.
-    if not result:
-      resource_printer.Print(resources={'key': args.key, 'success': True},
-                             print_format=args.format or 'yaml',
-                             out=log.out)
+    return result or {'key': args.key, 'success': True}

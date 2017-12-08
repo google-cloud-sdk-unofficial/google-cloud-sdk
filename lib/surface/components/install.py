@@ -17,6 +17,7 @@
 import argparse
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.components import util
 
 
 class Install(base.SilentCommand):
@@ -74,5 +75,6 @@ class Install(base.SilentCommand):
 
   def Run(self, args):
     """Runs the list command."""
-    self.group.update_manager.Install(
+    update_manager = util.GetUpdateManager(args)
+    update_manager.Install(
         args.component_ids, allow_no_backup=args.allow_no_backup)

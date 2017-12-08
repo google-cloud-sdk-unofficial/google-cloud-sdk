@@ -55,8 +55,9 @@ class WaitUntilStable(base_classes.BaseCommand):
   """Waits until state of managed instance group is stable."""
 
   _TIME_BETWEEN_POLLS_SEC = 10
-  _OPERATION_TYPES = ['abandoning', 'creating', 'deleting', 'rebooting',
-                      'restarting', 'recreating', 'refreshing']
+  _OPERATION_TYPES = ['abandoning', 'creating', 'creatingWithoutRetries',
+                      'deleting', 'rebooting', 'restarting', 'recreating',
+                      'refreshing']
 
   @staticmethod
   def Args(parser):

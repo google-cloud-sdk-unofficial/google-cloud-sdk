@@ -16,11 +16,9 @@
 import re
 import textwrap
 
-from googlecloudsdk.api_lib.iam import base_classes
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import log
-from googlecloudsdk.core import resource_printer
+from googlecloudsdk.command_lib.iam import base_classes
 
 
 class ListGrantableRoles(base_classes.BaseIamCommand):
@@ -28,6 +26,7 @@ class ListGrantableRoles(base_classes.BaseIamCommand):
 
   This command displays the list of grantable roles for a resource.
   The resource can be referenced either via the full resource name or via a URI.
+  User can then add IAM policy bindings to grant the roles.
   """
 
   detailed_help = {
@@ -79,10 +78,3 @@ class ListGrantableRoles(base_classes.BaseIamCommand):
             fullResourceName=resource))
 
     return result.roles
-
-  def Display(self, args, resources):
-    if not resources:
-      return
-    resource_printer.Print(resources=resources,
-                           print_format='yaml',
-                           out=log.out)

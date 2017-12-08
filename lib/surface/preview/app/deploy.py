@@ -23,6 +23,7 @@ from gae_ext_runtime import ext_runtime
 
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import appengine_client
+from googlecloudsdk.api_lib.app import cloud_endpoints
 from googlecloudsdk.api_lib.app import cloud_storage
 from googlecloudsdk.api_lib.app import deploy_app_command_util
 from googlecloudsdk.api_lib.app import deploy_command_util
@@ -33,8 +34,6 @@ from googlecloudsdk.api_lib.app import util
 from googlecloudsdk.api_lib.app import version_util
 from googlecloudsdk.api_lib.app import yaml_parsing
 from googlecloudsdk.api_lib.app.runtimes import fingerprinter
-from googlecloudsdk.api_lib.service_management import services_util as service_management_util
-from googlecloudsdk.api_lib.source import context_util
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import apis
@@ -44,7 +43,7 @@ from googlecloudsdk.core import metrics
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.docker import constants
-
+from googlecloudsdk.third_party.appengine.tools import context_util
 
 DEPLOY_MESSAGE_TEMPLATE = """\
 {project}/{service} (from [{file}])
@@ -420,8 +419,9 @@ class Deploy(base.SilentCommand):
 
     # If the app has enabled Endpoints API Management features, pass
     # control to the cloud_endpoints handler.
-    service_management_util.ProcessEndpointsServices(
-        app_config.Services().items(), project)
+
+    cloud_endpoints.ProcessEndpointsServices(
+        [item[1] for item in app_config.Services().items()], project)
 
     remote_build = True
     docker_build_property = properties.VALUES.app.docker_build.Get()
@@ -545,8 +545,15 @@ class Deploy(base.SilentCommand):
           elif stop_previous_version:
             log.info('Not stopping previous version because new version was '
                      'not promoted.')
-        log.status.Print('Deployed service [{0}] to [{1}]'.format(
-            service, deployed_urls[service]))
+        # We don't have a deployed URL for custom-domain apps, since these are
+        # not possible to predict with 100% accuracy (b/24603280).
+        deployed_url = deployed_urls.get(service)
+        # deployed_url = deployed_urls[service]
+        if deployed_url:
+          log.status.Print('Deployed service [{0}] to [{1}]'.format(
+              service, deployed_url))
+        else:
+          log.status.Print('Deployed service [{0}]'.format(service))
         new_versions.append(new_version)
 
     # Config files.
@@ -571,3 +578,4 @@ class Deploy(base.SilentCommand):
         raise DefaultBucketAccessError(project)
 
     return cloud_storage.BucketReference(bucket_with_gs)
+

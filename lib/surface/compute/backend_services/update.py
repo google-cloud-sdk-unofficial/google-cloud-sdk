@@ -125,8 +125,8 @@ class UpdateAlpha(UpdateGA):
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddEnableCdn(parser)
     flags.AddHealthChecks(parser)
-    flags.AddSessionAffinity(parser, default=None)
-    flags.AddAffinityCookieTtl(parser, default=None)
+    flags.AddSessionAffinity(parser)
+    flags.AddAffinityCookieTtl(parser)
 
   def Modify(self, args, existing):
     replacement = super(UpdateAlpha, self).Modify(args, existing)
@@ -183,12 +183,22 @@ class UpdateBeta(UpdateGA):
     flags.AddProtocol(parser, default=None)
 
     flags.AddEnableCdn(parser)
+    flags.AddSessionAffinity(parser)
+    flags.AddAffinityCookieTtl(parser)
 
   def Modify(self, args, existing):
     replacement = super(UpdateBeta, self).Modify(args, existing)
 
     if args.enable_cdn is not None:
       replacement.enableCDN = args.enable_cdn
+
+    if args.session_affinity is not None:
+      replacement.sessionAffinity = (
+          self.messages.BackendService.SessionAffinityValueValuesEnum(
+              args.session_affinity))
+
+    if args.affinity_cookie_ttl is not None:
+      replacement.affinityCookieTtlSec = args.affinity_cookie_ttl
 
     return replacement
 
@@ -202,6 +212,8 @@ class UpdateBeta(UpdateGA):
         args.port,
         args.port_name,
         args.enable_cdn is not None,
+        args.session_affinity is not None,
+        args.affinity_cookie_ttl is not None
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
 

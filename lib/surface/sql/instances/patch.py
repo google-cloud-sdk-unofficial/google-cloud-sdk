@@ -22,8 +22,8 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
-from googlecloudsdk.core import resource_printer
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.resource import resource_diff
 from googlecloudsdk.third_party.apitools.base.py import encoding
 
 
@@ -183,7 +183,7 @@ class _BasePatch(object):
       patch operation if the patch was successful.
     """
     if args.diff:
-      resource_printer.Print(result, 'text')
+      result.Print('text')
 
   def _PrintAndConfirmWarningMessage(self, args):
     """Print and confirm warning indicating the effect of applying the patch."""
@@ -286,7 +286,7 @@ class Patch(_BasePatch, base.Command):
     if args.diff:
       changed_instance_resource = sql_client.instances.Get(
           instance_ref.Request())
-      return resource_printer.ResourceDiff(
+      return resource_diff.ResourceDiff(
           original_instance_resource, changed_instance_resource)
 
     return sql_client.instances.Get(instance_ref.Request())
@@ -352,7 +352,7 @@ class PatchBeta(_BasePatch, base.Command):
     if args.diff:
       changed_instance_resource = sql_client.instances.Get(
           instance_ref.Request())
-      return resource_printer.ResourceDiff(
+      return resource_diff.ResourceDiff(
           original_instance_resource, changed_instance_resource)
 
     return sql_client.instances.Get(instance_ref.Request())

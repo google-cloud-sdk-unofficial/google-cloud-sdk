@@ -11,11 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Command for deleting backend services."""
-from googlecloudsdk.api_lib.compute import base_classes
+
+from googlecloudsdk.api_lib.compute import request_helper
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
-class Delete(base_classes.GlobalDeleter):
+class Delete(base.Command):
   """Delete backend services.
 
     *{command}* deletes one or more backend services.
@@ -23,12 +28,36 @@ class Delete(base_classes.GlobalDeleter):
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalDeleter.Args(parser, 'compute.backendServices')
+    flags.AddBackendServiceName(parser, is_plural=True)
 
-  @property
-  def service(self):
-    return self.compute.backendServices
+  def Run(self, args):
+    refs = [
+        self.context['resources'].Parse(backend_service_name,
+                                        collection='compute.backendServices')
+        for backend_service_name in args.names]
+    utils.PromptForDeletion(refs)
 
-  @property
-  def resource_type(self):
-    return 'backendServices'
+    client = self.context['compute']
+    messages = client.MESSAGES_MODULE
+
+    requests = []
+    for ref in refs:
+      request = (
+          client.backendServices,
+          'Delete',
+          messages.ComputeBackendServicesDeleteRequest(
+              backendService=ref.Name(),
+              project=ref.project))
+      requests.append(request)
+
+    errors = []
+    resources = list(request_helper.MakeRequests(
+        requests=requests,
+        http=client.http,
+        batch_url=self.context['batch-url'],
+        errors=errors,
+        custom_get_requests=None))
+
+    if errors:
+      utils.RaiseToolException(errors)
+    return resources

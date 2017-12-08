@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """'endpoints create' command."""
 
 from googlecloudsdk.api_lib.service_registry import arg_support
@@ -81,7 +80,7 @@ class Create(base.CreateCommand):
             description=args.description,
             addresses=args.target,
             dnsIntegration=messages.EndpointDnsIntegration(
-                networks=args.networks)
+                networks=arg_support.ExpandNetworks(args.networks, project))
         )
     )
 

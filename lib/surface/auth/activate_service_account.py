@@ -137,11 +137,11 @@ class ActivateServiceAccount(base.Command):
             user_agent=config.CLOUDSDK_USER_AGENT)
       try:
         c_store.Refresh(cred)
-      except c_store.RefreshError:
-        log.error(
+      except c_store.TokenRefreshError as e:
+        log.file_only_logger.exception(e)
+        raise c_exc.ToolException(
             'Failed to activate the given service account.  Please ensure the '
             'key is valid and that you have provided the correct account name.')
-        raise
 
     c_store.Store(cred, account)
 

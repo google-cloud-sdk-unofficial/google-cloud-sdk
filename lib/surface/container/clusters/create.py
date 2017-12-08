@@ -50,7 +50,7 @@ def _Args(parser):
       help='Poll the operation for completion after issuing a create request.')
   parser.add_argument(
       '--num-nodes',
-      type=int,
+      type=arg_parsers.BoundedInt(1),
       help='The number of nodes to be created in each of the cluster\'s zones.',
       default=3)
   parser.add_argument(
@@ -161,6 +161,15 @@ Alias,URI
       help='The user name to use for cluster auth.',
       default='admin')
   parser.add_argument(
+      '--max-nodes-per-pool',
+      type=arg_parsers.BoundedInt(100, api_adapter.MAX_NODES_PER_POOL),
+      help='The maximum number of nodes to allocate per default initial node '
+      'pool. Container engine will automatically create enough nodes pools '
+      'such that each node pool contains less than '
+      '--max-nodes-per-pool nodes. Defaults to {nodes} nodes, but can be set '
+      'as low as 100 nodes per pool on initial create.'.format(
+          nodes=api_adapter.MAX_NODES_PER_POOL))
+  parser.add_argument(
       '--cluster-version',
       help=argparse.SUPPRESS)
   parser.add_argument(
@@ -174,7 +183,6 @@ Alias,URI
       type=arg_parsers.ArgList(min_length=1),
       metavar='TAGS',
       action=arg_parsers.FloatingListValuesCatcher())
-  flags.AddImageFamilyFlag(parser)
 
 
 NO_CERTS_ERROR_FMT = '''\
@@ -191,6 +199,7 @@ class Create(base.Command):
   @staticmethod
   def Args(parser):
     _Args(parser)
+    flags.AddImageTypeFlag(parser, 'cluster', True)
 
   def ParseCreateOptions(self, args):
     if not args.scopes:
@@ -214,7 +223,8 @@ class Create(base.Command):
         disable_addons=args.disable_addons,
         local_ssd_count=args.local_ssd_count,
         tags=args.tags,
-        image_family=args.image_family)
+        image_type=args.image_type,
+        max_nodes_per_pool=args.max_nodes_per_pool)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -282,7 +292,17 @@ class Create(base.Command):
 class CreateBeta(Create):
   """Create a cluster for running containers."""
 
+  @staticmethod
+  def Args(parser):
+    _Args(parser)
+    flags.AddImageTypeFlag(parser, 'cluster', False)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
   """Create a cluster for running containers."""
+
+  @staticmethod
+  def Args(parser):
+    _Args(parser)
+    flags.AddImageTypeFlag(parser, 'cluster', False)

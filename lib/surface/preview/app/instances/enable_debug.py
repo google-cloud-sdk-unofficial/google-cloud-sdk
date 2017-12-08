@@ -14,12 +14,14 @@
 
 """The `app instances enable-debug` command."""
 
+import operator
+
+from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import appengine_client
 from googlecloudsdk.api_lib.app import flags
 from googlecloudsdk.api_lib.app import instances_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
@@ -79,17 +81,13 @@ class EnableDebug(base.Command):
         'This affects both interactive and non-interactive selection.')
 
   def Run(self, args):
+    api_client = appengine_api_client.GetApiClient()
     client = appengine_client.AppengineClient(args.server,
                                               args.ignore_bad_certs)
-    # --user-output-enabled=false prevents this from printing, as well as from
-    # consuming the generator from the other command
-    # The command being called here uses a cli.Execute call under-the-hood, so
-    # in order to avoid leaking the abstraction we defer to the implementation
-    # in `instances list`.
-    all_instances = list(self.cli.Execute(
-        ['preview', 'app', 'instances', 'list',
-         '--user-output-enabled=false',
-         '--project', properties.VALUES.core.project.Get()]))
+
+    all_instances = api_client.GetAllInstances(args.service, args.version)
+    # Only VM instances can be placed in debug mode for now.
+    all_instances = filter(operator.attrgetter('instance.vmId'), all_instances)
     instance = instances_util.GetMatchingInstance(
         all_instances, service=args.service, version=args.version,
         instance=args.instance)

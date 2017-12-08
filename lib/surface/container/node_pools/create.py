@@ -40,6 +40,12 @@ def _Args(parser):
       '--cluster',
       help='The cluster to add the node pool to.',
       action=actions.StoreProperty(properties.VALUES.container.cluster))
+  parser.add_argument(
+      '--enable-cloud-endpoints',
+      action='store_true',
+      default=True,
+      help='Automatically enable Google Cloud Endpoints to take advantage of '
+      'API management features.')
   # Timeout in seconds for operation
   parser.add_argument(
       '--timeout',
@@ -102,7 +108,6 @@ Alias,URI
       type=arg_parsers.ArgList(min_length=1),
       metavar='TAGS',
       action=arg_parsers.FloatingListValuesCatcher())
-  flags.AddImageFamilyFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -112,16 +117,18 @@ class Create(base.Command):
   @staticmethod
   def Args(parser):
     _Args(parser)
+    flags.AddImageTypeFlag(parser, 'node pool', False)
 
   def ParseCreateNodePoolOptions(self, args):
     return api_adapter.CreateNodePoolOptions(
         machine_type=args.machine_type,
         disk_size_gb=args.disk_size,
         scopes=args.scopes,
+        enable_cloud_endpoints=args.enable_cloud_endpoints,
         num_nodes=args.num_nodes,
         local_ssd_count=args.local_ssd_count,
         tags=args.tags,
-        image_family=args.image_family)
+        image_type=args.image_type)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

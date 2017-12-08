@@ -90,7 +90,6 @@ class Components(base.Group):
                         help=argparse.SUPPRESS)
 
   # pylint:disable=g-missing-docstring
-  @exceptions.RaiseToolExceptionInsteadOf(platforms.InvalidEnumValue)
   def Filter(self, unused_tool_context, args):
 
     if config.INSTALLATION_CONFIG.IsAlternateReleaseChannel():
@@ -99,16 +98,3 @@ class Components(base.Group):
       # Always show the URL if using a non standard release channel.
       log.warning('Snapshot URL for this release channel is: [%s]',
                   config.INSTALLATION_CONFIG.snapshot_url)
-
-    os_override = platforms.OperatingSystem.FromId(
-        args.operating_system_override)
-    arch_override = platforms.Architecture.FromId(args.architecture_override)
-
-    platform = platforms.Platform.Current(os_override, arch_override)
-    root = (os.path.expanduser(args.sdk_root_override)
-            if args.sdk_root_override else None)
-    url = (os.path.expanduser(args.snapshot_url_override)
-           if args.snapshot_url_override else None)
-
-    self.update_manager = update_manager.UpdateManager(
-        sdk_root=root, url=url, platform_filter=platform)

@@ -61,12 +61,13 @@ class Create(base.CreateCommand):
             the snapshot will be generated only if the condition is true.
         """)
     parser.add_argument(
-        '--expression', nargs='*',
+        '--expression', action='append',
         help="""\
-            One or more expressions to evaluate when the snapshot is taken.
+            An expression to evaluate when the snapshot is taken. You may
+            specify --expression multiple times.
         """)
     parser.add_argument(
-        '--wait', default=5,
+        '--wait', default=10,
         help="""\
             The number of seconds to wait to ensure that no error is returned
             from a debugger agent when creating the snapshot. When a snapshot
@@ -89,7 +90,7 @@ class Create(base.CreateCommand):
     return final_snapshot or snapshot
 
   def Collection(self):
-    return 'debug.snapshots'
+    return 'debug.snapshots.create'
 
   def Format(self, args):
     return self.ListFormat(args)

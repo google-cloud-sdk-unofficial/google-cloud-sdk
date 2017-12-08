@@ -297,19 +297,23 @@ https://console.developers.google.com/apis page.
         if values is None:
           return
         values = list(values)
+        message = (
+            'Which Google Compute Engine {0} would you like to use as project '
+            'default?\n'
+            'If you do not specify a {0} via a command line flag while working '
+            'with Compute Engine resources, the default is assumed.').format(
+                name)
         idx = console_io.PromptChoice(
             ['[{0}]'.format(value['name']) for value in values]
             + ['Do not set default {0}'.format(name)],
-            message=('Which compute {0} would you like '
-                     'to use as project default?'.format(name)),
-            prompt_string=None)
+            message=message, prompt_string=None)
         if idx is None or idx == len(values):
           return
         default_value = values[idx]
       self._RunCmd(['config', 'set'],
                    ['compute/{0}'.format(name), default_value['name']])
-      log.status.write('Your project default compute {0} has been set to '
-                       '[{1}].\nYou can change it by running '
+      log.status.write('Your project default Compute Engine {0} has been set '
+                       'to [{1}].\nYou can change it by running '
                        '[gcloud config set compute/{0} NAME].\n\n'
                        .format(name, default_value['name']))
       return default_value

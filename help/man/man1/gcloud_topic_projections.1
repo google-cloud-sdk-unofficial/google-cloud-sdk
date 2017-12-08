@@ -721,7 +721,28 @@ Returns this value if the resource cannot be formatted.
 .RE
 The debug transform functions are:
 
-\fBshort_status\fR(undefined="")
+\fBfull_status\fR(undefined="UNKNOWN_ERROR")
+.RS 2m
+Returns a full description of the status of a logpoint or snapshot. Status will
+be one of ACTIVE, COMPLETED, or a verbose error description. If the status is an
+error, there will be additional information available in the status field of the
+object.
+
+
+The arguments are:
+
+\fB\f5undefined\fR\fR
+.RS 2m
+Returns this value if the resource is not a valid status.
+
+.RE
+For example\f5:\fR
+.RS 2m
+\-\-format="table(id, location, full_status())"
+
+.RE
+.RE
+\fBshort_status\fR(undefined="UNKNOWN_ERROR")
 .RS 2m
 Returns a short description of the status of a logpoint or snapshot. Status will
 be one of ACTIVE, COMPLETED, or a short error description. If the status is an
@@ -738,7 +759,7 @@ Returns this value if the resource is not a valid status.
 .RE
 For example\f5:\fR
 .RS 2m
-\-\-format="table(id, location, short_status()())"
+\-\-format="table(id, location, short_status())"
 
 
 .RE
