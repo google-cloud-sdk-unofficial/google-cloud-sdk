@@ -20,6 +20,7 @@ from googlecloudsdk.core import apis
 from googlecloudsdk.core import resources
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create a new Cloud ML model."""
 
@@ -48,6 +49,42 @@ class Create(base.CreateCommand):
     req = msgs.MlProjectsModelsCreateRequest(
         projectsId=res.projectsId,
         googleCloudMlV1alpha3Model=msgs.GoogleCloudMlV1alpha3Model(
+            name=res.Name()))
+    resp = client.projects_models.Create(req)
+    return resp
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(base.CreateCommand):
+  """Create a new Cloud ML model."""
+
+  def Collection(self):
+    return 'ml.models'
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    flags.GetModelName().AddToParser(parser)
+
+  @http_error_handler.HandleHttpErrors
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+    client = apis.GetClientInstance('ml', 'v1beta1')
+    msgs = apis.GetMessagesModule('ml', 'v1beta1')
+    # TODO(b/31062835): remove CloneAndSwitchAPI and extract API code to api_lib
+    res = resources.REGISTRY.CloneAndSwitchAPIs(client).Parse(
+        args.model, collection='ml.projects.models')
+    req = msgs.MlProjectsModelsCreateRequest(
+        projectsId=res.projectsId,
+        googleCloudMlV1beta1Model=msgs.GoogleCloudMlV1beta1Model(
             name=res.Name()))
     resp = client.projects_models.Create(req)
     return resp

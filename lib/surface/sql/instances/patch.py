@@ -1,4 +1,4 @@
-# Copyright 2013 Google Inc. All Rights Reserved.
+# Copyright 2016 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -139,12 +139,14 @@ class _BasePatch(object):
         '-p',
         required=False,
         choices=['PER_USE', 'PACKAGE'],
-        help='The pricing plan for this instance.')
+        help='The pricing plan for this instance. '
+             'Valid options are PER_USE or PACKAGE.')
     parser.add_argument(
         '--replication',
         required=False,
         choices=['SYNCHRONOUS', 'ASYNCHRONOUS'],
-        help='The type of replication this instance uses.')
+        help='The type of replication this instance uses.'
+             'Valid options are SYNCHRONOUS or ASYNCHRONOUS.')
     parser.add_argument(
         '--require-ssl',
         action='store_true',
@@ -293,6 +295,24 @@ class Patch(_BasePatch, base.Command):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class PatchBeta(_BasePatch, base.Command):
   """Updates the settings of a Cloud SQL instance."""
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command."""
+    _BasePatch.Args(parser)
+    base.Argument(
+        '--storage-auto-increase',
+        action='store_true',
+        default=None,
+        help='Adds storage capacity whenever space is low. Up to 25 GB per '
+        'increase. All increases are permanent.',
+        detailed_help='Storage size can be increased, but it cannot be '
+        'decreased; storage increases are permanent for the life of the '
+        'instance. With this setting enabled, a spike in storage requirements '
+        'can result in permanently increased storage costs for your instance. '
+        'However, if an instance runs out of available space, it can result in '
+        'the instance going offline, dropping existing connections.'
+    ).AddToParser(parser)
 
   @errors.ReraiseHttpException
   def Run(self, args):

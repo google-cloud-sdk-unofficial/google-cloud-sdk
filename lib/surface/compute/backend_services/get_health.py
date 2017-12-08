@@ -14,21 +14,28 @@
 
 """Command for getting health status of backend(s) in a backend service."""
 
+from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.backend_services import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
+from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class GetHealth(base.ListCommand):
+  """Gets health status."""
 
   _BACKEND_SERVICE_ARG = flags.GLOBAL_BACKEND_SERVICE_ARG
 
   @classmethod
   def Args(cls, parser):
     cls._BACKEND_SERVICE_ARG.AddArgument(parser)
+
+  def GetReference(self, holder, args):
+    return self._BACKEND_SERVICE_ARG.ResolveAsResource(
+        args, holder.resources, default_scope=compute_flags.ScopeEnum.GLOBAL)
 
   def Run(self, args):
     """Returns a list of backendServiceGroupHealth objects."""
@@ -37,9 +44,7 @@ class GetHealth(base.ListCommand):
       args.format = 'value[delimiter="\n"](status.healthStatus[].instance)'
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    ref = self._BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, holder.resources,
-        default_scope=compute_flags.ScopeEnum.GLOBAL)
+    ref = self.GetReference(holder, args)
 
     backend_service = client.BackendService(
         ref, compute_client=holder.client)
@@ -75,3 +80,12 @@ GetHealth.detailed_help = {
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GetHealthAlpha(GetHealth):
   _BACKEND_SERVICE_ARG = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG
+
+  def GetReference(self, holder, args):
+    """Override. Don't assume a default scope."""
+    return self._BACKEND_SERVICE_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        default_scope=backend_services_utils.GetDefaultScope(self, args),
+        scope_lister=compute_flags.GetDefaultScopeLister(
+            holder.client, properties.VALUES.core.project))

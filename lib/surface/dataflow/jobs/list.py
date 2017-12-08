@@ -15,12 +15,10 @@
 """Implementation of gcloud dataflow jobs list command.
 """
 
+from googlecloudsdk.api_lib.dataflow import dataflow_util
 from googlecloudsdk.api_lib.dataflow import job_display
-from googlecloudsdk.api_lib.dataflow import job_utils
-from googlecloudsdk.api_lib.dataflow import list_pager
 from googlecloudsdk.api_lib.dataflow import time_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import properties
 from surface import dataflow as commands
 
@@ -30,22 +28,38 @@ class List(base.ListCommand):
 
   By default, jobs in the current project are listed; this can be overridden
   with the gcloud --project flag.
+
+  ## EXAMPLES
+
+  Filter jobs with the given name:
+
+    $ {command} --filter="name=my-wordcount"
+
   """
+
+  DEFAULT_PAGE_SIZE_ = 1000
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    # Flags for specifying job refs directly
-    job_utils.ArgsForJobRefs(parser, nargs='*')
+
+    base.FLATTEN_FLAG.RemoveFromParser(parser)
+    base.ASYNC_FLAG.RemoveFromParser(parser)
 
     # Flags for filtering jobs.
-    parser.add_argument('--job-name',
-                        help='Filter the jobs to those with the given name.')
     parser.add_argument(
-        '--status', action='append',
-        choices=['running', 'stopped', 'done', 'cancelled', 'failed',
-                 'updated'],
-        help='Filter the jobs to those with the selected status')
+        '--status',
+        choices=['all', 'terminated', 'active'],
+        help="""Filter the jobs to those with the selected status.
+
+        `all`: Returns running jobs first, ordered on creation timestamp, then
+            returns all terminated jobs ordered on the termination timestamp.
+        `terminated`: Filters the jobs that have a terminated state, ordered on
+            the termination timestamp. Example terminated states: Done, Updated,
+            Cancelled, etc.
+        `active`: Filters the jobs that are running ordered on the creation
+            timestamp.
+        """)
     parser.add_argument(
         '--created-after', type=time_util.ParseTimeArg,
         help='Filter the jobs to those created after the given time')
@@ -56,6 +70,9 @@ class List(base.ListCommand):
   def Collection(self):
     return 'dataflow.jobs'
 
+  def GetUriFunc(self):
+    return dataflow_util.JobsUriFunc
+
   def Run(self, args):
     """Runs the command.
 
@@ -65,100 +82,76 @@ class List(base.ListCommand):
     Returns:
       An iterator over Job messages.
     """
-    job_refs = job_utils.ExtractJobRefs(self.context, args)
-    filter_pred = _JobFilter(self.context, args)
-
-    if job_refs and not filter_pred.AlwaysTrue():
-      raise calliope_exceptions.ToolException(
-          'Cannot specify both job IDs and job filters.')
-
-    jobs = []
-    if job_refs:
-      view = job_utils.JOB_VIEW_SUMMARY
-      jobs = [job_utils.GetJob(self.context, job_ref, view=view)
-              for job_ref in job_refs]
-    else:
-      project_id = properties.VALUES.core.project.Get(required=True)
-      jobs = self._JobSummariesForProject(project_id, filter_pred)
+    filter_pred = _JobFilter(args)
+    project_id = properties.VALUES.core.project.Get(required=True)
+    jobs = self._JobSummariesForProject(project_id, args, filter_pred)
 
     dataflow_messages = self.context[commands.DATAFLOW_MESSAGES_MODULE_KEY]
     return [job_display.DisplayInfo(job, dataflow_messages) for job in jobs]
 
-  def _JobSummariesForProject(self, project_id, filter_predicate):
+  def _JobSummariesForProject(self, project_id, args, filter_predicate):
     """Get the list of job summaries that match the predicate.
 
     Args:
       project_id: The project ID to retrieve
+      args: parsed command line arguments
       filter_predicate: The filter predicate to apply
 
     Returns:
       An iterator over all the matching jobs.
     """
     apitools_client = self.context[commands.DATAFLOW_APITOOLS_CLIENT_KEY]
-    req_class = (self.context[commands.DATAFLOW_MESSAGES_MODULE_KEY]
-                 .DataflowProjectsJobsListRequest)
+    dataflow_messages = self.context[commands.DATAFLOW_MESSAGES_MODULE_KEY]
+    req_class = dataflow_messages.DataflowProjectsJobsListRequest
     request = req_class(
         projectId=project_id,
-        view=job_utils.JOB_VIEW_SUMMARY.JobsListRequest(self.context))
-    return list_pager.YieldFromList(
-        apitools_client.projects_jobs,
-        request,
-        batch_size=None,  # Use server default.
+        filter=self._StatusArgToFilter(args.status, dataflow_messages))
+
+    return dataflow_util.YieldFromList(
+        project_id=project_id,
+        service=apitools_client.projects_jobs,
+        request=request,
+        limit=args.limit,
+        batch_size=args.page_size or self.DEFAULT_PAGE_SIZE_,
         field='jobs',
+        batch_size_attribute='pageSize',
         predicate=filter_predicate)
+
+  def _StatusArgToFilter(self, status, dataflow_messages):
+    """Return a string describing the job status.
+
+    Args:
+      status: The job status enum
+      dataflow_messages: dataflow_messages package
+    Returns:
+      string describing the job status
+    """
+    filter_value_enum = (
+        dataflow_messages.DataflowProjectsJobsListRequest.FilterValueValuesEnum)
+    value_map = {
+        'all': filter_value_enum.ALL,
+        'terminated': filter_value_enum.TERMINATED,
+        'active': filter_value_enum.ACTIVE,
+    }
+    return value_map.get(status, filter_value_enum.ALL)
 
 
 class _JobFilter(object):
   """Predicate for filtering jobs.
   """
 
-  def __init__(self, context, args):
+  def __init__(self, args):
     """Create a _JobFilter from the given args.
 
     Args:
-      context: The command context.
       args: The argparse.Namespace containing the parsed arguments.
     """
     self.preds = []
-    if args.status:
-      self._ParseStatusSet(context, args.status)
-
     if args.created_after or args.created_before:
       self._ParseTimePredicate(args.created_after, args.created_before)
 
-    if args.job_name:
-      self.preds.append(lambda x: x.name and args.job_name in x.name)
-
   def __call__(self, job):
     return all([pred(job) for pred in self.preds])
-
-  def AlwaysTrue(self):
-    return not self.preds
-
-  def _ParseStatusSet(self, context, status_list):
-    """Parse a list of status enums from a list of command line flags.
-
-    Args:
-      context: The command context.
-      status_list: A list containing status strings, such as 'cancelled',
-          'done', 'failed', etc.
-    Returns:
-      A list containing enums from Job.CurrentStateValueValuesEnum.
-    """
-    state_value_enum = (context[commands.DATAFLOW_MESSAGES_MODULE_KEY]
-                        .Job.CurrentStateValueValuesEnum)
-    message_map = {
-        'cancelled': state_value_enum.JOB_STATE_CANCELLED,
-        'done': state_value_enum.JOB_STATE_DONE,
-        'failed': state_value_enum.JOB_STATE_FAILED,
-        'running': state_value_enum.JOB_STATE_RUNNING,
-        'stopped': state_value_enum.JOB_STATE_STOPPED,
-        'updated': state_value_enum.JOB_STATE_UPDATED,
-        'unknown': state_value_enum.JOB_STATE_UNKNOWN,
-    }
-
-    status_set = frozenset([message_map[status] for status in status_list])
-    self.preds.append(lambda x: x.currentState in status_set)
 
   def _ParseTimePredicate(self, after, before):
     """Return a predicate for filtering jobs by their creation time.

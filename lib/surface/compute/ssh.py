@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.compute import ssh_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.core.util import platforms
 
 
 def _Args(parser):
@@ -156,7 +157,7 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
         ssh_args.append('/bin/sh')
 
     elif args.command:
-      if not ssh_utils.IsRunningOnWindows():
+      if not platforms.OperatingSystem.IsWindows():
         ssh_args.append('--')
       ssh_args.append(args.command)
 

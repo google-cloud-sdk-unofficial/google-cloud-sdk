@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.core import apis as core_apis
 
 
@@ -54,16 +55,7 @@ class SetSchedulingInstances(base_classes.NoOutputAsyncMutator):
         instances during a migration event.
         """
 
-    parser.add_argument(
-        'name',
-        metavar='INSTANCE',
-        completion_resource='compute.instances',
-        help='The name of the instance for which to change scheduling options.')
-
-    flags.AddZoneFlag(
-        parser,
-        resource_type='instance',
-        operation_type='set scheduling settings for')
+    instance_flags.INSTANCE_ARG.AddArgument(parser)
 
   @property
   def service(self):
@@ -79,7 +71,9 @@ class SetSchedulingInstances(base_classes.NoOutputAsyncMutator):
 
   def CreateRequests(self, args):
     """Returns a list of request necessary for setting scheduling options."""
-    instance_ref = self.CreateZonalReference(args.name, args.zone)
+    instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
+        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
+            self.compute_client, self.project))
 
     scheduling_options = self.messages.Scheduling()
 

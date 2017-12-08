@@ -32,6 +32,7 @@ from surface import bigquery as commands
 _MAX_ROWS_PER_REQUEST = None
 
 
+@base.UnicodeIsSupported
 class TablesAddRows(base.Command):
   """Adds records specified in a file to a specified existing table.
 

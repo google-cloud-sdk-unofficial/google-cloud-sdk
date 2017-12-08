@@ -13,7 +13,8 @@ PULL = 'pull'
 PUSH = 'push,pull'
 # For now DELETE is PUSH, which is the read/write ACL.
 DELETE = PUSH
-ACTIONS = [PULL, PUSH, DELETE]
+CATALOG = 'catalog'
+ACTIONS = [PULL, PUSH, DELETE, CATALOG]
 
 
 class Diagnostic(object):

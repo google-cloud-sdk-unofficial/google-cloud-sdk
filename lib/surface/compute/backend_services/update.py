@@ -61,8 +61,7 @@ class UpdateGA(base_classes.ReadWriteCommand):
           default_scope=compute_flags.ScopeEnum.GLOBAL)
 
     return flags.GLOBAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, self.resources,
-        default_scope=compute_flags.ScopeEnum.GLOBAL)
+        args, self.resources)
 
   def GetGetRequest(self, args):
     if self.regional:
@@ -152,11 +151,14 @@ class UpdateGA(base_classes.ReadWriteCommand):
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
 
+  def SetRegional(self, args):
+    # Check whether --region flag was used for regional resource.
+    self.regional = getattr(args, 'region', None) is not None
+
   def Run(self, args):
     self.ValidateArgs(args)
 
-    # Check whether --region flag was used for regional resource.
-    self.regional = getattr(args, 'region', None) is not None
+    self.regional = backend_services_utils.IsRegionalRequest(self, args)
 
     return super(UpdateGA, self).Run(args)
 

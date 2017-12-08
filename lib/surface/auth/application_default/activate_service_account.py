@@ -28,6 +28,7 @@ from googlecloudsdk.core.credentials import store as c_store
 from oauth2client import client
 
 
+@base.UnicodeIsSupported
 class ActivateServiceAccount(base.SilentCommand):
   """Authorize access to Google Cloud Platform using a service account.
 

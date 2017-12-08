@@ -1,7 +1,7 @@
 """This package provides DockerImage for examining docker_build outputs."""
 
 import abc
-from cStringIO import StringIO
+import cStringIO
 import httplib
 import json
 import os
@@ -64,6 +64,9 @@ class FromRegistry(DockerImage):
 
   def _content(self, suffix):
     """Fetches content of the resources from registry by http calls."""
+    if not isinstance(self._name, docker_name.Repository):
+      raise ValueError('Expected docker_name.Repository for "name"')
+
     if suffix not in self._response:
       _, self._response[suffix] = self._transport.Request(
           '{scheme}://{registry}/v2/{repository}/{suffix}'.format(
@@ -119,6 +122,27 @@ class FromRegistry(DockerImage):
     # GET server1/v2/<name>/blobs/<digest>
     return self._content('blobs/' + digest)
 
+  def catalog(self, page_size=100):
+    # TODO(user): Handle docker_name.Repository for /v2/<name>/_catalog
+    if isinstance(self._name, docker_name.Repository):
+      raise ValueError('Expected docker_name.Registry for "name"')
+
+    url = '{scheme}://{registry}/v2/_catalog?n={page_size}'.format(
+        scheme=docker_http.Scheme(self._name.registry),
+        registry=self._name.registry,
+        page_size=page_size)
+
+    for _, content in self._transport.PaginatedRequest(
+        url, accepted_codes=[httplib.OK]):
+      wrapper_object = json.loads(content)
+
+      if 'repositories' not in wrapper_object:
+        raise docker_http.BadStateException(
+            'Malformed JSON response: %s' % content)
+
+      for repo in wrapper_object['repositories']:
+        yield repo
+
   # __enter__ and __exit__ allow use as a context manager.
   def __enter__(self):
     # Create a v2 transport to use for making authenticated requests.
@@ -158,7 +182,7 @@ def extract(image, tar):
   # Walk the layers, topmost first and add files.  If we've seen them in a
   # higher layer then we skip them.
   for layer in image.fs_layers():
-    buf = StringIO(image.blob(layer))
+    buf = cStringIO.StringIO(image.blob(layer))
     with tarfile.open(mode='r:gz', fileobj=buf) as layer_tar:
       for member in layer_tar.getmembers():
         # If we see a whiteout file, then don't add anything to the tarball

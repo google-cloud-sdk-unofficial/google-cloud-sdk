@@ -26,17 +26,14 @@ class SetIamPolicy(base.Command):
 
   Sets the IAM policy for a project, given a project ID and a file that
   contains the JSON-encoded IAM policy.
+
+  ## EXAMPLES
+
+  The following command reads an IAM policy defined in a JSON file `policy.json`
+  and sets it for a project with the ID `example-project-id-1`:
+
+    $ {command} example-project-id-1 policy.json
   """
-
-  detailed_help = {
-      'EXAMPLES': """
-          The following command reads an IAM policy defined in a JSON file
-          `policy.json` and sets it for a project with the ID
-          `example-project-id-1`:
-
-            $ {command} example-project-id-1 policy.json
-          """,
-  }
 
   def Collection(self):
     return command_lib_util.PROJECTS_COLLECTION

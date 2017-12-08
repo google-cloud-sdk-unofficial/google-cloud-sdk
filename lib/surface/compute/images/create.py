@@ -99,7 +99,7 @@ class Create(base_classes.BaseAsyncCreator):
       image.rawDisk = self.messages.Image.RawDiskValue(source=source_uri)
     else:
       source_disk_ref = flags.SOURCE_DISK_ARG.ResolveAsResource(
-          args, self.resources, default_scope=compute_flags.ScopeEnum.ZONE,
+          args, self.resources,
           scope_lister=compute_flags.GetDefaultScopeLister(
               self.compute_client, self.project))
       image.sourceDisk = source_disk_ref.SelfLink()

@@ -136,8 +136,7 @@ class Create(base_classes.BaseAsyncCreator,
     utils.WarnIfDiskSizeIsTooSmall(boot_disk_size_gb, args.boot_disk_type)
 
     instance_refs = instances_flags.INSTANCES_ARG.ResolveAsResource(
-        args, self.resources, default_scope=flags.ScopeEnum.ZONE,
-        scope_lister=flags.GetDefaultScopeLister(
+        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
             self.compute_client, self.project))
 
     # Check if the zone is deprecated or has maintenance coming.

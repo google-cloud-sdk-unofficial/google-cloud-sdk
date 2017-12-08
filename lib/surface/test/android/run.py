@@ -31,6 +31,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
+@base.UnicodeIsSupported
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Run(base.ListCommand):
   """Invoke an Android test in Google Cloud Test Lab and view test results."""

@@ -11,7 +11,7 @@ gcloud compute instances stop \- stop a virtual machine instance
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances stop\fR \fINAME\fR [\fINAME\fR\ ...] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instances stop\fR \fINAMES\fR [\fINAMES\fR\ ...] [\fB\-\-discard\-local\-ssd\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -26,19 +26,24 @@ SSD is not supported and will result in an API error.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR [\fINAME\fR ...]
+\fINAMES\fR [\fINAMES\fR ...]
 .RS 2m
-The names of the instances to stop.
+The names of the instances.
 
 
 .RE
 
 .SH "FLAGS"
 
+\fB\-\-discard\-local\-ssd\fR
+.RS 2m
+If provided, local SSD data is discarded.
+
+.RE
 \fB\-\-zone\fR \fIZONE\fR
 .RS 2m
-The zone of the instance to stop. If not specified, you will be prompted to
-select a zone.
+The zone of the instance to operate on. If not specified, you will be prompted
+to select a zone.
 
 To avoid prompting when this flag is omitted, you can set the
 \f5\fIcompute/zone\fR\fR property:

@@ -57,4 +57,4 @@ class StreamLogs(base.Command):
     build_ref = registry.Parse(
         args.build, collection='cloudbuild.projects.builds')
 
-    cb_logs.Stream(build_ref, client, messages)
+    cb_logs.CloudBuildClient(client, messages).Stream(build_ref)

@@ -66,11 +66,9 @@ class Registry(object):
   def __str__(self):
     return self.registry
 
-  def scope(self, action):
+  def scope(self, unused_action):
     # The only resource under 'registry' is 'catalog'. http://goo.gl/N9cN9Z
-    return 'registry:{resource}:{action}'.format(
-        resource='catalog',
-        action=action)
+    return 'registry:catalog:*'
 
 
 class Repository(Registry):

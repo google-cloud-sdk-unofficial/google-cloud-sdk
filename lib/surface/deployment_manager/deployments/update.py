@@ -29,6 +29,7 @@ from googlecloudsdk.core import properties
 OPERATION_TIMEOUT = 20 * 60  # 20 mins
 
 
+@base.UnicodeIsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update a deployment based on a provided config file.
@@ -235,6 +236,7 @@ class Update(base.Command):
                                                  args.deployment_name)
 
 
+@base.UnicodeIsSupported
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBETA(Update):
   """Update a deployment based on a provided config file.
@@ -248,6 +250,7 @@ class UpdateBETA(Update):
     Update.Args(parser, version=base.ReleaseTrack.BETA)
 
 
+@base.UnicodeIsSupported
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateALPHA(Update):
   """Update a deployment based on a provided config file.

@@ -29,16 +29,14 @@ class Create(base.CreateCommand):
   """Create a new project.
 
   Creates a new project with the given project ID.
+
+  ## EXAMPLES
+
+  The following command creates a project with ID `example-foo-bar-1`, name
+  `Happy project` and label `type=happy`:
+
+    $ {command} example-foo-bar-1 --name="Happy project" --labels=type=happy
   """
-
-  detailed_help = {
-      'EXAMPLES': """
-          The following command creates a project with ID
-          `example-foo-bar-1`, name `Happy project` and label `type=happy`:
-
-            $ {command} example-foo-bar-1 --name="Happy project" --labels=type=happy
-      """,
-  }
 
   def Collection(self):
     return command_lib_util.PROJECTS_COLLECTION

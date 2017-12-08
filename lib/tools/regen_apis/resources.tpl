@@ -15,17 +15,34 @@
 
 import enum
 
-
+<%!
+def SplitPath(path, max_length):
+  """Splits path into chunks of max_length."""
+  parts = []
+  while path:
+    if len(path) < max_length:
+      index = max_length
+    else:
+      # Prefer to split on last '/'.
+      index = path.rfind('/', 0, max_length - 1)
+      if index < 0:
+        index = min(max_length - 1, len(path) - 1)
+    parts.append(path[:index+1])
+    path = path[index+1:]
+  return parts
+%>
 class Collections(enum.Enum):
   """Collections for all supported apis."""
 
 % for collection_info in collections:
-  ${collection_info.name.upper().replace('.', '_')} = (
+  ${collection_info.api_name.replace('-', '_').upper()}_\
+${collection_info.api_version.upper()}_\
+${collection_info.name.upper().replace('.', '_')} = (
       '${collection_info.api_name}',
       '${collection_info.api_version}',
       '${collection_info.base_url}',
       '${collection_info.name}',
-% for i, part in enumerate(collection_info.GetSplitPath(80 - 3 - 6)):
+% for i, part in enumerate(SplitPath(collection_info.path, 80 - 3 - 6)):
 % if i:
 
 % endif

@@ -50,14 +50,14 @@ class Show(base.Command):
     Returns:
       A Job message.
     """
-    job = job_utils.GetJobForArgs(self.context, args)
+    job = job_utils.GetJobForArgs(self.context, args.job)
 
     # Extract the basic display information for the job
     dataflow_messages = self.context[commands.DATAFLOW_MESSAGES_MODULE_KEY]
     shown_job = job_display.DisplayInfo(job, dataflow_messages)
 
     # TODO(user): "Prettify" the environment, etc, since it includes
-    # JSON as a string in  some of the fields.
+    # JSON as a string in some of the fields.
     if args.environment:
       shown_job.environment = job.environment
 

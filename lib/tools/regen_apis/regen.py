@@ -19,6 +19,8 @@ import os
 import re
 
 from apitools.gen import gen_client
+from googlecloudsdk.api_lib.util import resource
+from googlecloudsdk.core import apis as core_apis
 from tools.regen_apis import api_def
 from mako import runtime
 from mako import template
@@ -179,41 +181,6 @@ def GenerateApiMap(base_dir, root_dir, api_config):
     tpl.render_context(ctx)
 
 
-class CollectionInfo(object):
-  """Holds structural metadata for collection resources."""
-
-  def __init__(self, api_name, api_version, base_url, name, path, params):
-    self.api_name = api_name
-    self.api_version = api_version
-    self.base_url = base_url
-    self.name = name
-    self.path = path
-    self.params = params
-
-  def GetSplitPath(self, max_length):
-    """Splits path into chunks of max_length."""
-    parts = []
-    path = self.path
-    while path:
-      if len(path) < max_length:
-        index = max_length
-      else:
-        # Prefer to split on last '/'.
-        index = path.rfind('/', 0, max_length - 1)
-        if index < 0:
-          index = min(max_length - 1, len(path) - 1)
-      parts.append(path[:index+1])
-      path = path[index+1:]
-    return parts
-
-  def __cmp__(self, other):
-    return cmp((self.api_name, self.api_version, self.name),
-               (other.api_name, other.api_version, other.name))
-
-  def __str__(self):
-    return self.name
-
-
 def _GetPathParams(path):
   """Extract parameters from path."""
   parts = path.split('/')
@@ -239,12 +206,22 @@ def _ExtractResources(api_name, api_version, base_url, infos):
         match = _METHOD_ID_RE.match(method_id)
         if match:
           collection_name = match.group('collection')
+          # Remove api name from collection. It might not match passed in, or
+          # even api name in url. We choose to use api name as defined by url.
+          collection_name = collection_name.split('.', 1)[1]
           path = get_method.get('flatPath')
           if not path:
             path = get_method.get('path')
-          collection_info = CollectionInfo(
-              api_name, api_version, base_url, collection_name,
-              path, _GetPathParams(path))
+          # Normalize base url so it includes api_version.
+          url = base_url + path
+          url_api_name, _, path = core_apis.SplitDefaultEndpointUrl(url)
+          # Use url_api_name instead as it is assumed to be source of truth.
+          # Also note that api_version not always equal to url_api_version,
+          # this is the case where api_version is an alias.
+          url = url[:-len(path)]
+          collection_info = resource.CollectionInfo(
+              url_api_name, api_version, url, collection_name,
+              get_method.get('requestType'), path, _GetPathParams(path))
           collections.append(collection_info)
     else:
       subresource_collections = _ExtractResources(

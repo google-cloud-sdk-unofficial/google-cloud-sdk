@@ -11,7 +11,7 @@ gcloud compute instances move \- move an instance between zones
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances move\fR \fIINSTANCE\fR \fB\-\-destination\-zone\fR \fIDESTINATION_ZONE\fR [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instances move\fR \fINAME\fR \fB\-\-destination\-zone\fR \fIDESTINATION_ZONE\fR [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -35,9 +35,9 @@ us\-central1\-b, to us\-central1\-f.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fIINSTANCE\fR
+\fINAME\fR
 .RS 2m
-The name of the instance to move.
+The name of the instance.
 
 
 .RE
@@ -55,8 +55,8 @@ The zone to move the instance to.
 
 \fB\-\-zone\fR \fIZONE\fR
 .RS 2m
-The zone of the instance to move. If not specified, you will be prompted to
-select a zone.
+The zone of the instance to operate on. If not specified, you will be prompted
+to select a zone.
 
 To avoid prompting when this flag is omitted, you can set the
 \f5\fIcompute/zone\fR\fR property:

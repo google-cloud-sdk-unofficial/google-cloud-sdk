@@ -25,6 +25,7 @@ from googlecloudsdk.core import log
 from surface import bigquery as commands
 
 
+@base.UnicodeIsSupported
 class TablesPatch(base.Command):
   """Updates one or more attributes of a table or view.
 

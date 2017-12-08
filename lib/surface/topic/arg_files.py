@@ -105,6 +105,26 @@ class TestingArgFiles(base.TopicCommand):
 
             $ gcloud beta test android run excelsior_args.yaml:quick-robo-test
 
+          If your app has a login screen, or has additional UI elements which
+          require input text, you may specify the resource names of the Android
+          target UI elements, along with their corresponding input values, in
+          the 'robo-directives' map argument. In the example below,
+          "username_resource" is the resource name of the username field and
+          "username" is the input for that field (similarly for password).
+
+            # Run a 'robo' test on the 'Excelsior' app with login credentials.
+            robo-test-with-login:
+              app: path/to/excelsior.apk
+              type: robo
+              robo-directives:
+                username_resource: username
+                password_resource: password
+
+          Assuming the above YAML text is appended to the arg-file named
+          excelsior_args.yaml, you may invode the test by running:
+
+            $ gcloud beta test android run excelsior_args.yaml:robo-test-with-login
+
           Here is a slightly more complicated example which demonstrates
           composition of argument groups. Assume the following YAML text
           is appended to the arg-file shown above named excelsior_args.yaml:
@@ -139,6 +159,5 @@ class TestingArgFiles(base.TopicCommand):
           In the last example, the --device-ids argument on the
           command line overrides the device-ids: specification inside the
           arg-file because command-line arguments have higher precedence.
-
           """,
       }

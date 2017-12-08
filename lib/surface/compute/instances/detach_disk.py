@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
@@ -35,6 +36,7 @@ class DetachDisk(base_classes.ReadWriteCommand):
 
   @staticmethod
   def Args(parser):
+    instance_flags.INSTANCE_ARG.AddArgument(parser)
     disk_group = parser.add_mutually_exclusive_group(required=True)
 
     disk_name = disk_group.add_argument(
@@ -59,17 +61,6 @@ class DetachDisk(base_classes.ReadWriteCommand):
         using the ``--disk'' flag.
         """
 
-    parser.add_argument(
-        'name',
-        metavar='NAME',
-        completion_resource='compute.instances',
-        help='The name of the instance to detach the disk from.')
-
-    flags.AddZoneFlag(
-        parser,
-        resource_type='instance',
-        operation_type='detach a disk from')
-
   @property
   def service(self):
     return self.compute.instances
@@ -79,7 +70,9 @@ class DetachDisk(base_classes.ReadWriteCommand):
     return 'instances'
 
   def CreateReference(self, args):
-    return self.CreateZonalReference(args.name, args.zone)
+    return instance_flags.INSTANCE_ARG.ResolveAsResource(
+        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
+            self.compute_client, self.project))
 
   def GetGetRequest(self, args):
     return (self.service,
@@ -106,8 +99,9 @@ class DetachDisk(base_classes.ReadWriteCommand):
     replacement = copy.deepcopy(existing)
 
     if args.disk:
-      disk_ref = self.CreateZonalReference(
-          args.disk, self.ref.zone, resource_type='disks')
+      disk_ref = self.resources.Parse(
+          args.disk, collection='compute.disks',
+          params={'zone': self.ref.zone})
       replacement.disks = [disk for disk in existing.disks
                            if disk.source != disk_ref.SelfLink()]
 

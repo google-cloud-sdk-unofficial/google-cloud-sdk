@@ -13,7 +13,7 @@
 # limitations under the License.
 """List images command."""
 
-from containerregistry.client.v2 import docker_image
+from containerregistry.client.v2_2 import docker_image
 from googlecloudsdk.api_lib.container.images import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import http
@@ -75,7 +75,7 @@ class List(base.ListCommand):
           properties.VALUES.core.project.Get(required=True))
 
     # Throws if invalid.
-    repository = util.ValidateRepository(repository_arg)
+    repository = util.ValidateRepositoryPath(repository_arg)
 
     def _DisplayName(c):
       """Display the fully-qualified name."""

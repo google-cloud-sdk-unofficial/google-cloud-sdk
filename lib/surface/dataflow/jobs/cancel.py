@@ -16,6 +16,7 @@
 """
 from apitools.base.py import exceptions
 
+from googlecloudsdk.api_lib.dataflow import dataflow_util
 from googlecloudsdk.api_lib.dataflow import job_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
@@ -36,14 +37,14 @@ class Cancel(base.Command):
 
     Args:
       args: all the arguments that were provided to this command invocation.
-
-    Returns:
-      A pair of lists indicating the jobs that were successfully cancelled and
-      those that failed to be cancelled.
     """
-    for job_ref in job_utils.ExtractJobRefs(self.context, args):
-      self._CancelJob(job_ref)
-    return None
+    for job_ref in job_utils.ExtractJobRefs(self.context, args.jobs):
+      try:
+        self._CancelJob(job_ref)
+        log.status.Print('Cancelled job [{0}]'.format(job_ref.jobId))
+      except exceptions.HttpError as error:
+        log.status.Print('Failed to cancel job [{0}]: {1}'.format(
+            job_ref.jobId, dataflow_util.GetErrorMessage(error)))
 
   def _CancelJob(self, job_ref):
     """Cancels a job.
@@ -53,7 +54,6 @@ class Cancel(base.Command):
     """
     apitools_client = self.context[commands.DATAFLOW_APITOOLS_CLIENT_KEY]
     dataflow_messages = self.context[commands.DATAFLOW_MESSAGES_MODULE_KEY]
-
     request = dataflow_messages.DataflowProjectsJobsUpdateRequest(
         projectId=job_ref.projectId,
         jobId=job_ref.jobId,
@@ -62,9 +62,4 @@ class Cancel(base.Command):
         job=dataflow_messages.Job(
             requestedState=(dataflow_messages.Job.RequestedStateValueValuesEnum
                             .JOB_STATE_CANCELLED)))
-
-    try:
-      apitools_client.projects_jobs.Update(request)
-      log.status.Print('Cancelled job [{0}]'.format(job_ref.jobId))
-    except exceptions.HttpError as unused_error:
-      log.err.Print('Failed to cancel job [{0}]'.format(job_ref.jobId))
+    apitools_client.projects_jobs.Update(request)

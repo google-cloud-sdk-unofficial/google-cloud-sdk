@@ -28,6 +28,7 @@ from googlecloudsdk.core import properties
 OPERATION_TIMEOUT = 20 * 60  # 20 mins
 
 
+@base.UnicodeIsSupported
 class Create(base.Command):
   """Create a deployment.
 

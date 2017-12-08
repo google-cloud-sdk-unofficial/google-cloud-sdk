@@ -114,7 +114,7 @@ newly created instance will be a read replica of the specified master instance.
 .RE
 \fB\-\-pricing\-plan\fR \fIPRICING_PLAN\fR, \fB\-p\fR \fIPRICING_PLAN\fR; default="PER_USE"
 .RS 2m
-The pricing plan for this instance.
+The pricing plan for this instance. Valid options are PER_USE or PACKAGE.
 
 .RE
 \fB\-\-region\fR \fIREGION\fR; default="us\-central"
@@ -124,7 +124,8 @@ The geographical region. Can be asia\-east1, europe\-west1, or us\-central.
 .RE
 \fB\-\-replication\fR \fIREPLICATION\fR
 .RS 2m
-The type of replication this instance uses.
+The type of replication this instance uses.Valid options are SYNCHRONOUS or
+ASYNCHRONOUS.
 
 .RE
 \fB\-\-require\-ssl\fR

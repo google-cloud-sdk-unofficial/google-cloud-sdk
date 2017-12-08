@@ -458,8 +458,8 @@ https://console.developers.google.com/apis page.
                                                           *command_args)
 
     return_code = execution_utils.Exec(gsutil_args, no_exit=True,
-                                       pipe_output_through_logger=True,
-                                       file_only_logger=True)
+                                       out_func=log.file_only_logger.debug,
+                                       err_func=log.file_only_logger.debug)
     if return_code == 0:
       log.status.write("""\
 Created a default .boto configuration file at [{boto_path}]. See this file and

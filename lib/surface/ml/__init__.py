@@ -21,6 +21,21 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Ml(base.Group):
+  """Cloud ML command groups.
+
+  NOTE: The alpha version of the ML command group is DEPRECATED.
+  Please update to use the new beta version.
+  """
+
+  def __init__(self):
+    project = properties.VALUES.core.project
+    resolver = resolvers.FromProperty(project)
+    resources.REGISTRY.SetParamDefault(
+        'ml', collection=None, param='projectsId', resolver=resolver)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class MlBeta(base.Group):
   """Cloud ML command groups."""
 
   def __init__(self):

@@ -14,10 +14,9 @@
 """Delete images command."""
 
 from containerregistry.client import docker_name
-from containerregistry.client.v2 import docker_session
+from containerregistry.client.v2_2 import docker_session
 from googlecloudsdk.api_lib.container.images import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import http
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
@@ -101,27 +100,12 @@ class Delete(base.DeleteCommand):
     digests = set()
     tags = set()
     for image_name in image_names:
-      docker_obj = self._ProcessImageName(image_name)
+      docker_obj = util.GetDockerImageFromTagOrDigest(image_name)
       if isinstance(docker_obj, docker_name.Digest):
         digests.add(docker_obj)
       elif isinstance(docker_obj, docker_name.Tag):
         tags.add(docker_obj)
     return [digests, tags]
-
-  def _ProcessImageName(self, image_name):
-    try:
-      return docker_name.Digest(image_name)
-    except docker_name.BadNameException:
-      pass
-
-    try:
-      return docker_name.Tag(image_name)
-    except docker_name.BadNameException:
-      raise exceptions.ToolException(
-          'The input {0} must be a properly formatted '
-          'docker tag or digest:\n'
-          'Format For Digest: *.gcr.io/repository@<digest>\n'
-          'Format For Tag: *.gcr.io/repository:<tag>'.format(image_name))
 
   def _DeleteDockerTagOrDigest(self, tag_or_digest, http_obj):
     docker_session.Delete(creds=util.CredentialProvider(),

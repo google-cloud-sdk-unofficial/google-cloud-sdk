@@ -102,7 +102,11 @@ class RestoreBackup(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class RestoreBackupBeta(base.Command):
-  """Restores a backup of a Cloud SQL instance."""
+  """Restores a backup of a Cloud SQL instance.
+
+  DEPRECATED: This command is deprecated and will be removed.
+  Use 'gcloud beta sql backups restore' instead.
+  """
 
   @staticmethod
   def Args(parser):

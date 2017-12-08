@@ -21,7 +21,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.configurations import named_configs
 
 
-@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class GetValue(base.Command):
   """Print the value of a Cloud SDK property.
 

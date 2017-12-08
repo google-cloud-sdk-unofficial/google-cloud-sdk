@@ -21,7 +21,42 @@ from googlecloudsdk.core import apis
 from googlecloudsdk.core import resources
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
+  """List existing Cloud ML versions."""
+
+  def Collection(self):
+    return 'ml.beta.models.versions'
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    flags.GetModelName(positional=False, required=True).AddToParser(parser)
+
+  @http_error_handler.HandleHttpErrors
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+    client = apis.GetClientInstance('ml', 'v1alpha3')
+    msgs = apis.GetMessagesModule('ml', 'v1alpha3')
+    res = resources.REGISTRY.Parse(args.model, collection='ml.projects.models')
+    req = msgs.MlProjectsModelsVersionsListRequest(
+        projectsId=res.projectsId, modelsId=res.Name())
+    return list_pager.YieldFromList(client.projects_models_versions,
+                                    req,
+                                    field='versions',
+                                    batch_size_attribute='pageSize')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(base.ListCommand):
   """List existing Cloud ML versions."""
 
   def Collection(self):
@@ -43,9 +78,11 @@ class List(base.ListCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    client = apis.GetClientInstance('ml', 'v1alpha3')
-    msgs = apis.GetMessagesModule('ml', 'v1alpha3')
-    res = resources.REGISTRY.Parse(args.model, collection='ml.projects.models')
+    # TODO(b/31062835): remove CloneAndSwitchAPI and extract API code to api_lib
+    client = apis.GetClientInstance('ml', 'v1beta1')
+    msgs = apis.GetMessagesModule('ml', 'v1beta1')
+    res = resources.REGISTRY.CloneAndSwitchAPIs(client).Parse(
+        args.model, collection='ml.projects.models')
     req = msgs.MlProjectsModelsVersionsListRequest(
         projectsId=res.projectsId, modelsId=res.Name())
     return list_pager.YieldFromList(client.projects_models_versions,

@@ -20,6 +20,7 @@ from googlecloudsdk.core import apis
 from googlecloudsdk.core import resources
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetDefault(base.DescribeCommand):
   """Sets an existing Cloud ML version as the default for its model."""
 
@@ -52,5 +53,43 @@ class SetDefault(base.DescribeCommand):
         versionsId=res.Name(),
         googleCloudMlV1alpha3SetDefaultVersionRequest=(
             msgs.GoogleCloudMlV1alpha3SetDefaultVersionRequest()))
+    resp = client.projects_models_versions.SetDefault(req)
+    return resp
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaSetDefault(base.DescribeCommand):
+  """Sets an existing Cloud ML version as the default for its model."""
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    flags.GetModelName(positional=False).AddToParser(parser)
+    flags.VERSION_NAME.AddToParser(parser)
+
+  @http_error_handler.HandleHttpErrors
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+    # TODO(b/31062835): remove CloneAndSwitchAPI and extract API code to api_lib
+    client = apis.GetClientInstance('ml', 'v1beta1')
+    msgs = apis.GetMessagesModule('ml', 'v1beta1')
+    res = resources.REGISTRY.CloneAndSwitchAPIs(client).Parse(
+        args.version,
+        params={'modelsId': args.model},
+        collection='ml.projects.models.versions')
+    req = msgs.MlProjectsModelsVersionsSetDefaultRequest(
+        projectsId=res.projectsId,
+        modelsId=res.modelsId,
+        versionsId=res.Name(),
+        googleCloudMlV1beta1SetDefaultVersionRequest=(
+            msgs.GoogleCloudMlV1beta1SetDefaultVersionRequest()))
     resp = client.projects_models_versions.SetDefault(req)
     return resp

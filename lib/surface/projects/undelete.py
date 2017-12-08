@@ -31,16 +31,13 @@ class Undelete(base.CreateCommand):
   * There is no project with the given ID.
   * The active account does not have Owner or Editor permissions for the
     given project.
+
+  ## EXAMPLES
+
+  The following command undeletes the project with the ID `example-foo-bar-1`:
+
+    $ {command} example-foo-bar-1
   """
-
-  detailed_help = {
-      'EXAMPLES': """
-          The following command undeletes the project with the ID
-          `example-foo-bar-1`:
-
-            $ {command} example-foo-bar-1
-      """,
-  }
 
   def Collection(self):
     return command_lib_util.PROJECTS_COLLECTION

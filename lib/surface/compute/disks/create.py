@@ -156,7 +156,6 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander,
     requests = []
     disk_refs = disks_flags.DISKS_ARG.ResolveAsResource(
         args, self.resources,
-        default_scope=flags.ScopeEnum.ZONE,
         scope_lister=flags.GetDefaultScopeLister(
             self.compute_client, self.project))
 
@@ -170,7 +169,7 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander,
       source_image_uri = None
 
     snapshot_ref = disks_flags.SOURCE_SNAPSHOT_ARG.ResolveAsResource(
-        args, self.resources, default_scope=flags.ScopeEnum.GLOBAL)
+        args, self.resources)
     if snapshot_ref:
       snapshot_uri = snapshot_ref.SelfLink()
     else:
@@ -188,9 +187,9 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander,
 
     for disk_ref in disk_refs:
       if args.type:
-        type_ref = self.CreateZonalReference(
-            args.type, disk_ref.zone,
-            resource_type='diskTypes')
+        type_ref = self.resources.Parse(
+            args.type, collection='compute.diskTypes',
+            params={'zone': disk_ref.zone})
         type_uri = type_ref.SelfLink()
       else:
         type_uri = None

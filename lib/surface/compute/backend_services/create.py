@@ -19,7 +19,6 @@
 from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
@@ -75,8 +74,7 @@ class CreateGA(backend_services_utils.BackendServiceMutator):
 
   def _CreateBackendService(self, args):
     backend_services_ref = flags.GLOBAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, self.resources,
-        default_scope=compute_flags.ScopeEnum.GLOBAL)
+        args, self.resources)
 
     health_checks = backend_services_utils.GetHealthChecks(args, self)
     if not health_checks:

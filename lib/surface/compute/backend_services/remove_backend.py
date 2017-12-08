@@ -14,6 +14,7 @@
 
 """Command for removing a backend from a backend service."""
 
+from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import base
@@ -131,8 +132,7 @@ class RemoveBackend(base_classes.ReadWriteCommand):
     return replacement
 
   def Run(self, args):
-    # Check whether --region flag was used for regional resource.
-    self.regional = getattr(args, 'region', None) is not None
+    self.regional = backend_services_utils.IsRegionalRequest(self, args)
     return super(RemoveBackend, self).Run(args)
 
 

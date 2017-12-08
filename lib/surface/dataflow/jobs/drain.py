@@ -44,26 +44,15 @@ class Drain(base.Command):
     Args:
       args: all the arguments that were provided to this command invocation.
     """
-    drained = []
-    failed = []
     output_stream = log.status.GetConsoleWriterStream()
-    for job_ref in job_utils.ExtractJobRefs(self.context, args):
+    for job_ref in job_utils.ExtractJobRefs(self.context, args.jobs):
       output_stream.flush()
       try:
-        output_stream.write('Starting drain for job \'{0}\' ... '
-                            .format(job_ref.jobId))
         self._DrainJob(job_ref)
-        output_stream.write('Success\n')
-        drained.append(job_ref.jobId)
+        log.status.Print('Started draining job [{0}]'.format(job_ref.jobId))
       except exceptions.HttpError as error:
-        reason = dataflow_util.GetErrorMessage(error)
-        output_stream.write('Failure: {0}\n'.format(reason))
-        failed.append(job_ref.jobId)
-    if drained:
-      log.status.Print('Started draining jobs: [{0}]'.format(','.join(drained)))
-    if failed:
-      log.status.Print('Failed to start draining jobs: [{0}]'
-                       .format(','.join(failed)))
+        log.status.Print('Failed to drain job [{0}]: {1}'.format(
+            job_ref.jobId, dataflow_util.GetErrorMessage(error)))
 
   def _DrainJob(self, job_ref):
     """Drains a job.
@@ -82,8 +71,4 @@ class Drain(base.Command):
         job=dataflow_messages.Job(
             requestedState=(dataflow_messages.Job.RequestedStateValueValuesEnum
                             .JOB_STATE_DRAINED)))
-
-    try:
-      apitools_client.projects_jobs.Update(request)
-    except exceptions.HttpError as error:
-      raise error
+    apitools_client.projects_jobs.Update(request)

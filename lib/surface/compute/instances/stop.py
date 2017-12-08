@@ -15,24 +15,22 @@
 """Command for stopping an instance."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Stop(base_classes.NoOutputAsyncMutator):
   """Stop a virtual machine instance."""
 
   @staticmethod
   def Args(parser):
-    flags.AddZoneFlag(
-        parser,
-        resource_type='instance',
-        operation_type='stop')
-
+    instance_flags.INSTANCES_ARG.AddArgument(parser)
     parser.add_argument(
-        'name',
-        nargs='+',
-        completion_resource='compute.instances',
-        help='The names of the instances to stop.')
+        '--discard-local-ssd',
+        action='store_true',
+        help=('If provided, local SSD data is discarded.'))
 
   @property
   def service(self):
@@ -46,18 +44,30 @@ class Stop(base_classes.NoOutputAsyncMutator):
   def resource_type(self):
     return 'instances'
 
+  def _CreateStopRequest(self, instance_ref, unused_discard_local_ssd):
+    return self.messages.ComputeInstancesStopRequest(
+        instance=instance_ref.Name(),
+        project=self.project,
+        zone=instance_ref.zone)
+
   def CreateRequests(self, args):
-    request_list = []
-    for name in args.name:
-      instance_ref = self.CreateZonalReference(name, args.zone)
+    instance_refs = instance_flags.INSTANCES_ARG.ResolveAsResource(
+        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
+            self.compute_client, self.project))
+    return [self._CreateStopRequest(instance_ref, args.discard_local_ssd)
+            for instance_ref in instance_refs]
 
-      request = self.messages.ComputeInstancesStopRequest(
-          instance=instance_ref.Name(),
-          project=self.project,
-          zone=instance_ref.zone)
 
-      request_list.append(request)
-    return request_list
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class StopAlpha(Stop, base_classes.BaseCommand):
+
+  def _CreateStopRequest(self, instance_ref, discard_local_ssd):
+    """Adds the discardLocalSsd var into the message."""
+    return self.messages.ComputeInstancesStopRequest(
+        discardLocalSsd=discard_local_ssd,
+        instance=instance_ref.Name(),
+        project=self.project,
+        zone=instance_ref.zone)
 
 
 Stop.detailed_help = {

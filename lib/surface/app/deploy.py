@@ -49,10 +49,6 @@ class DeployGA(base.SilentCommand):
     """Get arguments for this command."""
     deploy_util.ArgsDeploy(parser)
 
-  def Epilog(self, unused_resources_were_displayed):
-    """Print hints for user at the end of a deployment."""
-    deploy_util.EpilogDeploy(self, unused_resources_were_displayed)
-
   def Run(self, args):
     return deploy_util.RunDeploy(self, args)
 
@@ -66,10 +62,6 @@ class DeployBeta(base.SilentCommand):
     """Get arguments for this command."""
     deploy_util.ArgsDeploy(parser)
 
-  def Epilog(self, unused_resources_were_displayed):
-    """Print hints for user at the end of a deployment."""
-    deploy_util.EpilogDeploy(self, unused_resources_were_displayed)
-
   def Run(self, args):
     return deploy_util.RunDeploy(self, args, enable_endpoints=True)
 
@@ -82,10 +74,6 @@ class DeployPreview(base.SilentCommand):
   def Args(parser):
     """Get arguments for this command."""
     deploy_util.ArgsDeploy(parser)
-
-  def Epilog(self, unused_resources_were_displayed):
-    """Print hints for user at the end of a deployment."""
-    deploy_util.EpilogDeploy(self, unused_resources_were_displayed)
 
   def Run(self, args):
     return deploy_util.RunDeploy(self, args, enable_endpoints=True)

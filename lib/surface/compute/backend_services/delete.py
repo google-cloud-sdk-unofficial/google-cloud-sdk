@@ -14,11 +14,11 @@
 
 """Command for deleting backend services."""
 
+from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute.backend_services import client
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
@@ -38,8 +38,9 @@ class Delete(base.Command):
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     refs = self._BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, holder.resources,
-        default_scope=compute_flags.ScopeEnum.GLOBAL)
+        args,
+        holder.resources,
+        default_scope=backend_services_utils.GetDefaultScope(self, args))
     utils.PromptForDeletion(refs)
 
     requests = []

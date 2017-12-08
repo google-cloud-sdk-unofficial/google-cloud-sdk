@@ -11,7 +11,7 @@ gcloud compute instances set\-scheduling \- set scheduling options for Google Co
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances set\-scheduling\fR \fIINSTANCE\fR [\fB\-\-maintenance\-policy\fR\ \fIMAINTENANCE_POLICY\fR] [\fB\-\-restart\-on\-failure\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instances set\-scheduling\fR \fINAME\fR [\fB\-\-maintenance\-policy\fR\ \fIMAINTENANCE_POLICY\fR] [\fB\-\-restart\-on\-failure\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -24,9 +24,9 @@ options for Google Compute Engine virtual machines.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fIINSTANCE\fR
+\fINAME\fR
 .RS 2m
-The name of the instance for which to change scheduling options.
+The name of the instance.
 
 
 .RE
@@ -51,8 +51,8 @@ does not affect terminations performed by the user.'. Use
 .RE
 \fB\-\-zone\fR \fIZONE\fR
 .RS 2m
-The zone of the instance to set scheduling settings for. If not specified, you
-will be prompted to select a zone.
+The zone of the instance to operate on. If not specified, you will be prompted
+to select a zone.
 
 To avoid prompting when this flag is omitted, you can set the
 \f5\fIcompute/zone\fR\fR property:

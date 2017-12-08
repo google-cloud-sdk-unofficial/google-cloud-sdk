@@ -29,6 +29,7 @@ from googlecloudsdk.core import properties
 from surface import bigquery as commands
 
 
+@base.UnicodeIsSupported
 class Import(base.Command):
   """Import data from a specified source into a specified destination table.
 
@@ -258,13 +259,13 @@ def _ProcessSources(source_string):
     source = sources[0]
     if len(sources) > 1:
       raise exceptions.ToolException(
-          'Local upload currently supports only one file, found {0}'.format(
+          u'Local upload currently supports only one file, found {0}'.format(
               len(sources)))
     if not os.path.isfile(source):
       if os.path.exists(source):
         raise exceptions.ToolException(
-            'Source path is not a file: {0}'.format(source))
+            u'Source path is not a file: {0}'.format(source))
       else:
         raise exceptions.ToolException(
-            'Source file not found: {0}'.format(source))
+            u'Source file not found: {0}'.format(source))
   return sources

@@ -14,11 +14,13 @@
 """ml jobs describe command."""
 
 from googlecloudsdk.api_lib.ml import jobs
+from googlecloudsdk.api_lib.ml import jobs_v1beta1
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describe an existing Cloud ML job."""
 
@@ -39,3 +41,16 @@ class Describe(base.DescribeCommand):
       Some value that we want to have printed later.
     """
     return jobs.Get(args.job)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(base.DescribeCommand):
+  """Do it."""
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    flags.JOB_NAME.AddToParser(parser)
+
+  def Run(self, args):
+    return jobs_v1beta1.Get(args.job)

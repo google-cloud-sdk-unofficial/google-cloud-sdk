@@ -38,7 +38,6 @@ class GetNamedPorts(base.ListCommand):
     group_ref = (
         instance_groups_flags.ZONAL_INSTANCE_GROUP_ARG.ResolveAsResource(
             args, holder.resources,
-            default_scope=flags.ScopeEnum.ZONE,
             scope_lister=flags.GetDefaultScopeLister(
                 holder.client, project)))
     return instance_groups_utils.OutputNamedPortsForGroup(

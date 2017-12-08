@@ -25,15 +25,15 @@ class UnsupportedPlatformError(exceptions.Error):
 
 
 class Bigtable(base.Group):
-  """Manage your local bigtable emulator.
+  """Manage your local Bigtable emulator.
 
-  This set of commands allows you to start and use a local bigtable emulator.
+  This set of commands allows you to start and use a local Bigtable emulator.
   """
 
   detailed_help = {
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\
-          To start a local bigtable emulator, run:
+          To start a local Bigtable emulator, run:
 
             $ {command} start
           """,
@@ -44,7 +44,7 @@ class Bigtable(base.Group):
     current_os = platforms.OperatingSystem.Current()
     if current_os is platforms.OperatingSystem.WINDOWS:
       raise UnsupportedPlatformError(
-          'The bigtable emulator is currently not supported on Windows.')
+          'The Bigtable emulator is currently not supported on Windows.')
 
     util.EnsureComponentIsInstalled(bigtable_util.BIGTABLE,
                                     bigtable_util.BIGTABLE_TITLE)

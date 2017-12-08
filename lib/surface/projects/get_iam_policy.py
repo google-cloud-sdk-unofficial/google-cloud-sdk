@@ -25,16 +25,14 @@ class GetIamPolicy(base.Command):
   """Get IAM policy for a project.
 
   Gets the IAM policy for a project, given a project ID.
+
+  ## EXAMPLES
+
+  The following command prints the IAM policy for a project with the ID
+  `example-project-id-1`:
+
+    $ {command} example-project-id-1
   """
-
-  detailed_help = {
-      'EXAMPLES': """
-          The following command prints the IAM policy for a project with
-          the ID `example-project-id-1`:
-
-            $ {command} example-project-id-1
-      """,
-  }
 
   def Collection(self):
     return command_lib_util.PROJECTS_COLLECTION

@@ -45,7 +45,8 @@ class ExportSteps(base.Command):
     Returns:
       An iterator over the steps in the given job.
     """
-    return step_json.ExtractSteps(job_utils.GetJobForArgs(self.context, args))
+    return step_json.ExtractSteps(
+        job_utils.GetJobForArgs(self.context, args.job))
 
   def Display(self, args, steps):
     """This method is called to print the result of the Run() method.

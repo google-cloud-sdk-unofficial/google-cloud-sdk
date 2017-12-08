@@ -17,7 +17,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
+from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 
 
 class SetMachineType(base_classes.NoOutputAsyncMutator):
@@ -25,20 +25,9 @@ class SetMachineType(base_classes.NoOutputAsyncMutator):
 
   @staticmethod
   def Args(parser):
-
-    parser.add_argument(
-        'name',
-        metavar='NAME',
-        completion_resource='compute.instances',
-        help='The name of the instance to change the machine type for.')
-
-    instances_flags.AddMachineTypeArgs(parser)
-    instances_flags.AddCustomMachineTypeArgs(parser)
-
-    flags.AddZoneFlag(
-        parser,
-        resource_type='instance',
-        operation_type='change the machine type for')
+    instance_flags.INSTANCE_ARG.AddArgument(parser)
+    instance_flags.AddMachineTypeArgs(parser)
+    instance_flags.AddCustomMachineTypeArgs(parser)
 
   @property
   def service(self):
@@ -54,7 +43,9 @@ class SetMachineType(base_classes.NoOutputAsyncMutator):
 
   def CreateRequests(self, args):
     """Returns a list of request necessary for setting scheduling options."""
-    instance_ref = self.CreateZonalReference(args.name, args.zone)
+    instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
+        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
+            self.compute_client, self.project))
 
     machine_type = instance_utils.InterpretMachineType(
         machine_type=args.machine_type,
@@ -64,9 +55,9 @@ class SetMachineType(base_classes.NoOutputAsyncMutator):
     instance_utils.CheckCustomCpuRamRatio(
         self.compute_client, self.project, instance_ref.zone, machine_type)
 
-    machine_type_uri = self.CreateZonalReference(
-        machine_type, instance_ref.zone,
-        resource_type='machineTypes').SelfLink()
+    machine_type_uri = self.resources.Parse(
+        machine_type, collection='compute.machineTypes',
+        params={'zone': instance_ref.zone}).SelfLink()
 
     set_machine_type_request = self.messages.InstancesSetMachineTypeRequest(
         machineType=machine_type_uri)

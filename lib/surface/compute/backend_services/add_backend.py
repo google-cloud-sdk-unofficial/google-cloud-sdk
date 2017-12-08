@@ -54,8 +54,7 @@ class AddBackend(base_classes.ReadWriteCommand):
 
   def CreateReference(self, args):
     return flags.GLOBAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, self.resources,
-        default_scope=compute_flags.ScopeEnum.GLOBAL)
+        args, self.resources)
 
   def GetGetRequest(self, args):
     if self.regional:
@@ -144,8 +143,7 @@ class AddBackend(base_classes.ReadWriteCommand):
     return replacement
 
   def Run(self, args):
-    # Check whether --region flag was used for regional resource.
-    self.regional = getattr(args, 'region', None) is not None
+    self.regional = backend_services_utils.IsRegionalRequest(self, args)
     return super(AddBackend, self).Run(args)
 
 
@@ -218,7 +216,6 @@ class AddBackendAlpha(AddBackendBeta):
         zone=args.instance_group_zone,
         zonal_resource_type='instanceGroups',
         regional_resource_type='regionInstanceGroups')
-
 
 AddBackend.detailed_help = {
     'brief': 'Add a backend to a backend service',

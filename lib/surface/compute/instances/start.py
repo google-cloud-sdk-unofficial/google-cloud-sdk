@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import resources
 
@@ -36,17 +37,7 @@ DETAILED_HELP = {
 
 def _CommonArgs(parser):
   """Add parser arguments common to all tracks."""
-  flags.AddZoneFlag(
-      parser,
-      resource_type='instance',
-      operation_type='start')
-
-  parser.add_argument(
-      'name',
-      nargs='+',
-      completion_resource='compute.instances',
-      help='The names of the instances to start.')
-
+  instance_flags.INSTANCES_ARG.AddArgument(parser)
   csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
 
 
@@ -100,14 +91,14 @@ class Start(base_classes.NoOutputAsyncMutator):
   def CreateRequests(self, args):
     csek_key_file = args.csek_key_file
     request_list = []
-    instance_refs = [self.CreateZonalReference(name, args.zone)
-                     for name in args.name]
+    instance_refs = instance_flags.INSTANCES_ARG.ResolveAsResource(
+        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
+            self.compute_client, self.project))
     if csek_key_file:
       instances = self.GetInstances(instance_refs)
     else:
       instances = [None for _ in instance_refs]
-    for name, instance_ref, instance in zip(args.name, instance_refs,
-                                            instances):
+    for instance_ref, instance in zip(instance_refs, instances):
       disks = []
 
       if csek_key_file:

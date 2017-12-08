@@ -51,7 +51,6 @@ class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
         instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG
         .ResolveAsResource(
             args, self.resources,
-            default_scope=flags.ScopeEnum.ZONE,
             scope_lister=flags.GetDefaultScopeLister(
                 self.compute_client, self.project)))
 
@@ -61,7 +60,6 @@ class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
         instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG
         .ResolveAsResource(
             args, self.resources,
-            default_scope=flags.ScopeEnum.ZONE,
             scope_lister=flags.GetDefaultScopeLister(
                 self.compute_client, self.project)))
 

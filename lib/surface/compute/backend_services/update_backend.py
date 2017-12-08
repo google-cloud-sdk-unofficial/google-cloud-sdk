@@ -19,7 +19,6 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import backend_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.third_party.py27 import py27_copy as copy
@@ -55,12 +54,10 @@ class UpdateBackend(base_classes.ReadWriteCommand):
   def CreateReference(self, args):
     if self.regional:
       return flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-          args, self.resources,
-          default_scope=compute_flags.ScopeEnum.GLOBAL)
+          args, self.resources)
 
     return flags.GLOBAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, self.resources,
-        default_scope=compute_flags.ScopeEnum.GLOBAL)
+        args, self.resources)
 
   def GetGetRequest(self, args):
     if self.regional:
@@ -183,8 +180,7 @@ class UpdateBackend(base_classes.ReadWriteCommand):
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
 
-    # Check whether --region flag was used for regional resource.
-    self.regional = getattr(args, 'region', None) is not None
+    self.regional = backend_services_utils.IsRegionalRequest(self, args)
 
     return super(UpdateBackend, self).Run(args)
 
@@ -233,8 +229,7 @@ class UpdateBackendBeta(UpdateBackend):
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
 
-    # Check whether --region flag was used for regional resource.
-    self.regional = getattr(args, 'region', None) is not None
+    self.regional = backend_services_utils.IsRegionalRequest(self, args)
 
     return super(UpdateBackend, self).Run(args)
 
@@ -281,8 +276,7 @@ class UpdateBackendAlpha(UpdateBackend):
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
 
-    # Check whether --region flag was used for regional resource.
-    self.regional = getattr(args, 'region', None) is not None
+    self.regional = backend_services_utils.IsRegionalRequest(self, args)
     return super(UpdateBackend, self).Run(args)
 
 

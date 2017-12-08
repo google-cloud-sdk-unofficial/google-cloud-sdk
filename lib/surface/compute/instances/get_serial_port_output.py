@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 
@@ -32,11 +33,7 @@ class GetSerialPortOutputBase(object):
   @staticmethod
   def Args(parser):
     """Add expected arguments."""
-
-    flags.AddZoneFlag(
-        parser,
-        resource_type='instance',
-        operation_type='get serial port output for')
+    instance_flags.INSTANCE_ARG.AddArgument(parser)
 
     port = parser.add_argument(
         '--port',
@@ -49,11 +46,6 @@ class GetSerialPortOutputBase(object):
         port. Setting this flag will return the output of the requested serial
         port.
         """
-
-    parser.add_argument(
-        'name',
-        completion_resource='compute.instances',
-        help='The name of the instance.')
 
   @property
   def resource_type(self):
@@ -98,7 +90,9 @@ class GetSerialPortOutputBeta(GetSerialPortOutputBase,
         """
 
   def Run(self, args):
-    instance_ref = self.CreateZonalReference(args.name, args.zone)
+    instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
+        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
+            self.compute_client, self.project))
 
     request = (self.compute.instances,
                'GetSerialPortOutput',
@@ -144,7 +138,9 @@ class GetSerialPortOutput(GetSerialPortOutputBase,
   """Read output from a virtual machine instance's serial port."""
 
   def Run(self, args):
-    instance_ref = self.CreateZonalReference(args.name, args.zone)
+    instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
+        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
+            self.compute_client, self.project))
 
     request = (self.compute.instances,
                'GetSerialPortOutput',

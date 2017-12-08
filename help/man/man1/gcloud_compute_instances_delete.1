@@ -11,7 +11,7 @@ gcloud compute instances delete \- delete Google Compute Engine virtual machine 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances delete\fR \fINAME\fR [\fINAME\fR\ ...] [\fB\-\-delete\-disks\fR\ {\fIboot\fR,\fIdata\fR,\fIall\fR}\ |\ \fB\-\-keep\-disks\fR\ {\fIboot\fR,\fIdata\fR,\fIall\fR}] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instances delete\fR \fINAMES\fR [\fINAMES\fR\ ...] [\fB\-\-delete\-disks\fR\ {\fIboot\fR,\fIdata\fR,\fIall\fR}\ |\ \fB\-\-keep\-disks\fR\ {\fIboot\fR,\fIdata\fR,\fIall\fR}] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -24,9 +24,9 @@ virtual machine instances.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR [\fINAME\fR ...]
+\fINAMES\fR [\fINAMES\fR ...]
 .RS 2m
-The names of the instances to delete.
+The names of the instances.
 
 
 .RE
@@ -53,8 +53,8 @@ https://cloud.google.com/compute/docs/disks/persistent\-disks#updateautodelete
 .RE
 \fB\-\-zone\fR \fIZONE\fR
 .RS 2m
-The zone of the instances to delete. If not specified, you will be prompted to
-select a zone.
+The zone of the instance to operate on. If not specified, you will be prompted
+to select a zone.
 
 To avoid prompting when this flag is omitted, you can set the
 \f5\fIcompute/zone\fR\fR property:

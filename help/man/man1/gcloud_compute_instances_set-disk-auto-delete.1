@@ -11,7 +11,7 @@ gcloud compute instances set\-disk\-auto\-delete \- set auto\-delete behavior fo
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances set\-disk\-auto\-delete\fR \fIINSTANCE\fR [\fB\-\-no\-auto\-delete\fR] [\fB\-\-device\-name\fR\ \fIDEVICE_NAME\fR\ |\ \fB\-\-disk\fR\ \fIDISK\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instances set\-disk\-auto\-delete\fR \fINAME\fR [\fB\-\-no\-auto\-delete\fR] [\fB\-\-device\-name\fR\ \fIDEVICE_NAME\fR\ |\ \fB\-\-disk\fR\ \fIDISK\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -26,9 +26,9 @@ instance it is attached to is deleted.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fIINSTANCE\fR
+\fINAME\fR
 .RS 2m
-The name of the instance for which to configure disk auto\-deletion.
+The name of the instance.
 
 
 .RE
@@ -59,8 +59,8 @@ its device name using the \f5\fI\-\-device\-name\fR\fR flag.
 .RE
 \fB\-\-zone\fR \fIZONE\fR
 .RS 2m
-The zone of the instance to configure disk auto\-delete for. If not specified,
-you will be prompted to select a zone.
+The zone of the instance to operate on. If not specified, you will be prompted
+to select a zone.
 
 To avoid prompting when this flag is omitted, you can set the
 \f5\fIcompute/zone\fR\fR property:

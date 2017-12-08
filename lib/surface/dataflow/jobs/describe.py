@@ -60,4 +60,4 @@ class Describe(base.DescribeCommand):
     Returns:
       A Job message.
     """
-    return job_utils.GetJobForArgs(self.context, args, args.full, required=True)
+    return job_utils.GetJobForArgs(self.context, args.job, args.full)

@@ -37,16 +37,14 @@ class Move(base.Command):
         resourcemanager.projects.create permission for the given
         organization.
       * The given project is already in an organization.
+
+  ## EXAMPLES
+
+  The following command moves a project with the ID `super-awesome-project` into
+  the organization `25872158`:
+
+    $ {command} super-awesome-project --organization=25872158
   """
-
-  detailed_help = {
-      'EXAMPLES': """
-          The following command moves a project with the ID
-          `super-awesome-project` into the organization `25872158`:
-
-            $ {command} super-awesome-project --organization=25872158
-      """,
-  }
 
   def Collection(self):
     return command_lib_util.PROJECTS_COLLECTION

@@ -15,6 +15,7 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 
 
 class Move(base_classes.BaseAsyncMutator):
@@ -38,28 +39,22 @@ class Move(base_classes.BaseAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        'name',
-        metavar='DISK',
-        completion_resource='compute.disks',
-        help='The name of the disk to move.')
+    disks_flags.DISK_ARG.AddArgument(parser)
     parser.add_argument(
         '--destination-zone',
         help='The zone to move the disk to.',
         completion_resource='compute.zones',
         required=True)
-    flags.AddZoneFlag(
-        parser,
-        resource_type='disk',
-        operation_type='move')
 
   def CreateRequests(self, args):
     """Returns a request for moving a disk."""
 
-    target_disk = self.CreateZonalReference(
-        args.name, args.zone, resource_type='disks')
-    destination_zone = self.CreateGlobalReference(
-        args.destination_zone, resource_type='zones')
+    target_disk = disks_flags.DISK_ARG.ResolveAsResource(
+        args, self.resources,
+        scope_lister=flags.GetDefaultScopeLister(
+            self.compute_client, self.project))
+    destination_zone = self.resources.Parse(
+        args.destination_zone, collection='compute.zones')
 
     request = self.messages.ComputeProjectsMoveDiskRequest(
         diskMoveRequest=self.messages.DiskMoveRequest(
@@ -69,9 +64,12 @@ class Move(base_classes.BaseAsyncMutator):
         project=self.project,
     )
 
-    destination_disk_ref = self.CreateZonalReference(
-        args.name, args.destination_zone, resource_type='disks')
-    project_ref = self.CreateGlobalReference(self.project)
+    destination_disk_ref = self.resources.Parse(
+        target_disk.Name(), collection='compute.disks',
+        params={'zone': destination_zone.Name()})
+
+    project_ref = self.resources.Parse(
+        self.project, collection='compute.projects')
 
     self._target_to_get_request = {}
     self._target_to_get_request[project_ref.SelfLink()] = (

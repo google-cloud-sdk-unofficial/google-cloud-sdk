@@ -143,10 +143,10 @@ class Feedback(base.Command):
       try:
         log_data = info_holder.LogData.FromFile(args.log_file)
       except IOError as err:
-        log.warn('Error reading the specified file [{0}]: '
-                 '{1}\n'.format(args.log_file, err))
+        log.warn(u'Error reading the specified file [{0}]: '
+                 u'{1}\n'.format(args.log_file, err))
     if args.quiet:
-      _PrintQuiet(str(info), log_data)
+      _PrintQuiet(unicode(info), log_data)
     else:
       log.status.Print(FEEDBACK_MESSAGE)
       if not log_data:

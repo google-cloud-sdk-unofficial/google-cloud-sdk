@@ -20,15 +20,15 @@ from googlecloudsdk.calliope import base
 
 
 class Start(base.Command):
-  """Start a local bigtable emulator.
+  """Start a local Bigtable emulator.
 
-  This command starts a local bigtable emulator.
+  This command starts a local Bigtable emulator.
   """
 
   detailed_help = {
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\
-          To start a local bigtable emulator, run:
+          To start a local Bigtable emulator, run:
 
             $ {command}
           """,

@@ -15,6 +15,7 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 
 
 class Move(base_classes.NoOutputAsyncMutator):
@@ -38,28 +39,21 @@ class Move(base_classes.NoOutputAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        'name',
-        metavar='INSTANCE',
-        completion_resource='compute.instances',
-        help='The name of the instance to move.')
+    instance_flags.INSTANCE_ARG.AddArgument(parser)
     parser.add_argument(
         '--destination-zone',
         completion_resource='compute.zones',
         help='The zone to move the instance to.',
         required=True)
-    flags.AddZoneFlag(
-        parser,
-        resource_type='instance',
-        operation_type='move')
 
   def CreateRequests(self, args):
     """Returns a request for moving a instance."""
 
-    target_instance = self.CreateZonalReference(
-        args.name, args.zone, resource_type='instances')
-    destination_zone = self.CreateGlobalReference(
-        args.destination_zone, resource_type='zones')
+    target_instance = instance_flags.INSTANCE_ARG.ResolveAsResource(
+        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
+            self.compute_client, self.project))
+    destination_zone = self.resources.Parse(
+        args.destination_zone, collection='compute.zones')
 
     request = self.messages.ComputeProjectsMoveInstanceRequest(
         instanceMoveRequest=self.messages.InstanceMoveRequest(
@@ -69,8 +63,10 @@ class Move(base_classes.NoOutputAsyncMutator):
         project=self.project,
     )
 
-    destination_instance_ref = self.CreateZonalReference(
-        args.name, args.destination_zone, resource_type='instances')
+    destination_instance_ref = self.resources.Parse(
+        target_instance.Name(), collection='compute.instances',
+        params={'zone': destination_zone.Name()})
+
     project_ref = self.CreateGlobalReference(self.project)
 
     self._target_to_get_request = {}

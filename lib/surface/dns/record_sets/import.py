@@ -25,6 +25,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
 
 
+@base.UnicodeIsSupported
 class Import(base.Command):
   """Import record-sets into your managed-zone.
 
@@ -124,8 +125,8 @@ class Import(base.Command):
         else:
           imported = import_util.RecordSetsFromYamlFile(import_file)
     except Exception as exp:
-      msg = ('unable to read record-sets from specified records-file [{0}] '
-             'because [{1}]')
+      msg = (u'unable to read record-sets from specified records-file [{0}] '
+             u'because [{1}]')
       msg = msg.format(args.records_file, exp.message)
       raise exceptions.ToolException(msg)
 
@@ -134,7 +135,7 @@ class Import(base.Command):
                                        args.delete_all_existing,
                                        zone.dnsName, args.replace_origin_ns)
     if not change:
-      msg = 'Nothing to do, all the records in [{0}] already exist.'.format(
+      msg = u'Nothing to do, all the records in [{0}] already exist.'.format(
           args.records_file)
       log.status.Print(msg)
       return None
@@ -148,7 +149,7 @@ class Import(base.Command):
                                   project=project_id,
                                   managedZone=zone.name,
                                   changeId=result.id)
-    msg = 'Imported record-sets from [{0}] into managed-zone [{1}].'.format(
+    msg = u'Imported record-sets from [{0}] into managed-zone [{1}].'.format(
         args.records_file, zone_ref.Name())
     log.status.Print(msg)
     log.CreatedResource(change_ref)

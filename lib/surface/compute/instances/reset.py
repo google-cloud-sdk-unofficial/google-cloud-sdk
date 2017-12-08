@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 
 
 class Reset(base_classes.NoOutputAsyncMutator):
@@ -23,16 +24,7 @@ class Reset(base_classes.NoOutputAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    flags.AddZoneFlag(
-        parser,
-        resource_type='instance',
-        operation_type='reset')
-
-    parser.add_argument(
-        'name',
-        nargs='+',
-        completion_resource='compute.instances',
-        help='The names of the instances to reset.')
+    instance_flags.INSTANCES_ARG.AddArgument(parser)
 
   @property
   def service(self):
@@ -47,10 +39,11 @@ class Reset(base_classes.NoOutputAsyncMutator):
     return 'instances'
 
   def CreateRequests(self, args):
+    instance_refs = instance_flags.INSTANCES_ARG.ResolveAsResource(
+        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
+            self.compute_client, self.project))
     request_list = []
-    for name in args.name:
-      instance_ref = self.CreateZonalReference(name, args.zone)
-
+    for instance_ref in instance_refs:
       request = self.messages.ComputeInstancesResetRequest(
           instance=instance_ref.Name(),
           project=self.project,

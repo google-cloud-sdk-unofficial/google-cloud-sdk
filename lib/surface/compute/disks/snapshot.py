@@ -20,6 +20,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 
 DETAILED_HELP = {
     'DESCRIPTION': """\
@@ -35,11 +36,11 @@ DETAILED_HELP = {
 
 def _CommonArgs(parser):
   """Add parser arguments common to all tracks."""
+  disks_flags.DISKS_ARG.AddArgument(parser)
   parser.add_argument(
       '--description',
       help=('An optional, textual description for the snapshots being '
             'created.'))
-
   snapshot_names = parser.add_argument(
       '--snapshot-names',
       type=arg_parsers.ArgList(min_length=1),
@@ -56,19 +57,6 @@ def _CommonArgs(parser):
       will result in ``my-disk-1'' being snapshotted as
       ``snapshot-1'', ``my-disk-2'' as ``snapshot-2'', and so on.
       """
-
-  parser.add_argument(
-      'disk_names',
-      metavar='DISK_NAME',
-      nargs='+',
-      completion_resource='compute.disks',
-      help='The names of the disks to snapshot.')
-
-  flags.AddZoneFlag(
-      parser,
-      resource_type='disks',
-      operation_type='snapshot')
-
   csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
 
 
@@ -98,8 +86,12 @@ class SnapshotDisks(base_classes.NoOutputAsyncMutator):
 
   def CreateRequests(self, args):
     """Returns a list of requests necessary for snapshotting disks."""
+    disk_refs = disks_flags.DISKS_ARG.ResolveAsResource(
+        args, self.resources,
+        scope_lister=flags.GetDefaultScopeLister(
+            self.compute_client, self.project))
     if args.snapshot_names:
-      if len(args.disk_names) != len(args.snapshot_names):
+      if len(disk_refs) != len(args.snapshot_names):
         raise exceptions.ToolException(
             '[--snapshot-names] must have the same number of values as disks '
             'being snapshotted.')
@@ -107,17 +99,14 @@ class SnapshotDisks(base_classes.NoOutputAsyncMutator):
     else:
       # Generates names like "d52jsqy3db4q".
       snapshot_names = [name_generator.GenerateRandomName()
-                        for _ in args.disk_names]
+                        for _ in disk_refs]
 
     snapshot_refs = [
-        self.CreateGlobalReference(snapshot_name, resource_type='snapshots')
+        self.resources.Parse(snapshot_name, collection='compute.snapshots')
         for snapshot_name in snapshot_names]
-
     self._target_to_get_request = {}
 
     requests = []
-    disk_refs = self.CreateZonalReferences(
-        args.disk_names, args.zone, resource_type='disks')
 
     for disk_ref, snapshot_ref in zip(disk_refs, snapshot_refs):
       # This feature is only exposed in alpha/beta

@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instance_templates import flags as instance_templates_flags
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 
 
@@ -48,10 +49,7 @@ def _CommonArgs(parser):
       '--description',
       help='Specifies a textual description for the instance template.')
 
-  parser.add_argument(
-      'name',
-      metavar='NAME',
-      help='The name of the instance template to create.')
+  instance_templates_flags.INSTANCE_TEMPLATE_ARG.AddArgument(parser)
 
 
 class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
@@ -104,7 +102,9 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
     boot_disk_size_gb = utils.BytesToGb(args.boot_disk_size)
     utils.WarnIfDiskSizeIsTooSmall(boot_disk_size_gb, args.boot_disk_type)
 
-    instance_template_ref = self.CreateGlobalReference(args.name)
+    instance_template_ref = (
+        instance_templates_flags.INSTANCE_TEMPLATE_ARG.ResolveAsResource(
+            args, self.resources))
 
     metadata = metadata_utils.ConstructMetadataMessage(
         self.messages,

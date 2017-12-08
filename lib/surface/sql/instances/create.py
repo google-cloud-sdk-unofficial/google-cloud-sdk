@@ -1,4 +1,4 @@
-# Copyright 2013 Google Inc. All Rights Reserved.
+# Copyright 2016 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -88,8 +88,6 @@ class _BaseCreate(object):
     parser.add_argument(
         '--database-version',
         required=False,
-        # POSTGRES_9_5 isn't publicly announced so it's in the choice not help
-        choices=['MYSQL_5_5', 'MYSQL_5_6', 'MYSQL_5_7', 'POSTGRES_9_5'],
         default='MYSQL_5_6',
         help='The database engine type and version. Can be MYSQL_5_5, '
         'MYSQL_5_6, or MYSQL_5_7.')
@@ -129,7 +127,8 @@ class _BaseCreate(object):
         required=False,
         choices=['PER_USE', 'PACKAGE'],
         default='PER_USE',
-        help='The pricing plan for this instance.')
+        help='The pricing plan for this instance. '
+             'Valid options are PER_USE or PACKAGE.')
     parser.add_argument(
         '--region',
         required=False,
@@ -142,7 +141,8 @@ class _BaseCreate(object):
         required=False,
         choices=['SYNCHRONOUS', 'ASYNCHRONOUS'],
         default=None,
-        help='The type of replication this instance uses.')
+        help='The type of replication this instance uses.'
+             'Valid options are SYNCHRONOUS or ASYNCHRONOUS.')
     parser.add_argument(
         '--require-ssl',
         required=False,
@@ -243,6 +243,39 @@ class Create(_BaseCreate, base.Command):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(_BaseCreate, base.Command):
   """Creates a new Cloud SQL instance."""
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command."""
+    _BaseCreate.Args(parser)
+    parser.add_argument(
+        '--storage-type',
+        required=False,
+        choices=['SSD', 'HDD'],
+        default=None,
+        help='The storage type for the instance.'
+             'Valid options are SSD or HDD.')
+    parser.add_argument(
+        '--failover-replica-name',
+        required=False,
+        help='Also create a failover replica with the specified name.')
+    base.Argument(
+        '--storage-auto-increase',
+        action='store_true',
+        default=None,
+        help='Adds storage capacity whenever space is low. Up to 25 GB per '
+        'increase. All increases are permanent.',
+        detailed_help='Storage size can be increased, but it cannot be '
+        'decreased; storage increases are permanent for the life of the '
+        'instance. With this setting enabled, a spike in storage requirements '
+        'can result in permanently increased storage costs for your instance. '
+        'However, if an instance runs out of available space, it can result in '
+        'the instance going offline, dropping existing connections.'
+    ).AddToParser(parser)
+    parser.add_argument(
+        '--replica-type',
+        choices=['READ', 'FAILOVER'],
+        help='What type of replica to create: READ or FAILOVER')
 
   def Collection(self):
     return 'sql.instances.v1beta4'

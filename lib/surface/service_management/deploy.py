@@ -84,32 +84,24 @@ class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
     enable_api.EnableServiceIfDisabled(
         self.project, services_util.GetEndpointsServiceName(), args.async)
 
-    service_name = None
-    config_id = None
     # Get the service name out of the service configuration
     if 'swagger' in service_config_dict:
-      service_name = service_config_dict.get('host', None)
+      self.service_name = service_config_dict.get('host', None)
       # Check if we need to create the service.
-      services_util.CreateServiceIfNew(service_name, self.project)
+      services_util.CreateServiceIfNew(self.service_name, self.project)
       # Push the service configuration.
-      config_id = services_util.PushOpenApiServiceConfig(
-          service_name, config_contents,
+      self.service_version = services_util.PushOpenApiServiceConfig(
+          self.service_name, config_contents,
           os.path.basename(args.service_config_file), args.async)
     else:
-      service_name = service_config_dict.get('name', None)
+      self.service_name = service_config_dict.get('name', None)
       # Check if we need to create the service.
-      services_util.CreateServiceIfNew(service_name, self.project)
+      services_util.CreateServiceIfNew(self.service_name, self.project)
       # Push the service configuration.
-      config_id = services_util.PushGoogleServiceConfig(
-          service_name, self.project, config_contents)
+      self.service_version = services_util.PushGoogleServiceConfig(
+          self.service_name, self.project, config_contents)
 
-    if config_id and service_name:
-      # Print this to screen not to the log because the output is needed by the
-      # human user.
-      log.status.Print(
-          ('\nService Configuration with version [{0}] uploaded '
-           'for service [{1}]\n').format(config_id, service_name))
-    else:
+    if not self.service_version:
       raise calliope_exceptions.ToolException(
           'Failed to retrieve Service Configuration Version')
 
@@ -119,16 +111,24 @@ class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
     percentages.additionalProperties.append(
         (self.services_messages.TrafficPercentStrategy.PercentagesValue.
          AdditionalProperty(
-             key=config_id,
+             key=self.service_version,
              value=100.0)))
     traffic_percent_strategy = (
         self.services_messages.TrafficPercentStrategy(percentages=percentages))
     rollout = self.services_messages.Rollout(
-        serviceName=service_name,
+        serviceName=self.service_name,
         trafficPercentStrategy=traffic_percent_strategy,
     )
     rollout_operation = self.services_client.services_rollouts.Create(rollout)
     services_util.ProcessOperationResult(rollout_operation, args.async)
 
     # Check to see if the service is already enabled
-    enable_api.EnableServiceIfDisabled(self.project, service_name, args.async)
+    enable_api.EnableServiceIfDisabled(
+        self.project, self.service_name, args.async)
+
+  def Epilog(self, resources_were_displayed):
+    # Print this to screen not to the log because the output is needed by the
+    # human user.
+    log.status.Print(
+        ('\nService Configuration with version [{0}] uploaded for '
+         'service [{1}]\n').format(self.service_version, self.service_name))

@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.core.console import console_io
 
 AUTO_DELETE_OVERRIDE_CHOICES = ['boot', 'data', 'all']
@@ -62,15 +63,7 @@ class Delete(base_classes.ZonalDeleter):
         [](https://cloud.google.com/compute/docs/disks/persistent-disks#updateautodelete)
         """
 
-    parser.add_argument(
-        'names',
-        metavar='NAME',
-        nargs='+',
-        completion_resource='compute.instances',
-        help='The names of the instances to delete.')
-
-    flags.AddZoneFlag(
-        parser, resource_type='instances', operation_type='delete')
+    instance_flags.INSTANCES_ARG.AddArgument(parser)
 
   @property
   def service(self):
@@ -141,7 +134,9 @@ class Delete(base_classes.ZonalDeleter):
     return False
 
   def CreateRequests(self, args):
-    refs = self.CreateZonalReferences(args.names, args.zone)
+    refs = instance_flags.INSTANCES_ARG.ResolveAsResource(
+        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
+            self.compute_client, self.project))
     utils.PromptForDeletion(
         refs,
         scope_name='zone',

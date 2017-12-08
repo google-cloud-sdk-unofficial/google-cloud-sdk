@@ -17,6 +17,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import csek_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 
 MODE_OPTIONS = ['ro', 'rw']
 
@@ -35,11 +36,7 @@ DETAILED_HELP = {
 def _CommonArgs(parser):
   """Add parser arguments common to all tracks."""
 
-  parser.add_argument(
-      'name',
-      metavar='INSTANCE',
-      completion_resource='compute.instances',
-      help='The name of the instance to attach the disk to.')
+  instance_flags.INSTANCE_ARG.AddArgument(parser)
 
   parser.add_argument(
       '--device-name',
@@ -63,11 +60,6 @@ def _CommonArgs(parser):
       a default. It is an error to attach a disk in read-write mode to
       more than one instance.
       """
-
-  flags.AddZoneFlag(
-      parser,
-      resource_type='instance',
-      operation_type='attach a disk to')
 
   csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
 
@@ -93,9 +85,13 @@ class AttachDisk(base_classes.NoOutputAsyncMutator):
 
   def CreateRequests(self, args):
     """Returns a request for attaching a disk to an instance."""
-    instance_ref = self.CreateZonalReference(args.name, args.zone)
-    disk_ref = self.CreateZonalReference(
-        args.disk, instance_ref.zone, resource_type='disks')
+    instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
+        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
+            self.compute_client, self.project))
+
+    disk_ref = self.resources.Parse(
+        args.disk, collection='compute.disks',
+        params={'zone': instance_ref.zone})
 
     if args.mode == 'rw':
       mode = self.messages.AttachedDisk.ModeValueValuesEnum.READ_WRITE

@@ -20,7 +20,8 @@ from apitools.base.py import encoding
 from googlecloudsdk.api_lib.cloudbuild import config
 from googlecloudsdk.api_lib.cloudbuild import logs as cb_logs
 from googlecloudsdk.api_lib.cloudbuild import snapshot
-from googlecloudsdk.api_lib.cloudbuild import storage as cb_storage
+from googlecloudsdk.api_lib.storage import storage_api
+from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
@@ -101,7 +102,7 @@ class Create(base.Command):
     messages = core_apis.GetMessagesModule('cloudbuild', 'v1')
     registry = self.context['registry']
 
-    gcs_client = cb_storage.Client(properties.VALUES.core.project.Get())
+    gcs_client = storage_api.StorageClient()
 
     # First, create the build request.
     build_timeout = properties.VALUES.container.build_timeout.Get()
@@ -191,7 +192,10 @@ class Create(base.Command):
                 bucket=gcs_source_staging.bucket,
                 object=gcs_source_staging.object,
             ))
-        staged_source_obj = gcs_client.Upload(args.source, gcs_source_staging)
+        staged_source_obj = gcs_client.CopyFileToGCS(
+            storage_util.BucketReference.FromBucketUrl(
+                gcs_source_staging.bucket),
+            args.source, gcs_source_staging.object)
         build_config.source = messages.Source(
             storageSource=messages.StorageSource(
                 bucket=staged_source_obj.bucket,
@@ -234,7 +238,7 @@ class Create(base.Command):
       return build
 
     # Otherwise, logs are streamed from GCS.
-    return cb_logs.Stream(build_ref, client, messages)
+    return cb_logs.CloudBuildClient(client, messages).Stream(build_ref)
 
   def Collection(self):
     return 'cloudbuild.projects.builds'

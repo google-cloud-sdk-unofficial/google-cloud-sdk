@@ -20,6 +20,7 @@ from googlecloudsdk.core import apis
 from googlecloudsdk.core import properties
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List existing Cloud ML models."""
 
@@ -39,6 +40,36 @@ class List(base.ListCommand):
     """
     client = apis.GetClientInstance('ml', 'v1alpha3')
     msgs = apis.GetMessagesModule('ml', 'v1alpha3')
+    req = msgs.MlProjectsModelsListRequest(
+        projectsId=properties.VALUES.core.project.Get())
+    return list_pager.YieldFromList(
+        client.projects_models,
+        req,
+        field='models',
+        batch_size_attribute='pageSize')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(base.ListCommand):
+  """List existing Cloud ML models."""
+
+  def Collection(self):
+    return 'ml.models'
+
+  @http_error_handler.HandleHttpErrors
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+    # TODO(b/31062835): extract API code to api_lib
+    client = apis.GetClientInstance('ml', 'v1beta1')
+    msgs = apis.GetMessagesModule('ml', 'v1beta1')
     req = msgs.MlProjectsModelsListRequest(
         projectsId=properties.VALUES.core.project.Get())
     return list_pager.YieldFromList(

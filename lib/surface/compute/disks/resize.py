@@ -18,7 +18,6 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.core.console import console_io
 
@@ -67,8 +66,7 @@ class Resize(base_classes.BaseAsyncMutator):
 
     size_gb = utils.BytesToGb(args.size)
     disk_refs = disks_flags.DISKS_ARG.ResolveAsResource(
-        args, self.resources,
-        default_scope=flags.ScopeEnum.ZONE)
+        args, self.resources)
 
     console_io.PromptContinue(
         message=CONTINUE_WITH_RESIZE_PROMPT,

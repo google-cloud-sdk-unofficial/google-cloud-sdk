@@ -32,16 +32,13 @@ class Delete(base.DeleteCommand):
   This command can fail for the following reasons:
   * The project specified does not exist.
   * The active account does not have Owner permissions for the given project.
+
+  ## EXAMPLES
+
+  The following command deletes the project with the ID `example-foo-bar-1`:
+
+    $ {command} example-foo-bar-1
   """
-
-  detailed_help = {
-      'EXAMPLES': """
-          The following command deletes the project with the ID
-          `example-foo-bar-1`:
-
-            $ {command} example-foo-bar-1
-      """,
-  }
 
   def Collection(self):
     return command_lib_util.PROJECTS_COLLECTION

@@ -17,7 +17,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 class Logs(base.Group):
   """A group of subcommands for working with Dataflow logs.
   """

@@ -34,7 +34,7 @@ $ sudo umount /dev/disk/by\-id/google\-DEVICE_NAME
 
 \fINAME\fR
 .RS 2m
-The name of the instance to detach the disk from.
+The name of the instance.
 
 
 .RE
@@ -59,8 +59,8 @@ by persistent disk name, then you must not specify its device name using the
 .RE
 \fB\-\-zone\fR \fIZONE\fR
 .RS 2m
-The zone of the instance to detach a disk from. If not specified, you will be
-prompted to select a zone.
+The zone of the instance to operate on. If not specified, you will be prompted
+to select a zone.
 
 To avoid prompting when this flag is omitted, you can set the
 \f5\fIcompute/zone\fR\fR property:

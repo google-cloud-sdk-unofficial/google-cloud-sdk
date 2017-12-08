@@ -14,6 +14,7 @@
 
 """Command for describing backend services."""
 
+from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 
@@ -58,8 +59,14 @@ class DescribeAlpha(base_classes.MultiScopeDescriber):
         command='alpha compute backend-services list')
 
   def CreateReference(self, args):
+    default_scope = base_classes.ScopeType.global_scope
+    if backend_services_utils.IsRegionDefaultModeWarnOtherwise(
+        print_warning=(
+            getattr(args, 'global', None) is None and
+            getattr(args, 'region', None) is None)):
+      default_scope = base_classes.ScopeType.regional_scope
     return super(DescribeAlpha, self).CreateReference(
-        args, default=base_classes.ScopeType.global_scope)
+        args, default=default_scope)
 
   @property
   def global_service(self):

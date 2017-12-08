@@ -16,7 +16,6 @@
 from googlecloudsdk.api_lib.compute import backend_buckets_utils
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_buckets_flags
 
 
@@ -44,8 +43,7 @@ class CreateAlpha(base_classes.BaseAsyncCreator):
   def CreateRequests(self, args):
     backend_buckets_ref = (
         backend_buckets_flags.BACKEND_BUCKET_ARG.ResolveAsResource(
-            args, self.resources,
-            default_scope=flags.ScopeEnum.GLOBAL))
+            args, self.resources))
 
     enable_cdn = args.enable_cdn or False
 

@@ -13,10 +13,10 @@
 # limitations under the License.
 """Command for modifying backend services."""
 
+from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.core import resources
 
@@ -89,9 +89,10 @@ class Edit(base_classes.BaseEdit):
 
   def CreateReference(self, args):
     ref = self._BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, self.resources,
-        default_scope=compute_flags.ScopeEnum.GLOBAL)
-    self.regional = getattr(ref, 'region', None) is not None
+        args,
+        self.resources,
+        default_scope=backend_services_utils.GetDefaultScope(self, args))
+    self.regional = backend_services_utils.IsRegionalRequest(self, args)
     return ref
 
   @property
@@ -177,4 +178,3 @@ Edit.detailed_help = {
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class EditAlpha(Edit):
   _BACKEND_SERVICE_ARG = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG
-

@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 
 
 class DeleteAccessConfig(base_classes.NoOutputAsyncMutator):
@@ -28,11 +29,7 @@ class DeleteAccessConfig(base_classes.NoOutputAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    flags.AddZoneFlag(
-        parser,
-        resource_type='instance',
-        operation_type='delete an access config from')
-
+    instance_flags.INSTANCE_ARG.AddArgument(parser)
     access_config_name = parser.add_argument(
         '--access-config-name',
         default=constants.DEFAULT_ACCESS_CONFIG_NAME,
@@ -41,13 +38,6 @@ class DeleteAccessConfig(base_classes.NoOutputAsyncMutator):
         Specifies the name of the access configuration to delete.
         ``{0}'' is used as the default if this flag is not provided.
         """.format(constants.DEFAULT_ACCESS_CONFIG_NAME)
-
-    parser.add_argument(
-        'name',
-        completion_resource='compute.instances',
-        help=('The name of the instance from which to delete the access '
-              'configuration.'))
-
     network_interface = parser.add_argument(
         '--network-interface',
         default='nic0',
@@ -73,7 +63,9 @@ class DeleteAccessConfig(base_classes.NoOutputAsyncMutator):
 
   def CreateRequests(self, args):
     """Returns a request necessary for removing an access config."""
-    instance_ref = self.CreateZonalReference(args.name, args.zone)
+    instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
+        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
+            self.compute_client, self.project))
 
     request = self.messages.ComputeInstancesDeleteAccessConfigRequest(
         accessConfig=args.access_config_name,

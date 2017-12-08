@@ -76,8 +76,7 @@ class AddAccessConfigInstances(base_classes.NoOutputAsyncMutator):
   def CreateRequests(self, args):
     """Returns a list of request necessary for adding an access config."""
     instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
-        args, self.resources, default_scope=compute_flags.ScopeEnum.ZONE,
-        scope_lister=compute_flags.GetDefaultScopeLister(
+        args, self.resources, scope_lister=compute_flags.GetDefaultScopeLister(
             self.compute_client, self.project))
 
     request = self.messages.ComputeInstancesAddAccessConfigRequest(

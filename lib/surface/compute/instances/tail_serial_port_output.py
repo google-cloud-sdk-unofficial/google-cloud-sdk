@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 
@@ -36,11 +37,7 @@ class TailSerialPortOutput(base_classes.BaseCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddZoneFlag(
-        parser,
-        resource_type='instance',
-        operation_type='get serial port output for')
-
+    instance_flags.INSTANCE_ARG.AddArgument(parser)
     port = parser.add_argument(
         '--port',
         help=('The number of the requested serial port. '
@@ -53,17 +50,14 @@ class TailSerialPortOutput(base_classes.BaseCommand):
         port.
         """
 
-    parser.add_argument(
-        'name',
-        completion_resource='compute.instances',
-        help='The name of the instance.')
-
   @property
   def resource_type(self):
     return 'instances'
 
   def Run(self, args):
-    instance_ref = self.CreateZonalReference(args.name, args.zone)
+    instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
+        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
+            self.compute_client, self.project))
 
     start = None
     while True:

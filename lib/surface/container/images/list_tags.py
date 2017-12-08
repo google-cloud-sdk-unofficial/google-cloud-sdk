@@ -13,7 +13,9 @@
 # limitations under the License.
 """List tags command."""
 
-from containerregistry.client.v2 import docker_image
+import argparse
+
+from containerregistry.client.v2_2 import docker_image
 from googlecloudsdk.api_lib.container.images import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import http
@@ -49,6 +51,9 @@ class List(base.ListCommand):
           to capture some information, but behaves like an ArgumentParser.
     """
     parser.add_argument(
+        '--show-occurrences',
+        action='store_true', default=True, help=argparse.SUPPRESS)
+    parser.add_argument(
         'image',
         help='The name of the image. Format: *.gcr.io/repository/image')
 
@@ -65,10 +70,11 @@ class List(base.ListCommand):
       Some value that we want to have printed later.
     """
 
-    repository = util.ValidateImage(args.image)
+    repository = util.ValidateRepositoryPath(args.image)
     http_obj = http.Http()
     with docker_image.FromRegistry(
         basic_creds=util.CredentialProvider(),
         name=repository,
         transport=http_obj) as image:
-      return util.TransformManifests(image.manifests())
+      return util.TransformManifests(image.manifests(), repository,
+                                     show_occurrences=args.show_occurrences)

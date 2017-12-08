@@ -22,6 +22,7 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create a new Cloud ML version."""
 
@@ -63,4 +64,51 @@ class Create(base.CreateCommand):
       return op
     with console_io.ProgressTracker('Creating version...'):
       operations.WaitForOperation(client.projects_operations, op)
+    return op.response
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaCreate(base.CreateCommand):
+  """Create a new Cloud ML version."""
+
+  def Collection(self):
+    return 'ml.models.versions'
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    flags.GetModelName(positional=False).AddToParser(parser)
+    flags.VERSION_NAME.AddToParser(parser)
+    flags.VERSION_DATA.AddToParser(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
+
+  @http_error_handler.HandleHttpErrors
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+    # TODO(b/31062835): remove CloneAndSwitchAPI and extract API code to api_lib
+    client = apis.GetClientInstance('ml', 'v1beta1')
+    msgs = apis.GetMessagesModule('ml', 'v1beta1')
+    reg = resources.REGISTRY.CloneAndSwitchAPIs(client)
+    res = reg.Parse(
+        args.version,
+        params={'modelsId': args.model},
+        collection='ml.projects.models.versions')
+    req = msgs.MlProjectsModelsVersionsCreateRequest(
+        projectsId=res.projectsId,
+        modelsId=res.modelsId,
+        googleCloudMlV1beta1Version=msgs.GoogleCloudMlV1beta1Version(
+            name=res.Name(), deploymentUri=args.origin))
+    op = client.projects_models_versions.Create(req)
+    if args.async:
+      return op
+    with console_io.ProgressTracker('Creating version...'):
+      operations.WaitForOperation(client.projects_operations, op, registry=reg)
     return op.response

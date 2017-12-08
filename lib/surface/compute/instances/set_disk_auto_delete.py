@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
@@ -25,17 +26,7 @@ class SetDiskAutoDelete(base_classes.ReadWriteCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddZoneFlag(
-        parser,
-        resource_type='instance',
-        operation_type='configure disk auto-delete for')
-
-    parser.add_argument(
-        'name',
-        metavar='INSTANCE',
-        completion_resource='compute.instances',
-        help=('The name of the instance for which to configure disk '
-              'auto-deletion.'))
+    instance_flags.INSTANCE_ARG.AddArgument(parser)
 
     parser.add_argument(
         '--auto-delete',
@@ -78,7 +69,9 @@ class SetDiskAutoDelete(base_classes.ReadWriteCommand):
     return 'instances'
 
   def CreateReference(self, args):
-    return self.CreateZonalReference(args.name, args.zone)
+    return instance_flags.INSTANCE_ARG.ResolveAsResource(
+        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
+            self.compute_client, self.project))
 
   def GetGetRequest(self, args):
     return (self.service,
@@ -112,9 +105,9 @@ class SetDiskAutoDelete(base_classes.ReadWriteCommand):
     disk_found = False
 
     if args.disk:
-      disk_ref = self.CreateZonalReference(
-          args.disk, self.ref.zone,
-          resource_type='disks')
+      disk_ref = self.resources.Parse(
+          args.disk, collection='compute.disks',
+          params={'zone': self.ref.zone})
 
       for disk in replacement.disks:
         if disk.source == disk_ref.SelfLink():

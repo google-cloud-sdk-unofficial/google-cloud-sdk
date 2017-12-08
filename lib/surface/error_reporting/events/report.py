@@ -33,20 +33,18 @@ class Report(base.Command):
   """Report an error.
 
   {command} is used to report errors using the error-reporting service.
-  The required arguments are a service name, a service version, and either an
+  The required arguments are a service name and either an
   error-file containing details of an error or an inline error message.
 
   ## EXAMPLES
 
   To report an error, run:
 
-    $ {command} --service service-name --service-version version --message
-    error-message
+    $ {command} --service service-name --message error-message
 
   or:
 
-    $ {command} --service service-name --service-version version --message-file
-    error-message.ext.
+    $ {command} --service service-name --message-file error-message.ext.
   """
 
   @staticmethod
@@ -62,7 +60,6 @@ class Report(base.Command):
         help='The name of the service that generated the error')
     parser.add_argument(
         '--service-version',
-        required=True,
         help='The release version of the service')
 
     # add mutually exclusive arguments
@@ -107,6 +104,7 @@ class Report(base.Command):
     # Get required message components for API report request
     error_message = self.GetMessage(args)
     service = args.service
+    # Get service version if provided, otherwise service_version=None
     service_version = args.service_version
     project = self.GetProject(args)
 

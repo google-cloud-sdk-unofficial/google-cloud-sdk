@@ -55,12 +55,6 @@ class Dataflow(base.Group):
         which you can register arguments.  See the public argparse documentation
         for its capabilities.
     """
-    # Endpoint flags are being deprecated, please use the property
-    # api_endpoint_overrides/dataflow.
-    parser.add_argument(
-        '--endpoint', help=argparse.SUPPRESS,
-        action=actions.StoreProperty(
-            properties.VALUES.api_endpoint_overrides.dataflow))
 
   def Filter(self, context, args):
     """Setup the API client within the context for this group's commands.
@@ -80,9 +74,3 @@ class Dataflow(base.Group):
     context[DATAFLOW_APITOOLS_CLIENT_KEY] = apis.GetClientInstance(
         'dataflow', 'v1b3')
     context[DATAFLOW_REGISTRY_KEY] = cloud_resources.REGISTRY
-
-    if args.endpoint:
-      log.warn('The --endpoint flag is deprecated and will be removed.  '
-               'Set the api_endpoint_overrides/dataflow property instead.  '
-               'e.g. gcloud config set api_endpoint_overrides/dataflow '
-               'https://www.googleapis.com/dataflow/v1b3')

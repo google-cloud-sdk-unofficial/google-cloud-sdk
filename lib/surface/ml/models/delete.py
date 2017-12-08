@@ -20,6 +20,7 @@ from googlecloudsdk.core import apis
 from googlecloudsdk.core import resources
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
   """Delete an existing Cloud ML model."""
 
@@ -45,6 +46,40 @@ class Delete(base.DeleteCommand):
     client = apis.GetClientInstance('ml', 'v1alpha3')
     msgs = apis.GetMessagesModule('ml', 'v1alpha3')
     res = resources.REGISTRY.Parse(args.model, collection='ml.projects.models')
+    req = msgs.MlProjectsModelsDeleteRequest(
+        projectsId=res.projectsId, modelsId=res.Name())
+    resp = client.projects_models.Delete(req)
+    return resp
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DeleteBeta(base.DeleteCommand):
+  """Delete an existing Cloud ML model."""
+
+  def Collection(self):
+    return 'ml.models'
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    flags.GetModelName().AddToParser(parser)
+
+  @http_error_handler.HandleHttpErrors
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+    # TODO(b/31062835): remove CloneAndSwitchAPI and extract API code to api_lib
+    client = apis.GetClientInstance('ml', 'v1beta1')
+    msgs = apis.GetMessagesModule('ml', 'v1beta1')
+    res = resources.REGISTRY.CloneAndSwitchAPIs(client).Parse(
+        args.model, collection='ml.projects.models')
     req = msgs.MlProjectsModelsDeleteRequest(
         projectsId=res.projectsId, modelsId=res.Name())
     resp = client.projects_models.Delete(req)
