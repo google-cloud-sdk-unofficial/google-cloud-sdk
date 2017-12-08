@@ -49,9 +49,10 @@ class Create(base_classes.BaseAsyncCreator):
   def CreateRequests(self, args):
     """Returns a list of requests necessary for adding users."""
 
+    group_refs = [self.clouduseraccounts_resources.Parse(
+        group, collection='clouduseraccounts.groups') for group in args.names]
+
     requests = []
-    group_refs = self.CreateAccountsReferences(
-        args.names, resource_type='groups')
     for group_ref in group_refs:
 
       group = self.messages.Group(

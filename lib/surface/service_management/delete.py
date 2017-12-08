@@ -16,10 +16,9 @@
 
 from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import services_util
+from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core.console import console_io
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Delete(base.Command, base_classes.BaseServiceManagementCommand):
@@ -46,6 +45,7 @@ class Delete(base.Command, base_classes.BaseServiceManagementCommand):
 
     base.ASYNC_FLAG.AddToParser(parser)
 
+  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management delete'.
 
@@ -55,10 +55,6 @@ class Delete(base.Command, base_classes.BaseServiceManagementCommand):
 
     Returns:
       The response from the Delete API call (or None if cancelled).
-
-    Raises:
-      HttpException: An http error response was received while executing api
-          request.
     """
     # If the user doesn't specify --force, prompt with a warning before
     # continuing.
@@ -77,9 +73,6 @@ class Delete(base.Command, base_classes.BaseServiceManagementCommand):
         serviceName=args.service,
     )
 
-    try:
-      result = self.services_client.services.Delete(request)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(services_util.GetError(error))
+    operation = self.services_client.services.Delete(request)
 
-    return services_util.ProcessOperationResult(result, args.async)
+    return services_util.ProcessOperationResult(operation, args.async)

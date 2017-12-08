@@ -51,8 +51,8 @@ class Describe(base_classes.BaseAsyncMutator):
     if not user:
       user = gaia_utils.GetDefaultAccountName(self.http)
 
-    user_ref = self.CreateAccountsReference(
-        user, resource_type='users')
+    user_ref = self.clouduseraccounts_resources.Parse(
+        user, collection='clouduseraccounts.users')
 
     request = self.messages.ClouduseraccountsUsersGetRequest(
         project=self.project,

@@ -15,11 +15,8 @@
 """Implementation of the service-management api-keys list command."""
 
 from googlecloudsdk.api_lib.service_management import base_classes
-from googlecloudsdk.api_lib.service_management import services_util
-
+from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Describe(base.Command, base_classes.BaseServiceManagementCommand):
@@ -38,6 +35,7 @@ class Describe(base.Command, base_classes.BaseServiceManagementCommand):
                         '-k',
                         help='The identifier of the key to be retrieved.')
 
+  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management api-keys describe'.
 
@@ -47,17 +45,10 @@ class Describe(base.Command, base_classes.BaseServiceManagementCommand):
 
     Returns:
       The response from the keys API call.
-
-    Raises:
-      HttpException: An http error response was received while executing api
-          request.
     """
     # Construct the List API Key request object
     request = self.apikeys_messages.ApikeysProjectsApiKeysGetRequest(
         projectId=self.project,
         keyId=args.key)
 
-    try:
-      return self.apikeys_client.projects_apiKeys.Get(request)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(services_util.GetError(error))
+    return self.apikeys_client.projects_apiKeys.Get(request)

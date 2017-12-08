@@ -44,9 +44,9 @@ class Delete(base_classes.BaseAsyncMutator):
     return self.clouduseraccounts.MESSAGES_MODULE
 
   def CreateRequests(self, args):
+    group_refs = [self.clouduseraccounts_resources.Parse(
+        group, collection='clouduseraccounts.groups') for group in args.names]
 
-    group_refs = self.CreateAccountsReferences(
-        args.names, resource_type='groups')
     utils.PromptForDeletion(group_refs)
 
     requests = []

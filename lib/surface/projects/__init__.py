@@ -14,7 +14,6 @@
 
 """The command group for the projects CLI."""
 
-from googlecloudsdk.api_lib.projects import util
 from googlecloudsdk.calliope import base
 
 
@@ -24,10 +23,7 @@ class Projects(base.Group):
 
   Commands to get information about your Google Developer projects.
   """
-
-  def Filter(self, context, _):
-    context['projects_client'] = util.GetClient()
-    context['projects_messages'] = util.GetMessages()
+  pass
 
 
 @base.Hidden
@@ -37,7 +33,4 @@ class ProjectsAlpha(base.Group):
 
   Commands to get information about your Google Developer projects.
   """
-
-  def Filter(self, context, _):
-    context['projects_client'] = util.GetClient()
-    context['projects_messages'] = util.GetMessages()
+  pass

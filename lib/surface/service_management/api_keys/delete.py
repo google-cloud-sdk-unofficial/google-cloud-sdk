@@ -15,11 +15,8 @@
 """Implementation of the service-management api-keys delete command."""
 
 from googlecloudsdk.api_lib.service_management import base_classes
-from googlecloudsdk.api_lib.service_management import services_util
-
+from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Delete(base.Command, base_classes.BaseServiceManagementCommand):
@@ -38,6 +35,7 @@ class Delete(base.Command, base_classes.BaseServiceManagementCommand):
                         '-k',
                         help='The identifier of the key to be deleted.')
 
+  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management api-keys delete'.
 
@@ -47,20 +45,13 @@ class Delete(base.Command, base_classes.BaseServiceManagementCommand):
 
     Returns:
       The response from the keys API call.
-
-    Raises:
-      HttpException: An http error response was received while executing api
-          request.
     """
     # Construct the Delete API Key request object
     request = self.apikeys_messages.ApikeysProjectsApiKeysDeleteRequest(
         projectId=self.project,
         keyId=args.key)
 
-    try:
-      result = self.apikeys_client.projects_apiKeys.Delete(request)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(services_util.GetError(error))
+    result = self.apikeys_client.projects_apiKeys.Delete(request)
 
     # Note that we expect an empty proto as a result (google.protobuf.Empty).
     # If that's what we receive, we can assume success.

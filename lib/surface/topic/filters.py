@@ -154,9 +154,5 @@ class Filters(base.Command):
           List resources with zone prefix *us* and not MachineType *f1-micro*:
 
             $ gcloud compute instances list --filter='zone ~ ^us AND -machineType:f1-micro'
-
-          List resources with zone prefix *us* and not MachineType *f1-micro*:
-
-            $ gcloud compute instances list --filter='zone ~ ^us AND -machineType:f1-micro'
           """),
       }

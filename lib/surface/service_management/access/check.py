@@ -15,10 +15,8 @@
 """Command to get information about a principal's permissions on a service."""
 
 from googlecloudsdk.api_lib.service_management import base_classes
-from googlecloudsdk.api_lib.service_management import services_util
+from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Check(base.Command, base_classes.AccessCommand):
@@ -41,6 +39,7 @@ class Check(base.Command, base_classes.AccessCommand):
     parser.add_argument(
         'principal', help='The user email for which to check permissions.')
 
+  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management access check'.
 
@@ -50,17 +49,10 @@ class Check(base.Command, base_classes.AccessCommand):
 
     Returns:
       The response from the access API call.
-
-    Raises:
-      HttpException: An http error response was received while executing api
-        request.
     """
     # Shorten the query request name for better readability
     query_request = (self.services_messages
                      .ServicemanagementServicesAccessPolicyQueryRequest)
     request = query_request(serviceName=args.service, userEmail=args.principal)
 
-    try:
-      return self.services_client.services_accessPolicy.Query(request)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(services_util.GetError(error))
+    return self.services_client.services_accessPolicy.Query(request)

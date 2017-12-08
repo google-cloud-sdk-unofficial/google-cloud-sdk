@@ -21,6 +21,10 @@ class Endpoints(base.Group):
   """Commands for Service Registry endpoints.
 
   Commands to create, update, delete, and examine Service Registry entries.
+
+  Service Registry is currently released as v1alpha. In order to use it,
+  please request access through this form:
+  https://docs.google.com/forms/d/11SfJGB3LUGgT_aSMlVzWoJ0ec2fHKwk0J4e-zTNw0Bs
   """
 
   detailed_help = {

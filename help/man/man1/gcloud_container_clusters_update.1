@@ -1,0 +1,62 @@
+
+.TH "GCLOUD_CONTAINER_CLUSTERS_UPDATE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud container clusters update \- update cluster settings for an existing container cluster
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud container clusters update\fR \fINAME\fR [\fB\-\-monitoring\-service\fR\ \fIMONITORING_SERVICE\fR\ |\ \fB\-\-update\-addons\fR\ [\fIADDON\fR=\fIENABLED\fR|\fIDISABLED\fR,...]] [\fB\-\-wait\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Update cluster settings for an existing container cluster.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR
+.RS 2m
+The name of the cluster to update.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-monitoring\-service\fR \fIMONITORING_SERVICE\fR
+.RS 2m
+The monitoring service to use for the cluster. Options are:
+"monitoring.googleapis.com" (the Google Cloud Monitoring service), "none" (no
+metrics will be exported from the cluster)
+
+.RE
+\fB\-\-update\-addons\fR [\fIADDON\fR=\fIENABLED\fR|\fIDISABLED\fR,...]
+.RS 2m
+Cluster addons to enable or disable. Options are
+HorizontalPodAutoscaling=ENABLED|DISABLED HttpLoadBalancing=ENABLED|DISABLED
+
+.RE
+\fB\-\-wait\fR
+.RS 2m
+Poll the operation for completion after issuing an update request. Enabled by
+default, use \fB\-\-no\-wait\fR to disable.
+
+.RE
+\fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR
+.RS 2m
+The compute zone (e.g. us\-central1\-a) for the cluster
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

@@ -16,9 +16,9 @@
 
 from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import services_util
+from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Add(base.Command, base_classes.AccessCommand):
@@ -53,6 +53,7 @@ class Add(base.Command, base_classes.AccessCommand):
         'principal',
         help='The principal to add to the access policy entity.')
 
+  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management access add'.
 
@@ -64,8 +65,6 @@ class Add(base.Command, base_classes.AccessCommand):
       The response from the access API call.
 
     Raises:
-      HttpException: An http error response was received while executing api
-        request.
       ToolException: An error such as specifying a label that doesn't exist
         or a principal that is already a member of the service or visibility
         label.
@@ -77,10 +76,7 @@ class Add(base.Command, base_classes.AccessCommand):
     if not services_util.ValidateEmailString(args.principal):
       raise exceptions.ToolException('Invalid email string')
 
-    try:
-      access_policy = self.services_client.services.GetAccessPolicy(request)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(services_util.GetError(error))
+    access_policy = self.services_client.services.GetAccessPolicy(request)
 
     # Fill in the serviceName field if GetAccessPolicy didn't do so for us.
     if not access_policy.serviceName:
@@ -102,10 +98,7 @@ class Add(base.Command, base_classes.AccessCommand):
                                   access_policy)
 
     # Send updated access policy to backend
-    try:
-      return self.services_client.services.UpdateAccessPolicy(access_policy)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(services_util.GetError(error))
+    return self.services_client.services.UpdateAccessPolicy(access_policy)
 
   def _AddPrincipalToLabel(self, principal, service, label, access_policy):
     """Adds a principal to a service's access policy under a visibility label.

@@ -14,15 +14,29 @@
 
 """Delete node pool command."""
 import argparse
+from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
+
+DETAILED_HELP = {
+    'DESCRIPTION': """\
+        *{command}* deletes a node pool from a Google Container Engine cluster.
+        """,
+    'EXAMPLES': """\
+        To delete the "node-pool-1" node pool from the cluster
+        "sample-cluster", run:
+
+          $ {command} node-pool-1 --cluster=sample-cluster
+        """,
+}
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Delete(base.Command):
+class Delete(base.DeleteCommand):
   """Delete an existing node pool in a running cluster."""
 
   @staticmethod
@@ -33,6 +47,7 @@ class Delete(base.Command):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
           to capture some information, but behaves like an ArgumentParser.
     """
+    # TODO(b/28639250): Support remote completion when the SDK supports it.
     parser.add_argument(
         'name',
         metavar='NAME',
@@ -76,16 +91,21 @@ class Delete(base.Command):
         throw_if_unattended=True,
         cancel_on_no=True)
 
-    # Make sure it exists (will raise appropriate error if not)
-    adapter.GetNodePool(pool_ref)
+    try:
+      # Make sure it exists (will raise appropriate error if not)
+      adapter.GetNodePool(pool_ref)
 
-    op_ref = adapter.DeleteNodePool(pool_ref)
+      op_ref = adapter.DeleteNodePool(pool_ref)
+      if args.wait:
+        adapter.WaitForOperation(
+            op_ref,
+            'Deleting node pool {0}'.format(pool_ref.nodePoolId),
+            timeout_s=args.timeout)
+    except apitools_exceptions.HttpError as error:
+      raise exceptions.HttpException(util.GetError(error))
 
-    if args.wait:
-      adapter.WaitForOperation(
-          op_ref,
-          'Deleting node pool {0}'.format(pool_ref.nodePoolId),
-          timeout_s=args.timeout)
-      log.DeletedResource(pool_ref)
-
+    log.DeletedResource(pool_ref)
     return op_ref
+
+
+Delete.detailed_help = DETAILED_HELP

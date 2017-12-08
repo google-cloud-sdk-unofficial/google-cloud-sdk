@@ -19,9 +19,21 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
+DETAILED_HELP = {
+    'DESCRIPTION': """\
+        *{command}* displays all node pools in the Google Container Engine
+        cluster.
+        """,
+    'EXAMPLES': """\
+        To list all node pools in the cluster "sample-cluster" in table form,
+        run:
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(base.Command):
+          $ {command} --cluster=sample-cluster
+     """,
+}
+
+
+class List(base.ListCommand):
   """List existing node pools for a cluster."""
 
   @staticmethod
@@ -54,15 +66,13 @@ class List(base.Command):
     zone = properties.VALUES.compute.zone.Get(required=True)
 
     try:
-      return adapter.ListNodePools(project, zone, cluster)
+      res = adapter.ListNodePools(project, zone, cluster)
+      return res.nodePools
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(util.GetError(error))
 
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
+  def Collection(self):
+    return 'container.projects.zones.clusters.nodePools'
 
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    self.context['api_adapter'].PrintNodePools(result.nodePools)
+
+List.detailed_help = DETAILED_HELP

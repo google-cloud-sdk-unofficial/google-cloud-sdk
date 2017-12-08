@@ -178,9 +178,9 @@ class CloneAlpha(base.Command):
     # attempt in the developer console through a browser).
     project = source.Project(project_id)
     if not project.GetRepo(args.src):
-      message = 'Repository "{src}" in project "{prj}" does not yet '
-      'exist. Would you like to create it (y/N)?'.format(
-          src=args.src, prj=project_id)
+      message = ('Repository "{src}" in project "{prj}" does not yet '
+                 'exist. Would you like to create it (y/N)?'.format(
+                     src=args.src, prj=project_id))
       if args.autocreate or console_io.PromptContinue(
           message=message, default=False):
         try:

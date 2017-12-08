@@ -14,7 +14,6 @@
 
 """Implements the command for modifying the user's SSH config."""
 import cStringIO
-import errno
 import getpass
 import os
 import re
@@ -71,20 +70,7 @@ def _CreateAlias(instance_resource):
   return '.'.join(parts)
 
 
-def _ReadFile(file_path):
-  """Returns the contents of the file or ''."""
-  try:
-    with open(file_path) as f:
-      return f.read()
-  except IOError as e:
-    if e.errno == errno.ENOENT:
-      return ''
-    else:
-      raise exceptions.ToolException('There was a problem reading [{0}]: {1}'
-                                     .format(file_path, e.message))
-
-
-def _BuildComputeSection(instances, private_key_file):
+def _BuildComputeSection(instances, private_key_file, known_hosts_file):
   """Returns a string representing the Compute section that should be added."""
   buf = cStringIO.StringIO()
   buf.write(_BEGIN_MARKER)
@@ -101,20 +87,23 @@ def _BuildComputeSection(instances, private_key_file):
   for instance in instances:
     external_ip_address = (
         ssh_utils.GetExternalIPAddress(instance, no_raise=True))
+    host_key_alias = 'compute.{0}'.format(instance.id)
 
     if external_ip_address:
       buf.write(textwrap.dedent("""\
           Host {alias}
               HostName {external_ip_address}
               IdentityFile {private_key_file}
-              UserKnownHostsFile=/dev/null
+              UserKnownHostsFile={known_hosts_file}
+              HostKeyAlias={host_key_alias}
               IdentitiesOnly=yes
               CheckHostIP=no
-              StrictHostKeyChecking=no
 
           """.format(alias=_CreateAlias(instance),
                      external_ip_address=external_ip_address,
-                     private_key_file=private_key_file)))
+                     private_key_file=private_key_file,
+                     known_hosts_file=known_hosts_file,
+                     host_key_alias=host_key_alias)))
 
   buf.write(_END_MARKER)
   buf.write('\n')
@@ -179,11 +168,12 @@ class ConfigSSH(ssh_utils.BaseSSHCommand):
       self.EnsureSSHKeyIsInProject(getpass.getuser())
       instances = list(self.GetInstances())
       if instances:
-        compute_section = _BuildComputeSection(instances, self.ssh_key_file)
+        compute_section = _BuildComputeSection(instances, self.ssh_key_file,
+                                               self.known_hosts_file)
       else:
         compute_section = ''
 
-    existing_content = _ReadFile(ssh_config_file)
+    existing_content = ssh_utils.ReadFile(ssh_config_file)
     if existing_content:
       section_re = re.compile(_COMPUTE_SECTION_RE,
                               flags=re.MULTILINE | re.DOTALL)

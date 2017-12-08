@@ -62,7 +62,8 @@ class RemoveKeys(base_classes.NoOutputAsyncMutator,
     if not name:
       name = gaia_utils.GetDefaultAccountName(self.http)
 
-    user_ref = self.CreateAccountsReference(name, resource_type='users')
+    user_ref = self.clouduseraccounts_resources.Parse(
+        name, collection='clouduseraccounts.users')
 
     if args.fingerprints:
       fingerprints = args.fingerprints

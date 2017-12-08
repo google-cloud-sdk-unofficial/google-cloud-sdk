@@ -14,6 +14,7 @@
 
 """Command for adding a backend to a backend service."""
 
+from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import base
@@ -35,8 +36,7 @@ class AddBackend(base_classes.ReadWriteCommand):
         parser, operation_type='add to',
         multizonal=False, with_deprecated_zone=True)
     backend_flags.AddBalancingMode(parser)
-    backend_flags.AddMaxUtilization(parser)
-    backend_flags.AddRate(parser)
+    backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
 
   @property
@@ -71,6 +71,29 @@ class AddBackend(base_classes.ReadWriteCommand):
         args.instance_group_zone,
         resource_type='instanceGroups')
 
+  def CreateBackendMessage(self, group_uri, balancing_mode, args):
+    """Create a backend message.
+
+    Args:
+      group_uri: String. The backend instance group uri.
+      balancing_mode: Backend.BalancingModeValueValuesEnum. The backend load
+        balancing mode.
+      args: argparse Namespace. The arguments given to the add-backend command.
+
+    Returns:
+      A new Backend message with its fields set according to the given
+      arguments.
+    """
+
+    return self.messages.Backend(
+        balancingMode=balancing_mode,
+        capacityScaler=args.capacity_scaler,
+        description=args.description,
+        group=group_uri,
+        maxRate=args.max_rate,
+        maxRatePerInstance=args.max_rate_per_instance,
+        maxUtilization=args.max_utilization)
+
   def Modify(self, args, existing):
     backend_flags.WarnOnDeprecatedFlags(args)
     replacement = copy.deepcopy(existing)
@@ -93,14 +116,7 @@ class AddBackend(base_classes.ReadWriteCommand):
     else:
       balancing_mode = None
 
-    backend = self.messages.Backend(
-        balancingMode=balancing_mode,
-        capacityScaler=args.capacity_scaler,
-        description=args.description,
-        group=group_uri,
-        maxRate=args.max_rate,
-        maxRatePerInstance=args.max_rate_per_instance,
-        maxUtilization=args.max_utilization)
+    backend = self.CreateBackendMessage(group_uri, balancing_mode, args)
 
     replacement.backends.append(backend)
     return replacement
@@ -117,9 +133,8 @@ class AddBackendAlpha(AddBackend,
     backend_flags.AddDescription(parser)
     backend_flags.AddInstanceGroup(
         parser, operation_type='add to', multizonal=True)
-    backend_flags.AddBalancingMode(parser)
-    backend_flags.AddMaxUtilization(parser)
-    backend_flags.AddRate(parser)
+    backend_flags.AddBalancingMode(parser, with_connection=True)
+    backend_flags.AddCapacityLimits(parser, with_connection=True)
     backend_flags.AddCapacityScalar(parser)
 
   def CreateGroupReference(self, args):
@@ -130,6 +145,22 @@ class AddBackendAlpha(AddBackend,
         zonal_resource_type='instanceGroups',
         regional_resource_type='regionInstanceGroups')
 
+  def CreateBackendMessage(self, group_uri, balancing_mode, args):
+    """Override. See base class, AddBackend."""
+
+    backend_services_utils.ValidateBalancingModeArgs(args)
+
+    backend = self.messages.Backend(
+        balancingMode=balancing_mode,
+        capacityScaler=args.capacity_scaler,
+        description=args.description,
+        group=group_uri,
+        maxRate=args.max_rate,
+        maxRatePerInstance=args.max_rate_per_instance,
+        maxUtilization=args.max_utilization,
+        maxConnections=args.max_connections,
+        maxConnectionsPerInstance=args.max_connections_per_instance)
+    return backend
 
 AddBackend.detailed_help = {
     'brief': 'Add a backend to a backend service',

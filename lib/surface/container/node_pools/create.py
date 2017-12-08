@@ -28,6 +28,28 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
+DETAILED_HELP = {
+    'DESCRIPTION': """\
+        *{command}* facilitates the creation of a node pool in a Google
+        Container Engine cluster. A variety of options exists to customize the
+        node configuration and the number of nodes created.
+        """,
+    'EXAMPLES': """\
+        To create a new node pool "node-pool-1" with the default options in the
+        cluster "sample-cluster", run:
+
+          $ {command} node-pool-1 --cluster=sample-cluster
+
+        The new node pool will show up in the cluster after all the nodes have
+        been provisioned.
+
+        To create a node pool with 5 nodes, run:
+
+          $ {command} node-pool-1 --cluster=sample-cluster --num-nodes=5
+        """,
+}
+
+
 def _Args(parser):
   """Register flags for this command.
 
@@ -52,11 +74,6 @@ def _Args(parser):
       type=int,
       default=1800,
       help=argparse.SUPPRESS)
-  parser.add_argument(
-      '--wait',
-      action='store_true',
-      default=True,
-      help='Poll the operation for completion after issuing a create request.')
   parser.add_argument(
       '--num-nodes',
       type=int,
@@ -110,8 +127,7 @@ Alias,URI
       action=arg_parsers.FloatingListValuesCatcher())
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.Command):
+class Create(base.CreateCommand):
   """Create a node pool in a running cluster."""
 
   @staticmethod
@@ -147,7 +163,6 @@ class Create(base.Command):
 
     if not args.scopes:
       args.scopes = []
-    options = self.ParseCreateNodePoolOptions(args)
 
     try:
       if not args.scopes:
@@ -155,8 +170,6 @@ class Create(base.Command):
       pool_ref = adapter.ParseNodePool(args.name)
       options = self.ParseCreateNodePoolOptions(args)
       operation_ref = adapter.CreateNodePool(pool_ref, options)
-      if not args.wait:
-        return adapter.GetNodePool(pool_ref)
 
       adapter.WaitForOperation(
           operation_ref,
@@ -169,11 +182,11 @@ class Create(base.Command):
     log.CreatedResource(pool_ref)
     return pool
 
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
+  def Collection(self):
+    return 'container.projects.zones.clusters.nodePools'
 
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    self.context['api_adapter'].PrintNodePools([result])
+  def Format(self, args):
+    return self.ListFormat(args)
+
+
+Create.detailed_help = DETAILED_HELP

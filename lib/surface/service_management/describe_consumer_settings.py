@@ -17,9 +17,8 @@
 from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import consumers_flags
 from googlecloudsdk.api_lib.service_management import services_util
+from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class DescribeConsumerSettings(base.Command,
@@ -48,6 +47,7 @@ class DescribeConsumerSettings(base.Command,
         help=('The consumer settings view to describe. Choose from {0}').format(
             ', '.join(sorted(views.keys()))))
 
+  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management describe-consumer-settings'.
 
@@ -57,10 +57,6 @@ class DescribeConsumerSettings(base.Command,
 
     Returns:
       The response from the consumer settings API call.
-
-    Raises:
-      HttpException: An http error response was received while executing api
-          request.
     """
     # Shorten the request name for better readability
     get_request = (self.services_messages
@@ -73,7 +69,4 @@ class DescribeConsumerSettings(base.Command,
         view=views.get(args.view)
     )
 
-    try:
-      return self.services_client.services_projectSettings.Get(request)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(services_util.GetError(error))
+    return self.services_client.services_projectSettings.Get(request)

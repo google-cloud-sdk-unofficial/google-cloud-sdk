@@ -13,16 +13,18 @@
 # limitations under the License.
 """Command for listing instance groups."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import instance_groups_utils
+from googlecloudsdk.calliope import base
 
 
-class List(base_classes.ZonalLister,
-           base_classes.InstanceGroupDynamicProperiesMixin):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class List(base_classes.ZonalLister):
   """List Google Compute Engine instance groups."""
 
   @staticmethod
   def Args(parser):
     base_classes.ZonalLister.Args(parser)
-
+    # TODO(user): deprecate --only-managed and --only-unmanaged flags.
     managed_args_group = parser.add_mutually_exclusive_group()
     managed_args_group.add_argument(
         '--only-managed',
@@ -39,13 +41,31 @@ class List(base_classes.ZonalLister,
     return (resource for resource in resources if resource.zone)
 
   def ComputeDynamicProperties(self, args, items):
-    mode = base_classes.InstanceGroupFilteringMode.all_groups
+    mode = instance_groups_utils.InstanceGroupFilteringMode.ALL_GROUPS
     if args.only_managed:
-      mode = base_classes.InstanceGroupFilteringMode.only_managed_groups
-    if args.only_unmanaged:
-      mode = base_classes.InstanceGroupFilteringMode.only_unmanaged_groups
-    return self.ComputeInstanceGroupManagerMembership(
-        items=items, filter_mode=mode)
+      mode = (instance_groups_utils.InstanceGroupFilteringMode
+              .ONLY_MANAGED_GROUPS)
+    elif args.only_unmanaged:
+      mode = (instance_groups_utils.InstanceGroupFilteringMode
+              .ONLY_UNMANAGED_GROUPS)
+    return instance_groups_utils.ComputeInstanceGroupManagerMembership(
+        compute=self.compute,
+        project=self.project,
+        http=self.http,
+        batch_url=self.batch_url,
+        items=items,
+        filter_mode=mode)
+
+  def Format(self, unused_args):
+    return """
+          table(
+            name,
+            zone.basename(),
+            network.basename(),
+            isManaged:label=MANAGED,
+            size:label=INSTANCES
+          )
+          """
 
   @property
   def service(self):
@@ -56,4 +76,48 @@ class List(base_classes.ZonalLister,
     return 'instanceGroups'
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(base_classes.MultiScopeLister):
+  """List Google Compute Engine managed instance groups."""
+
+  SCOPES = (base_classes.ScopeType.regional_scope,
+            base_classes.ScopeType.zonal_scope)
+
+  @staticmethod
+  def Args(parser):
+    base_classes.MultiScopeLister.AddScopeArgs(parser, ListAlpha.SCOPES)
+
+  @property
+  def global_service(self):
+    return None
+
+  @property
+  def regional_service(self):
+    return self.compute.regionInstanceGroups
+
+  @property
+  def zonal_service(self):
+    return self.compute.instanceGroups
+
+  @property
+  def aggregation_service(self):
+    return self.compute.instanceGroups
+
+  @property
+  def resource_type(self):
+    return 'instanceGroups'
+
+  def ComputeDynamicProperties(self, args, items):
+    mode = instance_groups_utils.InstanceGroupFilteringMode.ALL_GROUPS
+    return instance_groups_utils.ComputeInstanceGroupManagerMembership(
+        compute=self.compute,
+        project=self.project,
+        http=self.http,
+        batch_url=self.batch_url,
+        items=items,
+        filter_mode=mode)
+
+
 List.detailed_help = base_classes.GetZonalListerHelp('instance groups')
+ListAlpha.detailed_help = base_classes.GetMultiScopeListerHelp(
+    'instance groups', ListAlpha.SCOPES)

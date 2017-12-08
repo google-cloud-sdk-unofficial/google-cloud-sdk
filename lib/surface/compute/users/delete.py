@@ -79,8 +79,9 @@ class Delete(base_classes.BaseAsyncMutator):
     else:
       names = args.names
 
-    user_refs = self.CreateAccountsReferences(
-        names, resource_type='users')
+    user_refs = [self.clouduseraccounts_resources.Parse(
+        user, collection='clouduseraccounts.users') for user in names]
+
     utils.PromptForDeletion(user_refs)
 
     requests = []

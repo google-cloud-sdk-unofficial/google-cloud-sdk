@@ -48,6 +48,6 @@ class Describe(util.ProjectCommand, base.DescribeCommand):
 
   @util.HandleHttpError
   def Run(self, args):
-    projects = self.context['projects_client']
+    projects = util.GetClient()
     project_ref = self.GetProject(args.id)
     return projects.projects.Get(project_ref.Request())

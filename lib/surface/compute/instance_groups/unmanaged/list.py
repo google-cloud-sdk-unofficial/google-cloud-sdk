@@ -13,10 +13,10 @@
 # limitations under the License.
 """Command for listing unmanaged instance groups."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import instance_groups_utils
 
 
-class List(base_classes.ZonalLister,
-           base_classes.InstanceGroupDynamicProperiesMixin):
+class List(base_classes.ZonalLister):
   """List Google Compute Engine unmanaged instance groups."""
 
   def GetResources(self, args, errors):
@@ -24,9 +24,26 @@ class List(base_classes.ZonalLister,
     return (resource for resource in resources if resource.zone)
 
   def ComputeDynamicProperties(self, args, items):
-    mode = base_classes.InstanceGroupFilteringMode.only_unmanaged_groups
-    return self.ComputeInstanceGroupManagerMembership(
-        items=items, filter_mode=mode)
+    mode = (
+        instance_groups_utils.InstanceGroupFilteringMode.ONLY_UNMANAGED_GROUPS)
+    return instance_groups_utils.ComputeInstanceGroupManagerMembership(
+        compute=self.compute,
+        project=self.project,
+        http=self.http,
+        batch_url=self.batch_url,
+        items=items,
+        filter_mode=mode)
+
+  def Format(self, unused_args):
+    return """
+          table(
+            name,
+            zone.basename(),
+            network.basename(),
+            isManaged:label=MANAGED,
+            size:label=INSTANCES
+          )
+          """
 
   @property
   def service(self):

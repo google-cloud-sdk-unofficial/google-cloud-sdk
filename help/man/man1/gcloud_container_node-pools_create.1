@@ -1,0 +1,156 @@
+
+.TH "GCLOUD_CONTAINER_NODE\-POOLS_CREATE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud container node\-pools create \- create a node pool in a running cluster
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud container node\-pools create\fR \fINAME\fR [\fB\-\-cluster\fR\ \fICLUSTER\fR] [\fB\-\-disk\-size\fR\ \fIDISK_SIZE\fR] [\fB\-\-enable\-cloud\-endpoints\fR] [\fB\-\-image\-type\fR\ \fIIMAGE_TYPE\fR] [\fB\-\-machine\-type\fR\ \fIMACHINE_TYPE\fR,\ \fB\-m\fR\ \fIMACHINE_TYPE\fR] [\fB\-\-num\-nodes\fR\ \fINUM_NODES\fR;\ default="3"] [\fB\-\-scopes\fR\ \fISCOPE\fR,[\fISCOPE\fR,...]] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud container node\-pools create\fR facilitates the creation of a node
+pool in a Google Container Engine cluster. A variety of options exists to
+customize the node configuration and the number of nodes created.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR
+.RS 2m
+The name of the node pool to create.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-cluster\fR \fICLUSTER\fR
+.RS 2m
+The cluster to add the node pool to.
+
+.RE
+\fB\-\-disk\-size\fR \fIDISK_SIZE\fR
+.RS 2m
+Size in GB for node VM boot disks. Defaults to 100GB.
+
+.RE
+\fB\-\-enable\-cloud\-endpoints\fR
+.RS 2m
+Automatically enable Google Cloud Endpoints to take advantage of API management
+features. Enabled by default, use \fB\-\-no\-enable\-cloud\-endpoints\fR to
+disable.
+
+.RE
+\fB\-\-image\-type\fR \fIIMAGE_TYPE\fR
+.RS 2m
+The image type to use for the node pool. Defaults to server\-specified.
+
+Image Type specifies the base OS that the nodes in the node pool will run on. If
+an image type is specified, that will be assigned to the node pool and all
+future upgrades will use the specified image type. If it is not specified the
+server will pick the default image type.
+
+The default image type and the list of valid image types are available using the
+following command.
+
+.RS 2m
+$ gcloud container get\-server\-config
+.RE
+
+
+.RE
+\fB\-\-machine\-type\fR \fIMACHINE_TYPE\fR, \fB\-m\fR \fIMACHINE_TYPE\fR
+.RS 2m
+The type of machine to use for nodes. Defaults to server\-specified
+
+.RE
+\fB\-\-num\-nodes\fR \fINUM_NODES\fR; default="3"
+.RS 2m
+The number of nodes in the node pool in each of the cluster's zones.
+
+.RE
+\fB\-\-scopes\fR \fISCOPE\fR,[\fISCOPE\fR,...]
+.RS 2m
+Specifies scopes for the node instances. The project's default service account
+is used. Examples:
+
+.RS 2m
+$ gcloud container node\-pools create example\-cluster \e
+    \-\-scopes https://www.googleapis.com/auth/devstorage.read_only
+.RE
+
+.RS 2m
+$ gcloud container node\-pools create example\-cluster \e
+    \-\-scopes bigquery,storage\-rw,compute\-ro
+.RE
+
+Multiple SCOPEs can specified, separated by commas. The scopes necessary for the
+cluster to function properly (compute\-rw, storage\-ro), are always added, even
+if not explicitly specified.
+
+SCOPE can be either the full URI of the scope or an alias. Available aliases
+are:
+
+Alias,URI bigquery,https://www.googleapis.com/auth/bigquery
+cloud\-platform,https://www.googleapis.com/auth/cloud\-platform
+compute\-ro,https://www.googleapis.com/auth/compute.readonly
+compute\-rw,https://www.googleapis.com/auth/compute
+datastore,https://www.googleapis.com/auth/datastore
+logging\-write,https://www.googleapis.com/auth/logging.write
+monitoring,https://www.googleapis.com/auth/monitoring
+monitoring\-write,https://www.googleapis.com/auth/monitoring.write
+service\-control,https://www.googleapis.com/auth/servicecontrol
+service\-management,https://www.googleapis.com/auth/service.management
+sql,https://www.googleapis.com/auth/sqlservice
+sql\-admin,https://www.googleapis.com/auth/sqlservice.admin
+storage\-full,https://www.googleapis.com/auth/devstorage.full_control
+storage\-ro,https://www.googleapis.com/auth/devstorage.read_only
+storage\-rw,https://www.googleapis.com/auth/devstorage.read_write
+taskqueue,https://www.googleapis.com/auth/taskqueue
+useraccounts\-ro,https://www.googleapis.com/auth/cloud.useraccounts.readonly
+useraccounts\-rw,https://www.googleapis.com/auth/cloud.useraccounts
+userinfo\-email,https://www.googleapis.com/auth/userinfo.email
+
+
+.RE
+\fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR
+.RS 2m
+The compute zone (e.g. us\-central1\-a) for the cluster
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To create a new node pool "node\-pool\-1" with the default options in the
+cluster "sample\-cluster", run:
+
+.RS 2m
+$ gcloud container node\-pools create node\-pool\-1 \e
+    \-\-cluster=sample\-cluster
+.RE
+
+The new node pool will show up in the cluster after all the nodes have been
+provisioned.
+
+To create a node pool with 5 nodes, run:
+
+.RS 2m
+$ gcloud container node\-pools create node\-pool\-1 \e
+    \-\-cluster=sample\-cluster \-\-num\-nodes=5
+.RE

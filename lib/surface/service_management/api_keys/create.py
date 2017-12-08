@@ -16,10 +16,9 @@
 
 from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import services_util
-
+from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 SHA_EXAMPLE = 'D8:AA:43:97:59:EE:C5:95:26:6A:07:EE:1C:37:8E:F4:F0:C8:05:C8'
@@ -69,6 +68,7 @@ class Create(base.Command, base_classes.BaseServiceManagementCommand):
                               'comma separating the package name and '
                               'fingerprint.'))
 
+  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management api-keys create'.
 
@@ -78,10 +78,6 @@ class Create(base.Command, base_classes.BaseServiceManagementCommand):
 
     Returns:
       The response from the api-keys API call.
-
-    Raises:
-      HttpException: An http error response was received while executing api
-          request.
     """
     # Verify Android command-line arguments, if applicable
     if args.type == 'android':
@@ -90,10 +86,7 @@ class Create(base.Command, base_classes.BaseServiceManagementCommand):
     # Construct the Create API Key request object
     request = self._ConstructApiKeyRequest(self.project, args)
 
-    try:
-      return self.apikeys_client.projects_apiKeys.Create(request)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(services_util.GetError(error))
+    return self.apikeys_client.projects_apiKeys.Create(request)
 
   def _VerifyAndroidPackageArgs(self, parsed_args):
     # Verify that each Android package is in the correct format

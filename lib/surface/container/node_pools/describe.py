@@ -20,8 +20,15 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(base.Command):
+DETAILED_HELP = {
+    'DESCRIPTION': """\
+        *{command}* displays all data associated with the node pool in the
+        Google Container Engine cluster.
+        """,
+}
+
+
+class Describe(base.DescribeCommand):
   """Describe an existing node pool for a cluster."""
 
   @staticmethod
@@ -55,11 +62,5 @@ class Describe(base.Command):
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(util.GetError(error))
 
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
 
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    self.format(result)
+Describe.detailed_help = DETAILED_HELP

@@ -14,12 +14,14 @@
 
 """Delete command for gcloud debug snapshots command group."""
 
+import StringIO
+
 from googlecloudsdk.api_lib.debug import debug
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.resource import resource_printer
 
 
 class Delete(base.DeleteCommand):
@@ -59,10 +61,15 @@ class Delete(base.DeleteCommand):
         args.id_or_location_regexp, include_all_users=args.all_users,
         include_inactive=args.include_inactive,
         restrict_to_type=debugger.SNAPSHOT_TYPE)
-    if not console_io.PromptContinue(
-        message='This command will delete {0} snapshots.'.format(
-            len(snapshots))):
-      raise calliope_exceptions.ToolException('Delete aborted by user.')
+    if snapshots:
+      snapshot_list = StringIO.StringIO()
+      resource_printer.Print(
+          snapshots, 'table(location, condition, id)', snapshot_list)
+      console_io.PromptContinue(
+          message=(
+              'This command will delete the following snapshots:'
+              '\n\n{0}\n'.format(snapshot_list.getvalue())),
+          cancel_on_no=True)
     for s in snapshots:
       debuggee.DeleteBreakpoint(s.id)
     # Guaranteed we have at least one snapshot, since ListMatchingBreakpoints

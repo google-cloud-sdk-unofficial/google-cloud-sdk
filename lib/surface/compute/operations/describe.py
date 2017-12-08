@@ -109,8 +109,8 @@ class DescribeGA(base_classes.BaseDescriber):
         ref = self.CreateZonalReference(
             args.name, args.zone, resource_type='zoneOperations')
       elif not self._ga and args.user_accounts:
-        ref = self.CreateAccountsReference(
-            args.name, resource_type='globalAccountsOperations')
+        ref = self.clouduseraccounts_resources.Parse(
+            args.name, collection='clouduseraccounts.globalAccountsOperations')
       else:
         # TODO(user): Instead of raising here, we should really just
         # prompt for {global, <list of regions>, <list of zones>}, but

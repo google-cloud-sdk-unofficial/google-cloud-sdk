@@ -17,12 +17,11 @@
 import os
 
 from googlecloudsdk.api_lib.service_management import base_classes
-from googlecloudsdk.api_lib.service_management import services_util
+from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.third_party.apitools.base.py import encoding
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class ConvertConfig(base.Command, base_classes.BaseServiceManagementCommand):
@@ -45,6 +44,7 @@ class ConvertConfig(base.Command, base_classes.BaseServiceManagementCommand):
         help=('The file path of the output file containing the converted '
               'configuration. Output to standard output if omitted.'))
 
+  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management convert-config'.
 
@@ -56,8 +56,8 @@ class ConvertConfig(base.Command, base_classes.BaseServiceManagementCommand):
       The response from the ConvertConfig API call.
 
     Raises:
-      HttpException: An http error response was received while executing api
-          request.
+      IOError: An IOError is returned if the input file cannot be read, or
+          the output file cannot be written to.
     """
     try:
       with open(args.swagger_file) as f:
@@ -77,11 +77,7 @@ class ConvertConfig(base.Command, base_classes.BaseServiceManagementCommand):
         swaggerSpec=swagger_spec,
     )
 
-    try:
-      converted_config = self.services_client.v1.ConvertConfig(request)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(services_util.GetError(error))
-
+    converted_config = self.services_client.v1.ConvertConfig(request)
     diagnostics = converted_config.diagnostics
     if diagnostics:
       kind = self.services_messages.Diagnostic.KindValueValuesEnum

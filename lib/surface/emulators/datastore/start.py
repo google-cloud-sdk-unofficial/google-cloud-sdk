@@ -58,7 +58,7 @@ class Start(base.Command):
       args.host_port = arg_parsers.HostPort.Parse(datastore_util.GetHostPort())
     args.host_port.host = args.host_port.host or 'localhost'
 
-    datastore_util.PrepareGCDDataDir(args.data_dir)
+    datastore_util.PrepareGCDDataDir(args)
     datastore_process = datastore_util.StartGCDEmulator(args)
     datastore_util.WriteGCDEnvYaml(args)
     util.PrefixOutput(datastore_process, 'datastore')

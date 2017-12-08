@@ -39,7 +39,6 @@ def _ParseAddonDisabled(val):
   raise InvalidAddonValueError(val)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.Command):
   """Update cluster settings for an existing container cluster."""
 

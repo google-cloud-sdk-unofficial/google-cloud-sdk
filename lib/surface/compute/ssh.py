@@ -138,6 +138,8 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
             .replace('%INSTANCE%', external_ip_address))
         ssh_args.append(dereferenced_flag)
 
+    ssh_args.extend(self.GetHostKeyArgs(args, instance))
+
     ssh_args.append(ssh_utils.UserHost(user, external_ip_address))
 
     if args.implementation_args:

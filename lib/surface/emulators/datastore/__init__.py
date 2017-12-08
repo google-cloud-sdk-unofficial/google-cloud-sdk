@@ -40,11 +40,20 @@ class Datastore(base.Group):
         required=False,
         help='The directory to be used to store/retrieve data/config for an'
         ' emulator run.')
+    parser.add_argument(
+        '--legacy',
+        default=True,
+        action='store_true',
+        help='Set to use the legacy emulator which supports Cloud Datastore'
+             ' API v1beta2.')
 
   def Filter(self, context, args):
     util.CheckIfJava7IsInstalled(datastore_util.DATASTORE_TITLE)
-    util.EnsureComponentIsInstalled('gcd-emulator',
-                                    datastore_util.DATASTORE_TITLE)
-
+    if args.legacy:
+      util.EnsureComponentIsInstalled('gcd-emulator',
+                                      datastore_util.DATASTORE_TITLE)
+    else:
+      util.EnsureComponentIsInstalled('cloud-datastore-emulator',
+                                      datastore_util.DATASTORE_TITLE)
     if not args.data_dir:
       args.data_dir = datastore_util.GetDataDir()

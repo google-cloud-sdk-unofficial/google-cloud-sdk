@@ -11,7 +11,7 @@ gcloud compute ssh \- SSH into a virtual machine instance
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute ssh\fR [\fIUSER\fR@]\fIINSTANCE\fR [\fB\-\-command\fR\ \fICOMMAND\fR] [\fB\-\-container\fR\ \fICONTAINER\fR] [\fB\-\-dry\-run\fR] [\fB\-\-plain\fR] [\fB\-\-ssh\-flag\fR\ \fISSH_FLAG\fR] [\fB\-\-ssh\-key\-file\fR\ \fISSH_KEY_FILE\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR] [\-\-\ \fIIMPLEMENTATION\-ARGS\fR\ ...]
+\f5gcloud compute ssh\fR [\fIUSER\fR@]\fIINSTANCE\fR [\fB\-\-command\fR\ \fICOMMAND\fR] [\fB\-\-container\fR\ \fICONTAINER\fR] [\fB\-\-dry\-run\fR] [\fB\-\-plain\fR] [\fB\-\-ssh\-flag\fR\ \fISSH_FLAG\fR] [\fB\-\-ssh\-key\-file\fR\ \fISSH_KEY_FILE\fR] [\fB\-\-strict\-host\-key\-checking\fR\ \fISTRICT_HOST_KEY_CHECKING\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR] [\-\-\ \fIIMPLEMENTATION\-ARGS\fR\ ...]
 
 
 .SH "DESCRIPTION"
@@ -77,8 +77,8 @@ executing it.
 \fB\-\-plain\fR
 .RS 2m
 Suppresses the automatic addition of \fBssh(1)\fR/\fBscp(1)\fR flags. This flag
-is useful if you want to take care of authentication yourself or re\-enable
-strict host checking.
+is useful if you want to take care of authentication yourself or use specific
+ssh/scp features.
 
 .RE
 \fB\-\-ssh\-flag\fR \fISSH_FLAG\fR
@@ -102,6 +102,14 @@ is equivalent to passing the flags \f5\fI\-\-vvv\fR\fR and \f5\fI\-L
 .RS 2m
 The path to the SSH key file. By default, this is
 \f5\fI~/.ssh/google_compute_engine\fR\fR.
+
+.RE
+\fB\-\-strict\-host\-key\-checking\fR \fISTRICT_HOST_KEY_CHECKING\fR
+.RS 2m
+Override the default behavior of StrictHostKeyChecking. By default,
+StrictHostKeyChecking is set to 'no' the first time you connect to an instance
+and will be set to 'yes' for all subsequent connections. Use this flag to
+specify a value for the connection.
 
 .RE
 \fB\-\-zone\fR \fIZONE\fR

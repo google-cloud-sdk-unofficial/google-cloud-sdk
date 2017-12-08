@@ -83,10 +83,6 @@ class List(base.ListCommand, base_classes.BaseServiceManagementCommand):
 
     Returns:
       The list of managed services for this project.
-
-    Raises:
-      HttpException: An http error response was received while executing api
-          request.
     """
     if args.simple_list:
       args.format = 'value(serviceName)'

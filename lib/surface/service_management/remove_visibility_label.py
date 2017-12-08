@@ -18,9 +18,9 @@
 from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import consumers_flags
 from googlecloudsdk.api_lib.service_management import services_util
+from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class RemoveVisibilityLabel(base.Command,
@@ -43,6 +43,7 @@ class RemoveVisibilityLabel(base.Command,
 
     base.ASYNC_FLAG.AddToParser(parser)
 
+  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management remove-visibility-label'.
 
@@ -54,8 +55,6 @@ class RemoveVisibilityLabel(base.Command,
       The response from the consumer settings API call.
 
     Raises:
-      HttpException: An http error response was received while executing api
-          request.
       ToolException: The label that was supposed to be removed is not currently
           set for the given service and consumer project.
     """
@@ -76,10 +75,7 @@ class RemoveVisibilityLabel(base.Command,
         view=get_request.ViewValueValuesEnum.PRODUCER_VIEW,
     )
 
-    try:
-      response = self.services_client.services_projectSettings.Get(request)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(services_util.GetError(error))
+    response = self.services_client.services_projectSettings.Get(request)
 
     # 2. Remove the provided label from the current labels if it exists
     visibility_labels = []
@@ -106,10 +102,6 @@ class RemoveVisibilityLabel(base.Command,
         projectSettings=project_settings,
         updateMask='visibility_settings.visibility_labels')
 
-    try:
-      # TODO(user): Add support for Operation completion, and --async flag
-      result = self.services_client.services_projectSettings.Patch(request)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(services_util.GetError(error))
+    operation = self.services_client.services_projectSettings.Patch(request)
 
-    return services_util.ProcessOperationResult(result, args.async)
+    return services_util.ProcessOperationResult(operation, args.async)

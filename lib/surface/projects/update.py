@@ -53,7 +53,7 @@ class Update(util.ProjectCommand):
 
   @util.HandleHttpError
   def Run(self, args):
-    projects = self.context['projects_client']
+    projects = util.GetClient()
     project_ref = self.GetProject(args.id)
     project = projects.projects.Get(project_ref.Request())
     project.name = args.name

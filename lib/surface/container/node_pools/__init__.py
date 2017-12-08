@@ -17,7 +17,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class NodePools(base.Group):
   """Create and delete operations for Google Container Engine node pools."""
 

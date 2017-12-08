@@ -15,10 +15,7 @@
 """Command to describe the access policy for a service."""
 
 from googlecloudsdk.api_lib.service_management import base_classes
-from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Describe(base.Command, base_classes.AccessCommand):
@@ -54,8 +51,4 @@ class Describe(base.Command, base_classes.AccessCommand):
                .ServicemanagementServicesGetAccessPolicyRequest(
                    serviceName=args.service))
 
-    try:
-      return self.services_client.services.GetAccessPolicy(request)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(services_util.GetError(error))
-
+    return self.services_client.services.GetAccessPolicy(request)

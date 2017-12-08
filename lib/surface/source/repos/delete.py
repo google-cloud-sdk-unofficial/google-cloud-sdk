@@ -70,9 +70,9 @@ class Delete(base.Command):
     project_id = properties.VALUES.core.project.Get(required=True)
     project = source.Project(project_id)
     try:
-      path = project.DeleteRepo(args.name)
-      log.DeletedResource(path)
-      return path
+      project.DeleteRepo(args.name)
+      log.DeletedResource(args.name)
+      return args.name
     except exceptions.HttpError as e:
       message = ('Failed to delete repository [{name}] for Project '
                  '[{prj}] with error [{err}].\n'.format(

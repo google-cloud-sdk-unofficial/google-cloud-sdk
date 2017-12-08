@@ -14,14 +14,17 @@
 
 """service-management operations describe command."""
 
+import sys
+
 from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import services_util
+from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
+
 
 OPTIONAL_PREFIX_TO_STRIP = 'operations/'
+MAX_RESPONSE_BYTES = 1000
 
 
 class Describe(base.Command, base_classes.BaseServiceManagementCommand):
@@ -42,9 +45,10 @@ class Describe(base.Command, base_classes.BaseServiceManagementCommand):
         '--full',
         action='store_true',
         default=False,
-        help=('Print the entire Operation resource, which could be large.'
-              'Otherwise, a summary will be printed instead.'))
+        help=('Print the entire Operation resource, which could be large. '
+              'By default, a summary will be printed instead.'))
 
+  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management operations describe'.
 
@@ -54,10 +58,6 @@ class Describe(base.Command, base_classes.BaseServiceManagementCommand):
 
     Returns:
       The response from the operations.Get API call.
-
-    Raises:
-      HttpException: An http error response was received while executing api
-          request.
     """
     # If a user includes the leading "operations/", just strip it off
     if args.operation.startswith(OPTIONAL_PREFIX_TO_STRIP):
@@ -67,16 +67,14 @@ class Describe(base.Command, base_classes.BaseServiceManagementCommand):
         operationsId=args.operation,
     )
 
-    try:
-      result = self.services_client.operations.Get(request)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(services_util.GetError(error))
+    operation = self.services_client.operations.Get(request)
 
-    if not args.full:
+    if (sys.getsizeof(str(operation.response)) > MAX_RESPONSE_BYTES and
+        not args.full):
       log.warn('Response portion of Operation redacted. '
                'Use --full to see the whole Operation.\n')
-      result.response = None
+      operation.response = None
 
     # Set async to True because we don't need to wait for the operation
     # to complete to check the status of it.
-    return services_util.ProcessOperationResult(result, async=True)
+    return services_util.GetProcessedOperationResult(operation, async=True)

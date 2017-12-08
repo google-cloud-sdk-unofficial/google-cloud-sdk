@@ -44,7 +44,7 @@ class List(util.ProjectCommand, base.ListCommand):
   def Run(self, args):
     """Run the list command."""
 
-    projects_client = self.context['projects_client']
-    messages = self.context['projects_messages']
+    projects_client = util.GetClient()
+    messages = util.GetMessages()
     # TODO(user): b/27946801 handle --limit,--page-size,--filter
     return projects_api.List(client=projects_client, messages=messages)

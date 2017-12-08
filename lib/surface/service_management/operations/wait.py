@@ -16,8 +16,10 @@
 
 from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import services_util
-
+from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
+
+OPTIONAL_PREFIX_TO_STRIP = 'operations/'
 
 
 class Wait(base.Command, base_classes.BaseServiceManagementCommand):
@@ -35,6 +37,7 @@ class Wait(base.Command, base_classes.BaseServiceManagementCommand):
     parser.add_argument(
         'operation', help='The name of the Operation on which to wait.')
 
+  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management operations wait'.
 
@@ -44,14 +47,15 @@ class Wait(base.Command, base_classes.BaseServiceManagementCommand):
 
     Returns:
       If successful, the response from the operations.Get API call.
-
-    Raises:
-      HttpException: An http error response was received while executing api
-          request.
     """
-    result = services_util.WaitForOperation(
-        args.operation, self.services_client)
+    # If a user includes the leading "operations/", just strip it off
+    if args.operation.startswith(OPTIONAL_PREFIX_TO_STRIP):
+      args.operation = args.operation[len(OPTIONAL_PREFIX_TO_STRIP):]
 
-    # Set async to True because we already waited for the operation to
-    # complete above.
-    return services_util.ProcessOperationResult(result, async=True)
+    request = self.services_messages.ServicemanagementOperationsGetRequest(
+        operationsId=args.operation,
+    )
+
+    operation = self.services_client.operations.Get(request)
+
+    return services_util.ProcessOperationResult(operation, async=False)

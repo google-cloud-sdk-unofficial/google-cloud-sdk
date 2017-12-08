@@ -33,6 +33,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
+    base.URI_FLAG.RemoveFromParser(parser)
     parser.add_argument(
         'id_or_location_regexp', metavar='(ID|LOCATION-REGEXP)', nargs='*',
         help="""\

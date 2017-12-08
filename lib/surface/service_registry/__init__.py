@@ -24,7 +24,6 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.credentials import store
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ServiceRegistry(base.Group):
   """Manage Service Registry entries."""

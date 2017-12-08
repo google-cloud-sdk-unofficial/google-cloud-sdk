@@ -79,8 +79,8 @@ class AddKeys(base_classes.NoOutputAsyncMutator):
     if not name:
       name = gaia_utils.GetDefaultAccountName(self.http)
 
-    user_ref = self.CreateAccountsReference(
-        name, resource_type='users')
+    user_ref = self.clouduseraccounts_resources.Parse(
+        name, collection='clouduseraccounts.users')
 
     valid_key_types = [
         'ssh-rsa', 'ssh-dss', 'ecdsa-sha2-nistp256', 'ssh-ed25519']

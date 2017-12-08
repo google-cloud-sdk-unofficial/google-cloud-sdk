@@ -48,8 +48,8 @@ class Describe(base_classes.BaseAsyncMutator):
   def CreateRequests(self, args):
     """Returns a list of requests necessary for describing groups."""
 
-    group_ref = self.CreateAccountsReference(
-        args.name, resource_type='groups')
+    group_ref = self.clouduseraccounts_resources.Parse(
+        args.name, collection='clouduseraccounts.groups')
 
     request = self.messages.ClouduseraccountsGroupsGetRequest(
         project=self.project,

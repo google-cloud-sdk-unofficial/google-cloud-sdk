@@ -60,8 +60,8 @@ class Create(base_classes.BaseAsyncCreator):
     if not name:
       name = gaia_utils.MapGaiaEmailToDefaultAccountName(owner)
 
-    user_ref = self.CreateAccountsReference(
-        name, resource_type='users')
+    user_ref = self.clouduseraccounts_resources.Parse(
+        name, collection='clouduseraccounts.users')
 
     user = self.messages.User(
         name=user_ref.Name(),

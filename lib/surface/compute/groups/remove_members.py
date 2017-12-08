@@ -58,12 +58,11 @@ class RemoveMembers(base_classes.NoOutputAsyncMutator,
     return self.clouduseraccounts.MESSAGES_MODULE
 
   def CreateRequests(self, args):
+    user_refs = [self.clouduseraccounts_resources.Parse(
+        user, collection='clouduseraccounts.users') for user in args.members]
 
-    user_refs = self.CreateAccountsReferences(
-        args.members, resource_type='users')
-
-    group_refs = self.CreateAccountsReferences(
-        args.names, resource_type='groups')
+    group_refs = [self.clouduseraccounts_resources.Parse(
+        group, collection='clouduseraccounts.groups') for group in args.names]
 
     requests = []
     for group_ref in group_refs:

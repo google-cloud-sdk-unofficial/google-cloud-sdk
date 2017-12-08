@@ -17,9 +17,8 @@
 from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import consumers_flags
 from googlecloudsdk.api_lib.service_management import services_util
+from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Disable(base.Command, base_classes.BaseServiceManagementCommand):
@@ -39,6 +38,7 @@ class Disable(base.Command, base_classes.BaseServiceManagementCommand):
 
     base.ASYNC_FLAG.AddToParser(parser)
 
+  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management disable'.
 
@@ -48,10 +48,6 @@ class Disable(base.Command, base_classes.BaseServiceManagementCommand):
 
     Returns:
       The response from the consumer settings API call.
-
-    Raises:
-      HttpException: An http error response was received while executing api
-          request.
     """
     # Shorten the patch request name for better readability
     patch_request = (self.services_messages
@@ -70,10 +66,6 @@ class Disable(base.Command, base_classes.BaseServiceManagementCommand):
         projectSettings=project_settings,
         updateMask='usage_settings.consumer_enable_status')
 
-    try:
-      # TODO(user): Add support for Operation completion, and --async flag
-      result = self.services_client.services_projectSettings.Patch(request)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(services_util.GetError(error))
+    operation = self.services_client.services_projectSettings.Patch(request)
 
-    return services_util.ProcessOperationResult(result, args.async)
+    return services_util.ProcessOperationResult(operation, args.async)

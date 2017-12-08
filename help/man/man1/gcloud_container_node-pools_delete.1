@@ -1,0 +1,66 @@
+
+.TH "GCLOUD_CONTAINER_NODE\-POOLS_DELETE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud container node\-pools delete \- delete an existing node pool in a running cluster
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud container node\-pools delete\fR \fINAME\fR [\fB\-\-cluster\fR\ \fICLUSTER\fR] [\fB\-\-wait\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud container node\-pools delete\fR deletes a node pool from a Google
+Container Engine cluster.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR
+.RS 2m
+The name of the node pool to delete.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-cluster\fR \fICLUSTER\fR
+.RS 2m
+The cluster from which to delete the node pool.
+
+.RE
+\fB\-\-wait\fR
+.RS 2m
+Poll the operation for completion after issuing a delete request. Enabled by
+default, use \fB\-\-no\-wait\fR to disable.
+
+.RE
+\fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR
+.RS 2m
+The compute zone (e.g. us\-central1\-a) for the cluster
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To delete the "node\-pool\-1" node pool from the cluster "sample\-cluster", run:
+
+.RS 2m
+$ gcloud container node\-pools delete node\-pool\-1 \e
+    \-\-cluster=sample\-cluster
+.RE

@@ -18,11 +18,18 @@ import os
 
 from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import services_util
+from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.third_party.apitools.base.py import encoding
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
+
+
+class SwaggerUploadException(exceptions.Error):
+
+  def __init(self, message):
+    super(SwaggerUploadException, self).__init__(message)
 
 
 class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
@@ -45,6 +52,7 @@ class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
 
     base.ASYNC_FLAG.AddToParser(parser)
 
+  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management deploy'.
 
@@ -56,8 +64,11 @@ class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
       The response from the Update API call.
 
     Raises:
-      HttpException: An http error response was received while executing api
-          request.
+      SwaggerUploadException: if the provided service configuration file is
+          rejected by the Service Management API.
+
+      BadFileExceptionn: if the provided service configuration file is invalid
+          or cannot be read.
     """
     with open(args.service_config_file, 'r') as f:
       config_contents = f.read()
@@ -65,7 +76,7 @@ class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
     # Try to load the file as JSON. If that fails, try YAML.
     service_config_dict = services_util.LoadJsonOrYaml(config_contents)
     if not service_config_dict:
-      raise exceptions.BadFileException(
+      raise calliope_exceptions.BadFileException(
           'Could not read JSON or YAML from service config file %s.'
           % args.service_config_file)
 
@@ -84,17 +95,20 @@ class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
           swaggerSpec=swagger_spec,
       )
 
-      try:
-        response = self.services_client.v1.ConvertConfig(request)
-      except apitools_exceptions.HttpError as error:
-        raise exceptions.HttpException(services_util.GetError(error))
-
+      response = self.services_client.v1.ConvertConfig(request)
       diagnostics = response.diagnostics
       if diagnostics:
         kind = self.services_messages.Diagnostic.KindValueValuesEnum
         for diagnostic in diagnostics:
           logger = log.error if diagnostic.kind == kind.ERROR else log.warning
           logger('{l}: {m}'.format(l=diagnostic.location, m=diagnostic.message))
+
+        # After all errors and warnings have been printed, exit early if any
+        # errors were returned by the server.
+        for diagnostic in diagnostics:
+          if diagnostic.kind == kind.ERROR:
+            raise SwaggerUploadException(
+                'Failed to upload service configuration.')
 
       service_config = response.serviceConfig
     else:
@@ -115,20 +129,17 @@ class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
         managedService=managed_service,
     )
 
-    try:
-      result = self.services_client.services.Update(request)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(services_util.GetError(error))
+    operation = self.services_client.services.Update(request)
 
     # Validate the response type to avoid surprise errors below
     services_util.RaiseIfResultNotTypeOf(
-        result, self.services_messages.Operation)
+        operation, self.services_messages.Operation)
 
     service_name = None
     config_id = None
     # Fish the serviceName and serviceConfig.id fields from the proto Any
-    # that is returned in result.response
-    for prop in result.response.additionalProperties:
+    # that is returned in operation.response
+    for prop in operation.response.additionalProperties:
       if prop.key == 'serviceName':
         service_name = prop.value.string_value
       elif prop.key == 'serviceConfig':
@@ -145,8 +156,4 @@ class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
       log.error('Failed to retrieve Service Name and '
                 'Service Configuration Version')
 
-    # Remove the response portion of the resulting operation since
-    # it can be extremely large.
-    result.response = None
-
-    return services_util.ProcessOperationResult(result, args.async)
+    return services_util.ProcessOperationResult(operation, args.async)

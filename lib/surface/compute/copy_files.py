@@ -114,6 +114,7 @@ class CopyFiles(ssh_utils.BaseSSHCLICommand):
     scp_args = [self.scp_executable]
     if not args.plain:
       scp_args.extend(self.GetDefaultFlags())
+      scp_args.extend(self.GetHostKeyArgs(args, instance))
       scp_args.append('-r')
 
     for file_spec in file_specs:

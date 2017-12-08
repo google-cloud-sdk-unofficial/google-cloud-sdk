@@ -45,8 +45,8 @@ class RemoveIamPolicyBinding(util.ProjectCommand):
   @util.HandleHttpError
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
-    projects = self.context['projects_client']
-    messages = self.context['projects_messages']
+    projects = util.GetClient()
+    messages = util.GetMessages()
 
     project_ref = self.GetProject(args.id)
 

@@ -50,15 +50,10 @@ class Enable(base.Command, base_classes.BaseServiceManagementCommand):
 
     Returns:
       The response from the consumer settings API call.
-
-    Raises:
-      HttpException: An http error response was received while executing api
-          request.
     """
 
-    # TODO(b/25392897): Add support for Operation completion, and --async flag
-    result = enable_api.EnableServiceApiCall(
+    operation = enable_api.EnableServiceApiCall(
         self.services_client, self.services_messages,
         args.consumer_project, args.service)
 
-    return services_util.ProcessOperationResult(result, args.async)
+    return services_util.ProcessOperationResult(operation, args.async)

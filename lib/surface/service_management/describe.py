@@ -15,10 +15,8 @@
 """service-management describe command."""
 
 from googlecloudsdk.api_lib.service_management import base_classes
-from googlecloudsdk.api_lib.service_management import services_util
+from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Describe(base.Command, base_classes.BaseServiceManagementCommand):
@@ -36,6 +34,7 @@ class Describe(base.Command, base_classes.BaseServiceManagementCommand):
     parser.add_argument(
         'service', help='The service to describe.')
 
+  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management describe'.
 
@@ -45,16 +44,9 @@ class Describe(base.Command, base_classes.BaseServiceManagementCommand):
 
     Returns:
       The response from the Get API call.
-
-    Raises:
-      HttpException: An http error response was received while executing api
-          request.
     """
     request = self.services_messages.ServicemanagementServicesGetRequest(
         serviceName=args.service,
     )
 
-    try:
-      return self.services_client.services.Get(request)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(services_util.GetError(error))
+    return self.services_client.services.Get(request)

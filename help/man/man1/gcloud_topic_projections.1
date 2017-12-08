@@ -134,7 +134,7 @@ Color blue resource value pattern.
 
 .RE
 .RE
-\fBdate\fR(format="%Y\-%m\-%dT%H:%M:%S", unit=1, undefined="", tz)
+\fBdate\fR(format="%Y\-%m\-%dT%H:%M:%S", unit=1, undefined="", tz, tz_default)
 .RS 2m
 Formats the resource as a strftime() format.
 
@@ -155,8 +155,13 @@ Returns this value if the resource is not a valid time.
 .RE
 \fB\f5tz\fR\fR
 .RS 2m
-Fixed timezone string, local timezone if not specified. For example, EST5EDT,
-US/Pacific, UTC, WEST.
+Return the time relative to the tz timezone if specified, the explicit timezone
+in the resource if it has one, otherwise the local timezone. For example,
+...date(tz=EST5EDT, tz_default=UTC).
+.RE
+\fB\f5tz_default\fR\fR
+.RS 2m
+The default timezone if the resource does not have a timezone suffix.
 
 .RE
 .RE
@@ -208,6 +213,27 @@ The encoding name. \fBbase64\fR and \fButf\-8\fR are supported.
 \fB\f5undefined\fR\fR
 .RS 2m
 Returns this value if the encoding fails.
+
+.RE
+.RE
+\fBenum\fR(enums, inverse=False, undefined="")
+.RS 2m
+Returns the enums dictionary description for the resource.
+
+
+The arguments are:
+
+\fB\f5enums\fR\fR
+.RS 2m
+The name of a message enum dictionary.
+.RE
+\fB\f5inverse\fR\fR
+.RS 2m
+Do inverse lookup.
+.RE
+\fB\f5undefined\fR\fR
+.RS 2m
+Returns this value if there is no matching enum description.
 
 .RE
 .RE
@@ -760,6 +786,28 @@ Returns this value if the resource is not a valid status.
 For example\f5:\fR
 .RS 2m
 \-\-format="table(id, location, short_status())"
+
+
+.RE
+.RE
+The runtimeconfig transform functions are:
+
+\fBwaiter_status\fR(undefined="")
+.RS 2m
+Returns a short description of the status of a waiter or waiter operation.
+Status will be one of WAITING, SUCCESS, FAILURE, or TIMEOUT.
+
+
+The arguments are:
+
+\fB\f5undefined\fR\fR
+.RS 2m
+Returns this value if the resource status cannot be determined.
+
+.RE
+For example\f5:\fR
+.RS 2m
+\-\-format="table(name, status())"
 
 
 .RE

@@ -43,8 +43,8 @@ class GetIamPolicy(util.ProjectCommand):
 
   @util.HandleHttpError
   def Run(self, args):
-    projects = self.context['projects_client']
-    messages = self.context['projects_messages']
+    projects = util.GetClient()
+    messages = util.GetMessages()
 
     project_ref = self.GetProject(args.id)
     policy_request = messages.CloudresourcemanagerProjectsGetIamPolicyRequest(
