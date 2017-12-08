@@ -73,6 +73,6 @@ class DNS(base.Group):
       log.warn('The --endpoint flag is deprecated and will be removed.  '
                'Set the api_endpoint_overrides/dns property instead.  '
                'e.g. gcloud config set api_endpoint_overrides/dns '
-               'https://www.googleapis.com/dns/v1beta1')
+               'https://www.googleapis.com/dns/v1')
 
     return context

@@ -21,8 +21,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase,
-                    instance_groups_utils.InstanceGroupReferenceMixin):
+class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
   """List Google Compute Engine instances present in managed instance group."""
 
   @staticmethod
@@ -96,7 +95,8 @@ class ListInstancesAlpha(ListInstances):
         parser, multizonal=True)
 
   def CreateGroupReference(self, args):
-    return self.CreateInstanceGroupReference(
+    return instance_groups_utils.CreateInstanceGroupReference(
+        scope_prompter=self, compute=self.compute, resources=self.resources,
         name=args.name, region=args.region, zone=args.zone)
 
   def GetResources(self, args):

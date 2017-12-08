@@ -123,8 +123,7 @@ class AddBackend(base_classes.ReadWriteCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AddBackendAlpha(AddBackend,
-                      instance_groups_utils.InstanceGroupReferenceMixin):
+class AddBackendAlpha(AddBackend):
   """Add a backend to a backend service."""
 
   @staticmethod
@@ -138,7 +137,10 @@ class AddBackendAlpha(AddBackend,
     backend_flags.AddCapacityScalar(parser)
 
   def CreateGroupReference(self, args):
-    return self.CreateInstanceGroupReference(
+    return instance_groups_utils.CreateInstanceGroupReference(
+        scope_prompter=self,
+        compute=self.compute,
+        resources=self.resources,
         name=args.instance_group,
         region=args.instance_group_region,
         zone=args.instance_group_zone,

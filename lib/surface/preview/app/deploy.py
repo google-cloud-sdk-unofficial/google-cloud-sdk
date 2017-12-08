@@ -19,8 +19,6 @@ import argparse
 import json
 import os
 
-from gae_ext_runtime import ext_runtime
-
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import appengine_client
 from googlecloudsdk.api_lib.app import cloud_endpoints
@@ -31,7 +29,6 @@ from googlecloudsdk.api_lib.app import metric_names
 from googlecloudsdk.api_lib.app import util
 from googlecloudsdk.api_lib.app import version_util
 from googlecloudsdk.api_lib.app import yaml_parsing
-from googlecloudsdk.api_lib.app.runtimes import fingerprinter
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import exceptions
@@ -52,9 +49,6 @@ class _AppEngineClients(object):
   def __init__(self, gae_client, api_client):
     self.gae = gae_client
     self.api = api_client
-
-
-DEFAULT_DEPLOYABLE = 'app.yaml'
 
 
 class Deploy(base.SilentCommand):
@@ -169,34 +163,16 @@ your own host, you can run:
     """)
       remote_build = docker_build_property == 'remote'
 
-    config_cleanup = None
-    if args.deployables:
-      app_config = yaml_parsing.AppConfigSet(args.deployables)
+    # Parse existing app.yamls or try to generate a new one if the directory is
+    # empty.
+    if not args.deployables:
+      yaml_path = deploy_command_util.EnsureAppYamlForAppDirectory(os.getcwd())
+      app_config = yaml_parsing.AppConfigSet([yaml_path])
     else:
-      if not os.path.exists(DEFAULT_DEPLOYABLE):
-        console_io.PromptContinue(
-            'Deployment to Google App Engine requires an app.yaml file. '
-            'This command will run `gcloud preview app gen-config` to generate '
-            'an app.yaml file for you in the current directory (if the current '
-            'directory does not contain an App Engine service, please answer '
-            '"no").', cancel_on_no=True)
-        # This generates the app.yaml AND the Dockerfile (and related files).
-        params = ext_runtime.Params(deploy=True)
-        configurator = fingerprinter.IdentifyDirectory(os.getcwd(),
-                                                       params=params)
-        if configurator is None:
-          raise exceptions.NoAppIdentifiedError(
-              'Could not identify an app in the current directory.\n\n'
-              'Please prepare an app.yaml file for your application manually '
-              'and deploy again.')
-        config_cleanup = configurator.GenerateConfigs()
-        log.status.Print('\nCreated [{0}] in the current directory.\n'.format(
-            DEFAULT_DEPLOYABLE))
-      app_config = yaml_parsing.AppConfigSet([DEFAULT_DEPLOYABLE])
+      app_config = yaml_parsing.AppConfigSet(args.deployables)
 
     # If the app has enabled Endpoints API Management features, pass
     # control to the cloud_endpoints handler.
-
     cloud_endpoints.ProcessEndpointsServices(
         [item[1] for item in app_config.Services().items()], project)
 
@@ -255,15 +231,9 @@ your own host, you can run:
       service = services.keys()[0]
       images = {service: args.image_url}
     else:
-      images = deploy_command_util.BuildAndPushDockerImages(services,
-                                                            version,
-                                                            cloudbuild_client,
-                                                            storage_client,
-                                                            code_bucket_ref,
-                                                            self.cli,
-                                                            remote_build,
-                                                            source_contexts,
-                                                            config_cleanup)
+      images = deploy_command_util.BuildAndPushDockerImages(
+          services, version, cloudbuild_client, storage_client, code_bucket_ref,
+          self.cli, remote_build, source_contexts)
 
     deployment_manifests = {}
     if app_config.NonHermeticServices():

@@ -113,8 +113,7 @@ class Delete(base_classes.ZonalDeleter):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(base_classes.BaseAsyncMutator,
-                  instance_groups_utils.InstanceGroupReferenceMixin):
+class DeleteAlpha(base_classes.BaseAsyncMutator):
   """Delete Google Compute Engine managed instance group."""
 
   @staticmethod
@@ -193,7 +192,8 @@ class DeleteAlpha(base_classes.BaseAsyncMutator,
   def CreateRequests(self, args):
     """Returns a list of delete messages for instance group managers."""
     # pylint:disable=too-many-function-args
-    refs = self.CreateInstanceGroupReferences(
+    refs = instance_groups_utils.CreateInstanceGroupReferences(
+        scope_prompter=self, compute=self.compute, resources=self.resources,
         names=args.names, zone=args.zone, region=args.region)
     scope_name = self._GetCommonScopeNameForRefs(refs)
 

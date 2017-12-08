@@ -167,8 +167,7 @@ class CreateBeta(CreateGA):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateGA,
-                  instance_groups_utils.InstanceGroupReferenceMixin):
+class CreateAlpha(CreateGA):
   """Create Google Compute Engine managed instance groups."""
 
   @staticmethod
@@ -177,7 +176,8 @@ class CreateAlpha(CreateGA,
     managed_instance_groups_utils.AddAutohealingArgs(parser)
 
   def CreateGroupReference(self, args):
-    group_ref = self.CreateInstanceGroupReference(
+    group_ref = instance_groups_utils.CreateInstanceGroupReference(
+        scope_prompter=self, compute=self.compute, resources=self.resources,
         name=args.name, region=args.region, zone=args.zone)
     if _IsZonalGroup(group_ref):
       self.WarnForZonalCreation([group_ref])

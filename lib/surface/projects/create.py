@@ -24,6 +24,7 @@ from googlecloudsdk.core import apis
 from googlecloudsdk.core import log
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(util.ProjectCommand, base.CreateCommand):
   """Create a new project.

@@ -80,8 +80,7 @@ class SetAutohealing(base_classes.BaseAsyncMutator):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SetAutohealingAlpha(SetAutohealing,
-                          instance_groups_utils.InstanceGroupReferenceMixin):
+class SetAutohealingAlpha(SetAutohealing):
   """Set autohealing policy of instance group manager."""
 
   @staticmethod
@@ -89,7 +88,8 @@ class SetAutohealingAlpha(SetAutohealing,
     _AddArgs(parser=parser, multizonal=True)
 
   def CreateRequests(self, args):
-    group_ref = self.CreateInstanceGroupReference(
+    group_ref = instance_groups_utils.CreateInstanceGroupReference(
+        scope_prompter=self, compute=self.compute, resources=self.resources,
         name=args.name, region=args.region, zone=args.zone)
     auto_healing_policies = (
         managed_instance_groups_utils.CreateAutohealingPolicies(self, args))

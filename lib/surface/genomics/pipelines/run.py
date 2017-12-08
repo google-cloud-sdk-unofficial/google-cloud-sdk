@@ -64,6 +64,9 @@ class Run(base.Command):
         '--inputs',
         category=base.COMMONLY_USED_FLAGS,
         type=arg_parsers.ArgDict(),
+        action=arg_parsers.FloatingListValuesCatcher(
+            arg_parsers.UpdateAction,
+            switch_value={}),
         help='''Map of input PipelineParameter names to values.
         Used to pass literal parameters to the pipeline, and to specify
         input files in Google Cloud Storage that will have a localCopy
@@ -74,6 +77,9 @@ class Run(base.Command):
         '--outputs',
         category=base.COMMONLY_USED_FLAGS,
         type=arg_parsers.ArgDict(),
+        action=arg_parsers.FloatingListValuesCatcher(
+            arg_parsers.UpdateAction,
+            switch_value={}),
         help='''Map of output PipelineParameter names to values.
         Used to specify output files in Google Cloud Storage that will be
         made from a localCopy. Specified as a comma-separated list:

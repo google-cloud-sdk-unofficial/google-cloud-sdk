@@ -92,7 +92,6 @@ class AbandonInstances(base_classes.BaseAsyncMutator):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AbandonInstancesAlpha(base_classes.BaseAsyncMutator,
-                            instance_groups_utils.InstanceGroupReferenceMixin,
                             instance_groups_utils.InstancesReferenceMixin):
   """Abandon instances owned by a managed instance group."""
 
@@ -114,7 +113,8 @@ class AbandonInstancesAlpha(base_classes.BaseAsyncMutator,
 
   def CreateRequests(self, args):
     errors = []
-    group_ref = self.CreateInstanceGroupReference(
+    group_ref = instance_groups_utils.CreateInstanceGroupReference(
+        scope_prompter=self, compute=self.compute, resources=self.resources,
         name=args.name, region=args.region, zone=args.zone)
     instances = self.CreateInstanceReferences(
         group_ref, args.instances, errors)

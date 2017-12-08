@@ -127,6 +127,13 @@ class SnapshotDisksGA(base_classes.NoOutputAsyncMutator):
         kwargs = {'sourceDiskEncryptionKey': disk_key_or_none}
       else:
         kwargs = {}
+
+      # TODO(user) drop test after 'guestFlush' goes GA
+      if hasattr(args, 'guest_flush') and args.guest_flush:
+        request_kwargs = {'guestFlush': True}
+      else:
+        request_kwargs = {}
+
       request = self.messages.ComputeDisksCreateSnapshotRequest(
           disk=disk_ref.Name(),
           snapshot=self.messages.Snapshot(
@@ -135,7 +142,8 @@ class SnapshotDisksGA(base_classes.NoOutputAsyncMutator):
               **kwargs
           ),
           project=self.project,
-          zone=disk_ref.zone)
+          zone=disk_ref.zone,
+          **request_kwargs)
       requests.append(request)
 
       self._target_to_get_request[disk_ref.SelfLink()] = (
@@ -148,8 +156,8 @@ class SnapshotDisksGA(base_classes.NoOutputAsyncMutator):
     return requests
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class SnapshotDisksAlphaBeta(SnapshotDisksGA):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class SnapshotDisksBeta(SnapshotDisksGA):
   """Create snapshots of Google Compute Engine persistent disks."""
 
   @staticmethod
@@ -158,5 +166,25 @@ class SnapshotDisksAlphaBeta(SnapshotDisksGA):
     csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SnapshotDisksAlpha(SnapshotDisksBeta):
+  """Create snapshots of Google Compute Engine persistent disks."""
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser)
+    csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
+
+    parser.add_argument(
+        '--guest-flush',
+        action='store_true',
+        default=False,
+        help=('Create an application consistent snapshot by informing the OS '
+              'to prepare for the snapshot process. Currently only supported '
+              'on Windows instances using the Volume Shadow Copy Service '
+              '(VSS).'))
+
+
 SnapshotDisksGA.detailed_help = DETAILED_HELP
-SnapshotDisksAlphaBeta.detailed_help = DETAILED_HELP
+SnapshotDisksBeta.detailed_help = DETAILED_HELP
+SnapshotDisksAlpha.detailed_help = DETAILED_HELP

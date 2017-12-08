@@ -19,13 +19,25 @@
 import os
 import sys
 
-_THIRD_PARTY_DIR = os.path.join(os.path.dirname(__file__), 'third_party')
+_GCLOUD_PY_DIR = os.path.dirname(__file__)
+_THIRD_PARTY_DIR = os.path.join(_GCLOUD_PY_DIR, 'third_party')
 
 if os.path.isdir(_THIRD_PARTY_DIR):
   sys.path.insert(0, _THIRD_PARTY_DIR)
 
 
 def main():
+  try:
+    if '_ARGCOMPLETE' in os.environ:
+      # pylint:disable=g-import-not-at-top
+      import googlecloudsdk.command_lib.static_completion.lookup as lookup
+      if lookup.Complete(_GCLOUD_PY_DIR):
+        return
+  # pylint:disable=broad-except
+  except Exception:
+    # Users do not expect to see errors during completion!
+    pass
+
   # pylint:disable=g-import-not-at-top
   try:
     import googlecloudsdk.gcloud_main

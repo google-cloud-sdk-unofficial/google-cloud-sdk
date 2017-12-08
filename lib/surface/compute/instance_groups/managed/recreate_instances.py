@@ -92,8 +92,7 @@ class RecreateInstances(base_classes.BaseAsyncMutator):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class RecreateInstancesAlpha(RecreateInstances,
-                             instance_groups_utils.InstancesReferenceMixin,
-                             instance_groups_utils.InstanceGroupReferenceMixin):
+                             instance_groups_utils.InstancesReferenceMixin):
   """Recreate instances managed by a managed instance group."""
 
   @staticmethod
@@ -102,7 +101,8 @@ class RecreateInstancesAlpha(RecreateInstances,
 
   def CreateRequests(self, args):
     errors = []
-    group_ref = self.CreateInstanceGroupReference(
+    group_ref = instance_groups_utils.CreateInstanceGroupReference(
+        scope_prompter=self, compute=self.compute, resources=self.resources,
         name=args.name, region=args.region, zone=args.zone)
     instances = self.CreateInstanceReferences(group_ref, args.instances, errors)
 

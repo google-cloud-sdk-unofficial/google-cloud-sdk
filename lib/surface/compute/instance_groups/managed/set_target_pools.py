@@ -93,8 +93,7 @@ class SetTargetPools(base_classes.BaseAsyncMutator):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SetTargetPoolsAlpha(SetTargetPools,
-                          instance_groups_utils.InstanceGroupReferenceMixin):
+class SetTargetPoolsAlpha(SetTargetPools):
   """Set target pools of managed instance group."""
 
   @staticmethod
@@ -102,7 +101,8 @@ class SetTargetPoolsAlpha(SetTargetPools,
     _AddArgs(parser=parser, multizonal=True)
 
   def CreateRequests(self, args):
-    group_ref = self.CreateInstanceGroupReference(
+    group_ref = instance_groups_utils.CreateInstanceGroupReference(
+        scope_prompter=self, compute=self.compute, resources=self.resources,
         name=args.name, region=args.region, zone=args.zone)
 
     if group_ref.Collection() == 'compute.instanceGroupManagers':

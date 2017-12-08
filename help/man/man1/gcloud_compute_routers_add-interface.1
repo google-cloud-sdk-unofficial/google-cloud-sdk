@@ -1,0 +1,91 @@
+
+.TH "GCLOUD_COMPUTE_ROUTERS_ADD\-INTERFACE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute routers add\-interface \- add an interface to a router
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute routers add\-interface\fR \fINAME\fR \fB\-\-interface\-name\fR \fIINTERFACE_NAME\fR \fB\-\-vpn\-tunnel\fR \fIVPN_TUNNEL\fR [\fB\-\-ip\-address\fR\ \fIIP_ADDRESS\fR] [\fB\-\-mask\-length\fR\ \fIMASK_LENGTH\fR] [\fB\-\-region\fR\ \fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute routers add\-interface\fR is used to add an interface to a
+router.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR
+.RS 2m
+The name of the router.
+
+
+.RE
+
+.SH "REQUIRED FLAGS"
+
+\fB\-\-interface\-name\fR \fIINTERFACE_NAME\fR
+.RS 2m
+The name of the interface being added.
+
+.RE
+\fB\-\-vpn\-tunnel\fR \fIVPN_TUNNEL\fR
+.RS 2m
+The tunnel of the interface being added.
+
+
+.RE
+
+.SH "OPTIONAL FLAGS"
+
+\fB\-\-ip\-address\fR \fIIP_ADDRESS\fR
+.RS 2m
+The link local address of the router for this interface.
+
+.RE
+\fB\-\-mask\-length\fR \fIMASK_LENGTH\fR
+.RS 2m
+The mask for network used for the server IP address.
+
+.RE
+\fB\-\-region\fR \fIREGION\fR
+.RS 2m
+The region of the router to update. If not specified, you will be prompted to
+select a region.
+
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/region\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/region REGION
+.RE
+
+A list of regions can be fetched by running:
+
+.RS 2m
+$ gcloud compute regions list
+.RE
+
+To unset the property, run:
+
+.RS 2m
+$ gcloud config unset compute/region
+.RE
+
+Alternatively, the region can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_REGION\fR\fR.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

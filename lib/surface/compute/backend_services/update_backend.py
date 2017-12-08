@@ -160,8 +160,7 @@ class UpdateBackend(base_classes.ReadWriteCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateBackendAlpha(UpdateBackend,
-                         instance_groups_utils.InstanceGroupReferenceMixin):
+class UpdateBackendAlpha(UpdateBackend):
   """Update an existing backend in a backend service."""
 
   @staticmethod
@@ -175,7 +174,10 @@ class UpdateBackendAlpha(UpdateBackend,
     backend_flags.AddCapacityScalar(parser)
 
   def CreateGroupReference(self, args):
-    return self.CreateInstanceGroupReference(
+    return instance_groups_utils.CreateInstanceGroupReference(
+        scope_prompter=self,
+        compute=self.compute,
+        resources=self.resources,
         name=args.instance_group,
         region=args.instance_group_region,
         zone=args.instance_group_zone,

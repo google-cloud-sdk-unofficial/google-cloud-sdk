@@ -24,10 +24,20 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.core import http
 from googlecloudsdk.core import log
 
 SERIAL_PORT_GATEWAY = 'ssh-serialport.googleapis.com'
 CONNECTION_PORT = '9600'
+HOST_KEY_URL = ('https://cloud-certs.storage.googleapis.com/'
+                'google-cloud-serialport-host-key.pub')
+DEFAULT_HOST_KEY = ('ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDkOOCaBZVTxzvjJ7+7'
+                    'YonnZOwIZ2Z7azwPC+oHbBCbWNBZAwzs63JQlHLibHG6NiNunFwP/lWs'
+                    '5SpLx5eEdxGL+WQmvtldnBdqJzNE1UHrxPDegysCXxn1fT7KELpLozLh'
+                    'vlfSnWJXbFbDrGB0bTv2U373Zo3BL9XTRf3qthdDEMF3GouUH8pGvitH'
+                    'lwcwO1ulpVB0sTIdB7Bu+YPuo1XSuL2n3tXA9n9S+7kQCoyuXodeBpJo'
+                    'JxzdJeoQXAepLrLA7nl6jRiYZyic0WJeSJm7vmvl1VDAGkyXloNEhBnv'
+                    'oQFQl5aCwcS8UQnzzwMDflQ+JgsynYN08dLIRGcwkJe9')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -36,7 +46,21 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
 
   @staticmethod
   def Args(parser):
-    ssh_utils.BaseSSHCLICommand.Args(parser)
+    # Use BaseSSHCommand args here, since we don't want --plain or
+    # --strict-host-key-checking.
+    ssh_utils.BaseSSHCommand.Args(parser)
+
+    parser.add_argument(
+        '--dry-run',
+        action='store_true',
+        help=('If provided, prints the command that would be run to standard '
+              'out instead of executing it.'))
+
+    # This flag should be hidden for this command, but needs to exist.
+    parser.add_argument(
+        '--plain',
+        action='store_true',
+        help=argparse.SUPPRESS)
 
     user_host = parser.add_argument(
         'user_host',
@@ -97,13 +121,40 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
           'Expected argument of the form [USER@]INSTANCE; received [{0}].'
           .format(args.user_host))
 
+    # Update google_compute_known_hosts file with published host key
+    if args.serial_port_gateway == SERIAL_PORT_GATEWAY:
+      http_client = http.Http()
+      http_response = http_client.request(HOST_KEY_URL)
+      hostname = '[{0}]:{1}'.format(SERIAL_PORT_GATEWAY, CONNECTION_PORT)
+      if http_response[0]['status'] == '200':
+        host_key = http_response[1].strip()
+        ssh_utils.UpdateKnownHostsFile(self.known_hosts_file, hostname,
+                                       host_key, overwrite_keys=True)
+      elif self.IsHostKeyAliasInKnownHosts(hostname):
+        log.warn('Unable to download and update Host Key for [{0}] from [{1}]. '
+                 'Attempting to connect using existing Host Key in [{2}]. If '
+                 'the connection fails, please try again to update the Host '
+                 'Key.'.format(SERIAL_PORT_GATEWAY, HOST_KEY_URL,
+                               self.known_hosts_file))
+      else:
+        ssh_utils.UpdateKnownHostsFile(self.known_hosts_file, hostname,
+                                       DEFAULT_HOST_KEY)
+        log.warn('Unable to download Host Key for [{0}] from [{1}]. To ensure '
+                 'the security of the SSH connetion, gcloud will attempt to '
+                 'connect using a hard-coded Host Key value. If the connection '
+                 'fails, please try again. If the problem persists, try '
+                 'updating gcloud and connecting again.'
+                 .format(SERIAL_PORT_GATEWAY, HOST_KEY_URL))
+
     instance_ref = self.CreateZonalReference(instance, args.zone)
     instance = self.GetInstance(instance_ref)
 
     ssh_args = [self.ssh_executable]
 
-    ssh_args.extend(['-i', self.ssh_key_file])
-    ssh_args.extend(['-o', 'IdentitiesOnly=yes'])
+    ssh_args.extend(self.GetDefaultFlags())
+    if args.serial_port_gateway == SERIAL_PORT_GATEWAY:
+      ssh_args.extend(['-o', 'StrictHostKeyChecking=yes'])
+
     ssh_args.extend(['-p', CONNECTION_PORT])
 
     if args.port:
@@ -137,13 +188,19 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
 ConnectToSerialPort.detailed_help = {
     'brief': 'Connect to the serial port of an instance.',
     'DESCRIPTION': """\
-      *{command}* is a helper command to connect through SSH to the serial
-      console of an instance. It supports connections to up to four serial
-      ports on the instance.
+      *{command}* allows users to connect to, and interact with, a VM's
+      virtual serial port using ssh as the secure, authenticated transport
+      protocol.
 
-      This command creates an SSH connection to a Google gateway that connects
-      to the serial port of the instance. Authentication is done using the
-      same project SSH keys used by the ``gcloud compute ssh'' command.
+      The user must first enable serial port access to a given VM by setting
+      the 'serialPortEnable=true' metadata key-value pair. Setting
+      'serialPortEnable' on the project-level metadata enables serial port
+      access to all VMs in the project.
+
+      This command uses the same SSH key pair as the 'gcloud compute ssh'
+      command and also ensures that the user's public SSH key is present in
+      the project's metadata. If the user does not have a public SSH key,
+      one is generated using ssh-keygen.
       """,
     }
 

@@ -30,8 +30,7 @@ class GetNamedPorts(instance_groups_utils.InstanceGroupGetNamedPorts):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class GetNamedPortsAlpha(instance_groups_utils.InstanceGroupGetNamedPorts,
-                         instance_groups_utils.InstanceGroupReferenceMixin):
+class GetNamedPortsAlpha(instance_groups_utils.InstanceGroupGetNamedPorts):
 
   @staticmethod
   def Args(parser):
@@ -40,7 +39,8 @@ class GetNamedPortsAlpha(instance_groups_utils.InstanceGroupGetNamedPorts,
 
   def GetResources(self, args):
     """Retrieves response with named ports."""
-    group_ref = self.CreateInstanceGroupReference(
+    group_ref = instance_groups_utils.CreateInstanceGroupReference(
+        scope_prompter=self, compute=self.compute, resources=self.resources,
         name=args.name, region=args.region, zone=args.zone,
         zonal_resource_type='instanceGroups',
         regional_resource_type='regionInstanceGroups')

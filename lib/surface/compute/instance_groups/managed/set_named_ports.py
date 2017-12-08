@@ -37,8 +37,7 @@ class SetNamedPorts(instance_groups_utils.InstanceGroupSetNamedPorts):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SetNamedPortsAlpha(instance_groups_utils.InstanceGroupSetNamedPorts,
-                         instance_groups_utils.InstanceGroupReferenceMixin):
+class SetNamedPortsAlpha(instance_groups_utils.InstanceGroupSetNamedPorts):
   """Sets named ports for instance groups."""
 
   @staticmethod
@@ -47,7 +46,8 @@ class SetNamedPortsAlpha(instance_groups_utils.InstanceGroupSetNamedPorts,
         parser=parser, multizonal=True)
 
   def GetGroupReference(self, args):
-    return self.CreateInstanceGroupReference(
+    return instance_groups_utils.CreateInstanceGroupReference(
+        scope_prompter=self, compute=self.compute, resources=self.resources,
         name=args.group, region=args.region, zone=args.zone,
         zonal_resource_type='instanceGroups',
         regional_resource_type='regionInstanceGroups')

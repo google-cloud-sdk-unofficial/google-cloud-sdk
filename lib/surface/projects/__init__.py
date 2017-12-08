@@ -26,7 +26,6 @@ class Projects(base.Group):
   pass
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ProjectsAlpha(base.Group):
   """Manage your projects.

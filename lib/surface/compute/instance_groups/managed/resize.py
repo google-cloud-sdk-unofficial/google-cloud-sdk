@@ -124,8 +124,7 @@ class ResizeBeta(base_classes.BaseAsyncMutator):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ResizeAlpha(Resize,
-                  instance_groups_utils.InstanceGroupReferenceMixin):
+class ResizeAlpha(Resize):
   """Set managed instance group size."""
 
   class ConflictingFlagsError(exceptions.Error):
@@ -137,7 +136,8 @@ class ResizeAlpha(Resize,
     _AddArgs(parser=parser, multizonal=True, creation_retries=True)
 
   def CreateGroupReference(self, args):
-    return self.CreateInstanceGroupReference(
+    return instance_groups_utils.CreateInstanceGroupReference(
+        scope_prompter=self, compute=self.compute, resources=self.resources,
         name=args.name, region=args.region, zone=args.zone)
 
   def CreateRequests(self, args):

@@ -85,8 +85,7 @@ class SetInstanceTemplate(base_classes.BaseAsyncMutator):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SetInstanceTemplateAlpha(
-    SetInstanceTemplate, instance_groups_utils.InstanceGroupReferenceMixin):
+class SetInstanceTemplateAlpha(SetInstanceTemplate):
   """Set an instances template of managed instance group."""
 
   @staticmethod
@@ -94,7 +93,8 @@ class SetInstanceTemplateAlpha(
     _AddArgs(parser=parser, multizonal=True)
 
   def CreateRequests(self, args):
-    group_ref = self.CreateInstanceGroupReference(
+    group_ref = instance_groups_utils.CreateInstanceGroupReference(
+        scope_prompter=self, compute=self.compute, resources=self.resources,
         name=args.name, region=args.region, zone=args.zone)
     template_ref = self.CreateGlobalReference(
         args.template, resource_type='instanceTemplates')

@@ -11,7 +11,7 @@ gcloud compute vpn\-tunnels create \- create a VPN tunnel
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute vpn\-tunnels create\fR \fINAME\fR \fB\-\-peer\-address\fR \fIPEER_ADDRESS\fR \fB\-\-shared\-secret\fR \fISHARED_SECRET\fR \fB\-\-target\-vpn\-gateway\fR \fITARGET_VPN_GATEWAY\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-ike\-version\fR\ \fIIKE_VERSION\fR] [\fB\-\-local\-traffic\-selector\fR\ \fICIDR\fR,[\fICIDR\fR,...]] [\fB\-\-region\fR\ \fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute vpn\-tunnels create\fR \fINAME\fR \fB\-\-peer\-address\fR \fIPEER_ADDRESS\fR \fB\-\-shared\-secret\fR \fISHARED_SECRET\fR \fB\-\-target\-vpn\-gateway\fR \fITARGET_VPN_GATEWAY\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-ike\-version\fR\ \fIIKE_VERSION\fR] [\fB\-\-local\-traffic\-selector\fR\ \fICIDR\fR,[\fICIDR\fR,...]] [\fB\-\-region\fR\ \fIREGION\fR] [\fB\-\-router\fR\ \fIROUTER\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -100,6 +100,11 @@ $ gcloud config unset compute/region
 
 Alternatively, the region can be stored in the environment variable
 \f5\fICLOUDSDK_COMPUTE_REGION\fR\fR.
+
+.RE
+\fB\-\-router\fR \fIROUTER\fR
+.RS 2m
+The Router to use for dynamic routing.
 
 
 .RE

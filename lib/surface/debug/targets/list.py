@@ -26,11 +26,25 @@ class List(base.ListCommand):
   with the Cloud Debugger.
   """
 
+  @staticmethod
+  def Args(parser):
+    parser.add_argument(
+        '--include-inactive', action='store_true', default=False,
+        help="""\
+            If set, include targets which are no longer active.
+        """)
+
   def Run(self, args):
     """Run the list command."""
     project_id = properties.VALUES.core.project.Get(required=True)
     debugger = debug.Debugger(project_id)
-    return debugger.ListDebuggees()
+    # Include stale debuggees whenever including inactive debuggees.
+    # It is likely not important to expose the ability to display stale versions
+    # without displaying all inactive versions. If users request the feature,
+    # we should add a second flag to allow including stale versions that are
+    # not inactive.
+    return debugger.ListDebuggees(include_inactive=args.include_inactive,
+                                  include_stale=args.include_inactive)
 
   def Collection(self):
     return 'debug.targets'

@@ -14,9 +14,13 @@
 
 """List command for gcloud debug logpoints command group."""
 
+import argparse
+import datetime
 
 from googlecloudsdk.api_lib.debug import debug
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import times
 
@@ -49,39 +53,56 @@ class List(base.ListCommand):
         """)
     parser.add_argument(
         '--include-expired', action='store_true', default=False,
+        help=argparse.SUPPRESS)
+    parser.add_argument(
+        '--include-inactive', default=300,
+        type=arg_parsers.BoundedInt(lower_bound=0, unlimited=True),
         help="""\
-            If set, include logpoints which have expired and are no longer
-            active.
+            Include logpoints which failed or expired in the last
+            INCLUDE_INACTIVE seconds. If the value is "unlimited", all failed
+            or expired logpoints will be included.
         """)
-
-  def _ShouldInclude(self, args, logpoint):
-    """Determines if a logpoint should be included in the output.
-
-    Args:
-      args: The command-line arguments.
-      logpoint: a Breakpoint message desciribing a logpoint.
-    Returns:
-      True if the logpoint should be included based on the criteria in args.
-    """
-    # Exclude expired logpoints.
-    if not args.include_expired and logpoint.createTime:
-      create_time = times.ParseDateTime(logpoint.createTime, tzinfo=times.UTC)
-      age = times.Now(times.UTC) - create_time
-      if age.days:
-        return False
-    return True
 
   def Run(self, args):
     """Run the list command."""
+    if args.include_expired:
+      # The (deprecated, hidden) --include-expired argument is equivalent to
+      # --include_inactive=unlimited
+      log.warn('The --include-expired flag has been deprecated. Please use '
+               '--include-inactive=unlimited instead.')
+      args.include_inactive = None
     project_id = properties.VALUES.core.project.Get(required=True)
     debugger = debug.Debugger(project_id)
     debuggee = debugger.FindDebuggee(args.target)
-    return [
-        l for l in debuggee.ListBreakpoints(
-            args.id_or_location_regexp, include_all_users=args.all_users,
-            include_inactive=args.include_expired,
-            restrict_to_type=debugger.LOGPOINT_TYPE)
-        if self._ShouldInclude(args, l)]
+    logpoints = debuggee.ListBreakpoints(
+        args.id_or_location_regexp, include_all_users=args.all_users,
+        include_inactive=(args.include_inactive != 0),
+        restrict_to_type=debugger.LOGPOINT_TYPE)
+
+    # Filter any results more than include_inactive seconds old.
+    # include_inactive may be None, which means we do not want to filter the
+    # results.
+    if args.include_inactive > 0:
+      cutoff_time = (times.Now(times.UTC) -
+                     datetime.timedelta(seconds=args.include_inactive))
+      logpoints = [lp for lp in logpoints if _ShouldInclude(lp, cutoff_time)]
+
+    return logpoints
 
   def Collection(self):
     return 'debug.logpoints'
+
+
+def _ShouldInclude(logpoint, cutoff_time):
+  """Determines if a logpoint should be included in the output.
+
+  Args:
+    logpoint: a Breakpoint object describing a logpoint.
+    cutoff_time: The oldest finalTime to include for completed logpoints.
+  Returns:
+    True if the logpoint should be included based on the criteria in args.
+  """
+  if not logpoint.isFinalState or not logpoint.finalTime:
+    return True
+  final_time = times.ParseDateTime(logpoint.finalTime, times.UTC)
+  return final_time >= cutoff_time

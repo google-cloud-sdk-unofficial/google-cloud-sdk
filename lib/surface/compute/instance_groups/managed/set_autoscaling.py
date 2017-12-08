@@ -105,8 +105,7 @@ class SetAutoscaling(base_classes.BaseAsyncMutator):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SetAutoscalingAlpha(SetAutoscaling,
-                          instance_groups_utils.InstanceGroupReferenceMixin):
+class SetAutoscalingAlpha(SetAutoscaling):
   """Set autoscaling parameters of a managed instance group."""
 
   @staticmethod
@@ -115,7 +114,8 @@ class SetAutoscalingAlpha(SetAutoscaling,
         parser=parser, multizonal_enabled=True, queue_scaling_enabled=True)
 
   def CreateGroupReference(self, args):
-    return self.CreateInstanceGroupReference(
+    return instance_groups_utils.CreateInstanceGroupReference(
+        scope_prompter=self, compute=self.compute, resources=self.resources,
         name=args.name, region=args.region, zone=args.zone)
 
   def GetAutoscalerServiceForGroup(self, group_ref):

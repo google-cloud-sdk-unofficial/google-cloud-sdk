@@ -15,7 +15,7 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.command_lib.compute.backend_services import flags
+from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.core import resources
 
 
@@ -29,10 +29,15 @@ class InvalidResourceError(exceptions.ToolException):
 class Edit(base_classes.BaseEdit):
   """Modify backend services."""
 
-  @staticmethod
-  def Args(parser):
+  _BACKEND_SERVICE_ARG = compute_flags.ResourceArgument(
+      resource_name='backend service',
+      completion_resource_id='compute.backendService',
+      global_collection='compute.backendServices')
+
+  @classmethod
+  def Args(cls, parser):
     base_classes.BaseEdit.Args(parser)
-    flags.AddBackendServiceName(parser)
+    cls._BACKEND_SERVICE_ARG.AddArgument(parser)
 
   @property
   def service(self):
@@ -81,7 +86,8 @@ class Edit(base_classes.BaseEdit):
     )
 
   def CreateReference(self, args):
-    return self.CreateGlobalReference(args.name)
+    return self._BACKEND_SERVICE_ARG.ResolveAsResource(
+        args, self.context['resources'], default_scope='global')
 
   @property
   def reference_normalizers(self):

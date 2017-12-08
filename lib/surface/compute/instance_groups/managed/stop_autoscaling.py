@@ -51,8 +51,7 @@ def _IsZonalGroup(ref):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class StopAutoscaling(base_classes.BaseAsyncMutator,
-                      instance_groups_utils.InstanceGroupReferenceMixin):
+class StopAutoscaling(base_classes.BaseAsyncMutator):
   """Stop autoscaling a managed instance group."""
 
   @property
@@ -123,7 +122,8 @@ class StopAutoscalingAlpha(StopAutoscaling):
     _AddArgs(parser=parser, multizonal=True)
 
   def CreateGroupReference(self, args):
-    return self.CreateInstanceGroupReference(
+    return instance_groups_utils.CreateInstanceGroupReference(
+        scope_prompter=self, compute=self.compute, resources=self.resources,
         name=args.name, region=args.region, zone=args.zone)
 
   def GetAutoscalerServiceForGroup(self, group_ref):

@@ -101,8 +101,7 @@ class RemoveBackend(base_classes.ReadWriteCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RemoveBackendAlpha(RemoveBackend,
-                         instance_groups_utils.InstanceGroupReferenceMixin):
+class RemoveBackendAlpha(RemoveBackend):
   """Remove a backend from a backend service.
 
   *{command}* is used to remove a backend from a backend
@@ -121,7 +120,10 @@ class RemoveBackendAlpha(RemoveBackend,
     flags.AddBackendServiceName(parser)
 
   def CreateGroupReference(self, args):
-    return self.CreateInstanceGroupReference(
+    return instance_groups_utils.CreateInstanceGroupReference(
+        scope_prompter=self,
+        compute=self.compute,
+        resources=self.resources,
         name=args.instance_group,
         region=args.instance_group_region,
         zone=args.instance_group_zone,
