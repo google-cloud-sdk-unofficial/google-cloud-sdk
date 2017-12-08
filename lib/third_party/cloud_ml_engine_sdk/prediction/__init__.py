@@ -17,11 +17,11 @@
 from _interfaces import Model
 from _interfaces import PredictionClient
 
+from prediction_lib import BaseModel
 from prediction_lib import columnarize
 from prediction_lib import COLUMNARIZE_TIME
 from prediction_lib import create_model
 from prediction_lib import decode_base64
-from prediction_lib import DefaultModel
 from prediction_lib import encode_base64
 from prediction_lib import ENGINE
 from prediction_lib import INPUTS_KEY
@@ -35,4 +35,6 @@ from prediction_lib import SESSION_RUN_ENGINE_NAME
 from prediction_lib import SESSION_RUN_TIME
 from prediction_lib import SessionClient
 from prediction_lib import Stats
+from prediction_lib import TensorflowModel
 from prediction_lib import Timer
+from prediction_lib import XGBoostModel

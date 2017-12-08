@@ -73,7 +73,8 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
       HttpException: An http error response was received while executing api
           request.
     """
-    type_provider_ref = type_providers.GetReference(args.provider_name)
+    type_provider_ref = type_providers.GetReference(self.resources,
+                                                    args.provider_name)
     project = type_provider_ref.project
     name = type_provider_ref.typeProvider
     get_request = self.messages.DeploymentmanagerTypeProvidersGetRequest(
@@ -92,7 +93,9 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
                                                descriptorUrl=(args.
                                                               descriptor_url),
                                                labels=labels)
-    type_providers.AddOptions(args.api_options_file, type_provider)
+    type_providers.AddOptions(self.messages,
+                              args.api_options_file,
+                              type_provider)
 
     update_request = self.messages.DeploymentmanagerTypeProvidersUpdateRequest(
         project=project,

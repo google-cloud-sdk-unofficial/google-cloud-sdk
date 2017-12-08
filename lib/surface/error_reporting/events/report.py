@@ -28,7 +28,10 @@ class Report(base.Command):
   The required arguments are a service name and either an
   error-file containing details of an error or an inline error message.
 
-  Guidelines on formatting error messages can be found at
+  The error message must contain a header (typically consisting of the
+  exception type name and an error message) and an exception stack trace in one
+  of the supported programming languages and formats. Details about supported
+  languages and formats can be found at
   https://cloud.google.com/error-reporting/docs/formatting-error-messages
 
   ## EXAMPLES
@@ -107,4 +110,3 @@ class Report(base.Command):
     error_event.ReportEvent(error_message, service, service_version, project)
 
     log.status.Print('Your error has been reported.')
-

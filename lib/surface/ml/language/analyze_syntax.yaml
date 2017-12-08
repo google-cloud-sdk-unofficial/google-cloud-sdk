@@ -18,7 +18,11 @@
     method: analyzeSyntax
 
   arguments:
-    _COMMON_: arguments
+    additional_arguments_hook: googlecloudsdk.command_lib.ml.language.flags:GetContentFlagsGroup
+    params:
+      - _COMMON_: args.content
+      - _COMMON_: args.language
+      - _COMMON_: args.encoding
 
   output:
     format: json

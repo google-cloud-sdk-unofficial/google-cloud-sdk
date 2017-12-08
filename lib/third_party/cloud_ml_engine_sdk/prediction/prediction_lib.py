@@ -17,7 +17,7 @@ Includes (from the Cloud ML SDK):
 - _predict_lib
 
 Important changes:
-- Remove interfaces for DefaultModel (they don't change behavior).
+- Remove interfaces for TensorflowModel (they don't change behavior).
 - Set from_client(skip_preprocessing=True) and remove the pre-processing code.
 """
 import base64
@@ -30,10 +30,8 @@ import os
 import pydoc  # used for importing python classes from their FQN
 import timeit
 
-
-
 from _interfaces import Model
-
+from enum import Enum
 import numpy as np
 
 import tensorflow.contrib   # pylint: disable=unused-import
@@ -45,16 +43,27 @@ from tensorflow.python.saved_model import tag_constants
 
 
 # --------------------------
-# prediction._prediction_lib
+# prediction.prediction_lib
 # --------------------------
+class UserClassType(Enum):
+  model_class = "model_class"
+  processor_class = "processor_class"
+
 
 INPUTS_KEY = "inputs"
 OUTPUTS_KEY = "outputs"
+# Keys for the name of the methods that the user provided `Processor`
+# class should implement.
+PREPROCESS_KEY = "preprocess"
+POSTPROCESS_KEY = "postprocess"
+FROM_MODEL_KEY = "from_model_path"
 
 ENGINE = "Prediction-Engine"
 PREPROCESS_TIME = "Prediction-Preprocess-Time"
+POSTPROCESS_TIME = "Prediction-Postprocess-Time"
 COLUMNARIZE_TIME = "Prediction-Columnarize-Time"
 UNALIAS_TIME = "Prediction-Unalias-Time"
+ENCODE_TIME = "Prediction-Encode-Time"
 ENGINE_RUN_TIME = "Prediction-Engine-Run-Time"
 SESSION_RUN_TIME = "Prediction-Session-Run-Time"
 ALIAS_TIME = "Prediction-Alias-Time"
@@ -80,6 +89,8 @@ class PredictionError(Exception):
       message="There was a problem processing the outputs", code=3)
   INVALID_USER_CODE = PredictionErrorType(
       message="There was a problem processing the user code", code=4)
+  FAILED_TO_ENCODE = PredictionErrorType(
+      message="Prediction failed during encoding instances", code=5)
   # When adding new exception, please update the ERROR_MESSAGE_ list as well as
   # unittest.
 
@@ -269,6 +280,64 @@ def rowify(columns):
            for name, output in columns.iteritems()}
 
 
+class BaseModel(object):
+  """The base definition of a Model interface.
+  """
+
+  def __init__(self, client):
+    """Constructs a BaseModel.
+
+    Args:
+      client: An instance of PredictionClient for performing prediction.
+    """
+    self._client = client
+    self._user_processor = None
+
+  def preprocess(self, instances, stats=None):
+    """Runs the preprocessing function on the instances.
+
+    Args:
+      instances: list of instances as provided to the predict() method.
+      stats: Stats object for recording timing information.
+
+    Returns:
+      A new list of preprocessed instances. Each instance is as described
+      in the predict() method.
+    """
+    pass
+
+  def postprocess(self, predicted_output, original_input=None, stats=None):
+    """Runs the postprocessing function on the instances.
+
+    Args:
+      predicted_output: list of instances returned by the predict() method on
+        preprocessed instances.
+       original_input: List of instances, before any pre-processing was applied.
+      stats: Stats object for recording timing information.
+
+    Returns:
+      A new list of postprocessed instances.
+    """
+    pass
+
+  def predict(self, instances, stats=None):
+    """Runs preprocessing, predict, and postprocessing on the input."""
+
+    stats = stats or Stats()
+
+    with stats.time(PREPROCESS_TIME):
+      preprocessed = self.preprocess(instances, stats)
+    with stats.time(ENGINE_RUN_TIME):
+      predicted_outputs = self._client.predict(preprocessed, stats)
+    with stats.time(POSTPROCESS_TIME):
+      postprocessed = self.postprocess(
+          predicted_outputs, original_input=instances, stats=stats)
+    return instances, postprocessed
+
+  def signature(self):
+    pass
+
+
 # TODO(b/34686738): when we no longer load the model to get the signature
 # consider making this a named constructor on SessionClient.
 def load_model(
@@ -422,20 +491,20 @@ class SessionClient(object):
 def create_model(client, model_path, **kwargs):
   """Creates and returns the appropriate model.
 
-  Creates and returns the DefaultModel if no user specified model is
+  Creates and returns the TensorflowModel if no user specified model is
   provided. Otherwise, the user specified model is imported, created, and
   returned.
 
   Args:
     client: An instance of ModelServerClient for performing prediction.
     model_path: the path to either session_bundle or SavedModel
-    **kwargs: keyword arguments to pass to DefaultModel.from_client.
+    **kwargs: keyword arguments to pass to TensorflowModel.from_client.
 
   Returns:
     An instance of the appropriate model class.
   """
   return (load_model_class(client, model_path) or
-          DefaultModel.from_client(client, model_path, **kwargs))
+          TensorflowModel.from_client(client, model_path, **kwargs))
 
 
 def load_model_class(client, model_path):
@@ -455,6 +524,28 @@ def load_model_class(client, model_path):
       (1) the user provided python model class cannot be found
       (2) if the loaded class does not implement the Model interface.
   """
+  model_class = load_custom_class(UserClassType.model_class)
+  if not model_class:
+    return None
+  model_instance = model_class.from_client(client, model_path)
+  _validate_model_class(model_instance)
+  return model_instance
+
+
+def load_custom_class(class_type):
+  """Loads in the user specified custom class.
+
+  Args:
+    class_type: An instance of UserClassType specifying what type of class to
+    load.
+
+  Returns:
+    An instance of a class specified by the user in the `create_version_request`
+    or None if no such class was specified.
+
+  Raises:
+    PredictionError: if the user provided python class cannot be found.
+  """
   create_version_json = os.environ.get("create_version_request")
   if not create_version_json:
     return None
@@ -464,22 +555,21 @@ def load_model_class(client, model_path):
   version = create_version_request.get("version")
   if not version:
     return None
-  model_class_name = version.get("model_class")
-  if not model_class_name:
+  class_name = version.get(class_type.name)
+  if not class_name:
     return None
-  model_class = pydoc.locate(model_class_name)
+  custom_class = pydoc.locate(class_name)
   # TODO(b/37749453): right place to generate errors?
-  if not model_class:
+  if not custom_class:
     package_uris = [str(s) for s in version.get("package_uris")]
     raise PredictionError(PredictionError.INVALID_USER_CODE,
                           "%s cannot be found. Please make sure "
-                          "(1) model_class is the fully qualified function "
-                          "name, and (2) model_class uses the correct package "
+                          "(1) %s is the fully qualified function "
+                          "name, and (2) %s uses the correct package "
                           "name as provided by the package_uris: %s" %
-                          (model_class_name, package_uris))
-  model_instance = model_class.from_client(client, model_path)
-  _validate_model_class(model_instance)
-  return model_instance
+                          (class_name, class_type.name, class_type.name,
+                           package_uris))
+  return custom_class
 
 
 def _validate_model_class(user_class):
@@ -520,8 +610,47 @@ def _validate_model_class(user_class):
                           (user_class_name, model_signature, user_signature))
 
 
-class DefaultModel(object):
-  """The default implementation of the Model interface.
+# TODO(user): Make this generic so it can load any Processor class, not just
+# from the create_version_request.
+def _new_processor_class(model_path=None):
+  user_processor_cls = load_custom_class(UserClassType.processor_class)
+  if user_processor_cls:
+    user_preprocess_fn = getattr(user_processor_cls, PREPROCESS_KEY, None)
+    user_postprocess_fn = getattr(user_processor_cls, POSTPROCESS_KEY, None)
+    user_from_model_path_fn = getattr(user_processor_cls, FROM_MODEL_KEY, None)
+
+    _validate_fn_signature(user_preprocess_fn, ["self", "instances"],
+                           PREPROCESS_KEY, user_processor_cls.__name__)
+    _validate_fn_signature(user_postprocess_fn, ["self", "instances"],
+                           POSTPROCESS_KEY, user_processor_cls.__name__)
+    _validate_fn_signature(user_from_model_path_fn, ["cls", "model_path"],
+                           FROM_MODEL_KEY, user_processor_cls.__name__)
+    if user_from_model_path_fn:
+      return user_from_model_path_fn(model_path)  # pylint: disable=not-callable
+    # Call the constructor if no `from_model_path` method provided.
+    return user_processor_cls()
+
+
+def _validate_fn_signature(fn, required_arg_names, expected_fn_name, cls_name):
+  if not fn:
+    return
+  if not callable(fn):
+    raise PredictionError(
+        PredictionError.INVALID_USER_CODE,
+        "The provided %s function in the Processor class "
+        "%s is not callable." % (expected_fn_name, cls_name))
+  for arg in required_arg_names:
+    if arg not in inspect.getargspec(fn).args:
+      raise PredictionError(
+          PredictionError.INVALID_USER_CODE,
+          "The provided %s function in the Processor class"
+          "has an invalid signature. It should take %s as arguments but"
+          "takes %s" %
+          (fn.__name__, required_arg_names, inspect.getargspec(fn).args))
+
+
+class TensorflowModel(BaseModel):
+  """The default implementation of the Model interface that uses TensorFlow.
 
   This implementation optionally performs preprocessing and postprocessing
   using the provided functions. These functions accept a single instance
@@ -530,7 +659,7 @@ class DefaultModel(object):
   """
 
   def __init__(self, client, preprocess_fn=None, postprocess_fn=None):
-    """Constructs a DefaultModel.
+    """Constructs a TensorflowModel.
 
     Args:
       client: An instance of ModelServerClient for performing prediction.
@@ -539,11 +668,11 @@ class DefaultModel(object):
       postprocess_fn: a function to run on each instance after calling predict,
           if this parameter is not None. See class docstring.
     """
-    self._client = client
+    super(TensorflowModel, self).__init__(client)
     self._preprocess_fn = preprocess_fn
     self._postprocess_fn = postprocess_fn
 
-  def _get_columns(self, instances):
+  def _get_columns(self, instances, stats):
     """Columnarize the instances, appending input_name, if necessary.
 
     Instances are the same instances passed to the predict() method. Since
@@ -556,34 +685,32 @@ class DefaultModel(object):
 
     Args:
       instances: the list of instances as provided to the predict() method.
+      stats: Stats object for recording timing information.
 
     Returns:
       A dictionary mapping input names to their values.
+
+    Raises:
+      PredictionError: if an error occurs during prediction.
     """
-    if len(self._client.signature.inputs) == 1:
-      input_name = self._client.signature.inputs.keys()[0]
-      return {input_name: instances}
-    return columnarize(instances)
-
-  def _preprocess(self, instances):
-    """Runs the preprocessing function on the instances.
-
-    Args:
-      instances: list of instances as provided to the predict() method.
-
-    Returns:
-      A new list of preprocessed instances. Each instance is as described
-      in the predict() method.
-    """
-    if not self._preprocess_fn:
-      return instances
-
-    try:
-      return [self._preprocess_fn(i).SerializeToString() for i in instances]
-    except Exception as e:
-      logging.error("Exception during preprocessing: " + str(e))
-      raise PredictionError(PredictionError.INVALID_INPUTS,
-                            "Exception during preprocessing: " + str(e))
+    with stats.time(COLUMNARIZE_TIME):
+      if len(self._client.signature.inputs) == 1:
+        input_name = self._client.signature.inputs.keys()[0]
+        columns = {input_name: instances}
+      else:
+        columns = columnarize(instances)
+      for k, v in columns.iteritems():
+        if k not in self._client.signature.inputs.keys():
+          raise PredictionError(
+              PredictionError.INVALID_INPUTS,
+              "Unexpected tensor name: %s" % k)
+        # Detect whether or not the user omits an input in one or more inputs.
+        # TODO(b/34686738): perform this check in columnarize?
+        if isinstance(v, list) and len(v) != len(instances):
+          raise PredictionError(
+              PredictionError.INVALID_INPUTS,
+              "Input %s was missing in at least one input instance." % k)
+    return columns
 
   # TODO(b/34686738): can this be removed?
   def need_preprocess(self):
@@ -603,8 +730,12 @@ class DefaultModel(object):
       return dtype == dtypes.string.as_datatype_enum
     return False
 
+  def preprocess(self, instances, stats):
+    preprocessed = self._maybe_preprocess(instances)
+    return self._get_columns(preprocessed, stats)
+
   # TODO(b/35704445): address the preprocessing code issue.
-  def maybe_preprocess(self, instances):
+  def _maybe_preprocess(self, instances):
     """Preprocess the instances if necessary."""
     # The instances should be already (b64-) decoded here.
     if not self.is_single_input():
@@ -635,58 +766,35 @@ class DefaultModel(object):
     if not isinstance(instances, list):
       instances = [instances]
     instances = [parse_single_tensor(x, tensor_name) for x in instances]
-    preprocessed = self._preprocess(instances)
-    result = list(preprocessed)
-    return result
+    if not self._preprocess_fn:
+      return instances
+    try:
+      preprocessed = list([
+          self._preprocess_fn(i).SerializeToString() for i in instances
+      ])
+    except Exception as e:
+      logging.error("Exception during preprocessing: " + str(e))
+      raise PredictionError(PredictionError.INVALID_INPUTS,
+                            "Exception during preprocessing: " + str(e))
+    return preprocessed
 
-  def predict(self, instances, stats=None):
-    """Returns predictions for the provided instances.
+  def postprocess(self, predicted_output, original_input=None, stats=None):
+    """Performs the necessary transformations on the prediction results.
 
-    The inputs to this function are a list of instances on which to perform
-    prediction (row-based data). However, the prediction engines expect a map
-    from input name to a batch of values for that input (column-based data).
-    Likewise, the output of the prediction engines is a map from output name
-    to the batch of values for that output, but this function returns a list,
-    one element per batch. Therefore, this function:
-
-      - Performs preprocessing, if necessary
-      - Columnarizes the data to send to the prediction engine
-      - Performs prediction
-      - Rowifies the result of prediction.
-
-    See the API for a description of the format:
-
-    https://cloud.google.com/ml/reference/rest/v1beta1/projects/predict
+    The transformations include rowifying the predicted results, and also
+    making sure that each input/output is a dict mapping input/output alias to
+    the value for that input/output.
 
     Args:
-      instances: list of instances, as described in the API.
+      predicted_output: list of instances returned by the predict() method on
+        preprocessed instances.
+      original_input: List of instances, before any pre-processing was applied.
       stats: Stats object for recording timing information.
 
     Returns:
-      A two-element tuple (inputs, outputs). Both inputs and outputs are
-      lists. Each input/output is a dict mapping input/output alias to the
-      value for that input/output.
-
-    Raises:
-      PredictionError: if an error occurs during prediction.
+      A list which is a dict mapping output alias to the output.
     """
     stats = stats or Stats()
-    with stats.time(PREPROCESS_TIME):
-      preprocessed = self.maybe_preprocess(instances)
-
-    with stats.time(COLUMNARIZE_TIME):
-      columns = self._get_columns(preprocessed)
-      for k, v in columns.iteritems():
-        # Detect whether or not the user omits an input in one or more inputs.
-        # TODO(b/34686738): perform this check in columnarize?
-        if isinstance(v, list) and len(v) != len(preprocessed):
-          raise PredictionError(
-              PredictionError.INVALID_INPUTS,
-              "Input %s was missing in at least one input instance." % k)
-
-    with stats.time(ENGINE_RUN_TIME):
-      outputs = self._client.predict(columns, stats)
-
     with stats.time(ROWIFY_TIME):
       # When returned element only contains one result (batch size == 1),
       # tensorflow's session.run() will return a scalar directly instead of a
@@ -702,19 +810,32 @@ class DefaultModel(object):
           return np.expand_dims(value, axis=0)
         else:
           return value
-      outputs = {alias: listify(val) for alias, val in outputs.iteritems()}
-      outputs = rowify(outputs)
+
+      postprocessed_outputs = {
+          alias: listify(val)
+          for alias, val in predicted_output.iteritems()
+      }
+      postprocessed_outputs = rowify(postprocessed_outputs)
 
     # TODO(b/34686738): this should probably be taken care of directly
     # in batch_prediction.py, or at least a helper method. That would
     # allow us to avoid processing the inputs when not necessary.
     with stats.time(INPUT_PROCESSING_TIME):
-      inputs = instances
-      if self.is_single_input:
+      if self.is_single_input():
         input_name = self._client.signature.inputs.keys()[0]
-        inputs = [{input_name: i} for i in inputs]
+        original_input = [{input_name: i} for i in original_input]
 
-    return inputs, outputs
+    with stats.time(ENCODE_TIME):
+      try:
+        postprocessed_outputs = encode_base64(
+            list(postprocessed_outputs), self._client.signature.outputs)
+      except (PredictionError, ValueError, Exception) as e:
+        logging.error("Encode base64 failed: %s", e)
+        raise PredictionError(
+            PredictionError.FAILED_TO_ENCODE,
+            "Prediction failed during encoding instances: %s" % e.error_detail)
+
+      return postprocessed_outputs
 
   # TODO(b/34686738): use signatures instead; remove this method.
   def outputs_type_map(self):
@@ -727,7 +848,7 @@ class DefaultModel(object):
   #   default_model_and_preprocessor.
   @classmethod
   def from_client(cls, client, model_path, **unused_kwargs):
-    """Creates a DefaultModel from a SessionClient and model data files."""
+    """Creates a TensorflowModel from a SessionClient and model data files."""
     del model_path  # Unused in from_client
     preprocess_fn = None
     return cls(client, preprocess_fn)
@@ -735,6 +856,37 @@ class DefaultModel(object):
   @property
   def signature(self):
     return self._client.signature
+
+
+class XGBoostModel(BaseModel):
+  """The implementation of XGboost Model.
+  """
+
+  def __init__(self, client):
+    super(XGBoostModel, self).__init__(client)
+    self._user_processor = _new_processor_class()
+    if self._user_processor and hasattr(self._user_processor, PREPROCESS_KEY):
+      self._preprocess = self._user_processor.preprocess
+    else:
+      self._preprocess = self._null_processor
+
+    if self._user_processor and hasattr(self._user_processor, PREPROCESS_KEY):
+      self._postprocess = self._user_processor.postprocess
+    else:
+      self._postprocess = self._null_processor
+
+  def preprocess(self, instances, stats=None):
+    return self._preprocess(instances)
+
+  def postprocess(self, predicted_outputs, original_input=None, stats=None):
+    return self._postprocess(predicted_outputs)
+
+  def _null_processor(self, instances):
+    return instances
+
+  @property
+  def signature(self):
+    return None
 
 
 def decode_base64(data):

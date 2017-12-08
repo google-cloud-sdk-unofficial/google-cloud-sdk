@@ -15,6 +15,7 @@
 
 from googlecloudsdk.api_lib.tasks import tasks
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.tasks import flags
 from googlecloudsdk.command_lib.tasks import parsers
 from googlecloudsdk.core import log
 
@@ -24,10 +25,11 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    parsers.AddTaskResourceArgs(parser, 'to delete')
+    flags.AddTaskResourceArgs(parser, 'to delete')
 
   def Run(self, args):
     tasks_client = tasks.Tasks()
-    task_ref = parsers.ParseTask(args.task, args.queue)
+    queue_ref = parsers.ParseQueue(args.queue)
+    task_ref = parsers.ParseTask(args.task, queue_ref)
     tasks_client.Delete(task_ref)
     log.DeletedResource(task_ref.Name(), kind='task')

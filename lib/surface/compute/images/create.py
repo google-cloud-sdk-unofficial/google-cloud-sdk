@@ -40,10 +40,10 @@ def _Args(parser, release_track):
 
   labels_util.AddCreateLabelsFlags(parser)
   flags.MakeForceArg().AddToParser(parser)
+  flags.AddCloningImagesArgs(parser, sources_group)
 
   # Alpha and Beta Args
   if release_track in (base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA):
-    flags.AddCloningImagesArgs(parser, sources_group)
     # Deprecated as of Aug 2017.
     flags.MakeForceCreateArg().AddToParser(parser)
 
@@ -92,9 +92,9 @@ class Create(base.CreateCommand):
           'You cannot specify [--source-disk-zone] unless you are specifying '
           '[--source-disk].')
 
-    source_image_project = getattr(args, 'source_image_project', None)
-    source_image = getattr(args, 'source_image', None)
-    source_image_family = getattr(args, 'source_image_family', None)
+    source_image_project = args.source_image_project
+    source_image = args.source_image
+    source_image_family = args.source_image_family
 
     if source_image_project and not (source_image or source_image_family):
       raise exceptions.ToolException(

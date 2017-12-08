@@ -63,6 +63,7 @@ DETAILED_HELP = {
 def _CommonArgs(parser,
                 release_track,
                 support_public_dns,
+                support_public_ptr,
                 support_network_tier,
                 enable_regional=False,
                 support_local_ssd_size=False,
@@ -93,6 +94,8 @@ def _CommonArgs(parser,
   instances_flags.AddImageArgs(parser)
   if support_public_dns:
     instances_flags.AddPublicDnsArgs(parser, instance=True)
+  if support_public_ptr:
+    instances_flags.AddPublicPtrArgs(parser, instance=True)
   if support_network_tier:
     instances_flags.AddNetworkTierArgs(parser, instance=True)
 
@@ -117,6 +120,7 @@ class Create(base.CreateCommand):
   """Create Google Compute Engine virtual machine instances."""
 
   _support_public_dns = False
+  _support_public_ptr = False
   _support_network_tier = False
 
   @classmethod
@@ -125,6 +129,7 @@ class Create(base.CreateCommand):
         parser,
         release_track=base.ReleaseTrack.GA,
         support_public_dns=cls._support_public_dns,
+        support_public_ptr=cls._support_public_ptr,
         support_network_tier=cls._support_network_tier)
 
   def Collection(self):
@@ -206,6 +211,8 @@ class Create(base.CreateCommand):
     else:
       if self._support_public_dns is True:
         instances_flags.ValidatePublicDnsFlags(args)
+      if self._support_public_ptr is True:
+        instances_flags.ValidatePublicPtrFlags(args)
 
       if (skip_defaults and not args.IsSpecified('network') and
           not args.IsSpecified('subnet') and
@@ -502,6 +509,7 @@ class CreateBeta(Create):
   """Create Google Compute Engine virtual machine instances."""
 
   _support_public_dns = False
+  _support_public_ptr = True
   _support_network_tier = False
 
   @classmethod
@@ -510,6 +518,7 @@ class CreateBeta(Create):
         parser,
         release_track=base.ReleaseTrack.BETA,
         support_public_dns=cls._support_public_dns,
+        support_public_ptr=cls._support_public_ptr,
         support_network_tier=cls._support_network_tier)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
 
@@ -519,6 +528,7 @@ class CreateAlpha(Create):
   """Create Google Compute Engine virtual machine instances."""
 
   _support_public_dns = True
+  _support_public_ptr = True
   _support_network_tier = True
 
   @classmethod
@@ -528,6 +538,7 @@ class CreateAlpha(Create):
         parser,
         release_track=base.ReleaseTrack.ALPHA,
         support_public_dns=cls._support_public_dns,
+        support_public_ptr=cls._support_public_ptr,
         support_network_tier=cls._support_network_tier,
         enable_regional=True,
         support_local_ssd_size=True,

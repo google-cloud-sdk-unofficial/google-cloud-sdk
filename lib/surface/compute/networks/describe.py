@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for describing networks."""
-from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import networks_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.networks import flags
+from googlecloudsdk.core.resource import resource_projector
 
 
 class Describe(base.DescribeCommand):
@@ -44,10 +44,9 @@ class Describe(base.DescribeCommand):
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-    request = client.messages.ComputeNetworksGetRequest(
-        **network_ref.AsDict())
+    request = client.messages.ComputeNetworksGetRequest(**network_ref.AsDict())
+    response = client.MakeRequests(
+        [(client.apitools_client.networks, 'Get', request)])
 
-    result = client.MakeRequests([(client.apitools_client.networks, 'Get',
-                                   request)])[0]
-
-    return next(networks_utils.AddMode([encoding.MessageToDict(result)]))
+    resource_dict = resource_projector.MakeSerializable(response[0])
+    return networks_utils.AddModesForListFormat(resource_dict)

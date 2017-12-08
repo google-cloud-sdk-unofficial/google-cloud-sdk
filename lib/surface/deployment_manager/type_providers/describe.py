@@ -16,7 +16,6 @@
 
 from googlecloudsdk.api_lib.deployment_manager import dm_base
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.deployment_manager import dm_v2beta_base
 from googlecloudsdk.command_lib.deployment_manager import type_providers
 from googlecloudsdk.core import properties
 
@@ -58,7 +57,7 @@ class Describe(base.DescribeCommand, dm_base.DmCommand):
           request.
       InvalidArgumentException: The requested type provider could not be found.
     """
-    type_provider_ref = dm_v2beta_base.GetResources().Parse(
+    type_provider_ref = self.resources.Parse(
         args.provider_name,
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='deploymentmanager.typeProviders')

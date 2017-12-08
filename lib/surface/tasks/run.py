@@ -15,6 +15,7 @@
 
 from googlecloudsdk.api_lib.tasks import tasks
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.tasks import flags
 from googlecloudsdk.command_lib.tasks import parsers
 
 
@@ -23,9 +24,10 @@ class Run(base.Command):
 
   @staticmethod
   def Args(parser):
-    parsers.AddTaskResourceArgs(parser, 'to run')
+    flags.AddTaskResourceArgs(parser, 'to run')
 
   def Run(self, args):
     tasks_client = tasks.Tasks()
-    task_ref = parsers.ParseTask(args.task, args.queue)
+    queue_ref = parsers.ParseQueue(args.queue)
+    task_ref = parsers.ParseTask(args.task, queue_ref)
     return tasks_client.Run(task_ref)

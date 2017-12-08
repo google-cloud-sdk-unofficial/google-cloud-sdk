@@ -19,7 +19,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.app import firewall_rules_util
 from googlecloudsdk.command_lib.app import flags
 from googlecloudsdk.core import log
-from googlecloudsdk.core import resources
 
 
 class Create(base.CreateCommand):
@@ -45,10 +44,7 @@ class Create(base.CreateCommand):
     flags.AddFirewallRulesFlags(parser, required=True)
 
   def Run(self, args):
-    client = api_client.AppengineFirewallApiClient.GetApiClient('v1beta')
-    registry = resources.REGISTRY.Clone()
-    registry.RegisterApiByName('appengine', 'v1beta')
-
+    client = api_client.GetApiClientForTrack(self.ReleaseTrack())
     priority = firewall_rules_util.ParsePriority(args.priority)
 
     if priority == firewall_rules_util.DEFAULT_RULE_PRIORITY:

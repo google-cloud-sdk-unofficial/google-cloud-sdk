@@ -1,0 +1,28 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Classifies input document into categories.
+    DESCRIPTION: |
+      Classifies input document into categories. Returns a list of categories
+      representing the document. Only the most relevant categories a document
+      are returned e.g. if  `/Science` and `/Science/Astronomy` both apply to a
+      document, then only the `/Science/Astronomy` category is returned, as it
+      is the more specific result.
+
+      {service_account_help}
+
+      Currently only English is supported for this feature.
+    service_account_help: !COMMON help_text.service_account_help
+
+  request:
+    _COMMON_: request
+    method: classifyText
+
+  arguments:
+    additional_arguments_hook: googlecloudsdk.command_lib.ml.language.flags:GetContentFlagsGroup
+    params:
+      - _COMMON_: args.content
+      - _COMMON_: args.language
+
+  output:
+    format: json

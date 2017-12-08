@@ -15,6 +15,7 @@
 
 from googlecloudsdk.api_lib.tasks import queues
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.tasks import flags
 from googlecloudsdk.command_lib.tasks import parsers
 
 
@@ -23,7 +24,7 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    parsers.AddQueueResourceArg(parser, 'to describe')
+    flags.AddQueueResourceArg(parser, 'to describe')
 
   def Run(self, args):
     queues_client = queues.Queues()

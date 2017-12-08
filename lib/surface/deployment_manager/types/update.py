@@ -69,7 +69,7 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
       HttpException: An http error response was received while executing api
           request.
     """
-    composite_type_ref = composite_types.GetReference(args.name)
+    composite_type_ref = composite_types.GetReference(self.resources, args.name)
     get_request = self.messages.DeploymentmanagerCompositeTypesGetRequest(
         project=composite_type_ref.project,
         compositeType=args.name)

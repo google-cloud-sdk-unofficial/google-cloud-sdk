@@ -15,12 +15,9 @@
 
 import textwrap
 
-from apitools.base.py import encoding
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import networks_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.networks import flags
 from googlecloudsdk.command_lib.compute.networks import network_utils
 from googlecloudsdk.core import log
@@ -41,7 +38,6 @@ def EpilogText(network_name):
   log.status.Print(textwrap.dedent(message))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Google Compute Engine network.
 
@@ -58,77 +54,6 @@ class Create(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    cls.NETWORK_ARG = flags.NetworkArgument()
-    cls.NETWORK_ARG.AddArgument(parser, operation_type='create')
-
-    network_utils.AddCreateBaseArgs(parser)
-    # TODO(b/64980447): Deprecate this arg and use --subnet-mode instead.
-    network_utils.AddCreateModeArg(parser)
-
-  def Run(self, args):
-    """Issues the request necessary for adding the network."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    self._network_name = args.name
-
-    # TODO(b/31649473): after one month, make default auto.
-    if args.mode is None:
-      if args.range is not None:
-        log.warn('You are creating a legacy network. Using --mode=legacy will '
-                 'be required in future releases.')
-        args.mode = 'legacy'
-      else:
-        args.mode = 'auto'
-
-    if args.mode != 'legacy' and args.range is not None:
-      raise exceptions.InvalidArgumentException(
-          '--range', '--range can only be used if --mode=legacy')
-
-    network_ref = self.NETWORK_ARG.ResolveAsResource(args, holder.resources)
-
-    if args.mode == 'legacy':
-      request = client.messages.ComputeNetworksInsertRequest(
-          network=client.messages.Network(
-              name=network_ref.Name(),
-              IPv4Range=args.range,
-              description=args.description),
-          project=network_ref.project)
-    else:
-      request = client.messages.ComputeNetworksInsertRequest(
-          network=client.messages.Network(
-              name=network_ref.Name(),
-              autoCreateSubnetworks=args.mode == 'auto',
-              description=args.description),
-          project=network_ref.project)
-
-    responses = client.MakeRequests([(client.apitools_client.networks, 'Insert',
-                                      request)])
-
-    responses = [encoding.MessageToDict(m) for m in responses]
-    return networks_utils.AddMode(responses)
-
-  def Epilog(self, resources_were_displayed=True):
-    EpilogText(self._network_name)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class CreateBeta(base.CreateCommand):
-  """Create a Google Compute Engine network.
-
-  *{command}* is used to create virtual networks. A network
-  performs the same function that a router does in a home
-  network: it describes the network range and gateway IP
-  address, handles communication between instances, and serves
-  as a gateway between instances and callers outside the
-  network.
-  """
-
-  NETWORK_ARG = None
-
-  @classmethod
-  def Args(cls, parser):
-    parser.display_info.AddFormat(flags.BETA_LIST_FORMAT)
     cls.NETWORK_ARG = flags.NetworkArgument()
     cls.NETWORK_ARG.AddArgument(parser, operation_type='create')
 
@@ -152,13 +77,10 @@ class CreateBeta(base.CreateCommand):
     request = (client.apitools_client.networks, 'Insert',
                client.messages.ComputeNetworksInsertRequest(
                    network=network_resource, project=network_ref.project))
-    response = client.MakeRequests([request])[0]
+    response = client.MakeRequests([request])
 
-    resource = resource_projector.MakeSerializable(response)
-    resource['x_gcloud_subnet_mode'] = networks_utils.GetSubnetMode(response)
-    resource['x_gcloud_bgp_routing_mode'] = networks_utils.GetBgpRoutingMode(
-        response)
-    return resource
+    resource_dict = resource_projector.MakeSerializable(response[0])
+    return networks_utils.AddModesForListFormat(resource_dict)
 
   def Epilog(self, resources_were_displayed=True):
     EpilogText(self._network_name)

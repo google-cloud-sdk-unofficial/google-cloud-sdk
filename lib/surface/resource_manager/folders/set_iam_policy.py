@@ -43,6 +43,15 @@ class SetIamPolicy(base.Command):
   def Run(self, args):
     messages = folders.FoldersMessages()
     policy = iam_util.ParsePolicyFile(args.policy_file, messages.Policy)
-    result = folders.SetIamPolicy(args.id, policy)
+    update_mask = iam_util.ConstructUpdateMaskFromPolicy(args.policy_file)
+
+    # To preserve the existing set-iam-policy behavior of always overwriting
+    # bindings and etag, add bindings and etag to update_mask.
+    if 'bindings' not in update_mask:
+      update_mask += ',bindings'
+    if 'etag' not in update_mask:
+      update_mask += ',etag'
+
+    result = folders.SetIamPolicy(args.id, policy, update_mask)
     iam_util.LogSetIamPolicy(args.id, 'folder')
     return result

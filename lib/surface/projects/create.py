@@ -41,8 +41,29 @@ ID_DESCRIPTION = ('Project IDs must start with a lowercase letter and can '
                   'Project IDs must be between 6 and 30 characters.')
 
 
-class _BaseCreate(object):
-  """Create command base for all release tracks of project create."""
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
+class Create(base.CreateCommand):
+  """Create a new project.
+
+  Creates a new project with the given project ID.
+
+  ## EXAMPLES
+
+  The following command creates a project with ID `example-foo-bar-1`, name
+  `Happy project` and label `type=happy`:
+
+    $ {command} example-foo-bar-1 --name="Happy project" --labels=type=happy
+
+  The following command creates a project with ID `example-2` with parent
+  `folders/12345`:
+
+    $ {command} example-2 --folder=12345
+
+  The following command creates a project with ID `example-3` with parent
+  `organizations/2048`:
+
+    $ {command} example-3 --organization=2048
+  """
 
   @staticmethod
   def Args(parser):
@@ -72,6 +93,7 @@ class _BaseCreate(object):
         default=False,
         help='Set newly created project as [core.project] property.')
     flags.OrganizationIdFlag('to use as a parent').AddToParser(parser)
+    flags.FolderIdFlag('to use as a parent').AddToParser(parser)
 
   def Run(self, args):
     """Default Run method implementation."""
@@ -127,53 +149,3 @@ class _BaseCreate(object):
                                                apis.GetMessagesModule(
                                                    'cloudresourcemanager',
                                                    'v1').Project)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Create(_BaseCreate, base.CreateCommand):
-  """Create a new project.
-
-  Creates a new project with the given project ID.
-
-  ## EXAMPLES
-
-  The following command creates a project with ID `example-foo-bar-1`, name
-  `Happy project` and label `type=happy`:
-
-    $ {command} example-foo-bar-1 --name="Happy project" --labels=type=happy
-
-  The following command creates a project with ID `example-3` with parent
-  `organizations/2048`:
-
-    $ {command} example-3 --organization=2048
-  """
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(_BaseCreate, base.CreateCommand):
-  """Create a new project.
-
-  Creates a new project with the given project ID.
-
-  ## EXAMPLES
-
-  The following command creates a project with ID `example-foo-bar-1`, name
-  `Happy project` and label `type=happy`:
-
-    $ {command} example-foo-bar-1 --name="Happy project" --labels=type=happy
-
-  The following command creates a project with ID `example-2` with parent
-  `folders/12345`:
-
-    $ {command} example-2 --folder=12345
-
-  The following command creates a project with ID `example-3` with parent
-  `organizations/2048`:
-
-    $ {command} example-3 --organization=2048
-  """
-
-  @staticmethod
-  def Args(parser):
-    _BaseCreate.Args(parser)
-    flags.FolderIdFlag('to use as a parent').AddToParser(parser)

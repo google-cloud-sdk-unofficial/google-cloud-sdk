@@ -47,6 +47,7 @@ def _Args(parser):
   instances_flags.AddPrivateNetworkIpArgs(parser)
   instances_flags.AddKonletArgs(parser)
   instances_flags.AddPublicDnsArgs(parser, instance=True)
+  instances_flags.AddPublicPtrArgs(parser, instance=True)
   instances_flags.AddImageArgs(parser)
   instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
   labels_util.AddCreateLabelsFlags(parser)
@@ -147,6 +148,7 @@ class CreateWithContainer(base.CreateCommand):
     zone_resource_fetcher.WarnForZonalCreation(instance_refs)
 
     instances_flags.ValidatePublicDnsFlags(args)
+    instances_flags.ValidatePublicPtrFlags(args)
 
     if (skip_defaults and not args.IsSpecified('network') and
         not args.IsSpecified('subnet') and

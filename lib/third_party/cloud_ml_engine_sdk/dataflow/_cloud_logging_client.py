@@ -24,7 +24,7 @@ _RESOURCE_TYPE = "ml_job"
 _JOB_ID_LABEL = "job_id"
 
 # Field names for error-related fields in the logEntry. See
-# proto: google.cloud.ml.api.v1beta1.PredictionLogEntry
+# proto: google.cloud.ml.api.v1.PredictionLogEntry
 _MESSAGE_KEY = "message"
 _ERROR_MESSAGE_KEY = "error_detail"
 _ERROR_DETAIL_KEY = "detail"
@@ -34,7 +34,7 @@ _ERROR_INPUT_SNIPPET_KEY = "input_snippet"
 # converting protobuf to JSON during training.
 FIXED_ENTRY = {
     "@type":
-    "type.googleapis.com/google.cloud.ml.api.v1beta1.PredictionLogEntry"
+    "type.googleapis.com/google.cloud.ml.api.v1.PredictionLogEntry"
 }
 
 

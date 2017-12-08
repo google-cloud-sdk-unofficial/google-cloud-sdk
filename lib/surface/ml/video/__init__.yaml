@@ -7,7 +7,7 @@ help_text:
 request:
   collection: videointelligence.videos
   method: annotate
-  api_version: v1beta1
+  api_version: v1beta2
 
 async:
   collection: videointelligence.operations
@@ -30,9 +30,23 @@ args:
     help_text: |
       The segments from the video which you want to analyze (by default, the
       entire video will be treated as one segment). Must be in the format
-      START1:END1[,START2:END2,...]. Start and end of segments are in
-      microseconds (inclusive).
-    processor: googlecloudsdk.api_lib.ml.video.video_client:_ValidateAndParseSegments
+      START1:END1[,START2:END2,...] (inclusive). START and END of segments must
+      be a properly formatted duration string of the form `HhMmSs` where:
+
+      *  H is the number of hours from beginning of video
+      *  M is the number of minutes from the beginning of video
+      *  S is the number of seconds from the beginning of the video
+
+      H, M and S can be specified as ints or floats for fractional units
+      (to microsecond resolution). Unit chars (e.g. `h`, `m` or `s`) are
+      required. Microseconds can be specified using fractional seconds
+      e.g. 0.000569s == 569 microseconds.
+
+      Examples:
+      0s:23.554048s,24s:29.528064s
+
+      0:1m40s,3m50s:5m10.232265s
+    processor: googlecloudsdk.api_lib.ml.video.video_client:ValidateAndParseSegments
 
   - api_field: locationId
     arg_name: region

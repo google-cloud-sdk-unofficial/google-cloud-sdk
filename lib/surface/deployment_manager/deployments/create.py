@@ -269,6 +269,28 @@ class Create(base.CreateCommand, dm_base.DmCommand):
 
 
 @base.UnicodeIsSupported
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@dm_base.UseDmApi(dm_base.DmApiVersion.ALPHA)
+class CreateAlpha(Create):
+  """Create a deployment.
+
+  This command inserts (creates) a new deployment based on a provided config
+  file.
+  """
+
+  @staticmethod
+  def Args(parser):
+    Create.Args(parser, version=base.ReleaseTrack.ALPHA)
+    flags.AddCredentialFlag(parser)
+
+  def _SetMetadata(self, args, deployment):
+    if args.credential:
+      deployment.credential = dm_util.CredentialFrom(self.messages,
+                                                     args.credential)
+    super(CreateAlpha, self)._SetMetadata(args, deployment)
+
+
+@base.UnicodeIsSupported
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a deployment.
@@ -280,17 +302,3 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     Create.Args(parser, version=base.ReleaseTrack.BETA)
-
-
-@base.UnicodeIsSupported
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
-  """Create a deployment.
-
-  This command inserts (creates) a new deployment based on a provided config
-  file.
-  """
-
-  @staticmethod
-  def Args(parser):
-    Create.Args(parser, version=base.ReleaseTrack.ALPHA)

@@ -19,7 +19,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.app import firewall_rules_util
 from googlecloudsdk.command_lib.app import flags
 from googlecloudsdk.core import log
-from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
@@ -33,7 +32,7 @@ class Delete(base.DeleteCommand):
           """\
           To delete an App Engine firewall rule, run:
 
-            $ {command}
+            $ {command} 1234
           """,
   }
 
@@ -51,12 +50,8 @@ class Delete(base.DeleteCommand):
         prompt_string='You are about to delete rule [{0}].'.format(priority),
         cancel_on_no=True)
 
-    client = api_client.AppengineFirewallApiClient.GetApiClient('v1beta')
-    registry = resources.REGISTRY.Clone()
-    registry.RegisterApiByName('appengine', 'v1beta')
-
-    resource = firewall_rules_util.ParseFirewallRule(registry, client.project,
-                                                     priority)
+    client = api_client.GetApiClientForTrack(self.ReleaseTrack())
+    resource = firewall_rules_util.ParseFirewallRule(client, priority)
     client.Delete(resource)
 
     log.DeletedResource(priority)

@@ -15,6 +15,7 @@
 
 from googlecloudsdk.api_lib.tasks import queues
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.tasks import flags
 from googlecloudsdk.command_lib.tasks import parsers
 from googlecloudsdk.core import log
 
@@ -24,7 +25,7 @@ class Resume(base.Command):
 
   @staticmethod
   def Args(parser):
-    parsers.AddQueueResourceArg(parser, 'to resume')
+    flags.AddQueueResourceArg(parser, 'to resume')
 
   def Run(self, args):
     queues_client = queues.Queues()

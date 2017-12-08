@@ -40,7 +40,7 @@ class TestIp(base.Command):
         'ip', help='An IPv4 or IPv6 address to test against the firewall.')
 
   def Run(self, args):
-    client = api_client.AppengineFirewallApiClient.GetApiClient('v1beta')
+    client = api_client.GetApiClientForTrack(self.ReleaseTrack())
     response = client.List(args.ip)
 
     rules = list(response)

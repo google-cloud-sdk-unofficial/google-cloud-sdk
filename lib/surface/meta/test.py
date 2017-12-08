@@ -81,8 +81,7 @@ class Test(base.Command):
         help='Trigger an exception that is not caught.')
 
   def _RunArgumenterrorOutsideArgparse(self, args):
-    raise parser_errors.RequiredArgumentError(
-        'Argument required exception.', argument='--some-flag')
+    raise parser_errors.RequiredError(argument='--some-flag')
 
   def _RunCoreException(self, args):
     raise exceptions.Error('Some core exception.')

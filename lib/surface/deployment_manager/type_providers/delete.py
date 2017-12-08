@@ -69,7 +69,8 @@ class Delete(base.DeleteCommand, dm_base.DmCommand):
       HttpException: An http error response was received while executing api
           request.
     """
-    type_provider_ref = type_providers.GetReference(args.provider_name)
+    type_provider_ref = type_providers.GetReference(self.resources,
+                                                    args.provider_name)
     if not args.quiet:
       prompt_message = 'Are you sure you want to delete [{0}]?'.format(
           type_provider_ref.typeProvider)

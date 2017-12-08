@@ -19,7 +19,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import firewall_rules_util
 from googlecloudsdk.command_lib.app import flags
 from googlecloudsdk.core import log
-from googlecloudsdk.core import resources
 
 
 class Update(base.UpdateCommand):
@@ -45,13 +44,9 @@ class Update(base.UpdateCommand):
     flags.AddFirewallRulesFlags(parser, required=False)
 
   def Run(self, args):
-    client = api_client.AppengineFirewallApiClient.GetApiClient('v1beta')
-    registry = resources.REGISTRY.Clone()
-    registry.RegisterApiByName('appengine', 'v1beta')
-
-    resource = firewall_rules_util.ParseFirewallRule(
-        registry, client.project, args.priority)
+    client = api_client.GetApiClientForTrack(self.ReleaseTrack())
     priority = firewall_rules_util.ParsePriority(args.priority)
+    resource = firewall_rules_util.ParseFirewallRule(client, priority)
     action = firewall_rules_util.ParseAction(client.messages, args.action)
 
     try:

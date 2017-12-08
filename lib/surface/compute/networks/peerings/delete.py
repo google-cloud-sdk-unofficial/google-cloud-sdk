@@ -14,10 +14,8 @@
 """Command for deleting network peerings."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import networks_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
-from googlecloudsdk.core.resource import resource_projector
 
 
 class Delete(base.DeleteCommand):
@@ -47,8 +45,5 @@ class Delete(base.DeleteCommand):
             client.messages.NetworksRemovePeeringRequest(name=args.name)),
         project=properties.VALUES.core.project.GetOrFail())
 
-    response = client.MakeRequests([(client.apitools_client.networks,
-                                     'RemovePeering', request)])
-
-    return networks_utils.AddMode(
-        [resource_projector.MakeSerializable(m) for m in response])
+    return client.MakeRequests([(client.apitools_client.networks,
+                                 'RemovePeering', request)])

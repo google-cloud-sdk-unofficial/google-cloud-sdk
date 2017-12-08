@@ -11,11 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""`gcloud tasks queues create` command."""
+"""`gcloud tasks queues create-app-engine-queue` command."""
 
 from googlecloudsdk.api_lib.tasks import queues
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.tasks import constants
+from googlecloudsdk.command_lib.tasks import flags
 from googlecloudsdk.command_lib.tasks import parsers
 from googlecloudsdk.core import log
 
@@ -31,15 +32,19 @@ class CreateAppEngine(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    parsers.AddIdArg(parser, 'App Engine queue', 'to create')
-    parsers.AddAppEngineQueueFlags(parser)
+    flags.AddIdArg(parser, 'App Engine queue', 'to create')
+    flags.AddAppEngineQueueFlags(parser)
 
   def Run(self, args):
     queues_client = queues.Queues()
     queue_ref = parsers.ParseQueue(args.id)
     location_ref = parsers.ExtractLocationRefFromQueueRef(queue_ref)
-    configs = parsers.ParseCreateOrUpdateQueueArgs(
+    queue_config = parsers.ParseCreateOrUpdateQueueArgs(
         args, constants.APP_ENGINE_QUEUE, queues_client.api.messages)
-    create_response = queues_client.Create(location_ref, queue_ref, *configs)
+    create_response = queues_client.Create(
+        location_ref, queue_ref,
+        retry_config=queue_config.retryConfig,
+        throttle_config=queue_config.throttleConfig,
+        app_engine_http_target=queue_config.appEngineHttpTarget)
     log.CreatedResource(queue_ref.Name(), 'queue')
     return create_response

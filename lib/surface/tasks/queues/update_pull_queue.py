@@ -16,6 +16,7 @@
 from googlecloudsdk.api_lib.tasks import queues
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.tasks import constants
+from googlecloudsdk.command_lib.tasks import flags
 from googlecloudsdk.command_lib.tasks import parsers
 from googlecloudsdk.core import log
 
@@ -30,14 +31,18 @@ class UpdatePull(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    parsers.AddQueueResourceArg(parser, 'to update')
-    parsers.AddPullQueueFlags(parser)
+    flags.AddQueueResourceArg(parser, 'to update')
+    flags.AddPullQueueFlags(parser)
 
   def Run(self, args):
     queues_client = queues.Queues()
     queue_ref = parsers.ParseQueue(args.queue)
-    configs = parsers.ParseCreateOrUpdateQueueArgs(
+    queue_config = parsers.ParseCreateOrUpdateQueueArgs(
         args, constants.PULL_QUEUE, queues_client.api.messages)
-    update_response = queues_client.Patch(queue_ref, *configs)
+    update_response = queues_client.Patch(
+        queue_ref,
+        retry_config=queue_config.retryConfig,
+        throttle_config=queue_config.throttleConfig,
+        pull_target=queue_config.pullTarget)
     log.status.Print('Updated queue [{}].'.format(queue_ref.Name()))
     return update_response

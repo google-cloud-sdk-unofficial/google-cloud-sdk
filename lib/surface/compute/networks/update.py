@@ -20,7 +20,6 @@ from googlecloudsdk.command_lib.compute.networks import network_utils
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine Network."""
 
@@ -30,7 +29,7 @@ class Update(base.UpdateCommand):
   def Args(cls, parser):
     cls.NETWORK_ARG = flags.NetworkArgument()
     cls.NETWORK_ARG.AddArgument(parser)
-    network_utils.AddUpdateBetaArgs(parser)
+    network_utils.AddUpdateArgs(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -42,8 +41,8 @@ class Update(base.UpdateCommand):
     if args.switch_to_custom_subnet_mode:
       prompt_msg = 'Network [{0}] will be switched to custom mode. '.format(
           network_ref.Name()) + 'This operation cannot be undone.'
-      if not console_io.PromptContinue(message=prompt_msg, default=True):
-        raise network_utils.CancelledException('Operation aborted by user.')
+      console_io.PromptContinue(
+          message=prompt_msg, default=True, cancel_on_no=True)
 
       resource = service.SwitchToCustomMode(
           messages.ComputeNetworksSwitchToCustomModeRequest(
@@ -55,7 +54,7 @@ class Update(base.UpdateCommand):
       network_resource.routingConfig = messages.NetworkRoutingConfig()
       network_resource.routingConfig.routingMode = (
           messages.NetworkRoutingConfig.RoutingModeValueValuesEnum(
-              args.bgp_routing_mode))
+              args.bgp_routing_mode.upper()))
 
       resource = service.Patch(
           messages.ComputeNetworksPatchRequest(

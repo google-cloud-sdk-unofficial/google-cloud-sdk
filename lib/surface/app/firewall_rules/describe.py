@@ -17,7 +17,6 @@ from googlecloudsdk.api_lib.app.api import appengine_firewall_api_client as api_
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import firewall_rules_util
 from googlecloudsdk.command_lib.app import flags
-from googlecloudsdk.core import resources
 
 
 class Describe(base.DescribeCommand):
@@ -30,7 +29,7 @@ class Describe(base.DescribeCommand):
           """\
           To describe an App Engine firewall rule, run:
 
-            $ {command}
+            $ {command} 1234
           """,
   }
 
@@ -39,10 +38,7 @@ class Describe(base.DescribeCommand):
     flags.FIREWALL_PRIORITY_FLAG.AddToParser(parser)
 
   def Run(self, args):
-    client = api_client.AppengineFirewallApiClient.GetApiClient('v1beta')
-    registry = resources.REGISTRY.Clone()
-    registry.RegisterApiByName('appengine', 'v1beta')
-    resource = firewall_rules_util.ParseFirewallRule(
-        registry, client.project, args.priority)
+    client = api_client.GetApiClientForTrack(self.ReleaseTrack())
+    resource = firewall_rules_util.ParseFirewallRule(client, args.priority)
 
     return client.Get(resource)

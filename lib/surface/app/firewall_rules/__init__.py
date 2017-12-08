@@ -16,7 +16,8 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class FirewallRules(base.Group):
   """View and manage your App Engine firewall rules.
 

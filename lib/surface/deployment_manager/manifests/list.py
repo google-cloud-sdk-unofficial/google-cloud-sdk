@@ -19,10 +19,10 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.deployment_manager import dm_api_util
 from googlecloudsdk.api_lib.deployment_manager import dm_base
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.deployment_manager import dm_v2_base
 
 
-class List(base.ListCommand):
+@dm_base.UseDmApi(dm_base.DmApiVersion.V2)
+class List(base.ListCommand, dm_base.DmCommand):
   """List manifests in a deployment.
 
   Prints a table with summary information on all manifests in the deployment.
@@ -67,10 +67,10 @@ class List(base.ListCommand):
       HttpException: An http error response was received while executing api
           request.
     """
-    request = dm_v2_base.GetMessages().DeploymentmanagerManifestsListRequest(
+    request = self.messages.DeploymentmanagerManifestsListRequest(
         project=dm_base.GetProject(),
         deployment=args.deployment,
     )
     return dm_api_util.YieldWithHttpExceptions(list_pager.YieldFromList(
-        dm_v2_base.GetClient().manifests, request, field='manifests',
+        self.client.manifests, request, field='manifests',
         limit=args.limit, batch_size=args.page_size))

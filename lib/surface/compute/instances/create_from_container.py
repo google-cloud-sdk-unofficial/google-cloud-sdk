@@ -55,6 +55,7 @@ class CreateFromContainer(base.CreateCommand):
     instances_flags.AddPrivateNetworkIpArgs(parser)
     instances_flags.AddDockerArgs(parser)
     instances_flags.AddPublicDnsArgs(parser, instance=True)
+    instances_flags.AddPublicPtrArgs(parser, instance=True)
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     labels_util.AddCreateLabelsFlags(parser)
@@ -143,6 +144,7 @@ class CreateFromContainer(base.CreateCommand):
     zone_resource_fetcher.WarnForZonalCreation(instance_refs)
 
     instances_flags.ValidatePublicDnsFlags(args)
+    instances_flags.ValidatePublicPtrFlags(args)
 
     if (skip_defaults and not args.IsSpecified('network') and
         not args.IsSpecified('subnet') and

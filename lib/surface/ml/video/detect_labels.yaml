@@ -23,7 +23,7 @@
     additional_arguments_hook: googlecloudsdk.command_lib.ml.video.video_command_util:AdditionalFlagsHook
     params:
       - _COMMON_args
-      - api_field: videoContext.labelDetectionMode
+      - api_field: videoContext.labelDetectionConfig.labelDetectionMode
         arg_name: detection-mode
         help_text: The mode of label detection requested.
         choices:

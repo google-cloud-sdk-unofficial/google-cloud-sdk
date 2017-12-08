@@ -22,7 +22,11 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container import flags
 
 # Add to this as we add more container analysis data.
-_DEFAULT_KINDS = ['BUILD_DETAILS', 'PACKAGE_VULNERABILITY', 'IMAGE_BASIS']
+_DEFAULT_KINDS = [
+    'BUILD_DETAILS',
+    'PACKAGE_VULNERABILITY',
+    'IMAGE_BASIS',
+]
 
 
 @contextmanager
@@ -36,17 +40,8 @@ def RecoverFromDiagnosticException(image_name):
     })
 
 
-def _CommonArgs(parser, release_track):
+def _CommonArgs(parser):
   flags.AddTagOrDigestPositional(parser, verb='describe', repeated=False)
-  parser.display_info.AddFormat('object')
-
-  if release_track is base.ReleaseTrack.ALPHA:
-    parser.add_argument(
-        '--occurrence-filter',
-        default=' OR '.join(
-            ['kind = "{kind}"'.format(kind=x) for x in _DEFAULT_KINDS]),
-        help=('Additional filter to fetch occurrences for '
-              'a given fully qualified image reference.'))
 
 
 # pylint: disable=line-too-long
@@ -64,15 +59,15 @@ class Describe(base.DescribeCommand):
 
   Find the digest for a tag:
 
-    $ {command} gcr.io/myproject/myimage:tag --format='value(digest)'
+    $ {command} gcr.io/myproject/myimage:tag --format='value(image_summary.digest)'
           OR
-    $ {command} gcr.io/myproject/myimage:tag --format='value(fully_qualified_digest)'
+    $ {command} gcr.io/myproject/myimage:tag --format='value(image_summary.fully_qualified_digest)'
 
   """
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser, release_track=base.ReleaseTrack.GA)
+    _CommonArgs(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -112,7 +107,29 @@ class DescribeAlpha(Describe):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser, release_track=base.ReleaseTrack.ALPHA)
+    _CommonArgs(parser)
+
+    parser.add_argument(
+        '--metadata-filter',
+        default='',
+        help=('Additional filter to fetch metadata for '
+              'a given fully qualified image reference.'))
+    parser.add_argument(
+        '--show-build-details',
+        action='store_true',
+        help='Include build metadata in the output.')
+    parser.add_argument(
+        '--show-package-vulnerability',
+        action='store_true',
+        help='Include vulnerability metadata in the output.')
+    parser.add_argument(
+        '--show-image-basis',
+        action='store_true',
+        help='Include base image metadata in the output.')
+    parser.add_argument(
+        '--show-all-metadata',
+        action='store_true',
+        help='Include all metadata in the output.')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -127,7 +144,53 @@ class DescribeAlpha(Describe):
       Some value that we want to have printed later.
     """
 
-    with RecoverFromDiagnosticException(args.image_name):
-      img_name = util.GetDigestFromName(args.image_name)
-      return util.TransformContainerAnalysisData(img_name,
-                                                 args.occurrence_filter)
+    filter_kinds = []
+    if args.show_build_details:
+      filter_kinds.append('BUILD_DETAILS')
+    if args.show_package_vulnerability:
+      filter_kinds.append('PACKAGE_VULNERABILITY')
+    if args.show_image_basis:
+      filter_kinds.append('IMAGE_BASIS')
+
+    if args.show_all_metadata:
+      filter_kinds = _DEFAULT_KINDS
+
+    if filter_kinds or args.metadata_filter:
+      if filter_kinds:
+        filter_from_flags = ' OR '.join(
+            ['kind = "{kind}"'.format(kind=fk) for fk in filter_kinds])
+
+        if not args.metadata_filter:
+          occ_filter = filter_from_flags
+        else:
+          occ_filter = '({occf}) AND ({flagf})'.format(
+              occf=args.metadata_filter,
+              flagf=filter_from_flags)
+      else:
+        occ_filter = args.metadata_filter
+
+      with RecoverFromDiagnosticException(args.image_name):
+        img_name = util.GetDigestFromName(args.image_name)
+        data = util.TransformContainerAnalysisData(
+            img_name, occ_filter)
+        # Clear out fields that weren't asked for and have no data.
+        if (not data.build_details_summary.build_details
+            and not args.show_build_details
+            and not args.show_all_metadata):
+          del data.build_details_summary
+        if (not data.package_vulnerability_summary.vulnerabilities
+            and not args.show_package_vulnerability
+            and not args.show_all_metadata):
+          del data.package_vulnerability_summary
+        if (not data.image_basis_summary.base_images
+            and not args.show_image_basis
+            and not args.show_all_metadata):
+          del data.image_basis_summary
+        return data
+    else:
+      with RecoverFromDiagnosticException(args.image_name):
+        img_name = util.GetDigestFromName(args.image_name)
+        return container_data_util.ContainerData(
+            registry=img_name.registry,
+            repository=img_name.repository,
+            digest=img_name.digest)

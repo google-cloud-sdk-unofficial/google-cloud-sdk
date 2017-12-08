@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.command_lib.util import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   r"""Update a key.
 

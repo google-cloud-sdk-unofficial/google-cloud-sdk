@@ -90,7 +90,9 @@ class Create(base.CreateCommand, dm_base.DmCommand):
         descriptorUrl=args.descriptor_url,
         labels=labels)
 
-    type_providers.AddOptions(args.api_options_file, type_provider)
+    type_providers.AddOptions(self.messages,
+                              args.api_options_file,
+                              type_provider)
     request = self.messages.DeploymentmanagerTypeProvidersInsertRequest(
         project=type_provider_ref.project,
         typeProvider=type_provider)

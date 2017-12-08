@@ -37,8 +37,8 @@ class List(base.ListCommand):
     list_implementation = lister.GlobalLister(
         client, client.apitools_client.networks)
 
-    return networks_utils.AddMode(
-        lister.Invoke(request_data, list_implementation))
+    return (networks_utils.AddModesForListFormat(resource)
+            for resource in lister.Invoke(request_data, list_implementation))
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp('networks')

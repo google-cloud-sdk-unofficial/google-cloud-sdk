@@ -15,26 +15,30 @@ request:
   api_version: v1beta2
   modify_request_hook: googlecloudsdk.command_lib.ml.language.language_command_util:AddContentToRequest
 
-arguments:
-  additional_arguments_hook: googlecloudsdk.command_lib.ml.language.flags:GetContentFlagsGroup
-  params:
-    - api_field: document.type
-      arg_name: content-type
-      default: plain-text
-      help_text: Specify the format of the input text.
+args:
+  content:
+    api_field: document.type
+    arg_name: content-type
+    default: plain-text
+    choices:
+      plain-text: PLAIN_TEXT
+      html: HTML
+    help_text: Specify the format of the input text.
 
-    - api_field: document.language
-      arg_name: language
-      help_text: |
-        Specify the language of the input text. If omitted, the server will
-        attempt to auto-detect. Both ISO (such as `en` or `es`) and BCP-47 (such
-        as `en-US` or `ja-JP`) language codes are accepted.
+  language:
+    api_field: document.language
+    arg_name: language
+    help_text: |
+      Specify the language of the input text. If omitted, the server will
+      attempt to auto-detect. Both ISO (such as `en` or `es`) and BCP-47 (such
+      as `en-US` or `ja-JP`) language codes are accepted.
 
-    - api_field: encodingType
-      arg_name: encoding-type
-      default: utf8
-      help_text: |
-        The encoding type used by the API to calculate offsets. If NONE, those
-        offsets are not calculated. This is an optional flag only used for the
-        entity mentions in results, and does not affect how the input is read or
-        analyzed.
+  encoding:
+    api_field: encodingType
+    arg_name: encoding-type
+    default: utf8
+    help_text: |
+      The encoding type used by the API to calculate offsets. If NONE, those
+      offsets are not calculated. This is an optional flag only used for the
+      entity mentions in results, and does not affect how the input is read or
+      analyzed.

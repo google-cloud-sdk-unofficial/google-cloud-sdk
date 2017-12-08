@@ -17,7 +17,6 @@
 from googlecloudsdk.api_lib.deployment_manager import dm_base
 from googlecloudsdk.api_lib.deployment_manager import exceptions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.deployment_manager import dm_v2_base
 from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.core import log
 
@@ -25,7 +24,8 @@ from googlecloudsdk.core import log
 OPERATION_TIMEOUT = 20 * 60  # 20 mins
 
 
-class Wait(base.Command):
+@dm_base.UseDmApi(dm_base.DmApiVersion.V2)
+class Wait(base.Command, dm_base.DmCommand):
   """Wait for all operations specified to complete before returning.
 
   Polls until all operations have finished, then prints the resulting operations
@@ -71,8 +71,8 @@ class Wait(base.Command):
     failed_ops = []
     for operation_name in args.operation_name:
       try:
-        dm_write.WaitForOperation(dm_v2_base.GetClient(),
-                                  dm_v2_base.GetMessages(),
+        dm_write.WaitForOperation(self.client,
+                                  self.messages,
                                   operation_name, '', dm_base.GetProject(),
                                   timeout=OPERATION_TIMEOUT)
       except exceptions.OperationError:

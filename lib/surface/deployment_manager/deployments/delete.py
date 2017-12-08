@@ -19,9 +19,9 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.deployment_manager import dm_api_util
 from googlecloudsdk.api_lib.deployment_manager import dm_base
 from googlecloudsdk.api_lib.deployment_manager import exceptions
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import exceptions as api_exceptions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.deployment_manager import dm_v2_base
 from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.command_lib.deployment_manager import flags
 from googlecloudsdk.core import exceptions as core_exceptions
@@ -72,7 +72,7 @@ class Delete(base.DeleteCommand, dm_base.DmCommand):
     """
     parser.add_argument('deployment_name', nargs='+', help='Deployment name.')
     flags.AddDeletePolicyFlag(
-        parser, dm_v2_base.GetMessages()
+        parser, apis.GetMessagesModule('deploymentmanager', 'v2')
         .DeploymentmanagerDeploymentsDeleteRequest)
     flags.AddAsyncFlag(parser)
 
@@ -131,8 +131,8 @@ class Delete(base.DeleteCommand, dm_base.DmCommand):
           except exceptions.OperationError as e:
             errors.append(exceptions.OperationError(
                 u'Delete operation {0} failed.\n{1}'.format(op_name, e)))
-          completed_operation = dm_v2_base.GetClient().operations.Get(
-              dm_v2_base.GetMessages().DeploymentmanagerOperationsGetRequest(
+          completed_operation = self.client.operations.Get(
+              self.messages.DeploymentmanagerOperationsGetRequest(
                   project=dm_base.GetProject(),
                   operation=op_name,
               )

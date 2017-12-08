@@ -43,7 +43,6 @@ class Update(base_classes.BaseIamCommand):
   @staticmethod
   def Args(parser):
     updated = parser.add_argument_group(
-        'Updated fields',
         'The following flags determine the fields need to be updated. '
         'You can update a role by specifying the following flags, or '
         'you can update a role from a Yaml file by specifying the file flag.')

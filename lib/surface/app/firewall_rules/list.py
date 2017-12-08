@@ -37,5 +37,5 @@ class List(base.ListCommand):
     parser.display_info.AddFormat(firewall_rules_util.LIST_FORMAT)
 
   def Run(self, args):
-    client = api_client.AppengineFirewallApiClient.GetApiClient('v1beta')
+    client = api_client.GetApiClientForTrack(self.ReleaseTrack())
     return client.List()

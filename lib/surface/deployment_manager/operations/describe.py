@@ -19,10 +19,10 @@ from googlecloudsdk.api_lib.deployment_manager import dm_api_util
 from googlecloudsdk.api_lib.deployment_manager import dm_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.command_lib.deployment_manager import dm_v2_base
 
 
-class Describe(base.DescribeCommand):
+@dm_base.UseDmApi(dm_base.DmApiVersion.V2)
+class Describe(base.DescribeCommand, dm_base.DmCommand):
   """Provide information about an operation.
 
   This command prints out all available details about an operation.
@@ -62,8 +62,8 @@ class Describe(base.DescribeCommand):
           request.
     """
     try:
-      return dm_v2_base.GetClient().operations.Get(
-          dm_v2_base.GetMessages().DeploymentmanagerOperationsGetRequest(
+      return self.client.operations.Get(
+          self.messages.DeploymentmanagerOperationsGetRequest(
               project=dm_base.GetProject(),
               operation=args.operation_name,
           )

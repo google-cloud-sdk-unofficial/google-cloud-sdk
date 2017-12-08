@@ -74,12 +74,13 @@ class Create(base.CreateCommand, dm_base.DmCommand):
       HttpException: An http error response was received while executing api
           request.
     """
-    composite_type_ref = composite_types.GetReference(args.name)
+    composite_type_ref = composite_types.GetReference(self.resources, args.name)
     update_labels_dict = labels_util.GetUpdateLabelsDictFromArgs(args)
     labels = dm_labels.UpdateLabels([],
                                     self.messages.CompositeTypeLabelEntry,
                                     update_labels=update_labels_dict)
-    template_contents = composite_types.TemplateContentsFor(args.template)
+    template_contents = composite_types.TemplateContentsFor(self.messages,
+                                                            args.template)
 
     composite_type = self.messages.CompositeType(
         name=args.name,

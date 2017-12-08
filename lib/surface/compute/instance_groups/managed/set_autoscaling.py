@@ -14,6 +14,7 @@
 """Command for configuring autoscaling of a managed instance group."""
 
 import json
+import re
 
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import base_classes
@@ -116,7 +117,7 @@ class SetAutoscaling(base.Command):
         return self._PromptToDeleteAutoscaler(
             client, igm_ref, existing_autoscaler_name,
             prompt_message=(
-                'Configuation specifies no autoscaling configuration. '
+                'Configuration specifies no autoscaling configuration. '
                 'Continuing will delete the existing autoscaler '
                 'configuration. Do you want to continue?')
         )
@@ -137,7 +138,7 @@ class SetAutoscaling(base.Command):
       self._PromptToDeleteAutoscaler(
           client, igm_ref, existing_autoscaler_name,
           prompt_message=(
-              'Configuation specifies autoscaling configuration with a '
+              'Configuration specifies autoscaling configuration with a '
               'different name than existing. Continuing will delete '
               'existing autoscaler and create new one with a different name. '
               'Do you want to continue?')
@@ -146,6 +147,15 @@ class SetAutoscaling(base.Command):
 
     new_autoscaler.name = existing_autoscaler_name
     return  self._UpdateAutoscaler(client, igm_ref, new_autoscaler)
+
+  def _PromptToAutoscaleGKENodeGroup(self, args):
+    if re.match(r'^gke-.*-[0-9a-f]{1,8}-grp$', args.name):
+      prompt_message = (
+          'You should not use Compute Engine\'s autoscaling feature '
+          'on instance groups created by Container Engine. '
+          'Do you want to continue?')
+      if not console_io.PromptContinue(message=prompt_message, default=False):
+        raise exceptions.ToolException('Setting autoscaling aborted by user.')
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -158,6 +168,9 @@ class SetAutoscaling(base.Command):
     # Assert that Instance Group Manager exists.
     managed_instance_groups_utils.GetInstanceGroupManagerOrThrow(
         igm_ref, client)
+
+    # Require confirmation if autoscaling a GKE node group.
+    self._PromptToAutoscaleGKENodeGroup(args)
 
     autoscaler_resource, is_new = self.CreateAutoscalerResource(
         client, holder.resources, igm_ref, args)

@@ -33,6 +33,7 @@ class _Results(object):
     self.outputs = outputs
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @dm_base.UseDmApi(dm_base.DmApiVersion.V2)
 class Describe(base.DescribeCommand, dm_base.DmCommand):
   """Provide information about a deployment.
@@ -49,13 +50,15 @@ class Describe(base.DescribeCommand, dm_base.DmCommand):
   }
 
   @staticmethod
-  def Args(parser):
+  def Args(parser, version=base.ReleaseTrack.GA):
     """Args is called by calliope to gather arguments for this command.
 
     Args:
       parser: An argparse parser that you can use to add arguments that go
           on the command line after this command. Positional arguments are
           allowed.
+      version: The version this tool is running as. base.ReleaseTrack.GA
+          is the default.
     """
     flags.AddDeploymentNameFlag(parser)
     parser.display_info.AddFormat("""
@@ -128,3 +131,46 @@ class Describe(base.DescribeCommand, dm_base.DmCommand):
         outputs = dm_api_util.FlattenLayoutOutputs(manifest_response.layout)
 
     return _Results(deployment, resources, outputs)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@dm_base.UseDmApi(dm_base.DmApiVersion.ALPHA)
+class DescribeAlpha(Describe):
+  """Provide information about a deployment.
+
+  This command prints out all available details about a deployment.
+  """
+
+  @staticmethod
+  def Args(parser):
+    Describe.Args(parser, version=base.ReleaseTrack.ALPHA)
+    parser.display_info.AddFormat("""
+              table(
+                deployment:format='default(name, id, description, fingerprint,
+                credential.serviceAccount.email,
+                insertTime, manifest.basename(), labels, operation.operationType,
+                operation.name, operation.progress, operation.status,
+                operation.user, operation.endTime, operation.startTime,
+                operation.error, update)',
+                resources:format='table(
+                  name:label=NAME,
+                  type:label=TYPE,
+                  update.state.yesno(no="COMPLETED"),
+                  update.intent)',
+              outputs:format='table(
+                name:label=OUTPUTS,
+                finalValue:label=VALUE)'
+             )
+    """)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
+  """Provide information about a deployment.
+
+  This command prints out all available details about a deployment.
+  """
+
+  @staticmethod
+  def Args(parser):
+    Describe.Args(parser, version=base.ReleaseTrack.BETA)

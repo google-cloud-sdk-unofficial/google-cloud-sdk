@@ -19,10 +19,10 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.deployment_manager import dm_api_util
 from googlecloudsdk.api_lib.deployment_manager import dm_base
 from googlecloudsdk.api_lib.deployment_manager import dm_labels
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deployment_manager import dm_util
-from googlecloudsdk.command_lib.deployment_manager import dm_v2_base
 from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.command_lib.deployment_manager import flags
 from googlecloudsdk.command_lib.deployment_manager import importer
@@ -130,12 +130,12 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
         '--create-policy',
         help='Create policy for resources that have changed in the update.',
         default='CREATE_OR_ACQUIRE',
-        choices=(sorted(dm_v2_base.GetMessages()
+        choices=(sorted(apis.GetMessagesModule('deploymentmanager', 'v2')
                         .DeploymentmanagerDeploymentsUpdateRequest
                         .CreatePolicyValueValuesEnum.to_dict().keys())))
 
     flags.AddDeletePolicyFlag(
-        parser, dm_v2_base.GetMessages()
+        parser, apis.GetMessagesModule('deploymentmanager', 'v2')
         .DeploymentmanagerDeploymentsUpdateRequest)
     flags.AddFingerprintFlag(parser)
 
@@ -209,6 +209,11 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
         # TODO(b/34966984): Remove the empty default after cleaning up all
         # deployments that has no fingerprint
         deployment.fingerprint = current_deployment.fingerprint or ''
+
+      # Get the credential from the deployment to update.
+      if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA] and args.credential:
+        deployment.credential = dm_util.CredentialFrom(self.messages,
+                                                       args.credential)
 
       # Update the labels of the deployment
 
@@ -292,6 +297,7 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
 
 @base.UnicodeIsSupported
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@dm_base.UseDmApi(dm_base.DmApiVersion.ALPHA)
 class UpdateAlpha(Update):
   """Update a deployment based on a provided config file.
 
@@ -302,6 +308,7 @@ class UpdateAlpha(Update):
   @staticmethod
   def Args(parser):
     Update.Args(parser, version=base.ReleaseTrack.ALPHA)
+    flags.AddCredentialFlag(parser)
 
 
 @base.UnicodeIsSupported

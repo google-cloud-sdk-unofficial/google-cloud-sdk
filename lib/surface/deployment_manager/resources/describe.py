@@ -20,10 +20,10 @@ from googlecloudsdk.api_lib.deployment_manager import dm_api_util
 from googlecloudsdk.api_lib.deployment_manager import dm_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.command_lib.deployment_manager import dm_v2_base
 
 
-class Describe(base.DescribeCommand):
+@dm_base.UseDmApi(dm_base.DmApiVersion.V2)
+class Describe(base.DescribeCommand, dm_base.DmCommand):
   """Provide information about a resource.
 
   This command prints out all available details about a resource.
@@ -63,8 +63,8 @@ class Describe(base.DescribeCommand):
           request.
     """
     try:
-      return dm_v2_base.GetClient().resources.Get(
-          dm_v2_base.GetMessages().DeploymentmanagerResourcesGetRequest(
+      return self.client.resources.Get(
+          self.messages.DeploymentmanagerResourcesGetRequest(
               project=dm_base.GetProject(),
               deployment=args.deployment,
               resource=args.resource

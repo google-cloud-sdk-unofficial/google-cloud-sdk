@@ -19,7 +19,7 @@ from googlecloudsdk.command_lib.ml.language import flags
 from googlecloudsdk.command_lib.ml.language import language_command_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ClassifyText(base.Command):
   """Classifies input document into categories.
 

@@ -4,11 +4,13 @@
 some helper functions that might be generally useful
 """
 
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 from .compat import text_type, binary_type
-from .main import round_trip_load
+
+if False:  # MYPY
+    from typing import Any, Dict, Optional, List, Text  # NOQA
+    from .compat import StreamTextType  # NOQA
 
 
 # originally as comment
@@ -17,6 +19,7 @@ from .main import round_trip_load
 # that check this routines output against a known piece of your YAML
 # before upgrades to this code break your round-tripped YAML
 def load_yaml_guess_indent(stream, **kw):
+    # type: (StreamTextType, Any) -> Any
     """guess the indent and block sequence indent of yaml stream/string
 
     returns round_trip_loaded stream, indent level, block sequence indent
@@ -24,8 +27,11 @@ def load_yaml_guess_indent(stream, **kw):
     - if there are no block sequences, indent is taken from nested mappings, block sequence
       indent is unset (None) in that case
     """
+    from .main import round_trip_load
+
     # load a yaml file guess the indentation, if you use TABs ...
     def leading_spaces(l):
+        # type: (Any) -> int
         idx = 0
         while idx < len(l) and l[idx] == ' ':
             idx += 1
@@ -75,11 +81,12 @@ def load_yaml_guess_indent(stream, **kw):
 
 
 def configobj_walker(cfg):
+    # type: (Any) -> Any
     """
     walks over a ConfigObj (INI file with comments) generating
     corresponding YAML output (including comments
     """
-    from configobj import ConfigObj
+    from configobj import ConfigObj  # type: ignore
     assert isinstance(cfg, ConfigObj)
     for c in cfg.initial_comment:
         if c.strip():
@@ -93,6 +100,7 @@ def configobj_walker(cfg):
 
 
 def _walk_section(s, level=0):
+    # type: (Any, int) -> Any
     from configobj import Section
     assert isinstance(s, Section)
     indent = u'  ' * level
@@ -118,7 +126,7 @@ def _walk_section(s, level=0):
         if c:
             line += u' ' + c
         yield line
-        for val in _walk_section(s[name], level=level+1):
+        for val in _walk_section(s[name], level=level + 1):
             yield val
 
 # def config_obj_2_rt_yaml(cfg):
