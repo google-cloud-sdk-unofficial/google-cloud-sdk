@@ -18,7 +18,6 @@ from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describes the operation."""
 

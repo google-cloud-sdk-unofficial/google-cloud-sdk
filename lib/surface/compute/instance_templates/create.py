@@ -42,11 +42,7 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
   instances_flags.AddMaintenancePolicyArgs(parser)
   instances_flags.AddNoRestartOnFailureArgs(parser)
   instances_flags.AddPreemptibleVmArgs(parser)
-  # TODO(b/33688891) After 13th Jan 2017 Move to GA
-  if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-    instances_flags.AddServiceAccountAndScopeArgs(parser, False)
-  else:
-    instances_flags.AddScopeArgs(parser)
+  instances_flags.AddServiceAccountAndScopeArgs(parser, False)
   instances_flags.AddTagsArgs(parser)
   instances_flags.AddCustomMachineTypeArgs(parser)
   instances_flags.AddImageArgs(parser)
@@ -115,11 +111,7 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
     self.ValidateDiskFlags(args)
     instances_flags.ValidateLocalSsdFlags(args)
     instances_flags.ValidateNicFlags(args)
-    # TODO(b/33688891) After 13th Jan 2017 Move to GA
-    if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-      instances_flags.ValidateServiceAccountAndScopeArgs(args)
-    else:
-      instances_flags.ValidateScopeFlags(args)
+    instances_flags.ValidateServiceAccountAndScopeArgs(args)
 
     boot_disk_size_gb = utils.BytesToGb(args.boot_disk_size)
     utils.WarnIfDiskSizeIsTooSmall(boot_disk_size_gb, args.boot_disk_type)
@@ -163,21 +155,19 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
         preemptible=args.preemptible,
         restart_on_failure=args.restart_on_failure)
 
-    if getattr(args, 'no_service_account', True):
+    if args.no_service_account:
       service_account = None
     else:
       service_account = args.service_account
     service_accounts = instance_utils.CreateServiceAccountMessages(
         messages=self.messages,
         scopes=[] if args.no_scopes else args.scopes,
-        service_account=service_account,
-        # TODO(b/33688891) Stop silencing deprecation warning in GA
-        silence_deprecation_warning=(
-            self.ReleaseTrack() == base.ReleaseTrack.GA))
+        service_account=service_account)
 
     create_boot_disk = not instance_utils.UseExistingBootDisk(args.disk or [])
     if create_boot_disk:
       image_uri, _ = self.ExpandImageFlag(
+          user_project=self.project,
           image=args.image,
           image_family=args.image_family,
           image_project=args.image_project,

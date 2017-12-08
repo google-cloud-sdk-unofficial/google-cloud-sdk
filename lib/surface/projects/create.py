@@ -33,6 +33,7 @@ from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import apis
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
@@ -137,7 +138,10 @@ class Create(base.CreateCommand):
       services_client = apis.GetClientInstance('servicemanagement', 'v1')
       enable_operation = services_enable_api.EnableServiceApiCall(
           project_ref.Name(), 'cloudapis.googleapis.com')
-      services_util.WaitForOperation(enable_operation.name, services_client)
+      enable_operation_ref = resources.REGISTRY.Parse(
+          enable_operation.name,
+          collection='servicemanagement.operations')
+      services_util.WaitForOperation(enable_operation_ref, services_client)
       # TODO(user): Retry in case it failed?
 
     if args.set_as_default:

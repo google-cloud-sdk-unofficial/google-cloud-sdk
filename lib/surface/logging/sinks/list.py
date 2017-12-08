@@ -98,6 +98,8 @@ class List(base.ListCommand):
     Returns:
       The list of sinks.
     """
+    util.WarnOnUsingLogOrServiceArguments(args)
+
     project = properties.VALUES.core.project.Get(required=True)
 
     if args.log:

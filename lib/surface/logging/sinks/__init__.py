@@ -24,13 +24,15 @@ class Sinks(base.Group):
   def Args(parser):
     """Add log name and log service name flags, used by sinks subcommands."""
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('--log',
-                       help=('The name of a log. Use this argument only '
-                             'if the sink applies to a single log.'))
-    group.add_argument('--log-service', dest='service',
-                       help=('The name of a log service. Use this argument '
-                             'only if the sink applies to all logs from '
-                             'a log service.'))
+    group.add_argument(
+        '--log',
+        help=('DEPRECATED. The name of a log. Use this argument only '
+              'if the sink applies to a single log.'))
+    group.add_argument(
+        '--log-service', dest='service',
+        help=('DEPRECATED. The name of a log service. Use this argument '
+              'only if the sink applies to all logs from '
+              'a log service.'))
 
   def Filter(self, context, args):
     """Modify the context that will be given to this group's commands when run.

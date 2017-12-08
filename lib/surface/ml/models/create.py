@@ -14,8 +14,10 @@
 """ml models create command."""
 
 from googlecloudsdk.api_lib.ml import models
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
+from googlecloudsdk.core import log
 
 
 class CreateBeta(base.CreateCommand):
@@ -28,6 +30,18 @@ class CreateBeta(base.CreateCommand):
   def Args(parser):
     """Register flags for this command."""
     flags.GetModelName().AddToParser(parser)
+    regions = parser.add_argument(
+        '--regions',
+        metavar='REGION',
+        type=arg_parsers.ArgList(min_length=1),
+        help=('Comma separated list of Google Cloud regions where the model '
+              'will be deployed.'))
+    regions.detailed_help = """\
+Comma separated list of Google Cloud regions where the model will be deployed.
+Currently only one region per model is supported.
+
+Will soon be required, but defaults to 'us-central1' for now.
+"""
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -39,4 +53,9 @@ class CreateBeta(base.CreateCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    return models.ModelsClient().Create(args.model)
+    regions = args.regions
+    if regions is None:
+      log.warn('`--regions` flag will soon be required. Please explicitly '
+               'specify a region. Using [us-central1] by default.')
+      regions = ['us-central1']
+    return models.ModelsClient().Create(args.model, regions)

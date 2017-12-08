@@ -74,6 +74,8 @@ class Describe(base.DescribeCommand):
     Returns:
       The specified sink with its destination.
     """
+    util.WarnOnUsingLogOrServiceArguments(args)
+
     try:
       if args.log:
         return util.TypedLogSink(self.GetLogSink(), log_name=args.log)

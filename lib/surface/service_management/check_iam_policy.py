@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.service_management import arg_parsers
 from googlecloudsdk.command_lib.service_management import common_flags
 
 
@@ -68,8 +69,10 @@ class CheckIamPolicy(base.Command):
     # Shorten the query request name for better readability
     query_request = messages.ServicemanagementServicesTestIamPermissionsRequest
 
+    service = arg_parsers.GetServiceNameFromArg(args.service)
+
     request = query_request(
-        servicesId=args.service,
+        servicesId=service,
         testIamPermissionsRequest=messages.TestIamPermissionsRequest(
             permissions=all_iam_permissions))
 

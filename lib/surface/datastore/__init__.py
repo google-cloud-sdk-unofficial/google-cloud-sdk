@@ -36,12 +36,3 @@ This set of commands allows you to create and delete datastore indexes.
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Datastore(base.Group):
   detailed_help = DETAILED_HELP
-
-
-@base.ReleaseTracks(base.ReleaseTrack.PREVIEW)
-@base.Deprecate(
-    is_removed=False,
-    warning='This is now available in GA and preview has been deprecated. '
-            'Please use the `gcloud datastore` commands instead.')
-class DatastorePreview(base.Group):
-  detailed_help = DETAILED_HELP

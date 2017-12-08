@@ -15,8 +15,10 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import csek_utils
+from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import scope as compute_scopes
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 
 MODE_OPTIONS = {
@@ -63,6 +65,7 @@ def _CommonArgs(parser):
   csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class AttachDisk(base_classes.NoOutputAsyncMutator):
   """Attach a disk to an instance."""
 
@@ -82,15 +85,18 @@ class AttachDisk(base_classes.NoOutputAsyncMutator):
   def resource_type(self):
     return 'instances'
 
+  def ParseDiskRef(self, args, instance_ref):
+    return instance_utils.ParseDiskResource(self.resources, args.disk,
+                                            instance_ref.zone,
+                                            compute_scopes.ScopeEnum.ZONE)
+
   def CreateRequests(self, args):
     """Returns a request for attaching a disk to an instance."""
     instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
         args, self.resources, scope_lister=flags.GetDefaultScopeLister(
             self.compute_client, self.project))
 
-    disk_ref = self.resources.Parse(
-        args.disk, collection='compute.disks',
-        params={'zone': instance_ref.zone})
+    disk_ref = self.ParseDiskRef(args, instance_ref)
 
     if args.mode == 'rw':
       mode = self.messages.AttachedDisk.ModeValueValuesEnum.READ_WRITE
@@ -114,7 +120,40 @@ class AttachDisk(base_classes.NoOutputAsyncMutator):
             diskEncryptionKey=disk_key_or_none),
         zone=instance_ref.zone)
 
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      request.forceAttach = args.force_attach
+
     return [request]
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AttachDiskAlpha(AttachDisk):
+  """Attach a disk to an instance."""
+
+  @staticmethod
+  def Args(parser):
+    instance_flags.AddDiskScopeFlag(parser)
+    force_attach = parser.add_argument(
+        '--force-attach',
+        default=False,
+        action='store_true',
+        help='Attach the disk to the instance even if there is another '
+             'instance currently attached to it.')
+    force_attach.detailed_help = """\
+    Attach the disk to the instance even if there is another instance currently
+    attached to it. The server will attempt to detach the disk cleanly from the existing
+    instance but will force attach to the new instance if that's not possible and will
+    continue to try to detach from the previous instance in the background."""
+    _CommonArgs(parser)
+
+  def ParseDiskRef(self, args, instance_ref):
+    if args.disk_scope == 'regional':
+      return instance_utils.ParseDiskResource(self.resources, args.disk,
+                                              instance_ref.zone,
+                                              compute_scopes.ScopeEnum.REGION)
+    else:
+      return super(AttachDiskAlpha, self).ParseDiskRef(args, instance_ref)
+
+
 AttachDisk.detailed_help = DETAILED_HELP
+AttachDiskAlpha.detailed_help = DETAILED_HELP

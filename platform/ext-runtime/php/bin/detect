@@ -17,6 +17,7 @@
 
 import json
 import os
+import posixpath
 import sys
 
 def get_config():
@@ -53,7 +54,7 @@ def main(args):
     if appinfo and 'runtime_config' in appinfo:
         if 'document_root' in appinfo['runtime_config']:
             root = appinfo['runtime_config']['document_root']
-            document_root = os.path.normpath(os.path.join('/app', root))
+            document_root = posixpath.normpath(posixpath.join('/app', root))
 
     directory = args[1]
     for dirpath, _, filenames in os.walk(directory):

@@ -108,23 +108,6 @@ def _Run(args):
                        'field to custom.'.format(config_filename))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.PREVIEW)
-class GenConfigPreview(base.Command):
-  """[DEPRECATED] Generate missing configuration files for a source directory.
-
-  This command is deprecated. Please use `gcloud beta app gen-config` instead.
-  """
-
-  @staticmethod
-  def Args(parser):
-    _Args(parser)
-
-  def Run(self, args):
-    log.warn('This command is deprecated. '
-             'Please use `gcloud beta app gen-config` instead.')
-    _Run(args)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class GenConfig(base.Command):
   """Generate missing configuration files for a source directory."""
@@ -183,4 +166,3 @@ _DETAILED_HELP = {
 }
 
 GenConfig.detailed_help = _DETAILED_HELP
-GenConfigPreview.detailed_help = _DETAILED_HELP

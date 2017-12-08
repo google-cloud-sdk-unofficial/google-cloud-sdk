@@ -1,4 +1,4 @@
-# Copyright 2015 Google Inc. All Rights Reserved.
+# Copyright 2017 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,14 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Flags and helpers for the compute accelerator-types commands."""
 
-"""To determine the version of Python used."""
+from googlecloudsdk.command_lib.compute import flags as compute_flags
 
-import sys
-
-IS_ON_PYTHON26 = False
-
-if sys.version_info[:2] < (2, 7):
-  IS_ON_PYTHON26 = True
-
-
+ACCELERATOR_TYPES_ARG = compute_flags.ResourceArgument(
+    resource_name='accelerator type',
+    completion_resource_id='compute.acceleratorTypes',
+    plural=False,
+    required=True,
+    zonal_collection='compute.acceleratorTypes',
+    short_help=('The name of the accelerator type.'))

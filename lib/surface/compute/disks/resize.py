@@ -27,8 +27,23 @@ CONTINUE_WITH_RESIZE_PROMPT = textwrap.dedent("""
     https://cloud.google.com/sdk/gcloud/reference/compute/disks/resize""")
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA,
-                    base.ReleaseTrack.BETA,
+def _CommonArgs(parser):
+  Resize.disks_arg.AddArgument(parser)
+  size = parser.add_argument(
+      '--size',
+      required=True,
+      type=arg_parsers.BinarySize(lower_bound='1GB'),
+      help='Indicates the new size of the disks.')
+  size.detailed_help = """\
+        Indicates the new size of the disks. The value must be a whole
+        number followed by a size unit of ``KB'' for kilobyte, ``MB''
+        for megabyte, ``GB'' for gigabyte, or ``TB'' for terabyte. For
+        example, ``10GB'' will produce 10 gigabyte disks.  Disk size
+        must be a multiple of 10 GB.
+        """
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Resize(base_classes.BaseAsyncMutator):
   """Set size of a persistent disk."""
@@ -47,25 +62,14 @@ class Resize(base_classes.BaseAsyncMutator):
 
   @classmethod
   def Args(cls, parser):
-    disks_flags.DISKS_ARG.AddArgument(parser)
-    size = parser.add_argument(
-        '--size',
-        required=True,
-        type=arg_parsers.BinarySize(lower_bound='1GB'),
-        help='Indicates the new size of the disks.')
-    size.detailed_help = """\
-        Indicates the new size of the disks. The value must be a whole
-        number followed by a size unit of ``KB'' for kilobyte, ``MB''
-        for megabyte, ``GB'' for gigabyte, or ``TB'' for terabyte. For
-        example, ``10GB'' will produce 10 gigabyte disks.  Disk size
-        must be a multiple of 10 GB.
-        """
+    Resize.disks_arg = disks_flags.MakeDiskArg(plural=True)
+    _CommonArgs(parser)
 
   def CreateRequests(self, args):
     """Returns a request for resizing a disk."""
 
     size_gb = utils.BytesToGb(args.size)
-    disk_refs = disks_flags.DISKS_ARG.ResolveAsResource(
+    disk_refs = Resize.disks_arg.ResolveAsResource(
         args, self.resources)
 
     console_io.PromptContinue(
@@ -75,11 +79,20 @@ class Resize(base_classes.BaseAsyncMutator):
     requests = []
 
     for disk_ref in disk_refs:
-      request = self.messages.ComputeDisksResizeRequest(
-          disk=disk_ref.Name(),
-          project=self.project,
-          zone=disk_ref.zone,
-          disksResizeRequest=self.messages.DisksResizeRequest(sizeGb=size_gb))
+      if disk_ref.Collection() == 'compute.disks':
+        request = self.messages.ComputeDisksResizeRequest(
+            disk=disk_ref.Name(),
+            project=self.project,
+            zone=disk_ref.zone,
+            disksResizeRequest=self.messages.DisksResizeRequest(sizeGb=size_gb))
+      elif disk_ref.Collection() == 'compute.regionDisks':
+        request = self.messages.ComputeRegionDisksResizeRequest(
+            disk=disk_ref.Name(),
+            project=self.project,
+            region=disk_ref.region,
+            regionDisksResizeRequest=self.messages.RegionDisksResizeRequest(
+                sizeGb=size_gb))
+        request = (self.compute.regionDisks, self.method, request)
       requests.append(request)
 
     return requests
@@ -105,3 +118,15 @@ Resize.detailed_help = {
 
         This assumes that original size of each of these disks is 6TB or less.
         """}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ResizeAlpha(Resize):
+
+  @classmethod
+  def Args(cls, parser):
+    Resize.disks_arg = disks_flags.MakeDiskArgZonalOrRegional(plural=True)
+    _CommonArgs(parser)
+
+
+ResizeAlpha.detailed_help = Resize.detailed_help

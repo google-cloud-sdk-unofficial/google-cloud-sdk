@@ -28,7 +28,8 @@ class Move(base.SilentCommand):
 
   @staticmethod
   def Args(parser):
-    disks_flags.DISK_ARG.AddArgument(parser)
+    Move.disk_arg = disks_flags.MakeDiskArg(plural=False)
+    Move.disk_arg.AddArgument(parser)
 
     parser.add_argument(
         '--destination-zone',
@@ -42,7 +43,7 @@ class Move(base.SilentCommand):
     """Returns a request for moving a disk."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
 
-    target_disk = disks_flags.DISK_ARG.ResolveAsResource(
+    target_disk = Move.disk_arg.ResolveAsResource(
         args, holder.resources,
         scope_lister=flags.GetDefaultScopeLister(holder.client))
     destination_zone = holder.resources.Parse(

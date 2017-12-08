@@ -64,5 +64,5 @@ class BetaCreate(base.CreateCommand):
     op = versions_client.Create(
         versions_util.ParseVersion(args.model, args.version), origin)
     return versions_util.WaitForOpMaybe(
-        versions_client.client, op, async_=args.async,
-        msg='Creating version (this might take a few minutes)...')
+        op, async_=args.async,
+        message='Creating version (this might take a few minutes)...')

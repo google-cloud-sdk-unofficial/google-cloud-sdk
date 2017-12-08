@@ -131,6 +131,10 @@ class Update(base.UpdateCommand):
     """
     util.CheckSinksCommandArguments(args)
 
+    if not args.unique_writer_identity:
+      log.warn(
+          '--unique-writer-identity is deprecated and will soon be removed.')
+
     # One of the flags is required to update the sink.
     # log_filter can be an empty string, so check explicitly for None.
     if not (args.destination or args.log_filter is not None or

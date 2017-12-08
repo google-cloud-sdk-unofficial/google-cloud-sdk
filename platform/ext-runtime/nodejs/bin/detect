@@ -18,6 +18,9 @@
 import json
 import os
 import sys
+import subprocess
+
+DEV_NULL = open(os.devnull, 'w')
 
 # Augment the path with our library directory.
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0])))
@@ -25,6 +28,19 @@ sys.path.append(os.path.join(ROOT_DIR, 'lib'))
 
 import comm
 
+def invoke(cmdArr):
+    """Invoke the given command in a shell and return its exit code.
+
+    This function is needed so that invoking a command returns the correct
+    return code on both Windows and Unix where invoking the command is
+    either mocked in unit tests or run on an actual machine.
+    """
+    try:
+        return subprocess.check_call(' '.join(cmdArr),
+                                     shell=True,
+                                     stdout=DEV_NULL)
+    except subprocess.CalledProcessError as e:
+        return e.returncode
 
 def main(args):
 
@@ -49,15 +65,75 @@ def main(args):
 
     comm.info('Checking for Node.js.')
     package_json = os.path.join(path, 'package.json')
+    yarn_lock = os.path.join(path, 'yarn.lock')
     got_shrinkwrap = False
 
     if not os.path.isfile(package_json):
         comm.debug('node.js checker: No package.json file.')
         got_package_json = False
-        got_npm_start = False
+        got_scripts_start = False
         node_version = None
+        use_yarn = False
     else:
         got_package_json = True
+
+        has_yarn_lock = os.path.isfile(yarn_lock)
+        if has_yarn_lock:
+            # This check is needed since with Yarn version 0.17.2, the current
+            # version at the time this code was written, the command
+            #     yarn check --strict-semver --integrity
+            # hangs if the yarn.lock file cannot be read.
+            #
+            # A possible race condition exists here where the yarn.lock file
+            # is readable at this point in the code, but is not readable when
+            # the 'yarn check ...' command is run.  However, since the file is
+            # ultimately going to be used by a subprocess, a race condition
+            # cannot be solved in this process's code.  Further, the
+            # probability of a race condition should be low.
+            if not os.access(yarn_lock, os.R_OK):
+                warn('Yarn checker: "yarn.lock" exists, indicating Yarn '
+                     'should be used, but Yarn cannot run since "yarn.lock" '
+                     'is not readable.')
+                return 1
+
+            try:
+                yarn_version_cmd = ['yarn', '--version']
+                yarn_version_ret = invoke(yarn_version_cmd)
+                comm.info('{0} returned {1}'.format(
+                    ' '.join(yarn_version_cmd), yarn_version_ret))
+                yarn_detected = yarn_version_ret == 0
+            except OSError as e:
+                warn('Encountered error {0} while trying to run Yarn'.format(e))
+                yarn_detected = False
+
+            if not yarn_detected:
+                warn('Yarn checker: "yarn.lock" was found indicating Yarn '
+                     'is being used, but "yarn" could not be run.')
+                return 1
+
+            try:
+                yarn_check_cmd = ['yarn',
+                                  'check',
+                                  '--strict-semver',
+                                  '--integrity']
+                yarn_check_ret = invoke(yarn_check_cmd)
+                comm.info('{0} returned {1}'.format(
+                    ' '.join(yarn_check_cmd), yarn_check_ret))
+                yarn_lock_valid = yarn_check_ret == 0
+
+                if yarn_lock_valid:
+                    use_yarn = True
+                else:
+                    warn('Yarn checker: "yarn.lock" was found indicating '
+                         'Yarn is being used, but "yarn check" indicates '
+                         '"yarn.lock" is invalid.')
+                    return 1
+            except OSError:
+                warn('Yarn checker: Failed to check the integrity of the '
+                     'file "yarn.lock"')
+                return 1
+        else:
+            use_yarn = False
 
         # Try to read the package.json file.
         try:
@@ -72,7 +148,7 @@ def main(args):
             return 1
 
         # See if we've got a scripts.start field.
-        got_npm_start = bool(contents.get('scripts', {}).get('start'))
+        got_scripts_start = bool(contents.get('scripts', {}).get('start'))
 
         # See if a version of node is specified.
         try:
@@ -89,17 +165,19 @@ def main(args):
                       'version, see '
                       'https://docs.npmjs.com/files/package.json#engines')
 
-    if got_npm_start or os.path.exists(os.path.join(path, 'server.js')):
+    if got_scripts_start or os.path.exists(os.path.join(path, 'server.js')):
       runtime = 'custom' if config.params.custom else 'nodejs'
       appinfo = {'runtime': runtime,
                  'env': 'flex'}
       comm.send_runtime_params({'got_package_json': got_package_json,
-                                'got_npm_start': got_npm_start,
-                                'node_version': node_version},
+                                'got_scripts_start': got_scripts_start,
+                                'node_version': node_version,
+                                'use_yarn': use_yarn},
                                 appinfo=appinfo)
 
     else:
-        warn('node.js checker: No npm start and no server.js')
+        warn('node.js checker: Neither "start" in the "scripts" section ' +
+             'of "package.json" nor the "server.js" file were found.')
         return 1
 
     return 0

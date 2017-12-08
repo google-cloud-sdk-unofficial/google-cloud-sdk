@@ -21,7 +21,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import progress_tracker
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Wait(base.Command):
   """Polls an operation until completion."""
 

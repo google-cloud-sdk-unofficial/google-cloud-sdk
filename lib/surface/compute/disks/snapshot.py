@@ -34,9 +34,21 @@ DETAILED_HELP = {
 }
 
 
+def _AddGuestFlushArgument(parser):
+  parser.add_argument(
+      '--guest-flush',
+      action='store_true',
+      default=False,
+      help=('Create an application consistent snapshot by informing the OS '
+            'to prepare for the snapshot process. Currently only supported '
+            'on Windows instances using the Volume Shadow Copy Service '
+            '(VSS).'))
+
+
 def _CommonArgs(parser):
   """Add parser arguments common to all tracks."""
-  disks_flags.DISKS_ARG.AddArgument(parser)
+  SnapshotDisks.disks_arg.AddArgument(parser)
+
   parser.add_argument(
       '--description',
       help=('An optional, textual description for the snapshots being '
@@ -66,6 +78,7 @@ class SnapshotDisks(base_classes.NoOutputAsyncMutator):
 
   @staticmethod
   def Args(parser):
+    SnapshotDisks.disks_arg = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(parser)
 
   @property
@@ -86,10 +99,11 @@ class SnapshotDisks(base_classes.NoOutputAsyncMutator):
 
   def CreateRequests(self, args):
     """Returns a list of requests necessary for snapshotting disks."""
-    disk_refs = disks_flags.DISKS_ARG.ResolveAsResource(
+    disk_refs = SnapshotDisks.disks_arg.ResolveAsResource(
         args, self.resources,
         scope_lister=flags.GetDefaultScopeLister(
             self.compute_client, self.project))
+
     if args.snapshot_names:
       if len(disk_refs) != len(args.snapshot_names):
         raise exceptions.ToolException(
@@ -122,16 +136,29 @@ class SnapshotDisks(base_classes.NoOutputAsyncMutator):
       else:
         request_kwargs = {}
 
-      request = self.messages.ComputeDisksCreateSnapshotRequest(
-          disk=disk_ref.Name(),
-          snapshot=self.messages.Snapshot(
-              name=snapshot_ref.Name(),
-              description=args.description,
-              sourceDiskEncryptionKey=disk_key_or_none
-          ),
-          project=self.project,
-          zone=disk_ref.zone,
-          **request_kwargs)
+      if disk_ref.Collection() == 'compute.disks':
+        request = self.messages.ComputeDisksCreateSnapshotRequest(
+            disk=disk_ref.Name(),
+            snapshot=self.messages.Snapshot(
+                name=snapshot_ref.Name(),
+                description=args.description,
+                sourceDiskEncryptionKey=disk_key_or_none
+            ),
+            project=disk_ref.project,
+            zone=disk_ref.zone,
+            **request_kwargs)
+      elif disk_ref.Collection() == 'compute.regionDisks':
+        request = self.messages.ComputeRegionDisksCreateSnapshotRequest(
+            disk=disk_ref.Name(),
+            snapshot=self.messages.Snapshot(
+                name=snapshot_ref.Name(),
+                description=args.description,
+                sourceDiskEncryptionKey=disk_key_or_none
+            ),
+            project=disk_ref.project,
+            region=disk_ref.region,
+            **request_kwargs)
+        request = (self.compute.regionDisks, self.method, request)
       requests.append(request)
 
       self._target_to_get_request[disk_ref.SelfLink()] = (
@@ -144,22 +171,28 @@ class SnapshotDisks(base_classes.NoOutputAsyncMutator):
     return requests
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class SnapshotDisksAlphaBeta(SnapshotDisks):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class SnapshotDisksBeta(SnapshotDisks):
   """Create snapshots of Google Compute Engine persistent disks."""
 
   @staticmethod
   def Args(parser):
+    SnapshotDisks.disks_arg = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(parser)
-    parser.add_argument(
-        '--guest-flush',
-        action='store_true',
-        default=False,
-        help=('Create an application consistent snapshot by informing the OS '
-              'to prepare for the snapshot process. Currently only supported '
-              'on Windows instances using the Volume Shadow Copy Service '
-              '(VSS).'))
+    _AddGuestFlushArgument(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SnapshotDisksAlpha(SnapshotDisks):
+  """Create snapshots of Google Compute Engine persistent disks."""
+
+  @staticmethod
+  def Args(parser):
+    SnapshotDisks.disks_arg = disks_flags.MakeDiskArgZonalOrRegional(
+        plural=True)
+    _CommonArgs(parser)
+    _AddGuestFlushArgument(parser)
 
 
 SnapshotDisks.detailed_help = DETAILED_HELP
-SnapshotDisksAlphaBeta.detailed_help = DETAILED_HELP
+SnapshotDisksBeta.detailed_help = DETAILED_HELP

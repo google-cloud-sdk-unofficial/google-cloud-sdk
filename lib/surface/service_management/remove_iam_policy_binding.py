@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.api_lib.util import http_retry
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
+from googlecloudsdk.command_lib.service_management import arg_parsers
 from googlecloudsdk.command_lib.service_management import common_flags
 
 
@@ -62,8 +63,11 @@ class RemoveIamPolicyBinding(base.Command):
     """
     messages = services_util.GetMessagesModule()
     client = services_util.GetClientInstance()
+
+    service = arg_parsers.GetServiceNameFromArg(args.service)
+
     request = messages.ServicemanagementServicesGetIamPolicyRequest(
-        servicesId=args.service)
+        servicesId=service)
 
     policy = client.services.GetIamPolicy(request)
 
@@ -72,6 +76,6 @@ class RemoveIamPolicyBinding(base.Command):
 
     # Send updated access policy to backend
     request = messages.ServicemanagementServicesSetIamPolicyRequest(
-        servicesId=args.service,
+        servicesId=service,
         setIamPolicyRequest=messages.SetIamPolicyRequest(policy=policy))
     return client.services.SetIamPolicy(request)

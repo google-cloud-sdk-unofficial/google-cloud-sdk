@@ -4,7 +4,6 @@
 
 import hashlib
 
-from containerregistry.client import typing  # pylint: disable=unused-import
 
 
 class BadManifestException(Exception):

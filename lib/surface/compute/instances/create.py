@@ -59,13 +59,14 @@ DETAILED_HELP = {
 
 
 def _CommonArgs(parser, multiple_network_interface_cards, release_track,
-                support_alias_ip_ranges):
+                support_alias_ip_ranges, enable_regional=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
-  instances_flags.AddDiskArgs(parser)
+  instances_flags.AddDiskArgs(parser, enable_regional)
   if release_track in [base.ReleaseTrack.ALPHA]:
     instances_flags.AddCreateDiskArgs(parser)
     instances_flags.AddExtendedMachineTypeArgs(parser)
+    instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddLocalSsdArgs(parser)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(
@@ -76,11 +77,7 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
   instances_flags.AddMaintenancePolicyArgs(parser)
   instances_flags.AddNoRestartOnFailureArgs(parser)
   instances_flags.AddPreemptibleVmArgs(parser)
-  # TODO(b/33688891) After 13th Jan 2017 Move to GA
-  if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-    instances_flags.AddServiceAccountAndScopeArgs(parser, False)
-  else:
-    instances_flags.AddScopeArgs(parser)
+  instances_flags.AddServiceAccountAndScopeArgs(parser, False)
   instances_flags.AddTagsArgs(parser)
   instances_flags.AddCustomMachineTypeArgs(parser)
   instances_flags.AddNetworkArgs(parser)
@@ -174,11 +171,8 @@ class Create(base.CreateCommand,
     instances_flags.ValidateDiskFlags(args)
     instances_flags.ValidateLocalSsdFlags(args)
     instances_flags.ValidateNicFlags(args)
-    # TODO(b/33688891) After 13th Jan 2017 Move to GA
-    if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-      instances_flags.ValidateServiceAccountAndScopeArgs(args)
-    else:
-      instances_flags.ValidateScopeFlags(args)
+    instances_flags.ValidateServiceAccountAndScopeArgs(args)
+    instances_flags.ValidateAcceleratorArgs(args)
 
     # This feature is only exposed in alpha/beta
     allow_rsa_encrypted = self.ReleaseTrack() in [base.ReleaseTrack.ALPHA,
@@ -248,6 +242,7 @@ class Create(base.CreateCommand,
     create_boot_disk = not instance_utils.UseExistingBootDisk(args.disk or [])
     if create_boot_disk:
       image_uri, _ = self.ExpandImageFlag(
+          user_project=self.project,
           image=args.image,
           image_family=args.image_family,
           image_project=args.image_project,
@@ -307,6 +302,8 @@ class Create(base.CreateCommand,
       disks_messages.append(persistent_disks + persistent_create_disks +
                             local_ssds)
 
+    accelerator_args = getattr(args, 'accelerator', None)
+
     project_to_sa = {}
     requests = []
     for instance_ref, machine_type_uri, disks in zip(
@@ -332,31 +329,43 @@ class Create(base.CreateCommand,
         if scopes is None:
           scopes = [] if args.no_scopes else args.scopes
 
-        if getattr(args, 'no_service_account', True):
+        if args.no_service_account:
           service_account = None
         else:
           service_account = args.service_account
         service_accounts = instance_utils.CreateServiceAccountMessages(
             messages=self.messages,
             scopes=scopes,
-            service_account=service_account,
-            # TODO(b/33688891) Stop silencing deprecation warning in GA
-            silence_deprecation_warning=(
-                self.ReleaseTrack() == base.ReleaseTrack.GA))
+            service_account=service_account)
         project_to_sa[instance_ref.project] = service_accounts
+
+      instance = self.messages.Instance(
+          canIpForward=args.can_ip_forward,
+          disks=disks,
+          description=args.description,
+          machineType=machine_type_uri,
+          metadata=metadata,
+          name=instance_ref.Name(),
+          networkInterfaces=network_interfaces,
+          serviceAccounts=project_to_sa[instance_ref.project],
+          scheduling=scheduling,
+          tags=tags)
+      if accelerator_args:
+        accelerator_type_name = accelerator_args['type']
+        accelerator_type_ref = self.resources.Parse(
+            accelerator_type_name,
+            collection='compute.acceleratorTypes',
+            params={'project': instance_ref.project,
+                    'zone': instance_ref.zone})
+        # Accelerator count is default to 1.
+        accelerator_count = int(accelerator_args.get('count', 1))
+        accelerators = instance_utils.CreateAcceleratorConfigMessages(
+            self.compute_client.messages, accelerator_type_ref,
+            accelerator_count)
+        instance.guestAccelerators = accelerators
+
       request = self.messages.ComputeInstancesInsertRequest(
-          instance=self.messages.Instance(
-              canIpForward=args.can_ip_forward,
-              disks=disks,
-              description=args.description,
-              machineType=machine_type_uri,
-              metadata=metadata,
-              name=instance_ref.Name(),
-              networkInterfaces=network_interfaces,
-              serviceAccounts=project_to_sa[instance_ref.project],
-              scheduling=scheduling,
-              tags=tags,
-          ),
+          instance=instance,
           project=instance_ref.project,
           zone=instance_ref.zone)
 
@@ -407,7 +416,8 @@ class CreateAlpha(Create):
     parser.add_argument('--sole-tenancy-host', help=argparse.SUPPRESS)
     _CommonArgs(parser, multiple_network_interface_cards=True,
                 release_track=base.ReleaseTrack.ALPHA,
-                support_alias_ip_ranges=True)
+                support_alias_ip_ranges=True,
+                enable_regional=True)
 
 
 Create.detailed_help = DETAILED_HELP

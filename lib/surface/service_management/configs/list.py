@@ -17,8 +17,8 @@
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.service_management import services_util
-
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.service_management import arg_parsers
 
 
 _DETAILED_HELP = {
@@ -67,8 +67,10 @@ class List(base.ListCommand):
     messages = services_util.GetMessagesModule()
     client = services_util.GetClientInstance()
 
+    service = arg_parsers.GetServiceNameFromArg(args.service)
+
     request = messages.ServicemanagementServicesConfigsListRequest(
-        serviceName=args.service)
+        serviceName=service)
 
     return list_pager.YieldFromList(
         client.services_configs,

@@ -233,6 +233,9 @@ ListBeta.detailed_help = {
         By default, all global, regional, zonal and Compute Accounts operations
         are listed. The results can be narrowed by providing combinations of
         the --zones, --regions, --global and --accounts flags.
+
+        Note: *{command}* displays operations fewer than 14 days old, up to a
+        maximum of 5000.
         """,
     'EXAMPLES': """\
         To list all operations in a project in table form, run:

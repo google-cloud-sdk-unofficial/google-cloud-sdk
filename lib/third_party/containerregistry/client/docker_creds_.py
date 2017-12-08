@@ -5,7 +5,6 @@
 import abc
 import base64
 
-from containerregistry.client import typing  # pylint: disable=unused-import
 import httplib2  # pylint: disable=unused-import
 from oauth2client import client as oauth2client  # pylint: disable=unused-import
 

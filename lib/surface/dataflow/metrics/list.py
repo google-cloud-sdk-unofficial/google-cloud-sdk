@@ -102,7 +102,7 @@ class List(base.ListCommand):
       args: all the arguments that were provided to this command invocation.
 
     Returns:
-      None on success, or a string containing the error message.
+      List of metric values.
     """
     job_ref = job_utils.ExtractJobRef(args.job)
 

@@ -27,7 +27,7 @@ def _Args(parser, include_beta, include_alpha=False):
   """Argument parsing."""
   flags.AddUpdateArgs(parser, include_beta=include_beta)
   flags.ADDRESS_ARG.AddArgument(parser)
-  flags.AddIPProtocols(parser, include_beta=include_beta)
+  flags.AddIPProtocols(parser)
   flags.AddDescription(parser)
   flags.AddPortsAndPortRange(parser)
   if include_alpha:

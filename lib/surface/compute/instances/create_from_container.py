@@ -33,7 +33,7 @@ class CreateFromContainer(base_classes.BaseAsyncCreator,
   def Args(parser):
     """Register parser args."""
     metadata_utils.AddMetadataArgs(parser)
-    instances_flags.AddDiskArgs(parser)
+    instances_flags.AddDiskArgs(parser, True)
     instances_flags.AddCreateDiskArgs(parser)
     instances_flags.AddLocalSsdArgs(parser)
     instances_flags.AddCanIpForwardArgs(parser)

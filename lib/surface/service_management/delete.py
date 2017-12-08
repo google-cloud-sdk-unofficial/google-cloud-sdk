@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.service_management import arg_parsers
 from googlecloudsdk.command_lib.service_management import common_flags
 from googlecloudsdk.core.console import console_io
 
@@ -82,8 +83,10 @@ class Delete(base.DeleteCommand):
         throw_if_unattended=True,
         cancel_on_no=True)
 
+    service = arg_parsers.GetServiceNameFromArg(args.service)
+
     request = messages.ServicemanagementServicesDeleteRequest(
-        serviceName=args.service,)
+        serviceName=service,)
 
     operation = client.services.Delete(request)
 

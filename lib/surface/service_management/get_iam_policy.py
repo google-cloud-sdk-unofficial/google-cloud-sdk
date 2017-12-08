@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.service_management import arg_parsers
 from googlecloudsdk.command_lib.service_management import common_flags
 
 
@@ -64,8 +65,10 @@ class GetIamPolicy(base.DescribeCommand):
     messages = services_util.GetMessagesModule()
     client = services_util.GetClientInstance()
 
+    service = arg_parsers.GetServiceNameFromArg(args.service)
+
     request = messages.ServicemanagementServicesGetIamPolicyRequest(
-        servicesId=args.service)
+        servicesId=service)
 
     return client.services.GetIamPolicy(request)
 

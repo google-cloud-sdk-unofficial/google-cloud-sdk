@@ -5,7 +5,6 @@
 import hashlib
 import json
 
-from containerregistry.client import typing  # pylint: disable=unused-import
 from containerregistry.client.v1 import docker_image as v1_image
 from containerregistry.client.v2 import docker_image as v2_image
 from containerregistry.client.v2 import util

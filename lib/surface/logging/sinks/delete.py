@@ -69,6 +69,8 @@ class Delete(base.DeleteCommand):
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
     """
+    util.WarnOnUsingLogOrServiceArguments(args)
+
     sink_ref = self.context['sink_reference']
 
     if args.log:

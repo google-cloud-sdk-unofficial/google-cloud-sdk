@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.service_management import arg_parsers
 from googlecloudsdk.command_lib.service_management import common_flags
 
 
@@ -46,8 +47,10 @@ class Describe(base.DescribeCommand):
     messages = services_util.GetMessagesModule()
     client = services_util.GetClientInstance()
 
+    service = arg_parsers.GetServiceNameFromArg(args.service)
+
     request = messages.ServicemanagementServicesGetRequest(
-        serviceName=args.service,)
+        serviceName=service,)
 
     return client.services.Get(request)
 

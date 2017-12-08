@@ -16,7 +16,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Operations(base.Group):
   """View and manage your App Engine Operations.
 

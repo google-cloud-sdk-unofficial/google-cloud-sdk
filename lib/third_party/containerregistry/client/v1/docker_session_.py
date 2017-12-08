@@ -11,7 +11,6 @@ import logging
 
 from containerregistry.client import docker_creds
 from containerregistry.client import docker_name  # pylint: disable=unused-import
-from containerregistry.client import typing  # pylint: disable=unused-import
 from containerregistry.client.v1 import docker_http
 from containerregistry.client.v1 import docker_image  # pylint: disable=unused-import
 

@@ -168,7 +168,7 @@ class ConfigSSH(ssh_utils.BaseSSHCommand):
       self.EnsureSSHKeyIsInProject(getpass.getuser())
       instances = list(self.GetInstances())
       if instances:
-        compute_section = _BuildComputeSection(instances, self.keys.key_file,
+        compute_section = _BuildComputeSection(instances, self.ssh_key_file,
                                                ssh.KnownHosts.DEFAULT_PATH)
       else:
         compute_section = ''

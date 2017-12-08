@@ -9,9 +9,6 @@ import os
 import subprocess
 
 from containerregistry.client import docker_name  # pylint: disable=unused-import
-from containerregistry.client import typing  # pylint: disable=unused-import
-
-# TODO(user): Replace or remove.
 
 
 class BadManifestException(Exception):

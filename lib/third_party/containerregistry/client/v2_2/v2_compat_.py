@@ -7,11 +7,11 @@ import gzip
 import hashlib
 import json
 
-from containerregistry.client import typing  # pylint: disable=unused-import
 from containerregistry.client.v2 import docker_image as v2_image
 from containerregistry.client.v2 import util as v2_util
 from containerregistry.client.v2_2 import docker_http
 from containerregistry.client.v2_2 import docker_image as v2_2_image
+
 
 
 class BadDigestException(Exception):
@@ -199,10 +199,10 @@ class V2FromV22(v2_image.DockerImage):
       raise BadDigestException('Invalid Digest: %s, must be in '
                                'algorithm : blobSumHex format.' % (digest))
 
-    data = parts[1] + ' ' + parent
+    data = str(parts[1] + ' ' + parent)
 
     if raw_config:
-      data += ' ' + raw_config
+      data += ' ' + str(raw_config)
     return hashlib.sha256(data).hexdigest()
 
   def _BuildV1Compatibility(

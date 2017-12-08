@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.service_management import arg_parsers
 from googlecloudsdk.command_lib.service_management import common_flags
 from googlecloudsdk.core import properties
 
@@ -75,8 +76,9 @@ class Disable(base.SilentCommand):
     client = services_util.GetClientInstance()
 
     project = properties.VALUES.core.project.Get(required=True)
+    service = arg_parsers.GetServiceNameFromArg(args.service)
     request = messages.ServicemanagementServicesDisableRequest(
-        serviceName=args.service,
+        serviceName=service,
         disableServiceRequest=messages.DisableServiceRequest(
             consumerId='project:' + project))
     operation = client.services.Disable(request)

@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.service_management import enable_api
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.service_management import arg_parsers
 from googlecloudsdk.command_lib.service_management import common_flags
 from googlecloudsdk.core import properties
 
@@ -73,7 +74,8 @@ class Enable(base.SilentCommand):
       The response from the consumer settings API call.
     """
     project = properties.VALUES.core.project.Get(required=True)
-    operation = enable_api.EnableServiceApiCall(project, args.service)
+    service = arg_parsers.GetServiceNameFromArg(args.service)
+    operation = enable_api.EnableServiceApiCall(project, service)
     return services_util.ProcessOperationResult(operation, args.async)
 
 

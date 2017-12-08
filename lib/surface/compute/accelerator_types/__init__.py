@@ -1,4 +1,4 @@
-# Copyright 2013 Google Inc. All Rights Reserved.
+# Copyright 2017 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,24 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Commands for reading disk types."""
 
-"""The gcloud app modules group."""
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.PREVIEW)
-class Modules(base.Group):
-  """Deprecated. View and manage your App Engine modules.
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AcceleratorTypes(base.Group):
+  """Read Google Compute Engine accelerator types."""
+  pass
 
-  This set of commands can be used to view and manage your existing App Engine
-  modules.  To create new deployments of modules, use {parent_command} deploy.
-  """
 
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To list your deployed modules, run:
-
-            $ {command} list
-      """,
-  }
+AcceleratorTypes.detailed_help = {
+    'brief': 'Read Google Compute Engine accelerator types',
+}

@@ -12,10 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for deleting disks."""
+
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
+from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 
 
-class Delete(base_classes.ZonalDeleter):
+def _RaiseIfMixZoneRegion(disk_refs):
+  zones_num = 0
+  regions_num = 0
+  for disk in disk_refs:
+    if disk.Collection() == 'compute.disks':
+      zones_num += 1
+    if disk.Collection() == 'compute.regionDisks':
+      regions_num += 1
+  if zones_num > 0 and regions_num > 0:
+    raise exceptions.InvalidArgumentException(
+        'Not Supported: You can not mix delete of zonal and regional '
+        'Disks')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class Delete(base.DeleteCommand):
   """Delete Google Compute Engine persistent disks.
 
   *{command}* deletes one or more Google Compute Engine
@@ -23,19 +47,82 @@ class Delete(base_classes.ZonalDeleter):
   being used by any virtual machine instances.
   """
 
-  @property
-  def service(self):
-    return self.compute.disks
+  @staticmethod
+  def Args(parser):
+    Delete.disks_arg = disks_flags.MakeDiskArg(plural=True)
+    Delete.disks_arg.AddArgument(parser, operation_type='delete')
 
-  @property
-  def resource_type(self):
-    return 'disks'
+  def _GetCommonScopeNameForRefs(self, refs):
+    """Gets common scope for references."""
+    has_zone = any(hasattr(ref, 'zone') for ref in refs)
+    has_region = any(hasattr(ref, 'region') for ref in refs)
 
-  @property
-  def custom_prompt(self):
-    return ('The following disks will be deleted. Deleting a disk is '
-            'irreversible and any data on the disk will be lost.')
+    if has_zone and not has_region:
+      return 'zone'
+    elif has_region and not has_zone:
+      return 'region'
+    else:
+      return None
+
+  def _CreateDeleteRequests(self, client, disk_refs):
+    """Returns a list of delete messages for disks."""
+
+    messages = client.MESSAGES_MODULE
+    requests = []
+    for disk_ref in disk_refs:
+      if disk_ref.Collection() == 'compute.disks':
+        service = client.disks
+        request = messages.ComputeDisksDeleteRequest(
+            disk=disk_ref.Name(),
+            project=disk_ref.project,
+            zone=disk_ref.zone)
+      elif disk_ref.Collection() == 'compute.regionDisks':
+        service = client.regionDisks
+        request = messages.ComputeRegionDisksDeleteRequest(
+            disk=disk_ref.Name(),
+            project=disk_ref.project,
+            region=disk_ref.region)
+      else:
+        raise ValueError('Unknown reference type {0}'.
+                         format(disk_ref.Collection()))
+
+      requests.append((service, 'Delete', request))
+    return requests
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+
+    disk_refs = Delete.disks_arg.ResolveAsResource(
+        args, holder.resources,
+        default_scope=compute_scope.ScopeEnum.ZONE,
+        scope_lister=flags.GetDefaultScopeLister(holder.client))
+
+    scope_name = self._GetCommonScopeNameForRefs(disk_refs)
+
+    utils.PromptForDeletion(
+        disk_refs, scope_name=scope_name, prompt_title=None)
+
+    # Disable ability to mix zonal and regional delete in one command.
+    # This is temporary workaround of missing functionality
+    # TODO(b/32276307)
+    _RaiseIfMixZoneRegion(disk_refs)
+
+    requests = list(self._CreateDeleteRequests(
+        holder.client.apitools_client, disk_refs))
+
+    return holder.client.MakeRequests(requests)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaDelete(Delete):
+  """Delete Google Compute Engine persistent disks.
+
+  *{command}* deletes one or more Google Compute Engine
+  persistent disks. Disks can be deleted only if they are not
+  being used by any virtual machine instances.
+  """
 
   @staticmethod
   def Args(parser):
-    base_classes.ZonalDeleter.Args(parser, 'compute.disks')
+    Delete.disks_arg = disks_flags.MakeDiskArgZonalOrRegional(plural=True)
+    Delete.disks_arg.AddArgument(parser, operation_type='delete')

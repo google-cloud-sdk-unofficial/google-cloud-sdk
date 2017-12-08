@@ -61,16 +61,4 @@ class AppengineGA(base.Group):
         'appengine', None, 'appsId',
         properties.VALUES.core.project.Get(required=True))
 
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.PREVIEW)
-class AppenginePreview(base.Group):
-
-  def Filter(self, unused_context, unused_args):
-    log.warn('The `gcloud preview app` command group is deprecated; please use '
-             'the `gcloud app` commands instead.')
-    checks.RaiseIfNotPython27()
-
-
 AppengineGA.detailed_help = DETAILED_HELP
-AppenginePreview.detailed_help = DETAILED_HELP

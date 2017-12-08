@@ -77,19 +77,5 @@ class DeployBeta(base.SilentCommand):
                                  upload_strategy=upload_strategy,
                                  use_runtime_builders=use_runtime_builders)
 
-
-@base.ReleaseTracks(base.ReleaseTrack.PREVIEW)
-class DeployPreview(base.SilentCommand):
-  """Deploy the local code and/or configuration of your app to App Engine."""
-
-  @staticmethod
-  def Args(parser):
-    """Get arguments for this command."""
-    deploy_util.ArgsDeploy(parser)
-
-  def Run(self, args):
-    return deploy_util.RunDeploy(args, enable_endpoints=True)
-
 DeployGA.detailed_help = _DETAILED_HELP
 DeployBeta.detailed_help = _DETAILED_HELP
-DeployPreview.detailed_help = _DETAILED_HELP

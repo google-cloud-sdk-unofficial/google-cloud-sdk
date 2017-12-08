@@ -58,15 +58,25 @@ def main(args):
             out.write(INSTALL_NODE_TEMPLATE %
                       {'version_spec': pipes.quote(runtime_data.node_version)})
 
+        # If the directory structure indicates that yarn is being used
+        # then install yarn since (unlike npm) Node.js doesn't include it
+        if runtime_data.use_yarn:
+            out.write(ROOT.read_file('data', 'install-yarn'))
+
         out.write('COPY . /app/\n')
 
-        # Generate npm install if there is a package.json.
+        # Generate npm or yarn install if there is a package.json.
         if runtime_data.got_package_json:
-            out.write(ROOT.read_file('data/package-json-install'))
+            out.write(
+                ROOT.read_file('data/{0}-package-json-install'.
+                               format('yarn' if runtime_data.use_yarn
+                                      else 'npm')))
 
         # Generate the appropriate start command.
-        if runtime_data.got_npm_start:
-            out.write('CMD npm start\n')
+        if runtime_data.got_scripts_start:
+            out.write(
+                'CMD {0} start\n'.format('yarn' if runtime_data.use_yarn
+                                         else 'npm'))
         else:
             out.write('CMD node server.js\n')
 

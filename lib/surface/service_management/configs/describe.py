@@ -16,7 +16,10 @@
 
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.service_management import arg_parsers
 from googlecloudsdk.command_lib.service_management import completion_callbacks
+from googlecloudsdk.core import resolvers
+from googlecloudsdk.core import resources
 
 
 _DETAILED_HELP = {
@@ -48,7 +51,6 @@ class Describe(base.DescribeCommand):
     """
     callback = completion_callbacks.ProducerServiceFlagCompletionCallback
     parser.add_argument('--service',
-                        required=True,
                         completion_resource=services_util.SERVICES_COLLECTION,
                         list_command_callback_fn=callback,
                         help='The service from which to retrieve the '
@@ -68,8 +70,14 @@ class Describe(base.DescribeCommand):
       The response from the Get API call.
     """
 
+    service = arg_parsers.GetServiceNameFromArg(args.service)
+    config_ref = resources.REGISTRY.Parse(
+        args.config_id,
+        params={'serviceName': resolvers.FromArgument('--service', service)},
+        collection='servicemanagement.services.configs')
+
     # Check if the user wants the active config or a specific config.
-    return self._GetConfig(args.service, args.config_id)
+    return self._GetConfig(config_ref.serviceName, config_ref.configId)
 
   def Collection(self):
     return services_util.CONFIG_COLLECTION

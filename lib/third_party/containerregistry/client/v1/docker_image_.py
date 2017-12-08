@@ -16,7 +16,6 @@ import tempfile
 
 from containerregistry.client import docker_creds
 from containerregistry.client import docker_name
-from containerregistry.client import typing  # pylint: disable=unused-import
 from containerregistry.client.v1 import docker_http
 
 import httplib2  # pylint: disable=unused-import

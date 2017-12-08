@@ -18,6 +18,7 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.logs import stream
 from googlecloudsdk.command_lib.ml import flags
 from googlecloudsdk.command_lib.ml import jobs as jobs_prep
+from googlecloudsdk.command_lib.ml import log_utils
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -126,18 +127,19 @@ class BetaTrain(base.Command):
       log.status.Print(_FOLLOW_UP_MESSAGE.format(job_id=job.jobId))
       return job
 
-    log_fetcher = stream.LogFetcher(job_id=job.jobId,
-                                    polling_interval=_POLLING_INTERVAL,
-                                    allow_multiline_logs=False)
+    log_fetcher = stream.LogFetcher(
+        filters=log_utils.LogFilters(job.jobId),
+        polling_interval=_POLLING_INTERVAL,
+        continue_func=log_utils.MakeContinueFunction(job.jobId))
 
-    printer = resource_printer.Printer(stream.LogFetcher.LOG_FORMAT,
+    printer = resource_printer.Printer(log_utils.LOG_FORMAT,
                                        out=log.err)
     def _CtrlCHandler(signal, frame):
       del signal, frame  # Unused
       raise KeyboardInterrupt
     with execution_utils.CtrlCSection(_CtrlCHandler):
       try:
-        printer.Print(log_fetcher.YieldLogs())
+        printer.Print(log_utils.SplitMultiline(log_fetcher.YieldLogs()))
       except KeyboardInterrupt:
         log.status.Print('Received keyboard interrupt.')
         log.status.Print(_FOLLOW_UP_MESSAGE.format(job_id=job.jobId))

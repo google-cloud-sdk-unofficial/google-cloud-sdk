@@ -10,7 +10,6 @@ import concurrent.futures
 
 from containerregistry.client import docker_creds  # pylint: disable=unused-import
 from containerregistry.client import docker_name
-from containerregistry.client import typing  # pylint: disable=unused-import
 from containerregistry.client.v2_2 import docker_http
 from containerregistry.client.v2_2 import docker_image  # pylint: disable=unused-import
 from containerregistry.client.v2_2 import util

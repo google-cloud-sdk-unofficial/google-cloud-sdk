@@ -5,7 +5,6 @@
 import os
 import sys
 
-from containerregistry.client import typing  # pylint: disable=unused-import
 
 
 class BadNameException(Exception):

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """ml versions delete command."""
-
 from googlecloudsdk.api_lib.ml import versions_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
@@ -45,4 +44,5 @@ class BetaDelete(base.DeleteCommand):
     version_ref = versions_util.ParseVersion(args.model, args.version)
     op = versions_client.Delete(version_ref)
     return versions_util.WaitForOpMaybe(
-        versions_client.client, op, async_=False, msg='Deleting version...')
+        op, async_=False,
+        message='Deleting version [{}]...'.format(version_ref.versionsId))

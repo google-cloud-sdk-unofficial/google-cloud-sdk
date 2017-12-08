@@ -37,14 +37,15 @@ class Create(base.CreateCommand):
               'specifies which log entries to export.'))
     parser.add_argument(
         '--output-version-format', required=False,
-        help=('Format of the log entries being exported. Detailed information: '
+        help=('DEPRECATED. Format of the log entries being exported. Detailed '
+              'information: '
               'https://cloud.google.com/logging/docs/api/introduction_v2'),
         choices=('V1', 'V2'), default='V1')
     parser.add_argument(
         '--unique-writer-identity', required=False, action='store_true',
         default=True,
-        help=('Whether to create a new writer identity for this sink. Only '
-              'available for project sinks.'))
+        help=('DEPRECATED. Whether to create a new writer identity for this '
+              'sink. Only available for project sinks.'))
 
   def Collection(self):
     return 'logging.sinks'
@@ -95,6 +96,10 @@ class Create(base.CreateCommand):
       The created sink with its destination.
     """
     util.CheckSinksCommandArguments(args)
+
+    if not args.unique_writer_identity:
+      log.warn(
+          '--unique-writer-identity is deprecated and will soon be removed.')
 
     if not (args.log or args.service or args.log_filter):
       # Attempt to create a project sink with an empty filter.

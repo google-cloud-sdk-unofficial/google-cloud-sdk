@@ -10,7 +10,6 @@ import urllib
 
 from containerregistry.client import docker_creds  # pylint: disable=unused-import
 from containerregistry.client import docker_name  # pylint: disable=unused-import
-from containerregistry.client import typing  # pylint: disable=unused-import
 import httplib2  # pylint: disable=unused-import
 
 # Options for docker_http.Transport actions

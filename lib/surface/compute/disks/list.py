@@ -12,9 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for listing persistent disks."""
+
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base_classes.ZonalLister):
   """List Google Compute Engine persistent disks."""
 
@@ -27,4 +30,51 @@ class List(base_classes.ZonalLister):
     return 'disks'
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(base_classes.MultiScopeLister):
+  """List Google Compute Engine persistent disks."""
+
+  @staticmethod
+  def Args(parser):
+    base_classes.MultiScopeLister.AddScopeArgs(
+        parser,
+        scopes=[base_classes.ScopeType.zonal_scope,
+                base_classes.ScopeType.regional_scope])
+
+  def Format(self, args):
+    return """table(name,
+                    location(),
+                    location_scope(),
+                    sizeGb,
+                    type.basename(),
+                    status)"""
+
+  def Collection(self):
+    return 'compute.disks'
+
+  @property
+  def global_service(self):
+    """The service used to list global resources."""
+    raise NotImplementedError()
+
+  @property
+  def regional_service(self):
+    """The service used to list regional resources."""
+    return self.compute.regionDisks
+
+  @property
+  def zonal_service(self):
+    """The service used to list regional resources."""
+    return self.compute.disks
+
+  @property
+  def aggregation_service(self):
+    """The service used to get aggregated list of resources."""
+    return self.zonal_service
+
+
 List.detailed_help = base_classes.GetZonalListerHelp('disks')
+ListAlpha.detailed_help = base_classes.GetMultiScopeListerHelp(
+    'disks',
+    scopes=[base_classes.ScopeType.zonal_scope,
+            base_classes.ScopeType.regional_scope])
