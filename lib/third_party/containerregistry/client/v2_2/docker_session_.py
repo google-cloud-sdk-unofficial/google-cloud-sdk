@@ -82,9 +82,10 @@ class Push(object):
     # GET the manifest by digest, and check for 200
     resp, unused_content = self._transport.Request(
         '{base_url}/manifests/{digest}'.format(
-            base_url=self._base_url(),
-            digest=manifest_digest),
-        method='GET', accepted_codes=[httplib.OK, httplib.NOT_FOUND])
+            base_url=self._base_url(), digest=manifest_digest),
+        method='GET',
+        accepted_codes=[httplib.OK, httplib.NOT_FOUND],
+        accepted_mimes=docker_http.MANIFEST_SCHEMA2_MIMES)
 
     return resp.status == httplib.OK  # pytype: disable=attribute-error
 
@@ -166,13 +167,13 @@ class Push(object):
     """Upload the aufs .tgz for a single layer."""
     # We have a few choices for unchunked uploading:
     if not self._mount:
-    #   POST to /v2/<name>/blobs/uploads/?digest=<digest>
-    # TODO(user): Not supported by DockerHub
+      #   POST to /v2/<name>/blobs/uploads/?digest=<digest>
+      # TODO(user): Not supported by DockerHub
       self._monolithic_upload(image, digest)
     else:
-    # or:
-    #   POST /v2/<name>/blobs/uploads/        (no body*)
-    #   PUT  /v2/<name>/blobs/uploads/<uuid>  (full body)
+      # or:
+      #   POST /v2/<name>/blobs/uploads/        (no body*)
+      #   PUT  /v2/<name>/blobs/uploads/<uuid>  (full body)
       self._put_upload(image, digest)
     # or:
     #   POST   /v2/<name>/blobs/uploads/        (no body*)
@@ -314,5 +315,4 @@ def Delete(
           repository=name.repository,
           entity=_tag_or_digest(name)),
       method='DELETE',
-      accepted_codes=[httplib.OK])
-
+      accepted_codes=[httplib.OK, httplib.ACCEPTED])

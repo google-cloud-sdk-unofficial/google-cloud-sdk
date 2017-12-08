@@ -23,22 +23,37 @@ from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
 
 
+DETAILED_HELP = {
+    'DESCRIPTION': """\
+        The gcloud dataproc command group lets you create and manage Google
+        Cloud Dataproc clusters and jobs.
+
+        Cloud Dataproc is an Apache Hadoop, Apache Spark, Apache Pig, and Apache
+        Hive service. It easily processes big datasets at low cost, creating
+        managed clusters of any size that scale down once processing is
+        complete.
+
+        More information on Cloud Dataproc can be found here:
+        https://cloud.google.com/dataproc and detailed documentation can be
+        found here: https://cloud.google.com/dataproc/docs/
+
+        ## EXAMPLES
+
+        To see how to create and manage clusters, run:
+
+            $ {command} clusters
+
+        To see how to submit and manage jobs, run:
+
+            $ {command} jobs
+        """,
+}
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Dataproc(base.Group):
-  """Create and manage Google Cloud Dataproc clusters and jobs.
-
-  Create and manage Google Cloud Dataproc clusters and jobs.
-
-  ## EXAMPLES
-
-  To see how to create and manage clusters, run:
-
-    $ {command} clusters
-
-  To see how to submit and manage jobs, run:
-
-    $ {command} jobs
-  """
+  """Create and manage Google Cloud Dataproc clusters and jobs."""
+  detailed_help = DETAILED_HELP
 
   # The only dataproc region
   REGION = 'global'

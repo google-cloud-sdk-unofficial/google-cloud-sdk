@@ -25,20 +25,14 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
+from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as instance_groups_managed_flags
 from googlecloudsdk.command_lib.compute.managed_instance_groups import update_instances_utils
 from googlecloudsdk.core.util import times
 
 
 def _AddArgs(parser):
   """Adds args."""
-  parser.add_argument('--type',
-                      choices={
-                          'opportunistic': 'Replace instances when needed.',
-                          'proactive': 'Replace instances proactively.',
-                      },
-                      default='proactive',
-                      category=base.COMMONLY_USED_FLAGS,
-                      help='Desired update type.')
+  instance_groups_managed_flags.AddTypeArg(parser)
   parser.add_argument('--action',
                       choices={
                           'replace': 'Replace instances by new ones',
@@ -47,24 +41,9 @@ def _AddArgs(parser):
                       default='replace',
                       category=base.COMMONLY_USED_FLAGS,
                       help='Desired action.')
-  parser.add_argument('--max-surge',
-                      type=str,
-                      help=('Maximum additional number of instances that '
-                            'can be created during the update process. '
-                            'This can be a fixed number (e.g. 5) or '
-                            'a percentage of size to the managed instance '
-                            'group (e.g. 10%)'))
-  parser.add_argument('--max-unavailable',
-                      type=str,
-                      help=('Maximum number of instances that can be '
-                            'unavailable during the update process. '
-                            'This can be a fixed number (e.g. 5) or '
-                            'a percentage of size to the managed instance '
-                            'group (e.g. 10%)'))
-  parser.add_argument('--min-ready',
-                      type=arg_parsers.Duration(lower_bound='0s'),
-                      help=('Minimum time for which a newly created instance '
-                            'should be ready to be considered available.'))
+  instance_groups_managed_flags.AddMaxSurgeArg(parser)
+  instance_groups_managed_flags.AddMaxUnavailableArg(parser)
+  instance_groups_managed_flags.AddMinReadyArg(parser)
   parser.add_argument('--version-original',
                       type=arg_parsers.ArgDict(spec={
                           'template': str,
@@ -83,10 +62,7 @@ def _AddArgs(parser):
                       help=('New instance template resource to be used. '
                             'Each version has the following format: '
                             'template=TEMPLATE,[target-size=FIXED_OR_PERCENT]'))
-  parser.add_argument('--force',
-                      action='store_true',
-                      help=('If set, accepts any original or new version '
-                            'configurations without validation.'))
+  instance_groups_managed_flags.AddForceArg(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -141,7 +117,7 @@ class UpdateInstancesAlpha(base_classes.BaseCommand):
         self.messages)
 
     igm_info = managed_instance_groups_utils.GetInstanceGroupManagerOrThrow(
-        igm_ref, self.project, self.compute, self.http, self.batch_url)
+        igm_ref, self.compute_client)
     if args.action == 'replace':
       versions = []
       if args.version_original:

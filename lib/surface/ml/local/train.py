@@ -76,7 +76,7 @@ class RunLocal(base.Command):
     # Mimic behavior of ml jobs submit training
     package_root = os.path.dirname(os.path.abspath(package_path))
     if args.distributed:
-      local_train.RunDistributed(
+      retval = local_train.RunDistributed(
           args.module_name,
           package_root,
           args.parameter_server_count or 2,
@@ -89,7 +89,10 @@ class RunLocal(base.Command):
             flag='--parameter-server-count'))
       if args.worker_count:
         log.warn(_BAD_FLAGS_WARNING_MESSAGE.format(flag='--worker-count'))
-      local_train.MakeProcess(args.module_name,
-                              package_root,
-                              args=args.user_args,
-                              task_type='master')
+      retval = local_train.MakeProcess(args.module_name,
+                                       package_root,
+                                       args=args.user_args,
+                                       task_type='master')
+    # Don't raise an exception because the users will already see the message.
+    # We want this to mimic calling the script directly as much as possible.
+    self.exit_code = retval

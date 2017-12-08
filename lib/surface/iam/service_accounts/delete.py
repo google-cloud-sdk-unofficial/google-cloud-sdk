@@ -40,19 +40,19 @@ class Delete(base_classes.BaseIamCommand, base.DeleteCommand):
   @staticmethod
   def Args(parser):
     # TODO(user): add tab completion.
-    parser.add_argument('account',
+    parser.add_argument('name',
                         metavar='IAM-ACCOUNT',
                         help='The service account to delete.')
 
   def Run(self, args):
     try:
       console_io.PromptContinue(message='You are about to delete service '
-                                        'account [{0}].'.format(args.account),
+                                        'account [{0}].'.format(args.name),
                                 cancel_on_no=True)
       self.iam_client.projects_serviceAccounts.Delete(
           self.messages.IamProjectsServiceAccountsDeleteRequest(
-              name=iam_util.EmailToAccountResourceName(args.account)))
+              name=iam_util.EmailToAccountResourceName(args.name)))
 
-      log.status.Print('deleted service account [{0}]'.format(args.account))
+      log.status.Print('deleted service account [{0}]'.format(args.name))
     except exceptions.HttpError as error:
-      raise iam_util.ConvertToServiceAccountException(error, args.account)
+      raise iam_util.ConvertToServiceAccountException(error, args.name)

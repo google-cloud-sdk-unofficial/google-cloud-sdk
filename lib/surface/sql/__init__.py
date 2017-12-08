@@ -37,6 +37,21 @@ _ACTIVE_VERSIONS = [
     'v1beta4',
 ]
 
+DETAILED_HELP = {
+    'DESCRIPTION': """\
+        The gcloud sql command group lets you create and manage Google Cloud SQL
+        databases.
+
+        Cloud SQL is a fully-managed database service that makes it easy to set
+        up, maintain, manage, and administer your relational MySQL databases in
+        the cloud.
+
+        More information on Cloud SQL can be found here:
+        https://cloud.google.com/sql and detailed documentation can be found
+        here: https://cloud.google.com/sql/docs/
+        """,
+}
+
 
 def _Args(parser):
   parser.add_argument(
@@ -76,7 +91,8 @@ class SQL(base.Group):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SQLBeta(base.Group):
-  """Manage Cloud SQL databases."""
+  """Create and manage Google Cloud SQL databases."""
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

@@ -20,7 +20,8 @@ from googlecloudsdk.command_lib.compute.xpn import flags
 class GetHostProject(base.Command):
   """Get the XPN host project that the given project is linked to.
 
-  That is, get the XPN host project the given project can use via XPN.
+  Get the cross-project networking (XPN) host project of this project, whose
+  networks can be accessed from this one via XPN.
   """
 
   detailed_help = {
@@ -38,5 +39,5 @@ class GetHostProject(base.Command):
     flags.GetProjectIdArgument('get the host project for').AddToParser(parser)
 
   def Run(self, args):
-    xpn_client = xpn_api.GetXpnClient()
+    xpn_client = xpn_api.GetXpnClient(api_version='beta')
     return xpn_client.GetHostProject(args.project)

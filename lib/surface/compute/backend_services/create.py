@@ -52,6 +52,20 @@ def _ResolveProtocol(messages, args, default='HTTP'):
       args.protocol or default)
 
 
+def AddIapFlag(parser):
+  iap_flag = flags.AddIap(parser)
+  # TODO(b/34479878): It would be nice if the auto-generated help text were
+  # a bit better so we didn't need to be quite so verbose here.
+  iap_flag.detailed_help = """\
+    Configure Identity Aware Proxy (IAP) service. You can configure IAP to be
+    'enabled' or 'disabled' (default). If it is enabled you can provide values
+    for 'oauth2-client-id' and 'oauth2-client-secret'. For example,
+    '--iap=enabled,oauth2-client-id=foo,oauth2-client-secret=bar' will
+    turn IAP on, and '--iap=disabled' will turn it off. See
+    https://cloud.google.com/iap/ for more information about this feature.
+    """
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateGA(backend_services_utils.BackendServiceMutator):
   """Create a backend service."""
@@ -149,6 +163,16 @@ class CreateGA(backend_services_utils.BackendServiceMutator):
         protocol=_ResolveProtocol(self.messages, args, default='TCP'),
         timeoutSec=args.timeout)
 
+  def _ApplyIapArgs(self, iap_arg, backend_service):
+    if iap_arg is not None:
+      backend_service.iap = backend_services_utils.GetIAP(iap_arg,
+                                                          self.messages)
+      if backend_service.iap.enabled:
+        log.warning(backend_services_utils.IapBestPracticesNotice())
+      if (backend_service.iap.enabled and backend_service.protocol is not
+          self.messages.BackendService.ProtocolValueValuesEnum.HTTPS):
+        log.warning(backend_services_utils.IapHttpWarning())
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateGA):
@@ -173,8 +197,7 @@ class CreateAlpha(CreateGA):
     flags.AddAffinityCookieTtl(parser)
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddLoadBalancingScheme(parser)
-
-    flags.AddIap(parser)
+    AddIapFlag(parser)
 
   def CreateGlobalRequests(self, args):
     if args.load_balancing_scheme == 'INTERNAL':
@@ -206,13 +229,7 @@ class CreateAlpha(CreateGA):
     if args.affinity_cookie_ttl is not None:
       backend_service.affinityCookieTtlSec = args.affinity_cookie_ttl
 
-    if args.iap:
-      backend_service.iap = backend_services_utils.GetIAP(args, self.messages)
-      if (backend_service.iap.enabled and backend_service.protocol is not
-          self.messages.BackendService.ProtocolValueValuesEnum.HTTPS):
-        log.warning('IAP has been enabled for a backend service that does '
-                    'not use HTTPS. Data sent from the Load Balancer to your '
-                    'VM will not be encrypted.')
+    self._ApplyIapArgs(args.iap, backend_service)
 
     request = self.messages.ComputeBackendServicesInsertRequest(
         backendService=backend_service,
@@ -277,6 +294,7 @@ class CreateBeta(CreateGA):
     flags.AddAffinityCookieTtl(parser)
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddLoadBalancingScheme(parser)
+    AddIapFlag(parser)
 
   def CreateGlobalRequests(self, args):
     if args.load_balancing_scheme == 'INTERNAL':
@@ -293,6 +311,8 @@ class CreateBeta(CreateGA):
               args.session_affinity))
     if args.session_affinity is not None:
       backend_service.affinityCookieTtlSec = args.affinity_cookie_ttl
+
+    self._ApplyIapArgs(args.iap, backend_service)
 
     request = self.messages.ComputeBackendServicesInsertRequest(
         backendService=backend_service,

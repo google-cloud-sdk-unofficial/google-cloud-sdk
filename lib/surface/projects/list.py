@@ -44,6 +44,4 @@ class List(base.ListCommand):
 
   def Run(self, args):
     """Run the list command."""
-
-    # TODO(user): b/27946801 handle --limit,--page-size,--filter
     return projects_api.List()

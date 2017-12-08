@@ -137,7 +137,7 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
         ext=getattr(args, 'custom_extensions', None),
         instance_refs=instance_refs)
 
-    image_uri = containers_utils.ExpandGciImageFlag(self.compute_client)
+    image_uri = containers_utils.ExpandCosImageFlag(self.compute_client)
     requests = []
     for instance_ref, machine_type_uri in zip(instance_refs, machine_type_uris):
       metadata = containers_utils.CreateMetadataMessage(

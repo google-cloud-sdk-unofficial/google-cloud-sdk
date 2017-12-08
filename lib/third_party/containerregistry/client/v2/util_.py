@@ -135,4 +135,3 @@ def Rename(manifest, name):
 
   # Sign the updated manifest
   return Sign(updated_unsigned_manifest)
-

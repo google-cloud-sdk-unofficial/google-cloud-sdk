@@ -191,4 +191,3 @@ class Push(object):
     self._put_images()
 
     logging.info('Finished upload of: %s', self._name)
-

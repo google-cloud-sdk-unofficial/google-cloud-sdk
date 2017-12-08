@@ -20,7 +20,7 @@ from googlecloudsdk.core import properties
 
 
 class ListHostProjects(base.ListCommand):
-  """List the projects in a given organization that are enabled as XPN hosts."""
+  """List projects in a given organization that are enabled as XPN hosts."""
 
   detailed_help = {
       'EXAMPLES': """
@@ -42,7 +42,7 @@ class ListHostProjects(base.ListCommand):
     return command_lib_util.PROJECTS_COLLECTION
 
   def Run(self, args):
-    xpn_client = xpn_api.GetXpnClient()
+    xpn_client = xpn_api.GetXpnClient(api_version='beta')
     project = properties.VALUES.core.project.Get(required=True)
     organization_id = args.id
     return xpn_client.ListOrganizationHostProjects(

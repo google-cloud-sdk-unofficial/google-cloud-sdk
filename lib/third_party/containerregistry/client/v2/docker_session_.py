@@ -299,5 +299,4 @@ def Delete(
           repository=name.repository,
           entity=_tag_or_digest(name)),
       method='DELETE',
-      accepted_codes=[httplib.OK])
-
+      accepted_codes=[httplib.OK, httplib.ACCEPTED])

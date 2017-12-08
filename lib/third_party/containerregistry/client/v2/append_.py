@@ -92,4 +92,3 @@ class Layer(docker_image.DockerImage):
   def __exit__(self, unused_type, unused_value, unused_traceback):
     """Override."""
     return
-

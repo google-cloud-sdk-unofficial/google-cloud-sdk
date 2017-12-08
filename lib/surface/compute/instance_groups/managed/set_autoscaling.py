@@ -119,7 +119,7 @@ class SetAutoscaling(base_classes.BaseAsyncMutator):
 
     # Assert that Instance Group Manager exists.
     managed_instance_groups_utils.GetInstanceGroupManagerOrThrow(
-        igm_ref, self.project, self.compute, self.http, self.batch_url)
+        igm_ref, self.compute_client)
 
     autoscaler_resource, is_new = self.CreateAutoscalerResource(igm_ref, args)
 

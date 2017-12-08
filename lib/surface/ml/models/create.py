@@ -42,6 +42,10 @@ Currently only one region per model is supported.
 
 Will soon be required, but defaults to 'us-central1' for now.
 """
+    parser.add_argument(
+        '--enable-logging',
+        action='store_true',
+        help=('If set, enables StackDriver Logging for online prediction.'))
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -58,4 +62,5 @@ Will soon be required, but defaults to 'us-central1' for now.
       log.warn('`--regions` flag will soon be required. Please explicitly '
                'specify a region. Using [us-central1] by default.')
       regions = ['us-central1']
-    return models.ModelsClient().Create(args.model, regions)
+    return models.ModelsClient().Create(args.model, regions,
+                                        args.enable_logging)

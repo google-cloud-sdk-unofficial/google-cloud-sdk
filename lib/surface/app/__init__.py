@@ -25,11 +25,20 @@ from googlecloudsdk.core.util import platforms
 
 
 DETAILED_HELP = {
-    'brief': 'Manage your App Engine app.',
+    'brief': 'Manage your App Engine deployments.',
     'DESCRIPTION': """
-        This set of commands allows you to deploy your app and manage your
-        existing deployments.  These commands replace their equivalents in the
-        appcfg tool.
+        The gcloud app command group lets you deploy and manage your Google App
+        Engine apps. These commands replace their equivalents in the appcfg
+        tool.
+
+        App Engine is a platform for building scalable web applications
+        and mobile backends. App Engine provides you with built-in services and
+        APIs such as NoSQL datastores, memcache, and a user authentication API,
+        common to most applications.
+
+        More information on App Engine can be found here:
+        https://cloud.google.com/appengine and detailed documentation can be
+        found here: https://cloud.google.com/appengine/docs/
         """,
     'EXAMPLES': """\
         To run your app locally in the development application server, run:

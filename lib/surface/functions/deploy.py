@@ -13,10 +13,10 @@
 # limitations under the License.
 
 """'functions deploy' command."""
-import argparse
 import httplib
 import os
 import random
+import re
 import string
 
 from apitools.base.py import exceptions as apitools_exceptions
@@ -29,6 +29,7 @@ from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions.deploy import util as deploy_util
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import progress_tracker
@@ -61,9 +62,6 @@ def _SourceCodeArgs(parser):
   """Add arguments specyfying functions source code to the parser."""
   path_group = parser.add_mutually_exclusive_group()
   path_group.add_argument(
-      '--source',
-      help=argparse.SUPPRESS)
-  path_group.add_argument(
       '--local-path',
       help=('Path to local directory with source code. Required with '
             '--stage-bucket flag.'))
@@ -73,10 +71,6 @@ def _SourceCodeArgs(parser):
             'Repositories, when you specify this parameter --source-url flag '
             'is required.'))
   source_group = parser.add_mutually_exclusive_group()
-  source_group.add_argument(
-      '--bucket',
-      help=argparse.SUPPRESS,
-      type=util.ValidateAndStandarizeBucketUriOrRaise)
   source_group.add_argument(
       '--stage-bucket',
       help=('Name of Google Cloud Storage bucket in which source code will '
@@ -126,6 +120,14 @@ def _SourceCodeArgs(parser):
       'the name of a JavaScript function that will be executed when the '
       'Google Cloud Function is triggered.'
   )
+  parser.add_argument(
+      '--include-node-modules',
+      help=('Include the content of node_modules with deployed sources; if '
+            'this flag is not specified node_modules will not be included. '
+            'This flag can only be used in conjunction with the --local-path '
+            'flag.'),
+      default=False,
+      action='store_true')
 
 
 def _TriggerArgs(parser):
@@ -137,10 +139,6 @@ def _TriggerArgs(parser):
             'will trigger function execution with message contents passed as '
             'input data.'),
       type=util.ValidatePubsubTopicNameOrRaise)
-  trigger_group.add_argument(
-      '--trigger-gs-uri',
-      help=argparse.SUPPRESS,
-      type=util.ValidateAndStandarizeBucketUriOrRaise)
   trigger_group.add_argument(
       '--trigger-bucket',
       help=('Google Cloud Storage bucket name. Every change in files in this '
@@ -223,7 +221,15 @@ class Deploy(base.Command):
     zip_file_name = os.path.join(tmp_dir, 'fun.zip')
     local_path = deploy_util.GetLocalPath(args)
     try:
-      archive.MakeZipFromDir(zip_file_name, local_path)
+      if args.include_node_modules:
+        archive.MakeZipFromDir(zip_file_name, local_path)
+      else:
+        log.info('Not including node_modules in deployed code. To include '
+                 'node_modules in uploaded code use --include-node-modules '
+                 'flag.')
+        archive.MakeZipFromDir(
+            zip_file_name, local_path, skip_file_regex=re.escape(
+                'node_modules' + os.sep))
     except ValueError as e:
       raise exceptions.FunctionsError(
           'Error creating a ZIP archive with the source code '
@@ -286,7 +292,7 @@ class Deploy(base.Command):
         name, args.entry_point, args.timeout, args.trigger_http, trigger_params)
     if args.source_url:
       messages = self.context['functions_messages']
-      source_path = args.source or args.source_path
+      source_path = args.source_path
       source_branch = args.source_branch or 'master'
       function.sourceRepository = messages.SourceRepository(
           tag=args.source_tag, branch=source_branch,
@@ -301,14 +307,13 @@ class Deploy(base.Command):
 
   def _PrepareSourcesOnGcs(self, args):
     remote_zip_file = self._GenerateRemoteZipFileName(args)
-    stage_bucket = args.bucket or args.stage_bucket
-    gcs_url = storage.BuildRemoteDestination(stage_bucket, remote_zip_file)
+    gcs_url = storage.BuildRemoteDestination(args.stage_bucket, remote_zip_file)
     with file_utils.TemporaryDirectory() as tmp_dir:
       zip_file = self._CreateZipFile(tmp_dir, args)
       if self._UploadFile(zip_file, gcs_url) != 0:
         raise exceptions.FunctionsError(
             'Failed to upload the function source code to the bucket {0}'
-            .format(stage_bucket))
+            .format(args.stage_bucket))
     return gcs_url
 
   @util.CatchHTTPErrorRaiseHTTPException

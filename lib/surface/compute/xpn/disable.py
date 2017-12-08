@@ -17,6 +17,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.xpn import flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Disable(base.Command):
   """Disable the given project as an XPN host.
 

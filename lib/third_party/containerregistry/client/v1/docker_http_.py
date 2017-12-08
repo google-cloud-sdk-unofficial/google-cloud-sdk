@@ -80,4 +80,3 @@ def Scheme(endpoint):
     return 'http'
   else:
     return 'https'
-

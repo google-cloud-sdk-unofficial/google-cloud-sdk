@@ -13,4 +13,3 @@ class BadManifestException(Exception):
 def Digest(manifest):
   """Compute the digest of the manifest."""
   return 'sha256:' + hashlib.sha256(manifest).hexdigest()
-

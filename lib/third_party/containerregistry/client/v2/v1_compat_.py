@@ -148,4 +148,3 @@ class V2FromV1(v2_image.DockerImage):
 
   def __exit__(self, unused_type, unused_value, unused_traceback):
     pass
-

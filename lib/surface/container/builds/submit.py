@@ -41,9 +41,10 @@ _ALLOWED_SOURCE_EXT = ['.zip', '.tgz', '.gz']
 class FailedBuildException(core_exceptions.Error):
   """Exception for builds that did not succeed."""
 
-  def __init__(self, status):
+  def __init__(self, build):
     super(FailedBuildException, self).__init__(
-        'build completed with status "{status}"'.format(status=status))
+        'build {id} completed with status "{status}"'.format(
+            id=build.id, status=build.status))
 
 
 @base.ReleaseTracks(
@@ -180,9 +181,8 @@ class Submit(base.CreateCommand):
       _, suffix = os.path.splitext(args.source)
 
     # Next, stage the source to Cloud Storage.
-    staged_object = '{stamp}_{tag_ish}{suffix}'.format(
+    staged_object = '{stamp}{suffix}'.format(
         stamp=times.GetTimeStampFromDateTime(times.Now()),
-        tag_ish='_'.join(build_config.images or ['null']).replace('/', '_'),
         suffix=suffix,
     )
     gcs_source_staging_dir = registry.Parse(
@@ -331,7 +331,7 @@ class Submit(base.CreateCommand):
           'the timeout threshold.')
 
     if build.status != messages.Build.StatusValueValuesEnum.SUCCESS:
-      raise FailedBuildException(build.status)
+      raise FailedBuildException(build)
 
     return build
 

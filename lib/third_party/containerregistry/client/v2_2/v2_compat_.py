@@ -281,4 +281,3 @@ class V2FromV22(v2_image.DockerImage):
 
   def __exit__(self, unused_type, unused_value, unused_traceback):
     pass
-

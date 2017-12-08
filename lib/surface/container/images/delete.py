@@ -76,7 +76,7 @@ class Delete(base.DeleteCommand):
       A list of the deleted docker_name.Tag and docker_name.Digest objects
     """
     # IMAGE_NAME: The fully-qualified image name to delete (with a digest).
-    # Deletes the layers. Ex. gcr.io/google_appengine/java(@DIGEST|:TAG).
+    # Deletes the layers. Ex. gcr.io/google-appengine/java(@DIGEST|:TAG).
 
     http_obj = http.Http()
     # collect input/validate

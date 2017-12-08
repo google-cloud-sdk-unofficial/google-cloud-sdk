@@ -34,7 +34,7 @@ class RemoveIamPolicyBinding(base_classes.BaseIamCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('account',
+    parser.add_argument('name',
                         metavar='IAM-ACCOUNT',
                         help='The service account whose policy to '
                         'remove the binding from.')
@@ -45,14 +45,14 @@ class RemoveIamPolicyBinding(base_classes.BaseIamCommand):
     try:
       policy = self.iam_client.projects_serviceAccounts.GetIamPolicy(
           self.messages.IamProjectsServiceAccountsGetIamPolicyRequest(
-              resource=iam_util.EmailToAccountResourceName(args.account)))
+              resource=iam_util.EmailToAccountResourceName(args.name)))
 
       iam_util.RemoveBindingFromIamPolicy(policy, args.member, args.role)
 
       return self.iam_client.projects_serviceAccounts.SetIamPolicy(
           self.messages.IamProjectsServiceAccountsSetIamPolicyRequest(
-              resource=iam_util.EmailToAccountResourceName(args.account),
+              resource=iam_util.EmailToAccountResourceName(args.name),
               setIamPolicyRequest=self.messages.SetIamPolicyRequest(
                   policy=policy)))
     except exceptions.HttpError as error:
-      raise iam_util.ConvertToServiceAccountException(error, args.account)
+      raise iam_util.ConvertToServiceAccountException(error, args.name)

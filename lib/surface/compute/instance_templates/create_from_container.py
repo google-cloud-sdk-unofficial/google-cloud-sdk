@@ -129,7 +129,7 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
         scopes=[] if args.no_scopes else args.scopes,
         service_account=service_account)
 
-    image_uri = containers_utils.ExpandGciImageFlag(self.compute_client)
+    image_uri = containers_utils.ExpandCosImageFlag(self.compute_client)
 
     machine_type = instance_utils.InterpretMachineType(
         machine_type=args.machine_type,

@@ -28,7 +28,7 @@ _DEFAULT_KINDS = [
 ]
 
 
-class List(base.ListCommand):
+class ListTags(base.ListCommand):
   """List tags and digests for the specified image."""
 
   detailed_help = {
@@ -67,6 +67,9 @@ class List(base.ListCommand):
     parser.add_argument(
         'image',
         help='The name of the image. Format: *.gcr.io/repository/image')
+
+    # Does nothing for us, included in base.ListCommand
+    base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

@@ -13,6 +13,7 @@
 # limitations under the License.
 """ml jobs submit training command."""
 from googlecloudsdk.api_lib.ml import jobs
+from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.logs import stream
@@ -81,7 +82,21 @@ class BetaTrain(base.Command):
     compute_flags.AddRegionFlag(parser, 'machine learning training job',
                                 'submit')
     flags.CONFIG.AddToParser(parser)
-    flags.GetStagingBucket(required=True).AddToParser(parser)
+    flags.STAGING_BUCKET.AddToParser(parser)
+    parser.add_argument(
+        '--job-dir',
+        type=storage_util.ObjectReference.FromUrl,
+        help="""\
+            A Google Cloud Storage path in which to store training outputs and
+            other data needed for training.
+
+            This path will be passed to your TensorFlow program as `--job_dir`
+            command-line arg.The benefit of specifying this field is that Cloud
+            ML will validate the path for use in training.
+
+            If packages must be uploaded and `--staging-bucket` is not provided,
+            this path will be used instead.
+        """)
     flags.GetUserArgs(local=False).AddToParser(parser)
     flags.SCALE_TIER.AddToParser(parser)
     flags.RUNTIME_VERSION.AddToParser(parser)
@@ -101,10 +116,19 @@ class BetaTrain(base.Command):
       Some value that we want to have printed later.
     """
     region = properties.VALUES.compute.region.Get(required=True)
-    uris = jobs_prep.UploadPythonPackages(
-        packages=args.packages, package_path=args.package_path,
-        staging_bucket=args.staging_bucket, job_name=args.job)
+    staging_location = jobs_prep.GetStagingLocation(
+        staging_bucket=args.staging_bucket, job_id=args.job,
+        job_dir=args.job_dir)
+    try:
+      uris = jobs_prep.UploadPythonPackages(
+          packages=args.packages, package_path=args.package_path,
+          staging_location=staging_location)
+    except jobs_prep.NoStagingLocationError:
+      raise flags.ArgumentError(
+          'If local packages are provided, the `--staging-bucket` or '
+          '`--job-dir` flag must be given.')
     log.debug('Using {0} as trainer uris'.format(uris))
+
     scale_tier_enum = (jobs.GetMessagesModule().
                        GoogleCloudMlV1beta1TrainingInput.
                        ScaleTierValueValuesEnum)
@@ -115,6 +139,7 @@ class BetaTrain(base.Command):
         job_name=args.job,
         trainer_uri=uris,
         region=region,
+        job_dir=args.job_dir.ToUrl() if args.job_dir else None,
         scale_tier=scale_tier,
         user_args=args.user_args,
         runtime_version=args.runtime_version)

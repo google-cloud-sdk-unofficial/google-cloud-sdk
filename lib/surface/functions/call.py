@@ -50,6 +50,9 @@ class Call(base.Command):
     function_ref = registry.Parse(
         args.name, params={'projectsId': project, 'locationsId': args.region},
         collection='cloudfunctions.projects.locations.functions')
+    # Do not retry calling function - most likely user want to know that the
+    # call failed and debug.
+    client.projects_locations_functions.client.num_retries = 0
     return client.projects_locations_functions.Call(
         messages.CloudfunctionsProjectsLocationsFunctionsCallRequest(
             name=function_ref.RelativeName(),

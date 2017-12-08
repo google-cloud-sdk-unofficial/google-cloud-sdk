@@ -38,9 +38,10 @@ Cloud SQL instance ID.
 .TP 2m
 \fB\-\-activation\-policy\fR=\fIACTIVATION_POLICY\fR
 The activation policy for this instance. This specifies when the instance should
-be activated and is applicable only when the instance state is RUNNABLE.
-\fIACTIVATION_POLICY\fR must be one of: \fBALWAYS\fR, \fBNEVER\fR,
-\fBON_DEMAND\fR.
+be activated and is applicable only when the instance state is RUNNABLE. More
+information on activation policies can be found here:
+https://cloud.google.com/sql/faq#activation_policy. \fIACTIVATION_POLICY\fR must
+be one of: \fBALWAYS\fR, \fBNEVER\fR, \fBON_DEMAND\fR.
 
 .TP 2m
 \fB\-\-assign\-ip\fR
@@ -126,7 +127,9 @@ Specified if users connecting over IP must use SSL. Use
 
 .TP 2m
 \fB\-\-tier\fR=\fITIER\fR, \fB\-t\fR \fITIER\fR; default="D1"
-The tier of service for this instance, for example D0, D1.
+The tier for first generation Cloud SQL instances, for example D0, D1, D2. A
+complete list of tiers is available here:
+https://cloud.google.com/sql/pricing#packages
 
 
 .RE

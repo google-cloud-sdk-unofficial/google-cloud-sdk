@@ -253,4 +253,3 @@ def extract(image, tar):
             tar.addfile(member, fileobj=layer_tar.extractfile(member.name))
           else:
             tar.addfile(member, fileobj=None)
-

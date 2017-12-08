@@ -138,9 +138,10 @@ class Upgrade(base.Command):
         image_type=args.image_type)
 
     if options.version:
-      new_version = options.version
+      new_version_message = 'version [{new_version}]'.format(
+          new_version=options.version)
     else:
-      new_version = 'latest'
+      new_version_message = 'master version'
 
     if args.master:
       node_message = 'Master'
@@ -152,15 +153,15 @@ class Upgrade(base.Command):
       current_version = cluster.currentNodeVersion
 
     console_io.PromptContinue(
-        message=
-        '{node_message} of cluster [{cluster_name}] will be upgraded '
-        'from version [{current_version}] to version [{new_version}]. '
+        message='{node_message} of cluster [{cluster_name}] will be upgraded '
+        'from version [{current_version}] to {new_version_message}. '
         'This operation is long-running and will block other operations '
         'on the cluster (including delete) until it has run to completion.'
-        .format(node_message=node_message,
-                cluster_name=cluster.name,
-                current_version=current_version,
-                new_version=new_version),
+        .format(
+            node_message=node_message,
+            cluster_name=cluster.name,
+            current_version=current_version,
+            new_version_message=new_version_message),
         throw_if_unattended=True,
         cancel_on_no=True)
 

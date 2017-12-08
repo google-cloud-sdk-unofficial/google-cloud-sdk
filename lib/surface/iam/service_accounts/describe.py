@@ -44,7 +44,7 @@ class Describe(base_classes.BaseIamCommand, base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('account',
+    parser.add_argument('name',
                         metavar='IAM-ACCOUNT',
                         help='The service account to describe.')
 
@@ -53,6 +53,6 @@ class Describe(base_classes.BaseIamCommand, base.DescribeCommand):
       # TODO(b/25212870): use resource parsing.
       return self.iam_client.projects_serviceAccounts.Get(
           self.messages.IamProjectsServiceAccountsGetRequest(
-              name=iam_util.EmailToAccountResourceName(args.account)))
+              name=iam_util.EmailToAccountResourceName(args.name)))
     except exceptions.HttpError as error:
-      raise iam_util.ConvertToServiceAccountException(error, args.account)
+      raise iam_util.ConvertToServiceAccountException(error, args.name)

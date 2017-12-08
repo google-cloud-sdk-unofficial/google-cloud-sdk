@@ -17,5 +17,10 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Xpn(base.Group):
-  """Configure cross-project networking."""
+class XpnAlpha(base.Group):
+  """Configure cross-project networking (XPN)."""
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class XpnBeta(base.Group):
+  """View cross-project networking (XPN)."""

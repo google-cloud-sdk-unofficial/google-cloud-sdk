@@ -42,7 +42,7 @@ class BetaCreate(base.CreateCommand):
     flags.VERSION_DATA.AddToParser(parser)
     flags.RUNTIME_VERSION.AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
-    flags.GetStagingBucket(required=False).AddToParser(parser)
+    flags.STAGING_BUCKET.AddToParser(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

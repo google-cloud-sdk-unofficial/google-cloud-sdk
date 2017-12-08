@@ -123,4 +123,3 @@ class OAuth2(Basic):
     # Most useful API ever:
     # https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={at}
     return self._creds.get_access_token(http=self._transport).access_token
-

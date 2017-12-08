@@ -50,7 +50,8 @@ class _BaseCreate(object):
         default=None,
         help='The activation policy for this instance. This specifies when the '
         'instance should be activated and is applicable only when the '
-        'instance state is RUNNABLE.')
+        'instance state is RUNNABLE. More information on activation policies '
+        'can be found here: https://cloud.google.com/sql/faq#activation_policy')
     parser.add_argument(
         '--assign-ip',
         required=False,
@@ -152,7 +153,9 @@ class _BaseCreate(object):
         '-t',
         required=False,
         default='D1',
-        help='The tier of service for this instance, for example D0, D1.')
+        help='The tier for first generation Cloud SQL instances, for example '
+        ' D0, D1, D2. A complete list of tiers is available here: '
+        'https://cloud.google.com/sql/pricing#packages')
     parser.add_argument(
         '--database-flags',
         type=arg_parsers.ArgDict(min_length=1),

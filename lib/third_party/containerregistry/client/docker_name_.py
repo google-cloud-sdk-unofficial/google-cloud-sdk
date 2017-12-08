@@ -188,4 +188,3 @@ class Digest(Repository):
 
   def __hash__(self):
     return hash((self.repository, self.digest))
-

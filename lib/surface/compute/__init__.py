@@ -25,14 +25,26 @@ from googlecloudsdk.core import properties
 
 
 DETAILED_HELP = {
-    'brief': 'Read and manipulate Google Compute Engine resources',
+    'DESCRIPTION': """\
+        The gcloud compute command group lets you create, configure and
+        manipulate Google Compute Engine virtual machines.
+
+        With Compute Engine you can create and run virtual machines
+        on Google infrastructure. Compute Engine offers scale, performance, and
+        value that allows you to easily launch large compute clusters on
+        Google's infrastructure.
+
+        More information on Compute Engine can be found here:
+        https://cloud.google.com/compute/ and detailed documentation can be
+        found here: https://cloud.google.com/compute/docs/
+        """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Compute(base.Group):
-  """Read and manipulate Google Compute Engine resources."""
+  """Create and manipulate Google Compute Engine resources."""
   detailed_help = DETAILED_HELP
 
   @staticmethod
