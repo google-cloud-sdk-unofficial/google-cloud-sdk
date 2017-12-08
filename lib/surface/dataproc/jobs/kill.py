@@ -14,7 +14,7 @@
 
 """Kill job command."""
 
-from googlecloudsdk.api_lib.dataproc import util
+from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
@@ -40,15 +40,14 @@ class Kill(base.Command):
         help='The ID of the job to kill.')
 
   def Run(self, args):
-    client = self.context['dataproc_client']
-    messages = self.context['dataproc_messages']
+    dataproc = dp.Dataproc()
 
-    job_ref = util.ParseJob(args.id, self.context)
-    request = messages.DataprocProjectsRegionsJobsCancelRequest(
+    job_ref = dataproc.ParseJob(args.id)
+    request = dataproc.messages.DataprocProjectsRegionsJobsCancelRequest(
         projectId=job_ref.projectId,
         region=job_ref.region,
         jobId=job_ref.jobId,
-        cancelJobRequest=messages.CancelJobRequest())
+        cancelJobRequest=dataproc.messages.CancelJobRequest())
 
     # TODO(b/36049788) Check if Job is still running and fail or handle 401.
 
@@ -57,15 +56,14 @@ class Kill(base.Command):
         cancel_on_no=True,
         cancel_string='Cancellation aborted by user.')
 
-    job = client.projects_regions_jobs.Cancel(request)
+    job = dataproc.client.projects_regions_jobs.Cancel(request)
     log.status.Print(
         'Job cancellation initiated for [{0}].'.format(job_ref.jobId))
 
-    job = util.WaitForJobTermination(
+    job = dataproc.WaitForJobTermination(
         job,
-        self.context,
         message='Waiting for job cancellation',
-        goal_state=messages.JobStatus.StateValueValuesEnum.CANCELLED)
+        goal_state=dataproc.messages.JobStatus.StateValueValuesEnum.CANCELLED)
 
     log.status.Print('Killed [{0}].'.format(job_ref))
 

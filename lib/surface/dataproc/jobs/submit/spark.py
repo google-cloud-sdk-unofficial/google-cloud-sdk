@@ -54,14 +54,14 @@ class Spark(base_classes.JobSubmitter):
     driver_group = parser.add_argument_group()
     util.AddJvmDriverFlags(driver_group)
 
-  def ConfigureJob(self, job, args):
+  def ConfigureJob(self, messages, job, args):
     SparkBase.ConfigureJob(
-        self.context['dataproc_messages'],
+        messages,
         job,
-        self.BuildLoggingConfig(args.driver_log_levels),
+        self.BuildLoggingConfig(messages, args.driver_log_levels),
         self.files_by_type,
         args)
-    super(Spark, self).ConfigureJob(job, args)
+    super(Spark, self).ConfigureJob(messages, job, args)
 
   def PopulateFilesByType(self, args):
     self.files_by_type.update(SparkBase.GetFilesByType(args))
@@ -95,14 +95,14 @@ class SparkBeta(base_classes.JobSubmitterBeta):
     driver_group = parser.add_mutually_exclusive_group(required=True)
     util.AddJvmDriverFlags(driver_group)
 
-  def ConfigureJob(self, job, args):
+  def ConfigureJob(self, messages, job, args):
     SparkBase.ConfigureJob(
-        self.context['dataproc_messages'],
+        messages,
         job,
-        self.BuildLoggingConfig(args.driver_log_levels),
+        self.BuildLoggingConfig(messages, args.driver_log_levels),
         self.files_by_type,
         args)
-    super(SparkBeta, self).ConfigureJob(job, args)
+    super(SparkBeta, self).ConfigureJob(messages, job, args)
 
   def PopulateFilesByType(self, args):
     self.files_by_type.update(SparkBase.GetFilesByType(args))

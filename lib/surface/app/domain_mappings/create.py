@@ -69,7 +69,9 @@ class CreateAlpha(CreateBeta):
 
           To create a domain with an automatically managed certificate, run:
 
-              $ {command} '*.example.com'
+              $ {command} 'example.com'
+
+          Note: managed certificates do not support wildcard domain mappings.
 
           To create a domain with no associated certificate, run:
 

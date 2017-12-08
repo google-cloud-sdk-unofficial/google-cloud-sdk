@@ -42,10 +42,7 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        'name',
-        metavar='REPOSITORY_NAME',
-        help=('Name of the repository.'))
+    parser.add_argument('repository_name', help='Name of the repository.')
 
   def Run(self, args):
     """Describe a named GCP repository in the current project.
@@ -60,7 +57,7 @@ class Describe(base.DescribeCommand):
       ToolException: on project initialization errors.
     """
     res = resources.REGISTRY.Parse(
-        args.name,
+        args.repository_name,
         params={'projectsId': properties.VALUES.core.project.GetOrFail},
         collection='sourcerepo.projects.repos')
     sourcerepo_handler = sourcerepo.Source()

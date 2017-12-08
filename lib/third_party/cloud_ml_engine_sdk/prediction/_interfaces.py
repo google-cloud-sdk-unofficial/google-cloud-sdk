@@ -84,28 +84,54 @@ class PredictionClient(object):
     raise NotImplementedError()
 
 
-class Servable(object):
+class Preprocessor(object):
+  """Interface for processing instances one-by-one before prediction."""
 
-  """A Model factory.
-
-  Can be used to create a model that implements the predict method, or a class
-  that implements the preprocess and/or the postprocess methods.
-  """
-
-  @classmethod
-  def from_client(cls, client, path):
-    """Creates a model using the given client and path.
-
-    Path is useful, e.g., to load files from the exported directory containing
-    the model.
+  def preprocess(self, instance):
+    """The preprocessing function.
 
     Args:
-      client: An instance of Client for performing prediction.
-      path: The path to the stored model.
+      instance: a single instance in the instances provided to the predict()
+        method.
 
     Returns:
-      An instance of an implementation of Servable, which may be a class
-      implementing the predict method, or a class implementing the pre and post
-      process methods.
+      The processed instance to use in the predict() method.
     """
     raise NotImplementedError()
+
+
+class Postprocessor(object):
+  """Interface for processing instances one-by-one after prediction."""
+
+  def postprocess(self, instance):
+    """The postprocessing function.
+
+    Args:
+      instance: a single instance in the instances outputted by the predict()
+        method.
+
+    Returns:
+      The processed instance to return as the final prediction output.
+    """
+    raise NotImplementedError()
+
+
+# Specify the method interface for users to implement, so disable the unused
+# argument rule.
+def from_client(client, model_path):  # pylint: disable=unused-argument
+  """Creates a model using the given client and path.
+
+  Path is useful, e.g., to load files from the exported directory containing
+  the model.
+
+  Args:
+    client: An instance of Client for performing prediction.
+    model_path: The path to the stored model.
+
+  Returns:
+    An instance implementing the following:
+      Model
+      -or-
+      Preprocessor and/or Postprocessor
+  """
+  raise NotImplementedError()

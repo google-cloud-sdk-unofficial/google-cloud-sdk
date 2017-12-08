@@ -20,11 +20,13 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.backend_services import (
     flags as backend_service_flags)
 from googlecloudsdk.command_lib.compute.ssl_certificates import (
-    flags as ssl_certificate_flags)
+    flags as ssl_certificates_flags)
 from googlecloudsdk.command_lib.compute.target_ssl_proxies import flags
+from googlecloudsdk.core import log
 
 
-class Create(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class CreateGA(base.CreateCommand):
   """Create a target SSL proxy."""
 
   BACKEND_SERVICE_ARG = None
@@ -39,7 +41,7 @@ class Create(base.CreateCommand):
         backend_service_flags.BackendServiceArgumentForTargetSslProxy())
     cls.BACKEND_SERVICE_ARG.AddArgument(parser)
     cls.SSL_CERTIFICATE_ARG = (
-        ssl_certificate_flags.SslCertificateArgumentForOtherResource(
+        ssl_certificates_flags.SslCertificateArgumentForOtherResource(
             'target SSL proxy'))
     cls.SSL_CERTIFICATE_ARG.AddArgument(parser)
     cls.TARGET_SSL_PROXY_ARG = flags.TargetSslProxyArgument()
@@ -49,10 +51,8 @@ class Create(base.CreateCommand):
         '--description',
         help='An optional, textual description for the target SSL proxy.')
 
-  def Run(self, args):
+  def _CreateResourceWithCertRefs(self, args, ssl_cert_refs):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    ssl_certificate_ref = self.SSL_CERTIFICATE_ARG.ResolveAsResource(
-        args, holder.resources)
 
     backend_service_ref = self.BACKEND_SERVICE_ARG.ResolveAsResource(
         args, holder.resources)
@@ -76,7 +76,7 @@ class Create(base.CreateCommand):
             name=target_ssl_proxy_ref.Name(),
             proxyHeader=proxy_header,
             service=backend_service_ref.SelfLink(),
-            sslCertificates=[ssl_certificate_ref.SelfLink()]))
+            sslCertificates=[ref.SelfLink() for ref in ssl_cert_refs]))
 
     errors = []
     resources = holder.client.MakeRequests(
@@ -86,15 +86,85 @@ class Create(base.CreateCommand):
       utils.RaiseToolException(errors)
     return resources
 
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    ssl_certificate_ref = self.SSL_CERTIFICATE_ARG.ResolveAsResource(
+        args, holder.resources)
+    return self._CreateResourceWithCertRefs(args, [ssl_certificate_ref])
 
-Create.detailed_help = {
-    'brief': 'Create a target SSL proxy',
-    'DESCRIPTION': """
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateGA):
+  """Create a target SSL proxy."""
+
+  SSL_CERTIFICATES_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    target_proxies_utils.AddProxyHeaderRelatedCreateArgs(parser)
+
+    cls.BACKEND_SERVICE_ARG = (
+        backend_service_flags.BackendServiceArgumentForTargetSslProxy())
+    cls.BACKEND_SERVICE_ARG.AddArgument(parser)
+    cls.TARGET_SSL_PROXY_ARG = flags.TargetSslProxyArgument()
+    cls.TARGET_SSL_PROXY_ARG.AddArgument(parser)
+
+    certs = parser.add_mutually_exclusive_group(required=True)
+    cls.SSL_CERTIFICATE_ARG = (
+        ssl_certificates_flags.SslCertificateArgumentForOtherResource(
+            'target SSL proxy', required=False))
+    cls.SSL_CERTIFICATE_ARG.AddArgument(parser, mutex_group=certs)
+    cls.SSL_CERTIFICATES_ARG = (
+        ssl_certificates_flags.SslCertificatesArgumentForOtherResource(
+            'target SSL proxy', required=False))
+    cls.SSL_CERTIFICATES_ARG.AddArgument(
+        parser, mutex_group=certs, cust_metavar='SSL_CERTIFICATE')
+
+    parser.add_argument(
+        '--description',
+        help='An optional, textual description for the target SSL proxy.')
+
+  def _GetSslCertificatesList(self, args, holder):
+    if args.ssl_certificate:
+      log.warn(
+          'The --ssl-certificate flag is deprecated and will be removed soon. '
+          'Use equivalent --ssl-certificates %s flag.', args.ssl_certificate)
+      return [
+          self.SSL_CERTIFICATE_ARG.ResolveAsResource(args, holder.resources)
+      ]
+
+    return self.SSL_CERTIFICATES_ARG.ResolveAsResource(args, holder.resources)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    ssl_certificate_refs = self._GetSslCertificatesList(args, holder)
+    return self._CreateResourceWithCertRefs(args, ssl_certificate_refs)
+
+
+CreateGA.detailed_help = {
+    'brief':
+        'Create a target SSL proxy',
+    'DESCRIPTION':
+        """
         *{command}* is used to create target SSL proxies. A target
         SSL proxy is referenced by one or more forwarding rules which
         define which packets the proxy is responsible for routing. The
         target SSL proxy points to a backend service which handle the
         actual requests. The target SSL proxy also points to an SSL
         certificate used for server-side authentication.
+        """,
+}
+
+CreateAlpha.detailed_help = {
+    'brief':
+        'Create a target SSL proxy',
+    'DESCRIPTION':
+        """
+        *{command}* is used to create target SSL proxies. A target
+        SSL proxy is referenced by one or more forwarding rules which
+        define which packets the proxy is responsible for routing. The
+        target SSL proxy points to a backend service which handle the
+        actual requests. The target SSL proxy also points to at most 10 SSL
+        certificates used for server-side authentication.
         """,
 }

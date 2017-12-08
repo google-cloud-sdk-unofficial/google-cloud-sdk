@@ -57,14 +57,14 @@ class Hadoop(base_classes.JobSubmitter):
     driver_group = parser.add_argument_group()
     util.AddJvmDriverFlags(driver_group)
 
-  def ConfigureJob(self, job, args):
+  def ConfigureJob(self, messages, job, args):
     HadoopBase.ConfigureJob(
-        self.context['dataproc_messages'],
+        messages,
         job,
-        self.BuildLoggingConfig(args.driver_log_levels),
+        self.BuildLoggingConfig(messages, args.driver_log_levels),
         self.files_by_type,
         args)
-    super(Hadoop, self).ConfigureJob(job, args)
+    super(Hadoop, self).ConfigureJob(messages, job, args)
 
   def PopulateFilesByType(self, args):
     self.files_by_type.update(HadoopBase.GetFilesByType(args))
@@ -101,14 +101,14 @@ class HadoopBeta(base_classes.JobSubmitterBeta):
     driver_group = parser.add_mutually_exclusive_group(required=True)
     util.AddJvmDriverFlags(driver_group)
 
-  def ConfigureJob(self, job, args):
+  def ConfigureJob(self, messages, job, args):
     HadoopBase.ConfigureJob(
-        self.context['dataproc_messages'],
+        messages,
         job,
-        self.BuildLoggingConfig(args.driver_log_levels),
+        self.BuildLoggingConfig(messages, args.driver_log_levels),
         self.files_by_type,
         args)
-    super(HadoopBeta, self).ConfigureJob(job, args)
+    super(HadoopBeta, self).ConfigureJob(messages, job, args)
 
   def PopulateFilesByType(self, args):
     self.files_by_type.update(HadoopBase.GetFilesByType(args))

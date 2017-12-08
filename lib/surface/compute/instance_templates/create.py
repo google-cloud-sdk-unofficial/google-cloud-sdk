@@ -38,7 +38,6 @@ def _CommonArgs(parser,
     instances_flags.AddCreateDiskArgs(parser)
   if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
     instances_flags.AddExtendedMachineTypeArgs(parser)
-    instances_flags.AddAcceleratorArgs(parser)
   if support_local_ssd_size:
     instances_flags.AddLocalSsdArgsWithSize(parser)
   else:
@@ -49,6 +48,7 @@ def _CommonArgs(parser,
       multiple_network_interface_cards=multiple_network_interface_cards,
       support_alias_ip_ranges=support_alias_ip_ranges,
       support_network_tier=support_network_tier)
+  instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
   instances_flags.AddMaintenancePolicyArgs(parser)
   instances_flags.AddNoRestartOnFailureArgs(parser)
@@ -252,24 +252,19 @@ class Create(base.CreateCommand):
         instance_template_utils.CreateAcceleratorConfigMessages(
             client.messages, getattr(args, 'accelerator', None)))
 
-    instance_properties = client.messages.InstanceProperties(
-        machineType=machine_type,
-        disks=disks,
-        canIpForward=args.can_ip_forward,
-        metadata=metadata,
-        networkInterfaces=network_interfaces,
-        serviceAccounts=service_accounts,
-        scheduling=scheduling,
-        tags=tags,
-    )
-
-    # TODO(b/36890961): Pass this directly into guestAccelerators once GA.
-    if guest_accelerators:
-      instance_properties.guestAccelerators = guest_accelerators
-
     request = client.messages.ComputeInstanceTemplatesInsertRequest(
         instanceTemplate=client.messages.InstanceTemplate(
-            properties=instance_properties,
+            properties=client.messages.InstanceProperties(
+                machineType=machine_type,
+                disks=disks,
+                canIpForward=args.can_ip_forward,
+                metadata=metadata,
+                networkInterfaces=network_interfaces,
+                serviceAccounts=service_accounts,
+                scheduling=scheduling,
+                tags=tags,
+                guestAccelerators=guest_accelerators,
+            ),
             description=args.description,
             name=instance_template_ref.Name(),
         ),

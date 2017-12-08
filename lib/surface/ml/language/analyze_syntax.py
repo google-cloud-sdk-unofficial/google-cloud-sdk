@@ -37,6 +37,7 @@ class AnalyzeSyntax(base.Command):
 
   @staticmethod
   def Args(parser):
+    parser.display_info.AddFormat('json')
     flags.AddLanguageFlags(parser)
 
   def Run(self, args):
@@ -57,12 +58,9 @@ class AnalyzeSyntax(base.Command):
       the result of the analyze syntax command.
     """
     return language_command_util.RunLanguageCommand(
-        'extractSyntax',
+        'analyzeSyntax',
         content_file=args.content_file,
         content=args.content,
         language=args.language,
         content_type=args.content_type,
         encoding_type=args.encoding_type)
-
-  def DeprecatedFormat(self, args):
-    return 'json'

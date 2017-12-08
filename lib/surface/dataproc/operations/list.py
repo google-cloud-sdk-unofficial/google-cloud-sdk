@@ -18,6 +18,7 @@ import json
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.dataproc import constants
+from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
@@ -79,14 +80,12 @@ class List(base.ListCommand):
     parser.display_info.AddFormat('table(name:label=OPERATION_NAME, done)')
 
   def Run(self, args):
-    client = self.context['dataproc_client']
-    messages = self.context['dataproc_messages']
-    resources = self.context['resources']
+    dataproc = dp.Dataproc()
 
     # Parse Operations endpoint.
     region_callback = properties.VALUES.dataproc.region.GetOrFail
     project_callback = properties.VALUES.core.project.GetOrFail
-    operation_list_ref = resources.Parse(
+    operation_list_ref = dataproc.resources.Parse(
         None,
         params={'regionId': region_callback, 'projectId': project_callback},
         collection='dataproc.projects.regions.operations_list')
@@ -109,11 +108,11 @@ class List(base.ListCommand):
     else:
       op_filter = json.dumps(filter_dict)
 
-    request = messages.DataprocProjectsRegionsOperationsListRequest(
+    request = dataproc.messages.DataprocProjectsRegionsOperationsListRequest(
         name=operation_list_ref.RelativeName(), filter=op_filter)
 
     return list_pager.YieldFromList(
-        client.projects_regions_operations,
+        dataproc.client.projects_regions_operations,
         request,
         limit=args.limit, field='operations',
         batch_size=args.page_size,

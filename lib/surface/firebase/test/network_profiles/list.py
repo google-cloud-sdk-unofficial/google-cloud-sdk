@@ -32,7 +32,20 @@ class List(base.ListCommand):
       parser: An argparse parser used to add arguments that follow this
           command in the CLI. Positional arguments are allowed.
     """
-    pass
+    parser.display_info.AddFormat("""
+          table[box](
+            id:label=PROFILE_ID,
+            synthesize((rule:up, upRule),(rule:down, downRule)):
+              format="table[box](
+                rule,
+                delay,
+                packetLossRatio:label=LOSS_RATIO,
+                packetDuplicationRatio:label=DUPLICATION_RATIO,
+                bandwidth,
+                burst
+              )"
+          )
+    """)
 
   def Run(self, args):
     """Run the 'gcloud firebase test network-profiles list' command.
@@ -46,12 +59,3 @@ class List(base.ListCommand):
     """
     catalog = util.GetNetworkProfileCatalog(self.context)
     return getattr(catalog, 'configurations', None)
-
-  def Collection(self):
-    """Choose the default resource collection key used to list network profiles.
-
-    Returns:
-      A collection string used as a key to select the default ResourceInfo
-      from core.resources.resource_registry.RESOURCE_REGISTRY.
-    """
-    return 'firebase.test.network-profiles'

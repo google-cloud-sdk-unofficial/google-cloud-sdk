@@ -16,13 +16,12 @@
 from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import routers_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_errors
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.interconnects.attachments import (
     flags as attachment_flags)
-from googlecloudsdk.command_lib.compute.routers import flags
+from googlecloudsdk.command_lib.compute.routers import flags as router_flags
 from googlecloudsdk.command_lib.compute.vpn_tunnels import (flags as
                                                             vpn_tunnel_flags)
 
@@ -40,12 +39,12 @@ class AddInterface(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    cls.ROUTER_ARG = flags.RouterArgument()
+    cls.ROUTER_ARG = router_flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser, operation_type='update')
     cls.VPN_TUNNEL_ARG = vpn_tunnel_flags.VpnTunnelArgumentForRouter()
     cls.VPN_TUNNEL_ARG.AddArgument(parser)
 
-    routers_utils.AddCommonArgs(parser)
+    router_flags.AddInterfaceArgs(parser)
 
   def _GetGetRequest(self, client, router_ref):
     return (client.apitools_client.routers, 'Get',
@@ -68,11 +67,6 @@ class AddInterface(base.UpdateCommand):
     mask = None
 
     interface_name = args.interface_name
-
-    if args.mask_length is not None:
-      if args.mask_length < 0 or args.mask_length > 31:
-        raise parser_errors.ArgumentException(
-            '--mask-length must be a non-negative integer less than 32')
 
     if args.ip_address is not None:
       if args.mask_length is not None:
@@ -124,7 +118,7 @@ class AlphaAddInterface(AddInterface):
 
   @classmethod
   def Args(cls, parser):
-    cls.ROUTER_ARG = flags.RouterArgument()
+    cls.ROUTER_ARG = router_flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser, operation_type='update')
 
     link_parser = parser.add_mutually_exclusive_group(
@@ -138,7 +132,7 @@ class AlphaAddInterface(AddInterface):
         attachment_flags.InterconnectAttachmentArgumentForRouter())
     cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(link_parser)
 
-    routers_utils.AddCommonArgs(parser)
+    router_flags.AddInterfaceArgs(parser)
 
   def Modify(self, client, resources, args, existing):
     replacement = encoding.CopyProtoMessage(existing)

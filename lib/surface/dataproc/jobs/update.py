@@ -14,8 +14,8 @@
 
 """Update job command."""
 
+from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import exceptions
-from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
@@ -51,10 +51,9 @@ class Update(base.UpdateCommand):
     labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):
-    client = self.context['dataproc_client']
-    messages = self.context['dataproc_messages']
+    dataproc = dp.Dataproc()
 
-    job_ref = util.ParseJob(args.id, self.context)
+    job_ref = dataproc.ParseJob(args.id)
 
     changed_fields = []
 
@@ -70,15 +69,15 @@ class Update(base.UpdateCommand):
       # labels_util.UpdateLabels will fill out the proto for us with all the
       # updates and removals, but first we need to provide the current state
       # of the labels
-      orig_job = client.projects_regions_jobs.Get(
-          client.MESSAGES_MODULE.DataprocProjectsRegionsJobsGetRequest(
+      orig_job = dataproc.client.projects_regions_jobs.Get(
+          dataproc.messages.DataprocProjectsRegionsJobsGetRequest(
               projectId=job_ref.projectId,
               region=job_ref.region,
               jobId=job_ref.jobId))
 
       labels = labels_util.UpdateLabels(
           orig_job.labels,
-          messages.Job.LabelsValue,
+          dataproc.messages.Job.LabelsValue,
           args.update_labels,
           args.remove_labels)
 
@@ -88,14 +87,14 @@ class Update(base.UpdateCommand):
 
     updated_job = orig_job
     updated_job.labels = labels
-    request = messages.DataprocProjectsRegionsJobsPatchRequest(
+    request = dataproc.messages.DataprocProjectsRegionsJobsPatchRequest(
         projectId=job_ref.projectId,
         region=job_ref.region,
         jobId=job_ref.jobId,
         job=updated_job,
         updateMask=','.join(changed_fields))
 
-    returned_job = client.projects_regions_jobs.Patch(request)
+    returned_job = dataproc.client.projects_regions_jobs.Patch(request)
 
     log.UpdatedResource(returned_job)
     return returned_job

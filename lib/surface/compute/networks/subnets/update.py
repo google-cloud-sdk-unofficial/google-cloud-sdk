@@ -15,10 +15,11 @@
 """Command for modifying the properties of a subnetwork."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.networks.subnets import flags
 
 
-class Update(base_classes.BaseAsyncMutator):
+class Update(base.UpdateCommand):
   """Updates properties of an existing Google Compute Engine subnetwork."""
 
   SUBNETWORK_ARG = None
@@ -40,33 +41,26 @@ class Update(base_classes.BaseAsyncMutator):
         help=('Enable/disable access to Google Cloud APIs from this subnet for '
               'instances without a public ip address.'))
 
-  @property
-  def service(self):
-    return self.compute.subnetworks
+  def Run(self, args):
+    """Issues requests necessary to update Subnetworks."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'subnetworks'
-
-  @property
-  def method(self):
-    return 'Update'
-
-  def CreateRequests(self, args):
-    """Returns a list of (request method, protobuf) tuples for the requests."""
     request_list = []
-    subnet_ref = self.SUBNETWORK_ARG.ResolveAsResource(args, self.resources)
+    subnet_ref = self.SUBNETWORK_ARG.ResolveAsResource(args, holder.resources)
 
     if args.enable_private_ip_google_access is not None:
-      google_access = self.messages.SubnetworksSetPrivateIpGoogleAccessRequest()
+      google_access = (
+          client.messages.SubnetworksSetPrivateIpGoogleAccessRequest())
       google_access.privateIpGoogleAccess = args.enable_private_ip_google_access
 
       google_access_request = (
-          self.messages.ComputeSubnetworksSetPrivateIpGoogleAccessRequest(
-              project=self.project,
+          client.messages.ComputeSubnetworksSetPrivateIpGoogleAccessRequest(
+              project=subnet_ref.project,
               region=subnet_ref.region,
               subnetwork=subnet_ref.Name(),
               subnetworksSetPrivateIpGoogleAccessRequest=google_access))
-      request_list.append(('SetPrivateIpGoogleAccess', google_access_request))
+      request_list.append((client.apitools_client.subnetworks,
+                           'SetPrivateIpGoogleAccess', google_access_request))
 
-    return request_list
+    return client.MakeRequests(request_list)

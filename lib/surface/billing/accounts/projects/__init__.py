@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All Rights Reserved.
+# Copyright 2017 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,5 +16,13 @@
 from googlecloudsdk.calliope import base
 
 
+_BASE_MESSAGE = """\
+The `gcloud billing accounts projects` group has been moved to
+`gcloud billing projects`. Please use the new, shorter commands instead."""
+
+
+# Don't promote this group beyond alpha, since the new alias is preferred.
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Deprecate(is_removed=False, warning=_BASE_MESSAGE, error=_BASE_MESSAGE)
 class Projects(base.Group):
   """Manage the billing account configuration of your projects."""

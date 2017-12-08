@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.deployment_manager import dm_base
 from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.command_lib.deployment_manager import flags
+from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -93,6 +94,7 @@ class Delete(base.DeleteCommand):
         raise exceptions.OperationError('Deletion aborted by user.')
 
     operations = []
+    errors = []
     for deployment_name in args.deployment_name:
       try:
         operation = dm_base.GetClient().deployments.Delete(
@@ -104,34 +106,32 @@ class Delete(base.DeleteCommand):
                               .DeletePolicyValueValuesEnum(args.delete_policy)),
             )
         )
-      except apitools_exceptions.HttpError as error:
-        raise api_exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
-      if args.async:
-        operations.append(operation)
-      else:
-        op_name = operation.name
-        try:
-          dm_write.WaitForOperation(op_name,
-                                    'delete',
-                                    dm_base.GetProject(),
-                                    timeout=OPERATION_TIMEOUT)
-          log.status.Print('Delete operation ' + op_name
-                           + ' completed successfully.')
-        except exceptions.OperationError as e:
-          log.error(u'Delete operation {0} failed.\n{1}'.format(op_name, e))
-        except apitools_exceptions.HttpError as error:
-          raise api_exceptions.HttpException(error,
-                                             dm_v2_util.HTTP_ERROR_FORMAT)
-        try:
+        if args.async:
+          operations.append(operation)
+        else:
+          op_name = operation.name
+          try:
+            # TODO(b/62720778): Refactor to use waiter.CloudOperationPoller
+            dm_write.WaitForOperation(op_name,
+                                      'delete',
+                                      dm_base.GetProject(),
+                                      timeout=OPERATION_TIMEOUT)
+            log.status.Print('Delete operation ' + op_name
+                             + ' completed successfully.')
+          except exceptions.OperationError as e:
+            errors.append(exceptions.OperationError(
+                u'Delete operation {0} failed.\n{1}'.format(op_name, e)))
           completed_operation = dm_base.GetClient().operations.Get(
               dm_base.GetMessages().DeploymentmanagerOperationsGetRequest(
                   project=dm_base.GetProject(),
                   operation=op_name,
               )
           )
-        except apitools_exceptions.HttpError as error:
-          raise api_exceptions.HttpException(error,
-                                             dm_v2_util.HTTP_ERROR_FORMAT)
-        operations.append(completed_operation)
+          operations.append(completed_operation)
+      except apitools_exceptions.HttpError as error:
+        errors.append(api_exceptions.HttpException(
+            error, dm_v2_util.HTTP_ERROR_FORMAT))
 
+    if errors:
+      raise core_exceptions.MultiError(errors)
     return operations

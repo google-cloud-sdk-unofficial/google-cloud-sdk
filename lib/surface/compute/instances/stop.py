@@ -21,7 +21,13 @@ from googlecloudsdk.command_lib.compute.instances import flags
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Stop(base.SilentCommand):
-  """Stop a virtual machine instance."""
+  """Stop a virtual machine instance.
+
+  *{command}* is used stop a Google Compute Engine virtual machine.
+  Stopping a VM performs a clean shutdown, much like invoking the shutdown
+  functionality of a workstation or laptop. Stopping a VM with a local SSD
+  is not supported and will result in an API error.
+  """
 
   @staticmethod
   def Args(parser):
@@ -51,7 +57,14 @@ class Stop(base.SilentCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class StopAlpha(Stop, base_classes.BaseCommand):
+class StopAlpha(Stop):
+  """Stop a virtual machine instance.
+
+  *{command}* is used stop a Google Compute Engine virtual machine.
+  Stopping a VM performs a clean shutdown, much like invoking the shutdown
+  functionality of a workstation or laptop. Stopping a VM with a local SSD
+  is not supported and will result in an API error.
+  """
 
   def _CreateStopRequest(self, client, instance_ref, discard_local_ssd):
     """Adds the discardLocalSsd var into the message."""
@@ -60,14 +73,3 @@ class StopAlpha(Stop, base_classes.BaseCommand):
         instance=instance_ref.Name(),
         project=instance_ref.project,
         zone=instance_ref.zone)
-
-
-Stop.detailed_help = {
-    'brief': 'Stop a virtual machine instance',
-    'DESCRIPTION': """\
-        *{command}* is used stop a Google Compute Engine virtual machine.
-        Stopping a VM performs a clean shutdown, much like invoking the shutdown
-        functionality of a workstation or laptop. Stopping a VM with a local SSD
-        is not supported and will result in an API error.
-        """,
-}

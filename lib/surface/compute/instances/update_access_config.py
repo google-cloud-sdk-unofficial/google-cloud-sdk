@@ -34,7 +34,7 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
     flags.INSTANCE_ARG.AddArgument(parser)
     flags.AddNetworkInterfaceArgs(parser)
     flags.AddPublicDnsArgs(parser, instance=False)
-    flags.AddNetworkTierArgs(parser, instance=False)
+    flags.AddNetworkTierArgs(parser, instance=False, for_update=True)
 
   def CreateReference(self, client, resources, args):
     flags.ValidatePublicDnsFlags(args)
@@ -71,29 +71,33 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
     else:
       set_public_dns = None
 
-    ptr_domain_name = None
     if args.public_ptr is True:
       set_ptr = True
-      ptr_domain_name = args.public_ptr_domain
     elif args.no_public_ptr is True:
       set_ptr = False
     else:
       set_ptr = None
 
-    new_network_tier = client.messages.AccessConfig.NetworkTierValueValuesEnum(
-        args.network_tier)
-
     modified = encoding.CopyProtoMessage(original)
     for interface in modified.networkInterfaces:
       if interface.name == args.network_interface:
-        interface.accessConfigs[0].setPublicDns = set_public_dns
+        if set_public_dns is not None:
+          interface.accessConfigs[0].setPublicDns = set_public_dns
         # publicDnsName is output only.
         interface.accessConfigs[0].publicDnsName = None
-        interface.accessConfigs[0].setPublicPtr = set_ptr
-        interface.accessConfigs[0].publicPtrDomainName = ptr_domain_name
 
-        if interface.accessConfigs[0].networkTier != new_network_tier:
-          interface.accessConfigs[0].networkTier = new_network_tier
+        if set_ptr is not None:
+          interface.accessConfigs[0].setPublicPtr = set_ptr
+        if args.public_ptr_domain is not None:
+          interface.accessConfigs[
+              0].publicPtrDomainName = args.public_ptr_domain
+        elif args.no_public_ptr_domain is True:
+          interface.accessConfigs[0].publicPtrDomainName = None
+
+        if args.network_tier is not None:
+          interface.accessConfigs[0].networkTier = (
+              client.messages.AccessConfig.NetworkTierValueValuesEnum(
+                  args.network_tier))
 
         return modified
 

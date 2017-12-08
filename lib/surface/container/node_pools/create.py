@@ -124,6 +124,7 @@ on the Compute Engine API instance object and can be used in firewall rules.
 See https://cloud.google.com/sdk/gcloud/reference/compute/firewall-rules/create
 for examples.
 """)
+  flags.AddDiskTypeFlag(parser, suppressed=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -157,7 +158,8 @@ class Create(base.CreateCommand):
         preemptible=args.preemptible,
         enable_autorepair=args.enable_autorepair,
         enable_autoupgrade=args.enable_autoupgrade,
-        service_account=args.service_account)
+        service_account=args.service_account,
+        disk_type=args.disk_type)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

@@ -11,7 +11,7 @@ gcloud dataproc clusters describe \- view the details of a cluster
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud dataproc clusters describe\fR \fINAME\fR [\fIGCLOUD_WIDE_FLAG\ ...\fR]
+\f5gcloud dataproc clusters describe\fR \fINAME\fR [\fB\-\-region\fR=\fIREGION\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -27,6 +27,23 @@ View the details of a cluster.
 .TP 2m
 \fINAME\fR
 The name of the cluster to describe.
+
+
+.RE
+.sp
+
+.SH "FLAGS"
+
+.RS 2m
+.TP 2m
+\fB\-\-region\fR=\fIREGION\fR
+Specifies the Cloud Dataproc region to use. Each Cloud Dataproc region
+constitutes an independent resource namespace constrained to deploying instances
+into Google Compute Engine zones inside the region. The default value of
+"global" is a special multi\-region namespace which is capable of deploying
+instances into all Google Compute Engine zones globally, and is disjoint from
+other Cloud Dataproc regions. Overrides the default \fBdataproc/region\fR
+property value for this command invocation.
 
 
 .RE

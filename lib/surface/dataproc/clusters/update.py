@@ -14,6 +14,7 @@
 
 """Update cluster command."""
 
+from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import exceptions
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
@@ -70,25 +71,24 @@ class Update(base.UpdateCommand):
         help='The new number of preemptible worker nodes in the cluster.')
 
   def Run(self, args):
-    client = self.context['dataproc_client']
-    messages = self.context['dataproc_messages']
+    dataproc = dp.Dataproc()
 
-    cluster_ref = util.ParseCluster(args.name, self.context)
+    cluster_ref = dataproc.ParseCluster(args.name)
 
-    cluster_config = messages.ClusterConfig()
+    cluster_config = dataproc.messages.ClusterConfig()
     changed_fields = []
 
     has_changes = False
 
     if args.num_workers is not None:
-      worker_config = messages.InstanceGroupConfig(
+      worker_config = dataproc.messages.InstanceGroupConfig(
           numInstances=args.num_workers)
       cluster_config.workerConfig = worker_config
       changed_fields.append('config.worker_config.num_instances')
       has_changes = True
 
     if args.num_preemptible_workers is not None:
-      worker_config = messages.InstanceGroupConfig(
+      worker_config = dataproc.messages.InstanceGroupConfig(
           numInstances=args.num_preemptible_workers)
       cluster_config.secondaryWorkerConfig = worker_config
       changed_fields.append(
@@ -106,15 +106,15 @@ class Update(base.UpdateCommand):
       # updates and removals, but first we need to provide the current state
       # of the labels
       get_cluster_request = (
-          client.MESSAGES_MODULE.DataprocProjectsRegionsClustersGetRequest(
+          dataproc.messages.DataprocProjectsRegionsClustersGetRequest(
               projectId=cluster_ref.projectId,
               region=cluster_ref.region,
               clusterName=cluster_ref.clusterName))
-      current_cluster = client.projects_regions_clusters.Get(
+      current_cluster = dataproc.client.projects_regions_clusters.Get(
           get_cluster_request)
       labels = labels_util.UpdateLabels(
           current_cluster.labels,
-          messages.Cluster.LabelsValue,
+          dataproc.messages.Cluster.LabelsValue,
           args.update_labels,
           args.remove_labels)
 
@@ -122,20 +122,20 @@ class Update(base.UpdateCommand):
       raise exceptions.ArgumentError(
           'Must specify at least one cluster parameter to update.')
 
-    cluster = messages.Cluster(
+    cluster = dataproc.messages.Cluster(
         config=cluster_config,
         clusterName=cluster_ref.clusterName,
         labels=labels,
         projectId=cluster_ref.projectId)
 
-    request = messages.DataprocProjectsRegionsClustersPatchRequest(
+    request = dataproc.messages.DataprocProjectsRegionsClustersPatchRequest(
         clusterName=cluster_ref.clusterName,
         region=cluster_ref.region,
         projectId=cluster_ref.projectId,
         cluster=cluster,
         updateMask=','.join(changed_fields))
 
-    operation = client.projects_regions_clusters.Patch(request)
+    operation = dataproc.client.projects_regions_clusters.Patch(request)
 
     if args.async:
       log.status.write(
@@ -143,16 +143,15 @@ class Update(base.UpdateCommand):
               cluster_ref, operation.name))
       return
 
-    util.WaitForOperation(
+    dataproc.WaitForOperation(
         operation,
-        self.context,
         message='Waiting for cluster update operation',
         timeout_s=args.timeout)
 
-    request = client.MESSAGES_MODULE.DataprocProjectsRegionsClustersGetRequest(
+    request = dataproc.messages.DataprocProjectsRegionsClustersGetRequest(
         projectId=cluster_ref.projectId,
         region=cluster_ref.region,
         clusterName=cluster_ref.clusterName)
-    cluster = client.projects_regions_clusters.Get(request)
+    cluster = dataproc.client.projects_regions_clusters.Get(request)
     log.UpdatedResource(cluster_ref)
     return cluster

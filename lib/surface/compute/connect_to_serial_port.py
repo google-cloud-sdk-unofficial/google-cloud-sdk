@@ -17,7 +17,9 @@
 import argparse
 import sys
 
+from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute import ssh_utils
@@ -41,8 +43,23 @@ SERIAL_PORT_HELP = ('https://cloud.google.com/compute/docs/'
                     'instances/interacting-with-serial-console')
 
 
-class ConnectToSerialPort(ssh_utils.BaseSSHCommand):
-  """Class for connecting through a gateway to the interactive serial port."""
+class ConnectToSerialPort(base.Command):
+  """Connect to the serial port of an instance.
+
+  *{command}* allows users to connect to, and interact with, a VM's
+  virtual serial port using ssh as the secure, authenticated transport
+  protocol.
+
+  The user must first enable serial port access to a given VM by setting
+  the 'serial-port-enable=true' metadata key-value pair. Setting
+  'serial-port-enable' on the project-level metadata enables serial port
+  access to all VMs in the project.
+
+  This command uses the same SSH key pair as the `gcloud compute ssh`
+  command and also ensures that the user's public SSH key is present in
+  the project's metadata. If the user does not have a public SSH key,
+  one is generated using ssh-keygen.
+  """
 
   @staticmethod
   def Args(parser):
@@ -51,7 +68,7 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCommand):
     Args:
       parser: An argparse.ArgumentParser.
     """
-    super(ConnectToSerialPort, ConnectToSerialPort).Args(parser)
+    ssh_utils.BaseSSHHelper.Args(parser)
 
     parser.add_argument(
         '--dry-run',
@@ -104,9 +121,14 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCommand):
 
   def Run(self, args):
     """See ssh_utils.BaseSSHCommand.Run."""
-    super(ConnectToSerialPort, self).Run(args)
-    self.keys.EnsureKeysExist(args.force_key_file_overwrite,
-                              allow_passphrase=True)
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    cua_holder = base_classes.ComputeUserAccountsApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    ssh_helper = ssh_utils.BaseSSHHelper()
+    ssh_helper.Run(args)
+    ssh_helper.keys.EnsureKeysExist(args.force_key_file_overwrite,
+                                    allow_passphrase=True)
 
     remote = ssh.Remote.FromArg(args.user_host)
     if not remote:
@@ -142,11 +164,13 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCommand):
                  'updating gcloud and connecting again.'
                  .format(SERIAL_PORT_GATEWAY, HOST_KEY_URL))
     instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
-        [remote.host], compute_scope.ScopeEnum.ZONE, args.zone, self.resources,
-        scope_lister=instance_flags.GetInstanceZoneScopeLister(
-            self.compute_client))[0]
-    instance = self.GetInstance(instance_ref)
-    project = self.GetProject(instance_ref.project)
+        [remote.host],
+        compute_scope.ScopeEnum.ZONE,
+        args.zone,
+        holder.resources,
+        scope_lister=instance_flags.GetInstanceZoneScopeLister(client))[0]
+    instance = ssh_helper.GetInstance(client, instance_ref)
+    project = ssh_helper.GetProject(client, instance_ref.project)
 
     # Determine the serial user, host tuple (remote)
     port = 'port={0}'.format(args.port)
@@ -158,17 +182,17 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCommand):
     serial_user = '.'.join(constructed_username_list)
     serial_remote = ssh.Remote(args.serial_port_gateway, user=serial_user)
 
-    identity_file = self.keys.key_file
-    options = self.GetConfig(hostname, strict_host_key_checking='yes')
+    identity_file = ssh_helper.keys.key_file
+    options = ssh_helper.GetConfig(hostname, strict_host_key_checking='yes')
     del options['HostKeyAlias']
     cmd = ssh.SSHCommand(serial_remote, identity_file=identity_file,
                          port=CONNECTION_PORT,
                          options=options)
     if args.dry_run:
-      log.out.Print(' '.join(cmd.Build(self.env)))
+      log.out.Print(' '.join(cmd.Build(ssh_helper.env)))
       return
-    self.EnsureSSHKeyExists(
-        remote.user, instance, project)
+    ssh_helper.EnsureSSHKeyExists(client, cua_holder.client, remote.user,
+                                  instance, project)
 
     # Don't wait for the instance to become SSHable. We are not connecting to
     # the instance itself through SSH, so the instance doesn't need to have
@@ -176,28 +200,8 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCommand):
     # since the normal way to terminate the serial port connection is ~. and
     # that causes ssh to exit with 255.
     try:
-      return_code = cmd.Run(self.env, force_connect=True)
+      return_code = cmd.Run(ssh_helper.env, force_connect=True)
     except ssh.CommandError:
       return_code = 255
     if return_code:
       sys.exit(return_code)
-
-
-ConnectToSerialPort.detailed_help = {
-    'brief': 'Connect to the serial port of an instance.',
-    'DESCRIPTION': """\
-      *{command}* allows users to connect to, and interact with, a VM's
-      virtual serial port using ssh as the secure, authenticated transport
-      protocol.
-
-      The user must first enable serial port access to a given VM by setting
-      the 'serial-port-enable=true' metadata key-value pair. Setting
-      'serial-port-enable' on the project-level metadata enables serial port
-      access to all VMs in the project.
-
-      This command uses the same SSH key pair as the `gcloud compute ssh`
-      command and also ensures that the user's public SSH key is present in
-      the project's metadata. If the user does not have a public SSH key,
-      one is generated using ssh-keygen.
-      """,
-    }

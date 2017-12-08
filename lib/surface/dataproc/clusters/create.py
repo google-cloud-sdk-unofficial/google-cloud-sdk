@@ -19,6 +19,7 @@ from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import utils as api_utils
 from googlecloudsdk.api_lib.dataproc import compute_helpers
 from googlecloudsdk.api_lib.dataproc import constants
+from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
@@ -275,10 +276,9 @@ class Create(base.CreateCommand):
   def Run(self, args):
     self.ValidateArgs(args)
 
-    client = self.context['dataproc_client']
-    messages = self.context['dataproc_messages']
+    dataproc = dp.Dataproc()
 
-    cluster_ref = util.ParseCluster(args.name, self.context)
+    cluster_ref = dataproc.ParseCluster(args.name)
 
     compute_resources = compute_helpers.GetComputeResources(
         self.ReleaseTrack(), args.name)
@@ -295,31 +295,14 @@ class Create(base.CreateCommand):
         worker_accelerator_type = args.worker_accelerator['type']
         worker_accelerator_count = args.worker_accelerator.get('count', 1)
 
-    # Resolve GCE resources
-    zone_ref = compute_resources.Create(
-        'compute.zones',
-        project=cluster_ref.projectId,
-        zone=properties.VALUES.compute.zone.GetOrFail())
+    # Resolve non-zonal GCE resources
+    # We will let the server resolve short names of zonal resources because
+    # if auto zone is requested, we will not know the zone before sending the
+    # request
     image_ref = args.image and compute_resources.Parse(
         args.image,
         params={'project': cluster_ref.projectId},
         collection='compute.images')
-    master_machine_type_ref = (
-        args.master_machine_type and compute_resources.Parse(
-            args.master_machine_type,
-            params={
-                'project': cluster_ref.projectId,
-                'zone': zone_ref.Name(),
-            },
-            collection='compute.machineTypes'))
-    worker_machine_type_ref = (
-        args.worker_machine_type and compute_resources.Parse(
-            args.worker_machine_type,
-            params={
-                'project': cluster_ref.projectId,
-                'zone': zone_ref.Name(),
-            },
-            collection='compute.machineTypes'))
     network_ref = args.network and compute_resources.Parse(
         args.network,
         params={'project': cluster_ref.projectId},
@@ -331,26 +314,9 @@ class Create(base.CreateCommand):
             'region': properties.VALUES.compute.region.GetOrFail,
         },
         collection='compute.subnetworks')
-    master_accelerator_type_ref = (
-        master_accelerator_type and compute_resources.Parse(
-            master_accelerator_type,
-            params={
-                'project': cluster_ref.projectId,
-                'zone': zone_ref.Name(),
-            },
-            collection='compute.acceleratorTypes'))
-    worker_accelerator_type_ref = (
-        worker_accelerator_type and compute_resources.Parse(
-            worker_accelerator_type,
-            params={
-                'project': cluster_ref.projectId,
-                'zone': zone_ref.Name(),
-            },
-            collection='compute.acceleratorTypes'))
-
     timeout_str = str(args.initialization_action_timeout) + 's'
     init_actions = [
-        messages.NodeInitializationAction(
+        dataproc.messages.NodeInitializationAction(
             executableFile=exe, executionTimeout=timeout_str)
         for exe in (args.initialization_actions or [])]
     # Increase the client timeout for each initialization action.
@@ -358,7 +324,7 @@ class Create(base.CreateCommand):
 
     expanded_scopes = compute_helpers.ExpandScopeAliases(args.scopes)
 
-    software_config = messages.SoftwareConfig(
+    software_config = dataproc.messages.SoftwareConfig(
         imageVersion=args.image_version)
 
     master_boot_disk_size_gb = args.master_boot_disk_size_gb
@@ -379,15 +345,15 @@ class Create(base.CreateCommand):
 
     if args.properties:
       software_config.properties = encoding.DictToMessage(
-          args.properties, messages.SoftwareConfig.PropertiesValue)
+          args.properties, dataproc.messages.SoftwareConfig.PropertiesValue)
 
-    gce_cluster_config = messages.GceClusterConfig(
+    gce_cluster_config = dataproc.messages.GceClusterConfig(
         networkUri=network_ref and network_ref.SelfLink(),
         subnetworkUri=subnetwork_ref and subnetwork_ref.SelfLink(),
         internalIpOnly=args.no_address,
         serviceAccount=args.service_account,
         serviceAccountScopes=expanded_scopes,
-        zoneUri=zone_ref and zone_ref.SelfLink())
+        zoneUri=properties.VALUES.compute.zone.GetOrFail())
 
     if args.tags:
       gce_cluster_config.tags = args.tags
@@ -395,71 +361,63 @@ class Create(base.CreateCommand):
     if args.metadata:
       flat_metadata = dict((k, v) for d in args.metadata for k, v in d.items())
       gce_cluster_config.metadata = encoding.DictToMessage(
-          flat_metadata, messages.GceClusterConfig.MetadataValue)
+          flat_metadata, dataproc.messages.GceClusterConfig.MetadataValue)
 
     master_accelerators = []
     if master_accelerator_type:
       master_accelerators.append(
-          messages.AcceleratorConfig(
-              acceleratorTypeUri=master_accelerator_type_ref and
-              master_accelerator_type_ref.SelfLink(),
+          dataproc.messages.AcceleratorConfig(
+              acceleratorTypeUri=master_accelerator_type,
               acceleratorCount=master_accelerator_count))
     worker_accelerators = []
     if worker_accelerator_type:
-      worker_accelerators.append(messages.AcceleratorConfig(
-          acceleratorTypeUri=worker_accelerator_type_ref and
-          worker_accelerator_type_ref.SelfLink(),
-          acceleratorCount=worker_accelerator_count))
+      worker_accelerators.append(
+          dataproc.messages.AcceleratorConfig(
+              acceleratorTypeUri=worker_accelerator_type,
+              acceleratorCount=worker_accelerator_count))
 
-    cluster_config = messages.ClusterConfig(
+    cluster_config = dataproc.messages.ClusterConfig(
         configBucket=args.bucket,
         gceClusterConfig=gce_cluster_config,
-        masterConfig=messages.InstanceGroupConfig(
+        masterConfig=dataproc.messages.InstanceGroupConfig(
             numInstances=args.num_masters,
             imageUri=image_ref and image_ref.SelfLink(),
-            machineTypeUri=master_machine_type_ref and
-            master_machine_type_ref.SelfLink(),
+            machineTypeUri=args.master_machine_type,
             accelerators=master_accelerators,
-            diskConfig=messages.DiskConfig(
+            diskConfig=dataproc.messages.DiskConfig(
                 bootDiskSizeGb=master_boot_disk_size_gb,
-                numLocalSsds=args.num_master_local_ssds,
-            ),
-        ),
-        workerConfig=messages.InstanceGroupConfig(
+                numLocalSsds=args.num_master_local_ssds,),),
+        workerConfig=dataproc.messages.InstanceGroupConfig(
             numInstances=args.num_workers,
             imageUri=image_ref and image_ref.SelfLink(),
-            machineTypeUri=worker_machine_type_ref and
-            worker_machine_type_ref.SelfLink(),
+            machineTypeUri=args.worker_machine_type,
             accelerators=worker_accelerators,
-            diskConfig=messages.DiskConfig(
+            diskConfig=dataproc.messages.DiskConfig(
                 bootDiskSizeGb=worker_boot_disk_size_gb,
-                numLocalSsds=args.num_worker_local_ssds,
-            ),
-        ),
+                numLocalSsds=args.num_worker_local_ssds,),),
         initializationActions=init_actions,
-        softwareConfig=software_config,
-    )
+        softwareConfig=software_config,)
 
     # Secondary worker group is optional. However, users may specify
     # future pVM disk size at creation time.
     if (args.num_preemptible_workers is not None or
         preemptible_worker_boot_disk_size_gb is not None):
       cluster_config.secondaryWorkerConfig = (
-          messages.InstanceGroupConfig(
+          dataproc.messages.InstanceGroupConfig(
               numInstances=args.num_preemptible_workers,
-              diskConfig=messages.DiskConfig(
+              diskConfig=dataproc.messages.DiskConfig(
                   bootDiskSizeGb=preemptible_worker_boot_disk_size_gb,
               )))
 
-    cluster = messages.Cluster(
+    cluster = dataproc.messages.Cluster(
         config=cluster_config,
         clusterName=cluster_ref.clusterName,
         projectId=cluster_ref.projectId)
 
-    self.ConfigureCluster(messages, args, cluster)
+    self.ConfigureCluster(dataproc.messages, args, cluster)
 
-    operation = client.projects_regions_clusters.Create(
-        messages.DataprocProjectsRegionsClustersCreateRequest(
+    operation = dataproc.client.projects_regions_clusters.Create(
+        dataproc.messages.DataprocProjectsRegionsClustersCreateRequest(
             projectId=cluster_ref.projectId,
             region=cluster_ref.region,
             cluster=cluster))
@@ -470,19 +428,18 @@ class Create(base.CreateCommand):
               cluster_ref, operation.name))
       return
 
-    operation = util.WaitForOperation(
+    operation = dataproc.WaitForOperation(
         operation,
-        self.context,
         message='Waiting for cluster creation operation',
         timeout_s=args.timeout)
 
-    get_request = messages.DataprocProjectsRegionsClustersGetRequest(
+    get_request = dataproc.messages.DataprocProjectsRegionsClustersGetRequest(
         projectId=cluster_ref.projectId,
         region=cluster_ref.region,
         clusterName=cluster_ref.clusterName)
-    cluster = client.projects_regions_clusters.Get(get_request)
+    cluster = dataproc.client.projects_regions_clusters.Get(get_request)
     if cluster.status.state == (
-        messages.ClusterStatus.StateValueValuesEnum.RUNNING):
+        dataproc.messages.ClusterStatus.StateValueValuesEnum.RUNNING):
       log.CreatedResource(cluster_ref)
     else:
       log.error('Create cluster failed!')

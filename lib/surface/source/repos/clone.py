@@ -133,7 +133,7 @@ class CloneAlpha(base.Command):
          'Using the full path means that gcloud does not need to be in '
          'the path for future git operations on the repository.'))
     parser.add_argument(
-        'src', metavar='REPOSITORY_NAME', help=('Name of the repository. '))
+        'src', metavar='REPOSITORY_NAME', help='Name of the repository. ')
     parser.add_argument(
         'dst',
         metavar='DIRECTORY_NAME',

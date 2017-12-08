@@ -32,11 +32,15 @@ class Link(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.GetAccountIdArgument(positional=False).AddToParser(parser)
+    account_args_group = parser.add_mutually_exclusive_group(required=True)
+    flags.GetOldAccountIdArgument(positional=False).AddToParser(
+        account_args_group)
+    flags.GetAccountIdArgument(positional=False).AddToParser(account_args_group)
+
     flags.GetProjectIdArgument().AddToParser(parser)
 
   def Run(self, args):
     client = billing_client.ProjectsClient()
     project_ref = utils.ParseProject(args.project_id)
-    account_ref = utils.ParseAccount(args.account_id)
+    account_ref = utils.ParseAccount(args.billing_account)
     return client.Link(project_ref, account_ref)

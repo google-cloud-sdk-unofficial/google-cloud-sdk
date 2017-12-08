@@ -17,9 +17,12 @@ import copy
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import routers_utils
+from googlecloudsdk.api_lib.compute.operations import poller
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.command_lib.compute.routers import router_utils
+from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -32,20 +35,20 @@ class UpdateAlpha(base.UpdateCommand):
   def Args(cls, parser):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser, operation_type='update')
-    router_utils.AddCustomAdvertisementArgs(parser, 'router')
+    flags.AddCustomAdvertisementArgs(parser, 'router')
 
   def Run(self, args):
     # Manually ensure replace/incremental flags are mutually exclusive.
     router_utils.CheckIncompatibleFlagsOrRaise(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-    messages = client.messages
+    messages = holder.client.messages
+    service = holder.client.apitools_client.routers
 
-    ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
+    router_ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
 
-    existing = client.MakeRequests([routers_utils.GetGetRequest(client,
-                                                                ref)])[0]
+    request_type = messages.ComputeRoutersGetRequest
+    existing = service.Get(request_type(**router_ref.AsDict()))
     replacement = copy.deepcopy(existing)
 
     if router_utils.HasReplaceAdvertisementFlags(args):
@@ -77,13 +80,13 @@ class UpdateAlpha(base.UpdateCommand):
 
       # These arguments are guaranteed to be mutually exclusive in args.
       if args.add_advertisement_groups:
-        groups_to_add = router_utils.ParseGroups(
+        groups_to_add = routers_utils.ParseGroups(
             resource_class=messages.RouterBgp,
             groups=args.add_advertisement_groups)
         replacement.bgp.advertisedGroups.extend(groups_to_add)
 
       if args.remove_advertisement_groups:
-        groups_to_remove = router_utils.ParseGroups(
+        groups_to_remove = routers_utils.ParseGroups(
             resource_class=messages.RouterBgp,
             groups=args.remove_advertisement_groups)
         router_utils.RemoveGroupsFromAdvertisements(
@@ -93,7 +96,7 @@ class UpdateAlpha(base.UpdateCommand):
             groups=groups_to_remove)
 
       if args.add_advertisement_ranges:
-        ip_ranges_to_add = router_utils.ParseIpRanges(
+        ip_ranges_to_add = routers_utils.ParseIpRanges(
             messages=messages, ip_ranges=args.add_advertisement_ranges)
         replacement.bgp.advertisedPrefixs.extend(ip_ranges_to_add)
 
@@ -111,10 +114,37 @@ class UpdateAlpha(base.UpdateCommand):
     if not replacement.bgp.advertisedPrefixs:
       cleared_fields.append('bgp.advertisedPrefixs')
 
-    with client.apitools_client.IncludeFields(cleared_fields):
-      resource_list = client.MakeRequests(
-          [routers_utils.GetPatchRequest(client, ref, replacement)])
-    return resource_list
+    with holder.client.apitools_client.IncludeFields(cleared_fields):
+      request_type = messages.ComputeRoutersPatchRequest
+      result = service.Patch(
+          request_type(
+              project=router_ref.project,
+              region=router_ref.region,
+              router=router_ref.Name(),
+              routerResource=replacement))
+
+    operation_ref = resources.REGISTRY.Parse(
+        result.name,
+        collection='compute.regionOperations',
+        params={
+            'project': router_ref.project,
+            'region': router_ref.region,
+        })
+
+    # TODO(b/62801777): add support for --async flag.
+
+    target_router_ref = holder.resources.Parse(
+        router_ref.Name(),
+        collection='compute.routers',
+        params={
+            'project': router_ref.project,
+            'region': router_ref.region,
+        })
+
+    operation_poller = poller.Poller(service, target_router_ref)
+    return waiter.WaitFor(
+        operation_poller, operation_ref,
+        'Updating router {0}'.format(router_ref.Name()))
 
 
 UpdateAlpha.detailed_help = {

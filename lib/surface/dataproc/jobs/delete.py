@@ -14,6 +14,7 @@
 
 """Delete job command."""
 
+from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
@@ -40,11 +41,10 @@ class Delete(base.DeleteCommand):
         help='The ID of the job to delete.')
 
   def Run(self, args):
-    client = self.context['dataproc_client']
-    messages = self.context['dataproc_messages']
+    dataproc = dp.Dataproc()
 
-    job_ref = util.ParseJob(args.id, self.context)
-    request = messages.DataprocProjectsRegionsJobsDeleteRequest(
+    job_ref = dataproc.ParseJob(args.id)
+    request = dataproc.messages.DataprocProjectsRegionsJobsDeleteRequest(
         projectId=job_ref.projectId,
         region=job_ref.region,
         jobId=job_ref.jobId)
@@ -54,17 +54,16 @@ class Delete(base.DeleteCommand):
         cancel_on_no=True,
         cancel_string='Deletion aborted by user.')
 
-    client.projects_regions_jobs.Delete(request)
+    dataproc.client.projects_regions_jobs.Delete(request)
 
     def _GetJob(job_ref):
-      return client.projects_regions_jobs.Get(
-          messages.DataprocProjectsRegionsJobsGetRequest(
+      return dataproc.client.projects_regions_jobs.Get(
+          dataproc.messages.DataprocProjectsRegionsJobsGetRequest(
               projectId=job_ref.projectId,
               region=job_ref.region,
               jobId=job_ref.jobId))
 
     util.WaitForResourceDeletion(
-        _GetJob, job_ref,
-        message='Waiting for job deletion')
+        _GetJob, job_ref, message='Waiting for job deletion')
 
     log.DeletedResource(job_ref)

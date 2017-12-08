@@ -11,7 +11,7 @@ gcloud dataproc operations list \- view the list of all operations
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud dataproc operations list\fR [\fB\-\-cluster\fR=\fICLUSTER\fR] [\fB\-\-state\-filter\fR=\fISTATE_FILTER\fR] [\fB\-\-filter\fR=\fIEXPRESSION\fR] [\fB\-\-limit\fR=\fILIMIT\fR] [\fB\-\-page\-size\fR=\fIPAGE_SIZE\fR;\ default="100"] [\fB\-\-sort\-by\fR=[\fIFIELD\fR,...]] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
+\f5gcloud dataproc operations list\fR [\fB\-\-cluster\fR=\fICLUSTER\fR] [\fB\-\-region\fR=\fIREGION\fR] [\fB\-\-state\-filter\fR=\fISTATE_FILTER\fR] [\fB\-\-filter\fR=\fIEXPRESSION\fR] [\fB\-\-limit\fR=\fILIMIT\fR] [\fB\-\-page\-size\fR=\fIPAGE_SIZE\fR;\ default="100"] [\fB\-\-sort\-by\fR=[\fIFIELD\fR,...]] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -41,6 +41,16 @@ having an implicit \f5AND\fR operator.
 Restrict to the operations of this Dataproc cluster. This flag is ignored when
 \-\-filter is specified. The equivalent term in a \-\-filter expression is:
 \f5clusterName = myclustername\fR
+
+.TP 2m
+\fB\-\-region\fR=\fIREGION\fR
+Specifies the Cloud Dataproc region to use. Each Cloud Dataproc region
+constitutes an independent resource namespace constrained to deploying instances
+into Google Compute Engine zones inside the region. The default value of
+"global" is a special multi\-region namespace which is capable of deploying
+instances into all Google Compute Engine zones globally, and is disjoint from
+other Cloud Dataproc regions. Overrides the default \fBdataproc/region\fR
+property value for this command invocation.
 
 .TP 2m
 \fB\-\-state\-filter\fR=\fISTATE_FILTER\fR

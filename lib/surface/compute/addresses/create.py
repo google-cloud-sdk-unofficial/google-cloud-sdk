@@ -220,14 +220,7 @@ class CreateAlpha(Create):
   def Args(cls, parser):
     _Args(cls, parser)
     flags.AddAddressesAndIPVersions(parser, required=False)
-
-    parser.add_argument(
-        '--network-tier',
-        choices=['PREMIUM', 'SELECT'],
-        type=lambda x: x.upper(),
-        help='The network tier to assign to the reserved IP addresses. If left '
-        'empty, `PREMIUM` is used. Supported network tiers are: `PREMIUM`, '
-        '`SELECT`.')
+    flags.AddNetworkTier(parser)
 
     cls.SUBNETWORK_ARG = flags.SubnetworkArgument()
     cls.SUBNETWORK_ARG.AddArgument(parser)

@@ -23,10 +23,24 @@ from googlecloudsdk.command_lib.app import flags
 from googlecloudsdk.command_lib.app import ssh_common
 from googlecloudsdk.command_lib.util.ssh import containers
 from googlecloudsdk.command_lib.util.ssh import ssh
+from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class Ssh(base.Command):
+def _ArgsCommon(parser):
+  parser.add_argument(
+      'instance',
+      help='The instance ID.')
+  parser.add_argument(
+      '--container',
+      help='Name of the container within the VM to connect to.')
+  parser.add_argument(
+      'command',
+      nargs=argparse.REMAINDER,
+      help='Remote command to execute on the VM.')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class SshGa(base.Command):
   """SSH into the VM of an App Engine Flexible instance."""
 
   detailed_help = {
@@ -50,17 +64,8 @@ class Ssh(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddServiceVersionSelectArgs(parser, short_flags=True)
-    parser.add_argument(
-        'instance',
-        help='The instance ID.')
-    parser.add_argument(
-        '--container',
-        help='Name of the container within the VM to connect to.')
-    parser.add_argument(
-        'command',
-        nargs=argparse.REMAINDER,
-        help='Remote command to execute on the VM.')
+    flags.AddServiceVersionSelectArgs(parser)
+    _ArgsCommon(parser)
 
   def Run(self, args):
     """Connect to a running flex instance.
@@ -95,4 +100,22 @@ class Ssh(base.Command):
         identity_file=keys.key_file, tty=tty,
         remote_command=remote_command, options=connection_details.options)
     return cmd.Run(env)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class SshBeta(SshGa):
+  """SSH into the VM of an App Engine Flexible instance."""
+
+  @staticmethod
+  def Args(parser):
+    flags.AddServiceVersionSelectArgs(parser, short_flags=True)
+    _ArgsCommon(parser)
+
+  def Run(self, args):
+    log.warning(
+        'For `gcloud beta app instances ssh`, the short flags `-s` and `-v` '
+        'are deprecated and will be removed 2017-09-27. For the GA command, '
+        'they are not available. Please use `--service` and `--version` '
+        'instead.')
+    super(SshBeta, self).Run(args)
 

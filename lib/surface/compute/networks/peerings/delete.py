@@ -20,8 +20,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_projector
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class DeleteBeta(base.DeleteCommand):
+class Delete(base.DeleteCommand):
   """Delete a Google Compute Engine network peering."""
 
   @staticmethod

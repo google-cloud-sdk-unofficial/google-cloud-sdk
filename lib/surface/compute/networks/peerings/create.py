@@ -21,8 +21,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateBeta(base.Command):
+class Create(base.Command):
   """Create a Google Compute Engine network peering."""
 
   @staticmethod

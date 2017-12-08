@@ -39,12 +39,9 @@ def _Args(parser, release_track):
 
   labels_util.AddCreateLabelsFlags(parser)
 
-  # Beta Args
+  # Alpha and Beta Args
   if release_track in (base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA):
     flags.AddCloningImagesArgs(parser, sources_group)
-
-  # Alpha Args
-  if release_track == base.ReleaseTrack.ALPHA:
     flags.MakeForceCreateArg().AddToParser(parser)
 
 
@@ -147,7 +144,9 @@ class Create(base.CreateCommand):
           for key, value in sorted(args_labels.iteritems())])
       request.image.labels = labels
 
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA and args.force_create:
+    alpha_or_beta = self.ReleaseTrack() in (
+        base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+    if alpha_or_beta and args.force_create:
       request.forceCreate = True
 
     return client.MakeRequests([(client.apitools_client.images, 'Insert',

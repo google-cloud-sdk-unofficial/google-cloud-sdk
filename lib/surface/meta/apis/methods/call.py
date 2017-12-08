@@ -28,6 +28,7 @@ class Call(base.Command):
     # added.
     flags.API_VERSION_FLAG.AddToParser(parser)
     flags.COLLECTION_FLAG.AddToParser(parser)
+    flags.RAW_FLAG.AddToParser(parser)
     parser.AddDynamicPositional(
         'method',
         action=flags.MethodDynamicPositionalAction,

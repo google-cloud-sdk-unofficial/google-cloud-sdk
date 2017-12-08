@@ -43,13 +43,13 @@ class Hive(base_classes.JobSubmitter):
     super(Hive, Hive).Args(parser)
     HiveBase.Args(parser)
 
-  def ConfigureJob(self, job, args):
+  def ConfigureJob(self, messages, job, args):
     HiveBase.ConfigureJob(
-        self.context['dataproc_messages'],
+        messages,
         job,
         self.files_by_type,
         args)
-    super(Hive, self).ConfigureJob(job, args)
+    super(Hive, self).ConfigureJob(messages, job, args)
 
   def PopulateFilesByType(self, args):
     self.files_by_type.update(HiveBase.GetFilesByType(args))
@@ -78,13 +78,13 @@ class HiveBeta(base_classes.JobSubmitterBeta):
     super(HiveBeta, HiveBeta).Args(parser)
     HiveBase.Args(parser)
 
-  def ConfigureJob(self, job, args):
+  def ConfigureJob(self, messages, job, args):
     HiveBase.ConfigureJob(
-        self.context['dataproc_messages'],
+        messages,
         job,
         self.files_by_type,
         args)
-    super(HiveBeta, self).ConfigureJob(job, args)
+    super(HiveBeta, self).ConfigureJob(messages, job, args)
 
   def PopulateFilesByType(self, args):
     self.files_by_type.update(HiveBase.GetFilesByType(args))

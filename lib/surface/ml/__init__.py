@@ -18,6 +18,5 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Ml(base.Group):
   """Use Google Cloud machine learning capabilities."""

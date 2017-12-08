@@ -61,6 +61,19 @@ class CreateFromContainer(base.CreateCommand):
 
     instances_flags.INSTANCES_ARG.AddArgument(parser, operation_type='create')
 
+    CreateFromContainer.SOURCE_INSTANCE_TEMPLATE = (
+        instances_flags.MakeSourceInstanceTemplateArg())
+    CreateFromContainer.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
+
+  def WarnForSourceInstanceTemplateLimitations(self, args):
+    instances_flags.WarnForSourceInstanceTemplateLimitations(args)
+
+  def GetSourceInstanceTemplate(self, args, resources):
+    if not args.IsSpecified('source_instance_template'):
+      return None
+    ref = self.SOURCE_INSTANCE_TEMPLATE.ResolveAsResource(args, resources)
+    return ref.SelfLink()
+
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -73,6 +86,8 @@ class CreateFromContainer(base.CreateCommand):
       raise exceptions.InvalidArgumentException(
           '--disk',
           'Boot disk specified for containerized VM.')
+
+    self.WarnForSourceInstanceTemplateLimitations(args)
 
     scheduling = instance_utils.CreateSchedulingMessage(
         messages=client.messages,
@@ -171,6 +186,21 @@ class CreateFromContainer(base.CreateCommand):
           zone=instance_ref.zone)
       if labels:
         request.instance.labels = labels
+      source_instance_template = self.GetSourceInstanceTemplate(
+          args, holder.resources)
+      if source_instance_template:
+        request.sourceInstanceTemplate = source_instance_template
+
+        # Labels and MachineType are currently overridable.
+        # If no custom value was specified, default to None. Otherwise gcloud
+        # auto-default value will be considered as an override by Arcus.
+        if (not args.IsSpecified('machine_type') and
+            not args.IsSpecified('custom_cpu') and
+            not args.IsSpecified('custom_memory')):
+          request.instance.machineType = None
+        if not args.IsSpecified('labels'):
+          request.instance.labels = None
+
       requests.append((client.apitools_client.instances,
                        'Insert', request))
 

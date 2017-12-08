@@ -13,41 +13,61 @@
 # limitations under the License.
 """Command for listing network peerings."""
 
+from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.compute import base_classes
-
+from googlecloudsdk.api_lib.compute import filter_rewrite
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
+from googlecloudsdk.core.resource import resource_projector
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class ListBeta(base_classes.GlobalLister):
+class List(base.ListCommand):
   """List Google Compute Engine network peerings."""
-
-  @property
-  def service(self):
-    return self.compute.networks
-
-  @property
-  def resource_type(self):
-    return 'peerings'
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalLister.Args(parser)
+    parser.display_info.AddFormat("""
+        table(peerings:format="table(
+            name,
+            source_network.basename():label=NETWORK,
+            network.map().scope(projects).segment(0):label=PEER_PROJECT,
+            network.basename():label=PEER_NETWORK,
+            autoCreateRoutes,
+            state,
+            stateDetails
+        )")
+    """)
 
     parser.add_argument(
         '--network',
         help='Only show peerings of a specific network.')
 
-  def ComputeDynamicProperties(self, args, items):
-    for network in items:
-      for peering in network['peerings']:
-        # Add network information to peering for output table
-        peering['source_network'] = network['selfLink']
-        yield peering
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
 
-  def GetResources(self, args, errors):
-    networks = super(ListBeta, self).GetResources(args, errors)
-    return (network for network in networks if network.peerings and args.network
-            is None or network.name == args.network)
+    client = holder.client.apitools_client
+    messages = client.MESSAGES_MODULE
 
-ListBeta.detailed_help = base_classes.GetGlobalListerHelp('peerings')
+    project = properties.VALUES.core.project.GetOrFail()
+
+    args.filter, filter_expr = filter_rewrite.Rewriter().Rewrite(args.filter)
+    request = messages.ComputeNetworksListRequest(
+        project=project, filter=filter_expr)
+
+    for network in [network for network in list_pager.YieldFromList(
+        client.networks,
+        request,
+        field='items',
+        limit=args.limit,
+        batch_size=None) if network.peerings and (
+            args.network is None or
+            args.network == network.name)]:
+      # Network is synthesized for legacy reasons to maintain prior format.
+      # In general, synthesized output should not be done.
+      synthesized_network = resource_projector.MakeSerializable(network)
+      for peering in synthesized_network['peerings']:
+        peering['source_network'] = network.selfLink
+      yield synthesized_network
+
+
+List.detailed_help = base_classes.GetGlobalListerHelp('peerings')

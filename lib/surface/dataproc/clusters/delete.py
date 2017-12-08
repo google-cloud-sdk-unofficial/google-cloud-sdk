@@ -14,6 +14,7 @@
 
 """Delete cluster command."""
 
+from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
@@ -38,12 +39,11 @@ class Delete(base.DeleteCommand):
     util.AddTimeoutFlag(parser)
 
   def Run(self, args):
-    client = self.context['dataproc_client']
-    messages = self.context['dataproc_messages']
+    dataproc = dp.Dataproc()
 
-    cluster_ref = util.ParseCluster(args.name, self.context)
+    cluster_ref = dataproc.ParseCluster(args.name)
 
-    request = messages.DataprocProjectsRegionsClustersDeleteRequest(
+    request = dataproc.messages.DataprocProjectsRegionsClustersDeleteRequest(
         clusterName=cluster_ref.clusterName,
         region=cluster_ref.region,
         projectId=cluster_ref.projectId)
@@ -54,7 +54,7 @@ class Delete(base.DeleteCommand):
         cancel_on_no=True,
         cancel_string='Deletion aborted by user.')
 
-    operation = client.projects_regions_clusters.Delete(request)
+    operation = dataproc.client.projects_regions_clusters.Delete(request)
 
     if args.async:
       log.status.write(
@@ -62,9 +62,8 @@ class Delete(base.DeleteCommand):
               cluster_ref, operation.name))
       return operation
 
-    operation = util.WaitForOperation(
+    operation = dataproc.WaitForOperation(
         operation,
-        self.context,
         message='Waiting for cluster deletion operation',
         timeout_s=args.timeout)
     log.DeletedResource(cluster_ref)

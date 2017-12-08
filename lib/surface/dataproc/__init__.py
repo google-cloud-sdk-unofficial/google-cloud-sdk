@@ -14,13 +14,13 @@
 
 """The main command group for cloud dataproc."""
 
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
+# TODO(b/62883827): Move this into the docstring along with other places
+# where this pattern currently occurs.
 DETAILED_HELP = {
     'DESCRIPTION': """\
         The gcloud dataproc command group lets you create and manage Google
@@ -48,23 +48,10 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Dataproc(base.Group):
   """Create and manage Google Cloud Dataproc clusters and jobs."""
   detailed_help = DETAILED_HELP
-
-  def Filter(self, context, args):
-    # TODO(b/35708327): Stop using self.context
-    context['dataproc_messages'] = apis.GetMessagesModule('dataproc', 'v1')
-    context['resources'] = resources.REGISTRY
-    context['dataproc_client'] = apis.GetClientInstance('dataproc', 'v1')
-
-    return context
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DataprocBeta(Dataproc):
-  """Create and manage Google Cloud Dataproc clusters and jobs."""
 
   @staticmethod
   def Args(parser):
@@ -73,6 +60,4 @@ class DataprocBeta(Dataproc):
         '--region',
         help=region_prop.help_text,
         # Don't set default, because it would override users' property setting.
-        action=actions.StoreProperty(region_prop),
-        hidden=True)
-
+        action=actions.StoreProperty(region_prop))

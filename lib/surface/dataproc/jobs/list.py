@@ -18,6 +18,7 @@ from apitools.base.py import encoding
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.dataproc import constants
+from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import exceptions
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
@@ -92,13 +93,12 @@ class List(base.ListCommand):
     """)
 
   def Run(self, args):
-    client = self.context['dataproc_client']
-    messages = self.context['dataproc_messages']
+    dataproc = dp.Dataproc()
 
     project = properties.VALUES.core.project.GetOrFail()
     region = properties.VALUES.dataproc.region.GetOrFail()
 
-    request = self.GetRequest(messages, project, region, args)
+    request = self.GetRequest(dataproc.messages, project, region, args)
 
     if args.cluster:
       request.clusterName = args.cluster
@@ -106,19 +106,19 @@ class List(base.ListCommand):
     if args.state_filter:
       if args.state_filter == 'active':
         request.jobStateMatcher = (
-            messages.DataprocProjectsRegionsJobsListRequest
+            dataproc.messages.DataprocProjectsRegionsJobsListRequest
             .JobStateMatcherValueValuesEnum.ACTIVE)
       # TODO(b/32669485) Get full flag test coverage.
       elif args.state_filter == 'inactive':
         request.jobStateMatcher = (
-            messages.DataprocProjectsRegionsJobsListRequest
+            dataproc.messages.DataprocProjectsRegionsJobsListRequest
             .JobStateMatcherValueValuesEnum.NON_ACTIVE)
       else:
         raise exceptions.ArgumentError(
             'Invalid state-filter; [{0}].'.format(args.state_filter))
 
     jobs = list_pager.YieldFromList(
-        client.projects_regions_jobs,
+        dataproc.client.projects_regions_jobs,
         request,
         limit=args.limit, field='jobs',
         batch_size=args.page_size,

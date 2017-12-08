@@ -11,7 +11,7 @@ gcloud iam list\-grantable\-roles \- list IAM grantable roles for a resource
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud iam list\-grantable\-roles\fR \fIRESOURCE\fR [\fB\-\-filter\fR=\fIEXPRESSION\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
+\f5gcloud iam list\-grantable\-roles\fR \fIRESOURCE\fR [\fB\-\-filter\fR=\fIEXPRESSION\fR] [\fB\-\-page\-size\fR=\fIPAGE_SIZE\fR;\ default="100"] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -44,6 +44,14 @@ the expression evaluates True then that item is listed. For more details and
 examples of filter expressions run $ gcloud topic filters. This flag interacts
 with other flags that are applied in this order: \fB\-\-flatten\fR,
 \fB\-\-sort\-by\fR, \fB\-\-filter\fR, \fB\-\-limit\fR.
+
+.TP 2m
+\fB\-\-page\-size\fR=\fIPAGE_SIZE\fR; default="100"
+Some services group resource list output into pages. This flag specifies the
+maximum number of resources per page. The default is determined by the service
+if it supports paging, otherwise it is \fBunlimited\fR (no paging). Paging may
+be applied before or after \fB\-\-filter\fR and \fB\-\-limit\fR depending on the
+service.
 
 
 .RE

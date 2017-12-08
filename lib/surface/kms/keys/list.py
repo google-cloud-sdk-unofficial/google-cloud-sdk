@@ -36,8 +36,15 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
+    # The format of a CryptoKeyVersion name is:
+    # 'projects/*/locations/*/keyRings/*/cryptoKeys/*/cryptoKeyVersions/*'
+    # The CryptoKeyVersionId is captured by segment(9).
     parser.display_info.AddFormat("""
-        table(name, purpose, primary.state:label=PRIMARY_STATE)
+        table(
+          name,
+          purpose,
+          primary.name.segment(9):label=PRIMARY_ID,
+          primary.state:label=PRIMARY_STATE)
     """)
 
   def Run(self, args):

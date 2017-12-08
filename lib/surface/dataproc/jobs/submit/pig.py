@@ -43,14 +43,14 @@ class Pig(base_classes.JobSubmitter):
     super(Pig, Pig).Args(parser)
     PigBase.Args(parser)
 
-  def ConfigureJob(self, job, args):
+  def ConfigureJob(self, messages, job, args):
     PigBase.ConfigureJob(
-        self.context['dataproc_messages'],
+        messages,
         job,
-        self.BuildLoggingConfig(args.driver_log_levels),
+        self.BuildLoggingConfig(messages, args.driver_log_levels),
         self.files_by_type,
         args)
-    super(Pig, self).ConfigureJob(job, args)
+    super(Pig, self).ConfigureJob(messages, job, args)
 
   def PopulateFilesByType(self, args):
     self.files_by_type.update(PigBase.GetFilesByType(args))
@@ -78,14 +78,14 @@ class PigBeta(base_classes.JobSubmitterBeta):
     super(PigBeta, PigBeta).Args(parser)
     PigBase.Args(parser)
 
-  def ConfigureJob(self, job, args):
+  def ConfigureJob(self, messages, job, args):
     PigBase.ConfigureJob(
-        self.context['dataproc_messages'],
+        messages,
         job,
-        self.BuildLoggingConfig(args.driver_log_levels),
+        self.BuildLoggingConfig(messages, args.driver_log_levels),
         self.files_by_type,
         args)
-    super(PigBeta, self).ConfigureJob(job, args)
+    super(PigBeta, self).ConfigureJob(messages, job, args)
 
   def PopulateFilesByType(self, args):
     self.files_by_type.update(PigBase.GetFilesByType(args))

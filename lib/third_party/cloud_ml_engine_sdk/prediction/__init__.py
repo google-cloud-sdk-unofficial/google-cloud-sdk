@@ -17,7 +17,6 @@
 import os
 from _interfaces import Model
 from _interfaces import PredictionClient
-from _interfaces import Servable
 
 _version = os.getenv("CLOUDML_ENDPOINT_VERSION")
 

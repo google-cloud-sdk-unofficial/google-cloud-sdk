@@ -142,7 +142,7 @@ class Create(base.Command):
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
 
-  def ValidateAndParse(self, args, compute_holder):
+  def ValidateAndParseDiskRefs(self, args, compute_holder):
     """Validate flags and parse disks references.
 
     Subclasses may override it to customize parsing.
@@ -159,37 +159,26 @@ class Create(base.Command):
         compute_holder.resources,
         scope_lister=flags.GetDefaultScopeLister(compute_holder.client))
 
-  def Run(self, args):
-    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = compute_holder.client
+  def GetFromImage(self, args):
+    return args.image or args.image_family
 
-    disk_refs = self.ValidateAndParse(args, compute_holder)
-
+  def GetDiskSizeGb(self, args, from_image):
     size_gb = utils.BytesToGb(args.size)
 
-    from_image = args.image or args.image_family
     if not size_gb and not args.source_snapshot and not from_image:
       if args.type and 'pd-ssd' in args.type:
         size_gb = constants.DEFAULT_SSD_DISK_SIZE_GB
       else:
         size_gb = constants.DEFAULT_STANDARD_DISK_SIZE_GB
-
     utils.WarnIfDiskSizeIsTooSmall(size_gb, args.type)
+    return size_gb
 
-    requests = []
-
-    # Check if the zone is deprecated or has maintenance coming.
-    zone_resource_fetcher = zone_utils.ZoneResourceFetcher(client)
-    zone_resource_fetcher.WarnForZonalCreation(
-        (ref for ref in disk_refs if ref.Collection() == 'compute.disks'))
-    # Check if the region is deprecated or has maintenance coming.
-    region_resource_fetcher = region_utils.RegionResourceFetcher(client)
-    region_resource_fetcher.WarnForRegionalCreation(
-        (ref for ref in disk_refs if ref.Collection() == 'compute.regionDisks'))
-
+  def GetProjectToSourceImageDict(
+      self, args, disk_refs, compute_holder, from_image):
     project_to_source_image = {}
 
-    image_expander = image_utils.ImageExpander(client, compute_holder.resources)
+    image_expander = image_utils.ImageExpander(
+        compute_holder.client, compute_holder.resources)
 
     for disk_ref in disk_refs:
       if from_image:
@@ -205,15 +194,81 @@ class Create(base.Command):
       else:
         project_to_source_image[disk_ref.project] = argparse.Namespace()
         project_to_source_image[disk_ref.project].uri = None
+    return project_to_source_image
 
+  def WarnAboutScopeDeprecationsAndMaintainance(self, disk_refs, client):
+    # Check if the zone is deprecated or has maintenance coming.
+    zone_resource_fetcher = zone_utils.ZoneResourceFetcher(client)
+    zone_resource_fetcher.WarnForZonalCreation(
+        (ref for ref in disk_refs if ref.Collection() == 'compute.disks'))
+    # Check if the region is deprecated or has maintenance coming.
+    region_resource_fetcher = region_utils.RegionResourceFetcher(client)
+    region_resource_fetcher.WarnForRegionalCreation(
+        (ref for ref in disk_refs if ref.Collection() == 'compute.regionDisks'))
+
+  def GetSnapshotUri(self, args, compute_holder):
     snapshot_ref = disks_flags.SOURCE_SNAPSHOT_ARG.ResolveAsResource(
         args, compute_holder.resources)
     if snapshot_ref:
-      snapshot_uri = snapshot_ref.SelfLink()
-    else:
-      snapshot_uri = None
+      return snapshot_ref.SelfLink()
+    return None
 
-    # This feature is only exposed in alpha/beta
+  def GetLabels(self, args, client):
+    labels = None
+    args_labels = getattr(args, 'labels', None)
+    if args_labels:
+      labels = client.messages.Disk.LabelsValue(additionalProperties=[
+          client.messages.Disk.LabelsValue.AdditionalProperty(
+              key=key, value=value)
+          for key, value in sorted(args.labels.iteritems())])
+    return labels
+
+  def GetDiskTypeUri(self, args, disk_ref, compute_holder):
+    if args.type:
+      if disk_ref.Collection() == 'compute.disks':
+        type_ref = compute_holder.resources.Parse(
+            args.type, collection='compute.diskTypes',
+            params={
+                'project': disk_ref.project,
+                'zone': disk_ref.zone
+            })
+      elif disk_ref.Collection() == 'compute.regionDisks':
+        type_ref = compute_holder.resources.Parse(
+            args.type, collection='compute.regionDiskTypes',
+            params={
+                'project': disk_ref.project,
+                'region': disk_ref.region
+            })
+      return type_ref.SelfLink()
+    return None
+
+  def GetReplicaZones(self, args, compute_holder, disk_ref):
+    result = []
+    for zone in args.replica_zones:
+      zone_ref = compute_holder.resources.Parse(
+          zone,
+          collection='compute.zones',
+          params={
+              'project': disk_ref.project
+          })
+      result.append(zone_ref.SelfLink())
+    return result
+
+  def Run(self, args):
+    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = compute_holder.client
+    disk_refs = self.ValidateAndParseDiskRefs(args, compute_holder)
+    from_image = self.GetFromImage(args)
+    size_gb = self.GetDiskSizeGb(args, from_image)
+    self.WarnAboutScopeDeprecationsAndMaintainance(disk_refs, client)
+    project_to_source_image = self.GetProjectToSourceImageDict(
+        args, disk_refs, compute_holder, from_image)
+    snapshot_uri = self.GetSnapshotUri(args, compute_holder)
+
+    # Those features are only exposed in alpha/beta, it would be nice to have
+    # code supporting them only in alpha and beta versions of the command.
+    labels = self.GetLabels(args, client)
+
     allow_rsa_encrypted = self.ReleaseTrack() in [base.ReleaseTrack.ALPHA,
                                                   base.ReleaseTrack.BETA]
     csek_keys = csek_utils.CsekKeyStore.FromArgs(args, allow_rsa_encrypted)
@@ -224,86 +279,52 @@ class Create(base.Command):
           csek_utils.MaybeLookupKeyMessagesByUri(
               csek_keys, compute_holder.resources,
               [source_image_uri, snapshot_uri], client.apitools_client))
+    # end of alpha/beta features.
 
-    labels = None
-    args_labels = getattr(args, 'labels', None)
-    if args_labels:
-      labels = client.messages.Disk.LabelsValue(additionalProperties=[
-          client.messages.Disk.LabelsValue.AdditionalProperty(
-              key=key, value=value)
-          for key, value in sorted(args.labels.iteritems())])
-
+    requests = []
     for disk_ref in disk_refs:
-      if args.type:
-        if disk_ref.Collection() == 'compute.disks':
-          type_ref = compute_holder.resources.Parse(
-              args.type, collection='compute.diskTypes',
-              params={
-                  'project': disk_ref.project,
-                  'zone': disk_ref.zone
-              })
-        elif disk_ref.Collection() == 'compute.regionDisks':
-          type_ref = compute_holder.resources.Parse(
-              args.type, collection='compute.regionDiskTypes',
-              params={
-                  'project': disk_ref.project,
-                  'region': disk_ref.region
-              })
-        type_uri = type_ref.SelfLink()
-      else:
-        type_uri = None
+      type_uri = self.GetDiskTypeUri(args, disk_ref, compute_holder)
 
+      # Those features are only exposed in alpha/beta, it would be nice to have
+      # code supporting them only in alpha and beta versions of the command.
+      kwargs = {}
       if csek_keys:
         disk_key_or_none = csek_keys.LookupKey(
             disk_ref, args.require_csek_key_create)
         disk_key_message_or_none = csek_utils.MaybeToMessage(
             disk_key_or_none, client.apitools_client)
-        kwargs = {'diskEncryptionKey': disk_key_message_or_none,
-                  'sourceImageEncryptionKey':
-                      project_to_source_image[disk_ref.project].keys[0],
-                  'sourceSnapshotEncryptionKey':
-                      project_to_source_image[disk_ref.project].keys[1]}
-      else:
-        kwargs = {}
+        kwargs['diskEncryptionKey'] = disk_key_message_or_none
+        kwargs['sourceImageEncryptionKey'] = (
+            project_to_source_image[disk_ref.project].keys[0])
+        kwargs['sourceSnapshotEncryptionKey'] = (
+            project_to_source_image[disk_ref.project].keys[1])
+      if labels:
+        kwargs['labels'] = labels
+      # end of alpha/beta features.
+
+      disk = client.messages.Disk(
+          name=disk_ref.Name(),
+          description=args.description,
+          sizeGb=size_gb,
+          sourceSnapshot=snapshot_uri,
+          type=type_uri,
+          **kwargs)
 
       if disk_ref.Collection() == 'compute.disks':
         request = client.messages.ComputeDisksInsertRequest(
-            disk=client.messages.Disk(
-                name=disk_ref.Name(),
-                description=args.description,
-                sizeGb=size_gb,
-                sourceSnapshot=snapshot_uri,
-                type=type_uri,
-                **kwargs),
+            disk=disk,
             project=disk_ref.project,
             sourceImage=project_to_source_image[disk_ref.project].uri,
             zone=disk_ref.zone)
-        if labels:
-          request.disk.labels = labels
+
         request = (client.apitools_client.disks, 'Insert', request)
       elif disk_ref.Collection() == 'compute.regionDisks':
-        def SelfLink(zone, disk_ref):
-          return compute_holder.resources.Parse(
-              zone,
-              collection='compute.zones',
-              params={
-                  'project': disk_ref.project
-              }).SelfLink()
-        zones = [SelfLink(zone, disk_ref) for zone in args.replica_zones]
+        disk.replicaZones = self.GetReplicaZones(args, compute_holder, disk_ref)
         request = client.messages.ComputeRegionDisksInsertRequest(
-            disk=client.messages.Disk(
-                name=disk_ref.Name(),
-                description=args.description,
-                sizeGb=size_gb,
-                sourceSnapshot=snapshot_uri,
-                type=type_uri,
-                replicaZones=zones,
-                **kwargs),
+            disk=disk,
             project=disk_ref.project,
             sourceImage=project_to_source_image[disk_ref.project].uri,
             region=disk_ref.region)
-        if labels:
-          request.disk.labels = labels
 
         request = (client.apitools_client.regionDisks, 'Insert', request)
 
@@ -349,7 +370,7 @@ class CreateAlpha(Create):
 
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
 
-  def ValidateAndParse(self, args, compute_holder):
+  def ValidateAndParseDiskRefs(self, args, compute_holder):
     if args.replica_zones is None and args.region is not None:
       raise exceptions.RequiredArgumentException(
           '--replica-zones',

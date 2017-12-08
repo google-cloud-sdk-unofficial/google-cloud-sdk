@@ -57,8 +57,7 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'name',
-        metavar='REPOSITORY_NAME',
+        'repository_name',
         help="""\
         Name of the repository. May contain between 3 and 63 (inclusive)
         lowercase letters, digits, and hyphens. Must start with a letter, and
@@ -79,7 +78,7 @@ class Create(base.CreateCommand):
         account, and when the repo name is already in use.
     """
     res = resources.REGISTRY.Parse(
-        args.name,
+        args.repository_name,
         params={'projectsId': properties.VALUES.core.project.GetOrFail},
         collection='sourcerepo.projects.repos')
     # check that the name does not have forbidden characters.

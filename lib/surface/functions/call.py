@@ -13,9 +13,11 @@
 # limitations under the License.
 
 """'functions call' command."""
+import json
 
 from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -46,6 +48,12 @@ class Call(base.Command):
     Returns:
       Function call results (error or result with execution id)
     """
+    if args.data:
+      try:
+        json.loads(args.data)
+      except ValueError as e:
+        raise exceptions.InvalidArgumentException(
+            '--data', 'Is not a valid JSON: ' + e.message)
     client = util.GetApiClientInstance()
     function_ref = resources.REGISTRY.Parse(
         args.name,
@@ -62,3 +70,15 @@ class Call(base.Command):
         messages.CloudfunctionsProjectsLocationsFunctionsCallRequest(
             name=function_ref.RelativeName(),
             callFunctionRequest=messages.CallFunctionRequest(data=args.data)))
+
+Call.detailed_help = {
+    'brief': 'Call function synchronously for testing.',
+    'EXAMPLES': """\
+        To call a function giving it hello world in message field of its event
+        argument (depending on your environment you might need to escape
+        characters in --data flag value differently):
+
+        $ {{command}} helloWorld --data '{"message":"Hello World!"}'
+
+     """
+}

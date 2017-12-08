@@ -20,7 +20,7 @@ gcloud compute url\-maps remove\-host\-rule \- remove a host rule from a URL map
 \fBgcloud compute url\-maps remove\-host\-rule\fR is used to remove a host rule
 from a URL map. When a host rule is removed, its path matcher is only removed if
 it is not referenced by any other host rules and
-\f5\fI\-\-delete\-orphaned\-path\-matcher\fR\fR is provided.
+\f5\-\-delete\-orphaned\-path\-matcher\fR is provided.
 
 
 
@@ -69,8 +69,8 @@ help\fR for details.
 
 .SH "EXAMPLES"
 
-To remove a host rule that contains the host \f5\fIexample.com\fR\fR from the
-URL map named \f5\fIMY\-URL\-MAP\fR\fR, you can use this command:
+To remove a host rule that contains the host \f5example.com\fR from the URL map
+named \f5MY\-URL\-MAP\fR, you can use this command:
 
 .RS 2m
 $ gcloud compute url\-maps remove\-host\-rule MY\-URL\-MAP \e

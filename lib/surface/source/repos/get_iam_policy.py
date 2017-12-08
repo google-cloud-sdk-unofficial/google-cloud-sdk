@@ -37,8 +37,7 @@ class GetIamPolicy(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        'name', metavar='REPOSITORY_NAME', help=('Name of the repository.'))
+    parser.add_argument('repository_name', help='Name of the repository.')
 
   def Run(self, args):
     """Gets the IAM policy for the repository.
@@ -53,7 +52,7 @@ class GetIamPolicy(base.DescribeCommand):
       ToolException: on project initialization errors.
     """
     res = resources.REGISTRY.Parse(
-        args.name,
+        args.repository_name,
         params={'projectsId': properties.VALUES.core.project.GetOrFail},
         collection='sourcerepo.projects.repos')
     source = sourcerepo.Source()

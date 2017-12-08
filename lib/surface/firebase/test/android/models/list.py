@@ -54,12 +54,3 @@ class List(base.ListCommand):
     """
     catalog = util.GetAndroidCatalog(self.context)
     return [model for model in catalog.models if model.supportedVersionIds]
-
-  def Collection(self):
-    """Choose the resource collection key used to list models by default.
-
-    Returns:
-      A collection string used as a key to select the default ResourceInfo
-      from core.resources.resource_registry.RESOURCE_REGISTRY.
-    """
-    return 'firebase.test.android.models'

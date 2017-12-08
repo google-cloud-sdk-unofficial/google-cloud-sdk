@@ -14,15 +14,29 @@
 
 """Command for removing a host rule from a URL map."""
 
-import copy
+from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.url_maps import flags
 
 
-class RemoveHostRule(base_classes.ReadWriteCommand):
-  """Remove a host rule from a URL map."""
+class RemoveHostRule(base.UpdateCommand):
+  """Remove a host rule from a URL map.
+
+  *{command}* is used to remove a host rule from a URL map. When
+  a host rule is removed, its path matcher is only removed if
+  it is not referenced by any other host rules and
+  `--delete-orphaned-path-matcher` is provided.
+
+  ## EXAMPLES
+  To remove a host rule that contains the host `example.com`
+  from the URL map named `MY-URL-MAP`, you can use this
+  command:
+
+    $ {command} MY-URL-MAP --host example.com
+  """
 
   URL_MAP_ARG = None
 
@@ -44,36 +58,25 @@ class RemoveHostRule(base_classes.ReadWriteCommand):
               'command, the command removes the orphaned path matcher instead '
               'of failing.'))
 
-  @property
-  def service(self):
-    return self.compute.urlMaps
-
-  @property
-  def resource_type(self):
-    return 'urlMaps'
-
-  def CreateReference(self, args):
-    return self.URL_MAP_ARG.ResolveAsResource(args, self.resources)
-
-  def GetGetRequest(self, args):
+  def _GetGetRequest(self, client, url_map_ref):
     """Returns the request for the existing URL map resource."""
-    return (self.service,
+    return (client.apitools_client.urlMaps,
             'Get',
-            self.messages.ComputeUrlMapsGetRequest(
-                urlMap=self.ref.Name(),
-                project=self.project))
+            client.messages.ComputeUrlMapsGetRequest(
+                urlMap=url_map_ref.Name(),
+                project=url_map_ref.project))
 
-  def GetSetRequest(self, args, replacement, existing):
-    return (self.service,
+  def _GetSetRequest(self, client, url_map_ref, replacement):
+    return (client.apitools_client.urlMaps,
             'Update',
-            self.messages.ComputeUrlMapsUpdateRequest(
-                urlMap=self.ref.Name(),
+            client.messages.ComputeUrlMapsUpdateRequest(
+                urlMap=url_map_ref.Name(),
                 urlMapResource=replacement,
-                project=self.project))
+                project=url_map_ref.project))
 
-  def Modify(self, args, existing):
+  def _Modify(self, args, existing):
     """Returns a modified URL map message."""
-    replacement = copy.deepcopy(existing)
+    replacement = encoding.CopyProtoMessage(existing)
 
     path_matcher_to_remove = None
     new_host_rules = []
@@ -110,20 +113,17 @@ class RemoveHostRule(base_classes.ReadWriteCommand):
 
     return replacement
 
+  def Run(self, args):
+    """Issues requests necessary to remove host rule on URL maps."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-RemoveHostRule.detailed_help = {
-    'brief': 'Remove a host rule from a URL map',
-    'DESCRIPTION': """\
-        *{command}* is used to remove a host rule from a URL map. When
-        a host rule is removed, its path matcher is only removed if
-        it is not referenced by any other host rules and
-        ``--delete-orphaned-path-matcher'' is provided.
-        """,
-    'EXAMPLES': """\
-        To remove a host rule that contains the host ``example.com''
-        from the URL map named ``MY-URL-MAP'', you can use this
-        command:
+    url_map_ref = self.URL_MAP_ARG.ResolveAsResource(args, holder.resources)
+    get_request = self._GetGetRequest(client, url_map_ref)
 
-          $ {command} MY-URL-MAP --host example.com
-        """,
-}
+    objects = client.MakeRequests([get_request])
+
+    new_object = self._Modify(args, objects[0])
+
+    return client.MakeRequests(
+        [self._GetSetRequest(client, url_map_ref, new_object)])

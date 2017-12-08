@@ -16,7 +16,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Language(base.Group):
   """Use the Google Cloud Natural Language API to analyze text.
 

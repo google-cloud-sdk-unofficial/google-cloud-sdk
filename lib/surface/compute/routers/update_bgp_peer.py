@@ -14,13 +14,14 @@
 
 """Command for updating a BGP peer on a Google Compute Engine router."""
 
-import copy
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import routers_utils
+from googlecloudsdk.api_lib.compute.operations import poller
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.command_lib.compute.routers import router_utils
+from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
@@ -33,7 +34,7 @@ class UpdateBgpPeer(base.UpdateCommand):
   def Args(cls, parser):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser)
-    router_utils.AddUpdateBgpPeerArgs(parser)
+    flags.AddUpdateBgpPeerArgs(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -44,8 +45,7 @@ class UpdateBgpPeer(base.UpdateCommand):
     ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
 
     request_type = messages.ComputeRoutersGetRequest
-    existing = service.Get(request_type(**ref.AsDict()))
-    replacement = copy.deepcopy(existing)
+    replacement = service.Get(request_type(**ref.AsDict()))
 
     _UpdateBgpPeer(replacement, args)
 
@@ -78,23 +78,21 @@ class UpdateBgpPeerAlpha(base.UpdateCommand):
   def Args(cls, parser):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser)
-    router_utils.AddUpdateBgpPeerArgs(parser)
-    router_utils.AddCustomAdvertisementArgs(parser, 'peer')
+    flags.AddUpdateBgpPeerArgs(parser)
+    flags.AddCustomAdvertisementArgs(parser, 'peer')
 
   def Run(self, args):
     # Manually ensure replace/incremental flags are mutually exclusive.
     router_utils.CheckIncompatibleFlagsOrRaise(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-    messages = client.messages
+    messages = holder.client.messages
+    service = holder.client.apitools_client.routers
 
-    ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
+    router_ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
 
-    existing = client.MakeRequests([routers_utils.GetGetRequest(client,
-                                                                ref)])[0]
-    # TODO(b/38240188): Clean up test resources and remove this copy step.
-    replacement = copy.deepcopy(existing)
+    request_type = messages.ComputeRoutersGetRequest
+    replacement = service.Get(request_type(**router_ref.AsDict()))
 
     # Retrieve specified peer and update base fields.
     peer = _UpdateBgpPeer(replacement, args)
@@ -128,13 +126,13 @@ class UpdateBgpPeerAlpha(base.UpdateCommand):
 
       # These arguments are guaranteed to be mutually exclusive in args.
       if args.add_advertisement_groups:
-        groups_to_add = router_utils.ParseGroups(
+        groups_to_add = routers_utils.ParseGroups(
             resource_class=messages.RouterBgpPeer,
             groups=args.add_advertisement_groups)
         peer.advertisedGroups.extend(groups_to_add)
 
       if args.remove_advertisement_groups:
-        groups_to_remove = router_utils.ParseGroups(
+        groups_to_remove = routers_utils.ParseGroups(
             resource_class=messages.RouterBgpPeer,
             groups=args.remove_advertisement_groups)
         router_utils.RemoveGroupsFromAdvertisements(
@@ -144,7 +142,7 @@ class UpdateBgpPeerAlpha(base.UpdateCommand):
             groups=groups_to_remove)
 
       if args.add_advertisement_ranges:
-        ip_ranges_to_add = router_utils.ParseIpRanges(
+        ip_ranges_to_add = routers_utils.ParseIpRanges(
             messages=messages, ip_ranges=args.add_advertisement_ranges)
         peer.advertisedPrefixs.extend(ip_ranges_to_add)
 
@@ -155,10 +153,36 @@ class UpdateBgpPeerAlpha(base.UpdateCommand):
             resource=peer,
             ip_ranges=args.remove_advertisement_ranges)
 
-    # TODO(b/62667314): Replace MakeRequests with proper poll + mock testing.
-    resource_list = client.MakeRequests(
-        [routers_utils.GetPatchRequest(client, ref, replacement)])
-    return resource_list
+    request_type = messages.ComputeRoutersPatchRequest
+    result = service.Patch(
+        request_type(
+            project=router_ref.project,
+            region=router_ref.region,
+            router=router_ref.Name(),
+            routerResource=replacement))
+
+    operation_ref = resources.REGISTRY.Parse(
+        result.name,
+        collection='compute.regionOperations',
+        params={
+            'project': router_ref.project,
+            'region': router_ref.region,
+        })
+
+    # TODO(b/62801777): add support for --async flag.
+
+    target_router_ref = holder.resources.Parse(
+        router_ref.Name(),
+        collection='compute.routers',
+        params={
+            'project': router_ref.project,
+            'region': router_ref.region,
+        })
+
+    operation_poller = poller.Poller(service, target_router_ref)
+    return waiter.WaitFor(
+        operation_poller, operation_ref,
+        'Updating peer {0} in router {1}'.format(peer.name, router_ref.Name()))
 
 
 def _UpdateBgpPeer(resource, args):

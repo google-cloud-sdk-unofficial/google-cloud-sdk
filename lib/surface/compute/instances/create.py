@@ -67,7 +67,6 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
     instances_flags.AddCreateDiskArgs(parser)
   if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
     instances_flags.AddExtendedMachineTypeArgs(parser)
-    instances_flags.AddAcceleratorArgs(parser)
   if support_local_ssd_size:
     instances_flags.AddLocalSsdArgsWithSize(parser)
   else:
@@ -78,6 +77,7 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
       multiple_network_interface_cards=multiple_network_interface_cards,
       support_alias_ip_ranges=support_alias_ip_ranges,
       support_network_tier=support_network_tier)
+  instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
   instances_flags.AddMaintenancePolicyArgs(parser)
   instances_flags.AddNoRestartOnFailureArgs(parser)
@@ -125,6 +125,14 @@ class Create(base.CreateCommand):
 
   def Collection(self):
     return 'compute.instances'
+
+  def WarnForSourceInstanceTemplateLimitations(self, args):
+    """Warn if --source-instance-template is mixed with unsupported flags."""
+    pass
+
+  def GetSourceInstanceTemplate(self, args, resources):
+    """Get sourceInstanceTemplate value as required by API."""
+    return None
 
   def _CreateRequests(self, args, compute_client, resource_parser):
     # This feature is only exposed in alpha/beta
@@ -350,6 +358,21 @@ class Create(base.CreateCommand):
           project=instance_ref.project,
           zone=instance_ref.zone)
 
+      source_instance_template = self.GetSourceInstanceTemplate(
+          args, resource_parser)
+      if source_instance_template:
+        request.sourceInstanceTemplate = source_instance_template
+
+        # Labels and MachineType are currently overridable.
+        # If no custom value was specified, default to None. Otherwise gcloud
+        # auto-default value will be considered as an override by Arcus.
+        if (not args.IsSpecified('machine_type') and
+            not args.IsSpecified('custom_cpu') and
+            not args.IsSpecified('custom_memory')):
+          request.instance.machineType = None
+        if not args.IsSpecified('labels'):
+          request.instance.labels = None
+
       sole_tenancy_host_arg = getattr(args, 'sole_tenancy_host', None)
       if sole_tenancy_host_arg:
         sole_tenancy_host_ref = resource_parser.Parse(
@@ -369,6 +392,8 @@ class Create(base.CreateCommand):
     instances_flags.ValidateNicFlags(args)
     instances_flags.ValidateServiceAccountAndScopeArgs(args)
     instances_flags.ValidateAcceleratorArgs(args)
+
+    self.WarnForSourceInstanceTemplateLimitations(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     compute_client = holder.client
@@ -415,6 +440,18 @@ class CreateAlpha(Create):
                 enable_regional=True,
                 support_local_ssd_size=True)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
+    CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
+        instances_flags.MakeSourceInstanceTemplateArg())
+    CreateAlpha.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
+
+  def WarnForSourceInstanceTemplateLimitations(self, args):
+    instances_flags.WarnForSourceInstanceTemplateLimitations(args)
+
+  def GetSourceInstanceTemplate(self, args, resources):
+    if not args.IsSpecified('source_instance_template'):
+      return None
+    ref = self.SOURCE_INSTANCE_TEMPLATE.ResolveAsResource(args, resources)
+    return ref.SelfLink()
 
 
 Create.detailed_help = DETAILED_HELP

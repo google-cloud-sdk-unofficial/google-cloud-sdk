@@ -15,12 +15,14 @@
 
 import os
 import signal
+import sys
 import time
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import execution_utils
+from googlecloudsdk.core.console import console_io
 
 
 class Test(base.Command):
@@ -43,11 +45,17 @@ class Test(base.Command):
         help='Trigger a core exception.')
     scenarios.add_argument(
         '--exec-file',
-        help='Will run \'bash <given file>\'')
+        metavar='SCRIPT_FILE',
+        help='Runs `bash SCRIPT_FILE`.')
     scenarios.add_argument(
         '--interrupt',
         action='store_true',
         help='Kill the command with SIGINT.')
+    scenarios.add_argument(
+        '--is-interactive',
+        action='store_true',
+        help=('Call console_io.IsInteractive(heuristic=True) and exit 0 '
+              'if the return value is True, 1 if False.'))
     scenarios.add_argument(
         '--sleep',
         metavar='SECONDS',
@@ -61,6 +69,13 @@ class Test(base.Command):
 
   def _RunCoreException(self, args):
     raise exceptions.Error('Some core exception.')
+
+  def _RunExecFile(self, args):
+    # We may want to add a timeout, though that will complicate the logic a bit
+    execution_utils.Exec(['bash', args.exec_file])
+
+  def _RunIsInteractive(self, args):
+    sys.exit(int(console_io.IsInteractive(heuristic=True)))
 
   def _RunInterrupt(self, args):
     try:
@@ -76,10 +91,6 @@ class Test(base.Command):
   def _RunSleep(self, args):
     time.sleep(args.sleep)
 
-  def _RunCommand(self, args):
-    # We may want to add a timeout, though that will complicate the logic a bit
-    execution_utils.Exec(['bash', args.exec_file])
-
   def _RunUncaughtException(self, args):
     raise ValueError('Catch me if you can.')
 
@@ -87,9 +98,11 @@ class Test(base.Command):
     if args.core_exception:
       self._RunCoreException(args)
     elif args.exec_file:
-      self._RunCommand(args)
+      self._RunExecFile(args)
     elif args.interrupt:
       self._RunInterrupt(args)
+    elif args.is_interactive:
+      self._RunIsInteractive(args)
     elif args.sleep:
       self._RunSleep(args)
     elif args.uncaught_exception:

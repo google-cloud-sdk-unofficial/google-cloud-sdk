@@ -15,6 +15,7 @@
 """A simple auth command to bootstrap authentication with oauth2."""
 
 import getpass
+import json
 
 from googlecloudsdk.api_lib.auth import service_account as auth_service_account
 from googlecloudsdk.calliope import base
@@ -22,6 +23,7 @@ from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.credentials import store as c_store
+from googlecloudsdk.core.util import files
 
 
 class ActivateServiceAccount(base.SilentCommand):
@@ -75,9 +77,19 @@ class ActivateServiceAccount(base.SilentCommand):
   def Run(self, args):
     """Create service account credentials."""
 
-    try:
+    if _IsJsonFile(args.key_file):
       cred = auth_service_account.CredentialsFromAdcFile(args.key_file)
-    except auth_service_account.BadCredentialFileException:
+      if args.password_file or args.prompt_for_password:
+        raise c_exc.InvalidArgumentException(
+            '--password-file',
+            'A .json service account key does not require a password.')
+      account = cred.service_account_email
+      if args.account and args.account != account:
+        raise c_exc.InvalidArgumentException(
+            'ACCOUNT',
+            'The given account name does not match the account name in the key '
+            'file.  This argument can be omitted when using .json keys.')
+    else:
       account = args.account
       if not account:
         raise c_exc.RequiredArgumentException(
@@ -94,17 +106,6 @@ class ActivateServiceAccount(base.SilentCommand):
 
       cred = auth_service_account.CredentialsFromP12File(
           args.key_file, account, password=password)
-    else:  # JSON format key file.
-      if args.password_file or args.prompt_for_password:
-        raise c_exc.InvalidArgumentException(
-            '--password-file',
-            'A .json service account key does not require a password.')
-      account = cred.service_account_email
-      if args.account and args.account != account:
-        raise c_exc.InvalidArgumentException(
-            'ACCOUNT',
-            'The given account name does not match the account name in the key '
-            'file.  This argument can be omitted when using .json keys.')
 
     try:
       c_store.ActivateCredentials(account, cred)
@@ -121,3 +122,15 @@ class ActivateServiceAccount(base.SilentCommand):
     log.status.Print('Activated service account credentials for: [{0}]'
                      .format(account))
 
+
+def _IsJsonFile(filename):
+  """Check and validate if given filename is proper json file."""
+  content = files.GetFileContents(filename)
+  try:
+    json.loads(content)
+    return True
+  except ValueError as e:
+    if filename.endswith('.json'):
+      raise auth_service_account.BadCredentialFileException(
+          'Could not read json file {0}: {1}'.format(filename, e))
+  return False

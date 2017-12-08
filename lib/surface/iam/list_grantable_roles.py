@@ -16,6 +16,8 @@
 import re
 import textwrap
 
+from apitools.base.py import list_pager
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.iam import base_classes
@@ -51,6 +53,8 @@ class ListGrantableRoles(base_classes.BaseIamCommand):
         'resource',
         help=('The full resource name to get the list of roles for.'))
     base.FILTER_FLAG.AddToParser(parser)
+    base.PAGE_SIZE_FLAG.AddToParser(parser)
+    base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
 
   def Run(self, args):
     resource = None
@@ -76,8 +80,10 @@ class ListGrantableRoles(base_classes.BaseIamCommand):
       raise exceptions.ToolException(
           'The given resource is not a valid full resource name or URL.')
 
-    result = self.iam_client.roles.QueryGrantableRoles(
-        self.messages.QueryGrantableRolesRequest(
-            fullResourceName=resource))
-
-    return result.roles
+    return list_pager.YieldFromList(
+        self.iam_client.roles,
+        self.messages.QueryGrantableRolesRequest(fullResourceName=resource),
+        field='roles',
+        method='QueryGrantableRoles',
+        batch_size=args.page_size,
+        batch_size_attribute='pageSize')

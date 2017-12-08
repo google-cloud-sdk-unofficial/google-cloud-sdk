@@ -19,9 +19,11 @@ import re
 import stat
 import textwrap
 
+from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.api_lib.compute import path_simplifier
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.util.ssh import ssh
@@ -216,8 +218,40 @@ def _BuildComputeSection(instances, private_key_file, known_hosts_file):
   return buf.getvalue()
 
 
-class ConfigSSH(ssh_utils.BaseSSHCommand):
-  """Populate SSH config files with Host entries from each instance."""
+class ConfigSSH(base.Command):
+  """Populate SSH config files with Host entries from each instance.
+
+  *{command}* makes SSHing to virtual machine instances easier
+  by adding an alias for each instance to the user SSH configuration
+  (`~/.ssh/config`) file.
+
+  In most cases, it is sufficient to run:
+
+    $ {command}
+
+  Each instance will be given an alias of the form
+  `NAME.ZONE.PROJECT`. For example, if `example-instance` resides in
+  `us-central1-a`, you can SSH to it by running:
+
+    $ ssh example-instance.us-central1-a.MY-PROJECT
+
+  On some platforms, the host alias can be tab-completed, making
+  the long alias less daunting to type.
+
+  The aliases created interface with SSH-based programs like
+  *scp(1)*, so it is possible to use the aliases elsewhere:
+
+    $ scp ~/MY-FILE example-instance.us-central1-a.MY-PROJECT:~
+
+  Whenever instances are added, removed, or their external IP
+  addresses are changed, this command should be re-executed to
+  update the configuration.
+
+  This command ensures that the user's public SSH key is present
+  in the project's metadata. If the user does not have a public
+  SSH key, one is generated using *ssh-keygen(1)* (if the `--quiet`
+  flag is given, the generated key will have an empty passphrase).
+  """
 
   @staticmethod
   def Args(parser):
@@ -226,7 +260,7 @@ class ConfigSSH(ssh_utils.BaseSSHCommand):
     Args:
       parser: An argparse.ArgumentParser.
     """
-    super(ConfigSSH, ConfigSSH).Args(parser)
+    ssh_utils.BaseSSHHelper.Args(parser)
 
     parser.add_argument(
         '--ssh-config-file',
@@ -247,17 +281,16 @@ class ConfigSSH(ssh_utils.BaseSSHCommand):
         help=('If provided, any changes made to the SSH config file by this '
               'tool are reverted.'))
 
-  def GetInstances(self):
+  def GetInstances(self, client):
     """Returns a generator of all instances in the project."""
-    compute = self.compute
     errors = []
     instances = lister.GetZonalResources(
-        service=compute.instances,
-        project=self.project,
+        service=client.apitools_client.instances,
+        project=properties.VALUES.core.project.GetOrFail(),
         requested_zones=None,
         filter_expr=None,
-        http=self.http,
-        batch_url=self.batch_url,
+        http=client.apitools_client.http,
+        batch_url=client.batch_url,
         errors=errors)
 
     if errors:
@@ -267,9 +300,13 @@ class ConfigSSH(ssh_utils.BaseSSHCommand):
 
   def Run(self, args):
     """See ssh_utils.BaseSSHCommand.Run."""
-    super(ConfigSSH, self).Run(args)
-    self.keys.EnsureKeysExist(args.force_key_file_overwrite,
-                              allow_passphrase=True)
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    ssh_helper = ssh_utils.BaseSSHHelper()
+    ssh_helper.Run(args)
+    ssh_helper.keys.EnsureKeysExist(args.force_key_file_overwrite,
+                                    allow_passphrase=True)
 
     ssh_config_file = os.path.expanduser(
         args.ssh_config_file or ssh.PER_USER_SSH_CONFIG_FILE)
@@ -289,12 +326,12 @@ class ConfigSSH(ssh_utils.BaseSSHCommand):
       except MultipleComputeSectionsError:
         raise MultipleComputeSectionsError(ssh_config_file)
     else:
-      self.EnsureSSHKeyIsInProject(
-          ssh.GetDefaultSshUsername(warn_on_account_user=True))
-      instances = list(self.GetInstances())
+      ssh_helper.EnsureSSHKeyIsInProject(
+          client, ssh.GetDefaultSshUsername(warn_on_account_user=True))
+      instances = list(self.GetInstances(client))
       if instances:
         compute_section = _BuildComputeSection(
-            instances, self.keys.key_file, ssh.KnownHosts.DEFAULT_PATH)
+            instances, ssh_helper.keys.key_file, ssh.KnownHosts.DEFAULT_PATH)
       else:
         compute_section = ''
 
@@ -345,40 +382,3 @@ class ConfigSSH(ssh_utils.BaseSSHCommand):
           'No host aliases were added to your SSH configs because you do not '
           'have any instances. Try running this command again after creating '
           'some instances.')
-
-
-ConfigSSH.detailed_help = {
-    'brief': 'Populate SSH config files with Host entries from each instance',
-    'DESCRIPTION': """\
-        *{command}* makes SSHing to virtual machine instances easier
-        by adding an alias for each instance to the user SSH configuration
-        (``~/.ssh/config'') file.
-
-        In most cases, it is sufficient to run:
-
-          $ {command}
-
-        Each instance will be given an alias of the form
-        ``NAME.ZONE.PROJECT''. For example, if ``example-instance'' resides in
-        ``us-central1-a'', you can SSH to it by running:
-
-          $ ssh example-instance.us-central1-a.MY-PROJECT
-
-        On some platforms, the host alias can be tab-completed, making
-        the long alias less daunting to type.
-
-        The aliases created interface with SSH-based programs like
-        *scp(1)*, so it is possible to use the aliases elsewhere:
-
-          $ scp ~/MY-FILE example-instance.us-central1-a.MY-PROJECT:~
-
-        Whenever instances are added, removed, or their external IP
-        addresses are changed, this command should be re-executed to
-        update the configuration.
-
-        This command ensures that the user's public SSH key is present
-        in the project's metadata. If the user does not have a public
-        SSH key, one is generated using *ssh-keygen(1)* (if the `--quiet`
-        flag is given, the generated key will have an empty passphrase).
-        """
-}

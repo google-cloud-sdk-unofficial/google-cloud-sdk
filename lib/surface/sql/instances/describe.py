@@ -16,6 +16,7 @@
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
 
 
@@ -42,6 +43,8 @@ class Get(base.DescribeCommand):
         'instance',
         completion_resource='sql.instances',
         help='Cloud SQL instance ID.')
+    parser.display_info.AddFormat(
+        '{0} default'.format(flags.INSTANCES_USERLABELS_FORMAT))
 
   def Run(self, args):
     """Displays configuration and metadata about a Cloud SQL instance.

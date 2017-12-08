@@ -17,12 +17,10 @@ Lists instances in a given project in the alphabetical order of the
 instance name.
 """
 
-from apitools.base.py import list_pager
-
 from googlecloudsdk.api_lib.sql import api_util
+from googlecloudsdk.api_lib.sql import instances
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
-from googlecloudsdk.core import properties
 
 
 def _GetUriFromResource(resource):
@@ -61,13 +59,4 @@ class List(base.ListCommand):
       ToolException: An error other than an http error occured while executing
           the command.
     """
-    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
-    sql_client = client.sql_client
-    sql_messages = client.sql_messages
-
-    project_id = properties.VALUES.core.project.Get(required=True)
-
-    return list_pager.YieldFromList(
-        sql_client.instances,
-        sql_messages.SqlInstancesListRequest(project=project_id),
-        limit=args.limit)
+    return instances.InstancesV1Beta4.GetDatabaseInstances()

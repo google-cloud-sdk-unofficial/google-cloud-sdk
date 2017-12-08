@@ -44,14 +44,14 @@ class PySpark(base_classes.JobSubmitter):
     super(PySpark, PySpark).Args(parser)
     PySparkBase.Args(parser)
 
-  def ConfigureJob(self, job, args):
+  def ConfigureJob(self, messages, job, args):
     PySparkBase.ConfigureJob(
-        self.context['dataproc_messages'],
+        messages,
         job,
-        self.BuildLoggingConfig(args.driver_log_levels),
+        self.BuildLoggingConfig(messages, args.driver_log_levels),
         self.files_by_type,
         args)
-    super(PySpark, self).ConfigureJob(job, args)
+    super(PySpark, self).ConfigureJob(messages, job, args)
 
   def PopulateFilesByType(self, args):
     self.files_by_type.update(PySparkBase.GetFilesByType(args))
@@ -78,14 +78,14 @@ class PySparkBeta(base_classes.JobSubmitterBeta):
     super(PySparkBeta, PySparkBeta).Args(parser)
     PySparkBase.Args(parser)
 
-  def ConfigureJob(self, job, args):
+  def ConfigureJob(self, messages, job, args):
     PySparkBase.ConfigureJob(
-        self.context['dataproc_messages'],
+        messages,
         job,
-        self.BuildLoggingConfig(args.driver_log_levels),
+        self.BuildLoggingConfig(messages, args.driver_log_levels),
         self.files_by_type,
         args)
-    super(PySparkBeta, self).ConfigureJob(job, args)
+    super(PySparkBeta, self).ConfigureJob(messages, job, args)
 
   def PopulateFilesByType(self, args):
     self.files_by_type.update(PySparkBase.GetFilesByType(args))

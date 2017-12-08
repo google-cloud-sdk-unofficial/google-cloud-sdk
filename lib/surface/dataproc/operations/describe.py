@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """Describe operation command."""
-from googlecloudsdk.api_lib.dataproc import util
+from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.calliope import base
 
 
@@ -35,13 +35,12 @@ class Describe(base.DescribeCommand):
         'operation', help='The ID of the operation to describe.')
 
   def Run(self, args):
-    client = self.context['dataproc_client']
-    messages = self.context['dataproc_messages']
+    dataproc = dp.Dataproc()
 
-    operation_ref = util.ParseOperation(args.operation, self.context)
+    operation_ref = dataproc.ParseOperation(args.operation)
 
-    request = messages.DataprocProjectsRegionsOperationsGetRequest(
+    request = dataproc.messages.DataprocProjectsRegionsOperationsGetRequest(
         name=operation_ref.RelativeName())
 
-    operation = client.projects_regions_operations.Get(request)
+    operation = dataproc.client.projects_regions_operations.Get(request)
     return operation

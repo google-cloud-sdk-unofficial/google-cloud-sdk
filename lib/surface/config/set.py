@@ -58,9 +58,7 @@ class Set(base.Command):
         'referring to properties in the core section.')
     parser.add_argument(
         'value',
-        completion_resource='cloudresourcemanager.projects',
         completer=Set.ValueCompleter,
-        list_command_path='beta projects list --uri',
         help='The value to be set.')
 
     flags.INSTALLATION_FLAG.AddToParser(parser)

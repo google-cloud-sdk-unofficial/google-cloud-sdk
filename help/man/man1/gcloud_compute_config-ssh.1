@@ -19,7 +19,7 @@ gcloud compute config\-ssh \- populate SSH config files with Host entries from e
 
 \fBgcloud compute config\-ssh\fR makes SSHing to virtual machine instances
 easier by adding an alias for each instance to the user SSH configuration
-(\f5\fI~/.ssh/config\fR\fR) file.
+(\f5~/.ssh/config\fR) file.
 
 In most cases, it is sufficient to run:
 
@@ -27,9 +27,9 @@ In most cases, it is sufficient to run:
 $ gcloud compute config\-ssh
 .RE
 
-Each instance will be given an alias of the form \f5\fINAME.ZONE.PROJECT\fR\fR.
-For example, if \f5\fIexample\-instance\fR\fR resides in
-\f5\fIus\-central1\-a\fR\fR, you can SSH to it by running:
+Each instance will be given an alias of the form \f5NAME.ZONE.PROJECT\fR. For
+example, if \f5example\-instance\fR resides in \f5us\-central1\-a\fR, you can
+SSH to it by running:
 
 .RS 2m
 $ ssh example\-instance.us\-central1\-a.MY\-PROJECT

@@ -176,6 +176,7 @@ See https://cloud.google.com/sdk/gcloud/reference/compute/firewall-rules/create
 for examples.
 """)
   flags.AddClusterVersionFlag(parser)
+  flags.AddDiskTypeFlag(parser, suppressed=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -195,6 +196,7 @@ class Create(base.CreateCommand):
     flags.AddMasterAuthorizedNetworksFlags(parser, hidden=True)
     flags.AddEnableLegacyAuthorizationFlag(parser, hidden=True)
     flags.AddLabelsFlag(parser, suppressed=True)
+    flags.AddNetworkPolicyFlags(parser, hidden=True)
 
   def ParseCreateOptions(self, args):
     if not args.scopes:
@@ -233,7 +235,9 @@ class Create(base.CreateCommand):
         enable_master_authorized_networks=enable_master_authorized_networks,
         master_authorized_networks=args.master_authorized_networks,
         enable_legacy_authorization=args.enable_legacy_authorization,
-        labels=args.labels)
+        labels=args.labels,
+        disk_type=args.disk_type,
+        enable_network_policy=args.enable_network_policy)
 
   def Collection(self):
     return 'container.projects.zones.clusters'
@@ -321,6 +325,7 @@ class CreateBeta(Create):
     flags.AddMasterAuthorizedNetworksFlags(parser, hidden=True)
     flags.AddEnableLegacyAuthorizationFlag(parser)
     flags.AddLabelsFlag(parser)
+    flags.AddNetworkPolicyFlags(parser, hidden=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -340,3 +345,4 @@ class CreateAlpha(Create):
     flags.AddMasterAuthorizedNetworksFlags(parser, hidden=True)
     flags.AddEnableLegacyAuthorizationFlag(parser)
     flags.AddLabelsFlag(parser)
+    flags.AddNetworkPolicyFlags(parser, hidden=False)

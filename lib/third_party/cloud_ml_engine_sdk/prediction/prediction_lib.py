@@ -23,6 +23,8 @@ Important changes:
 import base64
 import collections
 from contextlib import contextmanager
+import inspect
+import json
 import logging
 import os
 import pydoc  # used for importing python classes from their FQN
@@ -31,7 +33,6 @@ import timeit
 
 
 from _interfaces import Model
-from _interfaces import Servable
 
 import numpy as np
 
@@ -76,6 +77,7 @@ class PredictionError(Exception):
   FAILED_TO_GET_OUTPUT_TENSOR_ALIAS_MAP = 6
   FAILED_TO_RUN_GRAPH_BAD_OUTPUTS = 7
   FAILED_TO_GET_DEFAULT_SIGNATURE = 8
+  FAILED_TO_LOAD_USER_CODE = 9
 
   def __init__(self, error_code, error_message, *args):
     super(PredictionError, self).__init__(error_code, error_message, *args)
@@ -391,7 +393,7 @@ class SessionClient(object):
       return dict(zip(self._signature.outputs.iterkeys(), outputs))
 
 
-def create_model(client, model_path, **unused_kwargs):
+def create_model(client, model_path, **kwargs):
   """Creates and returns the appropriate model.
 
   Creates and returns the DefaultModel if no user specified model is
@@ -401,33 +403,110 @@ def create_model(client, model_path, **unused_kwargs):
   Args:
     client: An instance of ModelServerClient for performing prediction.
     model_path: the path to either session_bundle or SavedModel
+    **kwargs: keyword arguments to pass to DefaultModel.from_client.
 
   Returns:
     An instance of the appropriate model class.
+  """
+  user_class = load_user_class(client, model_path)
+  # Can't use isinstance() because the user doesn't have access to our Model
+  # class. We can only inspect the user_class to check if it conforms to the
+  # Model interface.
+  if user_class and hasattr(user_class, "predict"):
+    return user_class
+  else:
+    return DefaultModel.from_client(client, model_path, **kwargs)
+
+
+# TODO(b/62266327): split this into load_user_model and load_user_processor if
+# we decide to use separate parameters in Version API.
+def load_user_class(client, model_path):
+  """Loads in the user specified custom python class.
+
+  Args:
+    client: An instance of ModelServerClient for performing prediction.
+    model_path: the path to either session_bundle or SavedModel
+
+  Returns:
+    An instance of a Model or Preprocessor/Postprocessor.
+    Returns None if the user didn't specify the name of the custom
+    python class to load in the create_version_request.
 
   Raises:
-    ImportError: if the user provided python model class cannot be found
-    AttributeError: if the user provided python model class does not implement
-      both the from_client method and the predict method
+    PredictionError: for any of the following:
+      (1) the user provided python model class cannot be found
+      (2) if the loaded class does not implement a Model,
+      Preprocessor, or Postprocessor
   """
-  model_class = DefaultModel
-  python_class = os.environ.get("python_class")
-  if python_class:
-    user_class = pydoc.locate(python_class)
-    # TODO(b/37749453): right place to generate errors?
-    if not user_class:
-      raise ImportError(python_class + " cannot be found")
-    if not hasattr(user_class, "from_client"):
-      raise AttributeError("User provided model class " + python_class
-                           + " must implement the from_client method")
-    if not hasattr(user_class, "predict"):
-      raise AttributeError("User provided model class " + python_class
-                           + " must implement the predict method")
-    model_class = user_class
-  return model_class.from_client(client, model_path, **unused_kwargs)
+  create_version_json = os.environ.get("create_version_request")
+  if not create_version_json:
+    return None
+  create_version_request = json.loads(create_version_json)
+  if not create_version_request:
+    return None
+  version = create_version_request.get("version")
+  if not version:
+    return None
+  custom_code = version.get("custom_code")
+  if not custom_code:
+    return None
+  create_fn = pydoc.locate(custom_code)
+  # TODO(b/37749453): right place to generate errors?
+  if not create_fn:
+    package_uris = [str(s) for s in version.get("package_uris")]
+    raise PredictionError(PredictionError.FAILED_TO_LOAD_USER_CODE,
+                          "%s cannot be found. Please make sure "
+                          "(1) custom_code is the fully qualified function "
+                          "name, and (2) custom_code uses the correct package "
+                          "name as provided by the package_uris: %s"
+                          % (custom_code, package_uris))
+  user_class = create_fn(client, model_path)
+  # Check that the user class implements at least one of the expected methods
+  if hasattr(user_class, "predict"):
+    _validate_model_class(user_class)
+  else:
+    user_class_name = user_class.__class__.__name__
+    raise PredictionError(PredictionError.FAILED_TO_LOAD_USER_CODE,
+                          "The provided class, %s, must implement at least one "
+                          "of the following methods: predict, preprocess, "
+                          "postprocess"
+                          % user_class_name)
+  return user_class
 
 
-class DefaultModel(Model, Servable):
+def _validate_model_class(user_class):
+  """Validates a user provided instance of a Model implementation.
+
+  Args:
+    user_class: An instance of of a Model implementation.
+
+  Raises:
+    PredictionError: for any of the following:
+      (1) the user model class does not have the correct method signatures for
+      the predict method
+      (2) the user model class does not implement the signature method
+  """
+  # Check the predict method has the correct number of arguments
+  user_signature = inspect.getargspec(user_class.predict)[0]
+  model_signature = inspect.getargspec(Model.predict)[0]
+  user_predict_num_args = len(user_signature)
+  predict_num_args = len(model_signature)
+  user_class_name = type(user_class).__name__
+  if predict_num_args is not user_predict_num_args:
+    raise PredictionError(PredictionError.FAILED_TO_LOAD_USER_CODE,
+                          "The provided class, %s, has a predict method with "
+                          "an invalid signature. Expected signature: %s User "
+                          "signature: %s"
+                          % (user_class_name, model_signature, user_signature))
+  # Check that the signature method is implemented
+  if not hasattr(user_class, "signature"):
+    raise PredictionError(PredictionError.FAILED_TO_LOAD_USER_CODE,
+                          "The provided class, %s, is missing the required "
+                          "signature property."
+                          % user_class_name)
+
+
+class DefaultModel(Model):
   """The default implementation of the Model interface.
 
   This implementation optionally performs preprocessing and postprocessing

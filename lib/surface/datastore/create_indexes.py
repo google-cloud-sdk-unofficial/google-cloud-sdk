@@ -54,13 +54,10 @@ configuration. Any indexes in your index file that do not exist will be created.
 
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)
-    app_config = yaml_parsing.AppConfigSet([args.index_file])
-
-    if yaml_parsing.ConfigYamlInfo.INDEX not in app_config.Configs():
+    info = yaml_parsing.ConfigYamlInfo.FromFile(args.index_file)
+    if not info or info.name != yaml_parsing.ConfigYamlInfo.INDEX:
       raise exceptions.InvalidArgumentException(
           'index_file', 'You must provide the path to a valid index.yaml file.')
-
-    info = app_config.Configs()[yaml_parsing.ConfigYamlInfo.INDEX]
     output_helpers.DisplayProposedConfigDeployments(project, [info])
     console_io.PromptContinue(default=True, throw_if_unattended=False,
                               cancel_on_no=True)

@@ -16,11 +16,12 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Peerings(base.Group):
   """List, create, and delete Google Compute Engine network peerings."""
 
 
-Peerings.detailed_help = {
-    'brief': 'List, create, and delete Google Compute Engine network peerings',
-}
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class PeeringsGA(base.Group):
+  """List, create, and delete Google Compute Engine network peerings."""

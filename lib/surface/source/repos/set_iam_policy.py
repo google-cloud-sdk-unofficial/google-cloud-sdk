@@ -39,10 +39,9 @@ class SetIamPolicy(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'name', metavar='REPOSITORY_NAME', help=('Name of the repository.'))
+        'name', metavar='REPOSITORY_NAME', help='Name of the repository.')
     parser.add_argument(
         'policy_file',
-        metavar='FILE_NAME',
         help=('JSON file with IAM policy. '
               'See https://cloud.google.com/resource-manager/'
               'reference/rest/Shared.Types/Policy'))

@@ -28,7 +28,10 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.GetAccountIdArgument().AddToParser(parser)
+    account_args_group = parser.add_mutually_exclusive_group(required=True)
+    flags.GetOldAccountIdArgument().AddToParser(account_args_group)
+    flags.GetAccountIdArgument(positional=False).AddToParser(account_args_group)
+
     base.URI_FLAG.RemoveFromParser(parser)
     parser.display_info.AddFormat("""
           table(
@@ -46,5 +49,5 @@ class List(base.ListCommand):
   def Run(self, args):
     """Run the list command."""
     client = billing_client.ProjectsClient()
-    account_ref = utils.ParseAccount(args.id)
+    account_ref = utils.ParseAccount(args.id or args.billing_account)
     return client.List(account_ref, limit=args.limit)

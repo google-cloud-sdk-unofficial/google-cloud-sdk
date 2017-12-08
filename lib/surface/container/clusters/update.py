@@ -147,6 +147,7 @@ class Update(base.UpdateCommand):
     flags.AddCompleteIpRotationFlag(group, hidden=True)
     flags.AddUpdateLabelsFlag(group, suppressed=True)
     flags.AddRemoveLabelsFlag(group, suppressed=True)
+    flags.AddNetworkPolicyFlags(group, hidden=True)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -195,6 +196,20 @@ class Update(base.UpdateCommand):
       except apitools_exceptions.HttpError as error:
         del password
         del options
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif args.enable_network_policy is not None:
+      console_io.PromptContinue(
+          message='Enabling/Disabling Network Policy causes a rolling '
+          'update of all cluster nodes, similar to performing a cluster '
+          'upgrade.  This operation is long-running and will block other '
+          'operations on the cluster (including delete) until it has run '
+          'to completion.',
+          cancel_on_no=True)
+      options = api_adapter.SetNetworkPolicyOptions(
+          enabled=args.enable_network_policy)
+      try:
+        op_ref = adapter.SetNetworkPolicy(cluster_ref, options)
+      except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif args.start_ip_rotation:
       console_io.PromptContinue(
@@ -289,6 +304,7 @@ class UpdateBeta(Update):
     flags.AddCompleteIpRotationFlag(group)
     flags.AddUpdateLabelsFlag(group)
     flags.AddRemoveLabelsFlag(group)
+    flags.AddNetworkPolicyFlags(group, hidden=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -308,3 +324,4 @@ class UpdateAlpha(Update):
     flags.AddCompleteIpRotationFlag(group)
     flags.AddUpdateLabelsFlag(group)
     flags.AddRemoveLabelsFlag(group)
+    flags.AddNetworkPolicyFlags(group, hidden=False)

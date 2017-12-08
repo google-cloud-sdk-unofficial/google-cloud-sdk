@@ -13,19 +13,19 @@
 # limitations under the License.
 """Command for updating an interface on a Google Compute Engine router."""
 
-import copy
+from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import routers_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_errors
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.interconnects.attachments import (
     flags as attachment_flags)
-from googlecloudsdk.command_lib.compute.routers import flags
+from googlecloudsdk.command_lib.compute.routers import flags as router_flags
 from googlecloudsdk.command_lib.compute.vpn_tunnels import (flags as
                                                             vpn_tunnel_flags)
 from googlecloudsdk.core import exceptions
+from googlecloudsdk.core import log
 
 
 class InterfaceNotFoundError(exceptions.Error):
@@ -46,46 +46,43 @@ class RequireMaskError(exceptions.Error):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class UpdateInterface(base_classes.ReadWriteCommand):
-  """Update an interface on a Google Compute Engine router."""
+class UpdateInterface(base.UpdateCommand):
+  """Update an interface on a Google Compute Engine router.
+
+  *{command}* is used to update an interface on a Google Compute Engine
+  router.
+  """
 
   ROUTER_ARG = None
   VPN_TUNNEL_ARG = None
 
   @classmethod
   def Args(cls, parser):
-    cls.ROUTER_ARG = flags.RouterArgument()
+    cls.ROUTER_ARG = router_flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser, operation_type='update')
     cls.VPN_TUNNEL_ARG = vpn_tunnel_flags.VpnTunnelArgumentForRouter(
         required=False, operation_type='updated')
     cls.VPN_TUNNEL_ARG.AddArgument(parser)
 
-    routers_utils.AddCommonArgs(parser, for_update=True)
+    router_flags.AddInterfaceArgs(parser, for_update=True)
 
-  @property
-  def service(self):
-    return self.compute.routers
+  def GetGetRequest(self, client, router_ref):
+    return (client.apitools_client.routers, 'Get',
+            client.messages.ComputeRoutersGetRequest(
+                router=router_ref.Name(),
+                region=router_ref.region,
+                project=router_ref.project))
 
-  @property
-  def resource_type(self):
-    return 'routers'
+  def GetSetRequest(self, client, router_ref, replacement):
+    return (client.apitools_client.routers, 'Update',
+            client.messages.ComputeRoutersUpdateRequest(
+                router=router_ref.Name(),
+                routerResource=replacement,
+                region=router_ref.region,
+                project=router_ref.project))
 
-  def CreateReference(self, args):
-    return self.ROUTER_ARG.ResolveAsResource(args, self.resources)
-
-  def GetGetRequest(self, args):
-    return (self.service, 'Get', self.messages.ComputeRoutersGetRequest(
-        router=self.ref.Name(), region=self.ref.region, project=self.project))
-
-  def GetSetRequest(self, args, replacement, existing):
-    return (self.service, 'Update', self.messages.ComputeRoutersUpdateRequest(
-        router=self.ref.Name(),
-        routerResource=replacement,
-        region=self.ref.region,
-        project=self.project))
-
-  def Modify(self, args, existing):
-    replacement = copy.deepcopy(existing)
+  def Modify(self, client, resources, args, existing):
+    replacement = encoding.CopyProtoMessage(existing)
 
     iface = None
     for i in replacement.interfaces:
@@ -95,11 +92,6 @@ class UpdateInterface(base_classes.ReadWriteCommand):
 
     if iface is None:
       raise InterfaceNotFoundError(args.interface_name)
-
-    if args.mask_length is not None:
-      if args.mask_length < 0 or args.mask_length > 31:
-        raise exceptions.Error(
-            '--mask-length must be a non-negative integer less than 32')
 
     if args.ip_address is not None:
       if args.mask_length is None:
@@ -113,16 +105,44 @@ class UpdateInterface(base_classes.ReadWriteCommand):
     if args.vpn_tunnel is not None:
       vpn_ref = self.VPN_TUNNEL_ARG.ResolveAsResource(
           args,
-          self.resources,
-          scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
+          resources,
+          scope_lister=compute_flags.GetDefaultScopeLister(client))
       iface.linkedVpnTunnel = vpn_ref.SelfLink()
 
     return replacement
 
+  def Run(self, args):
+    """Issues requests necessary to update interfaces of the Router."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    router_ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
+    get_request = self.GetGetRequest(client, router_ref)
+
+    objects = client.MakeRequests([get_request])
+
+    new_object = self.Modify(client, holder.resources, args, objects[0])
+
+    # If existing object is equal to the proposed object or if
+    # Modify() returns None, then there is no work to be done, so we
+    # print the resource and return.
+    if objects[0] == new_object:
+      log.status.Print(
+          'No change requested; skipping update for [{0}].'.format(
+              objects[0].name))
+      return objects
+
+    return client.MakeRequests(
+        [self.GetSetRequest(client, router_ref, new_object)])
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaUpdateInterface(UpdateInterface):
-  """Update an interface on a Google Compute Engine router."""
+  """Update an interface on a Google Compute Engine router.
+
+  *{command}* is used to update an interface on a Google Compute Engine
+  router.
+  """
 
   ROUTER_ARG = None
   VPN_TUNNEL_ARG = None
@@ -130,7 +150,7 @@ class AlphaUpdateInterface(UpdateInterface):
 
   @classmethod
   def Args(cls, parser):
-    cls.ROUTER_ARG = flags.RouterArgument()
+    cls.ROUTER_ARG = router_flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser, operation_type='update')
 
     link_parser = parser.add_mutually_exclusive_group(
@@ -145,10 +165,11 @@ class AlphaUpdateInterface(UpdateInterface):
             required=False, operation_type='updated'))
     cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(link_parser)
 
-    routers_utils.AddCommonArgs(parser, for_update=True)
+    router_flags.AddInterfaceArgs(parser, for_update=True)
 
-  def Modify(self, args, existing):
-    replacement = super(AlphaUpdateInterface, self).Modify(args, existing)
+  def Modify(self, client, resources, args, existing):
+    replacement = super(AlphaUpdateInterface, self).Modify(
+        client, resources, args, existing)
 
     iface = None
     for i in replacement.interfaces:
@@ -161,7 +182,7 @@ class AlphaUpdateInterface(UpdateInterface):
 
     if args.interconnect_attachment is not None:
       attachment_ref = self.INTERCONNECT_ATTACHMENT_ARG.ResolveAsResource(
-          args, self.resources)
+          args, resources)
       iface.linkedInterconnectAttachment = attachment_ref.SelfLink()
 
     if (iface.linkedVpnTunnel is not None and
@@ -171,12 +192,3 @@ class AlphaUpdateInterface(UpdateInterface):
           'interface.')
 
     return replacement
-
-
-UpdateInterface.detailed_help = {
-    'DESCRIPTION':
-        """
-        *{command}* is used to update an interface on a Google Compute Engine
-        router.
-        """,
-}

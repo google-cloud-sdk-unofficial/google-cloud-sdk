@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.app import ssh_common
 from googlecloudsdk.command_lib.util.ssh import ssh
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Scp(base.Command):
   """SCP from or to the VM of an App Engine Flexible instance."""
 

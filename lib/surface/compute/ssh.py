@@ -16,6 +16,7 @@
 import argparse
 import sys
 
+from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
@@ -29,7 +30,7 @@ from googlecloudsdk.core.util import retry
 
 def _Args(parser):
   """Argument parsing for ssh, including hook for remote completion."""
-  ssh_utils.BaseSSHCLICommand.Args(parser)
+  ssh_utils.BaseSSHCLIHelper.Args(parser)
 
   parser.add_argument(
       '--command',
@@ -95,11 +96,13 @@ def _Args(parser):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class SshGA(ssh_utils.BaseSSHCLICommand):
+class SshGA(base.Command):
   """SSH into a virtual machine instance."""
 
   def __init__(self, *args, **kwargs):
     super(SshGA, self).__init__(*args, **kwargs)
+    self._use_account_service = False
+    self._use_internal_ip = False
 
   @staticmethod
   def Args(parser):
@@ -112,21 +115,27 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
 
   def Run(self, args):
     """See ssh_utils.BaseSSHCLICommand.Run."""
-    super(SshGA, self).Run(args)
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    cua_holder = base_classes.ComputeUserAccountsApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    ssh_helper = ssh_utils.BaseSSHCLIHelper()
+    ssh_helper.Run(args)
     user, instance_name = ssh_utils.GetUserAndInstance(
-        args.user_host, self._use_account_service, self.http)
+        args.user_host, self._use_account_service,
+        client.apitools_client.http)
     instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
         [instance_name], compute_scope.ScopeEnum.ZONE, args.zone,
-        self.resources,
-        scope_lister=instance_flags.GetInstanceZoneScopeLister(
-            self.compute_client))[0]
-    instance = self.GetInstance(instance_ref)
-    project = self.GetProject(instance_ref.project)
+        holder.resources,
+        scope_lister=instance_flags.GetInstanceZoneScopeLister(client))[0]
+    instance = ssh_helper.GetInstance(client, instance_ref)
+    project = ssh_helper.GetProject(client, instance_ref.project)
     if args.plain:
       use_oslogin = False
     else:
-      user, use_oslogin = self.CheckForOsloginAndGetUser(
-          instance, project, user)
+      user, use_oslogin = ssh_helper.CheckForOsloginAndGetUser(
+          instance, project, user,
+          self.ReleaseTrack(), client.apitools_client.http)
     if self._use_internal_ip:
       ip_address = ssh_utils.GetInternalIPAddress(instance)
     else:
@@ -137,9 +146,9 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
     identity_file = None
     options = None
     if not args.plain:
-      identity_file = self.keys.key_file
-      options = self.GetConfig(ssh_utils.HostKeyAlias(instance),
-                               args.strict_host_key_checking)
+      identity_file = ssh_helper.keys.key_file
+      options = ssh_helper.GetConfig(ssh_utils.HostKeyAlias(instance),
+                                     args.strict_host_key_checking)
 
     extra_flags = []
     remainder = []
@@ -165,13 +174,14 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
                          remote_command=remote_command, tty=tty,
                          remainder=remainder)
     if args.dry_run:
-      log.out.Print(' '.join(cmd.Build(self.env)))
+      log.out.Print(' '.join(cmd.Build(ssh_helper.env)))
       return
 
     if args.plain or use_oslogin:
       keys_newly_added = False
     else:
-      keys_newly_added = self.EnsureSSHKeyExists(
+      keys_newly_added = ssh_helper.EnsureSSHKeyExists(
+          client, cua_holder.client,
           remote.user, instance, project,
           use_account_service=self._use_account_service)
 
@@ -183,15 +193,15 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
       log.status.Print('Waiting for SSH key to propagate.')
       # TODO(b/35355795): Don't force_connect
       try:
-        poller.Poll(self.env, force_connect=True)
+        poller.Poll(ssh_helper.env, force_connect=True)
       except retry.WaitException:
         raise ssh_utils.NetworkError()
 
     if self._use_internal_ip:
-      self._PreliminarylyVerifyInstance(instance.id, remote, identity_file,
-                                        options, extra_flags)
+      ssh_helper.PreliminarylyVerifyInstance(instance.id, remote, identity_file,
+                                             options)
 
-    return_code = cmd.Run(self.env, force_connect=True)
+    return_code = cmd.Run(ssh_helper.env, force_connect=True)
     if return_code:
       # Can't raise an exception because we don't want any "ERROR" message
       # printed; the output from `ssh` will be enough.

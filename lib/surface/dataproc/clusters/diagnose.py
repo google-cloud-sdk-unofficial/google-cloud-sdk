@@ -16,6 +16,7 @@
 
 from apitools.base.py import encoding
 
+from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import exceptions
 from googlecloudsdk.api_lib.dataproc import storage_helpers
 from googlecloudsdk.api_lib.dataproc import util
@@ -35,21 +36,19 @@ class Diagnose(base.Command):
         help='The name of the cluster to diagnose.')
 
   def Run(self, args):
-    client = self.context['dataproc_client']
-    messages = self.context['dataproc_messages']
+    dataproc = dp.Dataproc()
 
-    cluster_ref = util.ParseCluster(args.name, self.context)
+    cluster_ref = dataproc.ParseCluster(args.name)
 
-    request = messages.DataprocProjectsRegionsClustersDiagnoseRequest(
+    request = dataproc.messages.DataprocProjectsRegionsClustersDiagnoseRequest(
         clusterName=cluster_ref.clusterName,
         region=cluster_ref.region,
         projectId=cluster_ref.projectId)
 
-    operation = client.projects_regions_clusters.Diagnose(request)
+    operation = dataproc.client.projects_regions_clusters.Diagnose(request)
     # TODO(b/36052522): Stream output during polling.
-    operation = util.WaitForOperation(
+    operation = dataproc.WaitForOperation(
         operation,
-        self.context,
         message='Waiting for cluster diagnose operation',
         timeout_s=args.timeout)
 

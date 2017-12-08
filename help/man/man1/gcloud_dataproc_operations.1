@@ -11,7 +11,7 @@ gcloud dataproc operations \- view and manage Google Cloud Dataproc operations
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud dataproc operations\fR \fICOMMAND\fR [\fIGCLOUD_WIDE_FLAG\ ...\fR]
+\f5gcloud dataproc operations\fR \fICOMMAND\fR [\fB\-\-region\fR=\fIREGION\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -20,6 +20,23 @@ gcloud dataproc operations \- view and manage Google Cloud Dataproc operations
 View and manage Google Cloud Dataproc operations.
 
 
+
+.SH "FLAGS"
+
+.RS 2m
+.TP 2m
+\fB\-\-region\fR=\fIREGION\fR
+Specifies the Cloud Dataproc region to use. Each Cloud Dataproc region
+constitutes an independent resource namespace constrained to deploying instances
+into Google Compute Engine zones inside the region. The default value of
+"global" is a special multi\-region namespace which is capable of deploying
+instances into all Google Compute Engine zones globally, and is disjoint from
+other Cloud Dataproc regions. Overrides the default \fBdataproc/region\fR
+property value for this command invocation.
+
+
+.RE
+.sp
 
 .SH "GCLOUD WIDE FLAGS"
 

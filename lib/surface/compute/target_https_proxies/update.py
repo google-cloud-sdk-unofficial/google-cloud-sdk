@@ -17,12 +17,14 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.ssl_certificates import (
-    flags as ssl_certificate_flags)
+    flags as ssl_certificates_flags)
 from googlecloudsdk.command_lib.compute.target_https_proxies import flags
 from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
+from googlecloudsdk.core import log
 
 
-class Update(base.SilentCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class UpdateGA(base.SilentCommand):
   """Update a target HTTPS proxy.
 
   *{command}* is used to change the SSL certificate and/or URL map of
@@ -43,7 +45,7 @@ class Update(base.SilentCommand):
   @classmethod
   def Args(cls, parser):
     cls.SSL_CERTIFICATE_ARG = (
-        ssl_certificate_flags.SslCertificateArgumentForOtherResource(
+        ssl_certificates_flags.SslCertificateArgumentForOtherResource(
             'target HTTPS proxy', required=False))
     cls.SSL_CERTIFICATE_ARG.AddArgument(parser)
     cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument()
@@ -64,22 +66,15 @@ class Update(base.SilentCommand):
   def resource_type(self):
     return 'targetHttpProxies'
 
-  def Run(self, args):
+  def _CreateRequestsWithCertRefs(self, args, ssl_cert_refs):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
-
-    if not args.ssl_certificate and not args.url_map:
-      raise exceptions.ToolException(
-          'You must specify at least one of [--ssl-certificate] or '
-          '[--url-map].')
 
     requests = []
     target_https_proxy_ref = self.TARGET_HTTPS_PROXY_ARG.ResolveAsResource(
         args, holder.resources)
 
-    if args.ssl_certificate:
-      ssl_certificate_ref = self.SSL_CERTIFICATE_ARG.ResolveAsResource(
-          args, holder.resources)
+    if ssl_cert_refs:
       requests.append(
           (client.apitools_client.targetHttpsProxies, 'SetSslCertificates',
            client.messages.ComputeTargetHttpsProxiesSetSslCertificatesRequest(
@@ -87,7 +82,9 @@ class Update(base.SilentCommand):
                targetHttpsProxy=target_https_proxy_ref.Name(),
                targetHttpsProxiesSetSslCertificatesRequest=(
                    client.messages.TargetHttpsProxiesSetSslCertificatesRequest(
-                       sslCertificates=[ssl_certificate_ref.SelfLink()])))))
+                       sslCertificates=[
+                           ref.SelfLink() for ref in ssl_cert_refs
+                       ])))))
 
     if args.url_map:
       url_map_ref = self.URL_MAP_ARG.ResolveAsResource(args, holder.resources)
@@ -100,3 +97,82 @@ class Update(base.SilentCommand):
                    urlMap=url_map_ref.SelfLink()))))
 
     return client.MakeRequests(requests)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+
+    if not args.ssl_certificate and not args.url_map:
+      raise exceptions.ToolException(
+          'You must specify at least one of [--ssl-certificate] or '
+          '[--url-map].')
+
+    if args.ssl_certificate:
+      ssl_certificate_ref = self.SSL_CERTIFICATE_ARG.ResolveAsResource(
+          args, holder.resources)
+      return self._CreateRequestsWithCertRefs(args, [ssl_certificate_ref])
+
+    return self._CreateRequestsWithCertRefs(args, [])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateGA):
+  """Update a target HTTPS proxy.
+
+  *{command}* is used to change the SSL certificate and/or URL map of
+  existing target HTTPS proxies. A target HTTPS proxy is referenced
+  by one or more forwarding rules which
+  define which packets the proxy is responsible for routing. The
+  target HTTPS proxy in turn points to a URL map that defines the rules
+  for routing the requests. The URL map's job is to map URLs to
+  backend services which handle the actual requests. The target
+  HTTPS proxy also points to at most 10 SSL certificates used for
+  server-side authentication.
+  """
+
+  SSL_CERTIFICATES_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    certs = parser.add_mutually_exclusive_group()
+    cls.SSL_CERTIFICATE_ARG = (
+        ssl_certificates_flags.SslCertificateArgumentForOtherResource(
+            'target HTTPS proxy', required=False))
+    cls.SSL_CERTIFICATE_ARG.AddArgument(parser, mutex_group=certs)
+    cls.SSL_CERTIFICATES_ARG = (
+        ssl_certificates_flags.SslCertificatesArgumentForOtherResource(
+            'target HTTPS proxy', required=False))
+    cls.SSL_CERTIFICATES_ARG.AddArgument(
+        parser, mutex_group=certs, cust_metavar='SSL_CERTIFICATE')
+
+    cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument()
+    cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser)
+    cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy(
+        required=False, proxy_type='HTTPS')
+    cls.URL_MAP_ARG.AddArgument(parser)
+
+  def _GetSslCertificatesList(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    if args.ssl_certificate:
+      log.warn(
+          'The --ssl-certificate flag is deprecated and will be removed soon. '
+          'Use equivalent --ssl-certificates %s flag.', args.ssl_certificate)
+      return [
+          self.SSL_CERTIFICATE_ARG.ResolveAsResource(args, holder.resources)
+      ]
+
+    if args.ssl_certificates:
+      return self.SSL_CERTIFICATES_ARG.ResolveAsResource(args, holder.resources)
+
+    return []
+
+  def _CheckMissingArgument(self, args):
+    if not (args.ssl_certificates or args.ssl_certificate) and not args.url_map:
+      raise exceptions.ToolException(
+          'You must specify at least one of [--ssl-certificates] or '
+          '[--url-map].')
+
+  def Run(self, args):
+    self._CheckMissingArgument(args)
+
+    ssl_certificate_refs = self._GetSslCertificatesList(args)
+    return self._CreateRequestsWithCertRefs(args, ssl_certificate_refs)

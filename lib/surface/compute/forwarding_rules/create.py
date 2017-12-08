@@ -31,7 +31,7 @@ def _Args(parser, include_beta, include_alpha=False):
   flags.AddIPProtocols(parser)
   flags.AddDescription(parser)
   flags.AddPortsAndPortRange(parser)
-  flags.AddNetworkTier(parser, include_alpha=include_alpha)
+  flags.AddNetworkTier(parser, include_alpha=include_alpha, for_update=False)
   if include_alpha:
     parser.add_argument(
         '--service-label',

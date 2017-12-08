@@ -36,4 +36,3 @@ class HelpSearch(base.Command):
 
   def Run(self, args):
     return search.RunSearch([args.term], self._cli_power_users_only)
-

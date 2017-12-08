@@ -21,9 +21,9 @@ from googlecloudsdk.command_lib.ml.language import language_command_util
 class AnalyzeEntities(base.Command):
   """Use Google Cloud Natural Language API to identify entities in text.
 
-  Entity Analysis inspects the given text for known entities (proper nouns
-  such as public figures, landmarks, etc.), and returns information about
-  those entities.
+  Entity Analysis inspects the given text for common names or known entities
+  (proper nouns such as public figures, landmarks, etc.), and returns
+  information about those entities.
 
   {service_account_help}
 
@@ -37,6 +37,7 @@ class AnalyzeEntities(base.Command):
 
   @staticmethod
   def Args(parser):
+    parser.display_info.AddFormat('json')
     flags.AddLanguageFlags(parser)
 
   def Run(self, args):
@@ -56,7 +57,7 @@ class AnalyzeEntities(base.Command):
     Returns:
       the result of the analyze entities command.
     """
-    feature = 'extractEntities'
+    feature = 'analyzeEntities'
     return language_command_util.RunLanguageCommand(
         feature,
         content_file=args.content_file,
@@ -64,6 +65,3 @@ class AnalyzeEntities(base.Command):
         language=args.language,
         content_type=args.content_type,
         encoding_type=args.encoding_type)
-
-  def DeprecatedFormat(self, args):
-    return 'json'

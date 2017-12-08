@@ -16,6 +16,7 @@
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.dataproc import constants
+from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
@@ -72,16 +73,15 @@ class List(base.ListCommand):
     """)
 
   def Run(self, args):
-    client = self.context['dataproc_client']
-    messages = self.context['dataproc_messages']
+    dataproc = dp.Dataproc()
 
     project = properties.VALUES.core.project.GetOrFail()
     region = properties.VALUES.dataproc.region.GetOrFail()
 
-    request = self.GetRequest(messages, project, region, args)
+    request = self.GetRequest(dataproc.messages, project, region, args)
 
     return list_pager.YieldFromList(
-        client.projects_regions_clusters,
+        dataproc.client.projects_regions_clusters,
         request,
         limit=args.limit, field='clusters',
         batch_size=args.page_size,
