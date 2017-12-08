@@ -21,6 +21,7 @@ from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
@@ -63,9 +64,6 @@ class Update(base.UpdateCommand):
               'https://cloud.google.com/logging/docs/api/introduction_v2'),
         choices=('V2',))
     util.AddNonProjectArgs(parser, 'Update a sink')
-
-  def Collection(self):
-    return 'logging.sinks'
 
   def GetSink(self, parent, sink_ref):
     """Returns a sink specified by the arguments."""
@@ -110,7 +108,9 @@ class Update(base.UpdateCommand):
           '[destination], --log-filter or --output-version-format is required')
 
     sink_ref = resources.REGISTRY.Parse(
-        args.sink_name, collection='logging.projects.sinks')
+        args.sink_name,
+        params={'projectsId': properties.VALUES.core.project.GetOrFail},
+        collection='logging.projects.sinks')
 
     # Calling Update on a non-existing sink creates it.
     # We need to make sure it exists, otherwise we would create it.

@@ -19,6 +19,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Start(base.Command):
   """Start a local datastore emulator.
 
@@ -66,6 +67,6 @@ class Start(base.Command):
     args.host_port.host = args.host_port.host or 'localhost'
 
     datastore_util.PrepareGCDDataDir(args)
-    datastore_process = datastore_util.StartGCDEmulator(args)
-    datastore_util.WriteGCDEnvYaml(args)
-    util.PrefixOutput(datastore_process, 'datastore')
+    with datastore_util.StartGCDEmulator(args) as proc:
+      datastore_util.WriteGCDEnvYaml(args)
+      util.PrefixOutput(proc, 'datastore')

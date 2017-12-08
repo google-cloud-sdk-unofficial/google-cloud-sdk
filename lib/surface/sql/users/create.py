@@ -59,12 +59,12 @@ class CreateBeta(base.CreateCommand):
     sql_client = client.sql_client
     sql_messages = client.sql_messages
 
-    project_id = properties.VALUES.core.project.Get(required=True)
-
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
     operation_ref = None
-    new_user = sql_messages.User(project=project_id,
+    new_user = sql_messages.User(project=instance_ref.project,
                                  instance=args.instance,
                                  name=args.username,
                                  host=args.host,

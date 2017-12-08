@@ -33,8 +33,14 @@ class List(base.ListCommand):
           """,
   }
 
-  def Collection(self):
-    return 'appengine.services'
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""
+          table(
+            id:label=SERVICE:sort=1,
+            versions.len():label=NUM_VERSIONS
+          )
+    """)
 
   def Run(self, args):
     api_client = appengine_api_client.GetApiClient()

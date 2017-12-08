@@ -20,34 +20,29 @@ from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
 
 
-_DETAILED_HELP = {
-    'DESCRIPTION': """\
-        This command lists the services that are produced, enabled, or
-        available to be enabled by a project. You can choose the mode in
-        which the command will list services by using exactly one of the
-        `--produced`, `--enabled`, or `--available` flags.
-        `--enabled` is the default.
-        """,
-    'EXAMPLES': """\
-        To list the services the current project produces, run:
-
-          $ {command} --produced
-
-        To list the services the current project has enabled for consumption,
-        run:
-
-          $ {command} --enabled
-
-        To list the services the current project can enable for consumption,
-        run:
-
-          $ {command} --available
-        """,
-}
-
-
 class List(base.ListCommand):
-  """List services for a project."""
+  """List services for a project.
+
+  This command lists the services that are produced, enabled, or
+  available to be enabled by a project. You can choose the mode in
+  which the command will list services by using exactly one of the
+  `--produced`, `--enabled`, or `--available` flags.
+  `--enabled` is the default.
+
+  ## EXAMPLES
+
+  To list the services the current project produces, run:
+
+    $ {command} --produced
+
+  To list the services the current project has enabled for consumption, run:
+
+    $ {command} --enabled
+
+  To list the services the current project can enable for consumption, run:
+
+    $ {command} --available
+  """
 
   @staticmethod
   def Args(parser):
@@ -83,6 +78,13 @@ class List(base.ListCommand):
     # Remove unneeded list-related flags from parser
     base.URI_FLAG.RemoveFromParser(parser)
 
+    parser.display_info.AddFormat("""
+          table(
+            serviceName:label=NAME,
+            serviceConfig.title
+          )
+        """)
+
   def Run(self, args):
     """Run 'service-management list'.
 
@@ -116,9 +118,3 @@ class List(base.ListCommand):
         batch_size_attribute='pageSize',
         batch_size=args.page_size,
         field='services')
-
-  def Collection(self):
-    return services_util.SERVICES_COLLECTION
-
-
-List.detailed_help = _DETAILED_HELP

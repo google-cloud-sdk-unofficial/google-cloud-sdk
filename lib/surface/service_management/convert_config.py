@@ -48,6 +48,7 @@ class ConvertConfig(base.Command):
         'output_file', nargs='?', default='',
         help=('The file path of the output file containing the converted '
               'configuration. Output to standard output if omitted.'))
+    parser.display_info.AddFormat('json')
 
   def Run(self, args):
     """Run 'service-management convert-config'.
@@ -102,6 +103,3 @@ class ConvertConfig(base.Command):
               'Cannot open output file \'{f}\''.format(f=args.output_file))
       else:
         return service
-
-  def Format(self, unused_args):
-    return 'json'

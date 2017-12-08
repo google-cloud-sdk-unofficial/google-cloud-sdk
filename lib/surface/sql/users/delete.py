@@ -57,10 +57,10 @@ class DeleteBeta(base.DeleteCommand):
     sql_client = client.sql_client
     sql_messages = client.sql_messages
 
-    project_id = properties.VALUES.core.project.Get(required=True)
-
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
     operation_ref = None
 
     console_io.PromptContinue(
@@ -71,8 +71,8 @@ class DeleteBeta(base.DeleteCommand):
         cancel_on_no=True)
 
     result_operation = sql_client.users.Delete(
-        sql_messages.SqlUsersDeleteRequest(project=project_id,
-                                           instance=args.instance,
+        sql_messages.SqlUsersDeleteRequest(project=instance_ref.project,
+                                           instance=instance_ref.Name(),
                                            name=args.username,
                                            host=args.host))
     operation_ref = client.resource_parser.Create(

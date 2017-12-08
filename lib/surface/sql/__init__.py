@@ -26,11 +26,7 @@ from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import config
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resolvers
-from googlecloudsdk.core import resources as cloud_resources
-from googlecloudsdk.core.credentials import store as c_store
 
 _ACTIVE_VERSIONS = [
     'v1beta3',

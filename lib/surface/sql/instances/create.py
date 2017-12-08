@@ -27,6 +27,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.command_lib.sql import validate as command_validate
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.resource import resource_lex
 from googlecloudsdk.core.resource import resource_property
@@ -198,7 +199,9 @@ class Create(_BaseCreate, base.CreateCommand):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
     instance_resource = instances.InstancesV1Beta3.ConstructInstanceFromArgs(
         sql_messages, args, instance_ref=instance_ref)
 
@@ -349,7 +352,9 @@ class CreateBeta(_BaseCreate, base.CreateCommand):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
     instance_resource = instances.InstancesV1Beta4.ConstructInstanceFromArgs(
         sql_messages, args, instance_ref=instance_ref)
 

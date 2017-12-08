@@ -100,7 +100,6 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
   csek_utils.AddCsekKeyArgs(parser)
 
 
-# TODO(b/33434068) Refactor away ImageExpander and ZoneResourceFetcher
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create Google Compute Engine virtual machine instances."""

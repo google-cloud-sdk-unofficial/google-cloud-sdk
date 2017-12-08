@@ -34,10 +34,7 @@ class PrintAccessToken(base.Command):
 
   @staticmethod
   def Args(parser):
-    pass
-
-  def Format(self, unused_args):
-    return 'value(access_token)'
+    parser.display_info.AddFormat('value(access_token)')
 
   def Run(self, args):
     """Run the helper command."""

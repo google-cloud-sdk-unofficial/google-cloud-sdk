@@ -52,9 +52,16 @@ class List(base.ListCommand):
                         help='Only show versions from this service.')
     parser.add_argument('--hide-no-traffic', action='store_true',
                         help='Only show versions that are receiving traffic.')
-
-  def Collection(self):
-    return 'appengine.versions'
+    parser.display_info.AddFormat("""
+          table(
+            service,
+            id:label=VERSION,
+            traffic_split.format("{0:.2f}", .),
+            last_deployed_time.date("%Y-%m-%dT%H:%M:%S%Oz", undefined="-")
+              :label=LAST_DEPLOYED,
+            version.servingStatus:label=SERVING_STATUS
+          )
+    """)
 
   def Run(self, args):
     api_client = appengine_api_client.GetApiClient()

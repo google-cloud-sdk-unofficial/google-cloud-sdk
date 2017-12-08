@@ -31,6 +31,7 @@ class AccessToken(base.Command):
         'account', nargs='?',
         help=('The account to get the access token for. Leave empty for the '
               'active account.'))
+    parser.display_info.AddFormat('value(access_token)')
 
   @c_exc.RaiseToolExceptionInsteadOf(c_store.Error, client.Error)
   def Run(self, args):
@@ -43,6 +44,3 @@ class AccessToken(base.Command):
       raise c_exc.ToolException(
           'No access token could be obtained from the current credentials.')
     return cred
-
-  def Format(self, args):
-    return 'value(access_token)'

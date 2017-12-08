@@ -52,9 +52,7 @@ class GetPublicKey(base_classes.BaseIamCommand, base.Command):
         choices=['pem', 'raw'],
         default='pem',
         help='The type of the public key to get.')
-
-  def Collection(self):
-    return 'iam.service_accounts.keys'
+    parser.display_info.AddFormat(iam_util.SERVICE_ACCOUNT_KEY_FORMAT)
 
   def Run(self, args):
     result = self.iam_client.projects_serviceAccounts_keys.Get(

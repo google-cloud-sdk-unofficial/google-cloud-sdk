@@ -14,11 +14,15 @@
 """List tags command."""
 
 import argparse
+import heapq
+import sys
 
 from containerregistry.client.v2_2 import docker_http
 from containerregistry.client.v2_2 import docker_image
 from googlecloudsdk.api_lib.container.images import util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import http
 
 # Add to this as we add columns.
@@ -27,11 +31,19 @@ _DEFAULT_KINDS = [
     'IMAGE_BASIS',
     'PACKAGE_VULNERABILITY',
 ]
-# How many images to consider.
+# How many images to consider by default.
 _DEFAULT_LIMIT = 10
+# How many images for which to report vulnerabilities, by default. These are
+# always the most recent images, regardless of sorting.
+_DEFAULT_SHOW_OCCURRENCES_FROM = 10
 # By default return the most recent timestamps.
 # (The --sort-by flag uses syntax `~X` to mean "sort descending on field X.")
 _DEFAULT_SORT_BY = '~timestamp'
+
+
+class ArgumentError(exceptions.Error):
+  """For missing required mutually inclusive flags."""
+  pass
 
 
 class ListTags(base.ListCommand):
@@ -79,6 +91,11 @@ class ListTags(base.ListCommand):
             ['kind = "{kind}"'.format(kind=x) for x in _DEFAULT_KINDS]),
         help=argparse.SUPPRESS)
     parser.add_argument(
+        '--show-occurrences-from',
+        type=arg_parsers.BoundedInt(1, sys.maxint, unlimited=True),
+        default=_DEFAULT_SHOW_OCCURRENCES_FROM,
+        help=argparse.SUPPRESS)
+    parser.add_argument(
         'image',
         help='The name of the image. Format: *.gcr.io/repository/image')
     # Set flag defaults to return X most recent images instead of all.
@@ -96,10 +113,16 @@ class ListTags(base.ListCommand):
         command invocation.
 
     Raises:
+      ArgumentError: If the user provided the flag --show-occurrences-from but
+        --show-occurrences=False.
       InvalidImageNameError: If the user specified an invalid image name.
     Returns:
       Some value that we want to have printed later.
     """
+    # Verify that --show-occurrences-from is set iff --show-occurrences=True.
+    if args.IsSpecified('show_occurrences_from') and not args.show_occurrences:
+      raise ArgumentError(
+          '--show-occurrences-from may only be set if --show-occurrences=True')
 
     repository = util.ValidateRepositoryPath(args.image)
     http_obj = http.Http()
@@ -108,11 +131,24 @@ class ListTags(base.ListCommand):
         name=repository,
         transport=http_obj) as image:
       try:
+        # Only consider the top _DEFAULT_SHOW_OCCURRENCES_FROM images
+        # to reduce computation time.
+        manifests = image.manifests()
+        most_recent_resource_urls = None
+        if args.show_occurrences_from:
+          # This block is skipped when the user provided
+          # --show-occurrences-from=unlimited on the CLI.
+          most_recent_resource_urls = [
+              'https://%s@%s' % (args.image, k) for k in heapq.nlargest(
+                  args.show_occurrences_from,
+                  manifests,
+                  key=lambda k: manifests[k]['timeCreatedMs'])]
         return util.TransformManifests(
-            image.manifests(),
+            manifests,
             repository,
             show_occurrences=args.show_occurrences,
-            occurrence_filter=args.occurrence_filter)
+            occurrence_filter=args.occurrence_filter,
+            resource_urls=most_recent_resource_urls)
       except docker_http.V2DiagnosticException as err:
         raise util.GcloudifyRecoverableV2Errors(err, {
             403: 'Access denied: {0}'.format(repository),

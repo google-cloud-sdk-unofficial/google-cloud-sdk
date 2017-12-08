@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
@@ -87,7 +88,9 @@ class Import(base.Command):
         default=True,
         cancel_on_no=True)
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
 
     import_request = sql_messages.SqlInstancesImportRequest(
         instance=instance_ref.instance,
@@ -187,7 +190,9 @@ class ImportBeta(base.Command):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
 
     console_io.PromptContinue(
         message='Data from {0} will be imported to {1}.'.format(args.uri[0],

@@ -22,8 +22,7 @@ class List(base_classes.RegionalLister):
 
   @property
   def service(self):
-    return util.ServiceComposer(zonal_service=self.compute.commitments,
-                                regional_service=self.compute.regionCommitments)
+    return self.compute.regionCommitments
 
   @property
   def resource_type(self):

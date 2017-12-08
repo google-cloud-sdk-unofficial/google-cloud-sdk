@@ -18,8 +18,6 @@ import argparse
 
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
 
 
@@ -71,30 +69,6 @@ class Dataproc(base.Group):
       context['dataproc_region'] = _DEFAULT_REGION
 
     context['dataproc_client'] = apis.GetClientInstance('dataproc', 'v1')
-
-    resources.REGISTRY.SetParamDefault(
-        api='dataproc',
-        collection=None,
-        param='projectId',
-        resolver=resolvers.FromProperty(properties.VALUES.core.project))
-    resources.REGISTRY.SetParamDefault(
-        api='dataproc',
-        collection=None,
-        param='region',
-        resolver=lambda: context['dataproc_region'])
-
-    # These two properties are artifacts of how our Operations API get
-    # converted into generated libraries.
-    resources.REGISTRY.SetParamDefault(
-        api='dataproc',
-        collection=None,
-        param='projectsId',
-        resolver=resolvers.FromProperty(properties.VALUES.core.project))
-    resources.REGISTRY.SetParamDefault(
-        api='dataproc',
-        collection=None,
-        param='regionsId',
-        resolver=lambda: context['dataproc_region'])
 
     return context
 

@@ -293,25 +293,57 @@ class Create(base.CreateCommand):
         worker_accelerator_count = args.worker_accelerator.get('count', 1)
 
     # Resolve GCE resources
-    zone_ref = compute_resources.Parse(None, collection='compute.zones')
+    zone_ref = compute_resources.Create(
+        'compute.zones',
+        project=cluster_ref.projectId,
+        zone=properties.VALUES.compute.zone.GetOrFail())
     image_ref = args.image and compute_resources.Parse(
-        args.image, collection='compute.images')
+        args.image,
+        params={'project': cluster_ref.projectId},
+        collection='compute.images')
     master_machine_type_ref = (
         args.master_machine_type and compute_resources.Parse(
-            args.master_machine_type, collection='compute.machineTypes'))
+            args.master_machine_type,
+            params={
+                'project': cluster_ref.projectId,
+                'zone': zone_ref.Name(),
+            },
+            collection='compute.machineTypes'))
     worker_machine_type_ref = (
         args.worker_machine_type and compute_resources.Parse(
-            args.worker_machine_type, collection='compute.machineTypes'))
+            args.worker_machine_type,
+            params={
+                'project': cluster_ref.projectId,
+                'zone': zone_ref.Name(),
+            },
+            collection='compute.machineTypes'))
     network_ref = args.network and compute_resources.Parse(
-        args.network, collection='compute.networks')
+        args.network,
+        params={'project': cluster_ref.projectId},
+        collection='compute.networks')
     subnetwork_ref = args.subnet and compute_resources.Parse(
-        args.subnet, collection='compute.subnetworks')
+        args.subnet,
+        params={
+            'project': cluster_ref.projectId,
+            'region': properties.VALUES.compute.region.GetOrFail,
+        },
+        collection='compute.subnetworks')
     master_accelerator_type_ref = (
         master_accelerator_type and compute_resources.Parse(
-            master_accelerator_type, collection='compute.acceleratorTypes'))
+            master_accelerator_type,
+            params={
+                'project': cluster_ref.projectId,
+                'zone': zone_ref.Name(),
+            },
+            collection='compute.acceleratorTypes'))
     worker_accelerator_type_ref = (
         worker_accelerator_type and compute_resources.Parse(
-            worker_accelerator_type, collection='compute.acceleratorTypes'))
+            worker_accelerator_type,
+            params={
+                'project': cluster_ref.projectId,
+                'zone': zone_ref.Name(),
+            },
+            collection='compute.acceleratorTypes'))
 
     init_actions = []
     timeout_str = str(args.initialization_action_timeout) + 's'

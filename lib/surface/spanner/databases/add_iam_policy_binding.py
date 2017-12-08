@@ -18,6 +18,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import iam
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -53,6 +54,9 @@ class AddIamPolicyBinding(base.Command):
     """
     database_ref = resources.REGISTRY.Parse(
         args.database,
-        params={'instancesId': args.instance},
+        params={
+            'projectsId': properties.VALUES.core.project.GetOrFail,
+            'instancesId': args.instance
+        },
         collection='spanner.projects.instances.databases')
     return iam.AddDatabaseIamPolicyBinding(database_ref, args.member, args.role)

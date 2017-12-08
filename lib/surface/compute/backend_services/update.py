@@ -76,6 +76,10 @@ class UpdateGA(base_classes.ReadWriteCommand):
     flags.AddSessionAffinity(parser, internal_lb=True)
     flags.AddAffinityCookieTtl(parser)
     flags.AddConnectionDrainingTimeout(parser)
+    flags.AddCacheKeyIncludeProtocol(parser, default=None)
+    flags.AddCacheKeyIncludeHost(parser, default=None)
+    flags.AddCacheKeyIncludeQueryString(parser, default=None)
+    flags.AddCacheKeyQueryStringList(parser)
 
   @property
   def service(self):
@@ -174,6 +178,9 @@ class UpdateGA(base_classes.ReadWriteCommand):
     if args.affinity_cookie_ttl is not None:
       replacement.affinityCookieTtlSec = args.affinity_cookie_ttl
 
+    backend_services_utils.ApplyCdnPolicyArgs(
+        self, args, replacement, is_update=True)
+
     return replacement
 
   def ValidateArgs(self, args):
@@ -182,6 +189,11 @@ class UpdateGA(base_classes.ReadWriteCommand):
         args.connection_draining_timeout is not None,
         args.description is not None,
         args.enable_cdn is not None,
+        args.cache_key_include_protocol is not None,
+        args.cache_key_include_host is not None,
+        args.cache_key_include_query_string is not None,
+        args.cache_key_query_string_whitelist is not None,
+        args.cache_key_query_string_blacklist is not None,
         args.health_checks,
         args.http_health_checks,
         args.https_health_checks,
@@ -255,9 +267,6 @@ class UpdateAlpha(UpdateGA):
 
     self._ApplyIapArgs(args.iap, existing, replacement)
 
-    backend_services_utils.ApplyCdnPolicyArgs(
-        self, args, replacement, is_update=True)
-
     return replacement
 
   def ValidateArgs(self, args):
@@ -326,9 +335,6 @@ class UpdateBeta(UpdateGA):
           drainingTimeoutSec=args.connection_draining_timeout)
 
     self._ApplyIapArgs(args.iap, existing, replacement)
-
-    backend_services_utils.ApplyCdnPolicyArgs(
-        self, args, replacement, is_update=True)
 
     return replacement
 

@@ -14,14 +14,8 @@
 
 """The super-group for the compute CLI."""
 
-import argparse
-import sys
-
-from googlecloudsdk.api_lib.compute import utils
-from googlecloudsdk.calliope import actions
+from googlecloudsdk.api_lib.compute import transforms
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 
 DETAILED_HELP = {
@@ -49,4 +43,4 @@ class Compute(base.Group):
 
   @staticmethod
   def Args(parser):
-    pass
+    parser.display_info.AddTransforms(transforms.GetTransforms())

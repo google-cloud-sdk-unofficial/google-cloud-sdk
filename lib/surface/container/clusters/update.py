@@ -141,6 +141,8 @@ class Update(base.UpdateCommand):
     flags.AddClusterAutoscalingFlags(parser, group, hidden=True)
     flags.AddMasterAuthorizedNetworksFlags(parser, group, hidden=True)
     flags.AddEnableLegacyAuthorizationFlag(group, hidden=True)
+    flags.AddStartIpRotationFlag(group, hidden=True)
+    flags.AddCompleteIpRotationFlag(group, hidden=True)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -190,6 +192,16 @@ class Update(base.UpdateCommand):
         del password
         del options
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif args.start_ip_rotation:
+      try:
+        op_ref = adapter.StartIpRotation(cluster_ref)
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif args.complete_ip_rotation:
+      try:
+        op_ref = adapter.CompleteIpRotation(cluster_ref)
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     else:
       enable_master_authorized_networks = args.enable_master_authorized_networks
 
@@ -234,6 +246,8 @@ class UpdateBeta(Update):
     _AddAdditionalZonesArg(group)
     flags.AddMasterAuthorizedNetworksFlags(parser, group, hidden=True)
     flags.AddEnableLegacyAuthorizationFlag(group)
+    flags.AddStartIpRotationFlag(group)
+    flags.AddCompleteIpRotationFlag(group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -249,3 +263,5 @@ class UpdateAlpha(Update):
     _AddAdditionalZonesArg(group)
     flags.AddMasterAuthorizedNetworksFlags(parser, group, hidden=True)
     flags.AddEnableLegacyAuthorizationFlag(group)
+    flags.AddStartIpRotationFlag(group)
+    flags.AddCompleteIpRotationFlag(group)

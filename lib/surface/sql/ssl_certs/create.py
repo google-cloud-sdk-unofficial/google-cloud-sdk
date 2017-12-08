@@ -20,6 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
 
 
@@ -76,7 +77,9 @@ class _BaseAddCert(object):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
 
     # TODO(b/36049399): figure out how to rectify the common_name and the
     # sha1fingerprint, so that things can work with the resource parser.

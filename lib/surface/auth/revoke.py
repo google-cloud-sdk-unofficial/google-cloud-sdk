@@ -40,6 +40,7 @@ class Revoke(base.Command):
                         help='Accounts whose credentials are to be revoked.')
     parser.add_argument('--all', action='store_true',
                         help='Revoke credentials for all accounts.')
+    parser.display_info.AddFormat('list[title="Revoked credentials:"]')
 
   @c_exc.RaiseToolExceptionInsteadOf(c_store.Error)
   def Run(self, args):
@@ -70,9 +71,6 @@ class Revoke(base.Command):
       if not c_store.Revoke(account):
         log.warn('[{}] already inactive (previously revoked?)'.format(account))
     return accounts
-
-  def Format(self, unused_args):
-    return 'list[title="Revoked credentials:"]'
 
   def Epilog(self, unused_results_were_displayed):
     log_out = log.out

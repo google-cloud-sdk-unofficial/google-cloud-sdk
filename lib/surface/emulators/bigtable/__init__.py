@@ -24,6 +24,7 @@ class UnsupportedPlatformError(exceptions.Error):
   pass
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Bigtable(base.Group):
   """Manage your local Bigtable emulator.
 

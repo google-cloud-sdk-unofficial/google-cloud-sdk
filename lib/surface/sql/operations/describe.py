@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
+from googlecloudsdk.core import properties
 
 
 class _BaseGet(object):
@@ -40,7 +41,7 @@ class Get(_BaseGet, base.DescribeCommand):
     parser.add_argument(
         'operation',
         help='Name that uniquely identifies the operation.')
-    flags.INSTANCE_FLAG.AddToParser(parser)
+    flags.DEPRECATED_INSTANCE_FLAG_REQUIRED.AddToParser(parser)
 
   def Run(self, args):
     """Retrieves information about a Cloud SQL instance operation.
@@ -65,7 +66,9 @@ class Get(_BaseGet, base.DescribeCommand):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
 
     operation_ref = client.resource_parser.Parse(
         args.operation, collection='sql.operations',
@@ -95,6 +98,9 @@ class GetBeta(_BaseGet, base.DescribeCommand):
     parser.add_argument(
         'operation',
         help='Name that uniquely identifies the operation.')
+    # Add superfluous instance flag so that users passing --instance do not see
+    # an error.
+    flags.DEPRECATED_INSTANCE_FLAG.AddToParser(parser)
 
   def Run(self, args):
     """Retrieves information about a Cloud SQL instance operation.
@@ -117,8 +123,9 @@ class GetBeta(_BaseGet, base.DescribeCommand):
     sql_messages = client.sql_messages
 
     operation_ref = client.resource_parser.Parse(
-        args.operation, collection='sql.operations',
-        params={'project': args.project})
+        args.operation,
+        collection='sql.operations',
+        params={'project': properties.VALUES.core.project.GetOrFail})
 
     return sql_client.operations.Get(
         sql_messages.SqlOperationsGetRequest(

@@ -17,7 +17,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
 
 
@@ -40,10 +39,6 @@ class MlEngineBeta(base.Group):
   """
 
   def __init__(self):
-    project = properties.VALUES.core.project
-    resolver = resolvers.FromProperty(project)
-    resources.REGISTRY.SetParamDefault(
-        'ml', collection=None, param='projectsId', resolver=resolver)
     resources.REGISTRY.RegisterApiByName('ml', 'v1beta1')
     # TODO(b/36712515) Remove this warning and cut over.
     log.warning(flags.V1BETA1_DEPRECATION_WARNING)
@@ -54,8 +49,4 @@ class MlEngineGa(base.Group):
   """Cloud ML Engine command groups."""
 
   def __init__(self):
-    project = properties.VALUES.core.project
-    resolver = resolvers.FromProperty(project)
-    resources.REGISTRY.SetParamDefault(
-        'ml', collection=None, param='projectsId', resolver=resolver)
     resources.REGISTRY.RegisterApiByName('ml', 'v1')

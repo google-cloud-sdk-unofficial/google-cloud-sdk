@@ -15,7 +15,6 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
 
 
@@ -25,8 +24,4 @@ class Ml(base.Group):
 
   def __init__(self):
     # TODO(b/36565419): Remove
-    project = properties.VALUES.core.project
-    resolver = resolvers.FromProperty(project)
-    resources.REGISTRY.SetParamDefault(
-        'ml', collection=None, param='projectsId', resolver=resolver)
     resources.REGISTRY.RegisterApiByName('ml', 'v1beta1')

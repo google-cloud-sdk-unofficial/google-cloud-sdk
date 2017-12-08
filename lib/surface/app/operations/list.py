@@ -43,9 +43,7 @@ class List(base.ListCommand):
                         action='store_true',
                         default=False,
                         help='Only display pending operations')
-
-  def Format(self, args):
-    return 'table(id, start_time, status)'
+    parser.display_info.AddFormat('table(id, start_time, status)')
 
   def Run(self, args):
     api_client = appengine_api_client.GetApiClient()

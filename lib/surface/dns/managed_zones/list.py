@@ -22,6 +22,13 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+def _GetUri(resource):
+  return resources.REGISTRY.Create(
+      'dns.managedZones',
+      project=properties.VALUES.core.project.GetOrFail,
+      managedZone=resource.name).SelfLink()
+
+
 class List(base.ListCommand):
   """View the list of all your managed-zones.
 
@@ -38,16 +45,10 @@ class List(base.ListCommand):
     $ {command} --limit=10
   """
 
-  def Collection(self):
-    return 'dns.managedZones'
-
-  def GetUriFunc(self):
-    def _GetUri(resource):
-      return resources.REGISTRY.Create(
-          self.Collection(),
-          project=properties.VALUES.core.project.GetOrFail,
-          managedZone=resource.name).SelfLink()
-    return _GetUri
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat('table(name, dnsName, description)')
+    parser.display_info.AddUriFunc(_GetUri)
 
   def Run(self, args):
     dns_client = apis.GetClientInstance('dns', 'v1')

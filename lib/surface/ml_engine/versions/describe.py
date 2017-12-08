@@ -19,9 +19,6 @@ from googlecloudsdk.command_lib.ml import flags
 from googlecloudsdk.command_lib.ml import versions_util
 
 
-_COLLECTION = 'ml.models.versions'
-
-
 def _AddDescribeArgs(parser):
   flags.GetModelName(positional=False, required=True).AddToParser(parser)
   flags.VERSION_NAME.AddToParser(parser)
@@ -30,9 +27,6 @@ def _AddDescribeArgs(parser):
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class DescribeBeta(base.DescribeCommand):
   """Describe an existing Cloud ML Engine version."""
-
-  def Collection(self):
-    return _COLLECTION
 
   @staticmethod
   def Args(parser):
@@ -46,9 +40,6 @@ class DescribeBeta(base.DescribeCommand):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class DescribeGa(base.DescribeCommand):
   """Describe an existing Cloud ML Engine version."""
-
-  def Collection(self):
-    return _COLLECTION
 
   @staticmethod
   def Args(parser):

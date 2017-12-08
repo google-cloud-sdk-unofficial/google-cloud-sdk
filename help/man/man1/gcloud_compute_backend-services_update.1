@@ -11,7 +11,7 @@ gcloud compute backend\-services update \- update a backend service
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute backend\-services update\fR \fIBACKEND_SERVICE_NAME\fR [\fB\-\-affinity\-cookie\-ttl\fR=\fIAFFINITY_COOKIE_TTL\fR] [\fB\-\-connection\-draining\-timeout\fR=\fICONNECTION_DRAINING_TIMEOUT\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-enable\-cdn\fR] [\fB\-\-health\-checks\fR=\fIHEALTH_CHECK\fR,[\fIHEALTH_CHECK\fR,...]] [\fB\-\-http\-health\-checks\fR=\fIHTTP_HEALTH_CHECK\fR,[\fIHTTP_HEALTH_CHECK\fR,...]] [\fB\-\-https\-health\-checks\fR=\fIHTTPS_HEALTH_CHECK\fR,[\fIHTTPS_HEALTH_CHECK\fR,...]] [\fB\-\-port\fR=\fIPORT\fR] [\fB\-\-port\-name\fR=\fIPORT_NAME\fR] [\fB\-\-protocol\fR=\fIPROTOCOL\fR] [\fB\-\-session\-affinity\fR=\fISESSION_AFFINITY\fR] [\fB\-\-timeout\fR=\fITIMEOUT\fR] [\fB\-\-global\fR\ |\ \fB\-\-region\fR=\fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute backend\-services update\fR \fIBACKEND_SERVICE_NAME\fR [\fB\-\-affinity\-cookie\-ttl\fR=\fIAFFINITY_COOKIE_TTL\fR] [\fB\-\-cache\-key\-include\-host\fR] [\fB\-\-cache\-key\-include\-protocol\fR] [\fB\-\-cache\-key\-include\-query\-string\fR] [\fB\-\-connection\-draining\-timeout\fR=\fICONNECTION_DRAINING_TIMEOUT\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-enable\-cdn\fR] [\fB\-\-health\-checks\fR=\fIHEALTH_CHECK\fR,[\fIHEALTH_CHECK\fR,...]] [\fB\-\-http\-health\-checks\fR=\fIHTTP_HEALTH_CHECK\fR,[\fIHTTP_HEALTH_CHECK\fR,...]] [\fB\-\-https\-health\-checks\fR=\fIHTTPS_HEALTH_CHECK\fR,[\fIHTTPS_HEALTH_CHECK\fR,...]] [\fB\-\-port\fR=\fIPORT\fR] [\fB\-\-port\-name\fR=\fIPORT_NAME\fR] [\fB\-\-protocol\fR=\fIPROTOCOL\fR] [\fB\-\-session\-affinity\fR=\fISESSION_AFFINITY\fR] [\fB\-\-timeout\fR=\fITIMEOUT\fR] [\fB\-\-cache\-key\-query\-string\-blacklist\fR=[\fIQUERY_STRING\fR,...]\ |\ \fB\-\-cache\-key\-query\-string\-whitelist\fR=\fIQUERY_STRING\fR,[\fIQUERY_STRING\fR,...]] [\fB\-\-global\fR\ |\ \fB\-\-region\fR=\fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -41,6 +41,26 @@ The name of the backend service.
 If session\-affinity is set to "generated_cookie", this flag sets the TTL, in
 seconds, of the resulting cookie. A setting of 0 indicates that the cookie
 should be transient.
+
+.TP 2m
+\fB\-\-cache\-key\-include\-host\fR
+Enable including host in cache key. If enabled, requests to different hosts will
+be cached separately. Can only be applied for global resources.
+
+.TP 2m
+\fB\-\-cache\-key\-include\-protocol\fR
+Enable including protocol in cache key. If enabled, http and https requests will
+be cached separately. Can only be applied for global resources.
+
+.TP 2m
+\fB\-\-cache\-key\-include\-query\-string\fR
+Enable including query string in cache key. If enabled, the query string
+parameters will be included according to
+\-\-cache\-key\-query\-string\-whitelist and
+\-\-cache\-key\-query\-string\-blacklist. If disabled, the entire query string
+will be excluded. Use "\-\-cache\-key\-query\-string\-blacklist=" (sets the
+blacklist to the empty list) to include the entire query string. Can only be
+applied for global resources.
 
 .TP 2m
 \fB\-\-connection\-draining\-timeout\fR=\fICONNECTION_DRAINING_TIMEOUT\fR
@@ -141,6 +161,27 @@ backend produces any response headers, the load balancer does not retry. If the
 backend does not reply at all, the load balancer returns a \f5502 Bad Gateway\fR
 error to the client. Valid units for this flag are \f5s\fR for seconds, \f5m\fR
 for minutes, and \f5h\fR for hours.
+
+.RE
+.sp
+At most one of these may be specified:
+
+.RS 2m
+.TP 2m
+\fB\-\-cache\-key\-query\-string\-blacklist\fR=[\fIQUERY_STRING\fR,...]
+Specifies a comma separated list of query string parameters to exclude in cache
+keys. All other parameters will be included. Either specify
+\-\-cache\-key\-query\-string\-whitelist or
+\-\-cache\-key\-query\-string\-blacklist, not both. '&' and '=' will be percent
+encoded and not treated as delimiters. Can only be applied for global resources.
+
+.TP 2m
+\fB\-\-cache\-key\-query\-string\-whitelist\fR=\fIQUERY_STRING\fR,[\fIQUERY_STRING\fR,...]
+Specifies a comma separated list of query string parameters to include in cache
+keys. All other parameters will be excluded. Either specify
+\-\-cache\-key\-query\-string\-whitelist or
+\-\-cache\-key\-query\-string\-blacklist, not both. '&' and '=' will be percent
+encoded and not treated as delimiters. Can only be applied for global resources.
 
 .RE
 .sp

@@ -79,7 +79,9 @@ class SetRootPassword(_BaseSetRootPassword, base.Command):
     sql_messages = client.sql_messages
 
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
 
     if args.password_file:
       with open(args.password_file) as f:
@@ -147,7 +149,9 @@ class SetRootPasswordBeta(_BaseSetRootPassword, base.Command):
     sql_messages = client.sql_messages
 
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
 
     if args.password_file:
       with open(args.password_file) as f:
@@ -155,17 +159,16 @@ class SetRootPasswordBeta(_BaseSetRootPassword, base.Command):
     else:
       password = args.password
 
-    project_id = properties.VALUES.core.project.Get(required=True)
     operation_ref = None
     result_operation = sql_client.users.Update(
         sql_messages.SqlUsersUpdateRequest(
-            project=project_id,
-            instance=args.instance,
+            project=instance_ref.project,
+            instance=instance_ref.Name(),
             name='root',
             host='%',
             user=sql_messages.User(
-                project=project_id,
-                instance=args.instance,
+                project=instance_ref.project,
+                instance=instance_ref.Name(),
                 name='root',
                 host='%',
                 password=password)))

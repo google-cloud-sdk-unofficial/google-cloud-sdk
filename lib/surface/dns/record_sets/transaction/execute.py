@@ -41,12 +41,7 @@ class Execute(base.ListCommand):
   @staticmethod
   def Args(parser):
     util.ZONE_FLAG.AddToParser(parser)
-
-  def Collection(self):
-    return 'dns.changes'
-
-  def Format(self, args):
-    return self.ListFormat(args)
+    parser.display_info.AddFormat(util.CHANGES_FORMAT)
 
   def Run(self, args):
     with transaction_util.TransactionFile(args.transaction_file) as trans_file:

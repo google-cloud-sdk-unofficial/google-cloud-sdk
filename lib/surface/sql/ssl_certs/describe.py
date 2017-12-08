@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.sql import cert
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
+from googlecloudsdk.core import properties
 
 
 class _BaseGet(object):
@@ -59,7 +60,9 @@ class _BaseGet(object):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
 
     # sha1fingerprint, so that things can work with the resource parser.
     return cert.GetCertFromName(sql_client, sql_messages, instance_ref,

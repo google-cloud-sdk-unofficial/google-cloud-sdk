@@ -29,9 +29,6 @@ from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resolvers
-from googlecloudsdk.core import resources as cloud_resources
 
 
 SERVICE_NAME = 'dataflow'
@@ -56,19 +53,6 @@ class Dataflow(base.Group):
   here: https://cloud.google.com/dataflow/docs/
   """
 
-  def Filter(self, context, args):
-    """Setup the API client within the context for this group's commands.
-
-    Args:
-      context: {str:object}, A set of key-value pairs that can be used for
-          common initialization among commands.
-      args: argparse.Namespace: The same namespace given to the corresponding
-          .Run() invocation.
-    """
-    cloud_resources.REGISTRY.SetParamDefault(
-        api='dataflow', collection=None, param='projectId',
-        resolver=resolvers.FromProperty(properties.VALUES.core.project))
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DataflowDeprecated(base.Group):
@@ -78,16 +62,3 @@ class DataflowDeprecated(base.Group):
   def __init__(self):
     log.warn('The Dataflow Alpha CLI is now deprecated and will soon be '
              'removed. Please use the new `gcloud beta dataflow` commands.')
-
-  def Filter(self, context, args):
-    """Setup the API client within the context for this group's commands.
-
-    Args:
-      context: {str:object}, A set of key-value pairs that can be used for
-          common initialization among commands.
-      args: argparse.Namespace: The same namespace given to the corresponding
-          .Run() invocation.
-    """
-    cloud_resources.REGISTRY.SetParamDefault(
-        api='dataflow', collection=None, param='projectId',
-        resolver=resolvers.FromProperty(properties.VALUES.core.project))

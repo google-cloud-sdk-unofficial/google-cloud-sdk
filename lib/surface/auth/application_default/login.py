@@ -72,9 +72,7 @@ class Login(base.Command):
         'The list of possible scopes can be found at: '
         '[](https://developers.google.com/identity/protocols/googlescopes).'
         .format(', '.join(auth_util.DEFAULT_SCOPES)))
-
-  def Format(self, unused_args):
-    return None
+    parser.display_info.AddFormat('none')
 
   def Run(self, args):
     """Run the authentication command."""

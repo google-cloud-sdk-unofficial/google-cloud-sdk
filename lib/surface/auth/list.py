@@ -51,6 +51,8 @@ class List(base.ListCommand):
         List only credentials for one account. Use
         --filter="account~_PATTERN_" to select accounts that match
         _PATTERN_.""")
+    parser.display_info.AddFormat(
+        'list[compact,title="Credentialed Accounts:"](account, status)')
 
   def Run(self, args):
     accounts = c_store.AvailableAccounts()
@@ -64,10 +66,6 @@ class List(base.ListCommand):
         accounts = []
 
     return auth_util.AuthResults(accounts, active_account)
-
-  def Format(self, unused_args):
-    title = 'Credentialed Accounts:'
-    return 'list[compact,title="{title}"](account, status)'.format(title=title)
 
   def Epilog(self, resources_were_displayed):
     if resources_were_displayed:

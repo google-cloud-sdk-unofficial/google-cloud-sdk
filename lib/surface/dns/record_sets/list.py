@@ -59,9 +59,14 @@ class List(base.ListCommand):
         '--type', required=False,
         help='Only list records of this type. If present, the --name parameter '
         'must also be present.')
-
-  def Collection(self):
-    return 'dns.resourceRecordSets'
+    parser.display_info.AddFormat("""
+        table(
+              name,
+              type,
+              ttl,
+              rrdatas.list():label=DATA
+            )
+        """)
 
   def Run(self, args):
     dns_client = self.context['dns_client']

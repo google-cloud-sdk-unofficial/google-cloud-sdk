@@ -20,20 +20,17 @@ from googlecloudsdk.command_lib.service_management import arg_parsers
 from googlecloudsdk.command_lib.service_management import common_flags
 
 
-_DETAILED_HELP = {
-    'DESCRIPTION': """\
-        Gets the IAM policy for a produced service, given the service name.
-        """,
-    'EXAMPLES': """\
-        To print the IAM policy for a service named `my-service`, run:
-
-          $ {command} my-service
-        """,
-}
-
-
 class GetIamPolicy(base.DescribeCommand):
-  """Describes the IAM policy for a service."""
+  """Describes the IAM policy for a service.
+
+  Gets the IAM policy for a produced service, given the service name.
+
+  ## EXAMPLES
+
+  To print the IAM policy for a service named `my-service`, run:
+
+    $ {command} my-service
+  """
 
   @staticmethod
   def Args(parser):
@@ -71,9 +68,3 @@ class GetIamPolicy(base.DescribeCommand):
         servicesId=service)
 
     return client.services.GetIamPolicy(request)
-
-  def Collection(self):
-    return services_util.SERVICES_COLLECTION
-
-
-GetIamPolicy.detailed_help = _DETAILED_HELP

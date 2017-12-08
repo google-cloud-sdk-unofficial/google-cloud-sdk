@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.cloudbuild import logs as cb_logs
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
@@ -57,9 +58,8 @@ class Log(base.Command):
 
     client = cloudbuild_util.GetClientInstance()
     messages = cloudbuild_util.GetMessagesModule()
-    registry = self.context['registry']
 
-    build_ref = registry.Parse(
+    build_ref = resources.REGISTRY.Parse(
         args.build,
         params={
             'projectId': properties.VALUES.core.project.GetOrFail,

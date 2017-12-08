@@ -33,6 +33,7 @@ class StreamLogsGa(base.Command):
   @staticmethod
   def Args(parser):
     _AddStreamLogsArgs(parser)
+    parser.display_info.AddFormat(log_utils.LOG_FORMAT)
 
   def Run(self, args):
     """Run the stream-logs command."""
@@ -40,9 +41,6 @@ class StreamLogsGa(base.Command):
         'v1', args.job, args.task_name,
         properties.VALUES.ml_engine.polling_interval.GetInt(),
         args.allow_multiline_logs)
-
-  def Format(self, args):
-    return log_utils.LOG_FORMAT
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
@@ -52,6 +50,7 @@ class StreamLogsBeta(base.Command):
   @staticmethod
   def Args(parser):
     _AddStreamLogsArgs(parser)
+    parser.display_info.AddFormat(log_utils.LOG_FORMAT)
 
   def Run(self, args):
     """Run the stream-logs command."""
@@ -59,6 +58,3 @@ class StreamLogsBeta(base.Command):
         'v1beta1', args.job, args.task_name,
         properties.VALUES.ml_engine.polling_interval.GetInt(),
         args.allow_multiline_logs)
-
-  def Format(self, args):
-    return log_utils.LOG_FORMAT

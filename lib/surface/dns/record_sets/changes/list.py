@@ -46,9 +46,7 @@ class List(base.ListCommand):
         '--sort-order', default=None, required=False,
         choices=['ascending', 'descending'],
         help='Sort order for listing.')
-
-  def Collection(self):
-    return 'dns.changes'
+    parser.display_info.AddFormat(util.CHANGES_FORMAT)
 
   def Run(self, args):
     dns_client = self.context['dns_client']

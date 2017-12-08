@@ -17,6 +17,7 @@ from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
+from googlecloudsdk.core import properties
 
 
 class _BaseList(object):
@@ -62,7 +63,9 @@ class _BaseList(object):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
 
     result = sql_client.databases.List(
         sql_messages.SqlDatabasesListRequest(

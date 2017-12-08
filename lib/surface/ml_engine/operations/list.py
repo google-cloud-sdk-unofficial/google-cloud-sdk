@@ -17,7 +17,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import operations_util
 
 
-_COLLECTION = 'ml.operations'
 _LIST_FORMAT = """\
     table(
         name.basename(),
@@ -31,12 +30,9 @@ _LIST_FORMAT = """\
 class ListBeta(base.ListCommand):
   """List existing Cloud ML Engine jobs."""
 
-  def Collection(self):
-    return _COLLECTION
-
-  def Format(self, args):
-    del args  # Unused in Format
-    return _LIST_FORMAT
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(_LIST_FORMAT)
 
   def Run(self, args):
     return operations_util.List(operations.OperationsClient('v1beta1'))
@@ -46,12 +42,9 @@ class ListBeta(base.ListCommand):
 class ListGa(base.ListCommand):
   """List existing Cloud ML Engine jobs."""
 
-  def Collection(self):
-    return _COLLECTION
-
-  def Format(self, args):
-    del args  # Unused in Format
-    return _LIST_FORMAT
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(_LIST_FORMAT)
 
   def Run(self, args):
     return operations_util.List(operations.OperationsClient('v1'))

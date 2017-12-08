@@ -37,9 +37,6 @@ class Update(base.UpdateCommand):
         help=('A new filter string for the metric. '
               'If omitted, the filter is not changed.'))
 
-  def Collection(self):
-    return 'logging.metrics'
-
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

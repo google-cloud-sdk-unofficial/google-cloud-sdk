@@ -95,12 +95,10 @@ aren't a first-class Cloud Storage concept) of `my-bucket`.
 class PredictionBeta(base.Command):
   """Start a Cloud ML Engine batch prediction job."""
 
-  def Format(self, args):
-    return jobs_util.JOB_FORMAT
-
   @staticmethod
   def Args(parser):
     _AddSubmitPredictionArgs(parser)
+    parser.display_info.AddFormat(jobs_util.JOB_FORMAT)
 
   def Run(self, args):
     return jobs_util.SubmitPrediction(
@@ -120,12 +118,10 @@ class PredictionBeta(base.Command):
 class PredictionGa(base.Command):
   """Start a Cloud ML Engine batch prediction job."""
 
-  def Format(self, args):
-    return jobs_util.JOB_FORMAT
-
   @staticmethod
   def Args(parser):
     _AddSubmitPredictionArgs(parser)
+    parser.display_info.AddFormat(jobs_util.JOB_FORMAT)
 
   def Run(self, args):
     return jobs_util.SubmitPrediction(

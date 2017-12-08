@@ -75,18 +75,18 @@ versions run
         This flag accepts "-" for stdin.
         """)
 
-  def Format(self, args):
-    if self.predictions is None or not isinstance(self.predictions, list):
+  def _DefaultFormat(self, predictions):
+    if predictions is None or not isinstance(predictions, list):
       # This usually indicates some kind of error case, so surface the full API
       # response
       return 'json'
-    elif not self.predictions:
+    elif not predictions:
       return None
 
     # predictions is guaranteed by API contract to be a list of similarly shaped
     # objects, but we don't know ahead of time what those objects look like.
-    elif isinstance(self.predictions[0], dict):
-      keys = ', '.join(sorted(self.predictions[0].keys()))
+    elif isinstance(predictions[0], dict):
+      keys = ', '.join(sorted(predictions[0].keys()))
       return """
           table(
               predictions:format="table(
@@ -114,6 +114,9 @@ versions run
         args.model, args.version)
 
     results = predict.Predict(model_or_version_ref, instances)
-    # Hack to make the results available to Format() method
-    self.predictions = results.get('predictions')
+
+    if not args.IsSpecified('format'):
+      # default format is based on the response.
+      args.format = self._DefaultFormat(results.get('predictions'))
+
     return results

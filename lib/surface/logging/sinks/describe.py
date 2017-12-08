@@ -46,9 +46,6 @@ class Describe(base.DescribeCommand):
     parser.add_argument('sink_name', help='The name of the sink to describe.')
     util.AddNonProjectArgs(parser, 'Describe a sink')
 
-  def Collection(self):
-    return 'logging.sinks'
-
   def GetLogSink(self, sink_ref):
     """Returns a log sink specified by the arguments."""
     client = util.GetClientV1()

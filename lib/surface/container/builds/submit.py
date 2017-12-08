@@ -32,6 +32,7 @@ from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 from googlecloudsdk.core.resource import resource_transform
 from googlecloudsdk.core.util import times
 
@@ -158,7 +159,6 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
 
     client = cloudbuild_util.GetClientInstance()
     messages = cloudbuild_util.GetMessagesModule()
-    registry = self.context['registry']
 
     gcs_client = storage_api.StorageClient()
 
@@ -210,7 +210,7 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
         stamp=times.GetTimeStampFromDateTime(times.Now()),
         suffix=suffix,
     )
-    gcs_source_staging_dir = registry.Parse(
+    gcs_source_staging_dir = resources.REGISTRY.Parse(
         args.gcs_source_staging_dir, collection='storage.objects')
 
     # We first try to create the bucket, before doing all the checks, in order
@@ -250,13 +250,13 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
     if gcs_source_staging_dir.object:
       staged_object = gcs_source_staging_dir.object + '/' + staged_object
 
-    gcs_source_staging = registry.Create(
+    gcs_source_staging = resources.REGISTRY.Create(
         collection='storage.objects',
         bucket=gcs_source_staging_dir.bucket,
         object=staged_object)
 
     if args.source.startswith('gs://'):
-      gcs_source = registry.Parse(
+      gcs_source = resources.REGISTRY.Parse(
           args.source, collection='storage.objects')
       staged_source_obj = gcs_client.Rewrite(gcs_source, gcs_source_staging)
       build_config.source = messages.Source(
@@ -309,7 +309,7 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
                 generation=staged_source_obj.generation,
             ))
 
-    gcs_log_dir = registry.Parse(
+    gcs_log_dir = resources.REGISTRY.Parse(
         args.gcs_log_dir, collection='storage.objects')
 
     if gcs_log_dir.bucket != gcs_source_staging.bucket:
@@ -327,7 +327,7 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
     json = encoding.MessageToJson(op.metadata)
     build = encoding.JsonToMessage(messages.BuildOperationMetadata, json).build
 
-    build_ref = registry.Create(
+    build_ref = resources.REGISTRY.Create(
         collection='cloudbuild.projects.builds',
         projectId=build.projectId,
         id=build.id)

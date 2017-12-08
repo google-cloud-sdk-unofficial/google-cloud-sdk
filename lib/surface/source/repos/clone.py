@@ -23,7 +23,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.credentials import store as c_store
 
@@ -171,10 +170,9 @@ class CloneAlpha(base.Command):
     # Ensure that we're logged in.
     c_store.Load()
 
-    project_id = resolvers.FromProperty(properties.VALUES.core.project)
     res = resources.REGISTRY.Parse(
         args.src,
-        params={'projectsId': project_id},
+        params={'projectsId': properties.VALUES.core.project.GetOrFail},
         collection='sourcerepo.projects.repos')
     source_handler = sourcerepo.Source()
 

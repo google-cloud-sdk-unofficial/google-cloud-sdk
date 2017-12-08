@@ -67,13 +67,6 @@ class Delete(base.DeleteCommand):
               'Format For Tag: *.gcr.io/repository:<tag>'))
 
     parser.add_argument(
-        '--resolve-tag-to-digest',
-        action='store_true',
-        default=False,
-        help=('Allows for images to be specified for deletion by tag. '
-              'To remove a tag, please use the `untag` command.'))
-
-    parser.add_argument(
         '--force-delete-tags',
         action='store_true',
         default=False,
@@ -100,14 +93,6 @@ class Delete(base.DeleteCommand):
     http_obj = http.Http()
     # collect input/validate
     digests, explicit_tags = self._ProcessImageNames(args.image_names)
-
-    if explicit_tags and not args.resolve_tag_to_digest:
-      raise exceptions.Error(
-          'Referencing an image by tag will now delete the entire underlying '
-          'image, as well as all associated tags. For the remainder of beta, '
-          'please specify --resolve-tag-to-digest when deleting an image by '
-          'tag. This will become the default behavior when `container images` '
-          'leaves beta.')
 
     # Resolve tags to digests.
     for tag in explicit_tags:

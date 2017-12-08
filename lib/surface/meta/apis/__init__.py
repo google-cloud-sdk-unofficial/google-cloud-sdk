@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All Rights Reserved.
+# Copyright 2015 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Flag related helpers for sole tenancy related commands."""
+"""The super-group for commands to inspect APIs in gcloud."""
 
-from googlecloudsdk.command_lib.compute import flags as compute_flags
-from googlecloudsdk.command_lib.compute import scope as compute_scope
+from googlecloudsdk.calliope import base
 
 
-SOLE_TENANCY_HOST_TYPE_RESOLVER = compute_flags.ResourceResolver.FromMap(
-    'sole tenancy host type', {
-        compute_scope.ScopeEnum.ZONE: 'compute.hostTypes'})
+class APIs(base.Group):
+  """Inspect the APIs registered in gcloud."""

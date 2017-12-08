@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
+from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -28,7 +29,7 @@ class Wait(base.Command):
   @staticmethod
   def Args(parser):
     flags.OPERATION_ARGUMENT.AddToParser(parser)
-    flags.INSTANCE_FLAG.AddToParser(parser)
+    flags.DEPRECATED_INSTANCE_FLAG_REQUIRED.AddToParser(parser)
     parser.display_info.AddFormat(flags.OPERATION_FORMAT)
 
   def Run(self, args):
@@ -52,7 +53,9 @@ class Wait(base.Command):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
 
     for op in args.operation:
       operation_ref = client.resource_parser.Parse(
@@ -77,6 +80,7 @@ class WaitBeta(base.Command):
   @staticmethod
   def Args(parser):
     flags.OPERATION_ARGUMENT.AddToParser(parser)
+    flags.DEPRECATED_INSTANCE_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(flags.OPERATION_FORMAT_BETA)
 
   def Run(self, args):
@@ -101,7 +105,7 @@ class WaitBeta(base.Command):
     for op in args.operation:
       operation_ref = client.resource_parser.Parse(
           op, collection='sql.operations',
-          params={'project': args.project})
+          params={'project': properties.VALUES.core.project.GetOrFail})
 
       operations.OperationsV1Beta4.WaitForOperation(
           sql_client, operation_ref,

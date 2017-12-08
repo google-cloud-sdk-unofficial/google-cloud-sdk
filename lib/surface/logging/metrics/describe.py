@@ -27,9 +27,6 @@ class Describe(base.DescribeCommand):
     parser.add_argument(
         'metric_name', help='The name of the metric.')
 
-  def Collection(self):
-    return 'logging.metrics'
-
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

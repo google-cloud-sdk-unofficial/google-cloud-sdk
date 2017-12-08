@@ -22,23 +22,20 @@ from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
 
 
-_DETAILED_HELP = {
-    'DESCRIPTION': """\
-        This command prints out the configuration for the given version of a
-        given service. You specify the name of the service and the ID of the
-        configuration, and the command will print out the specified config.
-        """,
-    'EXAMPLES': """\
-       To print the configuration with ID ``2017-01-01R0'' for the service
-       called ``my-service'', run:
-
-         $ {command} --service my-service 2017-01-01R0
-       """,
-}
-
-
 class Describe(base.DescribeCommand):
-  """Describes the configuration for a given version of a service."""
+  """Describes the configuration for a given version of a service.
+
+  This command prints out the configuration for the given version of a
+  given service. You specify the name of the service and the ID of the
+  configuration, and the command will print out the specified config.
+
+  ## EXAMPLES
+
+  To print the configuration with ID ``2017-01-01R0'' for the service
+  called ``my-service'', run:
+
+    $ {command} --service my-service 2017-01-01R0
+  """
 
   @staticmethod
   def Args(parser):
@@ -79,9 +76,6 @@ class Describe(base.DescribeCommand):
     # Check if the user wants the active config or a specific config.
     return self._GetConfig(config_ref.serviceName, config_ref.configId)
 
-  def Collection(self):
-    return services_util.CONFIG_COLLECTION
-
   def _GetConfig(self, service, config_id):
     messages = services_util.GetMessagesModule()
     client = services_util.GetClientInstance()
@@ -89,6 +83,3 @@ class Describe(base.DescribeCommand):
     request = messages.ServicemanagementServicesConfigsGetRequest(
         serviceName=service, configId=config_id)
     return client.services_configs.Get(request)
-
-
-Describe.detailed_help = _DETAILED_HELP

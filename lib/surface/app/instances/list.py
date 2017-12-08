@@ -21,6 +21,12 @@ APPENGINE_PATH_START = 'https://appengine.googleapis.com/{0}/'.format(
     appengine_api_client.API_VERSION)
 
 
+def _GetUri(resource):
+  # TODO(b/29539463): Use parser when instances collection adds simple URIs
+  # and a Get method
+  return APPENGINE_PATH_START + resource.instance.name
+
+
 class List(base.ListCommand):
   """List the instances affiliated with the current App Engine project."""
 
@@ -45,16 +51,6 @@ class List(base.ListCommand):
     # TODO(b/29539463) Resources of this API are not parsable.
     return None
 
-  def Collection(self):
-    return 'appengine.instances'
-
-  def GetUriFunc(self):
-    def _GetUri(resource):
-      # TODO(b/29539463): Use parser when instances collection adds simple URIs
-      # and a Get method
-      return APPENGINE_PATH_START + resource.instance.name
-    return _GetUri
-
   @staticmethod
   def Args(parser):
     parser.add_argument('--service', '-s',
@@ -63,6 +59,16 @@ class List(base.ListCommand):
     parser.add_argument('--version', '-v',
                         help=('If specified, only list instances belonging to '
                               'the given version.'))
+    parser.display_info.AddFormat("""
+          table(
+            service:sort=1,
+            version:sort=2,
+            id:sort=3,
+            instance.vmStatus.yesno(no="N/A"),
+            instance.vmDebugEnabled.yesno(yes="YES", no=""):label=DEBUG_MODE
+          )
+    """)
+    parser.display_info.AddUriFunc(_GetUri)
 
   def Run(self, args):
     api_client = appengine_api_client.GetApiClient()

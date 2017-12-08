@@ -16,16 +16,22 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
-class AbandonInstances(base_classes.BaseAsyncMutator):
+class AbandonInstances(base.Command):
   """Abandon instances owned by a managed instance group."""
 
   @staticmethod
   def Args(parser):
+    parser.display_info.AddFormat("""
+        table(project(),
+              zone(),
+              selfLink.basename():label=INSTANCE,
+              status)""")
     parser.add_argument('--instances',
                         type=arg_parsers.ArgList(min_length=1),
                         metavar='INSTANCE',
@@ -34,59 +40,49 @@ class AbandonInstances(base_classes.BaseAsyncMutator):
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 
-  @property
-  def method(self):
-    return 'AbandonInstances'
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def service(self):
-    return self.compute.instanceGroupManagers
-
-  @property
-  def resource_type(self):
-    return 'instanceGroupManagers'
-
-  def CreateRequests(self, args):
     resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
     default_scope = compute_scope.ScopeEnum.ZONE
-    scope_lister = flags.GetDefaultScopeLister(self.compute_client)
+    scope_lister = flags.GetDefaultScopeLister(client)
     igm_ref = resource_arg.ResolveAsResource(
-        args, self.resources, default_scope=default_scope,
+        args,
+        holder.resources,
+        default_scope=default_scope,
         scope_lister=scope_lister)
     instances = instance_groups_utils.CreateInstanceReferences(
-        self.resources, self.compute_client, igm_ref, args.instances)
+        holder.resources, client, igm_ref, args.instances)
 
     if igm_ref.Collection() == 'compute.instanceGroupManagers':
-      service = self.compute.instanceGroupManagers
-      request = (
-          self.messages.
-          ComputeInstanceGroupManagersAbandonInstancesRequest(
+      field_name = 'instanceGroupManagersAbandonInstancesRequest'
+      service = client.apitools_client.instanceGroupManagers
+      requests = instance_groups_utils.SplitInstancesInRequest(
+          client.messages.ComputeInstanceGroupManagersAbandonInstancesRequest(
               instanceGroupManager=igm_ref.Name(),
-              instanceGroupManagersAbandonInstancesRequest=(
-                  self.messages.InstanceGroupManagersAbandonInstancesRequest(
-                      instances=instances,
-                  )
-              ),
+              instanceGroupManagersAbandonInstancesRequest=
+              client.messages.InstanceGroupManagersAbandonInstancesRequest(
+                  instances=instances),
               project=igm_ref.project,
-              zone=igm_ref.zone,
-          ))
+              zone=igm_ref.zone), field_name)
     else:
-      service = self.compute.regionInstanceGroupManagers
-      request = (
-          self.messages.
+      field_name = 'regionInstanceGroupManagersAbandonInstancesRequest'
+      service = client.apitools_client.regionInstanceGroupManagers
+      requests = instance_groups_utils.SplitInstancesInRequest(
+          client.messages.
           ComputeRegionInstanceGroupManagersAbandonInstancesRequest(
               instanceGroupManager=igm_ref.Name(),
-              regionInstanceGroupManagersAbandonInstancesRequest=(
-                  self.messages.
-                  RegionInstanceGroupManagersAbandonInstancesRequest(
-                      instances=instances,
-                  )
-              ),
+              regionInstanceGroupManagersAbandonInstancesRequest=client.
+              messages.RegionInstanceGroupManagersAbandonInstancesRequest(
+                  instances=instances),
               project=igm_ref.project,
-              region=igm_ref.region,
-          ))
+              region=igm_ref.region,), field_name)
 
-    return [(service, self.method, request)]
+    requests = instance_groups_utils.GenerateRequestTuples(
+        service, 'AbandonInstances', requests)
+
+    return instance_groups_utils.MakeRequestsList(client, requests, field_name)
 
 
 AbandonInstances.detailed_help = {

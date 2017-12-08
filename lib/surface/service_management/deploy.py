@@ -64,7 +64,6 @@ def _CommonArgs(parser):
             'specification to upload. Proto Descriptors, Open API (Swagger) '
             'specifications, and Google Service Configuration files in JSON '
             'and YAML formats are acceptable.'))
-
   base.ASYNC_FLAG.AddToParser(parser)
 
 
@@ -92,12 +91,6 @@ class _BaseDeploy(object):
         action='store_true',
         help='If included, the command will only validate the service '
              'configuration(s). No configuration(s) will be persisted.')
-
-  def Format(self, unused_args):
-    return 'none'
-
-  def ValidateOnlyFormat(self, args):
-    return args.format or 'default'
 
   def MakeConfigFileMessage(self, file_contents, filename, file_type):
     """Constructs a ConfigFile message from a config file.
@@ -145,8 +138,8 @@ class _BaseDeploy(object):
 
     # If doing a validate-only run, restore the default formatting
     # (or whatever the user has entered as an override).
-    if self.validate_only:
-      self.Format = self.ValidateOnlyFormat  # pylint: disable=invalid-name
+    if not self.validate_only and not args.IsSpecified('format'):
+      args.format = 'none'
 
     for service_config_file in args.service_config_file:
       config_contents = services_util.ReadServiceConfigFile(service_config_file)

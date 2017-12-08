@@ -16,6 +16,7 @@
 from googlecloudsdk.api_lib.spanner import databases
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -48,6 +49,9 @@ class GetIamPolicy(base.Command):
     """
     database_ref = resources.REGISTRY.Parse(
         args.database,
-        params={'instancesId': args.instance},
+        params={
+            'projectsId': properties.VALUES.core.project.GetOrFail,
+            'instancesId': args.instance
+        },
         collection='spanner.projects.instances.databases')
     return databases.GetIamPolicy(database_ref)

@@ -21,24 +21,21 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.service_management import arg_parsers
 
 
-_DETAILED_HELP = {
-    'DESCRIPTION': """\
-        This command lists all the configurations for a given service by ID.
-
-        To get more detailed information about a specific configuration, run:
-
-          $ {parent_command} describe
-        """,
-    'EXAMPLES': """\
-        To list the configurations for a service named `my-service`, run:
-
-          $ {command} --service my-service
-        """,
-}
-
-
 class List(base.ListCommand):
-  """Lists the configurations for a given service."""
+  """Lists the configurations for a given service.
+
+  This command lists all the configurations for a given service by ID.
+
+  To get more detailed information about a specific configuration, run:
+
+    $ {parent_command} describe
+
+  ## EXAMPLES
+
+  To list the configurations for a service named `my-service`, run:
+
+    $ {command} --service my-service
+  """
 
   @staticmethod
   def Args(parser):
@@ -53,6 +50,12 @@ class List(base.ListCommand):
         '--service',
         required=True,
         help='The name of service for which to list existing configurations.')
+    parser.display_info.AddFormat("""
+          table(
+            id:label=CONFIG_ID,
+            name:label=SERVICE_NAME
+          )
+        """)
 
   def Run(self, args):
     """Run 'service-management configs list'.
@@ -79,9 +82,3 @@ class List(base.ListCommand):
         batch_size_attribute='pageSize',
         batch_size=args.page_size,
         field='serviceConfigs')
-
-  def Collection(self):
-    return services_util.CONFIG_COLLECTION
-
-
-List.detailed_help = _DETAILED_HELP

@@ -13,13 +13,12 @@
 # limitations under the License.
 """Retrieves information about a backup."""
 
-import sys
-
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import times
 
 
@@ -69,7 +68,9 @@ class Describe(base.DescribeCommand):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
 
     instance = sql_client.instances.Get(
         sql_messages.SqlInstancesGetRequest(
@@ -103,9 +104,53 @@ class DescribeBeta(base.DescribeCommand):
     """
     parser.add_argument(
         'id',
-        type=arg_parsers.BoundedInt(1, sys.maxint),
+        # TODO(b/21877717): uncomment validation after deprecation period.
+        # type=arg_parsers.BoundedInt(1, sys.maxint),
         help='The ID of the Backup Run.')
     flags.INSTANCE_FLAG.AddToParser(parser)
+
+  def _GetById(self, id_integer, args):
+    # If user passes ID, user v1beta4 API.
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
+
+    instance_ref = client.resource_parser.Parse(
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
+
+    request = sql_messages.SqlBackupRunsGetRequest(
+        project=instance_ref.project,
+        instance=instance_ref.instance,
+        # TODO(b/21877717): Remove cast after deprecation period.
+        id=id_integer)
+    return sql_client.backupRuns.Get(request)
+
+  def _GetByDatetime(self, datetime, args):
+    # Backwards compatibility during deprecation period.
+    # If user passes DUE_TIME instead of ID, use v1beta3 API.
+    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
+
+    instance_ref = client.resource_parser.Parse(
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
+
+    instance = sql_client.instances.Get(
+        sql_messages.SqlInstancesGetRequest(
+            project=instance_ref.project,
+            instance=instance_ref.instance))
+
+    backup_config = instance.settings.backupConfiguration[0].id
+    request = sql_messages.SqlBackupRunsGetRequest(
+        project=instance_ref.project,
+        instance=instance_ref.instance,
+        backupConfiguration=backup_config,
+        dueTime=times.FormatDateTime(datetime, tzinfo=times.UTC))
+    return sql_client.backupRuns.Get(request)
 
   def Run(self, args):
     """Retrieves information about a backup.
@@ -123,17 +168,19 @@ class DescribeBeta(base.DescribeCommand):
       ToolException: An error other than http error occured while executing the
           command.
     """
-
-    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
-    sql_client = client.sql_client
-    sql_messages = client.sql_messages
-
     validate.ValidateInstanceName(args.instance)
-    instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
 
-    request = sql_messages.SqlBackupRunsGetRequest(
-        project=instance_ref.project,
-        instance=instance_ref.instance,
-        id=args.id)
-    return sql_client.backupRuns.Get(request)
+    try:
+      # Check if ID is an integer.
+      # TODO(b/21877717): Remove this try clause after deprecation period when
+      # re-adding validation above.
+      id_integer = int(args.id)
+    except ValueError:
+      try:
+        # If input is not an integer, check if it is a datetime.
+        datetime = arg_parsers.Datetime.Parse(args.id)
+      except arg_parsers.ArgumentTypeError:
+        # If user input is not integer or datetime, throw error.
+        raise arg_parsers.ArgumentTypeError('ID must be an integer.')
+      return self._GetByDatetime(datetime, args)
+    return self._GetById(id_integer, args)

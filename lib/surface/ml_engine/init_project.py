@@ -39,9 +39,8 @@ def _InitProject(version):
   client = apis.GetClientInstance('ml', version)
   msgs = apis.GetMessagesModule('ml', version)
 
-  project = properties.VALUES.core.project.Get(required=True)
-  project_ref = resources.REGISTRY.Parse(
-      project, collection='ml.projects')
+  project = properties.VALUES.core.project.GetOrFail()
+  project_ref = resources.REGISTRY.Create('ml.projects', projectsId=project)
   console_io.PromptContinue(
       message='\nCloud ML Engine needs to add its service accounts to your '
       'project [{0}] as Editors. This will enable Cloud Machine Learning to '
@@ -56,8 +55,8 @@ def _InitProject(version):
 
   # Add Cloud ML Engine service account.
   cloud_ml_service_account = 'serviceAccount:' + resp.serviceAccount
-  cloudresourcemanager_project_ref = resources.REGISTRY.Parse(
-      project, collection='cloudresourcemanager.projects')
+  cloudresourcemanager_project_ref = resources.REGISTRY.Create(
+      'cloudresourcemanager.projects', projectId=project)
   projects_api.AddIamPolicyBinding(
       cloudresourcemanager_project_ref, cloud_ml_service_account, EDITOR_ROLE)
   log.status.Print('Added {0} as an Editor to project \'{1}\'.'.format(

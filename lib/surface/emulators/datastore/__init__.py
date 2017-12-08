@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.emulators import util
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Datastore(base.Group):
   """Manage your local datastore emulator.
 

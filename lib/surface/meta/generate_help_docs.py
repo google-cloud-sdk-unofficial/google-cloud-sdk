@@ -146,7 +146,7 @@ class GenerateHelpDocs(base.Command):
         '--test',
         action='store_true',
         help='Show but do not apply --update-help-text-dir actions. Exit with '
-        'non-zero exit status if any help text file must be upfdated.')
+        'non-zero exit status if any help text file must be updated.')
     parser.add_argument(
         '--update-help-text-dir',
         metavar='DIRECTORY',

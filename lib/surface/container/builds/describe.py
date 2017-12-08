@@ -16,6 +16,7 @@
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 class Describe(base.DescribeCommand):
@@ -48,9 +49,8 @@ class Describe(base.DescribeCommand):
     """
 
     client = cloudbuild_util.GetClientInstance()
-    resources = self.context['registry']
 
-    build_ref = resources.Parse(
+    build_ref = resources.REGISTRY.Parse(
         args.build,
         params={'projectId': properties.VALUES.core.project.GetOrFail},
         collection='cloudbuild.projects.builds')

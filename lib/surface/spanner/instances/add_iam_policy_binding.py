@@ -18,6 +18,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import iam
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -51,5 +52,7 @@ class AddIamPolicyBinding(base.Command):
       Some value that we want to have printed later.
     """
     instance_ref = resources.REGISTRY.Parse(
-        args.instance, collection='spanner.projects.instances')
+        args.instance,
+        params={'projectsId': properties.VALUES.core.project.GetOrFail},
+        collection='spanner.projects.instances')
     return iam.AddInstanceIamPolicyBinding(instance_ref, args.member, args.role)

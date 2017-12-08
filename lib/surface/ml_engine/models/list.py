@@ -19,14 +19,21 @@ from googlecloudsdk.command_lib.ml import models_util
 
 
 _COLLECTION = 'ml.models'
+_DEFAULT_FORMAT = """
+        table(
+            name.basename(),
+            defaultVersion.name.basename()
+        )
+    """
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ListBeta(base.ListCommand):
   """List existing Cloud ML Engine models."""
 
-  def Collection(self):
-    return _COLLECTION
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(_DEFAULT_FORMAT)
 
   def Run(self, args):
     return models_util.List(models.ModelsClient('v1beta1'))
@@ -36,8 +43,9 @@ class ListBeta(base.ListCommand):
 class ListGa(base.ListCommand):
   """List existing Cloud ML Engine models."""
 
-  def Collection(self):
-    return _COLLECTION
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(_DEFAULT_FORMAT)
 
   def Run(self, args):
     return models_util.List(models.ModelsClient('v1'))

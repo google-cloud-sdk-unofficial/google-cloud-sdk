@@ -28,9 +28,6 @@ def _AddDeleteArgs(parser):
 class DeleteBeta(base.DeleteCommand):
   """Delete an existing Cloud ML Engine version."""
 
-  def Collection(self):
-    return 'ml.models.versions'
-
   @staticmethod
   def Args(parser):
     _AddDeleteArgs(parser)
@@ -45,9 +42,6 @@ class DeleteBeta(base.DeleteCommand):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class DeleteGa(base.DeleteCommand):
   """Delete an existing Cloud ML Engine version."""
-
-  def Collection(self):
-    return 'ml.models.versions'
 
   @staticmethod
   def Args(parser):

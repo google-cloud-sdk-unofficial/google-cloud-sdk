@@ -21,7 +21,6 @@ from googlecloudsdk.api_lib.sourcerepo import sourcerepo
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
@@ -69,10 +68,9 @@ class Delete(base.DeleteCommand):
     Raises:
       ToolException: on project initialization errors.
     """
-    project_id = resolvers.FromProperty(properties.VALUES.core.project)
     res = resources.REGISTRY.Parse(
         args.name,
-        params={'projectsId': project_id},
+        params={'projectsId': properties.VALUES.core.project.GetOrFail},
         collection='sourcerepo.projects.repos')
     delete_warning = ('If {repo} is deleted, the name cannot be reused for up '
                       'to seven days.'.format(repo=res.Name()))

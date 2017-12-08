@@ -65,18 +65,18 @@ class SetPasswordBeta(base.CreateCommand):
     sql_client = client.sql_client
     sql_messages = client.sql_messages
 
-    project_id = properties.VALUES.core.project.Get(required=True)
-
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
     operation_ref = None
     result_operation = sql_client.users.Update(
-        sql_messages.SqlUsersUpdateRequest(project=project_id,
+        sql_messages.SqlUsersUpdateRequest(project=instance_ref.project,
                                            instance=args.instance,
                                            name=args.username,
                                            host=args.host,
                                            user=sql_messages.User(
-                                               project=project_id,
+                                               project=instance_ref.project,
                                                instance=args.instance,
                                                name=args.username,
                                                host=args.host,

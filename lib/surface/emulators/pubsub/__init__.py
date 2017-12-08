@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.emulators import util
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class PubSub(base.Group):
   """Manage your local pubsub emulator.
 

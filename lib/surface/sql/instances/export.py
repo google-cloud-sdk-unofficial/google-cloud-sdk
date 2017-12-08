@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
 class _BaseExport(object):
@@ -97,7 +98,9 @@ class Export(_BaseExport, base.Command):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
 
     export_request = sql_messages.SqlInstancesExportRequest(
         instance=instance_ref.instance,
@@ -166,7 +169,9 @@ class ExportBeta(_BaseExport, base.Command):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
 
     # TODO(b/36051079): add support for CSV exporting.
     export_request = sql_messages.SqlInstancesExportRequest(

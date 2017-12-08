@@ -89,6 +89,3 @@ class AddIamPolicyBinding(base.Command):
         servicesId=service,
         setIamPolicyRequest=(messages.SetIamPolicyRequest(policy=policy)))
     return client.services.SetIamPolicy(request)
-
-  def Collection(self):
-    return services_util.SERVICES_COLLECTION

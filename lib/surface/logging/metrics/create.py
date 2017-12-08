@@ -34,9 +34,6 @@ class Create(base.CreateCommand):
         help='The metric\'s filter expression. '
              'The filter must be for a V2 LogEntry.')
 
-  def Collection(self):
-    return 'logging.metrics'
-
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

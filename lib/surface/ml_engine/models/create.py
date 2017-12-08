@@ -42,9 +42,6 @@ Will soon be required, but defaults to 'us-central1' for now.
 class CreateBeta(base.CreateCommand):
   """Create a new Cloud ML Engine model."""
 
-  def Collection(self):
-    return 'ml.models'
-
   @staticmethod
   def Args(parser):
     _AddCreateArgs(parser)
@@ -57,9 +54,6 @@ class CreateBeta(base.CreateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateGa(base.CreateCommand):
   """Create a new Cloud ML Engine model."""
-
-  def Collection(self):
-    return 'ml.models'
 
   @staticmethod
   def Args(parser):

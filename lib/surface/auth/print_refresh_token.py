@@ -29,6 +29,7 @@ class PrintRefreshToken(base.Command):
         'account', nargs='?',
         help=('The account to get the access token for. Leave empty for the '
               'active account.'))
+    parser.display_info.AddFormat('value(refresh_token)')
 
   def Run(self, args):
     """Run the helper command."""
@@ -36,7 +37,3 @@ class PrintRefreshToken(base.Command):
     return {
         'refresh_token': refresh_token.GetForAccount(args.account)
     }
-
-  def Format(self, args):
-    return 'value(refresh_token)'
-

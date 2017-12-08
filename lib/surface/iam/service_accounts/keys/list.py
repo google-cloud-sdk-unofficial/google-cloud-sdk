@@ -51,9 +51,7 @@ class List(base_classes.BaseIamCommand, base.ListCommand):
     parser.add_argument('--iam-account',
                         required=True,
                         help='A textual name to display for the account.')
-
-  def Collection(self):
-    return 'iam.service_accounts.keys'
+    parser.display_info.AddFormat(iam_util.SERVICE_ACCOUNT_KEY_FORMAT)
 
   def Run(self, args):
     result = self.iam_client.projects_serviceAccounts_keys.List(

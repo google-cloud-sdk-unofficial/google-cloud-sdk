@@ -20,23 +20,20 @@ from googlecloudsdk.command_lib.service_management import arg_parsers
 from googlecloudsdk.command_lib.service_management import common_flags
 
 
-_DETAILED_HELP = {
-    'DESCRIPTION': """\
-        This command lists the permissions that the current authenticated
-        gcloud user has for a service. For example, if the authenticated user is
-        able to delete the service, `servicemanagement.services.delete` will
-        be among the returned permissions.
-        """,
-    'EXAMPLES': """\
-        To check the permissions for the currently authenticated gcloud, run:
-
-          $ {command} my_produced_service_name
-        """,
-}
-
-
 class CheckIamPolicy(base.Command):
-  """Returns information about a member's permissions on a service."""
+  """Returns information about a member's permissions on a service.
+
+  This command lists the permissions that the current authenticated
+  gcloud user has for a service. For example, if the authenticated user is
+  able to delete the service, `servicemanagement.services.delete` will
+  be among the returned permissions.
+
+  ## EXAMPLES
+
+  To check the permissions for the currently authenticated gcloud, run:
+
+    $ {command} my_produced_service_name
+  """
 
   @staticmethod
   def Args(parser):
@@ -47,7 +44,6 @@ class CheckIamPolicy(base.Command):
           on the command line after this command. Positional arguments are
           allowed.
     """
-
     service_flag = common_flags.producer_service_flag(
         suffix='for which to check the IAM policy')
     service_flag.AddToParser(parser)
@@ -77,9 +73,3 @@ class CheckIamPolicy(base.Command):
             permissions=all_iam_permissions))
 
     return client.services.TestIamPermissions(request)
-
-  def Collection(self):
-    return services_util.SERVICES_COLLECTION
-
-
-CheckIamPolicy.detailed_help = _DETAILED_HELP

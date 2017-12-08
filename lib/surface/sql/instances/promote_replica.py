@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
@@ -66,7 +67,9 @@ class PromoteReplica(_BasePromoteReplica, base.Command):
 
     validate.ValidateInstanceName(args.replica)
     instance_ref = client.resource_parser.Parse(
-        args.replica, collection='sql.instances')
+        args.replica,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
 
     console_io.PromptContinue(
         message='Once the read replica has been promoted to a stand-alone '
@@ -125,7 +128,9 @@ class PromoteReplicaBeta(_BasePromoteReplica, base.Command):
 
     validate.ValidateInstanceName(args.replica)
     instance_ref = client.resource_parser.Parse(
-        args.replica, collection='sql.instances')
+        args.replica,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
 
     console_io.PromptContinue(
         message='Once the read replica has been promoted to a stand-alone '

@@ -28,9 +28,6 @@ def _AddDescribeArgs(parser):
 class DescribeBeta(base.DescribeCommand):
   """Describe an existing Cloud ML Engine model."""
 
-  def Collection(self):
-    return _COLLECTION
-
   @staticmethod
   def Args(parser):
     _AddDescribeArgs(parser)
@@ -42,9 +39,6 @@ class DescribeBeta(base.DescribeCommand):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class DescribeGa(base.DescribeCommand):
   """Describe an existing Cloud ML Engine model."""
-
-  def Collection(self):
-    return _COLLECTION
 
   @staticmethod
   def Args(parser):

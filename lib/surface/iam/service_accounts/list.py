@@ -25,16 +25,12 @@ from googlecloudsdk.core import properties
 class List(base_classes.BaseIamCommand, base.ListCommand):
   """List all of a project's service accounts."""
 
-  def Collection(self):
-    return 'iam.service_accounts'
-
-  def GetUriFunc(self):
-    return iam_util.ServiceAccountsUriFunc
-
   @staticmethod
   def Args(parser):
     base.ASYNC_FLAG.RemoveFromParser(parser)
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
+    parser.display_info.AddFormat(iam_util.SERVICE_ACCOUNT_FORMAT)
+    parser.display_info.AddUriFunc(iam_util.ServiceAccountsUriFunc)
 
   def Run(self, args):
     if args.limit is not None:

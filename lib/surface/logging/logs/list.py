@@ -32,9 +32,7 @@ class List(base.ListCommand):
   def Args(parser):
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
-
-  def Format(self, args):
-    return 'table(.:label=NAME)'
+    parser.display_info.AddFormat('table(.:label=NAME)')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

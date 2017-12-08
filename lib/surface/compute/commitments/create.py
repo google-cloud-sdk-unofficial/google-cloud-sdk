@@ -13,13 +13,19 @@
 # limitations under the License.
 """Command for creating Google Compute Engine commitments."""
 
+import re
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import request_helper
+from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.commitments import flags
 from googlecloudsdk.core import properties
+
+
+_MISSING_COMMITMENTS_QUOTA_REGEX = r'Quota .COMMITMENTS. exceeded.+'
 
 
 class Create(base.Command):
@@ -86,8 +92,18 @@ class Create(base.Command):
     batch_url = holder.client.batch_url
     http = holder.client.apitools_client.http
     errors = []
-    return request_helper.MakeRequests(
+    result = list(request_helper.MakeRequests(
         requests=[(service, 'Insert', create_request)],
         http=http,
         batch_url=batch_url,
-        errors=errors)
+        errors=errors))
+    for i, error in enumerate(errors):
+      if re.match(_MISSING_COMMITMENTS_QUOTA_REGEX, error[1]):
+        errors[i] = (
+            error[0],
+            error[1] + (' You can request commitments quota on '
+                        'https://cloud.google.com/compute/docs/instances/'
+                        'signing-up-committed-use-discounts#quota'))
+    if errors:
+      utils. RaiseToolException(errors)
+    return result

@@ -27,12 +27,10 @@ def _AddListArgs(parser):
 class ListGa(base.ListCommand):
   """List existing Cloud ML Engine versions."""
 
-  def Collection(self):
-    return 'ml.models.versions'
-
   @staticmethod
   def Args(parser):
     _AddListArgs(parser)
+    parser.display_info.AddFormat('table(name.basename(), deploymentUri)')
 
   def Run(self, args):
     return versions_util.List(versions_api.VersionsClient('v1'),
@@ -43,12 +41,10 @@ class ListGa(base.ListCommand):
 class ListBeta(base.ListCommand):
   """List existing Cloud ML Engine versions."""
 
-  def Collection(self):
-    return 'ml.models.versions'
-
   @staticmethod
   def Args(parser):
     _AddListArgs(parser)
+    parser.display_info.AddFormat('table(name.basename(), deploymentUri)')
 
   def Run(self, args):
     return versions_util.List(versions_api.VersionsClient('v1beta1'),

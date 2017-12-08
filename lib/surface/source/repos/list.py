@@ -17,7 +17,6 @@
 from googlecloudsdk.api_lib.sourcerepo import sourcerepo
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
 
 
@@ -51,10 +50,9 @@ class List(base.ListCommand):
 
   def Run(self, args):
     """Run the list command."""
-    project_id = resolvers.FromProperty(properties.VALUES.core.project)
     res = resources.REGISTRY.Parse(
         None,
-        params={'projectsId': project_id},
+        params={'projectsId': properties.VALUES.core.project.GetOrFail},
         collection='sourcerepo.projects')
     source_handler = sourcerepo.Source()
     return source_handler.ListRepos(res)

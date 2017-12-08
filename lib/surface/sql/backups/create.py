@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -65,7 +66,9 @@ class CreateBackupBeta(base.CreateCommand):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
 
     result_operation = sql_client.backupRuns.Insert(
         sql_messages.SqlBackupRunsInsertRequest(

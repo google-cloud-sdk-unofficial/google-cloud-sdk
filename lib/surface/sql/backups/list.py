@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
+from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -68,7 +69,9 @@ class List(base.ListCommand):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
 
     instance_resource = sql_client.instances.Get(
         sql_messages.SqlInstancesGetRequest(
@@ -130,7 +133,9 @@ class ListBeta(base.ListCommand):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
 
     return list_pager.YieldFromList(
         sql_client.backupRuns,

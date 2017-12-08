@@ -29,6 +29,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.disks import create
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
+from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
@@ -124,7 +125,7 @@ def _CommonArgs(parser, source_snapshot_arg):
   csek_utils.AddCsekKeyArgs(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create Google Compute Engine persistent disks."""
 
@@ -223,6 +224,14 @@ class Create(base.Command):
               csek_keys, compute_holder.resources,
               [source_image_uri, snapshot_uri], client.apitools_client))
 
+    labels = None
+    args_labels = getattr(args, 'labels', None)
+    if args_labels:
+      labels = client.messages.Disk.LabelsValue(additionalProperties=[
+          client.messages.Disk.LabelsValue.AdditionalProperty(
+              key=key, value=value)
+          for key, value in sorted(args.labels.iteritems())])
+
     for disk_ref in disk_refs:
       if args.type:
         if disk_ref.Collection() == 'compute.disks':
@@ -268,6 +277,8 @@ class Create(base.Command):
             project=disk_ref.project,
             sourceImage=project_to_source_image[disk_ref.project].uri,
             zone=disk_ref.zone)
+        if labels:
+          request.disk.labels = labels
         request = (client.apitools_client.disks, 'Insert', request)
       elif disk_ref.Collection() == 'compute.regionDisks':
         def SelfLink(zone, disk_ref):
@@ -290,7 +301,11 @@ class Create(base.Command):
             project=disk_ref.project,
             sourceImage=project_to_source_image[disk_ref.project].uri,
             region=disk_ref.region)
+        if labels:
+          request.disk.labels = labels
+
         request = (client.apitools_client.regionDisks, 'Insert', request)
+
       requests.append(request)
 
     return client.MakeRequests(requests)
@@ -305,7 +320,16 @@ class Create(base.Command):
         """
     log.status.Print(textwrap.dedent(message))
 
-Create.detailed_help = DETAILED_HELP
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create Google Compute Engine persistent disks."""
+
+  @staticmethod
+  def Args(parser):
+    Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
+    _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
+    labels_util.AddCreateLabelsFlags(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -324,6 +348,7 @@ class CreateAlpha(Create):
         hidden=True)
 
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
+    labels_util.AddCreateLabelsFlags(parser)
 
   def ValidateAndParse(self, args, compute_holder):
     if args.replica_zones is None and args.region is not None:
@@ -352,3 +377,6 @@ class CreateAlpha(Create):
             format(disk_ref.SelfLink()))
 
     return disk_refs
+
+
+Create.detailed_help = DETAILED_HELP

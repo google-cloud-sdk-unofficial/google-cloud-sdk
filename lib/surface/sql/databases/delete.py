@@ -59,7 +59,9 @@ class _BaseDelete(object):
     project_id = properties.VALUES.core.project.Get(required=True)
 
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
 
     console_io.PromptContinue(
         message='The database will be deleted. Any data stored in the database '

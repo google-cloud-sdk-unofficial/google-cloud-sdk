@@ -97,6 +97,10 @@ class CreateGA(base_classes.BaseAsyncMutator):
     flags.AddAffinityCookieTtl(parser)
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddLoadBalancingScheme(parser)
+    flags.AddCacheKeyIncludeProtocol(parser, default=True)
+    flags.AddCacheKeyIncludeHost(parser, default=True)
+    flags.AddCacheKeyIncludeQueryString(parser, default=True)
+    flags.AddCacheKeyQueryStringList(parser)
 
   @property
   def method(self):
@@ -135,6 +139,9 @@ class CreateGA(base_classes.BaseAsyncMutator):
               args.session_affinity))
     if args.session_affinity is not None:
       backend_service.affinityCookieTtlSec = args.affinity_cookie_ttl
+
+    backend_services_utils.ApplyCdnPolicyArgs(
+        self, args, backend_service, is_update=False)
 
     request = self.messages.ComputeBackendServicesInsertRequest(
         backendService=backend_service,

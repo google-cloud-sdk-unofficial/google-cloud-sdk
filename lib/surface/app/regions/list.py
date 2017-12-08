@@ -28,8 +28,15 @@ class List(base.ListCommand):
           """,
   }
 
-  def Collection(self):
-    return 'appengine.regions'
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""
+          table(
+           region:sort=1,
+           standard.yesno(yes="YES", no="NO"):label='SUPPORTS STANDARD',
+           flexible.yesno(yes="YES", no="NO"):label='SUPPORTS FLEXIBLE'
+          )
+    """)
 
   def Run(self, args):
     api_client = appengine_api_client.GetApiClient()

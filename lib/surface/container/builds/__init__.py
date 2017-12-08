@@ -14,38 +14,9 @@
 
 """The command group for cloud container builds."""
 
-from googlecloudsdk.api_lib.util import apis as core_apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resolvers
-from googlecloudsdk.core import resources
 
 
 class Builds(base.Group):
   """Create and manage container builds."""
 
-  def Filter(self, context, args):
-    """Modify the context that will be given to this group's commands when run.
-
-    Args:
-      context: {str:object}, A set of key-value pairs that can be used for
-          common initialization among commands.
-      args: argparse.Namespace: The same namespace given to the corresponding
-          .Run() invocation.
-
-    Returns:
-      The refined command context.
-    """
-
-    if not properties.VALUES.core.project.Get():
-      raise properties.RequiredPropertyError(
-          properties.VALUES.core.project,
-          flag='--project')
-
-    resources.REGISTRY.SetParamDefault(
-        api='cloudbuild', collection=None, param='projectId',
-        resolver=resolvers.FromProperty(properties.VALUES.core.project))
-
-    context['registry'] = resources.REGISTRY
-
-    return context

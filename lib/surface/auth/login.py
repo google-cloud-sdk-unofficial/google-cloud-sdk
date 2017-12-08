@@ -71,9 +71,7 @@ class Login(base.Command):
         help='Enable Google Drive access.')
     parser.add_argument(
         'account', nargs='?', help='User account used for authorization.')
-
-  def Format(self, unused_args):
-    return None
+    parser.display_info.AddFormat('none')
 
   @c_exc.RaiseToolExceptionInsteadOf(c_store.Error)
   def Run(self, args):

@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
@@ -67,9 +68,6 @@ class Create(base.CreateCommand):
               'specifies which log entries to export.'))
     util.AddNonProjectArgs(parser, 'Create a sink')
 
-  def Collection(self):
-    return 'logging.sinks'
-
   def CreateSink(self, parent, sink_data):
     """Creates a v2 sink specified by the arguments."""
     messages = util.GetMessages()
@@ -94,7 +92,9 @@ class Create(base.CreateCommand):
           'Sink with empty filter matches all entries.', cancel_on_no=True)
 
     sink_ref = resources.REGISTRY.Parse(
-        args.sink_name, collection='logging.projects.sinks')
+        args.sink_name,
+        params={'projectsId': properties.VALUES.core.project.GetOrFail},
+        collection='logging.projects.sinks')
 
     sink_data = {
         'name': sink_ref.sinksId,

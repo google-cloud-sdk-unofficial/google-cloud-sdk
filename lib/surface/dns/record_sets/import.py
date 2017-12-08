@@ -77,12 +77,7 @@ class Import(base.Command):
         action='store_true',
         help='Indicates that NS records for the origin of a zone should be'
         ' imported if defined')
-
-  def Collection(self):
-    return 'dns.changes'
-
-  def Format(self, args):
-    return self.ListFormat(args)
+    parser.display_info.AddFormat(util.CHANGES_FORMAT)
 
   def Run(self, args):
     if not os.path.exists(args.records_file):

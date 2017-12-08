@@ -20,6 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import remote_completion
 
 
@@ -102,9 +103,13 @@ class _BaseClone(object):
     validate.ValidateInstanceName(args.source)
     validate.ValidateInstanceName(args.destination)
     source_instance_ref = client.resource_parser.Parse(
-        args.source, collection='sql.instances')
+        args.source,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
     destination_instance_ref = client.resource_parser.Parse(
-        args.destination, collection='sql.instances')
+        args.destination,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
 
     self._CheckSourceAndDestination(source_instance_ref,
                                     destination_instance_ref)

@@ -19,6 +19,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Start(base.Command):
   """Start a local pubsub emulator.
 
@@ -47,4 +48,6 @@ class Start(base.Command):
       args.host_port = arg_parsers.HostPort.Parse(util.GetHostPort(
           pubsub_util.PUBSUB))
 
-    pubsub_util.Start(args)
+    with pubsub_util.Start(args) as pubsub_process:
+      util.WriteEnvYaml(pubsub_util.GetEnv(args), args.data_dir)
+      util.PrefixOutput(pubsub_process, pubsub_util.PUBSUB)

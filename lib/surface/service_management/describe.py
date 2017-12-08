@@ -53,6 +53,3 @@ class Describe(base.DescribeCommand):
         serviceName=service,)
 
     return client.services.Get(request)
-
-  def Collection(self):
-    return services_util.SERVICES_COLLECTION

@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
@@ -69,7 +70,9 @@ class RestoreBackup(base.Command):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
 
     if not console_io.PromptContinue(
         'All current data on the instance will be lost when the backup is '
@@ -172,7 +175,9 @@ class RestoreBackupBeta(base.Command):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
 
     if not console_io.PromptContinue(
         'All current data on the instance will be lost when the backup is '

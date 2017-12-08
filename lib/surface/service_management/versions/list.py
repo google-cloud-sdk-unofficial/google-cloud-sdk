@@ -41,6 +41,12 @@ class List(base.ListCommand):
     parser.add_argument('--service',
                         required=True,
                         help='The service to describe.')
+    parser.display_info.AddFormat("""
+          table(
+            id:label=CONFIG_ID,
+            name:label=SERVICE_NAME
+          )
+        """)
 
   def Run(self, args):
     """Run 'service-management versions list'.
@@ -68,6 +74,3 @@ class List(base.ListCommand):
         batch_size_attribute='pageSize',
         batch_size=args.page_size,
         field='serviceConfigs')
-
-  def Collection(self):
-    return 'servicemanagement-v1.serviceConfigs'

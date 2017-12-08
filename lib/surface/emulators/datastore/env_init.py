@@ -17,6 +17,7 @@ from googlecloudsdk.api_lib.emulators import util
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class EnvInit(base.Command):
   """Print the commands required to export env variables of a datastore.
 

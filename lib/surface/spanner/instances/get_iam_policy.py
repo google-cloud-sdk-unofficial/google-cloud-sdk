@@ -16,6 +16,7 @@
 from googlecloudsdk.api_lib.spanner import instances
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -46,5 +47,7 @@ class GetIamPolicy(base.Command):
       Some value that we want to have printed later.
     """
     instance_ref = resources.REGISTRY.Parse(
-        args.instance, collection='spanner.projects.instances')
+        args.instance,
+        params={'projectsId': properties.VALUES.core.project.GetOrFail},
+        collection='spanner.projects.instances')
     return instances.GetIamPolicy(instance_ref)

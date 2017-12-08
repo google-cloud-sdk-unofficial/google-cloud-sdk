@@ -50,9 +50,8 @@ class List(base.ListCommand):
         '--only-v2-sinks', required=False, action='store_true',
         help='Display only v2 sinks.')
     util.AddNonProjectArgs(parser, 'List sinks')
-
-  def Collection(self):
-    return 'logging.sinks'
+    parser.display_info.AddFormat(
+        'table(name, destination, type, format, filter)')
 
   def ListLogSinks(self, project, log_name):
     """List log sinks from the specified log."""

@@ -19,7 +19,6 @@ import textwrap
 from googlecloudsdk.api_lib.sourcerepo import sourcerepo
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
 
 
@@ -56,10 +55,9 @@ class GetIamPolicy(base.DescribeCommand):
     Raises:
       ToolException: on project initialization errors.
     """
-    project_id = resolvers.FromProperty(properties.VALUES.core.project)
     res = resources.REGISTRY.Parse(
         args.name,
-        params={'projectsId': project_id},
+        params={'projectsId': properties.VALUES.core.project.GetOrFail},
         collection='sourcerepo.projects.repos')
     source = sourcerepo.Source()
     return source.GetIamPolicy(res)

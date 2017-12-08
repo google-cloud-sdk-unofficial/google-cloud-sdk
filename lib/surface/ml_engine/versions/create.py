@@ -33,9 +33,6 @@ def _AddCreateArgs(parser):
 class CreateBeta(base.CreateCommand):
   """Create a new Cloud ML Engine version."""
 
-  def Collection(self):
-    return 'ml.models.versions'
-
   @staticmethod
   def Args(parser):
     _AddCreateArgs(parser)
@@ -54,9 +51,6 @@ class CreateBeta(base.CreateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateGa(base.CreateCommand):
   """Create a new Cloud ML Engine version."""
-
-  def Collection(self):
-    return 'ml.models.versions'
 
   @staticmethod
   def Args(parser):

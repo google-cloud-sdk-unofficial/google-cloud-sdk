@@ -18,15 +18,22 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import jobs_util
 
 
-_COLLECTION = 'ml.beta.jobs'  # This is okay for GA too--they're identical
+_DEFAULT_FORMAT = """
+        table(
+            jobId.basename(),
+            state:label=STATUS,
+            createTime.date(tz=LOCAL):label=CREATED
+         )
+    """
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ListBeta(base.ListCommand):
   """List existing Cloud ML Engine jobs."""
 
-  def Collection(self):
-    return _COLLECTION
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(_DEFAULT_FORMAT)
 
   def Run(self, args):
     return jobs_util.List(jobs.JobsClient('v1beta1'))
@@ -36,8 +43,9 @@ class ListBeta(base.ListCommand):
 class ListGa(base.ListCommand):
   """List existing Cloud ML Engine jobs."""
 
-  def Collection(self):
-    return _COLLECTION
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(_DEFAULT_FORMAT)
 
   def Run(self, args):
     return jobs_util.List(jobs.JobsClient('v1'))

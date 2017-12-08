@@ -32,8 +32,6 @@ class Create(base_classes.BaseAsyncCreator):
 
   _GUEST_OS_FEATURES = image_utils.GUEST_OS_FEATURES
 
-  _SUPPORT_FORCE_CREATION = False
-
   @classmethod
   def Args(cls, parser):
     parser.add_argument(
@@ -70,13 +68,6 @@ class Create(base_classes.BaseAsyncCreator):
           type=arg_parsers.ArgList(element_type=lambda x: x.upper(),
                                    choices=cls._GUEST_OS_FEATURES),
           help=('One or more features supported by the OS in the image.'))
-
-    if cls._SUPPORT_FORCE_CREATION:
-      parser.add_argument(
-          '--force-creation',
-          action='store_true',
-          help=('Force image creation to succeed where it would fail '
-                'otherwise.'))
 
     flags.DISK_IMAGE_ARG.AddArgument(parser, operation_type='create')
     csek_utils.AddCsekKeyArgs(parser, resource_type='image')
@@ -157,10 +148,6 @@ class Create(base_classes.BaseAsyncCreator):
         image=image,
         project=image_ref.project)
 
-    force_creation = getattr(args, 'force_creation', None)
-    if force_creation:
-      request.forceCreation = True
-
     return [request]
 
 
@@ -173,15 +160,11 @@ class CreateBeta(Create):
 
   _GUEST_OS_FEATURES = image_utils.GUEST_OS_FEATURES_BETA
 
-  _SUPPORT_FORCE_CREATION = False
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
 
   _GUEST_OS_FEATURES = image_utils.GUEST_OS_FEATURES_ALPHA
-
-  _SUPPORT_FORCE_CREATION = True
 
 
 Create.detailed_help = {

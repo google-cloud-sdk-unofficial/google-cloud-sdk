@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
@@ -66,7 +67,9 @@ class ResetSslConfig(_BaseResetSslConfig, base.Command):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
 
     console_io.PromptContinue(
         message='Resetting your SSL configuration will delete all client '
@@ -126,7 +129,9 @@ class ResetSslConfigBeta(_BaseResetSslConfig, base.Command):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
 
     console_io.PromptContinue(
         message='Resetting your SSL configuration will delete all client '

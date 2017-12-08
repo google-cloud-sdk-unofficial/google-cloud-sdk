@@ -27,9 +27,7 @@ class List(base.ListCommand):
   def Args(parser):
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
-
-  def Collection(self):
-    return 'logging.metrics'
+    parser.display_info.AddFormat('table(name, description, filter, version)')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

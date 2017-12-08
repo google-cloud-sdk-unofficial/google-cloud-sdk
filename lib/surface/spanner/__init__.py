@@ -14,17 +14,8 @@
 """Command group for spanner."""
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resolvers
-from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class SpannerBeta(base.Group):
   """Command groups for Cloud Spanner."""
-
-  def __init__(self):
-    project = properties.VALUES.core.project
-    resolver = resolvers.FromProperty(project)
-    resources.REGISTRY.SetParamDefault(
-        'spanner', collection=None, param='projectsId', resolver=resolver)
