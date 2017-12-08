@@ -63,11 +63,11 @@ class DNS(base.Group):
   def Filter(self, context, args):
     project = properties.VALUES.core.project
     resolver = resolvers.FromProperty(project)
-    resources.SetParamDefault('dns', None, 'project', resolver)
+    resources.REGISTRY.SetParamDefault('dns', None, 'project', resolver)
 
     context['dns_client'] = apis.GetClientInstance('dns', 'v1')
     context['dns_messages'] = apis.GetMessagesModule('dns', 'v1')
-    context['dns_resources'] = resources
+    context['dns_resources'] = resources.REGISTRY
 
     if args.endpoint:
       log.warn('The --endpoint flag is deprecated and will be removed.  '

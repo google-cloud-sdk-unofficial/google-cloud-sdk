@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """'functions deploy' command."""
+import argparse
 import httplib
 import os
 import random
@@ -25,6 +26,7 @@ from googlecloudsdk.api_lib.functions import operations
 from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import archive
 from googlecloudsdk.core.util import files as file_utils
@@ -39,18 +41,26 @@ class Deploy(base.Command):
     parser.add_argument(
         'name', help='Intended name of the new function.',
         type=util.ValidateFunctionNameOrRaise)
-    parser.add_argument(
+    path_group = parser.add_mutually_exclusive_group()
+    path_group.add_argument(
         '--source',
-        help=('Path to directory with source code, either local or in Cloud '
-              'Source Repositories. If the code is being deployed from Cloud '
-              'Source Repositories, this parameter is required and also you '
-              'have to specify the parameter --source-url. If the code is in '
-              'a local directory, this parameter is optional and defaults to '
-              'the current directory. In this case you have to specify the '
-              '--bucket parameter.'))
+        help=argparse.SUPPRESS)
+    path_group.add_argument(
+        '--local-path',
+        help=('Path to local directory with source code. Required with '
+              '--stage-bucket flag.'))
+    path_group.add_argument(
+        '--source-path',
+        help=('Path to directory with source code in Cloud Source '
+              'Repositories, when you specify this parameter --source-url flag '
+              'is required.'))
     source_group = parser.add_mutually_exclusive_group()
     source_group.add_argument(
         '--bucket',
+        help=argparse.SUPPRESS,
+        type=util.ValidateAndStandarizeBucketUriOrRaise)
+    source_group.add_argument(
+        '--stage-bucket',
         help=('Name of Google Cloud Storage bucket in which source code will '
               'be stored. Required if a function is deployed from a local '
               'directory.'),
@@ -105,6 +115,10 @@ class Deploy(base.Command):
         type=util.ValidatePubsubTopicNameOrRaise)
     trigger_group.add_argument(
         '--trigger-gs-uri',
+        help=argparse.SUPPRESS,
+        type=util.ValidateAndStandarizeBucketUriOrRaise)
+    trigger_group.add_argument(
+        '--trigger-bucket',
         help=('Google Cloud Storage bucket name. Every change in files in this '
               'bucket will trigger function execution.'),
         type=util.ValidateAndStandarizeBucketUriOrRaise)
@@ -116,6 +130,9 @@ class Deploy(base.Command):
         '(web_trigger.url parameter of the deploy output) will trigger '
         'function execution. Result of the function execution will be returned '
         'in response body.')
+
+  def _GetLocalPath(self, args):
+    return args.local_path or args.source or '.'
 
   @util.CatchHTTPErrorRaiseHTTPException
   def _GetExistingFunction(self, name):
@@ -141,12 +158,13 @@ class Deploy(base.Command):
 
   def _CreateZipFile(self, tmp_dir, args):
     zip_file_name = os.path.join(tmp_dir, 'fun.zip')
+    local_path = self._GetLocalPath(args)
     try:
-      archive.MakeZipFromDir(zip_file_name, args.source)
+      archive.MakeZipFromDir(zip_file_name, local_path)
     except ValueError as e:
       raise exceptions.FunctionsError(
           'Error creating a ZIP archive with the source code '
-          'for directory {0}: {1}'.format(args.source, str(e)))
+          'for directory {0}: {1}'.format(local_path, str(e)))
     return zip_file_name
 
   def _PrepareFunctionWithoutSources(self, name, args):
@@ -166,8 +184,9 @@ class Deploy(base.Command):
       project = properties.VALUES.core.project.Get(required=True)
       trigger.pubsubTopic = 'projects/{0}/topics/{1}'.format(
           project, args.trigger_topic)
-    if args.trigger_gs_uri:
-      trigger.gsUri = args.trigger_gs_uri
+    trigger_bucket = args.trigger_bucket or args.trigger_gs_uri
+    if trigger_bucket is not None:
+      trigger.gsUri = trigger_bucket
     if args.trigger_http:
       web_trigger = messages.WebTrigger()
       web_trigger.protocol = messages.WebTrigger.ProtocolValueValuesEnum.HTTP
@@ -185,29 +204,25 @@ class Deploy(base.Command):
     function = self._PrepareFunctionWithoutSources(name, args)
     if args.source_url:
       messages = self.context['functions_messages']
-      if len(filter(None, [args.source_tag, args.source_branch,
-                           args.source_revision])) > 1:  # double check
-        raise exceptions.FunctionsError('Invalid source parameters.')
+      source_path = args.source or args.source_path
       function.sourceRepository = messages.SourceRepository(
           tag=args.source_tag, branch=args.source_branch,
           revision=args.source_revision, repositoryUrl=args.source_url,
-          sourcePath=args.source)
+          sourcePath=source_path)
     else:
       function.gcsUrl = self._PrepareSourcesOnGcs(args)
     return deploy_method(location, function)
 
   def _PrepareSourcesOnGcs(self, args):
     remote_zip_file = self._GenerateRemoteZipFileName(args)
-    if args.bucket is None:  # double check
-      raise exceptions.FunctionsError('Missing bucket parameter'
-                                      ' for function sources.')
-    gcs_url = storage.BuildRemoteDestination(args.bucket, remote_zip_file)
+    stage_bucket = args.bucket or args.stage_bucket
+    gcs_url = storage.BuildRemoteDestination(stage_bucket, remote_zip_file)
     with file_utils.TemporaryDirectory() as tmp_dir:
       zip_file = self._CreateZipFile(tmp_dir, args)
       if self._UploadFile(zip_file, gcs_url) != 0:
         raise exceptions.FunctionsError(
             'Failed to upload the function source code to the bucket {0}'
-            .format(args.bucket))
+            .format(stage_bucket))
     return gcs_url
 
   @util.CatchHTTPErrorRaiseHTTPException
@@ -250,18 +265,28 @@ class Deploy(base.Command):
         raise exceptions.FunctionsError(
             'argument --source-tag: can be given only if argument '
             '--source-url is provided')
-      if args.source is None:
-        args.source = '.'
-      if args.bucket is None:
+      stage_bucket = args.bucket or args.stage_bucket
+      if stage_bucket is None:
         raise exceptions.FunctionsError(
-            'argument --bucket: required when the function is deployed from'
-            ' a local directory (when argument --source-url is not provided)')
-      util.ValidateDirectoryExistsOrRaiseFunctionError(args.source)
+            'argument --stage-bucket: required when the function is deployed '
+            'from a local directory (when argument --source-url is not '
+            'provided)')
+      util.ValidateDirectoryExistsOrRaiseFunctionError(self._GetLocalPath(args))
     else:
-      if args.source is None:
+      if args.source is None and args.source_path is None:
         raise exceptions.FunctionsError(
-            'argument --source: required when argument --source-url is '
+            'argument --source-path: required when argument --source-url is '
             'provided')
+
+    if args.bucket is not None:
+      log.warn('--bucket flag is deprecated. Use --stage-bucket instead.')
+    if args.source is not None:
+      log.warn('--source flag is deprecated. Use --local-path (for sources on '
+               'local file system) or --source-path (for sources in Cloud '
+               'Source Repositories) instead.')
+    if args.trigger_gs_uri is not None:
+      log.warn('--trigger-gs-uri flag is deprecated. Use --trigger-bucket '
+               'instead.')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

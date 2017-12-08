@@ -50,8 +50,8 @@ class Create(base.CreateCommand):
     pubsub = self.context['pubsub']
 
     for topic_name in args.topic:
-      topic_name = resources.Parse(topic_name,
-                                   collection=util.TOPICS_COLLECTION).Name()
+      topic_name = resources.REGISTRY.Parse(
+          topic_name, collection=util.TOPICS_COLLECTION).Name()
       topic = msgs.Topic(name=util.TopicFormat(topic_name))
       try:
         yield util.TopicDisplayDict(pubsub.projects_topics.Create(topic))

@@ -116,7 +116,12 @@ class Import(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ImportBeta(base.Command):
-  """Imports data into a Cloud SQL instance from Google Cloud Storage."""
+  """Imports data into a Cloud SQL instance from Google Cloud Storage.
+
+  Note: authorization is required. For more information on importing data
+  into Google Cloud SQL see
+  [](https://cloud.google.com/sql/docs/import-export/importing).
+  """
 
   @staticmethod
   def Args(parser):

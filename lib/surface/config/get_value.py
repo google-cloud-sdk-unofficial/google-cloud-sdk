@@ -1,4 +1,4 @@
-# Copyright 2013 Google Inc. All Rights Reserved.
+# Copyright 2016 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@ from googlecloudsdk.core.configurations import named_configs
 
 @base.Hidden
 class GetValue(base.Command):
-  """Get a Cloud SDK property.
+  """Print the value of a Cloud SDK property.
 
-  Gets the property in your active configuration only.
+  {command} prints the property value from your active configuration only.
 
   ## AVAIABLE PROPERTIES
 
@@ -33,11 +33,11 @@ class GetValue(base.Command):
 
   ## EXAMPLES
 
-  To get the project property in the core section, run:
+  To print the project property in the core section, run:
 
     $ {command} project
 
-  To get the zone property in the compute section, run:
+  To print the zone property in the compute section, run:
 
     $ {command} compute/zone
   """
@@ -80,3 +80,6 @@ class GetValue(base.Command):
       value = properties.VALUES.Section(section).Property(prop).Get(
           validate=False)
     return value
+
+  def Format(self, args):
+    return 'value(.)'

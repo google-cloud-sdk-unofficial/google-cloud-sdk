@@ -17,7 +17,9 @@ from googlecloudsdk.calliope import base
 
 VERSION_NAME = base.Argument('version', help='Name of the model version.')
 VERSION_DATA = base.Argument(
-    '--origin', required=True, help='GCS location containing the model graph.')
+    '--origin',
+    required=True,
+    help='Google Cloud Storage location containing the model graph.')
 JOB_NAME = base.Argument('job', help='Name of the job.')
 
 

@@ -16,8 +16,6 @@
 
 import os
 
-from apitools.base.py import encoding
-
 from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import enable_api
 from googlecloudsdk.api_lib.service_management import services_util
@@ -86,84 +84,51 @@ class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
     enable_api.EnableServiceIfDisabled(
         self.project, services_util.GetEndpointsServiceName(), args.async)
 
-    # Check if the provided file is a swagger spec that needs to be converted
-    # to Google Service Configuration
-    if 'swagger' in service_config_dict:
-      swagger_file = self.services_messages.File(
-          contents=config_contents,
-          path=os.path.basename(args.service_config_file)
-      )
-      # TODO(user): Add support for swagger file references later
-      # This requires the API to support multiple files first. b/23353397
-      swagger_spec = self.services_messages.SwaggerSpec(
-          swaggerFiles=[swagger_file])
-      request = self.services_messages.ConvertConfigRequest(
-          swaggerSpec=swagger_spec,
-      )
-
-      response = self.services_client.v1.ConvertConfig(request)
-      diagnostics = response.diagnostics
-      if diagnostics:
-        kind = self.services_messages.Diagnostic.KindValueValuesEnum
-        for diagnostic in diagnostics:
-          logger = log.error if diagnostic.kind == kind.ERROR else log.warning
-          logger('{l}: {m}'.format(l=diagnostic.location, m=diagnostic.message))
-
-        # After all errors and warnings have been printed, exit early if any
-        # errors were returned by the server.
-        for diagnostic in diagnostics:
-          if diagnostic.kind == kind.ERROR:
-            raise SwaggerUploadException(
-                'Failed to upload service configuration.')
-
-      service_config = response.serviceConfig
-    else:
-      # If not Swagger, assume that we are dealing with Google Service Config
-      service_config = encoding.JsonToMessage(
-          self.services_messages.Service, config_contents)
-
-    managed_service = self.services_messages.ManagedService(
-        serviceConfig=service_config,
-        serviceName=service_config.name)
-
-    # Set the serviceConfig producerProjectId if it is not already set
-    if not managed_service.serviceConfig.producerProjectId:
-      managed_service.serviceConfig.producerProjectId = self.project
-
-    request = self.services_messages.ServicemanagementServicesUpdateRequest(
-        serviceName=managed_service.serviceName,
-        managedService=managed_service,
-    )
-
-    operation = self.services_client.services.Update(request)
-
     service_name = None
     config_id = None
-    # Fish the serviceName and serviceConfig.id fields from the proto Any
-    # that is returned in result.response
-    for prop in operation.response.additionalProperties:
-      if prop.key == 'serviceName':
-        service_name = prop.value.string_value
-      elif prop.key == 'serviceConfig':
-        for item in prop.value.object_value.properties:
-          if item.key == 'id':
-            config_id = item.value.string_value
-            break
-      elif prop.key == 'producerProjectId':
-        producer_project_id = prop.value.string_value
+    # Get the service name out of the service configuration
+    if 'swagger' in service_config_dict:
+      service_name = service_config_dict.get('host', None)
+      # Check if we need to create the service.
+      services_util.CreateServiceIfNew(service_name, self.project)
+      # Push the service configuration.
+      config_id = services_util.PushOpenApiServiceConfig(
+          service_name, config_contents,
+          os.path.basename(args.service_config_file), args.async)
+    else:
+      service_name = service_config_dict.get('name', None)
+      # Check if we need to create the service.
+      services_util.CreateServiceIfNew(service_name, self.project)
+      # Push the service configuration.
+      config_id = services_util.PushGoogleServiceConfig(
+          service_name, self.project, config_contents)
 
-    if service_name and config_id:
+    if config_id and service_name:
       # Print this to screen not to the log because the output is needed by the
       # human user.
       log.status.Print(
-          ('\nService Configuration with version "{0}" uploaded '
-           'for service "{1}"\n').format(config_id, service_name))
+          ('\nService Configuration with version [{0}] uploaded '
+           'for service [{1}]\n').format(config_id, service_name))
     else:
       raise calliope_exceptions.ToolException(
-          'Failed to retrieve Service Name and Service Configuration Version')
+          'Failed to retrieve Service Configuration Version')
 
-    services_util.ProcessOperationResult(operation, args.async)
+    # Create a Rollout for the new service configuration
+    percentages = (self.services_messages.TrafficPercentStrategy.
+                   PercentagesValue())
+    percentages.additionalProperties.append(
+        (self.services_messages.TrafficPercentStrategy.PercentagesValue.
+         AdditionalProperty(
+             key=config_id,
+             value=100.0)))
+    traffic_percent_strategy = (
+        self.services_messages.TrafficPercentStrategy(percentages=percentages))
+    rollout = self.services_messages.Rollout(
+        serviceName=service_name,
+        trafficPercentStrategy=traffic_percent_strategy,
+    )
+    rollout_operation = self.services_client.services_rollouts.Create(rollout)
+    services_util.ProcessOperationResult(rollout_operation, args.async)
 
     # Check to see if the service is already enabled
-    enable_api.EnableServiceIfDisabled(
-        producer_project_id, service_name, args.async)
+    enable_api.EnableServiceIfDisabled(self.project, service_name, args.async)

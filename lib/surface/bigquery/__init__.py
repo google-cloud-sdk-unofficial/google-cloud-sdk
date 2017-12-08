@@ -46,7 +46,7 @@ class Bigquery(base.Group):
     Returns:
       The updated context.
     """
-    resources.SetParamDefault(
+    resources.REGISTRY.SetParamDefault(
         api='bigquery', collection=None, param='projectId',
         resolver=resolvers.FromProperty(properties.VALUES.core.project))
 

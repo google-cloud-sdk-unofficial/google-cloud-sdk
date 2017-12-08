@@ -369,7 +369,7 @@ UpdateBackend.detailed_help = {
         something similar with ``backend-services remove-backend'' and
         ``backend-services add-backend''.
 
-        'gcloud compute backend-services edit' can also be used to
+        `gcloud compute backend-services edit` can also be used to
         update a backend if the use of a text editor is desired.
         """,
 }

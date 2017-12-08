@@ -59,7 +59,8 @@ class ServiceRegistry(base.Group):
 
     project = properties.VALUES.core.project
     resolver = resolvers.FromProperty(project)
-    resources.SetParamDefault('serviceregistry', None, 'project', resolver)
+    resources.REGISTRY.SetParamDefault(
+        'serviceregistry', None, 'project', resolver)
     # guarantee we use the same API as our client
     context[constants.RESOURCES] = resources.REGISTRY.CloneAndSwitchAPIs(client)
 

@@ -45,7 +45,7 @@ class Login(base.Command):
 
   Deprecated behavior: This command also saves the credentials for
   Application Default Credentials. This behavior has been taken over by
-  'gcloud auth application-default login', so prefer to use that command
+  `gcloud auth application-default login`, so prefer to use that command
   instead for that purpose.
   """
 

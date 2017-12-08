@@ -39,12 +39,12 @@ List.detailed_help = {
     'brief': 'List addresses',
     'DESCRIPTION': """\
         *{command}* lists summary information of addresses in a project. The
-        ``--uri'' option can be used to display URIs instead. Users who want to
-        see more data should use 'gcloud compute addresses describe'.
+        *--uri* option can be used to display URIs instead. Users who want to
+        see more data should use `gcloud compute addresses describe`.
 
         By default, global addresses and addresses from all regions are listed.
-        The results can be narrowed down by providing the ``--regions'' or
-        ``--global'' flag.
+        The results can be narrowed down by providing the *--regions* or
+        *--global* flag.
         """,
     'EXAMPLES': """\
         To list all addresses in a project in table form, run:

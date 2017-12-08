@@ -41,8 +41,8 @@ class DeleteInstance(base.DeleteCommand):
     cli = util.GetAdminClient()
     msgs = util.GetAdminMessages()
     for instance in args.instance:
-      ref = resources.Parse(instance,
-                            collection='bigtableadmin.projects.instances')
+      ref = resources.REGISTRY.Parse(
+          instance, collection='bigtableadmin.projects.instances')
       msg = msgs.BigtableadminProjectsInstancesDeleteRequest(
           projectsId=ref.projectsId,
           instancesId=ref.Name())

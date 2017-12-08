@@ -34,12 +34,12 @@ class ActivateServiceAccount(base.SilentCommand):
   Gets credentials for a service account, using a .json file
   for the private key, and puts them in the well-known location for
   Application Default Credentials.
-  The --project option is ignored.
+  The *--project* option is ignored.
 
   This command has no effect on the service account(s) used with the
-  'gcloud auth activate-service-account' command, but any existing credentials
+  `gcloud auth activate-service-account` command, but any existing credentials
   previously installed by this command (or
-  'gcloud auth application-default login') will be overwritten.
+  `gcloud auth application-default login`) will be overwritten.
   """
 
   @staticmethod

@@ -91,8 +91,8 @@ def GenerateApi(base_dir, root_dir, api_name, api_version, api_config):
   logging.debug('Apitools gen %s', args)
   gen_client.main(args)
 
-  package_dir = ''
-  for subdir in [base_dir, root_dir, api_name, api_version]:
+  package_dir = base_dir
+  for subdir in [root_dir, api_name, api_version]:
     package_dir = os.path.join(package_dir, subdir)
     init_file = os.path.join(package_dir, '__init__.py')
     if not os.path.isfile(init_file):
@@ -100,6 +100,10 @@ def GenerateApi(base_dir, root_dir, api_name, api_version, api_config):
                    package_dir)
       with open(init_file, 'w') as f:
         f.write(_INIT_FILE_CONTENT)
+
+
+def _CamelCase(snake_case):
+  return ''.join(x.capitalize() for x in snake_case.split('_'))
 
 
 def _MakeApiMap(root_package, api_config):
@@ -124,17 +128,18 @@ def _MakeApiMap(root_package, api_config):
     for api_version, api_config in api_version_config.iteritems():
       default = api_config.get('default', len(api_version_config) == 1)
       has_default = has_default or default
+      version = api_config.get('version', api_version)
       client_classpath = '.'.join([
           root_package,
           api_name,
           api_version,
-          '_'.join([api_name, api_version, 'client']),
-          api_name.capitalize() + api_version.capitalize()])
+          '_'.join([api_name, version, 'client']),
+          _CamelCase(api_name) + _CamelCase(version)])
       messages_modulepath = '.'.join([
           root_package,
           api_name,
           api_version,
-          '_'.join([api_name, api_version, 'messages']),
+          '_'.join([api_name, version, 'messages']),
       ])
       api_versions_map[api_version] = api_def.APIDef(
           client_classpath, messages_modulepath, default)
@@ -272,8 +277,9 @@ def GenerateResourceModule(base_dir, root_dir, api_config):
       with open(discovery_doc, 'rU') as f:
         discovery = json.load(f)
       if discovery['version'] != api_version:
-        raise WrongDiscoveryDoc('api version {0}, expected {1}'
-                                .format(discovery['version'], api_version))
+        logging.warn('Discovery api version %s does not match %s, '
+                     'this client will be accessible via new alias.',
+                     discovery['version'], api_version)
       if discovery['name'] != api_name:
         raise WrongDiscoveryDoc('api name {0}, expected {1}'
                                 .format(discovery['name'], api_name))

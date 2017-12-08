@@ -56,7 +56,7 @@ class ListGrantableRoles(base_classes.BaseIamCommand):
       resource = args.resource
     if args.resource.startswith('http'):
       # This is a full resource URL that needs to be converted to an atomic path
-      resource_ref = self.resources.Parse(args.resource)
+      resource_ref = self.resources.REGISTRY.Parse(args.resource)
       full_name = resource_ref.SelfLink()
       full_name = re.sub(r'\w+://', '//', full_name)  # no protocol at the start
       full_name = re.sub(r'/v[0-9]+[0-9a-zA-z]*/', '/', full_name)  # no version

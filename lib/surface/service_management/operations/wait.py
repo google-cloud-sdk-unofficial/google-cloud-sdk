@@ -15,11 +15,10 @@
 """service-management operations wait command."""
 
 from googlecloudsdk.api_lib.service_management import base_classes
+from googlecloudsdk.api_lib.service_management import common_flags
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
-
-OPTIONAL_PREFIX_TO_STRIP = 'operations/'
 
 
 class Wait(base.Command, base_classes.BaseServiceManagementCommand):
@@ -34,8 +33,7 @@ class Wait(base.Command, base_classes.BaseServiceManagementCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    parser.add_argument(
-        'operation', help='The name of the Operation on which to wait.')
+    common_flags.operation_flag(suffix='on which to wait').AddToParser(parser)
 
   @http_error_handler.HandleHttpErrors
   def Run(self, args):
@@ -48,12 +46,10 @@ class Wait(base.Command, base_classes.BaseServiceManagementCommand):
     Returns:
       If successful, the response from the operations.Get API call.
     """
-    # If a user includes the leading "operations/", just strip it off
-    if args.operation.startswith(OPTIONAL_PREFIX_TO_STRIP):
-      args.operation = args.operation[len(OPTIONAL_PREFIX_TO_STRIP):]
+    op_name = services_util.ParseOperationName(args.operation)
 
     request = self.services_messages.ServicemanagementOperationsGetRequest(
-        operationsId=args.operation,
+        operationsId=op_name,
     )
 
     operation = self.services_client.operations.Get(request)

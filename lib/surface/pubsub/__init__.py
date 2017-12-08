@@ -51,7 +51,7 @@ class Pubsub(base.Group):
     """
     context['pubsub_msgs'] = apis.GetMessagesModule('pubsub', 'v1')
     context['pubsub'] = apis.GetClientInstance('pubsub', 'v1')
-    cloud_resources.SetParamDefault(
+    cloud_resources.REGISTRY.SetParamDefault(
         api='pubsub', collection=None,
         param='project',
         resolver=resolvers.FromProperty(properties.VALUES.core.project))

@@ -52,16 +52,16 @@ class Updater(base.Group):
       The updated context.
     """
     properties.VALUES.compute.zone.Get(required=True)
-    resources.SetParamDefault(
+    resources.REGISTRY.SetParamDefault(
         api='compute', collection=None, param='project',
         resolver=resolvers.FromProperty(properties.VALUES.core.project))
-    resources.SetParamDefault(
+    resources.REGISTRY.SetParamDefault(
         api='compute', collection=None, param='zone',
         resolver=resolvers.FromProperty(properties.VALUES.compute.zone))
-    resources.SetParamDefault(
+    resources.REGISTRY.SetParamDefault(
         api='replicapoolupdater', collection=None, param='project',
         resolver=resolvers.FromProperty(properties.VALUES.core.project))
-    resources.SetParamDefault(
+    resources.REGISTRY.SetParamDefault(
         api='replicapoolupdater', collection=None, param='zone',
         resolver=resolvers.FromProperty(properties.VALUES.compute.zone))
     return context

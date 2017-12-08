@@ -93,7 +93,7 @@ class Create(base_classes.BaseAsyncCreator):
       raise exceptions.ConflictingArgumentsException(
           '--source-uri', '--source-disk')
 
-    # TODO(user): use resources.Parse() to pase GCS URIs (b/30086260).
+    # TODO(user): use resources.REGISTRY.Parse() for GCS URIs (b/30086260).
     if args.source_uri:
       source_uri = utils.NormalizeGoogleStorageUri(args.source_uri)
       image.rawDisk = self.messages.Image.RawDiskValue(source=source_uri)

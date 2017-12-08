@@ -34,7 +34,7 @@ class GetHealth(base.ListCommand):
     """Returns a list of backendServiceGroupHealth objects."""
     if args.uri:
       args.uri = False
-      self.SetFormat('value(status.healthStatus[].instance)')
+      args.format = 'value[delimiter="\n"](status.healthStatus[].instance)'
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self._BACKEND_SERVICE_ARG.ResolveAsResource(

@@ -115,7 +115,7 @@ class Start(base_classes.NoOutputAsyncMutator):
                                                       base.ReleaseTrack.BETA]
         csek_keys = csek_utils.CsekKeyStore.FromArgs(args, allow_rsa_encrypted)
         for disk in instance.disks:
-          disk_resource = resources.Parse(disk.source)
+          disk_resource = resources.REGISTRY.Parse(disk.source)
 
           disk_key_or_none = csek_utils.MaybeLookupKeyMessage(
               csek_keys, disk_resource, self.compute)

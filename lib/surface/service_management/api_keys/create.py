@@ -81,16 +81,17 @@ class Create(base.Command, base_classes.BaseServiceManagementCommand):
     """
     # Verify Android command-line arguments, if applicable
     if args.type == 'android':
-      self._VerifyAndroidPackageArgs(args)
+      self._VerifyAndroidPackageArgs(args.allowed_entities)
 
     # Construct the Create API Key request object
-    request = self._ConstructApiKeyRequest(self.project, args)
+    request = self._ConstructApiKeyRequest(
+        self.project, args.type, args.allowed_entities, args.display_name)
 
     return self.apikeys_client.projects_apiKeys.Create(request)
 
-  def _VerifyAndroidPackageArgs(self, parsed_args):
+  def _VerifyAndroidPackageArgs(self, allowed_entities):
     # Verify that each Android package is in the correct format
-    for package in parsed_args.allowed_entities:
+    for package in allowed_entities:
       try:
         _, fingerprint = package.split(',', 1)
       except ValueError:
@@ -103,38 +104,39 @@ class Create(base.Command, base_classes.BaseServiceManagementCommand):
         raise exceptions.ToolException(
             'Invalid SHA fingerprint provided (%s).' % fingerprint)
 
-  def _ConstructApiKeyRequest(self, project, parsed_args):
-    if parsed_args.type == 'browser':
+  def _ConstructApiKeyRequest(self, project, key_type, allowed_entities,
+                              display_name):
+    if key_type == 'browser':
       key_details = self.apikeys_messages.BrowserKeyDetails()
-      if parsed_args.allowed_entities:
-        key_details.allowedReferrers.extend(parsed_args.allowed_entities)
+      if allowed_entities:
+        key_details.allowedReferrers.extend(allowed_entities)
       api_key = self.apikeys_messages.ApiKey(browserKeyDetails=key_details)
-    elif parsed_args.type == 'server':
+    elif key_type == 'server':
       key_details = self.apikeys_messages.ServerKeyDetails()
-      if parsed_args.allowed_entities:
-        key_details.allowedIps.extend(parsed_args.allowed_entities)
+      if allowed_entities:
+        key_details.allowedIps.extend(allowed_entities)
       api_key = self.apikeys_messages.ApiKey(serverKeyDetails=key_details)
-    elif parsed_args.type == 'ios':
+    elif key_type == 'ios':
       key_details = self.apikeys_messages.IosKeyDetails()
-      if parsed_args.allowed_entities:
-        key_details.allowedBundleIds.extend(parsed_args.allowed_entities)
+      if allowed_entities:
+        key_details.allowedBundleIds.extend(allowed_entities)
       api_key = self.apikeys_messages.ApiKey(iosKeyDetails=key_details)
-    elif parsed_args.type == 'android':
+    elif key_type == 'android':
       def _ConstructAndroidApplication(package, fingerprint):
         return self.apikeys_messages.AndroidApplication(
             sha1Fingerprint=services_util.GetByteStringFromFingerprint(
                 fingerprint),
             packageName=package)
 
-      if parsed_args.allowed_entities:
-        apps = [p.split(',') for p in parsed_args.allowed_entities]
+      if allowed_entities:
+        apps = [p.split(',') for p in allowed_entities]
 
       key_details = self.apikeys_messages.AndroidKeyDetails()
       key_details.allowedApplications.extend(
           [_ConstructAndroidApplication(p, f) for (p, f) in apps])
       api_key = self.apikeys_messages.ApiKey(androidKeyDetails=key_details)
 
-    api_key.displayName = parsed_args.display_name
+    api_key.displayName = display_name
 
     return self.apikeys_messages.ApikeysProjectsApiKeysCreateRequest(
         projectId=project,

@@ -80,7 +80,7 @@ class Publish(base.Command):
                                   ' You must specify either a MESSAGE_BODY,'
                                   ' one or more ATTRIBUTE, or both.'))
 
-    topic_name = resources.Parse(
+    topic_name = resources.REGISTRY.Parse(
         args.topic, collection=util.TOPICS_COLLECTION).Name()
 
     message = msgs.PubsubMessage(

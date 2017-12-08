@@ -15,11 +15,12 @@
 """Command to get information about a principal's permissions on a service."""
 
 from googlecloudsdk.api_lib.service_management import base_classes
+from googlecloudsdk.api_lib.service_management import common_flags
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 
 
-class Check(base.Command, base_classes.BaseServiceManagementCommand):
+class CheckIamPolicy(base.Command, base_classes.BaseServiceManagementCommand):
   """Returns information about a member's permissions on a service."""
 
   @staticmethod
@@ -32,9 +33,10 @@ class Check(base.Command, base_classes.BaseServiceManagementCommand):
           allowed.
     """
 
-    parser.add_argument(
-        'service',
-        help='The service for which to check the IAM policy.')
+    service_flag = common_flags.service_flag(
+        suffix='for which to check the IAM policy')
+    service_flag.AddToParser(parser)
+
     parser.add_argument(
         '--member',
         required=True,
@@ -42,7 +44,7 @@ class Check(base.Command, base_classes.BaseServiceManagementCommand):
 
   @http_error_handler.HandleHttpErrors
   def Run(self, args):
-    """Run 'service-management access check'.
+    """Run 'service-management check-access'.
 
     Args:
       args: argparse.Namespace, The arguments that this command was invoked

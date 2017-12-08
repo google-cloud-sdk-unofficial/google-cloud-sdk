@@ -28,7 +28,10 @@ class SetIamPolicy(base.Command):
   file that contains the JSON encoded IAM policy.
   """
 
-  detailed_help = iam_util.GetDetailedHelpForSetIamPolicy('dataset', '1000')
+  detailed_help = iam_util.GetDetailedHelpForSetIamPolicy(
+      'dataset', '1000',
+      """See https://cloud.google.com/genomics/v1/access-control for details on
+          managing access control on Genomics datasets.""")
 
   @staticmethod
   def Args(parser):
@@ -41,7 +44,8 @@ class SetIamPolicy(base.Command):
     apitools_client = genomics_util.GetGenomicsClient()
     messages = genomics_util.GetGenomicsMessages()
 
-    dataset_resource = resources.Parse(args.id, collection='genomics.datasets')
+    dataset_resource = resources.REGISTRY.Parse(
+        args.id, collection='genomics.datasets')
 
     policy = iam_util.ParseJsonPolicyFile(args.policy_file, messages.Policy)
 

@@ -130,10 +130,9 @@ class CreateAlpha(CreateGA):
 
     # These are in beta
     flags.AddConnectionDrainingTimeout(parser)
-
-    # These are added for alpha
     flags.AddHealthChecks(parser)
 
+    # These are added for alpha
     flags.AddLoadBalancingScheme(parser)
 
   def CreateGlobalRequests(self, args):
@@ -211,6 +210,7 @@ class CreateBeta(CreateGA):
 
     # These are added for beta
     flags.AddConnectionDrainingTimeout(parser)
+    flags.AddHealthChecks(parser)
 
   def CreateGlobalRequests(self, args):
     backend_service = self._CreateBackendService(args)

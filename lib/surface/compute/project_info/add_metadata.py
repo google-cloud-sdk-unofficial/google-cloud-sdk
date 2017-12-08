@@ -33,7 +33,7 @@ AddMetadata.detailed_help = {
         can be used to query metadata that has been set through this
         tool. Project-wide metadata entries are visible to all
         instances. To set metadata for individual instances, use
-        'gcloud compute instances add-metadata'. For information on
+        `gcloud compute instances add-metadata`. For information on
         metadata, see
         [](https://cloud.google.com/compute/docs/metadata)
 

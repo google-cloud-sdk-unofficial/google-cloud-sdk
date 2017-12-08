@@ -64,12 +64,6 @@ class List(base.ListCommand, base_classes.BaseServiceManagementCommand):
                                   'already consumes. Or use one of --enabled '
                                   'or --produced.'))
 
-    parser.add_argument('--project-id',
-                        dest='project',
-                        default=None,
-                        help=('The project ID to retrieve information about. '
-                              'The default is the currently active project.'))
-
     # Remove unneeded list-related flags from parser
     base.URI_FLAG.RemoveFromParser(parser)
     base.FLATTEN_FLAG.RemoveFromParser(parser)
@@ -96,11 +90,11 @@ class List(base.ListCommand, base_classes.BaseServiceManagementCommand):
     validated_project = services_util.GetValidatedProject(args.project)
 
     if args.enabled:
-      request = self._GetEnabledListRequest(validated_project)
+      request = services_util.GetEnabledListRequest(validated_project)
     elif args.available:
-      request = self._GetAvailableListRequest(validated_project)
+      request = services_util.GetAvailableListRequest(validated_project)
     elif args.produced:
-      request = self._GetProducedListRequest(validated_project)
+      request = services_util.GetProducedListRequest(validated_project)
 
     return list_pager.YieldFromList(
         self.services_client.services,
@@ -112,26 +106,3 @@ class List(base.ListCommand, base_classes.BaseServiceManagementCommand):
 
   def Collection(self):
     return 'servicemanagement-v1.services'
-
-  def _GetEnabledListRequest(self, project_id):
-    return self.services_messages.ServicemanagementServicesListRequest(
-        consumerProjectId=project_id
-    )
-
-  # These are special settings that will make Inception return
-  # all service-management available to a project.
-  _AVAILABLE_SERVICES_CATEGORY = ('servicemanagement.googleapis.com/'
-                                  'categories/google-services')
-  _AVAILABLE_SERVICES_EXPAND = 'consumerSettings'
-
-  def _GetAvailableListRequest(self, project_id):
-    return self.services_messages.ServicemanagementServicesListRequest(
-        consumerProjectId=project_id,
-        category=self._AVAILABLE_SERVICES_CATEGORY,
-        expand=self._AVAILABLE_SERVICES_EXPAND,
-    )
-
-  def _GetProducedListRequest(self, project_id):
-    return self.services_messages.ServicemanagementServicesListRequest(
-        producerProjectId=project_id
-    )

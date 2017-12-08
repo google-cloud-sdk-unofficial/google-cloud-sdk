@@ -46,11 +46,15 @@ class CreateAlpha(base_classes.BaseAsyncCreator):
         backend_buckets_flags.BACKEND_BUCKET_ARG.ResolveAsResource(
             args, self.resources,
             default_scope=flags.ScopeEnum.GLOBAL))
+
+    enable_cdn = args.enable_cdn or False
+
     request = self.messages.ComputeBackendBucketsInsertRequest(
         backendBucket=self.messages.BackendBucket(
             description=args.description,
             name=backend_buckets_ref.Name(),
-            bucketName=args.gcs_bucket_name),
+            bucketName=args.gcs_bucket_name,
+            enableCdn=enable_cdn),
         project=self.project)
 
     return [request]

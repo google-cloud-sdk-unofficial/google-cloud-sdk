@@ -234,8 +234,9 @@ AddBackend.detailed_help = {
         nearest group(s) that still have remaining capacity.
 
         To modify the parameters of a backend after it has been added
-        to the backend service, use 'gcloud compute backend-services
-        update-backend' or 'gcloud compute backend-services edit'.
+        to the backend service, use
+        `gcloud compute backend-services update-backend` or
+        `gcloud compute backend-services edit`.
         """,
 }
 AddBackendBeta.detailed_help = AddBackend.detailed_help

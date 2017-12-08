@@ -49,7 +49,7 @@ class AddHostRule(base_classes.ReadWriteCommand):
     path_matcher.detailed_help = """\
         The name of the patch matcher to use if a request matches this
         host rule. The patch matcher must already exist in the URL map
-        (see 'gcloud compute url-maps add-path-matcher').
+        (see `gcloud compute url-maps add-path-matcher`).
         """
 
     parser.add_argument(
@@ -105,9 +105,9 @@ AddHostRule.detailed_help = {
         component of HTTP requests to path matchers which in turn map
         the request to a backend service. Before adding a host rule,
         at least one path matcher must exist in the URL map to take
-        care of the path component of the requests. 'gcloud compute
-        url-maps add-path-matcher' or 'gcloud compute url-maps edit'
-        can be used to add path matchers.
+        care of the path component of the requests.
+        `gcloud compute url-maps add-path-matcher` or
+        `gcloud compute url-maps edit` can be used to add path matchers.
         """,
     'EXAMPLES': """\
         To create a host rule mapping the ```*-foo.google.com``` and

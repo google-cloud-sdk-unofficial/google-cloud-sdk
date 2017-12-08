@@ -19,7 +19,7 @@ from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 
 
-class List(base.Command, base_classes.BaseServiceManagementCommand):
+class List(base.ListCommand, base_classes.BaseServiceManagementCommand):
   """Lists API keys for a project."""
 
   @staticmethod
@@ -31,7 +31,9 @@ class List(base.Command, base_classes.BaseServiceManagementCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    base.LIMIT_FLAG.AddToParser(parser)
+    # Remove unneeded list-related flags from parser
+    base.URI_FLAG.RemoveFromParser(parser)
+    base.FLATTEN_FLAG.RemoveFromParser(parser)
 
   @http_error_handler.HandleHttpErrors
   def Run(self, args):

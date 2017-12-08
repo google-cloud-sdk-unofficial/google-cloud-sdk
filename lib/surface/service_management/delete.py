@@ -15,6 +15,7 @@
 """service-management delete command."""
 
 from googlecloudsdk.api_lib.service_management import base_classes
+from googlecloudsdk.api_lib.service_management import common_flags
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
@@ -33,15 +34,7 @@ class Delete(base.Command, base_classes.BaseServiceManagementCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    parser.add_argument(
-        'service', help='The service to delete for this producer project.')
-
-    parser.add_argument(
-        '--force',
-        '-f',
-        action='store_true',
-        default=False,
-        help='Force the deletion of the service without warning prompt.')
+    common_flags.service_flag(suffix='to delete').AddToParser(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -56,18 +49,16 @@ class Delete(base.Command, base_classes.BaseServiceManagementCommand):
     Returns:
       The response from the Delete API call (or None if cancelled).
     """
-    # If the user doesn't specify --force, prompt with a warning before
-    # continuing.
-    if not args.force:
-      continue_prompt_response = console_io.PromptContinue(
-          message='Are you sure? This will permanently delete the service '
-                  'configuration and all of the associated consumer '
-                  'information. This CANNOT be undone!',
-          prompt_string='Continue anyway',
-          default=True,
-          throw_if_unattended=True)
-      if not continue_prompt_response:
-        return
+    # Prompt with a warning before continuing.
+    continue_prompt_response = console_io.PromptContinue(
+        message='Are you sure? This will permanently delete the service '
+                'configuration and all of the associated consumer '
+                'information. This CANNOT be undone!',
+        prompt_string='Continue anyway',
+        default=True,
+        throw_if_unattended=True)
+    if not continue_prompt_response:
+      return
 
     request = self.services_messages.ServicemanagementServicesDeleteRequest(
         serviceName=args.service,

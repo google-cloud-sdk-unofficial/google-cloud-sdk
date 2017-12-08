@@ -17,6 +17,7 @@ import json
 from apitools.base.py import exceptions as api_ex
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.projects import util as projects_util
 from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core import resources
@@ -76,6 +77,10 @@ class Create(base.Command):
       A serialized object (dict) describing the results of the operation.
       This description fits the Resource described in the ResourceRegistry under
       'pubsub.projects.topics'.
+
+    Raises:
+      An HttpException if there was a problem calling the
+      API subscriptions.Create command.
     """
     msgs = self.context['pubsub_msgs']
     pubsub = self.context['pubsub']
@@ -83,11 +88,11 @@ class Create(base.Command):
     topic_project = ''
     if args.topic_project:
       topic_project = projects_util.ParseProject(args.topic_project).Name()
-    topic_name = resources.Parse(args.topic,
-                                 collection=util.TOPICS_COLLECTION).Name()
+    topic_name = resources.REGISTRY.Parse(
+        args.topic, collection=util.TOPICS_COLLECTION).Name()
 
     for subscription in args.subscription:
-      subscription_name = resources.Parse(
+      subscription_name = resources.REGISTRY.Parse(
           subscription, collection=util.SUBSCRIPTIONS_COLLECTION).Name()
       create_req = msgs.Subscription(
           name=util.SubscriptionFormat(subscription_name),
@@ -100,8 +105,8 @@ class Create(base.Command):
         yield SubscriptionDisplayDict(
             pubsub.projects_subscriptions.Create(create_req))
       except api_ex.HttpError as exc:
-        yield SubscriptionDisplayDict(
-            subscription, json.loads(exc.content)['error']['message'])
+        raise exceptions.HttpException(
+            json.loads(exc.content)['error']['message'])
 
 
 def SubscriptionDisplayDict(subscription, error_msg=''):

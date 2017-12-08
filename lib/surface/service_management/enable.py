@@ -16,7 +16,7 @@
 
 
 from googlecloudsdk.api_lib.service_management import base_classes
-from googlecloudsdk.api_lib.service_management import consumers_flags
+from googlecloudsdk.api_lib.service_management import common_flags
 from googlecloudsdk.api_lib.service_management import enable_api
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.api_lib.util import http_error_handler
@@ -35,7 +35,7 @@ class Enable(base.Command, base_classes.BaseServiceManagementCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    consumers_flags.SERVICE_FLAG.AddToParser(parser)
+    common_flags.service_flag(suffix='to enable').AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   @http_error_handler.HandleHttpErrors

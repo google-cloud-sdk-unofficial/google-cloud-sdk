@@ -116,7 +116,7 @@ class Start(base.Command):
 
     try:
       operation = client.rollingUpdates.Insert(request)
-      operation_ref = resources.Parse(
+      operation_ref = resources.REGISTRY.Parse(
           operation.name,
           collection='replicapoolupdater.zoneOperations')
       result = updater_util.WaitForOperation(
@@ -157,9 +157,9 @@ class Start(base.Command):
     if args.max_num_failed_instances:
       policy.maxNumFailedInstances = args.max_num_failed_instances
 
-    group_ref = resources.Parse(
+    group_ref = resources.REGISTRY.Parse(
         args.group, collection='compute.instanceGroupManagers')
-    template_ref = resources.Parse(
+    template_ref = resources.REGISTRY.Parse(
         args.template, collection='compute.instanceTemplates')
 
     return messages.RollingUpdate(

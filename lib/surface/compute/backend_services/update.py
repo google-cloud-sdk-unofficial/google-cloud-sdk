@@ -224,6 +224,7 @@ class UpdateBeta(UpdateGA):
 
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddEnableCdn(parser, default=None)
+    flags.AddHealthChecks(parser)
     flags.AddSessionAffinity(parser)
     flags.AddAffinityCookieTtl(parser)
 
@@ -242,6 +243,7 @@ class UpdateBeta(UpdateGA):
         args.connection_draining_timeout is not None,
         args.description is not None,
         args.enable_cdn is not None,
+        args.health_checks,
         args.http_health_checks,
         args.https_health_checks,
         args.port,

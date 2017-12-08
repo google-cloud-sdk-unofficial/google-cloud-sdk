@@ -71,7 +71,7 @@ class Dataflow(base.Group):
       args: argparse.Namespace: The same namespace given to the corresponding
           .Run() invocation.
     """
-    cloud_resources.SetParamDefault(
+    cloud_resources.REGISTRY.SetParamDefault(
         api='dataflow', collection=None, param='projectId',
         resolver=resolvers.FromProperty(properties.VALUES.core.project))
 

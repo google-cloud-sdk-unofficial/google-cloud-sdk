@@ -26,5 +26,5 @@ class Ml(base.Group):
   def __init__(self):
     project = properties.VALUES.core.project
     resolver = resolvers.FromProperty(project)
-    resources.SetParamDefault(
+    resources.REGISTRY.SetParamDefault(
         'ml', collection=None, param='projectsId', resolver=resolver)

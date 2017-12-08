@@ -48,8 +48,8 @@ class Delete(base.DeleteCommand):
     pubsub = self.context['pubsub']
 
     for topic_name in args.topic:
-      topic_name = resources.Parse(topic_name,
-                                   collection=self.Collection()).Name()
+      topic_name = resources.REGISTRY.Parse(
+          topic_name, collection=self.Collection()).Name()
       topic = msgs.Topic(name=util.TopicFormat(topic_name))
       delete_req = msgs.PubsubProjectsTopicsDeleteRequest(
           topic=util.TopicFormat(topic.name))

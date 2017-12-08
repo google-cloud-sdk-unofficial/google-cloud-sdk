@@ -19,7 +19,8 @@ from googlecloudsdk.core import apis
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.BETA)
 class ServiceManagement(base.Group):
   """Manage service configuration via ServiceManagement v1."""
 

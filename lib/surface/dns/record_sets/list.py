@@ -17,6 +17,7 @@
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.dns import util
+from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import properties
@@ -64,7 +65,6 @@ class List(base.ListCommand):
   def Collection(self):
     return 'dns.resourceRecordSets'
 
-  @util.HandleHttpError
   def Run(self, args):
     dns_client = self.context['dns_client']
     dns_messages = self.context['dns_messages']
@@ -75,12 +75,21 @@ class List(base.ListCommand):
       raise exceptions.ToolException(
           '--name should also be provided when --type is used')
 
-    for resource in list_pager.YieldFromList(
-        dns_client.resourceRecordSets,
-        dns_messages.DnsResourceRecordSetsListRequest(
-            project=project_id,
-            managedZone=args.zone,
-            name=util.AppendTrailingDot(args.name),
-            type=args.type),
-        limit=args.limit, field='rrsets'):
-      yield resource
+    def generate():
+      for resource in list_pager.YieldFromList(
+          dns_client.resourceRecordSets,
+          dns_messages.DnsResourceRecordSetsListRequest(
+              project=project_id,
+              managedZone=args.zone,
+              name=util.AppendTrailingDot(args.name),
+              type=args.type),
+          limit=args.limit, field='rrsets'):
+        yield resource
+    # TODO(b/3076666) Remove this error handling once calliope properly handles
+    # these errors.  Decorators are currently broken with calliope and
+    # generators, and their use is being removed. However, this decorator does
+    # exactly what we need here to handle the error properly. As such, we wrap
+    # the function manually to get consistent error handling with the rest of
+    # gcloud. There is work being done to move the error handling to calliope,
+    # which would obviate the need for this.
+    return http_error_handler.HandleHttpErrors(generate)()

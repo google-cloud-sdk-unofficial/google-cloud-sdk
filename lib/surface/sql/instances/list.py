@@ -69,8 +69,9 @@ class List(_BaseList, base.ListCommand):
 
   def GetUriFunc(self):
     def _GetUri(resource):
-      return resources.Create(self.Collection(), project=resource.project,
-                              instance=resource.instance).SelfLink()
+      return resources.REGISTRY.Create(
+          self.Collection(), project=resource.project,
+          instance=resource.instance).SelfLink()
     return _GetUri
 
 
@@ -87,6 +88,7 @@ class ListBeta(_BaseList, base.ListCommand):
 
   def GetUriFunc(self):
     def _GetUri(resource):
-      return resources.Create('sql.instances', project=resource.project,
-                              instance=resource.name).SelfLink()
+      return resources.REGISTRY.Create(
+          'sql.instances', project=resource.project,
+          instance=resource.name).SelfLink()
     return _GetUri

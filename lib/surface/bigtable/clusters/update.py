@@ -92,7 +92,7 @@ class UpdateCluster(base.Command):
     """
     cli = util.GetAdminClient()
     msgs = util.GetAdminMessages()
-    ref = resources.Parse(
+    ref = resources.REGISTRY.Parse(
         args.cluster,
         params={'instancesId': args.instance},
         collection='bigtableadmin.projects.instances.clusters')

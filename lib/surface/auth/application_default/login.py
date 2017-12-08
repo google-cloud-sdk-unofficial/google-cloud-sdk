@@ -40,9 +40,9 @@ class Login(base.Command):
   These user credentials will then be used as a "proxy" for an associated
   service account. The credentials will apply to all projects accessed through
   Application Default Credentials. This command has no effect on the user
-  account(s) used with the 'gcloud auth login' command, but any existing
+  account(s) used with the `gcloud auth login` command, but any existing
   credentials previously installed by this command (or
-  'gcloud auth application-default activate-service-account') will be
+  `gcloud auth application-default activate-service-account`) will be
   overwritten.
   """
 

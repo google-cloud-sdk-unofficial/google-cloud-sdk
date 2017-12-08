@@ -32,4 +32,4 @@ class List(base_classes.GlobalLister):
     return networks_utils.AddMode(items)
 
 
-List.detailed_help = base_classes.GetZonalListerHelp('networks')
+List.detailed_help = base_classes.GetGlobalListerHelp('networks')

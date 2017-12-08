@@ -123,9 +123,9 @@ CreateGA.detailed_help = {
         else to a default backend service.
 
         Host rules and patch matchers can be added to the URL map
-        after the map is created by using 'gcloud compute url-maps
-        edit' or by using 'gcloud compute url-maps add-path-matcher'
-        and 'gcloud compute url-maps add-host-rule'.
+        after the map is created by using `gcloud compute url-maps edit`
+        or by using `gcloud compute url-maps add-path-matcher`
+        and `gcloud compute url-maps add-host-rule`.
         """,
 }
 CreateAlpha.detailed_help = {
@@ -146,8 +146,8 @@ CreateAlpha.detailed_help = {
         else to a default backend service or default backend bucket.
 
         Host rules and patch matchers can be added to the URL map
-        after the map is created by using 'gcloud compute url-maps
-        edit' or by using 'gcloud compute url-maps add-path-matcher'
-        and 'gcloud compute url-maps add-host-rule'.
+        after the map is created by using `gcloud compute url-maps edit`
+        or by using `gcloud compute url-maps add-path-matcher`
+        and `gcloud compute url-maps add-host-rule`.
         """,
 }

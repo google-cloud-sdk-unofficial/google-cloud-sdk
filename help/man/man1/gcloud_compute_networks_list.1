@@ -20,9 +20,6 @@ gcloud compute networks list \- list Google Compute Engine networks
 \fBgcloud compute networks list\fR displays all Google Compute Engine networks
 in a project.
 
-By default, networks from all zones are listed. The results can be narrowed down
-by providing the \f5\fI\-\-zones\fR\fR flag.
-
 
 
 .SH "POSITIONAL ARGUMENTS"
@@ -110,11 +107,4 @@ To list the URIs of all networks in a project, run:
 
 .RS 2m
 $ gcloud compute networks list \-\-uri
-.RE
-
-To list all networks in the \f5\fIus\-central1\-b\fR\fR and
-\f5\fIeurope\-west1\-d\fR\fR zones, run:
-
-.RS 2m
-$ gcloud compute networks list \-\-zones us\-central1\-b europe\-west1\-d
 .RE

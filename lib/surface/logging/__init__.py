@@ -38,7 +38,7 @@ class Logging(base.Group):
       The updated context.
     """
     # All logging collections use projectId, so we can set a default value.
-    resources.SetParamDefault(
+    resources.REGISTRY.SetParamDefault(
         api='logging', collection=None, param='projectsId',
         resolver=resolvers.FromProperty(properties.VALUES.core.project))
 
@@ -52,5 +52,5 @@ class Logging(base.Group):
     context['logging_messages_v2beta1'] = apis.GetMessagesModule(
         'logging', 'v2beta1')
 
-    context['logging_resources'] = resources
+    context['logging_resources'] = resources.REGISTRY
     return context

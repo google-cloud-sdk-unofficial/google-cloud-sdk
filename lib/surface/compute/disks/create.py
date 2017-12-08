@@ -40,7 +40,7 @@ DETAILED_HELP = {
         `gcloud compute disks snapshot`) and creating a new disk using
         `--source-snapshot` in the desired zone. The contents of a
         disk can also be moved across project or zone by creating an
-        image (using 'gcloud compute images create') and creating a
+        image (using `gcloud compute images create`) and creating a
         new disk using `--image` in the desired project and/or
         zone.
 
@@ -110,8 +110,8 @@ def _CommonArgs(parser, source_snapshot_arg):
       help='Specifies the type of disk to create.')
   disk_type.detailed_help = """\
       Specifies the type of disk to create. To get a
-      list of available disk types, run 'gcloud compute
-      disk-types list'. The default disk type is pd-standard.
+      list of available disk types, run `gcloud compute disk-types list`.
+      The default disk type is pd-standard.
       """
 
   _SourceArgs(parser, source_snapshot_arg)

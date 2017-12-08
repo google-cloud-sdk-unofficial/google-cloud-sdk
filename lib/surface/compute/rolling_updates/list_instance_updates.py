@@ -59,7 +59,7 @@ class ListInstanceUpdates(base.ListCommand):
     client = updater_util.GetApiClientInstance()
     messages = updater_util.GetApiMessages()
 
-    ref = resources.Parse(
+    ref = resources.REGISTRY.Parse(
         args.update,
         collection='replicapoolupdater.rollingUpdates')
     request = (

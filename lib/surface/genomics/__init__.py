@@ -62,5 +62,5 @@ class Genomics(base.Group):
 
     project = properties.VALUES.core.project
     resolver = resolvers.FromProperty(project)
-    resources.SetParamDefault('genomics', None, 'project', resolver)
+    resources.REGISTRY.SetParamDefault('genomics', None, 'project', resolver)
     return context

@@ -87,9 +87,21 @@ format requires a projection to define the values to be printed.
 
 The format attributes are:
 
+\fBdelimiter="string"\fR
+.RS 2m
+The string printed between list value items, default ";".
+.RE
 \fBno\-heading\fR
 .RS 2m
 Disables the initial key name heading record.
+.RE
+\fBseparator="string"\fR
+.RS 2m
+The string printed between values, default ",".
+.RE
+\fBterminator="string"\fR
+.RS 2m
+The string printed after each record, default "\en" (newline).
 
 .RE
 .RE
@@ -213,9 +225,21 @@ value(s) to be printed.
 
 The format attributes are:
 
+\fBdelimiter="string"\fR
+.RS 2m
+The string printed between list value items, default ";".
+.RE
 \fBquote\fR
 .RS 2m
-"..." quote values that contain <TAB>, <NEWLINE> or ".
+"..." quote values that contain delimiter, separator or terminator strings.
+.RE
+\fBseparator="string"\fR
+.RS 2m
+The string printed between values, default "\et" (tab).
+.RE
+\fBterminator="string"\fR
+.RS 2m
+The string printed after each record, default "\en" (newline).
 
 .RE
 .RE

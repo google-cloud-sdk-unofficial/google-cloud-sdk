@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
 
 
@@ -200,15 +201,27 @@ class Run(base.Command):
         default=[],
         help='''List of additional scopes to be made available for this service
              account. The following scopes are always requested:
-             https://www.googleapis.com/auth/genomics,
-             https://www.googleapis.com/auth/compute, and
+
+             https://www.googleapis.com/auth/genomics
+             https://www.googleapis.com/auth/compute
              https://www.googleapis.com/auth/devstorage.full_control''')
 
     parser.add_argument(
         '--zones',
         type=arg_parsers.ArgList(),
         completion_resource='compute.zones',
-        help='''List of Compute Engine zones the pipeline can run in''')
+        help='''List of Compute Engine zones the pipeline can run in.
+
+If no zones are specified with the zones flag, then zones in the
+pipeline definition file will be used.
+
+If no zones are specified in the pipeline definition, then the
+default zone in your local client configuration is used.
+
+If you have no default zone, then the pipeline may run in any zone.
+
+For more information on default zones, see
+https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_region_in_your_local_client''')
 
   @genomics_util.ReraiseHttpException
   def Run(self, args):
@@ -260,8 +273,18 @@ class Run(base.Command):
             name=disk_args[0],
             sizeGb=int(disk_args[1])
         ))
+
+    # Progression for picking the right zones...
+    #   If specified on the command line, use them.
+    #   If specified in the Pipeline definition, use them.
+    #   If there is a GCE default zone in the local configuration, use it.
+    #   Else let the API select a zone
     if args.zones:
       resources.zones = args.zones
+    elif pipeline.resources and pipeline.resources.zones:
+      pass
+    elif properties.VALUES.compute.zone.Get():
+      resources.zones = [properties.VALUES.compute.zone.Get()]
 
     request = genomics_messages.RunPipelineRequest(
         ephemeralPipeline=pipeline,

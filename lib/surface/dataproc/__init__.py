@@ -45,7 +45,7 @@ class Dataproc(base.Group):
 
   def Filter(self, context, args):
     context['dataproc_messages'] = apis.GetMessagesModule('dataproc', 'v1')
-    context['resources'] = resources
+    context['resources'] = resources.REGISTRY
 
     # TODO(user): Move outside of context in a place that will be easier to
     # convert into a property when there are multiple regions.
@@ -53,13 +53,13 @@ class Dataproc(base.Group):
 
     context['dataproc_client'] = apis.GetClientInstance('dataproc', 'v1')
 
-    resources.SetParamDefault(
+    resources.REGISTRY.SetParamDefault(
         api='dataproc',
         collection=None,
         param='projectId',
         resolver=resolvers.FromProperty(properties.VALUES.core.project))
 
-    resources.SetParamDefault(
+    resources.REGISTRY.SetParamDefault(
         api='dataproc',
         collection=None,
         param='region',

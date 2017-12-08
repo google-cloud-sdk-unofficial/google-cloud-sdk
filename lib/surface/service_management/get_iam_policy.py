@@ -15,10 +15,12 @@
 """Command to describe the access policy for a service."""
 
 from googlecloudsdk.api_lib.service_management import base_classes
+from googlecloudsdk.api_lib.service_management import common_flags
 from googlecloudsdk.calliope import base
 
 
-class Describe(base.DescribeCommand, base_classes.BaseServiceManagementCommand):
+class GetIamPolicy(
+    base.DescribeCommand, base_classes.BaseServiceManagementCommand):
   """Describes the IAM policy for a service."""
 
   @staticmethod
@@ -30,11 +32,12 @@ class Describe(base.DescribeCommand, base_classes.BaseServiceManagementCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    parser.add_argument(
-        'service', help='The service whose IAM policy is to be described.')
+    service_flag = common_flags.service_flag(
+        suffix='whose IAM policy is to be described')
+    service_flag.AddToParser(parser)
 
   def Run(self, args):
-    """Run 'service-management access describe'.
+    """Run 'service-management get-iam-policy'.
 
     Args:
       args: argparse.Namespace, The arguments that this command was invoked

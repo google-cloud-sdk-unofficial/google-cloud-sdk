@@ -46,8 +46,8 @@ class List(base.ListCommand):
 
   def GetUriFunc(self):
     def _GetUri(resource):
-      return resources.Create(self.Collection(),
-                              managedZone=resource.name).SelfLink()
+      return resources.REGISTRY.Create(
+          self.Collection(), managedZone=resource.name).SelfLink()
     return _GetUri
 
   @util.HandleHttpError

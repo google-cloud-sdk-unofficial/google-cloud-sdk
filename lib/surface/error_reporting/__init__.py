@@ -38,7 +38,7 @@ class ErrorReporting(base.Group):
       The updated context.
     """
     # All error reporting collections use projectId, so we can set a default.
-    resources.SetParamDefault(
+    resources.REGISTRY.SetParamDefault(
         api='clouderrorreporting', collection=None, param='projectsId',
         resolver=resolvers.FromProperty(properties.VALUES.core.project))
 

@@ -36,7 +36,8 @@ class GetIamPolicy(base.Command):
     apitools_client = genomics_util.GetGenomicsClient()
     messages = genomics_util.GetGenomicsMessages()
 
-    dataset_resource = resources.Parse(args.id, collection='genomics.datasets')
+    dataset_resource = resources.REGISTRY.Parse(
+        args.id, collection='genomics.datasets')
 
     policy_request = messages.GenomicsDatasetsGetIamPolicyRequest(
         resource='datasets/{0}'.format(dataset_resource.Name()),

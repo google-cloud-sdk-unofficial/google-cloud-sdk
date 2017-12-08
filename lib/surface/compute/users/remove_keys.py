@@ -95,7 +95,7 @@ RemoveKeys.detailed_help = {
           $ {command} example-user
 
         To remove a specific public key, first describe the user
-        (using 'gcloud compute users describe example-user') to determine the
+        (using `gcloud compute users describe example-user`) to determine the
         fingerprints of the public keys you wish
         to remove. Then run:
 

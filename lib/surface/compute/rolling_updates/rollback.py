@@ -54,7 +54,7 @@ class Rollback(base.Command):
     client = updater_util.GetApiClientInstance()
     messages = updater_util.GetApiMessages()
 
-    ref = resources.Parse(
+    ref = resources.REGISTRY.Parse(
         args.update,
         collection='replicapoolupdater.rollingUpdates')
     request = messages.ReplicapoolupdaterRollingUpdatesRollbackRequest(
@@ -64,7 +64,7 @@ class Rollback(base.Command):
 
     try:
       operation = client.rollingUpdates.Rollback(request)
-      operation_ref = resources.Parse(
+      operation_ref = resources.REGISTRY.Parse(
           operation.name,
           collection='replicapoolupdater.zoneOperations')
       result = updater_util.WaitForOperation(

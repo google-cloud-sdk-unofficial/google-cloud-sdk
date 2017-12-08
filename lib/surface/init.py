@@ -275,7 +275,7 @@ class Init(base.Command):
         return None
     else:
       projects = sorted(projects, key=lambda prj: prj.projectId)
-      choices = ['[{0}]'.format(project.projectId) for project in projects]
+      choices = [project.projectId for project in projects]
       if not choices:
         log.status.write('\nThis account has no projects. Please create one in '
                          'developers console '
@@ -296,7 +296,7 @@ class Init(base.Command):
         idx = console_io.PromptChoice(
             choices,
             message='Pick cloud project to use: ',
-            prompt_string=None)
+            allow_freeform=True)
         if idx is None:
           return None
         project_id = projects[idx].projectId

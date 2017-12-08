@@ -39,8 +39,8 @@ class DescribeInstance(base.DescribeCommand):
       Some value that we want to have printed later.
     """
     cli = util.GetAdminClient()
-    ref = resources.Parse(args.instance,
-                          collection='bigtableadmin.projects.instances')
+    ref = resources.REGISTRY.Parse(
+        args.instance, collection='bigtableadmin.projects.instances')
     msg = util.GetAdminMessages().BigtableadminProjectsInstancesGetRequest(
         projectsId=ref.projectsId,
         instancesId=ref.Name())

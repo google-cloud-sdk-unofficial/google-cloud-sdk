@@ -44,7 +44,7 @@ def _AddGaHops(next_hop_group):
       Specifies the IP address of an instance that should handle
       matching packets. The instance must have IP forwarding enabled
       (i.e., include ``--can-ip-forward'' when creating the instance
-      using 'gcloud compute instances create')
+      using `gcloud compute instances create`)
       """
 
   next_hop_gateway = next_hop_group.add_argument(
@@ -100,11 +100,11 @@ def _Args(parser):
       '--priority',
       default=1000,
       help=('Specifies the priority of this route relative to other routes '
-            'with the same specifity.'),
+            'with the same specificity.'),
       type=int)
   priority.detailed_help = """\
       Specifies the priority of this route relative to other routes
-      with the same specifity. The lower the value, the higher the
+      with the same specificity. The lower the value, the higher the
       priority.
       """
 

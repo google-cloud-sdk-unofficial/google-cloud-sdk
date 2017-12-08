@@ -43,8 +43,8 @@ class CreateInstance(base.CreateCommand):
       Some value that we want to have printed later.
     """
     cli = util.GetAdminClient()
-    ref = resources.Parse(args.instance,
-                          collection='bigtableadmin.projects.instances')
+    ref = resources.REGISTRY.Parse(
+        args.instance, collection='bigtableadmin.projects.instances')
     msgs = util.GetAdminMessages()
     msg = msgs.BigtableadminProjectsInstancesCreateRequest(
         projectsId=ref.projectsId,

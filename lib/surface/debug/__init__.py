@@ -71,7 +71,7 @@ class Debug(base.Group):
     Returns:
       The updated context.
     """
-    resources.SetParamDefault(
+    resources.REGISTRY.SetParamDefault(
         api='debug', collection=None, param='projectId',
         resolver=resolvers.FromProperty(properties.VALUES.core.project))
 

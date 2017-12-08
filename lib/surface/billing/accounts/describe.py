@@ -49,7 +49,7 @@ class Describe(base.DescribeCommand):
     client = self.context['billing_client']
     messages = self.context['billing_messages']
     # TODO(b/22402915) enable caching once bug is resolved
-    # billing_ref = resources.Parse(
+    # billing_ref = resources.REGISTRY.Parse(
     # "billingAccounts/{}".format(args.id),
     #  collection='cloudbilling.billingAccounts'
     # )

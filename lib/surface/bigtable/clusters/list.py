@@ -79,8 +79,8 @@ class ListClusters(base.ListCommand):
     instances = args.instances or ['-']
     # can't use list_pager due to b/29450218
     for instance in instances:
-      ref = resources.Parse(instance,
-                            collection='bigtableadmin.projects.instances')
+      ref = resources.REGISTRY.Parse(
+          instance, collection='bigtableadmin.projects.instances')
       msg = (util.GetAdminMessages()
              .BigtableadminProjectsInstancesClustersListRequest(
                  projectsId=ref.projectsId,

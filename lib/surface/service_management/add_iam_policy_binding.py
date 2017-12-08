@@ -12,21 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command to remove a principal from a service's access policy."""
+"""Command for adding a principal to a service's access policy."""
 
 import httplib
 
+from apitools.base.py import exceptions as apitools_exceptions
+
 from googlecloudsdk.api_lib.service_management import base_classes
+from googlecloudsdk.api_lib.service_management import common_flags
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.api_lib.util import http_retry
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-class Remove(base.Command, base_classes.BaseServiceManagementCommand):
-  """Removes an IAM policy binding from a service's access policy."""
+class AddIamPolicyBinding(
+    base.Command, base_classes.BaseServiceManagementCommand):
+  """Adds IAM policy binding to a service's access policy."""
 
-  detailed_help = iam_util.GetDetailedHelpForRemoveIamPolicyBinding(
+  detailed_help = iam_util.GetDetailedHelpForAddIamPolicyBinding(
       'service', 'my-service')
 
   @staticmethod
@@ -38,18 +42,18 @@ class Remove(base.Command, base_classes.BaseServiceManagementCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
+    service_flag = common_flags.service_flag(
+        suffix='to which the member is to be added')
+    service_flag.AddToParser(parser)
 
     parser.add_argument(
-        'service',
-        help='The service from which the member is to be removed.')
-    parser.add_argument(
         '--member', required=True,
-        help='The member to remove from the binding.')
+        help='The member to add to the binding.')
 
   @http_error_handler.HandleHttpErrors
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
-    """Run 'service-management access remove'.
+    """Run 'service-management add-iam-policy-binding'.
 
     Args:
       args: argparse.Namespace, The arguments that this command was invoked
@@ -67,10 +71,18 @@ class Remove(base.Command, base_classes.BaseServiceManagementCommand):
                .ServicemanagementServicesGetIamPolicyRequest(
                    servicesId=args.service))
 
-    policy = self.services_client.services.GetIamPolicy(request)
+    try:
+      policy = self.services_client.services.GetIamPolicy(request)
+    except apitools_exceptions.HttpError as error:
+      # If the error is a 404, no IAM policy exists, so just create a blank one.
+      if http_error_handler.GetHttpErrorStatusCode(error) == 404:
+        policy = self.services_messages.Policy()
+      else:
+        raise
 
-    iam_util.RemoveBindingFromIamPolicy(
-        policy, args.member, 'roles/servicemanagement.serviceConsumer')
+    iam_util.AddBindingToIamPolicy(
+        self.services_messages, policy, args.member,
+        'roles/servicemanagement.serviceConsumer')
 
     # Send updated access policy to backend
     request = (self.services_messages

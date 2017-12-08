@@ -49,7 +49,7 @@ def _Args(parser):
 
 def _DoFilter(context, api_version_default):
   """Set up and return the context to be used by all SQL release tracks."""
-  cloud_resources.SetParamDefault(
+  cloud_resources.REGISTRY.SetParamDefault(
       api='sql', collection=None, param='project',
       resolver=resolvers.FromProperty(properties.VALUES.core.project))
 

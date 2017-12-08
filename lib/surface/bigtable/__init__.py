@@ -45,7 +45,5 @@ class BigtableV2(base.Group):
   def Filter(self, context, args):
     project = properties.VALUES.core.project
     resolver = resolvers.FromProperty(project)
-    resources.SetParamDefault('bigtableadmin',
-                              collection=None,
-                              param='projectsId',
-                              resolver=resolver)
+    resources.REGISTRY.SetParamDefault(
+        'bigtableadmin', collection=None, param='projectsId', resolver=resolver)

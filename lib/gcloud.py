@@ -31,8 +31,8 @@ def main():
     if '_ARGCOMPLETE' in os.environ:
       # pylint:disable=g-import-not-at-top
       import googlecloudsdk.command_lib.static_completion.lookup as lookup
-      if lookup.Complete(_GCLOUD_PY_DIR):
-        return
+      lookup.Complete(_GCLOUD_PY_DIR)
+      return
   # pylint:disable=broad-except
   except Exception:
     # Users do not expect to see errors during completion!

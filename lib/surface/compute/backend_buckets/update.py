@@ -72,12 +72,16 @@ class UpdateAlpha(base_classes.ReadWriteCommand):
     if args.gcs_bucket_name:
       replacement.bucketName = args.gcs_bucket_name
 
+    if args.enable_cdn is not None:
+      replacement.enableCdn = args.enable_cdn
+
     return replacement
 
   def Run(self, args):
     if not any([
         args.description is not None,
         args.gcs_bucket_name is not None,
+        args.enable_cdn is not None,
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
 

@@ -11,16 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Common flags for the consumers subcommand group."""
+"""Command group for ml models versions."""
 
 from googlecloudsdk.calliope import base
 
-CONSUMER_PROJECT_FLAG = base.Argument(
-    '--consumer-project',
-    required=False,
-    help='The consumer project ID.')
 
-SERVICE_FLAG = base.Argument(
-    'service',
-    help='The service to act on for this consumer project.')
+class Versions(base.Group):
+  """Cloud ML Versions commands."""
+  pass

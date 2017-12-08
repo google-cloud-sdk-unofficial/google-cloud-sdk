@@ -37,7 +37,7 @@ class Source(base.Group):
     Returns:
       The updated context.
     """
-    resources.SetParamDefault(
+    resources.REGISTRY.SetParamDefault(
         api='source', collection=None, param='projectId',
         resolver=resolvers.FromProperty(properties.VALUES.core.project))
 

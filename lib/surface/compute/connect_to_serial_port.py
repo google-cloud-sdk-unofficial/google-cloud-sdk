@@ -197,7 +197,7 @@ ConnectToSerialPort.detailed_help = {
       'serial-port-enable' on the project-level metadata enables serial port
       access to all VMs in the project.
 
-      This command uses the same SSH key pair as the 'gcloud compute ssh'
+      This command uses the same SSH key pair as the `gcloud compute ssh`
       command and also ensures that the user's public SSH key is present in
       the project's metadata. If the user does not have a public SSH key,
       one is generated using ssh-keygen.

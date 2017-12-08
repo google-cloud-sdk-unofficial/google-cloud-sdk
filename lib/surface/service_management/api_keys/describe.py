@@ -15,6 +15,7 @@
 """Implementation of the service-management api-keys list command."""
 
 from googlecloudsdk.api_lib.service_management import base_classes
+from googlecloudsdk.api_lib.service_management import common_flags
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 
@@ -31,9 +32,7 @@ class Describe(base.DescribeCommand, base_classes.BaseServiceManagementCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    parser.add_argument('--key',
-                        '-k',
-                        help='The identifier of the key to be retrieved.')
+    common_flags.key_flag(suffix='to describe').AddToParser(parser)
 
   @http_error_handler.HandleHttpErrors
   def Run(self, args):
