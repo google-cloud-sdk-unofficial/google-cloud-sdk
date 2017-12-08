@@ -206,7 +206,15 @@ class CreateAlpha(Create):
 
   In the above invocation, the two addresses will be assigned
   random names.
+
+  To reserve an IP address from the subnet ``default'' in the ``us-central1''
+  region, run:
+
+    $ {command} SUBNET-ADDRESS-1 --region us-central1 --subnet default
+
   """
+
+  SUBNETWORK_ARG = None
 
   @classmethod
   def Args(cls, parser):
@@ -221,6 +229,9 @@ class CreateAlpha(Create):
         'empty, `PREMIUM` is used. Supported network tiers are: `PREMIUM`, '
         '`SELECT`.')
 
+    cls.SUBNETWORK_ARG = flags.SubnetworkArgument()
+    cls.SUBNETWORK_ARG.AddArgument(parser)
+
   def ConstructNetworkTier(self, messages, args):
     if args.network_tier:
       return messages.Address.NetworkTierValueValuesEnum(args.network_tier)
@@ -229,6 +240,7 @@ class CreateAlpha(Create):
 
   def GetAddress(self, messages, args, address, address_ref):
     """Override."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     network_tier = self.ConstructNetworkTier(messages, args)
 
     if args.ip_version or (
@@ -242,9 +254,25 @@ class CreateAlpha(Create):
       # allocated.
       ip_version = None
 
+    # TODO(b/36862747): get rid of args.subnet check
+    if args.subnet:
+      if address_ref.Collection() == 'compute.globalAddresses':
+        raise exceptions.ToolException(
+            '[--subnet] may not be specified for global addresses.')
+      if not args.subnet_region:
+        args.subnet_region = address_ref.region
+      subnetwork_url = flags.SubnetworkArgument().ResolveAsResource(
+          args, holder.resources).SelfLink()
+    else:
+      subnetwork_url = None
+
     return messages.Address(
         address=address,
         description=args.description,
         networkTier=network_tier,
         ipVersion=ip_version,
-        name=address_ref.Name())
+        name=address_ref.Name(),
+        addressType=(
+            messages.Address.AddressTypeValueValuesEnum.INTERNAL
+            if subnetwork_url else None),
+        subnetwork=subnetwork_url)

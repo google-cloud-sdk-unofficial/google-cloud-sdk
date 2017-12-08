@@ -14,15 +14,34 @@
 
 """Command for adding a host rule to a URL map."""
 
-import copy
+from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.url_maps import flags
 
 
-class AddHostRule(base_classes.ReadWriteCommand):
-  """Add a rule to a URL map to map hosts to a path matcher."""
+class AddHostRule(base.UpdateCommand):
+  # pylint:disable=line-too-long
+  """Add a rule to a URL map to map hosts to a path matcher.
+
+  *{command}* is used to add a mapping of hosts to a patch
+  matcher in a URL map. The mapping will match the host
+  component of HTTP requests to path matchers which in turn map
+  the request to a backend service. Before adding a host rule,
+  at least one path matcher must exist in the URL map to take
+  care of the path component of the requests.
+  `gcloud compute url-maps add-path-matcher` or
+  `gcloud compute url-maps edit` can be used to add path matchers.
+
+  ## EXAMPLES
+  To create a host rule mapping the ```*-foo.example.com``` and
+  ```example.com``` hosts to the ```www``` path matcher, run:
+
+    $ {command} MY-URL-MAP --hosts '*-foo.example.com,example.com' --path-matcher-name www
+  """
+  # pylint:enable=line-too-long
 
   URL_MAP_ARG = None
 
@@ -57,38 +76,27 @@ class AddHostRule(base_classes.ReadWriteCommand):
         (see `gcloud compute url-maps add-path-matcher`).
         """)
 
-  @property
-  def service(self):
-    return self.compute.urlMaps
-
-  @property
-  def resource_type(self):
-    return 'urlMaps'
-
-  def CreateReference(self, args):
-    return self.URL_MAP_ARG.ResolveAsResource(args, self.resources)
-
-  def GetGetRequest(self, args):
+  def _GetGetRequest(self, client, url_map_ref):
     """Returns the request for the existing URL map resource."""
-    return (self.service,
+    return (client.apitools_client.urlMaps,
             'Get',
-            self.messages.ComputeUrlMapsGetRequest(
-                urlMap=self.ref.Name(),
-                project=self.project))
+            client.messages.ComputeUrlMapsGetRequest(
+                urlMap=url_map_ref.Name(),
+                project=url_map_ref.project))
 
-  def GetSetRequest(self, args, replacement, existing):
-    return (self.service,
+  def _GetSetRequest(self, client, url_map_ref, replacement):
+    return (client.apitools_client.urlMaps,
             'Update',
-            self.messages.ComputeUrlMapsUpdateRequest(
-                urlMap=self.ref.Name(),
+            client.messages.ComputeUrlMapsUpdateRequest(
+                urlMap=url_map_ref.Name(),
                 urlMapResource=replacement,
-                project=self.project))
+                project=url_map_ref.project))
 
-  def Modify(self, args, existing):
+  def _Modify(self, client, args, existing):
     """Returns a modified URL map message."""
-    replacement = copy.deepcopy(existing)
+    replacement = encoding.CopyProtoMessage(existing)
 
-    new_host_rule = self.messages.HostRule(
+    new_host_rule = client.messages.HostRule(
         description=args.description,
         hosts=sorted(args.hosts),
         pathMatcher=args.path_matcher_name)
@@ -97,23 +105,17 @@ class AddHostRule(base_classes.ReadWriteCommand):
 
     return replacement
 
+  def Run(self, args):
+    """Issues requests necessary to add host rule to the Url Map."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-AddHostRule.detailed_help = {
-    'brief': 'Add a rule to a URL map to map hosts to a path matcher',
-    'DESCRIPTION': """\
-        *{command}* is used to add a mapping of hosts to a patch
-        matcher in a URL map. The mapping will match the host
-        component of HTTP requests to path matchers which in turn map
-        the request to a backend service. Before adding a host rule,
-        at least one path matcher must exist in the URL map to take
-        care of the path component of the requests.
-        `gcloud compute url-maps add-path-matcher` or
-        `gcloud compute url-maps edit` can be used to add path matchers.
-        """,
-    'EXAMPLES': """\
-        To create a host rule mapping the ```*-foo.example.com``` and
-        ```example.com``` hosts to the ```www``` path matcher, run:
+    url_map_ref = self.URL_MAP_ARG.ResolveAsResource(args, holder.resources)
+    get_request = self._GetGetRequest(client, url_map_ref)
 
-          $ {command} MY-URL-MAP --hosts '*-foo.example.com,example.com' --path-matcher-name www
-        """,
-}
+    objects = client.MakeRequests([get_request])
+
+    new_object = self._Modify(client, args, objects[0])
+
+    return client.MakeRequests(
+        [self._GetSetRequest(client, url_map_ref, new_object)])

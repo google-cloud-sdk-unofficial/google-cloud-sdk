@@ -42,21 +42,26 @@ def main():
     # pylint:disable=g-import-not-at-top
     import googlecloudsdk.gcloud_main
   except ImportError as err:
+    # pylint:disable=g-import-not-at-top
+    import traceback
     # We DON'T want to suggest `gcloud components reinstall` here (ex. as
     # opposed to the similar message in gcloud_main.py), as we know that no
     # commands will work.
     sys.stderr.write(
-        ('ERROR: gcloud failed to load: {0}\n\n'
+        ('ERROR: gcloud failed to load: {0}\n{1}\n\n'
          'This usually indicates corruption in your gcloud installation or '
          'problems with your Python interpreter.\n\n'
          'Please verify that the following is the path to a working Python 2.7 '
          'executable:\n'
-         '    {1}\n\n'
+         '    {2}\n\n'
          'If it is not, please set the CLOUDSDK_PYTHON environment variable to '
          'point to a working Python 2.7 executable.\n\n'
          'If you are still experiencing problems, please reinstall the Cloud '
          'SDK using the instructions here:\n'
-         '    https://cloud.google.com/sdk/\n').format(err, sys.executable))
+         '    https://cloud.google.com/sdk/\n').format(
+             err,
+             '\n'.join(traceback.format_exc().splitlines()[2::2]),
+             sys.executable))
     sys.exit(1)
   sys.exit(googlecloudsdk.gcloud_main.main())
 

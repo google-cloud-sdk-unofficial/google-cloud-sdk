@@ -14,14 +14,18 @@
 
 """Command for adding a BGP peer to a Google Compute Engine router."""
 
-import copy
+from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.routers import flags
 
 
-class AddBgpPeer(base_classes.ReadWriteCommand):
-  """Add a BGP peer to a Google Compute Engine router."""
+class AddBgpPeer(base.UpdateCommand):
+  """Add a BGP peer to a Google Compute Engine router.
+
+  *{command}* is used to add a BGP peer to a Google Compute Engine router.
+  """
 
   ROUTER_ARG = None
 
@@ -59,38 +63,27 @@ class AddBgpPeer(base_classes.ReadWriteCommand):
              'the routes with lowest priority value win. 0 <= priority <= '
              '65535.')
 
-  @property
-  def service(self):
-    return self.compute.routers
-
-  @property
-  def resource_type(self):
-    return 'routers'
-
-  def CreateReference(self, args):
-    return self.ROUTER_ARG.ResolveAsResource(args, self.resources)
-
-  def GetGetRequest(self, args):
-    return (self.service,
+  def GetGetRequest(self, client, router_ref):
+    return (client.apitools_client.routers,
             'Get',
-            self.messages.ComputeRoutersGetRequest(
-                router=self.ref.Name(),
-                region=self.ref.region,
-                project=self.project))
+            client.messages.ComputeRoutersGetRequest(
+                router=router_ref.Name(),
+                region=router_ref.region,
+                project=router_ref.project))
 
-  def GetSetRequest(self, args, replacement, existing):
-    return (self.service,
+  def GetSetRequest(self, client, router_ref, replacement):
+    return (client.apitools_client.routers,
             'Update',
-            self.messages.ComputeRoutersUpdateRequest(
-                router=self.ref.Name(),
+            client.messages.ComputeRoutersUpdateRequest(
+                router=router_ref.Name(),
                 routerResource=replacement,
-                region=self.ref.region,
-                project=self.project))
+                region=router_ref.region,
+                project=router_ref.project))
 
-  def Modify(self, args, existing):
-    replacement = copy.deepcopy(existing)
+  def Modify(self, client, args, existing):
+    replacement = encoding.CopyProtoMessage(existing)
 
-    peer = self.messages.RouterBgpPeer(
+    peer = client.messages.RouterBgpPeer(
         name=args.peer_name,
         interfaceName=args.interface,
         peerIpAddress=args.peer_ip_address,
@@ -101,9 +94,17 @@ class AddBgpPeer(base_classes.ReadWriteCommand):
 
     return replacement
 
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-AddBgpPeer.detailed_help = {
-    'DESCRIPTION': """
-        *{command}* is used to add a BGP peer to a Google Compute Engine router.
-        """,
-}
+    router_ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
+    get_request = self.GetGetRequest(client, router_ref)
+
+    # There is only one response because one request is made
+    router = client.MakeRequests([get_request])[0]
+
+    modified_router = self.Modify(client, args, router)
+
+    return client.MakeRequests(
+        [self.GetSetRequest(client, router_ref, modified_router)])

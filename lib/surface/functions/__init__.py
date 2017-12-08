@@ -28,19 +28,4 @@ class Functions(base.Group):
 
   @staticmethod
   def Args(parser):
-    """Add command flags that are global to this group.
-
-    Per command flags should be added in the Args() method of that specific
-    command.
-
-    Args:
-      parser: argparse.ArgumentParser, This is a standard argparser parser with
-        which you can register arguments.  See the public argparse documentation
-        for its capabilities.
-    """
-    parser.add_argument(
-        '--region',
-        help='The region in which the function will run.',
-        completion_resource='cloudfunctions.locations',
-        action=actions.StoreProperty(properties.VALUES.functions.region))
     parser.display_info.AddTransforms(transforms.GetTransforms())

@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.functions import exceptions
 from googlecloudsdk.api_lib.functions import operations
 from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -30,6 +31,7 @@ class Delete(base.DeleteCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
+    flags.AddRegionFlag(parser)
     parser.add_argument(
         'name', help='The name of the function to delete.',
         type=util.ValidateFunctionNameOrRaise)

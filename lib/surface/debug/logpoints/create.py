@@ -83,6 +83,17 @@ class Create(base.CreateCommand):
             enable the logpoint, it cannot be determined if the logpoint is
             valid.
         """)
+    parser.display_info.AddFormat("""
+          list(
+            format("id: {0}", id),
+            format("location: {0}", location),
+            format("logLevel: {0}", logLevel),
+            format("logMessageFormat: {0}", logMessageFormat),
+            format("condition: {0}", condition),
+            format("logViewUrl: {0}", logViewUrl),
+            format("status: {0}", full_status())
+          )
+    """)
 
   def Run(self, args):
     """Run the create command."""
@@ -104,9 +115,3 @@ class Create(base.CreateCommand):
           'The debugger adjusted the logpoint location to {0}'.format(
               final_logpoint.location))
     return final_logpoint or logpoint
-
-  def Collection(self):
-    return 'debug.logpoints.create'
-
-  def DeprecatedFormat(self, args):
-    return self.ListFormat(args)

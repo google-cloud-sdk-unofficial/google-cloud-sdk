@@ -357,22 +357,14 @@ Create.detailed_help = {
 
         When creating a forwarding rule, exactly one of  ``--target-instance'',
         ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
-        ``--target-ssl-proxy'', or ``--target-vpn-gateway'' must be specified.
-        """.format(overview=flags.FORWARDING_RULES_OVERVIEW)),
-}
-
-CreateBeta.detailed_help = {
-    'DESCRIPTION': ("""\
-        *{{command}}* is used to create a forwarding rule. {overview}
-
-        When creating a forwarding rule, exactly one of  ``--target-instance'',
-        ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
         ``--target-ssl-proxy'', ``--target-tcp-proxy'', or
         ``--target-vpn-gateway'' must be specified.""".format(
             overview=flags.FORWARDING_RULES_OVERVIEW)),
 }
 
-CreateAlpha.detailed_help = CreateBeta.detailed_help
+
+CreateBeta.detailed_help = Create.detailed_help
+CreateAlpha.detailed_help = Create.detailed_help
 
 
 def _GetPortRange(ports_range_list):

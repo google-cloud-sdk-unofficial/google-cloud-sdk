@@ -13,8 +13,8 @@
 # limitations under the License.
 """gcloud datastore emulator env-init command."""
 
-from googlecloudsdk.api_lib.emulators import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.emulators import util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)

@@ -14,8 +14,8 @@
 """Command for reading the serial port output of an instance."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
@@ -25,12 +25,19 @@ class GetSerialPortOutputException(exceptions.Error):
   """An error occurred while tailing the serial port."""
 
 
-class GetSerialPortOutput(base_classes.BaseCommand):
-  """Read output from a virtual machine instance's serial port."""
+class GetSerialPortOutput(base.Command):
+  """Read output from a virtual machine instance's serial port.
+
+  {command} is used to get the output from a Google Compute
+  Engine virtual machine's serial port. The serial port output
+  from the virtual machine will be printed to standard output. This
+  information can be useful for diagnostic purposes.
+  """
 
   @staticmethod
   def Args(parser):
     """Add expected arguments."""
+    parser.display_info.AddFormat('value[no-quote](contents)')
     flags.INSTANCE_ARG.AddArgument(parser)
 
     parser.add_argument(
@@ -53,13 +60,16 @@ class GetSerialPortOutput(base_classes.BaseCommand):
         """)
 
   def Run(self, args):
-    instance_ref = flags.INSTANCE_ARG.ResolveAsResource(
-        args, self.resources,
-        scope_lister=flags.GetInstanceZoneScopeLister(self.compute_client))
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-    request = (self.compute.instances,
+    instance_ref = flags.INSTANCE_ARG.ResolveAsResource(
+        args, holder.resources,
+        scope_lister=flags.GetInstanceZoneScopeLister(client))
+
+    request = (client.apitools_client.instances,
                'GetSerialPortOutput',
-               self.messages.ComputeInstancesGetSerialPortOutputRequest(
+               client.messages.ComputeInstancesGetSerialPortOutputRequest(
                    instance=instance_ref.Name(),
                    project=instance_ref.project,
                    port=args.port,
@@ -67,11 +77,9 @@ class GetSerialPortOutput(base_classes.BaseCommand):
                    zone=instance_ref.zone))
 
     errors = []
-    objects = list(request_helper.MakeRequests(
+    objects = client.MakeRequests(
         requests=[request],
-        http=self.http,
-        batch_url=self.batch_url,
-        errors=errors))
+        errors_to_collect=errors)
     if errors:
       raise GetSerialPortOutputException(
           'Could not fetch serial port output: ' +
@@ -92,21 +100,3 @@ class GetSerialPortOutput(base_classes.BaseCommand):
         '\nSpecify --start={0} in the next get-serial-port-output invocation '
         'to get only the new output starting from here.'.format(
             self._response.next))
-
-  @property
-  def resource_type(self):
-    return 'instances'
-
-  def DeprecatedFormat(self, _):
-    return 'value[no-quote](contents)'
-
-
-GetSerialPortOutput.detailed_help = {
-    'brief': "Read output from a virtual machine instance's serial port",
-    'DESCRIPTION': """\
-        {command} is used to get the output from a Google Compute
-        Engine virtual machine's serial port. The serial port output
-        from the virtual machine will be printed to standard output. This
-        information can be useful for diagnostic purposes.
-        """,
-}

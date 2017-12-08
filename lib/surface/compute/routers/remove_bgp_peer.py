@@ -14,9 +14,10 @@
 
 """Command for removing a BGP peer from a Google Compute Engine router."""
 
-import copy
+from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.core import exceptions
 
@@ -27,12 +28,14 @@ class PeerNotFoundError(exceptions.Error):
   def __init__(self, name):
     self.name = name
     msg = 'peer `{0}` not found'.format(name)
-    super(PeerNotFoundError, self
-         ).__init__(msg)
+    super(PeerNotFoundError, self).__init__(msg)
 
 
-class RemoveBgpPeer(base_classes.ReadWriteCommand):
-  """Remove a BGP peer from a Google Compute Engine router."""
+class RemoveBgpPeer(base.UpdateCommand):
+  """Remove a BGP peer from a Google Compute Engine router.
+
+  *{command}* removes a BGP peer from a Google Compute Engine router.
+  """
 
   ROUTER_ARG = None
 
@@ -46,36 +49,25 @@ class RemoveBgpPeer(base_classes.ReadWriteCommand):
         required=True,
         help='The name of the peer being removed.')
 
-  @property
-  def service(self):
-    return self.compute.routers
-
-  @property
-  def resource_type(self):
-    return 'routers'
-
-  def CreateReference(self, args):
-    return self.ROUTER_ARG.ResolveAsResource(args, self.resources)
-
-  def GetGetRequest(self, args):
-    return (self.service,
+  def GetGetRequest(self, client, router_ref):
+    return (client.apitools_client.routers,
             'Get',
-            self.messages.ComputeRoutersGetRequest(
-                router=self.ref.Name(),
-                region=self.ref.region,
-                project=self.project))
+            client.messages.ComputeRoutersGetRequest(
+                router=router_ref.Name(),
+                region=router_ref.region,
+                project=router_ref.project))
 
-  def GetSetRequest(self, args, replacement, existing):
-    return (self.service,
+  def GetSetRequest(self, client, router_ref, replacement):
+    return (client.apitools_client.routers,
             'Update',
-            self.messages.ComputeRoutersUpdateRequest(
-                router=self.ref.Name(),
+            client.messages.ComputeRoutersUpdateRequest(
+                router=router_ref.Name(),
                 routerResource=replacement,
-                region=self.ref.region,
-                project=self.project))
+                region=router_ref.region,
+                project=router_ref.project))
 
   def Modify(self, args, existing):
-    replacement = copy.deepcopy(existing)
+    replacement = encoding.CopyProtoMessage(existing)
 
     # remove peer if exists
     peer = None
@@ -90,9 +82,17 @@ class RemoveBgpPeer(base_classes.ReadWriteCommand):
 
     return replacement
 
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-RemoveBgpPeer.detailed_help = {
-    'DESCRIPTION': """
-        *{command}* removes a BGP peer from a Google Compute Engine router.
-        """,
-}
+    router_ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
+    get_request = self.GetGetRequest(client, router_ref)
+
+    objects = client.MakeRequests([get_request])
+
+    # There is only one response because one request is made above
+    new_object = self.Modify(args, objects[0])
+
+    return client.MakeRequests(
+        [self.GetSetRequest(client, router_ref, new_object)])

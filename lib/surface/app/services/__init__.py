@@ -16,6 +16,7 @@
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Services(base.Group):
   """View and manage your App Engine services.
 

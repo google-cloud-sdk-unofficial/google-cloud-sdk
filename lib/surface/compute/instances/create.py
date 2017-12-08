@@ -15,6 +15,7 @@
 import argparse
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import base_classes_resource_registry as resource_registry
 from googlecloudsdk.api_lib.compute import csek_utils
 from googlecloudsdk.api_lib.compute import image_utils
 from googlecloudsdk.api_lib.compute import instance_utils
@@ -103,6 +104,9 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
 
   csek_utils.AddCsekKeyArgs(parser)
 
+  parser.display_info.AddFormat(
+      resource_registry.RESOURCE_REGISTRY['compute.instances'].list_format)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
@@ -121,9 +125,6 @@ class Create(base.CreateCommand):
 
   def Collection(self):
     return 'compute.instances'
-
-  def DeprecatedFormat(self, args):
-    return self.ListFormat(args)
 
   def _CreateRequests(self, args, compute_client, resource_parser):
     # This feature is only exposed in alpha/beta

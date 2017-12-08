@@ -13,9 +13,11 @@
 # limitations under the License.
 """Command to list all project IDs associated with the active user."""
 
+from googlecloudsdk.api_lib.cloudresourcemanager import filter_rewrite
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import util as command_lib_util
+from googlecloudsdk.core import log
 
 
 class List(base.ListCommand):
@@ -42,4 +44,8 @@ class List(base.ListCommand):
 
   def Run(self, args):
     """Run the list command."""
-    return projects_api.List()
+    args.filter, server_filter = filter_rewrite.ListRewriter().Rewrite(
+        args.filter)
+    log.info('client_filter="%s" server_filter="%s"',
+             args.filter, server_filter)
+    return projects_api.List(limit=args.limit, filter=server_filter)

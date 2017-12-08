@@ -16,8 +16,8 @@
 import time
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
@@ -27,8 +27,16 @@ class TailSerialPortOutputException(exceptions.Error):
   """An error occurred while tailing the serial port."""
 
 
-class TailSerialPortOutput(base_classes.BaseCommand):
-  """Tail output from a virtual machine instance's serial port."""
+class TailSerialPortOutput(base.Command):
+  # pylint:disable=line-too-long
+  """Periodically fetch new output from a virtual machine instance's serial port and display it as it becomes available.
+
+  {command} is used to tail the output from a Google Compute
+  Engine virtual machine instance's serial port. The serial port output
+  from the instance will be printed to standard output. This
+  information can be useful for diagnostic purposes.
+  """
+  # pylint:enable=line-too-long
 
   POLL_SLEEP_SECS = 10
 
@@ -45,20 +53,19 @@ class TailSerialPortOutput(base_classes.BaseCommand):
         port.
         """)
 
-  @property
-  def resource_type(self):
-    return 'instances'
-
   def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
     instance_ref = flags.INSTANCE_ARG.ResolveAsResource(
-        args, self.resources,
-        scope_lister=flags.GetInstanceZoneScopeLister(self.compute_client))
+        args, holder.resources,
+        scope_lister=flags.GetInstanceZoneScopeLister(client))
 
     start = None
     while True:
-      request = (self.compute.instances,
+      request = (client.apitools_client.instances,
                  'GetSerialPortOutput',
-                 self.messages.ComputeInstancesGetSerialPortOutputRequest(
+                 client.messages.ComputeInstancesGetSerialPortOutputRequest(
                      instance=instance_ref.Name(),
                      project=instance_ref.project,
                      port=args.port,
@@ -66,11 +73,9 @@ class TailSerialPortOutput(base_classes.BaseCommand):
                      zone=instance_ref.zone))
 
       errors = []
-      objects = list(request_helper.MakeRequests(
+      objects = client.MakeRequests(
           requests=[request],
-          http=self.http,
-          batch_url=self.batch_url,
-          errors=errors))
+          errors_to_collect=errors)
       if errors:
         raise TailSerialPortOutputException(
             'Could not fetch serial port output: ' +
@@ -84,15 +89,3 @@ class TailSerialPortOutput(base_classes.BaseCommand):
       # call.
       if not result.contents:
         time.sleep(self.POLL_SLEEP_SECS)
-
-
-TailSerialPortOutput.detailed_help = {
-    'brief': """Periodically fetch new output from a virtual machine instance's
-    serial port and display it as it becomes available""",
-    'DESCRIPTION': """\
-        {command} is used to tail the output from a Google Compute
-        Engine virtual machine instance's serial port. The serial port output
-        from the instance will be printed to standard output. This
-        information can be useful for diagnostic purposes.
-        """,
-}

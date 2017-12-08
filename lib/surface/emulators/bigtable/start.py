@@ -13,10 +13,10 @@
 # limitations under the License.
 """gcloud bigtable emulator start command."""
 
-from googlecloudsdk.api_lib.emulators import bigtable_util
-from googlecloudsdk.api_lib.emulators import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.emulators import bigtable_util
+from googlecloudsdk.command_lib.emulators import util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)

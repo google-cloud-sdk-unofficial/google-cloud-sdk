@@ -39,9 +39,7 @@ class List(base.ListCommand):
   def Args(parser):
     flags.GetProjectIdArgument(
         'get associated projects for').AddToParser(parser)
-
-  def Collection(self):
-    return command_lib_util.XPN_RESOURCE_COLLECTION
+    parser.display_info.AddFormat(command_lib_util.XPN_RESOURCE_ID_FORMAT)
 
   def Run(self, args):
     xpn_client = xpn_api.GetXpnClient()

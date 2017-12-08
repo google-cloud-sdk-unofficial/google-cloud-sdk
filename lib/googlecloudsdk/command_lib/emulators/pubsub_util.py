@@ -14,7 +14,7 @@
 """Utility functions for gcloud pubsub emulator."""
 
 import os
-from googlecloudsdk.api_lib.emulators import util
+from googlecloudsdk.command_lib.emulators import util
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log

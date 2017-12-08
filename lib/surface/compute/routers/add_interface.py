@@ -13,7 +13,7 @@
 # limitations under the License.
 """Command for adding an interface to a Google Compute Engine router."""
 
-import copy
+from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import routers_utils
@@ -28,8 +28,12 @@ from googlecloudsdk.command_lib.compute.vpn_tunnels import (flags as
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class AddInterface(base_classes.ReadWriteCommand):
-  """Add an interface to a Google Compute Engine router."""
+class AddInterface(base.UpdateCommand):
+  """Add an interface to a Google Compute Engine router.
+
+  *{command}* is used to add an interface to a Google Compute Engine
+  router.
+  """
 
   ROUTER_ARG = None
   VPN_TUNNEL_ARG = None
@@ -43,30 +47,23 @@ class AddInterface(base_classes.ReadWriteCommand):
 
     routers_utils.AddCommonArgs(parser)
 
-  @property
-  def service(self):
-    return self.compute.routers
+  def _GetGetRequest(self, client, router_ref):
+    return (client.apitools_client.routers, 'Get',
+            client.messages.ComputeRoutersGetRequest(
+                router=router_ref.Name(),
+                region=router_ref.region,
+                project=router_ref.project))
 
-  @property
-  def resource_type(self):
-    return 'routers'
+  def _GetSetRequest(self, client, router_ref, replacement):
+    return (client.apitools_client.routers, 'Update',
+            client.messages.ComputeRoutersUpdateRequest(
+                router=router_ref.Name(),
+                routerResource=replacement,
+                region=router_ref.region,
+                project=router_ref.project))
 
-  def CreateReference(self, args):
-    return self.ROUTER_ARG.ResolveAsResource(args, self.resources)
-
-  def GetGetRequest(self, args):
-    return (self.service, 'Get', self.messages.ComputeRoutersGetRequest(
-        router=self.ref.Name(), region=self.ref.region, project=self.project))
-
-  def GetSetRequest(self, args, replacement, existing):
-    return (self.service, 'Update', self.messages.ComputeRoutersUpdateRequest(
-        router=self.ref.Name(),
-        routerResource=replacement,
-        region=self.ref.region,
-        project=self.project))
-
-  def Modify(self, args, existing):
-    replacement = copy.deepcopy(existing)
+  def Modify(self, client, resources, args, existing):
+    replacement = encoding.CopyProtoMessage(existing)
 
     mask = None
 
@@ -88,20 +85,38 @@ class AddInterface(base_classes.ReadWriteCommand):
       args.vpn_tunnel_region = replacement.region
     vpn_ref = self.VPN_TUNNEL_ARG.ResolveAsResource(
         args,
-        self.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
+        resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-    interface = self.messages.RouterInterface(
+    interface = client.messages.RouterInterface(
         name=interface_name, linkedVpnTunnel=vpn_ref.SelfLink(), ipRange=mask)
 
     replacement.interfaces.append(interface)
 
     return replacement
 
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    router_ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
+    get_request = self._GetGetRequest(client, router_ref)
+
+    objects = client.MakeRequests([get_request])
+
+    new_object = self.Modify(client, holder.resources, args, objects[0])
+
+    return client.MakeRequests(
+        [self._GetSetRequest(client, router_ref, new_object)])
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaAddInterface(AddInterface):
-  """Add an interface to a Google Compute Engine router."""
+  """Add an interface to a Google Compute Engine router.
+
+  *{command}* is used to add an interface to a Google Compute Engine
+  router.
+  """
 
   ROUTER_ARG = None
   VPN_TUNNEL_ARG = None
@@ -125,8 +140,8 @@ class AlphaAddInterface(AddInterface):
 
     routers_utils.AddCommonArgs(parser)
 
-  def Modify(self, args, existing):
-    replacement = copy.deepcopy(existing)
+  def Modify(self, client, resources, args, existing):
+    replacement = encoding.CopyProtoMessage(existing)
     mask = None
     interface_name = args.interface_name
 
@@ -148,17 +163,17 @@ class AlphaAddInterface(AddInterface):
     if args.vpn_tunnel is not None:
       vpn_ref = self.VPN_TUNNEL_ARG.ResolveAsResource(
           args,
-          self.resources,
-          scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
+          resources,
+          scope_lister=compute_flags.GetDefaultScopeLister(client))
 
     if not args.interconnect_attachment_region:
       args.interconnect_attachment_region = replacement.region
     attachment_ref = None
     if args.interconnect_attachment is not None:
       attachment_ref = self.INTERCONNECT_ATTACHMENT_ARG.ResolveAsResource(
-          args, self.resources)
+          args, resources)
 
-    interface = self.messages.RouterInterface(
+    interface = client.messages.RouterInterface(
         name=interface_name,
         linkedVpnTunnel=(vpn_ref.SelfLink() if vpn_ref else None),
         linkedInterconnectAttachment=(attachment_ref.SelfLink()
@@ -168,12 +183,3 @@ class AlphaAddInterface(AddInterface):
     replacement.interfaces.append(interface)
 
     return replacement
-
-
-AddInterface.detailed_help = {
-    'DESCRIPTION':
-        """
-        *{command}* is used to add an interface to a Google Compute Engine
-        router.
-        """,
-}

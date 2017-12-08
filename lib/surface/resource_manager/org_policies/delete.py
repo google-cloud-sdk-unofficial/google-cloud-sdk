@@ -60,4 +60,7 @@ class DeletePolicy(base.DeleteCommand):
     elif args.organization:
       return messages.CloudresourcemanagerOrganizationsClearOrgPolicyRequest(
           organizationsId=resource_id, clearOrgPolicyRequest=request)
+    elif args.folder:
+      return messages.CloudresourcemanagerFoldersClearOrgPolicyRequest(
+          foldersId=resource_id, clearOrgPolicyRequest=request)
     return None

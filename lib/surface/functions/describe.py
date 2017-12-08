@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
@@ -29,6 +30,7 @@ class Describe(base.DescribeCommand):
     parser.add_argument(
         'name', help='The name of the function to describe.',
         type=util.ValidateFunctionNameOrRaise)
+    flags.AddRegionFlag(parser)
 
   @util.CatchHTTPErrorRaiseHTTPException
   def Run(self, args):

@@ -57,6 +57,11 @@ class Submit(base.CreateCommand):
   """Submit a build using the Google Container Builder service."""
 
   @staticmethod
+  def GetUriCacheUpdateOp():
+    """Do not try to create a URI to update the cache."""
+    return None
+
+  @staticmethod
   def Args(parser):
     """Register flags for this command.
 
@@ -129,6 +134,16 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
         help='The .yaml or .json file to use for build configuration.',
     )
     base.ASYNC_FLAG.AddToParser(parser)
+    parser.display_info.AddFormat("""
+          table(
+            id,
+            createTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-'),
+            duration(start=startTime,end=finishTime,precision=0,calendar=false,undefined="  -").slice(2:).join(""):label=DURATION,
+            build_source(undefined="-"):label=SOURCE,
+            build_images(undefined="-"):label=IMAGES,
+            status
+          )
+        """)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -365,9 +380,3 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
       raise FailedBuildException(build)
 
     return build
-
-  def Collection(self):
-    return 'cloudbuild.projects.builds'
-
-  def DeprecatedFormat(self, args):
-    return self.ListFormat(args)

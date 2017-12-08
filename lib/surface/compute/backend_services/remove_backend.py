@@ -14,20 +14,17 @@
 
 """Command for removing a backend from a backend service."""
 
-import copy
+from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
-from googlecloudsdk.command_lib.compute import scope as compute_scope
-from googlecloudsdk.command_lib.compute.backend_services import backend_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class RemoveBackend(base_classes.ReadWriteCommand):
+class RemoveBackend(base.UpdateCommand):
   """Remove a backend from a backend service.
 
   *{command}* is used to remove a backend from a backend
@@ -39,86 +36,51 @@ class RemoveBackend(base_classes.ReadWriteCommand):
   backend-services edit'.
   """
   _BACKEND_SERVICE_ARG = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG
-
-  def __init__(self, *args, **kwargs):
-    super(RemoveBackend, self).__init__(*args, **kwargs)
-    self.ref = None
+  _INSTANCE_GROUP_ARG = flags.MULTISCOPE_INSTANCE_GROUP_ARG
 
   @classmethod
   def Args(cls, parser):
     cls._BACKEND_SERVICE_ARG.AddArgument(parser)
-    backend_flags.AddInstanceGroup(
-        parser, operation_type='remove from', with_deprecated_zone=True)
+    cls._INSTANCE_GROUP_ARG.AddArgument(
+        parser, operation_type='remove from the backend service')
 
-  @property
-  def service(self):
-    if self.regional:
-      return self.compute.regionBackendServices
-    return self.compute.backendServices
-
-  @property
-  def resource_type(self):
-    if self.regional:
-      return 'regionBackendServices'
-    return 'backendServices'
-
-  def CreateReference(self, args):
-    # TODO(b/35133484): remove once base classes are refactored away
-    if not self.ref:
-      self.ref = self._BACKEND_SERVICE_ARG.ResolveAsResource(
-          args,
-          self.resources,
-          scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
-      self.regional = self.ref.Collection() == 'compute.regionBackendServices'
-    return self.ref
-
-  def GetGetRequest(self, args):
-    if self.regional:
-      return (self.service,
+  def GetGetRequest(self, client, backend_service_ref):
+    if backend_service_ref.Collection() == 'compute.regionBackendServices':
+      return (client.apitools_client.regionBackendServices,
               'Get',
-              self.messages.ComputeRegionBackendServicesGetRequest(
-                  backendService=self.ref.Name(),
-                  region=self.ref.region,
-                  project=self.project))
-    return (self.service,
+              client.messages.ComputeRegionBackendServicesGetRequest(
+                  backendService=backend_service_ref.Name(),
+                  region=backend_service_ref.region,
+                  project=backend_service_ref.project))
+    return (client.apitools_client.backendServices,
             'Get',
-            self.messages.ComputeBackendServicesGetRequest(
-                backendService=self.ref.Name(),
-                project=self.project))
+            client.messages.ComputeBackendServicesGetRequest(
+                backendService=backend_service_ref.Name(),
+                project=backend_service_ref.project))
 
-  def GetSetRequest(self, args, replacement, existing):
-    if self.regional:
-      return (self.service,
+  def GetSetRequest(self, client, backend_service_ref, replacement):
+    if backend_service_ref.Collection() == 'compute.regionBackendServices':
+      return (client.apitools_client.regionBackendServices,
               'Update',
-              self.messages.ComputeRegionBackendServicesUpdateRequest(
-                  backendService=self.ref.Name(),
+              client.messages.ComputeRegionBackendServicesUpdateRequest(
+                  backendService=backend_service_ref.Name(),
                   backendServiceResource=replacement,
-                  region=self.ref.region,
-                  project=self.project))
-    return (self.service,
+                  region=backend_service_ref.region,
+                  project=backend_service_ref.project))
+    return (client.apitools_client.backendServices,
             'Update',
-            self.messages.ComputeBackendServicesUpdateRequest(
-                backendService=self.ref.Name(),
+            client.messages.ComputeBackendServicesUpdateRequest(
+                backendService=backend_service_ref.Name(),
                 backendServiceResource=replacement,
-                project=self.project))
+                project=backend_service_ref.project))
 
-  def CreateGroupReference(self, args):
-    return instance_groups_utils.CreateInstanceGroupReference(
-        scope_prompter=self,
-        compute=self.compute,
-        resources=self.resources,
-        name=args.instance_group,
-        region=args.instance_group_region,
-        zone=(args.instance_group_zone
-              if args.instance_group_zone else args.zone),
-        zonal_resource_type='instanceGroups',
-        regional_resource_type='regionInstanceGroups')
+  def Modify(self, client, resources, backend_service_ref, args, existing):
+    replacement = encoding.CopyProtoMessage(existing)
 
-  def Modify(self, args, existing):
-    backend_flags.WarnOnDeprecatedFlags(args)
-    replacement = copy.deepcopy(existing)
-
-    group_ref = self.CreateGroupReference(args)
+    group_ref = RemoveBackend._INSTANCE_GROUP_ARG.ResolveAsResource(
+        args,
+        resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
     group_uri = group_ref.SelfLink()
 
@@ -140,15 +102,29 @@ class RemoveBackend(base_classes.ReadWriteCommand):
           '[{3}].'.format(group_ref.Name(),
                           scope,
                           scope_value,
-                          self.ref.Name()))
+                          backend_service_ref.Name()))
     else:
       replacement.backends.pop(backend_idx)
 
     return replacement
 
   def Run(self, args):
-    self.CreateReference(args)
-    return super(RemoveBackend, self).Run(args)
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    backend_service_ref = self._BACKEND_SERVICE_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+    get_request = self.GetGetRequest(client, backend_service_ref)
+
+    objects = client.MakeRequests([get_request])
+
+    new_object = self.Modify(client, holder.resources, backend_service_ref,
+                             args, objects[0])
+
+    return client.MakeRequests(
+        [self.GetSetRequest(client, backend_service_ref, new_object)])
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -167,21 +143,8 @@ class RemoveBackendBeta(RemoveBackend):
   @classmethod
   def Args(cls, parser):
     cls._BACKEND_SERVICE_ARG.AddArgument(parser)
-    backend_flags.AddInstanceGroup(
-        parser, operation_type='remove from', with_deprecated_zone=True)
-
-  def CreateGroupReference(self, args):
-    """Overrides."""
-    return instance_groups_utils.CreateInstanceGroupReference(
-        scope_prompter=self,
-        compute=self.compute,
-        resources=self.resources,
-        name=args.instance_group,
-        region=args.instance_group_region,
-        zone=(args.instance_group_zone
-              if args.instance_group_zone else args.zone),
-        zonal_resource_type='instanceGroups',
-        regional_resource_type='regionInstanceGroups')
+    cls._INSTANCE_GROUP_ARG.AddArgument(
+        parser, operation_type='remove from the backend service')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -200,14 +163,5 @@ class RemoveBackendAlpha(RemoveBackendBeta):
   @classmethod
   def Args(cls, parser):
     cls._BACKEND_SERVICE_ARG.AddArgument(parser)
-    flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(
-        parser, operation_type='remove')
-
-  def CreateGroupReference(self, args):
-    """Overrides."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
-        args, holder.resources,
-        default_scope=compute_scope.ScopeEnum.ZONE,
-        scope_lister=compute_flags.GetDefaultScopeLister(
-            holder.client, self.project))
+    cls._INSTANCE_GROUP_ARG.AddArgument(
+        parser, operation_type='remove from the backend service')

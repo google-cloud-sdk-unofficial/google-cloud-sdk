@@ -16,7 +16,8 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.BETA)
 class SslCertificates(base.Group):
   """View and manage your App Engine SSL certificates.
 

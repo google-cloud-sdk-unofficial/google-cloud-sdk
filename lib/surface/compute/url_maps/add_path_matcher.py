@@ -15,10 +15,11 @@
 """Command for adding a path matcher to a URL map."""
 
 import collections
-import copy
+from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.backend_buckets import (
     flags as backend_bucket_flags)
@@ -95,8 +96,33 @@ def _Args(parser):
       help='Rules for mapping request paths to backend buckets.')
 
 
-class AddPathMatcher(base_classes.ReadWriteCommand):
-  """Add a path matcher to a URL map."""
+class AddPathMatcher(base.UpdateCommand):
+  # pylint: disable=line-too-long
+  """Add a path matcher to a URL map.
+
+  *{command}* is used to add a path matcher to a URL map. A path
+  matcher maps HTTP request paths to backend services or backend
+  buckets. Each path matcher must be referenced by at least one
+  host rule. This command can create a new host rule through the
+  `--new-hosts` flag or it can reconfigure an existing host rule
+  to point to the newly added path matcher using `--existing-host`.
+  In the latter case, if a path matcher is orphaned as a result
+  of the operation, this command will fail unless
+  `--delete-orphaned-path-matcher` is provided.
+
+  ## EXAMPLES
+  To create a rule for mapping the path ```/search/*``` to the
+  hypothetical ```search-service```, ```/static/*``` to the
+  ```static-bucket``` backend bucket and ```/images/*``` to the
+  ```images-service``` under the hosts ```example.com``` and
+  ```*.example.com```, run:
+
+    $ {command} MY-URL-MAP --path-matcher-name MY-MATCHER --default-service MY-DEFAULT-SERVICE --backend-service-path-rules '/search/*=search_service,/images/*=images-service' --backend-bucket-path-rules '/static/*=static-bucket' --new-hosts example.com '*.example.com'
+
+  Note that a default service or default backend bucket must be
+  provided to handle paths for which there is no mapping.
+  """
+  # pylint: enable=line-too-long
 
   BACKEND_SERVICE_ARG = None
   BACKEND_BUCKET_ARG = None
@@ -113,44 +139,34 @@ class AddPathMatcher(base_classes.ReadWriteCommand):
 
     _Args(parser)
 
-  @property
-  def service(self):
-    return self.compute.urlMaps
-
-  @property
-  def resource_type(self):
-    return 'urlMaps'
-
-  def CreateReference(self, args):
-    return self.URL_MAP_ARG.ResolveAsResource(args, self.resources)
-
-  def GetGetRequest(self, args):
+  def GetGetRequest(self, client, url_map_ref):
     """Returns the request for the existing URL map resource."""
-    return (self.service,
+    return (client.apitools_client.urlMaps,
             'Get',
-            self.messages.ComputeUrlMapsGetRequest(
-                urlMap=self.ref.Name(),
-                project=self.project))
+            client.messages.ComputeUrlMapsGetRequest(
+                urlMap=url_map_ref.Name(),
+                project=url_map_ref.project))
 
-  def GetSetRequest(self, args, replacement, existing):
-    return (self.service,
+  def GetSetRequest(self, client, url_map_ref, replacement):
+    return (client.apitools_client.urlMaps,
             'Update',
-            self.messages.ComputeUrlMapsUpdateRequest(
-                urlMap=self.ref.Name(),
+            client.messages.ComputeUrlMapsUpdateRequest(
+                urlMap=url_map_ref.Name(),
                 urlMapResource=replacement,
-                project=self.project))
+                project=url_map_ref.project))
 
-  def _ModifyBase(self, args, existing):
+  def _ModifyBase(self, client, args, existing):
     """Modifications to the URL map that are shared between release tracks.
 
     Args:
+      client: The compute client.
       args: the argparse arguments that this command was invoked with.
       existing: the existing URL map message.
 
     Returns:
       A modified URL map message.
     """
-    replacement = copy.deepcopy(existing)
+    replacement = encoding.CopyProtoMessage(existing)
 
     if not args.new_hosts and not args.existing_host:
       new_hosts = ['*']
@@ -170,7 +186,7 @@ class AddPathMatcher(base_classes.ReadWriteCommand):
                 'host is already part of a host rule that references the path '
                 'matcher [{1}].'.format(host, host_rule.pathMatcher))
 
-      replacement.hostRules.append(self.messages.HostRule(
+      replacement.hostRules.append(client.messages.HostRule(
           hosts=sorted(new_hosts),
           pathMatcher=args.path_matcher_name))
 
@@ -222,9 +238,9 @@ class AddPathMatcher(base_classes.ReadWriteCommand):
 
     return replacement
 
-  def Modify(self, args, existing):
+  def Modify(self, client, resources, args, existing):
     """Returns a modified URL map message."""
-    replacement = self._ModifyBase(args, existing)
+    replacement = self._ModifyBase(client, args, existing)
 
     # Creates PathRule objects from --path-rules, --backend-service-path-rules,
     # and --backend-bucket-path-rules.
@@ -239,9 +255,9 @@ class AddPathMatcher(base_classes.ReadWriteCommand):
     path_rules = []
     for service, paths in sorted(service_map.iteritems()):
       path_rules.append(
-          self.messages.PathRule(
+          client.messages.PathRule(
               paths=sorted(paths),
-              service=self.resources.Parse(
+              service=resources.Parse(
                   service,
                   params={
                       'project': properties.VALUES.core.project.GetOrFail,
@@ -249,21 +265,21 @@ class AddPathMatcher(base_classes.ReadWriteCommand):
                   collection='compute.backendServices').SelfLink()))
     for bucket, paths in sorted(bucket_map.iteritems()):
       path_rules.append(
-          self.messages.PathRule(
+          client.messages.PathRule(
               paths=sorted(paths),
-              service=self.resources.Parse(
+              service=resources.Parse(
                   bucket,
                   params={'project': properties.VALUES.core.project.GetOrFail},
                   collection='compute.backendBuckets').SelfLink()))
 
     if args.default_service:
       default_backend_uri = self.BACKEND_SERVICE_ARG.ResolveAsResource(
-          args, self.resources).SelfLink()
+          args, resources).SelfLink()
     else:
       default_backend_uri = self.BACKEND_BUCKET_ARG.ResolveAsResource(
-          args, self.resources).SelfLink()
+          args, resources).SelfLink()
 
-    new_path_matcher = self.messages.PathMatcher(
+    new_path_matcher = client.messages.PathMatcher(
         defaultService=default_backend_uri,
         description=args.description,
         name=args.path_matcher_name,
@@ -272,30 +288,16 @@ class AddPathMatcher(base_classes.ReadWriteCommand):
     replacement.pathMatchers.append(new_path_matcher)
     return replacement
 
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-AddPathMatcher.detailed_help = {
-    'brief': 'Add a path matcher to a URL map',
-    'DESCRIPTION': """\
-        *{command}* is used to add a path matcher to a URL map. A path
-        matcher maps HTTP request paths to backend services or backend
-        buckets. Each path matcher must be referenced by at least one
-        host rule. This command can create a new host rule through the
-        ``--new-hosts'' flag or it can reconfigure an existing host rule
-        to point to the newly added path matcher using ``--existing-host''.
-        In the latter case, if a path matcher is orphaned as a result
-        of the operation, this command will fail unless
-        ``--delete-orphaned-path-matcher'' is provided.
-        """,
-    'EXAMPLES': """\
-        To create a rule for mapping the path ```/search/*``` to the
-        hypothetical ```search-service```, ```/static/*``` to the
-        ```static-bucket``` backend bucket and ```/images/*``` to the
-        ```images-service``` under the hosts ```example.com``` and
-        ```*.example.com```, run:
+    url_map_ref = self.URL_MAP_ARG.ResolveAsResource(args, holder.resources)
+    get_request = self.GetGetRequest(client, url_map_ref)
 
-          $ {command} MY-URL-MAP --path-matcher-name MY-MATCHER --default-service MY-DEFAULT-SERVICE --backend-service-path-rules '/search/*=search_service,/images/*=images-service' --backend-bucket-path-rules '/static/*=static-bucket' --new-hosts example.com '*.example.com'
+    url_map = client.MakeRequests([get_request])[0]
 
-        Note that a default service or default backend bucket must be
-        provided to handle paths for which there is no mapping.
-        """,
-}
+    modified_url_map = self.Modify(client, holder.resources, args, url_map)
+
+    return client.MakeRequests(
+        [self.GetSetRequest(client, url_map_ref, modified_url_map)])

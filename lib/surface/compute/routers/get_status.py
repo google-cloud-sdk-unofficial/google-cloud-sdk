@@ -42,7 +42,7 @@ class Describe(base.DescribeCommand):
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-    request = client.messages.ComputeRoutersGetRequest(
+    request = client.messages.ComputeRoutersGetRouterStatusRequest(
         **router_ref.AsDict())
 
     return client.MakeRequests([(client.apitools_client.routers,

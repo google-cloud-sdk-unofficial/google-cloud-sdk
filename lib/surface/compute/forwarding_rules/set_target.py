@@ -113,20 +113,11 @@ Set.detailed_help = {
 
         When creating a forwarding rule, exactly one of  ``--target-instance'',
         ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
-        ``--target-ssl-proxy'', or ``--target-vpn-gateway'' must be specified.
-        """.format(overview=flags.FORWARDING_RULES_OVERVIEW)),
-}
-
-SetBeta.detailed_help = {
-    'DESCRIPTION': ("""\
-        *{{command}}* is used to set a new target for a forwarding
-        rule. {overview}
-
-        When creating a forwarding rule, exactly one of  ``--target-instance'',
-        ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
         ``--target-ssl-proxy'', ``--target-tcp-proxy'' or
         ``--target-vpn-gateway'' must be specified.""".format(
             overview=flags.FORWARDING_RULES_OVERVIEW)),
 }
 
-SetAlpha.detailed_help = SetBeta.detailed_help
+
+SetBeta.detailed_help = Set.detailed_help
+SetAlpha.detailed_help = Set.detailed_help

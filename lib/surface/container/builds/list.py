@@ -14,11 +14,9 @@
 """List builds command."""
 
 from apitools.base.py import list_pager
-
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
 class List(base.ListCommand):
@@ -37,20 +35,16 @@ class List(base.ListCommand):
         help='Only list builds that are currently QUEUED or WORKING.',
         action='store_true')
     base.LIMIT_FLAG.SetDefault(parser, 50)
-
-  def Collection(self):
-    return 'cloudbuild.projects.builds'
-
-  def GetUriFunc(self):
-    registry = resources.REGISTRY.Clone()
-
-    def _BuildToURI(build):
-      build_ref = registry.Create(
-          self.Collection(),
-          projectId=build.projectId,
-          id=build.id)
-      return build_ref.SelfLink()
-    return _BuildToURI
+    parser.display_info.AddFormat("""
+        table(
+            id,
+            createTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-'),
+            duration(start=startTime,end=finishTime,precision=0,calendar=false,undefined="  -").slice(2:).join(""):label=DURATION,
+            build_source(undefined="-"):label=SOURCE,
+            build_images(undefined="-"):label=IMAGES,
+            status
+        )
+    """)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

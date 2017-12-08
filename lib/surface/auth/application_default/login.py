@@ -19,6 +19,7 @@ import textwrap
 from googlecloudsdk.api_lib.auth import util as auth_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.util import check_browser
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.credentials import gce as c_gce
@@ -107,7 +108,7 @@ class Login(base.Command):
           message=message, throw_if_unattended=True, cancel_on_no=True)
 
     scopes = args.scopes or auth_util.DEFAULT_SCOPES
-    launch_browser = auth_util.ShouldLaunchBrowser(args.launch_browser)
+    launch_browser = check_browser.ShouldLaunchBrowser(args.launch_browser)
     if args.client_id_file:
       creds = auth_util.DoInstalledAppBrowserFlow(
           launch_browser=launch_browser,

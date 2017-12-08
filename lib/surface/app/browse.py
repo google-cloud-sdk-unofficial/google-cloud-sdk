@@ -15,9 +15,12 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import browser_dispatcher
+from googlecloudsdk.command_lib.app import flags
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Browse(base.Command):
   """Open the current app in a web browser.
 
@@ -44,6 +47,8 @@ class Browse(base.Command):
 
   @staticmethod
   def Args(parser):
+    parser.display_info.AddFormat('value(url)')
+    flags.LAUNCH_BROWSER.AddToParser(parser)
     parser.add_argument(
         '--version',
         '-v',
@@ -56,5 +61,15 @@ class Browse(base.Command):
               'default service. May be used in conjunction with `--version`.'))
 
   def Run(self, args):
+    """Launch a browser, or return a URL to print."""
     project = properties.VALUES.core.project.Get(required=True)
-    browser_dispatcher.BrowseApp(project, args.service, args.version)
+    url_format = browser_dispatcher.BrowseApp(project,
+                                              args.service,
+                                              args.version,
+                                              args.launch_browser)
+    if url_format:
+      if args.launch_browser:
+        log.status.Print(
+            'Did not detect your browser. Go to this link to view your app:')
+      return url_format
+    return None

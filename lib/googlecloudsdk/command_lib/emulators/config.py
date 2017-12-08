@@ -14,8 +14,8 @@
 """Code related to proxy and emulator configuration."""
 
 import json
-from googlecloudsdk.api_lib.emulators import datastore_util
-from googlecloudsdk.api_lib.emulators import pubsub_util
+from googlecloudsdk.command_lib.emulators import datastore_util
+from googlecloudsdk.command_lib.emulators import pubsub_util
 from googlecloudsdk.core.util import files
 
 

@@ -77,6 +77,14 @@ class Create(base.CreateCommand):
             enable the snapshot, it cannot be determined if the snapshot is
             valid.
         """)
+    parser.display_info.AddFormat("""
+          list(
+            format("id: {0}", id),
+            format("location: {0}", location),
+            format("status: {0}", full_status()),
+            format("consoleViewUrl: {0}", consoleViewUrl)
+          )
+    """)
 
   def Run(self, args):
     """Run the create command."""
@@ -94,9 +102,3 @@ class Create(base.CreateCommand):
           'The debugger adjusted the snapshot location to {0}'.format(
               final_snapshot.location))
     return final_snapshot or snapshot
-
-  def Collection(self):
-    return 'debug.snapshots.create'
-
-  def DeprecatedFormat(self, args):
-    return self.ListFormat(args)

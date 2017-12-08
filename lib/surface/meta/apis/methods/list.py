@@ -32,7 +32,6 @@ class List(base.ListCommand):
     parser.display_info.AddFormat("""
       table(
         name:sort=1,
-        path,
         detailed_path:optional,
         http_method,
         request_type,

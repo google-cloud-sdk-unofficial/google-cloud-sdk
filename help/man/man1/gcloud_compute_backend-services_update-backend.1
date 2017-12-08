@@ -11,7 +11,7 @@ gcloud compute backend\-services update\-backend \- update an existing backend i
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute backend\-services update\-backend\fR \fIBACKEND_SERVICE_NAME\fR \fB\-\-instance\-group\fR=\fIINSTANCE_GROUP\fR [\fB\-\-balancing\-mode\fR=\fIBALANCING_MODE\fR] [\fB\-\-capacity\-scaler\fR=\fICAPACITY_SCALER\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-max\-utilization\fR=\fIMAX_UTILIZATION\fR] [\fB\-\-global\fR\ |\ \fB\-\-region\fR=\fIREGION\fR] [\fB\-\-instance\-group\-region\fR=\fIINSTANCE_GROUP_REGION\fR\ |\ \fB\-\-instance\-group\-zone\fR=\fIINSTANCE_GROUP_ZONE\fR\ |\ \fB\-\-zone\fR=\fIZONE\fR] [\fB\-\-max\-connections\fR=\fIMAX_CONNECTIONS\fR\ |\ \fB\-\-max\-connections\-per\-instance\fR=\fIMAX_CONNECTIONS_PER_INSTANCE\fR\ |\ \fB\-\-max\-rate\fR=\fIMAX_RATE\fR\ |\ \fB\-\-max\-rate\-per\-instance\fR=\fIMAX_RATE_PER_INSTANCE\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
+\f5gcloud compute backend\-services update\-backend\fR \fIBACKEND_SERVICE_NAME\fR \fB\-\-instance\-group\fR=\fIINSTANCE_GROUP\fR [\fB\-\-balancing\-mode\fR=\fIBALANCING_MODE\fR] [\fB\-\-capacity\-scaler\fR=\fICAPACITY_SCALER\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-max\-utilization\fR=\fIMAX_UTILIZATION\fR] [\fB\-\-global\fR\ |\ \fB\-\-region\fR=\fIREGION\fR] [\fB\-\-instance\-group\-region\fR=\fIINSTANCE_GROUP_REGION\fR\ |\ \fB\-\-instance\-group\-zone\fR=\fIINSTANCE_GROUP_ZONE\fR] [\fB\-\-max\-connections\fR=\fIMAX_CONNECTIONS\fR\ |\ \fB\-\-max\-connections\-per\-instance\fR=\fIMAX_CONNECTIONS_PER_INSTANCE\fR\ |\ \fB\-\-max\-rate\fR=\fIMAX_RATE\fR\ |\ \fB\-\-max\-rate\-per\-instance\fR=\fIMAX_RATE_PER_INSTANCE\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -20,15 +20,14 @@ gcloud compute backend\-services update\-backend \- update an existing backend i
 \fBgcloud compute backend\-services update\-backend\fR updates a backend that is
 part of a backend service. This is useful for changing the way a backend
 behaves. Example changes that can be made include changing the load balancing
-policy and \f5\fIdraining\fR\fR a backend by setting its capacity scaler to
-zero.
+policy and \f5draining\fR a backend by setting its capacity scaler to zero.
 
 Backends are named by their associated instances groups, and one of the
-\f5\fI\-\-group\fR\fR or \f5\fI\-\-instance\-group\fR\fR flags is required to
-identify the backend that you are modifying. You cannot "change" the instance
-group associated with a backend, but you can accomplish something similar with
-\f5\fIbackend\-services remove\-backend\fR\fR and \f5\fIbackend\-services
-add\-backend\fR\fR.
+\f5\-\-group\fR or \f5\-\-instance\-group\fR flags is required to identify the
+backend that you are modifying. You cannot "change" the instance group
+associated with a backend, but you can accomplish something similar with
+\f5backend\-services remove\-backend\fR and \f5backend\-services
+add\-backend\fR.
 
 \f5gcloud compute backend\-services edit\fR can also be used to update a backend
 if the use of a text editor is desired.
@@ -51,7 +50,7 @@ The name of the backend service.
 .RS 2m
 .TP 2m
 \fB\-\-instance\-group\fR=\fIINSTANCE_GROUP\fR
-The name or URI of a Google Cloud Instance Group.
+The name of the instance group.
 
 
 .RE
@@ -141,19 +140,39 @@ At most one of these may be specified:
 The region of the instance group to update the backend service. If not
 specified, you will be prompted to select a region.
 
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/region\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/region REGION
+.RE
+
 A list of regions can be fetched by running:
 
 .RS 2m
 $ gcloud compute regions list
 .RE
 
-Overrides the default \fBcompute/region\fR property value for this command
-invocation.
+To unset the property, run:
+
+.RS 2m
+$ gcloud config unset compute/region
+.RE
+
+Alternatively, the region can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_REGION\fR\fR.
 
 .TP 2m
 \fB\-\-instance\-group\-zone\fR=\fIINSTANCE_GROUP_ZONE\fR
 The zone of the instance group to update the backend service. If not specified,
 you may be prompted to select a zone.
+
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/zone\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/zone ZONE
+.RE
 
 A list of zones can be fetched by running:
 
@@ -161,14 +180,14 @@ A list of zones can be fetched by running:
 $ gcloud compute zones list
 .RE
 
-Overrides the default \fBcompute/zone\fR property value for this command
-invocation.
+To unset the property, run:
 
-.TP 2m
-\fB\-\-zone\fR=\fIZONE\fR
-The zone of the instance group to update the backend service. DEPRECATED, use
-\-\-instance\-group\-zone flag instead. Overrides the default \fBcompute/zone\fR
-property value for this command invocation.
+.RS 2m
+$ gcloud config unset compute/zone
+.RE
+
+Alternatively, the zone can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
 
 .RE
 .sp

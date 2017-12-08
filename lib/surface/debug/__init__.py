@@ -14,6 +14,7 @@
 
 """The main command group for the gcloud debug command group."""
 
+from googlecloudsdk.api_lib.debug import transforms
 from googlecloudsdk.calliope import base
 
 
@@ -62,3 +63,7 @@ class Debug(base.Group):
     would match only "default-test" (by name), while "9876" would match
     "default-test" by description.
   """
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddTransforms(transforms.GetTransforms())

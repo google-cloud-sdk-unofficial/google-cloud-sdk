@@ -32,6 +32,8 @@ class Describe(base.DescribeCommand):
     """
     parser.add_argument(
         'build',
+        completion_resource='cloudbuild.projects.builds',
+        list_command_path='container builds list --uri',
         help=('The build to describe. The ID of the build is printed at the '
               'end of the build submission process, or in the ID column when '
               'listing builds.'),

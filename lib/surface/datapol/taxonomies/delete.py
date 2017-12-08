@@ -27,10 +27,10 @@ class Delete(base.Command):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    parser.add_argument('name',
+    parser.add_argument('id',
                         default='',
-                        metavar='TAXONOMY_NAME',
-                        help='Name of the taxonomy to be deleted.')
+                        metavar='TAXONOMY_ID',
+                        help='Id of the taxonomy to be deleted.')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -42,4 +42,4 @@ class Delete(base.Command):
     Returns:
       Status of command execution.
     """
-    return delete_lib.DeleteTaxonomy(args.name)
+    return delete_lib.DeleteTaxonomy(args.id)

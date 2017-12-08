@@ -13,9 +13,9 @@
 # limitations under the License.
 """The gcloud bigtable emulator group."""
 
-from googlecloudsdk.api_lib.emulators import bigtable_util
-from googlecloudsdk.api_lib.emulators import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.emulators import bigtable_util
+from googlecloudsdk.command_lib.emulators import util
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core.util import platforms
 

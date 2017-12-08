@@ -12,25 +12,45 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command to get IAM policy for a resource."""
-
-from googlecloudsdk.api_lib.compute import iam_base_classes
+from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.networks.subnets import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class GetIamPolicy(iam_base_classes.RegionalGetIamPolicy):
-  """Get the IAM policy for a Google Compute Engine subnetwork resource."""
+class GetIamPolicy(base.DescribeCommand):
+  """Get the IAM Policy for a Google Compute Engine subnetwork.
+
+  *{command}* displays the Iam Policy associated with a Google Compute Engine
+  subnetwork in a project.
+  """
+
+  SUBNETWORK_ARG = None
 
   @staticmethod
   def Args(parser):
-    iam_base_classes.RegionalGetIamPolicy.Args(parser, 'compute.subnetworks')
+    GetIamPolicy.SUBNETWORK_ARG = flags.SubnetworkArgument()
+    GetIamPolicy.SUBNETWORK_ARG.AddArgument(
+        parser, operation_type='describe the IAM Policy of')
 
-  @property
-  def service(self):
-    return self.compute.subnetworks
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'subnetworks'
+    subnetwork_ref = GetIamPolicy.SUBNETWORK_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-GetIamPolicy.detailed_help = iam_base_classes.GetIamPolicyHelp('subnetwork')
+    # TODO(b/36051087): determine how this output should look when empty.
+
+    # GetIamPolicy always returns either an error or a valid policy.
+    # If no policy has been set it returns a valid empty policy (just an etag.)
+    # It is not possible to have multiple policies for one resource.
+    return client.MakeRequests(
+        [(client.apitools_client.subnetworks, 'GetIamPolicy',
+          client.messages.ComputeSubnetworksGetIamPolicyRequest(
+              resource=subnetwork_ref.subnetwork,
+              region=subnetwork_ref.region,
+              project=subnetwork_ref.project))])[0]

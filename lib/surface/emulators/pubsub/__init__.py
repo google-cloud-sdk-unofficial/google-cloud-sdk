@@ -13,9 +13,10 @@
 # limitations under the License.
 """The gcloud pubsub emulator group."""
 
-from googlecloudsdk.api_lib.emulators import pubsub_util
-from googlecloudsdk.api_lib.emulators import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.emulators import pubsub_util
+from googlecloudsdk.command_lib.emulators import util
+from googlecloudsdk.command_lib.util import java
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -43,7 +44,7 @@ class PubSub(base.Group):
 
   # Override
   def Filter(self, context, args):
-    util.CheckIfJava7IsInstalled(pubsub_util.PUBSUB_TITLE)
+    java.CheckIfJavaIsInstalled(pubsub_util.PUBSUB_TITLE)
     util.EnsureComponentIsInstalled('pubsub-emulator', pubsub_util.PUBSUB_TITLE)
 
     if not args.data_dir:

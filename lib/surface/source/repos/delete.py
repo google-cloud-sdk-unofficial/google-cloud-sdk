@@ -15,8 +15,6 @@
 """Delete Google Cloud Platform git repository.
 """
 
-import textwrap
-
 from googlecloudsdk.api_lib.sourcerepo import sourcerepo
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
@@ -28,23 +26,20 @@ from googlecloudsdk.core.console import console_io
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA,
                     base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
-  """Delete a cloud source repository."""
+  """Delete a cloud source repository.
 
-  detailed_help = {
-      'DESCRIPTION':
-          """\
-          This command deletes a named git repository from the currently
-          active Google Cloud Platform project.
-      """,
-      'EXAMPLES':
-          textwrap.dedent("""\
-          To delete a named repository in the current project issue the
-          following commands:
+  This command deletes a named git repository from the currently
+  active Google Cloud Platform project.
 
-            $ gcloud init
-            $ {command} REPOSITORY_NAME
-      """),
-  }
+  ## EXAMPLES
+
+  To delete a named repository in the current project issue the
+  following commands:
+
+    $ gcloud init
+    $ {command} REPOSITORY_NAME
+
+  """
 
   @staticmethod
   def Args(parser):

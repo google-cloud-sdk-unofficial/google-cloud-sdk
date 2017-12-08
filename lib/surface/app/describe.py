@@ -21,6 +21,7 @@ from googlecloudsdk.command_lib.app import exceptions
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Describe(base.Command):
   """Display all data about an existing service."""
 

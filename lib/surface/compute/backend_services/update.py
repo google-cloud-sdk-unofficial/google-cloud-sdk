@@ -16,7 +16,7 @@
    There are separate alpha, beta, and GA command classes in this file.
 """
 
-import copy
+from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
@@ -46,12 +46,11 @@ def AddIapFlag(parser):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class UpdateGA(base_classes.ReadWriteCommand):
-  """Update a backend service."""
+class UpdateGA(base.UpdateCommand):
+  """Update a backend service.
 
-  def __init__(self, *args, **kwargs):
-    super(UpdateGA, self).__init__(*args, **kwargs)
-    self.ref = None
+  *{command}* is used to update backend services.
+  """
 
   HEALTH_CHECK_ARG = None
   HTTP_HEALTH_CHECK_ARG = None
@@ -82,68 +81,49 @@ class UpdateGA(base_classes.ReadWriteCommand):
     flags.AddCacheKeyQueryStringList(parser)
     AddIapFlag(parser)
 
-  @property
-  def service(self):
-    if self.regional:
-      return self.compute.regionBackendServices
-    return self.compute.backendServices
-
-  @property
-  def resource_type(self):
-    if self.regional:
-      return 'regionBackendServices'
-    return 'backendServices'
-
-  def CreateReference(self, args):
-    # TODO(b/35133484): remove once base classes are refactored away
-    if not self.ref:
-      self.ref = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-          args,
-          self.resources,
-          scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
-      self.regional = self.ref.Collection() == 'compute.regionBackendServices'
-    return self.ref
-
-  def GetGetRequest(self, args):
-    if self.regional:
+  def GetGetRequest(self, client, backend_service_ref):
+    """Create Backend Services get request."""
+    if backend_service_ref.Collection() == 'compute.regionBackendServices':
       return (
-          self.service,
+          client.apitools_client.regionBackendServices,
           'Get',
-          self.messages.ComputeRegionBackendServicesGetRequest(
-              project=self.project,
-              region=self.ref.region,
-              backendService=self.ref.Name()))
+          client.messages.ComputeRegionBackendServicesGetRequest(
+              project=backend_service_ref.project,
+              region=backend_service_ref.region,
+              backendService=backend_service_ref.Name()))
     return (
-        self.service,
+        client.apitools_client.backendServices,
         'Get',
-        self.messages.ComputeBackendServicesGetRequest(
-            project=self.project,
-            backendService=self.ref.Name()))
+        client.messages.ComputeBackendServicesGetRequest(
+            project=backend_service_ref.project,
+            backendService=backend_service_ref.Name()))
 
-  def GetSetRequest(self, args, replacement, _):
-    if self.regional:
+  def GetSetRequest(self, client, backend_service_ref, replacement):
+    """Create Backend Services set request."""
+    if backend_service_ref.Collection() == 'compute.regionBackendServices':
       return (
-          self.service,
+          client.apitools_client.regionBackendServices,
           'Update',
-          self.messages.ComputeRegionBackendServicesUpdateRequest(
-              project=self.project,
-              region=self.ref.region,
-              backendService=self.ref.Name(),
+          client.messages.ComputeRegionBackendServicesUpdateRequest(
+              project=backend_service_ref.project,
+              region=backend_service_ref.region,
+              backendService=backend_service_ref.Name(),
               backendServiceResource=replacement))
 
     return (
-        self.service,
+        client.apitools_client.backendServices,
         'Update',
-        self.messages.ComputeBackendServicesUpdateRequest(
-            project=self.project,
-            backendService=self.ref.Name(),
+        client.messages.ComputeBackendServicesUpdateRequest(
+            project=backend_service_ref.project,
+            backendService=backend_service_ref.Name(),
             backendServiceResource=replacement))
 
-  def Modify(self, args, existing):
-    replacement = copy.deepcopy(existing)
+  def Modify(self, client, resources, args, existing):
+    """Modify Backend Service."""
+    replacement = encoding.CopyProtoMessage(existing)
 
     if args.connection_draining_timeout is not None:
-      replacement.connectionDraining = self.messages.ConnectionDraining(
+      replacement.connectionDraining = client.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
 
     if args.description:
@@ -151,7 +131,7 @@ class UpdateGA(base_classes.ReadWriteCommand):
     elif args.description is not None:
       replacement.description = None
 
-    health_checks = flags.GetHealthCheckUris(args, self, self.resources)
+    health_checks = flags.GetHealthCheckUris(args, self, resources)
     if health_checks:
       replacement.healthChecks = health_checks
 
@@ -165,7 +145,7 @@ class UpdateGA(base_classes.ReadWriteCommand):
       replacement.portName = args.port_name
 
     if args.protocol:
-      replacement.protocol = (self.messages.BackendService
+      replacement.protocol = (client.messages.BackendService
                               .ProtocolValueValuesEnum(args.protocol))
 
     if args.enable_cdn is not None:
@@ -173,20 +153,21 @@ class UpdateGA(base_classes.ReadWriteCommand):
 
     if args.session_affinity is not None:
       replacement.sessionAffinity = (
-          self.messages.BackendService.SessionAffinityValueValuesEnum(
+          client.messages.BackendService.SessionAffinityValueValuesEnum(
               args.session_affinity))
 
     if args.affinity_cookie_ttl is not None:
       replacement.affinityCookieTtlSec = args.affinity_cookie_ttl
 
     backend_services_utils.ApplyCdnPolicyArgs(
-        self, args, replacement, is_update=True)
+        client, args, replacement, is_update=True)
 
-    self._ApplyIapArgs(args.iap, existing, replacement)
+    self._ApplyIapArgs(client, args.iap, existing, replacement)
 
     return replacement
 
   def ValidateArgs(self, args):
+    """Validate arguments."""
     if not any([
         args.affinity_cookie_ttl is not None,
         args.connection_draining_timeout is not None,
@@ -210,27 +191,54 @@ class UpdateGA(base_classes.ReadWriteCommand):
       raise exceptions.ToolException('At least one property must be modified.')
 
   def Run(self, args):
+    """Issues requests necessary to update the Backend Services."""
     self.ValidateArgs(args)
-    self.CreateReference(args)
 
-    return super(UpdateGA, self).Run(args)
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  def _ApplyIapArgs(self, iap_arg, existing, replacement):
+    backend_service_ref = (
+        flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
+            args,
+            holder.resources,
+            scope_lister=compute_flags.GetDefaultScopeLister(client)))
+    get_request = self.GetGetRequest(client, backend_service_ref)
+
+    objects = client.MakeRequests([get_request])
+
+    new_object = self.Modify(client, holder.resources, args, objects[0])
+
+    # If existing object is equal to the proposed object or if
+    # Modify() returns None, then there is no work to be done, so we
+    # print the resource and return.
+    if objects[0] == new_object:
+      log.status.Print(
+          'No change requested; skipping update for [{0}].'.format(
+              objects[0].name))
+      return objects
+
+    return client.MakeRequests(
+        [self.GetSetRequest(client, backend_service_ref, new_object)])
+
+  def _ApplyIapArgs(self, client, iap_arg, existing, replacement):
     if iap_arg is not None:
       existing_iap = existing.iap
       replacement.iap = backend_services_utils.GetIAP(
-          iap_arg, self.messages, existing_iap_settings=existing_iap)
+          iap_arg, client.messages, existing_iap_settings=existing_iap)
       if replacement.iap.enabled and not (existing_iap and
                                           existing_iap.enabled):
         log.warning(backend_services_utils.IapBestPracticesNotice())
       if (replacement.iap.enabled and replacement.protocol is not
-          self.messages.BackendService.ProtocolValueValuesEnum.HTTPS):
+          client.messages.BackendService.ProtocolValueValuesEnum.HTTPS):
         log.warning(backend_services_utils.IapHttpWarning())
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateGA):
-  """Update a backend service."""
+  """Update a backend service.
+
+  *{command}* is used to update backend services.
+  """
 
   HEALTH_CHECK_ARG = None
   HTTP_HEALTH_CHECK_ARG = None
@@ -262,16 +270,19 @@ class UpdateAlpha(UpdateGA):
     flags.AddAffinityCookieTtl(parser)
     AddIapFlag(parser)
 
-  def Modify(self, args, existing):
-    replacement = super(UpdateAlpha, self).Modify(args, existing)
+  def Modify(self, client, resources, args, existing):
+    """Modify Backend Service."""
+    replacement = super(UpdateAlpha, self).Modify(client, resources, args,
+                                                  existing)
 
     if args.connection_draining_timeout is not None:
-      replacement.connectionDraining = self.messages.ConnectionDraining(
+      replacement.connectionDraining = client.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
 
     return replacement
 
   def ValidateArgs(self, args):
+    """Validate arguments."""
     if not any([
         args.affinity_cookie_ttl is not None,
         args.connection_draining_timeout is not None,
@@ -297,7 +308,10 @@ class UpdateAlpha(UpdateGA):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(UpdateGA):
-  """Update a backend service."""
+  """Update a backend service.
+
+  *{command}* is used to update backend services.
+  """
 
   HEALTH_CHECK_ARG = None
   HTTP_HEALTH_CHECK_ARG = None
@@ -329,16 +343,19 @@ class UpdateBeta(UpdateGA):
     flags.AddCacheKeyIncludeQueryString(parser, default=None)
     flags.AddCacheKeyQueryStringList(parser)
 
-  def Modify(self, args, existing):
-    replacement = super(UpdateBeta, self).Modify(args, existing)
+  def Modify(self, client, resources, args, existing):
+    """Modify Backend Service."""
+    replacement = super(UpdateBeta, self).Modify(client, resources, args,
+                                                 existing)
 
     if args.connection_draining_timeout is not None:
-      replacement.connectionDraining = self.messages.ConnectionDraining(
+      replacement.connectionDraining = client.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
 
     return replacement
 
   def ValidateArgs(self, args):
+    """Validate arguments."""
     if not any([
         args.affinity_cookie_ttl is not None,
         args.connection_draining_timeout is not None,
@@ -360,13 +377,3 @@ class UpdateBeta(UpdateGA):
         args.timeout is not None,
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
-
-
-UpdateGA.detailed_help = {
-    'brief': 'Update a backend service',
-    'DESCRIPTION': """
-        *{command}* is used to update backend services.
-        """,
-}
-UpdateAlpha.detailed_help = UpdateGA.detailed_help
-UpdateBeta.detailed_help = UpdateGA.detailed_help

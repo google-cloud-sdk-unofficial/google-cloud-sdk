@@ -154,6 +154,16 @@ be overridden by using the global \f5\-\-project\fR flag.
 
 
 .TP 2m
+\fBshow_structured_logs\fR
+Controls when JSON structured log messages for the current verbosity and above
+will be written to standard error. The default is text format when disabled.
+Valid values are: \f5never\fR \- Log messages as text, \f5always\fR \- Always
+log messages as JSON, \f5log\fR \- Only log messages as JSON if stderr is a
+file, \f5terminal\fR \- Only log messages as JSON if stderr is a terminal. If
+unset default is \f5never\fR.
+
+
+.TP 2m
 \fBtrace_token\fR
 Token used to route traces of service requests for investigation of issues. This
 token will be provided by Google support.

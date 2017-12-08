@@ -18,12 +18,17 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.health_checks import flags
 from googlecloudsdk.core import exceptions as core_exceptions
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Update(base_classes.ReadWriteCommand):
+class Update(base.UpdateCommand):
+  """Update a UDP health check.
 
-  """Update a UDP health check."""
+  *{command}* is used to update an existing UDP health check. Only
+  arguments passed in will be updated on the health check. Other
+  attributes will remain unaffected.
+  """
 
   HEALTH_CHECK_ARG = None
 
@@ -35,40 +40,29 @@ class Update(base_classes.ReadWriteCommand):
                                           request_and_response_required=False)
     health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'UDP')
 
-  @property
-  def service(self):
-    return self.compute.healthChecks
-
-  @property
-  def resource_type(self):
-    return 'healthChecks'
-
-  def CreateReference(self, args):
-    return self.HEALTH_CHECK_ARG.ResolveAsResource(args, self.resources)
-
-  def GetGetRequest(self, args):
+  def GetGetRequest(self, client, health_check_ref):
     """Returns a request for fetching the existing health check."""
-    return (self.service,
+    return (client.apitools_client.healthChecks,
             'Get',
-            self.messages.ComputeHealthChecksGetRequest(
-                healthCheck=self.ref.Name(),
-                project=self.project))
+            client.messages.ComputeHealthChecksGetRequest(
+                healthCheck=health_check_ref.Name(),
+                project=health_check_ref.project))
 
-  def GetSetRequest(self, args, replacement, existing):
+  def GetSetRequest(self, client, health_check_ref, replacement):
     """Returns a request for updating the health check."""
-    return (self.service,
+    return (client.apitools_client.healthChecks,
             'Update',
-            self.messages.ComputeHealthChecksUpdateRequest(
-                healthCheck=self.ref.Name(),
+            client.messages.ComputeHealthChecksUpdateRequest(
+                healthCheck=health_check_ref.Name(),
                 healthCheckResource=replacement,
-                project=self.project))
+                project=health_check_ref.project))
 
-  def Modify(self, args, existing_check):
+  def Modify(self, client, args, existing_check):
     """Returns a modified HealthCheck message."""
     # We do not support using 'update udp' with a health check of a
     # different protocol.
     if (existing_check.type !=
-        self.messages.HealthCheck.TypeValueValuesEnum.UDP):
+        client.messages.HealthCheck.TypeValueValuesEnum.UDP):
       raise core_exceptions.Error(
           'update udp subcommand applied to health check with protocol ' +
           existing_check.type.name)
@@ -89,11 +83,11 @@ class Update(base_classes.ReadWriteCommand):
     else:
       port_name = None
 
-    new_health_check = self.messages.HealthCheck(
+    new_health_check = client.messages.HealthCheck(
         name=existing_check.name,
         description=description,
-        type=self.messages.HealthCheck.TypeValueValuesEnum.UDP,
-        udpHealthCheck=self.messages.UDPHealthCheck(
+        type=client.messages.HealthCheck.TypeValueValuesEnum.UDP,
+        udpHealthCheck=client.messages.UDPHealthCheck(
             request=args.request or existing_check.udpHealthCheck.request,
             response=args.response or existing_check.udpHealthCheck.response,
             port=args.port or existing_check.udpHealthCheck.port,
@@ -109,6 +103,10 @@ class Update(base_classes.ReadWriteCommand):
     return new_health_check
 
   def Run(self, args):
+    """Issues requests necessary to update UDP Health Checks."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
     health_checks_utils.CheckProtocolAgnosticArgs(args)
 
     args_unset = not (args.port
@@ -130,14 +128,22 @@ class Update(base_classes.ReadWriteCommand):
       raise exceptions.ToolException(
           '"response" field for UDP can not be empty.')
 
-    return super(Update, self).Run(args)
+    health_check_ref = self.HEALTH_CHECK_ARG.ResolveAsResource(
+        args, holder.resources)
+    get_request = self.GetGetRequest(client, health_check_ref)
 
+    objects = client.MakeRequests([get_request])
 
-Update.detailed_help = {
-    'brief': ('Update a UDP health check'),
-    'DESCRIPTION': """\
-        *{command}* is used to update an existing UDP health check. Only
-        arguments passed in will be updated on the health check. Other
-        attributes will remain unaffected.
-        """,
-}
+    new_object = self.Modify(client, args, objects[0])
+
+    # If existing object is equal to the proposed object or if
+    # Modify() returns None, then there is no work to be done, so we
+    # print the resource and return.
+    if objects[0] == new_object:
+      log.status.Print(
+          'No change requested; skipping update for [{0}].'.format(
+              objects[0].name))
+      return objects
+
+    return client.MakeRequests(
+        [self.GetSetRequest(client, health_check_ref, new_object)])

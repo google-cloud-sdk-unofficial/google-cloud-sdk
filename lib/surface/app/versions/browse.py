@@ -17,6 +17,8 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import browser_dispatcher
+from googlecloudsdk.command_lib.app import flags
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
@@ -41,6 +43,13 @@ class Browse(base.Command):
 
   @staticmethod
   def Args(parser):
+    parser.display_info.AddFormat("""
+          table(
+            version:label=VERSION,
+            url:label=URL
+          )
+    """)
+    flags.LAUNCH_BROWSER.AddToParser(parser)
     parser.add_argument(
         'versions',
         nargs='+',
@@ -52,6 +61,18 @@ class Browse(base.Command):
                               'default service.'))
 
   def Run(self, args):
+    """Launch a browser, or return a table of URLs to print."""
     project = properties.VALUES.core.project.Get(required=True)
+    outputs = []
     for version in args.versions:
-      browser_dispatcher.BrowseApp(project, args.service, version)
+      outputs.append(browser_dispatcher.BrowseApp(project,
+                                                  args.service,
+                                                  version,
+                                                  args.launch_browser))
+    if any(outputs):
+      if args.launch_browser:
+        # We couldn't find a browser to launch
+        log.status.Print(
+            'Did not detect your browser. Go to these links to view your app:')
+      return outputs
+    return None

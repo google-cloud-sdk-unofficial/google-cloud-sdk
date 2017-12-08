@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.logging import common as logging_common
 from googlecloudsdk.api_lib.logging import util as logging_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.core import properties
 
 
@@ -37,6 +38,7 @@ class GetLogs(base.ListCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
+    flags.AddRegionFlag(parser)
     base.LIMIT_FLAG.RemoveFromParser(parser)
     parser.add_argument(
         'name', nargs='?',

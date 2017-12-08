@@ -40,17 +40,18 @@ class ListAlpha(base_classes.MultiScopeLister):
         parser,
         scopes=[base_classes.ScopeType.zonal_scope,
                 base_classes.ScopeType.regional_scope])
-
-  def DeprecatedFormat(self, args):
-    return """table(name,
-                    location(),
-                    location_scope(),
-                    sizeGb,
-                    type.basename(),
-                    status)"""
+    parser.display_info.AddFormat("""
+        table(name,
+              location(),
+              location_scope(),
+              sizeGb,
+              type.basename(),
+              status)
+    """)
 
   def Collection(self):
-    return 'compute.disks'
+    """Override the default collection from the base class."""
+    return None
 
   @property
   def global_service(self):

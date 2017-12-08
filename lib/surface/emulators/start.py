@@ -16,11 +16,12 @@
 import contextlib
 import tempfile
 
-from googlecloudsdk.api_lib.emulators import config
-from googlecloudsdk.api_lib.emulators import proxy_util
-from googlecloudsdk.api_lib.emulators import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.emulators import config
+from googlecloudsdk.command_lib.emulators import proxy_util
+from googlecloudsdk.command_lib.emulators import util
+from googlecloudsdk.command_lib.util import java
 from googlecloudsdk.core import log
 import portpicker
 
@@ -81,7 +82,7 @@ class Start(base.Command):
       component = emulator.emulator_component
       if (args.emulators is not None and
           (flag in args.emulators or 'all' in args.emulators)):
-        util.CheckIfJava7IsInstalled(title)
+        java.CheckIfJavaIsInstalled(title)
         util.EnsureComponentIsInstalled(component, title)
 
     local_emulator_ports = {}

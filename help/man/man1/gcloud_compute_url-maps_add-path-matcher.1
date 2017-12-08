@@ -20,11 +20,11 @@ gcloud compute url\-maps add\-path\-matcher \- add a path matcher to a URL map
 \fBgcloud compute url\-maps add\-path\-matcher\fR is used to add a path matcher
 to a URL map. A path matcher maps HTTP request paths to backend services or
 backend buckets. Each path matcher must be referenced by at least one host rule.
-This command can create a new host rule through the \f5\fI\-\-new\-hosts\fR\fR
-flag or it can reconfigure an existing host rule to point to the newly added
-path matcher using \f5\fI\-\-existing\-host\fR\fR. In the latter case, if a path
-matcher is orphaned as a result of the operation, this command will fail unless
-\f5\fI\-\-delete\-orphaned\-path\-matcher\fR\fR is provided.
+This command can create a new host rule through the \f5\-\-new\-hosts\fR flag or
+it can reconfigure an existing host rule to point to the newly added path
+matcher using \f5\-\-existing\-host\fR. In the latter case, if a path matcher is
+orphaned as a result of the operation, this command will fail unless
+\f5\-\-delete\-orphaned\-path\-matcher\fR is provided.
 
 
 

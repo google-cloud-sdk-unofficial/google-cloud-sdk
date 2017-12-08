@@ -19,7 +19,8 @@ from googlecloudsdk.command_lib.app import flags
 from googlecloudsdk.core import log
 
 
-class Update(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(base.UpdateCommand):
   """Updates a domain mapping."""
 
   detailed_help = {
@@ -46,7 +47,27 @@ class Update(base.UpdateCommand):
 
   def Run(self, args):
     client = api_client.AppengineDomainsApiClient.GetApiClient()
-    mapping = client.UpdateDomainMapping(args.domain, args.certificate_id,
+    mapping = client.UpdateDomainMapping(args.domain,
+                                         args.certificate_id,
                                          args.no_certificate_id)
+    log.UpdatedResource(args.domain)
+    return mapping
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  """Updates a domain mapping with an Alpha client."""
+
+  @staticmethod
+  def Args(parser):
+    super(UpdateAlpha, UpdateAlpha).Args(parser)
+    flags.AddNoManagedCertificateFlag(parser)
+
+  def Run(self, args):
+    client = api_client.AppengineDomainsApiAlphaClient.GetApiClient()
+    mapping = client.UpdateDomainMapping(args.domain,
+                                         args.certificate_id,
+                                         args.no_certificate_id,
+                                         args.no_managed_certificate)
     log.UpdatedResource(args.domain)
     return mapping

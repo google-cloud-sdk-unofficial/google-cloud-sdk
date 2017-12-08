@@ -38,3 +38,33 @@ class DomainMappings(base.Group):
             $ {command} list
       """,
   }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DomainMappingsAlpha(base.Group):
+  """View and manage your App Engine domain mappings.
+
+  This set of commands can be used to view and manage your app's
+  domain mappings.
+
+  App Engine Domain Mappings allow an application to be served via one or many
+  custom domains, such as `example.com`, instead of the default `appspot.com`
+  address. You can use a custom domain with or without SSL.
+
+  The Alpha commands add support for automatically managed certificates.
+  """
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To list your App Engine domains, run:
+
+            $ {command} list
+
+          To create a domain with an automatically managed certiticate, run:
+
+            $ {command} create 'example.com'
+      """,
+  }

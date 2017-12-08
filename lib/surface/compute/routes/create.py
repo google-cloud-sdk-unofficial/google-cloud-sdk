@@ -103,7 +103,7 @@ def _Args(parser):
       '--next-hop-instance-zone',
       action=actions.StoreProperty(properties.VALUES.compute.zone),
       help=('The zone of the next hop instance. ' +
-            compute_flags.ZONE_PROPERTY_EXPLANATION))
+            instance_flags.ZONE_PROPERTY_EXPLANATION))
 
   parser.add_argument(
       '--next-hop-vpn-tunnel-region',

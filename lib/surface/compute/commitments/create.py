@@ -36,8 +36,8 @@ class Create(base.Command):
     flags.MakeCommitmentArg(False).AddArgument(parser)
     parser.add_argument('--plan',
                         required=True,
-                        help=('Duration of the commitment. Can be `12-months` '
-                              'or `36-months`.'))
+                        choices=flags.VALID_PLANS,
+                        help=('Duration of the commitment.'))
     resources_help = """\
     Resources to be included in the commitment commitment:
     * MEMORY should include unit (eg. 3072MB or 9GB). If no units are specified,
@@ -57,7 +57,6 @@ class Create(base.Command):
                         }))
 
   def _ValidateArgs(self, args):
-    flags.ValidatePlanArg(args.plan)
     flags.ValidateResourcesArg(args.resources)
 
   def _MakeCreateRequest(self, args, messages, project, region, commitment_ref):

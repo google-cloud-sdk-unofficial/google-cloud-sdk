@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.compute import firewalls_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.firewall_rules import flags
 from googlecloudsdk.command_lib.compute.networks import flags as network_flags
+from googlecloudsdk.core.console import progress_tracker
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -67,8 +68,9 @@ class Create(base.CreateCommand):
     firewall, project = self._CreateFirewall(holder, args)
     request = client.messages.ComputeFirewallsInsertRequest(
         firewall=firewall, project=project)
-    return client.MakeRequests([(client.apitools_client.firewalls, 'Insert',
-                                 request)])
+    with progress_tracker.ProgressTracker('Creating firewall'):
+      return client.MakeRequests([(client.apitools_client.firewalls, 'Insert',
+                                   request)])
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

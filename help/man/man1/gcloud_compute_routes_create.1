@@ -105,7 +105,9 @@ Specifies the network to which the route will be applied.
 .TP 2m
 \fB\-\-next\-hop\-instance\-zone\fR=\fINEXT_HOP_INSTANCE_ZONE\fR
 The zone of the next hop instance. If not specified, you may be prompted to
-select a zone.
+select a zone. \f5gcloud\fR will attempt to identify the zone by searching for
+resources in your project. If the zone cannot be determined, you will then be
+prompted with all Google Cloud Platform zones.
 
 To avoid prompting when this flag is omitted, you can set the
 \f5\fIcompute/zone\fR\fR property:

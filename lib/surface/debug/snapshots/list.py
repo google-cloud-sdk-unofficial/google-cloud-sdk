@@ -52,6 +52,7 @@ class List(base.ListCommand):
             seconds. If the value is "unlimited", all inactive snapshots will
             be included.
         """)
+    parser.display_info.AddFormat(flags.SNAPSHOT_LIST_FORMAT)
 
   def Run(self, args):
     """Run the list command."""

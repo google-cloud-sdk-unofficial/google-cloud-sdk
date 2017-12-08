@@ -20,7 +20,6 @@ from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.core.util import files
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Decrypt(base.Command):
   r"""Decrypt a ciphertext file using a key.
 
@@ -57,10 +56,7 @@ class Decrypt(base.Command):
     flags.AddAadFileFlag(parser)
 
   def _ReadFileOrStdin(self, path, max_bytes):
-    try:
-      data = files.GetFileOrStdinContents(path, binary=True)
-    except files.Error as e:
-      raise exceptions.BadFileException(e)
+    data = files.GetFileOrStdinContents(path, binary=True)
     if len(data) > max_bytes:
       raise exceptions.BadFileException(
           'The file [{0}] is larger than the maximum size of {1} bytes.'.format(
@@ -81,7 +77,7 @@ class Decrypt(base.Command):
       # to buffer and send obviously oversized files to KMS.
       ciphertext = self._ReadFileOrStdin(
           args.ciphertext_file, max_bytes=2 * 65536)
-    except EnvironmentError as e:
+    except files.Error as e:
       raise exceptions.BadFileException(
           'Failed to read ciphertext file [{0}]: {1}'.format(
               args.ciphertext_file, e))
@@ -92,7 +88,7 @@ class Decrypt(base.Command):
         # The Encrypt API limits the AAD to 64KiB.
         aad = self._ReadFileOrStdin(
             args.additional_authenticated_data_file, max_bytes=65536)
-      except EnvironmentError as e:
+      except files.Error as e:
         raise exceptions.BadFileException(
             'Failed to read additional authenticated data file [{0}]: {1}'.
             format(args.additional_authenticated_data_file, e))

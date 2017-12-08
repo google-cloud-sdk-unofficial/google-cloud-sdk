@@ -13,25 +13,56 @@
 # limitations under the License.
 """Command to set IAM policy for an instance resource."""
 
-from googlecloudsdk.api_lib.compute import iam_base_classes
+from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.instances import flags
+from googlecloudsdk.command_lib.iam import iam_util
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SetIamPolicy(iam_base_classes.ZonalSetIamPolicy):
-  """Set the IAM Policy for a Google Compute Engine instance resource."""
+class SetIamPolicy(base.Command):
+  """Set the IAM Policy for a Google Compute Engine instance.
+
+  *{command}* sets the Iam Policy associated with a Google Compute Engine
+  instance in a project.
+  """
 
   @staticmethod
   def Args(parser):
-    iam_base_classes.ZonalSetIamPolicy.Args(parser, 'compute.instances')
+    flags.INSTANCE_ARG.AddArgument(
+        parser, operation_type='set the IAM policy of')
 
-  @property
-  def service(self):
-    return self.compute.instances
+    parser.add_argument(
+        'policy_file',
+        metavar='POLICY_FILE',
+        help="""\
+        Path to a local JSON or YAML formatted file containing a valid policy.
+        """)
+    # TODO(b/36050881): fill in detailed help.
 
-  @property
-  def resource_type(self):
-    return 'instances'
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-SetIamPolicy.detailed_help = iam_base_classes.SetIamPolicyHelp('instance')
+    policy = iam_util.ParsePolicyFile(args.policy_file, client.messages.Policy)
+
+    instance_ref = flags.INSTANCE_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+
+    # TODO(b/36053578): determine how this output should look when empty.
+
+    # SetIamPolicy always returns either an error or the newly set policy.
+    # If the policy was just set to the empty policy it returns a valid empty
+    # policy (just an etag.)
+    # It is not possible to have multiple policies for one resource.
+    return client.MakeRequests(
+        [(client.apitools_client.instances, 'SetIamPolicy',
+          client.messages.ComputeInstancesSetIamPolicyRequest(
+              policy=policy,
+              project=instance_ref.project,
+              resource=instance_ref.instance,
+              zone=instance_ref.zone))])[0]

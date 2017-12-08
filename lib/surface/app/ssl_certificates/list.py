@@ -17,7 +17,8 @@ from googlecloudsdk.api_lib.app.api import appengine_ssl_api_client as api_clien
 from googlecloudsdk.calliope import base
 
 
-class List(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(base.ListCommand):
   """Lists the SSL certificates."""
 
   detailed_help = {
@@ -38,8 +39,7 @@ class List(base.ListCommand):
   }
 
   def Run(self, args):
-    client = api_client.AppengineSslApiClient.GetApiClient()
-    return client.ListSslCertificates()
+    return api_client.AppengineSslApiClient.GetApiClient().ListSslCertificates()
 
   @staticmethod
   def Args(parser):
@@ -48,5 +48,25 @@ class List(base.ListCommand):
               id:sort=1,
               display_name,
               domain_names.list()
+            )
+        """)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListBeta):
+  """Lists the SSL certificates for Alpha version."""
+
+  def Run(self, args):
+    return api_client.AppengineSslApiAlphaClient.GetApiClient(
+    ).ListSslCertificates()
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""
+            table(
+              id:sort=1,
+              display_name,
+              domain_names.list(),
+              managed_certificate.status:label=MANAGED_CERTIFICATE_STATUS
             )
         """)

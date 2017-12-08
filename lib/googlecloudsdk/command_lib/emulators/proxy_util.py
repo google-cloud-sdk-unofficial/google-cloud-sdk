@@ -17,7 +17,7 @@
 import contextlib
 import os
 import subprocess
-from googlecloudsdk.api_lib.emulators import util
+from googlecloudsdk.command_lib.emulators import util
 from googlecloudsdk.core.util import files
 
 

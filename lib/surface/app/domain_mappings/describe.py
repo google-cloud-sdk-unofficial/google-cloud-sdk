@@ -37,5 +37,8 @@ class Describe(base.DescribeCommand):
     flags.DOMAIN_FLAG.AddToParser(parser)
 
   def Run(self, args):
-    client = api_client.AppengineDomainsApiClient.GetApiClient()
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      client = api_client.AppengineDomainsApiAlphaClient.GetApiClient()
+    else:
+      client = api_client.AppengineDomainsApiClient.GetApiClient()
     return client.GetDomainMapping(args.domain)

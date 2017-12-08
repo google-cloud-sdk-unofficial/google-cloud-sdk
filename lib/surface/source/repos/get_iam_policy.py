@@ -14,8 +14,6 @@
 """Gets the IAM policy for the repository.
 """
 
-import textwrap
-
 from googlecloudsdk.api_lib.sourcerepo import sourcerepo
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
@@ -25,19 +23,17 @@ from googlecloudsdk.core import resources
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA,
                     base.ReleaseTrack.BETA)
 class GetIamPolicy(base.DescribeCommand):
-  """Get the IAM policy for the named cloud source repository."""
+  """Get the IAM policy for the named cloud source repository.
 
-  detailed_help = {
-      'DESCRIPTION':
-          """\
-          This command gets the IAM policy for the given repository.
-      """,
-      'EXAMPLES':
-          textwrap.dedent("""\
-          To get the IAM policy, issue the following command:\n
-            $ {command} REPOSITORY_NAME
-      """),
-  }
+  This command gets the IAM policy for the given repository.
+
+  ## EXAMPLES
+
+  To get the IAM policy, issue the following command:
+
+    $ {command} REPOSITORY_NAME
+
+  """
 
   @staticmethod
   def Args(parser):

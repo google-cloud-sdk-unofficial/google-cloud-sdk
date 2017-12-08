@@ -16,9 +16,11 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
+from googlecloudsdk.command_lib.auth import auth_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.credentials import store as c_store
+from googlecloudsdk.core.resource import resource_printer
 
 
 class Revoke(base.Command):
@@ -42,7 +44,6 @@ class Revoke(base.Command):
                         help='Revoke credentials for all accounts.')
     parser.display_info.AddFormat('list[title="Revoked credentials:"]')
 
-  @c_exc.RaiseToolExceptionInsteadOf(c_store.Error)
   def Run(self, args):
     """Revoke credentials and update active account."""
     accounts = args.accounts or []
@@ -73,8 +74,8 @@ class Revoke(base.Command):
     return accounts
 
   def Epilog(self, unused_results_were_displayed):
-    log_out = log.out
-    log.out = log.status
-    # TODO(b/38445131): Remove usage of ExecuteCommandDoNotUse
-    self.ExecuteCommandDoNotUse(['auth', 'list'])
-    log.out = log_out
+    accounts = auth_util.AllAccounts()
+    printer = resource_printer.Printer(
+        auth_util.ACCOUNT_TABLE_FORMAT,
+        out=log.status)
+    printer.Print(accounts)

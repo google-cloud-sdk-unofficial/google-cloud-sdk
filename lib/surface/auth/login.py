@@ -20,6 +20,7 @@ import textwrap
 from googlecloudsdk.api_lib.auth import util as auth_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
+from googlecloudsdk.command_lib.util import check_browser
 from googlecloudsdk.core import config
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -128,7 +129,7 @@ class Login(base.Command):
                             args.brief)
 
     # No valid creds, do the web flow.
-    launch_browser = auth_util.ShouldLaunchBrowser(args.launch_browser)
+    launch_browser = check_browser.ShouldLaunchBrowser(args.launch_browser)
     creds = auth_util.DoInstalledAppBrowserFlow(launch_browser, scopes)
     web_flow_account = creds.id_token['email']
     if account and account.lower() != web_flow_account.lower():

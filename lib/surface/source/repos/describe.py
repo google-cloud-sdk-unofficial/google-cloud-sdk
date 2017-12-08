@@ -15,8 +15,6 @@
 """Describe Google Cloud Platform git repository.
 """
 
-import textwrap
-
 from googlecloudsdk.api_lib.sourcerepo import sourcerepo
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
@@ -26,24 +24,21 @@ from googlecloudsdk.core import resources
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA,
                     base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
-  """Describe a cloud source repository."""
+  """Describe a cloud source repository.
 
-  detailed_help = {
-      'DESCRIPTION':
-          """\
-          This command describes a repository from the currently
-          active Google Cloud Platform project.  The description includes the
-          full repository name (projects/<projectid>/repos/<reponame>), the size
-          (if non-zero), and the url.
-      """,
-      'EXAMPLES':
-          textwrap.dedent("""\
-          To describe a repository named example-repo in the current project
-          issue the following command:
+  This command describes a repository from the currently
+  active Google Cloud Platform project.  The description includes the
+  full repository name (projects/<projectid>/repos/<reponame>), the size
+  (if non-zero), and the url.
 
-            $ {command} REPOSITORY_NAME
-      """),
-  }
+  ## EXAMPLES
+
+  To describe a repository named example-repo in the current project
+  issue the following command:
+
+    $ {command} REPOSITORY_NAME
+
+  """
 
   @staticmethod
   def Args(parser):

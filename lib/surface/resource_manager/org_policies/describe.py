@@ -75,4 +75,7 @@ class Describe(base.DescribeCommand):
     elif args.organization:
       return m.CloudresourcemanagerOrganizationsGetEffectiveOrgPolicyRequest(
           organizationsId=resource_id, getEffectiveOrgPolicyRequest=request)
+    elif args.folder:
+      return m.CloudresourcemanagerFoldersGetEffectiveOrgPolicyRequest(
+          foldersId=resource_id, getEffectiveOrgPolicyRequest=request)
     return None

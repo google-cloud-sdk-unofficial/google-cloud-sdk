@@ -24,6 +24,7 @@ from googlecloudsdk.third_party.appengine.tools import context_util
 
 
 @base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class GenRepoInfoFile(base.Command):
   """[DEPRECATED] Saves repository information in a file.
 

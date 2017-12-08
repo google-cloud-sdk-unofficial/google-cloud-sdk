@@ -19,6 +19,20 @@ from googlecloudsdk.api_lib.compute import instance_groups_utils
 class List(base_classes.ZonalLister):
   """List Google Compute Engine unmanaged instance groups."""
 
+  @staticmethod
+  def Args(parser):
+    base_classes.ZonalLister.Args(parser)
+    parser.display_info.AddFormat("""
+          table(
+            name,
+            zone.basename(),
+            network.basename(),
+            network.segment(-4):label=NETWORK_PROJECT,
+            isManaged:label=MANAGED,
+            size:label=INSTANCES
+          )
+    """)
+
   def GetResources(self, args, errors):
     resources = super(List, self).GetResources(args, errors)
     return (resource for resource in resources if resource.zone)
@@ -34,17 +48,9 @@ class List(base_classes.ZonalLister):
         items=items,
         filter_mode=mode)
 
-  def DeprecatedFormat(self, unused_args):
-    return """
-          table(
-            name,
-            zone.basename(),
-            network.basename(),
-            network.segment(-4):label=NETWORK_PROJECT,
-            isManaged:label=MANAGED,
-            size:label=INSTANCES
-          )
-          """
+  def Collection(self):
+    """Override the default collection from the base class."""
+    return None
 
   @property
   def service(self):

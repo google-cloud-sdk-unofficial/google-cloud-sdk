@@ -15,14 +15,17 @@
 """Command for getting a target pool's health."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.target_pools import flags
 
 
-class GetHealth(base_classes.BaseCommand):
-  """Get the health of instances in a target pool."""
+class GetHealth(base.DescribeCommand):
+  """Get the health of instances in a target pool.
+
+  *{command}* displays the health of instances in a target pool.
+  """
 
   TARGET_POOL_ARG = None
 
@@ -32,41 +35,26 @@ class GetHealth(base_classes.BaseCommand):
     cls.TARGET_POOL_ARG.AddArgument(
         parser, operation_type='get health information for')
 
-  @property
-  def service(self):
-    return self.compute.targetPools
-
-  @property
-  def resource_type(self):
-    return 'targetPoolInstanceHealth'
-
-  def GetTargetPool(self):
+  def GetTargetPool(self, client, target_pool_ref):
     """Fetches the target pool resource."""
-    errors = []
-    objects = list(request_helper.MakeRequests(
-        requests=[(self.service,
-                   'Get',
-                   self.messages.ComputeTargetPoolsGetRequest(
-                       project=self.project,
-                       region=self.target_pool_ref.region,
-                       targetPool=self.target_pool_ref.Name()))],
-        http=self.http,
-        batch_url=self.batch_url,
-        errors=errors))
-    if errors:
-      utils.RaiseToolException(
-          errors,
-          error_message='Could not fetch target pool:')
+    objects = client.MakeRequests(
+        [(client.apitools_client.targetPools, 'Get',
+          client.messages.ComputeTargetPoolsGetRequest(
+              project=target_pool_ref.project,
+              region=target_pool_ref.region,
+              targetPool=target_pool_ref.Name()))])
     return objects[0]
 
   def Run(self, args):
     """Returns a list of TargetPoolInstanceHealth objects."""
-    self.target_pool_ref = self.TARGET_POOL_ARG.ResolveAsResource(
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    target_pool_ref = self.TARGET_POOL_ARG.ResolveAsResource(
         args,
-        self.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
-                                                         self.project))
-    target_pool = self.GetTargetPool()
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+    target_pool = self.GetTargetPool(client, target_pool_ref)
     instances = target_pool.instances
 
     # If the target pool has no instances, we should return an empty
@@ -76,20 +64,19 @@ class GetHealth(base_classes.BaseCommand):
 
     requests = []
     for instance in instances:
-      request_message = self.messages.ComputeTargetPoolsGetHealthRequest(
-          instanceReference=self.messages.InstanceReference(
+      request_message = client.messages.ComputeTargetPoolsGetHealthRequest(
+          instanceReference=client.messages.InstanceReference(
               instance=instance),
-          project=self.project,
-          region=self.target_pool_ref.region,
-          targetPool=self.target_pool_ref.Name())
-      requests.append((self.service, 'GetHealth', request_message))
+          project=target_pool_ref.project,
+          region=target_pool_ref.region,
+          targetPool=target_pool_ref.Name())
+      requests.append((client.apitools_client.targetPools, 'GetHealth',
+                       request_message))
 
     errors = []
-    resources = request_helper.MakeRequests(
+    resources = client.MakeRequests(
         requests=requests,
-        http=self.http,
-        batch_url=self.batch_url,
-        errors=errors)
+        errors_to_collect=errors)
 
     for resource in resources:
       yield resource
@@ -98,11 +85,3 @@ class GetHealth(base_classes.BaseCommand):
       utils.RaiseToolException(
           errors,
           error_message='Could not get health for some targets:')
-
-
-GetHealth.detailed_help = {
-    'brief': 'Get the health of instances in a target pool',
-    'DESCRIPTION': """\
-        *{command}* displays the health of instances in a target pool.
-        """,
-}

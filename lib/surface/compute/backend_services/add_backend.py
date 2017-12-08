@@ -14,106 +14,82 @@
 
 """Command for adding a backend to a backend service."""
 
-import copy
+from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
-from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.backend_services import backend_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class AddBackend(base_classes.ReadWriteCommand):
-  """Add a backend to a backend service."""
+class AddBackend(base.UpdateCommand):
+  """Add a backend to a backend service.
 
-  def __init__(self, *args, **kwargs):
-    super(AddBackend, self).__init__(*args, **kwargs)
-    self.ref = None
+  *{command}* is used to add a backend to a backend service. A
+  backend is a group of tasks that can handle requests sent to a
+  backend service. Currently, the group of tasks can be one or
+  more Google Compute Engine virtual machine instances grouped
+  together using an instance group.
+
+  Traffic is first spread evenly across all virtual machines in
+  the group. When the group is full, traffic is sent to the next
+  nearest group(s) that still have remaining capacity.
+
+  To modify the parameters of a backend after it has been added
+  to the backend service, use
+  `gcloud compute backend-services update-backend` or
+  `gcloud compute backend-services edit`.
+  """
 
   @staticmethod
   def Args(parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     backend_flags.AddDescription(parser)
-    backend_flags.AddInstanceGroup(
-        parser, operation_type='add to',
-        with_deprecated_zone=True)
+    flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(
+        parser, operation_type='add to the backend service')
     backend_flags.AddBalancingMode(parser)
     backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
 
-  @property
-  def service(self):
-    if self.regional:
-      return self.compute.regionBackendServices
-    return self.compute.backendServices
-
-  @property
-  def resource_type(self):
-    if self.regional:
-      return 'regionBackendServices'
-    return 'backendServices'
-
-  def CreateReference(self, args):
-    # TODO(b/35133484): remove once base classes are refactored away
-    if not self.ref:
-      self.ref = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-          args,
-          self.resources,
-          scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
-      self.regional = self.ref.Collection() == 'compute.regionBackendServices'
-    return self.ref
-
-  def GetGetRequest(self, args):
-    if self.regional:
-      return (self.service,
+  def _GetGetRequest(self, client, backend_service_ref):
+    if backend_service_ref.Collection() == 'compute.regionBackendServices':
+      return (client.apitools_client.regionBackendServices,
               'Get',
-              self.messages.ComputeRegionBackendServicesGetRequest(
-                  backendService=self.ref.Name(),
-                  region=self.ref.region,
-                  project=self.project))
-    return (self.service,
+              client.messages.ComputeRegionBackendServicesGetRequest(
+                  backendService=backend_service_ref.Name(),
+                  region=backend_service_ref.region,
+                  project=backend_service_ref.project))
+    return (client.apitools_client.backendServices,
             'Get',
-            self.messages.ComputeBackendServicesGetRequest(
-                backendService=self.ref.Name(),
-                project=self.project))
+            client.messages.ComputeBackendServicesGetRequest(
+                backendService=backend_service_ref.Name(),
+                project=backend_service_ref.project))
 
-  def GetSetRequest(self, args, replacement, existing):
-    if self.regional:
-      return (self.service,
+  def _GetSetRequest(self, client, backend_service_ref, replacement):
+    if backend_service_ref.Collection() == 'compute.regionBackendServices':
+      return (client.apitools_client.regionBackendServices,
               'Update',
-              self.messages.ComputeRegionBackendServicesUpdateRequest(
-                  backendService=self.ref.Name(),
+              client.messages.ComputeRegionBackendServicesUpdateRequest(
+                  backendService=backend_service_ref.Name(),
                   backendServiceResource=replacement,
-                  region=self.ref.region,
-                  project=self.project))
-    return (self.service,
+                  region=backend_service_ref.region,
+                  project=backend_service_ref.project))
+    return (client.apitools_client.backendServices,
             'Update',
-            self.messages.ComputeBackendServicesUpdateRequest(
-                backendService=self.ref.Name(),
+            client.messages.ComputeBackendServicesUpdateRequest(
+                backendService=backend_service_ref.Name(),
                 backendServiceResource=replacement,
-                project=self.project))
+                project=backend_service_ref.project))
 
-  def CreateGroupReference(self, args):
-    return instance_groups_utils.CreateInstanceGroupReference(
-        scope_prompter=self,
-        compute=self.compute,
-        resources=self.resources,
-        name=args.instance_group,
-        region=args.instance_group_region,
-        zone=(args.instance_group_zone
-              if args.instance_group_zone else args.zone),
-        zonal_resource_type='instanceGroups',
-        regional_resource_type='regionInstanceGroups')
-
-  def CreateBackendMessage(self, group_uri, balancing_mode, args):
+  def _CreateBackendMessage(self, client, group_uri, balancing_mode, args):
     """Create a backend message.
 
     Args:
+      client: The compute client.
       group_uri: String. The backend instance group uri.
       balancing_mode: Backend.BalancingModeValueValuesEnum. The backend load
         balancing mode.
@@ -124,8 +100,8 @@ class AddBackend(base_classes.ReadWriteCommand):
       arguments.
     """
 
-    backend_services_utils.ValidateBalancingModeArgs(self.messages, args)
-    return self.messages.Backend(
+    backend_services_utils.ValidateBalancingModeArgs(client.messages, args)
+    return client.messages.Backend(
         balancingMode=balancing_mode,
         capacityScaler=args.capacity_scaler,
         description=args.description,
@@ -136,15 +112,13 @@ class AddBackend(base_classes.ReadWriteCommand):
         maxConnections=args.max_connections,
         maxConnectionsPerInstance=args.max_connections_per_instance)
 
-  def Modify(self, args, existing):
-    ref = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-        args,
-        self.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
-    backend_flags.WarnOnDeprecatedFlags(args)
-    replacement = copy.deepcopy(existing)
+  def _Modify(self, client, resources, backend_service_ref, args, existing):
+    replacement = encoding.CopyProtoMessage(existing)
 
-    group_ref = self.CreateGroupReference(args)
+    group_ref = flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
+        args,
+        resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
     group_uri = group_ref.SelfLink()
 
@@ -154,95 +128,98 @@ class AddBackend(base_classes.ReadWriteCommand):
             'Backend [{0}] in zone [{1}] already exists in backend service '
             '[{2}].'.format(group_ref.Name(),
                             group_ref.zone,
-                            ref.Name()))
+                            backend_service_ref.Name()))
 
     if args.balancing_mode:
-      balancing_mode = self.messages.Backend.BalancingModeValueValuesEnum(
+      balancing_mode = client.messages.Backend.BalancingModeValueValuesEnum(
           args.balancing_mode)
     else:
       balancing_mode = None
 
-    backend = self.CreateBackendMessage(group_uri, balancing_mode, args)
+    backend = self._CreateBackendMessage(client, group_uri, balancing_mode,
+                                         args)
 
     replacement.backends.append(backend)
     return replacement
 
   def Run(self, args):
-    self.CreateReference(args)
-    return super(AddBackend, self).Run(args)
+    """Issues requests necessary to add backend to the Backend Service."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    backend_service_ref = (
+        flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
+            args,
+            holder.resources,
+            scope_lister=compute_flags.GetDefaultScopeLister(client)))
+    get_request = self._GetGetRequest(client, backend_service_ref)
+
+    objects = client.MakeRequests([get_request])
+
+    new_object = self._Modify(client, holder.resources, backend_service_ref,
+                              args, objects[0])
+
+    return client.MakeRequests(
+        [self._GetSetRequest(client, backend_service_ref, new_object)])
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class AddBackendBeta(AddBackend):
-  """Add a backend to a backend service."""
+  """Add a backend to a backend service.
 
-  @staticmethod
-  def Args(parser):
-    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
-    backend_flags.AddDescription(parser)
-    backend_flags.AddInstanceGroup(
-        parser, operation_type='add to',
-        with_deprecated_zone=True)
-    backend_flags.AddBalancingMode(parser)
-    backend_flags.AddCapacityLimits(parser)
-    backend_flags.AddCapacityScalar(parser)
+  *{command}* is used to add a backend to a backend service. A
+  backend is a group of tasks that can handle requests sent to a
+  backend service. Currently, the group of tasks can be one or
+  more Google Compute Engine virtual machine instances grouped
+  together using an instance group.
 
-  def CreateGroupReference(self, args):
-    """Overrides."""
-    return instance_groups_utils.CreateInstanceGroupReference(
-        scope_prompter=self,
-        compute=self.compute,
-        resources=self.resources,
-        name=args.instance_group,
-        region=args.instance_group_region,
-        zone=(args.instance_group_zone
-              if args.instance_group_zone else args.zone),
-        zonal_resource_type='instanceGroups',
-        regional_resource_type='regionInstanceGroups')
+  Traffic is first spread evenly across all virtual machines in
+  the group. When the group is full, traffic is sent to the next
+  nearest group(s) that still have remaining capacity.
 
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AddBackendAlpha(AddBackendBeta):
-  """Add a backend to a backend service."""
+  To modify the parameters of a backend after it has been added
+  to the backend service, use
+  `gcloud compute backend-services update-backend` or
+  `gcloud compute backend-services edit`.
+  """
 
   @staticmethod
   def Args(parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     backend_flags.AddDescription(parser)
     flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(
-        parser, operation_type='add')
+        parser, operation_type='add to the backend service')
     backend_flags.AddBalancingMode(parser)
     backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
 
-  def CreateGroupReference(self, args):
-    """Overrides."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
-        args, holder.resources,
-        default_scope=compute_scope.ScopeEnum.ZONE,
-        scope_lister=compute_flags.GetDefaultScopeLister(
-            holder.client, self.project))
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AddBackendAlpha(AddBackendBeta):
+  """Add a backend to a backend service.
 
-AddBackend.detailed_help = {
-    'brief': 'Add a backend to a backend service',
-    'DESCRIPTION': """
-        *{command}* is used to add a backend to a backend service. A
-        backend is a group of tasks that can handle requests sent to a
-        backend service. Currently, the group of tasks can be one or
-        more Google Compute Engine virtual machine instances grouped
-        together using an instance group.
+  *{command}* is used to add a backend to a backend service. A
+  backend is a group of tasks that can handle requests sent to a
+  backend service. Currently, the group of tasks can be one or
+  more Google Compute Engine virtual machine instances grouped
+  together using an instance group.
 
-        Traffic is first spread evenly across all virtual machines in
-        the group. When the group is full, traffic is sent to the next
-        nearest group(s) that still have remaining capacity.
+  Traffic is first spread evenly across all virtual machines in
+  the group. When the group is full, traffic is sent to the next
+  nearest group(s) that still have remaining capacity.
 
-        To modify the parameters of a backend after it has been added
-        to the backend service, use
-        `gcloud compute backend-services update-backend` or
-        `gcloud compute backend-services edit`.
-        """,
-}
-AddBackendAlpha.detailed_help = AddBackend.detailed_help
-AddBackendBeta.detailed_help = AddBackend.detailed_help
+  To modify the parameters of a backend after it has been added
+  to the backend service, use
+  `gcloud compute backend-services update-backend` or
+  `gcloud compute backend-services edit`.
+  """
+
+  @staticmethod
+  def Args(parser):
+    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    backend_flags.AddDescription(parser)
+    flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(
+        parser, operation_type='add to the backend service')
+    backend_flags.AddBalancingMode(parser)
+    backend_flags.AddCapacityLimits(parser)
+    backend_flags.AddCapacityScalar(parser)

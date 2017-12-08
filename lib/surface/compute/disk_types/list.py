@@ -72,6 +72,15 @@ class ListAlpha(base.ListCommand):
               'regions are shown.'),
         type=arg_parsers.ArgList())
 
+    parser.display_info.AddFormat("""
+          table(
+            name,
+            location():label=LOCATION,
+            location_scope():label=SCOPE,
+            validDiskSize:label=VALID_DISK_SIZES
+          )
+    """)
+
   def _GetFilter(self, names, name_regex, zones, regions):
     result = []
     if names:
@@ -90,9 +99,6 @@ class ListAlpha(base.ListCommand):
     for disk_in_scope in response.items.additionalProperties:
       disk_types_lists += disk_in_scope.value.diskTypes
     return disk_types_lists, response.nextPageToken
-
-  def Collection(self):
-    return 'compute.diskTypes.alpha'
 
   def Run(self, args):
     compute_disk_types = apis.GetClientInstance('compute', 'alpha').diskTypes

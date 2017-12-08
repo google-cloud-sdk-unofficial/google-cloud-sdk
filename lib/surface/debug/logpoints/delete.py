@@ -82,6 +82,3 @@ class Delete(base.DeleteCommand):
     else:
       log.status.write('Deleted {0} logpoints.\n'.format(len(logpoints)))
     return logpoints
-
-  def Collection(self):
-    return 'debug.logpoints'

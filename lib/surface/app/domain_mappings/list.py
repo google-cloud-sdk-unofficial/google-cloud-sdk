@@ -17,7 +17,8 @@ from googlecloudsdk.api_lib.app.api import appengine_domains_api_client as api_c
 from googlecloudsdk.calliope import base
 
 
-class List(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(base.ListCommand):
   """Lists domain mappings."""
 
   detailed_help = {
@@ -41,5 +42,24 @@ class List(base.ListCommand):
             table(
               id:sort=1,
               ssl_settings.certificate_id:label=SSL_CERTIFICATE_ID
+            )
+        """)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListBeta):
+  """Lists domain mappings Alpha."""
+
+  def Run(self, args):
+    client = api_client.AppengineDomainsApiAlphaClient.GetApiClient()
+    return client.ListDomainMappings()
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""
+            table(
+              id:sort=1,
+              ssl_settings.certificate_id:label=SSL_CERTIFICATE_ID,
+              ssl_settings.is_managed_certificate:label=IS_MANAGED_CERTIFICATE
             )
         """)

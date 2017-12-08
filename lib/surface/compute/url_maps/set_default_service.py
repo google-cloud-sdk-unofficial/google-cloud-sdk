@@ -14,18 +14,26 @@
 
 """Command for changing the default service of a URL map."""
 
-import copy
+from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.backend_buckets import (
     flags as backend_bucket_flags)
 from googlecloudsdk.command_lib.compute.backend_services import (
     flags as backend_service_flags)
 from googlecloudsdk.command_lib.compute.url_maps import flags
+from googlecloudsdk.core import log
 
 
-class SetDefaultService(base_classes.ReadWriteCommand):
-  """Change the default service of a URL map."""
+class SetDefaultService(base.UpdateCommand):
+  """Change the default service or default bucket of a URL map.
+
+  *{command}* is used to change the default service or default
+  bucket of a URL map. The default service or default bucket is
+  used for any requests for which there is no mapping in the
+  URL map.
+  """
 
   BACKEND_BUCKET_ARG = None
   BACKEND_SERVICE_ARG = None
@@ -50,55 +58,56 @@ class SetDefaultService(base_classes.ReadWriteCommand):
         help=('A backend bucket that will be used for requests for which this '
               'URL map has no mappings.'))
 
-  @property
-  def service(self):
-    return self.compute.urlMaps
-
-  @property
-  def resource_type(self):
-    return 'urlMaps'
-
-  def CreateReference(self, args):
-    return self.URL_MAP_ARG.ResolveAsResource(args, self.resources)
-
-  def GetGetRequest(self, args):
+  def GetGetRequest(self, client, url_map_ref):
     """Returns the request for the existing URL map resource."""
-    return (self.service,
+    return (client.apitools_client.urlMaps,
             'Get',
-            self.messages.ComputeUrlMapsGetRequest(
-                urlMap=self.ref.Name(),
-                project=self.project))
+            client.messages.ComputeUrlMapsGetRequest(
+                urlMap=url_map_ref.Name(),
+                project=url_map_ref.project))
 
-  def GetSetRequest(self, args, replacement, existing):
-    return (self.service,
+  def GetSetRequest(self, client, url_map_ref, replacement):
+    return (client.apitools_client.urlMaps,
             'Update',
-            self.messages.ComputeUrlMapsUpdateRequest(
-                urlMap=self.ref.Name(),
+            client.messages.ComputeUrlMapsUpdateRequest(
+                urlMap=url_map_ref.Name(),
                 urlMapResource=replacement,
-                project=self.project))
+                project=url_map_ref.project))
 
-  def Modify(self, args, existing):
+  def Modify(self, resources, args, existing):
     """Returns a modified URL map message."""
-    replacement = copy.deepcopy(existing)
+    replacement = encoding.CopyProtoMessage(existing)
 
     if args.default_service:
       default_backend_uri = self.BACKEND_SERVICE_ARG.ResolveAsResource(
-          args, self.resources).SelfLink()
+          args, resources).SelfLink()
     else:
       default_backend_uri = self.BACKEND_BUCKET_ARG.ResolveAsResource(
-          args, self.resources).SelfLink()
+          args, resources).SelfLink()
 
     replacement.defaultService = default_backend_uri
 
     return replacement
 
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-SetDefaultService.detailed_help = {
-    'brief': 'Change the default service or default bucket of a URL map',
-    'DESCRIPTION': """\
-        *{command}* is used to change the default service or default
-        bucket of a URL map. The default service or default bucket is
-        used for any requests for which there is no mapping in the
-        URL map.
-        """,
-}
+    url_map_ref = self.URL_MAP_ARG.ResolveAsResource(args, holder.resources)
+    get_request = self.GetGetRequest(client, url_map_ref)
+
+    objects = client.MakeRequests([get_request])
+
+    new_object = self.Modify(holder.resources, args, objects[0])
+
+    # If existing object is equal to the proposed object or if
+    # Modify() returns None, then there is no work to be done, so we
+    # print the resource and return.
+    if objects[0] == new_object:
+      log.status.Print(
+          'No change requested; skipping update for [{0}].'.format(
+              objects[0].name))
+      return objects
+
+    return client.MakeRequests(
+        [self.GetSetRequest(client, url_map_ref, new_object)])

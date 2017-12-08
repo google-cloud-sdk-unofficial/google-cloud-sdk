@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.debug import debug
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.debug import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
@@ -73,6 +74,7 @@ class Wait(base.ListCommand):
             Maximum number of seconds to wait for a snapshot to complete. By
             default, wait indefinitely.
         """)
+    parser.display_info.AddFormat(flags.SNAPSHOT_LIST_FORMAT)
 
   def Run(self, args):
     """Run the wait command."""
@@ -98,9 +100,6 @@ class Wait(base.ListCommand):
                                                     timeout=args.timeout)
     self._is_partial = args.all and len(snapshots) != len(ids)
     return snapshots
-
-  def Collection(self):
-    return 'debug.snapshots'
 
   def Epilog(self, resources_were_displayed):
     if not resources_were_displayed:

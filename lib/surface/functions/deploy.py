@@ -28,6 +28,7 @@ from googlecloudsdk.api_lib.functions import operations
 from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.command_lib.functions.deploy import util as deploy_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -196,6 +197,7 @@ class Deploy(base.Command):
     _FunctionArgs(parser)
     _SourceCodeArgs(parser)
     _TriggerArgs(parser)
+    flags.AddRegionFlag(parser)
 
   @util.CatchHTTPErrorRaiseHTTPException
   def _GetExistingFunction(self, name):

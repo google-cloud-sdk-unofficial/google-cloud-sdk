@@ -20,14 +20,15 @@ from googlecloudsdk.core import properties
 class List(base.ListCommand):
   """List Google Compute Engine accelerator types."""
 
-  def DeprecatedFormat(self, args):
-    return """
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""
         table(
           name,
           zone.basename(),
           description
         )
-    """
+    """)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

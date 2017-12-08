@@ -20,7 +20,6 @@ from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.core.util import files
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Encrypt(base.Command):
   r"""Encrypt a plaintext file using a key.
 
@@ -61,10 +60,7 @@ class Encrypt(base.Command):
     flags.AddAadFileFlag(parser)
 
   def _ReadFileOrStdin(self, path, max_bytes):
-    try:
-      data = files.GetFileOrStdinContents(path, binary=True)
-    except files.Error as e:
-      raise exceptions.BadFileException(e)
+    data = files.GetFileOrStdinContents(path, binary=True)
     if len(data) > max_bytes:
       raise exceptions.BadFileException(
           'The file [{0}] is larger than the maximum size of {1} bytes.'.format(
@@ -82,7 +78,7 @@ class Encrypt(base.Command):
     try:
       # The Encrypt API limits the plaintext to 64KiB.
       plaintext = self._ReadFileOrStdin(args.plaintext_file, max_bytes=65536)
-    except EnvironmentError as e:
+    except files.Error as e:
       raise exceptions.BadFileException(
           'Failed to read plaintext file [{0}]: {1}'.format(
               args.plaintext_file, e))
@@ -93,7 +89,7 @@ class Encrypt(base.Command):
         # The Encrypt API limits the AAD to 64KiB.
         aad = self._ReadFileOrStdin(
             args.additional_authenticated_data_file, max_bytes=65536)
-      except EnvironmentError as e:
+      except files.Error as e:
         raise exceptions.BadFileException(
             'Failed to read additional authenticated data file [{0}]: {1}'.
             format(args.additional_authenticated_data_file, e))

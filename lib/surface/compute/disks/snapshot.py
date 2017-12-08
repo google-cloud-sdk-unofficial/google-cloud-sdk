@@ -85,19 +85,6 @@ class SnapshotDisks(base.SilentCommand):
     SnapshotDisks.disks_arg = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(parser)
 
-  def _MaxWaitMs(self):
-    """Decides how long command is allowed to run.
-
-    This function exists to allow GA, beta, and alpha versions of the command to
-    behave differently. After the command on all tracks have no time limit this
-    function should be removed (b/24330625, b/35906173).
-
-    Returns:
-      The time after which the command will stop waiting for operation. It must
-      be in ms or None for no timelimit.
-    """
-    return 1800000
-
   def Run(self, args):
     """Returns a list of requests necessary for snapshotting disks."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -194,7 +181,7 @@ class SnapshotDisks(base.SilentCommand):
         operation_poller, poller.OperationBatch(operation_refs),
         'Creating snapshot(s) {0}'
         .format(', '.join(s.Name() for s in snapshot_refs)),
-        max_wait_ms=self._MaxWaitMs()
+        max_wait_ms=None
     )
 
 
@@ -207,19 +194,6 @@ class SnapshotDisksBeta(SnapshotDisks):
     SnapshotDisks.disks_arg = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(parser)
 
-  def _MaxWaitMs(self):
-    """Decides how long command is allowed to run.
-
-    This function exists to allow GA, beta, and alpha versions of the command to
-    behave differently. After the command on all tracks have no time limit this
-    function should be removed (b/24330625, b/35906173).
-
-    Returns:
-      The time after which the command will stop waiting for operation. It must
-      be in ms or None for no timelimit.
-    """
-    return None
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SnapshotDisksAlpha(SnapshotDisks):
@@ -230,19 +204,6 @@ class SnapshotDisksAlpha(SnapshotDisks):
     SnapshotDisks.disks_arg = disks_flags.MakeDiskArgZonalOrRegional(
         plural=True)
     _CommonArgs(parser)
-
-  def _MaxWaitMs(self):
-    """Decides how long command is allowed to run.
-
-    This function exists to allow GA, beta, and alpha versions of the command to
-    behave differently. After the command on all tracks have no time limit this
-    function should be removed (b/24330625, b/35906173).
-
-    Returns:
-      The time after which the command will stop waiting for operation. It must
-      be in ms or None for no timelimit.
-    """
-    return None
 
 
 SnapshotDisks.detailed_help = DETAILED_HELP

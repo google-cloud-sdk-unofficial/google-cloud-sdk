@@ -51,6 +51,17 @@ class List(base.ListCommand):
             INCLUDE_INACTIVE seconds. If the value is "unlimited", all failed
             or expired logpoints will be included.
         """)
+    parser.display_info.AddFormat("""
+          table(
+            userEmail.if(all_users),
+            location,
+            condition,
+            logLevel,
+            logMessageFormat,
+            id,
+            full_status():label=STATUS)
+            :(isFinalState:sort=1, createTime:sort=2)
+    """)
 
   def Run(self, args):
     """Run the list command."""
@@ -71,9 +82,6 @@ class List(base.ListCommand):
       logpoints = [lp for lp in logpoints if _ShouldInclude(lp, cutoff_time)]
 
     return logpoints
-
-  def Collection(self):
-    return 'debug.logpoints'
 
 
 def _ShouldInclude(logpoint, cutoff_time):

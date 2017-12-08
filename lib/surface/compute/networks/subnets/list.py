@@ -27,6 +27,15 @@ class List(base_classes.RegionalLister):
         '--network',
         help='Only show subnetworks of a specific network.')
 
+    parser.display_info.AddFormat("""
+          table(
+            name,
+            region.basename(),
+            network.basename(),
+            ipCidrRange:label=RANGE
+          )
+    """)
+
   @property
   def service(self):
     return self.compute.subnetworks

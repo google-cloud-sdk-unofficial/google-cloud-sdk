@@ -76,6 +76,9 @@ class List(base.ListCommand):
     elif args.organization:
       return messages.CloudresourcemanagerOrganizationsListOrgPoliciesRequest(
           organizationsId=resource_id, listOrgPoliciesRequest=request)
+    elif args.folder:
+      return messages.CloudresourcemanagerFoldersListOrgPoliciesRequest(
+          foldersId=resource_id, listOrgPoliciesRequest=request)
     return None
 
   @staticmethod
@@ -93,5 +96,10 @@ class List(base.ListCommand):
       # pylint: disable=line-too-long
       return messages.CloudresourcemanagerOrganizationsListAvailableOrgPolicyConstraintsRequest(
           organizationsId=resource_id,
+          listAvailableOrgPolicyConstraintsRequest=request)
+    elif args.folder:
+      # pylint: disable=line-too-long
+      return messages.CloudresourcemanagerFoldersListAvailableOrgPolicyConstraintsRequest(
+          foldersId=resource_id,
           listAvailableOrgPolicyConstraintsRequest=request)
     return None

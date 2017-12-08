@@ -14,107 +14,85 @@
 
 """Command for updating a backend in a backend service."""
 
-import copy
+from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
-from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.backend_services import backend_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class UpdateBackend(base_classes.ReadWriteCommand):
-  """Update an existing backend in a backend service."""
+class UpdateBackend(base.UpdateCommand):
+  """Update an existing backend in a backend service.
 
-  def __init__(self, *args, **kwargs):
-    super(UpdateBackend, self).__init__(*args, **kwargs)
-    self.ref = None
+  *{command}* updates a backend that is part of a backend
+  service. This is useful for changing the way a backend
+  behaves. Example changes that can be made include changing the
+  load balancing policy and `draining` a backend by setting
+  its capacity scaler to zero.
+
+  Backends are named by their associated instances groups, and one
+  of the `--group` or `--instance-group` flags is required to
+  identify the backend that you are modifying.  You cannot "change"
+  the instance group associated with a backend, but you can accomplish
+  something similar with `backend-services remove-backend` and
+  `backend-services add-backend`.
+
+  `gcloud compute backend-services edit` can also be used to
+  update a backend if the use of a text editor is desired.
+  """
 
   @staticmethod
   def Args(parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     backend_flags.AddDescription(parser)
-    backend_flags.AddInstanceGroup(
-        parser, operation_type='update', with_deprecated_zone=True)
+    flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(
+        parser, operation_type='update the backend service')
     backend_flags.AddBalancingMode(parser)
     backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
 
-  @property
-  def service(self):
-    if self.regional:
-      return self.compute.regionBackendServices
-    return self.compute.backendServices
-
-  @property
-  def resource_type(self):
-    if self.regional:
-      return 'regionBackendServices'
-    return 'backendServices'
-
-  def CreateReference(self, args):
-    # TODO(b/35133484): remove once base classes are refactored away
-    if not self.ref:
-      self.ref = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-          args,
-          self.resources,
-          scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
-      self.regional = self.ref.Collection() == 'compute.regionBackendServices'
-    return self.ref
-
-  def GetGetRequest(self, args):
-    if self.regional:
-      return (self.service,
+  def _GetGetRequest(self, client, backend_service_ref):
+    if backend_service_ref.Collection() == 'compute.regionBackendServices':
+      return (client.apitools_client.regionBackendServices,
               'Get',
-              self.messages.ComputeRegionBackendServicesGetRequest(
-                  backendService=self.ref.Name(),
-                  region=self.ref.region,
-                  project=self.project))
-    return (self.service,
+              client.messages.ComputeRegionBackendServicesGetRequest(
+                  backendService=backend_service_ref.Name(),
+                  region=backend_service_ref.region,
+                  project=backend_service_ref.project))
+    return (client.apitools_client.backendServices,
             'Get',
-            self.messages.ComputeBackendServicesGetRequest(
-                backendService=self.ref.Name(),
-                project=self.project))
+            client.messages.ComputeBackendServicesGetRequest(
+                backendService=backend_service_ref.Name(),
+                project=backend_service_ref.project))
 
-  def GetSetRequest(self, args, replacement, existing):
-    if self.regional:
-      return (self.service,
+  def _GetSetRequest(self, client, backend_service_ref, replacement):
+    if backend_service_ref.Collection() == 'compute.regionBackendServices':
+      return (client.apitools_client.regionBackendServices,
               'Update',
-              self.messages.ComputeRegionBackendServicesUpdateRequest(
-                  backendService=self.ref.Name(),
+              client.messages.ComputeRegionBackendServicesUpdateRequest(
+                  backendService=backend_service_ref.Name(),
                   backendServiceResource=replacement,
-                  region=self.ref.region,
-                  project=self.project))
-    return (self.service,
+                  region=backend_service_ref.region,
+                  project=backend_service_ref.project))
+    return (client.apitools_client.backendServices,
             'Update',
-            self.messages.ComputeBackendServicesUpdateRequest(
-                backendService=self.ref.Name(),
+            client.messages.ComputeBackendServicesUpdateRequest(
+                backendService=backend_service_ref.Name(),
                 backendServiceResource=replacement,
-                project=self.project))
+                project=backend_service_ref.project))
 
-  def CreateGroupReference(self, args):
-    return instance_groups_utils.CreateInstanceGroupReference(
-        scope_prompter=self,
-        compute=self.compute,
-        resources=self.resources,
-        name=args.instance_group,
-        region=args.instance_group_region,
-        zone=(args.instance_group_zone
-              if args.instance_group_zone else args.zone),
-        zonal_resource_type='instanceGroups',
-        regional_resource_type='regionInstanceGroups')
+  def _Modify(self, client, resources, backend_service_ref, args, existing):
+    replacement = encoding.CopyProtoMessage(existing)
 
-  def Modify(self, args, existing):
-    """Override. See base class, ReadWriteCommand."""
-    backend_flags.WarnOnDeprecatedFlags(args)
-    replacement = copy.deepcopy(existing)
-
-    group_ref = self.CreateGroupReference(args)
+    group_ref = flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
+        args,
+        resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
     backend_to_update = None
     for backend in replacement.backends:
@@ -132,29 +110,31 @@ class UpdateBackend(base_classes.ReadWriteCommand):
         scope_name = group_ref.region
       raise exceptions.ToolException(
           'No backend with name [{0}] in {1} [{2}] is part of the backend '
-          'service [{3}].'.format(
-              group_ref.Name(), scope_type, scope_name, self.ref.Name()))
+          'service [{3}].'.format(group_ref.Name(), scope_type, scope_name,
+                                  backend_service_ref.Name()))
 
     if args.description:
       backend_to_update.description = args.description
     elif args.description is not None:
       backend_to_update.description = None
 
-    self.ModifyBalancingModeArgs(args, backend_to_update)
+    self._ModifyBalancingModeArgs(client, args, backend_to_update)
 
     return replacement
 
-  def ModifyBalancingModeArgs(self, args, backend_to_update):
+  def _ModifyBalancingModeArgs(self, client, args, backend_to_update):
     """Update balancing mode fields in backend_to_update according to args.
 
     Args:
+      client: The compute client.
       args: The arguments given to the update-backend command.
       backend_to_update: The backend message to modify.
     """
 
-    _ModifyBalancingModeArgs(self.messages, args, backend_to_update)
+    _ModifyBalancingModeArgs(client.messages, args, backend_to_update)
 
   def Run(self, args):
+    """Issues requests necessary to update backend of the Backend Service."""
     if not any([
         args.description is not None,
         args.balancing_mode,
@@ -166,61 +146,90 @@ class UpdateBackend(base_classes.ReadWriteCommand):
         args.capacity_scaler is not None,
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
-    self.CreateReference(args)
 
-    return super(UpdateBackend, self).Run(args)
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    backend_service_ref = (
+        flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
+            args,
+            holder.resources,
+            scope_lister=compute_flags.GetDefaultScopeLister(client)))
+    get_request = self._GetGetRequest(client, backend_service_ref)
+
+    backend_service = client.MakeRequests([get_request])[0]
+
+    modified_backend_service = self._Modify(
+        client, holder.resources, backend_service_ref, args, backend_service)
+
+    return client.MakeRequests([
+        self._GetSetRequest(client, backend_service_ref,
+                            modified_backend_service)
+    ])
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBackendBeta(UpdateBackend):
-  """Update an existing backend in a backend service."""
+  """Update an existing backend in a backend service.
 
-  @classmethod
-  def Args(cls, parser):
-    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
-    backend_flags.AddDescription(parser)
-    backend_flags.AddInstanceGroup(
-        parser, operation_type='update', with_deprecated_zone=True)
-    backend_flags.AddBalancingMode(parser)
-    backend_flags.AddCapacityLimits(parser)
-    backend_flags.AddCapacityScalar(parser)
+  *{command}* updates a backend that is part of a backend
+  service. This is useful for changing the way a backend
+  behaves. Example changes that can be made include changing the
+  load balancing policy and `draining` a backend by setting
+  its capacity scaler to zero.
 
-  def CreateGroupReference(self, args):
-    """Overrides."""
-    return instance_groups_utils.CreateInstanceGroupReference(
-        scope_prompter=self,
-        compute=self.compute,
-        resources=self.resources,
-        name=args.instance_group,
-        region=args.instance_group_region,
-        zone=(args.instance_group_zone
-              if args.instance_group_zone else args.zone),
-        zonal_resource_type='instanceGroups',
-        regional_resource_type='regionInstanceGroups')
+  Backends are named by their associated instances groups, and one
+  of the `--group` or `--instance-group` flags is required to
+  identify the backend that you are modifying.  You cannot "change"
+  the instance group associated with a backend, but you can accomplish
+  something similar with `backend-services remove-backend` and
+  `backend-services add-backend`.
 
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateBackendAlpha(UpdateBackend):
-  """Update an existing backend in a backend service."""
+  `gcloud compute backend-services edit` can also be used to
+  update a backend if the use of a text editor is desired.
+  """
 
   @classmethod
   def Args(cls, parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     backend_flags.AddDescription(parser)
     flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(
-        parser, operation_type='update')
+        parser, operation_type='update the backend service')
     backend_flags.AddBalancingMode(parser)
     backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
 
-  def CreateGroupReference(self, args):
-    """Overrides."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
-        args, holder.resources,
-        default_scope=compute_scope.ScopeEnum.ZONE,
-        scope_lister=compute_flags.GetDefaultScopeLister(
-            holder.client, self.project))
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateBackendAlpha(UpdateBackend):
+  """Update an existing backend in a backend service.
+
+  *{command}* updates a backend that is part of a backend
+  service. This is useful for changing the way a backend
+  behaves. Example changes that can be made include changing the
+  load balancing policy and `draining` a backend by setting
+  its capacity scaler to zero.
+
+  Backends are named by their associated instances groups, and one
+  of the `--group` or `--instance-group` flags is required to
+  identify the backend that you are modifying.  You cannot "change"
+  the instance group associated with a backend, but you can accomplish
+  something similar with `backend-services remove-backend` and
+  `backend-services add-backend`.
+
+  `gcloud compute backend-services edit` can also be used to
+  update a backend if the use of a text editor is desired.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    backend_flags.AddDescription(parser)
+    flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(
+        parser, operation_type='update the backend service')
+    backend_flags.AddBalancingMode(parser)
+    backend_flags.AddCapacityLimits(parser)
+    backend_flags.AddCapacityScalar(parser)
 
 
 def _ClearMutualExclusiveBackendCapacityThresholds(backend):
@@ -288,27 +297,3 @@ def _ModifyBalancingModeArgs(messages, args, backend_to_update):
 
   if args.capacity_scaler is not None:
     backend_to_update.capacityScaler = args.capacity_scaler
-
-
-UpdateBackend.detailed_help = {
-    'brief': 'Update an existing backend in a backend service',
-    'DESCRIPTION': """
-        *{command}* updates a backend that is part of a backend
-        service. This is useful for changing the way a backend
-        behaves. Example changes that can be made include changing the
-        load balancing policy and ``draining'' a backend by setting
-        its capacity scaler to zero.
-
-        Backends are named by their associated instances groups, and one
-        of the ``--group'' or ``--instance-group'' flags is required to
-        identify the backend that you are modifying.  You cannot "change"
-        the instance group associated with a backend, but you can accomplish
-        something similar with ``backend-services remove-backend'' and
-        ``backend-services add-backend''.
-
-        `gcloud compute backend-services edit` can also be used to
-        update a backend if the use of a text editor is desired.
-        """,
-}
-UpdateBackendAlpha.detailed_help = UpdateBackend.detailed_help
-UpdateBackendBeta.detailed_help = UpdateBackend.detailed_help

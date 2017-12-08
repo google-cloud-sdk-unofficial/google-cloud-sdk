@@ -18,8 +18,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 
 
-class _BaseList(object):
-  """List health checks."""
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class List(base_classes.BaseLister):
+  """List health checks in Beta or GA."""
 
   @staticmethod
   def Args(parser):
@@ -83,7 +84,16 @@ class _BaseList(object):
 
     return columns
 
-  def DeprecatedFormat(self, args):
+  def Collection(self):
+    """Override the default collection from the base class."""
+    return None
+
+  def Run(self, args):
+    if not args.IsSpecified('format') and not args.uri:
+      args.format = self._Format(args)
+    return super(List, self).Run(args)
+
+  def _Format(self, args):
     columns = self._GetValidColumns(args)
     return 'table[]({columns})'.format(columns=','.join(columns))
 
@@ -119,16 +129,8 @@ class _BaseList(object):
         yield health_check
 
 
-_BaseList.detailed_help = base_classes.GetGlobalListerHelp('health checks')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class ListBetaAndGA(_BaseList, base_classes.BaseLister):
-  """List health checks in Beta or GA."""
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(_BaseList, base_classes.BaseLister):
+class ListAlpha(List):
   """List health checks in Alpha."""
 
   def _ProtocolWhitelist(self):
@@ -138,7 +140,7 @@ class ListAlpha(_BaseList, base_classes.BaseLister):
     whitelist.append(self.messages.HealthCheck.TypeValueValuesEnum.UDP.number)
     return whitelist
 
-  def DeprecatedFormat(self, args):
+  def _Format(self, args):
     columns = self._GetValidColumns(args)
     if args.protocol is not None:
       protocol_value = self._ConvertProtocolArgToValue(args)
@@ -154,3 +156,7 @@ class ListAlpha(_BaseList, base_classes.BaseLister):
                         'udpHealthCheck.request:label=REQUEST',
                         'udpHealthCheck.response:label=RESPONSE'])
     return 'table[]({columns})'.format(columns=','.join(columns))
+
+
+List.detailed_help = base_classes.GetGlobalListerHelp('health checks')
+ListAlpha.detailed_help = base_classes.GetGlobalListerHelp('health checks')

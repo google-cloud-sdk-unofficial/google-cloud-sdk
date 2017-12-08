@@ -13,25 +13,43 @@
 # limitations under the License.
 """Command to get IAM policy for a resource."""
 
-from googlecloudsdk.api_lib.compute import iam_base_classes
+from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.instances import flags
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class GetIamPolicy(iam_base_classes.ZonalGetIamPolicy):
-  """Command to get IAM policy for an instance resource."""
+class GetIamPolicy(base.DescribeCommand):
+  """Get the IAM Policy for a Google Compute Engine instance.
+
+  *{command}* displays the Iam Policy associated with a Google Compute Engine
+  instance in a project.
+  """
 
   @staticmethod
   def Args(parser):
-    iam_base_classes.ZonalGetIamPolicy.Args(parser, 'compute.instances')
+    flags.INSTANCE_ARG.AddArgument(
+        parser, operation_type='describe the IAM Policy of')
 
-  @property
-  def service(self):
-    return self.compute.instances
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'instances'
+    instance_ref = flags.INSTANCE_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-GetIamPolicy.detailed_help = iam_base_classes.GetIamPolicyHelp('instance')
+    # TODO(b/36051087): determine how this output should look when empty.
+
+    # GetIamPolicy always returns either an error or a valid policy.
+    # If no policy has been set it returns a valid empty policy (just an etag.)
+    # It is not possible to have multiple policies for one resource.
+    return client.MakeRequests(
+        [(client.apitools_client.instances, 'GetIamPolicy',
+          client.messages.ComputeInstancesGetIamPolicyRequest(
+              resource=instance_ref.instance,
+              zone=instance_ref.zone,
+              project=instance_ref.project))])[0]

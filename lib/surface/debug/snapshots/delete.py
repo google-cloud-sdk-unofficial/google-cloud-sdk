@@ -77,6 +77,3 @@ class Delete(base.DeleteCommand):
     else:
       log.status.write('Deleted {0} snapshots.\n'.format(len(snapshots)))
     return snapshots
-
-  def Collection(self):
-    return 'debug.snapshots'

@@ -35,6 +35,8 @@ class Log(base.Command):
     """
     parser.add_argument(
         'build',
+        completion_resource='cloudbuild.projects.builds',
+        list_command_path='container builds list --uri',
         help=('The build whose logs shall be printed. The ID of the build is '
               'printed at the end of the build submission process, or in the '
               'ID column when listing builds.'),

@@ -14,9 +14,13 @@
 
 """The command group for cloud container builds."""
 
+from googlecloudsdk.api_lib.cloudbuild import transforms
 from googlecloudsdk.calliope import base
 
 
 class Builds(base.Group):
   """Create and manage container builds."""
 
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddTransforms(transforms.GetTransforms())

@@ -17,6 +17,7 @@
 """
 from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.functions import flags
 
 
 class List(base.Command):
@@ -37,6 +38,7 @@ class List(base.Command):
 
   @staticmethod
   def Args(parser):
+    flags.AddRegionFlag(parser)
     parser.display_info.AddFormat('''
         table(provider.label:label="EVENT_PROVIDER":sort=1,
               label:label="EVENT_TYPE":sort=2,

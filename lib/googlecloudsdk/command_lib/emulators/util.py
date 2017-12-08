@@ -56,12 +56,6 @@ class NoEnvYamlError(exceptions.Error):
         ' started the appropriate emulator.'.format(data_dir))
 
 
-class Java7Error(exceptions.Error):
-
-  def __init__(self, msg):
-    super(Java7Error, self).__init__(msg)
-
-
 class MissingProxyError(exceptions.Error):
   pass
 
@@ -112,43 +106,6 @@ def GetCloudSDKRoot():
     raise NoCloudSDKError()
   log.debug('Found Cloud SDK root: %s', sdk_root)
   return sdk_root
-
-
-def CheckIfJava7IsInstalled(for_text):
-  """Checks if Java 7+ is installed.
-
-  Args:
-    for_text: str, the text explaining what Java 7 is necessary for
-
-  Raises:
-    Java7Error: if Java 7+ is not found on the path or is not executable.
-  """
-  java_path = files.FindExecutableOnPath('java')
-  if not java_path:
-    raise Java7Error('To use the {for_text}, a Java 7+ JRE must be installed '
-                     'and on your system PATH'.format(for_text=for_text))
-  try:
-    output = subprocess.check_output([java_path, '-version'],
-                                     stderr=subprocess.STDOUT)
-  except subprocess.CalledProcessError:
-    raise Java7Error('Unable to execute the java that was found on your PATH.'
-                     ' The {for_text} requires a Java 7+ JRE installed and on '
-                     'your system PATH'.format(for_text=for_text))
-
-  match = re.search('version "1.([0-9]).', output)
-  if not match or int(match.group(1)) < 7:
-    raise Java7Error('The java executable on your PATH is not a Java 7+ JRE.'
-                     ' The {for_text} requires a Java 7+ JRE installed and on '
-                     'your system PATH'.format(for_text=for_text))
-
-
-def IsJavaInstalledForTest():
-  """Use this to use Java 7+ as a boolean precondition."""
-  try:
-    CheckIfJava7IsInstalled('test')
-    return True
-  except Java7Error:
-    return False
 
 
 def WriteEnvYaml(env, output_dir):

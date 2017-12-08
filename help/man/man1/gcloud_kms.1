@@ -11,7 +11,7 @@ gcloud kms \- manage cryptographic keys in the cloud
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud kms\fR \fIGROUP\fR [\fIGCLOUD_WIDE_FLAG\ ...\fR]
+\f5gcloud kms\fR \fIGROUP\fR | \fICOMMAND\fR [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -46,5 +46,22 @@ Create and manage keys.
 .TP 2m
 \fBlocations\fR
 View locations available for a project.
+
+
+.RE
+.sp
+
+.SH "COMMANDS"
+
+\f5\fICOMMAND\fR\fR is one of the following:
+
+.RS 2m
+.TP 2m
+\fBdecrypt\fR
+Decrypt a ciphertext file using a key.
+
+.TP 2m
+\fBencrypt\fR
+Encrypt a plaintext file using a key.
 .RE
 .sp

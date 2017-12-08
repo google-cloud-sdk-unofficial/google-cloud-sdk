@@ -27,10 +27,10 @@ class Describe(base.Command):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    parser.add_argument('name',
+    parser.add_argument('id',
                         default='',
-                        metavar='TAXONOMY_NAME',
-                        help='Name of the taxonomy.')
+                        metavar='TAXONOMY_ID',
+                        help='Id of the taxonomy.')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -42,4 +42,4 @@ class Describe(base.Command):
     Returns:
       Status of command execution.
     """
-    return describe_lib.DescribeTaxonomy(args.name)
+    return describe_lib.DescribeTaxonomy(args.id)

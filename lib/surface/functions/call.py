@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
@@ -26,6 +27,7 @@ class Call(base.Command):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
+    flags.AddRegionFlag(parser)
     parser.add_argument(
         'name', help='Name of the function to be called.',
         type=util.ValidateFunctionNameOrRaise)

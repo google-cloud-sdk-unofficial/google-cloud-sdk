@@ -37,5 +37,5 @@ class Describe(base.DescribeCommand):
     flags.CERTIFICATE_ID_FLAG.AddToParser(parser)
 
   def Run(self, args):
-    client = api_client.AppengineSslApiClient.GetApiClient()
+    client = api_client.GetApiClient(self.ReleaseTrack())
     return client.GetSslCertificate(args.id)

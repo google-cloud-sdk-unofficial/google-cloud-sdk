@@ -44,6 +44,7 @@ def _CreateDevConsoleURL(project, service='default', version=None, logs=False):
   return (LOGS_URL if logs else CONSOLE_URL).format(query=query_string)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class OpenConsole(base.Command):
   """Open the App Engine dashboard, or log viewer, in a web browser.
 

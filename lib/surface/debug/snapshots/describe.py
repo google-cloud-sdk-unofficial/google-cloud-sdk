@@ -46,6 +46,3 @@ class Describe(base.DescribeCommand):
     return debuggee.ListBreakpoints(args.location,
                                     resource_ids=args.ids,
                                     restrict_to_type=debugger.SNAPSHOT_TYPE)
-
-  def Collection(self):
-    return 'debug.snapshots'

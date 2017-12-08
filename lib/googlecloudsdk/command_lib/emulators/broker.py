@@ -24,9 +24,9 @@ import threading
 import time
 import urllib
 
-from googlecloudsdk.api_lib.emulators import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.emulators import util
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import platforms

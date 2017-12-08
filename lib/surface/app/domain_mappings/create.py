@@ -19,7 +19,8 @@ from googlecloudsdk.command_lib.app import flags
 from googlecloudsdk.core import log
 
 
-class Create(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(base.CreateCommand):
   """Creates a domain mapping."""
 
   detailed_help = {
@@ -38,10 +39,12 @@ class Create(base.CreateCommand):
   def Args(parser):
     flags.DOMAIN_FLAG.AddToParser(parser)
     flags.AddCertificateIdFlag(parser, include_no_cert=False)
+    parser.display_info.AddFormat('default(id, resourceRecords)')
 
   def Run(self, args):
     client = api_client.AppengineDomainsApiClient.GetApiClient()
-    mapping = client.CreateDomainMapping(args.domain, args.certificate_id)
+    mapping = client.CreateDomainMapping(args.domain,
+                                         args.certificate_id)
     log.CreatedResource(args.domain)
 
     log.status.Print(
@@ -49,5 +52,45 @@ class Create(base.CreateCommand):
         ' DNS changes can require up to 24 hours to take effect.')
     return mapping
 
-  def DeprecatedFormat(self, args):
-    return 'default(id, resourceRecords)'
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Creates a domain mapping."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To create a new App Engine new domain mapping, run:
+
+              $ {command} '*.example.com' \
+                    --certificate-id=1234
+
+          To create a domain with an automatically managed certificate, run:
+
+              $ {command} '*.example.com'
+
+          To create a domain with no associated certificate, run:
+
+              $ {command} '*.example.com' \
+                    --no-managed-certificate
+          """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    super(CreateAlpha, CreateAlpha).Args(parser)
+    flags.AddNoManagedCertificateFlag(parser)
+
+  def Run(self, args):
+    client = api_client.AppengineDomainsApiAlphaClient.GetApiClient()
+    mapping = client.CreateDomainMapping(args.domain,
+                                         args.certificate_id,
+                                         args.no_managed_certificate)
+    log.CreatedResource(args.domain)
+
+    log.status.Print(
+        'Please add the following entries to your domain registrar.'
+        ' DNS changes can require up to 24 hours to take effect.')
+    return mapping

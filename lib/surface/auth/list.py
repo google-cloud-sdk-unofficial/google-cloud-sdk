@@ -17,8 +17,6 @@
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.auth import auth_util
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
-from googlecloudsdk.core.credentials import store as c_store
 
 
 class List(base.ListCommand):
@@ -51,30 +49,22 @@ class List(base.ListCommand):
         List only credentials for one account. Use
         --filter="account~_PATTERN_" to select accounts that match
         _PATTERN_.""")
-    parser.display_info.AddFormat(
-        'list[compact,title="Credentialed Accounts:"](account, status)')
+    parser.display_info.AddFormat(auth_util.ACCOUNT_TABLE_FORMAT)
 
   def Run(self, args):
-    accounts = c_store.AvailableAccounts()
-
-    active_account = properties.VALUES.core.account.Get()
-
+    accounts = auth_util.AllAccounts()
     if args.filter_account:
-      if args.filter_account in accounts:
-        accounts = [args.filter_account]
-      else:
-        accounts = []
-
-    return auth_util.AuthResults(accounts, active_account)
+      accounts = [a for a in accounts if a.account == args.filter_account]
+    return accounts
 
   def Epilog(self, resources_were_displayed):
     if resources_were_displayed:
-      log.status.Print("""\
+      log.status.Print("""
 To set the active account, run:
     $ gcloud config set account `ACCOUNT`
 """)
     else:
-      log.status.Print("""\
+      log.status.Print("""
 No credentialed accounts.
 
 To login, run:

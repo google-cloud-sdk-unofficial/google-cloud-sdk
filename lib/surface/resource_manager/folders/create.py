@@ -53,3 +53,4 @@ class Create(base.CreateCommand):
       result = operations.ExtractOperationResponse(finished_operation,
                                                    messages.Folder)
       log.CreatedResource(result)
+      return result

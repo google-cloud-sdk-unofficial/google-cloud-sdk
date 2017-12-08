@@ -13,9 +13,10 @@
 # limitations under the License.
 """The gcloud datastore emulator group."""
 
-from googlecloudsdk.api_lib.emulators import datastore_util
-from googlecloudsdk.api_lib.emulators import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.emulators import datastore_util
+from googlecloudsdk.command_lib.emulators import util
+from googlecloudsdk.command_lib.util import java
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -48,7 +49,7 @@ class Datastore(base.Group):
              ' API v1beta2.')
 
   def Filter(self, context, args):
-    util.CheckIfJava7IsInstalled(datastore_util.DATASTORE_TITLE)
+    java.CheckIfJavaIsInstalled(datastore_util.DATASTORE_TITLE)
     if args.legacy:
       util.EnsureComponentIsInstalled('gcd-emulator',
                                       datastore_util.DATASTORE_TITLE)

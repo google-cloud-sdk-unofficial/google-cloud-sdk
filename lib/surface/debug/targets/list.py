@@ -33,6 +33,13 @@ class List(base.ListCommand):
         help="""\
             If set, include targets which are no longer active.
         """)
+    parser.display_info.AddFormat("""
+          table(
+            name,
+            target_id:label=ID,
+            description
+          )
+    """)
 
   def Run(self, args):
     """Run the list command."""
@@ -45,6 +52,3 @@ class List(base.ListCommand):
     # not inactive.
     return debugger.ListDebuggees(include_inactive=args.include_inactive,
                                   include_stale=args.include_inactive)
-
-  def Collection(self):
-    return 'debug.targets'
