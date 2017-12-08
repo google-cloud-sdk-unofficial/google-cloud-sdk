@@ -16,18 +16,23 @@
 
 import os
 
+# pylint: disable=g-import-not-at-top
 import apache_beam as beam
-from apache_beam import coders
-from apache_beam.io import fileio
+from apache_beam.coders.coders import Base64PickleCoder
+try:
+  from apache_beam.io.filebasedsink import DEFAULT_SHARD_NAME_TEMPLATE
+except ImportError:
+  from apache_beam.io import fileio
+  DEFAULT_SHARD_NAME_TEMPLATE = fileio.DEFAULT_SHARD_NAME_TEMPLATE
 
 from google.cloud.ml.dataflow.io import tfrecordio
 from google.cloud.ml.io import coders as mlcoders
 
 try:
   # TODO(user): Remove this after updating to latest Beam.
-  from apache_beam.io.filesystem import CompressionTypes  # pylint: disable=g-import-not-at-top
+  from apache_beam.io.filesystem import CompressionTypes
 except ImportError:
-  from apache_beam.io.fileio import CompressionTypes  # pylint: disable=g-import-not-at-top
+  from apache_beam.io.fileio import CompressionTypes
 
 
 # TODO(user) rename these classes depending on what is said in
@@ -76,7 +81,7 @@ class SaveFeatures(beam.PTransform):
   def __init__(self,
                file_path_prefix,
                file_name_suffix='.tfrecord.gz',
-               shard_name_template=fileio.DEFAULT_SHARD_NAME_TEMPLATE,
+               shard_name_template=DEFAULT_SHARD_NAME_TEMPLATE,
                compression_type=CompressionTypes.AUTO):
     """Initialize SaveFeatures.
 
@@ -240,7 +245,7 @@ class SaveModel(beam.PTransform):
               | beam.io.textio.WriteToText(
                   self._path + '.meta',
                   shard_name_template='',
-                  coder=coders.Base64PickleCoder()))
+                  coder=Base64PickleCoder()))
 
 
 class LoadModel(beam.PTransform):
@@ -260,7 +265,7 @@ class LoadModel(beam.PTransform):
     # TODO(user): This still seems to be broken.
     # if fileio.ChannelFactory.exists(self._path + '.meta'):
     #  return pvalue.pipeline | beam.io.ReadFromText(
-    #          self._path + '.meta', coder=coders.Base64PickleCoder())
+    #          self._path + '.meta', coder=Base64PickleCoder())
     # else:
     return pvalue.pipeline | beam.Create([self._path])
 

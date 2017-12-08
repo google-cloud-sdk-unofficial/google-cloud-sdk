@@ -25,11 +25,14 @@ import _ml_functions as ml_func
 import apache_beam as beam
 
 # pylint: disable=g-import-not-at-top
-# TODO(user): Remove after Dataflow 0.4.5 SDK is released.
+# TODO(user): Remove after Dataflow 2.0.0 SDK is released.
 try:
-  from apache_beam.utils import pipeline_options as df_options
+  from apache_beam.options import pipeline_options as df_options
 except ImportError:
-  from apache_beam.utils import options as df_options
+  try:
+    from apache_beam.utils import pipeline_options as df_options
+  except ImportError:
+    from apache_beam.utils import options as df_options
 import batch_prediction
 
 from google.cloud.ml.io import coders as ml_coders

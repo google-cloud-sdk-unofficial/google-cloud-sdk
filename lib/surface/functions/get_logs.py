@@ -91,6 +91,11 @@ class GetLogs(base.ListCommand):
     Yields:
       Objects representing log entries.
     """
+    # Format is dynamically set based on other arguments. --format overrides
+    # any other flags.
+    if not args.IsSpecified('format'):
+      args.format = self._Format(args)
+
     log_filter = [
         'resource.type="cloud_function"',
         'resource.labels.region="%s"' % (
@@ -143,7 +148,7 @@ class GetLogs(base.ListCommand):
         row['time_utc'] = util.FormatTimestamp(entry.timestamp)
       yield row
 
-  def Format(self, args):
+  def _Format(self, args):
     fields = []
     if args.show_log_levels:
       fields.append('level')

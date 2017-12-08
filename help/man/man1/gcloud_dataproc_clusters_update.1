@@ -11,7 +11,7 @@ gcloud dataproc clusters update \- update labels and/or the number of worker nod
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud dataproc clusters update\fR \fINAME\fR [\fB\-\-async\fR] [\fB\-\-num\-preemptible\-workers\fR=\fINUM_PREEMPTIBLE_WORKERS\fR] [\fB\-\-num\-workers\fR=\fINUM_WORKERS\fR] [\fB\-\-remove\-labels\fR=[\fIKEY\fR,...]] [\fB\-\-update\-labels\fR=[\fIKEY\fR=\fIVALUE\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud dataproc clusters update\fR \fINAME\fR [\fB\-\-async\fR] [\fB\-\-num\-preemptible\-workers\fR=\fINUM_PREEMPTIBLE_WORKERS\fR] [\fB\-\-num\-workers\fR=\fINUM_WORKERS\fR] [\fB\-\-remove\-labels\fR=[\fIKEY\fR,...]] [\fB\-\-update\-labels\fR=[\fIKEY\fR=\fIVALUE\fR,...]] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -62,9 +62,12 @@ modified, otherwise a new label is created.
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.
 
 
 

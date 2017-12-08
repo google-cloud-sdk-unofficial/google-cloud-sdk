@@ -11,7 +11,7 @@ gcloud spanner databases \- manage Cloud Spanner databases
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud spanner databases\fR \fIGROUP\fR | \fICOMMAND\fR [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud spanner databases\fR \fIGROUP\fR | \fICOMMAND\fR [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -21,9 +21,12 @@ Manage Cloud Spanner databases.
 
 
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.
 
 
 
@@ -63,7 +66,7 @@ Describe a Cloud Spanner database.
 
 .TP 2m
 \fBexecute\-sql\fR
-Execute a read\-only SQL query against a Cloud Spanner database.
+Executes a read\-only SQL query against a Cloud Spanner database.
 
 .TP 2m
 \fBget\-iam\-policy\fR

@@ -5,20 +5,20 @@
 
 .SH "NAME"
 .HP
-gcloud compute routers add\-interface \- add an interface to a router
+gcloud compute routers add\-interface \- add an interface to a Google Compute Engine router
 
 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute routers add\-interface\fR \fINAME\fR \fB\-\-interface\-name\fR=\fIINTERFACE_NAME\fR \fB\-\-vpn\-tunnel\fR=\fIVPN_TUNNEL\fR [\fB\-\-ip\-address\fR=\fIIP_ADDRESS\fR] [\fB\-\-mask\-length\fR=\fIMASK_LENGTH\fR] [\fB\-\-region\fR=\fIREGION\fR] [\fB\-\-vpn\-tunnel\-region\fR=\fIVPN_TUNNEL_REGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute routers add\-interface\fR \fINAME\fR \fB\-\-interface\-name\fR=\fIINTERFACE_NAME\fR \fB\-\-vpn\-tunnel\fR=\fIVPN_TUNNEL\fR [\fB\-\-ip\-address\fR=\fIIP_ADDRESS\fR] [\fB\-\-mask\-length\fR=\fIMASK_LENGTH\fR] [\fB\-\-region\fR=\fIREGION\fR] [\fB\-\-vpn\-tunnel\-region\fR=\fIVPN_TUNNEL_REGION\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
 .SH "DESCRIPTION"
 
 \fBgcloud compute routers add\-interface\fR is used to add an interface to a
-router.
+Google Compute Engine router.
 
 
 
@@ -96,6 +96,9 @@ value for this command invocation.
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.

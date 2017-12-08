@@ -59,7 +59,7 @@ class List(base.ListCommand):
         '--show-versions', required=False, action='store_true',
         help='Show installed and available versions of all components.')
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     attributes = [
         'box',
         'title="Components"'

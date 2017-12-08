@@ -33,7 +33,7 @@ class Describe(base.DescribeCommand):
     """
     parser.add_argument(
         'config',
-        metavar='INSTANCE-CONFIG',
+        metavar='INSTANCE_CONFIG',
         completion_resource='spanner.projects.instanceConfigs',
         help='Cloud Spanner instance config.')
 

@@ -26,6 +26,7 @@ class Describe(base.DescribeCommand):
     apis.API_VERSION_FLAG.AddToParser(parser)
     parser.add_argument(
         'api_name',
+        completer=apis.APICompleter,
         help='The name of the API to show the details of.')
 
   def Run(self, args):

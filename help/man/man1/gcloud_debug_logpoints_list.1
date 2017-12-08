@@ -11,7 +11,7 @@ gcloud debug logpoints list \- list debug logpoints
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud debug logpoints list\fR [\fIID\fR\ ...] [\fB\-\-no\-all\-users\fR] [\fB\-\-include\-inactive\fR=\fIINCLUDE_INACTIVE\fR;\ default="300"] [\fB\-\-location\fR=\fILOCATION\-REGEXP\fR] [\fB\-\-target\fR=(\fIID\fR|\fIDESCRIPTION_REGEXP\fR)] [\fB\-\-filter\fR=\fIEXPRESSION\fR] [\fB\-\-limit\fR=\fILIMIT\fR] [\fB\-\-page\-size\fR=\fIPAGE_SIZE\fR] [\fB\-\-sort\-by\fR=[\fIFIELD\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud debug logpoints list\fR [\fIID\fR\ ...] [\fB\-\-no\-all\-users\fR] [\fB\-\-include\-inactive\fR=\fIINCLUDE_INACTIVE\fR;\ default="300"] [\fB\-\-location\fR=\fILOCATION\-REGEXP\fR] [\fB\-\-target\fR=(\fIID\fR|\fIDESCRIPTION_REGEXP\fR)] [\fB\-\-filter\fR=\fIEXPRESSION\fR] [\fB\-\-limit\fR=\fILIMIT\fR] [\fB\-\-page\-size\fR=\fIPAGE_SIZE\fR] [\fB\-\-sort\-by\fR=[\fIFIELD\fR,...]] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -106,6 +106,9 @@ field. This flag interacts with other flags that are applied in this order:
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.

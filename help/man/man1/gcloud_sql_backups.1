@@ -11,7 +11,7 @@ gcloud sql backups \- provide commands for working with backups of Cloud SQL ins
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud sql backups\fR \fICOMMAND\fR [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud sql backups\fR \fICOMMAND\fR [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -22,9 +22,12 @@ listing and getting information about backups for a Cloud SQL instance.
 
 
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.
 
 
 
@@ -34,11 +37,23 @@ Run \fB$ gcloud help\fR for a description of flags available to all commands.
 
 .RS 2m
 .TP 2m
+\fBcreate\fR
+Creates a backup of a Cloud SQL instance.
+
+.TP 2m
+\fBdelete\fR
+Delete a backup of a Cloud SQL instance.
+
+.TP 2m
 \fBdescribe\fR
 Retrieves information about a backup.
 
 .TP 2m
 \fBlist\fR
 Lists all backups associated with a given instance.
+
+.TP 2m
+\fBrestore\fR
+Restores a backup of a Cloud SQL instance.
 .RE
 .sp

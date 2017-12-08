@@ -11,7 +11,7 @@ gcloud spanner databases remove\-iam\-policy\-binding \- remove an IAM policy bi
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud spanner databases remove\-iam\-policy\-binding\fR \fIDATABASE\fR \fB\-\-instance\fR=\fIINSTANCE\fR \fB\-\-member\fR=\fIMEMBER\fR \fB\-\-role\fR=\fIROLE\fR [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud spanner databases remove\-iam\-policy\-binding\fR \fIDATABASE\fR \fB\-\-instance\fR=\fIINSTANCE\fR \fB\-\-member\fR=\fIMEMBER\fR \fB\-\-role\fR=\fIROLE\fR [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -41,7 +41,8 @@ Cloud Spanner instance ID.
 
 .TP 2m
 \fB\-\-member\fR=\fIMEMBER\fR
-The member to remove from the binding.
+The member to add to the binding. Should be of the form \f5user:user_email\fR
+(e.g. \f5user:test\-user@gmail.com.\fR)
 
 .TP 2m
 \fB\-\-role\fR=\fIROLE\fR
@@ -51,6 +52,9 @@ The role to remove the member from.
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.

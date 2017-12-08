@@ -21,7 +21,7 @@ class SetIamPolicy(base_classes.BaseIamCommand):
   """Set the IAM policy for a service account.
 
   This command replaces the existing IAM policy for a service account, given
-  an IAM-ACCOUNT and a file encoded in JSON or YAML that contains the IAM
+  an IAM_ACCOUNT and a file encoded in JSON or YAML that contains the IAM
   policy. If the given policy file specifies an "etag" value, then the
   replacement will succeed only if the policy already in place matches that
   etag. (An etag obtained via $ gcloud iam service-accounts get-iam-policy will
@@ -39,7 +39,7 @@ class SetIamPolicy(base_classes.BaseIamCommand):
         parser, help_text='The service account whose policy to set.')
     parser.add_argument(
         'policy_file',
-        metavar='POLICY-FILE',
+        metavar='POLICY_FILE',
         help='Path to a local JSON or YAML formatted file '
         'containing a valid policy.')
 

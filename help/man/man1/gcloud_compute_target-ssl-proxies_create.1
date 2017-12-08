@@ -11,7 +11,7 @@ gcloud compute target\-ssl\-proxies create \- create a target SSL proxy
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute target\-ssl\-proxies create\fR \fINAME\fR \fB\-\-backend\-service\fR=\fIBACKEND_SERVICE\fR \fB\-\-ssl\-certificate\fR=\fISSL_CERTIFICATE\fR [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-proxy\-header\fR=\fIPROXY_HEADER\fR;\ default="NONE"] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute target\-ssl\-proxies create\fR \fINAME\fR \fB\-\-backend\-service\fR=\fIBACKEND_SERVICE\fR \fB\-\-ssl\-certificate\fR=\fISSL_CERTIFICATE\fR [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-proxy\-header\fR=\fIPROXY_HEADER\fR;\ default="NONE"] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -78,6 +78,9 @@ Enables PROXY protocol (version 1) for passing client connection information.
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.

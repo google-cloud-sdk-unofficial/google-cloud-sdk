@@ -84,7 +84,8 @@ class Describe(base.DescribeCommand):
     """
     util.CheckLegacySinksCommandArguments(args)
 
-    sink_ref = util.GetSinkReference(args.sink_name, args.log, args.service)
+    sink_ref = util.GetSinkReference(
+        args.sink_name, args.log, args.service, args)
 
     try:
       if args.log:

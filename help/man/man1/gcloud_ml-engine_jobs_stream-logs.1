@@ -11,7 +11,7 @@ gcloud ml\-engine jobs stream\-logs \- show logs from a running Cloud ML Engine 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud ml\-engine jobs stream\-logs\fR \fIJOB\fR [\fB\-\-allow\-multiline\-logs\fR] [\fB\-\-polling\-interval\fR=\fIPOLLING_INTERVAL\fR;\ default="60"] [\fB\-\-task\-name\fR=\fITASK_NAME\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud ml\-engine jobs stream\-logs\fR \fIJOB\fR [\fB\-\-allow\-multiline\-logs\fR] [\fB\-\-polling\-interval\fR=\fIPOLLING_INTERVAL\fR;\ default="60"] [\fB\-\-task\-name\fR=\fITASK_NAME\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -53,6 +53,9 @@ If set, display only the logs for this particular task.
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.

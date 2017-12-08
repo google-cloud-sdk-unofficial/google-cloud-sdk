@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command for adding a BGP peer to a router."""
+"""Command for adding a BGP peer to a Google Compute Engine router."""
 
 import copy
 
@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.compute.routers import flags
 
 
 class AddBgpPeer(base_classes.ReadWriteCommand):
-  """Add a BGP peer to a router."""
+  """Add a BGP peer to a Google Compute Engine router."""
 
   ROUTER_ARG = None
 
@@ -104,6 +104,6 @@ class AddBgpPeer(base_classes.ReadWriteCommand):
 
 AddBgpPeer.detailed_help = {
     'DESCRIPTION': """
-        *{command}* is used to add a BGP peer to a router.
+        *{command}* is used to add a BGP peer to a Google Compute Engine router.
         """,
 }

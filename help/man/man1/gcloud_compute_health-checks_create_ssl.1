@@ -11,7 +11,7 @@ gcloud compute health\-checks create ssl \- create a SSL health check to monitor
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute health\-checks create ssl\fR \fINAME\fR [\fB\-\-check\-interval\fR=\fICHECK_INTERVAL\fR;\ default="5s"] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-healthy\-threshold\fR=\fIHEALTHY_THRESHOLD\fR;\ default="2"] [\fB\-\-port\fR=\fIPORT\fR;\ default="80"] [\fB\-\-port\-name\fR=\fIPORT_NAME\fR] [\fB\-\-proxy\-header\fR=\fIPROXY_HEADER\fR;\ default="NONE"] [\fB\-\-request\fR=\fIREQUEST\fR] [\fB\-\-response\fR=\fIRESPONSE\fR] [\fB\-\-timeout\fR=\fITIMEOUT\fR;\ default="5s"] [\fB\-\-unhealthy\-threshold\fR=\fIUNHEALTHY_THRESHOLD\fR;\ default="2"] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute health\-checks create ssl\fR \fINAME\fR [\fB\-\-check\-interval\fR=\fICHECK_INTERVAL\fR;\ default="5s"] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-healthy\-threshold\fR=\fIHEALTHY_THRESHOLD\fR;\ default="2"] [\fB\-\-port\fR=\fIPORT\fR;\ default="80"] [\fB\-\-port\-name\fR=\fIPORT_NAME\fR] [\fB\-\-proxy\-header\fR=\fIPROXY_HEADER\fR;\ default="NONE"] [\fB\-\-request\fR=\fIREQUEST\fR] [\fB\-\-response\fR=\fIRESPONSE\fR] [\fB\-\-timeout\fR=\fITIMEOUT\fR;\ default="5s"] [\fB\-\-unhealthy\-threshold\fR=\fIUNHEALTHY_THRESHOLD\fR;\ default="2"] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -116,6 +116,9 @@ marked as unhealthy. The default is 2.
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.

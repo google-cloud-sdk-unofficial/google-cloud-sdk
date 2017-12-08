@@ -50,5 +50,5 @@ class DetectImageProperties(base.Command):
     return vision_command_util.RunVisionCommand('IMAGE_PROPERTIES',
                                                 args.image_path)
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return 'json'

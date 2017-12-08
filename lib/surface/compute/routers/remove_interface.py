@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command for removing an interface from a router."""
+"""Command for removing an interface from a Google Compute Engine router."""
 
 import copy
 
@@ -32,7 +32,7 @@ class InterfaceNotFoundError(exceptions.Error):
 
 
 class RemoveBgpPeer(base_classes.ReadWriteCommand):
-  """Remove an interface from a router."""
+  """Remove an interface from a Google Compute Engine router."""
 
   ROUTER_ARG = None
 
@@ -93,6 +93,6 @@ class RemoveBgpPeer(base_classes.ReadWriteCommand):
 
 RemoveBgpPeer.detailed_help = {
     'DESCRIPTION': """
-        *{command}* removes an interface from a router.
+        *{command}* removes an interface from a Google Compute Engine router.
         """,
 }

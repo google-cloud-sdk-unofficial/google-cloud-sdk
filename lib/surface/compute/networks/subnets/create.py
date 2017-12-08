@@ -17,7 +17,6 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.networks import flags as network_flags
 from googlecloudsdk.command_lib.compute.networks.subnets import flags
@@ -104,17 +103,17 @@ class CreateBeta(Create):
     _AddArgs(cls, parser)
     parser.add_argument(
         '--secondary-range',
-        type=arg_parsers.ArgDict(spec={'name': str, 'range': str}),
+        type=arg_parsers.ArgDict(min_length=1),
         action='append',
         metavar='PROPERTY=VALUE',
         help="""\
         Adds a secondary IP range to the subnetwork for use in IP aliasing.
 
-        For example, `--secondary-range name=range1,range=192.168.64.0/24` adds
+        For example, `--secondary-range range1=192.168.64.0/24` adds
         a secondary range 192.168.64.0/24 with name range1.
 
-        *name*::: Name of the secondary range.
-        *range*::: IP range in CIDR format.
+        * `RANGE_NAME` - Name of the secondary range.
+        * `RANGE` - `IP range in CIDR format.`
         """)
 
   def CreateRequests(self, args):
@@ -140,15 +139,11 @@ class CreateBeta(Create):
     secondary_ranges = []
     if args.secondary_range:
       for secondary_range in args.secondary_range:
-        for field in ('name', 'range'):
-          if field not in secondary_range:
-            raise exceptions.InvalidArgumentException(
-                '--secondary-range', field + ' not present.')
-
-        secondary_ranges.append(
-            self.messages.SubnetworkSecondaryRange(
-                rangeName=secondary_range['name'],
-                ipCidrRange=secondary_range['range']))
+        for range_name, ip_cidr_range in sorted(secondary_range.iteritems()):
+          secondary_ranges.append(
+              self.messages.SubnetworkSecondaryRange(
+                  rangeName=range_name,
+                  ipCidrRange=ip_cidr_range))
 
     request.subnetwork.secondaryIpRanges = secondary_ranges
     return [request]

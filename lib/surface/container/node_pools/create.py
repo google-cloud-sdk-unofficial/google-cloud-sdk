@@ -207,7 +207,7 @@ class Create(base.CreateCommand):
   def Collection(self):
     return 'container.projects.zones.clusters.nodePools'
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return self.ListFormat(args)
 
 

@@ -11,7 +11,7 @@ gcloud dataproc clusters create \- create a cluster
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud dataproc clusters create\fR \fINAME\fR [\fB\-\-async\fR] [\fB\-\-bucket\fR=\fIBUCKET\fR] [\fB\-\-image\-version\fR=\fIVERSION\fR] [\fB\-\-initialization\-action\-timeout\fR=\fITIMEOUT\fR;\ default="10m"] [\fB\-\-initialization\-actions\fR=\fICLOUD_STORAGE_URI\fR,[\fICLOUD_STORAGE_URI\fR,...]] [\fB\-\-labels\fR=[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-master\-boot\-disk\-size\fR=\fIMASTER_BOOT_DISK_SIZE\fR] [\fB\-\-master\-machine\-type\fR=\fIMASTER_MACHINE_TYPE\fR] [\fB\-\-metadata\fR=\fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-num\-master\-local\-ssds\fR=\fINUM_MASTER_LOCAL_SSDS\fR] [\fB\-\-num\-preemptible\-workers\fR=\fINUM_PREEMPTIBLE_WORKERS\fR] [\fB\-\-num\-worker\-local\-ssds\fR=\fINUM_WORKER_LOCAL_SSDS\fR] [\fB\-\-num\-workers\fR=\fINUM_WORKERS\fR] [\fB\-\-preemptible\-worker\-boot\-disk\-size\fR=\fIPREEMPTIBLE_WORKER_BOOT_DISK_SIZE\fR] [\fB\-\-properties\fR=[\fIPREFIX\fR:\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fB\-\-scopes\fR=\fISCOPE\fR,[\fISCOPE\fR,...]] [\fB\-\-service\-account\fR=\fISERVICE_ACCOUNT\fR] [\fB\-\-tags\fR=\fITAG\fR,[\fITAG\fR,...]] [\fB\-\-worker\-boot\-disk\-size\fR=\fIWORKER_BOOT_DISK_SIZE\fR] [\fB\-\-worker\-machine\-type\fR=\fIWORKER_MACHINE_TYPE\fR] [\fB\-\-zone\fR=\fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fB\-\-network\fR=\fINETWORK\fR\ |\ \fB\-\-subnet\fR=\fISUBNET\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud dataproc clusters create\fR \fINAME\fR [\fB\-\-async\fR] [\fB\-\-bucket\fR=\fIBUCKET\fR] [\fB\-\-image\-version\fR=\fIVERSION\fR] [\fB\-\-initialization\-action\-timeout\fR=\fITIMEOUT\fR;\ default="10m"] [\fB\-\-initialization\-actions\fR=\fICLOUD_STORAGE_URI\fR,[\fICLOUD_STORAGE_URI\fR,...]] [\fB\-\-labels\fR=[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-master\-boot\-disk\-size\fR=\fIMASTER_BOOT_DISK_SIZE\fR] [\fB\-\-master\-machine\-type\fR=\fIMASTER_MACHINE_TYPE\fR] [\fB\-\-metadata\fR=\fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-num\-master\-local\-ssds\fR=\fINUM_MASTER_LOCAL_SSDS\fR] [\fB\-\-num\-preemptible\-workers\fR=\fINUM_PREEMPTIBLE_WORKERS\fR] [\fB\-\-num\-worker\-local\-ssds\fR=\fINUM_WORKER_LOCAL_SSDS\fR] [\fB\-\-num\-workers\fR=\fINUM_WORKERS\fR] [\fB\-\-preemptible\-worker\-boot\-disk\-size\fR=\fIPREEMPTIBLE_WORKER_BOOT_DISK_SIZE\fR] [\fB\-\-properties\fR=[\fIPREFIX\fR:\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fB\-\-scopes\fR=\fISCOPE\fR,[\fISCOPE\fR,...]] [\fB\-\-service\-account\fR=\fISERVICE_ACCOUNT\fR] [\fB\-\-tags\fR=\fITAG\fR,[\fITAG\fR,...]] [\fB\-\-worker\-boot\-disk\-size\fR=\fIWORKER_BOOT_DISK_SIZE\fR] [\fB\-\-worker\-machine\-type\fR=\fIWORKER_MACHINE_TYPE\fR] [\fB\-\-zone\fR=\fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fB\-\-network\fR=\fINETWORK\fR\ |\ \fB\-\-subnet\fR=\fISUBNET\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -258,9 +258,12 @@ with \-\-network.
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.
 
 
 

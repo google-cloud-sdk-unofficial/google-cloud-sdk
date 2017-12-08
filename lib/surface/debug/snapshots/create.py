@@ -98,5 +98,5 @@ class Create(base.CreateCommand):
   def Collection(self):
     return 'debug.snapshots.create'
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return self.ListFormat(args)

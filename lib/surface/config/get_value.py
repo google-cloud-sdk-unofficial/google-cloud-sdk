@@ -81,5 +81,5 @@ class GetValue(base.Command):
           validate=False)
     return value
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return 'value(.)'

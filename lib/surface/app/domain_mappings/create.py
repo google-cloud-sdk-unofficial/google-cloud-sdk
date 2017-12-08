@@ -49,5 +49,5 @@ class Create(base.CreateCommand):
         ' DNS changes can require up to 24 hours to take effect.')
     return mapping
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return 'default(id, resourceRecords)'

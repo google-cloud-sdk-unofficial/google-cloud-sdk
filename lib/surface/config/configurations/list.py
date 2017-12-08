@@ -55,7 +55,7 @@ class List(base.ListCommand):
           'properties': props,
       }
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return ('table('
             'name,'
             'is_active,'

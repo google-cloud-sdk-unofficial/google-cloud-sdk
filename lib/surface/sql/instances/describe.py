@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Retrieves information about a Cloud SQL instance."""
 
 from googlecloudsdk.api_lib.sql import api_util
@@ -20,8 +19,15 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-class _BaseGet(object):
-  """Displays configuration and metadata about a Cloud SQL instance."""
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class Get(base.DescribeCommand):
+  """Displays configuration and metadata about a Cloud SQL instance.
+
+  Displays configuration and metadata about a Cloud SQL instance.
+
+  Information such as instance name, IP address, region, the CA certificate
+  and configuration settings will be displayed.
+  """
 
   @staticmethod
   def Args(parser):
@@ -56,7 +62,7 @@ class _BaseGet(object):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    client = self.GetSqlClient()
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client
     sql_messages = client.sql_messages
 
@@ -68,33 +74,4 @@ class _BaseGet(object):
 
     return sql_client.instances.Get(
         sql_messages.SqlInstancesGetRequest(
-            project=instance_ref.project,
-            instance=instance_ref.instance))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Get(_BaseGet, base.DescribeCommand):
-  """Displays configuration and metadata about a Cloud SQL instance.
-
-  Displays configuration and metadata about a Cloud SQL instance.
-
-  Information such as instance name, IP address, region, the CA certificate
-  and configuration settings will be displayed.
-  """
-
-  def GetSqlClient(self):
-    return api_util.SqlClient(api_util.API_VERSION_FALLBACK)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class GetBeta(_BaseGet, base.DescribeCommand):
-  """Displays configuration and metadata about a Cloud SQL instance.
-
-  Displays configuration and metadata about a Cloud SQL instance.
-
-  Information such as instance name, IP address, region, the CA certificate
-  and configuration settings will be displayed.
-  """
-
-  def GetSqlClient(self):
-    return api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+            project=instance_ref.project, instance=instance_ref.instance))

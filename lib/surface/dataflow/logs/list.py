@@ -19,7 +19,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataflow import dataflow_util
 from googlecloudsdk.command_lib.dataflow import job_utils
 from googlecloudsdk.command_lib.dataflow import time_util
-from googlecloudsdk.core.resource import resource_projection_spec
 
 
 class List(base.ListCommand):
@@ -67,18 +66,23 @@ class List(base.ListCommand):
         default='warning',
         help='Minimum importance a message must have to be displayed.')
 
-  def Collection(self):
-    return 'dataflow.logs'
+    parser.display_info.AddFormat("""
+          table[no-heading,pad=1](
+            messageImportance.enum(dataflow.JobMessage),
+            time.date(tz=LOCAL):label=TIME,
+            id,
+            messageText:label=TEXT
+          )
+    """)
 
-  def Defaults(self):
-    importances = {
+    symbols = {'dataflow.JobMessage::enum': {
         'JOB_MESSAGE_DETAILED': 'd',
         'JOB_MESSAGE_DEBUG': 'D',
         'JOB_MESSAGE_WARNING': 'W',
         'JOB_MESSAGE_ERROR': 'E',
-    }
-    symbols = {'dataflow.JobMessage::enum': importances}
-    return resource_projection_spec.ProjectionSpec(symbols=symbols)
+    }}
+
+    parser.display_info.AddTransforms(symbols)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

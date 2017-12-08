@@ -41,7 +41,7 @@ class List(base.ListCommand):
     client = api_client.AppengineSslApiClient.GetApiClient()
     return client.ListSslCertificates()
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return """
             table(
               id:sort=1,

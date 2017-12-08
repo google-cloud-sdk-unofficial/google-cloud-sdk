@@ -237,7 +237,7 @@ class Create(base.CreateCommand):
   def Collection(self):
     return 'container.projects.zones.clusters'
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return self.ListFormat(args)
 
   def Run(self, args):

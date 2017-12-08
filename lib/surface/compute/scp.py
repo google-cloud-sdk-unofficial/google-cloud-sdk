@@ -14,11 +14,9 @@
 
 """Implements the command for copying files from and to virtual machines."""
 
-from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import scp_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Scp(scp_utils.BaseScpCommand):
   """Copy files to and from Google Compute Engine virtual machines."""
 

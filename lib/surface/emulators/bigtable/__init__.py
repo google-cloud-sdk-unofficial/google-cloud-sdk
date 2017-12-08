@@ -32,7 +32,8 @@ class Bigtable(base.Group):
   """
 
   detailed_help = {
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
           To start a local Bigtable emulator, run:
 
             $ {command} start
@@ -41,10 +42,5 @@ class Bigtable(base.Group):
 
   # Override
   def Filter(self, context, args):
-    current_os = platforms.OperatingSystem.Current()
-    if current_os is platforms.OperatingSystem.WINDOWS:
-      raise UnsupportedPlatformError(
-          'The Bigtable emulator is currently not supported on Windows.')
-
     util.EnsureComponentIsInstalled(bigtable_util.BIGTABLE,
                                     bigtable_util.BIGTABLE_TITLE)

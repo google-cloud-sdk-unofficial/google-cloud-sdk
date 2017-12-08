@@ -50,6 +50,9 @@ class CancelPreview(base.Command):
           To cancel a preview command providing a fingerprint:
 
             $ {command} my-deployment --fingerprint deployment-fingerprint
+
+          When a deployment preview is cancelled, the deployment itself is not
+          deleted.
           """,
   }
 

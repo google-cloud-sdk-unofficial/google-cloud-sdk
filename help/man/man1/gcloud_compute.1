@@ -11,7 +11,7 @@ gcloud compute \- create and manipulate Google Compute Engine resources
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute\fR \fIGROUP\fR | \fICOMMAND\fR [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute\fR \fIGROUP\fR | \fICOMMAND\fR [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -30,9 +30,12 @@ https://cloud.google.com/compute/docs/
 
 
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.
 
 
 
@@ -188,11 +191,16 @@ Connect to the serial port of an instance.
 
 .TP 2m
 \fBcopy\-files\fR
-Copy files to and from Google Compute Engine virtual machines via scp.
+\fB(DEPRECATED)\fR Copy files to and from Google Compute Engine virtual machines
+via scp.
 
 .TP 2m
 \fBreset\-windows\-password\fR
 Reset and return a password for a Windows machine instance.
+
+.TP 2m
+\fBscp\fR
+Copy files to and from Google Compute Engine virtual machines via scp.
 
 .TP 2m
 \fBssh\fR

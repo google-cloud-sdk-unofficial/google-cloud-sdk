@@ -26,12 +26,13 @@ from googlecloudsdk.command_lib.util import labels_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateFromContainer(base_classes.BaseAsyncCreator):
+class CreateFromContainer(base.CreateCommand):
   """Command for creating VM instances running Docker images."""
 
   @staticmethod
   def Args(parser):
     """Register parser args."""
+    parser.display_info.AddFormat(instances_flags.DEFAULT_LIST_FORMAT)
     metadata_utils.AddMetadataArgs(parser)
     instances_flags.AddDiskArgs(parser, True)
     instances_flags.AddCreateDiskArgs(parser)
@@ -60,19 +61,10 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
 
     instances_flags.INSTANCES_ARG.AddArgument(parser)
 
-  @property
-  def service(self):
-    return self.compute.instances
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'Insert'
-
-  @property
-  def resource_type(self):
-    return 'instances'
-
-  def CreateRequests(self, args):
     instances_flags.ValidateDockerArgs(args)
     instances_flags.ValidateDiskCommonFlags(args)
     instances_flags.ValidateLocalSsdFlags(args)
@@ -83,7 +75,7 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
           'Boot disk specified for containerized VM.')
 
     scheduling = instance_utils.CreateSchedulingMessage(
-        messages=self.messages,
+        messages=client.messages,
         maintenance_policy=args.maintenance_policy,
         preemptible=args.preemptible,
         restart_on_failure=args.restart_on_failure)
@@ -93,12 +85,12 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
     else:
       service_account = args.service_account
     service_accounts = instance_utils.CreateServiceAccountMessages(
-        messages=self.messages,
+        messages=client.messages,
         scopes=[] if args.no_scopes else args.scopes,
         service_account=service_account)
 
     user_metadata = metadata_utils.ConstructMetadataMessage(
-        self.messages,
+        client.messages,
         metadata=args.metadata,
         metadata_from_file=args.metadata_from_file)
     containers_utils.ValidateUserMetadata(user_metadata)
@@ -107,18 +99,19 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
     utils.WarnIfDiskSizeIsTooSmall(boot_disk_size_gb, args.boot_disk_type)
 
     instance_refs = instances_flags.INSTANCES_ARG.ResolveAsResource(
-        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client, self.project))
+        args,
+        holder.resources,
+        scope_lister=flags.GetDefaultScopeLister(client))
 
     # Check if the zone is deprecated or has maintenance coming.
-    zone_resource_fetcher = zone_utils.ZoneResourceFetcher(self.compute_client)
+    zone_resource_fetcher = zone_utils.ZoneResourceFetcher(client)
     zone_resource_fetcher.WarnForZonalCreation(instance_refs)
 
     instances_flags.ValidatePublicDnsFlags(args)
 
     network_interface = instance_utils.CreateNetworkInterfaceMessage(
-        resources=self.resources,
-        compute_client=self.compute_client,
+        resources=holder.resources,
+        compute_client=client,
         network=args.network,
         subnet=args.subnet,
         private_network_ip=args.private_network_ip,
@@ -134,36 +127,35 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
         public_ptr_domain=getattr(args, 'public_ptr_domain', None))
 
     machine_type_uris = instance_utils.CreateMachineTypeUris(
-        resources=self.resources,
-        compute_client=self.compute_client,
-        project=self.project,
+        resources=holder.resources,
+        compute_client=client,
         machine_type=args.machine_type,
         custom_cpu=args.custom_cpu,
         custom_memory=args.custom_memory,
         ext=getattr(args, 'custom_extensions', None),
         instance_refs=instance_refs)
 
-    image_uri = containers_utils.ExpandCosImageFlag(self.compute_client)
+    image_uri = containers_utils.ExpandCosImageFlag(client)
 
     args_labels = getattr(args, 'labels', None)
     labels = None
     if args_labels:
-      labels = self.messages.Instance.LabelsValue(
+      labels = client.messages.Instance.LabelsValue(
           additionalProperties=[
-              self.messages.Instance.LabelsValue.AdditionalProperty(
+              client.messages.Instance.LabelsValue.AdditionalProperty(
                   key=key, value=value)
               for key, value in sorted(args.labels.iteritems())])
 
     requests = []
     for instance_ref, machine_type_uri in zip(instance_refs, machine_type_uris):
       metadata = containers_utils.CreateMetadataMessage(
-          self.messages, args.run_as_privileged, args.container_manifest,
+          client.messages, args.run_as_privileged, args.container_manifest,
           args.docker_image, args.port_mappings, args.run_command,
           user_metadata, instance_ref.Name())
-      request = self.messages.ComputeInstancesInsertRequest(
-          instance=self.messages.Instance(
+      request = client.messages.ComputeInstancesInsertRequest(
+          instance=client.messages.Instance(
               canIpForward=args.can_ip_forward,
-              disks=(self._CreateDiskMessages(args, boot_disk_size_gb,
+              disks=(self._CreateDiskMessages(holder, args, boot_disk_size_gb,
                                               image_uri, instance_ref)),
               description=args.description,
               machineType=machine_type_uri,
@@ -173,39 +165,40 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
               networkInterfaces=[network_interface],
               serviceAccounts=service_accounts,
               scheduling=scheduling,
-              tags=containers_utils.CreateTagsMessage(self.messages, args.tags),
-          ),
-          project=self.project,
+              tags=containers_utils.CreateTagsMessage(client.messages,
+                                                      args.tags)),
+          project=instance_ref.project,
           zone=instance_ref.zone)
       if labels:
         request.instance.labels = labels
-      requests.append(request)
+      requests.append((client.apitools_client.instances,
+                       'Insert', request))
 
-    return requests
+    return client.MakeRequests(requests)
 
   def _CreateDiskMessages(
-      self, args, boot_disk_size_gb, image_uri, instance_ref):
+      self, holder, args, boot_disk_size_gb, image_uri, instance_ref):
     """Creates API messages with disks attached to VM instance."""
     persistent_disks, _ = (
         instance_utils.CreatePersistentAttachedDiskMessages(
-            self.resources, self.compute_client, None, args.disk or [],
+            holder.resources, holder.client, None, args.disk or [],
             instance_ref))
     persistent_create_disks = (
         instance_utils.CreatePersistentCreateDiskMessages(
-            self.compute_client, self.resources, None,
+            holder.client, holder.resources, None,
             getattr(args, 'create_disk', []), instance_ref))
     local_ssds = []
     for x in args.local_ssd or []:
       local_ssd = instance_utils.CreateLocalSsdMessage(
-          self.resources,
-          self.messages,
+          holder.resources,
+          holder.client.messages,
           x.get('device-name'),
           x.get('interface'),
           x.get('size'),
           instance_ref.zone)
       local_ssds.append(local_ssd)
     boot_disk = instance_utils.CreateDefaultBootAttachedDiskMessage(
-        self.compute_client, self.resources,
+        holder.client, holder.resources,
         disk_type=args.boot_disk_type,
         disk_device_name=args.boot_disk_device_name,
         disk_auto_delete=args.boot_disk_auto_delete,

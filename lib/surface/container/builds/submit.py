@@ -157,11 +157,6 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
       default_gcs_source = True
       args.gcs_source_staging_dir = 'gs://{}/source'.format(default_bucket_name)
 
-    default_gcs_log_dir = False
-    if args.gcs_log_dir is None:
-      default_gcs_log_dir = True
-      args.gcs_log_dir = 'gs://{}/logs'.format(default_bucket_name)
-
     client = cloudbuild_util.GetClientInstance()
     messages = cloudbuild_util.GetMessagesModule()
 
@@ -233,10 +228,9 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
       # creation to avoid this race condition.
       gcs_client.CreateBucketIfNotExists(gcs_source_staging_dir.bucket)
 
-      # If no bucket is specified (for the source `default_gcs_source` or for
-      # the logs `default_gcs_log_dir`), check that the default bucket is also
-      # owned by the project (b/33046325).
-      if default_gcs_source or default_gcs_log_dir:
+      # If no bucket is specified (for the source `default_gcs_source`), check
+      # that the default bucket is also owned by the project (b/33046325).
+      if default_gcs_source:
         # This request returns only the buckets owned by the project.
         bucket_list_req = gcs_client.messages.StorageBucketsListRequest(
             project=project,
@@ -254,12 +248,6 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
                 'A bucket with name {} already exists and is owned by '
                 'another project. Specify a bucket using '
                 '--gcs_source_staging_dir.'.format(default_bucket_name))
-          elif default_gcs_log_dir:
-            raise c_exceptions.RequiredArgumentException(
-                'gcs-log-dir',
-                'A bucket with name {} already exists and is owned by '
-                'another project. Specify a bucket to hold build logs '
-                'using --gcs-log-dir.'.format(default_bucket_name))
 
       if gcs_source_staging_dir.object:
         staged_object = gcs_source_staging_dir.object + '/' + staged_object
@@ -328,13 +316,12 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
             '--no-source',
             'To omit source, use the --no-source flag.')
 
-    gcs_log_dir = resources.REGISTRY.Parse(
-        args.gcs_log_dir, collection='storage.objects')
+    if args.gcs_log_dir:
+      gcs_log_dir = resources.REGISTRY.Parse(
+          args.gcs_log_dir, collection='storage.objects')
 
-    if gcs_source_staging and gcs_log_dir.bucket != gcs_source_staging.bucket:
-      # Create the logs bucket if it does not yet exist.
-      gcs_client.CreateBucketIfNotExists(gcs_log_dir.bucket)
-    build_config.logsBucket = 'gs://'+gcs_log_dir.bucket+'/'+gcs_log_dir.object
+      build_config.logsBucket = (
+          'gs://'+gcs_log_dir.bucket+'/'+gcs_log_dir.object)
 
     log.debug('submitting build: '+repr(build_config))
 
@@ -382,5 +369,5 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
   def Collection(self):
     return 'cloudbuild.projects.builds'
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return self.ListFormat(args)

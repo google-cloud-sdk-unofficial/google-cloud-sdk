@@ -16,7 +16,6 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.search_help import search
-from googlecloudsdk.command_lib.search_help import table
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -36,9 +35,8 @@ class HelpSearch(base.Command):
                         help=('Term to search for.'))
 
   def Run(self, args):
-    table_path = table.IndexPath()
-    return search.RunSearch(table_path, [args.term], self.cli)
+    return search.RunSearch([args.term], self.cli)
 
-  def Format(self, unused_args):
+  def DeprecatedFormat(self, unused_args):
     return ("table(path.join(sep=' '):label='COMMAND', "
             "summary:wrap:label='HELP')")

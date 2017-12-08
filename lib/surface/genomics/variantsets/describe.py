@@ -48,5 +48,5 @@ class Describe(base.DescribeCommand):
 
     return apitools_client.variantsets.Get(get_request)
 
-  def Format(self, unused_args):
+  def DeprecatedFormat(self, unused_args):
     return 'json'

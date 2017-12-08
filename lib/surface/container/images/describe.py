@@ -40,7 +40,7 @@ class Describe(base.DescribeCommand):
   def Collection(self):
     return 'container.images'
 
-  def Format(self, unused_args):
+  def DeprecatedFormat(self, unused_args):
     return 'object'
 
   @staticmethod

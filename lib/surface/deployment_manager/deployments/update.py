@@ -83,6 +83,7 @@ class Update(base.UpdateCommand):
     flags.AddDeploymentNameFlag(parser)
     flags.AddPropertiesFlag(parser)
     flags.AddAsyncFlag(parser)
+
     parser.add_argument(
         '--description',
         help='The new description of the deployment.',
@@ -92,9 +93,10 @@ class Update(base.UpdateCommand):
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
         '--config',
-        help='Filename of config which specifies resources to deploy. '
+        help='Filename of config that specifies resources to deploy. '
         'Required unless launching an already-previewed update to this '
-        'deployment.',
+        'deployment. More information is available at '
+        'https://cloud.google.com/deployment-manager/docs/configuration/.',
         dest='config')
 
     if version in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
@@ -130,7 +132,7 @@ class Update(base.UpdateCommand):
   def Collection(self):
     return 'deploymentmanager.resources_and_outputs'
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return self.ListFormat(args)
 
   def Epilog(self, resources_were_displayed):

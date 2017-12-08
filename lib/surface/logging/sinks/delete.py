@@ -85,7 +85,8 @@ class Delete(base.DeleteCommand):
     """
     util.CheckLegacySinksCommandArguments(args)
 
-    sink_ref = util.GetSinkReference(args.sink_name, args.log, args.service)
+    sink_ref = util.GetSinkReference(
+        args.sink_name, args.log, args.service, args)
 
     if args.log:
       sink_description = 'log sink [%s] from [%s]' % (

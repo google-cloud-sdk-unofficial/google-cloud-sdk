@@ -20,35 +20,33 @@ from googlecloudsdk.command_lib.compute.health_checks import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base_classes.BaseAsyncCreator):
-  """Create a UDP health check to monitor load balanced instances."""
+class Create(base.CreateCommand):
+  """Create a UDP health check to monitor load balanced instances.
+
+    *{command}* is used to create a UDP health check. UDP health checks
+  monitor instances in a load balancer controlled by a target pool. All
+  arguments to the command are optional except for the name of the health
+  check, request and response. For more information on load balancing, see
+  [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
+  """
 
   HEALTH_CHECK_ARG = None
 
   @classmethod
   def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument('UDP')
     cls.HEALTH_CHECK_ARG.AddArgument(parser)
     health_checks_utils.AddUdpRelatedArgs(parser)
     health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'UDP')
 
-  @property
-  def service(self):
-    return self.compute.healthChecks
-
-  @property
-  def method(self):
-    return 'Insert'
-
-  @property
-  def resource_type(self):
-    return 'healthChecks'
-
-  def CreateRequests(self, args):
-    """Returns the request necessary for adding the health check."""
+  def Run(self, args):
+    """Issues the request necessary for adding the health check."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
     health_check_ref = self.HEALTH_CHECK_ARG.ResolveAsResource(
-        args, self.resources)
+        args, holder.resources)
     # Check that request and response are not None and empty.
     if not args.request:
       raise exceptions.ToolException(
@@ -57,12 +55,12 @@ class Create(base_classes.BaseAsyncCreator):
       raise exceptions.ToolException(
           '"response" field for UDP can not be empty.')
 
-    request = self.messages.ComputeHealthChecksInsertRequest(
-        healthCheck=self.messages.HealthCheck(
+    request = client.messages.ComputeHealthChecksInsertRequest(
+        healthCheck=client.messages.HealthCheck(
             name=health_check_ref.Name(),
             description=args.description,
-            type=self.messages.HealthCheck.TypeValueValuesEnum.UDP,
-            udpHealthCheck=self.messages.UDPHealthCheck(
+            type=client.messages.HealthCheck.TypeValueValuesEnum.UDP,
+            udpHealthCheck=client.messages.UDPHealthCheck(
                 request=args.request,
                 response=args.response,
                 port=args.port,
@@ -72,18 +70,7 @@ class Create(base_classes.BaseAsyncCreator):
             healthyThreshold=args.healthy_threshold,
             unhealthyThreshold=args.unhealthy_threshold,
         ),
-        project=self.project)
+        project=health_check_ref.project)
 
-    return [request]
-
-
-Create.detailed_help = {
-    'brief': ('Create a UDP health check to monitor load balanced instances'),
-    'DESCRIPTION': """\
-        *{command}* is used to create a UDP health check. UDP health checks
-        monitor instances in a load balancer controlled by a target pool. All
-        arguments to the command are optional except for the name of the health
-        check, request and response. For more information on load balancing, see
-        [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
-        """,
-}
+    return client.MakeRequests([(client.apitools_client.healthChecks,
+                                 'Insert', request)])

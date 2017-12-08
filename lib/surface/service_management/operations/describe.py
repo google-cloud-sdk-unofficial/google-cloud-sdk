@@ -64,6 +64,10 @@ class Describe(base.DescribeCommand):
     """
     common_flags.operation_flag(suffix='to describe').AddToParser(parser)
 
+    parser.display_info.AddFormat(
+        ':(metadata.startTime.date(format="%Y-%m-%d %H:%M:%S %Z", tz=LOCAL)) '
+        '[transforms] default')
+
     parser.add_argument(
         '--full',
         action='store_true',

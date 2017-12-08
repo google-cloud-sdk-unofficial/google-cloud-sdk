@@ -21,6 +21,7 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.command_lib.util.ssh import containers
 from googlecloudsdk.command_lib.util.ssh import ssh
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import retry
@@ -72,6 +73,9 @@ def _Args(parser):
 
       ``USER'' specifies the username with which to SSH. If omitted,
       $USER from the environment is selected.
+
+      ``INSTANCE'' specifies the name of the virtual machine instance to SSH
+      into.
       """)
 
   parser.add_argument(
@@ -144,8 +148,10 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
     if args.ssh_args:
       remainder.extend(args.ssh_args)
 
-    tty = ssh_utils.GetTty(args.container, args.command)
-    remote_command = ssh_utils.GetRemoteCommand(args.container, args.command)
+    # Transform args.command into arg list or None if no command
+    command_list = args.command.split(' ') if args.command else None
+    tty = containers.GetTty(args.container, command_list)
+    remote_command = containers.GetRemoteCommand(args.container, command_list)
 
     cmd = ssh.SSHCommand(remote, identity_file=identity_file,
                          options=options, extra_flags=extra_flags,

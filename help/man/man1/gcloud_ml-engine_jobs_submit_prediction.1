@@ -11,7 +11,7 @@ gcloud ml\-engine jobs submit prediction \- start a Cloud ML Engine batch predic
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud ml\-engine jobs submit prediction\fR \fIJOB\fR \fB\-\-data\-format\fR=\fIDATA_FORMAT\fR \fB\-\-input\-paths\fR=\fIINPUT_PATH\fR,[\fIINPUT_PATH\fR,...] \fB\-\-output\-path\fR=\fIOUTPUT_PATH\fR \fB\-\-region\fR=\fIREGION\fR (\fB\-\-model\fR=\fIMODEL\fR\ |\ \fB\-\-model\-dir\fR=\fIMODEL_DIR\fR) [\fB\-\-max\-worker\-count\fR=\fIMAX_WORKER_COUNT\fR] [\fB\-\-runtime\-version\fR=\fIRUNTIME_VERSION\fR] [\fB\-\-version\fR=\fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud ml\-engine jobs submit prediction\fR \fIJOB\fR \fB\-\-data\-format\fR=\fIDATA_FORMAT\fR \fB\-\-input\-paths\fR=\fIINPUT_PATH\fR,[\fIINPUT_PATH\fR,...] \fB\-\-output\-path\fR=\fIOUTPUT_PATH\fR \fB\-\-region\fR=\fIREGION\fR (\fB\-\-model\fR=\fIMODEL\fR\ |\ \fB\-\-model\-dir\fR=\fIMODEL_DIR\fR) [\fB\-\-max\-worker\-count\fR=\fIMAX_WORKER_COUNT\fR] [\fB\-\-runtime\-version\fR=\fIRUNTIME_VERSION\fR] [\fB\-\-version\fR=\fIVERSION\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -130,6 +130,9 @@ $ gcloud ml\-engine versions list
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.

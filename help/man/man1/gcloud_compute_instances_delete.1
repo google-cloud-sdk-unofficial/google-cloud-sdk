@@ -11,7 +11,7 @@ gcloud compute instances delete \- delete Google Compute Engine virtual machine 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances delete\fR \fINAMES\fR [\fINAMES\fR\ ...] [\fB\-\-zone\fR=\fIZONE\fR] [\fB\-\-delete\-disks\fR=\fIDISK\-TYPE\fR\ |\ \fB\-\-keep\-disks\fR=\fIDISK\-TYPE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instances delete\fR \fINAMES\fR [\fINAMES\fR\ ...] [\fB\-\-zone\fR=\fIZONE\fR] [\fB\-\-delete\-disks\fR=\fIDISK_TYPE\fR\ |\ \fB\-\-keep\-disks\fR=\fIDISK_TYPE\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -69,13 +69,13 @@ At most one of these may be specified:
 
 .RS 2m
 .TP 2m
-\fB\-\-delete\-disks\fR=\fIDISK\-TYPE\fR
+\fB\-\-delete\-disks\fR=\fIDISK_TYPE\fR
 The types of disks to delete with instance deletion regardless of the disks'
 auto\-delete configuration. When this flag is provided, the auto\-delete bits on
 the attached disks are modified accordingly before the instance deletion
 requests are issued. For more information on disk auto\-deletion, see
 https://cloud.google.com/compute/docs/disks/persistent\-disks#updateautodelete.
-\fIDISK\-TYPE\fR must be one of:
+\fIDISK_TYPE\fR must be one of:
 
 .RS 2m
 .TP 2m
@@ -91,13 +91,13 @@ A non\-boot disk.
 .RE
 .sp
 .TP 2m
-\fB\-\-keep\-disks\fR=\fIDISK\-TYPE\fR
+\fB\-\-keep\-disks\fR=\fIDISK_TYPE\fR
 The types of disks to not delete with instance deletion regardless of the disks'
 auto\-delete configuration. When this flag is provided, the auto\-delete bits on
 the attached disks are modified accordingly before the instance deletion
 requests are issued. For more information on disk auto\-deletion, see
 https://cloud.google.com/compute/docs/disks/persistent\-disks#updateautodelete.
-\fIDISK\-TYPE\fR must be one of:
+\fIDISK_TYPE\fR must be one of:
 
 .RS 2m
 .TP 2m
@@ -115,6 +115,9 @@ A non\-boot disk.
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.

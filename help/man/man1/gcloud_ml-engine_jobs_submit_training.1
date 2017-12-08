@@ -11,7 +11,7 @@ gcloud ml\-engine jobs submit training \- submits a Cloud Machine Learning train
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud ml\-engine jobs submit training\fR \fIJOB\fR \fB\-\-module\-name\fR=\fIMODULE_NAME\fR [\fB\-\-config\fR=\fICONFIG\fR] [\fB\-\-job\-dir\fR=\fIJOB_DIR\fR] [\fB\-\-package\-path\fR=\fIPACKAGE_PATH\fR] [\fB\-\-packages\fR=[\fIPACKAGE\fR,...]] [\fB\-\-region\fR=\fIREGION\fR] [\fB\-\-runtime\-version\fR=\fIRUNTIME_VERSION\fR] [\fB\-\-scale\-tier\fR=\fISCALE_TIER\fR] [\fB\-\-staging\-bucket\fR=\fISTAGING_BUCKET\fR] [\fB\-\-async\fR\ |\ \fB\-\-stream\-logs\fR] [\fIGLOBAL\-FLAG\ ...\fR] [\-\-\ \fIUSER_ARGS\fR\ ...]
+\f5gcloud ml\-engine jobs submit training\fR \fIJOB\fR \fB\-\-module\-name\fR=\fIMODULE_NAME\fR [\fB\-\-config\fR=\fICONFIG\fR] [\fB\-\-job\-dir\fR=\fIJOB_DIR\fR] [\fB\-\-package\-path\fR=\fIPACKAGE_PATH\fR] [\fB\-\-packages\fR=[\fIPACKAGE\fR,...]] [\fB\-\-region\fR=\fIREGION\fR] [\fB\-\-runtime\-version\fR=\fIRUNTIME_VERSION\fR] [\fB\-\-scale\-tier\fR=\fISCALE_TIER\fR] [\fB\-\-staging\-bucket\fR=\fISTAGING_BUCKET\fR] [\fB\-\-async\fR\ |\ \fB\-\-stream\-logs\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR] [\-\-\ \fIUSER_ARGS\fR\ ...]
 
 
 
@@ -239,6 +239,9 @@ $ gcloud ml\-engine jobs cancel JOB_ID
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.

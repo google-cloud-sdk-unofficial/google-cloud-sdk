@@ -46,6 +46,8 @@ class Docker(base.Command):
   A full reference of docker's command line options available after -- can be
   found here: [](https://docs.docker.com/engine/reference/commandline/cli/).
 
+  You may also run `{command} -- --help` to view the docker CLI's help directly.
+
   More information on Google Container Registry can be found here:
   https://cloud.google.com/container-registry/ and detailed documentation can be
   found here: https://cloud.google.com/container-registry/docs/

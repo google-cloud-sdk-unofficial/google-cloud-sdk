@@ -19,7 +19,9 @@ import dns.exception
 import dns.rdata
 import dns.tokenizer
 
+
 class CAA(dns.rdata.Rdata):
+
     """CAA (Certification Authority Authorization) record
 
     @ivar flags: the flags
@@ -43,41 +45,29 @@ class CAA(dns.rdata.Rdata):
                                dns.rdata._escapify(self.tag),
                                dns.rdata._escapify(self.value))
 
-    def from_text(cls, rdclass, rdtype, tok, origin = None, relativize = True):
+    @classmethod
+    def from_text(cls, rdclass, rdtype, tok, origin=None, relativize=True):
         flags = tok.get_uint8()
-        tag = tok.get_string()
+        tag = tok.get_string().encode()
         if len(tag) > 255:
             raise dns.exception.SyntaxError("tag too long")
         if not tag.isalnum():
             raise dns.exception.SyntaxError("tag is not alphanumeric")
-        value = tok.get_string()
+        value = tok.get_string().encode()
         return cls(rdclass, rdtype, flags, tag, value)
 
-    from_text = classmethod(from_text)
-
-    def to_wire(self, file, compress = None, origin = None):
-        file.write(chr(self.flags))
+    def to_wire(self, file, compress=None, origin=None):
+        file.write(struct.pack('!B', self.flags))
         l = len(self.tag)
         assert l < 256
-        file.write(chr(l))
+        file.write(struct.pack('!B', l))
         file.write(self.tag)
         file.write(self.value)
 
-    def from_wire(cls, rdclass, rdtype, wire, current, rdlen, origin = None):
-        (flags, l) = struct.unpack('!BB', wire[current : current + 2])
+    @classmethod
+    def from_wire(cls, rdclass, rdtype, wire, current, rdlen, origin=None):
+        (flags, l) = struct.unpack('!BB', wire[current: current + 2])
         current += 2
-        tag = wire[current : current + l]
+        tag = wire[current: current + l]
         value = wire[current + l:current + rdlen - 2]
         return cls(rdclass, rdtype, flags, tag, value)
-
-    from_wire = classmethod(from_wire)
-
-    def _cmp(self, other):
-        v = cmp(self.flags, other.flags)
-        if v == 0:
-            v = cmp(len(self.tag), len(other.tag))
-        if v == 0:
-            v = cmp(self.tag, other.tag)
-        if v == 0:
-            v = cmp(self.value, other.value)
-        return v

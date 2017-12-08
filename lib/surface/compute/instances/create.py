@@ -64,8 +64,8 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
   instances_flags.AddDiskArgs(parser, enable_regional)
   if release_track in [base.ReleaseTrack.ALPHA]:
     instances_flags.AddCreateDiskArgs(parser)
-    instances_flags.AddExtendedMachineTypeArgs(parser)
   if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
+    instances_flags.AddExtendedMachineTypeArgs(parser)
     instances_flags.AddAcceleratorArgs(parser)
   if support_local_ssd_size:
     instances_flags.AddLocalSsdArgsWithSize(parser)
@@ -122,7 +122,7 @@ class Create(base.CreateCommand):
   def Collection(self):
     return 'compute.instances'
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return self.ListFormat(args)
 
   def _CreateRequests(self, args, compute_client, resource_parser):
@@ -208,7 +208,6 @@ class Create(base.CreateCommand):
     machine_type_uris = instance_utils.CreateMachineTypeUris(
         resources=resource_parser,
         compute_client=compute_client,
-        project=instance_refs[0].project,
         machine_type=args.machine_type,
         custom_cpu=args.custom_cpu,
         custom_memory=args.custom_memory,

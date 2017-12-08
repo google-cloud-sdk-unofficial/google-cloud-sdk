@@ -42,7 +42,7 @@ class UpdateFirewall(base_classes.BaseCommand):
   def resource_type(self):
     return 'firewalls'
 
-  def Format(self, unused_args):
+  def DeprecatedFormat(self, unused_args):
     # Do not print the modifed the firewall in the output.
     return 'none'
 

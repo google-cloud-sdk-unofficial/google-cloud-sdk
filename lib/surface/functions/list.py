@@ -28,8 +28,10 @@ from googlecloudsdk.core import resources
 class List(base.ListCommand):
   """Lists all the functions in a given region."""
 
-  def Collection(self):
-    return 'functions.projects.locations.functions'
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(
+        'table(name.basename(), status, trigger():label=TRIGGER)')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

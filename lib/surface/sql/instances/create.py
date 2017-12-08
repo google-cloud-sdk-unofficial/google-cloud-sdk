@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Creates a new Cloud SQL instance."""
 import argparse
 
@@ -33,14 +32,16 @@ from googlecloudsdk.core.resource import resource_lex
 from googlecloudsdk.core.resource import resource_property
 
 
-class _BaseCreate(object):
-  """Create command base class for all release tracks."""
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class Create(base.CreateCommand):
+  """Creates a new Cloud SQL instance."""
 
-  @classmethod
-  def Args(cls, parser):
+  @staticmethod
+  def Args(parser):
     """Declare flag and positional arguments for this command parser."""
     # TODO(b/35705305): move common flags to command_lib.sql.flags
     base.ASYNC_FLAG.AddToParser(parser)
+    parser.display_info.AddFormat(flags.INSTANCES_FORMAT_BETA)
     parser.add_argument(
         '--activation-policy',
         required=False,
@@ -76,16 +77,36 @@ class _BaseCreate(object):
               'the instance. Specified in CIDR notation, also known as '
               '\'slash\' notation (e.g. 192.168.100.0/24).'))
     parser.add_argument(
-        '--backup-start-time',
-        required=False,
-        help=('The start time of daily backups, specified in the 24 hour '
-              'format - HH:MM, in the UTC timezone.'))
-    parser.add_argument(
         '--backup',
         required=False,
         action='store_true',
         default=True,
         help='Enables daily backup.')
+    parser.add_argument(
+        '--backup-start-time',
+        required=False,
+        help=('The start time of daily backups, specified in the 24 hour '
+              'format - HH:MM, in the UTC timezone.'))
+    parser.add_argument(
+        '--cpu',
+        type=int,
+        required=False,
+        help=('A whole number value indicating how many cores are desired in '
+              'the machine. Both --cpu and --memory must be specified if a '
+              'custom machine type is desired, and the --tier flag must be '
+              'omitted.'))
+    parser.add_argument(
+        '--database-flags',
+        type=arg_parsers.ArgDict(min_length=1),
+        metavar='FLAG=VALUE',
+        required=False,
+        help=('A comma-separated list of database flags to set on the '
+              'instance. Use an equals sign to separate flag name and value. '
+              'Flags without values, like skip_grant_tables, can be written '
+              'out without a value after, e.g., `skip_grant_tables=`. Use '
+              'on/off for booleans. View the Instance Resource API for allowed '
+              'flags. (e.g., `--database-flags max_allowed_packet=55555,'
+              'skip_grant_tables=,log_output=1`)'))
     parser.add_argument(
         '--database-version',
         required=False,
@@ -97,9 +118,13 @@ class _BaseCreate(object):
         required=False,
         action='store_true',
         default=None,  # Tri-valued: None => don't change the setting.
-        help=('Specified if binary log should be enabled. If backup '
-              'configuration is disabled, binary log must be disabled as well.'
-             ))
+        help=(
+            'Specified if binary log should be enabled. If backup '
+            'configuration is disabled, binary log must be disabled as well.'))
+    parser.add_argument(
+        '--failover-replica-name',
+        required=False,
+        help='Also create a failover replica with the specified name.')
     parser.add_argument(
         '--follow-gae-app',
         required=False,
@@ -116,15 +141,44 @@ class _BaseCreate(object):
         type=command_validate.InstanceNameRegexpValidator(),
         help='Cloud SQL instance ID.')
     parser.add_argument(
+        '--maintenance-release-channel',
+        choices={
+            'production': 'Production updates are stable and recommended '
+                          'for applications in production.',
+            'preview': 'Preview updates release prior to production '
+                       'updates. You may wish to use the preview channel '
+                       'for dev/test applications so that you can preview '
+                       'their compatibility with your application prior '
+                       'to the production release.'
+        },
+        type=str.lower,
+        help="Which channel's updates to apply during the maintenance window.")
+    parser.add_argument(
+        '--maintenance-window-day',
+        choices=arg_parsers.DayOfWeek.DAYS,
+        type=arg_parsers.DayOfWeek.Parse,
+        help='Day of week for maintenance window, in UTC time zone.')
+    parser.add_argument(
+        '--maintenance-window-hour',
+        type=arg_parsers.BoundedInt(lower_bound=0, upper_bound=23),
+        help='Hour of day for maintenance window, in UTC time zone.')
+    parser.add_argument(
         '--master-instance-name',
         required=False,
         help=('Name of the instance which will act as master in the '
               'replication setup. The newly created instance will be a read '
               'replica of the specified master instance.'))
     parser.add_argument(
-        '--on-premises-host-port',
+        '--memory',
+        type=arg_parsers.BinarySize(),
         required=False,
-        help=argparse.SUPPRESS)
+        help=('A whole number value indicating how much memory is desired in '
+              'the machine. A size unit should be provided (eg. 3072MiB or '
+              '9GiB) - if no units are specified, GiB is assumed. Both --cpu '
+              'and --memory must be specified if a custom machine type is '
+              'desired, and the --tier flag must be omitted.'))
+    parser.add_argument(
+        '--on-premises-host-port', required=False, help=argparse.SUPPRESS)
     parser.add_argument(
         '--pricing-plan',
         '-p',
@@ -142,6 +196,10 @@ class _BaseCreate(object):
               'list of regions at '
               'https://cloud.google.com/sql/docs/instance-locations.'))
     parser.add_argument(
+        '--replica-type',
+        choices=['READ', 'FAILOVER'],
+        help='The type of replica to create.')
+    parser.add_argument(
         '--replication',
         required=False,
         choices=['SYNCHRONOUS', 'ASYNCHRONOUS'],
@@ -154,134 +212,6 @@ class _BaseCreate(object):
         default=None,  # Tri-valued: None => don't change the setting.
         help='Specified if users connecting over IP must use SSL.')
     parser.add_argument(
-        '--tier',
-        '-t',
-        required=False,
-        help=('The tier for this instance. For Second Generation instances, '
-              'TIER is the instance\'s machine type (e.g., db-n1-standard-1). '
-              'For PostgreSQL instances, only shared-core machine types '
-              '(e.g., db-f1-micro) apply. A complete list of tiers is '
-              'available here: https://cloud.google.com/sql/pricing.'))
-    parser.add_argument(
-        '--database-flags',
-        type=arg_parsers.ArgDict(min_length=1),
-        metavar='FLAG=VALUE',
-        required=False,
-        help=('A comma-separated list of database flags to set on the '
-              'instance. Use an equals sign to separate flag name and value. '
-              'Flags without values, like skip_grant_tables, can be written '
-              'out without a value after, e.g., `skip_grant_tables=`. Use '
-              'on/off for booleans. View the Instance Resource API for allowed '
-              'flags. (e.g., `--database-flags max_allowed_packet=55555,'
-              'skip_grant_tables=,log_output=1`)'))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Create(_BaseCreate, base.CreateCommand):
-  """Creates a new Cloud SQL instance."""
-
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat(flags.INSTANCES_FORMAT)
-    _BaseCreate.Args(parser)
-
-  def Run(self, args):
-    """Creates a new Cloud SQL instance.
-
-    Args:
-      args: argparse.Namespace, The arguments that this command was invoked
-          with.
-
-    Returns:
-      A dict object representing the operations resource describing the create
-      operation if the create was successful.
-    Raises:
-      HttpException: A http error response was received while executing api
-          request.
-      ToolException: An error other than http error occured while executing the
-          command.
-    """
-    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
-    sql_client = client.sql_client
-    sql_messages = client.sql_messages
-
-    validate.ValidateInstanceName(args.instance)
-    instance_ref = client.resource_parser.Parse(
-        args.instance,
-        params={'project': properties.VALUES.core.project.GetOrFail},
-        collection='sql.instances')
-    instance_resource = instances.InstancesV1Beta3.ConstructInstanceFromArgs(
-        sql_messages, args, instance_ref=instance_ref)
-
-    if args.pricing_plan == 'PACKAGE':
-      if not console_io.PromptContinue(
-          'Charges will begin accruing immediately. Really create Cloud '
-          'SQL instance?'):
-        raise exceptions.ToolException('canceled by the user.')
-
-    operation_ref = None
-    try:
-      result = sql_client.instances.Insert(instance_resource)
-
-      operation_ref = client.resource_parser.Create(
-          'sql.operations',
-          operation=result.operation,
-          project=instance_ref.project,
-          instance=instance_ref.instance,
-      )
-
-      if args.async:
-        if not args.IsSpecified('format'):
-          args.format = 'default'
-        return sql_client.operations.Get(
-            sql_messages.SqlOperationsGetRequest(
-                project=operation_ref.project,
-                instance=operation_ref.instance,
-                operation=operation_ref.operation))
-
-      operations.OperationsV1Beta3.WaitForOperation(
-          sql_client, operation_ref, 'Creating Cloud SQL instance')
-
-      log.CreatedResource(instance_ref)
-
-      new_resource = sql_client.instances.Get(
-          sql_messages.SqlInstancesGetRequest(
-              project=instance_ref.project,
-              instance=instance_ref.instance))
-      return new_resource
-
-    except apitools_exceptions.HttpError as error:
-      log.debug('operation : %s', str(operation_ref))
-      exc = exceptions.HttpException(error)
-      if resource_property.Get(exc.payload.content,
-                               resource_lex.ParseKey('error.errors[0].reason'),
-                               None) == 'errorMaxInstancePerLabel':
-        msg = resource_property.Get(exc.payload.content,
-                                    resource_lex.ParseKey('error.message'),
-                                    None)
-        raise exceptions.HttpException(msg)
-      raise
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(_BaseCreate, base.CreateCommand):
-  """Creates a new Cloud SQL instance."""
-
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat(flags.INSTANCES_FORMAT_BETA)
-    _BaseCreate.Args(parser)
-    parser.add_argument(
-        '--storage-type',
-        required=False,
-        choices=['SSD', 'HDD'],
-        default=None,
-        help='The storage type for the instance.')
-    parser.add_argument(
-        '--failover-replica-name',
-        required=False,
-        help='Also create a failover replica with the specified name.')
-    parser.add_argument(
         '--storage-auto-increase',
         action='store_true',
         default=None,
@@ -293,52 +223,28 @@ class CreateBeta(_BaseCreate, base.CreateCommand):
               'it can result in the instance going offline, dropping existing '
               'connections.'))
     parser.add_argument(
-        '--replica-type',
-        choices=['READ', 'FAILOVER'],
-        help='The type of replica to create.')
-    parser.add_argument(
         '--storage-size',
-        type=arg_parsers.BinarySize(lower_bound='10GB', upper_bound='10230GB',
-                                    suggested_binary_size_scales=['GB']),
+        type=arg_parsers.BinarySize(
+            lower_bound='10GB',
+            upper_bound='10230GB',
+            suggested_binary_size_scales=['GB']),
         help=('Amount of storage allocated to the instance. Must be an integer '
               'number of GB between 10GB and 10230GB inclusive.'))
     parser.add_argument(
-        '--maintenance-release-channel',
-        choices={'production': 'Production updates are stable and recommended '
-                               'for applications in production.',
-                 'preview': 'Preview updates release prior to production '
-                            'updates. You may wish to use the preview channel '
-                            'for dev/test applications so that you can preview '
-                            'their compatibility with your application prior '
-                            'to the production release.'},
-        type=str.lower,
-        help="Which channel's updates to apply during the maintenance window.")
-    parser.add_argument(
-        '--maintenance-window-day',
-        choices=arg_parsers.DayOfWeek.DAYS,
-        type=arg_parsers.DayOfWeek.Parse,
-        help='Day of week for maintenance window, in UTC time zone.')
-    parser.add_argument(
-        '--maintenance-window-hour',
-        type=arg_parsers.BoundedInt(lower_bound=0, upper_bound=23),
-        help='Hour of day for maintenance window, in UTC time zone.')
-    parser.add_argument(
-        '--cpu',
-        type=int,
+        '--storage-type',
         required=False,
-        help=('A whole number value indicating how many cores are desired in '
-              'the machine. Both --cpu and --memory must be specified if a '
-              'custom machine type is desired, and the --tier flag must be '
-              'omitted.'))
+        choices=['SSD', 'HDD'],
+        default=None,
+        help='The storage type for the instance.')
     parser.add_argument(
-        '--memory',
-        type=arg_parsers.BinarySize(),
+        '--tier',
+        '-t',
         required=False,
-        help=('A whole number value indicating how much memory is desired in '
-              'the machine. A size unit should be provided (eg. 3072MiB or '
-              '9GiB) - if no units are specified, GiB is assumed. Both --cpu '
-              'and --memory must be specified if a custom machine type is '
-              'desired, and the --tier flag must be omitted.'))
+        help=('The tier for this instance. For Second Generation instances, '
+              'TIER is the instance\'s machine type (e.g., db-n1-standard-1). '
+              'For PostgreSQL instances, only shared-core machine types '
+              '(e.g., db-f1-micro) apply. A complete list of tiers is '
+              'available here: https://cloud.google.com/sql/pricing.'))
 
   def Run(self, args):
     """Creates a new Cloud SQL instance.
@@ -398,8 +304,7 @@ class CreateBeta(_BaseCreate, base.CreateCommand):
 
       new_resource = sql_client.instances.Get(
           sql_messages.SqlInstancesGetRequest(
-              project=instance_ref.project,
-              instance=instance_ref.instance))
+              project=instance_ref.project, instance=instance_ref.instance))
       return new_resource
     except apitools_exceptions.HttpError as error:
       log.debug('operation : %s', str(operation_ref))

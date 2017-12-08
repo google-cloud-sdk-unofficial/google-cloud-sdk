@@ -31,7 +31,7 @@ def _CommonArgs(parser, release_track):
           ' Either this flag, --custom-cpu, or --custom-memory must be '
           'specified.'))
   instance_flags.AddCustomMachineTypeArgs(parser)
-  if release_track in [base.ReleaseTrack.ALPHA]:
+  if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
     instance_flags.AddExtendedMachineTypeArgs(parser)
 
 

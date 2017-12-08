@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command for getting the status of routers."""
+"""Command for getting the status of Google Compute Engine routers."""
 from googlecloudsdk.api_lib.compute import base_classes
 
 

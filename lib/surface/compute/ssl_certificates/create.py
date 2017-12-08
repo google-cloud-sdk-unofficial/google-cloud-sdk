@@ -15,10 +15,11 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import file_utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.ssl_certificates import flags
 
 
-class Create(base_classes.BaseAsyncCreator):
+class Create(base.CreateCommand):
   """Create a Google Compute Engine SSL certificate.
 
   *{command}* is used to create SSL certificates which can be used to
@@ -31,6 +32,7 @@ class Create(base_classes.BaseAsyncCreator):
 
   @classmethod
   def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument()
     cls.SSL_CERTIFICATE_ARG.AddArgument(parser)
 
@@ -57,32 +59,23 @@ class Create(base_classes.BaseAsyncCreator):
         format and must use RSA or ECDSA encryption.
         """)
 
-  @property
-  def service(self):
-    return self.compute.sslCertificates
-
-  @property
-  def method(self):
-    return 'Insert'
-
-  @property
-  def resource_type(self):
-    return 'sslCertificates'
-
-  def CreateRequests(self, args):
-    """Returns the request necessary for adding the SSL certificate."""
+  def Run(self, args):
+    """Issues the request necessary for adding the SSL certificate."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
     ssl_certificate_ref = self.SSL_CERTIFICATE_ARG.ResolveAsResource(
-        args, self.resources)
+        args, holder.resources)
     certificate = file_utils.ReadFile(args.certificate, 'certificate')
     private_key = file_utils.ReadFile(args.private_key, 'private key')
 
-    request = self.messages.ComputeSslCertificatesInsertRequest(
-        sslCertificate=self.messages.SslCertificate(
+    request = client.messages.ComputeSslCertificatesInsertRequest(
+        sslCertificate=client.messages.SslCertificate(
             name=ssl_certificate_ref.Name(),
             certificate=certificate,
             privateKey=private_key,
             description=args.description),
-        project=self.project)
+        project=ssl_certificate_ref.project)
 
-    return [request]
+    return client.MakeRequests([(client.apitools_client.sslCertificates,
+                                 'Insert', request)])

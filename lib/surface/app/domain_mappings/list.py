@@ -35,7 +35,7 @@ class List(base.ListCommand):
     client = api_client.AppengineDomainsApiClient.GetApiClient()
     return client.ListDomainMappings()
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return """
             table(
               id:sort=1,

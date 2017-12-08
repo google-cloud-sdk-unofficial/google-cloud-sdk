@@ -11,7 +11,7 @@ gcloud compute url\-maps remove\-path\-matcher \- remove a path matcher from a U
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute url\-maps remove\-path\-matcher\fR \fINAME\fR \fB\-\-path\-matcher\-name\fR=\fIPATH_MATCHER_NAME\fR [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute url\-maps remove\-path\-matcher\fR \fIURL_MAP_NAME\fR \fB\-\-path\-matcher\-name\fR=\fIPATH_MATCHER_NAME\fR [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -30,7 +30,7 @@ refer to the path matcher are also removed.
 
 .RS 2m
 .TP 2m
-\fINAME\fR
+\fIURL_MAP_NAME\fR
 The name of the URL map.
 
 
@@ -48,9 +48,12 @@ The name of the path matcher to remove.
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.
 
 
 

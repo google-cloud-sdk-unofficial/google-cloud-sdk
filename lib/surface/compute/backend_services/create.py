@@ -101,6 +101,7 @@ class CreateGA(base_classes.BaseAsyncMutator):
     flags.AddCacheKeyIncludeHost(parser, default=True)
     flags.AddCacheKeyIncludeQueryString(parser, default=True)
     flags.AddCacheKeyQueryStringList(parser)
+    AddIapFlag(parser)
 
   @property
   def method(self):
@@ -142,6 +143,8 @@ class CreateGA(base_classes.BaseAsyncMutator):
 
     backend_services_utils.ApplyCdnPolicyArgs(
         self, args, backend_service, is_update=False)
+
+    self._ApplyIapArgs(args.iap, backend_service)
 
     request = self.messages.ComputeBackendServicesInsertRequest(
         backendService=backend_service,
@@ -203,7 +206,7 @@ class CreateGA(base_classes.BaseAsyncMutator):
     else:
       return self.CreateRegionalRequests(args, ref)
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return self.ListFormat(args)
 
   @property

@@ -30,6 +30,12 @@ class Formats(base.TopicCommand):
 
           ### Formats
 
+          A format expression is used to change the default output format of a
+          command.
+          Many output formats are available; some for pretty printing
+          human-readable output and others for returning machine-readable
+          output.
+
           A format expression has 3 parts:
 
           _NAME_:: _name_
@@ -62,6 +68,14 @@ class Formats(base.TopicCommand):
 
             $ gcloud compute instances list --format='table[box,title=Instances](name:sort=1, zone:title=zone, status)'
 
+          List a nested table of the quotas of a region:
+
+            $ gcloud compute regions describe us-central1 --format="table(quotas:format='table(metric,limit,usage)')"
+
+          Print a flattened list of global quotas in CSV format:
+
+            $ gcloud compute project-info describe --flatten='quotas[]' --format='csv(quotas.metric,quotas.limit,quotas.usage)'
+
           List the disk interfaces for all compute instances as a compact
           comma separated list:
 
@@ -74,5 +88,36 @@ class Formats(base.TopicCommand):
           List the project authenticated user email address:
 
             $ gcloud info --format='value(config.account)'
+
+          List resources filtered on repeated fields by projecting subfields on
+          a repeated message:
+
+            $ gcloud alpha genomics readgroupsets list --format 'default(readGroups[].name)'
+
+          Return the scope of the current instance:
+
+            $ gcloud compute zones list --format="value(selfLink.scope())"
+
+          selfLink is a fully qualified name. (e.g. 'https://www.googleapis.com/compute/v1/projects/my-project/zones/us-central1-a')
+          The previous example returns a list of just the names of each zone
+          (e.g. 'us-central1-a'). This is because selfLink.scope() grabs the
+          last part of the URL segment. To extract selfLink starting from
+          /projects and return the scope of the current instance:
+
+            $ gcloud compute zones list --format="value(selfLink.scope(projects))"
+
+          List all scopes enabled for a Compute Engine instance and flatten the
+          multi-valued resource:
+
+            $ gcloud compute instances list --format="flattened(name,serviceAccounts[].email,serviceAccounts[].scopes[].basename())"
+
+          Display a multi-valued resource's service account keys with the
+          corresponding service account, extracting just the first '/' delimited
+          part with segment(0):
+
+            $ gcloud iam service-accounts keys list --iam-account svc-2-123@test-minutia-123.iam.gserviceaccount.com --project test-minutia-123 --format="table(name.scope(serviceAccounts).segment(0):label='service Account',name.scope(keys):label='keyID',validAfterTime)"
+
+          The last example returns a table with service account names without
+          their full paths, keyID and validity.
           """,
       }

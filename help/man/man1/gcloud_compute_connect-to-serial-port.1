@@ -11,7 +11,7 @@ gcloud compute connect\-to\-serial\-port \- connect to the serial port of an ins
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute connect\-to\-serial\-port\fR [\fIUSER\fR@]\fIINSTANCE\fR [\fB\-\-dry\-run\fR] [\fB\-\-extra\-args\fR=\fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-force\-key\-file\-overwrite\fR] [\fB\-\-port\fR=\fIPORT\fR;\ default="1"] [\fB\-\-ssh\-key\-file\fR=\fISSH_KEY_FILE\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute connect\-to\-serial\-port\fR [\fIUSER\fR@]\fIINSTANCE\fR [\fB\-\-dry\-run\fR] [\fB\-\-extra\-args\fR=\fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-force\-key\-file\-overwrite\fR] [\fB\-\-port\fR=\fIPORT\fR;\ default="1"] [\fB\-\-ssh\-key\-file\fR=\fISSH_KEY_FILE\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -116,6 +116,9 @@ Alternatively, the zone can be stored in the environment variable
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.

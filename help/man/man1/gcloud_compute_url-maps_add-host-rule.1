@@ -11,7 +11,7 @@ gcloud compute url\-maps add\-host\-rule \- add a rule to a URL map to map hosts
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute url\-maps add\-host\-rule\fR \fINAME\fR \fB\-\-hosts\fR=\fIHOST\fR,[\fIHOST\fR,...] \fB\-\-path\-matcher\-name\fR=\fIPATH_MATCHER_NAME\fR [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute url\-maps add\-host\-rule\fR \fIURL_MAP_NAME\fR \fB\-\-hosts\fR=\fIHOST\fR,[\fIHOST\fR,...] \fB\-\-path\-matcher\-name\fR=\fIPATH_MATCHER_NAME\fR [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -31,7 +31,7 @@ used to add path matchers.
 
 .RS 2m
 .TP 2m
-\fINAME\fR
+\fIURL_MAP_NAME\fR
 The name of the URL map.
 
 
@@ -69,18 +69,21 @@ An optional, textual description for the host rule.
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.
 
 
 
 .SH "EXAMPLES"
 
-To create a host rule mapping the \f5*\-foo.google.com\fR and \f5google.com\fR
+To create a host rule mapping the \f5*\-foo.example.com\fR and \f5example.com\fR
 hosts to the \f5www\fR path matcher, run:
 
 .RS 2m
 $ gcloud compute url\-maps add\-host\-rule MY\-URL\-MAP \e
-    \-\-hosts '*\-foo.google.com,google.com' \-\-path\-matcher\-name www
+    \-\-hosts '*\-foo.example.com,example.com' \-\-path\-matcher\-name www
 .RE

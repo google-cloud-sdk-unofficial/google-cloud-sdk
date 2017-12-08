@@ -69,12 +69,16 @@ class List(base.ListCommand):
     parser.add_argument(
         '--created-before', type=time_util.ParseTimeArg,
         help='Filter the jobs to those created before the given time')
-
-  def Collection(self):
-    return 'dataflow.jobs'
-
-  def GetUriFunc(self):
-    return dataflow_util.JobsUriFunc
+    parser.display_info.AddFormat("""
+          table(
+            id:label=JOB_ID,
+            name:label=NAME,
+            type:label=TYPE,
+            creationTime.yesno(no="-"),
+            state
+          )
+     """)
+    parser.display_info.AddUriFunc(dataflow_util.JobsUriFunc)
 
   def Run(self, args):
     """Runs the command.

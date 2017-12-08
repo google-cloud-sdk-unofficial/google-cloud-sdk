@@ -32,7 +32,7 @@ class CopyBundledPython(base.Command):
   installation.
   """
 
-  def Format(self, unused_args):
+  def DeprecatedFormat(self, unused_args):
     return 'value(python_location)'
 
   def Run(self, args):

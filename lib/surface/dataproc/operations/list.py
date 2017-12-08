@@ -81,15 +81,20 @@ class List(base.ListCommand):
   def Run(self, args):
     client = self.context['dataproc_client']
     messages = self.context['dataproc_messages']
+    resources = self.context['resources']
 
-    project = properties.VALUES.core.project.Get(required=True)
-    region = self.context['dataproc_region']
-    name = 'projects/{project}/regions/{region}/operations'.format(
-        project=project, region=region)
+    # Parse Operations endpoint.
+    region_callback = properties.VALUES.dataproc.region.GetOrFail
+    project_callback = properties.VALUES.core.project.GetOrFail
+    operation_list_ref = resources.Parse(
+        None,
+        params={'regionId': region_callback, 'projectId': project_callback},
+        collection='dataproc.projects.regions.operations_list')
 
     filter_dict = dict()
     if args.state_filter:
       filter_dict[STATE_MATCHER_FILTER] = STATE_MATCHER_MAP[args.state_filter]
+    # TODO(b/32669485) Get full flag test coverage.
     if args.cluster:
       filter_dict[CLUSTER_NAME_FILTER] = args.cluster
 
@@ -105,7 +110,7 @@ class List(base.ListCommand):
       op_filter = json.dumps(filter_dict)
 
     request = messages.DataprocProjectsRegionsOperationsListRequest(
-        name=name, filter=op_filter)
+        name=operation_list_ref.RelativeName(), filter=op_filter)
 
     return list_pager.YieldFromList(
         client.projects_regions_operations,

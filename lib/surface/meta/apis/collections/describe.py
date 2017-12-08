@@ -26,6 +26,7 @@ class Describe(base.DescribeCommand):
     apis.API_VERSION_FLAG.AddToParser(parser)
     parser.add_argument(
         'collection',
+        completer=apis.CollectionCompleter,
         help='The name of the collection to get the details of.')
 
   def Run(self, args):

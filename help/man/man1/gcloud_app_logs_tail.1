@@ -11,7 +11,7 @@ gcloud app logs tail \- streams logs for App Engine apps
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud app logs tail\fR [\fB\-\-level\fR=\fILEVEL\fR;\ default="any"] [\fB\-\-logs\fR=\fIAPP_LOG\fR,[\fIAPP_LOG\fR,...];\ default="stderr,stdout,crash.log,nginx.request,request_log"] [\fB\-\-service\fR=\fISERVICE\fR,\ \fB\-s\fR\ \fISERVICE\fR] [\fB\-\-version\fR=\fIVERSION\fR,\ \fB\-v\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud app logs tail\fR [\fB\-\-level\fR=\fILEVEL\fR;\ default="any"] [\fB\-\-logs\fR=\fIAPP_LOG\fR,[\fIAPP_LOG\fR,...];\ default="stderr,stdout,crash.log,nginx.request,request_log"] [\fB\-\-service\fR=\fISERVICE\fR,\ \fB\-s\fR\ \fISERVICE\fR] [\fB\-\-version\fR=\fIVERSION\fR,\ \fB\-v\fR\ \fIVERSION\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -47,9 +47,12 @@ Limit to specific version.
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.
 
 
 

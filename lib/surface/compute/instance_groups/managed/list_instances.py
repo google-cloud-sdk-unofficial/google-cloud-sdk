@@ -82,7 +82,7 @@ class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
 
     return results, errors
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return """\
         table(instance.basename():label=NAME,
               instance.scope().segment(0):label=ZONE,
@@ -110,7 +110,7 @@ class ListInstancesBeta(ListInstances):
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return """\
         table(instance.basename():label=NAME,
               instance.scope().segment(0):label=ZONE,

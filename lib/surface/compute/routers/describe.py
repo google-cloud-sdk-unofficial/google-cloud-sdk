@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command for describing routers."""
+"""Command for describing Google Compute Engine routers."""
 from googlecloudsdk.api_lib.compute import base_classes
 
 

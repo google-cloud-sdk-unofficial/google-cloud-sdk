@@ -11,13 +11,14 @@ gcloud sql instances restore\-backup \- restores a backup of a Cloud SQL instanc
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud sql instances restore\-backup\fR \fIINSTANCE\fR \fB\-\-due\-time\fR=\fIDUE_TIME\fR, \fB\-d\fR \fIDUE_TIME\fR [\fB\-\-async\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud sql instances restore\-backup\fR \fIINSTANCE\fR (\fB\-\-backup\-id\fR=\fIBACKUP_ID\fR\ |\ \fB\-\-due\-time\fR=\fIDUE_TIME\fR) [\fB\-\-async\fR] [\fB\-\-backup\-instance\fR=\fIBACKUP_INSTANCE\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
 .SH "DESCRIPTION"
 
-Restores a backup of a Cloud SQL instance.
+DEPRECATED: This command is deprecated and will be removed. Use 'gcloud beta sql
+backups restore' instead.
 
 
 
@@ -26,7 +27,7 @@ Restores a backup of a Cloud SQL instance.
 .RS 2m
 .TP 2m
 \fIINSTANCE\fR
-Cloud SQL instance ID.
+Cloud SQL instance ID that will be restored.
 
 
 .RE
@@ -34,9 +35,15 @@ Cloud SQL instance ID.
 
 .SH "REQUIRED FLAGS"
 
+Exactly one of these must be specified:
+
 .RS 2m
 .TP 2m
-\fB\-\-due\-time\fR=\fIDUE_TIME\fR, \fB\-d\fR \fIDUE_TIME\fR
+\fB\-\-backup\-id\fR=\fIBACKUP_ID\fR
+The ID of the backup run to restore from.
+
+.TP 2m
+\fB\-\-due\-time\fR=\fIDUE_TIME\fR
 The time when this run was due to start in RFC 3339 format, for example
 2012\-11\-15T16:19:00.094Z.
 
@@ -49,13 +56,19 @@ The time when this run was due to start in RFC 3339 format, for example
 .RS 2m
 .TP 2m
 \fB\-\-async\fR
-Display information about the operation in progress, without waiting for the
-operation to complete.
+Do not wait for the operation to complete.
+
+.TP 2m
+\fB\-\-backup\-instance\fR=\fIBACKUP_INSTANCE\fR
+The ID of the instance that the backup was taken from.
 
 
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.

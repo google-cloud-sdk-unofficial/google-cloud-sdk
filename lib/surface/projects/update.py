@@ -100,7 +100,7 @@ class Update(base.UpdateCommand):
     flags.GetProjectFlag('update').AddToParser(parser)
     parser.add_argument('--name', help='New name for the project.')
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return self.ListFormat(args)
 
   def Run(self, args):

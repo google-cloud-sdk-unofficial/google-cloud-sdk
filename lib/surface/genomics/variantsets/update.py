@@ -67,5 +67,5 @@ class Update(base.UpdateCommand):
                              variantset.description))
     return variantset
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return None

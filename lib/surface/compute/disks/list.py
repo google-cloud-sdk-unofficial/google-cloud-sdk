@@ -41,7 +41,7 @@ class ListAlpha(base_classes.MultiScopeLister):
         scopes=[base_classes.ScopeType.zonal_scope,
                 base_classes.ScopeType.regional_scope])
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return """table(name,
                     location(),
                     location_scope(),

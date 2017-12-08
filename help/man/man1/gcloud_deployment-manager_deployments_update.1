@@ -11,7 +11,7 @@ gcloud deployment\-manager deployments update \- update a deployment based on a 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud deployment\-manager deployments update\fR \fIDEPLOYMENT_NAME\fR [\fB\-\-async\fR] [\fB\-\-config\fR=\fICONFIG\fR] [\fB\-\-create\-policy\fR=\fICREATE_POLICY\fR;\ default="CREATE_OR_ACQUIRE"] [\fB\-\-delete\-policy\fR=\fIDELETE_POLICY\fR;\ default="DELETE"] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-fingerprint\fR=\fIFINGERPRINT\fR] [\fB\-\-preview\fR] [\fB\-\-properties\fR=[\fIPROPERTIES\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud deployment\-manager deployments update\fR \fIDEPLOYMENT_NAME\fR [\fB\-\-async\fR] [\fB\-\-config\fR=\fICONFIG\fR] [\fB\-\-create\-policy\fR=\fICREATE_POLICY\fR;\ default="CREATE_OR_ACQUIRE"] [\fB\-\-delete\-policy\fR=\fIDELETE_POLICY\fR;\ default="DELETE"] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-fingerprint\fR=\fIFINGERPRINT\fR] [\fB\-\-preview\fR] [\fB\-\-properties\fR=[\fIPROPERTIES\fR,...]] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -43,8 +43,9 @@ than waiting for the Operation to complete. (default=False)
 
 .TP 2m
 \fB\-\-config\fR=\fICONFIG\fR
-Filename of config which specifies resources to deploy. Required unless
-launching an already\-previewed update to this deployment.
+Filename of config that specifies resources to deploy. Required unless launching
+an already\-previewed update to this deployment. More information is available
+at https://cloud.google.com/deployment\-manager/docs/configuration/.
 
 .TP 2m
 \fB\-\-create\-policy\fR=\fICREATE_POLICY\fR; default="CREATE_OR_ACQUIRE"
@@ -85,9 +86,12 @@ directly.
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.
 
 
 

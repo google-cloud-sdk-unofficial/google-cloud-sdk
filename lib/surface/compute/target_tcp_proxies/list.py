@@ -23,7 +23,7 @@ from googlecloudsdk.core import properties
 class List(base.ListCommand):
   """List target TCP proxies."""
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return """
         table(
           name,
@@ -40,9 +40,7 @@ class List(base.ListCommand):
 
     project = properties.VALUES.core.project.Get(required=True)
 
-    filter_expr = None
-    if args.filter:
-      filter_expr = filter_rewrite.Rewriter().Rewrite(args.filter)
+    args.filter, filter_expr = filter_rewrite.Rewriter().Rewrite(args.filter)
 
     request = messages.ComputeTargetTcpProxiesListRequest(
         project=project,

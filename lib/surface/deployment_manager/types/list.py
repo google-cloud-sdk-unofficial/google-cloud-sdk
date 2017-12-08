@@ -204,12 +204,14 @@ class ListALPHA(base.ListCommand):
                                        field='types',
                                        batch_size=self.page_size,
                                        limit=self.limit))
-          yield {'types': list(paginated_types),
-                 'provider': project + '/' + type_provider}
+          types = list(paginated_types)
+          if types:
+            yield {'types': types,
+                   'provider': project + '/' + type_provider}
         except api_exceptions.HttpException as error:
           yield {'types': [],
                  'provider': project + '/' + type_provider,
                  'error': error.message}
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return 'yaml(provider:sort=1, error, types.map().format("{0}", name))'

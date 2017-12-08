@@ -62,7 +62,7 @@ class List(base.ListCommand):
                                  batch_size=args.page_size,
                                  limit=args.limit))
 
-  def Format(self, unused_args):
+  def DeprecatedFormat(self, unused_args):
     return ('table(name,'
             'insertTime.date(format="%Y-%m-%d"):label=INSERT_DATE)')
 

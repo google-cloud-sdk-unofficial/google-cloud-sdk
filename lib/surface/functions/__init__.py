@@ -16,6 +16,7 @@
 
 import argparse
 
+from googlecloudsdk.api_lib.functions import transforms
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
@@ -42,3 +43,4 @@ class Functions(base.Group):
         help='The region in which the function will run.',
         completion_resource='cloudfunctions.locations',
         action=actions.StoreProperty(properties.VALUES.functions.region))
+    parser.display_info.AddTransforms(transforms.GetTransforms())

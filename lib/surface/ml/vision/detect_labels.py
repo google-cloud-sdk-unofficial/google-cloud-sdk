@@ -54,5 +54,5 @@ class DetectLabels(base.Command):
         max_results=args.max_results
     )
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return 'json'

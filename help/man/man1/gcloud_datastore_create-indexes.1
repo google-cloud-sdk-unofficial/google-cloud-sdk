@@ -11,7 +11,7 @@ gcloud datastore create\-indexes \- create new datastore indexes based on your l
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud datastore create\-indexes\fR \fIINDEX_FILE\fR [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud datastore create\-indexes\fR \fIINDEX_FILE\fR [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -33,9 +33,12 @@ The path to your index.yaml file.
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.
 
 
 
@@ -46,3 +49,7 @@ To create new indexes based on your local configuration, run:
 .RS 2m
 $ gcloud datastore create\-indexes ~/myapp/index.yaml
 .RE
+
+Detailed information about index configuration can be found at the index.yaml
+reference
+(https://cloud.google.com/appengine/docs/standard/python/config/indexref).

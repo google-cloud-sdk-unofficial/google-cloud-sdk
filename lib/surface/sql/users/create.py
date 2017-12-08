@@ -64,11 +64,12 @@ class Create(base.CreateCommand):
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='sql.instances')
     operation_ref = None
-    new_user = sql_messages.User(project=instance_ref.project,
-                                 instance=args.instance,
-                                 name=args.username,
-                                 host=args.host,
-                                 password=args.password)
+    new_user = sql_messages.User(
+        project=instance_ref.project,
+        instance=args.instance,
+        name=args.username,
+        host=args.host,
+        password=args.password)
     result_operation = sql_client.users.Insert(new_user)
     operation_ref = client.resource_parser.Create(
         'sql.operations',
@@ -77,11 +78,10 @@ class Create(base.CreateCommand):
     if args.async:
       result = sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project,
-              operation=operation_ref.operation))
+              project=operation_ref.project, operation=operation_ref.operation))
     else:
-      operations.OperationsV1Beta4.WaitForOperation(
-          sql_client, operation_ref, 'Creating Cloud SQL user')
+      operations.OperationsV1Beta4.WaitForOperation(sql_client, operation_ref,
+                                                    'Creating Cloud SQL user')
       result = new_user
 
     log.CreatedResource(args.username, kind='user', async=args.async)

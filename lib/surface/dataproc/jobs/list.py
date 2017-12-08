@@ -95,8 +95,9 @@ class List(base.ListCommand):
     client = self.context['dataproc_client']
     messages = self.context['dataproc_messages']
 
-    project = properties.VALUES.core.project.Get(required=True)
-    region = self.context['dataproc_region']
+    project = properties.VALUES.core.project.GetOrFail()
+    region = properties.VALUES.dataproc.region.GetOrFail()
+
     request = self.GetRequest(messages, project, region, args)
 
     if args.cluster:
@@ -107,6 +108,7 @@ class List(base.ListCommand):
         request.jobStateMatcher = (
             messages.DataprocProjectsRegionsJobsListRequest
             .JobStateMatcherValueValuesEnum.ACTIVE)
+      # TODO(b/32669485) Get full flag test coverage.
       elif args.state_filter == 'inactive':
         request.jobStateMatcher = (
             messages.DataprocProjectsRegionsJobsListRequest

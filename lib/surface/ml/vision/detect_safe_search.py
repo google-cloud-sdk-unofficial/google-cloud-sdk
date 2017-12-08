@@ -51,5 +51,5 @@ class DetectSafeSearch(base.Command):
     return vision_command_util.RunVisionCommand('SAFE_SEARCH_DETECTION',
                                                 args.image_path)
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return 'json'

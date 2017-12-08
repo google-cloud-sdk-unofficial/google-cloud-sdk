@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Lists customizable flags for Google Cloud SQL instances."""
 
 from googlecloudsdk.api_lib.sql import api_util
@@ -51,8 +50,7 @@ class List(base.ListCommand):
         '--database-version',
         required=False,
         choices=['MYSQL_5_5', 'MYSQL_5_6', 'MYSQL_5_7', 'POSTGRES_9_6'],
-        help='Only list flags that apply to the specified database version.'
-    )
+        help='Only list flags that apply to the specified database version.')
 
   def Run(self, args):
     """List customizable flags for Google Cloud SQL instances.

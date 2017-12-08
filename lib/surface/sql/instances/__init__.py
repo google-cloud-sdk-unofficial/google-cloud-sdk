@@ -18,6 +18,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.CommandSuggestion('connect', 'sql connect')
 class Instances(base.Group):
   """Provide commands for managing Cloud SQL instances.
 

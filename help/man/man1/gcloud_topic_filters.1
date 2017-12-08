@@ -13,35 +13,29 @@ gcloud topic filters \- resource filters supplementary help
 
 Most \fBgcloud\fR commands return a list of resources on success. By default
 they are pretty\-printed on the standard output. The
-\fB\-\-format=\fR\fINAME\fR[\fIATTRIBUTES\fR]\fB(\fR\fIPROJECTION\fR\fB)\fR flag
-changes the default output:
+\fB\-\-format=\fR\fINAME\fR[\fIATTRIBUTES\fR]\fB(\fR\fIPROJECTION\fR\fB)\fR and
+\fB\-\-filter=\fR\fIEXPRESSION\fR flags along with projections can be used to
+format and change the default output to a more meaningful result.
 
-.RS 2m
-.TP 2m
-\fINAME\fR
-The format name.
-.TP 2m
-\fIATTRIBUTES\fR
-Format specific attributes. For details run $ gcloud topic formats.
-.TP 2m
-\fIPROJECTION\fR
-A list of resource keys that selects the data listed. For details run $ gcloud
-topic projections.
-.TP 2m
-\fIresource keys\fR
-Keys are names for resource items. For details run $ gcloud topic
-resource\-keys. Most \fBgcloud\fR \fBlist\fR commands have a
-\fB\-\-filter=\fR\fIEXPRESSION\fR flag that selects resources to be listed.
-Resource filters are described in detail below.
+To change the default output format of a command, use the \-\-format flag. For
+details run $ gcloud topic formats.
+
+To select resources to be listed, use the \-\-filter flag. Resource filters are
+described in detail below.
+
+To reach resource items through a unique path of names from the root, use
+resource\-keys. For details run $ gcloud topic resource\-keys.
+
+To list a subset of resource keys in a resource, use projections. For details
+run $ gcloud topic projections.
 
 
-.RE
-.sp
 
 .SH "Filter Expressions"
 
-A filter expression is a Boolean function that selects resources from a list.
-Expressions are composed of terms connected by logic operators.
+A filter expression is a Boolean function that selects the resources to print
+from a list of resources. Expressions are composed of terms connected by logic
+operators.
 
 .RS 2m
 .TP 2m
@@ -180,3 +174,22 @@ List resources with zone prefix \fBus\fR and not MachineType \fBf1\-micro\fR:
 $ gcloud compute instances list \e
     \-\-filter='zone ~ ^us AND \-machineType:f1\-micro'
 .RE
+
+List in JSON format those projects where the labels match specific values (e.g.
+label.env is 'test' and label.version is alpha):
+
+.RS 2m
+$ gcloud projects list \-\-format="json" \e
+    \-\-filter="labels.env=test AND labels.version=alpha"
+.RE
+
+List projects that were created after a specific date:
+
+.RS 2m
+$ gcloud projects list \e
+    \-\-format="table(projectNumber,projectId,createTime)" \e
+    \-\-filter="createTime.date('%Y\-%m\-%d', Z)='2016\-05\-11'"
+.RE
+
+Note that in the last example, a projection on the key was used. The filter is
+applied on the createTime key after the date formatting is set.

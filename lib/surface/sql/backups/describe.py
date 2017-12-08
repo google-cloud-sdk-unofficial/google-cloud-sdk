@@ -18,76 +18,13 @@ from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import times
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
-  """Retrieves information about a backup.
-
-  Retrieves information about a backup.
-  """
-
-  @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
-    parser.add_argument(
-        'due_time',
-        type=arg_parsers.Datetime.Parse,
-        help='The time when this run is due to start in RFC 3339 format, for '
-        'example 2012-11-15T16:19:00.094Z.')
-    flags.INSTANCE_FLAG.AddToParser(parser)
-
-  def Run(self, args):
-    """Retrieves information about a backup.
-
-    Args:
-      args: argparse.Namespace, The arguments that this command was invoked
-          with.
-
-    Returns:
-      A dict object that has the backup run resource if the command ran
-      successfully.
-    Raises:
-      HttpException: A http error response was received while executing api
-          request.
-      ToolException: An error other than http error occured while executing the
-          command.
-    """
-
-    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
-    sql_client = client.sql_client
-    sql_messages = client.sql_messages
-
-    validate.ValidateInstanceName(args.instance)
-    instance_ref = client.resource_parser.Parse(
-        args.instance,
-        params={'project': properties.VALUES.core.project.GetOrFail},
-        collection='sql.instances')
-
-    instance = sql_client.instances.Get(
-        sql_messages.SqlInstancesGetRequest(
-            project=instance_ref.project,
-            instance=instance_ref.instance))
-    # At this point we support only one backup-config. So, just use that id.
-    backup_config = instance.settings.backupConfiguration[0].id
-    request = sql_messages.SqlBackupRunsGetRequest(
-        project=instance_ref.project,
-        instance=instance_ref.instance,
-        backupConfiguration=backup_config,
-        dueTime=times.FormatDateTime(args.due_time, tzinfo=times.UTC))
-    return sql_client.backupRuns.Get(request)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(base.DescribeCommand):
   """Retrieves information about a backup.
 
   Retrieves information about a backup.
@@ -133,6 +70,9 @@ class DescribeBeta(base.DescribeCommand):
     client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
     sql_client = client.sql_client
     sql_messages = client.sql_messages
+    log.warning('Starting on 2017-06-30, DUE_TIME will no longer be valid: Use '
+                'the ID argument instead to retrieve a backup. You can start '
+                'using ID now.')
 
     instance_ref = client.resource_parser.Parse(
         args.instance,
@@ -141,8 +81,7 @@ class DescribeBeta(base.DescribeCommand):
 
     instance = sql_client.instances.Get(
         sql_messages.SqlInstancesGetRequest(
-            project=instance_ref.project,
-            instance=instance_ref.instance))
+            project=instance_ref.project, instance=instance_ref.instance))
 
     backup_config = instance.settings.backupConfiguration[0].id
     request = sql_messages.SqlBackupRunsGetRequest(

@@ -11,7 +11,7 @@ gcloud sql instances create \- creates a new Cloud SQL instance
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud sql instances create\fR \fIINSTANCE\fR [\fB\-\-activation\-policy\fR=\fIACTIVATION_POLICY\fR] [\fB\-\-assign\-ip\fR] [\fB\-\-async\fR] [\fB\-\-authorized\-gae\-apps\fR=\fIAPP\fR,[\fIAPP\fR,...]] [\fB\-\-authorized\-networks\fR=\fINETWORK\fR,[\fINETWORK\fR,...]] [\fB\-\-no\-backup\fR] [\fB\-\-backup\-start\-time\fR=\fIBACKUP_START_TIME\fR] [\fB\-\-database\-flags\fR=\fIFLAG\fR=\fIVALUE\fR,[\fIFLAG\fR=\fIVALUE\fR,...]] [\fB\-\-database\-version\fR=\fIDATABASE_VERSION\fR;\ default="MYSQL_5_6"] [\fB\-\-enable\-bin\-log\fR] [\fB\-\-follow\-gae\-app\fR=\fIFOLLOW_GAE_APP\fR] [\fB\-\-gce\-zone\fR=\fIGCE_ZONE\fR] [\fB\-\-master\-instance\-name\fR=\fIMASTER_INSTANCE_NAME\fR] [\fB\-\-pricing\-plan\fR=\fIPRICING_PLAN\fR,\ \fB\-p\fR\ \fIPRICING_PLAN\fR;\ default="PER_USE"] [\fB\-\-region\fR=\fIREGION\fR;\ default="us\-central"] [\fB\-\-replication\fR=\fIREPLICATION\fR] [\fB\-\-require\-ssl\fR] [\fB\-\-tier\fR=\fITIER\fR,\ \fB\-t\fR\ \fITIER\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud sql instances create\fR \fIINSTANCE\fR [\fB\-\-activation\-policy\fR=\fIACTIVATION_POLICY\fR] [\fB\-\-assign\-ip\fR] [\fB\-\-async\fR] [\fB\-\-authorized\-gae\-apps\fR=\fIAPP\fR,[\fIAPP\fR,...]] [\fB\-\-authorized\-networks\fR=\fINETWORK\fR,[\fINETWORK\fR,...]] [\fB\-\-no\-backup\fR] [\fB\-\-backup\-start\-time\fR=\fIBACKUP_START_TIME\fR] [\fB\-\-cpu\fR=\fICPU\fR] [\fB\-\-database\-flags\fR=\fIFLAG\fR=\fIVALUE\fR,[\fIFLAG\fR=\fIVALUE\fR,...]] [\fB\-\-database\-version\fR=\fIDATABASE_VERSION\fR;\ default="MYSQL_5_6"] [\fB\-\-enable\-bin\-log\fR] [\fB\-\-failover\-replica\-name\fR=\fIFAILOVER_REPLICA_NAME\fR] [\fB\-\-follow\-gae\-app\fR=\fIFOLLOW_GAE_APP\fR] [\fB\-\-gce\-zone\fR=\fIGCE_ZONE\fR] [\fB\-\-maintenance\-release\-channel\fR=\fIMAINTENANCE_RELEASE_CHANNEL\fR] [\fB\-\-maintenance\-window\-day\fR=\fIMAINTENANCE_WINDOW_DAY\fR] [\fB\-\-maintenance\-window\-hour\fR=\fIMAINTENANCE_WINDOW_HOUR\fR] [\fB\-\-master\-instance\-name\fR=\fIMASTER_INSTANCE_NAME\fR] [\fB\-\-memory\fR=\fIMEMORY\fR] [\fB\-\-pricing\-plan\fR=\fIPRICING_PLAN\fR,\ \fB\-p\fR\ \fIPRICING_PLAN\fR;\ default="PER_USE"] [\fB\-\-region\fR=\fIREGION\fR;\ default="us\-central"] [\fB\-\-replica\-type\fR=\fIREPLICA_TYPE\fR] [\fB\-\-replication\fR=\fIREPLICATION\fR] [\fB\-\-require\-ssl\fR] [\fB\-\-storage\-auto\-increase\fR] [\fB\-\-storage\-size\fR=\fISTORAGE_SIZE\fR] [\fB\-\-storage\-type\fR=\fISTORAGE_TYPE\fR] [\fB\-\-tier\fR=\fITIER\fR,\ \fB\-t\fR\ \fITIER\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -73,6 +73,12 @@ The start time of daily backups, specified in the 24 hour format \- HH:MM, in
 the UTC timezone.
 
 .TP 2m
+\fB\-\-cpu\fR=\fICPU\fR
+A whole number value indicating how many cores are desired in the machine. Both
+\-\-cpu and \-\-memory must be specified if a custom machine type is desired,
+and the \-\-tier flag must be omitted.
+
+.TP 2m
 \fB\-\-database\-flags\fR=\fIFLAG\fR=\fIVALUE\fR,[\fIFLAG\fR=\fIVALUE\fR,...]
 A comma\-separated list of database flags to set on the instance. Use an equals
 sign to separate flag name and value. Flags without values, like
@@ -92,6 +98,10 @@ Specified if binary log should be enabled. If backup configuration is disabled,
 binary log must be disabled as well.
 
 .TP 2m
+\fB\-\-failover\-replica\-name\fR=\fIFAILOVER_REPLICA_NAME\fR
+Also create a failover replica with the specified name.
+
+.TP 2m
 \fB\-\-follow\-gae\-app\fR=\fIFOLLOW_GAE_APP\fR
 First Generation instances only. The App Engine app this instance should follow.
 It must be in the same region as the instance.
@@ -101,9 +111,43 @@ It must be in the same region as the instance.
 The preferred Compute Engine zone (e.g. us\-central1\-a, us\-central1\-b, etc.).
 
 .TP 2m
+\fB\-\-maintenance\-release\-channel\fR=\fIMAINTENANCE_RELEASE_CHANNEL\fR
+Which channel's updates to apply during the maintenance window.
+\fIMAINTENANCE_RELEASE_CHANNEL\fR must be one of:
+
+.RS 2m
+.TP 2m
+\fBpreview\fR
+Preview updates release prior to production updates. You may wish to use the
+preview channel for dev/test applications so that you can preview their
+compatibility with your application prior to the production release.
+.TP 2m
+\fBproduction\fR
+Production updates are stable and recommended for applications in production.
+
+.RE
+.sp
+.TP 2m
+\fB\-\-maintenance\-window\-day\fR=\fIMAINTENANCE_WINDOW_DAY\fR
+Day of week for maintenance window, in UTC time zone.
+\fIMAINTENANCE_WINDOW_DAY\fR must be one of: \fBSUN\fR, \fBMON\fR, \fBTUE\fR,
+\fBWED\fR, \fBTHU\fR, \fBFRI\fR, \fBSAT\fR.
+
+.TP 2m
+\fB\-\-maintenance\-window\-hour\fR=\fIMAINTENANCE_WINDOW_HOUR\fR
+Hour of day for maintenance window, in UTC time zone.
+
+.TP 2m
 \fB\-\-master\-instance\-name\fR=\fIMASTER_INSTANCE_NAME\fR
 Name of the instance which will act as master in the replication setup. The
 newly created instance will be a read replica of the specified master instance.
+
+.TP 2m
+\fB\-\-memory\fR=\fIMEMORY\fR
+A whole number value indicating how much memory is desired in the machine. A
+size unit should be provided (eg. 3072MiB or 9GiB) \- if no units are specified,
+GiB is assumed. Both \-\-cpu and \-\-memory must be specified if a custom
+machine type is desired, and the \-\-tier flag must be omitted.
 
 .TP 2m
 \fB\-\-pricing\-plan\fR=\fIPRICING_PLAN\fR, \fB\-p\fR \fIPRICING_PLAN\fR; default="PER_USE"
@@ -116,6 +160,11 @@ The regional location (e.g. asia\-east1, us\-east1). See the full list of
 regions at https://cloud.google.com/sql/docs/instance\-locations.
 
 .TP 2m
+\fB\-\-replica\-type\fR=\fIREPLICA_TYPE\fR
+The type of replica to create. \fIREPLICA_TYPE\fR must be one of: \fBREAD\fR,
+\fBFAILOVER\fR.
+
+.TP 2m
 \fB\-\-replication\fR=\fIREPLICATION\fR
 The type of replication this instance uses. \fIREPLICATION\fR must be one of:
 \fBSYNCHRONOUS\fR, \fBASYNCHRONOUS\fR.
@@ -123,6 +172,24 @@ The type of replication this instance uses. \fIREPLICATION\fR must be one of:
 .TP 2m
 \fB\-\-require\-ssl\fR
 Specified if users connecting over IP must use SSL.
+
+.TP 2m
+\fB\-\-storage\-auto\-increase\fR
+Storage size can be increased, but it cannot be decreased; storage increases are
+permanent for the life of the instance. With this setting enabled, a spike in
+storage requirements can result in permanently increased storage costs for your
+instance. However, if an instance runs out of available space, it can result in
+the instance going offline, dropping existing connections.
+
+.TP 2m
+\fB\-\-storage\-size\fR=\fISTORAGE_SIZE\fR
+Amount of storage allocated to the instance. Must be an integer number of GB
+between 10GB and 10230GB inclusive.
+
+.TP 2m
+\fB\-\-storage\-type\fR=\fISTORAGE_TYPE\fR
+The storage type for the instance. \fISTORAGE_TYPE\fR must be one of: \fBSSD\fR,
+\fBHDD\fR.
 
 .TP 2m
 \fB\-\-tier\fR=\fITIER\fR, \fB\-t\fR \fITIER\fR
@@ -135,6 +202,9 @@ tiers is available here: https://cloud.google.com/sql/pricing.
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.

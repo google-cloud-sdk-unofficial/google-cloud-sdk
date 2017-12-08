@@ -18,6 +18,7 @@ import re
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.routers import flags as router_flags
@@ -63,12 +64,13 @@ def ValidateSimpleSharedSecret(possible_secret):
       'non-printable charcters.')
 
 
-class _BaseCreate(object):
-  """Create a VPN Tunnel."""
+class CreateGA(base.CreateCommand):
+  """Create a VPN tunnel.
 
-  # Placeholder to indicate that a detailed_help field exists and should
-  # be set outside the class definition.
-  detailed_help = None
+    *{command}* is used to create a VPN tunnel between a VPN Gateway
+  in Google Cloud Platform and an external gateway that is
+  identified by --peer-address.
+  """
 
   ROUTER_ARG = None
   TARGET_VPN_GATEWAY_ARG = None
@@ -77,7 +79,7 @@ class _BaseCreate(object):
   @classmethod
   def Args(cls, parser):
     """Adds arguments to the supplied parser."""
-
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.ROUTER_ARG = router_flags.RouterArgumentForVpnTunnel(required=False)
     cls.TARGET_VPN_GATEWAY_ARG = (
         target_vpn_gateway_flags.TargetVpnGatewayArgumentForVpnTunnel())
@@ -143,38 +145,12 @@ class _BaseCreate(object):
         '--router',
         help='The Router to use for dynamic routing.')
 
-  @property
-  def service(self):
-    return self.compute.vpnTunnels
+  def Run(self, args):
+    """Issues API requests to construct VPN Tunnels."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'Insert'
-
-  @property
-  def resource_type(self):
-    return 'vpnTunnels'
-
-_BaseCreate.detailed_help = {
-    'brief': 'Create a VPN tunnel',
-    'DESCRIPTION': """
-        *{command}* is used to create a VPN tunnel between a VPN Gateway
-        in Google Cloud Platform and an external gateway that is
-        identified by --peer-address.
-     """
-    }
-
-
-class CreateGA(_BaseCreate, base_classes.BaseAsyncCreator):
-  """Create a VPN tunnel."""
-
-  @staticmethod
-  def Args(parser):
-    _BaseCreate.Args(parser)
-
-  def CreateRequests(self, args):
-    """Builds API requests to construct VPN Tunnels."""
-
+    # TODO(b/38253176) Add test coverage
     if args.ike_networks is not None:
       raise DeprecatedArgumentException(
           '--ike-networks',
@@ -182,24 +158,24 @@ class CreateGA(_BaseCreate, base_classes.BaseAsyncCreator):
 
     vpn_tunnel_ref = self.VPN_TUNNEL_ARG.ResolveAsResource(
         args,
-        self.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
-                                                         self.project))
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
     args.target_vpn_gateway_region = vpn_tunnel_ref.region
     target_vpn_gateway_ref = self.TARGET_VPN_GATEWAY_ARG.ResolveAsResource(
-        args, self.resources)
+        args, holder.resources)
 
+    # TODO(b/38253800) Add test coverage
     router_link = None
     if args.router is not None:
       args.router_region = vpn_tunnel_ref.region
-      router_ref = self.ROUTER_ARG.ResolveAsResource(args, self.resources)
+      router_ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
       router_link = router_ref.SelfLink()
 
-    request = self.messages.ComputeVpnTunnelsInsertRequest(
-        project=self.project,
+    request = client.messages.ComputeVpnTunnelsInsertRequest(
+        project=vpn_tunnel_ref.project,
         region=vpn_tunnel_ref.region,
-        vpnTunnel=self.messages.VpnTunnel(
+        vpnTunnel=client.messages.VpnTunnel(
             description=args.description,
             router=router_link,
             localTrafficSelector=args.local_traffic_selector or [],
@@ -210,4 +186,5 @@ class CreateGA(_BaseCreate, base_classes.BaseAsyncCreator):
             sharedSecret=args.shared_secret,
             targetVpnGateway=target_vpn_gateway_ref.SelfLink()))
 
-    return [request]
+    return client.MakeRequests([(client.apitools_client.vpnTunnels, 'Insert',
+                                 request)])

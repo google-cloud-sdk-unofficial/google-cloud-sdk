@@ -108,5 +108,5 @@ class Create(base.CreateCommand):
   def Collection(self):
     return 'debug.logpoints.create'
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return self.ListFormat(args)

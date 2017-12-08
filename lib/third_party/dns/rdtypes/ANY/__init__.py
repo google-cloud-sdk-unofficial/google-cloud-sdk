@@ -1,4 +1,4 @@
-# Copyright (C) 2003-2007, 2009, 2010 Nominum, Inc.
+# Copyright (C) 2003-2007, 2009-2011 Nominum, Inc.
 #
 # Permission to use, copy, modify, and distribute this software and its
 # documentation for any purpose with or without fee is hereby granted,
@@ -17,6 +17,7 @@
 
 __all__ = [
     'AFSDB',
+    'CDNSKEY',
     'CDS',
     'CERT',
     'CNAME',
@@ -24,11 +25,12 @@ __all__ = [
     'DNAME',
     'DNSKEY',
     'DS',
+    'EUI48',
+    'EUI64',
     'GPOS',
     'HINFO',
     'HIP',
     'ISDN',
-    'KEY',
     'LOC',
     'MX',
     'NS',
@@ -36,12 +38,10 @@ __all__ = [
     'NSEC3',
     'NSEC3PARAM',
     'TLSA',
-    'NXT',
     'PTR',
     'RP',
     'RRSIG',
     'RT',
-    'SIG',
     'SOA',
     'SPF',
     'SSHFP',

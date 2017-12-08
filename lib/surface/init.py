@@ -27,9 +27,11 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.configurations import named_configs
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.credentials import store as c_store
 from googlecloudsdk.core.diagnostics import network_diagnostics
 from googlecloudsdk.core.resource import resource_projector
 from googlecloudsdk.core.util import platforms
+import yaml
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
@@ -137,11 +139,7 @@ class Init(base.Command):
     """
 
     new_credentials = False
-    auth_info = self._RunCmd(['auth', 'list'])
-    if auth_info:
-      accounts = [a['account'] for a in auth_info]
-    else:
-      accounts = None
+    accounts = c_store.AvailableAccounts()
     if accounts:
       # There is at least one credentialed account.
       if preselected:
@@ -188,7 +186,7 @@ class Init(base.Command):
       # `gcloud auth login` already did `gcloud config set account`.
     else:
       # Set the config account to the already credentialed account.
-      self._RunCmd(['config', 'set'], ['account', account])
+      properties.PersistProperty(properties.VALUES.core.account, account)
 
     log.status.write('You are logged in as: [{0}].\n\n'
                      .format(properties.VALUES.core.account.Get()))
@@ -229,8 +227,8 @@ class Init(base.Command):
     log.status.write('Settings from your current configuration [{0}] are:\n'
                      .format(active_config.name))
     log.status.flush()
-    # Not using self._RunCmd to get command actual output.
-    self.cli.Execute(['config', 'list'])
+    log.status.write(yaml.dump(properties.VALUES.AllValues(),
+                               default_flow_style=False))
     log.out.flush()
     log.status.write('\n')
     log.status.flush()
@@ -252,7 +250,7 @@ class Init(base.Command):
     if idx == 1:  # Second option is to create new configuration.
       return self._CreateConfiguration()
     config_name = config_choices[idx - 2]
-    self._RunCmd(['config', 'configurations', 'activate'], [config_name])
+    named_configs.ConfigurationStore.ActivateConfig(config_name)
     return config_name
 
   def _PickProject(self, preselected=None):
@@ -266,7 +264,7 @@ class Init(base.Command):
     """
     project_id = init_util.PickProject(preselected=preselected)
     if project_id is not None:
-      self._RunCmd(['config', 'set'], ['project', project_id])
+      properties.PersistProperty(properties.VALUES.core.project, project_id)
       log.status.write('Your current project has been set to: [{0}].\n\n'
                        .format(project_id))
     return project_id
@@ -331,8 +329,8 @@ https://console.developers.google.com/apis page.
         if idx is None or idx == len(values):
           return
         default_value = values[idx]
-      self._RunCmd(['config', 'set'],
-                   ['compute/{0}'.format(name), default_value['name']])
+      properties.PersistProperty(properties.VALUES.compute.Property(name),
+                                 default_value['name'])
       log.status.write('Your project default Compute Engine {0} has been set '
                        'to [{1}].\nYou can change it by running '
                        '[gcloud config set compute/{0} NAME].\n\n'
@@ -439,10 +437,10 @@ information about configuring Google Cloud Storage.
                        'create this file.\n')
 
   def _CleanCurrentConfiguration(self):
-    self._RunCmd(['config', 'unset'], ['account'])
-    self._RunCmd(['config', 'unset'], ['project'])
-    self._RunCmd(['config', 'unset'], ['compute/zone'])
-    self._RunCmd(['config', 'unset'], ['compute/region'])
+    properties.PersistProperty(properties.VALUES.core.account, None)
+    properties.PersistProperty(properties.VALUES.core.project, None)
+    properties.PersistProperty(properties.VALUES.compute.region, None)
+    properties.PersistProperty(properties.VALUES.compute.zone, None)
     named_configs.ActivePropertiesFile.Invalidate()
 
   def _RunCmd(self, cmd, params=None, disable_user_output=True):

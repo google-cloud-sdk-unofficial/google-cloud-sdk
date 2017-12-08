@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for updating an interface on a router."""
+"""Command for updating an interface on a Google Compute Engine router."""
 
 import copy
 
@@ -47,7 +47,7 @@ class RequireMaskError(exceptions.Error):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class UpdateInterface(base_classes.ReadWriteCommand):
-  """Update an interface on a router."""
+  """Update an interface on a Google Compute Engine router."""
 
   ROUTER_ARG = None
   VPN_TUNNEL_ARG = None
@@ -122,7 +122,7 @@ class UpdateInterface(base_classes.ReadWriteCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaUpdateInterface(UpdateInterface):
-  """Update an interface on a router."""
+  """Update an interface on a Google Compute Engine router."""
 
   ROUTER_ARG = None
   VPN_TUNNEL_ARG = None
@@ -176,6 +176,7 @@ class AlphaUpdateInterface(UpdateInterface):
 UpdateInterface.detailed_help = {
     'DESCRIPTION':
         """
-        *{command}* is used to update an interface on a router.
+        *{command}* is used to update an interface on a Google Compute Engine
+        router.
         """,
 }

@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """List project repositories."""
+
 
 from googlecloudsdk.api_lib.sourcerepo import sourcerepo
 from googlecloudsdk.calliope import base
@@ -20,7 +20,8 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List the repositories the currently active project.
 
@@ -55,4 +56,5 @@ class List(base.ListCommand):
         params={'projectsId': properties.VALUES.core.project.GetOrFail},
         collection='sourcerepo.projects')
     source_handler = sourcerepo.Source()
-    return source_handler.ListRepos(res)
+    return source_handler.ListRepos(
+        res, limit=args.limit, page_size=args.page_size)

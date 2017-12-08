@@ -41,7 +41,7 @@ class AddDatabase(base.Command):
     flags.INSTANCE_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return self.ListFormat(args)
 
   def Run(self, args):
@@ -88,8 +88,7 @@ class AddDatabase(base.Command):
     if args.async:
       result = sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project,
-              operation=operation_ref.operation))
+              project=operation_ref.project, operation=operation_ref.operation))
     else:
       try:
         operations.OperationsV1Beta4.WaitForOperation(

@@ -22,8 +22,8 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class RestoreBackupBeta(base.RestoreCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class RestoreBackup(base.RestoreCommand):
   """Restores a backup of a Cloud SQL instance."""
 
   @staticmethod
@@ -79,8 +79,7 @@ class RestoreBackupBeta(base.RestoreCommand):
         collection='sql.instances')
     if not console_io.PromptContinue(
         'All current data on the instance will be lost when the backup is '
-        'restored.'
-    ):
+        'restored.'):
       return None
     if not args.backup_instance:
       args.backup_instance = args.restore_instance
@@ -104,7 +103,6 @@ class RestoreBackupBeta(base.RestoreCommand):
       return sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(
               project=operation_ref.project,
-              instance=operation_ref.instance,
               operation=operation_ref.operation))
 
     operations.OperationsV1Beta4.WaitForOperation(

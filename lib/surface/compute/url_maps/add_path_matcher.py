@@ -290,10 +290,10 @@ AddPathMatcher.detailed_help = {
         To create a rule for mapping the path ```/search/*``` to the
         hypothetical ```search-service```, ```/static/*``` to the
         ```static-bucket``` backend bucket and ```/images/*``` to the
-        ```images-service``` under the hosts ```google.com``` and
-        ```*.google.com```, run:
+        ```images-service``` under the hosts ```example.com``` and
+        ```*.example.com```, run:
 
-          $ {command} MY-URL-MAP --path-matcher-name MY-MATCHER --default-service MY-DEFAULT-SERVICE --backend-service-path-rules '/search/*=search_service,/images/*=images-service' --backend-bucket-path-rules '/static/*=static-bucket' --new-hosts google.com '*.google.com'
+          $ {command} MY-URL-MAP --path-matcher-name MY-MATCHER --default-service MY-DEFAULT-SERVICE --backend-service-path-rules '/search/*=search_service,/images/*=images-service' --backend-bucket-path-rules '/static/*=static-bucket' --new-hosts example.com '*.example.com'
 
         Note that a default service or default backend bucket must be
         provided to handle paths for which there is no mapping.

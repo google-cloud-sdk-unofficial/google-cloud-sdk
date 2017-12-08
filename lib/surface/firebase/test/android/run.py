@@ -29,7 +29,7 @@ from googlecloudsdk.core import log
 
 
 @base.UnicodeIsSupported
-class Run(base.ListCommand):
+class _BaseRun(object):
   """Invoke a test in Firebase Test Lab for Android and view test results."""
 
   detailed_help = {
@@ -144,18 +144,6 @@ class Run(base.ListCommand):
           """,
   }
 
-  @staticmethod
-  def Args(parser):
-    """Method called by Calliope to register flags for this command.
-
-    Args:
-      parser: An argparse parser used to add arguments that follow this
-          command in the CLI. Positional arguments are allowed.
-    """
-    arg_util.AddCommonTestRunArgs(parser)
-    arg_util.AddMatrixArgs(parser)
-    arg_util.AddAndroidTestArgs(parser)
-
   def Run(self, args):
     """Run the 'gcloud firebase test run' command to invoke a test in Test Lab.
 
@@ -230,6 +218,30 @@ class Run(base.ListCommand):
     """
     log.debug('gcloud test command exit_code is: {0}'.format(self.exit_code))
     return 'firebase.test.android.run.outcomes'
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class RunGA(_BaseRun, base.ListCommand):
+  """Invoke a test in Firebase Test Lab for Android and view test results."""
+
+  @staticmethod
+  def Args(parser):
+    arg_util.AddCommonTestRunArgs(parser)
+    arg_util.AddMatrixArgs(parser)
+    arg_util.AddAndroidTestArgs(parser)
+    arg_util.AddGaArgs(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class RunBeta(_BaseRun, base.ListCommand):
+  """Invoke a test in Firebase Test Lab for Android and view test results."""
+
+  @staticmethod
+  def Args(parser):
+    arg_util.AddCommonTestRunArgs(parser)
+    arg_util.AddMatrixArgs(parser)
+    arg_util.AddAndroidTestArgs(parser)
+    arg_util.AddBetaArgs(parser)
 
 
 def PickHistoryName(args):

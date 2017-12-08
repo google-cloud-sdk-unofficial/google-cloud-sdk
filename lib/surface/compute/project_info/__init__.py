@@ -21,5 +21,12 @@ class ProjectInfo(base.Group):
 
 
 ProjectInfo.detailed_help = {
-    'brief': 'Read and manipulate project-level data like quotas and metadata',
+    'DESCRIPTION': """
+        Read and manipulate project-level data like quotas and metadata.
+
+
+        `Note`: project-level metadata is a distinct concept from instance-level
+        metadata; for details on instance metadata see:
+        https://cloud.google.com/compute/docs/storing-retrieving-metadata
+        """,
 }

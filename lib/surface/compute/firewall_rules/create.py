@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.compute.networks import flags as network_flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Create(base_classes.BaseAsyncCreator):
+class Create(base.CreateCommand):
   """Create a Google Compute Engine firewall rule.
 
   *{command}* is used to create firewall rules to allow incoming
@@ -33,49 +33,42 @@ class Create(base_classes.BaseAsyncCreator):
 
   @classmethod
   def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument()
     cls.FIREWALL_RULE_ARG.AddArgument(parser)
     cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
         'The network to which this rule is attached.', required=False)
     firewalls_utils.AddCommonArgs(parser, for_update=False)
 
-  @property
-  def service(self):
-    return self.compute.firewalls
-
-  @property
-  def method(self):
-    return 'Insert'
-
-  @property
-  def resource_type(self):
-    return 'firewalls'
-
-  def _CreateFirewall(self, args):
-    allowed = firewalls_utils.ParseRules(args.allow, self.messages,
+  def _CreateFirewall(self, holder, args):
+    allowed = firewalls_utils.ParseRules(args.allow, holder.client.messages,
                                          firewalls_utils.ActionType.ALLOW)
 
-    network_ref = self.NETWORK_ARG.ResolveAsResource(args, self.resources)
+    network_ref = self.NETWORK_ARG.ResolveAsResource(args, holder.resources)
     firewall_ref = self.FIREWALL_RULE_ARG.ResolveAsResource(args,
-                                                            self.resources)
+                                                            holder.resources)
     if not args.source_ranges and not args.source_tags:
       args.source_ranges = ['0.0.0.0/0']
 
-    return self.messages.Firewall(
+    return holder.client.messages.Firewall(
         allowed=allowed,
         name=firewall_ref.Name(),
         description=args.description,
         network=network_ref.SelfLink(),
         sourceRanges=args.source_ranges,
         sourceTags=args.source_tags,
-        targetTags=args.target_tags)
+        targetTags=args.target_tags), firewall_ref.project
 
-  def CreateRequests(self, args):
-    """Returns a list of requests necessary for adding firewall rules."""
-    firewall = self._CreateFirewall(args)
-    request = self.messages.ComputeFirewallsInsertRequest(
-        firewall=firewall, project=self.project)
-    return [request]
+  def Run(self, args):
+    """Issues requests necessary for adding firewall rules."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    firewall, project = self._CreateFirewall(holder, args)
+    request = client.messages.ComputeFirewallsInsertRequest(
+        firewall=firewall, project=project)
+    return client.MakeRequests([(client.apitools_client.firewalls, 'Insert',
+                                 request)])
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -88,6 +81,7 @@ class BetaCreate(Create):
 
   @classmethod
   def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_ALPHA_LIST_FORMAT)
     cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument()
     cls.FIREWALL_RULE_ARG.AddArgument(parser)
     cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
@@ -95,11 +89,9 @@ class BetaCreate(Create):
     firewalls_utils.AddCommonArgs(
         parser, for_update=False, with_egress_support=True)
 
-  def Collection(self):
-    """Returns the resource collection path."""
-    return 'compute.firewalls.alpha'
+  def _CreateFirewall(self, holder, args):
+    client = holder.client
 
-  def _CreateFirewall(self, args):
     if args.rules and args.allow:
       raise firewalls_utils.ArgumentValidationError(
           'Can NOT specify --rules and --allow in the same request.')
@@ -108,14 +100,14 @@ class BetaCreate(Create):
       raise firewalls_utils.ArgumentValidationError(
           'Must specify --rules with --action.')
 
-    allowed = firewalls_utils.ParseRules(args.allow, self.messages,
+    allowed = firewalls_utils.ParseRules(args.allow, client.messages,
                                          firewalls_utils.ActionType.ALLOW)
 
-    network_ref = self.NETWORK_ARG.ResolveAsResource(args, self.resources)
+    network_ref = self.NETWORK_ARG.ResolveAsResource(args, holder.resources)
     firewall_ref = self.FIREWALL_RULE_ARG.ResolveAsResource(
-        args, self.resources)
+        args, holder.resources)
 
-    firewall = self.messages.Firewall(
+    firewall = client.messages.Firewall(
         allowed=allowed,
         name=firewall_ref.Name(),
         description=args.description,
@@ -127,10 +119,10 @@ class BetaCreate(Create):
     firewall.direction = None
     if args.direction and args.direction in ['EGRESS', 'OUT']:
       firewall.direction = (
-          self.messages.Firewall.DirectionValueValuesEnum.EGRESS)
+          client.messages.Firewall.DirectionValueValuesEnum.EGRESS)
     else:
       firewall.direction = (
-          self.messages.Firewall.DirectionValueValuesEnum.INGRESS)
+          client.messages.Firewall.DirectionValueValuesEnum.INGRESS)
 
     firewall.priority = args.priority
     firewall.destinationRanges = args.destination_ranges
@@ -139,16 +131,16 @@ class BetaCreate(Create):
     denied = []
     if not args.action:
       allowed = firewalls_utils.ParseRules(
-          args.allow, self.messages, firewalls_utils.ActionType.ALLOW)
+          args.allow, client.messages, firewalls_utils.ActionType.ALLOW)
     elif args.action == 'ALLOW':
       allowed = firewalls_utils.ParseRules(
-          args.rules, self.messages, firewalls_utils.ActionType.ALLOW)
+          args.rules, client.messages, firewalls_utils.ActionType.ALLOW)
     elif args.action == 'DENY':
       denied = firewalls_utils.ParseRules(
-          args.rules, self.messages, firewalls_utils.ActionType.DENY)
+          args.rules, client.messages, firewalls_utils.ActionType.DENY)
     firewall.allowed = allowed
     firewall.denied = denied
-    return firewall
+    return firewall, firewall_ref.project
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -161,6 +153,7 @@ class AlphaCreate(BetaCreate):
 
   @classmethod
   def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_ALPHA_LIST_FORMAT)
     cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument()
     cls.FIREWALL_RULE_ARG.AddArgument(parser)
     cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
@@ -172,12 +165,8 @@ class AlphaCreate(BetaCreate):
         with_service_account=True)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=False)
 
-  def Collection(self):
-    """Returns the resource collection path."""
-    return 'compute.firewalls.alpha'
-
-  def _CreateFirewall(self, args):
-    firewall = super(AlphaCreate, self)._CreateFirewall(args)
+  def _CreateFirewall(self, holder, args):
+    firewall, project = super(AlphaCreate, self)._CreateFirewall(holder, args)
     firewall.sourceServiceAccounts = args.source_service_accounts
     firewall.targetServiceAccounts = args.target_service_accounts
-    return firewall
+    return firewall, project

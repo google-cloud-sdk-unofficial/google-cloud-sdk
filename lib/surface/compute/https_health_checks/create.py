@@ -15,16 +15,25 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.https_health_checks import flags
 
 
-class CreateHttpsHealthCheck(base_classes.BaseAsyncCreator):
-  """Create an HTTPS health check to monitor load balanced instances."""
+class CreateHttpsHealthCheck(base.CreateCommand):
+  """Create an HTTPS health check to monitor load balanced instances.
+
+    *{command}* is used to create an HTTPS health check. HTTPS health checks
+  monitor instances in a load balancer controlled by a target pool. All
+  arguments to the command are optional except for the name of the health
+  check. For more information on load balancing, see
+  [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
+  """
 
   HTTPS_HEALTH_CHECKS_ARG = None
 
   @classmethod
   def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.HTTPS_HEALTH_CHECKS_ARG = flags.HttpsHealthCheckArgument()
     cls.HTTPS_HEALTH_CHECKS_ARG.AddArgument(parser)
 
@@ -100,26 +109,16 @@ class CreateHttpsHealthCheck(base_classes.BaseAsyncCreator):
         '--description',
         help='An optional, textual description for the HTTPS health check.')
 
-  @property
-  def service(self):
-    return self.compute.httpsHealthChecks
-
-  @property
-  def method(self):
-    return 'Insert'
-
-  @property
-  def resource_type(self):
-    return 'httpsHealthChecks'
-
-  def CreateRequests(self, args):
-    """Returns the request necessary for adding the health check."""
+  def Run(self, args):
+    """Issues the request necessary for adding the health check."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
     health_check_ref = self.HTTPS_HEALTH_CHECKS_ARG.ResolveAsResource(
-        args, self.resources)
+        args, holder.resources)
 
-    request = self.messages.ComputeHttpsHealthChecksInsertRequest(
-        httpsHealthCheck=self.messages.HttpsHealthCheck(
+    request = client.messages.ComputeHttpsHealthChecksInsertRequest(
+        httpsHealthCheck=client.messages.HttpsHealthCheck(
             name=health_check_ref.Name(),
             host=args.host,
             port=args.port,
@@ -130,19 +129,7 @@ class CreateHttpsHealthCheck(base_classes.BaseAsyncCreator):
             healthyThreshold=args.healthy_threshold,
             unhealthyThreshold=args.unhealthy_threshold,
         ),
-        project=self.project)
+        project=health_check_ref.project)
 
-    return [request]
-
-
-CreateHttpsHealthCheck.detailed_help = {
-    'brief': ('Create an HTTPS health check to monitor load balanced '
-              'instances'),
-    'DESCRIPTION': """\
-        *{command}* is used to create an HTTPS health check. HTTPS health checks
-        monitor instances in a load balancer controlled by a target pool. All
-        arguments to the command are optional except for the name of the health
-        check. For more information on load balancing, see
-        [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
-        """,
-}
+    return client.MakeRequests([(client.apitools_client.httpsHealthChecks,
+                                 'Insert', request)])

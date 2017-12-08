@@ -60,7 +60,7 @@ class Describe(base.DescribeCommand):
   def Collection(self):
     return 'deploymentmanager.deployments_and_resources_and_outputs'
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     """No need to list the id fields by default."""
     return self.ListFormat(args)
 

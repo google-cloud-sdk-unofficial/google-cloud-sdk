@@ -1,4 +1,4 @@
-# Copyright (C) 2003-2007, 2009, 2010 Nominum, Inc.
+# Copyright (C) 2003-2007, 2009-2011 Nominum, Inc.
 #
 # Permission to use, copy, modify, and distribute this software and its
 # documentation for any purpose with or without fee is hereby granted,
@@ -13,24 +13,36 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 # OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+import struct
+
 import dns.exception
 import dns.rdata
 import dns.tokenizer
+from dns._compat import long, text_type
+
 
 def _validate_float_string(what):
-    if what[0] == '-' or what[0] == '+':
+    if what[0] == b'-'[0] or what[0] == b'+'[0]:
         what = what[1:]
     if what.isdigit():
         return
-    (left, right) = what.split('.')
-    if left == '' and right == '':
+    (left, right) = what.split(b'.')
+    if left == b'' and right == b'':
         raise dns.exception.FormError
-    if not left == '' and not left.isdigit():
+    if not left == b'' and not left.decode().isdigit():
         raise dns.exception.FormError
-    if not right == '' and not right.isdigit():
+    if not right == b'' and not right.decode().isdigit():
         raise dns.exception.FormError
-    
+
+
+def _sanitize(value):
+    if isinstance(value, text_type):
+        return value.encode()
+    return value
+
+
 class GPOS(dns.rdata.Rdata):
+
     """GPOS record
 
     @ivar latitude: latitude
@@ -42,7 +54,7 @@ class GPOS(dns.rdata.Rdata):
     @see: RFC 1712"""
 
     __slots__ = ['latitude', 'longitude', 'altitude']
-    
+
     def __init__(self, rdclass, rdtype, latitude, longitude, altitude):
         super(GPOS, self).__init__(rdclass, rdtype)
         if isinstance(latitude, float) or \
@@ -57,6 +69,9 @@ class GPOS(dns.rdata.Rdata):
            isinstance(altitude, int) or \
            isinstance(altitude, long):
             altitude = str(altitude)
+        latitude = _sanitize(latitude)
+        longitude = _sanitize(longitude)
+        altitude = _sanitize(altitude)
         _validate_float_string(latitude)
         _validate_float_string(longitude)
         _validate_float_string(altitude)
@@ -65,68 +80,57 @@ class GPOS(dns.rdata.Rdata):
         self.altitude = altitude
 
     def to_text(self, origin=None, relativize=True, **kw):
-        return '%s %s %s' % (self.latitude, self.longitude, self.altitude)
-        
-    def from_text(cls, rdclass, rdtype, tok, origin = None, relativize = True):
+        return '%s %s %s' % (self.latitude.decode(),
+                             self.longitude.decode(),
+                             self.altitude.decode())
+
+    @classmethod
+    def from_text(cls, rdclass, rdtype, tok, origin=None, relativize=True):
         latitude = tok.get_string()
         longitude = tok.get_string()
         altitude = tok.get_string()
         tok.get_eol()
         return cls(rdclass, rdtype, latitude, longitude, altitude)
-    
-    from_text = classmethod(from_text)
 
-    def to_wire(self, file, compress = None, origin = None):
+    def to_wire(self, file, compress=None, origin=None):
         l = len(self.latitude)
         assert l < 256
-        byte = chr(l)
-        file.write(byte)
+        file.write(struct.pack('!B', l))
         file.write(self.latitude)
         l = len(self.longitude)
         assert l < 256
-        byte = chr(l)
-        file.write(byte)
+        file.write(struct.pack('!B', l))
         file.write(self.longitude)
         l = len(self.altitude)
         assert l < 256
-        byte = chr(l)
-        file.write(byte)
+        file.write(struct.pack('!B', l))
         file.write(self.altitude)
-        
-    def from_wire(cls, rdclass, rdtype, wire, current, rdlen, origin = None):
-        l = ord(wire[current])
+
+    @classmethod
+    def from_wire(cls, rdclass, rdtype, wire, current, rdlen, origin=None):
+        l = wire[current]
         current += 1
         rdlen -= 1
         if l > rdlen:
             raise dns.exception.FormError
-        latitude = wire[current : current + l]
+        latitude = wire[current: current + l].unwrap()
         current += l
         rdlen -= l
-        l = ord(wire[current])
+        l = wire[current]
         current += 1
         rdlen -= 1
         if l > rdlen:
             raise dns.exception.FormError
-        longitude = wire[current : current + l]
+        longitude = wire[current: current + l].unwrap()
         current += l
         rdlen -= l
-        l = ord(wire[current])
+        l = wire[current]
         current += 1
         rdlen -= 1
         if l != rdlen:
             raise dns.exception.FormError
-        altitude = wire[current : current + l]
+        altitude = wire[current: current + l].unwrap()
         return cls(rdclass, rdtype, latitude, longitude, altitude)
-
-    from_wire = classmethod(from_wire)
-
-    def _cmp(self, other):
-        v = cmp(self.latitude, other.latitude)
-        if v == 0:
-            v = cmp(self.longitude, other.longitude)
-            if v == 0:
-                v = cmp(self.altitude, other.altitude)
-        return v
 
     def _get_float_latitude(self):
         return float(self.latitude)

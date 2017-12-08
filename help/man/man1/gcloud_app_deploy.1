@@ -11,7 +11,7 @@ gcloud app deploy \- deploy the local code and/or configuration of your app to A
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud app deploy\fR [\fIDEPLOYABLES\fR\ ...] [\fB\-\-bucket\fR=\fIBUCKET\fR] [\fB\-\-image\-url\fR=\fIIMAGE_URL\fR] [\fB\-\-no\-promote\fR] [\fB\-\-no\-stop\-previous\-version\fR] [\fB\-\-version\fR=\fIVERSION\fR,\ \fB\-v\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud app deploy\fR [\fIDEPLOYABLES\fR\ ...] [\fB\-\-bucket\fR=\fIBUCKET\fR] [\fB\-\-image\-url\fR=\fIIMAGE_URL\fR] [\fB\-\-no\-promote\fR] [\fB\-\-no\-stop\-previous\-version\fR] [\fB\-\-version\fR=\fIVERSION\fR,\ \fB\-v\fR\ \fIVERSION\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -83,9 +83,12 @@ you do not specify a version, one will be generated for you.
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.
 
 
 

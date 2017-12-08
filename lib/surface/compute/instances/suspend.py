@@ -19,11 +19,19 @@ from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Suspend(base_classes.NoOutputAsyncMutator):
+class Suspend(base.SilentCommand):
   """Suspend a virtual machine instance.
 
-  *{command}* is used to suspend a running Google Compute Engine virtual
-  machine. Only a running virtual machine can be suspended.
+  *{command}* is used to suspend a Google Compute Engine virtual machine.
+  Suspending a VM is the equivalent of sleep or standby mode:
+  the guest receives an ACPI S3 suspend signal, after which all VM state
+  is saved to temporary storage.  An instance can only be suspended while
+  it is in the RUNNING state.  A suspended instance will be put in
+  SUSPENDED state.
+
+  Alpha restrictions: Suspending a Preemptible VM is not supported and
+  will result in an API error. Suspending a VM that is using CSEK or GPUs
+  is not supported and will result in an API error.
   """
 
   @staticmethod
@@ -35,45 +43,25 @@ class Suspend(base_classes.NoOutputAsyncMutator):
         help=('If provided, local SSD data is discarded.'))
     # TODO(b/36057354): consider adding detailed help.
 
-  @property
-  def service(self):
-    return self.compute.instances
-
-  @property
-  def method(self):
-    return 'Suspend'
-
-  @property
-  def resource_type(self):
-    return 'instances'
-
-  def _CreateSuspendRequest(self, instance_ref, discard_local_ssd):
-    return self.messages.ComputeInstancesSuspendRequest(
+  def _CreateSuspendRequest(self, client, instance_ref, discard_local_ssd):
+    return client.messages.ComputeInstancesSuspendRequest(
         discardLocalSsd=discard_local_ssd,
         instance=instance_ref.Name(),
         project=instance_ref.project,
         zone=instance_ref.zone)
 
-  def CreateRequests(self, args):
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
     instance_refs = instance_flags.INSTANCES_ARG.ResolveAsResource(
-        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client))
-    return [self._CreateSuspendRequest(instance_ref, args.discard_local_ssd)
-            for instance_ref in instance_refs]
+        args,
+        holder.resources,
+        scope_lister=flags.GetDefaultScopeLister(client))
 
-
-Suspend.detailed_help = {
-    'brief': 'Suspend a virtual machine instance',
-    'DESCRIPTION': """\
-        *{command}* is used to suspend a Google Compute Engine virtual machine.
-        Suspending a VM is the equivalent of sleep or standby mode:
-        the guest receives an ACPI S3 suspend signal, after which all VM state
-        is saved to temporary storage.  An instance can only be suspended while
-        it is in the RUNNING state.  A suspended instance will be put in
-        SUSPENDED state.
-
-        Alpha restrictions: Suspending a Preemptible VM is not supported and
-        will result in an API error. Suspending a VM that is using CSEK or GPUs
-        is not supported and will result in an API error.
-        """,
-}
+    requests = []
+    for instance_ref in instance_refs:
+      requests.append((client.apitools_client.instances,
+                       'Suspend', self._CreateSuspendRequest(
+                           client, instance_ref, args.discard_local_ssd)))
+    return client.MakeRequests(requests)

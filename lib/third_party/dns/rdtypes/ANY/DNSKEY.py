@@ -1,4 +1,4 @@
-# Copyright (C) 2004-2007, 2009, 2010 Nominum, Inc.
+# Copyright (C) 2004-2007, 2009-2011 Nominum, Inc.
 #
 # Permission to use, copy, modify, and distribute this software and its
 # documentation for any purpose with or without fee is hereby granted,
@@ -13,13 +13,13 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 # OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-import dns.rdtypes.keybase
+import dns.rdtypes.dnskeybase
+from dns.rdtypes.dnskeybase import flags_to_text_set, flags_from_text_set
 
-# flag constants
-SEP = 0x0001
-REVOKE = 0x0080
-ZONE = 0x0100
 
-class DNSKEY(dns.rdtypes.keybase.KEYBase):
+__all__ = ['flags_to_text_set', 'flags_from_text_set']
+
+
+class DNSKEY(dns.rdtypes.dnskeybase.DNSKEYBase):
+
     """DNSKEY record"""
-    pass

@@ -20,7 +20,7 @@ from googlecloudsdk.core import properties
 class List(base.ListCommand):
   """List Google Compute Engine accelerator types."""
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return """
         table(
           name,

@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Retrieves information about a Cloud SQL instance operation."""
 
 from googlecloudsdk.api_lib.sql import api_util
@@ -34,8 +33,7 @@ class Get(base.DescribeCommand):
           allowed.
     """
     parser.add_argument(
-        'operation',
-        help='Name that uniquely identifies the operation.')
+        'operation', help='Name that uniquely identifies the operation.')
     # Add superfluous instance flag so that users passing --instance do not see
     # an error.
     flags.DEPRECATED_INSTANCE_FLAG.AddToParser(parser)
@@ -67,5 +65,4 @@ class Get(base.DescribeCommand):
 
     return sql_client.operations.Get(
         sql_messages.SqlOperationsGetRequest(
-            project=operation_ref.project,
-            operation=operation_ref.operation))
+            project=operation_ref.project, operation=operation_ref.operation))

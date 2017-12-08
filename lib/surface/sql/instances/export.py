@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Exports data from a Cloud SQL instance.
 
 Exports data from a Cloud SQL instance to a Google Cloud Storage bucket as
@@ -27,8 +26,13 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-class _BaseExport(object):
-  """Exports data from a Cloud SQL instance."""
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class Export(base.Command):
+  """Exports data from a Cloud SQL instance.
+
+  Exports data from a Cloud SQL instance to a Google Cloud Storage
+  bucket as a MySQL dump file.
+  """
 
   @staticmethod
   def Args(parser):
@@ -67,86 +71,6 @@ class _BaseExport(object):
         help='Tables to export from the specified database. If you specify '
         'tables, specify one and only one database.')
 
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Export(_BaseExport, base.Command):
-  """Exports data from a Cloud SQL instance.
-
-  Exports data from a Cloud SQL instance to a Google Cloud Storage
-  bucket as a MySQL dump file.
-  """
-
-  def Run(self, args):
-    """Exports data from a Cloud SQL instance.
-
-    Args:
-      args: argparse.Namespace, The arguments that this command was invoked
-          with.
-
-    Returns:
-      A dict object representing the operations resource describing the export
-      operation if the export was successful.
-    Raises:
-      HttpException: A http error response was received while executing api
-          request.
-      ToolException: An error other than http error occured while executing the
-          command.
-    """
-    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
-    sql_client = client.sql_client
-    sql_messages = client.sql_messages
-
-    validate.ValidateInstanceName(args.instance)
-    instance_ref = client.resource_parser.Parse(
-        args.instance,
-        params={'project': properties.VALUES.core.project.GetOrFail},
-        collection='sql.instances')
-
-    export_request = sql_messages.SqlInstancesExportRequest(
-        instance=instance_ref.instance,
-        project=instance_ref.project,
-        instancesExportRequest=sql_messages.InstancesExportRequest(
-            exportContext=sql_messages.ExportContext(
-                uri=args.uri,
-                database=args.database or [],
-                table=args.table or [],
-            ),
-        ),
-    )
-
-    result = sql_client.instances.Export(export_request)
-
-    operation_ref = client.resource_parser.Create(
-        'sql.operations',
-        operation=result.operation,
-        project=instance_ref.project,
-        instance=instance_ref.instance,
-    )
-
-    if args.async:
-      return sql_client.operations.Get(
-          sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project,
-              instance=operation_ref.instance,
-              operation=operation_ref.operation))
-
-    operations.OperationsV1Beta3.WaitForOperation(
-        sql_client, operation_ref, 'Exporting Cloud SQL instance')
-
-    log.status.write('Exported [{instance}] to [{bucket}].\n'.format(
-        instance=instance_ref, bucket=args.uri))
-
-    return None
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ExportBeta(_BaseExport, base.Command):
-  """Exports data from a Cloud SQL instance.
-
-  Exports data from a Cloud SQL instance to a Google Cloud Storage
-  bucket as a MySQL dump file.
-  """
-
   def Run(self, args):
     """Exports data from a Cloud SQL instance.
 
@@ -184,11 +108,7 @@ class ExportBeta(_BaseExport, base.Command):
                 fileType='SQL',
                 sqlExportOptions=(
                     sql_messages.ExportContext.SqlExportOptionsValue(
-                        tables=args.table or [],
-                    )),
-            ),
-        ),
-    )
+                        tables=args.table or [],)),),),)
 
     result_operation = sql_client.instances.Export(export_request)
 
@@ -200,8 +120,7 @@ class ExportBeta(_BaseExport, base.Command):
     if args.async:
       return sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project,
-              operation=operation_ref.operation))
+              project=operation_ref.project, operation=operation_ref.operation))
 
     operations.OperationsV1Beta4.WaitForOperation(
         sql_client, operation_ref, 'Exporting Cloud SQL instance')

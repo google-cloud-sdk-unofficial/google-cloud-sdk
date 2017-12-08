@@ -21,7 +21,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Failover(base.Command):
   """Causes a high-availability Cloud SQL instance to failover."""
 
@@ -73,8 +73,7 @@ class Failover(base.Command):
 
     instance = sql_client.instances.Get(
         sql_messages.SqlInstancesGetRequest(
-            project=instance_ref.project,
-            instance=instance_ref.instance))
+            project=instance_ref.project, instance=instance_ref.instance))
 
     request = sql_messages.SqlInstancesFailoverRequest(
         project=instance_ref.project,

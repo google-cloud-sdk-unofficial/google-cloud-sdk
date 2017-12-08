@@ -73,5 +73,5 @@ class List(base.ListCommand):
         dm_base.GetClient().manifests, request, field='manifests',
         limit=args.limit, batch_size=args.page_size))
 
-  def Format(self, unused_args):
+  def DeprecatedFormat(self, unused_args):
     return 'table(name, id, insertTime)'

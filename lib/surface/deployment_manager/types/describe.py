@@ -48,7 +48,7 @@ class Describe(base.DescribeCommand):
                         help='Type provider name or its self-link.',
                         required=True)
 
-  def Format(self, unused_args):
+  def DeprecatedFormat(self, unused_args):
     return 'yaml(type_info)'
 
   def Run(self, args):

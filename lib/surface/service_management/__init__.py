@@ -43,8 +43,6 @@ class ServiceManagement(base.Group):
 
     Returns:
       The updated context.
-    Raises:
-      ToolException: When no project is specified.
     """
 
     context['servicemanagement-v1'] = apis.GetClientInstance(

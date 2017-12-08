@@ -1,4 +1,4 @@
-# Copyright (C) 2003-2007, 2009, 2010 Nominum, Inc.
+# Copyright (C) 2003-2007, 2009-2011 Nominum, Inc.
 #
 # Permission to use, copy, modify, and distribute this software and its
 # documentation for any purpose with or without fee is hereby granted,
@@ -15,7 +15,10 @@
 
 import dns.rdtypes.nsbase
 
+
 class DNAME(dns.rdtypes.nsbase.UncompressedNS):
+
     """DNAME record"""
-    def to_digestable(self, origin = None):
+
+    def to_digestable(self, origin=None):
         return self.target.to_digestable(origin)

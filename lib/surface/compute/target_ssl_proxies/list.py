@@ -42,7 +42,7 @@ class List(base.ListCommand):
         that do not match the entire regular expression will be filtered out.
         """)
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return """
         table(
           name,

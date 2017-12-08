@@ -14,9 +14,16 @@
 
 """Implements the command for copying files from and to virtual machines."""
 
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import scp_utils
 
+DEPRECATION_WARNING = (
+    '`gcloud compute copy-files` is deprecated.  Please use `gcloud compute '
+    'scp` instead.  Note that `gcloud compute scp` does not have recursive '
+    'copy on by default.  To turn on recursion, use the `--recurse` flag.')
 
+
+@base.Deprecate(is_removed=False, warning=DEPRECATION_WARNING)
 class CopyFiles(scp_utils.BaseScpCommand):
   """Copy files to and from Google Compute Engine virtual machines."""
 

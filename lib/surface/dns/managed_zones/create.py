@@ -80,7 +80,9 @@ class CreateBeta(base.CreateCommand):
   To create a managed-zone, run:
 
     $ {command} my_zone --dns-name my.zone.com. --description "My zone!"
+  """
 
+  UNUSED_DNSSEC_EXAMPLE = """
   To create a managed-zone with DNSSEC, run:
 
     $ {command} my_zone_2 --description "Signed Zone" \

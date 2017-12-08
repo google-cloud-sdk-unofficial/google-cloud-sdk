@@ -66,7 +66,7 @@ class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
 
     return results, errors
 
-  def Format(self, unused_args):
+  def DeprecatedFormat(self, unused_args):
     return """table(instance.basename():label=NAME,
                     instance.scope().segment(0):label=ZONE,
                     status)"""

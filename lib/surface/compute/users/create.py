@@ -13,16 +13,18 @@
 # limitations under the License.
 """Command for creating users."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.users import utils as user_utils
 from googlecloudsdk.command_lib.util import gaia
 from googlecloudsdk.core import properties
 
 
-class Create(base_classes.BaseAsyncCreator):
+class Create(base.CreateCommand):
   """Create Google Compute Engine users."""
 
   @staticmethod
   def Args(parser):
+    parser.display_info.AddFormat(user_utils.DEFAULT_LIST_FORMAT)
     parser.add_argument(
         '--owner',
         help=('The owner of the user to be created. The owner must be an email '
@@ -34,48 +36,36 @@ class Create(base_classes.BaseAsyncCreator):
 
     user_utils.AddUserArgument(parser, 'create')
 
-  @property
-  def service(self):
-    return self.clouduseraccounts.users
-
-  @property
-  def method(self):
-    return 'Insert'
-
-  @property
-  def resource_type(self):
-    return 'users'
-
-  @property
-  def messages(self):
-    return self.clouduseraccounts.MESSAGES_MODULE
-
-  def CreateRequests(self, args):
-    """Returns a list of requests necessary for adding users."""
+  def Run(self, args):
+    """Issues requests necessary for adding users."""
+    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    holder = base_classes.ComputeUserAccountsApiHolder(self.ReleaseTrack())
+    client = holder.client
 
     owner = args.owner
     if not owner:
-      owner = gaia.GetAuthenticatedGaiaEmail(self.http)
+      owner = gaia.GetAuthenticatedGaiaEmail(client.http)
 
     name = args.name
     if not name:
       name = gaia.MapGaiaEmailToDefaultAccountName(owner)
 
-    user_ref = self.clouduseraccounts_resources.Parse(
+    user_ref = holder.resources.Parse(
         name,
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='clouduseraccounts.users')
 
-    user = self.messages.User(
+    user = client.MESSAGES_MODULE.User(
         name=user_ref.Name(),
         description=args.description,
         owner=owner,
     )
 
-    request = self.messages.ClouduseraccountsUsersInsertRequest(
-        project=self.project,
+    request = client.MESSAGES_MODULE.ClouduseraccountsUsersInsertRequest(
+        project=user_ref.project,
         user=user)
-    return [request]
+    return compute_holder.client.MakeRequests([(client.users,
+                                                'Insert', request)])
 
 
 Create.detailed_help = {

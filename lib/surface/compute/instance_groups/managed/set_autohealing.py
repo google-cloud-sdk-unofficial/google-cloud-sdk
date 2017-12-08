@@ -27,8 +27,23 @@ def _AddArgs(parser):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class SetAutohealing(base_classes.BaseAsyncMutator):
-  """Set autohealing policy of instance group manager."""
+class SetAutohealing(base.Command):
+  """Set autohealing policy for managed instance group.
+
+    *{command}* updates the autohealing policy for an existing managed
+  instance group.
+
+  If --http-health-check or --https-health-check is specified, the resulting
+  autohealing policy will be triggered by the health-check i.e. the autohealing
+  action (RECREATE) on an instance will be performed if the health-check signals
+  that the instance is UNHEALTHY. If neither --http-health-check nor
+  --https-health-check is specified, the resulting autohealing policy will be
+  triggered by instance's status i.e. the autohealing action (RECREATE) on an
+  instance will be performed if the instance.status is not RUNNING.
+  --initial-delay specifies the length of the period during which IGM will
+  refrain from autohealing the instance even if the instance is reported as not
+  RUNNING or UNHEALTHY. This value must be from range [0, 3600].
+  """
 
   @staticmethod
   def Args(parser):
@@ -36,67 +51,41 @@ class SetAutohealing(base_classes.BaseAsyncMutator):
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 
-  @property
-  def method(self):
-    return 'SetAutoHealingPolicies'
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def service(self):
-    return self.compute.instanceGroupManagers
-
-  def CreateRequests(self, args):
     igm_ref = (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
                ResolveAsResource)(
-                   args, self.resources,
+                   args, holder.resources,
                    default_scope=compute_scope.ScopeEnum.ZONE,
-                   scope_lister=flags.GetDefaultScopeLister(
-                       self.compute_client))
+                   scope_lister=flags.GetDefaultScopeLister(client))
     auto_healing_policies = (
         managed_instance_groups_utils.CreateAutohealingPolicies(
-            self.resources, self.messages, args))
+            holder.resources, client.messages, args))
 
     if igm_ref.Collection() == 'compute.instanceGroupManagers':
-      service = self.compute.instanceGroupManagers
+      service = client.apitools_client.instanceGroupManagers
       request = (
-          self.messages.
+          client.messages.
           ComputeInstanceGroupManagersSetAutoHealingPoliciesRequest(
               project=igm_ref.project,
               zone=igm_ref.zone,
               instanceGroupManager=igm_ref.Name(),
               instanceGroupManagersSetAutoHealingRequest=(
-                  self.messages.InstanceGroupManagersSetAutoHealingRequest(
+                  client.messages.InstanceGroupManagersSetAutoHealingRequest(
                       autoHealingPolicies=auto_healing_policies))))
     else:
-      service = self.compute.regionInstanceGroupManagers
+      service = client.apitools_client.regionInstanceGroupManagers
       request = (
-          self.messages.
+          client.messages.
           ComputeRegionInstanceGroupManagersSetAutoHealingPoliciesRequest(
               project=igm_ref.project,
               region=igm_ref.region,
               instanceGroupManager=igm_ref.Name(),
               regionInstanceGroupManagersSetAutoHealingRequest=(
-                  self.messages.
+                  client.messages.
                   RegionInstanceGroupManagersSetAutoHealingRequest(
                       autoHealingPolicies=auto_healing_policies))))
 
-    return [(service, self.method, request)]
-
-
-SetAutohealing.detailed_help = {
-    'brief': 'Set autohealing policy for managed instance group.',
-    'DESCRIPTION': """
-        *{command}* updates the autohealing policy for an existing managed
-instance group.
-
-If --http-health-check or --https-health-check is specified, the resulting
-autohealing policy will be triggered by the health-check i.e. the autohealing
-action (RECREATE) on an instance will be performed if the health-check signals
-that the instance is UNHEALTHY. If neither --http-health-check nor
---https-health-check is specified, the resulting autohealing policy will be
-triggered by instance's status i.e. the autohealing action (RECREATE) on an
-instance will be performed if the instance.status is not RUNNING.
---initial-delay specifies the length of the period during which IGM will
-refrain from autohealing the instance even if the instance is reported as not
-RUNNING or UNHEALTHY. This value must be from range [0, 3600].
-""",
-}
+    return client.MakeRequests([(service, 'SetAutoHealingPolicies', request)])

@@ -71,16 +71,17 @@ class SetPassword(base.CreateCommand):
         collection='sql.instances')
     operation_ref = None
     result_operation = sql_client.users.Update(
-        sql_messages.SqlUsersUpdateRequest(project=instance_ref.project,
-                                           instance=args.instance,
-                                           name=args.username,
-                                           host=args.host,
-                                           user=sql_messages.User(
-                                               project=instance_ref.project,
-                                               instance=args.instance,
-                                               name=args.username,
-                                               host=args.host,
-                                               password=args.password)))
+        sql_messages.SqlUsersUpdateRequest(
+            project=instance_ref.project,
+            instance=args.instance,
+            name=args.username,
+            host=args.host,
+            user=sql_messages.User(
+                project=instance_ref.project,
+                instance=args.instance,
+                name=args.username,
+                host=args.host,
+                password=args.password)))
     operation_ref = client.resource_parser.Create(
         'sql.operations',
         operation=result_operation.name,
@@ -88,7 +89,6 @@ class SetPassword(base.CreateCommand):
     if args.async:
       return sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project,
-              operation=operation_ref.operation))
+              project=operation_ref.project, operation=operation_ref.operation))
     operations.OperationsV1Beta4.WaitForOperation(sql_client, operation_ref,
                                                   'Updating Cloud SQL user')

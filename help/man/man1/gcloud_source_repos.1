@@ -11,7 +11,7 @@ gcloud source repos \- manage cloud source repositories
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud source repos\fR \fICOMMAND\fR [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud source repos\fR \fICOMMAND\fR [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -21,9 +21,12 @@ Manage cloud source repositories.
 
 
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.
 
 
 
@@ -35,5 +38,29 @@ Run \fB$ gcloud help\fR for a description of flags available to all commands.
 .TP 2m
 \fBclone\fR
 Clone project git repository in the current directory.
+
+.TP 2m
+\fBcreate\fR
+Create a cloud source repository.
+
+.TP 2m
+\fBdelete\fR
+Delete a cloud source repository.
+
+.TP 2m
+\fBdescribe\fR
+Describe a cloud source repository.
+
+.TP 2m
+\fBget\-iam\-policy\fR
+Get the IAM policy for the named cloud source repository.
+
+.TP 2m
+\fBlist\fR
+List the repositories the currently active project.
+
+.TP 2m
+\fBset\-iam\-policy\fR
+Set the IAM policy for the named repository.
 .RE
 .sp

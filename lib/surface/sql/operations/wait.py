@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Retrieves information about a Cloud SQL instance operation."""
 
 from googlecloudsdk.api_lib.sql import api_util
@@ -52,13 +51,14 @@ class Wait(base.Command):
 
     for op in args.operation:
       operation_ref = client.resource_parser.Parse(
-          op, collection='sql.operations',
+          op,
+          collection='sql.operations',
           params={'project': properties.VALUES.core.project.GetOrFail})
 
       operations.OperationsV1Beta4.WaitForOperation(
-          sql_client, operation_ref,
+          sql_client,
+          operation_ref,
           'Waiting for [{operation}]'.format(operation=operation_ref))
       yield sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project,
-              operation=operation_ref.operation))
+              project=operation_ref.project, operation=operation_ref.operation))

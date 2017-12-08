@@ -54,7 +54,7 @@ class Patch(base.Command):
         action='store_true',
         help='Show what changed as a result of the patch.')
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     if args.diff:
       return 'diff(old, new)'
     fmt = self.ListFormat(args)
@@ -116,8 +116,8 @@ class Patch(base.Command):
         operation=result_operation.name,
         project=instance_ref.project)
 
-    operations.OperationsV1Beta4.WaitForOperation(
-        sql_client, operation_ref, 'Patching Cloud SQL database')
+    operations.OperationsV1Beta4.WaitForOperation(sql_client, operation_ref,
+                                                  'Patching Cloud SQL database')
 
     log.UpdatedResource(args.database, 'database')
 

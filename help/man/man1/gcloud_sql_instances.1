@@ -11,7 +11,7 @@ gcloud sql instances \- provide commands for managing Cloud SQL instances
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud sql instances\fR \fICOMMAND\fR [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud sql instances\fR \fICOMMAND\fR [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -22,9 +22,12 @@ configuring, restarting, and deleting instances.
 
 
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.
 
 
 
@@ -52,6 +55,10 @@ Displays configuration and metadata about a Cloud SQL instance.
 .TP 2m
 \fBexport\fR
 Exports data from a Cloud SQL instance.
+
+.TP 2m
+\fBfailover\fR
+Causes a high\-availability Cloud SQL instance to failover.
 
 .TP 2m
 \fBimport\fR
@@ -83,6 +90,6 @@ Restores a backup of a Cloud SQL instance.
 
 .TP 2m
 \fBset\-root\-password\fR
-Sets the password of the MySQL root user.
+\fB(DEPRECATED)\fR Sets the password of the MySQL root user.
 .RE
 .sp

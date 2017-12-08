@@ -15,14 +15,17 @@
 
 import textwrap
 
+from apitools.base.py import encoding
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import networks_utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.networks import flags
 from googlecloudsdk.core import log
 
 
-class Create(base_classes.BaseAsyncCreator):
+class Create(base.CreateCommand):
   """Create a Google Compute Engine network.
 
   *{command}* is used to create virtual networks. A network
@@ -35,24 +38,9 @@ class Create(base_classes.BaseAsyncCreator):
 
   NETWORK_ARG = None
 
-  @property
-  def service(self):
-    return self.compute.networks
-
-  @property
-  def method(self):
-    return 'Insert'
-
-  @property
-  def resource_type(self):
-    return 'networks'
-
-  def ComputeDynamicProperties(self, args, items):
-    self._network_name = args.name
-    return networks_utils.AddMode(items)
-
   @classmethod
   def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.NETWORK_ARG = flags.NetworkArgument()
     cls.NETWORK_ARG.AddArgument(parser)
 
@@ -84,8 +72,12 @@ class Create(base_classes.BaseAsyncCreator):
         This flag only works if mode is legacy.
         """)
 
-  def CreateRequests(self, args):
-    """Returns the request necessary for adding the network."""
+  def Run(self, args):
+    """Issues the request necessary for adding the network."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    self._network_name = args.name
 
     # TODO(b/31649473): after one month, make default auto.
     if args.mode is None:
@@ -100,24 +92,28 @@ class Create(base_classes.BaseAsyncCreator):
       raise exceptions.InvalidArgumentException(
           '--range', '--range can only be used if --mode=legacy')
 
-    network_ref = self.NETWORK_ARG.ResolveAsResource(args, self.resources)
+    network_ref = self.NETWORK_ARG.ResolveAsResource(args, holder.resources)
 
     if args.mode == 'legacy':
-      return [self.messages.ComputeNetworksInsertRequest(
-          network=self.messages.Network(
+      request = client.messages.ComputeNetworksInsertRequest(
+          network=client.messages.Network(
               name=network_ref.Name(),
               IPv4Range=args.range,
               description=args.description),
-          project=self.project)]
+          project=network_ref.project)
+    else:
+      request = client.messages.ComputeNetworksInsertRequest(
+          network=client.messages.Network(
+              name=network_ref.Name(),
+              autoCreateSubnetworks=args.mode == 'auto',
+              description=args.description),
+          project=network_ref.project)
 
-    request = self.messages.ComputeNetworksInsertRequest(
-        network=self.messages.Network(
-            name=network_ref.Name(),
-            autoCreateSubnetworks=args.mode == 'auto',
-            description=args.description),
-        project=self.project)
+    responses = client.MakeRequests([(client.apitools_client.networks, 'Insert',
+                                      request)])
 
-    return [request]
+    responses = [encoding.MessageToDict(m) for m in responses]
+    return networks_utils.AddMode(responses)
 
   def Epilog(self, resources_were_displayed=True):
     message = """\

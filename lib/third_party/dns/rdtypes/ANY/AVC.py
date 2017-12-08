@@ -1,4 +1,4 @@
-# Copyright (C) 2003-2007, 2009, 2010 Nominum, Inc.
+# Copyright (C) 2016 Nominum, Inc.
 #
 # Permission to use, copy, modify, and distribute this software and its
 # documentation for any purpose with or without fee is hereby granted,
@@ -13,8 +13,11 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 # OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-import dns.rdtypes.keybase
+import dns.rdtypes.txtbase
 
-class KEY(dns.rdtypes.keybase.KEYBase):
-    """KEY record"""
-    pass
+
+class AVC(dns.rdtypes.txtbase.TXTBase):
+
+    """AVC record
+
+    @see: U{http://www.iana.org/assignments/dns-parameters/AVC/avc-completed-template}"""

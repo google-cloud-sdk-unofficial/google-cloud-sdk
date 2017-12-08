@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Lists instances in a given project.
 
 Lists instances in a given project in the alphabetical order of the
@@ -28,22 +27,24 @@ from googlecloudsdk.core import properties
 
 def _GetUriFromResource(resource):
   """Returns the URI for resource."""
-  client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
-  return client.resource_parser.Create(
-      'sql.instances', project=resource.project,
-      instance=resource.instance).SelfLink()
-
-
-def _GetUriFromResourceBeta(resource):
-  """Returns the URI for resource."""
   client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
   return client.resource_parser.Create(
       'sql.instances', project=resource.project,
       instance=resource.name).SelfLink()
 
 
-class _BaseList(object):
-  """Lists Cloud SQL instances in a given project."""
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class List(base.ListCommand):
+  """Lists Cloud SQL instances in a given project.
+
+  Lists Cloud SQL instances in a given project in the alphabetical
+  order of the instance name.
+  """
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(flags.INSTANCES_FORMAT_BETA)
+    parser.display_info.AddUriFunc(_GetUriFromResource)
 
   def Run(self, args):
     """Lists Cloud SQL instances in a given project.
@@ -60,7 +61,7 @@ class _BaseList(object):
       ToolException: An error other than an http error occured while executing
           the command.
     """
-    client = self.GetSqlClient()
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client
     sql_messages = client.sql_messages
 
@@ -70,38 +71,3 @@ class _BaseList(object):
         sql_client.instances,
         sql_messages.SqlInstancesListRequest(project=project_id),
         limit=args.limit)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class List(_BaseList, base.ListCommand):
-  """Lists Cloud SQL instances in a given project.
-
-  Lists Cloud SQL instances in a given project in the alphabetical
-  order of the instance name.
-  """
-
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat(flags.INSTANCES_FORMAT)
-    # TODO(b/36472296): Add a --uri flag test to kill a mutant.
-    parser.display_info.AddUriFunc(_GetUriFromResource)
-
-  def GetSqlClient(self):
-    return api_util.SqlClient(api_util.API_VERSION_FALLBACK)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(_BaseList, base.ListCommand):
-  """Lists Cloud SQL instances in a given project.
-
-  Lists Cloud SQL instances in a given project in the alphabetical
-  order of the instance name.
-  """
-
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat(flags.INSTANCES_FORMAT_BETA)
-    parser.display_info.AddUriFunc(_GetUriFromResourceBeta)
-
-  def GetSqlClient(self):
-    return api_util.SqlClient(api_util.API_VERSION_DEFAULT)

@@ -27,8 +27,9 @@ from googlecloudsdk.core import properties
 class List(base.ListCommand):
   """Returns a list of locations where functions can be deployed."""
 
-  def Collection(self):
-    return 'functions.projects.locations'
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat('table(name)')
 
   def Run(self, args):
     client = util.GetApiClientInstance()

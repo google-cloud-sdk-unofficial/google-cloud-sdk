@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for adding an interface to a router."""
+"""Command for adding an interface to a Google Compute Engine router."""
 
 import copy
 
@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.compute.vpn_tunnels import (flags as
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class AddInterface(base_classes.ReadWriteCommand):
-  """Add an interface to a router."""
+  """Add an interface to a Google Compute Engine router."""
 
   ROUTER_ARG = None
   VPN_TUNNEL_ARG = None
@@ -101,7 +101,7 @@ class AddInterface(base_classes.ReadWriteCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaAddInterface(AddInterface):
-  """Add an interface to a router."""
+  """Add an interface to a Google Compute Engine router."""
 
   ROUTER_ARG = None
   VPN_TUNNEL_ARG = None
@@ -173,6 +173,7 @@ class AlphaAddInterface(AddInterface):
 AddInterface.detailed_help = {
     'DESCRIPTION':
         """
-        *{command}* is used to add an interface to a router.
+        *{command}* is used to add an interface to a Google Compute Engine
+        router.
         """,
 }

@@ -64,5 +64,5 @@ class AnalyzeSyntax(base.Command):
         content_type=args.content_type,
         encoding_type=args.encoding_type)
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return 'json'

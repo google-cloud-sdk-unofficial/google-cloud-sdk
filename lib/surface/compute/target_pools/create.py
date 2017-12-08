@@ -14,6 +14,7 @@
 """Command for creating target pools."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import (
@@ -24,7 +25,7 @@ from googlecloudsdk.command_lib.compute.target_pools import flags
 from googlecloudsdk.core import log
 
 
-class Create(base_classes.BaseAsyncCreator):
+class Create(base.CreateCommand):
   """Define a load-balanced pool of virtual machine instances.
 
   *{command}* is used to create a target pool. A target pool resource
@@ -46,6 +47,7 @@ class Create(base_classes.BaseAsyncCreator):
 
   @classmethod
   def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.BACKUP_POOL_ARG = flags.BackupPoolArgument(required=False)
     cls.HTTP_HEALTH_CHECK_ARG = (
         http_health_check_flags.HttpHealthCheckArgumentForTargetPoolCreate(
@@ -103,20 +105,11 @@ class Create(base_classes.BaseAsyncCreator):
 
     backend_services_flags.AddSessionAffinity(parser, target_pools=True)
 
-  @property
-  def service(self):
-    return self.compute.targetPools
+  def Run(self, args):
+    """Issues requests necessary for adding a target pool."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'Insert'
-
-  @property
-  def resource_type(self):
-    return 'targetPools'
-
-  def CreateRequests(self, args):
-    """Returns a list of requests necessary for adding a target pool."""
     if ((args.backup_pool and not args.failover_ratio) or
         (args.failover_ratio and not args.backup_pool)):
       raise calliope_exceptions.ToolException(
@@ -135,35 +128,35 @@ class Create(base_classes.BaseAsyncCreator):
 
     if args.http_health_check:
       http_health_check = [self.HTTP_HEALTH_CHECK_ARG.ResolveAsResource(
-          args, self.resources).SelfLink()]
+          args, holder.resources).SelfLink()]
 
     else:
       http_health_check = []
 
     target_pool_ref = self.TARGET_POOL_ARG.ResolveAsResource(
         args,
-        self.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
-                                                         self.project))
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
     if args.backup_pool:
       args.backup_pool_region = target_pool_ref.region
       backup_pool_uri = self.BACKUP_POOL_ARG.ResolveAsResource(
-          args, self.resources).SelfLink()
+          args, holder.resources).SelfLink()
     else:
       backup_pool_uri = None
 
-    request = self.messages.ComputeTargetPoolsInsertRequest(
-        targetPool=self.messages.TargetPool(
+    request = client.messages.ComputeTargetPoolsInsertRequest(
+        targetPool=client.messages.TargetPool(
             backupPool=backup_pool_uri,
             description=args.description,
             failoverRatio=args.failover_ratio,
             healthChecks=http_health_check,
             name=target_pool_ref.Name(),
             sessionAffinity=(
-                self.messages.TargetPool.SessionAffinityValueValuesEnum(
+                client.messages.TargetPool.SessionAffinityValueValuesEnum(
                     args.session_affinity))),
         region=target_pool_ref.region,
-        project=self.project)
+        project=target_pool_ref.project)
 
-    return [request]
+    return client.MakeRequests([(client.apitools_client.targetPools, 'Insert',
+                                 request)])

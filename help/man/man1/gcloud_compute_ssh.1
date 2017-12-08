@@ -11,7 +11,7 @@ gcloud compute ssh \- SSH into a virtual machine instance
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute ssh\fR [\fIUSER\fR@]\fIINSTANCE\fR [\fB\-\-command\fR=\fICOMMAND\fR] [\fB\-\-container\fR=\fICONTAINER\fR] [\fB\-\-dry\-run\fR] [\fB\-\-force\-key\-file\-overwrite\fR] [\fB\-\-plain\fR] [\fB\-\-ssh\-flag\fR=\fISSH_FLAG\fR] [\fB\-\-ssh\-key\-file\fR=\fISSH_KEY_FILE\fR] [\fB\-\-strict\-host\-key\-checking\fR=\fISTRICT_HOST_KEY_CHECKING\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR] [\-\-\ \fISSH_ARGS\fR\ ...]
+\f5gcloud compute ssh\fR [\fIUSER\fR@]\fIINSTANCE\fR [\fB\-\-command\fR=\fICOMMAND\fR] [\fB\-\-container\fR=\fICONTAINER\fR] [\fB\-\-dry\-run\fR] [\fB\-\-force\-key\-file\-overwrite\fR] [\fB\-\-plain\fR] [\fB\-\-ssh\-flag\fR=\fISSH_FLAG\fR] [\fB\-\-ssh\-key\-file\fR=\fISSH_KEY_FILE\fR] [\fB\-\-strict\-host\-key\-checking\fR=\fISTRICT_HOST_KEY_CHECKING\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR] [\-\-\ \fISSH_ARGS\fR\ ...]
 
 
 
@@ -37,6 +37,9 @@ Specifies the instance to SSH into.
 
 \f5\fIUSER\fR\fR specifies the username with which to SSH. If omitted, $USER
 from the environment is selected.
+
+\f5\fIINSTANCE\fR\fR specifies the name of the virtual machine instance to SSH
+into.
 
 .TP 2m
 [\-\- \fISSH_ARGS\fR ...]
@@ -151,9 +154,12 @@ Alternatively, the zone can be stored in the environment variable
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.
 
 
 

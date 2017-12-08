@@ -22,7 +22,8 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
-class _BaseResetSslConfig(object):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class ResetSslConfig(base.Command):
   """Deletes all client certificates and generates a new server certificate."""
 
   @staticmethod
@@ -39,73 +40,6 @@ class _BaseResetSslConfig(object):
         'instance',
         completion_resource='sql.instances',
         help='Cloud SQL instance ID.')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class ResetSslConfig(_BaseResetSslConfig, base.Command):
-  """Deletes all client certificates and generates a new server certificate."""
-
-  def Run(self, args):
-    """Deletes all certificates and generates a new server SSL certificate.
-
-    Args:
-      args: argparse.Namespace, The arguments that this command was invoked
-          with.
-
-    Returns:
-      A dict object representing the operations resource describing the
-      resetSslConfig operation if the reset was successful.
-    Raises:
-      HttpException: A http error response was received while executing api
-          request.
-      ToolException: An error other than http error occured while executing the
-          command.
-    """
-    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
-    sql_client = client.sql_client
-    sql_messages = client.sql_messages
-
-    validate.ValidateInstanceName(args.instance)
-    instance_ref = client.resource_parser.Parse(
-        args.instance,
-        params={'project': properties.VALUES.core.project.GetOrFail},
-        collection='sql.instances')
-
-    console_io.PromptContinue(
-        message='Resetting your SSL configuration will delete all client '
-        'certificates and generate a new server certificate.',
-        default=True,
-        cancel_on_no=True)
-
-    result = sql_client.instances.ResetSslConfig(
-        sql_messages.SqlInstancesResetSslConfigRequest(
-            project=instance_ref.project,
-            instance=instance_ref.instance))
-
-    operation_ref = client.resource_parser.Create(
-        'sql.operations',
-        operation=result.operation,
-        project=instance_ref.project,
-        instance=instance_ref.instance,
-    )
-
-    if args.async:
-      return sql_client.operations.Get(
-          sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project,
-              instance=operation_ref.instance,
-              operation=operation_ref.operation))
-
-    operations.OperationsV1Beta3.WaitForOperation(
-        sql_client, operation_ref, 'Resetting SSL config')
-
-    log.status.write('Reset SSL config for [{resource}].\n'.format(
-        resource=instance_ref))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ResetSslConfigBeta(_BaseResetSslConfig, base.Command):
-  """Deletes all client certificates and generates a new server certificate."""
 
   def Run(self, args):
     """Deletes all certificates and generates a new server SSL certificate.
@@ -141,8 +75,7 @@ class ResetSslConfigBeta(_BaseResetSslConfig, base.Command):
 
     result_operation = sql_client.instances.ResetSslConfig(
         sql_messages.SqlInstancesResetSslConfigRequest(
-            project=instance_ref.project,
-            instance=instance_ref.instance))
+            project=instance_ref.project, instance=instance_ref.instance))
 
     operation_ref = client.resource_parser.Create(
         'sql.operations',
@@ -152,11 +85,10 @@ class ResetSslConfigBeta(_BaseResetSslConfig, base.Command):
     if args.async:
       return sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project,
-              operation=operation_ref.operation))
+              project=operation_ref.project, operation=operation_ref.operation))
 
-    operations.OperationsV1Beta4.WaitForOperation(
-        sql_client, operation_ref, 'Resetting SSL config')
+    operations.OperationsV1Beta4.WaitForOperation(sql_client, operation_ref,
+                                                  'Resetting SSL config')
 
-    log.status.write('Reset SSL config for [{resource}].\n'.format(
-        resource=instance_ref))
+    log.status.write(
+        'Reset SSL config for [{resource}].\n'.format(resource=instance_ref))

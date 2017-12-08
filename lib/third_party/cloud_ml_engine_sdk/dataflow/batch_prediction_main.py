@@ -70,7 +70,10 @@ import apache_beam as beam
 # pylint: disable=g-import-not-at-top
 # TODO(user): Remove after Dataflow 0.4.5 SDK is released.
 try:
-  from apache_beam.utils.pipeline_options import PipelineOptions
+  try:
+    from apache_beam.options.pipeline_options import PipelineOptions
+  except ImportError:
+    from apache_beam.utils.pipeline_options import PipelineOptions
 except ImportError:
   from apache_beam.utils.options import PipelineOptions
 

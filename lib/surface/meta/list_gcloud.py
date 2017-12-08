@@ -36,7 +36,7 @@ class ListGCloud(base.Command):
         help=('Restrict the tree to these dotted command paths. '
               'For example: gcloud.alpha gcloud.beta.test'))
 
-  def Format(self, unused_args):
+  def DeprecatedFormat(self, unused_args):
     return 'json'
 
   def Run(self, args):

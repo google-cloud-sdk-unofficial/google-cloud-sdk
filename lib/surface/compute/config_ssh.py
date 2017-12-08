@@ -19,9 +19,9 @@ import re
 import stat
 import textwrap
 
-from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.api_lib.compute import path_simplifier
+from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.util.ssh import ssh
@@ -261,7 +261,7 @@ class ConfigSSH(ssh_utils.BaseSSHCommand):
         errors=errors)
 
     if errors:
-      base_classes.RaiseToolException(
+      utils.RaiseToolException(
           errors, error_message='Could not fetch all instances:')
     return instances
 

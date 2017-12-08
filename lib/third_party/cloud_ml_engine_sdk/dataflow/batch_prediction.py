@@ -214,7 +214,12 @@ class PredictionDoFn(beam.DoFn):
       if self._cloud_logger:
         self._cloud_logger.write_error_message(
             str(e), self._create_snippet(element))
-      yield beam.pvalue.TaggedOutput("errors", (str(e), element))
+      try:
+        yield beam.pvalue.TaggedOutput(
+            "errors", (str(e), element))
+      except AttributeError:
+        yield beam.pvalue.SideOutputValue("errors",
+                                          (str(e), element))
 
 
 class BatchPredict(beam.PTransform):

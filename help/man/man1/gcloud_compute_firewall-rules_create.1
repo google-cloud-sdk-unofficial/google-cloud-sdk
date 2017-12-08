@@ -11,7 +11,7 @@ gcloud compute firewall\-rules create \- create a Google Compute Engine firewall
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute firewall\-rules create\fR \fINAME\fR \fB\-\-allow\fR=\fIPROTOCOL\fR[:\fIPORT\fR[\-\fIPORT\fR]],[\fIPROTOCOL\fR[:\fIPORT\fR[\-\fIPORT\fR]],...] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-network\fR=\fINETWORK\fR;\ default="default"] [\fB\-\-source\-ranges\fR=\fICIDR_RANGE\fR,[\fICIDR_RANGE\fR,...]] [\fB\-\-source\-tags\fR=\fITAG\fR,[\fITAG\fR,...]] [\fB\-\-target\-tags\fR=\fITAG\fR,[\fITAG\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute firewall\-rules create\fR \fINAME\fR \fB\-\-allow\fR=\fIPROTOCOL\fR[:\fIPORT\fR[\-\fIPORT\fR]],[\fIPROTOCOL\fR[:\fIPORT\fR[\-\fIPORT\fR]],...] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-network\fR=\fINETWORK\fR;\ default="default"] [\fB\-\-source\-ranges\fR=\fICIDR_RANGE\fR,[\fICIDR_RANGE\fR,...]] [\fB\-\-source\-tags\fR=\fITAG\fR,[\fITAG\fR,...]] [\fB\-\-target\-tags\fR=\fITAG\fR,[\fITAG\fR,...]] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -127,6 +127,9 @@ Tags can be assigned to instances during instance creation.
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.

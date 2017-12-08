@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command for listing routers."""
+"""Command for listing Google Compute Engine routers."""
 from googlecloudsdk.api_lib.compute import base_classes
 
 
 class List(base_classes.RegionalLister):
-  """List routers."""
+  """List Google Compute Engine routers."""
 
   @property
   def service(self):

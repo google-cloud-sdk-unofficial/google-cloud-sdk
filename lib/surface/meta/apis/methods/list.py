@@ -27,9 +27,7 @@ class List(base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
 
     apis.API_VERSION_FLAG.AddToParser(parser)
-    parser.add_argument(
-        '--collection',
-        help='The name of the collection to get the methods of.')
+    apis.COLLECTION_FLAG.AddToParser(parser)
     parser.display_info.AddFormat("""
       table(
         name:sort=1,

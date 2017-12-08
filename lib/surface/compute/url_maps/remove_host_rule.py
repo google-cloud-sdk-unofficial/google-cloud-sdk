@@ -120,10 +120,10 @@ RemoveHostRule.detailed_help = {
         ``--delete-orphaned-path-matcher'' is provided.
         """,
     'EXAMPLES': """\
-        To remove a host rule that contains the host ``google.com''
+        To remove a host rule that contains the host ``example.com''
         from the URL map named ``MY-URL-MAP'', you can use this
         command:
 
-          $ {command} MY-URL-MAP --host google.com
+          $ {command} MY-URL-MAP --host example.com
         """,
 }

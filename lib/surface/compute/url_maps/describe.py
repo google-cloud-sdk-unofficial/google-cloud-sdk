@@ -20,7 +20,10 @@ class Describe(base_classes.GlobalDescriber):
 
   @staticmethod
   def Args(parser):
-    base_classes.RegionalDescriber.Args(parser, 'compute.urlMaps')
+    base_classes.GlobalDescriber.Args(
+        parser,
+        'compute.urlMaps',
+        list_command_path='compute url-maps list --uri')
 
   @property
   def service(self):

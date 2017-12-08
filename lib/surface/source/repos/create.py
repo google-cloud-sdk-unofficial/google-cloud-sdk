@@ -36,7 +36,8 @@ _BILLING_URL = 'https://cloud.google.com/source-repositories/docs/pricing'
 _SOURCEREPO_SERVICE_NAME = 'sourcerepo.googleapis.com'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a cloud source repository."""
 

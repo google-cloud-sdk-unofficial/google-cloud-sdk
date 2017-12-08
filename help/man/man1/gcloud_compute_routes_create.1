@@ -11,7 +11,7 @@ gcloud compute routes create \- create a new route
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute routes create\fR \fINAME\fR \fB\-\-destination\-range\fR=\fIDESTINATION_RANGE\fR (\fB\-\-next\-hop\-address\fR=\fINEXT_HOP_ADDRESS\fR\ |\ \fB\-\-next\-hop\-gateway\fR=\fINEXT_HOP_GATEWAY\fR\ |\ \fB\-\-next\-hop\-instance\fR=\fINEXT_HOP_INSTANCE\fR\ |\ \fB\-\-next\-hop\-vpn\-tunnel\fR=\fINEXT_HOP_VPN_TUNNEL\fR) [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-network\fR=\fINETWORK\fR;\ default="default"] [\fB\-\-next\-hop\-instance\-zone\fR=\fINEXT_HOP_INSTANCE_ZONE\fR] [\fB\-\-next\-hop\-vpn\-tunnel\-region\fR=\fINEXT_HOP_VPN_TUNNEL_REGION\fR] [\fB\-\-priority\fR=\fIPRIORITY\fR;\ default="1000"] [\fB\-\-tags\fR=\fITAG\fR,[\fITAG\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute routes create\fR \fINAME\fR \fB\-\-destination\-range\fR=\fIDESTINATION_RANGE\fR (\fB\-\-next\-hop\-address\fR=\fINEXT_HOP_ADDRESS\fR\ |\ \fB\-\-next\-hop\-gateway\fR=\fINEXT_HOP_GATEWAY\fR\ |\ \fB\-\-next\-hop\-instance\fR=\fINEXT_HOP_INSTANCE\fR\ |\ \fB\-\-next\-hop\-vpn\-tunnel\fR=\fINEXT_HOP_VPN_TUNNEL\fR) [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-network\fR=\fINETWORK\fR;\ default="default"] [\fB\-\-next\-hop\-instance\-zone\fR=\fINEXT_HOP_INSTANCE_ZONE\fR] [\fB\-\-next\-hop\-vpn\-tunnel\-region\fR=\fINEXT_HOP_VPN_TUNNEL_REGION\fR] [\fB\-\-priority\fR=\fIPRIORITY\fR;\ default="1000"] [\fB\-\-tags\fR=\fITAG\fR,[\fITAG\fR,...]] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -74,8 +74,8 @@ compute instances create\fR)
 .TP 2m
 \fB\-\-next\-hop\-gateway\fR=\fINEXT_HOP_GATEWAY\fR
 Specifies the gateway that should handle matching packets. Currently, the only
-acceptable value is \f5\fIdefault\-internet\-gateway\fR\fR which is a gateway
-operated by Google Compute Engine.
+acceptable value is \f5default\-internet\-gateway\fR which is a gateway operated
+by Google Compute Engine.
 
 .TP 2m
 \fB\-\-next\-hop\-instance\fR=\fINEXT_HOP_INSTANCE\fR
@@ -170,6 +170,9 @@ provided, the route will apply to all instances in the network.
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.

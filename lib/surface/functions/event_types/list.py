@@ -35,14 +35,16 @@ class List(base.Command):
     may be omitted).
   """
 
-  def Format(self, args):
-    return '''\
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat('''
         table(provider.label:label="EVENT_PROVIDER":sort=1,
               label:label="EVENT_TYPE":sort=2,
               event_is_optional.yesno('Yes'):label="EVENT_TYPE_DEFAULT",
               resource_type.value.name:label="RESOURCE_TYPE",
               resource_is_optional.yesno('Yes'):label="RESOURCE_OPTIONAL"
-        )'''
+        )
+     ''')
 
   def Run(self, args):
     for provider in util.output_trigger_provider_registry.providers:

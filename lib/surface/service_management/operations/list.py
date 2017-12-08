@@ -81,7 +81,7 @@ class List(base.ListCommand):
         '--filter', metavar='EXPRESSION',
         help=_FILTER_HELP)
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return 'table({fields})'.format(
         fields=','.join([
             'name',

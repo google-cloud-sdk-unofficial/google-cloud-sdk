@@ -129,7 +129,7 @@ def _CommonArgs(parser, source_snapshot_arg):
 class Create(base.Command):
   """Create Google Compute Engine persistent disks."""
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return """table(name,
                     zone.basename(),
                     sizeGb,

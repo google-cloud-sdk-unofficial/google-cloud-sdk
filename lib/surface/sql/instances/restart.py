@@ -22,7 +22,8 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
-class _BaseRestart(object):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class Restart(base.Command):
   """Restarts a Cloud SQL instance."""
 
   @staticmethod
@@ -39,74 +40,6 @@ class _BaseRestart(object):
         'instance',
         completion_resource='sql.instances',
         help='Cloud SQL instance ID.')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Restart(_BaseRestart, base.Command):
-  """Restarts a Cloud SQL instance."""
-
-  def Run(self, args):
-    """Restarts a Cloud SQL instance.
-
-    Args:
-      args: argparse.Namespace, The arguments that this command was invoked
-          with.
-
-    Returns:
-      A dict object representing the operations resource describing the restart
-      operation if the restart was successful.
-    Raises:
-      HttpException: A http error response was received while executing api
-          request.
-      ToolException: An error other than http error occured while executing the
-          command.
-    """
-    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
-    sql_client = client.sql_client
-    sql_messages = client.sql_messages
-
-    validate.ValidateInstanceName(args.instance)
-    instance_ref = client.resource_parser.Parse(
-        args.instance,
-        params={'project': properties.VALUES.core.project.GetOrFail},
-        collection='sql.instances')
-
-    console_io.PromptContinue(
-        message='The instance will shut down and start up again immediately if '
-        'its activation policy is "always." If "on demand," the instance will '
-        'start up again when a new connection request is made.',
-        default=True,
-        cancel_on_no=True)
-
-    result = sql_client.instances.Restart(
-        sql_messages.SqlInstancesRestartRequest(
-            project=instance_ref.project,
-            instance=instance_ref.instance))
-
-    operation_ref = client.resource_parser.Create(
-        'sql.operations',
-        operation=result.operation,
-        project=instance_ref.project,
-        instance=instance_ref.instance,
-    )
-
-    if args.async:
-      return sql_client.operations.Get(
-          sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project,
-              instance=operation_ref.instance,
-              operation=operation_ref.operation))
-
-    operations.OperationsV1Beta3.WaitForOperation(
-        sql_client, operation_ref, 'Restarting Cloud SQL instance')
-
-    log.status.write(
-        'Restarted [{resource}].\n'.format(resource=instance_ref))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class RestartBeta(_BaseRestart, base.Command):
-  """Restarts a Cloud SQL instance."""
 
   def Run(self, args):
     """Restarts a Cloud SQL instance.
@@ -143,8 +76,7 @@ class RestartBeta(_BaseRestart, base.Command):
 
     result_operation = sql_client.instances.Restart(
         sql_messages.SqlInstancesRestartRequest(
-            project=instance_ref.project,
-            instance=instance_ref.instance))
+            project=instance_ref.project, instance=instance_ref.instance))
 
     operation_ref = client.resource_parser.Create(
         'sql.operations',
@@ -154,11 +86,9 @@ class RestartBeta(_BaseRestart, base.Command):
     if args.async:
       return sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project,
-              operation=operation_ref.operation))
+              project=operation_ref.project, operation=operation_ref.operation))
 
     operations.OperationsV1Beta4.WaitForOperation(
         sql_client, operation_ref, 'Restarting Cloud SQL instance')
 
-    log.status.write(
-        'Restarted [{resource}].\n'.format(resource=instance_ref))
+    log.status.write('Restarted [{resource}].\n'.format(resource=instance_ref))

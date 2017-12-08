@@ -1,4 +1,4 @@
-# Copyright (C) 2003-2007, 2009, 2010 Nominum, Inc.
+# Copyright (C) 2003-2007, 2009-2011 Nominum, Inc.
 #
 # Permission to use, copy, modify, and distribute this software and its
 # documentation for any purpose with or without fee is hereby granted,
@@ -15,10 +15,11 @@
 
 import dns.rdtypes.nsbase
 
+
 class CNAME(dns.rdtypes.nsbase.NSBase):
+
     """CNAME record
 
     Note: although CNAME is officially a singleton type, dnspython allows
     non-singleton CNAME rdatasets because such sets have been commonly
     used by BIND and other nameservers for load balancing."""
-    pass

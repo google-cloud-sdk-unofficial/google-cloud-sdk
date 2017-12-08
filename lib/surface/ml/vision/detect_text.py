@@ -61,5 +61,5 @@ class DetectText(base.Command):
         language_hints=args.language_hints
     )
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return 'json'

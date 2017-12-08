@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Lists all available service tiers for Google Cloud SQL."""
-
 
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.calliope import base
@@ -49,8 +47,9 @@ class _BaseList(object):
     sql_client = client.sql_client
     sql_messages = client.sql_messages
 
-    result = sql_client.tiers.List(sql_messages.SqlTiersListRequest(
-        project=properties.VALUES.core.project.Get(required=True)))
+    result = sql_client.tiers.List(
+        sql_messages.SqlTiersListRequest(
+            project=properties.VALUES.core.project.Get(required=True)))
     return iter(result.items)
 
 

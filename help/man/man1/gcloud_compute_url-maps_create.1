@@ -11,7 +11,7 @@ gcloud compute url\-maps create \- create a URL map
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute url\-maps create\fR \fINAME\fR (\fB\-\-default\-backend\-bucket\fR=\fIDEFAULT_BACKEND_BUCKET\fR\ |\ \fB\-\-default\-service\fR=\fIDEFAULT_SERVICE\fR) [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute url\-maps create\fR \fIURL_MAP_NAME\fR (\fB\-\-default\-backend\-bucket\fR=\fIDEFAULT_BACKEND_BUCKET\fR\ |\ \fB\-\-default\-service\fR=\fIDEFAULT_SERVICE\fR) [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -42,7 +42,7 @@ add\-host\-rule\fR.
 
 .RS 2m
 .TP 2m
-\fINAME\fR
+\fIURL_MAP_NAME\fR
 The name of the URL map.
 
 
@@ -81,6 +81,9 @@ An optional, textual description for the URL map.
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.

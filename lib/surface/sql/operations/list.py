@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """List all instance operations.
 
 Lists all instance operations that have been performed on the given
@@ -65,6 +64,5 @@ class List(base.ListCommand):
     return list_pager.YieldFromList(
         sql_client.operations,
         sql_messages.SqlOperationsListRequest(
-            project=instance_ref.project,
-            instance=instance_ref.instance),
+            project=instance_ref.project, instance=instance_ref.instance),
         limit=args.limit)

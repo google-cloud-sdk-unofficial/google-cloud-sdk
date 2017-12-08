@@ -17,8 +17,6 @@
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
@@ -99,10 +97,7 @@ class Create(base.CreateCommand):
       log.warn('include-children only has an effect for sinks at the folder '
                'or organization level')
 
-    sink_ref = resources.REGISTRY.Parse(
-        args.sink_name,
-        params={'projectsId': properties.VALUES.core.project.GetOrFail},
-        collection='logging.projects.sinks')
+    sink_ref = util.GetSinkReference(args.sink_name, None, None, args)
 
     sink_data = {
         'name': sink_ref.sinksId,

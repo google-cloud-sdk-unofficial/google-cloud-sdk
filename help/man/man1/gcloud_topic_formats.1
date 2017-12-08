@@ -13,32 +13,29 @@ gcloud topic formats \- resource formats supplementary help
 
 Most \fBgcloud\fR commands return a list of resources on success. By default
 they are pretty\-printed on the standard output. The
-\fB\-\-format=\fR\fINAME\fR[\fIATTRIBUTES\fR]\fB(\fR\fIPROJECTION\fR\fB)\fR flag
-changes the default output:
+\fB\-\-format=\fR\fINAME\fR[\fIATTRIBUTES\fR]\fB(\fR\fIPROJECTION\fR\fB)\fR and
+\fB\-\-filter=\fR\fIEXPRESSION\fR flags along with projections can be used to
+format and change the default output to a more meaningful result.
 
-.RS 2m
-.TP 2m
-\fINAME\fR
-The format name.
-.TP 2m
-\fIATTRIBUTES\fR
-Format specific attributes. Resource formats are described in detail below.
-.TP 2m
-\fIPROJECTION\fR
-A list of resource keys that selects the data listed. For details run $ gcloud
-topic projections.
-.TP 2m
-\fIresource keys\fR
-Keys are names for resource items. For details run $ gcloud topic
-resource\-keys. Most \fBgcloud\fR \fBlist\fR commands have a
-\fB\-\-filter=\fR\fIEXPRESSION\fR flag that selects resources to be listed. For
-details run $ gcloud topic filters.
+To change the default output format of a command, use the \-\-format flag.
+Resource formats are described in detail below.
+
+To select resources to be listed, use the \-\-filter flag. For details run $
+gcloud topic filters.
+
+To reach resource items through a unique path of names from the root, use
+resource\-keys. For details run $ gcloud topic resource\-keys.
+
+To list a subset of resource keys in a resource, use projections. For details
+run $ gcloud topic projections.
 
 
-.RE
-.sp
 
 .SH "Formats"
+
+A format expression is used to change the default output format of a command.
+Many output formats are available; some for pretty printing human\-readable
+output and others for returning machine\-readable output.
 
 A format expression has 3 parts:
 
@@ -333,6 +330,20 @@ $ gcloud compute instances list \e
  zone:title=zone, status)'
 .RE
 
+List a nested table of the quotas of a region:
+
+.RS 2m
+$ gcloud compute regions describe us\-central1 \e
+    \-\-format="table(quotas:format='table(metric,limit,usage)')"
+.RE
+
+Print a flattened list of global quotas in CSV format:
+
+.RS 2m
+$ gcloud compute project\-info describe \-\-flatten='quotas[]' \e
+    \-\-format='csv(quotas.metric,quotas.limit,quotas.usage)'
+.RE
+
 List the disk interfaces for all compute instances as a compact comma separated
 list:
 
@@ -352,3 +363,53 @@ List the project authenticated user email address:
 .RS 2m
 $ gcloud info \-\-format='value(config.account)'
 .RE
+
+List resources filtered on repeated fields by projecting subfields on a repeated
+message:
+
+.RS 2m
+$ gcloud alpha genomics readgroupsets list \e
+    \-\-format 'default(readGroups[].name)'
+.RE
+
+Return the scope of the current instance:
+
+.RS 2m
+$ gcloud compute zones list \-\-format="value(selfLink.scope())"
+.RE
+
+selfLink is a fully qualified name. (e.g.
+\'https://www.googleapis.com/compute/v1/projects/my\-project/zones/us\-central1\-a')
+The previous example returns a list of just the names of each zone (e.g.
+\'us\-central1\-a'). This is because selfLink.scope() grabs the last part of the
+URL segment. To extract selfLink starting from /projects and return the scope of
+the current instance:
+
+.RS 2m
+$ gcloud compute zones list \e
+    \-\-format="value(selfLink.scope(projects))"
+.RE
+
+List all scopes enabled for a Compute Engine instance and flatten the
+multi\-valued resource:
+
+.RS 2m
+$ gcloud compute instances list \e
+    \-\-format="flattened(name,serviceAccounts[].email,serviceAccounts\e
+[].scopes[].basename())"
+.RE
+
+Display a multi\-valued resource's service account keys with the corresponding
+service account, extracting just the first '/' delimited part with segment(0):
+
+.RS 2m
+$ gcloud iam service\-accounts keys list \e
+    \-\-iam\-account \e
+    svc\-2\-123@test\-minutia\-123.iam.gserviceaccount.com \e
+    \-\-project test\-minutia\-123 \e
+    \-\-format="table(name.scope(serviceAccounts).segment(0):label='se\e
+rvice Account',name.scope(keys):label='keyID',validAfterTime)"
+.RE
+
+The last example returns a table with service account names without their full
+paths, keyID and validity.

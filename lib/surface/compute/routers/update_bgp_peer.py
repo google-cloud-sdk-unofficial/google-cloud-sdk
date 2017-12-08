@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command for updating a BGP peer to a router."""
+"""Command for updating a BGP peer on a Google Compute Engine router."""
 
 import copy
 
@@ -20,22 +20,11 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.command_lib.compute.routers import router_utils
-from googlecloudsdk.core import exceptions
-
-
-class PeerNotFoundError(exceptions.Error):
-  """Raised when a peer is not found."""
-
-  def __init__(self, name):
-    self.name = name
-    msg = 'peer `{0}` not found'.format(name)
-    super(PeerNotFoundError, self
-         ).__init__(msg)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class UpdateBgpPeer(base.UpdateCommand):
-  """Update a BGP peer on a router."""
+  """Update a BGP peer on a Google Compute Engine router."""
 
   ROUTER_ARG = None
 
@@ -72,14 +61,15 @@ class UpdateBgpPeer(base.UpdateCommand):
 
 UpdateBgpPeer.detailed_help = {
     'DESCRIPTION': """
-        *{command}* is used to update a BGP peer on a router.
+        *{command}* is used to update a BGP peer on a Google Compute Engine
+        router.
         """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateBgpPeerAlpha(base.UpdateCommand):
-  """Update a BGP peer on a router."""
+  """Update a BGP peer on a Google Compute Engine router."""
 
   ROUTER_ARG = None
 
@@ -92,9 +82,8 @@ class UpdateBgpPeerAlpha(base.UpdateCommand):
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    api_client = holder.client.apitools_client
     messages = holder.client.messages
-    service = api_client.routers
+    service = holder.client.apitools_client.routers
 
     ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
 
@@ -138,13 +127,7 @@ class UpdateBgpPeerAlpha(base.UpdateCommand):
 def _UpdateBgpPeer(resource, args):
   """Updates common attributes of a BGP peer based on flag arguments."""
 
-  peer = None
-  for p in resource.bgpPeers:
-    if p.name == args.peer_name:
-      peer = p
-      break
-  if peer is None:
-    raise PeerNotFoundError(args.peer_name)
+  peer = router_utils.FindBgpPeerOrRaise(resource, args.peer_name)
 
   attrs = {
       'interfaceName': args.interface,
@@ -162,6 +145,7 @@ def _UpdateBgpPeer(resource, args):
 
 UpdateBgpPeerAlpha.detailed_help = {
     'DESCRIPTION': """
-        *{command}* is used to update a BGP peer on a router.
+        *{command}* is used to update a BGP peer on a Google Compute Engine
+        router.
         """,
 }

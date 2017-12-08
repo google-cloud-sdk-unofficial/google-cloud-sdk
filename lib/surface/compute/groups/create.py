@@ -13,14 +13,17 @@
 # limitations under the License.
 """Command for creating groups."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.groups import flags
 from googlecloudsdk.core import properties
 
 
-class Create(base_classes.BaseAsyncCreator):
+class Create(base.CreateCommand):
   """Create Google Compute Engine groups."""
 
   @staticmethod
   def Args(parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     parser.add_argument(
         'names',
         metavar='NAME',
@@ -31,26 +34,13 @@ class Create(base_classes.BaseAsyncCreator):
         '--description',
         help='An optional, textual description for the group being created.')
 
-  @property
-  def service(self):
-    return self.clouduseraccounts.groups
+  def Run(self, args):
+    """Issues requests necessary for adding users."""
+    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    holder = base_classes.ComputeUserAccountsApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'Insert'
-
-  @property
-  def resource_type(self):
-    return 'groups'
-
-  @property
-  def messages(self):
-    return self.clouduseraccounts.MESSAGES_MODULE
-
-  def CreateRequests(self, args):
-    """Returns a list of requests necessary for adding users."""
-
-    group_refs = [self.clouduseraccounts_resources.Parse(
+    group_refs = [holder.resources.Parse(
         group,
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='clouduseraccounts.groups') for group in args.names]
@@ -58,17 +48,17 @@ class Create(base_classes.BaseAsyncCreator):
     requests = []
     for group_ref in group_refs:
 
-      group = self.messages.Group(
+      group = client.MESSAGES_MODULE.Group(
           name=group_ref.Name(),
           description=args.description,
       )
 
-      request = self.messages.ClouduseraccountsGroupsInsertRequest(
-          project=self.project,
+      request = client.MESSAGES_MODULE.ClouduseraccountsGroupsInsertRequest(
+          project=group_ref.project,
           group=group)
-      requests.append(request)
+      requests.append((client.groups, 'Insert', request))
 
-    return requests
+    return compute_holder.client.MakeRequests(requests)
 
 
 Create.detailed_help = {

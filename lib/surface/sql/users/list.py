@@ -57,5 +57,6 @@ class List(base.ListCommand):
 
     project_id = properties.VALUES.core.project.Get(required=True)
 
-    return sql_client.users.List(sql_messages.SqlUsersListRequest(
-        project=project_id, instance=args.instance)).items
+    return sql_client.users.List(
+        sql_messages.SqlUsersListRequest(
+            project=project_id, instance=args.instance)).items

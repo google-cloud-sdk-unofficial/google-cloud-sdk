@@ -24,7 +24,7 @@ class RemoveIamPolicyBinding(base_classes.BaseIamCommand):
   """Remove an IAM policy binding from a service account.
 
   This command removes a policy binding to the IAM policy of a service account,
-  given an IAM-ACCOUNT and the binding.
+  given an IAM_ACCOUNT and the binding.
   """
 
   detailed_help = iam_util.GetDetailedHelpForRemoveIamPolicyBinding(

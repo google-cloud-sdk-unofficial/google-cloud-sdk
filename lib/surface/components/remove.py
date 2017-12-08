@@ -48,7 +48,7 @@ class Remove(base.SilentCommand):
   def Args(parser):
     parser.add_argument(
         'component_ids',
-        metavar='COMPONENT-ID',
+        metavar='COMPONENT_ID',
         nargs='+',
         help='The IDs of the components to be removed.')
     parser.add_argument(

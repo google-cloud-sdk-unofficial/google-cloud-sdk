@@ -29,10 +29,11 @@ import pydoc  # used for importing python classes from their FQN
 import timeit
 
 
-import numpy as np
 
-from google.cloud.ml.prediction import Model
-from google.cloud.ml.prediction import Servable
+from _interfaces import Model
+from _interfaces import Servable
+
+import numpy as np
 
 import tensorflow.contrib   # pylint: disable=unused-import
 from tensorflow.python.client import session as tf_session

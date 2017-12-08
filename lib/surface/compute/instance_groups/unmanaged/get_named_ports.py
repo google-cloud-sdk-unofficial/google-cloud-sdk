@@ -24,7 +24,7 @@ from googlecloudsdk.core import properties
 class GetNamedPorts(base.ListCommand):
   """Implements get-named-ports command, GA version."""
 
-  def Format(self, unused_args):
+  def DeprecatedFormat(self, unused_args):
     return 'table(name, port)'
 
   @staticmethod
@@ -53,7 +53,7 @@ class GetNamedPorts(base.ListCommand):
 class GetNamedPortsBeta(base.ListCommand):
   """Implements get-named-ports command, alpha, and beta versions."""
 
-  def Format(self, unused_args):
+  def DeprecatedFormat(self, unused_args):
     return 'table(name, port)'
 
   @staticmethod

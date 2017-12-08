@@ -71,10 +71,11 @@ class Delete(base.DeleteCommand):
         cancel_on_no=True)
 
     result_operation = sql_client.users.Delete(
-        sql_messages.SqlUsersDeleteRequest(project=instance_ref.project,
-                                           instance=instance_ref.Name(),
-                                           name=args.username,
-                                           host=args.host))
+        sql_messages.SqlUsersDeleteRequest(
+            project=instance_ref.project,
+            instance=instance_ref.Name(),
+            name=args.username,
+            host=args.host))
     operation_ref = client.resource_parser.Create(
         'sql.operations',
         operation=result_operation.name,
@@ -82,7 +83,6 @@ class Delete(base.DeleteCommand):
     if args.async:
       return sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project,
-              operation=operation_ref.operation))
+              project=operation_ref.project, operation=operation_ref.operation))
     operations.OperationsV1Beta4.WaitForOperation(sql_client, operation_ref,
                                                   'Deleting Cloud SQL user')

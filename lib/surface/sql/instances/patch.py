@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Updates the settings of a Cloud SQL instance."""
 
 from apitools.base.py import encoding
@@ -36,7 +35,8 @@ class _Result(object):
     self.old = old
 
 
-class _BasePatch(object):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class Patch(base.UpdateCommand):
   """Updates the settings of a Cloud SQL instance."""
 
   @staticmethod
@@ -55,6 +55,10 @@ class _BasePatch(object):
         action='store_true',
         default=None,  # Tri-valued: None => don't change the setting.
         help='The instance must be assigned an IP address.')
+    parser.add_argument(
+        '--async',
+        action='store_true',
+        help='Do not wait for the operation to complete.')
     gae_apps_group = parser.add_mutually_exclusive_group()
     gae_apps_group.add_argument(
         '--authorized-gae-apps',
@@ -116,11 +120,28 @@ class _BasePatch(object):
         help=('Clear the database flags set on the instance. '
               'WARNING: Instance will be restarted.'))
     parser.add_argument(
+        '--cpu',
+        type=int,
+        required=False,
+        help='A whole number value indicating how many cores are desired in '
+        'the machine. Both --cpu and --memory must be specified if a custom '
+        'machine type is desired, and the --tier flag must be omitted.')
+    parser.add_argument(
+        '--diff',
+        action='store_true',
+        help='Show what changed as a result of the update.')
+    parser.add_argument(
         '--enable-bin-log',
         action='store_true',
         default=None,  # Tri-valued: None => don't change the setting.
         help=('Enable binary log. If backup configuration is disabled, binary '
               'log should be disabled as well.'))
+    parser.add_argument(
+        '--enable-database-replication',
+        action='store_true',
+        default=None,  # Tri-valued: None => don't change the setting.
+        help=('Enable database replication. Applicable only for read replica '
+              'instance(s). WARNING: Instance will be restarted.'))
     parser.add_argument(
         '--follow-gae-app',
         required=False,
@@ -137,12 +158,47 @@ class _BasePatch(object):
         completion_resource='sql.instances',
         help='Cloud SQL instance ID.')
     parser.add_argument(
+        '--maintenance-release-channel',
+        choices={
+            'production': 'Production updates are stable and recommended '
+                          'for applications in production.',
+            'preview': 'Preview updates release prior to production '
+                       'updates. You may wish to use the preview channel '
+                       'for dev/test applications so that you can preview '
+                       'their compatibility with your application prior '
+                       'to the production release.'
+        },
+        type=str.lower,
+        help="Which channel's updates to apply during the maintenance window.")
+    parser.add_argument(
+        '--maintenance-window-any',
+        action='store_true',
+        help='Removes the user-specified maintenance window.')
+    parser.add_argument(
+        '--maintenance-window-day',
+        choices=arg_parsers.DayOfWeek.DAYS,
+        type=arg_parsers.DayOfWeek.Parse,
+        help='Day of week for maintenance window, in UTC time zone.')
+    parser.add_argument(
+        '--maintenance-window-hour',
+        type=arg_parsers.BoundedInt(lower_bound=0, upper_bound=23),
+        help='Hour of day for maintenance window, in UTC time zone.')
+    parser.add_argument(
         '--pricing-plan',
         '-p',
         required=False,
         choices=['PER_USE', 'PACKAGE'],
         help=('First Generation instances only. The pricing plan for this '
               'instance.'))
+    parser.add_argument(
+        '--memory',
+        type=arg_parsers.BinarySize(),
+        required=False,
+        help='A whole number value indicating how much memory is desired in '
+        'the machine. A size unit should be provided (eg. 3072MiB or 9GiB) - '
+        'if no units are specified, GiB is assumed. Both --cpu and --memory '
+        'must be specified if a custom machine type is desired, and the --tier '
+        'flag must be omitted.')
     parser.add_argument(
         '--replication',
         required=False,
@@ -155,6 +211,24 @@ class _BasePatch(object):
         help=('mysqld should default to \'REQUIRE X509\' for users connecting '
               'over IP.'))
     parser.add_argument(
+        '--storage-auto-increase',
+        action='store_true',
+        default=None,
+        help='Storage size can be increased, but it cannot be '
+        'decreased; storage increases are permanent for the life of the '
+        'instance. With this setting enabled, a spike in storage requirements '
+        'can result in permanently increased storage costs for your instance. '
+        'However, if an instance runs out of available space, it can result in '
+        'the instance going offline, dropping existing connections.')
+    parser.add_argument(
+        '--storage-size',
+        type=arg_parsers.BinarySize(
+            lower_bound='10GB',
+            upper_bound='10230GB',
+            suggested_binary_size_scales=['GB']),
+        help='Amount of storage allocated to the instance. Must be an integer '
+        'number of GB between 10GB and 10230GB inclusive.')
+    parser.add_argument(
         '--tier',
         '-t',
         required=False,
@@ -164,30 +238,18 @@ class _BasePatch(object):
               '(e.g., db-f1-micro) apply. A complete list of tiers is '
               'available here: https://cloud.google.com/sql/pricing. WARNING: '
               'Instance will be restarted.'))
-    parser.add_argument(
-        '--enable-database-replication',
-        action='store_true',
-        default=None,  # Tri-valued: None => don't change the setting.
-        help=('Enable database replication. Applicable only for read replica '
-              'instance(s). WARNING: Instance will be restarted.'))
-    parser.add_argument(
-        '--async',
-        action='store_true',
-        help='Do not wait for the operation to complete.')
-    parser.add_argument(
-        '--diff',
-        action='store_true',
-        help='Show what changed as a result of the update.')
 
   def _PrintAndConfirmWarningMessage(self, args):
     """Print and confirm warning indicating the effect of applying the patch."""
     continue_msg = None
-    if any([args.tier, args.database_flags, args.clear_database_flags,
-            args.enable_database_replication is not None]):
-      continue_msg = ('WARNING: This patch modifies a value that requires '
-                      'your instance to be restarted. Submitting this patch '
-                      'will immediately restart your instance if it\'s running.'
-                     )
+    if any([
+        args.tier, args.database_flags, args.clear_database_flags,
+        args.enable_database_replication is not None
+    ]):
+      continue_msg = (
+          'WARNING: This patch modifies a value that requires '
+          'your instance to be restarted. Submitting this patch '
+          'will immediately restart your instance if it\'s running.')
     else:
       if any([args.follow_gae_app, args.gce_zone]):
         continue_msg = ('WARNING: This patch modifies the zone your instance '
@@ -212,159 +274,12 @@ class _BasePatch(object):
     log.status.write(
         'The following message will be used for the patch API method.\n')
     log.status.write(
-        encoding.MessageToJson(
-            patch_instance, include_fields=cleared_fields)+'\n')
+        encoding.MessageToJson(patch_instance, include_fields=cleared_fields) +
+        '\n')
 
     self._PrintAndConfirmWarningMessage(args)
 
     return cleared_fields
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Patch(_BasePatch, base.UpdateCommand):
-  """Updates the settings of a Cloud SQL instance."""
-
-  def Run(self, args):
-    """Updates settings of a Cloud SQL instance using the patch api method.
-
-    Args:
-      args: argparse.Namespace, The arguments that this command was invoked
-          with.
-
-    Returns:
-      A dict object representing the operations resource describing the patch
-      operation if the patch was successful.
-    Raises:
-      HttpException: A http error response was received while executing api
-          request.
-      ToolException: An error other than http error occured while executing the
-          command.
-    """
-    if args.diff and not args.IsSpecified('format'):
-      args.format = 'diff(old, new)'
-
-    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
-    sql_client = client.sql_client
-    sql_messages = client.sql_messages
-
-    validate.ValidateInstanceName(args.instance)
-    instance_ref = client.resource_parser.Parse(
-        args.instance,
-        params={'project': properties.VALUES.core.project.GetOrFail},
-        collection='sql.instances')
-
-    console_io.PromptContinue(
-        message='When adding a new IP address to authorized networks, include '
-                'existing authorized IP addresses. Any existing authorized IP '
-                'address not included will be de-authorized.',
-        default=True,
-        cancel_on_no=True)
-
-    original_instance_resource = sql_client.instances.Get(
-        sql_messages.SqlInstancesGetRequest(
-            project=instance_ref.project,
-            instance=instance_ref.instance))
-
-    patch_instance = instances.InstancesV1Beta3.ConstructInstanceFromArgs(
-        sql_messages, args, original=original_instance_resource)
-    patch_instance.project = instance_ref.project
-    patch_instance.instance = instance_ref.instance
-
-    cleared_fields = self._GetConfirmedClearedFields(args, patch_instance)
-
-    with sql_client.IncludeFields(cleared_fields):
-      result = sql_client.instances.Patch(patch_instance)
-
-    operation_ref = client.resource_parser.Create(
-        'sql.operations',
-        operation=result.operation,
-        project=instance_ref.project,
-        instance=instance_ref.instance,
-    )
-
-    if args.async:
-      return sql_client.operations.Get(
-          sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project,
-              instance=operation_ref.instance,
-              operation=operation_ref.operation))
-
-    operations.OperationsV1Beta3.WaitForOperation(
-        sql_client, operation_ref, 'Patching Cloud SQL instance')
-
-    log.UpdatedResource(instance_ref)
-
-    changed_instance_resource = sql_client.instances.Get(
-        sql_messages.SqlInstancesGetRequest(
-            project=instance_ref.project,
-            instance=instance_ref.instance))
-    return _Result(changed_instance_resource, original_instance_resource)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class PatchBeta(_BasePatch, base.UpdateCommand):
-  """Updates the settings of a Cloud SQL instance."""
-
-  @staticmethod
-  def Args(parser):
-    _BasePatch.Args(parser)
-    base.Argument(
-        '--storage-auto-increase',
-        action='store_true',
-        default=None,
-        help='Storage size can be increased, but it cannot be '
-        'decreased; storage increases are permanent for the life of the '
-        'instance. With this setting enabled, a spike in storage requirements '
-        'can result in permanently increased storage costs for your instance. '
-        'However, if an instance runs out of available space, it can result in '
-        'the instance going offline, dropping existing connections.'
-    ).AddToParser(parser)
-    parser.add_argument(
-        '--storage-size',
-        type=arg_parsers.BinarySize(lower_bound='10GB', upper_bound='10230GB',
-                                    suggested_binary_size_scales=['GB']),
-        help='Amount of storage allocated to the instance. Must be an integer '
-             'number of GB between 10GB and 10230GB inclusive.')
-    parser.add_argument(
-        '--maintenance-release-channel',
-        choices={'production': 'Production updates are stable and recommended '
-                               'for applications in production.',
-                 'preview': 'Preview updates release prior to production '
-                            'updates. You may wish to use the preview channel '
-                            'for dev/test applications so that you can preview '
-                            'their compatibility with your application prior '
-                            'to the production release.'},
-        type=str.lower,
-        help="Which channel's updates to apply during the maintenance window.")
-    parser.add_argument(
-        '--maintenance-window-day',
-        choices=arg_parsers.DayOfWeek.DAYS,
-        type=arg_parsers.DayOfWeek.Parse,
-        help='Day of week for maintenance window, in UTC time zone.')
-    parser.add_argument(
-        '--maintenance-window-hour',
-        type=arg_parsers.BoundedInt(lower_bound=0, upper_bound=23),
-        help='Hour of day for maintenance window, in UTC time zone.')
-    parser.add_argument(
-        '--maintenance-window-any',
-        action='store_true',
-        help='Removes the user-specified maintenance window.')
-    parser.add_argument(
-        '--cpu',
-        type=int,
-        required=False,
-        help='A whole number value indicating how many cores are desired in '
-        'the machine. Both --cpu and --memory must be specified if a custom '
-        'machine type is desired, and the --tier flag must be omitted.')
-    parser.add_argument(
-        '--memory',
-        type=arg_parsers.BinarySize(),
-        required=False,
-        help='A whole number value indicating how much memory is desired in '
-        'the machine. A size unit should be provided (eg. 3072MiB or 9GiB) - '
-        'if no units are specified, GiB is assumed. Both --cpu and --memory '
-        'must be specified if a custom machine type is desired, and the --tier '
-        'flag must be omitted.')
 
   def Run(self, args):
     """Updates settings of a Cloud SQL instance using the patch api method.
@@ -397,15 +312,14 @@ class PatchBeta(_BasePatch, base.UpdateCommand):
 
     console_io.PromptContinue(
         message='When adding a new IP address to authorized networks, include '
-                'existing authorized IP addresses. Any existing authorized IP '
-                'address not included will be de-authorized.',
+        'existing authorized IP addresses. Any existing authorized IP '
+        'address not included will be de-authorized.',
         default=True,
         cancel_on_no=True)
 
     original_instance_resource = sql_client.instances.Get(
         sql_messages.SqlInstancesGetRequest(
-            project=instance_ref.project,
-            instance=instance_ref.instance))
+            project=instance_ref.project, instance=instance_ref.instance))
 
     patch_instance = instances.InstancesV1Beta4.ConstructInstanceFromArgs(
         sql_messages, args, original=original_instance_resource)
@@ -432,16 +346,14 @@ class PatchBeta(_BasePatch, base.UpdateCommand):
     if args.async:
       return sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project,
-              operation=operation_ref.operation))
+              project=operation_ref.project, operation=operation_ref.operation))
 
-    operations.OperationsV1Beta4.WaitForOperation(
-        sql_client, operation_ref, 'Patching Cloud SQL instance')
+    operations.OperationsV1Beta4.WaitForOperation(sql_client, operation_ref,
+                                                  'Patching Cloud SQL instance')
 
     log.UpdatedResource(instance_ref)
 
     changed_instance_resource = sql_client.instances.Get(
         sql_messages.SqlInstancesGetRequest(
-            project=instance_ref.project,
-            instance=instance_ref.instance))
+            project=instance_ref.project, instance=instance_ref.instance))
     return _Result(changed_instance_resource, original_instance_resource)

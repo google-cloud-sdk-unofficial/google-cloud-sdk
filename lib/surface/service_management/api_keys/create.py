@@ -14,9 +14,9 @@
 
 """Implementation of the service-management api-keys create command."""
 
+from googlecloudsdk.api_lib.service_management import exceptions
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import properties
 
 
@@ -96,13 +96,13 @@ class Create(base.Command):
       try:
         _, fingerprint = package.split(',', 1)
       except ValueError:
-        raise exceptions.ToolException(
+        raise exceptions.InvalidConditionError(
             'Package %s has incorrect format. It should be of the form '
             '\'[PACKAGE_NAME],[FINGERPRINT]\'.' % package)
 
       # Validate the fingerprint against the regex
       if not services_util.ValidateFingerprint(fingerprint):
-        raise exceptions.ToolException(
+        raise exceptions.FingerprintError(
             'Invalid SHA fingerprint provided (%s).' % fingerprint)
 
   def _ConstructApiKeyRequest(self, project, key_type, allowed_entities,

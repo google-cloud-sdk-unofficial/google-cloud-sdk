@@ -28,6 +28,7 @@ class List(base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
     parser.add_argument(
         '--api',
+        completer=apis.APICompleter,
         help='The name of the API to get the collections for.')
     apis.API_VERSION_FLAG.AddToParser(parser)
     parser.display_info.AddFormat("""

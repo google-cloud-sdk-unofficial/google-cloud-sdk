@@ -75,8 +75,8 @@ class List(base.ListCommand):
     client = self.context['dataproc_client']
     messages = self.context['dataproc_messages']
 
-    project = properties.VALUES.core.project.Get(required=True)
-    region = self.context['dataproc_region']
+    project = properties.VALUES.core.project.GetOrFail()
+    region = properties.VALUES.dataproc.region.GetOrFail()
 
     request = self.GetRequest(messages, project, region, args)
 

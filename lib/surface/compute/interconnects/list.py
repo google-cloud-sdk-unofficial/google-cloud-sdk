@@ -43,10 +43,7 @@ class List(base.ListCommand):
 
     project = properties.VALUES.core.project.GetOrFail()
 
-    if args.filter:
-      filter_expr = filter_rewrite.Rewriter().Rewrite(args.filter)
-    else:
-      filter_expr = None
+    args.filter, filter_expr = filter_rewrite.Rewriter().Rewrite(args.filter)
     request = messages.ComputeInterconnectsListRequest(
         project=project, filter=filter_expr)
 

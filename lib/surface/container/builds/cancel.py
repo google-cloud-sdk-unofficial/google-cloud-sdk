@@ -63,5 +63,5 @@ class Cancel(base.Command):
     log.status.write('Cancelled [{r}].\n'.format(r=str(build_ref)))
     return canceled_build
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return None

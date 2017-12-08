@@ -87,9 +87,15 @@ class GetLogs(base.ListCommand):
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
 
-    Yields:
-      Objects representing log entries.
+    Returns:
+      A generator of objects representing log entries.
     """
+    if not args.IsSpecified('format'):
+      args.format = self._Format(args)
+
+    return self._Run(args)
+
+  def _Run(self, args):
     region = properties.VALUES.functions.region.Get()
     log_filter = ['resource.type="cloud_function"',
                   'resource.labels.region="%s"' % region,
@@ -143,7 +149,7 @@ class GetLogs(base.ListCommand):
         row['time_utc'] = util.FormatTimestamp(entry.timestamp)
       yield row
 
-  def Format(self, args):
+  def _Format(self, args):
     fields = []
     if args.show_log_levels:
       fields.append('level')

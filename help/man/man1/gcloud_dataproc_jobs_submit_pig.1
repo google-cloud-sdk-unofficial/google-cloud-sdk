@@ -11,7 +11,7 @@ gcloud dataproc jobs submit pig \- submit a Pig job to a cluster
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud dataproc jobs submit pig\fR \fB\-\-cluster\fR=\fICLUSTER\fR (\fB\-\-execute\fR=\fIQUERY\fR,\ \fB\-e\fR\ \fIQUERY\fR\ |\ \fB\-\-file\fR=\fIFILE\fR,\ \fB\-f\fR\ \fIFILE\fR) [\fB\-\-async\fR] [\fB\-\-bucket\fR=\fIBUCKET\fR] [\fB\-\-continue\-on\-failure\fR] [\fB\-\-driver\-log\-levels\fR=[\fIPACKAGE\fR=\fILEVEL\fR,...]] [\fB\-\-jars\fR=[\fIJAR\fR,...]] [\fB\-\-labels\fR=[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-params\fR=[\fIPARAM\fR=\fIVALUE\fR,...]] [\fB\-\-properties\fR=[\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud dataproc jobs submit pig\fR \fB\-\-cluster\fR=\fICLUSTER\fR (\fB\-\-execute\fR=\fIQUERY\fR,\ \fB\-e\fR\ \fIQUERY\fR\ |\ \fB\-\-file\fR=\fIFILE\fR,\ \fB\-f\fR\ \fIFILE\fR) [\fB\-\-async\fR] [\fB\-\-bucket\fR=\fIBUCKET\fR] [\fB\-\-continue\-on\-failure\fR] [\fB\-\-driver\-log\-levels\fR=[\fIPACKAGE\fR=\fILEVEL\fR,...]] [\fB\-\-jars\fR=[\fIJAR\fR,...]] [\fB\-\-labels\fR=[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-params\fR=[\fIPARAM\fR=\fIVALUE\fR,...]] [\fB\-\-properties\fR=[\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -87,9 +87,12 @@ A list of key value pairs to configure Pig.
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.
 
 
 

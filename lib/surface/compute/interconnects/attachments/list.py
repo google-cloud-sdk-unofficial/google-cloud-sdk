@@ -50,10 +50,8 @@ class List(base.ListCommand):
 
     messages = apis.GetMessagesModule('compute', 'alpha')
     project = properties.VALUES.core.project.GetOrFail()
-    if args.filter:
-      filter_expr = filter_rewrite.Rewriter().Rewrite(args.filter)
-    else:
-      filter_expr = None
+
+    args.filter, filter_expr = filter_rewrite.Rewriter().Rewrite(args.filter)
 
     request = messages.ComputeInterconnectAttachmentsAggregatedListRequest(
         project=project, filter=filter_expr)

@@ -39,5 +39,5 @@ class Version(base.Command):
     versions['Google Cloud SDK'] = config.CLOUD_SDK_VERSION
     return versions
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return 'flattened[no-pad,separator=" "]'

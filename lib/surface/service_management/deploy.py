@@ -18,10 +18,10 @@ import os
 
 from googlecloudsdk.api_lib.service_management import config_reporter
 from googlecloudsdk.api_lib.service_management import enable_api
+from googlecloudsdk.api_lib.service_management import exceptions
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
-from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
@@ -117,12 +117,6 @@ def _CommonArgs(parser):
             'specifications, and Google Service Configuration files in JSON '
             'and YAML formats are acceptable.'))
   base.ASYNC_FLAG.AddToParser(parser)
-
-
-class SwaggerUploadException(exceptions.Error):
-
-  def __init(self, message):
-    super(SwaggerUploadException, self).__init__(message)
 
 
 class _BaseDeploy(object):
@@ -234,9 +228,6 @@ class _BaseDeploy(object):
       The response from the Update API call.
 
     Raises:
-      SwaggerUploadException: if the provided service configuration files are
-          rejected by the Service Management API.
-
       BadFileExceptionn: if the provided service configuration files are
           invalid or cannot be read.
     """
@@ -298,9 +289,9 @@ class _BaseDeploy(object):
           # If this is a validate-only run, abort now, since this is not
           # supported in the ServiceConfigs.Create API
           if self.validate_only:
-            raise exceptions.Error('The --validate-only flag is not supported '
-                                   'when using normalized service configs as '
-                                   'input.')
+            raise exceptions.InvalidFlagError(
+                'The --validate-only flag is not supported when using '
+                'normalized service configs as input.')
 
           self.service_name = service_config_dict.get('name')
           config_files = []
@@ -345,7 +336,7 @@ class _BaseDeploy(object):
       self.service_config_id = push_config_result.id
 
     if not self.service_config_id:
-      raise calliope_exceptions.ToolException(
+      raise exceptions.InvalidConditionError(
           'Failed to retrieve Service Configuration Id.')
 
     # Run the Push Advisor to see if we need to warn the user of any

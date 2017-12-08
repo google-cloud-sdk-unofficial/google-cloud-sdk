@@ -98,7 +98,7 @@ class GetSerialPortOutput(base_classes.BaseCommand):
   def resource_type(self):
     return 'instances'
 
-  def Format(self, _):
+  def DeprecatedFormat(self, _):
     return 'value[no-quote](contents)'
 
 

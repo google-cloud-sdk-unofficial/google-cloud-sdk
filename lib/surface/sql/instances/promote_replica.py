@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Promotes Cloud SQL read replica to a stand-alone instance."""
 
 from googlecloudsdk.api_lib.sql import api_util
@@ -23,7 +22,8 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
-class _BasePromoteReplica(object):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class PromoteReplica(base.Command):
   """Promotes Cloud SQL read replica to a stand-alone instance."""
 
   @staticmethod
@@ -36,75 +36,10 @@ class _BasePromoteReplica(object):
           allowed.
     """
     base.ASYNC_FLAG.AddToParser(parser)
-    parser.add_argument('replica',
-                        completion_resource='sql.instances',
-                        help='Cloud SQL read replica ID.')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class PromoteReplica(_BasePromoteReplica, base.Command):
-  """Promotes Cloud SQL read replica to a stand-alone instance."""
-
-  def Run(self, args):
-    """Promotes Cloud SQL read replica to a stand-alone instance.
-
-    Args:
-      args: argparse.Namespace, The arguments that this command was invoked
-          with.
-
-    Returns:
-      A dict object representing the operations resource describing the
-      promote-replica operation if the promote-replica was successful.
-    Raises:
-      HttpException: An HTTP error response was received while executing api
-          request.
-      ToolException: An error other than an HTTP error occured while executing
-          the command.
-    """
-    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
-    sql_client = client.sql_client
-    sql_messages = client.sql_messages
-
-    validate.ValidateInstanceName(args.replica)
-    instance_ref = client.resource_parser.Parse(
-        args.replica,
-        params={'project': properties.VALUES.core.project.GetOrFail},
-        collection='sql.instances')
-
-    console_io.PromptContinue(
-        message='Once the read replica has been promoted to a stand-alone '
-        'instance it cannot be converted back.',
-        default=True,
-        cancel_on_no=True)
-
-    result = sql_client.instances.PromoteReplica(
-        sql_messages.SqlInstancesPromoteReplicaRequest(
-            project=instance_ref.project,
-            instance=instance_ref.instance))
-    operation_ref = client.resource_parser.Create(
-        'sql.operations',
-        operation=result.operation,
-        project=instance_ref.project,
-        instance=instance_ref.instance,
-    )
-
-    if args.async:
-      return sql_client.operations.Get(
-          sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project,
-              instance=operation_ref.instance,
-              operation=operation_ref.operation))
-
-    operations.OperationsV1Beta3.WaitForOperation(
-        sql_client, operation_ref, 'Promoting Cloud SQL replica')
-
-    log.status.write(
-        'Promoted [{instance}].\n'.format(instance=instance_ref))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class PromoteReplicaBeta(_BasePromoteReplica, base.Command):
-  """Promotes Cloud SQL read replica to a stand-alone instance."""
+    parser.add_argument(
+        'replica',
+        completion_resource='sql.instances',
+        help='Cloud SQL read replica ID.')
 
   def Run(self, args):
     """Promotes Cloud SQL read replica to a stand-alone instance.
@@ -140,21 +75,16 @@ class PromoteReplicaBeta(_BasePromoteReplica, base.Command):
 
     result = sql_client.instances.PromoteReplica(
         sql_messages.SqlInstancesPromoteReplicaRequest(
-            project=instance_ref.project,
-            instance=instance_ref.instance))
+            project=instance_ref.project, instance=instance_ref.instance))
     operation_ref = client.resource_parser.Create(
-        'sql.operations',
-        operation=result.name,
-        project=instance_ref.project)
+        'sql.operations', operation=result.name, project=instance_ref.project)
 
     if args.async:
       return sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project,
-              operation=operation_ref.operation))
+              project=operation_ref.project, operation=operation_ref.operation))
 
-    operations.OperationsV1Beta4.WaitForOperation(
-        sql_client, operation_ref, 'Promoting Cloud SQL replica')
+    operations.OperationsV1Beta4.WaitForOperation(sql_client, operation_ref,
+                                                  'Promoting Cloud SQL replica')
 
-    log.status.write(
-        'Promoted [{instance}].\n'.format(instance=instance_ref))
+    log.status.write('Promoted [{instance}].\n'.format(instance=instance_ref))

@@ -13,6 +13,7 @@
 # limitations under the License.
 """List images command."""
 
+import httplib
 from containerregistry.client.v2_2 import docker_http
 from containerregistry.client.v2_2 import docker_image
 from googlecloudsdk.api_lib.container.images import util
@@ -69,6 +70,12 @@ class List(base.ListCommand):
 
     Returns:
       Some value that we want to have printed later.
+
+    Raises:
+      exceptions.Error: If the repository could not be found, or access was
+      denied.
+      docker_http.V2DiagnosticException: Any other error occured while
+      accessing GCR.
     """
     repository_arg = args.repository
     if not repository_arg:
@@ -90,9 +97,9 @@ class List(base.ListCommand):
         images = [{'name': _DisplayName(c)} for c in r.children()]
         return images
       except docker_http.V2DiagnosticException as err:
-        if err.http_status_code == 403:
+        if err.status in [httplib.UNAUTHORIZED, httplib.FORBIDDEN]:
           raise exceptions.Error('Access denied: {0}'.format(repository))
-        elif err.http_status_code == 404:
+        elif err.status == httplib.NOT_FOUND:
           raise exceptions.Error('Not found: {0}'.format(repository))
         else:
           raise

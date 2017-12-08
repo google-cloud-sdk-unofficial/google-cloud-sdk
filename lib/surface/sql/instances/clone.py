@@ -23,7 +23,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import remote_completion
 
-
 _DETAILED_HELP = """
 
   *{command}* creates a clone of the Cloud SQL instance. The source and the
@@ -47,23 +46,23 @@ _DETAILED_HELP = """
 """
 
 
-class _BaseClone(object):
-  """Create command base class for all release tracks."""
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class Clone(base.CreateCommand):
+  """Clones a Cloud SQL instance."""
 
   @classmethod
   def Args(cls, parser):
     """Declare flag and positional arguments for the command parser."""
     base.ASYNC_FLAG.AddToParser(parser)
-    parser.display_info.AddFormat(cls.GetTrackedAttribute(
-        flags, 'INSTANCES_FORMAT'))
+    parser.display_info.AddFormat(
+        cls.GetTrackedAttribute(flags, 'INSTANCES_FORMAT'))
     parser.add_argument(
         'source',
         completion_resource='sql.instances',
         list_command_path='sql instances list --uri',
         help='Cloud SQL instance ID of the source.')
     parser.add_argument(
-        'destination',
-        help='Cloud SQL instance ID of the clone.')
+        'destination', help='Cloud SQL instance ID of the clone.')
     parser.add_argument(
         '--bin-log-file-name',
         required=False,
@@ -93,7 +92,7 @@ class _BaseClone(object):
     if source_instance_ref.project != destination_instance_ref.project:
       raise exceptions.ToolException(
           'The source and the clone instance must belong to the same project:'
-          ' "{src}" != "{dest}".' . format(
+          ' "{src}" != "{dest}".'.format(
               src=source_instance_ref.project,
               dest=destination_instance_ref.project))
 
@@ -126,81 +125,6 @@ class _BaseClone(object):
           'Both --bin-log-file-name and --bin-log-position must be specified to'
           ' represent a valid binary log coordinate up to which the source is'
           ' cloned.')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Clone(_BaseClone, base.CreateCommand):
-  """Clones a Cloud SQL instance."""
-
-  def Run(self, args):
-    """Clones a Cloud SQL instance.
-
-    Args:
-      args: argparse.Namespace, The arguments that this command was invoked
-          with.
-
-    Returns:
-      A dict object representing the operations resource describing the
-      clone operation if the clone was successful.
-    Raises:
-      InvalidArgumentException: If one of the simulateneously required arguments
-          is not specified.
-      HttpException: A http error response was received while executing api
-          request.
-      ToolException: An error other than http error occured while executing the
-          command.
-    """
-    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
-    sql_client = client.sql_client
-    sql_messages = client.sql_messages
-
-    source_instance_ref, destination_instance_ref = (
-        self._GetInstanceRefsFromArgs(args, client))
-
-    request = sql_messages.SqlInstancesCloneRequest(
-        project=source_instance_ref.project,
-        instancesCloneRequest=sql_messages.InstancesCloneRequest(
-            cloneContext=sql_messages.CloneContext(
-                sourceInstanceName=source_instance_ref.instance,
-                destinationInstanceName=destination_instance_ref.instance)))
-
-    self._UpdateRequestFromArgs(request, args, sql_messages)
-
-    result = sql_client.instances.Clone(request)
-
-    operation_ref = client.resource_parser.Create(
-        'sql.operations',
-        operation=result.operation,
-        project=destination_instance_ref.project,
-        instance=destination_instance_ref.instance,
-    )
-
-    if args.async:
-      if not args.IsSpecified('format'):
-        args.format = 'default'
-      return sql_client.operations.Get(
-          sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project,
-              instance=operation_ref.instance,
-              operation=operation_ref.operation))
-    operations.OperationsV1Beta3.WaitForOperation(sql_client, operation_ref,
-                                                  'Cloning Cloud SQL instance')
-    log.CreatedResource(destination_instance_ref)
-    rsource = sql_client.instances.Get(
-        sql_messages.SqlInstancesGetRequest(
-            project=destination_instance_ref.project,
-            instance=destination_instance_ref.instance))
-    cache = remote_completion.RemoteCompletion()
-    cache.AddToCache(destination_instance_ref.SelfLink())
-    return rsource
-
-
-Clone.__doc__ += _DETAILED_HELP
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CloneBeta(_BaseClone, base.CreateCommand):
-  """Clones a Cloud SQL instance."""
 
   def Run(self, args):
     """Clones a Cloud SQL instance.
@@ -248,8 +172,7 @@ class CloneBeta(_BaseClone, base.CreateCommand):
         args.format = 'default'
       return sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project,
-              operation=operation_ref.operation))
+              project=operation_ref.project, operation=operation_ref.operation))
     operations.OperationsV1Beta4.WaitForOperation(sql_client, operation_ref,
                                                   'Cloning Cloud SQL instance')
     log.CreatedResource(destination_instance_ref)
@@ -262,4 +185,4 @@ class CloneBeta(_BaseClone, base.CreateCommand):
     return rsource
 
 
-CloneBeta.__doc__ += _DETAILED_HELP
+Clone.__doc__ += _DETAILED_HELP

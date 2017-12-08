@@ -11,13 +11,11 @@ gcloud compute instances start \- start a stopped virtual machine instance
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances start\fR \fINAMES\fR [\fINAMES\fR\ ...] [\fB\-\-csek\-key\-file\fR=\fIFILE\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instances start\fR \fINAMES\fR [\fINAMES\fR\ ...] [\fB\-\-csek\-key\-file\fR=\fIFILE\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
 .SH "DESCRIPTION"
-
-Start a stopped virtual machine instance.
 
 \fBgcloud compute instances start\fR is used to start a stopped Google Compute
 Engine virtual machine. Only a stopped virtual machine can be started.
@@ -77,6 +75,9 @@ Alternatively, the zone can be stored in the environment variable
 .RE
 .sp
 
-.SH "GLOBAL FLAGS"
+.SH "GCLOUD WIDE FLAGS"
 
-Run \fB$ gcloud help\fR for a description of flags available to all commands.
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.

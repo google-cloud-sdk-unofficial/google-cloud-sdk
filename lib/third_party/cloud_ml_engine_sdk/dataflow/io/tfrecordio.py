@@ -6,20 +6,34 @@ import struct
 import apache_beam as beam
 from apache_beam import coders
 from apache_beam.io import filebasedsource
-from apache_beam.io import fileio
+
 import crcmod
 
+# pylint: disable=g-import-not-at-top
 try:
   # TODO(user): Remove this after updating to latest Beam.
-  from apache_beam.io.filesystem import CompressionTypes  # pylint: disable=g-import-not-at-top
+  from apache_beam.io import filebasedsink
 except ImportError:
-  from apache_beam.io.fileio import CompressionTypes  # pylint: disable=g-import-not-at-top
+  from apache_beam.io import fileio as filebasedsink
 
 try:
   # TODO(user): Remove this after updating to latest Beam.
-  from apache_beam.io import Read  # pylint: disable=g-import-not-at-top
+  from apache_beam.io.filebasedsink import FileBasedSink
 except ImportError:
-  from apache_beam import Read  # pylint: disable=g-import-not-at-top
+  from apache_beam.io.fileio import FileSink
+  FileBasedSink = FileSink
+
+try:
+  # TODO(user): Remove this after updating to latest Beam.
+  from apache_beam.io.filesystem import CompressionTypes
+except ImportError:
+  from apache_beam.io.fileio import CompressionTypes
+
+try:
+  # TODO(user): Remove this after updating to latest Beam.
+  from apache_beam.io import Read
+except ImportError:
+  from apache_beam import Read
 
 _crc32c_fn = None
 try:
@@ -191,7 +205,7 @@ class ReadFromTFRecord(beam.PTransform):
     return pvalue.pipeline | Read(_TFRecordSource(*self._args))
 
 
-class _TFRecordSink(fileio.FileSink):
+class _TFRecordSink(FileBasedSink):
   """Sink for writing TFRecord files.
 
   For detailed TFRecord format description see:
@@ -223,7 +237,7 @@ class WriteToTFRecord(beam.PTransform):
                coder=coders.BytesCoder(),
                file_name_suffix='',
                num_shards=0,
-               shard_name_template=fileio.DEFAULT_SHARD_NAME_TEMPLATE,
+               shard_name_template=filebasedsink.DEFAULT_SHARD_NAME_TEMPLATE,
                compression_type=CompressionTypes.AUTO,
                **kwargs):
     """Initialize WriteToTFRecord transform.

@@ -38,7 +38,7 @@ class ListUserVerified(base.Command):
     client = api_client.AppengineDomainsApiClient.GetApiClient()
     return client.ListVerifiedDomains()
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return """
             table(
               id:sort=1

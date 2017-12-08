@@ -30,9 +30,9 @@ class Filters(base.TopicCommand):
 
           === Filter Expressions ===
 
-          A filter expression is a Boolean function that selects resources from
-          a list. Expressions are composed of terms connected by logic
-          operators.
+          A filter expression is a Boolean function that selects the resources
+          to print from a list of resources. Expressions are composed
+          of terms connected by logic operators.
 
           *LogicOperator*::
 
@@ -152,5 +152,18 @@ class Filters(base.TopicCommand):
           List resources with zone prefix *us* and not MachineType *f1-micro*:
 
             $ gcloud compute instances list --filter='zone ~ ^us AND -machineType:f1-micro'
+
+          List in JSON format those projects where the labels match specific
+          values (e.g. label.env is 'test' and label.version is alpha):
+
+            $ gcloud projects list --format="json" --filter="labels.env=test AND labels.version=alpha"
+
+          List projects that were created after a specific date:
+
+            $ gcloud projects list --format="table(projectNumber,projectId,createTime)" --filter="createTime.date('%Y-%m-%d', Z)='2016-05-11'"
+
+          Note that in the last example, a projection on the key was used. The
+          filter is applied on the createTime key after the date formatting is
+          set.
           """),
       }

@@ -22,7 +22,8 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.BETA)
 class SetIamPolicy(base.UpdateCommand):
   """Set the IAM policy for the named repository."""
 

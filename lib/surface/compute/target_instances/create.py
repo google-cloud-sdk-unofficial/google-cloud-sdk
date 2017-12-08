@@ -14,6 +14,7 @@
 """Command for creating target instances."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instances import (flags as
@@ -21,14 +22,22 @@ from googlecloudsdk.command_lib.compute.instances import (flags as
 from googlecloudsdk.command_lib.compute.target_instances import flags
 
 
-class Create(base_classes.BaseAsyncCreator):
-  """Create a target instance for handling traffic from a forwarding rule."""
+class Create(base.CreateCommand):
+  """Create a target instance for handling traffic from a forwarding rule.
+
+    *{command}* is used to create a target instance for handling
+  traffic from one or more forwarding rules. Target instances
+  are ideal for traffic that should be managed by a single
+  source. For more information on target instances, see
+  [](https://cloud.google.com/compute/docs/protocol-forwarding/#targetinstances)
+  """
 
   INSTANCE_ARG = None
   TARGET_INSTANCE_ARG = None
 
   @classmethod
   def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.INSTANCE_ARG = instance_flags.InstanceArgumentForTargetInstance()
     cls.INSTANCE_ARG.AddArgument(parser)
     cls.TARGET_INSTANCE_ARG = flags.TargetInstanceArgument()
@@ -39,55 +48,32 @@ class Create(base_classes.BaseAsyncCreator):
         '--description',
         help='An optional, textual description of the target instance.')
 
-  @property
-  def service(self):
-    return self.compute.targetInstances
-
-  @property
-  def method(self):
-    return 'Insert'
-
-  @property
-  def resource_type(self):
-    return 'targetInstances'
-
-  def CreateRequests(self, args):
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
     target_instance_ref = self.TARGET_INSTANCE_ARG.ResolveAsResource(
         args,
-        self.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
-                                                         self.project))
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
     if target_instance_ref.zone and not args.instance_zone:
       args.instance_zone = target_instance_ref.zone
 
-    instance_ref = self.INSTANCE_ARG.ResolveAsResource(args, self.resources)
+    instance_ref = self.INSTANCE_ARG.ResolveAsResource(args, holder.resources)
 
     if target_instance_ref.zone != instance_ref.zone:
       raise calliope_exceptions.ToolException(
           'Target instance zone must match the virtual machine instance zone.')
 
-    request = self.messages.ComputeTargetInstancesInsertRequest(
-        targetInstance=self.messages.TargetInstance(
+    request = client.messages.ComputeTargetInstancesInsertRequest(
+        targetInstance=client.messages.TargetInstance(
             description=args.description,
             name=target_instance_ref.Name(),
             instance=instance_ref.SelfLink(),
         ),
-        project=self.project,
+        project=target_instance_ref.project,
         zone=target_instance_ref.zone)
 
-    return [request]
-
-
-Create.detailed_help = {
-    'brief': (
-        'Create a target instance for handling traffic from a forwarding rule'),
-    'DESCRIPTION': """\
-        *{command}* is used to create a target instance for handling
-        traffic from one or more forwarding rules. Target instances
-        are ideal for traffic that should be managed by a single
-        source. For more information on target instances, see
-        [](https://cloud.google.com/compute/docs/protocol-forwarding/#targetinstances)
-        """,
-}
+    return client.MakeRequests([(client.apitools_client.targetInstances,
+                                 'Insert', request)])

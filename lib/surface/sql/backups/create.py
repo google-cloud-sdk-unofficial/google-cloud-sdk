@@ -22,8 +22,8 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBackupBeta(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class CreateBackup(base.CreateCommand):
   """Creates a backup of a Cloud SQL instance."""
 
   @staticmethod
@@ -87,8 +87,7 @@ class CreateBackupBeta(base.CreateCommand):
     if args.async:
       return sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project,
-              operation=operation_ref.operation))
+              project=operation_ref.project, operation=operation_ref.operation))
 
     operations.OperationsV1Beta4.WaitForOperation(
         sql_client, operation_ref, 'Backing up Cloud SQL instance')

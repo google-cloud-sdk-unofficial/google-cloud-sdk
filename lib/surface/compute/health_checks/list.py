@@ -83,7 +83,7 @@ class _BaseList(object):
 
     return columns
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     columns = self._GetValidColumns(args)
     return 'table[]({columns})'.format(columns=','.join(columns))
 
@@ -138,7 +138,7 @@ class ListAlpha(_BaseList, base_classes.BaseLister):
     whitelist.append(self.messages.HealthCheck.TypeValueValuesEnum.UDP.number)
     return whitelist
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     columns = self._GetValidColumns(args)
     if args.protocol is not None:
       protocol_value = self._ConvertProtocolArgToValue(args)

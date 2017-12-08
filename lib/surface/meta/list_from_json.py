@@ -57,5 +57,5 @@ class ListFromJson(base.ListCommand):
       resources = json.load(sys.stdin)
     return resources
 
-  def Format(self, unused_args):
+  def DeprecatedFormat(self, unused_args):
     return 'json'

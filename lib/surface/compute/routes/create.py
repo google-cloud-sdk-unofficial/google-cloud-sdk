@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
@@ -47,14 +48,7 @@ def _AddGaHops(next_hop_group):
       using `gcloud compute instances create`)
       """)
 
-  next_hop_group.add_argument(
-      '--next-hop-gateway',
-      help="""\
-      Specifies the gateway that should handle matching
-      packets. Currently, the only acceptable value is
-      ``default-internet-gateway'' which is a gateway operated by
-      Google Compute Engine.
-      """)
+  flags.NEXT_HOP_GATEWAY_ARG.AddArgument(next_hop_group)
 
   next_hop_group.add_argument(
       '--next-hop-vpn-tunnel',
@@ -117,74 +111,33 @@ def _Args(parser):
             compute_flags.REGION_PROPERTY_EXPLANATION))
 
 
-def _CreateRequests(cmd, args):
-  """Make API requests for route creation, callable from multiple tracks."""
+class Create(base.CreateCommand):
+  """Create a new route.
 
-  network_uri = cmd.NETWORK_ARG.ResolveAsResource(args,
-                                                  cmd.resources).SelfLink()
+    *{command}* is used to create routes. A route is a rule that
+  specifies how certain packets should be handled by the virtual
+  network. Routes are associated with virtual machine instances
+  by tag, and the set of routes for a particular VM is called
+  its routing table. For each packet leaving a virtual machine,
+  the system searches that machine's routing table for a single
+  best matching route.
 
-  if args.next_hop_instance:
-    next_hop_instance_uri = cmd.INSTANCE_ARG.ResolveAsResource(
-        args,
-        cmd.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(
-            cmd.compute_client, cmd.project)).SelfLink()
-  else:
-    if args.next_hop_instance_zone:
-      raise exceptions.ToolException(
-          '[--next-hop-instance-zone] can only be specified in conjunction '
-          'with [--next-hop-instance].')
-    next_hop_instance_uri = None
+  Routes match packets by destination IP address, preferring
+  smaller or more specific ranges over larger ones (see
+  ``--destination-range''). If there is a tie, the system selects
+  the route with the smallest priority value. If there is still
+  a tie, it uses the layer three and four packet headers to
+  select just one of the remaining matching routes. The packet
+  is then forwarded as specified by ``--next-hop-address'',
+  ``--next-hop-instance'', ``--next-hop-vpn-tunnel'', or
+  ``--next-hop-gateway'' of the winning route. Packets that do
+  not match any route in the sending virtual machine routing
+  table will be dropped.
 
-  if args.next_hop_gateway:
-    # TODO(b/18201355): This is hack.
-    #
-    # There is currently no "gateways" resource type in the Compute
-    # API, however, the API does accept a "gateways" URI. We need to
-    # extend the resources module to allow for arbitrary URI
-    # patterns to be registered. With the logic below, a URI value
-    # for --next-hop-gateway will not work.
-    next_hop_gateway_uri = (
-        cmd.compute.url +
-        'projects/' + cmd.project +
-        '/global/gateways/' + args.next_hop_gateway)
-  else:
-    next_hop_gateway_uri = None
-
-  route_ref = cmd.ROUTE_ARG.ResolveAsResource(args, cmd.resources)
-
-  next_hop_vpn_tunnel_uri = None
-
-  if args.next_hop_vpn_tunnel:
-    next_hop_vpn_tunnel_uri = cmd.VPN_TUNNEL_ARG.ResolveAsResource(
-        args,
-        cmd.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(
-            cmd.compute_client, cmd.project)).SelfLink()
-  elif args.next_hop_vpn_tunnel_region:
-    raise exceptions.ToolException(
-        '[--next-hop-vpn-tunnel-region] can only be specified in '
-        'conjunction with [--next-hop-vpn-tunnel].')
-
-  request = cmd.messages.ComputeRoutesInsertRequest(
-      project=cmd.project,
-      route=cmd.messages.Route(
-          description=args.description,
-          destRange=args.destination_range,
-          name=route_ref.Name(),
-          network=network_uri,
-          nextHopInstance=next_hop_instance_uri,
-          nextHopIp=args.next_hop_address,
-          nextHopGateway=next_hop_gateway_uri,
-          nextHopVpnTunnel=next_hop_vpn_tunnel_uri,
-          priority=args.priority,
-          tags=args.tags,
-      ))
-  return [request]
-
-
-class Create(base_classes.BaseAsyncCreator):
-  """Create a new route."""
+  Exactly one of ``--next-hop-address'', ``--next-hop-gateway'',
+  ``--next-hop-vpn-tunnel'', or ``--next-hop-instance'' must be
+  provided with this command.
+  """
 
   NETWORK_ARG = None
   INSTANCE_ARG = None
@@ -193,6 +146,7 @@ class Create(base_classes.BaseAsyncCreator):
 
   @classmethod
   def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
         'Specifies the network to which the route will be applied.',
         required=False)
@@ -202,47 +156,59 @@ class Create(base_classes.BaseAsyncCreator):
     cls.ROUTE_ARG.AddArgument(parser)
     _Args(parser)
 
-  @property
-  def service(self):
-    return self.compute.routes
+  def Run(self, args):
+    """Issue API requests for route creation, callable from multiple tracks."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'Insert'
+    network_uri = self.NETWORK_ARG.ResolveAsResource(
+        args, holder.resources).SelfLink()
 
-  @property
-  def resource_type(self):
-    return 'routes'
+    route_ref = self.ROUTE_ARG.ResolveAsResource(args, holder.resources)
 
-  def CreateRequests(self, args):
-    return _CreateRequests(self, args)
+    if args.next_hop_instance:
+      next_hop_instance_uri = self.INSTANCE_ARG.ResolveAsResource(
+          args,
+          holder.resources,
+          scope_lister=compute_flags.GetDefaultScopeLister(client)).SelfLink()
+    else:
+      if args.next_hop_instance_zone:
+        raise exceptions.ToolException(
+            '[--next-hop-instance-zone] can only be specified in conjunction '
+            'with [--next-hop-instance].')
+      next_hop_instance_uri = None
 
+    if args.next_hop_gateway:
+      next_hop_gateway_ref = flags.NEXT_HOP_GATEWAY_ARG.ResolveAsResource(
+          args, holder.resources)
+      next_hop_gateway_uri = next_hop_gateway_ref.SelfLink()
+    else:
+      next_hop_gateway_uri = None
 
-Create.detailed_help = {
-    'brief': 'Create a new route',
-    'DESCRIPTION': """\
-        *{command}* is used to create routes. A route is a rule that
-        specifies how certain packets should be handled by the virtual
-        network. Routes are associated with virtual machine instances
-        by tag, and the set of routes for a particular VM is called
-        its routing table. For each packet leaving a virtual machine,
-        the system searches that machine's routing table for a single
-        best matching route.
+    next_hop_vpn_tunnel_uri = None
 
-        Routes match packets by destination IP address, preferring
-        smaller or more specific ranges over larger ones (see
-        ``--destination-range''). If there is a tie, the system selects
-        the route with the smallest priority value. If there is still
-        a tie, it uses the layer three and four packet headers to
-        select just one of the remaining matching routes. The packet
-        is then forwarded as specified by ``--next-hop-address'',
-        ``--next-hop-instance'', ``--next-hop-vpn-tunnel'', or
-        ``--next-hop-gateway'' of the winning route. Packets that do
-        not match any route in the sending virtual machine routing
-        table will be dropped.
+    if args.next_hop_vpn_tunnel:
+      next_hop_vpn_tunnel_uri = self.VPN_TUNNEL_ARG.ResolveAsResource(
+          args,
+          holder.resources,
+          scope_lister=compute_flags.GetDefaultScopeLister(client)).SelfLink()
+    elif args.next_hop_vpn_tunnel_region:
+      raise exceptions.ToolException(
+          '[--next-hop-vpn-tunnel-region] can only be specified in '
+          'conjunction with [--next-hop-vpn-tunnel].')
 
-        Exactly one of ``--next-hop-address'', ``--next-hop-gateway'',
-        ``--next-hop-vpn-tunnel'', or ``--next-hop-instance'' must be
-        provided with this command.
-        """,
-    }
+    request = client.messages.ComputeRoutesInsertRequest(
+        project=route_ref.project,
+        route=client.messages.Route(
+            description=args.description,
+            destRange=args.destination_range,
+            name=route_ref.Name(),
+            network=network_uri,
+            nextHopInstance=next_hop_instance_uri,
+            nextHopIp=args.next_hop_address,
+            nextHopGateway=next_hop_gateway_uri,
+            nextHopVpnTunnel=next_hop_vpn_tunnel_uri,
+            priority=args.priority,
+            tags=args.tags,))
+    return client.MakeRequests([(client.apitools_client.routes, 'Insert',
+                                 request)])

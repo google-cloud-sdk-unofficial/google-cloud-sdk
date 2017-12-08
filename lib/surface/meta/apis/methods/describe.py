@@ -24,12 +24,10 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     apis.API_VERSION_FLAG.AddToParser(parser)
-    parser.add_argument(
-        '--collection',
-        required=True,
-        help='The name of the collection to get the method for.')
+    apis.COLLECTION_FLAG.AddToParser(parser)
     parser.add_argument(
         'method',
+        completer=apis.MethodCompleter,
         help='The name of the method to get the details of.')
 
   def Run(self, args):

@@ -17,11 +17,12 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 
 
-class DeleteAccessConfig(base_classes.NoOutputAsyncMutator):
+class DeleteAccessConfig(base.SilentCommand):
   """Delete an access configuration from a virtual machine network interface.
 
   *{command}* is used to delete access configurations from network
@@ -48,29 +49,21 @@ class DeleteAccessConfig(base_classes.NoOutputAsyncMutator):
         as the default.
         """)
 
-  @property
-  def service(self):
-    return self.compute.instances
+  def Run(self, args):
+    """Invokes request necessary for removing an access config."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'DeleteAccessConfig'
-
-  @property
-  def resource_type(self):
-    return 'instances'
-
-  def CreateRequests(self, args):
-    """Returns a request necessary for removing an access config."""
     instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
-        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client))
+        args, holder.resources, scope_lister=flags.GetDefaultScopeLister(
+            client))
 
-    request = self.messages.ComputeInstancesDeleteAccessConfigRequest(
+    request = client.messages.ComputeInstancesDeleteAccessConfigRequest(
         accessConfig=args.access_config_name,
         instance=instance_ref.Name(),
         networkInterface=args.network_interface,
         project=instance_ref.project,
         zone=instance_ref.zone)
 
-    return [request]
+    return client.MakeRequests([(client.apitools_client.instances,
+                                 'DeleteAccessConfig', request)])

@@ -91,7 +91,7 @@ class List(base.ListCommand):
                                     'a property name and the `--all` flag.')
     return self._GetPropertiesToDisplay(args)
 
-  def Format(self, _):
+  def DeprecatedFormat(self, _):
     return 'config'
 
   def Epilog(self, resources_were_displayed):

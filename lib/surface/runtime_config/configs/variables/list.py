@@ -96,7 +96,7 @@ class List(base.ListCommand):
     for result in results:
       yield util.FormatVariable(result, self._display_values)
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return 'table(name, updateTime, value:optional)'
 
   def Epilog(self, resources_were_displayed):

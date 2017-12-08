@@ -34,7 +34,7 @@ class List(base_classes.ZonalLister):
         items=items,
         filter_mode=mode)
 
-  def Format(self, unused_args):
+  def DeprecatedFormat(self, unused_args):
     return """
           table(
             name,

@@ -26,8 +26,8 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DeleteBeta(base.DeleteCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class Delete(base.DeleteCommand):
   """Delete a backup of a Cloud SQL instance."""
 
   @staticmethod
@@ -90,9 +90,7 @@ class DeleteBeta(base.DeleteCommand):
             id=args.id))
 
     operation_ref = client.resource_parser.Create(
-        'sql.operations',
-        operation=result.name,
-        project=instance_ref.project)
+        'sql.operations', operation=result.name, project=instance_ref.project)
 
     operations.OperationsV1Beta4.WaitForOperation(sql_client, operation_ref,
                                                   'Deleting backup run')

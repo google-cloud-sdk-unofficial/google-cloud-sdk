@@ -18,10 +18,11 @@ import os
 
 from apitools.base.py import encoding
 
+from googlecloudsdk.api_lib.service_management import exceptions
 from googlecloudsdk.api_lib.service_management import services_util
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import log
 
 
@@ -79,7 +80,8 @@ class ConvertConfig(base.Command):
                 contents=f.read())
         ])
     except IOError:
-      raise exceptions.ToolException.FromCurrent(
+      raise calliope_exceptions.NewErrorFromCurrentException(
+          exceptions.FileOpenError,
           'Cannot open {f} file'.format(f=args.open_api_file))
 
     request = messages.ConvertConfigRequest(openApiSpec=open_api_spec)
@@ -99,7 +101,8 @@ class ConvertConfig(base.Command):
           with open(args.output_file, 'w') as out:
             out.write(encoding.MessageToJson(service))
         except IOError:
-          raise exceptions.ToolException.FromCurrent(
+          raise calliope_exceptions.NewErrorFromCurrentException(
+              exceptions.FileOpenError,
               'Cannot open output file \'{f}\''.format(f=args.output_file))
       else:
         return service

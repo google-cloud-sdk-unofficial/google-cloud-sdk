@@ -42,7 +42,7 @@ class Delete(base.DeleteCommand):
     auto_delete_override.add_argument(
         '--delete-disks',
         choices=AUTO_DELETE_OVERRIDE_CHOICES,
-        metavar='DISK-TYPE',
+        metavar='DISK_TYPE',
         help="""\
         The types of disks to delete with instance deletion regardless
         of the disks' auto-delete configuration. When this flag is
@@ -55,7 +55,7 @@ class Delete(base.DeleteCommand):
     auto_delete_override.add_argument(
         '--keep-disks',
         choices=AUTO_DELETE_OVERRIDE_CHOICES,
-        metavar='DISK-TYPE',
+        metavar='DISK_TYPE',
         help="""\
         The types of disks to not delete with instance deletion regardless
         of the disks' auto-delete configuration. When this flag is

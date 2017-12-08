@@ -14,17 +14,21 @@
 """Command for creating target VPN Gateways."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.networks import flags as network_flags
 from googlecloudsdk.command_lib.compute.target_vpn_gateways import flags
 
 
-class Create(base_classes.BaseAsyncCreator):
-  """Create a VPN Gateway."""
+class Create(base.CreateCommand):
+  """Create a target VPN Gateway.
 
-  # Placeholder to indicate that a detailed_help field exists and should
-  # be set outside the class definition.
-  detailed_help = None
+    *{command}* is used to create a target VPN Gateway. A target VPN
+  Gateway can reference one or more VPN tunnels that connect it to
+  external VPN gateways. A VPN Gateway may also be referenced by
+  one or more forwarding rules that define which packets the
+  gateway is responsible for routing.
+  """
 
   NETWORK_ARG = None
   TARGET_VPN_GATEWAY_ARG = None
@@ -32,6 +36,7 @@ class Create(base_classes.BaseAsyncCreator):
   @classmethod
   def Args(cls, parser):
     """Adds arguments to the supplied parser."""
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
         """\
         A reference to a network in this project to
@@ -45,53 +50,32 @@ class Create(base_classes.BaseAsyncCreator):
         '--description',
         help='An optional, textual description for the target VPN Gateway.')
 
-  @property
-  def service(self):
-    return self.compute.targetVpnGateways
-
-  @property
-  def method(self):
-    return 'Insert'
-
-  @property
-  def resource_type(self):
-    return 'targetVpnGateways'
-
-  def CreateRequests(self, args):
-    """Builds API requests to construct Target VPN Gateways.
+  def Run(self, args):
+    """Issues API requests to construct Target VPN Gateways.
 
     Args:
       args: argparse.Namespace, The arguments received by this command.
 
     Returns:
-      [protorpc.messages.Message], A list of requests to be executed
+      [protorpc.messages.Message], A list of responses returned
       by the compute API.
     """
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
     target_vpn_gateway_ref = self.TARGET_VPN_GATEWAY_ARG.ResolveAsResource(
         args,
-        self.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
-                                                         self.project))
-    network_ref = self.NETWORK_ARG.ResolveAsResource(args, self.resources)
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+    network_ref = self.NETWORK_ARG.ResolveAsResource(args, holder.resources)
 
-    request = self.messages.ComputeTargetVpnGatewaysInsertRequest(
-        project=self.project,
+    request = client.messages.ComputeTargetVpnGatewaysInsertRequest(
+        project=target_vpn_gateway_ref.project,
         region=target_vpn_gateway_ref.region,
-        targetVpnGateway=self.messages.TargetVpnGateway(
+        targetVpnGateway=client.messages.TargetVpnGateway(
             description=args.description,
             name=target_vpn_gateway_ref.Name(),
             network=network_ref.SelfLink()
             ))
-    return [request]
-
-Create.detailed_help = {
-    'brief': 'Create a target VPN Gateway',
-    'DESCRIPTION': """
-        *{command}* is used to create a target VPN Gateway. A target VPN
-        Gateway can reference one or more VPN tunnels that connect it to
-        external VPN gateways. A VPN Gateway may also be referenced by
-        one or more forwarding rules that define which packets the
-        gateway is responsible for routing.
-        """
-    }
+    return client.MakeRequests([(client.apitools_client.targetVpnGateways,
+                                 'Insert', request)])

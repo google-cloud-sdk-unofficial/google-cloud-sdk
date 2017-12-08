@@ -80,6 +80,7 @@ class UpdateGA(base_classes.ReadWriteCommand):
     flags.AddCacheKeyIncludeHost(parser, default=None)
     flags.AddCacheKeyIncludeQueryString(parser, default=None)
     flags.AddCacheKeyQueryStringList(parser)
+    AddIapFlag(parser)
 
   @property
   def service(self):
@@ -181,6 +182,8 @@ class UpdateGA(base_classes.ReadWriteCommand):
     backend_services_utils.ApplyCdnPolicyArgs(
         self, args, replacement, is_update=True)
 
+    self._ApplyIapArgs(args.iap, existing, replacement)
+
     return replacement
 
   def ValidateArgs(self, args):
@@ -197,6 +200,7 @@ class UpdateGA(base_classes.ReadWriteCommand):
         args.health_checks,
         args.http_health_checks,
         args.https_health_checks,
+        args.IsSpecified('iap'),
         args.port,
         args.port_name,
         args.protocol,
@@ -265,8 +269,6 @@ class UpdateAlpha(UpdateGA):
       replacement.connectionDraining = self.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
 
-    self._ApplyIapArgs(args.iap, existing, replacement)
-
     return replacement
 
   def ValidateArgs(self, args):
@@ -281,7 +283,7 @@ class UpdateAlpha(UpdateGA):
         args.cache_key_query_string_whitelist is not None,
         args.cache_key_query_string_blacklist is not None,
         args.http_health_checks,
-        args.iap is not None,
+        args.IsSpecified('iap'),
         args.port,
         args.port_name,
         args.protocol,
@@ -334,8 +336,6 @@ class UpdateBeta(UpdateGA):
       replacement.connectionDraining = self.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
 
-    self._ApplyIapArgs(args.iap, existing, replacement)
-
     return replacement
 
   def ValidateArgs(self, args):
@@ -352,7 +352,7 @@ class UpdateBeta(UpdateGA):
         args.health_checks,
         args.http_health_checks,
         args.https_health_checks,
-        args.iap is not None,
+        args.IsSpecified('iap'),
         args.port,
         args.port_name,
         args.protocol,

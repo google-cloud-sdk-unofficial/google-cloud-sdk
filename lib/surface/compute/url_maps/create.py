@@ -14,6 +14,7 @@
 """Command for creating URL maps."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.backend_buckets import (
     flags as backend_bucket_flags)
 from googlecloudsdk.command_lib.compute.backend_services import (
@@ -40,8 +41,28 @@ def _Args(parser):
             '--default-backend-bucket is required.'))
 
 
-class Create(base_classes.BaseAsyncCreator):
-  """Create a URL map."""
+class Create(base.CreateCommand):
+  """Create a URL map.
+
+    *{command}* is used to create URL maps which map HTTP and
+  HTTPS request URLs to backend services and backend buckets.
+  Mappings are done using a longest-match strategy.
+
+  There are two components to a mapping: a host rule and a path
+  matcher. A host rule maps one or more hosts to a path
+  matcher. A path matcher maps request paths to backend
+  services or backend buckets. For example, a host rule can map
+  the hosts ``*.google.com'' and ``google.com'' to a path
+  matcher called ``www''. The ``www'' path matcher in turn can
+  map the path ``/search/*'' to the search backend service, the
+  path ``/static/*'' to the static backend bucket  and everything
+  else to a default backend service or default backend bucket.
+
+  Host rules and patch matchers can be added to the URL map
+  after the map is created by using `gcloud compute url-maps edit`
+  or by using `gcloud compute url-maps add-path-matcher`
+  and `gcloud compute url-maps add-host-rule`.
+  """
 
   BACKEND_BUCKET_ARG = None
   BACKEND_SERVICE_ARG = None
@@ -49,6 +70,7 @@ class Create(base_classes.BaseAsyncCreator):
 
   @classmethod
   def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.BACKEND_BUCKET_ARG = (
         backend_bucket_flags.BackendBucketArgumentForUrlMap(required=False))
     cls.BACKEND_SERVICE_ARG = (
@@ -58,56 +80,24 @@ class Create(base_classes.BaseAsyncCreator):
 
     _Args(parser)
 
-  @property
-  def service(self):
-    return self.compute.urlMaps
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'Insert'
-
-  @property
-  def resource_type(self):
-    return 'urlMaps'
-
-  def CreateRequests(self, args):
     if args.default_service:
       default_backend_uri = self.BACKEND_SERVICE_ARG.ResolveAsResource(
-          args, self.resources).SelfLink()
+          args, holder.resources).SelfLink()
     else:
       default_backend_uri = self.BACKEND_BUCKET_ARG.ResolveAsResource(
-          args, self.resources).SelfLink()
+          args, holder.resources).SelfLink()
 
-    url_map_ref = self.URL_MAP_ARG.ResolveAsResource(args, self.resources)
+    url_map_ref = self.URL_MAP_ARG.ResolveAsResource(args, holder.resources)
 
-    request = self.messages.ComputeUrlMapsInsertRequest(
-        project=self.project,
-        urlMap=self.messages.UrlMap(defaultService=default_backend_uri,
-                                    description=args.description,
-                                    name=url_map_ref.Name()))
-    return [request]
-
-
-Create.detailed_help = {
-    'brief': 'Create a URL map',
-    'DESCRIPTION': """
-        *{command}* is used to create URL maps which map HTTP and
-        HTTPS request URLs to backend services and backend buckets.
-        Mappings are done using a longest-match strategy.
-
-        There are two components to a mapping: a host rule and a path
-        matcher. A host rule maps one or more hosts to a path
-        matcher. A path matcher maps request paths to backend
-        services or backend buckets. For example, a host rule can map
-        the hosts ``*.google.com'' and ``google.com'' to a path
-        matcher called ``www''. The ``www'' path matcher in turn can
-        map the path ``/search/*'' to the search backend service, the
-        path ``/static/*'' to the static backend bucket  and everything
-        else to a default backend service or default backend bucket.
-
-        Host rules and patch matchers can be added to the URL map
-        after the map is created by using `gcloud compute url-maps edit`
-        or by using `gcloud compute url-maps add-path-matcher`
-        and `gcloud compute url-maps add-host-rule`.
-        """,
-}
+    request = client.messages.ComputeUrlMapsInsertRequest(
+        project=url_map_ref.project,
+        urlMap=client.messages.UrlMap(
+            defaultService=default_backend_uri,
+            description=args.description,
+            name=url_map_ref.Name()))
+    return client.MakeRequests([(client.apitools_client.urlMaps,
+                                 'Insert', request)])

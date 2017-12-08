@@ -24,7 +24,7 @@ class AddIamPolicyBinding(base_classes.BaseIamCommand):
   """Add an IAM policy binding to a service account.
 
   This command adds a policy binding to the IAM policy of a service account,
-  given an IAM-ACCOUNT and the binding.
+  given an IAM_ACCOUNT and the binding.
   """
 
   detailed_help = iam_util.GetDetailedHelpForAddIamPolicyBinding(
@@ -33,7 +33,7 @@ class AddIamPolicyBinding(base_classes.BaseIamCommand):
   @staticmethod
   def Args(parser):
     parser.add_argument('account',
-                        metavar='IAM-ACCOUNT',
+                        metavar='IAM_ACCOUNT',
                         help='The service account whose policy to '
                         'add bindings to.')
     iam_util.AddArgsForAddIamPolicyBinding(parser)

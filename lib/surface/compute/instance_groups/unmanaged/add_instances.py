@@ -16,19 +16,29 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
-from googlecloudsdk.core import properties
 
 
-class AddInstances(base_classes.NoOutputAsyncMutator):
-  """Add instances to an unmanaged instance group."""
+class AddInstances(base.SilentCommand):
+  r"""Adds instances to an unmanaged instance group by name.
+
+    *{command}* adds existing instances to an unmanaged instance group
+  by name.
+  For example:
+
+    $ {command} example-instance-group --instances example-instance-1 \
+        example-instance-2 --zone us-central1-a
+  """
+
+  ZONAL_INSTANCE_GROUP_ARG = None
 
   @staticmethod
   def Args(parser):
-    AddInstances.ZonalInstanceGroupArg = (
+    AddInstances.ZONAL_INSTANCE_GROUP_ARG = (
         instance_groups_flags.MakeZonalInstanceGroupArg())
-    AddInstances.ZonalInstanceGroupArg.AddArgument(parser)
+    AddInstances.ZONAL_INSTANCE_GROUP_ARG.AddArgument(parser)
     parser.add_argument(
         '--instances',
         required=True,
@@ -38,31 +48,22 @@ class AddInstances(base_classes.NoOutputAsyncMutator):
         'These must exist beforehand and must live in the same zone as '
         'the instance group.')
 
-  @property
-  def service(self):
-    return self.compute.instanceGroups
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'AddInstances'
-
-  @property
-  def resource_type(self):
-    return 'instanceGroups'
-
-  def CreateRequests(self, args):
     group_ref = (
-        AddInstances.ZonalInstanceGroupArg.ResolveAsResource(
-            args, self.resources,
+        AddInstances.ZONAL_INSTANCE_GROUP_ARG.ResolveAsResource(
+            args, holder.resources,
             default_scope=None,
-            scope_lister=flags.GetDefaultScopeLister(self.compute_client)))
+            scope_lister=flags.GetDefaultScopeLister(client)))
 
     instance_references = []
     for instance in args.instances:
-      ref = self.resources.Parse(
+      ref = holder.resources.Parse(
           instance,
           params={
-              'project': properties.VALUES.core.project.GetOrFail,
+              'project': group_ref.project,
               'zone': group_ref.zone
           },
           collection='compute.instances')
@@ -71,27 +72,17 @@ class AddInstances(base_classes.NoOutputAsyncMutator):
     instance_groups_utils.ValidateInstanceInZone(instance_references,
                                                  group_ref.zone)
     instance_references = [
-        self.messages.InstanceReference(instance=inst.SelfLink())
+        client.messages.InstanceReference(instance=inst.SelfLink())
         for inst in instance_references]
-    request_payload = self.messages.InstanceGroupsAddInstancesRequest(
+    request_payload = client.messages.InstanceGroupsAddInstancesRequest(
         instances=instance_references)
 
-    request = self.messages.ComputeInstanceGroupsAddInstancesRequest(
+    request = client.messages.ComputeInstanceGroupsAddInstancesRequest(
         instanceGroup=group_ref.Name(),
         instanceGroupsAddInstancesRequest=request_payload,
         zone=group_ref.zone,
         project=group_ref.project
     )
 
-    return [request]
-
-  detailed_help = {
-      'brief': 'Adds instances to an unmanaged instance group by name',
-      'DESCRIPTION': """\
-          *{command}* adds existing instances to an unmanaged instance group
-          by name.
-          For example:
-
-            $ {command} example-instance-group --instances example-instance-1 example-instance-2 --zone us-central1-a
-          """,
-  }
+    return client.MakeRequests([(client.apitools_client.instanceGroups,
+                                 'AddInstances', request)])

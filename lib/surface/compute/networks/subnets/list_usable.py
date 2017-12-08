@@ -52,7 +52,7 @@ class ListUsableSubnets(base.ListCommand):
         batch_size=100,
         field='results')
 
-  def Format(self, args):
+  def DeprecatedFormat(self, args):
     return 'table({fields})'.format(
         fields=','.join([
             'resource.selfLink.segment(-5):label=PROJECT',

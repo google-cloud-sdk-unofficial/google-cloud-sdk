@@ -36,6 +36,9 @@ configuration. Any indexes in your index file that do not exist will be created.
           To create new indexes based on your local configuration, run:
 
             $ {command} ~/myapp/index.yaml
+
+          Detailed information about index configuration can be found at the
+          [index.yaml reference](https://cloud.google.com/appengine/docs/standard/python/config/indexref).
           """,
   }
 

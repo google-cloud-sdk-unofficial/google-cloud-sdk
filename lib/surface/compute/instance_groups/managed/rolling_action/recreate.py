@@ -21,6 +21,10 @@ from googlecloudsdk.command_lib.compute.instance_groups.managed import rolling_a
 from googlecloudsdk.command_lib.compute.managed_instance_groups import update_instances_utils
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=('Use gcloud alpha compute instance-groups managed rolling-action '
+             'replace instead.'))
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class StartUpdate(base.Command):
   """Start recreate instances of managed instance group."""

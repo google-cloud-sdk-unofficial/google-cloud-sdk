@@ -14,10 +14,10 @@
 
 """The main command group for cloud dataproc."""
 
-import argparse
-
 from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -48,26 +48,15 @@ DETAILED_HELP = {
 }
 
 
-# The default Dataproc region.
-_DEFAULT_REGION = 'global'
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Dataproc(base.Group):
   """Create and manage Google Cloud Dataproc clusters and jobs."""
   detailed_help = DETAILED_HELP
 
   def Filter(self, context, args):
+    # TODO(b/35708327): Stop using self.context
     context['dataproc_messages'] = apis.GetMessagesModule('dataproc', 'v1')
     context['resources'] = resources.REGISTRY
-
-    # TODO(b/35708327): Move outside of context in a place that will be easier
-    # to convert into a property when there are multiple regions.
-    if hasattr(args, 'region'):
-      context['dataproc_region'] = args.region
-    else:
-      context['dataproc_region'] = _DEFAULT_REGION
-
     context['dataproc_client'] = apis.GetClientInstance('dataproc', 'v1')
 
     return context
@@ -79,16 +68,11 @@ class DataprocBeta(Dataproc):
 
   @staticmethod
   def Args(parser):
+    region_prop = properties.VALUES.dataproc.region
     parser.add_argument(
         '--region',
-        default=_DEFAULT_REGION,
-        help=('Specifies the Dataproc region to use. Each Dataproc region '
-              'constitutes an independent resource namespace constrained to '
-              'deploying instances into GCE zones inside the region. The '
-              'default value of "global" is a special multi-region namespace '
-              'which is capable of deploying instances into all GCE zones '
-              'globally, and is disjoint from other Dataproc regions. This '
-              'region parameter corresponds to the /regions/<region> segment '
-              'of the Dataproc resource URIs being referenced.'),
+        help=region_prop.help_text,
+        # Don't set default, because it would override users' property setting.
+        action=actions.StoreProperty(region_prop),
         hidden=True)
 

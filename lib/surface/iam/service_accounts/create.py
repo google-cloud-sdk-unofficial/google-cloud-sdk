@@ -38,7 +38,7 @@ class Create(base_classes.BaseIamCommand, base.CreateCommand):
             $ {command} some-account-name --display-name "My Service Account"
 
           To work with this service account in subsequent IAM commands, use the
-          email resulting from this call as the IAM-ACCOUNT argument.
+          email resulting from this call as the IAM_ACCOUNT argument.
           """),
   }
 
@@ -51,7 +51,7 @@ class Create(base_classes.BaseIamCommand, base.CreateCommand):
                         metavar='NAME',
                         type=iam_util.AccountNameValidator(),
                         help='The internal name of the new service account. '
-                        'Used to generate an IAM-ACCOUNT (an IAM internal '
+                        'Used to generate an IAM_ACCOUNT (an IAM internal '
                         'email address used as an identifier of service '
                         'account), which must be passed to subsequent '
                         'commands.')

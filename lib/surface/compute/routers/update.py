@@ -23,8 +23,8 @@ from googlecloudsdk.command_lib.compute.routers import router_utils
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SetAdvertisementsAlpha(base.UpdateCommand):
-  """Sets the BGP advertisements of a Google Compute Engine router."""
+class UpdateAlpha(base.UpdateCommand):
+  """Update a Google Compute Engine router."""
 
   ROUTER_ARG = None
 
@@ -36,9 +36,8 @@ class SetAdvertisementsAlpha(base.UpdateCommand):
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    api_client = holder.client.apitools_client
     messages = holder.client.messages
-    service = api_client.routers
+    service = holder.client.apitools_client.routers
 
     ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
 
@@ -77,8 +76,8 @@ class SetAdvertisementsAlpha(base.UpdateCommand):
     return resource
 
 
-SetAdvertisementsAlpha.detailed_help = {
+UpdateAlpha.detailed_help = {
     'DESCRIPTION': """
-        *{command}* is used to set the BGP advertisements on a router.
+        *{command}* is used to update a Google Compute Engine Router.
         """,
 }
