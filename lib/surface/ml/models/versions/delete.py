@@ -18,7 +18,7 @@ from googlecloudsdk.api_lib.ml import versions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
 from googlecloudsdk.core import apis
-from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.console import progress_tracker
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -47,6 +47,6 @@ class BetaDelete(base.DeleteCommand):
     op = versions.Delete(args.model, args.version)
     client = apis.GetClientInstance('ml', 'v1beta1')
 
-    with console_io.ProgressTracker('Deleting version...'):
+    with progress_tracker.ProgressTracker('Deleting version...'):
       operations.WaitForOperation(client.projects_operations, op)
     return op.response

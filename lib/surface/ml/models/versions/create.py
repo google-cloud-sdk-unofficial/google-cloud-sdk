@@ -18,7 +18,7 @@ from googlecloudsdk.api_lib.ml import versions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
 from googlecloudsdk.core import apis
-from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.console import progress_tracker
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -51,7 +51,7 @@ class BetaCreate(base.CreateCommand):
       return op
     client = apis.GetClientInstance('ml', 'v1beta1')
 
-    with console_io.ProgressTracker(
+    with progress_tracker.ProgressTracker(
         'Creating version (this might take a few minutes)...'):
       operations.WaitForOperation(
           client.projects_operations,

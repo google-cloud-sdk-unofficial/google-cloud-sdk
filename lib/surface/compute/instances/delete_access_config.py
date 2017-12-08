@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 
@@ -41,6 +42,7 @@ class DeleteAccessConfig(base_classes.NoOutputAsyncMutator):
     network_interface = parser.add_argument(
         '--network-interface',
         default='nic0',
+        action=arg_parsers.StoreOnceAction,
         help=('Specifies the name of the network interface from which to '
               'delete the access configuration.'))
     network_interface.detailed_help = """\

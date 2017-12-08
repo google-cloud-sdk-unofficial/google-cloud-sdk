@@ -194,9 +194,10 @@ class RuntimeTests(testutil.TestBase):
         self.assertMultiLineEqual(
             app_yaml_contents,
             textwrap.dedent("""\
+                api_version: 1
                 entrypoint: my_entrypoint
-                vm: true
                 runtime: custom
+                vm: true
                 """))
         self.assertEqual(sorted(cleaner.GetFiles()),
                          [os.path.join(self.temp_path, '.dockerignore'),

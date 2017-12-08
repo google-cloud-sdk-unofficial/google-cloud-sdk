@@ -11,10 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """bigtable clusters list command."""
 
-
+from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
@@ -75,7 +74,6 @@ class ListClusters(base.ListCommand):
     """
     cli = util.GetAdminClient()
     instances = args.instances or ['-']
-    # can't use list_pager due to b/29450218
     for instance in instances:
       ref = resources.REGISTRY.Parse(
           instance, collection='bigtableadmin.projects.instances')
@@ -83,8 +81,11 @@ class ListClusters(base.ListCommand):
              .BigtableadminProjectsInstancesClustersListRequest(
                  projectsId=ref.projectsId,
                  instancesId=ref.Name()))
-      clusters = cli.projects_instances_clusters.List(msg).clusters
-      for cluster in clusters:
+      for cluster in list_pager.YieldFromList(
+          cli.projects_instances_clusters,
+          msg,
+          field='clusters',
+          batch_size_attribute=None):
         yield cluster
 
   def Collection(self):

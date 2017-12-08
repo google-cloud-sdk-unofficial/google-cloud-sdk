@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
+from googlecloudsdk.core import log
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
@@ -200,9 +201,14 @@ class UpdateAlpha(UpdateGA):
           drainingTimeoutSec=args.connection_draining_timeout)
 
     if args.iap:
-      replacement.iaap = backend_services_utils.GetIAP(
+      replacement.iap = backend_services_utils.GetIAP(
           args, self.messages,
-          existing_iap_settings=getattr(existing, 'iaap', None))
+          existing_iap_settings=getattr(existing, 'iap', None))
+      if (replacement.iap.enabled and replacement.protocol is not
+          self.messages.BackendService.ProtocolValueValuesEnum.HTTPS):
+        log.warning('IAP has been enabled for a backend service that does '
+                    'not use HTTPS. Data sent from the Load Balancer to your '
+                    'VM will not be encrypted.')
 
     return replacement
 

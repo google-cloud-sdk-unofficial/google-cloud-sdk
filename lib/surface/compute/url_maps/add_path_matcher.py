@@ -16,6 +16,11 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute.backend_buckets import (
+    flags as backend_bucket_flags)
+from googlecloudsdk.command_lib.compute.backend_services import (
+    flags as backend_service_flags)
+from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.third_party.py27 import py27_collections as collections
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
@@ -63,23 +68,23 @@ def _Args(parser):
             'command, the command removes the orphaned path matcher instead '
             'of failing.'))
 
-  parser.add_argument(
-      'name',
-      help='The name of the URL map.')
-
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class AddPathMatcherGA(base_classes.ReadWriteCommand):
   """Add a path matcher to a URL map."""
 
-  @staticmethod
-  def Args(parser):
+  BACKEND_SERVICE_ARG = None
+  URL_MAP_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.BACKEND_SERVICE_ARG = (
+        backend_service_flags.BackendServiceArgumentForUrlMapPathMatcher())
+    cls.BACKEND_SERVICE_ARG.AddArgument(parser)
+    cls.URL_MAP_ARG = flags.UrlMapArgument()
+    cls.URL_MAP_ARG.AddArgument(parser)
+
     _Args(parser)
-    parser.add_argument(
-        '--default-service',
-        required=True,
-        help=('A backend service that will be used for requests that the path '
-              'matcher cannot match.'))
 
   @property
   def service(self):
@@ -90,7 +95,7 @@ class AddPathMatcherGA(base_classes.ReadWriteCommand):
     return 'urlMaps'
 
   def CreateReference(self, args):
-    return self.CreateGlobalReference(args.name)
+    return self.URL_MAP_ARG.ResolveAsResource(args, self.resources)
 
   def GetGetRequest(self, args):
     """Returns the request for the existing URL map resource."""
@@ -200,14 +205,15 @@ class AddPathMatcherGA(base_classes.ReadWriteCommand):
       service_map[service].add(path)
     path_rules = []
     for service, paths in sorted(service_map.iteritems()):
-      path_rules.append(self.messages.PathRule(
-          paths=sorted(paths),
-          service=self.CreateGlobalReference(
-              service, resource_type='backendServices').SelfLink()))
+      path_rules.append(
+          self.messages.PathRule(
+              paths=sorted(paths),
+              service=self.resources.Parse(
+                  service, collection='compute.backendServices').SelfLink()))
 
     new_path_matcher = self.messages.PathMatcher(
-        defaultService=self.CreateGlobalReference(
-            args.default_service, resource_type='backendServices').SelfLink(),
+        defaultService=self.BACKEND_SERVICE_ARG.ResolveAsResource(
+            args, self.resources).SelfLink(),
         description=args.description,
         name=args.path_matcher_name,
         pathRules=path_rules)
@@ -220,8 +226,17 @@ class AddPathMatcherGA(base_classes.ReadWriteCommand):
 class AddPathMatcherAlpha(AddPathMatcherGA):
   """Add a path matcher to a URL map."""
 
-  @staticmethod
-  def Args(parser):
+  BACKEND_BUCKET_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.BACKEND_BUCKET_ARG = (
+        backend_bucket_flags.BackendBucketArgumentForUrlMap())
+    cls.BACKEND_SERVICE_ARG = (
+        backend_service_flags.BackendServiceArgumentForUrlMap())
+    cls.URL_MAP_ARG = flags.UrlMapArgument()
+    cls.URL_MAP_ARG.AddArgument(parser)
+
     _Args(parser)
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument(
@@ -263,26 +278,24 @@ class AddPathMatcherAlpha(AddPathMatcherGA):
       bucket_map[bucket].add(path)
     path_rules = []
     for service, paths in sorted(service_map.iteritems()):
-      path_rules.append(self.messages.PathRule(
-          paths=sorted(paths),
-          service=self.CreateGlobalReference(service,
-                                             resource_type=
-                                             'backendServices').SelfLink()))
+      path_rules.append(
+          self.messages.PathRule(
+              paths=sorted(paths),
+              service=self.resources.Parse(
+                  service, collection='compute.backendServices').SelfLink()))
     for bucket, paths in sorted(bucket_map.iteritems()):
-      path_rules.append(self.messages.PathRule(
-          paths=sorted(paths),
-          service=self.CreateGlobalReference(bucket,
-                                             resource_type=
-                                             'backendBuckets').SelfLink()))
+      path_rules.append(
+          self.messages.PathRule(
+              paths=sorted(paths),
+              service=self.resources.Parse(
+                  bucket, collection='compute.backendBuckets').SelfLink()))
 
     if args.default_service:
-      default_backend_uri = self.CreateGlobalReference(
-          args.default_service,
-          resource_type='backendServices').SelfLink()
+      default_backend_uri = self.BACKEND_SERVICE_ARG.ResolveAsResource(
+          args, self.resources).SelfLink()
     else:
-      default_backend_uri = self.CreateGlobalReference(
-          args.default_backend_bucket,
-          resource_type='backendBuckets').SelfLink()
+      default_backend_uri = self.BACKEND_BUCKET_ARG.ResolveAsResource(
+          args, self.resources).SelfLink()
 
     new_path_matcher = self.messages.PathMatcher(
         defaultService=default_backend_uri,

@@ -14,14 +14,20 @@
 """Command for adding a host rule to a URL map."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
 class AddHostRule(base_classes.ReadWriteCommand):
   """Add a rule to a URL map to map hosts to a path matcher."""
 
-  @staticmethod
-  def Args(parser):
+  URL_MAP_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.URL_MAP_ARG = flags.UrlMapArgument()
+    cls.URL_MAP_ARG.AddArgument(parser)
+
     parser.add_argument(
         '--description',
         help='An optional, textual description for the host rule.')
@@ -51,10 +57,6 @@ class AddHostRule(base_classes.ReadWriteCommand):
         (see `gcloud compute url-maps add-path-matcher`).
         """
 
-    parser.add_argument(
-        'name',
-        help='The name of the URL map.')
-
   @property
   def service(self):
     return self.compute.urlMaps
@@ -64,7 +66,7 @@ class AddHostRule(base_classes.ReadWriteCommand):
     return 'urlMaps'
 
   def CreateReference(self, args):
-    return self.CreateGlobalReference(args.name)
+    return self.URL_MAP_ARG.ResolveAsResource(args, self.resources)
 
   def GetGetRequest(self, args):
     """Returns the request for the existing URL map resource."""

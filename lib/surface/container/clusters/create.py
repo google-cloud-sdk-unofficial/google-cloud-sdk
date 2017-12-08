@@ -171,6 +171,7 @@ Alias,URI
       type=arg_parsers.ArgList(min_length=1),
       metavar='TAGS')
   flags.AddImageTypeFlag(parser, 'cluster')
+  flags.AddNodeLabelsFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -183,7 +184,6 @@ class Create(base.CreateCommand):
     flags.AddClusterAutoscalingFlags(parser, suppressed=True)
     flags.AddLocalSSDFlag(parser, suppressed=True)
     flags.AddEnableKubernetesAlphaFlag(parser, suppressed=True)
-    flags.AddNodeLabelsFlag(parser, suppressed=True)
     flags.AddClusterVersionFlag(parser, 'master and nodes', True)
 
   def ParseCreateOptions(self, args):
@@ -287,7 +287,6 @@ class CreateBeta(Create):
     flags.AddClusterAutoscalingFlags(parser, suppressed=True)
     flags.AddLocalSSDFlag(parser)
     flags.AddEnableKubernetesAlphaFlag(parser)
-    flags.AddNodeLabelsFlag(parser, suppressed=False)
     flags.AddClusterVersionFlag(parser, 'master and nodes')
 
 
@@ -301,5 +300,4 @@ class CreateAlpha(Create):
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDFlag(parser)
     flags.AddEnableKubernetesAlphaFlag(parser)
-    flags.AddNodeLabelsFlag(parser, suppressed=False)
     flags.AddClusterVersionFlag(parser, 'master and nodes')

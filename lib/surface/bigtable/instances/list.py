@@ -13,6 +13,7 @@
 # limitations under the License.
 """bigtable instances list command."""
 
+from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
@@ -39,8 +40,11 @@ class ListInstances(base.ListCommand):
     cli = util.GetAdminClient()
     msg = util.GetAdminMessages().BigtableadminProjectsInstancesListRequest(
         projectsId=properties.VALUES.core.project.Get())
-    instances = cli.projects_instances.List(msg).instances
-    return instances
+    return list_pager.YieldFromList(
+        cli.projects_instances,
+        msg,
+        field='instances',
+        batch_size_attribute=None)
 
   def Collection(self):
     return 'bigtable.instances.list'

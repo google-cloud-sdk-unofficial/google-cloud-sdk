@@ -15,15 +15,20 @@
 """Command for adding a BGP peer to a router."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
 class AddBgpPeer(base_classes.ReadWriteCommand):
   """Add a BGP peer to a router."""
 
-  @staticmethod
-  def Args(parser):
+  ROUTER_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.ROUTER_ARG = flags.RouterArgument()
+    cls.ROUTER_ARG.AddArgument(parser, operation_type='update')
+
     parser.add_argument(
         '--peer-name',
         required=True,
@@ -53,15 +58,6 @@ class AddBgpPeer(base_classes.ReadWriteCommand):
              'the routes with lowest priority value win. 0 <= priority <= '
              '65535.')
 
-    flags.AddRegionFlag(
-        parser,
-        resource_type='router',
-        operation_type='update')
-
-    parser.add_argument(
-        'name',
-        help='The name of the router.')
-
   @property
   def service(self):
     return self.compute.routers
@@ -71,7 +67,7 @@ class AddBgpPeer(base_classes.ReadWriteCommand):
     return 'routers'
 
   def CreateReference(self, args):
-    return self.CreateRegionalReference(args.name, args.region)
+    return self.ROUTER_ARG.ResolveAsResource(args, self.resources)
 
   def GetGetRequest(self, args):
     return (self.service,

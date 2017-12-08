@@ -50,7 +50,8 @@ class SetAutohealing(base_classes.BaseAsyncMutator):
                    scope_lister=flags.GetDefaultScopeLister(
                        self.compute_client, self.project))
     auto_healing_policies = (
-        managed_instance_groups_utils.CreateAutohealingPolicies(self, args))
+        managed_instance_groups_utils.CreateAutohealingPolicies(
+            self.resources, self.messages, args))
 
     if igm_ref.Collection() == 'compute.instanceGroupManagers':
       service = self.compute.instanceGroupManagers

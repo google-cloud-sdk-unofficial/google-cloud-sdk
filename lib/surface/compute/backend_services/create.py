@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.backend_services import flags
+from googlecloudsdk.core import log
 
 
 def _ResolvePort(args):
@@ -158,7 +159,12 @@ class CreateAlpha(CreateGA):
       backend_service.affinityCookieTtlSec = args.affinity_cookie_ttl
 
     if args.iap:
-      backend_service.iaap = backend_services_utils.GetIAP(args, self.messages)
+      backend_service.iap = backend_services_utils.GetIAP(args, self.messages)
+      if (backend_service.iap.enabled and backend_service.protocol is not
+          self.messages.BackendService.ProtocolValueValuesEnum.HTTPS):
+        log.warning('IAP has been enabled for a backend service that does '
+                    'not use HTTPS. Data sent from the Load Balancer to your '
+                    'VM will not be encrypted.')
 
     request = self.messages.ComputeBackendServicesInsertRequest(
         backendService=backend_service,

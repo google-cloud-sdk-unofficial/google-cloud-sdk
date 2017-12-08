@@ -16,6 +16,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.core import resources
 
 
@@ -30,12 +31,13 @@ class InvalidResourceError(exceptions.ToolException):
 class EditGA(base_classes.BaseEdit):
   """Modify URL maps."""
 
-  @staticmethod
-  def Args(parser):
+  URL_MAP_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.URL_MAP_ARG = flags.UrlMapArgument()
+    cls.URL_MAP_ARG.AddArgument(parser)
     base_classes.BaseEdit.Args(parser)
-    parser.add_argument(
-        'name',
-        help='The name of the URL map to modify.')
 
   @property
   def service(self):
@@ -100,13 +102,13 @@ class EditGA(base_classes.BaseEdit):
     )
 
   def CreateReference(self, args):
-    return self.CreateGlobalReference(args.name)
+    return self.URL_MAP_ARG.ResolveAsResource(args, self.resources)
 
   @property
   def reference_normalizers(self):
     def NormalizeBackendService(value):
-      return self.CreateGlobalReference(
-          value, resource_type='backendServices').SelfLink()
+      return self.resources.Parse(
+          value, collection='compute.backendServices').SelfLink()
 
     return [
         ('defaultService', NormalizeBackendService),

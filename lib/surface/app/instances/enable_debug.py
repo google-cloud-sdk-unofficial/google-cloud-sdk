@@ -21,6 +21,7 @@ from googlecloudsdk.api_lib.app import instances_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import flags
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.console import progress_tracker
 
 
 class EnableDebug(base.Command):
@@ -88,7 +89,7 @@ class EnableDebug(base.Command):
         'About to enable debug mode for instance [{0}].'.format(instance),
         cancel_on_no=True)
     message = 'Enabling debug mode for instance [{0}]'.format(instance)
-    with console_io.ProgressTracker(message):
+    with progress_tracker.ProgressTracker(message):
       api_client.DebugInstance(service=instance.service,
                                version=instance.version,
                                instance=instance.id)

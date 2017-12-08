@@ -18,7 +18,7 @@ from googlecloudsdk.api_lib.ml import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
 from googlecloudsdk.core import apis
-from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.console import progress_tracker
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -46,6 +46,6 @@ class DeleteBeta(base.DeleteCommand):
     op = models.Delete(args.model)
     client = apis.GetClientInstance('ml', 'v1beta1')
 
-    with console_io.ProgressTracker('Deleting model...'):
+    with progress_tracker.ProgressTracker('Deleting model...'):
       operations.WaitForOperation(client.projects_operations, op)
     return op.response

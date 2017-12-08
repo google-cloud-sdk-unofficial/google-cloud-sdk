@@ -92,7 +92,6 @@ class SparkSql(base_classes.JobSubmitter):
     spark_sql_job = messages.SparkSqlJob(
         jarFileUris=self.files_by_type['jars'],
         queryFileUri=self.files_by_type['file'],
-        scriptVariables=args.params,
         loggingConfig=log_config)
 
     if args.queries:

@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as base_exceptions
 from googlecloudsdk.command_lib.deployment_manager.runtime_configs import flags
-from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.console import progress_tracker
 
 
 TIMEOUT_MESSAGE = 'The read operation timed out'
@@ -124,7 +124,7 @@ class Watch(base.Command):
     else:
       newer_than = None
 
-    with console_io.ProgressTracker(
+    with progress_tracker.ProgressTracker(
         'Waiting for variable [{0}] to change'.format(name)):
       try:
         return util.FormatVariable(

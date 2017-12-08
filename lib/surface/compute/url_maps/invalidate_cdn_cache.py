@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.compute import property_selector
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.core import log
 
 
@@ -27,8 +28,13 @@ from googlecloudsdk.core import log
 class InvalidateCdnCacheGA(base_classes.NoOutputMutator):
   """Invalidate specified objects for a URL map in Cloud CDN caches."""
 
-  @staticmethod
-  def Args(parser):
+  URL_MAP_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.URL_MAP_ARG = flags.UrlMapArgument()
+    cls.URL_MAP_ARG.AddArgument(parser, cust_metavar='URLMAP')
+
     path = parser.add_argument(
         '--path',
         required=True,
@@ -62,11 +68,6 @@ class InvalidateCdnCacheGA(base_classes.NoOutputMutator):
         - ``/x/y/*'': ``/x/y/'' and everything under it
         """
 
-    parser.add_argument(
-        'urlmap',
-        completion_resource='compute.urlMaps',
-        help='The name of the URL map.')
-
   @property
   def method(self):
     return 'InvalidateCache'
@@ -77,11 +78,10 @@ class InvalidateCdnCacheGA(base_classes.NoOutputMutator):
 
   def CreateRequests(self, args):
     """Returns a list of requests necessary for cache invalidations."""
-    url_map_ref = self.CreateGlobalReference(
-        args.urlmap, resource_type='urlMaps')
+    url_map_ref = self.URL_MAP_ARG.ResolveAsResource(args, self.resources)
     cache_invalidation_rule = self.messages.CacheInvalidationRule(
         path=args.path)
-    # TODO(user): Remove hasattr when --host goes GA.
+    # TODO(b/31961207): Remove hasattr when --host goes GA.
     if hasattr(args, 'host') and args.host is not None:
       cache_invalidation_rule.host = args.host
     request = self.messages.ComputeUrlMapsInvalidateCacheRequest(

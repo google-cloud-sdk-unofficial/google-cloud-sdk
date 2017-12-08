@@ -14,14 +14,20 @@
 """Command for removing a host rule from a URL map."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
 class RemoveHostRule(base_classes.ReadWriteCommand):
   """Remove a host rule from a URL map."""
 
-  @staticmethod
-  def Args(parser):
+  URL_MAP_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.URL_MAP_ARG = flags.UrlMapArgument()
+    cls.URL_MAP_ARG.AddArgument(parser)
+
     parser.add_argument(
         '--host',
         required=True,
@@ -35,10 +41,6 @@ class RemoveHostRule(base_classes.ReadWriteCommand):
               'command, the command removes the orphaned path matcher instead '
               'of failing.'))
 
-    parser.add_argument(
-        'name',
-        help='The name of the URL map.')
-
   @property
   def service(self):
     return self.compute.urlMaps
@@ -48,7 +50,7 @@ class RemoveHostRule(base_classes.ReadWriteCommand):
     return 'urlMaps'
 
   def CreateReference(self, args):
-    return self.CreateGlobalReference(args.name)
+    return self.URL_MAP_ARG.ResolveAsResource(args, self.resources)
 
   def GetGetRequest(self, args):
     """Returns the request for the existing URL map resource."""

@@ -71,8 +71,7 @@ def _AddArgs(parser):
                       category=base.COMMONLY_USED_FLAGS,
                       help=('Original instance template resource to be used. '
                             'Each version has the following format: '
-                            'template=TEMPLATE,[target-size=FIXED_OR_PERCENT]'),
-                      metavar='VERSION_ORIGINAL')
+                            'template=TEMPLATE,[target-size=FIXED_OR_PERCENT]'))
   parser.add_argument('--version-new',
                       type=arg_parsers.ArgDict(spec={
                           'template': str,
@@ -81,8 +80,7 @@ def _AddArgs(parser):
                       category=base.COMMONLY_USED_FLAGS,
                       help=('New instance template resource to be used. '
                             'Each version has the following format: '
-                            'template=TEMPLATE,[target-size=FIXED_OR_PERCENT]'),
-                      metavar='VERSION_NEW')
+                            'template=TEMPLATE,[target-size=FIXED_OR_PERCENT]'))
   parser.add_argument('--force',
                       action='store_true',
                       help=('If set, accepts any original or new version '
@@ -134,9 +132,10 @@ class UpdateInstancesAlpha(base_classes.BaseAsyncMutator):
       versions = []
       if args.version_original:
         versions.append(update_instances_utils.ParseVersion(
-            '--version-original', args.version_original, self, self.messages))
+            '--version-original', args.version_original, self.resources,
+            self.messages))
       versions.append(update_instances_utils.ParseVersion(
-          '--version-new', args.version_new, self, self.messages))
+          '--version-new', args.version_new, self.resources, self.messages))
       managed_instance_groups_utils.ValidateVersions(
           igm_info, versions, args.force)
 

@@ -15,6 +15,11 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.backend_buckets import (
+    flags as backend_bucket_flags)
+from googlecloudsdk.command_lib.compute.backend_services import (
+    flags as backend_service_flags)
+from googlecloudsdk.command_lib.compute.url_maps import flags
 
 
 def _Args(parser):
@@ -22,23 +27,24 @@ def _Args(parser):
   parser.add_argument(
       '--description',
       help='An optional, textual description for the URL map.')
-  parser.add_argument(
-      'name',
-      help='The name of the URL map.')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class CreateGA(base_classes.BaseAsyncCreator):
   """Create a URL map."""
 
-  @staticmethod
-  def Args(parser):
+  BACKEND_SERVICE_ARG = None
+  URL_MAP_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.BACKEND_SERVICE_ARG = (
+        backend_service_flags.BackendServiceArgumentForUrlMap())
+    cls.BACKEND_SERVICE_ARG.AddArgument(parser)
+    cls.URL_MAP_ARG = flags.UrlMapArgument()
+    cls.URL_MAP_ARG.AddArgument(parser)
+
     _Args(parser)
-    parser.add_argument(
-        '--default-service',
-        required=True,
-        help=('A backend service that will be used for requests for which this '
-              'URL map has no mappings.'))
 
   @property
   def service(self):
@@ -53,10 +59,10 @@ class CreateGA(base_classes.BaseAsyncCreator):
     return 'urlMaps'
 
   def CreateRequests(self, args):
-    default_service_uri = self.CreateGlobalReference(
-        args.default_service, resource_type='backendServices').SelfLink()
+    default_service_uri = self.BACKEND_SERVICE_ARG.ResolveAsResource(
+        args, self.resources).SelfLink()
 
-    url_map_ref = self.CreateGlobalReference(args.name)
+    url_map_ref = self.URL_MAP_ARG.ResolveAsResource(args, self.resources)
 
     request = self.messages.ComputeUrlMapsInsertRequest(
         project=self.project,
@@ -71,8 +77,17 @@ class CreateGA(base_classes.BaseAsyncCreator):
 class CreateAlpha(CreateGA):
   """Create a URL map."""
 
-  @staticmethod
-  def Args(parser):
+  BACKEND_BUCKET_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.BACKEND_BUCKET_ARG = (
+        backend_bucket_flags.BackendBucketArgumentForUrlMap(required=False))
+    cls.BACKEND_SERVICE_ARG = (
+        backend_service_flags.BackendServiceArgumentForUrlMap(required=False))
+    cls.URL_MAP_ARG = flags.UrlMapArgument()
+    cls.URL_MAP_ARG.AddArgument(parser)
+
     _Args(parser)
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument(
@@ -88,15 +103,13 @@ class CreateAlpha(CreateGA):
 
   def CreateRequests(self, args):
     if args.default_service:
-      default_backend_uri = self.CreateGlobalReference(
-          args.default_service,
-          resource_type='backendServices').SelfLink()
+      default_backend_uri = self.BACKEND_SERVICE_ARG.ResolveAsResource(
+          args, self.resources).SelfLink()
     else:
-      default_backend_uri = self.CreateGlobalReference(
-          args.default_backend_bucket,
-          resource_type='backendBuckets').SelfLink()
+      default_backend_uri = self.BACKEND_BUCKET_ARG.ResolveAsResource(
+          args, self.resources).SelfLink()
 
-    url_map_ref = self.CreateGlobalReference(args.name)
+    url_map_ref = self.URL_MAP_ARG.ResolveAsResource(args, self.resources)
 
     request = self.messages.ComputeUrlMapsInsertRequest(
         project=self.project,

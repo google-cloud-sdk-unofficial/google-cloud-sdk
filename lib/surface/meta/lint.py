@@ -130,8 +130,7 @@ class BadListsChecker(Checker):
 
   def _ForEvery(self, cmd_or_group):
     for flag in cmd_or_group.GetSpecificFlags():
-      if (not hasattr(flag, '_NOLINT')
-          and flag.nargs not in [None, 0, 1, '?']):
+      if flag.nargs not in [None, 0, 1, '?']:
         self._issues.append(LintError(
             name=BadListsChecker.name,
             command=cmd_or_group,
@@ -146,13 +145,6 @@ class BadListsChecker(Checker):
               command=cmd_or_group,
               error_message=(
                   'list flag [{flg}] has no metavar'.format(
-                      flg=flag.option_strings[0]))))
-        if not hasattr(flag, '_NOLINT'):
-          self._issues.append(LintError(
-              name=BadListsChecker.name,
-              command=cmd_or_group,
-              error_message=(
-                  'list flag [{flg}] does not catch floating lists'.format(
                       flg=flag.option_strings[0]))))
 
   def ForEveryGroup(self, group):

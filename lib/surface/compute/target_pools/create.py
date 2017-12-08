@@ -15,8 +15,13 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
-from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.command_lib.compute.backend_services import flags as backend_services_flags
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.backend_services import (
+    flags as backend_services_flags)
+from googlecloudsdk.command_lib.compute.http_health_checks import (
+    flags as http_health_check_flags)
+from googlecloudsdk.command_lib.compute.target_pools import flags
+from googlecloudsdk.core import log
 
 
 class Create(base_classes.BaseAsyncCreator):
@@ -35,8 +40,20 @@ class Create(base_classes.BaseAsyncCreator):
   target-pools add-instances'.
   """
 
-  @staticmethod
-  def Args(parser):
+  BACKUP_POOL_ARG = None
+  HTTP_HEALTH_CHECK_ARG = None
+  TARGET_POOL_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.BACKUP_POOL_ARG = flags.BackupPoolArgument(required=False)
+    cls.HTTP_HEALTH_CHECK_ARG = (
+        http_health_check_flags.HttpHealthCheckArgumentForTargetPoolCreate(
+            required=False))
+    cls.HTTP_HEALTH_CHECK_ARG.AddArgument(parser)
+    cls.TARGET_POOL_ARG = flags.TargetPoolArgument()
+    cls.TARGET_POOL_ARG.AddArgument(parser, operation_type='create')
+
     backup_pool = parser.add_argument(
         '--backup-pool',
         help='Defines the fallback pool for the target pool.')
@@ -80,6 +97,7 @@ class Create(base_classes.BaseAsyncCreator):
               'in the pool.'),
         metavar='HEALTH_CHECK')
     health_check.detailed_help = """\
+        DEPRECATED, use --http-health-check.
         Specifies an HTTP health check resource to use to determine the health
         of instances in this pool. If no health check is specified, traffic will
         be sent to all instances in this target pool as if the instances
@@ -88,16 +106,7 @@ class Create(base_classes.BaseAsyncCreator):
         check.
         """
 
-    flags.AddRegionFlag(
-        parser,
-        resource_type='target pool',
-        operation_type='create')
-
     backend_services_flags.AddSessionAffinity(parser, target_pools=True)
-
-    parser.add_argument(
-        'name',
-        help='The name of the target pool.')
 
   @property
   def service(self):
@@ -125,17 +134,27 @@ class Create(base_classes.BaseAsyncCreator):
             '[--failover-ratio] must be a number between 0 and 1, inclusive.')
 
     if args.health_check:
-      health_check = [self.CreateGlobalReference(
-          args.health_check, resource_type='httpHealthChecks').SelfLink()]
+      args.http_health_check = args.health_check
+      log.warn('The --health-check flag is deprecated. Use equivalent '
+               '--http-health-check=%s flag.', args.health_check)
+
+    if args.http_health_check:
+      http_health_check = [self.HTTP_HEALTH_CHECK_ARG.ResolveAsResource(
+          args, self.resources).SelfLink()]
 
     else:
-      health_check = []
+      http_health_check = []
 
-    target_pool_ref = self.CreateRegionalReference(args.name, args.region)
+    target_pool_ref = self.TARGET_POOL_ARG.ResolveAsResource(
+        args,
+        self.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
+                                                         self.project))
 
     if args.backup_pool:
-      backup_pool_uri = self.CreateRegionalReference(
-          args.backup_pool, target_pool_ref.region).SelfLink()
+      args.backup_pool_region = target_pool_ref.region
+      backup_pool_uri = self.BACKUP_POOL_ARG.ResolveAsResource(
+          args, self.resources).SelfLink()
     else:
       backup_pool_uri = None
 
@@ -144,7 +163,7 @@ class Create(base_classes.BaseAsyncCreator):
             backupPool=backup_pool_uri,
             description=args.description,
             failoverRatio=args.failover_ratio,
-            healthChecks=health_check,
+            healthChecks=http_health_check,
             name=target_pool_ref.Name(),
             sessionAffinity=(
                 self.messages.TargetPool.SessionAffinityValueValuesEnum(

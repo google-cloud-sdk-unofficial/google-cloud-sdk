@@ -138,7 +138,8 @@ class CreateGA(base_classes.BaseAsyncCreator, zone_utils.ZoneResourceFetcher,
         targetPools=pools,
         targetSize=int(args.size))
     auto_healing_policies = (
-        managed_instance_groups_utils.CreateAutohealingPolicies(self, args))
+        managed_instance_groups_utils.CreateAutohealingPolicies(
+            self.resources, self.messages, args))
     if auto_healing_policies:
       instance_group_manager.autoHealingPolicies = auto_healing_policies
 

@@ -17,23 +17,20 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
-from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.target_pools import flags
 
 
 class GetHealth(base_classes.BaseCommand):
   """Get the health of instances in a target pool."""
 
-  @staticmethod
-  def Args(parser):
-    flags.AddRegionFlag(
-        parser,
-        resource_type='target pool',
-        operation_type='get health information for')
+  TARGET_POOL_ARG = None
 
-    parser.add_argument(
-        'name',
-        completion_resource='targetPools',
-        help='The name of the target pool.')
+  @classmethod
+  def Args(cls, parser):
+    cls.TARGET_POOL_ARG = flags.TargetPoolArgument()
+    cls.TARGET_POOL_ARG.AddArgument(
+        parser, operation_type='get health information for')
 
   @property
   def service(self):
@@ -65,8 +62,11 @@ class GetHealth(base_classes.BaseCommand):
 
   def Run(self, args):
     """Returns a list of TargetPoolInstanceHealth objects."""
-    self.target_pool_ref = self.CreateRegionalReference(
-        args.name, args.region, resource_type='targetPools')
+    self.target_pool_ref = self.TARGET_POOL_ARG.ResolveAsResource(
+        args,
+        self.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
+                                                         self.project))
     target_pool = self.GetTargetPool()
     instances = target_pool.instances
 

@@ -15,33 +15,37 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
-from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.command_lib.compute.target_pools import flags
+from googlecloudsdk.core import log
 
 
 class AddInstances(base_classes.NoOutputAsyncMutator):
   """Add instances to a target pool."""
 
-  @staticmethod
-  def Args(parser):
-    parser.add_argument(
-        '--instances',
-        type=arg_parsers.ArgList(min_length=1),
-        help='Specifies a list of instances to add to the target pool.',
-        completion_resource='compute.instances',
-        metavar='INSTANCE',
-        required=True)
+  INSTANCE_ARG = None
+  TARGET_POOL_ARG = None
 
-    flags.AddZoneFlag(
+  @classmethod
+  def Args(cls, parser):
+    cls.INSTANCE_ARG = instance_flags.InstanceArgumentForTargetPool('add to')
+    cls.INSTANCE_ARG.AddArgument(
+        parser,
+        operation_type='add to the target pool',
+        cust_metavar='INSTANCE')
+    cls.TARGET_POOL_ARG = flags.TargetPoolArgumentForAddRemoveInstances(
+        help_suffix=' to which to add the instances.')
+    cls.TARGET_POOL_ARG.AddArgument(parser)
+
+    compute_flags.AddZoneFlag(
         parser,
         resource_type='instances',
-        operation_type='add to the target pool')
-
-    parser.add_argument(
-        'name',
-        completion_resource='compute.targetPools',
-        help='The name of the target pool to which to add the instances.')
+        operation_type='add to the target pool',
+        explanation=(
+            'DEPRECATED, use --instances-zone. '
+            'If not specified, you will be prompted to select a zone.'))
 
   @property
   def service(self):
@@ -56,8 +60,16 @@ class AddInstances(base_classes.NoOutputAsyncMutator):
     return 'targetPools'
 
   def CreateRequests(self, args):
-    instance_refs = self.CreateZonalReferences(
-        args.instances, args.zone, resource_type='instances')
+    if args.zone and not args.instances_zone:
+      args.instances_zone = args.zone
+      log.warn('The --zone flag is deprecated. Use equivalent '
+               '--instances-zone=%s flag.', args.instances_zone)
+
+    instance_refs = self.INSTANCE_ARG.ResolveAsResource(
+        args,
+        self.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
+                                                         self.project))
 
     instances = [
         self.messages.InstanceReference(instance=instance_ref.SelfLink())
@@ -71,9 +83,17 @@ class AddInstances(base_classes.NoOutputAsyncMutator):
       raise calliope_exceptions.ToolException(
           'Instances must all be in the same region as the target pool.')
 
-    target_pool_ref = self.CreateRegionalReference(
-        args.name, unique_regions.pop(),
-        resource_type='targetPools')
+    region = unique_regions.pop()
+
+    # Check that the region of the instances is the same as target pool region.
+    if args.region and region != args.region:
+      raise calliope_exceptions.ToolException(
+          'Instances must all be in the same region as the target pool.')
+
+    args.region = region
+
+    target_pool_ref = self.TARGET_POOL_ARG.ResolveAsResource(args,
+                                                             self.resources)
 
     request = self.messages.ComputeTargetPoolsAddInstanceRequest(
         region=target_pool_ref.region,

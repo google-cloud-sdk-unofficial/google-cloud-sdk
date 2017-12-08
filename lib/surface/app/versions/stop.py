@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.resource import resource_printer
 
 
@@ -89,8 +90,8 @@ class Stop(base.Command):
     errors = []
     for version in sorted(versions):
       try:
-        with console_io.ProgressTracker('Stopping [{0}]'.format(version)):
-          api_client.StopVersion(version.service, version.id)
+        with progress_tracker.ProgressTracker('Stopping [{0}]'.format(version)):
+          api_client.StopVersion(version.service, version.id, block=True)
       except (calliope_exceptions.HttpException, operations.OperationError,
               operations.OperationTimeoutError) as err:
         errors.append(str(err))

@@ -15,7 +15,10 @@
 """Command for adding health checks to target pools."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.http_health_checks import (
+    flags as http_health_check_flags)
+from googlecloudsdk.command_lib.compute.target_pools import flags
 
 
 class AddHealthChecks(base_classes.NoOutputAsyncMutator):
@@ -30,25 +33,18 @@ class AddHealthChecks(base_classes.NoOutputAsyncMutator):
   [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
   """
 
-  @staticmethod
-  def Args(parser):
-    parser.add_argument(
-        '--http-health-check',
-        help=('Specifies an HTTP health check object to add to the '
-              'target pool.'),
-        metavar='HEALTH_CHECK',
-        completion_resource='httpHealthCheck',
-        required=True)
+  HEALTH_CHECK_ARG = None
+  TARGET_POOL_ARG = None
 
-    flags.AddRegionFlag(
-        parser,
-        resource_type='target pool',
-        operation_type='add health checks to')
-
-    parser.add_argument(
-        'name',
-        completion_resource='targetPools',
-        help='The name of the target pool to which to add the health check.')
+  @classmethod
+  def Args(cls, parser):
+    cls.HEALTH_CHECK_ARG = (
+        http_health_check_flags.HttpHealthCheckArgumentForTargetPool('add to'))
+    cls.HEALTH_CHECK_ARG.AddArgument(parser)
+    cls.TARGET_POOL_ARG = flags.TargetPoolArgument(
+        help_suffix=' to which to add the health check.')
+    cls.TARGET_POOL_ARG.AddArgument(
+        parser, operation_type='add health checks to')
 
   @property
   def service(self):
@@ -63,10 +59,14 @@ class AddHealthChecks(base_classes.NoOutputAsyncMutator):
     return 'targetPools'
 
   def CreateRequests(self, args):
-    health_check_ref = self.CreateGlobalReference(
-        args.http_health_check, resource_type='httpHealthChecks')
+    health_check_ref = self.HEALTH_CHECK_ARG.ResolveAsResource(
+        args, self.resources)
 
-    target_pool_ref = self.CreateRegionalReference(args.name, args.region)
+    target_pool_ref = self.TARGET_POOL_ARG.ResolveAsResource(
+        args,
+        self.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
+                                                         self.project))
 
     request = self.messages.ComputeTargetPoolsAddHealthCheckRequest(
         region=target_pool_ref.region,

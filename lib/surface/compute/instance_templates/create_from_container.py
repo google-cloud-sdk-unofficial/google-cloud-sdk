@@ -169,10 +169,14 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
     persistent_create_disks = (
         instance_template_utils.CreatePersistentCreateDiskMessages(
             self, self.messages, getattr(args, 'create_disk', [])))
-    local_ssds = [
-        instance_utils.CreateLocalSsdMessage(
-            self, x.get('device-name'), x.get('interface'))
-        for x in args.local_ssd or []]
+    local_ssds = []
+    for x in args.local_ssd or []:
+      local_ssd = instance_utils.CreateLocalSsdMessage(
+          self.resources,
+          self.messages,
+          x.get('device-name'),
+          x.get('interface'))
+      local_ssds.append(local_ssd)
     return (boot_disk_list + persistent_disks +
             persistent_create_disks + local_ssds)
 

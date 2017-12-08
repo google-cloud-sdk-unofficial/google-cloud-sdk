@@ -105,7 +105,7 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
     """
     self.ValidateDiskFlags(args)
     instances_flags.ValidateLocalSsdFlags(args)
-    instances_flags.ValidateAddressFlags(args)
+    instances_flags.ValidateNicFlags(args)
 
     boot_disk_size_gb = utils.BytesToGb(args.boot_disk_size)
     utils.WarnIfDiskSizeIsTooSmall(boot_disk_size_gb, args.boot_disk_type)
@@ -184,10 +184,14 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
     else:
       boot_disk_list = []
 
-    local_ssds = [
-        instance_utils.CreateLocalSsdMessage(
-            self, x.get('device-name'), x.get('interface'))
-        for x in args.local_ssd or []]
+    local_ssds = []
+    for x in args.local_ssd or []:
+      local_ssd = instance_utils.CreateLocalSsdMessage(
+          self.resources,
+          self.messages,
+          x.get('device-name'),
+          x.get('interface'))
+      local_ssds.append(local_ssd)
 
     disks = (
         boot_disk_list + persistent_disks + persistent_create_disks + local_ssds

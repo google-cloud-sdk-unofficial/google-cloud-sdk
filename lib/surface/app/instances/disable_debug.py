@@ -21,6 +21,7 @@ from googlecloudsdk.api_lib.app import instances_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import flags
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.console import progress_tracker
 
 
 class DisableDebug(base.Command):
@@ -88,7 +89,7 @@ class DisableDebug(base.Command):
         'Any local changes will be LOST. New instance(s) may spawn depending '
         'on the app\'s scaling settings.'.format(instance), cancel_on_no=True)
     message = 'Disabling debug mode for instance [{0}]'.format(instance)
-    with console_io.ProgressTracker(message):
+    with progress_tracker.ProgressTracker(message):
       api_client.DeleteInstance(service=instance.service,
                                 version=instance.version,
                                 instance=instance.id)

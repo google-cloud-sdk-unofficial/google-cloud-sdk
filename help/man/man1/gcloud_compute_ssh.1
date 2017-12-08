@@ -11,7 +11,7 @@ gcloud compute ssh \- SSH into a virtual machine instance
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute ssh\fR [\fIUSER\fR@]\fIINSTANCE\fR [\fB\-\-command\fR=\fICOMMAND\fR] [\fB\-\-container\fR=\fICONTAINER\fR] [\fB\-\-dry\-run\fR] [\fB\-\-plain\fR] [\fB\-\-ssh\-flag\fR=\fISSH_FLAG\fR] [\fB\-\-ssh\-key\-file\fR=\fISSH_KEY_FILE\fR] [\fB\-\-strict\-host\-key\-checking\fR=\fISTRICT_HOST_KEY_CHECKING\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR] [\-\-\ \fIIMPLEMENTATION_ARGS\fR\ ...]
+\f5gcloud compute ssh\fR [\fIUSER\fR@]\fIINSTANCE\fR [\fB\-\-command\fR=\fICOMMAND\fR] [\fB\-\-container\fR=\fICONTAINER\fR] [\fB\-\-dry\-run\fR] [\fB\-\-plain\fR] [\fB\-\-ssh\-flag\fR=\fISSH_FLAG\fR] [\fB\-\-ssh\-key\-file\fR=\fISSH_KEY_FILE\fR] [\fB\-\-strict\-host\-key\-checking\fR=\fISTRICT_HOST_KEY_CHECKING\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR] [\-\-\ \fISSH_ARGS\fR\ ...]
 
 
 
@@ -38,16 +38,16 @@ Specifies the instance to SSH into.
 from the environment is selected.
 
 .RE
-[\-\- \fIIMPLEMENTATION_ARGS\fR ...]
+[\-\- \fISSH_ARGS\fR ...]
 .RS 2m
 Flags and positionals passed to the underlying ssh implementation.
 
 
 .RE
 The '\-\-' argument must be specified between gcloud specific args on the left
-and IMPLEMENTATION_ARGS on the right. IMPORTANT: previously, commands allowed
-the omission of the \-\-, and unparsed arguments were treated as implementation
-args. This usage is being deprecated and will be removed in March 2017. Example:
+and SSH_ARGS on the right. IMPORTANT: previously, commands allowed the omission
+of the \-\-, and unparsed arguments were treated as implementation args. This
+usage is being deprecated and will be removed in March 2017. Example:
 
 .RS 2m
 $ gcloud compute ssh example\-instance \-\-zone us\-central1\-a \-\- \-vvv \e

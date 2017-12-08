@@ -14,41 +14,24 @@
 """Command for describing operations."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources as resource_exceptions
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.operations import flags
+from googlecloudsdk.core import resources
 
 
 def AddFlags(parser, is_ga):
   """Helper function for adding flags dependant on the release track."""
-  base_classes.BaseDescriber.Args(parser)
-
-  scope = parser.add_mutually_exclusive_group()
-
-  scope.add_argument(
-      '--global',
-      action='store_true',
-      help=('If provided, it is assumed that the requested operation is '
-            'global.'))
-
-  scope.add_argument(
-      '--region',
-      help='The region of the operation to fetch.',
-      action=actions.StoreProperty(properties.VALUES.compute.region))
-
-  scope.add_argument(
-      '--zone',
-      help='The zone of the operation to fetch.',
-      action=actions.StoreProperty(properties.VALUES.compute.zone))
+  flags.COMPUTE_OPERATION_ARG.AddArgument(parser)
 
   if not is_ga:
-    scope.add_argument(
+    parser.add_argument(
         '--user-accounts',
         action='store_true',
         help=('If provided, it is assumed that the requested operation is '
-              'a Compute User Accounts operation.'))
+              'a Compute User Accounts operation. Mutually exclusive with '
+              '--global, --region, and --zone flags.'))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -67,79 +50,57 @@ class DescribeGA(base_classes.BaseDescriber):
   def service(self):
     return self._service
 
-  def ReferenceFromUri(self, args):
-    """Helper function for creating a ref from a Uri."""
-    try:
-      ref = self.resources.Parse(args.name, params={
-          'region': args.region, 'zone': args.zone})
-      return ref
-    except resource_exceptions.InvalidResourceException as e:
-      if not self._ga:
-        ref = self.clouduseraccounts_resources.Parse(
-            args.name)
-        return ref
-      else:
-        raise e
+  def _ValidateArgs(self, args):
+    if getattr(args, 'user_accounts', None) is None:
+      return
+    for arg in ['global', 'region', 'zone']:
+      if getattr(args, arg, None):
+        raise exceptions.ConflictingArgumentsException(
+            '--user-accounts', '--' + arg)
 
-  def ValidCollection(self, ref):
-    """Helper function for checking a reference is for an operation."""
-    if self._ga:
-      return ref.Collection() in (
-          'compute.globalOperations',
-          'compute.regionOperations',
-          'compute.zoneOperations')
-    else:
-      return ref.Collection() in (
-          'compute.globalOperations',
-          'compute.regionOperations',
-          'compute.zoneOperations',
-          'clouduseraccounts.globalAccountsOperations')
+  def _ResolveAsAccountOperation(self, args):
+    self._service = self.clouduseraccounts.globalAccountsOperations
+    return flags.ACCOUNT_OPERATION_ARG.ResolveAsResource(
+        args, self.clouduseraccounts_resources,
+        default_scope=compute_flags.ScopeEnum.GLOBAL)
+
+  def _RaiseWrongResourceCollectionException(self, got, path):
+    expected_collections = [
+        'compute.instances',
+        'compute.globalOperations',
+        'compute.regionOperations',
+        'compute.zoneOperations',
+        'clouduseraccounts.globalAccountsOperations',
+    ]
+    raise resources.WrongResourceCollectionException(
+        expected=','.join(expected_collections),
+        got=got,
+        path=path)
 
   def CreateReference(self, args):
-    try:
-      ref = self.ReferenceFromUri(args)
-    except resource_exceptions.UnknownCollectionException:
-      if getattr(args, 'global'):
-        ref = self.CreateGlobalReference(
-            args.name, resource_type='globalOperations')
-      elif args.region:
-        ref = self.CreateRegionalReference(
-            args.name, args.region, resource_type='regionOperations')
-      elif args.zone:
-        ref = self.CreateZonalReference(
-            args.name, args.zone, resource_type='zoneOperations')
-      elif not self._ga and args.user_accounts:
-        ref = self.clouduseraccounts_resources.Parse(
-            args.name, collection='clouduseraccounts.globalAccountsOperations')
-      else:
-        # TODO(user): Instead of raising here, we should really just
-        # prompt for {global, <list of regions>, <list of zones>}, but
-        # for now, it's more important to go into GA than to solve
-        # this small problem.
-        raise exceptions.ToolException(
-            ('Either pass in the full URI of an operation object or pass in '
-             '[--global], [--region], or [--zone] when specifying just the '
-             'operation name.') if self._ga else
-            ('Either pass in the full URI of an operation object or pass in '
-             '[--global], [--region], [--zone], or [--user-accounts] when '
-             'specifying just the operation name.'))
+    self._ValidateArgs(args)
 
-    if not self.ValidCollection(ref):
-      raise exceptions.ToolException(
-          ('You must pass in a reference to a global, regional, or zonal '
-           'operation.') if self._ga else
-          ('You must pass in a reference to a global, regional, zonal, or '
-           'user accounts operation.'))
+    if not self._ga and args.user_accounts:
+      return self._ResolveAsAccountOperation(args)
+
+    try:
+      ref = flags.COMPUTE_OPERATION_ARG.ResolveAsResource(
+          args, self.resources, default_scope=compute_flags.ScopeEnum.GLOBAL,
+          scope_lister=compute_flags.GetDefaultScopeLister(
+              self.compute_client, self.project))
+    except resources.WrongResourceCollectionException:
+      try:
+        return self._ResolveAsAccountOperation(args)
+      except resources.WrongResourceCollectionException as ex:
+        self._RaiseWrongResourceCollectionException(ex.got, ex.path)
+
+    if ref.Collection() == 'compute.globalOperations':
+      self._service = self.compute.globalOperations
+    elif ref.Collection() == 'compute.regionOperations':
+      self._service = self.compute.regionOperations
     else:
-      if ref.Collection() == 'compute.globalOperations':
-        self._service = self.compute.globalOperations
-      elif ref.Collection() == 'compute.regionOperations':
-        self._service = self.compute.regionOperations
-      elif ref.Collection() == 'clouduseraccounts.globalAccountsOperations':
-        self._service = self.clouduseraccounts.globalAccountsOperations
-      else:
-        self._service = self.compute.zoneOperations
-      return ref
+      self._service = self.compute.zoneOperations
+    return ref
 
   def ScopeRequest(self, ref, request):
     if ref.Collection() == 'compute.regionOperations':

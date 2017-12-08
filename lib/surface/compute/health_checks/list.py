@@ -14,10 +14,11 @@
 """Command for listing health checks."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 
 
-class List(base_classes.BaseLister):
+class _BaseList(object):
   """List health checks."""
 
   @staticmethod
@@ -38,7 +39,17 @@ class List(base_classes.BaseLister):
     protocol_dict = self.messages.HealthCheck.TypeValueValuesEnum.to_dict()
     return protocol_dict.get(args.protocol.upper())
 
-  def Format(self, args):
+  def _ProtocolWhitelist(self):
+    # Returns a list of whitelisted protocols.
+    return [
+        self.messages.HealthCheck.TypeValueValuesEnum.HTTP.number,
+        self.messages.HealthCheck.TypeValueValuesEnum.HTTPS.number,
+        self.messages.HealthCheck.TypeValueValuesEnum.TCP.number,
+        self.messages.HealthCheck.TypeValueValuesEnum.SSL.number
+    ]
+
+  def _GetValidColumns(self, args):
+    """Returns a list of valid columns."""
     # Start with the columns that apply to all protocols.
     columns = ['name:label=NAME', 'type:label=PROTOCOL']
 
@@ -59,12 +70,6 @@ class List(base_classes.BaseLister):
                         'httpsHealthCheck.requestPath:label=REQUEST_PATH',
                         'httpsHealthCheck.proxyHeader:label=PROXY_HEADER'])
       elif (protocol_value ==
-            self.messages.HealthCheck.TypeValueValuesEnum.HTTP2.number):
-        columns.extend(['http2HealthCheck.host:label=HOST',
-                        'http2HealthCheck.port:label=PORT',
-                        'http2HealthCheck.requestPath:label=REQUEST_PATH',
-                        'http2HealthCheck.proxyHeader:label=PROXY_HEADER'])
-      elif (protocol_value ==
             self.messages.HealthCheck.TypeValueValuesEnum.TCP.number):
         columns.extend(['tcpHealthCheck.port:label=PORT',
                         'tcpHealthCheck.request:label=REQUEST',
@@ -77,6 +82,10 @@ class List(base_classes.BaseLister):
                         'sslHealthCheck.response:label=RESPONSE',
                         'sslHealthCheck.proxyHeader:label=PROXY_HEADER'])
 
+    return columns
+
+  def Format(self, args):
+    columns = self._GetValidColumns(args)
     return 'table[]({columns})'.format(columns=','.join(columns))
 
   @property
@@ -88,6 +97,7 @@ class List(base_classes.BaseLister):
     return 'healthChecks'
 
   def GetResources(self, args, errors):
+    """Gets a list of global healthcheck resources."""
     health_checks = lister.GetGlobalResources(
         service=self.service,
         project=self.project,
@@ -100,15 +110,8 @@ class List(base_classes.BaseLister):
     # it to a number.
     protocol_value = None
     if args.protocol is not None:
-      protocol_whitelist = [
-          self.messages.HealthCheck.TypeValueValuesEnum.HTTP.number,
-          self.messages.HealthCheck.TypeValueValuesEnum.HTTPS.number,
-          self.messages.HealthCheck.TypeValueValuesEnum.HTTP2.number,
-          self.messages.HealthCheck.TypeValueValuesEnum.TCP.number,
-          self.messages.HealthCheck.TypeValueValuesEnum.SSL.number
-          ]
       protocol_value = self._ConvertProtocolArgToValue(args)
-      if protocol_value not in protocol_whitelist:
+      if protocol_value not in self._ProtocolWhitelist():
         raise exceptions.ToolException(
             'Invalid health check protocol ' + args.protocol + '.')
 
@@ -117,4 +120,32 @@ class List(base_classes.BaseLister):
         yield health_check
 
 
-List.detailed_help = base_classes.GetGlobalListerHelp('health checks')
+_BaseList.detailed_help = base_classes.GetGlobalListerHelp('health checks')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class ListBetaAndGA(_BaseList, base_classes.BaseLister):
+  """List health checks in Beta or GA."""
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(_BaseList, base_classes.BaseLister):
+  """List health checks in Alpha."""
+
+  def _ProtocolWhitelist(self):
+    # Returns a list of whitelisted protocols.
+    whitelist = super(ListAlpha, self)._ProtocolWhitelist()
+    whitelist.append(self.messages.HealthCheck.TypeValueValuesEnum.HTTP2.number)
+    return whitelist
+
+  def Format(self, args):
+    columns = self._GetValidColumns(args)
+    if args.protocol is not None:
+      protocol_value = self._ConvertProtocolArgToValue(args)
+      if (protocol_value ==
+          self.messages.HealthCheck.TypeValueValuesEnum.HTTP2.number):
+        columns.extend(['http2HealthCheck.host:label=HOST',
+                        'http2HealthCheck.port:label=PORT',
+                        'http2HealthCheck.requestPath:label=REQUEST_PATH',
+                        'http2HealthCheck.proxyHeader:label=PROXY_HEADER'])
+    return 'table[]({columns})'.format(columns=','.join(columns))

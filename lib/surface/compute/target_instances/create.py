@@ -17,7 +17,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instances import (flags as
-                                                          instances_flags)
+                                                          instance_flags)
 from googlecloudsdk.command_lib.compute.target_instances import flags
 
 
@@ -29,7 +29,7 @@ class Create(base_classes.BaseAsyncCreator):
 
   @classmethod
   def Args(cls, parser):
-    cls.INSTANCE_ARG = instances_flags.InstanceArgumentForTargetInstance()
+    cls.INSTANCE_ARG = instance_flags.InstanceArgumentForTargetInstance()
     cls.INSTANCE_ARG.AddArgument(parser)
     cls.TARGET_INSTANCE_ARG = flags.TargetInstanceArgument()
     cls.TARGET_INSTANCE_ARG.AddArgument(

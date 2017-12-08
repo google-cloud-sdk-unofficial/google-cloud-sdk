@@ -51,7 +51,7 @@ class List(base.ListCommand):
     """
     parser.add_argument(
         '--show-occurrences',
-        action='store_true', default=True, help=argparse.SUPPRESS)
+        action='store_true', default=False, help=argparse.SUPPRESS)
     parser.add_argument(
         'image',
         help='The name of the image. Format: *.gcr.io/repository/image')

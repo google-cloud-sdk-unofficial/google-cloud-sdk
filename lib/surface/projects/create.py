@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Command to create a new project."""
 
 import httplib
@@ -19,22 +18,24 @@ import sys
 
 from apitools.base.py import exceptions as apitools_exceptions
 
+from googlecloudsdk.api_lib.cloudresourcemanager import operations
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
+from googlecloudsdk.api_lib.service_management import enable_api as services_enable_api
+from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.projects import util as command_lib_util
 from googlecloudsdk.command_lib.util import labels_util
 
+from googlecloudsdk.core import apis
 from googlecloudsdk.core import log
-
 
 ID_DESCRIPTION = ('Project IDs must start with a lowercase letter and can '
                   'have lowercase ASCII letters, digits or hyphens. '
                   'Project IDs must be between 6 and 30 characters.')
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create a new project.
@@ -58,29 +59,30 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     labels_util.AddCreateLabelsFlags(parser)
-    type_ = arg_parsers.RegexpValidator(
-        r'[a-z][a-z0-9-]{5,29}',
-        ID_DESCRIPTION)
+    type_ = arg_parsers.RegexpValidator(r'[a-z][a-z0-9-]{5,29}', ID_DESCRIPTION)
     project_id = parser.add_argument(
-        'id', metavar='PROJECT_ID', type=type_,
+        'id',
+        metavar='PROJECT_ID',
+        type=type_,
         help='ID for the project you want to create.')
     project_id.detailed_help = ('ID for the project you want to create.'
                                 '\n\n{0}'.format(ID_DESCRIPTION))
-    parser.add_argument('--name',
-                        help='Name for the project you want to create. '
-                             'If not specified, will use project id as name.')
-    parser.add_argument('--enable-cloud-apis',
-                        action='store_true',
-                        default=True,
-                        help='Enable cloudapis.googleapis.com during creation.')
+    parser.add_argument(
+        '--name',
+        help='Name for the project you want to create. '
+        'If not specified, will use project id as name.')
+    parser.add_argument(
+        '--enable-cloud-apis',
+        action='store_true',
+        default=True,
+        help='Enable cloudapis.googleapis.com during creation.')
 
   def Run(self, args):
     project_ref = command_lib_util.ParseProject(args.id)
     try:
-      result = projects_api.Create(
+      create_op = projects_api.Create(
           project_ref,
-          args.name,
-          args.enable_cloud_apis,
+          display_name=args.name,
           update_labels=labels_util.GetUpdateLabelsDictFromArgs(args))
     except apitools_exceptions.HttpError as error:
       if error.status_code == httplib.CONFLICT:
@@ -90,6 +92,17 @@ class Create(base.CreateCommand):
         unused_type, unused_value, traceback = sys.exc_info()
         raise exceptions.HttpException, msg, traceback
       raise
-    log.CreatedResource(project_ref)
-    return result
+    log.CreatedResource(project_ref, async=True)
+    create_op = operations.WaitForOperation(create_op)
 
+    # Enable cloudapis.googleapis.com
+    if args.enable_cloud_apis:
+      log.debug('Enabling cloudapis.googleapis.com')
+      services_client = apis.GetClientInstance('servicemanagement', 'v1')
+      enable_operation = services_enable_api.EnableServiceApiCall(
+          project_ref.Name(), 'cloudapis.googleapis.com')
+      services_util.WaitForOperation(enable_operation.name, services_client)
+      # TODO(user): Retry in case it failed?
+
+    return operations.ExtractOperationResponse(
+        create_op, apis.GetMessagesModule('cloudresourcemanager', 'v1').Project)

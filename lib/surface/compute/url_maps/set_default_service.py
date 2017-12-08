@@ -14,28 +14,28 @@
 """Command for changing the default service of a URL map."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.backend_buckets import (
+    flags as backend_bucket_flags)
+from googlecloudsdk.command_lib.compute.backend_services import (
+    flags as backend_service_flags)
+from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.third_party.py27 import py27_copy as copy
-
-
-def _Args(parser):
-  """Common arguments to set_default_service commands for each release track."""
-  parser.add_argument(
-      'name',
-      help='The name of the URL map.')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class SetDefaultServiceGA(base_classes.ReadWriteCommand):
   """Change the default service of a URL map."""
 
-  @staticmethod
-  def Args(parser):
-    _Args(parser)
-    parser.add_argument(
-        '--default-service',
-        required=True,
-        help=('A backend service that will be used for requests for which this '
-              'URL map has no mappings.'))
+  BACKEND_SERVICE_ARG = None
+  URL_MAP_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.BACKEND_SERVICE_ARG = (
+        backend_service_flags.BackendServiceArgumentForUrlMap())
+    cls.BACKEND_SERVICE_ARG.AddArgument(parser)
+    cls.URL_MAP_ARG = flags.UrlMapArgument()
+    cls.URL_MAP_ARG.AddArgument(parser)
 
   @property
   def service(self):
@@ -46,7 +46,7 @@ class SetDefaultServiceGA(base_classes.ReadWriteCommand):
     return 'urlMaps'
 
   def CreateReference(self, args):
-    return self.CreateGlobalReference(args.name)
+    return self.URL_MAP_ARG.ResolveAsResource(args, self.resources)
 
   def GetGetRequest(self, args):
     """Returns the request for the existing URL map resource."""
@@ -68,9 +68,8 @@ class SetDefaultServiceGA(base_classes.ReadWriteCommand):
     """Returns a modified URL map message."""
     replacement = copy.deepcopy(existing)
 
-    default_service_uri = self.CreateGlobalReference(
-        args.default_service, resource_type='backendServices').SelfLink()
-    replacement.defaultService = default_service_uri
+    replacement.defaultService = self.BACKEND_SERVICE_ARG.ResolveAsResource(
+        args, self.resources).SelfLink()
 
     return replacement
 
@@ -79,9 +78,17 @@ class SetDefaultServiceGA(base_classes.ReadWriteCommand):
 class SetDefaultServiceAlpha(SetDefaultServiceGA):
   """Change the default service of a URL map."""
 
-  @staticmethod
-  def Args(parser):
-    _Args(parser)
+  BACKEND_BUCKET_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.BACKEND_BUCKET_ARG = (
+        backend_bucket_flags.BackendBucketArgumentForUrlMap(required=False))
+    cls.BACKEND_SERVICE_ARG = (
+        backend_service_flags.BackendServiceArgumentForUrlMap(required=False))
+    cls.URL_MAP_ARG = flags.UrlMapArgument()
+    cls.URL_MAP_ARG.AddArgument(parser)
+
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument(
         '--default-service',
@@ -97,13 +104,11 @@ class SetDefaultServiceAlpha(SetDefaultServiceGA):
     replacement = copy.deepcopy(existing)
 
     if args.default_service:
-      default_backend_uri = self.CreateGlobalReference(
-          args.default_service,
-          resource_type='backendServices').SelfLink()
+      default_backend_uri = self.BACKEND_SERVICE_ARG.ResolveAsResource(
+          args, self.resources).SelfLink()
     else:
-      default_backend_uri = self.CreateGlobalReference(
-          args.default_backend_bucket,
-          resource_type='backendBuckets').SelfLink()
+      default_backend_uri = self.BACKEND_BUCKET_ARG.ResolveAsResource(
+          args, self.resources).SelfLink()
 
     replacement.defaultService = default_backend_uri
 

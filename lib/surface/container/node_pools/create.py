@@ -121,6 +121,7 @@ Alias,URI
       type=arg_parsers.ArgList(min_length=1),
       metavar='TAGS')
   flags.AddImageTypeFlag(parser, 'node pool')
+  flags.AddNodeLabelsFlag(parser, for_node_pool=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -132,7 +133,6 @@ class Create(base.CreateCommand):
     _Args(parser)
     flags.AddClusterAutoscalingFlags(parser, suppressed=True)
     flags.AddLocalSSDFlag(parser, suppressed=True)
-    flags.AddNodeLabelsFlag(parser, suppressed=True, for_node_pool=True)
 
   def ParseCreateNodePoolOptions(self, args):
     return api_adapter.CreateNodePoolOptions(
@@ -201,7 +201,6 @@ class CreateBeta(Create):
     _Args(parser)
     flags.AddClusterAutoscalingFlags(parser, suppressed=True)
     flags.AddLocalSSDFlag(parser)
-    flags.AddNodeLabelsFlag(parser, suppressed=False, for_node_pool=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -213,7 +212,6 @@ class CreateAlpha(Create):
     _Args(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDFlag(parser)
-    flags.AddNodeLabelsFlag(parser, suppressed=False, for_node_pool=True)
 
 
 Create.detailed_help = DETAILED_HELP

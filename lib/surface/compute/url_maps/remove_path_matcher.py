@@ -14,22 +14,24 @@
 """Command for removing a path matcher from a URL map."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
 class RemovePathMatcher(base_classes.ReadWriteCommand):
   """Remove a path matcher from a URL map."""
 
-  @staticmethod
-  def Args(parser):
+  URL_MAP_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.URL_MAP_ARG = flags.UrlMapArgument()
+    cls.URL_MAP_ARG.AddArgument(parser)
+
     parser.add_argument(
         '--path-matcher-name',
         required=True,
         help='The name of the path matcher to remove.')
-
-    parser.add_argument(
-        'name',
-        help='The name of the URL map.')
 
   @property
   def service(self):
@@ -40,7 +42,7 @@ class RemovePathMatcher(base_classes.ReadWriteCommand):
     return 'urlMaps'
 
   def CreateReference(self, args):
-    return self.CreateGlobalReference(args.name)
+    return self.URL_MAP_ARG.ResolveAsResource(args, self.resources)
 
   def GetGetRequest(self, args):
     """Returns the request for the existing URL map resource."""

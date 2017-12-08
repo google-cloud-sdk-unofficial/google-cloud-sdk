@@ -15,22 +15,27 @@
 """Command for creating routers."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.networks import flags as network_flags
+from googlecloudsdk.command_lib.compute.routers import flags
 
 
 class Create(base_classes.BaseAsyncCreator):
   """Define a router."""
 
-  @staticmethod
-  def Args(parser):
+  NETWORK_ARG = None
+  ROUTER_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
+        'The network for this router')
+    cls.NETWORK_ARG.AddArgument(parser)
+    cls.ROUTER_ARG = flags.RouterArgument()
+    cls.ROUTER_ARG.AddArgument(parser, operation_type='create')
+
     parser.add_argument(
         '--description',
         help='An optional description of this router.')
-
-    parser.add_argument(
-        '--network',
-        required=True,
-        help='The network for this router')
 
     parser.add_argument(
         '--asn',
@@ -38,15 +43,6 @@ class Create(base_classes.BaseAsyncCreator):
         type=int,
         # TODO(user): improve this help
         help='The BGP asn for this router')
-
-    flags.AddRegionFlag(
-        parser,
-        resource_type='router',
-        operation_type='create')
-
-    parser.add_argument(
-        'name',
-        help='The name of the router.')
 
   @property
   def service(self):
@@ -62,9 +58,8 @@ class Create(base_classes.BaseAsyncCreator):
 
   def CreateRequests(self, args):
     """Returns a list of requests necessary for adding a router."""
-    router_ref = self.CreateRegionalReference(args.name, args.region)
-    network_ref = self.CreateGlobalReference(
-        args.network, resource_type='networks')
+    router_ref = self.ROUTER_ARG.ResolveAsResource(args, self.resources)
+    network_ref = self.NETWORK_ARG.ResolveAsResource(args, self.resources)
 
     request = self.messages.ComputeRoutersInsertRequest(
         router=self.messages.Router(

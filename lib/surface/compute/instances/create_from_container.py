@@ -102,7 +102,7 @@ class CreateFromContainer(base_classes.BaseAsyncCreator,
     self.WarnForZonalCreation(instance_refs)
 
     network_interface = instance_utils.CreateNetworkInterfaceMessage(
-        scope_prompter=self,
+        resources=self.resources,
         compute_client=self.compute_client,
         network=args.network,
         subnet=args.subnet,
@@ -112,7 +112,7 @@ class CreateFromContainer(base_classes.BaseAsyncCreator,
         instance_refs=instance_refs)
 
     machine_type_uris = instance_utils.CreateMachineTypeUris(
-        scope_prompter=self,
+        resources=self.resources,
         compute_client=self.compute_client,
         project=self.project,
         machine_type=args.machine_type,
@@ -150,18 +150,23 @@ class CreateFromContainer(base_classes.BaseAsyncCreator,
     """Creates API messages with disks attached to VM instance."""
     persistent_disks, _ = (
         instance_utils.CreatePersistentAttachedDiskMessages(
-            self, self.compute_client, None, args.disk or [],
+            self.resources, self.compute_client, None, args.disk or [],
             instance_ref))
     persistent_create_disks = (
         instance_utils.CreatePersistentCreateDiskMessages(
             self, self.compute_client, self.resources, None,
             getattr(args, 'create_disk', []), instance_ref))
-    local_ssds = [
-        instance_utils.CreateLocalSsdMessage(
-            self, x.get('device-name'), x.get('interface'), instance_ref.zone)
-        for x in args.local_ssd or []]
+    local_ssds = []
+    for x in args.local_ssd or []:
+      local_ssd = instance_utils.CreateLocalSsdMessage(
+          self.resources,
+          self.messages,
+          x.get('device-name'),
+          x.get('interface'),
+          instance_ref.zone)
+      local_ssds.append(local_ssd)
     boot_disk = instance_utils.CreateDefaultBootAttachedDiskMessage(
-        self, self.compute_client, self.resources,
+        self.compute_client, self.resources,
         disk_type=args.boot_disk_type,
         disk_device_name=args.boot_disk_device_name,
         disk_auto_delete=args.boot_disk_auto_delete,

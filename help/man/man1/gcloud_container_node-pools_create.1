@@ -11,7 +11,7 @@ gcloud container node\-pools create \- create a node pool in a running cluster
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud container node\-pools create\fR \fINAME\fR [\fB\-\-cluster\fR=\fICLUSTER\fR] [\fB\-\-disk\-size\fR=\fIDISK_SIZE\fR] [\fB\-\-no\-enable\-cloud\-endpoints\fR] [\fB\-\-image\-type\fR=\fIIMAGE_TYPE\fR] [\fB\-\-machine\-type\fR=\fIMACHINE_TYPE\fR,\ \fB\-m\fR\ \fIMACHINE_TYPE\fR] [\fB\-\-num\-nodes\fR=\fINUM_NODES\fR;\ default="3"] [\fB\-\-scopes\fR=\fISCOPE\fR,[\fISCOPE\fR,...]] [\fB\-\-zone\fR=\fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud container node\-pools create\fR \fINAME\fR [\fB\-\-cluster\fR=\fICLUSTER\fR] [\fB\-\-disk\-size\fR=\fIDISK_SIZE\fR] [\fB\-\-no\-enable\-cloud\-endpoints\fR] [\fB\-\-image\-type\fR=\fIIMAGE_TYPE\fR] [\fB\-\-machine\-type\fR=\fIMACHINE_TYPE\fR,\ \fB\-m\fR\ \fIMACHINE_TYPE\fR] [\fB\-\-node\-labels\fR=[\fINODE_LABELS\fR,...]] [\fB\-\-num\-nodes\fR=\fINUM_NODES\fR;\ default="3"] [\fB\-\-scopes\fR=\fISCOPE\fR,[\fISCOPE\fR,...]] [\fB\-\-zone\fR=\fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -72,6 +72,21 @@ $ gcloud container get\-server\-config
 \fB\-\-machine\-type\fR=\fIMACHINE_TYPE\fR, \fB\-m\fR \fIMACHINE_TYPE\fR
 .RS 2m
 The type of machine to use for nodes. Defaults to server\-specified
+
+.RE
+\fB\-\-node\-labels\fR=[\fINODE_LABELS\fR,...]
+.RS 2m
+Applies the given kubernetes labels on all nodes in the new node\-pool. Example:
+
+.RS 2m
+$ gcloud container node\-pools create node\-pool\-1 \e
+    \-\-cluster=example\-cluster \e
+    \-\-node\-labels=label1=value1,label2=value2
+.RE
+
+New nodes, including ones created by resize or recreate, will have these labels
+on the kubernetes API node object and can be used in nodeSelectors. See
+http://kubernetes.io/docs/user\-guide/node\-selection/ for examples.
 
 .RE
 \fB\-\-num\-nodes\fR=\fINUM_NODES\fR; default="3"

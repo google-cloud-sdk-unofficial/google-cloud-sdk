@@ -77,7 +77,7 @@ def _Args(parser):
       """
 
   parser.add_argument(
-      'implementation_args',
+      'ssh_args',
       nargs=argparse.REMAINDER,
       help="""\
           Flags and positionals passed to the underlying ssh implementation.
@@ -143,8 +143,8 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
 
     ssh_args.append(ssh_utils.UserHost(user, external_ip_address))
 
-    if args.implementation_args:
-      ssh_args.extend(args.implementation_args)
+    if args.ssh_args:
+      ssh_args.extend(args.ssh_args)
     if args.container:
       ssh_args.append('--')
       ssh_args.append('container_exec')

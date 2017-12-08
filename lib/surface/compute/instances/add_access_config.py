@@ -14,6 +14,7 @@
 """Command for adding access configs to virtual machine instances."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 
@@ -38,6 +39,7 @@ class AddAccessConfigInstances(base_classes.NoOutputAsyncMutator):
 
     address = parser.add_argument(
         '--address',
+        action=arg_parsers.StoreOnceAction,
         help=('Specifies the external IP address of the new access '
               'configuration.'))
     address.detailed_help = """\
@@ -51,6 +53,7 @@ class AddAccessConfigInstances(base_classes.NoOutputAsyncMutator):
     network_interface = parser.add_argument(
         '--network-interface',
         default='nic0',
+        action=arg_parsers.StoreOnceAction,
         help=('Specifies the name of the network interface on which to add '
               'the new access configuration.'))
     network_interface.detailed_help = """\

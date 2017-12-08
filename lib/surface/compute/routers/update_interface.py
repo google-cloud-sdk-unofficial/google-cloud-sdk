@@ -16,7 +16,7 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
-from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
@@ -42,8 +42,13 @@ class RequireMaskError(exceptions.Error):
 class UpdateInterface(base_classes.ReadWriteCommand):
   """Update an interface on a router."""
 
-  @staticmethod
-  def Args(parser):
+  ROUTER_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.ROUTER_ARG = flags.RouterArgument()
+    cls.ROUTER_ARG.AddArgument(parser, operation_type='update')
+
     parser.add_argument(
         '--interface-name',
         required=True,
@@ -64,15 +69,6 @@ class UpdateInterface(base_classes.ReadWriteCommand):
         # TODO(user): better help
         help='The mask for network used for the server IP address.')
 
-    flags.AddRegionFlag(
-        parser,
-        resource_type='router',
-        operation_type='update')
-
-    parser.add_argument(
-        'name',
-        help='The name of the router.')
-
   @property
   def service(self):
     return self.compute.routers
@@ -82,7 +78,7 @@ class UpdateInterface(base_classes.ReadWriteCommand):
     return 'routers'
 
   def CreateReference(self, args):
-    return self.CreateRegionalReference(args.name, args.region)
+    return self.ROUTER_ARG.ResolveAsResource(args, self.resources)
 
   def GetGetRequest(self, args):
     return (self.service,

@@ -109,7 +109,7 @@ class Create(base_classes.BaseAsyncCreator,
   def CreateRequests(self, args):
     instances_flags.ValidateDiskFlags(args)
     instances_flags.ValidateLocalSsdFlags(args)
-    instances_flags.ValidateAddressFlags(args)
+    instances_flags.ValidateNicFlags(args)
 
     # This feature is only exposed in alpha/beta
     allow_rsa_encrypted = self.ReleaseTrack() in [base.ReleaseTrack.ALPHA,
@@ -152,14 +152,14 @@ class Create(base_classes.BaseAsyncCreator,
 
     if hasattr(args, 'network_interface') and args.network_interface:
       network_interfaces = instance_utils.CreateNetworkInterfaceMessages(
-          scope_prompter=self,
+          resources=self.resources,
           compute_client=self.compute_client,
           network_interface_arg=args.network_interface,
           instance_refs=instance_refs)
     else:
       network_interfaces = [
           instance_utils.CreateNetworkInterfaceMessage(
-              scope_prompter=self,
+              resources=self.resources,
               compute_client=self.compute_client,
               network=args.network,
               subnet=args.subnet,
@@ -170,7 +170,7 @@ class Create(base_classes.BaseAsyncCreator,
       ]
 
     machine_type_uris = instance_utils.CreateMachineTypeUris(
-        scope_prompter=self,
+        resources=self.resources,
         compute_client=self.compute_client,
         project=self.project,
         machine_type=args.machine_type,
@@ -201,8 +201,8 @@ class Create(base_classes.BaseAsyncCreator,
     for instance_ref in instance_refs:
       persistent_disks, boot_disk_ref = (
           instance_utils.CreatePersistentAttachedDiskMessages(
-              self, self.compute_client, self.csek_keys, args.disk or [],
-              instance_ref))
+              self.resources, self.compute_client, self.csek_keys,
+              args.disk or [], instance_ref))
       persistent_create_disks = (
           instance_utils.CreatePersistentCreateDiskMessages(
               self,
@@ -211,13 +211,20 @@ class Create(base_classes.BaseAsyncCreator,
               self.csek_keys,
               getattr(args, 'create_disk', []),
               instance_ref))
-      local_ssds = [
-          instance_utils.CreateLocalSsdMessage(
-              self, x.get('device-name'), x.get('interface'), instance_ref.zone)
-          for x in args.local_ssd or []]
+      local_ssds = []
+      for x in args.local_ssd or []:
+        local_ssds.append(
+            instance_utils.CreateLocalSsdMessage(
+                self.resources,
+                self.messages,
+                x.get('device-name'),
+                x.get('interface'),
+                instance_ref.zone)
+        )
+
       if create_boot_disk:
         boot_disk = instance_utils.CreateDefaultBootAttachedDiskMessage(
-            self, self.compute_client, self.resources,
+            self.compute_client, self.resources,
             disk_type=args.boot_disk_type,
             disk_device_name=args.boot_disk_device_name,
             disk_auto_delete=args.boot_disk_auto_delete,

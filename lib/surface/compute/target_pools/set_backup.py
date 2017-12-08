@@ -15,14 +15,24 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
-from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.target_pools import flags
 
 
 class SetBackup(base_classes.NoOutputAsyncMutator):
   """Set a backup pool for a target pool."""
 
-  @staticmethod
-  def Args(parser):
+  BACKUP_POOL_ARG = None
+  TARGET_POOL_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.BACKUP_POOL_ARG = flags.BackupPoolArgument()
+    cls.TARGET_POOL_ARG = flags.TargetPoolArgument(
+        help_suffix=' for which to set the backup pool.')
+    cls.TARGET_POOL_ARG.AddArgument(
+        parser, operation_type='set a backup pool for')
+
     parser.add_argument(
         '--backup-pool',
         nargs='?',
@@ -32,21 +42,11 @@ class SetBackup(base_classes.NoOutputAsyncMutator):
               'backup pool is removed.'),
         required=True)
 
-    flags.AddRegionFlag(
-        parser,
-        resource_type='target pool',
-        operation_type='set a backup pool for')
-
     parser.add_argument(
         '--failover-ratio',
         type=float,
         help=('The new failover ratio value for the target pool. '
               'This must be a float in the range of [0, 1].'))
-
-    parser.add_argument(
-        'name',
-        completion_resource='targetPools',
-        help='The name of the target pool for which to set the backup pool.')
 
   @property
   def service(self):
@@ -63,12 +63,16 @@ class SetBackup(base_classes.NoOutputAsyncMutator):
   def CreateRequests(self, args):
     """Returns a request necessary for setting a backup target pool."""
 
-    target_pool_ref = self.CreateRegionalReference(args.name, args.region)
+    target_pool_ref = self.TARGET_POOL_ARG.ResolveAsResource(
+        args,
+        self.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
+                                                         self.project))
 
     if args.backup_pool:
-      backup_pool_ref = self.CreateRegionalReference(
-          args.backup_pool, target_pool_ref.region,
-          resource_type='targetPools')
+      args.backup_pool_region = target_pool_ref.region
+      backup_pool_ref = self.BACKUP_POOL_ARG.ResolveAsResource(args,
+                                                               self.resources)
       target_reference = self.messages.TargetReference(
           target=backup_pool_ref.SelfLink())
     else:

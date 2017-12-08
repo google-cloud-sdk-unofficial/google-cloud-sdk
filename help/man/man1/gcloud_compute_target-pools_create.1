@@ -11,7 +11,7 @@ gcloud compute target\-pools create \- define a load\-balanced pool of virtual m
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute target\-pools create\fR \fINAME\fR [\fB\-\-backup\-pool\fR=\fIBACKUP_POOL\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-failover\-ratio\fR=\fIFAILOVER_RATIO\fR] [\fB\-\-health\-check\fR=\fIHEALTH_CHECK\fR] [\fB\-\-region\fR=\fIREGION\fR] [\fB\-\-session\-affinity\fR=\fISESSION_AFFINITY\fR;\ default="NONE"] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute target\-pools create\fR \fINAME\fR [\fB\-\-backup\-pool\fR=\fIBACKUP_POOL\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-failover\-ratio\fR=\fIFAILOVER_RATIO\fR] [\fB\-\-health\-check\fR=\fIHEALTH_CHECK\fR] [\fB\-\-http\-health\-check\fR=\fIHTTP_HEALTH_CHECK\fR] [\fB\-\-region\fR=\fIREGION\fR] [\fB\-\-session\-affinity\fR=\fISESSION_AFFINITY\fR;\ default="NONE"] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -71,6 +71,15 @@ flag is provided, then \f5\fI\-\-backup\-pool\fR\fR is required.
 
 .RE
 \fB\-\-health\-check\fR=\fIHEALTH_CHECK\fR
+.RS 2m
+DEPRECATED, use \-\-http\-health\-check. Specifies an HTTP health check resource
+to use to determine the health of instances in this pool. If no health check is
+specified, traffic will be sent to all instances in this target pool as if the
+instances were healthy, but the health status of this pool will appear as
+unhealthy as a warning that this target pool does not have a health check.
+
+.RE
+\fB\-\-http\-health\-check\fR=\fIHTTP_HEALTH_CHECK\fR
 .RS 2m
 Specifies an HTTP health check resource to use to determine the health of
 instances in this pool. If no health check is specified, traffic will be sent to
