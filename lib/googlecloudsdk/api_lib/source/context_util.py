@@ -23,10 +23,30 @@ _CLOUD_REPO_PATTERN = (
     '(/r/(?P<repo_name>[^/?#]+))?'
     '([/#?].*)?')
 
+SNAPSHOT_CATEGORY = 'category'
+REMOTE_REPO_CATEGORY = 'remote_repo'
+
 
 class GenerateSourceContextError(exceptions.Error):
   """An error occurred while trying to create the source context."""
   pass
+
+
+def IsSnapshotContext(context):
+  return context.get('labels', {}).get('category', None) == SNAPSHOT_CATEGORY
+
+
+def ExtendContextDict(context, category=REMOTE_REPO_CATEGORY):
+  """Converts a source context dict to an ExtendedSourceContext dict.
+
+  Args:
+    context: A SourceContext-compatible dict
+    category:  string indicating the category of context (either
+        SNAPSHOT_CATEGORY or REMOTE_REPO_CATEGORY)
+  Returns:
+    An ExtendedSourceContext-compatible dict.
+  """
+  return {'context': context, 'labels': {'category': category}}
 
 
 def CalculateExtendedSourceContexts(source_directory):
@@ -157,7 +177,7 @@ def _CallGit(cwd, *args):
   """
   try:
     return compat26.subprocess.check_output(['git'] + list(args), cwd=cwd)
-  except subprocess.CalledProcessError as e:
+  except (OSError, subprocess.CalledProcessError) as e:
     log.debug('Could not call git with args %s: %s', args, e)
     return None
 
@@ -283,4 +303,4 @@ def _ParseSourceContext(remote_url, source_revision):
   if not context:
     context = {'git': {'url': remote_url, 'revisionId': source_revision}}
 
-  return {'context': context, 'labels': {'category': 'remote_repo'}}
+  return ExtendContextDict(context)

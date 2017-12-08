@@ -100,7 +100,7 @@ quick\-robo\-test:
 To invoke this test, run:
 
 .RS 2m
-$ gcloud alpha test android run excelsior_args.yaml:quick\-robo\-test
+$ gcloud beta test android run excelsior_args.yaml:quick\-robo\-test
 .RE
 
 Here is a slightly more complicated example which demonstrates composition of
@@ -133,7 +133,7 @@ supported\-locales:
 To invoke this test matrix, run:
 
 .RS 2m
-$ gcloud alpha test android run excelsior_args.yaml:unit\-tests
+$ gcloud beta test android run excelsior_args.yaml:unit\-tests
 .RE
 
 To run these unit tests with the same locales and os\-version\-ids, but
@@ -141,7 +141,7 @@ substituting a sampling of three physical Android devices instead of the single
 virtual Nexus6 device, run:
 
 .RS 2m
-$ gcloud alpha test android run excelsior2.args:unit\-tests \e
+$ gcloud beta test android run excelsior2.args:unit\-tests \e
     \-\-device\-ids shamu,m7,g3
 .RE
 
