@@ -14,27 +14,45 @@
 """Command for getting service accounts."""
 
 
+import textwrap
+
 from googlecloudsdk.api_lib.iam import base_classes
 from googlecloudsdk.api_lib.iam import utils
 
 
 class Describe(base_classes.BaseIamCommand):
-  """Describe Service Account."""
+  """Show metadata for a service account from a project."""
+
+  detailed_help = {
+      'DESCRIPTION': textwrap.dedent("""\
+          This command shows metadata for a service account.
+
+          This call can fail for the following reasons:
+              * The service account specified does not exist.
+              * The active user does not have permission to access the given
+                service account.
+          """),
+      'EXAMPLES': textwrap.dedent("""\
+          To print metadata for a service account from your project, run:
+
+            $ {command} my-iam-account@somedomain.com
+          """),
+  }
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('address',
-                        metavar='IAM-ADDRESS',
-                        help='The IAM service account address to describe.')
+    parser.add_argument('account',
+                        metavar='IAM-ACCOUNT',
+                        help='The service account to describe.')
 
   @utils.CatchServiceAccountErrors
   def Run(self, args):
-    self.SetAddress(args.address)
+    self.SetAddress(args.account)
     # TODO(user): b/25212870
     # gcloud's resource support doesn't yet work for atomic names. When it does
     # this needs to be rewritten to use it.
-    # ref = self.ParseServiceAccount(args.address)
+    # ref = self.ParseServiceAccount(args.account)
     # return self.iam_client.projects_serviceAccounts.Get(ref.Request())
     return self.iam_client.projects_serviceAccounts.Get(
         self.messages.IamProjectsServiceAccountsGetRequest(
-            name=utils.EmailToAccountResourceName(args.address)))
+            name=utils.EmailToAccountResourceName(args.account)))

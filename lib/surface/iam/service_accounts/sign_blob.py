@@ -13,6 +13,7 @@
 # limitations under the License.
 """Command for signing blobs for service accounts."""
 
+import textwrap
 
 from googlecloudsdk.api_lib.iam import base_classes
 from googlecloudsdk.api_lib.iam import utils
@@ -20,13 +21,33 @@ from googlecloudsdk.core import log
 
 
 class SignBlob(base_classes.BaseIamCommand):
-  """Sign blob with managed Service Account key."""
+  """Sign a blob with a managed service account key.
+
+  This command signs a file containing arbitrary binary data (a blob) using a
+  system-managed service account key.
+  """
+
+  detailed_help = {
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': textwrap.dedent("""\
+          To sign a blob file with a system-managed service account key,
+          run:
+
+            $ {command} --iam-account my-account@somedomain.com input.bin output.bin
+          """),
+      'SEE ALSO': textwrap.dedent("""\
+        For more information on how this command ties into the wider cloud
+        infrastructure, please see:
+
+          https://cloud.google.com/appengine/docs/java/appidentity/
+        """),
+  }
 
   @staticmethod
   def Args(parser):
     parser.add_argument('--iam-account',
                         required=True,
-                        help='The IAM service account address to sign as.')
+                        help='The service account to sign as.')
 
     parser.add_argument('input',
                         metavar='INPUT-FILE',

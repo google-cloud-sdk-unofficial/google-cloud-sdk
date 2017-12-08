@@ -27,7 +27,7 @@ If you want to have a more secure implementation, use the functions from the
 
 """
 
-
+__author__ = "Sybren Stuvel, Barry Mead and Yesudeep Mangalapilly"
 __date__ = "2013-09-15"
 __version__ = '3.1.2'
 

@@ -17,7 +17,7 @@
 A client library for Google's discovery based APIs.
 """
 
-
+__author__ = 'jcgregorio@google.com (Joe Gregorio)'
 __all__ = [
     'build',
     'build_from_document',

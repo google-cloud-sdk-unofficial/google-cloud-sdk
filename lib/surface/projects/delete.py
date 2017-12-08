@@ -21,7 +21,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Delete(base.Command):
   """Delete a Project."""
 
@@ -45,7 +45,7 @@ class Delete(base.Command):
   def Args(parser):
     parser.add_argument('id', metavar='PROJECT_ID',
                         completion_resource='cloudresourcemanager.projects',
-                        list_command_path='beta.projects',
+                        list_command_path='projects',
                         help='The ID for the project you want to delete.')
 
   @util.HandleHttpError

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for reserving IP addresses."""
+"""Command for to list all of a project's service accounts."""
 
 
 from googlecloudsdk.api_lib.iam import base_classes
@@ -21,7 +21,7 @@ from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
 class List(base_classes.BaseIamCommand):
-  """List Service Account."""
+  """List all of a project's service accounts."""
 
   @staticmethod
   def Args(parser):

@@ -17,7 +17,7 @@
 A Storage for Credentials that uses the keyring module.
 """
 
-
+__author__ = 'jcgregorio@google.com (Joe Gregorio)'
 
 import threading
 

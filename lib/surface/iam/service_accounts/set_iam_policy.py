@@ -20,16 +20,20 @@ from googlecloudsdk.core.iam import iam_util
 
 
 class SetIamPolicy(base_classes.BaseIamCommand):
-  """Sets IAM policy for a Service Account."""
+  """Set the IAM policy for a service account.
+
+  This command sets the IAM policy for a service account, given an IAM-ACCOUNT
+  and a file that contains the JSON encoded IAM policy.
+  """
 
   detailed_help = iam_util.GetDetailedHelpForSetIamPolicy(
-      'service account', 'test@project.iam.gserviceaccounts.com')
+      'service account', 'my-iam-account@somedomain.com')
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('address',
-                        metavar='IAM-ADDRESS',
-                        help='The IAM service account address whose policy to '
+    parser.add_argument('account',
+                        metavar='IAM-ACCOUNT',
+                        help='The service account whose policy to '
                         'set.')
     parser.add_argument('policy_file',
                         metavar='POLICY-FILE',
@@ -38,13 +42,13 @@ class SetIamPolicy(base_classes.BaseIamCommand):
 
   @utils.CatchServiceAccountErrors
   def Run(self, args):
-    self.SetAddress(args.address)
+    self.SetAddress(args.account)
     policy = iam_util.ParseJsonPolicyFile(
         args.policy_file,
         self.messages.Policy)
 
     return self.iam_client.v1.SetIamPolicy(
         self.messages.IamSetIamPolicyRequest(
-            resource=utils.EmailToAccountResourceName(args.address),
+            resource=utils.EmailToAccountResourceName(args.account),
             setIamPolicyRequest=self.messages.SetIamPolicyRequest(
                 policy=policy)))

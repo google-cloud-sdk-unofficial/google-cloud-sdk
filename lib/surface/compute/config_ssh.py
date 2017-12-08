@@ -137,7 +137,7 @@ class ConfigSSH(ssh_utils.BaseSSHCommand):
         '--dry-run',
         action='store_true',
         help=('If provided, the proposed changes to the SSH config file are '
-              'printed to standard out and no actual changes are made.'))
+              'printed to standard output and no actual changes are made.'))
 
     parser.add_argument(
         '--remove',

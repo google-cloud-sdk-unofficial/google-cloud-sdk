@@ -41,7 +41,11 @@ class SetIamPolicy(base.Command):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('id', help='Project ID')
+    parser.add_argument('id', metavar='PROJECT_ID',
+                        completion_resource='cloudresourcemanager.projects',
+                        list_command_path='projects',
+                        help='The ID for the project you want to set '
+                             'IAM policy.')
     parser.add_argument('policy_file', help='JSON file with the IAM policy')
 
   @util.HandleHttpError

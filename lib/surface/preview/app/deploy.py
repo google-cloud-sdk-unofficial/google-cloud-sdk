@@ -179,7 +179,18 @@ class Deploy(base.Command):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
+      'DESCRIPTION': """\
+          {description}
+
+          To use the Container Builder API to perform docker builds, rather than
+          a temporary VM (with the default `--docker-build=remote` setting),
+          run:
+
+              $ gcloud config set app/use_cloud_build true
+
+          See https://cloud.google.com/container-builder/docs/ for more
+          information.
+          """,
       'EXAMPLES': """\
           To deploy a single module, run:
 
@@ -362,6 +373,7 @@ class Deploy(base.Command):
       images = deploy_command_util.BuildAndPushDockerImages(modules,
                                                             version,
                                                             cloudbuild_client,
+                                                            self.Http(),
                                                             code_bucket,
                                                             self.cli,
                                                             remote_build,

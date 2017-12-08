@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Commands for reading and manipulating service accounts."""
+"""Commands for creating and manipulating service accounts."""
 
 
 from googlecloudsdk.calliope import base
@@ -19,4 +19,4 @@ from googlecloudsdk.core import resources
 
 
 class ServiceAccounts(base.Group):
-  """Read and manipulate IAM Service Accounts."""
+  """Create and manipulate service accounts."""

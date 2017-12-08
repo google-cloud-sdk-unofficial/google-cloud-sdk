@@ -17,7 +17,7 @@
 from googlecloudsdk.calliope import base
 
 
-class Restore(base.Command):
+class Restore(base.SilentCommand):
   """Restore the Cloud SDK installation to its previous state.
 
   This is an undo operation, which restores the Cloud SDK installation on the

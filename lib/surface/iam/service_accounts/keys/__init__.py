@@ -11,11 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Commands for reading and manipulating service accounts."""
+"""Commands for managing service account keys."""
 
 
 from googlecloudsdk.calliope import base
 
 
 class Keys(base.Group):
-  """Read and manipulate IAM Service Accounts keys."""
+  """Manaage service account keys."""

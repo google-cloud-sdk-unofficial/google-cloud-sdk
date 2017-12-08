@@ -14,23 +14,34 @@
 """Command for getting IAM policies for service accounts."""
 
 
+import textwrap
+
 from googlecloudsdk.api_lib.iam import base_classes
 from googlecloudsdk.api_lib.iam import utils
 
 
 class GetIamPolicy(base_classes.BaseIamCommand):
-  """Get IAM Policy for Service Account."""
+  """Get the IAM policy for a service account."""
+
+  detailed_help = {
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': textwrap.dedent("""\
+          To print the IAM policy for a given service account, run:
+
+            $ {command} my-iam-account@somedomain.com
+          """),
+  }
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('address',
-                        metavar='IAM-ADDRESS',
-                        help='The IAM service account address whose policy to '
+    parser.add_argument('account',
+                        metavar='IAM-ACCOUNT',
+                        help='The service account whose policy to '
                         'get.')
 
   @utils.CatchServiceAccountErrors
   def Run(self, args):
-    self.SetAddress(args.address)
+    self.SetAddress(args.account)
     return self.iam_client.v1.GetIamPolicy(
         self.messages.IamGetIamPolicyRequest(
-            resource=utils.EmailToAccountResourceName(args.address)))
+            resource=utils.EmailToAccountResourceName(args.account)))

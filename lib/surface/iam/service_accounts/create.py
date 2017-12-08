@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for reserving IP addresses."""
+"""Command to create a service account for a project."""
 
+
+import textwrap
 
 from googlecloudsdk.api_lib.iam import base_classes
 from googlecloudsdk.api_lib.iam import utils
@@ -20,20 +22,34 @@ from googlecloudsdk.core import log
 
 
 class Create(base_classes.BaseIamCommand):
-  """Create Service Account."""
+  """Create an service account for a project.
+
+  This command creates a service account with the provided name. For
+  subsequent commands regarding service accounts, this service account should be
+  referred to by the email account in the response.
+  """
+
+  detailed_help = {
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': textwrap.dedent("""\
+          To create an service account for your project, run:
+
+            $ {command} some-account-name --display-name "My Service Account"
+
+          To work with this service account in subsequent IAM commands, use the
+          email resulting from this call as the IAM-ACCOUNT argument.
+          """),
+  }
 
   @staticmethod
   def Args(parser):
     parser.add_argument('--display-name',
                         help='A textual name to display for the account.')
 
-    parser.add_argument('--description',
-                        help='A textual description for the account.')
-
     parser.add_argument('name',
                         metavar='NAME',
                         help='The internal name of the new service account. '
-                        'Used to generate an IAM-ADDRESS, which must be passed '
+                        'Used to generate an IAM-ACCOUNT, which must be passed '
                         'to subsequent commands.')
 
   @utils.CatchHttpErrors
@@ -52,5 +68,4 @@ class Create(base_classes.BaseIamCommand):
             self.messages.CreateServiceAccountRequest(
                 accountId=args.name,
                 serviceAccount=self.messages.ServiceAccount(
-                    displayName=args.display_name,
-                    description=args.description))))
+                    displayName=args.display_name))))

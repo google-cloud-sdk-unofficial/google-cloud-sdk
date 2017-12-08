@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for adding IAM policies for service accounts."""
+"""Command for adding IAM policy bindings for service accounts."""
 
 import httplib
 
@@ -22,31 +22,35 @@ from googlecloudsdk.core.iam import iam_util
 
 
 class AddIamPolicyBinding(base_classes.BaseIamCommand):
-  """Add an IAM policy for a Service Account."""
+  """Add an IAM policy binding to a service account.
+
+  This command adds a policy binding to the IAM policy of a service account,
+  given an IAM-ACCOUNT and the binding.
+  """
 
   detailed_help = iam_util.GetDetailedHelpForAddIamPolicyBinding(
-      'service account', 'test@project.iam.gserviceaccounts.com')
+      'service account', 'my-iam-account@somedomain.com')
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('address',
-                        metavar='IAM-ADDRESS',
-                        help='The IAM service account address whose policy to '
-                        'add to.')
+    parser.add_argument('account',
+                        metavar='IAM-ACCOUNT',
+                        help='The service account whose policy to '
+                        'add bindings to.')
     iam_util.AddArgsForAddIamPolicyBinding(parser)
 
   @utils.CatchServiceAccountErrors
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
-    self.SetAddress(args.address)
+    self.SetAddress(args.account)
     policy = self.iam_client.v1.GetIamPolicy(
         self.messages.IamGetIamPolicyRequest(
-            resource=utils.EmailToAccountResourceName(args.address)))
+            resource=utils.EmailToAccountResourceName(args.account)))
 
     iam_util.AddBindingToIamPolicy(self.messages, policy, args)
 
     return self.iam_client.v1.SetIamPolicy(
         self.messages.IamSetIamPolicyRequest(
-            resource=utils.EmailToAccountResourceName(args.address),
+            resource=utils.EmailToAccountResourceName(args.account),
             setIamPolicyRequest=self.messages.SetIamPolicyRequest(
                 policy=policy)))

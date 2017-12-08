@@ -14,25 +14,36 @@
 """Command for deleting service accounts."""
 
 
+import textwrap
+
 from googlecloudsdk.api_lib.iam import base_classes
 from googlecloudsdk.api_lib.iam import utils
 from googlecloudsdk.core import log
 
 
 class Delete(base_classes.BaseIamCommand):
-  """Delete Service Account."""
+  """Delete an service account from a project."""
+
+  detailed_help = {
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': textwrap.dedent("""\
+          To delete an service account from your project, run:
+
+            $ {command} my-iam-account@somedomain.com
+          """),
+  }
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('address',
-                        metavar='IAM-ADDRESS',
-                        help='The IAM service account address to delete.')
+    parser.add_argument('account',
+                        metavar='IAM-ACCOUNT',
+                        help='The service account to delete.')
 
   @utils.CatchServiceAccountErrors
   def Run(self, args):
-    self.SetAddress(args.address)
+    self.SetAddress(args.account)
     self.iam_client.projects_serviceAccounts.Delete(
         self.messages.IamProjectsServiceAccountsDeleteRequest(
-            name=utils.EmailToAccountResourceName(args.address)))
+            name=utils.EmailToAccountResourceName(args.account)))
 
-    log.status.Print('deleted service account [{0}]'.format(args.address))
+    log.status.Print('deleted service account [{0}]'.format(args.account))

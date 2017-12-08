@@ -20,7 +20,7 @@ All exceptions defined by the library
 should be defined in this file.
 """
 
-
+__author__ = 'jcgregorio@google.com (Joe Gregorio)'
 
 import json
 

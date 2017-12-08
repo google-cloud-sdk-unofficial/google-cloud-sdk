@@ -19,7 +19,7 @@ Contents:
 """
 
 __version__ = '0.1.3'
-
+__author__ = 'Joe Gregorio'
 __email__ = 'joe@bitworking.org'
 __license__ = 'MIT License'
 __credits__ = ''

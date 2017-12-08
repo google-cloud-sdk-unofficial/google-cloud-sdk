@@ -17,7 +17,7 @@
 Tools for interacting with OAuth 2.0 protected resources.
 """
 
-
+__author__ = 'jcgregorio@google.com (Joe Gregorio)'
 
 import base64
 import collections

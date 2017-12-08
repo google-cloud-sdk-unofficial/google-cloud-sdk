@@ -18,7 +18,7 @@ A client_secrets.json file contains all the information needed to interact with
 an OAuth 2.0 protected service.
 """
 
-
+__author__ = 'jcgregorio@google.com (Joe Gregorio)'
 
 import json
 import six

@@ -72,6 +72,7 @@ def _CommonArgs(parser):
   instance_utils.AddScopeArgs(parser)
   instance_utils.AddTagsArgs(parser)
   instance_utils.AddCustomMachineTypeArgs(parser)
+  instance_utils.AddNetworkArgs(parser)
 
   parser.add_argument(
       '--description',
@@ -178,7 +179,6 @@ class CreateGA(base_classes.BaseAsyncCreator,
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
-    instance_utils.AddNetworkArgs(parser)
 
   @property
   def service(self):
@@ -342,8 +342,7 @@ class CreateGA(base_classes.BaseAsyncCreator,
     region = utils.ZoneNameToRegionName(instance_refs[0].zone)
 
     network_interface = None
-    # TODO(user) drop hasattr after subnets goes GA
-    if hasattr(args, 'subnet') and args.subnet is not None:
+    if args.subnet is not None:
       subnet_ref = self.CreateRegionalReference(
           args.subnet, region, resource_type='subnetworks')
       network_interface = self.messages.NetworkInterface(
@@ -503,7 +502,7 @@ class CreateGA(base_classes.BaseAsyncCreator,
     return requests
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CreateBeta(CreateGA):
   """Create Compute Engine virtual machine instances."""
 
@@ -511,20 +510,7 @@ class CreateBeta(CreateGA):
   def Args(parser):
     _CommonArgs(parser)
     csek_utils.AddCsekKeyArgs(parser)
-    instance_utils.AddNetworkArgsAlpha(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateGA):
-  """Create Compute Engine virtual machine instances."""
-
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser)
-    csek_utils.AddCsekKeyArgs(parser)
-    instance_utils.AddNetworkArgsAlpha(parser)
-
-
-CreateAlpha.detailed_help = DETAILED_HELP
 CreateBeta.detailed_help = DETAILED_HELP
 CreateGA.detailed_help = DETAILED_HELP

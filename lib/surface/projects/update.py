@@ -21,7 +21,7 @@ from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Update(base.Command):
   """Update new Project."""
 
@@ -44,6 +44,8 @@ class Update(base.Command):
   @staticmethod
   def Args(parser):
     parser.add_argument('id', metavar='PROJECT_ID',
+                        completion_resource='cloudresourcemanager.projects',
+                        list_command_path='projects',
                         help='The ID for the project you want to update.')
     parser.add_argument('--name', required=True,
                         help='The new name for the project.')

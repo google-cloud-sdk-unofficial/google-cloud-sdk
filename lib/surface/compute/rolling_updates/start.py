@@ -38,7 +38,11 @@ class Start(base.Command):
     parser.add_argument(
         '--group', help='Instance group name.', required=True)
     parser.add_argument(
-        '--action', help='Action to be performed on each instance.',
+        '--action',
+        help="""\
+        Action to be performed on each instance. Currently only 'RECREATE' is
+        supported.
+        """,
         choices=['RECREATE'], default='RECREATE')
     parser.add_argument(
         '--template', required=True,
@@ -57,7 +61,7 @@ class Start(base.Command):
     min_instance_update_time.detailed_help = """\
         Specifies minimum amount of time we will spend on updating single
         instance, measuring at the start of the first update action (currently
-        only Recreate call). If actual instance update takes less time we will
+        only 'RECREATE' call). If actual instance update takes less time we will
         simply sleep before proceeding with next instance. Valid units for this
         flag are ``s'' for seconds, ``m'' for minutes, ``h'' for hours and
         ``d'' for days. If no unit is specified, seconds is assumed.
@@ -79,8 +83,8 @@ class Start(base.Command):
         """)
     max_num_failed_instances.detailed_help = """\
         Maximum number of instance updates that can fail without failing the
-        group update. Instance update is considered failed if any of it's
-        update actions (currently only Recreate call) failed with permanent
+        group update. Instance update is considered failed if any of its
+        update actions (currently only 'RECREATE' call) failed with permanent
         failure, or if after finishing all update actions this instance is not
         running.
         """
@@ -153,18 +157,16 @@ class Start(base.Command):
     if args.max_num_failed_instances:
       policy.maxNumFailedInstances = args.max_num_failed_instances
 
-    if args.action == 'RECREATE':
-      group_ref = resources.Parse(
-          args.group, collection='compute.instanceGroupManagers')
+    group_ref = resources.Parse(
+        args.group, collection='compute.instanceGroupManagers')
+    template_ref = resources.Parse(
+        args.template, collection='compute.instanceTemplates')
 
-      template_ref = resources.Parse(
-          args.template, collection='compute.instanceTemplates')
-
-      return messages.RollingUpdate(
-          instanceGroupManager=group_ref.SelfLink(),
-          actionType='RECREATE',
-          instanceTemplate=template_ref.SelfLink(),
-          policy=policy)
+    return messages.RollingUpdate(
+        instanceGroupManager=group_ref.SelfLink(),
+        actionType=args.action,
+        instanceTemplate=template_ref.SelfLink(),
+        policy=policy)
 
 
 Start.detailed_help = {

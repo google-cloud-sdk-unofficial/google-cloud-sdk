@@ -17,7 +17,7 @@
 from googlecloudsdk.calliope import base
 
 
-class Reinstall(base.Command):
+class Reinstall(base.SilentCommand):
   """Reinstall the Cloud SDK with the same components you have now.
 
   If your Cloud SDK installation becomes corrupt, this command attempts to fix

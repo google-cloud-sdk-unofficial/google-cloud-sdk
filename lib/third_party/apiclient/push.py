@@ -15,7 +15,7 @@
 This code is based on experimental APIs and is subject to change.
 """
 
-
+__author__ = 'afshar@google.com (Ali Afshar)'
 
 import binascii
 import collections

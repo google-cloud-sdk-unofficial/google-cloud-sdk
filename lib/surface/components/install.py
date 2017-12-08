@@ -19,7 +19,7 @@ import argparse
 from googlecloudsdk.calliope import base
 
 
-class Install(base.Command):
+class Install(base.SilentCommand):
   """Install one or more Cloud SDK components.
 
   Ensure that each of the specified components (as well as any dependent

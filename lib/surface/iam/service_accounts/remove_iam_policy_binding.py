@@ -22,31 +22,35 @@ from googlecloudsdk.core.iam import iam_util
 
 
 class RemoveIamPolicyBinding(base_classes.BaseIamCommand):
-  """Remove an IAM policy for a Service Account."""
+  """Remove an IAM policy binding from a service account.
+
+  This command removes a policy binding to the IAM policy of a service account,
+  given an IAM-ACCOUNT and the binding.
+  """
 
   detailed_help = iam_util.GetDetailedHelpForRemoveIamPolicyBinding(
-      'service account', 'test@project.iam.gserviceaccounts.com')
+      'service account', 'my-iam-account@somedomain.com')
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('address',
-                        metavar='IAM-ADDRESS',
-                        help='The IAM service account address whose policy to '
-                        'remove from.')
+    parser.add_argument('account',
+                        metavar='IAM-ACCOUNT',
+                        help='The service account whose policy to '
+                        'remove the binding from.')
     iam_util.AddArgsForRemoveIamPolicyBinding(parser)
 
   @utils.CatchServiceAccountErrors
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
-    self.SetAddress(args.address)
+    self.SetAddress(args.account)
     policy = self.iam_client.v1.GetIamPolicy(
         self.messages.IamGetIamPolicyRequest(
-            resource=utils.EmailToAccountResourceName(args.address)))
+            resource=utils.EmailToAccountResourceName(args.account)))
 
     iam_util.RemoveBindingFromIamPolicy(policy, args)
 
     return self.iam_client.v1.SetIamPolicy(
         self.messages.IamSetIamPolicyRequest(
-            resource=utils.EmailToAccountResourceName(args.address),
+            resource=utils.EmailToAccountResourceName(args.account),
             setIamPolicyRequest=self.messages.SetIamPolicyRequest(
                 policy=policy)))

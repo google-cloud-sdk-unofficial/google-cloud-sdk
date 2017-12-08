@@ -25,7 +25,7 @@ class GetLogs(base.Command):
 
   This command gets the logs for the given module.  Logs will be downloaded to
   the file given as ``OUTPUT_FILE''.  If not provided, the logs will be printed
-  to standard out.  You can append new logs to an existing downloaded log file
+  to standard output. You can append new logs to an existing downloaded log file
   by using the ``--append'' flag.
   """
 

@@ -21,31 +21,27 @@ from googlecloudsdk.api_lib.util import http_retry
 
 
 class Update(base_classes.BaseIamCommand):
-  """Update Service Account."""
+  """Update the metadata of an IAM service account."""
 
   @staticmethod
   def Args(parser):
     parser.add_argument('--display-name',
                         help='The new textual name to display for the account.')
 
-    parser.add_argument('--description',
-                        help='The new textual description for the account.')
-
-    parser.add_argument('address',
-                        metavar='IAM-ADDRESS',
-                        help='The IAM service account address to update.')
+    parser.add_argument('account',
+                        metavar='IAM-ACCOUNT',
+                        help='The IAM service account to update.')
 
   @utils.CatchServiceAccountErrors
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
-    self.SetAddress(args.address)
+    self.SetAddress(args.account)
     current = self.iam_client.projects_serviceAccounts.Get(
         self.messages.IamProjectsServiceAccountsGetRequest(
-            name=utils.EmailToAccountResourceName(args.address)))
+            name=utils.EmailToAccountResourceName(args.account)))
 
     return self.iam_client.projects_serviceAccounts.Update(
         self.messages.ServiceAccount(
-            name=utils.EmailToAccountResourceName(args.address),
+            name=utils.EmailToAccountResourceName(args.account),
             etag=current.etag,
-            displayName=args.display_name,
-            description=args.description))
+            displayName=args.display_name))

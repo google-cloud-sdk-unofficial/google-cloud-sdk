@@ -22,7 +22,7 @@ for converting between the wire format and the Python
 object representation.
 """
 
-
+__author__ = 'jcgregorio@google.com (Joe Gregorio)'
 
 import json
 import logging

@@ -21,6 +21,15 @@ App Engine server. As an input it takes one or more \f5\fIDEPLOYABLES\fR\fR that
 should be uploaded. A \f5\fIDEPLOYABLE\fR\fR can be a module's .yaml file or a
 configuration's .yaml file.
 
+To use the Container Builder API to perform docker builds, rather than a
+temporary VM (with the default \f5\-\-docker\-build=remote\fR setting), run:
+
+.RS 2m
+$ gcloud config set app/use_cloud_build true
+.RE
+
+See https://cloud.google.com/container\-builder/docs/ for more information.
+
 
 
 .SH "POSITIONAL ARGUMENTS"

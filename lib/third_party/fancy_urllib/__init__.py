@@ -7,7 +7,7 @@ In particular, monkey patches in Python r74203 to provide support for CONNECT
 proxies and adds SSL cert validation if the ssl module is present.
 """
 
-
+__author__ = "{frew,nick.johnson}@google.com (Fred Wulff and Nick Johnson)"
 
 import base64
 import httplib

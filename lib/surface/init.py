@@ -112,9 +112,6 @@ class Init(base.Command):
     finally:
       log.status.write('You can use [gcloud config] to '
                        'change more gcloud settings.\n\n')
-      if configuration_name:
-        log.status.write('Your current configuration is: [{0}]\n\n'
-                         .format(configuration_name))
       log.status.flush()
 
       # Not using self._RunCmd to get command actual output.

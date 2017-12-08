@@ -13,20 +13,19 @@
 # limitations under the License.
 """Command for deleting user-managed service account keys."""
 
-
 from googlecloudsdk.api_lib.iam import base_classes
 from googlecloudsdk.api_lib.iam import utils
 from googlecloudsdk.core import log
 
 
 class Delete(base_classes.BaseIamCommand):
-  """Delete Service Account Key."""
+  """Delete a user-managed key from a service account."""
 
   @staticmethod
   def Args(parser):
     parser.add_argument('--iam-account',
                         required=True,
-                        help='The IAM service account address whose key to '
+                        help='The service account whose key to '
                         'delete.')
 
     parser.add_argument('key',

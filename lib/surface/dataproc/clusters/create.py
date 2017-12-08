@@ -131,13 +131,18 @@ Properties are mapped to configuration files by specifying a prefix, such as
 "core:io.serializations". The following are supported prefixes and their
 mappings:
 
-  core - core-site.xml
-  hdfs - hdfs-site.xml
-  mapred - mapred-site.xml
-  yarn - yarn-site.xml
-  hive - hive-site.xml
-  pig - pig.properties
-  spark - spark-defaults.conf
+[format="csv",options="header"]
+|========
+Prefix,Target Configuration File
+core,core-site.xml
+hdfs,hdfs-site.xml
+mapred,mapred-site.xml
+yarn,yarn-site.xml
+hive,hive-site.xml
+pig,pig.properties
+spark,spark-defaults.conf
+|========
+
 """
     scope_parser = parser.add_argument(
         '--scopes',

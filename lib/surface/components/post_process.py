@@ -19,7 +19,7 @@ from googlecloudsdk.core.updater import local_state
 
 
 @base.Hidden
-class PostProcess(base.Command):
+class PostProcess(base.SilentCommand):
   """Performs any necessary post installation steps."""
 
   @staticmethod

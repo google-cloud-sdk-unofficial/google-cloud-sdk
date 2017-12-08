@@ -104,7 +104,7 @@ TailSerialPortOutputAlpha.detailed_help = {
     'DESCRIPTION': """\
         {command} is used to tail the output from a Google Compute
         Engine virtual machine's serial port. The serial port output
-        from the instance will be printed to standard out. This
+        from the instance will be printed to standard output. This
         information can be useful for diagnostic purposes.
         """,
 }

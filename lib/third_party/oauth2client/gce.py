@@ -17,7 +17,7 @@
 Utilities for making it easier to use OAuth 2.0 on Google Compute Engine.
 """
 
-
+__author__ = 'jcgregorio@google.com (Joe Gregorio)'
 
 import json
 import logging

@@ -65,7 +65,7 @@ GetSerialPortOutputBase.detailed_help = {
     'DESCRIPTION': """\
         {command} is used to get the output from a Google Compute
         Engine virtual machine's serial port. The serial port output
-        from the virtual machine will be printed to standard out. This
+        from the virtual machine will be printed to standard output. This
         information can be useful for diagnostic purposes.
         """,
 }

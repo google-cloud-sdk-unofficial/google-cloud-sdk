@@ -54,7 +54,7 @@ class AddPathMatcher(base_classes.ReadWriteCommand):
         type=arg_parsers.ArgList(min_length=1),
         action=arg_parsers.FloatingListValuesCatcher(),
         metavar='NEW_HOST',
-        help=('If specified, a new host rule with the given hosts is created'
+        help=('If specified, a new host rule with the given hosts is created '
               'and the path matcher is tied to the new host rule.'))
 
     existing_host = host_rule.add_argument(

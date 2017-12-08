@@ -59,7 +59,7 @@ The constructor takes a discovery document in which to look up named schema.
 
 # TODO(user) support format, enum, minimum, maximum
 
-
+__author__ = 'jcgregorio@google.com (Joe Gregorio)'
 
 import copy
 

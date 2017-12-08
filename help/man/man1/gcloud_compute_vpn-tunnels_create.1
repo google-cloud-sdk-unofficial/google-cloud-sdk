@@ -11,7 +11,7 @@ gcloud compute vpn\-tunnels create \- create a VPN tunnel
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute vpn\-tunnels create\fR \fINAME\fR \fB\-\-peer\-address\fR \fIPEER_ADDRESS\fR \fB\-\-shared\-secret\fR \fISHARED_SECRET\fR \fB\-\-target\-vpn\-gateway\fR \fITARGET_VPN_GATEWAY\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-ike\-version\fR\ \fIIKE_VERSION\fR] [\fB\-\-region\fR\ \fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute vpn\-tunnels create\fR \fINAME\fR \fB\-\-peer\-address\fR \fIPEER_ADDRESS\fR \fB\-\-shared\-secret\fR \fISHARED_SECRET\fR \fB\-\-target\-vpn\-gateway\fR \fITARGET_VPN_GATEWAY\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-ike\-version\fR\ \fIIKE_VERSION\fR] [\fB\-\-local\-traffic\-selector\fR\ \fICIDR\fR,[\fICIDR\fR,...]] [\fB\-\-region\fR\ \fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -62,6 +62,16 @@ An optional, textual description for the target VPN tunnel.
 .RS 2m
 Internet Key Exchange protocol version number. Valid options are 1 and 2.
 Default is 2.
+
+.RE
+\fB\-\-local\-traffic\-selector\fR \fICIDR\fR,[\fICIDR\fR,...]
+.RS 2m
+Traffic selector is an agreement between IKE peers to permit traffic through a
+tunnel if the traffic matches a specified pair of local and remote addresses.
+
+local_traffic_selector allows to configure the local addresses that are
+permitted. The value should be a comma separate list of CIDR formatted strings.
+Example: 192.168.0.0/16,10.0.0.0/24.
 
 .RE
 \fB\-\-region\fR \fIREGION\fR

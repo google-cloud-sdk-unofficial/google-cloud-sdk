@@ -54,9 +54,7 @@ class Updater(base.Group):
     Returns:
       The updated context.
     """
-    if args.zone is None:
-      raise exceptions.ToolException('argument --zone is required')
-
+    properties.VALUES.compute.zone.Get(required=True)
     context['updater_api'] = updater_v1beta1.ReplicapoolupdaterV1beta1(
         get_credentials=False,
         http=cli.Http())

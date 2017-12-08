@@ -9,6 +9,6 @@
    the same way that it is exposed by the upstream version.
 """
 
-
+__author__ = 'ojarjur@google.com (Omar Jarjur)'
 
 from uritemplate import expand

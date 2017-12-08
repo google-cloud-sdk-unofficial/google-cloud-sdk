@@ -142,12 +142,7 @@ class Upgrade(base.Command):
     if options.version:
       new_version = options.version
     else:
-      try:
-        cluster_config = adapter.GetServerConfig(cluster_ref.projectId,
-                                                 cluster_ref.zone)
-        new_version = cluster_config.defaultClusterVersion
-      except apitools_exceptions.HttpError as error:
-        raise exceptions.HttpException(util.GetError(error))
+      new_version = 'latest'
 
     if args.master:
       node_message = 'Master'

@@ -18,7 +18,7 @@ Utilities for making it easier to work with OAuth 2.0
 credentials.
 """
 
-
+__author__ = 'jcgregorio@google.com (Joe Gregorio)'
 
 import os
 import threading

@@ -11,7 +11,7 @@ gcloud \- manage Google Cloud Platform resources and developer workflow
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud\fR \fIGROUP\fR | \fICOMMAND\fR [\fB\-\-account\fR\ \fIACCOUNT\fR] [\fB\-\-format\fR\ \fIFORMAT\fR] [\fB\-\-help\fR] [\fB\-\-project\fR\ \fIPROJECT_ID\fR] [\fB\-\-quiet\fR,\ \fB\-q\fR] [\fB\-\-verbosity\fR\ \fIVERBOSITY\fR] [\fB\-h\fR] [\fB\-v\fR,\ \fB\-\-version\fR] [\fB\-\-log\-http\fR] [\fB\-\-trace\-token\fR\ \fITRACE_TOKEN\fR] [\fB\-\-user\-output\-enabled\fR]
+\f5gcloud\fR \fIGROUP\fR | \fICOMMAND\fR [\fB\-\-account\fR\ \fIACCOUNT\fR] [\fB\-\-configuration\fR\ \fICONFIGURATION\fR] [\fB\-\-format\fR\ \fIFORMAT\fR] [\fB\-\-help\fR] [\fB\-\-project\fR\ \fIPROJECT_ID\fR] [\fB\-\-quiet\fR,\ \fB\-q\fR] [\fB\-\-verbosity\fR\ \fIVERBOSITY\fR] [\fB\-h\fR] [\fB\-v\fR,\ \fB\-\-version\fR] [\fB\-\-log\-http\fR] [\fB\-\-trace\-token\fR\ \fITRACE_TOKEN\fR] [\fB\-\-user\-output\-enabled\fR]
 
 
 .SH "DESCRIPTION"
@@ -26,6 +26,14 @@ workflow, and interactions with the Google Cloud Platform APIs.
 \fB\-\-account\fR \fIACCOUNT\fR
 .RS 2m
 Google Cloud Platform user account to use for invocation.
+
+.RE
+\fB\-\-configuration\fR \fICONFIGURATION\fR
+.RS 2m
+The configuration to use for this command invocation. For more information on
+how to use configurations, run: \f5gcloud topic configurations\fR. You can also
+use the [CLOUDSDK_ACTIVE_CONFIG_NAME] environment variable to set the equivalent
+of this flag for a terminal session.
 
 .RE
 \fB\-\-format\fR \fIFORMAT\fR

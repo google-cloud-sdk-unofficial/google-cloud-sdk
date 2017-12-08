@@ -14,6 +14,7 @@
 """Command for listing service account keys."""
 
 from datetime import datetime
+import textwrap
 
 from googlecloudsdk.api_lib.iam import base_classes
 from googlecloudsdk.api_lib.iam import data_formats
@@ -25,7 +26,17 @@ ZULU_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 
 
 class List(base_classes.BaseIamCommand):
-  """List Service Account Keys."""
+  """List the keys for a service account."""
+
+  detailed_help = {
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': textwrap.dedent("""\
+          To list all user-managed keys created before noon on July 19th, 2015
+          (to perform key rotation, for example), run:
+
+            $ {command} --iam-account my-iam-account@somedomain.com --managed-by user --created-before 2015-07-19T12:00:00Z
+          """),
+  }
 
   @staticmethod
   def Args(parser):

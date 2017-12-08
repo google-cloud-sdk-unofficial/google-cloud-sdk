@@ -44,7 +44,7 @@ The format of the stored data is like so::
 
 """
 
-
+__author__ = 'jbeda@google.com (Joe Beda)'
 
 import errno
 import json

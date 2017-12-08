@@ -19,7 +19,7 @@ import argparse
 from googlecloudsdk.calliope import base
 
 
-class Remove(base.Command):
+class Remove(base.SilentCommand):
   """Remove one or more installed components.
 
   Uninstall all listed components, as well as all components that directly or

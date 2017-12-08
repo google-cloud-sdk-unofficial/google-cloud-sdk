@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for creating service accounts keys."""
+"""Command to create private keys for service accounts."""
 
+
+import textwrap
 
 from googlecloudsdk.api_lib.iam import base_classes
 from googlecloudsdk.api_lib.iam import utils
@@ -20,7 +22,22 @@ from googlecloudsdk.core import log
 
 
 class Create(base_classes.BaseIamCommand):
-  """Create Service Account Key."""
+  """Create a private key for a service account."""
+
+  detailed_help = {
+      'DESCRIPTION': '{description}',
+      'NOTES': textwrap.dedent("""\
+          The option --key-file-type=p12 is available here only for legacy
+          reasons; all new use cases are encouraged to use the default 'json'
+          format.
+          """),
+      'EXAMPLES': textwrap.dedent("""\
+          To create a new private key for a service account, and save a copy
+          of it locally, run:
+
+            $ {command} --iam-account my-iam-account@somedomain.com key.json
+          """),
+  }
 
   @staticmethod
   def Args(parser):
@@ -32,8 +49,7 @@ class Create(base_classes.BaseIamCommand):
 
     parser.add_argument('--iam-account',
                         required=True,
-                        help='The IAM service account address to create a key '
-                        'for.')
+                        help='The service account for which to create a key.')
 
     parser.add_argument('output',
                         metavar='OUTPUT-FILE',

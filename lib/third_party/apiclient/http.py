@@ -19,7 +19,7 @@ object supporting an execute() method that does the
 actuall HTTP request.
 """
 
-
+__author__ = 'jcgregorio@google.com (Joe Gregorio)'
 
 import StringIO
 import base64

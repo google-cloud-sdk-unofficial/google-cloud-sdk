@@ -19,7 +19,6 @@ from googlecloudsdk.api_lib.compute import image_utils
 from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.api_lib.compute import utils
-from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.third_party.py27 import py27_collections as collections
 
@@ -45,6 +44,12 @@ def _CommonArgs(parser):
   instance_utils.AddTagsArgs(parser)
   instance_utils.AddCustomMachineTypeArgs(parser)
 
+  instance_utils.AddNetworkArgs(parser)
+  utils.AddRegionFlag(
+      parser,
+      resource_type='instance template',
+      operation_type='create')
+
   parser.add_argument(
       '--description',
       help='Specifies a textual description for the instance template.')
@@ -55,7 +60,6 @@ def _CommonArgs(parser):
       help='The name of the instance template to create.')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
   """Create a Compute Engine virtual machine instance template.
 
@@ -73,7 +77,6 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
-    instance_utils.AddNetworkArgs(parser)
 
   @property
   def service(self):
@@ -289,8 +292,7 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
     Returns:
       network_interface: a NetworkInterface message object
     """
-    # TODO(user): drop getattr() after subnets goes GA
-    if getattr(args, 'subnet', None) is not None:
+    if args.subnet is not None:
       subnet_ref = self.CreateRegionalReference(
           args.subnet, args.region, resource_type='subnetworks')
       network_interface = self.messages.NetworkInterface(
@@ -411,28 +413,3 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
         project=self.context['project'])
 
     return [request]
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateAlpha(Create):
-  """Create a Compute Engine virtual machine instance template.
-
-  *{command}* facilitates the creation of Google Compute Engine
-  virtual machine instance templates. For example, running:
-
-      $ {command} INSTANCE-TEMPLATE
-
-  will create one instance templates called 'INSTANCE-TEMPLATE'.
-
-  Instance templates are global resources, and can be used to create
-  instances in any zone.
-  """
-
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser)
-    instance_utils.AddNetworkArgsAlpha(parser)
-    utils.AddRegionFlag(
-        parser,
-        resource_type='instance template',
-        operation_type='create')

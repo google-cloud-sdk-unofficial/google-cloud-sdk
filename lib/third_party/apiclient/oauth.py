@@ -17,7 +17,7 @@
 Utilities for making it easier to work with OAuth.
 """
 
-
+__author__ = 'jcgregorio@google.com (Joe Gregorio)'
 
 
 import copy

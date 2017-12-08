@@ -17,7 +17,7 @@
 from googlecloudsdk.calliope import base
 
 
-class List(base.Command):
+class List(base.SilentCommand):
   """List the status of all Cloud SDK components.
 
   List all components in the Cloud SDK and provide information such as whether

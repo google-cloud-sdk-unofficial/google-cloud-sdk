@@ -20,7 +20,10 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core.console import console_io
 
 
-class Update(base.Command):
+# This command is silent as does not produce any resource output.
+# In fact it should not run any display code, as the installation has changed
+# and current run state is invalid in relation to new instalation.
+class Update(base.SilentCommand):
   """Update all of your installed components to the latest version.
 
   Ensure that the latest version of all installed components is installed on the

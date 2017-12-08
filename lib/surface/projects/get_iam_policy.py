@@ -38,7 +38,11 @@ class GetIamPolicy(base.Command):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('id', help='Project ID')
+    parser.add_argument('id', metavar='PROJECT_ID',
+                        completion_resource='cloudresourcemanager.projects',
+                        list_command_path='projects',
+                        help='The ID for the project you want to get '
+                             'IAM policy.')
 
   @util.HandleHttpError
   def Run(self, args):

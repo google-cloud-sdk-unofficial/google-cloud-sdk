@@ -53,6 +53,16 @@ class Delete(base.SilentCommand):
               'can not be currently active configuration.'))
 
   def Run(self, args):
+    # Fail the delete operation when we're attempting to delete the
+    # active config.
+    current_config = named_configs.GetNameOfActiveNamedConfig()
+    if current_config == args.configuration_name:
+      raise named_configs.NamedConfigWriteError(
+          'Deleting named configuration failed because configuration '
+          '[{0}] is set as active.  Use `gcloud config configurations '
+          'activate` to change the active configuration.'.format(
+              args.configuration_name))
+
     console_io.PromptContinue(
         'The following configuration will be deleted: [{0}]'.format(
             args.configuration_name),
