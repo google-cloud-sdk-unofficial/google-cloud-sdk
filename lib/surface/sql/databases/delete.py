@@ -24,9 +24,6 @@ from googlecloudsdk.core.console import console_io
 class _BaseDelete(object):
   """Deletes a Cloud SQL database."""
 
-  def Collection(self):
-    return 'sql.databases'
-
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command.

@@ -68,39 +68,36 @@ class SetAutoscaling(base_classes.BaseAsyncMutator):
 
   def CreateAutoscalerResource(self, igm_ref, args):
     if _IsZonalGroup(igm_ref):
-      scope_name = igm_ref.zone
       scope_type = 'zone'
-      zones, regions = [scope_name], None
+      location = managed_instance_groups_utils.CreateZoneRef(
+          self.resources, igm_ref)
+      zones, regions = [location], None
     else:
-      scope_name = igm_ref.region
       scope_type = 'region'
-      zones, regions = None, [scope_name]
+      location = managed_instance_groups_utils.CreateRegionRef(
+          self.resources, igm_ref)
+      zones, regions = None, [location]
 
     autoscaler = managed_instance_groups_utils.AutoscalerForMig(
         mig_name=igm_ref.Name(),
         autoscalers=managed_instance_groups_utils.AutoscalersForLocations(
             regions=regions,
             zones=zones,
-            project=igm_ref.project,
             compute=self.compute,
             http=self.http,
             batch_url=self.batch_url),
-        scope_name=scope_name,
-        scope_type=scope_type,
-        project=igm_ref.project)
+        location=location,
+        scope_type=scope_type)
     autoscaler_name = getattr(autoscaler, 'name', None)
     new_one = autoscaler_name is None
     autoscaler_name = autoscaler_name or args.name
 
     if _IsZonalGroup(igm_ref):
       autoscaler_resource = managed_instance_groups_utils.BuildAutoscaler(
-          args, self.messages, igm_ref, autoscaler_name, zone=scope_name)
+          args, self.messages, igm_ref, autoscaler_name)
     else:
       autoscaler_resource = managed_instance_groups_utils.BuildAutoscaler(
-          args, self.messages, igm_ref, autoscaler_name, region=scope_name)
-      region_link = self.resources.Parse(
-          scope_name, collection='compute.regions')
-      autoscaler_resource.region = region_link.SelfLink()
+          args, self.messages, igm_ref, autoscaler_name)
 
     return autoscaler_resource, new_one
 

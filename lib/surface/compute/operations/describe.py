@@ -87,8 +87,7 @@ class DescribeGA(base_classes.BaseDescriber):
     try:
       ref = flags.COMPUTE_OPERATION_ARG.ResolveAsResource(
           args, self.resources, default_scope=compute_scope.ScopeEnum.GLOBAL,
-          scope_lister=compute_flags.GetDefaultScopeLister(
-              self.compute_client, self.project))
+          scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
     except resources.WrongResourceCollectionException:
       try:
         return self._ResolveAsAccountOperation(args)

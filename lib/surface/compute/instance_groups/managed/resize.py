@@ -20,7 +20,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
-from googlecloudsdk.core import exceptions
 
 
 def _AddArgs(parser, creation_retries):
@@ -89,10 +88,6 @@ class Resize(base_classes.BaseAsyncMutator):
 class ResizeBeta(Resize):
   """Set managed instance group size."""
 
-  class ConflictingFlagsError(exceptions.Error):
-    """Conflicting flags were passed."""
-    pass
-
   @staticmethod
   def Args(parser):
     _AddArgs(parser=parser, creation_retries=True)
@@ -116,9 +111,8 @@ class ResizeBeta(Resize):
           zone=group_ref.zone,)
     else:
       if not args.creation_retries:
-        raise ConflictingFlagsError(
-            'argument --no-creation-retries: not allowed with argument '
-            '--region')
+        raise exceptions.ConflictingArgumentsException(
+            '--no-creation-retries', '--region')
       service = self.compute.regionInstanceGroupManagers
       method = 'Resize'
       request = self.messages.ComputeRegionInstanceGroupManagersResizeRequest(

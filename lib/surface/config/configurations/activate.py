@@ -44,10 +44,10 @@ class Activate(base.SilentCommand):
   @staticmethod
   def Args(parser):
     """Adds args for this command."""
-    configuration_arg = parser.add_argument(
+    parser.add_argument(
         'configuration_name',
+        completer=completers.NamedConfigCompleter,
         help='Name of the configuration to activate')
-    configuration_arg.completer = completers.NamedConfigCompleter
 
   def Run(self, args):
     named_configs.ConfigurationStore.ActivateConfig(args.configuration_name)

@@ -22,13 +22,30 @@ from googlecloudsdk.core import properties
 
 
 class List(base.ListCommand):
-  """Lists the defined sinks."""
+  """Lists the defined sinks.
+
+  Lists the defined sinks.
+  If either the *--log* or *--log-service* flags are included, then
+  the only sinks listed are for that log or that service.
+  If *--only-v2-sinks* flag is included, then only v2 sinks are listed.
+  If none of the flags are included, then all sinks in use are listed.
+  """
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        '--log',
+        help=('DEPRECATED. The name of a log. Use this argument only '
+              'if the sink applies to a single log.'))
+    group.add_argument(
+        '--log-service', dest='service',
+        help=('DEPRECATED. The name of a log service. Use this argument '
+              'only if the sink applies to all logs from '
+              'a log service.'))
     parser.add_argument(
         '--only-v2-sinks', required=False, action='store_true',
         help='Display only v2 sinks.')
@@ -112,14 +129,3 @@ class List(base.ListCommand):
       return self.ListSinks(util.GetParentFromArgs(args))
     else:
       return self.YieldAllSinks(project)
-
-List.detailed_help = {
-    'DESCRIPTION': """\
-        {index}
-        If either the *--log* or *--log-service* flags are included, then
-        the only sinks listed are for that log or that service.
-        If *--only-v2-sinks* flag is included, then only v2 sinks
-        are listed.
-        If none of the flags are included, then all sinks in use are listed.
-    """,
-}

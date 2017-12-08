@@ -15,26 +15,21 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.command_lib.compute.target_http_proxies import flags
+from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
 
 
 class Update(base_classes.NoOutputAsyncMutator):
   """Update a target HTTP proxy."""
 
   TARGET_HTTP_PROXY_ARG = None
+  URL_MAP_ARG = None
 
   @classmethod
   def Args(cls, parser):
     cls.TARGET_HTTP_PROXY_ARG = flags.TargetHttpProxyArgument()
     cls.TARGET_HTTP_PROXY_ARG.AddArgument(parser)
-
-    parser.add_argument(
-        '--url-map',
-        required=True,
-        help="""\
-        A reference to a URL map resource that will define the mapping of
-        URLs to backend services. The URL map must exist and cannot be
-        deleted while referenced by a target HTTP proxy.
-        """)
+    cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy()
+    cls.URL_MAP_ARG.AddArgument(parser)
 
   @property
   def service(self):
@@ -49,8 +44,7 @@ class Update(base_classes.NoOutputAsyncMutator):
     return 'targetHttpProxies'
 
   def CreateRequests(self, args):
-    url_map_ref = self.CreateGlobalReference(
-        args.url_map, resource_type='urlMaps')
+    url_map_ref = self.URL_MAP_ARG.ResolveAsResource(args, self.resources)
 
     target_http_proxy_ref = self.TARGET_HTTP_PROXY_ARG.ResolveAsResource(
         args, self.resources)

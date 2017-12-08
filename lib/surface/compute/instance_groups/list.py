@@ -73,7 +73,7 @@ class List(base_classes.MultiScopeLister):
               .ONLY_UNMANAGED_GROUPS)
     return instance_groups_utils.ComputeInstanceGroupManagerMembership(
         compute=self.compute,
-        project=self.project,
+        resources=self.resources,
         http=self.http,
         batch_url=self.batch_url,
         items=items,
@@ -91,7 +91,7 @@ class ListBetaAlpha(List):
   def ComputeDynamicProperties(self, args, items):
     return instance_groups_utils.ComputeInstanceGroupManagerMembership(
         compute=self.compute,
-        project=self.project,
+        resources=self.resources,
         http=self.http,
         batch_url=self.batch_url,
         items=items,

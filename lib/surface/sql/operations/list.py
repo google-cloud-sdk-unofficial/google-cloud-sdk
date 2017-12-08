@@ -28,17 +28,6 @@ from googlecloudsdk.command_lib.sql import flags
 class _BaseList(object):
   """Base class for sql list operations."""
 
-  @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
-    flags.INSTANCE_FLAG.AddToParser(parser)
-
   def Run(self, args):
     """Lists all instance operations that have been performed on an instance.
 
@@ -74,13 +63,17 @@ class _BaseList(object):
 class List(_BaseList, base.ListCommand):
   """Lists all instance operations for the given Cloud SQL instance."""
 
-  def Collection(self):
-    return 'sql.operations'
+  @staticmethod
+  def Args(parser):
+    flags.INSTANCE_FLAG.AddToParser(parser)
+    parser.display_info.AddFormat(flags.OPERATION_FORMAT)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListBeta(_BaseList, base.ListCommand):
   """Lists all instance operations for the given Cloud SQL instance."""
 
-  def Collection(self):
-    return 'sql.operations.v1beta4'
+  @staticmethod
+  def Args(parser):
+    flags.INSTANCE_FLAG.AddToParser(parser)
+    parser.display_info.AddFormat(flags.OPERATION_FORMAT_BETA)

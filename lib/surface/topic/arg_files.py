@@ -47,22 +47,21 @@ class TestingArgFiles(base.TopicCommand):
 
           List arguments may be specified within square brackets:
 
-            device-ids: [Nexus5, Nexus6, Nexus9]
+            directories-to-pull: [/sdcard/dir1, /data/dir2]
 
           or by using the alternate YAML list notation with one dash per list
           item:
 
             ```
-            device-ids:
-              - Nexus5
-              - Nexus6
-              - Nexus9
+            directories-to-pull:
+              - /sdcard/dir1
+              - /data/dir2
             ```
 
           If a list argument only contains a single value, you may omit the
           square brackets:
 
-            device-ids: Nexus9
+            directories-to-pull: /sdcard/dir1
 
           Composition
 
@@ -89,7 +88,7 @@ class TestingArgFiles(base.TopicCommand):
           we'll assume is stored in a file named excelsior_args.yaml:
 
             # Run a quick 'robo' test on the 'Excelsior' app for
-            # 90 seconds using only the default virtual device.
+            # 90 seconds using only the default Test Lab device.
             quick-robo-test:
               app: path/to/excelsior.apk
               type: robo
@@ -100,6 +99,35 @@ class TestingArgFiles(base.TopicCommand):
           To invoke this test, run:
 
             $ gcloud beta test android run excelsior_args.yaml:quick-robo-test
+
+          To select which device(s) you wish to test against in an argument
+          file, use *device:* to specify one or more devices, with each device
+          having one or more dimensions. For example, to specify the LG G3
+          device in the Chinese locale and with landscape orientation, use:
+
+            single-device-group:
+              device: [{model: g3, orientation: landscape, locale: zh}]
+
+          To specify multiple devices, use any of the following equivalent YAML
+          formats:
+
+            multi-device-group1:
+              device: [{model: flo}, {model: g3, version: 19, locale: zh}, {model: mako, version: 21}]
+
+            multi-device-group2:
+              device:
+                - {model: flo}
+                - {model: g3, version: 19, locale: zh}
+                - {model: mako, version: 21}
+
+            multi-device-group3:
+              device:
+                - model: flo
+                - model: g3
+                  version: 19
+                  locale: zh
+                - model: mako
+                  version: 21
 
           If your app has a login screen, or has additional UI elements which
           require input text, you may specify the resource names of the Android
@@ -117,13 +145,15 @@ class TestingArgFiles(base.TopicCommand):
                 password_resource: password
 
           Assuming the above YAML text is appended to the arg-file named
-          excelsior_args.yaml, you may invode the test by running:
+          excelsior_args.yaml, you may invoke the test by running:
 
             $ gcloud beta test android run excelsior_args.yaml:robo-test-with-login
 
           Here is a slightly more complicated example which demonstrates
-          composition of argument groups. Assume the following YAML text
-          is appended to the arg-file shown above named excelsior_args.yaml:
+          composition of argument groups using the legacy device dimension
+          arguments (*device:* is now the preferred way to specify test
+          devices). Assume the following YAML text is appended to the arg-file
+          shown above named excelsior_args.yaml:
 
             # Specify some unit tests to be run against a test matrix
             # with one device type, two Android versions, and four
@@ -133,7 +163,7 @@ class TestingArgFiles(base.TopicCommand):
               app: path/to/excelsior.apk
               test: path/to/excelsior-test.apk  # the unit tests
               timeout: 10m
-              device-ids: Nexus6
+              device-ids: NexusLowRes
               include: [supported-versions, supported-locales]
 
             supported-versions:
@@ -148,7 +178,7 @@ class TestingArgFiles(base.TopicCommand):
 
           To run these unit tests with the same locales and os-version-ids,
           but substituting a sampling of three physical Android devices
-          instead of the single virtual Nexus6 device, run:
+          instead of the single virtual NexusLowRes device, run:
 
             $ gcloud beta test android run excelsior_args.yaml:unit-tests --device-ids shamu,htc_m8,g3
 

@@ -27,13 +27,7 @@ class _BaseAddCert(object):
 
   @staticmethod
   def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
+    """Declare flag and positional arguments for the command parser."""
     parser.add_argument(
         'common_name',
         help='User supplied name. Constrained to ```[a-zA-Z.-_ ]+```.')
@@ -43,12 +37,7 @@ class _BaseAddCert(object):
         help=('Location of file which the private key of the created ssl-cert'
               ' will be written to.'))
     flags.INSTANCE_FLAG.AddToParser(parser)
-
-  def Collection(self):
-    return 'sql.sslCerts'
-
-  def Format(self, args):
-    return self.ListFormat(args)
+    parser.display_info.AddFormat(flags.SSL_CERTS_FORMAT)
 
   def Run(self, args):
     """Creates an SSL certificate for a Cloud SQL instance.
@@ -114,12 +103,12 @@ class _BaseAddCert(object):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class AddCert(_BaseAddCert, base.Command):
+class AddCert(_BaseAddCert, base.CreateCommand):
   """Creates an SSL certificate for a Cloud SQL instance."""
   pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class AddCertBeta(_BaseAddCert, base.Command):
+class AddCertBeta(_BaseAddCert, base.CreateCommand):
   """Creates an SSL certificate for a Cloud SQL instance."""
   pass

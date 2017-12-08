@@ -25,7 +25,9 @@ class Describe(base_classes.GlobalDescriber):
   @staticmethod
   def Args(parser):
     base_classes.GlobalDescriber.Args(
-        parser, 'compute.firewalls', list_command_path='compute.firewall-rules')
+        parser,
+        'compute.firewalls',
+        list_command_path='compute firewall-rules list --uri')
 
   @property
   def service(self):

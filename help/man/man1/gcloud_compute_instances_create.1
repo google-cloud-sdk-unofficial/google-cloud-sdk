@@ -331,7 +331,8 @@ At most one of these may be specified:
 Specifies the boot image for the instances. For each instance, a new boot disk
 will be created from the given image. Each boot disk will have the same name as
 the instance. To view a list of public images and projects, run \f5$ gcloud
-compute images list\fR.
+compute images list\fR. It is best practice to use \f5\-\-image\fR when a
+specific version of an image is needed.
 
 When using this option, \f5\fI\-\-boot\-disk\-device\-name\fR\fR and
 \f5\fI\-\-boot\-disk\-size\fR\fR can be used to override the boot disk's device
@@ -341,7 +342,8 @@ name and size, respectively.
 \fB\-\-image\-family\fR=\fIIMAGE_FAMILY\fR
 The family of the image that the boot disk will be initialized with. When a
 family is specified instead of an image, the latest non\-deprecated image
-associated with that family is used.
+associated with that family is used. It is best practice to use
+\f5\-\-image\-family\fR when the latest version of an image is needed.
 
 By default, \f5\fIdebian\-8\fR\fR is assumed for this flag.
 

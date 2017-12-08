@@ -29,19 +29,11 @@ class ListBeta(base.ListCommand):
   order of the user name.
   """
 
-  def Collection(self):
-    return 'sql.users.v1beta4'
-
   @staticmethod
   def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use it to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
     flags.INSTANCE_FLAG.AddToParser(parser)
+    # TODO(b/36473146): Add an output format test to kill a mutant.
+    parser.display_info.AddFormat(flags.USERS_FORMAT_BETA)
 
   def Run(self, args):
     """Lists Cloud SQL users in a given instance.

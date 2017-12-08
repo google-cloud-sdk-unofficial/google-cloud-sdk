@@ -128,11 +128,7 @@ class Watch(base.Command):
                 messages.RuntimeconfigProjectsConfigsVariablesWatchRequest(
                     name=var_resource.RelativeName(),
                     watchVariableRequest=messages.WatchVariableRequest(
-                        newerThan=newer_than,
-                    )
-                )
-            )
-        )
+                        newerThan=newer_than,))))
 
       except apitools_exceptions.HttpError as error:
         # For deadline exceeded or bad gateway errors,

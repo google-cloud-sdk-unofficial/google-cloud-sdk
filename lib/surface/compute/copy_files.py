@@ -125,7 +125,7 @@ you will be prompted to select a zone.
     scp_args = [self.env.scp]
     if not args.plain:
       scp_args.extend(ssh.GetDefaultFlags(self.keys.key_file))
-      host_key_alias = self.HostKeyAlias(source_instance)
+      host_key_alias = ssh_utils.HostKeyAlias(source_instance)
       scp_args.extend(ssh.GetHostKeyArgs(host_key_alias, args.plain,
                                          args.strict_host_key_checking))
       scp_args.append('-r')
@@ -139,8 +139,10 @@ you will be prompted to select a zone.
             ssh.UserHost(file_spec.user, external_ip_address),
             file_spec.file_path))
 
+    ip_address = ssh_utils.GetExternalIPAddress(source_instance)
     self.ActuallyRun(
-        args, scp_args, user, source_instance, source_instance_ref.project)
+        args, scp_args, user, source_instance, source_instance_ref.project,
+        ip_address)
 
 CopyFiles.detailed_help = {
     'brief': 'Copy files to and from Google Compute Engine virtual machines',

@@ -16,17 +16,16 @@
 
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
 
 
 class _BaseList(object):
   """Lists all available service tiers for Google Cloud SQL."""
 
-  def Collection(self):
-    return 'sql.tiers'
-
-  def Format(self, args):
-    return self.ListFormat(args)
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(flags.TIERS_FORMAT)
 
   def Run(self, unused_args):
     """Lists all available service tiers for Google Cloud SQL.
@@ -35,14 +34,15 @@ class _BaseList(object):
       unused_args: argparse.Namespace, The arguments that this command was
           invoked with.
 
-    Returns:
-      A dict object that has the list of tier resources if the command ran
-      successfully.
     Raises:
       HttpException: A http error response was received while executing api
           request.
       ToolException: An error other than http error occured while executing the
           command.
+
+    Returns:
+      A dict object that has the list of tier resources if the command ran
+      successfully.
     """
     sql_client = self.context['sql_client']
     sql_messages = self.context['sql_messages']
@@ -53,12 +53,12 @@ class _BaseList(object):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class List(_BaseList, base.Command):
+class List(_BaseList, base.ListCommand):
   """Lists all available service tiers for Google Cloud SQL."""
   pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(_BaseList, base.Command):
+class ListBeta(_BaseList, base.ListCommand):
   """Lists all available service tiers for Google Cloud SQL."""
   pass

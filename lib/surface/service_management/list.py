@@ -26,7 +26,7 @@ _DETAILED_HELP = {
         available to be enabled by a project. You can choose the mode in
         which the command will list services by using exactly one of the
         `--produced`, `--enabled`, or `--available` flags.
-        `--produced` is the default.
+        `--enabled` is the default.
         """,
     'EXAMPLES': """\
         To list the services the current project produces, run:

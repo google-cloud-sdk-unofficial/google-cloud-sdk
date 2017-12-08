@@ -27,15 +27,30 @@ from googlecloudsdk.core.credentials import store as c_store
 class ActivateServiceAccount(base.SilentCommand):
   """Authorize access to Google Cloud Platform using a service account.
 
-  Obtains access credentials for the service account using a .json (preferred)
-  or .p12 file that contains a private authorization key. You obtain the key
-  file from the [Cloud Platform console](https://console.cloud.google.com). For
-  .p12 files, a password is required. This password is displayed in the console
-  when you create the key. If you specify a project using the `--project` flag,
-  the project is set in your active configuration.
+  Adds service account credentials from a file that contains
+  a private authorization key to the existing set of credentials managed
+  and used by gcloud.
 
-  Any previously active credentials will still be retained,
-  they will just no longer be the active credentials.
+  The key file for this command can be obtained using either:
+    * the [Cloud Platform console](https://console.cloud.google.com) or
+    * $ gcloud iam service-accounts keys create.
+
+  The key file can be .json (preferred) or .p12 (legacy) format.
+  For legacy .p12 files, a separate password might be required. This password
+  is displayed in the console when you create the key.
+
+  The credentials will also be activated, which is same as running
+  $ gcloud config set account ACCOUNT_NAME.
+
+  If you specify a project using the `--project` flag, the project is set in
+  your active configuration, which is same as running
+  $ gcloud config set project PROJECT_NAME.
+
+  Any previously active credentials will still be retained, and can be seen by
+  running $ gcloud auth list. They will just no longer be the active/default
+  credentials.
+
+  If you want to delete previous credentials see `gcloud auth revoke` command.
   """
 
   @staticmethod

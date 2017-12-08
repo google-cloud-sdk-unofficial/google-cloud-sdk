@@ -127,6 +127,7 @@ class MLCloudLoggingClient(object):
 
     if not external_logger:
       try:
+        # We import the module locally because it is not available in google3
         # where unittest would must depend on.
         import google.cloud.logging   # pylint: disable=g-import-not-at-top
         client = google.cloud.logging.Client(project=project, use_gax=False)

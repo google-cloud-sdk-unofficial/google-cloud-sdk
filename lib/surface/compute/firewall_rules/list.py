@@ -58,16 +58,16 @@ ListAlpha.detailed_help = {
           """.format(RESOURCE_TYPE),
     'EXAMPLES':
         """\
-          To list all {0} in a project in table form, run:
+To list all {0} in a project in table form, run:
 
-            $ {{command}}
+    $ {{command}}
 
-          To list the URIs of all {0} in a project, run:
+To list the URIs of all {0} in a project, run:
 
-            $ {{command}} --uri
+    $ {{command}} --uri
 
-          To list all fields of all {0} in a project, run:
+To list all fields of all {0} in a project, run:
 
-            $ {{command}} --format="{1}"
-            """.format(RESOURCE_TYPE, flags.LIST_WITH_ALL_FIELDS_FORMAT)
+    $ {{command}} --format="{1}"
+""".format(RESOURCE_TYPE, flags.LIST_WITH_ALL_FIELDS_FORMAT)
 }

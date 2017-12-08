@@ -66,25 +66,25 @@ class StopAutoscaling(base_classes.BaseAsyncMutator):
 
   def GetAutoscalerResource(self, igm_ref, args):
     if _IsZonalGroup(igm_ref):
-      scope_name = igm_ref.zone
       scope_type = 'zone'
-      zones, regions = [scope_name], None
+      location = managed_instance_groups_utils.CreateZoneRef(
+          self.resources, igm_ref)
+      zones, regions = [location], None
     else:
-      scope_name = igm_ref.region
       scope_type = 'region'
-      zones, regions = None, [scope_name]
+      location = managed_instance_groups_utils.CreateRegionRef(
+          self.resources, igm_ref)
+      zones, regions = None, [location]
 
     autoscaler = managed_instance_groups_utils.AutoscalerForMig(
         mig_name=args.name,
         autoscalers=managed_instance_groups_utils.AutoscalersForLocations(
             regions=regions,
             zones=zones,
-            project=igm_ref.project,
             compute=self.compute,
             http=self.http,
             batch_url=self.batch_url),
-        project=igm_ref.project,
-        scope_name=scope_name,
+        location=location,
         scope_type=scope_type)
     if autoscaler is None:
       raise managed_instance_groups_utils.ResourceNotFoundException(

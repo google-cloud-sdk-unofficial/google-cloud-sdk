@@ -53,12 +53,12 @@ class Delete(base.SilentCommand):
   @staticmethod
   def Args(parser):
     """Adds args for this command."""
-    configuration_arg = parser.add_argument(
+    parser.add_argument(
         'configuration_names',
         nargs='+',
+        completer=completers.NamedConfigCompleter,
         help=('Name of the configuration to delete. '
               'Cannot be currently active configuration.'))
-    configuration_arg.completer = completers.NamedConfigCompleter
 
   def Run(self, args):
     # Fail the delete operation when we're attempting to delete the

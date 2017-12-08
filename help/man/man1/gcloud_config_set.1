@@ -158,6 +158,13 @@ deployments. All Docker builds now use the Container Builder API.
 
 
 .TP 2m
+\fBpromote_by_default\fR
+If True, when deploying a new version of a service, that version will be
+promoted to receive all traffic for the service. The flag can be overridden via
+the \f5\-\-promote\-by\-default\fR or \f5\-\-no\-promote\-by\-default\fR flags.
+
+
+.TP 2m
 \fBstop_previous_version\fR
 If True, when deploying a new version of a service, the previously deployed
 version is stopped. If False, older versions must be stopped manually.

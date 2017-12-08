@@ -30,9 +30,6 @@ class SetPasswordBeta(base.CreateCommand):
   host.
   """
 
-  def Collection(self):
-    return 'sql.users.v1beta4'
-
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command.

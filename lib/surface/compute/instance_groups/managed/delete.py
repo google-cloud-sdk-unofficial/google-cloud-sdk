@@ -61,17 +61,17 @@ class Delete(base.DeleteCommand):
       Messages, which will be sent to delete autoscalers.
     """
     mig_requests = zip(*mig_requests)[2] if mig_requests else []
-    zone_migs = [
-        (request.instanceGroupManager, 'zone', request.zone)
-        for request in mig_requests
-        if hasattr(request, 'zone') and request.zone is not None]
-    region_migs = [
-        (request.instanceGroupManager, 'region', request.region)
-        for request in mig_requests
-        if hasattr(request, 'region') and request.region is not None]
+    zone_migs = [(request.instanceGroupManager, 'zone',
+                  managed_instance_groups_utils.CreateZoneRef(
+                      holder.resources, request)) for request in mig_requests
+                 if hasattr(request, 'zone') and request.zone is not None]
+    region_migs = [(request.instanceGroupManager, 'region',
+                    managed_instance_groups_utils.CreateRegionRef(
+                        holder.resources, request)) for request in mig_requests
+                   if hasattr(request, 'region') and request.region is not None]
 
-    zones = sorted(set(zip(*zone_migs)[2])) if zone_migs else []
-    regions = sorted(set(zip(*region_migs)[2])) if region_migs else []
+    zones = zip(*zone_migs)[2] if zone_migs else []
+    regions = zip(*region_migs)[2] if region_migs else []
 
     client = holder.client.apitools_client
     messages = client.MESSAGES_MODULE
@@ -80,11 +80,9 @@ class Delete(base.DeleteCommand):
         autoscalers=managed_instance_groups_utils.AutoscalersForLocations(
             zones=zones,
             regions=regions,
-            project=project,
             compute=client,
             http=client.http,
-            batch_url=holder.client.batch_url),
-        project=project)
+            batch_url=holder.client.batch_url))
     requests = []
     for autoscaler in autoscalers_to_delete:
       if autoscaler.zone:

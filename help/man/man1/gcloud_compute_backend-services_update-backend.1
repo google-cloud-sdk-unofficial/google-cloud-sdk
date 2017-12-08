@@ -100,9 +100,12 @@ based on connections (for TCP/SSL) in addition to CPU by setting
 .sp
 .TP 2m
 \fB\-\-capacity\-scaler\fR=\fICAPACITY_SCALER\fR
-A float in the range [0.0, 1.0] that scales the maximum parameters for the group
-(e.g., max rate). A value of 0.0 will cause no requests to be sent to the group
-(i.e., it adds the group in a \f5\fIdrained\fR\fR state).
+A setting that applies to all balancing modes. This value is multiplied by the
+balancing mode value to set the current max usage of the instance group.
+Acceptable values are \f50.0\fR (0%) through \f51.0\fR (100%). Setting this
+value to \f50.0\fR (0%) drains the backend service. Note that draining a backend
+service only prevents new connections to instances in the group. All existing
+connections are allowed to continue until they close by normal means.
 
 .TP 2m
 \fB\-\-description\fR=\fIDESCRIPTION\fR
@@ -110,8 +113,9 @@ An optional, textual description for the backend.
 
 .TP 2m
 \fB\-\-max\-utilization\fR=\fIMAX_UTILIZATION\fR
-The target CPU utilization for the group as a float in the range [0.0, 1.0].
-This flag can only be provided when the balancing mode is \fBUTILIZATION\fR.
+The maximum average CPU utilization of the backend service. Acceptable values
+are \f50.0\fR (0%) through \f51.0\fR (100%). This flag can only be provided when
+the balancing mode is \fBUTILIZATION\fR.
 
 .RE
 .sp
@@ -181,11 +185,29 @@ The maximum concurrent connections per\-instance.
 
 .TP 2m
 \fB\-\-max\-rate\fR=\fIMAX_RATE\fR
-Maximum requests per second (RPS) that the group can handle.
+Maximum number of requests per second that can be sent to the instance group.
+Must not be used with Autoscaled Managed Instance Groups. \f5\-\-max\-rate\fR
+and \f5\-\-max\-rate\-per\-instance\fR are mutually exclusive. However, one of
+them can be set even if \f5\-\-balancing\-mode\fR is set to \f5UTILIZATION\fR.
+If either \f5\-\-max\-rate\fR or \f5\-\-max\-rate\-per\-instance\fR is set and
+\f5\-\-balancing\-mode\fR is set to \f5RATE\fR, then only that value is
+considered when judging capacity. If either \f5\-\-max\-rate\fR or
+\f5\-\-max\-rate\-per\-instance\fR is set and \f5\-\-balancing\-mode\fR is set
+to \f5UTILIZATION\fR, then instances are judged to be at capacity when either
+the \f5UTILIZATION\fR or \f5RATE\fR value is reached.
 
 .TP 2m
 \fB\-\-max\-rate\-per\-instance\fR=\fIMAX_RATE_PER_INSTANCE\fR
-The maximum per\-instance requests per second (RPS).
+Maximum number of requests per second that can be sent to each instance in the
+instance group. \f5\-\-max\-rate\fR and \f5\-\-max\-rate\-per\-instance\fR are
+mutually exclusive. However, one of them can be set even if
+\f5\-\-balancing\-mode\fR is set to \f5UTILIZATION\fR. If either
+\f5\-\-max\-rate\fR or \f5\-\-max\-rate\-per\-instance\fR is set and
+\f5\-\-balancing\-mode\fR is set to \f5RATE\fR, then only that value is
+considered when judging capacity. If either \f5\-\-max\-rate\fR or
+\f5\-\-max\-rate\-per\-instance\fR is set and \f5\-\-balancing\-mode\fR is set
+to \f5UTILIZATION\fR, then instances are judged to be at capacity when either
+the \f5UTILIZATION\fR or \f5RATE\fR value is reached.
 
 
 .RE

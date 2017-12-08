@@ -25,31 +25,24 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
 
 
-class _BaseList(object):
-  """Base class for sql backups list."""
-
-  @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use it to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
-    flags.INSTANCE_FLAG.AddToParser(parser)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class List(_BaseList, base.ListCommand):
+class List(base.ListCommand):
   """Lists all backups associated with a given instance.
 
   Lists all backups associated with a given Cloud SQL instance and
   configuration in the reverse chronological order of the enqueued time.
   """
 
-  def Collection(self):
-    return 'sql.backupRuns'
+  @staticmethod
+  def Args(parser):
+    flags.INSTANCE_FLAG.AddToParser(parser)
+    parser.display_info.AddFormat("""
+      table(
+        dueTime.iso(),
+        error.code.yesno(no="-"):label=ERROR,
+        status
+      )
+    """)
 
   def Run(self, args):
     """Lists all backups associated with a given instance.
@@ -93,15 +86,24 @@ class List(_BaseList, base.ListCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(_BaseList, base.ListCommand):
+class ListBeta(base.ListCommand):
   """Lists all backups associated with a given instance.
 
   Lists all backups associated with a given Cloud SQL instance and
   configuration in the reverse chronological order of the enqueued time.
   """
 
-  def Collection(self):
-    return 'sql.backupRuns.v1beta4'
+  @staticmethod
+  def Args(parser):
+    flags.INSTANCE_FLAG.AddToParser(parser)
+    parser.display_info.AddFormat("""
+      table(
+        id,
+        windowStartTime.iso(),
+        error.code.yesno(no="-"):label=ERROR,
+        status
+      )
+    """)
 
   def Run(self, args):
     """Lists all backups associated with a given instance.

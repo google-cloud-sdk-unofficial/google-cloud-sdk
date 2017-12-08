@@ -31,18 +31,8 @@ class CreateBeta(base.CreateCommand):
   password.
   """
 
-  def Collection(self):
-    return 'sql.users.v1beta4'
-
   @staticmethod
   def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use it to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
     flags.INSTANCE_FLAG.AddToParser(parser)
     flags.USERNAME_FLAG.AddToParser(parser)
     flags.HOST_FLAG.AddToParser(parser)

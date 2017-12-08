@@ -129,8 +129,7 @@ class Create(base_classes.BaseAsyncCreator):
       network_interfaces = (
           instance_template_utils.CreateNetworkInterfaceMessages)(
               resources=self.resources,
-              scope_lister=flags.GetDefaultScopeLister(
-                  self.compute_client, self.project),
+              scope_lister=flags.GetDefaultScopeLister(self.compute_client),
               messages=self.messages,
               network_interface_arg=args.network_interface,
               region=args.region)
@@ -138,8 +137,7 @@ class Create(base_classes.BaseAsyncCreator):
       network_interfaces = [
           instance_template_utils.CreateNetworkInterfaceMessage(
               resources=self.resources,
-              scope_lister=flags.GetDefaultScopeLister(
-                  self.compute_client, self.project),
+              scope_lister=flags.GetDefaultScopeLister(self.compute_client),
               messages=self.messages,
               network=args.network,
               region=args.region,
@@ -169,7 +167,7 @@ class Create(base_classes.BaseAsyncCreator):
       image_expander = image_utils.ImageExpander(self.compute_client,
                                                  self.resources)
       image_uri, _ = image_expander.ExpandImageFlag(
-          user_project=self.project,
+          user_project=instance_template_ref.project,
           image=args.image,
           image_family=args.image_family,
           image_project=args.image_project,
@@ -236,7 +234,7 @@ class Create(base_classes.BaseAsyncCreator):
             description=args.description,
             name=instance_template_ref.Name(),
         ),
-        project=self.project)
+        project=instance_template_ref.project)
 
     return [request]
 

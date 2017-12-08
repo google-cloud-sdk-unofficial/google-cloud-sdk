@@ -144,10 +144,9 @@ class AlphaCreate(Create):
       denied = firewalls_utils.ParseRules(
           args.rules, self.messages, firewalls_utils.ActionType.DENY)
 
-    network_ref = self.CreateGlobalReference(
-        args.network, resource_type='networks')
-    firewall_ref = self.CreateGlobalReference(
-        args.name, resource_type='firewalls')
+    network_ref = self.NETWORK_ARG.ResolveAsResource(args, self.resources)
+    firewall_ref = self.FIREWALL_RULE_ARG.ResolveAsResource(args,
+                                                            self.resources)
 
     request = self.messages.ComputeFirewallsInsertRequest(
         firewall=self.messages.Firewall(

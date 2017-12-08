@@ -17,16 +17,25 @@
 from googlecloudsdk.calliope import base
 
 
-class _BaseList(object):
-  """List customizable flags for Google Cloud SQL instances."""
-
-  def Collection(self):
-    return 'sql.flags'
+def _AddCommonFlags(parser):
+  """Adds flags common to all release tracks."""
+  parser.display_info.AddFormat("""
+    table(
+        name,
+        type,
+        appliesTo.list():label=DATABASE_VERSION,
+        allowedStringValues.list():label=ALLOWED_VALUES
+      )
+    """)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class List(_BaseList, base.ListCommand):
+class List(base.ListCommand):
   """List customizable flags for Google Cloud SQL instances."""
+
+  @staticmethod
+  def Args(parser):
+    _AddCommonFlags(parser)
 
   def Run(self, unused_args):
     """Lists customizable MySQL flags for Google Cloud SQL instances.
@@ -52,7 +61,7 @@ class List(_BaseList, base.ListCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(_BaseList, base.ListCommand):
+class ListBeta(base.ListCommand):
   """List customizable flags for Google Cloud SQL instances."""
 
   @staticmethod
@@ -61,11 +70,13 @@ class ListBeta(_BaseList, base.ListCommand):
 
     Please add arguments in alphabetical order except for no- or a clear-
     pair for that argument which can follow the argument itself.
+
     Args:
       parser: An argparse parser that you can use to add arguments that go
           on the command line after this command. Positional arguments are
           allowed.
     """
+    _AddCommonFlags(parser)
     parser.add_argument(
         '--database-version',
         required=False,

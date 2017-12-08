@@ -36,8 +36,8 @@ class Update(base_classes.NoOutputAsyncMutator):
     cls.SSL_CERTIFICATE_ARG.AddArgument(parser)
     cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument()
     cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser)
-    cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetHttpsProxy(
-        required=False)
+    cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy(
+        required=False, proxy_type='HTTPS')
     cls.URL_MAP_ARG.AddArgument(parser)
 
   @property

@@ -23,41 +23,53 @@ from googlecloudsdk.core import log
 
 
 class Describe(base.DescribeCommand):
-  """Displays information about a sink."""
+  """Displays information about a sink.
+
+  Displays information about a sink.
+  If you don't include one of the *--log* or *--log-service* flags,
+  this command displays information about a v2 sink.
+  """
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        '--log',
+        help=('DEPRECATED. The name of a log. Use this argument only '
+              'if the sink applies to a single log.'))
+    group.add_argument(
+        '--log-service', dest='service',
+        help=('DEPRECATED. The name of a log service. Use this argument '
+              'only if the sink applies to all logs from '
+              'a log service.'))
     parser.add_argument('sink_name', help='The name of the sink to describe.')
     util.AddNonProjectArgs(parser, 'Describe a sink')
 
   def Collection(self):
     return 'logging.sinks'
 
-  def GetLogSink(self):
+  def GetLogSink(self, sink_ref):
     """Returns a log sink specified by the arguments."""
     client = util.GetClientV1()
-    ref = self.context['sink_reference']
     return client.projects_logs_sinks.Get(
         client.MESSAGES_MODULE.LoggingProjectsLogsSinksGetRequest(
-            projectsId=ref.projectsId,
-            logsId=ref.logsId,
-            sinksId=ref.sinksId))
+            projectsId=sink_ref.projectsId,
+            logsId=sink_ref.logsId,
+            sinksId=sink_ref.sinksId))
 
-  def GetLogServiceSink(self):
+  def GetLogServiceSink(self, sink_ref):
     """Returns a log service sink specified by the arguments."""
     client = util.GetClientV1()
-    ref = self.context['sink_reference']
     return client.projects_logServices_sinks.Get(
         client.MESSAGES_MODULE.LoggingProjectsLogServicesSinksGetRequest(
-            projectsId=ref.projectsId,
-            logServicesId=ref.logServicesId,
-            sinksId=ref.sinksId))
+            projectsId=sink_ref.projectsId,
+            logServicesId=sink_ref.logServicesId,
+            sinksId=sink_ref.sinksId))
 
-  def GetSink(self, parent):
+  def GetSink(self, parent, sink_ref):
     """Returns a sink specified by the arguments."""
     # Use V2 logging API.
-    sink_ref = self.context['sink_reference']
     return util.GetClient().projects_sinks.Get(
         util.GetMessages().LoggingProjectsSinksGetRequest(
             sinkName=util.CreateResourceName(
@@ -75,14 +87,17 @@ class Describe(base.DescribeCommand):
     """
     util.CheckLegacySinksCommandArguments(args)
 
+    sink_ref = util.GetSinkReference(args.sink_name, args.log, args.service)
+
     try:
       if args.log:
-        return util.TypedLogSink(self.GetLogSink(), log_name=args.log)
+        return util.TypedLogSink(self.GetLogSink(sink_ref), log_name=args.log)
       elif args.service:
-        return util.TypedLogSink(self.GetLogServiceSink(),
+        return util.TypedLogSink(self.GetLogServiceSink(sink_ref),
                                  service_name=args.service)
       else:
-        return util.TypedLogSink(self.GetSink(util.GetParentFromArgs(args)))
+        return util.TypedLogSink(self.GetSink(util.GetParentFromArgs(args),
+                                              sink_ref))
     except apitools_exceptions.HttpError as error:
       v2_sink = not args.log and not args.service
       # Suggest the user to add --log or --log-service flag.
@@ -91,12 +106,3 @@ class Describe(base.DescribeCommand):
         log.status.Print(('Sink was not found. '
                           'Did you forget to add --log or --log-service flag?'))
       raise error
-
-
-Describe.detailed_help = {
-    'DESCRIPTION': """\
-        Displays information about a sink.
-        If you don't include one of the *--log* or *--log-service* flags,
-        this command displays information about a v2 sink.
-     """,
-}

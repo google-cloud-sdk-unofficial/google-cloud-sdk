@@ -19,6 +19,7 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.runtime_config import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.runtime_config import flags
+from googlecloudsdk.core import log
 
 
 class List(base.ListCommand):
@@ -53,13 +54,11 @@ class List(base.ListCommand):
     """
     flags.AddRequiredConfigFlag(parser)
 
-  def Collection(self):
-    """Returns the default collection path string.
-
-    Returns:
-      The default collection path string.
-    """
-    return 'runtimeconfig.variables'
+    parser.add_argument(
+        '--values',
+        action='store_true',
+        help=('List the variables for which you have Get '
+              'IAM permission along with their values.'))
 
   def Run(self, args):
     """Run 'runtime-configs variables list'.
@@ -80,9 +79,11 @@ class List(base.ListCommand):
 
     config_resource = util.ParseConfigName(util.ConfigName(args))
 
+    self._display_values = args.values
+
     request = messages.RuntimeconfigProjectsConfigsVariablesListRequest(
         parent=config_resource.RelativeName(),
-    )
+        returnValues=self._display_values)
 
     page_size = args.page_size or self.DEFAULT_PAGE_SIZE
 
@@ -93,4 +94,14 @@ class List(base.ListCommand):
     )
 
     for result in results:
-      yield util.FormatVariable(result)
+      yield util.FormatVariable(result, self._display_values)
+
+  def Format(self, args):
+    return 'table(name, updateTime, value:optional)'
+
+  def Epilog(self, resources_were_displayed):
+    if resources_were_displayed and self._display_values:
+      log.status.Print("""\
+With --values flag specified, only those variables for which you have Get IAM permission will be returned along with their values.
+To see all the variables for which you have List IAM permission, please run the command without the --values flag.
+""")

@@ -45,14 +45,14 @@ class Remove(base.SilentCommand):
 
   @staticmethod
   def Args(parser):
-    url_arg = parser.add_argument(
+    parser.add_argument(
         'url',
         nargs='*',
         metavar='URL',
+        completer=completers.RepoCompleter,
         help='Zero or more URLs for the component repositories you want to '
         'remove.  If none are given, you will be prompted to choose which '
         'existing repository you want to remove.')
-    url_arg.completer = completers.RepoCompleter
     parser.add_argument('--all', action='store_true',
                         help='Remove all registered repositories.')
 

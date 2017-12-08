@@ -55,8 +55,6 @@ class List(base.ListCommand):
       return build_ref.SelfLink()
     return _BuildToURI
 
-  # TODO(b/29048700): Until resolution of this bug, the error message
-  # printed by gcloud (for 404s, eg) will be really terrible.
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

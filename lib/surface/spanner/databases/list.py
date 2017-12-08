@@ -35,7 +35,7 @@ class List(base.ListCommand):
     flags.Instance(positional=False).AddToParser(parser)
 
   def Collection(self):
-    return 'spanner.databases'
+    return 'spanner.projects.instances.databases'
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

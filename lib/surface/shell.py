@@ -17,12 +17,17 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.shell import application
+from googlecloudsdk.command_lib.shell import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Shell(base.Command):
   """Start the gcloud shell.
   """
+
+  @staticmethod
+  def Args(parser):
+    flags.EXPERIMENTAL_AUTOCOMPLETE.AddToParser(parser)
 
   def Run(self, args):
     application.main()

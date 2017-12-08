@@ -50,18 +50,18 @@ class Set(base.Command):
   @staticmethod
   def Args(parser):
     """Adds args for this command."""
-    property_arg = parser.add_argument(
+    parser.add_argument(
         'property',
         metavar='SECTION/PROPERTY',
+        completer=completers.PropertiesCompleter,
         help='The property to be set. Note that SECTION/ is optional while '
         'referring to properties in the core section.')
-    property_arg.completer = completers.PropertiesCompleter
-    value_arg = parser.add_argument(
+    parser.add_argument(
         'value',
         completion_resource='cloudresourcemanager.projects',
-        list_command_path='beta.projects',
+        completer=Set.ValueCompleter,
+        list_command_path='beta projects list --uri',
         help='The value to be set.')
-    value_arg.completer = Set.ValueCompleter
 
     flags.INSTALLATION_FLAG.AddToParser(parser)
 

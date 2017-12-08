@@ -25,17 +25,8 @@ class _BaseList(object):
 
   @staticmethod
   def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
     flags.INSTANCE_FLAG.AddToParser(parser)
-
-  def Collection(self):
-    return 'sql.sslCerts'
+    parser.display_info.AddFormat(flags.SSL_CERTS_FORMAT)
 
   def Run(self, args):
     """Lists all SSL certs for a Cloud SQL instance.

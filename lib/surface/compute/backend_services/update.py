@@ -53,13 +53,22 @@ class UpdateGA(base_classes.ReadWriteCommand):
     super(UpdateGA, self).__init__(*args, **kwargs)
     self.ref = None
 
-  @staticmethod
-  def Args(parser):
+  HEALTH_CHECK_ARG = None
+  HTTP_HEALTH_CHECK_ARG = None
+  HTTPS_HEALTH_CHECK_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddDescription(parser)
-    flags.AddHealthChecks(parser)
-    flags.AddHttpHealthChecks(parser)
-    flags.AddHttpsHealthChecks(parser)
+    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument()
+    cls.HEALTH_CHECK_ARG.AddArgument(parser, cust_metavar='HEALTH_CHECK')
+    cls.HTTP_HEALTH_CHECK_ARG = flags.HttpHealthCheckArgument()
+    cls.HTTP_HEALTH_CHECK_ARG.AddArgument(
+        parser, cust_metavar='HTTP_HEALTH_CHECK')
+    cls.HTTPS_HEALTH_CHECK_ARG = flags.HttpsHealthCheckArgument()
+    cls.HTTPS_HEALTH_CHECK_ARG.AddArgument(
+        parser, cust_metavar='HTTPS_HEALTH_CHECK')
     flags.AddTimeout(parser, default=None)
     flags.AddPortName(parser)
     flags.AddProtocol(parser, default=None)
@@ -137,7 +146,7 @@ class UpdateGA(base_classes.ReadWriteCommand):
     elif args.description is not None:
       replacement.description = None
 
-    health_checks = backend_services_utils.GetHealthChecks(args, self)
+    health_checks = flags.GetHealthCheckUris(args, self, self.resources)
     if health_checks:
       replacement.healthChecks = health_checks
 
@@ -222,13 +231,22 @@ class UpdateGA(base_classes.ReadWriteCommand):
 class UpdateAlpha(UpdateGA):
   """Update a backend service."""
 
-  @staticmethod
-  def Args(parser):
+  HEALTH_CHECK_ARG = None
+  HTTP_HEALTH_CHECK_ARG = None
+  HTTPS_HEALTH_CHECK_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddDescription(parser)
-    flags.AddHealthChecks(parser)
-    flags.AddHttpHealthChecks(parser)
-    flags.AddHttpsHealthChecks(parser)
+    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument()
+    cls.HEALTH_CHECK_ARG.AddArgument(parser, cust_metavar='HEALTH_CHECK')
+    cls.HTTP_HEALTH_CHECK_ARG = flags.HttpHealthCheckArgument()
+    cls.HTTP_HEALTH_CHECK_ARG.AddArgument(
+        parser, cust_metavar='HTTP_HEALTH_CHECK')
+    cls.HTTPS_HEALTH_CHECK_ARG = flags.HttpsHealthCheckArgument()
+    cls.HTTPS_HEALTH_CHECK_ARG.AddArgument(
+        parser, cust_metavar='HTTPS_HEALTH_CHECK')
     flags.AddTimeout(parser, default=None)
     flags.AddPortName(parser)
     flags.AddProtocol(parser, default=None)
@@ -284,13 +302,22 @@ class UpdateAlpha(UpdateGA):
 class UpdateBeta(UpdateGA):
   """Update a backend service."""
 
-  @staticmethod
-  def Args(parser):
+  HEALTH_CHECK_ARG = None
+  HTTP_HEALTH_CHECK_ARG = None
+  HTTPS_HEALTH_CHECK_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddDescription(parser)
-    flags.AddHealthChecks(parser)
-    flags.AddHttpHealthChecks(parser)
-    flags.AddHttpsHealthChecks(parser)
+    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument()
+    cls.HEALTH_CHECK_ARG.AddArgument(parser, cust_metavar='HEALTH_CHECK')
+    cls.HTTP_HEALTH_CHECK_ARG = flags.HttpHealthCheckArgument()
+    cls.HTTP_HEALTH_CHECK_ARG.AddArgument(
+        parser, cust_metavar='HTTP_HEALTH_CHECK')
+    cls.HTTPS_HEALTH_CHECK_ARG = flags.HttpsHealthCheckArgument()
+    cls.HTTPS_HEALTH_CHECK_ARG.AddArgument(
+        parser, cust_metavar='HTTPS_HEALTH_CHECK')
     flags.AddTimeout(parser, default=None)
     flags.AddPortName(parser)
     flags.AddProtocol(parser, default=None)

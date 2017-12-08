@@ -14,25 +14,15 @@
 
 """The main command group for gcloud test."""
 
-import argparse
-
-from googlecloudsdk.api_lib.test import endpoints
-from googlecloudsdk.api_lib.test import exceptions
-from googlecloudsdk.api_lib.test import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resolvers
-from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Test(base.Group):
   """Interact with Firebase Test Lab.
 
-  Explore devices and OS versions available as test targets, run tests, monitor
-  test progress, and view detailed test results.
+  Explore devices and OS versions available as test targets.
   """
 
   def Filter(self, context, args):
@@ -47,24 +37,6 @@ class Test(base.Group):
     Returns:
       The refined command context.
     """
-    # Make sure service endpoints are compatible with each other.
-    endpoints.ValidateTestServiceEndpoints()
-
-    # Create the client for the Testing service.
     context['testing_client'] = apis.GetClientInstance('testing', 'v1')
     context['testing_messages'] = apis.GetMessagesModule('testing', 'v1')
-
-    # Create the client for the Tool Results service.
-    context['toolresults_client'] = apis.GetClientInstance(
-        'toolresults', 'v1beta3')
-    context['toolresults_messages'] = apis.GetMessagesModule(
-        'toolresults', 'v1beta3')
-
-    # Create the client for the Storage service.
-    context['storage_client'] = apis.GetClientInstance('storage', 'v1')
-
-    log.status.Print(
-        '\nHave questions, feedback, or issues? Get support by '
-        'visiting:\n  https://firebase.google.com/support/\n')
-
     return context

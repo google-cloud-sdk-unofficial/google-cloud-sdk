@@ -20,34 +20,15 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
 
 
-class _BaseWait(object):
-  """Base class for sql wait operations."""
-
-  def Format(self, args):
-    return self.ListFormat(args)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Wait(_BaseWait, base.Command):
+class Wait(base.Command):
   """Waits for one or more operations to complete."""
 
   @staticmethod
   def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use it to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
-    parser.add_argument(
-        'operation',
-        nargs='+',
-        help='An identifier that uniquely identifies the operation.')
+    flags.OPERATION_ARGUMENT.AddToParser(parser)
     flags.INSTANCE_FLAG.AddToParser(parser)
-
-  def Collection(self):
-    return 'sql.operations'
+    parser.display_info.AddFormat(flags.OPERATION_FORMAT)
 
   def Run(self, args):
     """Wait for a Cloud SQL instance operation.
@@ -88,25 +69,13 @@ class Wait(_BaseWait, base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class WaitBeta(_BaseWait, base.Command):
+class WaitBeta(base.Command):
   """Waits for one or more operations to complete."""
 
   @staticmethod
   def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use it to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
-    parser.add_argument(
-        'operation',
-        nargs='+',
-        help='An identifier that uniquely identifies the operation.')
-
-  def Collection(self):
-    return 'sql.operations.v1beta4'
+    flags.OPERATION_ARGUMENT.AddToParser(parser)
+    parser.display_info.AddFormat(flags.OPERATION_FORMAT_BETA)
 
   def Run(self, args):
     """Wait for a Cloud SQL instance operation.

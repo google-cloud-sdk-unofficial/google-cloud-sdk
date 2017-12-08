@@ -23,8 +23,9 @@ from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.sql import flags
+from googlecloudsdk.command_lib.sql import validate as command_validate
 from googlecloudsdk.core import log
-from googlecloudsdk.core import remote_completion
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.resource import resource_lex
 from googlecloudsdk.core.resource import resource_property
@@ -33,17 +34,9 @@ from googlecloudsdk.core.resource import resource_property
 class _BaseCreate(object):
   """Create command base class for all release tracks."""
 
-  @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Please add arguments in alphabetical order except for no- or a clear-
-    pair for that argument which can follow the argument itself.
-    Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
+  @classmethod
+  def Args(cls, parser):
+    """Declare flag and positional arguments for this command parser."""
     # TODO(b/35705305): move common flags to command_lib.sql.flags
     base.ASYNC_FLAG.AddToParser(parser)
     parser.add_argument(
@@ -113,6 +106,7 @@ class _BaseCreate(object):
         'us-central1-b, etc.).')
     parser.add_argument(
         'instance',
+        type=command_validate.InstanceNameRegexpValidator(),
         help='Cloud SQL instance ID.')
     parser.add_argument(
         '--master-instance-name',
@@ -171,16 +165,15 @@ class _BaseCreate(object):
         '(e.g., `--database-flags max_allowed_packet=55555,skip_grant_tables=,'
         'log_output=1`)')
 
-  def Format(self, args):
-    return self.ListFormat(args)
-
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Create(_BaseCreate, base.Command):
+class Create(_BaseCreate, base.CreateCommand):
   """Creates a new Cloud SQL instance."""
 
-  def Collection(self):
-    return 'sql.instances'
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(flags.INSTANCES_FORMAT)
+    _BaseCreate.Args(parser)
 
   def Run(self, args):
     """Creates a new Cloud SQL instance.
@@ -226,6 +219,8 @@ class Create(_BaseCreate, base.Command):
       )
 
       if args.async:
+        if not args.IsSpecified('format'):
+          args.format = 'default'
         return sql_client.operations.Get(
             sql_messages.SqlOperationsGetRequest(
                 project=operation_ref.project,
@@ -241,8 +236,6 @@ class Create(_BaseCreate, base.Command):
           sql_messages.SqlInstancesGetRequest(
               project=instance_ref.project,
               instance=instance_ref.instance))
-      cache = remote_completion.RemoteCompletion()
-      cache.AddToCache(instance_ref.SelfLink())
       return new_resource
 
     except apitools_exceptions.HttpError as error:
@@ -259,12 +252,12 @@ class Create(_BaseCreate, base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(_BaseCreate, base.Command):
+class CreateBeta(_BaseCreate, base.CreateCommand):
   """Creates a new Cloud SQL instance."""
 
   @staticmethod
   def Args(parser):
-    """Args is called by calliope to gather arguments for this command."""
+    parser.display_info.AddFormat(flags.INSTANCES_FORMAT_BETA)
     _BaseCreate.Args(parser)
     parser.add_argument(
         '--storage-type',
@@ -276,7 +269,7 @@ class CreateBeta(_BaseCreate, base.Command):
         '--failover-replica-name',
         required=False,
         help='Also create a failover replica with the specified name.')
-    base.Argument(
+    parser.add_argument(
         '--storage-auto-increase',
         action='store_true',
         default=None,
@@ -285,8 +278,7 @@ class CreateBeta(_BaseCreate, base.Command):
         'instance. With this setting enabled, a spike in storage requirements '
         'can result in permanently increased storage costs for your instance. '
         'However, if an instance runs out of available space, it can result in '
-        'the instance going offline, dropping existing connections.'
-    ).AddToParser(parser)
+        'the instance going offline, dropping existing connections.')
     parser.add_argument(
         '--replica-type',
         choices=['READ', 'FAILOVER'],
@@ -334,9 +326,6 @@ class CreateBeta(_BaseCreate, base.Command):
         'must be specified if a custom machine type is desired, and the --tier '
         'flag must be omitted.')
 
-  def Collection(self):
-    return 'sql.instances.v1beta4'
-
   def Run(self, args):
     """Creates a new Cloud SQL instance.
 
@@ -379,6 +368,8 @@ class CreateBeta(_BaseCreate, base.Command):
           project=instance_ref.project)
 
       if args.async:
+        if not args.IsSpecified('format'):
+          args.format = 'default'
         return sql_client.operations.Get(
             sql_messages.SqlOperationsGetRequest(
                 project=operation_ref.project,
@@ -393,8 +384,6 @@ class CreateBeta(_BaseCreate, base.Command):
           sql_messages.SqlInstancesGetRequest(
               project=instance_ref.project,
               instance=instance_ref.instance))
-      cache = remote_completion.RemoteCompletion()
-      cache.AddToCache(instance_ref.SelfLink())
       return new_resource
     except apitools_exceptions.HttpError as error:
       log.debug('operation : %s', str(operation_ref))

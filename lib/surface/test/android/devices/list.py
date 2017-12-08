@@ -14,7 +14,7 @@
 
 """The 'gcloud test android devices list' command."""
 
-from googlecloudsdk.api_lib.test import util
+from googlecloudsdk.api_lib.firebase.test import util
 from googlecloudsdk.calliope import base
 
 
@@ -22,9 +22,9 @@ from googlecloudsdk.calliope import base
 @base.Deprecate(
     is_removed=False,
     warning=('This command is deprecated. '
-             'Please use `gcloud beta test android models list` instead.'),
+             'Please use `gcloud firebase test android models list` instead.'),
     error=('This command has been removed. '
-           'Please use `gcloud beta test android models list` instead.'))
+           'Please use `gcloud firebase test android models list` instead.'))
 class List(base.ListCommand):
   """List all Android device environments available for testing."""
 

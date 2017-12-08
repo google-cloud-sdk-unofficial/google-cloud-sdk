@@ -22,8 +22,8 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
-from googlecloudsdk.command_lib.util import gaia
 from googlecloudsdk.command_lib.util import ssh
+from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core.util import platforms
 
 
@@ -105,23 +105,11 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
 
   def Run(self, args):
     super(SshGA, self).Run(args)
-
-    parts = args.user_host.split('@')
-    if len(parts) == 1:
-      if self._use_accounts_service:  # Using Account Service.
-        user = gaia.GetDefaultAccountName(self.http)
-      else:  # Uploading keys through metadata.
-        user = ssh.GetDefaultSshUsername(warn_on_account_user=True)
-      instance = parts[0]
-    elif len(parts) == 2:
-      user, instance = parts
-    else:
-      raise exceptions.ToolException(
-          'Expected argument of the form [USER@]INSTANCE; received [{0}].'
-          .format(args.user_host))
-
+    user, instance_name = ssh_utils.GetUserAndInstance(
+        args.user_host, self._use_accounts_service, self.http)
     instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
-        [instance], compute_scope.ScopeEnum.ZONE, args.zone, self.resources,
+        [instance_name], compute_scope.ScopeEnum.ZONE, args.zone,
+        self.resources,
         scope_lister=flags.GetDefaultScopeLister(self.compute_client))[0]
     instance = self.GetInstance(instance_ref)
     external_ip_address = ssh_utils.GetExternalIPAddress(instance)
@@ -141,7 +129,7 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
               .replace('%INSTANCE%', external_ip_address))
           ssh_args.append(dereferenced_flag)
 
-    host_key_alias = self.HostKeyAlias(instance)
+    host_key_alias = ssh_utils.HostKeyAlias(instance)
     ssh_args.extend(ssh.GetHostKeyArgs(host_key_alias, args.plain,
                                        args.strict_host_key_checking))
 
@@ -170,7 +158,7 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
     # return code.
     return_code = self.ActuallyRun(
         args, ssh_args, user, instance, instance_ref.project,
-        strict_error_checking=False,
+        external_ip_address, strict_error_checking=False,
         use_account_service=self._use_accounts_service)
     if return_code:
       # Can't raise an exception because we don't want any "ERROR" message
@@ -178,7 +166,7 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
       sys.exit(return_code)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SshBeta(SshGA):
   """SSH into a virtual machine instance."""
 
@@ -189,6 +177,89 @@ class SshBeta(SshGA):
   @staticmethod
   def Args(parser):
     _Args(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SshAlpha(SshBeta):
+  """SSH into a virtual machine instance."""
+
+  def _PreliminarylyVerifyInstance(
+      self, args, instance, project, user, ip_address):
+    ssh_args = ssh_utils.GetSshArgsForPreliminaryVerification(
+        args, user, instance, ip_address, self.env, self.keys)
+    ssh_return_code = self.ActuallyRun(
+        args, ssh_args, user, instance, project, ip_address,
+        strict_error_checking=False,
+        use_account_service=self._use_accounts_service)
+
+    if ssh_return_code == 0:
+      return
+    if ssh_return_code == 255:
+      raise core_exceptions.NetworkIssueError(
+          'Unable to connect to private IP {0}.'.format(ip_address))
+    if ssh_return_code == 1:
+      raise core_exceptions.NetworkIssueError(
+          'Established connection with private IP {0} but was unable to '
+          'confirm ID of the instance.'.format(ip_address))
+    raise exceptions.FailedSubCommand(' '.join(ssh_args), ssh_return_code)
+
+  @staticmethod
+  def Args(parser):
+    _Args(parser)
+    parser.add_argument(
+        '--internal-ip', default=False, action='store_true',
+        help="""\
+        Connect to instances using their private IP addresses. By default,
+        gcloud attempts to establish a ssh connection only if the specified
+        instance has a public IP address. When this flag is present, gcloud
+        attempts to connect to the instance using the IP of the internal network
+        instance even if the instance has a public IP.
+
+        For the connection to work, your network must already be configured to
+        allow you to establish connections using the instance's private
+        network IP.
+
+        The same IP can appear in two internal networks and can result in an
+        incorrect connection. For example, instance-1 in network-1 has the same
+        internal IP as instance-2 in network-2. You want to connect to
+        instance-1 but your network configuration results in opening a
+        connection to instance-2. `errors gcloud` will verify that the instance
+        it connected to reports the same id as the instance you requested
+        connection to. This only helps with catching network configuration
+        mistakes and is not meant as protection against any kind of attack.
+        `errors gcloud` requires the instance to have curl tool available.""")
+
+  def Run(self, args):
+    super(SshGA, self).Run(args)
+
+    user, instance_name = ssh_utils.GetUserAndInstance(
+        args.user_host, self._use_accounts_service, self.http)
+    instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
+        [instance_name], compute_scope.ScopeEnum.ZONE, args.zone,
+        self.resources,
+        scope_lister=flags.GetDefaultScopeLister(self.compute_client))[0]
+    instance = self.GetInstance(instance_ref)
+
+    if args.internal_ip:
+      ip_address = ssh_utils.GetInternalIPAddress(instance)
+      self._PreliminarylyVerifyInstance(
+          args, instance, instance_ref.project, user, ip_address)
+    else:
+      ip_address = ssh_utils.GetExternalIPAddress(instance)
+
+    # Don't use strict error checking for ssh: if the executed command fails, we
+    # don't want to consider it an error. We do, however, want to propagate its
+    # return code.
+    ssh_args = ssh_utils.GetSshArgs(
+        args, user, instance, ip_address, self.env, self.keys)
+    return_code = self.ActuallyRun(
+        args, ssh_args, user, instance, instance_ref.project, ip_address,
+        strict_error_checking=False,
+        use_account_service=self._use_accounts_service)
+    if return_code:
+      # Can't raise an exception because we don't want any "ERROR" message
+      # printed; the output from `ssh` will be enough.
+      sys.exit(return_code)
 
 
 def DetailedHelp(version):

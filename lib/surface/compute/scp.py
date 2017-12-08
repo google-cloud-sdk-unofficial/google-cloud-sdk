@@ -141,7 +141,7 @@ class Scp(ssh_utils.BaseSSHCLICommand):
     scp_args = [self.env.scp]
     if not args.plain:
       scp_args.extend(ssh.GetDefaultFlags(self.keys.key_file))
-      host_key_alias = self.HostKeyAlias(instance)
+      host_key_alias = ssh_utils.HostKeyAlias(instance)
       scp_args.extend(ssh.GetHostKeyArgs(host_key_alias, args.plain,
                                          args.strict_host_key_checking))
 
@@ -166,7 +166,9 @@ class Scp(ssh_utils.BaseSSHCLICommand):
             ssh.UserHost(file_spec.user, external_ip_address),
             file_spec.file_path))
 
-    self.ActuallyRun(args, scp_args, user, instance, instance_ref.project)
+    ip_address = ssh_utils.GetExternalIPAddress(instance)
+    self.ActuallyRun(
+        args, scp_args, user, instance, instance_ref.project, ip_address)
 
 Scp.detailed_help = {
     'brief': 'Copy files to and from Google Compute Engine virtual machines '

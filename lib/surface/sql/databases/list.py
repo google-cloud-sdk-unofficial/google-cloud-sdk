@@ -31,9 +31,13 @@ class _BaseList(object):
           allowed.
     """
     flags.INSTANCE_FLAG.AddToParser(parser)
-
-  def Collection(self):
-    return 'sql.databases'
+    parser.display_info.AddFormat("""
+      table(
+          name,
+          charset,
+          collation
+        )
+      """)
 
   def Run(self, args):
     """Lists databases for a Cloud SQL instance.

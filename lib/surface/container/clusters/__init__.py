@@ -21,7 +21,14 @@ from googlecloudsdk.core import properties
 
 
 class Clusters(base.Group):
-  """Deploy and teardown Google Container Engine clusters."""
+  """Deploy and teardown Google Container Engine clusters.
+
+  The gcloud container clusters command group lets you deploy and teardown
+  Google Container Engine clusters.
+
+  See $ gcloud docker --help for information about deploying docker images
+  to clusters.
+  """
 
   @staticmethod
   def Args(parser):

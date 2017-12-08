@@ -21,10 +21,26 @@ from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
 
 
 class Update(base.UpdateCommand):
-  """Updates a sink."""
+  """Updates a sink.
+
+  Changes the *[destination]* or *--log-filter* associated with a sink.
+  The new destination must already exist and Stackdriver Logging must have
+  permission to write to it.
+  Log entries are exported to the new destination immediately.
+
+  ## EXAMPLES
+
+  To only update a sink filter, run:
+
+    $ {command} my-sink --log-filter='severity>=ERROR'
+
+  Detailed information about filters can be found at:
+  [](https://cloud.google.com/logging/docs/view/advanced_filters)
+  """
 
   @staticmethod
   def Args(parser):
@@ -54,57 +70,15 @@ class Update(base.UpdateCommand):
   def Collection(self):
     return 'logging.sinks'
 
-  def GetLogSink(self):
-    """Returns a log sink specified by the arguments."""
-    client = util.GetClientV1()
-    ref = self.context['sink_reference']
-    return client.projects_logs_sinks.Get(
-        client.MESSAGES_MODULE.LoggingProjectsLogsSinksGetRequest(
-            projectsId=ref.projectsId,
-            logsId=ref.logsId,
-            sinksId=ref.sinksId))
-
-  def GetLogServiceSink(self):
-    """Returns a log service sink specified by the arguments."""
-    client = util.GetClientV1()
-    ref = self.context['sink_reference']
-    return client.projects_logServices_sinks.Get(
-        client.MESSAGES_MODULE.LoggingProjectsLogServicesSinksGetRequest(
-            projectsId=ref.projectsId,
-            logServicesId=ref.logServicesId,
-            sinksId=ref.sinksId))
-
-  def GetSink(self, parent):
+  def GetSink(self, parent, sink_ref):
     """Returns a sink specified by the arguments."""
-    # Use V2 logging API.
-    sink_ref = self.context['sink_reference']
     return util.GetClient().projects_sinks.Get(
         util.GetMessages().LoggingProjectsSinksGetRequest(
             sinkName=util.CreateResourceName(
                 parent, 'sinks', sink_ref.sinksId)))
 
-  def UpdateLogSink(self, sink_data):
-    """Updates a log sink specified by the arguments."""
-    messages = util.GetMessagesV1()
-    sink_ref = self.context['sink_reference']
-    return util.GetClientV1().projects_logs_sinks.Update(
-        messages.LoggingProjectsLogsSinksUpdateRequest(
-            projectsId=sink_ref.projectsId, logsId=sink_ref.logsId,
-            sinksId=sink_data['name'], logSink=messages.LogSink(**sink_data)))
-
-  def UpdateLogServiceSink(self, sink_data):
-    """Updates a log service sink specified by the arguments."""
-    messages = util.GetMessagesV1()
-    sink_ref = self.context['sink_reference']
-    return util.GetClientV1().projects_logServices_sinks.Update(
-        messages.LoggingProjectsLogServicesSinksUpdateRequest(
-            projectsId=sink_ref.projectsId,
-            logServicesId=sink_ref.logServicesId, sinksId=sink_data['name'],
-            logSink=messages.LogSink(**sink_data)))
-
   def UpdateSink(self, parent, sink_data, unique_writer_identity):
     """Updates a sink specified by the arguments."""
-    # Use V2 logging API.
     messages = util.GetMessages()
     # Change string value to enum.
     sink_data['outputVersionFormat'] = getattr(
@@ -127,8 +101,6 @@ class Update(base.UpdateCommand):
     Returns:
       The updated sink with its new destination.
     """
-    util.CheckSinksCommandArguments(args)
-
     if not args.unique_writer_identity:
       log.warn(
           '--unique-writer-identity is deprecated and will soon be removed.')
@@ -140,21 +112,16 @@ class Update(base.UpdateCommand):
       raise calliope_exceptions.ToolException(
           '[destination], --log-filter or --output-version-format is required')
 
+    sink_ref = resources.REGISTRY.Parse(
+        args.sink_name, collection='logging.projects.sinks')
+
     # Calling Update on a non-existing sink creates it.
     # We need to make sure it exists, otherwise we would create it.
     try:
-      if args.log:
-        sink = self.GetLogSink()
-      elif args.service:
-        sink = self.GetLogServiceSink()
-      else:
-        sink = self.GetSink(util.GetParentFromArgs(args))
+      sink = self.GetSink(util.GetParentFromArgs(args), sink_ref)
     except apitools_exceptions.HttpError as error:
-      v2_sink = not args.log and not args.service
-      # Suggest the user to add --log or --log-service flag.
-      if v2_sink and exceptions.HttpException(error).payload.status_code == 404:
-        log.status.Print(('Sink was not found. '
-                          'Did you forget to add --log or --log-service flag?'))
+      if exceptions.HttpException(error).payload.status_code == 404:
+        log.status.Print('Sink was not found.')
       raise error
 
     # Only update fields that were passed to the command.
@@ -168,47 +135,23 @@ class Update(base.UpdateCommand):
     else:
       log_filter = sink.filter
 
-    sink_ref = self.context['sink_reference']
-    sink_data = {'name': sink_ref.sinksId, 'destination': destination,
-                 'filter': log_filter}
-
-    if args.log:
-      result = util.TypedLogSink(self.UpdateLogSink(sink_data),
-                                 log_name=args.log)
-      kind = 'log sink'
-    elif args.service:
-      result = util.TypedLogSink(self.UpdateLogServiceSink(sink_data),
-                                 service_name=args.service)
-      kind = 'service log sink'
+    if args.output_version_format:
+      output_format = args.output_version_format
     else:
-      if args.output_version_format:
-        sink_data['outputVersionFormat'] = args.output_version_format
-      else:
-        sink_data['outputVersionFormat'] = sink.outputVersionFormat.name
-      result = util.TypedLogSink(
-          self.UpdateSink(util.GetParentFromArgs(args), sink_data,
-                          args.unique_writer_identity))
-      kind = 'sink'
-    log.UpdatedResource(sink_ref, kind=kind)
+      output_format = sink.outputVersionFormat.name
+
+    sink_data = {
+        'name': sink_ref.sinksId,
+        'destination': destination,
+        'filter': log_filter,
+        'outputVersionFormat': output_format
+    }
+
+    result = util.TypedLogSink(
+        self.UpdateSink(
+            util.GetParentFromArgs(args), sink_data,
+            args.unique_writer_identity))
+
+    log.UpdatedResource(sink_ref, kind='sink')
     util.PrintPermissionInstructions(result.destination, result.writer_identity)
     return result
-
-
-Update.detailed_help = {
-    'DESCRIPTION': """\
-        Changes the *[destination]* or *--log-filter* associated with a sink.
-        If you don't include one of the *--log* or *--log-service* flags,
-        this command updates a v2 sink.
-        The new destination must already exist and Stackdriver Logging must have
-        permission to write to it.
-        Log entries are exported to the new destination immediately.
-    """,
-    'EXAMPLES': """\
-        To only update a sink filter, run:
-
-          $ {command} my-sink --log-filter='severity>=ERROR'
-
-        Detailed information about filters can be found at:
-        [](https://cloud.google.com/logging/docs/view/advanced_filters)
-   """,
-}

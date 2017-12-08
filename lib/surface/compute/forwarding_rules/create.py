@@ -130,26 +130,24 @@ class Create(utils.ForwardingRulesTargetMutator):
       forwarding_rule.loadBalancingScheme = (
           self.messages.ForwardingRule
           .LoadBalancingSchemeValueValuesEnum.INTERNAL)
+
+    if target_ref.Collection() == 'compute.regionBackendServices':
       forwarding_rule.portRange = args.port_range
+      forwarding_rule.backendService = target_ref.SelfLink()
+      if args.ports:
+        forwarding_rule.portRange = None
+        forwarding_rule.ports = [str(p) for p in _GetPortList(args.ports)]
+      if args.subnet is not None:
+        if not args.subnet_region:
+          args.subnet_region = forwarding_rule_ref.region
+        forwarding_rule.subnetwork = flags.SUBNET_ARG.ResolveAsResource(
+            args, self.resources).SelfLink()
+      if args.network is not None:
+        forwarding_rule.network = flags.NETWORK_ARG.ResolveAsResource(
+            args, self.resources).SelfLink()
     else:
       forwarding_rule.portRange = (
           _ResolvePortRange(args.port_range, args.ports))
-
-    if target_ref.Collection() == 'compute.regionBackendServices':
-      forwarding_rule.backendService = target_ref.SelfLink()
-      if args.load_balancing_scheme == 'INTERNAL':
-        if args.ports:
-          forwarding_rule.portRange = None
-          forwarding_rule.ports = [str(p) for p in _GetPortList(args.ports)]
-        if args.subnet is not None:
-          if not args.subnet_region:
-            args.subnet_region = forwarding_rule_ref.region
-          forwarding_rule.subnetwork = flags.SUBNET_ARG.ResolveAsResource(
-              args, self.resources).SelfLink()
-        if args.network is not None:
-          forwarding_rule.network = flags.NETWORK_ARG.ResolveAsResource(
-              args, self.resources).SelfLink()
-    else:
       forwarding_rule.target = target_ref.SelfLink()
     if hasattr(args, 'service_label'):
       forwarding_rule.serviceLabel = args.service_label
@@ -266,26 +264,24 @@ class CreateAlpha(Create):
       forwarding_rule.loadBalancingScheme = (
           self.messages.ForwardingRule
           .LoadBalancingSchemeValueValuesEnum.INTERNAL)
+
+    if target_ref.Collection() == 'compute.regionBackendServices':
       forwarding_rule.portRange = args.port_range
+      forwarding_rule.backendService = target_ref.SelfLink()
+      if args.ports:
+        forwarding_rule.portRange = None
+        forwarding_rule.ports = [str(p) for p in _GetPortList(args.ports)]
+      if args.subnet is not None:
+        if not args.subnet_region:
+          args.subnet_region = forwarding_rule_ref.region
+        forwarding_rule.subnetwork = flags.SUBNET_ARG.ResolveAsResource(
+            args, self.resources).SelfLink()
+      if args.network is not None:
+        forwarding_rule.network = flags.NETWORK_ARG.ResolveAsResource(
+            args, self.resources).SelfLink()
     else:
       forwarding_rule.portRange = (
           _ResolvePortRange(args.port_range, args.ports))
-
-    if target_ref.Collection() == 'compute.regionBackendServices':
-      forwarding_rule.backendService = target_ref.SelfLink()
-      if args.load_balancing_scheme == 'INTERNAL':
-        if args.ports:
-          forwarding_rule.portRange = None
-          forwarding_rule.ports = [str(p) for p in _GetPortList(args.ports)]
-        if args.subnet is not None:
-          if not args.subnet_region:
-            args.subnet_region = forwarding_rule_ref.region
-          forwarding_rule.subnetwork = flags.SUBNET_ARG.ResolveAsResource(
-              args, self.resources).SelfLink()
-        if args.network is not None:
-          forwarding_rule.network = flags.NETWORK_ARG.ResolveAsResource(
-              args, self.resources).SelfLink()
-    else:
       forwarding_rule.target = target_ref.SelfLink()
     if hasattr(args, 'service_label'):
       forwarding_rule.serviceLabel = args.service_label

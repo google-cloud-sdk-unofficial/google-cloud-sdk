@@ -73,13 +73,22 @@ def AddIapFlag(parser):
 class CreateGA(base_classes.BaseAsyncMutator):
   """Create a backend service."""
 
-  @staticmethod
-  def Args(parser):
+  HEALTH_CHECK_ARG = None
+  HTTP_HEALTH_CHECK_ARG = None
+  HTTPS_HEALTH_CHECK_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddDescription(parser)
-    flags.AddHealthChecks(parser)
-    flags.AddHttpHealthChecks(parser)
-    flags.AddHttpsHealthChecks(parser)
+    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument()
+    cls.HEALTH_CHECK_ARG.AddArgument(parser, cust_metavar='HEALTH_CHECK')
+    cls.HTTP_HEALTH_CHECK_ARG = flags.HttpHealthCheckArgument()
+    cls.HTTP_HEALTH_CHECK_ARG.AddArgument(
+        parser, cust_metavar='HTTP_HEALTH_CHECK')
+    cls.HTTPS_HEALTH_CHECK_ARG = flags.HttpsHealthCheckArgument()
+    cls.HTTPS_HEALTH_CHECK_ARG.AddArgument(
+        parser, cust_metavar='HTTPS_HEALTH_CHECK')
     flags.AddTimeout(parser)
     flags.AddPortName(parser)
     flags.AddProtocol(parser, default=None)
@@ -94,7 +103,7 @@ class CreateGA(base_classes.BaseAsyncMutator):
     return 'Insert'
 
   def _CreateBackendService(self, args, backend_services_ref):
-    health_checks = backend_services_utils.GetHealthChecks(args, self)
+    health_checks = flags.GetHealthCheckUris(args, self, self.resources)
     if not health_checks:
       raise exceptions.ToolException('At least one health check required.')
 
@@ -147,7 +156,7 @@ class CreateGA(base_classes.BaseAsyncMutator):
     return [request]
 
   def _CreateRegionBackendService(self, args):
-    health_checks = backend_services_utils.GetHealthChecks(args, self)
+    health_checks = flags.GetHealthCheckUris(args, self, self.resources)
     if not health_checks:
       raise exceptions.ToolException('At least one health check required.')
 
@@ -217,13 +226,22 @@ class CreateGA(base_classes.BaseAsyncMutator):
 class CreateAlpha(CreateGA):
   """Create a backend service."""
 
-  @staticmethod
-  def Args(parser):
+  HEALTH_CHECK_ARG = None
+  HTTP_HEALTH_CHECK_ARG = None
+  HTTPS_HEALTH_CHECK_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddDescription(parser)
-    flags.AddHealthChecks(parser)
-    flags.AddHttpHealthChecks(parser)
-    flags.AddHttpsHealthChecks(parser)
+    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument()
+    cls.HEALTH_CHECK_ARG.AddArgument(parser, cust_metavar='HEALTH_CHECK')
+    cls.HTTP_HEALTH_CHECK_ARG = flags.HttpHealthCheckArgument()
+    cls.HTTP_HEALTH_CHECK_ARG.AddArgument(
+        parser, cust_metavar='HTTP_HEALTH_CHECK')
+    cls.HTTPS_HEALTH_CHECK_ARG = flags.HttpsHealthCheckArgument()
+    cls.HTTPS_HEALTH_CHECK_ARG.AddArgument(
+        parser, cust_metavar='HTTPS_HEALTH_CHECK')
     flags.AddTimeout(parser)
     flags.AddPortName(parser)
     flags.AddProtocol(parser, default=None)
@@ -288,7 +306,7 @@ class CreateAlpha(CreateGA):
     return [request]
 
   def _CreateRegionBackendService(self, args):
-    health_checks = backend_services_utils.GetHealthChecks(args, self)
+    health_checks = flags.GetHealthCheckUris(args, self, self.resources)
     if not health_checks:
       raise exceptions.ToolException('At least one health check required.')
 
@@ -307,13 +325,22 @@ class CreateAlpha(CreateGA):
 class CreateBeta(CreateGA):
   """Create a backend service."""
 
-  @staticmethod
-  def Args(parser):
+  HEALTH_CHECK_ARG = None
+  HTTP_HEALTH_CHECK_ARG = None
+  HTTPS_HEALTH_CHECK_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddDescription(parser)
-    flags.AddHealthChecks(parser)
-    flags.AddHttpHealthChecks(parser)
-    flags.AddHttpsHealthChecks(parser)
+    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument()
+    cls.HEALTH_CHECK_ARG.AddArgument(parser, cust_metavar='HEALTH_CHECK')
+    cls.HTTP_HEALTH_CHECK_ARG = flags.HttpHealthCheckArgument()
+    cls.HTTP_HEALTH_CHECK_ARG.AddArgument(
+        parser, cust_metavar='HTTP_HEALTH_CHECK')
+    cls.HTTPS_HEALTH_CHECK_ARG = flags.HttpsHealthCheckArgument()
+    cls.HTTPS_HEALTH_CHECK_ARG.AddArgument(
+        parser, cust_metavar='HTTPS_HEALTH_CHECK')
     flags.AddTimeout(parser)
     flags.AddPortName(parser)
     flags.AddProtocol(parser, default=None)
@@ -368,7 +395,7 @@ class CreateBeta(CreateGA):
     return [request]
 
   def _CreateRegionBackendService(self, args):
-    health_checks = backend_services_utils.GetHealthChecks(args, self)
+    health_checks = flags.GetHealthCheckUris(args, self, self.resources)
     if not health_checks:
       raise exceptions.ToolException('At least one health check required.')
 

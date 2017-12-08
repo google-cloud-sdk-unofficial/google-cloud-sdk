@@ -46,7 +46,7 @@ class Gcloud(base.Group):
         category=base.COMMONLY_USED_FLAGS,
         suggestion_aliases=['--application'],
         completion_resource='cloudresourcemanager.projects',
-        list_command_path='beta.projects',
+        list_command_path='beta projects list --uri',
         action=actions.StoreProperty(properties.VALUES.core.project),
         help="""\
         The Google Cloud Platform project name to use for this invocation. If

@@ -47,10 +47,10 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     """Adds args for this command."""
-    configuration_arg = parser.add_argument(
+    parser.add_argument(
         'configuration_name',
+        completer=completers.NamedConfigCompleter,
         help='Name of the configuration to describe')
-    configuration_arg.completer = completers.NamedConfigCompleter
     parser.add_argument(
         '--all', action='store_true',
         help='Include unset properties in output.')

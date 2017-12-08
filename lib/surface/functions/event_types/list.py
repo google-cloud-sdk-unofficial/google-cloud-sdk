@@ -45,15 +45,6 @@ class List(base.Command):
         )'''
 
   def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Yields:
-      All event types.
-    """
-    for provider in util.trigger_provider_registry.providers:
+    for provider in util.output_trigger_provider_registry.providers:
       for event in provider.events:
         yield event

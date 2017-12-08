@@ -39,15 +39,7 @@ class _BasePatch(object):
 
   @staticmethod
   def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Please add arguments in alphabetical order except for no- or a clear-
-    pair for that argument which can follow the argument itself.
-    Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
+    """Adds args and flags to the parser."""
     # TODO(b/35705305): move common flags to command_lib.sql.flags
     parser.add_argument(
         '--activation-policy',
@@ -179,14 +171,6 @@ class _BasePatch(object):
         action='store_true',
         help='Show what changed as a result of the update.')
 
-  def Format(self, args):
-    if args.diff:
-      return 'diff(old, new)'
-    fmt = self.ListFormat(args)
-    if args.async:
-      return fmt
-    return 'table(new:format="{fmt}")'.format(fmt=fmt)
-
   def _PrintAndConfirmWarningMessage(self, args):
     """Print and confirm warning indicating the effect of applying the patch."""
     continue_msg = None
@@ -229,7 +213,7 @@ class _BasePatch(object):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Patch(_BasePatch, base.Command):
+class Patch(_BasePatch, base.UpdateCommand):
   """Updates the settings of a Cloud SQL instance."""
 
   def Run(self, args):
@@ -248,6 +232,8 @@ class Patch(_BasePatch, base.Command):
       ToolException: An error other than http error occured while executing the
           command.
     """
+    if args.diff and not args.IsSpecified('format'):
+      args.format = 'diff(old, new)'
 
     sql_client = self.context['sql_client']
     sql_messages = self.context['sql_messages']
@@ -305,12 +291,11 @@ class Patch(_BasePatch, base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class PatchBeta(_BasePatch, base.Command):
+class PatchBeta(_BasePatch, base.UpdateCommand):
   """Updates the settings of a Cloud SQL instance."""
 
   @staticmethod
   def Args(parser):
-    """Args is called by calliope to gather arguments for this command."""
     _BasePatch.Args(parser)
     base.Argument(
         '--storage-auto-increase',
@@ -386,6 +371,8 @@ class PatchBeta(_BasePatch, base.Command):
       ToolException: An error other than http error occured while executing the
           command.
     """
+    if args.diff and not args.IsSpecified('format'):
+      args.format = 'diff(old, new)'
 
     sql_client = self.context['sql_client']
     sql_messages = self.context['sql_messages']

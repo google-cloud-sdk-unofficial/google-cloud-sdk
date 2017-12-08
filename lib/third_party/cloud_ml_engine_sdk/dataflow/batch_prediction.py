@@ -45,15 +45,12 @@ class EmitAsBatchDoFn(beam.DoFn):
     self._batch = []
 
     # Metrics.
-    self._num_batches = beam.metrics.Metrics.counter(self.__class__,
-                                                     "num_batches")
     self._batch_size_distribution = beam.metrics.Metrics.distribution(
-        self.__class__, "batch_size_distribution")
+        self.__class__, "batch_size")
     self._num_instances = beam.metrics.Metrics.counter(self.__class__,
                                                        "num_instances")
 
   def _flush_batch(self):
-    self._num_batches.inc(1)
     self._batch_size_distribution.update(len(self._batch))
     self._num_instances.inc(len(self._batch))
     result = self._batch
@@ -97,19 +94,13 @@ class PredictionDoFn(beam.DoFn):
     def __init__(self, model_dir, skip_preprocessing):
       self.model_dir = model_dir
 
-      session, signature = self._load_model_with_retry(model_dir)
+      session, signature = mlprediction.load_model(model_dir)
       client = mlprediction.SessionClient(session, signature)
       self.model = mlprediction.DefaultModel.from_client(
           client, model_dir, skip_preprocessing=skip_preprocessing)
 
-    # TODO(user): Perhaps remove this once CL/148555282 makes it to a
-    # Dataflow release, or use a custom retry_filter below.
-    @beam.utils.retry.with_exponential_backoff()  # Using Beam's retry defaults.
-    def _load_model_with_retry(self, model_dir):
-      return mlprediction.load_model(model_dir)
-
-  # TODO(b/33746781): Make this a non-thread local and promote model_state to
-  # a direct member variable instead.
+  # TODO(b/33746781): Get rid of this and instead use self._model_state for
+  # all initialization detection.
   _thread_local = threading.local()
 
   def __init__(self, aggregator_dict=None, cloud_logger=None,
@@ -137,6 +128,7 @@ class PredictionDoFn(beam.DoFn):
     self._config = config
     self._aggregator_dict = aggregator_dict
     self._cloud_logger = cloud_logger
+    self._model_state = None
 
     # Metrics.
     self._num_model_loads = beam.metrics.Metrics.counter(self.__class__,
@@ -155,27 +147,28 @@ class PredictionDoFn(beam.DoFn):
       pass
 
     try:
-      # TODO(b/35795474): Should the model initialization be moved outside of
-      # the try block?
-      if (not hasattr(self._thread_local, "model_state") or
-          self._thread_local.model_state.model_dir != model_dir):
-        self._num_model_loads.inc(1)
-        self._thread_local.model_state = self._ModelState(
-            model_dir, self._skip_preprocessing)
+      if self._model_state is None:
+        if (getattr(self._thread_local, "model_state", None) is None or
+            self._thread_local.model_state.model_dir != model_dir):
+          self._num_model_loads.inc(1)
+          self._thread_local.model_state = self._ModelState(
+              model_dir, self._skip_preprocessing)
+        self._model_state = self._thread_local.model_state
+      else:
+        assert self._model_state.model_dir == model_dir
 
       # Try to load it.
-      if (self._thread_local.model_state.model.is_single_string_input() or
-          self._thread_local.model_state.model.need_preprocess()):
+      if (self._model_state.model.is_single_string_input() or
+          self._model_state.model.need_preprocess()):
         loaded_data = element
       else:
         loaded_data = [json.loads(d) for d in element]
       instances = mlprediction.decode_base64(loaded_data)
-      inputs, predictions = self._thread_local.model_state.model.predict(
-          instances)
+      inputs, predictions = self._model_state.model.predict(instances)
       predictions = list(predictions)
       predictions = mlprediction.encode_base64(
           predictions,
-          self._thread_local.model_state.model.outputs_type_map())
+          self._model_state.model.outputs_type_map())
 
       if self._aggregator_dict:
         aggr = self._aggregator_dict.get(
@@ -194,6 +187,9 @@ class PredictionDoFn(beam.DoFn):
         # also eliminates the restarting/duplicated running issue.
         self._cloud_logger.write_error_message(
             e.error_message, self._create_snippet(element))
+      # reraise failure to load model as permanent exception to end dataflow job
+      if e.error_code == mlprediction.PredictionError.FAILED_TO_LOAD_MODEL:
+        raise beam.utils.retry.PermanentException(e.error_message)
       yield beam.pvalue.SideOutputValue("errors",
                                         (e.error_message, element))
 

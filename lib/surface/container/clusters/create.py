@@ -191,11 +191,13 @@ class Create(base.CreateCommand):
     flags.AddEnableAutoRepairFlag(parser, suppressed=True)
     flags.AddEnableAutoUpgradeFlag(parser, suppressed=True)
     flags.AddServiceAccountFlag(parser, suppressed=True)
+    flags.AddMasterAuthorizedNetworksFlags(parser, hidden=True)
 
   def ParseCreateOptions(self, args):
     if not args.scopes:
       args.scopes = []
     cluster_ipv4_cidr = args.cluster_ipv4_cidr
+    enable_master_authorized_networks = args.enable_master_authorized_networks
     return api_adapter.CreateClusterOptions(
         node_machine_type=args.machine_type,
         scopes=args.scopes,
@@ -224,7 +226,9 @@ class Create(base.CreateCommand):
         preemptible=args.preemptible,
         enable_autorepair=args.enable_autorepair,
         enable_autoupgrade=args.enable_autoupgrade,
-        service_account=args.service_account)
+        service_account=args.service_account,
+        enable_master_authorized_networks=enable_master_authorized_networks,
+        master_authorized_networks=args.master_authorized_networks)
 
   def Collection(self):
     return 'container.projects.zones.clusters'
@@ -310,6 +314,7 @@ class CreateBeta(Create):
     flags.AddEnableAutoRepairFlag(parser)
     flags.AddEnableAutoUpgradeFlag(parser)
     flags.AddServiceAccountFlag(parser)
+    flags.AddMasterAuthorizedNetworksFlags(parser, hidden=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -327,3 +332,4 @@ class CreateAlpha(Create):
     flags.AddEnableAutoRepairFlag(parser)
     flags.AddEnableAutoUpgradeFlag(parser)
     flags.AddServiceAccountFlag(parser)
+    flags.AddMasterAuthorizedNetworksFlags(parser, hidden=True)

@@ -47,12 +47,12 @@ class GetValue(base.Command):
   @staticmethod
   def Args(parser):
     """Adds args for this command."""
-    property_arg = parser.add_argument(
+    parser.add_argument(
         'property',
         metavar='SECTION/PROPERTY',
+        completer=completers.PropertiesCompleter,
         help='The property to be fetched. Note that `SECTION/` is optional'
         ' while referring to properties in the core section.')
-    property_arg.completer = completers.PropertiesCompleter
 
   def Run(self, args):
     config_name = named_configs.ConfigurationStore.ActiveConfig().name

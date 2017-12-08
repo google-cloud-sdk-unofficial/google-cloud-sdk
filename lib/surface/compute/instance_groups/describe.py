@@ -14,53 +14,38 @@
 """Command for describing instance groups."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import instance_groups_utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.instance_groups import flags
 
 
-class Describe(base_classes.MultiScopeDescriber):
-  """Describe an instance group."""
-
-  SCOPES = (base_classes.ScopeType.regional_scope,
-            base_classes.ScopeType.zonal_scope)
-
-  @property
-  def global_service(self):
-    return None
-
-  @property
-  def regional_service(self):
-    return self.compute.regionInstanceGroups
-
-  @property
-  def zonal_service(self):
-    return self.compute.instanceGroups
-
-  @property
-  def global_resource_type(self):
-    return None
-
-  @property
-  def regional_resource_type(self):
-    return 'regionInstanceGroups'
-
-  @property
-  def zonal_resource_type(self):
-    return 'instanceGroups'
+class Describe(base.DescribeCommand):
+  """Display detailed information about an instance group."""
 
   @staticmethod
   def Args(parser):
-    base_classes.MultiScopeDescriber.AddScopeArgs(
-        parser, 'instanceGroups', Describe.SCOPES)
+    flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(parser)
 
-  def ComputeDynamicProperties(self, args, items):
-    return instance_groups_utils.ComputeInstanceGroupManagerMembership(
-        compute=self.compute,
-        project=self.project,
-        http=self.http,
-        batch_url=self.batch_url,
-        items=items,
-        filter_mode=instance_groups_utils.InstanceGroupFilteringMode.ALL_GROUPS)
+  def Collection(self):
+    return 'compute.instanceGroups'
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client.apitools_client
+    messages = holder.client.messages
+
+    ref = flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
+        args, holder.resources)
+
+    if ref.Collection() == 'compute.instanceGroups':
+      service = client.instanceGroups
+      request_type = messages.ComputeInstanceGroupsGetRequest
+    elif ref.Collection() == 'compute.regionInstanceGroups':
+      service = client.regionInstanceGroups
+      request_type = messages.ComputeRegionInstanceGroupsGetRequest
+
+    return service.Get(request_type(**ref.AsDict()))
 
 
 Describe.detailed_help = base_classes.GetMultiScopeDescriberHelp(
-    'instance group', Describe.SCOPES)
+    'instance group', (base_classes.ScopeType.regional_scope,
+                       base_classes.ScopeType.zonal_scope))

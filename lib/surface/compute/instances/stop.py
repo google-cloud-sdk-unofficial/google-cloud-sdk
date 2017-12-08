@@ -47,7 +47,7 @@ class Stop(base_classes.NoOutputAsyncMutator):
   def _CreateStopRequest(self, instance_ref, unused_discard_local_ssd):
     return self.messages.ComputeInstancesStopRequest(
         instance=instance_ref.Name(),
-        project=self.project,
+        project=instance_ref.project,
         zone=instance_ref.zone)
 
   def CreateRequests(self, args):

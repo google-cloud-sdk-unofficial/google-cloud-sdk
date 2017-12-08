@@ -17,6 +17,7 @@ from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import remote_completion
 
@@ -45,22 +46,18 @@ _DETAILED_HELP = """
 
 
 class _BaseClone(object):
-  # pylint: disable=line-too-long
-  """Clones a Cloud SQL instance."""
+  """Create command base class for all release tracks."""
 
-  @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
+  @classmethod
+  def Args(cls, parser):
+    """Declare flag and positional arguments for the command parser."""
     base.ASYNC_FLAG.AddToParser(parser)
+    parser.display_info.AddFormat(cls.GetTrackedAttribute(
+        flags, 'INSTANCES_FORMAT'))
     parser.add_argument(
         'source',
         completion_resource='sql.instances',
+        list_command_path='sql instances list --uri',
         help='Cloud SQL instance ID of the source.')
     parser.add_argument(
         'destination',
@@ -128,7 +125,7 @@ class _BaseClone(object):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Clone(_BaseClone, base.Command):
+class Clone(_BaseClone, base.CreateCommand):
   """Clones a Cloud SQL instance."""
 
   def Run(self, args):
@@ -175,6 +172,8 @@ class Clone(_BaseClone, base.Command):
     )
 
     if args.async:
+      if not args.IsSpecified('format'):
+        args.format = 'default'
       return sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(
               project=operation_ref.project,
@@ -191,18 +190,12 @@ class Clone(_BaseClone, base.Command):
     cache.AddToCache(destination_instance_ref.SelfLink())
     return rsource
 
-  def Collection(self):
-    return 'sql.instances'
-
-  def Format(self, args):
-    return self.ListFormat(args)
-
 
 Clone.__doc__ += _DETAILED_HELP
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CloneBeta(_BaseClone, base.Command):
+class CloneBeta(_BaseClone, base.CreateCommand):
   """Clones a Cloud SQL instance."""
 
   def Run(self, args):
@@ -249,6 +242,8 @@ class CloneBeta(_BaseClone, base.Command):
     )
 
     if args.async:
+      if not args.IsSpecified('format'):
+        args.format = 'default'
       return sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(
               project=operation_ref.project,
@@ -264,12 +259,5 @@ class CloneBeta(_BaseClone, base.Command):
     cache.AddToCache(destination_instance_ref.SelfLink())
     return rsource
 
-  def Collection(self):
-    return 'sql.instances.v1beta4'
-
-  def Format(self, args):
-    return self.ListFormat(args)
-
 
 CloneBeta.__doc__ += _DETAILED_HELP
-

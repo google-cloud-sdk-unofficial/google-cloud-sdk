@@ -63,13 +63,13 @@ class List(base.ListCommand):
     parser.add_argument(
         '--all', action='store_true',
         help='List all set and unset properties that match the arguments.')
-    property_arg = parser.add_argument(
+    parser.add_argument(
         'property',
         metavar='SECTION/PROPERTY',
         nargs='?',
+        completer=completers.PropertiesCompleter,
         help='The property to be listed. Note that SECTION/ is optional while '
         'referring to properties in the core section.')
-    property_arg.completer = completers.PropertiesCompleter
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
 

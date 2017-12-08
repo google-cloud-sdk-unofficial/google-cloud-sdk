@@ -15,8 +15,8 @@
 """Sets the password of the MySQL root user."""
 
 from googlecloudsdk.api_lib.sql import operations
-from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.sql import validate
 from googlecloudsdk.core import log
 
 
@@ -36,6 +36,7 @@ class SetRootPassword(base.Command):
     base.ASYNC_FLAG.AddToParser(parser)
     parser.add_argument(
         'instance',
+        type=validate.InstanceNameRegexpValidator(),
         completion_resource='sql.instances',
         help='Cloud SQL instance ID.')
     password_group = parser.add_mutually_exclusive_group(required=True)
@@ -71,7 +72,6 @@ class SetRootPassword(base.Command):
     sql_messages = self.context['sql_messages']
     resources = self.context['registry']
 
-    validate.ValidateInstanceName(args.instance)
     instance_ref = resources.Parse(args.instance, collection='sql.instances')
 
     if args.password_file:

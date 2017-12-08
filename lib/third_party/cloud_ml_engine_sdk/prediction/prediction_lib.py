@@ -288,7 +288,8 @@ def load_model(model_path):
 def _get_signature_from_meta_graph(graph, meta_graph):
   """Returns the SignatureDef in meta_graph update dtypes using graph."""
   if not meta_graph.signature_def:
-    raise Exception("MetaGraph must have at least one signature_def.")
+    raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL,
+                          "MetaGraph must have at least one signature_def.")
   named_key = "serving_default_from_named"
   if len(meta_graph.signature_def) > 1:
     logging.warning("MetaGraph has multiple signatures %d. Support for "

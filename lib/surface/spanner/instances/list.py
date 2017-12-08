@@ -21,7 +21,7 @@ class List(base.ListCommand):
   """Cloud Spanner instances list command."""
 
   def Collection(self):
-    return 'spanner.instances'
+    return 'spanner.projects.instances'
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

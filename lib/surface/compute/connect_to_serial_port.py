@@ -176,6 +176,7 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
                                  args.serial_port_gateway))
 
     log.info('ssh command: {0}'.format(' '.join(ssh_args)))
+    ip_address = ssh_utils.GetExternalIPAddress(instance)
 
     # Don't wait for the instance to become SSHable. We are not connecting to
     # the instance itself through SSH, so the instance doesn't need to have
@@ -183,7 +184,7 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
     # since the normal way to terminate the serial port connection is ~. and
     # that causes ssh to exit with 255.
     return_code = self.ActuallyRun(
-        args, ssh_args, user, instance, instance_ref.project,
+        args, ssh_args, user, instance, instance_ref.project, ip_address,
         strict_error_checking=False, use_account_service=False,
         wait_for_sshable=False, ignore_ssh_errors=True)
     if return_code:

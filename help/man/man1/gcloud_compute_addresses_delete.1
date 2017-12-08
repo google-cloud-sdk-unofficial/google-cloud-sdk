@@ -44,30 +44,8 @@ If provided, it is assumed the address name is global.
 
 .TP 2m
 \fB\-\-region\fR=\fIREGION\fR
-The region of the address name to operate on. If not specified, you will be
-prompted to select a region.
-
-To avoid prompting when this flag is omitted, you can set the
-\f5\fIcompute/region\fR\fR property:
-
-.RS 2m
-$ gcloud config set compute/region REGION
-.RE
-
-A list of regions can be fetched by running:
-
-.RS 2m
-$ gcloud compute regions list
-.RE
-
-To unset the property, run:
-
-.RS 2m
-$ gcloud config unset compute/region
-.RE
-
-Alternatively, the region can be stored in the environment variable
-\f5\fICLOUDSDK_COMPUTE_REGION\fR\fR.
+The region of the address name to operate on. Overrides the default
+\fBcompute/region\fR property value for this command invocation.
 
 
 .RE

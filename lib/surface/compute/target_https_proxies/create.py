@@ -35,7 +35,8 @@ class Create(base_classes.BaseAsyncCreator):
     cls.SSL_CERTIFICATE_ARG.AddArgument(parser)
     cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument()
     cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser)
-    cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetHttpsProxy()
+    cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy(
+        proxy_type='HTTPS')
     cls.URL_MAP_ARG.AddArgument(parser)
 
     parser.add_argument(

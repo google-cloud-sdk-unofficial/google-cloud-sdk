@@ -56,7 +56,7 @@ class Describe(base_classes.MultiScopeDescriber):
     # Items are expected to be IGMs.
     return managed_instance_groups_utils.AddAutoscalersToMigs(
         migs_iterator=items,
-        project=self.project,
+        resources=self.resources,
         compute=self.compute,
         http=self.http,
         batch_url=self.batch_url,

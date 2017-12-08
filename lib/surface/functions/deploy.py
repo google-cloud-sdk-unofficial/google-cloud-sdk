@@ -45,7 +45,8 @@ def _FunctionArgs(parser):
   parser.add_argument(
       '--memory',
       type=arg_parsers.BinarySize(
-          suggested_binary_size_scales=['KB', 'MB', 'MiB', 'GB', 'GiB']),
+          suggested_binary_size_scales=['KB', 'MB', 'MiB', 'GB', 'GiB'],
+          default_unit='MB'),
       help="""\
       The amount of memory allocated to your function.
 
@@ -153,7 +154,7 @@ def _TriggerArgs(parser):
   trigger_group.add_argument(
       '--trigger-provider',
       metavar='PROVIDER',
-      choices=sorted(util.trigger_provider_registry.ProvidersLabels()),
+      choices=sorted(util.input_trigger_provider_registry.ProvidersLabels()),
       help=('Trigger this function in response to an event in another '
             'service. For a list of acceptable values, call `gcloud '
             'functions event-types list`.'),
