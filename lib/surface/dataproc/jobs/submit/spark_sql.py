@@ -50,6 +50,7 @@ class SparkSql(base_classes.JobSubmitter):
         self.BuildLoggingConfig(args.driver_log_levels),
         self.files_by_type,
         args)
+    super(SparkSql, self).ConfigureJob(job, args)
 
   def PopulateFilesByType(self, args):
     self.files_by_type.update(SparkSqlBase.GetFilesByType(args))
@@ -84,7 +85,6 @@ class SparkSqlBeta(base_classes.JobSubmitterBeta):
         self.BuildLoggingConfig(args.driver_log_levels),
         self.files_by_type,
         args)
-    # Apply labels
     super(SparkSqlBeta, self).ConfigureJob(job, args)
 
   def PopulateFilesByType(self, args):

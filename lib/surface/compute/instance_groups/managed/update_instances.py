@@ -136,10 +136,13 @@ class UpdateInstancesAlpha(base_classes.BaseCommand):
       # TODO(user): Decide what we should do when two versions have the same
       #              instance template (this can happen with canary restart
       #              performed using tags).
-      igm_tags = dict((version.instanceTemplate, version.tag)
-                      for version in igm_info.versions)
+      igm_version_names = {
+          version.instanceTemplate: version.name
+          for version in igm_info.versions
+      }
       for version in versions:
-        version.tag = igm_tags.get(version.instanceTemplate)
+        version.name = igm_version_names.get(version.instanceTemplate)
+        version.tag = version.name
       minimal_action = (self.messages.InstanceGroupManagerUpdatePolicy
                         .MinimalActionValueValuesEnum.REPLACE)
     elif args.action == 'restart' and igm_info.versions is not None:
@@ -148,7 +151,8 @@ class UpdateInstancesAlpha(base_classes.BaseCommand):
                       instanceTemplate=igm_info.instanceTemplate)])
       current_time_str = str(times.Now(times.UTC))
       for i, version in enumerate(versions):
-        version.tag = '%d/%s' % (i, current_time_str)
+        version.name = '%d/%s' % (i, current_time_str)
+        version.tag = version.name
       minimal_action = (self.messages.InstanceGroupManagerUpdatePolicy
                         .MinimalActionValueValuesEnum.RESTART)
     else:

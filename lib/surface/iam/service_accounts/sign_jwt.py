@@ -13,7 +13,6 @@
 # limitations under the License.
 """Command for signing jwts for service accounts."""
 
-from apitools.base.py import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
@@ -56,14 +55,11 @@ class SignJwt(base_classes.BaseIamCommand):
         'written to.')
 
   def Run(self, args):
-    try:
-      response = self.iam_client.projects_serviceAccounts.SignJwt(
-          self.messages.IamProjectsServiceAccountsSignJwtRequest(
-              name=iam_util.EmailToAccountResourceName(args.iam_account),
-              signJwtRequest=self.messages.SignJwtRequest(payload=self.ReadFile(
-                  args.input))))
-    except exceptions.HttpError as error:
-      raise iam_util.ConvertToServiceAccountException(error, args.iam_account)
+    response = self.iam_client.projects_serviceAccounts.SignJwt(
+        self.messages.IamProjectsServiceAccountsSignJwtRequest(
+            name=iam_util.EmailToAccountResourceName(args.iam_account),
+            signJwtRequest=self.messages.SignJwtRequest(payload=self.ReadFile(
+                args.input))))
 
     self.WriteFile(args.output, response.signedJwt)
     log.status.Print(

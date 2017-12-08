@@ -24,40 +24,47 @@ from googlecloudsdk.core import resources
 class Debug(base.Group):
   """Commands for interacting with the Cloud Debugger.
 
-  Commands that allow interacting with the Cloud Debugger to list and
-  manipulate debug targets, snapshots, and logpoints.
+  The {command} command group provides interaction with Stackdriver Debugger,
+  allowing you to list and manipulate debugging targets, snapshots and
+  logpoints.
+
+  Stackdriver Debugger is a feature of the Google Cloud Platform that lets you
+  inspect the state of an application at any code location without using logging
+  statements and without stopping or slowing down your applications.
+
+  More information on Stackdriver Debugger can be found here:
+  https://cloud.google.com/debugger and detailed documentation can be found
+  here: https://cloud.google.com/debugger/docs/
+
+  ## EXAMPLES
+
+  To view all available debug targets, run:
+
+    $ {command} targets list
+
+    NAME           ID             DESCRIPTION
+    default-test   gcp:1234:5678  myproject-test-9876543
+    default-test2  gcp:9012:3456  myproject-test2-1234567
+
+  To create a snapshot in a for a particular target:
+
+    $ {command} snapshots create --target=default-test foo.py:12
+
+  Note that if there is not a target with the exact name or ID specified, the
+  target is treated as a regular expression to match against the name or
+  description:
+
+    $ {command} snapshots create --target=test foo.py:12
+
+    ERROR: (gcloud.beta.debug.snapshots.create) Multiple possible targets found.
+    Use the --target option to select one of the following targets:
+        default-test
+        default-test2
+
+    In the above case, "test" matches both targets' names. Specifying 'test$'
+    would match only "default-test" (by name), while "9876" would match
+    "default-test" by description.
   """
-
-  detailed_help = {
-      'EXAMPLES': """\
-          To view all available debug targets, run:
-
-              $ {command} targets list
-              NAME           ID             DESCRIPTION
-              default-test   gcp:1234:5678  myproject-test-9876543
-              default-test2  gcp:9012:3456  myproject-test2-1234567
-
-          To create a snapshot in a for a particular target:
-
-              $ {command} snapshots create --target=default-test foo.py:12
-              ...
-
-          Note that if there is not a target with the exact name or ID
-          specified, the target is treated as a regular expression to match
-          against the name or description:
-
-              $ {command} snapshots create --target=test foo.py:12
-              ERROR: (gcloud.beta.debug.snapshots.create) Multiple possible
-              targets found.
-              Use the --target option to select one of the following targets:
-                  default-test
-                  default-test2
-
-          In the above case, "test" matches both targets' names. Specifying
-          'test$' would match only "default-test" (by name), while "9876" would
-          match "default-test" by description.
-       """
-  }
 
   def Filter(self, context, args):
     """Initialize context for Cloud Debugger commands.

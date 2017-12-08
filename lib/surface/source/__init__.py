@@ -26,7 +26,11 @@ from googlecloudsdk.core.credentials import store as c_store
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Source(base.Group):
-  """Cloud git repository commands."""
+  """Cloud git repository commands.
+
+  The {command} group lets you manipulate git repositories within a Google
+  Cloud project.
+  """
 
   def Filter(self, context, args):
     """Initialize context for source commands.

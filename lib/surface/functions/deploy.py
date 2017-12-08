@@ -122,11 +122,10 @@ def _SourceCodeArgs(parser):
   )
   parser.add_argument(
       '--include-node-modules',
-      help=('Include the content of node_modules with deployed sources; if '
-            'this flag is not specified node_modules will not be included. '
-            'This flag can only be used in conjunction with the --local-path '
-            'flag.'),
-      default=False,
+      help=('Include the content of node_modules with deployed sources. This '
+            'flag has an effect only if a function is deployed from a local '
+            'directory.'),
+      default=True,
       action='store_true')
 
 

@@ -23,9 +23,9 @@ of the default behavior.
 """
 
 from googlecloudsdk.api_lib import genomics as lib
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import apis
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources

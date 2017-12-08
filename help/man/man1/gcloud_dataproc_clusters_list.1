@@ -17,7 +17,24 @@ gcloud dataproc clusters list \- view a list of clusters in a project
 
 .SH "DESCRIPTION"
 
-View a list of clusters in a project.
+View a list of clusters in a project. An optional filter can be used to
+constrain the clusters returned. Filters are case\-sensitive and have the
+following syntax:
+
+.RS 2m
+field = value [AND [field = value]] ...
+.RE
+
+where \f5field\fR is one of \f5status.state\fR, \f5clusterName\fR, or
+\f5labels.[KEY]\fR, and \f5[KEY]\fR is a label key. \f5value\fR can be \f5*\fR
+to match all values. \f5status.state\fR can be one of the following:
+\f5ACTIVE\fR, \f5INACTIVE\fR, \f5CREATING\fR, \f5RUNNING\fR, \f5ERROR\fR,
+\f5DELETING\fR, or \f5UPDATING\fR. \f5ACTIVE\fR contains the \f5CREATING\fR,
+\f5UPDATING\fR, and \f5RUNNING\fR states. \f5INACTIVE\fR contains the
+\f5DELETING\fR and \f5ERROR\fR states. \f5clusterName\fR is the name of the
+cluster provided at creation time. Only the logical \f5AND\fR operator is
+supported; space\-separated items are treated as having an implicit \f5AND\fR
+operator.
 
 
 
@@ -69,4 +86,25 @@ To see the list of all clusters, run:
 
 .RS 2m
 $ gcloud dataproc clusters list
+.RE
+
+To show a cluster whose name is \f5mycluster\fR, run:
+
+.RS 2m
+$ gcloud dataproc clusters list \-\-filter='clusterName = mycluster'
+.RE
+
+To see the list of all clusters with particular labels, run:
+
+.RS 2m
+$ gcloud dataproc clusters list \e
+    \-\-filter='labels.env = staging AND labels.starred = *'
+.RE
+
+To see a list of all active clusters with particular labels, run:
+
+.RS 2m
+$ gcloud dataproc clusters list \e
+    \-\-filter='status.state = ACTIVE labels.env = staging AND
+ labels.starred = *'
 .RE

@@ -14,8 +14,8 @@
 
 """The command group for the ServiceManagement V1 CLI."""
 
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import apis
 from googlecloudsdk.core import properties
 
 

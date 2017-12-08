@@ -19,6 +19,7 @@ import datetime
 from apitools.base.protorpclite import util as protorpc_util
 from apitools.base.py import exceptions as apitools_exceptions
 
+from googlecloudsdk.api_lib.sql import constants
 from googlecloudsdk.api_lib.sql import network
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
@@ -157,14 +158,6 @@ class Connect(base.Command):
     sql_messages = self.context['sql_messages']
     resources = self.context['registry']
 
-    # Do the mysql executable check first. This way we can return an error
-    # faster and not wait for whitelisting IP and other operations.
-    mysql_executable = files.FindExecutableOnPath('mysql')
-    if not mysql_executable:
-      raise exceptions.ToolException(
-          'Mysql client not found. Please install a mysql client and make sure '
-          'it is in PATH to be able to connect to the database instance.')
-
     validate.ValidateInstanceName(args.instance)
     instance_ref = resources.Parse(args.instance, collection='sql.instances')
 
@@ -184,6 +177,16 @@ class Connect(base.Command):
       raise exceptions.ToolException('Could not whitelist client IP. Server '
                                      'did not reply with the whitelisted IP.')
 
+    # Check for the mysql or psql executable based on the db version.
+    db_type = instance_info.databaseVersion.split('_')[0]
+    exe_name = constants.DB_EXE.get(db_type, 'mysql')
+    exe = files.FindExecutableOnPath(exe_name)
+    if not exe:
+      raise exceptions.ToolException(
+          '{0} client not found.  Please install a {1} client and make sure '
+          'it is in PATH to be able to connect to the database instance.'
+          .format(exe_name.title(), exe_name))
+
     # Check the version of IP and decide if we need to add ipv4 support.
     ip_type = network.GetIpVersion(client_ip)
     if ip_type == network.IP_VERSION_4:
@@ -201,8 +204,10 @@ class Connect(base.Command):
       raise exceptions.ToolException('Could not connect to SQL server.')
 
     # We have everything we need, time to party!
-    mysql_args = [mysql_executable, '-h', ip_address]
+    flags = constants.EXE_FLAGS[exe_name]
+    sql_args = [exe_name, flags['hostname'], ip_address]
     if args.user:
-      mysql_args.extend(['-u', args.user])
-    mysql_args.append('-p')
-    execution_utils.Exec(mysql_args)
+      sql_args.extend([flags['user'], args.user])
+    sql_args.append(flags['password'])
+
+    execution_utils.Exec(sql_args)

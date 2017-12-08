@@ -17,37 +17,30 @@ gcloud init \- initialize or reinitialize gcloud
 
 .SH "DESCRIPTION"
 
-Initialize or reinitialize gcloud.
-
 gcloud init launches an interactive Getting Started workflow for gcloud. It
-replaces \f5gcloud auth login\fR as the recommended command to execute after you
-install the Cloud SDK. gcloud init performs the following setup steps:
+performs the following setup steps:
 
 .RS 2m
 .IP "\(bu" 2m
 Authorizes gcloud and other SDK tools to access Google Cloud Platform using your
 user account credentials, or lets you select from accounts whose credentials are
-already available. gcloud init uses the same browser\-based authorization flow
-as \f5gcloud auth login\fR.
+already available.
 .IP "\(bu" 2m
 Sets properties in a gcloud configuration, including the current project and the
 default Google Compute Engine region and zone.
 .RE
 .sp
 
-Most users run gcloud init to get started with gcloud. You can use subsequent
-gcloud init invocations to create new gcloud configurations or to reinitialize
-existing configurations. See \f5gcloud topic configurations\fR for additional
-information.
+gcloud init can be used for initial setup of gcloud and to create new or
+reinitialize gcloud configurations. More information can be found by running
+\f5gcloud topic configurations\fR.
 
-Properties set by \f5gcloud init\fR are local and persistent. They are not
-affected by remote changes to your project. For instance, the default Compute
-Engine zone in your configuration remains stable, even if you or another user
-changes the project\-level default zone in the Cloud Platform Console. You can
-resync your configuration at any time by rerunning \f5gcloud init\fR.
+Properties set by gcloud init are local and persistend, and are not affected by
+remote changes to the project. For example, the default Compute Engine zone in
+your configuration remains stable, even if you or another user changes the
+project\-level default zone in the Cloud Platform Console.
 
-(Available since version 0.9.79. Run $ gcloud \-\-version to see which version
-you are running.)
+To sync the configuration, re\-run gcloud init
 
 
 

@@ -19,7 +19,17 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Organizations(base.Group):
-  """Manage Cloud Organizations.
+  """Create and manage Google Cloud Platform Organizations.
 
-  Commands to query and update your Cloud Organizations.
+  The {command} group lets you create and manage Cloud Organizations.
+  Google Cloud Platform resources form a hierarchy with Organizations at the
+  root. Organizations contain projects, and Projects contain the remaining
+  Google Cloud Platform resources.
+
+  More information on the Cloud Platform Resource Hierarchy and the Organization
+  resource can be found here:
+  https://cloud.google.com/resource-manager/docs/creating-managing-organization
+  and detailed documentation on creating and managing organizations can be found
+  here:
+  https://cloud.google.com/resource-manager/docs/creating-managing-organization
   """

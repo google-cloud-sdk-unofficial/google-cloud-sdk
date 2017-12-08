@@ -49,6 +49,7 @@ class Hive(base_classes.JobSubmitter):
         job,
         self.files_by_type,
         args)
+    super(Hive, self).ConfigureJob(job, args)
 
   def PopulateFilesByType(self, args):
     self.files_by_type.update(HiveBase.GetFilesByType(args))
@@ -83,7 +84,6 @@ class HiveBeta(base_classes.JobSubmitterBeta):
         job,
         self.files_by_type,
         args)
-    # Apply labels
     super(HiveBeta, self).ConfigureJob(job, args)
 
   def PopulateFilesByType(self, args):

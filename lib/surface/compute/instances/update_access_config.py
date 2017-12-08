@@ -34,6 +34,7 @@ class UpdateAccessConfigInstances(base_classes.ReadWriteCommand):
     instance_flags.INSTANCE_ARG.AddArgument(parser)
     instance_flags.AddNetworkInterfaceArgs(parser)
     instance_flags.AddPublicDnsArgs(parser, instance=False)
+    instance_flags.AddNetworkTierArgs(parser, instance=False)
 
   @property
   def service(self):
@@ -95,6 +96,9 @@ class UpdateAccessConfigInstances(base_classes.ReadWriteCommand):
     else:
       set_ptr = None
 
+    new_network_tier = self.messages.AccessConfig.NetworkTierValueValuesEnum(
+        args.network_tier)
+
     modified = copy.deepcopy(original)
     for interface in modified.networkInterfaces:
       if interface.name == args.network_interface:
@@ -103,6 +107,9 @@ class UpdateAccessConfigInstances(base_classes.ReadWriteCommand):
         interface.accessConfigs[0].publicDnsName = None
         interface.accessConfigs[0].setPublicPtr = set_ptr
         interface.accessConfigs[0].publicPtrDomainName = ptr_domain_name
+
+        if interface.accessConfigs[0].networkTier != new_network_tier:
+          interface.accessConfigs[0].networkTier = new_network_tier
 
         return modified
 

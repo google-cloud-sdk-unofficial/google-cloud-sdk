@@ -71,7 +71,7 @@ Multiple locations can be specified, separated by commas. For example:
   parser.add_argument(
       '--machine-type', '-m',
       help='The type of machine to use for nodes. Defaults to '
-      'server-specified')
+      'server-specified.')
   parser.add_argument(
       '--subnetwork',
       help='The name of the Google Compute Engine subnetwork '
@@ -93,7 +93,7 @@ Multiple locations can be specified, separated by commas. For example:
       '--cluster-ipv4-cidr',
       help='The IP address range for the pods in this cluster in CIDR '
       'notation (e.g. 10.0.0.0/14). Due to kube-proxy limitations, this range '
-      'must be a subset of the 10.0.0.0/8 space. Defaults to server-specified')
+      'must be a subset of the 10.0.0.0/8 space. Defaults to server-specified.')
   parser.add_argument(
       '--password',
       help='The password to use for cluster auth. Defaults to a '

@@ -15,8 +15,6 @@
 
 import httplib
 
-from apitools.base.py import exceptions
-
 from googlecloudsdk.api_lib.util import http_retry
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
@@ -42,17 +40,14 @@ class RemoveIamPolicyBinding(base_classes.BaseIamCommand):
 
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
-    try:
-      policy = self.iam_client.projects_serviceAccounts.GetIamPolicy(
-          self.messages.IamProjectsServiceAccountsGetIamPolicyRequest(
-              resource=iam_util.EmailToAccountResourceName(args.name)))
+    policy = self.iam_client.projects_serviceAccounts.GetIamPolicy(
+        self.messages.IamProjectsServiceAccountsGetIamPolicyRequest(
+            resource=iam_util.EmailToAccountResourceName(args.name)))
 
-      iam_util.RemoveBindingFromIamPolicy(policy, args.member, args.role)
+    iam_util.RemoveBindingFromIamPolicy(policy, args.member, args.role)
 
-      return self.iam_client.projects_serviceAccounts.SetIamPolicy(
-          self.messages.IamProjectsServiceAccountsSetIamPolicyRequest(
-              resource=iam_util.EmailToAccountResourceName(args.name),
-              setIamPolicyRequest=self.messages.SetIamPolicyRequest(
-                  policy=policy)))
-    except exceptions.HttpError as error:
-      raise iam_util.ConvertToServiceAccountException(error, args.name)
+    return self.iam_client.projects_serviceAccounts.SetIamPolicy(
+        self.messages.IamProjectsServiceAccountsSetIamPolicyRequest(
+            resource=iam_util.EmailToAccountResourceName(args.name),
+            setIamPolicyRequest=self.messages.SetIamPolicyRequest(
+                policy=policy)))

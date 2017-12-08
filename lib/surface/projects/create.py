@@ -23,14 +23,14 @@ from googlecloudsdk.api_lib.resource_manager import operations
 from googlecloudsdk.api_lib.service_management import enable_api as services_enable_api
 from googlecloudsdk.api_lib.service_management import services_util
 
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.projects import util as command_lib_util
 from googlecloudsdk.command_lib.resource_manager import flags
-from googlecloudsdk.command_lib.util import labels_util
 
-from googlecloudsdk.core import apis
+from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources

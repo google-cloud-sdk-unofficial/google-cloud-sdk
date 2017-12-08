@@ -25,7 +25,15 @@ from googlecloudsdk.core.util import platforms
 class Info(base.Command):
   """Display information about the current gcloud environment.
 
-     This command displays information about the current gcloud environment.
+     {command} displays information about the current gcloud environment.
+
+     - {command} will print information about the current active configuration,
+       including the Google Cloud Platform account, project and directory paths
+       for logs.
+
+     - {command} --run-diagnostics will run a checks on network connectivity.
+
+     - {command} --show-log prints the contents of the most recent log file.
   """
 
   @staticmethod

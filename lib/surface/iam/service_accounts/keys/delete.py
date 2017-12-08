@@ -13,8 +13,6 @@
 # limitations under the License.
 """Command for deleting user-managed service account keys."""
 
-from apitools.base.py import exceptions
-
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import log
@@ -36,20 +34,14 @@ class Delete(base_classes.BaseIamCommand):
                         help='The key to delete.')
 
   def Run(self, args):
-    try:
-      console_io.PromptContinue(
-          message='You are about to delete key [{0}] for service '
-                  'account [{1}].'.format(args.key, args.account),
-          cancel_on_no=True)
-      self.iam_client.projects_serviceAccounts_keys.Delete(
-          self.messages.IamProjectsServiceAccountsKeysDeleteRequest(
-              name=iam_util.EmailAndKeyToResourceName(args.iam_account,
-                                                      args.key)))
+    console_io.PromptContinue(
+        message='You are about to delete key [{0}] for service '
+        'account [{1}].'.format(args.key, args.account),
+        cancel_on_no=True)
+    self.iam_client.projects_serviceAccounts_keys.Delete(
+        self.messages.IamProjectsServiceAccountsKeysDeleteRequest(
+            name=iam_util.EmailAndKeyToResourceName(args.iam_account,
+                                                    args.key)))
 
-      log.status.Print(
-          'deleted key [{1}] for service account [{0}]'.format(
-              args.iam_account,
-              args.key))
-    except exceptions.HttpError as error:
-      raise iam_util.ConvertToServiceAccountException(
-          error, args.iam_account, args.key)
+    log.status.Print('deleted key [{1}] for service account [{0}]'.format(
+        args.iam_account, args.key))

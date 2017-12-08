@@ -17,9 +17,9 @@
 import argparse
 
 from googlecloudsdk.api_lib.test import util
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import apis
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resolvers

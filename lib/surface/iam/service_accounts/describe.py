@@ -16,8 +16,6 @@
 
 import textwrap
 
-from apitools.base.py import exceptions
-
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
@@ -49,10 +47,7 @@ class Describe(base_classes.BaseIamCommand, base.DescribeCommand):
                         help='The service account to describe.')
 
   def Run(self, args):
-    try:
-      # TODO(b/25212870): use resource parsing.
-      return self.iam_client.projects_serviceAccounts.Get(
-          self.messages.IamProjectsServiceAccountsGetRequest(
-              name=iam_util.EmailToAccountResourceName(args.name)))
-    except exceptions.HttpError as error:
-      raise iam_util.ConvertToServiceAccountException(error, args.name)
+    # TODO(b/25212870): use resource parsing.
+    return self.iam_client.projects_serviceAccounts.Get(
+        self.messages.IamProjectsServiceAccountsGetRequest(
+            name=iam_util.EmailToAccountResourceName(args.name)))

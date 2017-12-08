@@ -21,6 +21,14 @@ from googlecloudsdk.calliope import base
 class Topic(base.Group):
   """gcloud supplementary help.
 
-  This command provides supplementary help for topics not directly associated
-  with individual commands. Run $ gcloud topic TOPIC to list help for TOPIC.
+  The {command} command group provides supplementary help for topics not
+  directly associated with individual commands.
+
+  More information on {command} can be found by running:
+
+    $ gcloud topic [TOPIC_NAME]
+
+  For a lits of available topics run:
+
+    $ gcloud topic --help
   """

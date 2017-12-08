@@ -14,8 +14,8 @@
 
 """The command group for cloud container builds."""
 
+from googlecloudsdk.api_lib.util import apis as core_apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import apis as core_apis
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
@@ -40,6 +40,11 @@ class Builds(base.Group):
     Returns:
       The refined command context.
     """
+
+    if not properties.VALUES.core.project.Get():
+      raise properties.RequiredPropertyError(
+          properties.VALUES.core.project,
+          flag='--project')
 
     resources.REGISTRY.SetParamDefault(
         api='cloudbuild', collection=None, param='projectId',

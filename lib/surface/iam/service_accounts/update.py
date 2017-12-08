@@ -15,8 +15,6 @@
 
 import httplib
 
-from apitools.base.py import exceptions
-
 from googlecloudsdk.api_lib.util import http_retry
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
@@ -37,18 +35,14 @@ class Update(base_classes.BaseIamCommand):
 
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
-    try:
-      resource_name = iam_util.EmailToAccountResourceName(args.name)
-      current = self.iam_client.projects_serviceAccounts.Get(
-          self.messages.IamProjectsServiceAccountsGetRequest(
-              name=resource_name))
+    resource_name = iam_util.EmailToAccountResourceName(args.name)
+    current = self.iam_client.projects_serviceAccounts.Get(
+        self.messages.IamProjectsServiceAccountsGetRequest(name=resource_name))
 
-      result = self.iam_client.projects_serviceAccounts.Update(
-          self.messages.ServiceAccount(
-              name=resource_name,
-              etag=current.etag,
-              displayName=args.display_name))
-      log.UpdatedResource(args.name, kind='service account')
-      return result
-    except exceptions.HttpError as error:
-      raise iam_util.ConvertToServiceAccountException(error, args.name)
+    result = self.iam_client.projects_serviceAccounts.Update(
+        self.messages.ServiceAccount(
+            name=resource_name,
+            etag=current.etag,
+            displayName=args.display_name))
+    log.UpdatedResource(args.name, kind='service account')
+    return result

@@ -49,6 +49,8 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
     instances_flags.AddPrivateNetworkIpArgs(parser)
     instances_flags.AddDockerArgs(parser)
     instances_flags.AddPublicDnsArgs(parser, instance=True)
+    instances_flags.AddNetworkTierArgs(parser, instance=True)
+    instances_flags.AddMinCpuPlatformArgs(parser)
     parser.add_argument(
         '--description',
         help='Specifies a textual description of the instances.')
@@ -120,6 +122,7 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
         no_address=args.no_address,
         address=args.address,
         instance_refs=instance_refs,
+        network_tier=args.network_tier,
         no_public_dns=getattr(args, 'no_public_dns', None),
         public_dns=getattr(args, 'public_dns', None),
         no_public_ptr=getattr(args, 'no_public_ptr', None),
@@ -152,6 +155,7 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
               description=args.description,
               machineType=machine_type_uri,
               metadata=metadata,
+              minCpuPlatform=args.min_cpu_platform,
               name=instance_ref.Name(),
               networkInterfaces=[network_interface],
               serviceAccounts=service_accounts,

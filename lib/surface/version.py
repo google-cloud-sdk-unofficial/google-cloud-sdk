@@ -25,8 +25,8 @@ from googlecloudsdk.core.updater import update_manager
 class Version(base.Command):
   """Print version information for Cloud SDK components.
 
-     This command prints version information for each installed Cloud SDK
-     component and prints a message if updates are available.
+  The {command} command prints version information for each installed Cloud SDK
+  components and prints a message if updates are available.
   """
 
   def Run(self, args):

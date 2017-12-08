@@ -20,7 +20,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Tail(base.Command):
   """Streams logs for App Engine apps."""
 
@@ -61,6 +61,7 @@ class Tail(base.Command):
     filters = logs_util.GetFilters(project, args.logs, args.service,
                                    args.version, args.level)
 
+    log.status.Print('Waiting for new log entries...')
     log_fetcher = stream.LogFetcher(filters=filters, polling_interval=1)
     for log_entry in log_fetcher.YieldLogs():
       log.out.Print(printer.Format(log_entry))

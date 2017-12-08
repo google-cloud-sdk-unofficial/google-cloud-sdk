@@ -20,51 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """View a list of clusters in a project.
-
-  View a list of clusters in a project.
-
-  ## EXAMPLES
-
-  To see the list of all clusters, run:
-
-    $ {command}
-  """
-
-  @staticmethod
-  def Args(parser):
-    base.URI_FLAG.RemoveFromParser(parser)
-    base.PAGE_SIZE_FLAG.SetDefault(parser, constants.DEFAULT_PAGE_SIZE)
-
-  def Collection(self):
-    return 'dataproc.clusters'
-
-  def Run(self, args):
-    client = self.context['dataproc_client']
-    messages = self.context['dataproc_messages']
-
-    project = properties.VALUES.core.project.Get(required=True)
-    region = self.context['dataproc_region']
-
-    request = self.GetRequest(messages, project, region, args)
-
-    return list_pager.YieldFromList(
-        client.projects_regions_clusters,
-        request,
-        limit=args.limit, field='clusters',
-        batch_size=args.page_size,
-        batch_size_attribute='pageSize')
-
-  @staticmethod
-  def GetRequest(messages, project, region, args):
-    return messages.DataprocProjectsRegionsClustersListRequest(
-        projectId=project, region=region)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class ListBeta(List):
   """View a list of clusters in a project.
 
   View a list of clusters in a project. An optional filter can be used to
@@ -103,6 +59,30 @@ class ListBeta(List):
   """
 
   @staticmethod
+  def Args(parser):
+    base.URI_FLAG.RemoveFromParser(parser)
+    base.PAGE_SIZE_FLAG.SetDefault(parser, constants.DEFAULT_PAGE_SIZE)
+
+  def Collection(self):
+    return 'dataproc.clusters'
+
+  def Run(self, args):
+    client = self.context['dataproc_client']
+    messages = self.context['dataproc_messages']
+
+    project = properties.VALUES.core.project.Get(required=True)
+    region = self.context['dataproc_region']
+
+    request = self.GetRequest(messages, project, region, args)
+
+    return list_pager.YieldFromList(
+        client.projects_regions_clusters,
+        request,
+        limit=args.limit, field='clusters',
+        batch_size=args.page_size,
+        batch_size_attribute='pageSize')
+
+  @staticmethod
   def GetRequest(messages, project, region, args):
     # Explicitly null out args.filter if present because by default args.filter
     # also acts as a postfilter to the things coming back from the backend
@@ -113,3 +93,5 @@ class ListBeta(List):
 
     return messages.DataprocProjectsRegionsClustersListRequest(
         projectId=project, region=region, filter=backend_filter)
+
+

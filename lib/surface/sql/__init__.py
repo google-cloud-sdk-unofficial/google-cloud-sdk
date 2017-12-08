@@ -22,10 +22,10 @@ import argparse
 import os
 import re
 
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import apis
 from googlecloudsdk.core import config
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resolvers

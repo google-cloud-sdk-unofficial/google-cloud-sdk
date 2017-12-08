@@ -35,6 +35,7 @@ def _CommonArgs(parser):
   """Register flags common to all tracks."""
   instances_flags.AddTagsArgs(parser)
   base.ASYNC_FLAG.AddToParser(parser)
+  labels_util.AddCreateLabelsFlags(parser)
   parser.add_argument(
       '--metadata',
       type=arg_parsers.ArgDict(min_length=1),
@@ -398,7 +399,13 @@ class Create(base.CreateCommand):
   @staticmethod
   def ConfigureCluster(messages, args, cluster):
     """Performs any additional configuration of the cluster."""
-    pass
+    labels = labels_util.UpdateLabels(
+        None,
+        messages.Cluster.LabelsValue,
+        labels_util.GetUpdateLabelsDictFromArgs(args),
+        None)
+
+    cluster.labels = labels
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -408,7 +415,6 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
-    labels_util.AddCreateLabelsFlags(parser)
     num_masters = parser.add_argument(
         '--num-masters',
         type=int,
@@ -424,12 +430,3 @@ class CreateBeta(Create):
       |========
       """
 
-  @staticmethod
-  def ConfigureCluster(messages, args, cluster):
-    labels = labels_util.UpdateLabels(
-        None,
-        messages.Cluster.LabelsValue,
-        labels_util.GetUpdateLabelsDictFromArgs(args),
-        None)
-
-    cluster.labels = labels

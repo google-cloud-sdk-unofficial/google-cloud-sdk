@@ -17,7 +17,7 @@
 import os
 import textwrap
 
-from googlecloudsdk.core import apis as core_apis
+from googlecloudsdk.api_lib.util import apis as core_apis
 from googlecloudsdk.core.util import files
 from tests.lib import test_case
 from googlecloudsdk.third_party.apis import apis_map

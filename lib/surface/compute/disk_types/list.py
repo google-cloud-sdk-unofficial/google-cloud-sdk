@@ -13,9 +13,9 @@
 # limitations under the License.
 """Command for listing disk types."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import apis
 from googlecloudsdk.core import properties
 
 

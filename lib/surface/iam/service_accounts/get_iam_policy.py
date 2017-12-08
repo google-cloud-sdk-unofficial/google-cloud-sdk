@@ -16,8 +16,6 @@
 
 import textwrap
 
-from apitools.base.py import exceptions
-
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
 
@@ -49,9 +47,6 @@ class GetIamPolicy(base_classes.BaseIamCommand):
                         'get.')
 
   def Run(self, args):
-    try:
-      return self.iam_client.projects_serviceAccounts.GetIamPolicy(
-          self.messages.IamProjectsServiceAccountsGetIamPolicyRequest(
-              resource=iam_util.EmailToAccountResourceName(args.name)))
-    except exceptions.HttpError as error:
-      raise iam_util.ConvertToServiceAccountException(error, args.name)
+    return self.iam_client.projects_serviceAccounts.GetIamPolicy(
+        self.messages.IamProjectsServiceAccountsGetIamPolicyRequest(
+            resource=iam_util.EmailToAccountResourceName(args.name)))

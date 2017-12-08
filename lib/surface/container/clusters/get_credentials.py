@@ -21,6 +21,10 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
+NOT_RUNNING_MSG = '''\
+cluster {0} is not running. The kubernetes API may not be available.'''
+
+
 class GetCredentials(base.Command):
   """Fetch credentials for a running cluster.
 
@@ -71,7 +75,5 @@ class GetCredentials(base.Command):
           'get-credentials requires edit permission on {0}'.format(
               cluster_ref.projectId))
     if not adapter.IsRunning(cluster):
-      log.error(
-          'cluster %s is not running. The kubernetes API will probably be '
-          'unreachable.' % cluster_ref.clusterId)
+      log.warn(NOT_RUNNING_MSG.format(cluster_ref.clusterId))
     util.ClusterConfig.Persist(cluster, cluster_ref.projectId)

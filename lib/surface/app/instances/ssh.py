@@ -130,6 +130,7 @@ class Ssh(base.Command):
       log.warn(ENABLE_DEBUG_WARNING)
       console_io.PromptContinue(cancel_on_no=True, throw_if_unattended=True)
     user = ssh.GetDefaultSshUsername()
+    remote = ssh.Remote(instance.vmIp, user=user)
     public_key = keys.GetPublicKey().ToEntry()
     ssh_key = '{user}:{key} {user}'.format(user=user, key=public_key)
     log.status.Print('Sending public key to instance [{}].'.format(rel_name))
@@ -137,8 +138,7 @@ class Ssh(base.Command):
     options = {
         'IdentitiesOnly': 'yes',  # No ssh-agent as of yet
         'UserKnownHostsFile': ssh.KnownHosts.DEFAULT_PATH}
-    cmd = ssh.SSHCommand(
-        instance.vmIp, user=user, identity_file=keys.key_file, options=options)
+    cmd = ssh.SSHCommand(remote, identity_file=keys.key_file, options=options)
     if args.container:
       cmd.tty = True
       cmd.remote_command = ['container_exec', args.container, '/bin/sh']

@@ -13,116 +13,84 @@
 # limitations under the License.
 """Command for reserving IP addresses."""
 
-from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import name_generator
+from googlecloudsdk.api_lib.compute import addresses_utils as utils
 from googlecloudsdk.calliope import arg_parsers
-from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.addresses import flags
 
 
-class Create(base_classes.BaseAsyncMutator):
+def _Args(cls, parser):
+  """Argument parsing."""
+
+  cls.ADDRESSES_ARG = flags.AddressArgument(required=False)
+  cls.ADDRESSES_ARG.AddArgument(parser)
+
+  addresses = parser.add_argument(
+      '--addresses',
+      metavar='ADDRESS',
+      type=arg_parsers.ArgList(min_length=1),
+      help='Ephemeral IP addresses to promote to reserved status.')
+  addresses.detailed_help = """\
+      Ephemeral IP addresses to promote to reserved status. Only addresses
+      that are being used by resources in the project can be promoted. When
+      providing this flag, a parallel list of names for the addresses can
+      be provided. For example,
+
+        $ {command} ADDRESS-1 ADDRESS-2 --addresses 162.222.181.197,162.222.181.198 --region us-central1
+
+      will result in 162.222.181.197 being reserved as
+      'ADDRESS-1' and 162.222.181.198 as 'ADDRESS-2'. If
+      no names are given, randomly-generated names will be assigned
+      to the IP addresses.
+      """
+
+  parser.add_argument(
+      '--description',
+      help='An optional textual description for the addresses.')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class Create(utils.AddressesMutator):
   """Reserve IP addresses."""
 
   ADDRESSES_ARG = None
 
   @classmethod
   def Args(cls, parser):
-    cls.ADDRESSES_ARG = flags.AddressArgument(required=False)
-    cls.ADDRESSES_ARG.AddArgument(parser)
+    _Args(cls, parser)
 
-    addresses = parser.add_argument(
-        '--addresses',
-        metavar='ADDRESS',
-        type=arg_parsers.ArgList(min_length=1),
-        help='Ephemeral IP addresses to promote to reserved status.')
-    addresses.detailed_help = """\
-        Ephemeral IP addresses to promote to reserved status. Only addresses
-        that are being used by resources in the project can be promoted. When
-        providing this flag, a parallel list of names for the addresses can
-        be provided. For example,
 
-          $ {command} ADDRESS-1 ADDRESS-2 --addresses 162.222.181.197,162.222.181.198 --region us-central1
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Reserve IP addresses."""
 
-        will result in 162.222.181.197 being reserved as
-        'ADDRESS-1' and 162.222.181.198 as 'ADDRESS-2'. If
-        no names are given, randomly-generated names will be assigned
-        to the IP addresses.
-        """
+  @classmethod
+  def Args(cls, parser):
+    _Args(cls, parser)
 
     parser.add_argument(
-        '--description',
-        help='An optional textual description for the addresses.')
+        '--network-tier',
+        choices=['PREMIUM', 'SELECT'],
+        type=lambda x: x.upper(),
+        help='The network tier to assign to the reserved IP addresses. If left '
+        'empty, `PREMIUM` is used. Supported network tiers are: `PREMIUM`, '
+        '`SELECT`.')
 
-  @property
-  def service(self):
-    if self.global_request:
-      return self.compute.globalAddresses
+  def ConstructNetworkTier(self, args):
+    if args.network_tier:
+      return self.messages.Address.NetworkTierValueValuesEnum(args.network_tier)
     else:
-      return self.compute.addresses
+      return None
 
-  @property
-  def resource_type(self):
-    return 'addresses'
+  def GetAddress(self, args, address, address_ref):
+    """Override."""
+    network_tier = self.ConstructNetworkTier(args)
 
-  @property
-  def method(self):
-    return 'Insert'
-
-  def _GetNamesAndAddresses(self, args):
-    """Returns names and addresses provided in args."""
-    if not args.addresses and not args.name:
-      raise exceptions.ToolException(
-          'At least one name or address must be provided.')
-
-    if args.name:
-      names = args.name
-    else:
-      # If we dont have any names then we must some addresses.
-      names = [name_generator.GenerateRandomName() for _ in args.addresses]
-
-    if args.addresses:
-      addresses = args.addresses
-    else:
-      # If we dont have any addresses then we must some names.
-      addresses = [None] * len(args.name)
-
-    if len(addresses) != len(names):
-      raise exceptions.ToolException(
-          'If providing both, you must specify the same number of names as '
-          'addresses.')
-
-    return names, addresses
-
-  def CreateRequests(self, args):
-    """Overrides."""
-    names, addresses = self._GetNamesAndAddresses(args)
-    if not args.name:
-      args.name = names
-
-    address_refs = self.ADDRESSES_ARG.ResolveAsResource(
-        args, self.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(
-            self.compute_client, self.project))
-
-    self.global_request = getattr(address_refs[0], 'region', None) is None
-
-    requests = []
-    for address, address_ref in zip(addresses, address_refs):
-      address_msg = self.messages.Address(
-          address=address,
-          description=args.description,
-          name=address_ref.Name())
-
-      if self.global_request:
-        requests.append(self.messages.ComputeGlobalAddressesInsertRequest(
-            address=address_msg, project=address_ref.project))
-      else:
-        requests.append(self.messages.ComputeAddressesInsertRequest(
-            address=address_msg,
-            region=address_ref.region,
-            project=address_ref.project))
-    return requests
+    return self.messages.Address(
+        address=address,
+        description=args.description,
+        networkTier=network_tier,
+        name=address_ref.Name())
 
 
 Create.detailed_help = {
@@ -151,3 +119,5 @@ Create.detailed_help = {
         random names.
         """,
 }
+
+CreateAlpha.detailed_help = Create.detailed_help

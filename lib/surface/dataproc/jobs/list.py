@@ -45,7 +45,6 @@ class TypedJob(util.Bunch):
     raise AttributeError('Job has no job type')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List jobs in a project.
 
@@ -122,33 +121,6 @@ class List(base.ListCommand):
 
   @staticmethod
   def GetRequest(messages, project, region, args):
-    return messages.DataprocProjectsRegionsJobsListRequest(
-        projectId=project, region=region)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class ListBeta(List):
-  """List jobs in a project.
-
-  List jobs in a project.
-
-  ## EXAMPLES
-
-  To see the list of all jobs, run:
-
-    $ {command}
-
-  To see the list of all active jobs in a cluster, run:
-
-    $ {command} --state-filter active --cluster my_cluster
-
-  To see the list of all jobs with particular labels, run:
-
-    $ {command} --filter='labels.env = staging AND labels.starred'
-  """
-
-  @staticmethod
-  def GetRequest(messages, project, region, args):
     # Explicitly null out args.filter if present because by default args.filter
     # also acts as a postfilter to the things coming back from the backend
     backend_filter = None
@@ -158,3 +130,4 @@ class ListBeta(List):
 
     return messages.DataprocProjectsRegionsJobsListRequest(
         projectId=project, region=region, filter=backend_filter)
+

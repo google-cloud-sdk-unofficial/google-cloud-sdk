@@ -20,7 +20,19 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Projects(base.Group):
-  """Manage your projects.
+  """Create and manage project access policies.
 
-  Commands to get information about your Google Developer projects.
+  The {command} group lets you create and manage IAM policies for projects on
+  the Google Cloud Platform. Resources are organized hierarchically and assigned
+  to a particular project.  A Project resource is required to use Google Cloud
+  Platform, and forms the basis for creating, enabling and using all Cloud
+  Platform services, managing APIs, enabling billing, adding and removing
+  collaborators, and managing permissions.
+
+  More information on the Cloud Platform Resource Hierarchy and the project
+  resource can be found here:
+  https://cloud.google.com/resource-manager/docs/creating-managing-organization
+  and detailed documentation on creating and managing projects can be found
+  here:
+  https://cloud.google.com/resource-manager/docs/creating-managing-projects
   """

@@ -14,9 +14,9 @@
 
 """gcloud dns managed-zone delete command."""
 
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
-from googlecloudsdk.core import apis
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 

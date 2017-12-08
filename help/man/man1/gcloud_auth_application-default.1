@@ -17,21 +17,16 @@ gcloud auth application\-default \- manage your active Application Default Crede
 
 .SH "DESCRIPTION"
 
-Application Default Credentials provide a simple way to get authorization
-credentials for use in calling Google APIs. These commands assist in managing
-the active credentials on your machine that are used for testing purposes during
-local application development.
+Application Default Credentials (ADC) provide a method to get credentials used
+in calling Google APIs. The gcloud auth application\-default command group
+allows you to manage active credentials on your machine that are used for local
+application development.
 
-These credentials are strictly used by Google client libraries in your own
-application. They are not used for any API calls made by the \f5gcloud\fR CLI,
-nor do they have any interaction with the credentials acquired by \f5gcloud auth
-login\fR.
+These credentials are only used by Google client libraries in your own
+application.
 
-For more information on ADC and how they work, see:
-
-.RS 2m
+More information on ADC and how they work can be found here:
 https://developers.google.com/identity/protocols/application\-default\-credentials
-.RE
 
 
 
@@ -75,11 +70,10 @@ $ export GOOGLE_APPLICATION_CREDENTIALS=key.json
 $ ./my_application.sh
 .RE
 
-If you want your local application to temporarily use your own user credentials,
-run:
+To temporarily use your own user credentials, run:
 
 .RS 2m
 $ gcloud auth application\-default login
 .RE
 
-which will take you through a web flow to acquire new user credentials.
+This will take you through a web flow to acquire new user credentials.

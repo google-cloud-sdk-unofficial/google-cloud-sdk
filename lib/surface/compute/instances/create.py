@@ -60,6 +60,7 @@ DETAILED_HELP = {
 
 def _CommonArgs(parser, multiple_network_interface_cards, release_track,
                 support_alias_ip_ranges, support_public_dns,
+                support_network_tier,
                 enable_regional=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -74,7 +75,8 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
   instances_flags.AddAddressArgs(
       parser, instances=True,
       multiple_network_interface_cards=multiple_network_interface_cards,
-      support_alias_ip_ranges=support_alias_ip_ranges)
+      support_alias_ip_ranges=support_alias_ip_ranges,
+      support_network_tier=support_network_tier)
   instances_flags.AddMachineTypeArgs(parser)
   instances_flags.AddMaintenancePolicyArgs(parser)
   instances_flags.AddNoRestartOnFailureArgs(parser)
@@ -87,6 +89,8 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
   instances_flags.AddImageArgs(parser)
   if support_public_dns:
     instances_flags.AddPublicDnsArgs(parser, instance=True)
+  if support_network_tier:
+    instances_flags.AddNetworkTierArgs(parser, instance=True)
 
   parser.add_argument(
       '--description',
@@ -103,6 +107,7 @@ class Create(base.CreateCommand):
   """Create Google Compute Engine virtual machine instances."""
 
   _support_public_dns = False
+  _support_network_tier = False
 
   def __init__(self, *args, **kwargs):
     super(Create, self).__init__(*args, **kwargs)
@@ -115,7 +120,8 @@ class Create(base.CreateCommand):
     _CommonArgs(parser, multiple_network_interface_cards=False,
                 release_track=base.ReleaseTrack.GA,
                 support_alias_ip_ranges=False,
-                support_public_dns=cls._support_public_dns)
+                support_public_dns=cls._support_public_dns,
+                support_network_tier=cls._support_network_tier)
 
   @property
   def resource_type(self):
@@ -221,10 +227,13 @@ class Create(base.CreateCommand):
           resources=self.resources,
           compute_client=self.compute_client,
           network_interface_arg=network_interface_arg,
-          instance_refs=instance_refs)
+          instance_refs=instance_refs,
+          support_network_tier=self._support_network_tier)
     else:
       if self._support_public_dns is True:
         instances_flags.ValidatePublicDnsFlags(args)
+
+      network_tier = getattr(args, 'network_tier', None)
 
       network_interfaces = [
           instance_utils.CreateNetworkInterfaceMessage(
@@ -236,6 +245,7 @@ class Create(base.CreateCommand):
               no_address=args.no_address,
               address=args.address,
               instance_refs=instance_refs,
+              network_tier=network_tier,
               no_public_dns=getattr(args, 'no_public_dns', None),
               public_dns=getattr(args, 'public_dns', None),
               no_public_ptr=getattr(args, 'no_public_ptr', None),
@@ -367,6 +377,8 @@ class Create(base.CreateCommand):
           serviceAccounts=project_to_sa[instance_ref.project],
           scheduling=scheduling,
           tags=tags)
+      if getattr(args, 'min_cpu_platform', None):
+        instance.minCpuPlatform = args.min_cpu_platform
       if accelerator_args:
         accelerator_type_name = accelerator_args['type']
         accelerator_type_ref = self.resources.Parse(
@@ -418,13 +430,15 @@ class CreateBeta(Create):
   """Create Google Compute Engine virtual machine instances."""
 
   _support_public_dns = False
+  _support_network_tier = False
 
   @classmethod
   def Args(cls, parser):
     _CommonArgs(parser, multiple_network_interface_cards=False,
                 release_track=base.ReleaseTrack.BETA,
                 support_alias_ip_ranges=False,
-                support_public_dns=cls._support_public_dns)
+                support_public_dns=cls._support_public_dns,
+                support_network_tier=cls._support_network_tier)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -432,6 +446,7 @@ class CreateAlpha(Create):
   """Create Google Compute Engine virtual machine instances."""
 
   _support_public_dns = True
+  _support_network_tier = True
 
   @classmethod
   def Args(cls, parser):
@@ -440,7 +455,9 @@ class CreateAlpha(Create):
                 release_track=base.ReleaseTrack.ALPHA,
                 support_alias_ip_ranges=True,
                 support_public_dns=cls._support_public_dns,
+                support_network_tier=cls._support_network_tier,
                 enable_regional=True)
+    instances_flags.AddMinCpuPlatformArgs(parser)
 
 
 Create.detailed_help = DETAILED_HELP

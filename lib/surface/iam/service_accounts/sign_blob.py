@@ -15,8 +15,6 @@
 
 import textwrap
 
-from apitools.base.py import exceptions
-
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import log
@@ -60,16 +58,13 @@ class SignBlob(base_classes.BaseIamCommand):
                         'written to.')
 
   def Run(self, args):
-    try:
-      response = self.iam_client.projects_serviceAccounts.SignBlob(
-          self.messages.IamProjectsServiceAccountsSignBlobRequest(
-              name=iam_util.EmailToAccountResourceName(args.iam_account),
-              signBlobRequest=self.messages.SignBlobRequest(
-                  bytesToSign=self.ReadFile(args.input))))
+    response = self.iam_client.projects_serviceAccounts.SignBlob(
+        self.messages.IamProjectsServiceAccountsSignBlobRequest(
+            name=iam_util.EmailToAccountResourceName(args.iam_account),
+            signBlobRequest=self.messages.SignBlobRequest(
+                bytesToSign=self.ReadFile(args.input))))
 
-      self.WriteFile(args.output, response.signature)
-      log.status.Print(
-          'signed blob [{0}] as [{1}] for [{2}] using key [{3}]'.format(
-              args.input, args.output, args.iam_account, response.keyId))
-    except exceptions.HttpError as error:
-      raise iam_util.ConvertToServiceAccountException(error, args.account)
+    self.WriteFile(args.output, response.signature)
+    log.status.Print(
+        'signed blob [{0}] as [{1}] for [{2}] using key [{3}]'.format(
+            args.input, args.output, args.iam_account, response.keyId))

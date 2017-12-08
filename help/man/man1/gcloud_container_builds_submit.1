@@ -63,14 +63,14 @@ operation to complete.
 .TP 2m
 \fB\-\-gcs\-log\-dir\fR=\fIGCS_LOG_DIR\fR
 Directory in Google Cloud Storage to hold build logs. If the bucket does not
-exist, it will be created. If not set, gs://<project id>\fIcloudbuild/logs is
-used.
+exist, it will be created. If not set, \f5gs://<project id>_cloudbuild/logs\fR
+is used.
 
 .TP 2m
-\fB\-\-gcs\-source\-staging\-dir\fR=\fRGCS_SOURCE_STAGING_DIR\fI
+\fB\-\-gcs\-source\-staging\-dir\fR=\fIGCS_SOURCE_STAGING_DIR\fR
 Directory in Google Cloud Storage to stage a copy of the source used for the
 build. If the bucket does not exist, it will be created. If not set,
-gs://<project id>\fRcloudbuild/source is used.
+\f5gs://<project id>_cloudbuild/source\fR is used.
 
 .TP 2m
 \fB\-\-timeout\fR=\fITIMEOUT\fR

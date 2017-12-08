@@ -31,6 +31,7 @@ def _Args(parser, include_beta, include_alpha=False):
   flags.AddIPProtocols(parser)
   flags.AddDescription(parser)
   flags.AddPortsAndPortRange(parser)
+  flags.AddNetworkTier(parser, include_alpha=include_alpha)
   if include_alpha:
     parser.add_argument(
         '--service-label',
@@ -195,6 +196,96 @@ class CreateAlpha(Create):
     cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
     _Args(parser, include_beta=True, include_alpha=True)
     cls.FORWARDING_RULE_ARG.AddArgument(parser)
+
+  def ConstructNetworkTier(self, args):
+    if args.network_tier:
+      return self.messages.ForwardingRule.NetworkTierValueValuesEnum(
+          args.network_tier)
+    else:
+      return
+
+  def _CreateGlobalRequests(self, args, forwarding_rule_ref):
+    """Create a globally scoped request."""
+    port_range = _ResolvePortRange(args.port_range, args.ports)
+    if not port_range:
+      raise exceptions.ToolException(
+          '[--ports] is required for global forwarding rules.')
+    target_ref = self.GetGlobalTarget(args)
+    protocol = self.ConstructProtocol(args)
+    network_tier = self.ConstructNetworkTier(args)
+
+    address = self._ResolveAddress(
+        args, compute_flags.compute_scope.ScopeEnum.GLOBAL)
+
+    forwarding_rule = self.messages.ForwardingRule(
+        description=args.description,
+        name=forwarding_rule_ref.Name(),
+        IPAddress=address,
+        IPProtocol=protocol,
+        portRange=port_range,
+        target=target_ref.SelfLink(),
+        networkTier=network_tier)
+    if args.load_balancing_scheme == 'INTERNAL':
+      forwarding_rule.loadBalancingScheme = (
+          self.messages.ForwardingRule
+          .LoadBalancingSchemeValueValuesEnum.INTERNAL)
+
+    request = self.messages.ComputeGlobalForwardingRulesInsertRequest(
+        forwardingRule=forwarding_rule,
+        project=self.project)
+
+    return [request]
+
+  def _CreateRegionalRequests(self, args, forwarding_rule_ref):
+    """Create a regionally scoped request."""
+    target_ref, region_ref = self.GetRegionalTarget(args, forwarding_rule_ref)
+    if not args.region and region_ref:
+      args.region = region_ref
+    protocol = self.ConstructProtocol(args)
+    network_tier = self.ConstructNetworkTier(args)
+
+    address = self._ResolveAddress(
+        args, compute_flags.compute_scope.ScopeEnum.REGION)
+
+    forwarding_rule = self.messages.ForwardingRule(
+        description=args.description,
+        name=forwarding_rule_ref.Name(),
+        IPAddress=address,
+        IPProtocol=protocol,
+        networkTier=network_tier)
+    if args.load_balancing_scheme == 'INTERNAL':
+      forwarding_rule.loadBalancingScheme = (
+          self.messages.ForwardingRule
+          .LoadBalancingSchemeValueValuesEnum.INTERNAL)
+      forwarding_rule.portRange = args.port_range
+    else:
+      forwarding_rule.portRange = (
+          _ResolvePortRange(args.port_range, args.ports))
+
+    if target_ref.Collection() == 'compute.regionBackendServices':
+      forwarding_rule.backendService = target_ref.SelfLink()
+      if args.load_balancing_scheme == 'INTERNAL':
+        if args.ports:
+          forwarding_rule.portRange = None
+          forwarding_rule.ports = [str(p) for p in _GetPortList(args.ports)]
+        if args.subnet is not None:
+          if not args.subnet_region:
+            args.subnet_region = forwarding_rule_ref.region
+          forwarding_rule.subnetwork = flags.SUBNET_ARG.ResolveAsResource(
+              args, self.resources).SelfLink()
+        if args.network is not None:
+          forwarding_rule.network = flags.NETWORK_ARG.ResolveAsResource(
+              args, self.resources).SelfLink()
+    else:
+      forwarding_rule.target = target_ref.SelfLink()
+    if hasattr(args, 'service_label'):
+      forwarding_rule.serviceLabel = args.service_label
+    request = self.messages.ComputeForwardingRulesInsertRequest(
+        forwardingRule=forwarding_rule,
+        project=self.project,
+        region=forwarding_rule_ref.region)
+
+    return [request]
 
 
 Create.detailed_help = {

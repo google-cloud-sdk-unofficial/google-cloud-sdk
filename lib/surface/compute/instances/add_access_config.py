@@ -28,7 +28,7 @@ DETAILED_HELP = {
 }
 
 
-def _Args(parser, support_public_dns):
+def _Args(parser, support_public_dns, support_network_tier):
   """Register parser args common to all tracks."""
 
   access_config_name = parser.add_argument(
@@ -56,6 +56,8 @@ def _Args(parser, support_public_dns):
   instance_flags.AddNetworkInterfaceArgs(parser)
   if support_public_dns:
     instance_flags.AddPublicDnsArgs(parser, instance=False)
+  if support_network_tier:
+    instance_flags.AddNetworkTierArgs(parser, instance=False)
   instance_flags.INSTANCE_ARG.AddArgument(parser)
 
 
@@ -67,7 +69,10 @@ class AddAccessConfigInstances(base_classes.NoOutputAsyncMutator):
 
   @classmethod
   def Args(cls, parser):
-    _Args(parser, support_public_dns=cls._support_public_dns)
+    _Args(
+        parser,
+        support_public_dns=cls._support_public_dns,
+        support_network_tier=False)
 
   @property
   def service(self):
@@ -109,6 +114,11 @@ class AddAccessConfigInstances(base_classes.NoOutputAsyncMutator):
           args.public_ptr_domain is not None):
         access_config.publicPtrDomainName = args.public_ptr_domain
 
+    network_tier = getattr(args, 'network_tier', None)
+    if network_tier is not None:
+      access_config.networkTier = (self.messages.AccessConfig.
+                                   NetworkTierValueValuesEnum(network_tier))
+
     request = self.messages.ComputeInstancesAddAccessConfigRequest(
         accessConfig=access_config,
         instance=instance_ref.Name(),
@@ -127,6 +137,9 @@ class AddAccessConfigInstancesAlpha(AddAccessConfigInstances):
 
   @classmethod
   def Args(cls, parser):
-    _Args(parser, support_public_dns=cls._support_public_dns)
+    _Args(
+        parser,
+        support_public_dns=cls._support_public_dns,
+        support_network_tier=True)
 
 AddAccessConfigInstances.detailed_help = DETAILED_HELP

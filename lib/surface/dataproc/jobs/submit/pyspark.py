@@ -51,6 +51,7 @@ class PySpark(base_classes.JobSubmitter):
         self.BuildLoggingConfig(args.driver_log_levels),
         self.files_by_type,
         args)
+    super(PySpark, self).ConfigureJob(job, args)
 
   def PopulateFilesByType(self, args):
     self.files_by_type.update(PySparkBase.GetFilesByType(args))
@@ -84,7 +85,6 @@ class PySparkBeta(base_classes.JobSubmitterBeta):
         self.BuildLoggingConfig(args.driver_log_levels),
         self.files_by_type,
         args)
-    # Apply labels
     super(PySparkBeta, self).ConfigureJob(job, args)
 
   def PopulateFilesByType(self, args):

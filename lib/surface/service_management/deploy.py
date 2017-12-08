@@ -272,6 +272,15 @@ class DeployBeta(Deploy):
         help='If included, the command will only validate the service '
              'configuration(s). No configuration(s) will be persisted.')
 
+  def Epilog(self, resources_were_displayed):
+    super(DeployBeta, self).Epilog(resources_were_displayed)
+
+    # Print link to Endpoints Management UI
+    if not self.validate_only:
+      management_url = services_util.GenerateManagementUrl(
+          self.service_name, properties.VALUES.core.project.Get(required=True))
+      log.status.Print('To manage your API, go to: ' + management_url)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DeployAlpha(DeployBeta):

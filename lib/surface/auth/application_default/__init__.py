@@ -22,37 +22,31 @@ from googlecloudsdk.calliope import base
 class ApplicationDefault(base.Group):
   """Manage your active Application Default Credentials.
 
-  Application Default Credentials provide a simple way to get authorization
-  credentials for use in calling Google APIs. These commands assist in managing
-  the active credentials on your machine that are used for testing purposes
-  during local application development.
+  Application Default Credentials (ADC) provide a method to get credentials used
+  in calling Google APIs. The {command} command group allows you to manage
+  active credentials on your machine that are used for local application
+  development.
 
-  These credentials are strictly used by Google client libraries in your own
-  application. They are not used for any API calls made by the `gcloud` CLI, nor
-  do they have any interaction with the credentials acquired by
-  `gcloud auth login`.
+  These credentials are only used by Google client libraries in your own
+  application.
 
-  For more information on ADC and how they work, see:
+  More information on ADC and how they work can be found here:
+  https://developers.google.com/identity/protocols/application-default-credentials
 
-    https://developers.google.com/identity/protocols/application-default-credentials
+  ## EXAMPLES
+
+  To create a service account and have your application use it for API access,
+  run:
+
+    $ gcloud iam service-accounts create my-account
+    $ gcloud iam service-accounts keys create key.json
+      --iam-account=my-account@my-project.iam.gserviceaccount.com
+    $ export GOOGLE_APPLICATION_CREDENTIALS=key.json
+    $ ./my_application.sh
+
+  To temporarily use your own user credentials, run:
+
+    $ {command} login
+
+  This will take you through a web flow to acquire new user credentials.
   """
-  detailed_help = {
-      'EXAMPLES': """\
-          To create a service account and have your application use it for API
-          access, run:
-
-            $ gcloud iam service-accounts create my-account
-            $ gcloud iam service-accounts keys create key.json
-              --iam-account=my-account@my-project.iam.gserviceaccount.com
-            $ export GOOGLE_APPLICATION_CREDENTIALS=key.json
-            $ ./my_application.sh
-
-          If you want your local application to temporarily use your own user
-          credentials, run:
-
-            $ {command} login
-
-          which will take you through a web flow to acquire new user
-          credentials.
-          """,
-  }

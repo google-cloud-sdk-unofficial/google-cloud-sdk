@@ -26,6 +26,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
+# TODO(b/33467618): Remove in favor of ssh.FileReference.
 RemoteFile = collections.namedtuple(
     'RemoteFile', ['user', 'instance_name', 'file_path'])
 LocalFile = collections.namedtuple(
@@ -62,6 +63,8 @@ class CopyFiles(ssh_utils.BaseSSHCLICommand):
 
   def Run(self, args):
     super(CopyFiles, self).Run(args)
+    # TODO(b/33467618): Change this implementation to use ssh.SCPCommand and
+    # ssh.FileReference objects.
 
     file_specs = []
 

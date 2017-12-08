@@ -71,14 +71,14 @@ class Submit(base.CreateCommand):
         '--gcs-source-staging-dir',
         help='Directory in Google Cloud Storage to stage a copy of the source '
              'used for the build. If the bucket does not exist, it will be '
-             'created. If not set, gs://<project id>_cloudbuild/source is '
-             'used.',
+             'created. If not set, ```gs://<project id>_cloudbuild/source``` '
+             'is used.',
     )
     parser.add_argument(
         '--gcs-log-dir',
         help='Directory in Google Cloud Storage to hold build logs. If the '
              'bucket does not exist, it will be created. If not set, '
-             'gs://<project id>_cloudbuild/logs is used.',
+             '```gs://<project id>_cloudbuild/logs``` is used.',
     )
     parser.add_argument(
         '--timeout',
@@ -170,7 +170,7 @@ class Submit(base.CreateCommand):
           timeout=timeout_str,
       )
     elif args.config:
-      build_config = config.LoadCloudbuildConfig(args.config, messages)
+      build_config = config.LoadCloudbuildConfigFromPath(args.config, messages)
 
     # If timeout was set by flag, overwrite the config file.
     if timeout_str:

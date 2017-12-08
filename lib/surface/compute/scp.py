@@ -83,6 +83,8 @@ class Scp(ssh_utils.BaseSSHCLICommand):
 
   def Run(self, args):
     super(Scp, self).Run(args)
+    # TODO(b/33467618): Change this implementation to use ssh.SCPCommand and
+    # ssh.FileReference objects.
 
     file_specs = []
 

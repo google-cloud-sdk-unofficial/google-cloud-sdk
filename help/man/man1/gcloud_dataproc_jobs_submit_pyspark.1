@@ -11,7 +11,7 @@ gcloud dataproc jobs submit pyspark \- submit a PySpark job to a cluster
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud dataproc jobs submit pyspark\fR \fIPY_FILE\fR \fB\-\-cluster\fR=\fICLUSTER\fR [\fB\-\-archives\fR=[\fIARCHIVE\fR,...]] [\fB\-\-async\fR] [\fB\-\-bucket\fR=\fIBUCKET\fR] [\fB\-\-driver\-log\-levels\fR=[\fIPACKAGE\fR=\fILEVEL\fR,...]] [\fB\-\-files\fR=[\fIFILE\fR,...]] [\fB\-\-jars\fR=[\fIJAR\fR,...]] [\fB\-\-properties\fR=[\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fB\-\-py\-files\fR=[\fIPY_FILE\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR] [\-\-\ \fIJOB_ARGS\fR\ ...]
+\f5gcloud dataproc jobs submit pyspark\fR \fIPY_FILE\fR \fB\-\-cluster\fR=\fICLUSTER\fR [\fB\-\-archives\fR=[\fIARCHIVE\fR,...]] [\fB\-\-async\fR] [\fB\-\-bucket\fR=\fIBUCKET\fR] [\fB\-\-driver\-log\-levels\fR=[\fIPACKAGE\fR=\fILEVEL\fR,...]] [\fB\-\-files\fR=[\fIFILE\fR,...]] [\fB\-\-jars\fR=[\fIJAR\fR,...]] [\fB\-\-labels\fR=[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-properties\fR=[\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fB\-\-py\-files\fR=[\fIPY_FILE\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR] [\-\-\ \fIJOB_ARGS\fR\ ...]
 
 
 
@@ -82,6 +82,10 @@ Comma separated list of files to be provided to the job.
 \fB\-\-jars\fR=[\fIJAR\fR,...]
 Comma separated list of jar files to be provided to the executor and driver
 classpaths.
+
+.TP 2m
+\fB\-\-labels\fR=[\fIKEY\fR=\fIVALUE\fR,...]
+A list of label KEY=VALUE pairs to add.
 
 .TP 2m
 \fB\-\-properties\fR=[\fIPROPERTY\fR=\fIVALUE\fR,...]

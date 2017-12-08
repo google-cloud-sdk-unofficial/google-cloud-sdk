@@ -81,7 +81,7 @@ def _Args(parser):
   parser.add_argument(
       '--machine-type', '-m',
       help='The type of machine to use for nodes. Defaults to '
-      'server-specified')
+      'server-specified.')
   parser.add_argument(
       '--disk-size',
       type=int,

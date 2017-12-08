@@ -1,3 +1,17 @@
+# Copyright 2017 Google Inc. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """This package provides DockerImage for examining docker_build outputs."""
 
 
@@ -13,6 +27,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import threading
 
 from containerregistry.client import docker_creds
 from containerregistry.client import docker_name
@@ -118,14 +133,28 @@ class FromTarball(DockerImage):
   def __init__(self, tarball, compresslevel=9):
     self._tarball = tarball
     self._compresslevel = compresslevel
+    self._memoize = {}
+    self._lock = threading.Lock()
 
-  def _content(self, name):
+  def _content(self, name, memoize=True):
+    """Fetches a particular path's contents from the tarball."""
+    # Check our cache
+    if memoize:
+      with self._lock:
+        if name in self._memoize:
+          return self._memoize[name]
+
     # tarfile is inherently single-threaded:
     # https://mail.python.org/pipermail/python-bugs-list/2015-March/265999.html
     # so instead of locking, just open the tarfile for each file
     # we want to read.
     with tarfile.open(name=self._tarball, mode='r') as tar:
-      return tar.extractfile('./' + name).read()
+      content = tar.extractfile('./' + name).read()
+      # Populate our cache.
+      if memoize:
+        with self._lock:
+          self._memoize[name] = content
+      return content
 
   def top(self):
     """Override."""
@@ -145,7 +174,7 @@ class FromTarball(DockerImage):
     buf = cStringIO.StringIO()
     f = gzip.GzipFile(mode='wb', compresslevel=self._compresslevel, fileobj=buf)
     try:
-      f.write(self._content(layer_id + '/layer.tar'))
+      f.write(self._content(layer_id + '/layer.tar', memoize=False))
     finally:
       f.close()
 

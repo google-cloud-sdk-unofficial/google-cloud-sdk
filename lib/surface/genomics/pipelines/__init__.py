@@ -14,8 +14,8 @@
 
 """Genomics pipelines sub-group."""
 from googlecloudsdk.api_lib import genomics as lib
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import apis
 
 
 class Pipelines(base.Group):

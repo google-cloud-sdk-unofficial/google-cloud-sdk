@@ -50,6 +50,7 @@ class Pig(base_classes.JobSubmitter):
         self.BuildLoggingConfig(args.driver_log_levels),
         self.files_by_type,
         args)
+    super(Pig, self).ConfigureJob(job, args)
 
   def PopulateFilesByType(self, args):
     self.files_by_type.update(PigBase.GetFilesByType(args))
@@ -84,7 +85,6 @@ class PigBeta(base_classes.JobSubmitterBeta):
         self.BuildLoggingConfig(args.driver_log_levels),
         self.files_by_type,
         args)
-    # Apply labels
     super(PigBeta, self).ConfigureJob(job, args)
 
   def PopulateFilesByType(self, args):

@@ -15,9 +15,9 @@
 """The command group for Service Registry CLI."""
 
 from googlecloudsdk.api_lib.service_registry import constants
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import apis
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources

@@ -13,8 +13,6 @@
 # limitations under the License.
 """Command for listing service account keys."""
 
-from apitools.base.py import exceptions
-
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
@@ -59,15 +57,10 @@ class GetPublicKey(base_classes.BaseIamCommand, base.Command):
     return 'iam.service_accounts.keys'
 
   def Run(self, args):
-    try:
-      result = self.iam_client.projects_serviceAccounts_keys.Get(
-          self.messages.IamProjectsServiceAccountsKeysGetRequest(
-              name=iam_util.EmailAndKeyToResourceName(args.iam_account,
-                                                      args.key),
-              publicKeyType=iam_util.PublicKeyTypeFromString(args.type)))
-    except exceptions.HttpError as error:
-      raise iam_util.ConvertToServiceAccountException(error, args.iam_account,
-                                                      args.key)
+    result = self.iam_client.projects_serviceAccounts_keys.Get(
+        self.messages.IamProjectsServiceAccountsKeysGetRequest(
+            name=iam_util.EmailAndKeyToResourceName(args.iam_account, args.key),
+            publicKeyType=iam_util.PublicKeyTypeFromString(args.type)))
     self.WriteFile(args.output_file, result.publicKeyData)
     log.status.Print('written key [{0}] for [{2}] as [{1}]'.format(
         args.key, args.output_file, args.iam_account))

@@ -36,41 +36,28 @@ from googlecloudsdk.core.util import platforms
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Init(base.Command):
-  """Initialize or reinitialize gcloud."""
+  """Initialize or reinitialize gcloud.
 
-  detailed_help = {
-      'DESCRIPTION': """\
-          {description}
+  {command} launches an interactive Getting Started workflow for gcloud.
+  It performs the following setup steps:
 
-          {command} launches an interactive Getting Started workflow for gcloud.
-          It replaces `gcloud auth login` as the recommended command to execute
-          after you install the Cloud SDK. {command} performs the following
-          setup steps:
+  - Authorizes gcloud and other SDK tools to access Google Cloud Platform using
+    your user account credentials, or lets you select from accounts whose
+    credentials are already available.
+  - Sets properties in a gcloud configuration, including the current project and
+    the default Google Compute Engine region and zone.
 
-            - Authorizes gcloud and other SDK tools to access Google Cloud
-              Platform using your user account credentials, or lets you select
-              from accounts whose credentials are already available. {command}
-              uses the same browser-based authorization flow as
-              `gcloud auth login`.
-            - Sets properties in a gcloud configuration, including the current
-              project and the default Google Compute Engine region and zone.
+  {command} can be used for initial setup of gcloud and to create new or
+  reinitialize gcloud configurations. More information can be found by
+  running `gcloud topic configurations`.
 
-          Most users run {command} to get started with gcloud. You can use
-          subsequent {command} invocations to create new gcloud configurations
-          or to reinitialize existing configurations.  See `gcloud topic
-          configurations` for additional information.
+  Properties set by {command} are local and persistend, and are not affected by
+  remote changes to the project. For example, the default Compute Engine zone in
+  your configuration remains stable, even if you or another user changes the
+  project-level default zone in the Cloud Platform Console.
 
-          Properties set by `gcloud init` are local and persistent. They are
-          not affected by remote changes to your project. For instance, the
-          default Compute Engine zone in your configuration remains stable,
-          even if you or another user changes the project-level default zone in
-          the Cloud Platform Console.  You can resync your configuration at any
-          time by rerunning `gcloud init`.
-
-          (Available since version 0.9.79. Run $ gcloud --version to see which
-          version you are running.)
-          """,
-  }
+  To sync the configuration, re-run {command}
+  """
 
   @staticmethod
   def Args(parser):
