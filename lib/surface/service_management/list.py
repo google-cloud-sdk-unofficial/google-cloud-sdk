@@ -32,15 +32,6 @@ class List(base.ListCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-
-    parser.add_argument('--simple-list',
-                        action='store_true',
-                        default=False,
-                        help=('If true, only the list of API service names is '
-                              'printed. If false, a human-readable table of '
-                              'service name and description information is '
-                              'printed.'))
-
     mode_group = parser.add_mutually_exclusive_group(required=False)
 
     mode_group.add_argument('--enabled',
@@ -78,9 +69,6 @@ class List(base.ListCommand):
     """
     client = services_util.GetClientInstance()
 
-    if args.simple_list:
-      args.format = 'value(serviceName)'
-
     # Default mode is --enabled, so if no flags were specified,
     # turn on the args.enabled flag.
     if not (args.enabled or args.available or args.produced):
@@ -104,4 +92,4 @@ class List(base.ListCommand):
         field='services')
 
   def Collection(self):
-    return 'servicemanagement-v1.services'
+    return services_util.SERVICES_COLLECTION

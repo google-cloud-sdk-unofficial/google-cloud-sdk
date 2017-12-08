@@ -12,62 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """ml predict command."""
-import json
-import sys
 
 from googlecloudsdk.api_lib.ml import predict
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import exceptions as core_exceptions
+from googlecloudsdk.command_lib.ml import predict_utilities
 
 
-class InvalidInstancesFileError(core_exceptions.Error):
-  """Indicates that the input file was invalid in some way."""
-  pass
-
-
-def _ReadInstances(input_file=None, data_format=None):
-  """Read the instances from input file.
-
-  Args:
-    input_file: An open file object for the input file.
-    data_format: data format of the input file, 'json' or 'text'.
-
-  Returns:
-    A list of instances.
-
-  Raises:
-    InvalidInstancesFileError: if the input_file is empty, ill-formatted,
-        or contains more than 100 instances.
-  """
-  instances = []
-  line_num = 0
-
-  for line_num, line in enumerate(input_file):
-    line_content = line.rstrip('\n')
-    if not line_content:
-      raise InvalidInstancesFileError('Empty line is not allowed in the '
-                                      'instances file.')
-    if line_num > 100:
-      raise InvalidInstancesFileError(
-          'Online prediction can process no more than 100 '
-          'instances per file. Please use batch prediction instead.')
-    if data_format == 'json':
-      try:
-        instances.append(json.loads(line_content))
-      except ValueError:
-        raise InvalidInstancesFileError(
-            'Input instances are not in JSON format. '
-            'See "gcloud beta ml predict --help" for details.')
-    elif data_format == 'text':
-      instances.append(line_content)
-
-  if not instances:
-    raise InvalidInstancesFileError('No valid instance was found.')
-
-  return instances
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Predict(base.Command):
   """Run Cloud ML online prediction."""
 
@@ -120,8 +70,8 @@ class Predict(base.Command):
       Some value that we want to have printed later.
     """
 
-    # Get the input file and format.
-    data_format = 'json'
+    # Get the input instances.
+    data_format = ''
     input_file = ''
     if args.json_instances:
       data_format = 'json'
@@ -129,16 +79,7 @@ class Predict(base.Command):
     elif args.text_instances:
       data_format = 'text'
       input_file = args.text_instances
-
-    # Read the instances from input file.
-    # TODO(b/31944251): change to a generic FileType like method for
-    # reading from input files.
-    instances = []
-    if input_file == '-':
-      instances = _ReadInstances(sys.stdin, data_format)
-    else:
-      with open(input_file, 'r') as f:
-        instances = _ReadInstances(f, data_format)
+    instances = predict_utilities.ReadInstances(input_file, data_format)
 
     return predict.Predict(
         model_name=args.model, version_name=args.version, instances=instances)

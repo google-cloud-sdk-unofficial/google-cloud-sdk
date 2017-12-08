@@ -18,7 +18,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class StreamLogs(base.Command):
   """Show logs from a running Cloud ML job."""
 

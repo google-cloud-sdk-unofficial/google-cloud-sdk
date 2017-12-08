@@ -207,7 +207,7 @@ class Submit(base.CreateCommand):
     if args.source.startswith('gs://'):
       gcs_source = registry.Parse(
           args.source, collection='storage.objects')
-      staged_source_obj = gcs_client.Copy(gcs_source, gcs_source_staging)
+      staged_source_obj = gcs_client.Rewrite(gcs_source, gcs_source_staging)
       build_config.source = messages.Source(
           storageSource=messages.StorageSource(
               bucket=staged_source_obj.bucket,

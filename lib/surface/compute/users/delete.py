@@ -15,8 +15,8 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.api_lib.compute import request_helper
-from googlecloudsdk.api_lib.compute import user_utils
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.api_lib.compute.users import client as users_client
 
 
 class Delete(base_classes.BaseAsyncMutator):
@@ -68,7 +68,7 @@ class Delete(base_classes.BaseAsyncMutator):
         custom_get_requests=None)
 
     if errors:
-      utils.RaiseException(errors, user_utils.UserException, error_message=(
+      utils.RaiseException(errors, users_client.UserException, error_message=(
           'Could not get users for owners:'))
     return [response.name for response in responses]
 

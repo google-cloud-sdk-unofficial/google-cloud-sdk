@@ -1,0 +1,96 @@
+
+.TH "GCLOUD_SERVICE\-MANAGEMENT" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud service\-management \- create, enable, or otherwise manage API services
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud service\-management\fR \fIGROUP\fR | \fICOMMAND\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+
+.SH "DESCRIPTION"
+
+Create, enable, or otherwise manage API services.
+
+
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "GROUPS"
+
+\f5\fIGROUP\fR\fR is one of the following:
+
+.RS 2m
+.TP 2m
+\fBconfigs\fR
+View configurations for various services.
+
+.TP 2m
+\fBoperations\fR
+Manage Operation for various services.
+
+
+.RE
+.sp
+
+.SH "COMMANDS"
+
+\f5\fICOMMAND\fR\fR is one of the following:
+
+.RS 2m
+.TP 2m
+\fBadd\-iam\-policy\-binding\fR
+Add IAM policy binding for a service.
+
+.TP 2m
+\fBcheck\-iam\-policy\fR
+Returns information about a member's permissions on a service.
+
+.TP 2m
+\fBdelete\fR
+Deletes a service.
+
+.TP 2m
+\fBdeploy\fR
+Deploys a service configuration for the given service name.
+
+.TP 2m
+\fBdescribe\fR
+Describes a service given a service name.
+
+.TP 2m
+\fBdisable\fR
+Disables a service on a provided (or previously configured) project.
+
+.TP 2m
+\fBenable\fR
+Enables a service on the current project.
+
+.TP 2m
+\fBget\-iam\-policy\fR
+Describes the IAM policy for a service.
+
+.TP 2m
+\fBlist\fR
+List services for a given project.
+
+.TP 2m
+\fBremove\-iam\-policy\-binding\fR
+Remove IAM policy binding for a service.
+
+.TP 2m
+\fBundelete\fR
+Undeletes a service configuration given a service name.
+.RE
+.sp

@@ -21,7 +21,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class BetaTrain(base.Command):
   r"""Submits a Cloud Machine Learning training job.
 
@@ -33,17 +32,14 @@ class BetaTrain(base.Command):
               --module-name trainer.task \
               --staging-bucket gs://my-bucket \
               --package-path /my/code/path/trainer \
-              --packages additional-dependency1.tar.gz \
-                         additional-dependency2.whl
+              --packages additional-dep1.tar.gz,dep2.whl
 
   Or by specifying an already built package:
 
       $ {command} my_job \
               --module-name trainer.task \
               --staging-bucket gs://my-bucket \
-              --packages trainer-0.0.1.tar.gz \
-                         additional-dependency1.tar.gz \
-                         additional-dependency2.whl
+              --packages trainer-0.0.1.tar.gz,additional-dep1.tar.gz,dep2.whl
 
   If --package-path /my/code/path/trainer is specified and there is a
   setup.py file at /my/code/path/setup.py then that file will be invoked
@@ -61,7 +57,7 @@ class BetaTrain(base.Command):
     compute_flags.AddRegionFlag(
         parser, 'machine learning training job', 'submit')
     flags.CONFIG.AddToParser(parser)
-    flags.STAGING_BUCKET.AddToParser(parser)
+    flags.GetStagingBucket(required=True).AddToParser(parser)
     flags.USER_ARGS.AddToParser(parser)
 
   def Run(self, args):
@@ -74,6 +70,9 @@ class BetaTrain(base.Command):
     Returns:
       Some value that we want to have printed later.
     """
+    # TODO(b/33234717): remove this after deprecation period
+    flags.ProcessPackages(args)
+
     region = properties.VALUES.compute.region.Get(required=True)
     uris = jobs_prep.RunSetupAndUpload(
         args.packages, args.staging_bucket, args.package_path)

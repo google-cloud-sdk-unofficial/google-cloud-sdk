@@ -12,33 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """ml models versions describe command."""
-
-from googlecloudsdk.api_lib.ml import versions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.ml import flags
+from surface.ml.versions import describe
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=('This command is deprecated. '
+             'Please use `gcloud beta ml versions describe` instead.'),
+    error=('This command has been removed. '
+           'Please use `gcloud beta ml versions describe` instead.'))
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class BetaDescribe(base.DescribeCommand):
-  """Describe an existing Cloud ML version."""
-
-  def Collection(self):
-    return 'ml.models.versions'
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    flags.GetModelName(positional=False, required=True).AddToParser(parser)
-    flags.VERSION_NAME.AddToParser(parser)
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-    return versions.Get(args.model, args.version)
+class BetaDescribe(describe.BetaDescribe):
+  pass

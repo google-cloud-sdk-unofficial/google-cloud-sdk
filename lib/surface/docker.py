@@ -105,11 +105,14 @@ class Docker(base.Command):
     Raises:
       exceptions.ExitCodeNoError: The docker command execution failed.
     """
+    force_refresh = True
     for server in args.server:
       if server not in _DEFAULT_REGISTRIES:
         log.warn('Authenticating to a non-default server: {server}.'.format(
             server=server))
-      docker.UpdateDockerCredentials(server)
+      docker.UpdateDockerCredentials(server, refresh=force_refresh)
+      # Only force a refresh for the first server we authorize
+      force_refresh = False
 
     if args.authorize_only:
       # NOTE: We don't know at this point how long the access token we have

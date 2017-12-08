@@ -18,7 +18,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CancelBeta(base.Command):
   """Cancel a running Cloud ML job."""
 

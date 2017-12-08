@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import instances_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import flags
+from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
 
@@ -81,15 +82,28 @@ class EnableDebug(base.Command):
     # Only VM instances can be placed in debug mode for now.
     all_instances = filter(operator.attrgetter('instance.vmName'),
                            all_instances)
-    instance = instances_util.GetMatchingInstance(
-        all_instances, service=args.service, version=args.version,
-        instance=args.instance)
+
+    try:
+      res = resources.REGISTRY.Parse(args.instance)
+    except Exception:  # pylint:disable=broad-except
+      # If parsing fails, use interactive selection or provided instance ID.
+      instance = instances_util.GetMatchingInstance(
+          all_instances, service=args.service, version=args.version,
+          instance=args.instance)
+    else:
+      instance = instances_util.GetMatchingInstance(
+          all_instances, service=res.servicesId, version=res.versionsId,
+          instance=res.instancesId)
 
     console_io.PromptContinue(
         'About to enable debug mode for instance [{0}].'.format(instance),
         cancel_on_no=True)
     message = 'Enabling debug mode for instance [{0}]'.format(instance)
+    res = resources.REGISTRY.Parse(instance.id,
+                                   params={'versionsId': instance.version,
+                                           'instancesId': instance.id,
+                                           'servicesId': instance.service},
+                                   collection='appengine.apps.services.'
+                                              'versions.instances')
     with progress_tracker.ProgressTracker(message):
-      api_client.DebugInstance(service=instance.service,
-                               version=instance.version,
-                               instance=instance.id)
+      api_client.DebugInstance(res)

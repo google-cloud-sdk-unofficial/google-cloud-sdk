@@ -19,7 +19,7 @@ from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class MlBeta(base.Group):
   """Cloud ML command groups."""
 

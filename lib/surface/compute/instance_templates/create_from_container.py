@@ -82,6 +82,7 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
     instances_flags.ValidateDockerArgs(args)
     instances_flags.ValidateDiskCommonFlags(args)
     instances_flags.ValidateLocalSsdFlags(args)
+    instances_flags.ValidateScopeFlags(args)
     if instance_utils.UseExistingBootDisk(args.disk or []):
       raise exceptions.InvalidArgumentException(
           '--disk',

@@ -14,9 +14,9 @@
 
 """Implementation of the service-management api-keys revert command."""
 
-from googlecloudsdk.api_lib.service_management import common_flags
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.service_management import common_flags
 from googlecloudsdk.core import properties
 
 

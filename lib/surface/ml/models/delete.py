@@ -21,7 +21,6 @@ from googlecloudsdk.core import apis
 from googlecloudsdk.core.console import progress_tracker
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DeleteBeta(base.DeleteCommand):
   """Delete an existing Cloud ML model."""
 

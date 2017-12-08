@@ -14,9 +14,9 @@
 
 """Command to get information about a principal's permissions on a service."""
 
-from googlecloudsdk.api_lib.service_management import common_flags
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.service_management import common_flags
 
 
 class CheckIamPolicy(base.Command):
@@ -70,3 +70,6 @@ class CheckIamPolicy(base.Command):
             permissions=all_iam_permissions))
 
     return client.services.TestIamPermissions(request)
+
+  def Collection(self):
+    return services_util.SERVICES_COLLECTION

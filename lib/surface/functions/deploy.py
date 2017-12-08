@@ -18,6 +18,7 @@ import httplib
 import os
 import random
 import string
+
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.compute import utils
@@ -27,8 +28,10 @@ from googlecloudsdk.api_lib.functions import operations
 from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.functions.deploy import util as deploy_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import archive
 from googlecloudsdk.core.util import files as file_utils
 
@@ -118,6 +121,7 @@ class Deploy(base.Command):
               'Defaults to 60 seconds.'),
         type=arg_parsers.Duration(lower_bound='1s'))
     trigger_group = parser.add_mutually_exclusive_group(required=True)
+    # TODO(b/32655988) This functionality is deprecated
     trigger_group.add_argument(
         '--trigger-topic',
         help=('Name of Pub/Sub topic. Every message published in this topic '
@@ -128,6 +132,7 @@ class Deploy(base.Command):
         '--trigger-gs-uri',
         help=argparse.SUPPRESS,
         type=util.ValidateAndStandarizeBucketUriOrRaise)
+    # TODO(b/32655988) This functionality is deprecated
     trigger_group.add_argument(
         '--trigger-bucket',
         help=('Google Cloud Storage bucket name. Every change in files in this '
@@ -141,9 +146,56 @@ class Deploy(base.Command):
         '(web_trigger.url parameter of the deploy output) will trigger '
         'function execution. Result of the function execution will be returned '
         'in response body.')
-
-  def _GetLocalPath(self, args):
-    return args.local_path or args.source or '.'
+    trigger_group.add_argument(
+        '--trigger-provider',
+        metavar='PROVIDER',
+        choices=sorted(util.trigger_provider_registry.ProvidersLabels()),
+        help=('Trigger this function in response to an event in another '
+              'service. For a list of acceptable values, call `gcloud '
+              'functions event-types list`.'),
+        )
+    trigger_provider_spec_group = parser.add_argument_group()
+    # The validation performed by argparse is incomplete, as the set of valid
+    # provider/event combinations is limited. This should be more thoroughly
+    # validated at runtime.
+    trigger_provider_spec_group.add_argument(
+        '--trigger-event',
+        metavar='EVENT_TYPE',
+        choices=['topic.publish', 'object.change', 'user.create', 'user.delete',
+                 'data.write'],
+        help=('Specifies which action should trigger the function. If omitted, '
+              'a default EVENT_TYPE for --trigger-provider will be used. For a '
+              'list of acceptable values, call functions event_types list.'),
+    )
+    # check later as type of applicable input depends on options above
+    trigger_provider_spec_group.add_argument(
+        '--trigger-resource',
+        metavar='RESOURCE',
+        help=('Specifies which resource from --trigger-provider is being '
+              'observed. E.g. if --trigger-provider is cloud.storage, '
+              '--trigger-resource must be a bucket name. For a list of '
+              'expected resources, call functions event_types list.'),
+    )
+    # check later as type of applicable input depends on options above
+    trigger_params = trigger_provider_spec_group.add_argument(
+        '--trigger-params',
+        metavar='PARAMS',
+        type=arg_parsers.ArgDict(spec={
+            'path': lambda x: x,
+        }),
+        action=arg_parsers.StoreOnceAction,
+        help=('Only path key is supported. Specifies which sub-path within '
+              '--trigger-resource is being observed.'),
+    )
+    trigger_params.detailed_help = (
+        'Specifies additional parameters. For example --trigger-params path '
+        'specifies which sub-path within --trigger-resource is being observed. '
+        'Paths may contain named wildcards by surrounding components with '
+        'curly brackets, e.g. literal/{wildcard}/anotherLiteral. In this case, '
+        'the value of all wildcards is included in the event as "params". Not '
+        'all --trigger-providers support a --trigger-param path. For a list of '
+        'services which support --trigger-param path, call functions '
+        'event_types list.')
 
   @util.CatchHTTPErrorRaiseHTTPException
   def _GetExistingFunction(self, name):
@@ -170,7 +222,7 @@ class Deploy(base.Command):
 
   def _CreateZipFile(self, tmp_dir, args):
     zip_file_name = os.path.join(tmp_dir, 'fun.zip')
-    local_path = self._GetLocalPath(args)
+    local_path = deploy_util.GetLocalPath(args)
     try:
       archive.MakeZipFromDir(zip_file_name, local_path)
     except ValueError as e:
@@ -179,28 +231,57 @@ class Deploy(base.Command):
           'for directory {0}: {1}'.format(local_path, str(e)))
     return zip_file_name
 
-  def _PrepareFunctionWithoutSources(self, name, args):
+  def _PrepareFunctionWithoutSources(self, name, args, event_trigger_args):
     """Creates a function object without filling in the sources properties.
 
     Args:
       name: funciton name
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
+      event_trigger_args: DataFlow arguments deduced form args
 
     Returns:
       The specified function with its description and configured filter.
     """
     messages = self.context['functions_messages']
     function = messages.CloudFunction()
+    # TODO(b/32655988) This functionality is deprecated
     if args.trigger_topic:
+      log.warn('--trigger-topic flag is deprecated and will be removed. Use '
+               '--trigger-provider cloud.pubsub --trigger-event topic.publish '
+               'instead.')
       project = properties.VALUES.core.project.Get(required=True)
       function.pubsubTrigger = 'projects/{0}/topics/{1}'.format(
           project, args.trigger_topic)
     trigger_bucket = args.trigger_bucket or args.trigger_gs_uri
+    # TODO(b/32655988) This functionality is deprecated
     if trigger_bucket is not None:
+      log.warn('--trigger-bucket is deprecated and will be removed. Use'
+               '--trigger-provider cloud.storage --trigger-event object.change '
+               'instead.')
       function.gcsTrigger = trigger_bucket
     if args.trigger_http:
       function.httpsTrigger = messages.HTTPSTrigger()
+    if event_trigger_args is not None:
+      # Initialize EventTrigger
+      function.eventTrigger = messages.EventTrigger()
+      # TODO(b/32857613)
+      event_type_ref = resources.REGISTRY.Parse(
+          None,
+          params={
+              'triggerProvider': event_trigger_args.trigger_provider,
+              'triggerEvent': event_trigger_args.trigger_event
+          },
+          collection='cloudfunctions.providers.event_types'
+      )
+      function.eventTrigger.eventType = event_type_ref.RelativeName()
+      function.eventTrigger.path = event_trigger_args.trigger_path
+      function.eventTrigger.resource = (
+          deploy_util.ConvertTriggerArgsToRelativeName(
+              event_trigger_args.trigger_provider,
+              event_trigger_args.trigger_event,
+              event_trigger_args.trigger_resource))
+
     function.name = name
     if args.entry_point:
       function.entryPoint = args.entry_point
@@ -208,8 +289,10 @@ class Deploy(base.Command):
       function.timeout = str(args.timeout) + 's'
     return function
 
-  def _DeployFunction(self, name, location, args, deploy_method):
-    function = self._PrepareFunctionWithoutSources(name, args)
+  def _DeployFunction(self, name, location, args, event_trigger_args,
+                      deploy_method):
+    function = self._PrepareFunctionWithoutSources(name, args,
+                                                   event_trigger_args)
     if args.source_url:
       messages = self.context['functions_messages']
       source_path = args.source or args.source_path
@@ -256,49 +339,6 @@ class Deploy(base.Command):
     operations.Wait(op, messages, client)
     return self._GetExistingFunction(function.name)
 
-  def _CheckArgs(self, args):
-    # This function should raise ArgumentParsingError, but:
-    # 1. ArgumentParsingError requires the  argument returned from add_argument)
-    #    and Args() method is static. So there is no elegant way to save it
-    #    to be reused here.
-    # 2. _CheckArgs() is invoked from Run() and ArgumentParsingError thrown
-    #    from Run are not caught.
-    if args.source_url is None:
-      if args.source_revision is not None:
-        raise exceptions.FunctionsError(
-            'argument --source-revision: can be given only if argument '
-            '--source-url is provided')
-      if args.source_branch is not None:
-        raise exceptions.FunctionsError(
-            'argument --source-branch: can be given only if argument '
-            '--source-url is provided')
-      if args.source_tag is not None:
-        raise exceptions.FunctionsError(
-            'argument --source-tag: can be given only if argument '
-            '--source-url is provided')
-      stage_bucket = args.bucket or args.stage_bucket
-      if stage_bucket is None:
-        raise exceptions.FunctionsError(
-            'argument --stage-bucket: required when the function is deployed '
-            'from a local directory (when argument --source-url is not '
-            'provided)')
-      util.ValidateDirectoryExistsOrRaiseFunctionError(self._GetLocalPath(args))
-    else:
-      if args.source is None and args.source_path is None:
-        raise exceptions.FunctionsError(
-            'argument --source-path: required when argument --source-url is '
-            'provided')
-
-    if args.bucket is not None:
-      log.warn('--bucket flag is deprecated. Use --stage-bucket instead.')
-    if args.source is not None:
-      log.warn('--source flag is deprecated. Use --local-path (for sources on '
-               'local file system) or --source-path (for sources in Cloud '
-               'Source Repositories) instead.')
-    if args.trigger_gs_uri is not None:
-      log.warn('--trigger-gs-uri flag is deprecated. Use --trigger-bucket '
-               'instead.')
-
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -315,7 +355,7 @@ class Deploy(base.Command):
     # TODO(b/24723761): This should be invoked as a hook method after arguments
     # are parsed, but unfortunately gcloud framework doesn't support such a
     # hook.
-    self._CheckArgs(args)
+    processed_args = deploy_util.DeduceAndCheckArgs(args)
 
     project = properties.VALUES.core.project.Get(required=True)
     location = 'projects/{0}/locations/{1}'.format(project, args.region)
@@ -324,6 +364,8 @@ class Deploy(base.Command):
 
     function = self._GetExistingFunction(name)
     if function is None:
-      return self._DeployFunction(name, location, args, self._CreateFunction)
+      return self._DeployFunction(name, location, args, processed_args,
+                                  self._CreateFunction)
     else:
-      return self._DeployFunction(name, location, args, self._UpdateFunction)
+      return self._DeployFunction(name, location, args, processed_args,
+                                  self._UpdateFunction)

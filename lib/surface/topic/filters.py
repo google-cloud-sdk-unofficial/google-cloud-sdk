@@ -62,11 +62,11 @@ class Filters(base.TopicCommand):
           name that evaluates to the value of a resource attribute, and _value_
           may be:
 
-          *number*:::: integer or floating point numeric constant
+          *number*::: integer or floating point numeric constant
 
-          *unquoted literal*:::: character sequence terminated by space, ( or )
+          *unquoted literal*::: character sequence terminated by space, ( or )
 
-          *quoted literal*:::: _"..."_ or _'...'_
+          *quoted literal*::: _"..."_ or _'...'_
 
           Most filter expressions need to be quoted in shell commands. If you
           use _'...'_ shell quotes then use _"..."_ filter string literal quotes

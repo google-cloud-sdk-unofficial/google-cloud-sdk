@@ -52,6 +52,9 @@ class Describe(base.DescribeCommand):
     # Check if the user wants the active config or a specific config.
     return self._GetConfig(args.service, args.config_id)
 
+  def Collection(self):
+    return services_util.CONFIG_COLLECTION
+
   def _GetConfig(self, service, config_id):
     messages = services_util.GetMessagesModule()
     client = services_util.GetClientInstance()

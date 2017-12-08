@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ConvertConfig(base.Command):
   """Convert Swagger specification to Google service configuration.
 

@@ -14,7 +14,7 @@
 """Command for describing users."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import gaia_utils
-from googlecloudsdk.api_lib.compute import user_utils
+from googlecloudsdk.command_lib.compute.users import utils as user_utils
 
 
 class Describe(base_classes.BaseAsyncMutator):

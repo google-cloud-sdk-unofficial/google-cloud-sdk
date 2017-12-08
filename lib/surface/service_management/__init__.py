@@ -19,8 +19,8 @@ from googlecloudsdk.core import apis
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA,
-                    base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class ServiceManagement(base.Group):
   """Create, enable, or otherwise manage API services."""
 

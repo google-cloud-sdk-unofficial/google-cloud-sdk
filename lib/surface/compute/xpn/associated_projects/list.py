@@ -13,7 +13,6 @@
 # limitations under the License.
 """The `gcloud compute xpn associated-projects list` command."""
 from googlecloudsdk.api_lib.compute import xpn_api
-from googlecloudsdk.api_lib.compute import xpn_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.xpn import flags
 from googlecloudsdk.command_lib.compute.xpn import util as command_lib_util
@@ -46,7 +45,7 @@ class List(base.ListCommand):
 
   def Run(self, args):
     xpn_client = xpn_api.GetXpnClient()
-    xpn_types = xpn_util.GetMessagesModule().XpnResourceId.TypeValueValuesEnum
+    xpn_types = xpn_client.messages.XpnResourceId.TypeValueValuesEnum
     resources = xpn_client.ListEnabledResources(args.project).resources
     return [resource for resource in resources if
             resource.type == xpn_types.PROJECT]

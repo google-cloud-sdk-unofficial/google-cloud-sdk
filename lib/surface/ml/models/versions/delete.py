@@ -12,41 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """ml models versions delete command."""
-
-from googlecloudsdk.api_lib.ml import operations
-from googlecloudsdk.api_lib.ml import versions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.ml import flags
-from googlecloudsdk.core import apis
-from googlecloudsdk.core.console import progress_tracker
+from surface.ml.versions import delete
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=('This command is deprecated. '
+             'Please use `gcloud beta ml versions delete` instead.'),
+    error=('This command has been removed. '
+           'Please use `gcloud beta ml versions delete` instead.'))
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class BetaDelete(base.DeleteCommand):
+class BetaDelete(delete.BetaDelete):
   """Delete an existing Cloud ML version."""
-
-  def Collection(self):
-    return 'ml.models.versions'
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    flags.GetModelName(positional=False, required=True).AddToParser(parser)
-    flags.VERSION_NAME.AddToParser(parser)
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-    op = versions.Delete(args.model, args.version)
-    client = apis.GetClientInstance('ml', 'v1beta1')
-
-    with progress_tracker.ProgressTracker('Deleting version...'):
-      operations.WaitForOperation(client.projects_operations, op)
-    return op.response
+  pass

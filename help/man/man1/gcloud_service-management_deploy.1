@@ -1,0 +1,51 @@
+
+.TH "GCLOUD_SERVICE\-MANAGEMENT_DEPLOY" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud service\-management deploy \- deploys a service configuration for the given service name
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud service\-management deploy\fR \fISERVICE_CONFIG_FILE\fR [\fISERVICE_CONFIG_FILE\fR\ ...] [\fB\-\-async\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+
+.SH "DESCRIPTION"
+
+Deploys a service configuration for the given service name.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+.RS 2m
+.TP 2m
+\fISERVICE_CONFIG_FILE\fR [\fISERVICE_CONFIG_FILE\fR ...]
+The service configuration file (or files) containing the API specification to
+upload. Proto Descriptors, Open API (Swagger) specifications, and Google Service
+Configuration files in JSON and YAML formats are acceptable.
+
+
+.RE
+.sp
+
+.SH "FLAGS"
+
+.RS 2m
+.TP 2m
+\fB\-\-async\fR
+Display information about the operation in progress and don't wait for the
+operation to complete.
+
+
+.RE
+.sp
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

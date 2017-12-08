@@ -13,10 +13,8 @@
 # limitations under the License.
 """Command to show Container Analysis Data for a specified image."""
 
-from containerregistry.client.v2 import docker_image as v2_image
 from googlecloudsdk.api_lib.container.images import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import http
 
 # Add to this as we add more container analysis data.
 _DEFAULT_KINDS = [
@@ -71,10 +69,7 @@ class Describe(base.DescribeCommand):
       Some value that we want to have printed later.
     """
 
-    img_name = util.GetDockerImageFromTagOrDigest(args.image)
-    http_obj = http.Http()
-    creds = util.CredentialProvider()
+    img_name = util.GetDigestFromName(args.image)
 
-    with v2_image.FromRegistry(img_name, creds, http_obj):
-      return util.TransformContainerAnalysisData(img_name,
-                                                 args.occurrence_filter)
+    return util.TransformContainerAnalysisData(
+        img_name, args.occurrence_filter)

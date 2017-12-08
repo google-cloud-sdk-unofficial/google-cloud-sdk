@@ -18,7 +18,6 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Prediction(base.Command):
   """Start a Cloud ML batch prediction job."""
 

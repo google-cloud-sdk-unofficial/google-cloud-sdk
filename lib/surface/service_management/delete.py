@@ -14,13 +14,13 @@
 
 """service-management delete command."""
 
-from googlecloudsdk.api_lib.service_management import common_flags
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.service_management import common_flags
 from googlecloudsdk.core.console import console_io
 
 
-class Delete(base.Command):
+class Delete(base.DeleteCommand):
   """Deletes a service."""
 
   @staticmethod
@@ -50,7 +50,7 @@ class Delete(base.Command):
     client = services_util.GetClientInstance()
 
     # Prompt with a warning before continuing.
-    continue_prompt_response = console_io.PromptContinue(
+    console_io.PromptContinue(
         message='Are you sure? This will set the service configuration to be '
         'deleted, along with all of the associated consumer '
         'information. Note: This does not immediately delete the '
@@ -59,9 +59,8 @@ class Delete(base.Command):
         'service be purged from the system.',
         prompt_string='Continue anyway',
         default=True,
-        throw_if_unattended=True)
-    if not continue_prompt_response:
-      return
+        throw_if_unattended=True,
+        cancel_on_no=True)
 
     request = messages.ServicemanagementServicesDeleteRequest(
         serviceName=args.service,)

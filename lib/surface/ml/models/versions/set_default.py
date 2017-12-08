@@ -12,30 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """ml models versions set-default command."""
-
-from googlecloudsdk.api_lib.ml import versions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.ml import flags
+from surface.ml.versions import set_default
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=('This command is deprecated. '
+             'Please use `gcloud beta ml versions set-default` instead.'),
+    error=('This command has been removed. '
+           'Please use `gcloud beta ml versions set-default` instead.'))
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class BetaSetDefault(base.DescribeCommand):
+class BetaSetDefault(set_default.BetaSetDefault):
   """Sets an existing Cloud ML version as the default for its model."""
+  pass
 
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    flags.GetModelName(positional=False, required=True).AddToParser(parser)
-    flags.VERSION_NAME.AddToParser(parser)
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-    return versions.SetDefault(args.model, args.version)

@@ -14,9 +14,9 @@
 
 """service-management describe command."""
 
-from googlecloudsdk.api_lib.service_management import common_flags
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.service_management import common_flags
 
 
 class Describe(base.DescribeCommand):
@@ -50,3 +50,6 @@ class Describe(base.DescribeCommand):
         serviceName=args.service,)
 
     return client.services.Get(request)
+
+  def Collection(self):
+    return services_util.SERVICES_COLLECTION

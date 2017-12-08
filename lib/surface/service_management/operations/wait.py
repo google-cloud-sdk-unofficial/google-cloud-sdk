@@ -14,9 +14,9 @@
 
 """service-management operations wait command."""
 
-from googlecloudsdk.api_lib.service_management import common_flags
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.service_management import common_flags
 
 
 class Wait(base.Command):

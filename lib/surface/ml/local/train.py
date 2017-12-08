@@ -27,7 +27,6 @@ Did you mean to run distributed training?\
 
 
 # TODO(b/31687602) Add link to documentation of env vars once created
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class RunLocal(base.Command):
   r"""Run a Cloud ML training job locally.
 

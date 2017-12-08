@@ -14,12 +14,10 @@
 """Command for adding a user to a group."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import user_utils
 from googlecloudsdk.calliope import arg_parsers
 
 
-class AddMembers(base_classes.NoOutputAsyncMutator,
-                 user_utils.UserResourceFetcher):
+class AddMembers(base_classes.NoOutputAsyncMutator):
   """Add a user to a Google Compute Engine group.
 
   *{command}* adds a users to a Google Compute Engine group.

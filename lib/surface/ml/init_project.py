@@ -24,7 +24,6 @@ from googlecloudsdk.core.console import console_io
 EDITOR_ROLE = 'roles/editor'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class InitProject(base.Command):
   """Initialize project for Cloud ML."""
 

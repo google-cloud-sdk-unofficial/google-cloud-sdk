@@ -21,6 +21,7 @@ from googlecloudsdk.command_lib.app import checks
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import platforms
 
 
@@ -56,6 +57,9 @@ class AppengineGA(base.Group):
 
   def Filter(self, unused_context, unused_args):
     checks.RaiseIfNotPython27()
+    resources.REGISTRY.SetParamDefault(
+        'appengine', None, 'appsId',
+        properties.VALUES.core.project.Get(required=True))
 
 
 @base.Hidden

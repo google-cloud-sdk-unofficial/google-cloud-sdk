@@ -16,11 +16,11 @@
 
 import httplib
 
-from googlecloudsdk.api_lib.service_management import common_flags
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.api_lib.util import http_retry
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
+from googlecloudsdk.command_lib.service_management import common_flags
 
 
 class RemoveIamPolicyBinding(base.Command):

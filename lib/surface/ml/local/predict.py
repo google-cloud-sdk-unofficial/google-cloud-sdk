@@ -18,9 +18,9 @@ import os
 import subprocess
 import sys
 
-
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import local_predict
+from googlecloudsdk.command_lib.ml import predict_utilities
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 
@@ -78,7 +78,6 @@ class InvalidReturnValueError(core_exceptions.Error):
   pass
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Predict(base.Command):
   """Run prediction locally."""
 
@@ -95,7 +94,7 @@ class Predict(base.Command):
         '--text-instances',
         help='Path to a local file from which instances are read. '
         'Instances are in UTF-8 encoded text format; newline delimited.')
-    json_flag.detailed_help = '''
+    json_flag.detailed_help = """
         Path to a local file from which instances are read.
         Instances are in JSON format; newline delimited.
 
@@ -104,8 +103,8 @@ class Predict(base.Command):
             {"images": [0.0, ..., 0.1], "key": 3}
             {"images": [0.0, ..., 0.1], "key": 2}
             ...
-        '''
-    text_flag.detailed_help = '''
+        """
+    text_flag.detailed_help = """
         Path to a local file from which instances are read.
         Instances are in UTF-8 encoded text format; newline delimited.
 
@@ -114,18 +113,18 @@ class Predict(base.Command):
             107,4.9,2.5,4.5,1.7
             100,5.7,2.8,4.1,1.3
             ...
-        '''
+        """
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""
 
     if sys.version_info < (2, 7):
-       # googlecloudsdk.command_lib.ml.local_predict is not supposed to run
-       # with python version less than 2.7.
+      # googlecloudsdk.command_lib.ml.local_predict is not supposed to run
+      # with python version less than 2.7.
       raise LocalPredictRuntimeError('Local prediction can only run with '
                                      'Python 2.7 or above.')
 
-    # Read the input instances.
+    # Get the input instances.
     data_format = ''
     input_file = ''
     if args.json_instances:
@@ -134,19 +133,18 @@ class Predict(base.Command):
     elif args.text_instances:
       data_format = 'text'
       input_file = args.text_instances
-    instances = []
-    if input_file == '-':
-      instances = _ReadInstances(sys.stdin, data_format)
-    else:
-      with open(input_file, 'r') as f:
-        instances = _ReadInstances(f, data_format)
+    instances = predict_utilities.ReadInstances(
+        input_file, data_format, local_predict=True)
 
     # Start local prediction in a subprocess.
     command = ['python', local_predict.__file__, '--model-dir', args.model_dir]
     env = dict(os.environ)
-    proc = subprocess.Popen(command, stdin=subprocess.PIPE,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE, env=env)
+    proc = subprocess.Popen(
+        command,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env=env)
 
     # Pass the instances to the process that actually runs local prediction.
     for instance in instances:

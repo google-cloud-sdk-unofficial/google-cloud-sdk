@@ -67,4 +67,4 @@ class List(base.ListCommand):
         field='serviceConfigs')
 
   def Collection(self):
-    return 'servicemanagement-v1.serviceConfigs'
+    return services_util.CONFIG_COLLECTION

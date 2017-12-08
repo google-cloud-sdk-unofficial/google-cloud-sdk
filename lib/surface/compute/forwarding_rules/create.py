@@ -26,7 +26,7 @@ def _Args(parser, include_beta, include_alpha=False):
   """Argument parsing."""
   flags.AddUpdateArgs(parser, include_beta=include_beta)
   flags.AddAddress(parser)
-  flags.AddIPProtocols(parser, include_alpha=include_alpha)
+  flags.AddIPProtocols(parser, include_beta=include_beta)
   flags.AddDescription(parser)
   flags.AddPortsAndPortRange(parser)
   if include_alpha:
@@ -40,7 +40,7 @@ def _Args(parser, include_beta, include_alpha=False):
              'no DNS record will be generated and no DNS name will be output. ')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(utils.ForwardingRulesTargetMutator):
   """Create a forwarding rule to direct network traffic to a load balancer."""
 
@@ -144,6 +144,17 @@ class Create(utils.ForwardingRulesTargetMutator):
         region=forwarding_rule_ref.region)
 
     return [request]
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a forwarding rule to direct network traffic to a load balancer."""
+
+  @classmethod
+  def Args(cls, parser):
+    cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
+    _Args(parser, include_beta=True, include_alpha=False)
+    cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

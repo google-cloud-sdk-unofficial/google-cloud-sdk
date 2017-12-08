@@ -14,16 +14,15 @@
 
 """service-management enable command."""
 
-
-from googlecloudsdk.api_lib.service_management import common_flags
 from googlecloudsdk.api_lib.service_management import enable_api
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.service_management import common_flags
 from googlecloudsdk.core import properties
 
 
-class Enable(base.Command):
-  """Enables a service on a provided (or previously configured) project."""
+class Enable(base.SilentCommand):
+  """Enables a service on the current project."""
 
   @staticmethod
   def Args(parser):
@@ -49,4 +48,4 @@ class Enable(base.Command):
     """
     project = properties.VALUES.core.project.Get(required=True)
     operation = enable_api.EnableServiceApiCall(project, args.service)
-    services_util.ProcessOperationResult(operation, args.async)
+    return services_util.ProcessOperationResult(operation, args.async)

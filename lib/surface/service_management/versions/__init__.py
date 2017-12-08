@@ -17,6 +17,8 @@
 from googlecloudsdk.calliope import base
 
 
+# NOTE: These are deprecated, so not included in the GA release track
+#       Users should use the functionally identical configs subcommand group.
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.Hidden
 class Versions(base.Group):

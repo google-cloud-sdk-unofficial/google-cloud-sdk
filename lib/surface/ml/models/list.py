@@ -17,7 +17,6 @@ from googlecloudsdk.api_lib.ml import models
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListBeta(base.ListCommand):
   """List existing Cloud ML models."""
 

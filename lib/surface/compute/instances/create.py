@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for creating instances."""
+import argparse
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import csek_utils
 from googlecloudsdk.api_lib.compute import image_utils
@@ -112,6 +114,7 @@ class Create(base_classes.BaseAsyncCreator,
     instances_flags.ValidateDiskFlags(args)
     instances_flags.ValidateLocalSsdFlags(args)
     instances_flags.ValidateNicFlags(args)
+    instances_flags.ValidateScopeFlags(args)
 
     # This feature is only exposed in alpha/beta
     allow_rsa_encrypted = self.ReleaseTrack() in [base.ReleaseTrack.ALPHA,
@@ -246,7 +249,7 @@ class Create(base_classes.BaseAsyncCreator,
     requests = []
     for instance_ref, machine_type_uri, disks in zip(
         instance_refs, machine_type_uris, disks_messages):
-      requests.append(self.messages.ComputeInstancesInsertRequest(
+      request = self.messages.ComputeInstancesInsertRequest(
           instance=self.messages.Instance(
               canIpForward=args.can_ip_forward,
               disks=disks,
@@ -260,8 +263,15 @@ class Create(base_classes.BaseAsyncCreator,
               tags=tags,
           ),
           project=self.project,
-          zone=instance_ref.zone))
+          zone=instance_ref.zone)
 
+      sole_tenancy_host_arg = getattr(args, 'sole_tenancy_host', None)
+      if sole_tenancy_host_arg:
+        sole_tenancy_host_ref = self.resources.Parse(
+            sole_tenancy_host_arg, collection='compute.hosts',
+            params={'zone': instance_ref.zone})
+        request.instance.host = sole_tenancy_host_ref.SelfLink()
+      requests.append(request)
     return requests
 
 
@@ -282,6 +292,7 @@ class CreateAlpha(Create):
 
   @classmethod
   def Args(cls, parser):
+    parser.add_argument('--sole-tenancy-host', help=argparse.SUPPRESS)
     _CommonArgs(parser, multiple_network_interface_cards=True,
                 release_track=base.ReleaseTrack.ALPHA,
                 support_alias_ip_ranges=True)

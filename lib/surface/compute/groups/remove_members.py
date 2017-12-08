@@ -14,12 +14,10 @@
 """Command for removing a user from a group."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import user_utils
 from googlecloudsdk.calliope import arg_parsers
 
 
-class RemoveMembers(base_classes.NoOutputAsyncMutator,
-                    user_utils.UserResourceFetcher):
+class RemoveMembers(base_classes.NoOutputAsyncMutator):
   """Remove a user from a Google Compute Engine group.
 
   *{command}* removes a user from a Google Compute Engine group.

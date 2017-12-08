@@ -14,9 +14,9 @@
 
 """Command to describe the access policy for a service."""
 
-from googlecloudsdk.api_lib.service_management import common_flags
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.service_management import common_flags
 
 
 class GetIamPolicy(base.DescribeCommand):
@@ -56,3 +56,6 @@ class GetIamPolicy(base.DescribeCommand):
         servicesId=args.service)
 
     return client.services.GetIamPolicy(request)
+
+  def Collection(self):
+    return services_util.SERVICES_COLLECTION

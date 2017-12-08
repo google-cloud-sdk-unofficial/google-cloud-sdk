@@ -17,6 +17,8 @@
 from googlecloudsdk.calliope import base
 
 
+# NOTE: These are deprecated, so not included in the GA release track
 @base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ApiKeys(base.Group):
   """Manage API keys for Google Cloud Platform projects."""
