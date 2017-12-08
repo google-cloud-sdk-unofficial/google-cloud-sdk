@@ -46,16 +46,18 @@ class Delete(base.Command):
     messages = self.context['dataproc_messages']
 
     job_ref = util.ParseJob(args.id, self.context)
-    request = messages.DataprocProjectsJobsDeleteRequest(
+    request = messages.DataprocProjectsRegionsJobsDeleteRequest(
         projectId=job_ref.projectId,
+        region=job_ref.region,
         jobId=job_ref.jobId)
 
     if not console_io.PromptContinue(
         message="The job '{0}' will be deleted.".format(args.id)):
       raise exceptions.ToolException('Deletion aborted by user.')
 
-    client.projects_jobs.Delete(request)
+    client.projects_regions_jobs.Delete(request)
     util.WaitForResourceDeletion(
-        client.projects_jobs.Get, job_ref, message='Waiting for job deletion')
+        client.projects_regions_jobs.Get, job_ref,
+        message='Waiting for job deletion')
 
     log.DeletedResource(job_ref)

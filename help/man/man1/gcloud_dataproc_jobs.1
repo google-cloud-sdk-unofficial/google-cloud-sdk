@@ -1,0 +1,107 @@
+
+.TH "GCLOUD_DATAPROC_JOBS" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud dataproc jobs \- submit and manage Google Cloud Dataproc jobs
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud dataproc jobs\fR \fIGROUP\fR | \fICOMMAND\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Submit and manage Google Cloud Dataproc jobs.
+
+
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "GROUPS"
+
+\f5\fIGROUP\fR\fR is one of the following:
+
+\fBsubmit\fR
+.RS 2m
+Submit Google Cloud Dataproc jobs to execute on a cluster.
+
+
+.RE
+
+.SH "COMMANDS"
+
+\f5\fICOMMAND\fR\fR is one of the following:
+
+\fBdelete\fR
+.RS 2m
+Delete the record of an inactive job.
+
+.RE
+\fBdescribe\fR
+.RS 2m
+View the details of a job.
+
+.RE
+\fBkill\fR
+.RS 2m
+Kill an active job.
+
+.RE
+\fBlist\fR
+.RS 2m
+List all jobs in a project.
+
+.RE
+\fBwait\fR
+.RS 2m
+View the output of a job as it runs or after it completes.
+
+
+.RE
+
+.SH "EXAMPLES"
+
+To learn about the types of jobs that can be submitted, run:
+
+.RS 2m
+$ gcloud dataproc jobs submit
+.RE
+
+To view the output of a job as it runs, run:
+
+.RS 2m
+$ gcloud dataproc jobs wait job_id
+.RE
+
+To cancel an active job, run:
+
+.RS 2m
+$ gcloud dataproc jobs kill job_id
+.RE
+
+To view the details of a job, run:
+
+.RS 2m
+$ gcloud dataproc jobs describe job_id
+.RE
+
+To see the list of all jobs, run:
+
+.RS 2m
+$ gcloud dataproc jobs list
+.RE
+
+To delete the record of an inactive job, run:
+
+.RS 2m
+$ gcloud dataproc jobs delete job_id
+.RE

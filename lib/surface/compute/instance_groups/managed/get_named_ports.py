@@ -15,11 +15,57 @@
 
 It's an alias for the instance-groups get-named-ports command.
 """
-from surface.compute.instance_groups import get_named_ports
+from googlecloudsdk.api_lib.compute import instance_groups_utils
+from googlecloudsdk.api_lib.compute import request_helper
+from googlecloudsdk.calliope import base
 
 
-class GetNamedPorts(get_named_ports.GetNamedPorts):
-  pass
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class GetNamedPorts(instance_groups_utils.InstanceGroupGetNamedPorts):
+
+  @staticmethod
+  def Args(parser):
+    instance_groups_utils.InstanceGroupGetNamedPorts.AddArgs(
+        parser=parser, multizonal=False)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class GetNamedPortsAlpha(instance_groups_utils.InstanceGroupGetNamedPorts,
+                         instance_groups_utils.InstanceGroupReferenceMixin):
+
+  @staticmethod
+  def Args(parser):
+    instance_groups_utils.InstanceGroupGetNamedPorts.AddArgs(
+        parser=parser, multizonal=True)
+
+  def GetResources(self, args):
+    """Retrieves response with named ports."""
+    group_ref = self.CreateInstanceGroupReference(
+        name=args.name, region=args.region, zone=args.zone,
+        zonal_resource_type='instanceGroups',
+        regional_resource_type='regionInstanceGroups')
+    if group_ref.Collection() == 'compute.instanceGroups':
+      service = self.compute.instanceGroups
+      request = service.GetRequestType('Get')(
+          instanceGroup=group_ref.Name(),
+          zone=group_ref.zone,
+          project=self.project)
+    else:
+      service = self.compute.regionInstanceGroups
+      request = service.GetRequestType('Get')(
+          instanceGroup=group_ref.Name(),
+          region=group_ref.region,
+          project=self.project)
+
+    errors = []
+    results = list(request_helper.MakeRequests(
+        requests=[(service, 'Get', request)],
+        http=self.http,
+        batch_url=self.batch_url,
+        errors=errors,
+        custom_get_requests=None))
+
+    return results, errors
 
 
 GetNamedPorts.detailed_help = {
@@ -39,3 +85,4 @@ The above example lists named ports assigned to an instance group named
 ``example-instance-group'' in the ``us-central1-a'' zone.
 """,
 }
+GetNamedPortsAlpha.detailed_help = GetNamedPorts.detailed_help

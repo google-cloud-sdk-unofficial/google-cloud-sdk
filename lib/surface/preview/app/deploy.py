@@ -26,20 +26,22 @@ from googlecloudsdk.api_lib.app import deploy_app_command_util
 from googlecloudsdk.api_lib.app import deploy_command_util
 from googlecloudsdk.api_lib.app import flags
 from googlecloudsdk.api_lib.app import metric_names
+from googlecloudsdk.api_lib.app import service_util
 from googlecloudsdk.api_lib.app import util
+from googlecloudsdk.api_lib.app import version_util
 from googlecloudsdk.api_lib.app import yaml_parsing
 from googlecloudsdk.api_lib.app.ext_runtimes import fingerprinting
 from googlecloudsdk.api_lib.app.runtimes import fingerprinter
 from googlecloudsdk.api_lib.source import context_util
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import apis
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import metrics
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.docker import constants
-from googlecloudsdk.third_party.apis.cloudbuild import v1 as cloudbuild_v1
 
 
 DEPLOY_MESSAGE_TEMPLATE = """\
@@ -55,6 +57,14 @@ PROMOTE_MESSAGE = """\
      (add --promote if you also want to make this module available from
      [{default_url}])
 """
+
+
+class _AppEngineClients(object):
+  """Value class for App Engine client objects."""
+
+  def __init__(self, gae_client, api_client):
+    self.gae = gae_client
+    self.api = api_client
 
 
 class DeployError(exceptions.Error):
@@ -169,6 +179,102 @@ def _DisplayProposedDeployment(project, app_config, version, promote):
   return deployed_urls
 
 
+def _Promote(all_services, new_version, clients, stop_previous_version):
+  """Promote the new version to receive all traffic.
+
+  Additionally, stops the previous version if applicable.
+
+  Args:
+    all_services: list of Service objects representing all services in the app
+    new_version: Version object representing the version to promote
+    clients: _AppEngineClients object containing clients for Google App Engine
+        APIs.
+    stop_previous_version: bool, whether to stop the previous version which was
+        receiving all traffic, if any.
+  """
+  old_default_version = None
+  if stop_previous_version:
+    # Grab the list of versions before we promote, since we need to
+    # figure out what the previous default version was
+    old_default_version = _GetPreviousVersion(all_services, new_version,
+                                              clients.api)
+
+  clients.api.SetDefaultVersion(new_version.service, new_version.id)
+  metrics.CustomTimedEvent(metric_names.SET_DEFAULT_VERSION_API)
+
+  if old_default_version:
+    _StopPreviousVersionIfApplies(old_default_version, clients)
+
+
+def _GetPreviousVersion(all_services, new_version, api_client):
+  """Get the previous default version of which new_version is replacing.
+
+  If there is no such version, return None.
+
+  Args:
+    all_services: list of Service objects representing all services for the app
+    new_version: a Version object representing the new version deployed.
+    api_client: client for the App Engine Admin API
+
+  Returns:
+    Version object representing the previous version or None
+
+  """
+  try:
+    service_object = service_util.GetMatchingServices(all_services,
+                                                      [new_version.service],
+                                                      new_version.project)[0]
+  except service_util.ServicesNotFoundError:
+    return None
+  for old_version in api_client.ListVersions([service_object]):
+    # Make sure not to stop the just-deployed version!
+    # This can happen with a new service, or with a deployment over
+    # an existing version.
+    if (old_version.is_receiving_all_traffic and
+        old_version.id != new_version.id):
+      return old_version
+
+
+def _StopPreviousVersionIfApplies(old_default_version, clients):
+  """Stop the previous default version if applicable.
+
+  Cases where a version will not be stopped:
+
+  * If the previous default version is not serving, there is no need to stop it.
+  * If the previous default version is an automatically scaled standard
+    environment app, it cannot be stopped.
+
+  Args:
+    old_default_version: Version object representign the default version
+    clients: _AppEngineClients object containing clients for Google App Engine
+        APIs.
+  """
+  version_object = old_default_version.version
+  status_enum = clients.api.messages.Version.ServingStatusValueValuesEnum
+  if version_object.servingStatus != status_enum.SERVING:
+    log.info(
+        'Previous default version [{0}] not serving, so not stopping '
+        'it.'.format(old_default_version))
+    return
+  if (not version_object.vm and not version_object.basicScaling and
+      not version_object.manualScaling):
+    log.info(
+        'Previous default version [{0}] is an automatically scaled '
+        'standard environment app, so not stopping it.'.format(
+            old_default_version))
+    return
+
+  try:
+    clients.gae.StopModule(module=old_default_version.service,
+                           version=old_default_version.id)
+  except util.RPCError as err:
+    log.warn('Error stopping version [{0}]: {1}'.format(old_default_version,
+                                                        str(err)))
+    log.warn('Version [{0}] is still running and you must stop or delete it '
+             'yourself in order to turn it off. (If you do not, you may be '
+             'charged.)'.format(old_default_version))
+
+
 class Deploy(base.Command):
   """Deploy the local code and/or configuration of your app to App Engine.
 
@@ -252,15 +358,12 @@ class Deploy(base.Command):
         'modules being deployed. If not specified, the source context '
         'information will be inferred from the directory containing the '
         'app.yaml file.')
-    # TODO(b/24008797): Add this in when it's implemented.
-    unused_stop_previous_version_help = (
-        'Stop the previously running version when deploying a new version '
-        'that receives all traffic (on by default).')
     parser.add_argument(
         '--stop-previous-version',
         action='store_true',
         default=None,
-        help=argparse.SUPPRESS)
+        help='Stop the previously running version when deploying a new version '
+             'that receives all traffic (off by default).')
     parser.add_argument(
         '--image-url',
         help='Deploy with a specific Docker image.  Docker url must be '
@@ -309,15 +412,13 @@ class Deploy(base.Command):
     elif docker_build_property:
       remote_build = docker_build_property == 'remote'
 
-    gae_client = appengine_client.AppengineClient(args.server)
-    api_client = appengine_api_client.GetApiClient(self.Http(timeout=None))
+    clients = _AppEngineClients(
+        appengine_client.AppengineClient(args.server),
+        appengine_api_client.GetApiClient(self.Http(timeout=None)))
     log.debug('API endpoint: [{endpoint}], API version: [{version}]'.format(
-        endpoint=api_client.client.url,
-        version=api_client.api_version))
-    cloudbuild_client = cloudbuild_v1.CloudbuildV1(
-        http=self.Http(),
-        get_credentials=False,
-        url=properties.VALUES.api_endpoint_overrides.cloudbuild.Get())
+        endpoint=clients.api.client.url,
+        version=clients.api.api_version))
+    cloudbuild_client = apis.GetClientInstance('cloudbuild', 'v1', self.Http())
     promote = properties.VALUES.app.promote_by_default.GetBool()
     deployed_urls = _DisplayProposedDeployment(project, app_config, version,
                                                promote)
@@ -350,7 +451,7 @@ class Deploy(base.Command):
     code_bucket = None
     if use_cloud_build or app_config.NonHermeticModules():
       # If using Argo CloudBuild, we'll need to upload source to a GCS bucket.
-      code_bucket = self._GetCodeBucket(api_client, args)
+      code_bucket = self._GetCodeBucket(clients.api, args)
       metrics.CustomTimedEvent(metric_names.GET_CODE_BUCKET)
       log.debug('Using bucket [{b}].'.format(b=code_bucket))
       if not code_bucket:
@@ -358,7 +459,7 @@ class Deploy(base.Command):
 
     modules = app_config.Modules()
     if any([m.RequiresImage() for m in modules.values()]):
-      deploy_command_util.DoPrepareManagedVms(gae_client)
+      deploy_command_util.DoPrepareManagedVms(clients.gae)
     if args.image_url:
       if len(modules) != 1:
         raise MultiDeployError()
@@ -386,6 +487,7 @@ class Deploy(base.Command):
           app_config.NonHermeticModules().items(), code_bucket, source_contexts)
       metrics.CustomTimedEvent(metric_names.COPY_APP_FILES)
 
+    all_services = clients.api.ListServices()
     # Now do deployment.
     for (module, info) in app_config.Modules().iteritems():
       message = 'Updating module [{module}]'.format(module=module)
@@ -394,20 +496,26 @@ class Deploy(base.Command):
           log.warning('The --force argument is deprecated and no longer '
                       'required. It will be removed in a future release.')
 
-        api_client.DeployModule(module, version, info,
-                                deployment_manifests.get(module),
-                                images.get(module))
+        clients.api.DeployModule(module, version, info,
+                                 deployment_manifests.get(module),
+                                 images.get(module))
         metrics.CustomTimedEvent(metric_names.DEPLOY_API)
 
+        stop_previous_version = (
+            deploy_command_util.GetStopPreviousVersionFromArgs(args))
         if promote:
-          api_client.SetDefaultVersion(module, version)
-          metrics.CustomTimedEvent(metric_names.SET_DEFAULT_VERSION_API)
+          new_version = version_util.Version(project, module, version)
+          _Promote(all_services, new_version, clients,
+                   stop_previous_version)
+        elif stop_previous_version:
+          log.info('Not stopping previous version because new version was not '
+                   'promoted.')
 
     # Config files.
     for (c, info) in app_config.Configs().iteritems():
       message = 'Updating config [{config}]'.format(config=c)
       with console_io.ProgressTracker(message):
-        gae_client.UpdateConfig(c, info.parsed)
+        clients.gae.UpdateConfig(c, info.parsed)
     return deployed_urls
 
   def Display(self, args, result):

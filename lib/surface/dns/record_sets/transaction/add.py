@@ -44,16 +44,16 @@ class Add(base.Command):
     util.ZONE_FLAG.AddToParser(parser)
     parser.add_argument(
         '--name', required=True,
-        help='DNS name of the record-set to be added.')
+        help='DNS name of the record-set to add.')
     parser.add_argument(
         '--ttl', required=True, type=int,
-        help='TTL for the record-set to be added.')
+        help='TTL for the record-set to add.')
     parser.add_argument(
         '--type', required=True,
-        help='Type of the record-set to be added.')
+        help='Type of the record-set to add.')
     parser.add_argument(
         'data', nargs='+',
-        help='DNS name of the record-set to be added.')
+        help='DNS data (Address/CNAME/MX info, etc.) of the record-set to add.')
 
   def Run(self, args):
     with trans_util.TransactionFile(args.transaction_file) as trans_file:

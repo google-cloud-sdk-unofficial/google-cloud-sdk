@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.api_lib.compute import path_simplifier
 from googlecloudsdk.api_lib.compute import property_selector
 from googlecloudsdk.api_lib.compute import request_helper
+from googlecloudsdk.calliope import base
 
 
 def LastAttemptErrorToMessage(last_attempt):
@@ -30,7 +31,19 @@ def LastAttemptErrorToMessage(last_attempt):
                     for e in last_attempt['errors']['errors']])
 
 
-class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
+def _InstanceName(instance):
+  """Get the name of resource."""
+  return instance['instance'].split('/')[-1]
+
+
+def _InstanceScopeName(instance):
+  """Get the scope name of resource."""
+  return instance['instance'].split('/')[0]
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase,
+                    instance_groups_utils.InstanceGroupReferenceMixin):
   """List Google Compute Engine instances present in managed instance group."""
 
   _LIST_TABS = [
@@ -42,6 +55,11 @@ class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
   _FIELD_TRANSFORMS = [
       ('instance', path_simplifier.Name),
       ('lastAttempt', LastAttemptErrorToMessage)]
+
+  @staticmethod
+  def Args(parser):
+    instance_groups_utils.InstanceGroupListInstancesBase.ListInstancesArgs(
+        parser, multizonal=False)
 
   @property
   def service(self):
@@ -58,6 +76,9 @@ class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
   @property
   def list_field(self):
     return 'managedInstances'
+
+  def CreateGroupReference(self, args):
+    return self.CreateZonalReference(args.name, args.zone)
 
   def GetResources(self, args):
     """Retrieves response with instance in the instance group."""
@@ -84,3 +105,57 @@ class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
           *{command}* list instances in a managed instance group.
           """,
   }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListInstancesAlpha(ListInstances):
+  """List Google Compute Engine instances present in managed instance group."""
+
+  _LIST_TABS = [
+      ('NAME', _InstanceName),
+      ('ZONE', _InstanceScopeName),
+      ('STATUS', property_selector.PropertyGetter('instanceStatus')),
+      ('ACTION', property_selector.PropertyGetter('currentAction')),
+      ('LAST_ERROR', property_selector.PropertyGetter('lastAttempt'))]
+
+  _FIELD_TRANSFORMS = [
+      ('instance', path_simplifier.ScopedSuffix),
+      ('lastAttempt', LastAttemptErrorToMessage)]
+
+  @staticmethod
+  def Args(parser):
+    instance_groups_utils.InstanceGroupListInstancesBase.ListInstancesArgs(
+        parser, multizonal=True)
+
+  def CreateGroupReference(self, args):
+    return self.CreateInstanceGroupReference(
+        name=args.name, region=args.region, zone=args.zone)
+
+  def GetResources(self, args):
+    """Retrieves response with instance in the instance group."""
+    group_ref = self.CreateGroupReference(args)
+
+    if hasattr(group_ref, 'zone'):
+      service = self.compute.instanceGroupManagers
+      request = service.GetRequestType(self.method)(
+          instanceGroupManager=group_ref.Name(),
+          zone=group_ref.zone,
+          project=self.context['project'])
+    elif hasattr(group_ref, 'region'):
+      service = self.compute.regionInstanceGroupManagers
+      request = service.GetRequestType(self.method)(
+          instanceGroupManager=group_ref.Name(),
+          region=group_ref.region,
+          project=self.context['project'])
+
+    errors = []
+    results = list(request_helper.MakeRequests(
+        requests=[(service, self.method, request)],
+        http=self.http,
+        batch_url=self.batch_url,
+        errors=errors,
+        custom_get_requests=None))
+
+    return results, errors
+
+ListInstancesAlpha.detailed_help = ListInstances.detailed_help

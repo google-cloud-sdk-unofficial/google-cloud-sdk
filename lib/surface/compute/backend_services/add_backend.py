@@ -14,18 +14,22 @@
 """Command for adding a backend to a backend service."""
 from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import instance_groups_utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.third_party.apis.compute.v1 import compute_v1_messages
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class AddBackend(base_classes.ReadWriteCommand):
   """Add a backend to a backend service."""
 
   @staticmethod
   def Args(parser):
-    backend_services_utils.AddUpdatableBackendArgs(parser, compute_v1_messages)
+    backend_services_utils.AddUpdatableBackendArgs(
+        parser, compute_v1_messages, multizonal=False)
     parser.add_argument(
         'name',
         help='The name of the backend service.')
@@ -56,6 +60,10 @@ class AddBackend(base_classes.ReadWriteCommand):
                 backendServiceResource=replacement,
                 project=self.project))
 
+  def CreateGroupReference(self, args):
+    return self.CreateZonalReference(
+        args.instance_group, args.zone, resource_type='instanceGroups')
+
   def Modify(self, args, existing):
     replacement = copy.deepcopy(existing)
 
@@ -66,8 +74,7 @@ class AddBackend(base_classes.ReadWriteCommand):
       group_ref = self.CreateZonalReference(
           args.group, args.zone, resource_type='zoneViews')
     else:
-      group_ref = self.CreateZonalReference(
-          args.instance_group, args.zone, resource_type='instanceGroups')
+      group_ref = self.CreateGroupReference(args)
 
     group_uri = group_ref.SelfLink()
 
@@ -96,6 +103,26 @@ class AddBackend(base_classes.ReadWriteCommand):
     return replacement
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AddBackendAlpha(AddBackend,
+                      instance_groups_utils.InstanceGroupReferenceMixin):
+  """Add a backend to a backend service."""
+
+  @staticmethod
+  def Args(parser):
+    backend_services_utils.AddUpdatableBackendArgs(
+        parser, compute_v1_messages, multizonal=True)
+    parser.add_argument(
+        'name',
+        help='The name of the backend service.')
+
+  def CreateGroupReference(self, args):
+    return self.CreateInstanceGroupReference(
+        name=args.instance_group, region=args.region, zone=args.zone,
+        zonal_resource_type='instanceGroups',
+        regional_resource_type='regionInstanceGroups')
+
+
 AddBackend.detailed_help = {
     'brief': 'Add a backend to a backend service',
     'DESCRIPTION': """
@@ -114,3 +141,4 @@ AddBackend.detailed_help = {
         update-backend' or 'gcloud compute backend-services edit'.
         """,
 }
+AddBackendAlpha.detailed_help = AddBackend.detailed_help

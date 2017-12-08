@@ -13,23 +13,45 @@
 # limitations under the License.
 """Command for setting instance template of managed instance group."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import constants
+from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
 
 
+def _AddArgs(parser, multizonal):
+  """Adds args."""
+  parser.add_argument('name', help='Managed instance group name.')
+  parser.add_argument(
+      '--template',
+      required=True,
+      help=('Compute Engine instance template resource to be used.'))
+  if multizonal:
+    scope_parser = parser.add_mutually_exclusive_group()
+    utils.AddRegionFlag(
+        scope_parser,
+        resource_type='instance group manager',
+        operation_type='set instance template',
+        explanation=constants.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
+    utils.AddZoneFlag(
+        scope_parser,
+        resource_type='instance group manager',
+        operation_type='set instance template',
+        explanation=constants.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
+  else:
+    utils.AddZoneFlag(
+        parser,
+        resource_type='instance group manager',
+        operation_type='set instance template')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class SetInstanceTemplate(base_classes.BaseAsyncMutator):
   """Set an instances template of managed instance group."""
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('name', help='Managed instance group name.')
-    parser.add_argument(
-        '--template',
-        required=True,
-        help=('Compute Engine instance template resource to be used.'))
-    utils.AddZoneFlag(
-        parser,
-        resource_type='instance group manager',
-        operation_type='set instance template')
+    _AddArgs(parser=parser, multizonal=False)
 
   @property
   def method(self):
@@ -61,6 +83,52 @@ class SetInstanceTemplate(base_classes.BaseAsyncMutator):
     return [request]
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SetInstanceTemplateAlpha(
+    SetInstanceTemplate, instance_groups_utils.InstanceGroupReferenceMixin):
+  """Set an instances template of managed instance group."""
+
+  @staticmethod
+  def Args(parser):
+    _AddArgs(parser=parser, multizonal=True)
+
+  def CreateRequests(self, args):
+    group_ref = self.CreateInstanceGroupReference(
+        name=args.name, region=args.region, zone=args.zone)
+    template_ref = self.CreateGlobalReference(
+        args.template, resource_type='instanceTemplates')
+
+    if group_ref.Collection() == 'compute.instanceGroupManagers':
+      service = self.compute.instanceGroupManagers
+      request = (
+          self.messages.ComputeInstanceGroupManagersSetInstanceTemplateRequest(
+              instanceGroupManager=group_ref.Name(),
+              instanceGroupManagersSetInstanceTemplateRequest=(
+                  self.messages.InstanceGroupManagersSetInstanceTemplateRequest(
+                      instanceTemplate=template_ref.SelfLink(),
+                  )
+              ),
+              project=self.project,
+              zone=group_ref.zone,)
+      )
+    else:
+      service = self.compute.regionInstanceGroupManagers
+      request = (
+          self.messages.
+          ComputeRegionInstanceGroupManagersSetInstanceTemplateRequest(
+              instanceGroupManager=group_ref.Name(),
+              regionInstanceGroupManagersSetTemplateRequest=(
+                  self.messages.RegionInstanceGroupManagersSetTemplateRequest(
+                      instanceTemplate=template_ref.SelfLink(),
+                  )
+              ),
+              project=self.project,
+              region=group_ref.region,)
+      )
+
+    return [(service, self.method, request)]
+
+
 SetInstanceTemplate.detailed_help = {
     'brief': 'Set instance template for managed instance group.',
     'DESCRIPTION': """
@@ -71,3 +139,4 @@ recreated using the recreate-instances command. But the new template does apply
 to all new instances added to the managed instance group.
 """,
 }
+SetInstanceTemplateAlpha.detailed_help = SetInstanceTemplate.detailed_help

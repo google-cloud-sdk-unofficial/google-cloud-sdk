@@ -19,13 +19,11 @@ import argparse
 from googlecloudsdk.api_lib.test import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.core import apis
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
-from googlecloudsdk.third_party.apis.storage import v1 as storage_v1
-from googlecloudsdk.third_party.apis.testing import v1 as testing_v1
-from googlecloudsdk.third_party.apis.toolresults import v1beta3 as toolresults_v1beta3
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -62,25 +60,17 @@ class Test(base.Group):
     http = self.Http()
 
     # Create the client for the Testing service.
-    # TODO(user) Support multiple versions when they exist
-    testing_client_v1 = testing_v1.TestingV1(
-        get_credentials=False,
-        url=testing_url,
-        http=http)
-    context['testing_client'] = testing_client_v1
-    context['testing_messages'] = testing_v1
+    context['testing_client'] = apis.GetClientInstance('testing', 'v1', http)
+    context['testing_messages'] = apis.GetMessagesModule('testing', 'v1')
 
     # Create the client for the Tool Results service.
-    toolresults_client_v1 = toolresults_v1beta3.ToolresultsV1beta3(
-        get_credentials=False,
-        url=toolresults_url,
-        http=http)
-    context['toolresults_client'] = toolresults_client_v1
-    context['toolresults_messages'] = toolresults_v1beta3
+    context['toolresults_client'] = apis.GetClientInstance(
+        'toolresults', 'v1beta3', http)
+    context['toolresults_messages'] = apis.GetMessagesModule(
+        'toolresults', 'v1beta3')
 
     # Create the client for the Storage service.
-    storage_client_v1 = storage_v1.StorageV1(get_credentials=False, http=http)
-    context['storage_client'] = storage_client_v1
+    context['storage_client'] = apis.GetClientInstance('storage', 'v1', http)
 
     # TODO(user): remove this message for general release.
     log.status.Print(

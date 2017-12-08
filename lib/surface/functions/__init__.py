@@ -17,9 +17,8 @@
 import argparse
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import apis
 from googlecloudsdk.core import properties
-from googlecloudsdk.third_party.apis.cloudfunctions import v1beta1
-from googlecloudsdk.third_party.apis.logging import v2beta1 as logging
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -53,20 +52,12 @@ class Functions(base.Group):
     Returns:
       The updated context.
     """
-    url = properties.VALUES.api_endpoint_overrides.functions.Get()
-    client_v1beta1 = v1beta1.CloudfunctionsV1beta1(
-        url=url,
-        http=self.Http(),
-        get_credentials=False)
-
-    logging_url = properties.VALUES.api_endpoint_overrides.logging.Get()
-    logging_client = logging.LoggingV2beta1(
-        url=logging_url,
-        http=self.Http(),
-        get_credentials=False)
-
-    context['functions_client'] = client_v1beta1
-    context['functions_messages'] = v1beta1
-    context['logging_client'] = logging_client
-    context['logging_messages'] = logging
+    context['functions_client'] = apis.GetClientInstance(
+        'functions', 'v1beta1', self.Http())
+    context['functions_messages'] = apis.GetMessagesModule(
+        'functions', 'v1beta1')
+    context['logging_client'] = apis.GetClientInstance(
+        'logging', 'v2beta1', http=self.Http())
+    context['logging_messages'] = apis.GetMessagesModule(
+        'logging', 'v2beta1')
     return context

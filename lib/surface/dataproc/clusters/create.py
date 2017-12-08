@@ -214,14 +214,14 @@ Alias,URI
                       for exe in args.initialization_actions]
     expanded_scopes = compute_helpers.ExpandScopeAliases(args.scopes)
 
-    software_config = messages.SoftwareConfiguration(
+    software_config = messages.SoftwareConfig(
         imageVersion=args.image_version)
 
     if args.properties:
       software_config.properties = encoding.DictToMessage(
-          args.properties, messages.SoftwareConfiguration.PropertiesValue)
+          args.properties, messages.SoftwareConfig.PropertiesValue)
 
-    gce_cluster_config = messages.GceClusterConfiguration(
+    gce_cluster_config = messages.GceClusterConfig(
         networkUri=compute_uris['network'],
         serviceAccountScopes=expanded_scopes,
         zoneUri=compute_uris['zone'])
@@ -231,48 +231,52 @@ Alias,URI
 
     if args.metadata:
       gce_cluster_config.metadata = encoding.DictToMessage(
-          args.metadata, messages.GceClusterConfiguration.MetadataValue)
+          args.metadata, messages.GceClusterConfig.MetadataValue)
 
-    cluster_config = messages.ClusterConfiguration(
-        configurationBucket=args.bucket,
-        gceClusterConfiguration=gce_cluster_config,
-        masterConfiguration=messages.InstanceGroupConfiguration(
+    cluster_config = messages.ClusterConfig(
+        configBucket=args.bucket,
+        gceClusterConfig=gce_cluster_config,
+        masterConfig=messages.InstanceGroupConfig(
             imageUri=compute_uris['image'],
             machineTypeUri=compute_uris['master_machine_type'],
-            diskConfiguration=messages.DiskConfiguration(
+            diskConfig=messages.DiskConfig(
                 bootDiskSizeGb=args.master_boot_disk_size_gb,
                 numLocalSsds=args.num_master_local_ssds,
             ),
         ),
-        workerConfiguration=messages.InstanceGroupConfiguration(
+        workerConfig=messages.InstanceGroupConfig(
             numInstances=args.num_workers,
             imageUri=compute_uris['image'],
             machineTypeUri=compute_uris['worker_machine_type'],
-            diskConfiguration=messages.DiskConfiguration(
+            diskConfig=messages.DiskConfig(
                 bootDiskSizeGb=args.worker_boot_disk_size_gb,
                 numLocalSsds=args.num_worker_local_ssds,
             ),
         ),
         initializationActions=init_actions,
-        softwareConfiguration=software_config,
+        softwareConfig=software_config,
     )
 
     # Secondary worker group is optional.
     if args.num_preemptible_workers is not None:
-      cluster_config.secondaryWorkerConfiguration = (
-          messages.InstanceGroupConfiguration(
+      cluster_config.secondaryWorkerConfig = (
+          messages.InstanceGroupConfig(
               numInstances=args.num_preemptible_workers))
 
     cluster = messages.Cluster(
-        configuration=cluster_config,
+        config=cluster_config,
         clusterName=cluster_ref.clusterName,
         projectId=cluster_ref.projectId)
 
-    operation = client.projects_clusters.Create(cluster)
+    operation = client.projects_regions_clusters.Create(
+        messages.DataprocProjectsRegionsClustersCreateRequest(
+            projectId=cluster_ref.projectId,
+            region=cluster_ref.region,
+            cluster=cluster))
     operation = util.WaitForOperation(
         operation, self.context, 'Waiting for cluster creation operation')
 
-    cluster = client.projects_clusters.Get(cluster_ref.Request())
+    cluster = client.projects_regions_clusters.Get(cluster_ref.Request())
     if cluster.status.state == (
         messages.ClusterStatus.StateValueValuesEnum.RUNNING):
       log.CreatedResource(cluster_ref)

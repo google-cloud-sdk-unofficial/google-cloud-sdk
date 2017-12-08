@@ -16,6 +16,8 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
+from googlecloudsdk.command_lib.config import completers
+from googlecloudsdk.command_lib.config import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import named_configs
 from googlecloudsdk.core import properties
@@ -54,7 +56,7 @@ class Set(base.Command):
         metavar='SECTION/PROPERTY',
         help='The property to be set. Note that SECTION/ is optional while '
         'referring to properties in the core section.')
-    property_arg.completer = Set.group_class.PropertiesCompleter
+    property_arg.completer = completers.PropertiesCompleter
     value_arg = parser.add_argument(
         'value',
         completion_resource='cloudresourcemanager.projects',
@@ -63,8 +65,8 @@ class Set(base.Command):
     value_arg.completer = Set.ValueCompleter
 
     scope_args = parser.add_mutually_exclusive_group()
-    Set.group_class.DEPRECATED_SCOPE_FLAG.AddToParser(scope_args)
-    Set.group_class.INSTALLATION_FLAG.AddToParser(scope_args)
+    flags.DEPRECATED_SCOPE_FLAG.AddToParser(scope_args)
+    flags.INSTALLATION_FLAG.AddToParser(scope_args)
 
   @staticmethod
   def ValueCompleter(prefix, parsed_args, **unused_kwargs):
@@ -93,7 +95,7 @@ class Set(base.Command):
                     'help topic configurations` and `gcloud help config set` '
                     'for more information.')
 
-    requested_scope = Set.group_class.RequestedScope(args)
+    requested_scope = flags.RequestedScope(args)
 
     if not requested_scope:
       named_configs.TryEnsureWriteableNamedConfig()

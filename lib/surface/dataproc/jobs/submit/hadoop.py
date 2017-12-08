@@ -112,7 +112,7 @@ cluster, run:
   def ConfigureJob(self, job, args):
     messages = self.context['dataproc_messages']
 
-    log_config = self.BuildLoggingConfiguration(args.driver_log_levels)
+    log_config = self.BuildLoggingConfig(args.driver_log_levels)
     hadoop_job = messages.HadoopJob(
         args=args.job_args,
         archiveUris=self.files_by_type['archives'],
@@ -120,7 +120,7 @@ cluster, run:
         jarFileUris=self.files_by_type['jars'],
         mainClass=args.main_class,
         mainJarFileUri=self.files_by_type['main_jar'],
-        loggingConfiguration=log_config)
+        loggingConfig=log_config)
 
     if args.properties:
       hadoop_job.properties = encoding.DictToMessage(

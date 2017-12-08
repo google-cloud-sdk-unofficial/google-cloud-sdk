@@ -19,12 +19,11 @@ import urlparse
 
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import apis
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
-from googlecloudsdk.third_party.apis.dns.v1 import dns_v1_client
-from googlecloudsdk.third_party.apis.dns.v1 import dns_v1_messages
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -66,13 +65,9 @@ class DNS(base.Group):
     resolver = resolvers.FromProperty(project)
     resources.SetParamDefault('dns', None, 'project', resolver)
 
-    dns_client = dns_v1_client.DnsV1(
-        url=properties.VALUES.api_endpoint_overrides.dns.Get(),
-        get_credentials=False,
-        http=self.Http())
-
-    context['dns_client'] = dns_client
-    context['dns_messages'] = dns_v1_messages
+    context['dns_client'] = apis.GetClientInstance('dns', 'v1',
+                                                   http=self.Http())
+    context['dns_messages'] = apis.GetMessagesModule('dns', 'v1')
     context['dns_resources'] = resources
 
     if args.endpoint:

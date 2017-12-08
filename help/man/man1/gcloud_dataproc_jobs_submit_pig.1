@@ -1,0 +1,109 @@
+
+.TH "GCLOUD_DATAPROC_JOBS_SUBMIT_PIG" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud dataproc jobs submit pig \- submit a Pig job to a cluster
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud dataproc jobs submit pig\fR \fB\-\-cluster\fR \fICLUSTER\fR [\fB\-\-async\fR] [\fB\-\-bucket\fR\ \fIBUCKET\fR] [\fB\-\-continue\-on\-failure\fR] [\fB\-\-driver\-log\-levels\fR\ [\fIPACKAGE\fR=\fILEVEL\fR,...]] [\fB\-\-execute\fR\ \fIQUERY\fR,\ \fB\-e\fR\ \fIQUERY\fR] [\fB\-\-file\fR\ \fIFILE\fR,\ \fB\-f\fR\ \fIFILE\fR] [\fB\-\-jars\fR\ [\fIJAR\fR,...]] [\fB\-\-params\fR\ [\fIPARAM\fR=\fIVALUE\fR,...]] [\fB\-\-properties\fR\ [\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Submit a Pig job to a cluster.
+
+
+
+.SH "REQUIRED FLAGS"
+
+\fB\-\-cluster\fR \fICLUSTER\fR
+.RS 2m
+The Dataproc cluster to submit the job to.
+
+
+.RE
+
+.SH "OPTIONAL FLAGS"
+
+\fB\-\-async\fR
+.RS 2m
+Does not wait for the job to run.
+
+.RE
+\fB\-\-bucket\fR \fIBUCKET\fR
+.RS 2m
+The Cloud Storage bucket to stage files in. Default's to the cluster's
+configured bucket
+
+.RE
+\fB\-\-continue\-on\-failure\fR
+.RS 2m
+Whether to continue if a single query fails.
+
+.RE
+\fB\-\-driver\-log\-levels\fR [\fIPACKAGE\fR=\fILEVEL\fR,...]
+.RS 2m
+A list of package to log4j log level pairs to configure driver logging. For
+example: root=FATAL,com.example=INFO
+
+.RE
+\fB\-\-execute\fR \fIQUERY\fR, \fB\-e\fR \fIQUERY\fR
+.RS 2m
+A Pig query to execute as part of the job.
+
+.RE
+\fB\-\-file\fR \fIFILE\fR, \fB\-f\fR \fIFILE\fR
+.RS 2m
+HCFS URI of file containing Pig script to execute as the job.
+
+.RE
+\fB\-\-jars\fR [\fIJAR\fR,...]
+.RS 2m
+Comma separated list of jar files to be provided to Pig and MR. May contain
+UDFs.
+
+.RE
+\fB\-\-params\fR [\fIPARAM\fR=\fIVALUE\fR,...]
+.RS 2m
+A list of key value pairs to set variables in the Pig queries.
+
+.RE
+\fB\-\-properties\fR [\fIPROPERTY\fR=\fIVALUE\fR,...]
+.RS 2m
+A list of key value pairs to configure Pig.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To submit a Pig job with a local script, run:
+
+.RS 2m
+$ gcloud dataproc jobs submit pig \-\-cluster my_cluster \e
+    \-\-file my_queries.pig
+.RE
+
+To submit a Pig job with inline queries, run:
+
+.RS 2m
+$ gcloud dataproc jobs submit pig \-\-cluster my_cluster \e
+    \-e "LNS = LOAD 'gs://my_bucket/my_file.txt' AS (line)" \e
+    \-e \e
+    "WORDS = FOREACH LNS GENERATE FLATTEN(TOKENIZE(line)) AS word" \e
+    \-e "GROUPS = GROUP WORDS BY word" \e
+    \-e "WORD_COUNTS = FOREACH GROUPS GENERATE group, COUNT(WORDS)" \e
+    \-e "DUMP WORD_COUNTS"
+.RE

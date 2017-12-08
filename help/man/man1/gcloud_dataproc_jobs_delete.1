@@ -1,0 +1,44 @@
+
+.TH "GCLOUD_DATAPROC_JOBS_DELETE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud dataproc jobs delete \- delete the record of an inactive job
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud dataproc jobs delete\fR \fIJOB_ID\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Delete the record of an inactive job.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIJOB_ID\fR
+.RS 2m
+The ID of the job to delete.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To delete the record of a job, run:
+
+.RS 2m
+$ gcloud dataproc jobs delete job_id
+.RE

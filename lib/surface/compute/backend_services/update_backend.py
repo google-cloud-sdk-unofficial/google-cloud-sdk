@@ -14,18 +14,22 @@
 """Command for updating a backend in a backend service."""
 from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import instance_groups_utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.third_party.apis.compute.v1 import compute_v1_messages
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class UpdateBackend(base_classes.ReadWriteCommand):
   """Update an existing backend in a backend service."""
 
   @staticmethod
   def Args(parser):
-    backend_services_utils.AddUpdatableBackendArgs(parser, compute_v1_messages)
+    backend_services_utils.AddUpdatableBackendArgs(
+        parser, compute_v1_messages, multizonal=False)
 
     parser.add_argument(
         'name',
@@ -57,6 +61,10 @@ class UpdateBackend(base_classes.ReadWriteCommand):
                 backendServiceResource=replacement,
                 project=self.project))
 
+  def CreateGroupReference(self, args):
+    return self.CreateZonalReference(
+        args.instance_group, args.zone, resource_type='instanceGroups')
+
   def Modify(self, args, existing):
     replacement = copy.deepcopy(existing)
 
@@ -67,8 +75,7 @@ class UpdateBackend(base_classes.ReadWriteCommand):
       group_ref = self.CreateZonalReference(
           args.group, args.zone, resource_type='zoneViews')
     else:
-      group_ref = self.CreateZonalReference(
-          args.instance_group, args.zone, resource_type='instanceGroups')
+      group_ref = self.CreateGroupReference(args)
 
     backend_to_update = None
     for backend in replacement.backends:
@@ -76,10 +83,18 @@ class UpdateBackend(base_classes.ReadWriteCommand):
         backend_to_update = backend
 
     if not backend_to_update:
+      scope_type = None
+      scope_name = None
+      if hasattr(group_ref, 'zone'):
+        scope_type = 'zone'
+        scope_name = group_ref.zone
+      if hasattr(group_ref, 'region'):
+        scope_type = 'region'
+        scope_name = group_ref.region
       raise exceptions.ToolException(
-          'No backend with name [{0}] in zone [{1}] is part of the backend '
-          'service [{2}].'.format(
-              group_ref.Name(), group_ref.zone, self.ref.Name()))
+          'No backend with name [{0}] in {1} [{2}] is part of the backend '
+          'service [{3}].'.format(
+              group_ref.Name(), scope_type, scope_name, self.ref.Name()))
 
     if args.description:
       backend_to_update.description = args.description
@@ -135,6 +150,27 @@ class UpdateBackend(base_classes.ReadWriteCommand):
     return super(UpdateBackend, self).Run(args)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateBackendAlpha(UpdateBackend,
+                         instance_groups_utils.InstanceGroupReferenceMixin):
+  """Update an existing backend in a backend service."""
+
+  @staticmethod
+  def Args(parser):
+    backend_services_utils.AddUpdatableBackendArgs(
+        parser, compute_v1_messages, multizonal=True)
+
+    parser.add_argument(
+        'name',
+        help='The name of the backend service to update.')
+
+  def CreateGroupReference(self, args):
+    return self.CreateInstanceGroupReference(
+        name=args.instance_group, region=args.region, zone=args.zone,
+        zonal_resource_type='instanceGroups',
+        regional_resource_type='regionInstanceGroups')
+
+
 UpdateBackend.detailed_help = {
     'brief': 'Update an existing backend in a backend service',
     'DESCRIPTION': """
@@ -155,3 +191,4 @@ UpdateBackend.detailed_help = {
         update a backend if the use of a text editor is desired.
         """,
 }
+UpdateBackendAlpha.detailed_help = UpdateBackend.detailed_help

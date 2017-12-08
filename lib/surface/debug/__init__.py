@@ -53,6 +53,4 @@ class Debug(base.Group):
         api='debug', collection=None, param='projectId',
         resolver=resolvers.FromProperty(properties.VALUES.core.project))
 
-    debug.DebugObject.InitializeApiClients(
-        self.Http(), properties.VALUES.api_endpoint_overrides.debug.Get(),
-        properties.VALUES.api_endpoint_overrides.cloudresourcemanager.Get())
+    debug.DebugObject.InitializeApiClients(self.Http())

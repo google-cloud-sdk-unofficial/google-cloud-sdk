@@ -38,11 +38,12 @@ class List(base.Command):
     messages = self.context['dataproc_messages']
 
     project = properties.VALUES.core.project.Get(required=True)
+    region = self.context['dataproc_region']
 
-    request = messages.DataprocProjectsClustersListRequest(
-        projectId=project)
+    request = messages.DataprocProjectsRegionsClustersListRequest(
+        projectId=project, region=region)
 
-    response = client.projects_clusters.List(request)
+    response = client.projects_regions_clusters.List(request)
     return response.clusters
 
   def Display(self, args, result):

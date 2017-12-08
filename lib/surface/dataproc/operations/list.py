@@ -61,17 +61,20 @@ class List(base.Command):
     messages = self.context['dataproc_messages']
 
     project = properties.VALUES.core.project.Get(required=True)
+    region = self.context['dataproc_region']
+    name = 'projects/{project}/regions/{region}/operations'.format(
+        project=project, region=region)
+
     filter_dict = dict()
-    filter_dict[PROJECT_FILTER] = project
     if args.state_filter:
       filter_dict[STATE_MATCHER_FILTER] = STATE_MATCHER_MAP[args.state_filter]
     if args.cluster:
       filter_dict[CLUSTER_NAME_FILTER] = args.cluster
 
-    request = messages.DataprocOperationsListRequest(
-        name='operations', filter=json.dumps(filter_dict))
+    request = messages.DataprocProjectsRegionsOperationsListRequest(
+        name=name, filter=json.dumps(filter_dict))
 
-    response = client.operations.List(request)
+    response = client.projects_regions_operations.List(request)
     return response.operations
 
   def Display(self, args, result):

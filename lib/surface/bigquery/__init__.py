@@ -18,17 +18,15 @@
 import urlparse
 from googlecloudsdk.api_lib.bigquery import bigquery
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import apis
 from googlecloudsdk.core import cli
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.credentials import store as c_store
-from googlecloudsdk.third_party.apis.bigquery.v2 import bigquery_v2_client
-from googlecloudsdk.third_party.apis.bigquery.v2 import bigquery_v2_messages
 
 SERVICE_NAME = 'bigquery'
 
-BIGQUERY_API_MODULE_KEY = 'bigquery-api-module'
 BIGQUERY_MESSAGES_MODULE_KEY = 'bigquery-messages-module'
 APITOOLS_CLIENT_KEY = 'bigquery-apitools-client'
 BIGQUERY_REGISTRY_KEY = 'bigquery-registry'
@@ -54,13 +52,10 @@ class Bigquery(base.Group):
         resolver=resolvers.FromProperty(properties.VALUES.core.project))
 
     # TODO(user): remove command dependence on these.
-    context[BIGQUERY_API_MODULE_KEY] = bigquery_v2_client
-    context[BIGQUERY_MESSAGES_MODULE_KEY] = bigquery_v2_messages
-
-    context[APITOOLS_CLIENT_KEY] = bigquery_v2_client.BigqueryV2(
-        url=properties.VALUES.api_endpoint_overrides.bigquery.Get(),
-        get_credentials=False,
-        http=self.Http())
+    context[BIGQUERY_MESSAGES_MODULE_KEY] = apis.GetMessagesModule(
+        'bigquery', 'v2')
+    context[APITOOLS_CLIENT_KEY] = apis.GetClientInstance(
+        'bigquery', 'v2', http=self.Http())
     context[BIGQUERY_REGISTRY_KEY] = resources.REGISTRY
 
     # Inject bigquery backend params.

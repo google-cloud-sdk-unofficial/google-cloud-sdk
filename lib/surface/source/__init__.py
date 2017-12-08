@@ -40,5 +40,4 @@ class Source(base.Group):
         resolver=resolvers.FromProperty(properties.VALUES.core.project))
 
     source.Source.SetResourceParser(resources.REGISTRY)
-    source.Source.SetApiEndpoint(
-        self.Http(), properties.VALUES.api_endpoint_overrides.source.Get())
+    source.Source.SetApiEndpoint(self.Http())

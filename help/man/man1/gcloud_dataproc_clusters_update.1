@@ -1,0 +1,65 @@
+
+.TH "GCLOUD_DATAPROC_CLUSTERS_UPDATE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud dataproc clusters update \- update the number of worker nodes in a cluster
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud dataproc clusters update\fR \fINAME\fR [\fB\-\-num\-preemptible\-workers\fR\ \fINUM_PREEMPTIBLE_WORKERS\fR] [\fB\-\-num\-workers\fR\ \fINUM_WORKERS\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Update the number of worker nodes in a cluster.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR
+.RS 2m
+The name of the cluster to update.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-num\-preemptible\-workers\fR \fINUM_PREEMPTIBLE_WORKERS\fR
+.RS 2m
+The new number of preemptible worker nodes in the cluster.
+
+.RE
+\fB\-\-num\-workers\fR \fINUM_WORKERS\fR
+.RS 2m
+The new number of worker nodes in the cluster.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To resize a cluster, run:
+
+.RS 2m
+$ gcloud dataproc clusters update my_cluster \-\-num\-workers 5
+.RE
+
+To change the number preemptible workers in a cluster, run:
+
+.RS 2m
+$ gcloud dataproc clusters update my_cluster \e
+    \-\-num\-preemptible\-workers 5
+.RE

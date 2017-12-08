@@ -41,7 +41,7 @@ class Describe(base.Command):
     cluster_ref = util.ParseCluster(args.name, self.context)
     request = cluster_ref.Request()
 
-    cluster = client.projects_clusters.Get(request)
+    cluster = client.projects_regions_clusters.Get(request)
     return cluster
 
   def Display(self, args, result):

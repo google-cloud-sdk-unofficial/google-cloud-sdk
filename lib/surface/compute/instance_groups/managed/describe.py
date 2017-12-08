@@ -14,8 +14,10 @@
 """Command for describing managed instance groups."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
+from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Describe(base_classes.ZonalDescriber):
   """Describe a managed instance group."""
 
@@ -44,6 +46,54 @@ class Describe(base_classes.ZonalDescriber):
         fail_when_api_not_supported=False)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(base_classes.MultiScopeDescriber):
+  """Describe a managed instance group."""
+
+  SCOPES = [base_classes.ScopeType.regional_scope,
+            base_classes.ScopeType.zonal_scope]
+
+  @property
+  def global_service(self):
+    return None
+
+  @property
+  def regional_service(self):
+    return self.compute.regionInstanceGroupManagers
+
+  @property
+  def zonal_service(self):
+    return self.compute.instanceGroupManagers
+
+  @property
+  def global_resource_type(self):
+    return None
+
+  @property
+  def regional_resource_type(self):
+    return 'regionInstanceGroupManagers'
+
+  @property
+  def zonal_resource_type(self):
+    return 'instanceGroupManagers'
+
+  @staticmethod
+  def Args(parser):
+    base_classes.MultiScopeDescriber.AddScopeArgs(
+        parser, 'instanceGroupManagers', DescribeAlpha.SCOPES)
+
+  def ComputeDynamicProperties(self, args, items):
+    """Add Autoscaler information if Autoscaler is defined for the item."""
+    # Items are expected to be IGMs.
+    return managed_instance_groups_utils.AddAutoscalersToMigs(
+        migs_iterator=items,
+        project=self.project,
+        compute=self.compute,
+        http=self.http,
+        batch_url=self.batch_url,
+        fail_when_api_not_supported=False)
+
+
 Describe.detailed_help = {
     'brief': 'Describe a managed instance group',
     'DESCRIPTION': """\
@@ -51,3 +101,5 @@ Describe.detailed_help = {
 managed instance group.
 """,
 }
+DescribeAlpha.detailed_help = base_classes.GetMultiScopeDescriberHelp(
+    'managed instance group', DescribeAlpha.SCOPES)

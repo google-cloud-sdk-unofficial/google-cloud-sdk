@@ -79,7 +79,7 @@ class RemoveBgpPeer(base_classes.ReadWriteCommand):
   def Modify(self, args, existing):
     replacement = copy.deepcopy(existing)
 
-    # remove peer
+    # remove peer if exists
     peer = None
     for p in replacement.bgpPeers:
       if p.name == args.peer_name:
@@ -90,17 +90,10 @@ class RemoveBgpPeer(base_classes.ReadWriteCommand):
     if peer is None:
       raise PeerNotFoundError(args.peer_name)
 
-    # remove interface if exists
-    for i in replacement.interfaces:
-      if i.name == peer.interfaceName:
-        replacement.interfaces.remove(i)
-        break
-
     return replacement
 
 
 RemoveBgpPeer.detailed_help = {
-    'brief': 'Remove a BGP peer to a router.',
     'DESCRIPTION': """
         *{command}* removes a BGP peer from a router.
         """,

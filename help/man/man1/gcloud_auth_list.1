@@ -5,7 +5,7 @@
 
 .SH "NAME"
 .HP
-gcloud auth list \- list the accounts for known credentials
+gcloud auth list \- lists credentialed accounts
 
 
 
@@ -16,7 +16,10 @@ gcloud auth list \- list the accounts for known credentials
 
 .SH "DESCRIPTION"
 
-List the accounts for known credentials.
+Lists accounts whose credentials have been obtained using \f5gcloud init\fR,
+\f5gcloud auth login\fR and \f5gcloud auth activate\-service\-account\fR, and
+shows which account is active. The active account is used by gcloud and other
+Cloud SDK tools to access Google Cloud Platform.
 
 
 
@@ -24,7 +27,7 @@ List the accounts for known credentials.
 
 \fB\-\-filter\-account\fR \fIFILTER_ACCOUNT\fR
 .RS 2m
-List only credentials for one account.
+List only the specified account.
 
 
 .RE

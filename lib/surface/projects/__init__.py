@@ -19,10 +19,22 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA,
-                    base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Projects(base.Group):
+  """Manage your Projects.
+
+  Commands to get information about your Google Developer Projects.
+  """
+
+  def Filter(self, context, _):
+    context['projects_resources'] = resources
+    context['projects_client'] = util.GetClient(self.Http())
+    context['projects_messages'] = util.GetMessages()
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ProjectsAlpha(base.Group):
   """Manage your Projects.
 
   Commands to get information about your Google Developer Projects.

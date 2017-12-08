@@ -1,0 +1,56 @@
+
+.TH "GCLOUD_DATAPROC_JOBS_LIST" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud dataproc jobs list \- list all jobs in a project
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud dataproc jobs list\fR [\fB\-\-cluster\fR\ \fICLUSTER\fR] [\fB\-\-state\-filter\fR\ \fISTATE_FILTER\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+List all jobs in a project.
+
+
+
+.SH "FLAGS"
+
+\fB\-\-cluster\fR \fICLUSTER\fR
+.RS 2m
+Restrict to the jobs of this Dataproc cluster.
+
+.RE
+\fB\-\-state\-filter\fR \fISTATE_FILTER\fR
+.RS 2m
+Filter by job state. Choices are ['active', 'inactive'].
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To see the list of all jobs, run:
+
+.RS 2m
+$ gcloud dataproc jobs list
+.RE
+
+To see the list of all active jobs in a cluster, run:
+
+.RS 2m
+$ gcloud dataproc jobs list \-\-state\-filter active \e
+    \-\-cluster my_cluster
+.RE

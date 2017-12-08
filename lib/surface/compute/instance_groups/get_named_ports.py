@@ -16,4 +16,8 @@ from googlecloudsdk.api_lib.compute import instance_groups_utils
 
 
 class GetNamedPorts(instance_groups_utils.InstanceGroupGetNamedPorts):
-  pass
+
+  @staticmethod
+  def Args(parser):
+    instance_groups_utils.InstanceGroupGetNamedPorts.AddArgs(
+        parser=parser, multizonal=False)

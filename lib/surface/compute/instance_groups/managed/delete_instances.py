@@ -14,28 +14,51 @@
 """Command for deleting instances managed by managed instance group."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import constants
+from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 
 
-class DeleteInstances(base_classes.BaseAsyncMutator):
-  """Delete instances managed by managed instance group."""
-
-  @staticmethod
-  def Args(parser):
-    parser.add_argument('name', help='Managed instance group name.')
-    parser.add_argument(
-        '--instances',
-        type=arg_parsers.ArgList(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
-        metavar='INSTANCE',
-        required=True,
-        help='Names of instances to delete.')
+def _AddArgs(parser, multizonal):
+  """Adds args."""
+  parser.add_argument('name', help='Managed instance group name.')
+  parser.add_argument(
+      '--instances',
+      type=arg_parsers.ArgList(min_length=1),
+      action=arg_parsers.FloatingListValuesCatcher(),
+      metavar='INSTANCE',
+      required=True,
+      help='Names of instances to delete.')
+  if multizonal:
+    scope_parser = parser.add_mutually_exclusive_group()
+    utils.AddRegionFlag(
+        scope_parser,
+        resource_type='instance group manager',
+        operation_type='delete instances',
+        explanation=constants.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
+    utils.AddZoneFlag(
+        scope_parser,
+        resource_type='instance group manager',
+        operation_type='delete instances',
+        explanation=constants.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
+  else:
     utils.AddZoneFlag(
         parser,
         resource_type='instance group manager',
         operation_type='delete instances')
 
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class DeleteInstances(base_classes.BaseAsyncMutator):
+  """Delete instances managed by managed instance group."""
+
+  @staticmethod
+  def Args(parser):
+    _AddArgs(parser=parser, multizonal=False)
+
+  @property
   def method(self):
     return 'DeleteInstances'
 
@@ -54,7 +77,7 @@ class DeleteInstances(base_classes.BaseAsyncMutator):
         ref.zone,
         resource_type='instances')
     instances = [instance_ref.SelfLink() for instance_ref in instances_ref]
-    return [(self.method(),
+    return [(self.method,
              self.messages.ComputeInstanceGroupManagersDeleteInstancesRequest(
                  instanceGroupManager=ref.Name(),
                  instanceGroupManagersDeleteInstancesRequest=(
@@ -65,6 +88,56 @@ class DeleteInstances(base_classes.BaseAsyncMutator):
                  project=self.project,
                  zone=ref.zone,
              ))]
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteInstancesAlpha(DeleteInstances,
+                           instance_groups_utils.InstanceGroupReferenceMixin,
+                           instance_groups_utils.InstancesReferenceMixin):
+  """Delete instances managed by managed instance group."""
+
+  @staticmethod
+  def Args(parser):
+    _AddArgs(parser=parser, multizonal=True)
+
+  def CreateRequests(self, args):
+    errors = []
+    group_ref = self.CreateInstanceGroupReference(
+        name=args.name, region=args.region, zone=args.zone)
+    instances = self.CreateInstanceReferences(
+        group_ref, args.instances, errors)
+
+    if group_ref.Collection() == 'compute.instanceGroupManagers':
+      service = self.compute.instanceGroupManagers
+      request = (
+          self.messages.
+          ComputeInstanceGroupManagersDeleteInstancesRequest(
+              instanceGroupManager=group_ref.Name(),
+              instanceGroupManagersDeleteInstancesRequest=(
+                  self.messages.InstanceGroupManagersDeleteInstancesRequest(
+                      instances=instances,
+                  )
+              ),
+              project=self.project,
+              zone=group_ref.zone,
+          ))
+    else:
+      service = self.compute.regionInstanceGroupManagers
+      request = (
+          self.messages.
+          ComputeRegionInstanceGroupManagersDeleteInstancesRequest(
+              instanceGroupManager=group_ref.Name(),
+              regionInstanceGroupManagersDeleteInstancesRequest=(
+                  self.messages.
+                  RegionInstanceGroupManagersDeleteInstancesRequest(
+                      instances=instances,
+                  )
+              ),
+              project=self.project,
+              region=group_ref.region,
+          ))
+
+    return [(service, self.method, request)]
 
 
 DeleteInstances.detailed_help = {
@@ -78,3 +151,4 @@ If you would like to keep the underlying virtual machines but still remove them
 from the managed instance group, use the abandon-instances command instead.
 """,
 }
+DeleteInstancesAlpha.detailed_help = DeleteInstances.detailed_help

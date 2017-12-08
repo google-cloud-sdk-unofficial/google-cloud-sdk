@@ -46,8 +46,9 @@ class Kill(base.Command):
     messages = self.context['dataproc_messages']
 
     job_ref = util.ParseJob(args.id, self.context)
-    request = messages.DataprocProjectsJobsCancelRequest(
+    request = messages.DataprocProjectsRegionsJobsCancelRequest(
         projectId=job_ref.projectId,
+        region=job_ref.region,
         jobId=job_ref.jobId,
         cancelJobRequest=messages.CancelJobRequest())
 
@@ -57,7 +58,7 @@ class Kill(base.Command):
         message="The job '{0}' will be killed.".format(args.id)):
       raise exceptions.ToolException('Cancellation aborted by user.')
 
-    job = client.projects_jobs.Cancel(request)
+    job = client.projects_regions_jobs.Cancel(request)
     log.status.Print(
         'Job cancellation initiated for [{0}].'.format(job_ref.jobId))
 

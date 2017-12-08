@@ -1,0 +1,124 @@
+
+.TH "GCLOUD_DATAPROC_JOBS_SUBMIT_HADOOP" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud dataproc jobs submit hadoop \- submit a Hadoop job to a cluster
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud dataproc jobs submit hadoop\fR \fB\-\-cluster\fR \fICLUSTER\fR [\fB\-\-archives\fR\ [\fIARCHIVE\fR,...]] [\fB\-\-async\fR] [\fB\-\-bucket\fR\ \fIBUCKET\fR] [\fB\-\-class\fR\ \fIMAIN_CLASS\fR] [\fB\-\-driver\-log\-levels\fR\ [\fIPACKAGE\fR=\fILEVEL\fR,...]] [\fB\-\-files\fR\ [\fIFILE\fR,...]] [\fB\-\-jar\fR\ \fIMAIN_JAR\fR] [\fB\-\-jars\fR\ [\fIJAR\fR,...]] [\fB\-\-properties\fR\ [\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR] [\fIJOB_ARGS\fR\ ...]
+
+
+.SH "DESCRIPTION"
+
+Submit a Hadoop job to a cluster.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+[\fIJOB_ARGS\fR ...]
+.RS 2m
+The arguments to pass to the driver.
+
+
+.RE
+
+.SH "REQUIRED FLAGS"
+
+\fB\-\-cluster\fR \fICLUSTER\fR
+.RS 2m
+The Dataproc cluster to submit the job to.
+
+
+.RE
+
+.SH "OPTIONAL FLAGS"
+
+\fB\-\-archives\fR [\fIARCHIVE\fR,...]
+.RS 2m
+Comma separated list of archives to be provided to the job. must be one of the
+following file formats: .zip, .tar, .tar.gz, or .tgz.
+
+.RE
+\fB\-\-async\fR
+.RS 2m
+Does not wait for the job to run.
+
+.RE
+\fB\-\-bucket\fR \fIBUCKET\fR
+.RS 2m
+The Cloud Storage bucket to stage files in. Default's to the cluster's
+configured bucket
+
+.RE
+\fB\-\-class\fR \fIMAIN_CLASS\fR
+.RS 2m
+The class containing the main method of the driver. Must be in a provided jar or
+jar that is already on the classpath
+
+.RE
+\fB\-\-driver\-log\-levels\fR [\fIPACKAGE\fR=\fILEVEL\fR,...]
+.RS 2m
+A list of package to log4j log level pairs to configure driver logging. For
+example: root=FATAL,com.example=INFO
+
+.RE
+\fB\-\-files\fR [\fIFILE\fR,...]
+.RS 2m
+Comma separated list of files to be provided to the job.
+
+.RE
+\fB\-\-jar\fR \fIMAIN_JAR\fR
+.RS 2m
+The HCFS URI of jar file containing the driver jar.
+
+.RE
+\fB\-\-jars\fR [\fIJAR\fR,...]
+.RS 2m
+Comma separated list of jar files to be provided to the MR and driver
+classpaths.
+
+.RE
+\fB\-\-properties\fR [\fIPROPERTY\fR=\fIVALUE\fR,...]
+.RS 2m
+A list of key value pairs to configure Hadoop.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To submit a Hadoop job that runs the main class of a jar, run:
+
+.RS 2m
+$ gcloud dataproc jobs submit hadoop \-\-cluster my_cluster \e
+    \-\-jar my_jar.jar arg1 arg2
+.RE
+
+To submit a Hadoop job that runs a specific class of a jar, run:
+
+.RS 2m
+$ gcloud dataproc jobs submit hadoop \-\-cluster my_cluster \e
+    \-\-class org.my.main.Class \-\-jars my_jar1.jar,my_jar2.jar arg1 \e
+    arg2
+.RE
+
+To submit a Hadoop job that runs a jar that is already on the cluster, run:
+
+.RS 2m
+$ gcloud dataproc jobs submit hadoop \-\-cluster my_cluster \e
+    \-\-jar file:///usr/lib/hadoop\-op/hadoop\-op\-examples.jar \e
+    wordcount gs://my_bucket/my_file.txt gs://my_bucket/output
+.RE

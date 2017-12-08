@@ -16,6 +16,7 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.components import completers
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
@@ -51,7 +52,7 @@ class Remove(base.Command):
         help='Zero or more URLs for the component repositories you want to '
         'remove.  If none are given, you will be prompted to choose which '
         'existing repository you want to remove.')
-    url_arg.completer = Remove.group_class.RepoCompleter
+    url_arg.completer = completers.RepoCompleter
     parser.add_argument('--all', action='store_true',
                         help='Remove all registered repositories.')
 

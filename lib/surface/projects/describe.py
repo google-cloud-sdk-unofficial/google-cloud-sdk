@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.projects import util
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Describe(base.Command):
   """Show metadata for a Project."""
 

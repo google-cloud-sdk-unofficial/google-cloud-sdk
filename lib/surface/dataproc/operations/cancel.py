@@ -42,8 +42,7 @@ class Cancel(base.Command):
     client = self.context['dataproc_client']
     messages = self.context['dataproc_messages']
 
-    request = messages.DataprocOperationsCancelRequest(
-        cancelOperationRequest=messages.CancelOperationRequest(),
+    request = messages.DataprocProjectsRegionsOperationsCancelRequest(
         name=args.operation)
 
     if not console_io.PromptContinue(
@@ -51,7 +50,7 @@ class Cancel(base.Command):
             args.operation)):
       raise exceptions.ToolException('Cancellation aborted by user.')
 
-    client.operations.Cancel(request)
+    client.projects_regions_operations.Cancel(request)
     # TODO(user) Check that operation was cancelled.
 
     log.status.write('Cancelled [{0}].\n'.format(args.operation))

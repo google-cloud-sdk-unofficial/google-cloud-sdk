@@ -76,7 +76,9 @@ class List(base.Command):
     messages = self.context['dataproc_messages']
 
     project = properties.VALUES.core.project.Get(required=True)
-    request = messages.DataprocProjectsJobsListRequest(projectId=project)
+    region = self.context['dataproc_region']
+    request = messages.DataprocProjectsRegionsJobsListRequest(
+        projectId=project, region=region)
 
     if args.cluster:
       request.clusterName = args.cluster
@@ -84,17 +86,17 @@ class List(base.Command):
     if args.state_filter:
       if args.state_filter == 'active':
         request.jobStateMatcher = (
-            messages.DataprocProjectsJobsListRequest
+            messages.DataprocProjectsRegionsJobsListRequest
             .JobStateMatcherValueValuesEnum.ACTIVE)
       elif args.state_filter == 'inactive':
         request.jobStateMatcher = (
-            messages.DataprocProjectsJobsListRequest
+            messages.DataprocProjectsRegionsJobsListRequest
             .JobStateMatcherValueValuesEnum.NON_ACTIVE)
       else:
         raise exceptions.ToolException(
             'Invalid state-filter; [{0}].'.format(args.state_filter))
 
-    response = client.projects_jobs.List(request)
+    response = client.projects_regions_jobs.List(request)
     return response.jobs
 
   def Display(self, args, result):

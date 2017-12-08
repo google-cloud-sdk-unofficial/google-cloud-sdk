@@ -14,29 +14,52 @@
 """Command for abandoning instances owned by a managed instance group."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import constants
+from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 
 
-class AbandonInstances(base_classes.BaseAsyncMutator):
-  """Abandon instances owned by a managed instance group."""
-
-  @staticmethod
-  def Args(parser):
-    parser.add_argument('name',
-                        help='The managed instance group name.')
-    parser.add_argument(
-        '--instances',
-        type=arg_parsers.ArgList(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
-        metavar='INSTANCE',
-        required=True,
-        help='Names of instances to abandon.')
+def _AddArgs(parser, multizonal):
+  """Adds args."""
+  parser.add_argument('name',
+                      help='The managed instance group name.')
+  parser.add_argument(
+      '--instances',
+      type=arg_parsers.ArgList(min_length=1),
+      action=arg_parsers.FloatingListValuesCatcher(),
+      metavar='INSTANCE',
+      required=True,
+      help='Names of instances to abandon.')
+  if multizonal:
+    scope_parser = parser.add_mutually_exclusive_group()
+    utils.AddRegionFlag(
+        scope_parser,
+        resource_type='instance group',
+        operation_type='abandon instances',
+        explanation=constants.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
+    utils.AddZoneFlag(
+        scope_parser,
+        resource_type='instance group manager',
+        operation_type='abandon instances',
+        explanation=constants.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
+  else:
     utils.AddZoneFlag(
         parser,
         resource_type='instance group manager',
         operation_type='abandon instances')
 
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class AbandonInstances(base_classes.BaseAsyncMutator):
+  """Abandon instances owned by a managed instance group."""
+
+  @staticmethod
+  def Args(parser):
+    _AddArgs(parser=parser, multizonal=False)
+
+  @property
   def method(self):
     return 'AbandonInstances'
 
@@ -55,7 +78,7 @@ class AbandonInstances(base_classes.BaseAsyncMutator):
         zone_ref.zone,
         resource_type='instances')
     instances = [instance_ref.SelfLink() for instance_ref in instance_refs]
-    return [(self.method(),
+    return [(self.method,
              self.messages.ComputeInstanceGroupManagersAbandonInstancesRequest(
                  instanceGroupManager=zone_ref.Name(),
                  instanceGroupManagersAbandonInstancesRequest=(
@@ -66,6 +89,68 @@ class AbandonInstances(base_classes.BaseAsyncMutator):
                  project=self.project,
                  zone=zone_ref.zone,
              ),),]
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AbandonInstancesAlpha(base_classes.BaseAsyncMutator,
+                            instance_groups_utils.InstanceGroupReferenceMixin,
+                            instance_groups_utils.InstancesReferenceMixin):
+  """Abandon instances owned by a managed instance group."""
+
+  @staticmethod
+  def Args(parser):
+    _AddArgs(parser=parser, multizonal=True)
+
+  @property
+  def method(self):
+    return 'AbandonInstances'
+
+  @property
+  def service(self):
+    return self.compute.instanceGroupManagers
+
+  @property
+  def resource_type(self):
+    return 'instanceGroupManagers'
+
+  def CreateRequests(self, args):
+    errors = []
+    group_ref = self.CreateInstanceGroupReference(
+        name=args.name, region=args.region, zone=args.zone)
+    instances = self.CreateInstanceReferences(
+        group_ref, args.instances, errors)
+
+    if group_ref.Collection() == 'compute.instanceGroupManagers':
+      service = self.compute.instanceGroupManagers
+      request = (
+          self.messages.
+          ComputeInstanceGroupManagersAbandonInstancesRequest(
+              instanceGroupManager=group_ref.Name(),
+              instanceGroupManagersAbandonInstancesRequest=(
+                  self.messages.InstanceGroupManagersAbandonInstancesRequest(
+                      instances=instances,
+                  )
+              ),
+              project=self.project,
+              zone=group_ref.zone,
+          ))
+    else:
+      service = self.compute.regionInstanceGroupManagers
+      request = (
+          self.messages.
+          ComputeRegionInstanceGroupManagersAbandonInstancesRequest(
+              instanceGroupManager=group_ref.Name(),
+              regionInstanceGroupManagersAbandonInstancesRequest=(
+                  self.messages.
+                  RegionInstanceGroupManagersAbandonInstancesRequest(
+                      instances=instances,
+                  )
+              ),
+              project=self.project,
+              region=group_ref.region,
+          ))
+
+    return [(service, self.method, request)]
 
 
 AbandonInstances.detailed_help = {
@@ -81,3 +166,4 @@ but just removes the instances from the instance group. If you would like the
 delete the underlying instances, use the delete-instances command instead.
 """,
 }
+AbandonInstancesAlpha.detailed_help = AbandonInstances.detailed_help

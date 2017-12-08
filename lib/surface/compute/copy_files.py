@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Implements the command for copying files from and to virtual machines."""
-import getpass
 import logging
 
 from googlecloudsdk.api_lib.compute import constants
@@ -71,7 +70,7 @@ class CopyFiles(ssh_utils.BaseSSHCLICommand):
         user_host, file_path = arg.split(':', 1)
         user_host_parts = user_host.split('@', 1)
         if len(user_host_parts) == 1:
-          user = getpass.getuser()
+          user = ssh_utils.GetDefaultSshUsername(warn_on_account_user=True)
           instance = user_host_parts[0]
         else:
           user, instance = user_host_parts

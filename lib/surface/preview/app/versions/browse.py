@@ -16,25 +16,11 @@
 
 
 from googlecloudsdk.api_lib.app import appengine_api_client
-from googlecloudsdk.api_lib.app import deploy_command_util
+from googlecloudsdk.api_lib.app import browser_dispatcher
 from googlecloudsdk.api_lib.app import version_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.third_party.appengine.api import appinfo
-
-
-class UnsupportedAppIdError(exceptions.Error):
-  pass
-
-
-def OpenInBrowser(url):
-  # pylint: disable=g-import-not-at-top
-  # Import in here for performance reasons
-  import webbrowser
-  # pylint: enable=g-import-not-at-top
-  webbrowser.open_new_tab(url)
 
 
 class Browse(base.Command):
@@ -74,7 +60,7 @@ class Browse(base.Command):
 
   def Run(self, args):
     if ':' in properties.VALUES.core.project.Get(required=True):
-      raise UnsupportedAppIdError(
+      raise browser_dispatcher.UnsupportedAppIdError(
           '`browse` command is currently unsupported for app IDs with custom '
           'domains.')
     client = appengine_api_client.GetApiClient(self.Http(timeout=None))
@@ -91,12 +77,4 @@ class Browse(base.Command):
       log.warn('No matching versions found.')
 
     for version in versions:
-      # Assume HTTPS. There's not enough information to determine based on the
-      # results of ListVersions, but HTTPS is always more secure (though HTTP
-      # will work in all cases, since it will redirect to HTTPS).
-      url = deploy_command_util.GetAppHostname(version.project, version.service,
-                                               version.id,
-                                               use_ssl=appinfo.SECURE_HTTPS)
-      log.status.Print(
-          'Opening [{0}] in a new tab in your default browser.'.format(url))
-      OpenInBrowser(url)
+      browser_dispatcher.BrowseApp(version.project, version.service, version.id)

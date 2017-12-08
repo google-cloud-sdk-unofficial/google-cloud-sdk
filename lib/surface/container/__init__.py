@@ -26,8 +26,6 @@ from googlecloudsdk.core import properties
 class Container(base.Group):
   """Deploy and manage clusters of machines for running containers."""
 
-  DEFAULT_API_VERSION = 'v1'
-
   @staticmethod
   def Args(parser):
     """Add arguments to the parser.
@@ -58,12 +56,7 @@ class Container(base.Group):
     Returns:
       The refined command context.
     """
-    api_version = (properties.VALUES.api_client_overrides.container.Get()
-                   or self.DEFAULT_API_VERSION)
-    endpoint_url = properties.VALUES.api_endpoint_overrides.container.Get()
-    comp_endpoint_url = properties.VALUES.api_endpoint_overrides.compute.Get()
-    context['api_adapter'] = api_adapter.NewAPIAdapter(
-        api_version, endpoint_url, comp_endpoint_url, self.Http())
+    context['api_adapter'] = api_adapter.NewAPIAdapter(self.Http())
     return context
 
 

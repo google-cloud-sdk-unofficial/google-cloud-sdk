@@ -17,20 +17,16 @@ import sys
 
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import apis
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
-from googlecloudsdk.third_party.apis.iam.v1 import iam_v1_client
-from googlecloudsdk.third_party.apis.iam.v1 import iam_v1_messages
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Iam(base.Group):
 
   def Filter(self, context, args):
-    context['iam-client'] = iam_v1_client.IamV1(
-        get_credentials=False,
-        http=self.Http(),
-        url=properties.VALUES.api_endpoint_overrides.iam.Get())
-    context['iam-messages'] = iam_v1_messages
+    context['iam-client'] = apis.GetClientInstance('iam', 'v1', self.Http())
+    context['iam-messages'] = apis.GetMessagesModule('iam', 'v1')
     context['iam-resources'] = resources

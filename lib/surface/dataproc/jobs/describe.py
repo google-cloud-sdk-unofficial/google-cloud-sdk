@@ -44,7 +44,7 @@ class Describe(base.Command):
     job_ref = util.ParseJob(args.id, self.context)
     request = job_ref.Request()
 
-    job = client.projects_jobs.Get(request)
+    job = client.projects_regions_jobs.Get(request)
     return job
 
   def Display(self, args, result):

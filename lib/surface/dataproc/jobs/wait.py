@@ -46,7 +46,7 @@ class Wait(base.Command):
     job_ref = util.ParseJob(args.id, self.context)
     request = job_ref.Request()
 
-    job = client.projects_jobs.Get(request)
+    job = client.projects_regions_jobs.Get(request)
     # TODO(user) Check if Job is still running and fail or handle 401.
 
     job = util.WaitForJobTermination(

@@ -5,7 +5,7 @@
 
 .SH "NAME"
 .HP
-gcloud auth login \- get credentials for the tools in the Google Cloud SDK via a web flow
+gcloud auth login \- authorize gcloud to access Google Cloud Platform
 
 
 
@@ -16,9 +16,10 @@ gcloud auth login \- get credentials for the tools in the Google Cloud SDK via a
 
 .SH "DESCRIPTION"
 
-Obtains access credentials for the Google Cloud Platform resources of the given
-account, via a web flow. If the account already has valid credentials, it is set
-as active without re\-running the web flow.
+Obtains access credentials for your user account via a web\-based authorization
+flow. If valid credentials for an account are already available from a prior
+authorization, the account is set to active without rerunning the flow. Use
+\f5gcloud auth list\fR to view credentialed accounts.
 
 
 
@@ -26,7 +27,7 @@ as active without re\-running the web flow.
 
 [\fIACCOUNT\fR]
 .RS 2m
-The account to log in as.
+User account used for authorization.
 
 
 .RE
@@ -35,8 +36,8 @@ The account to log in as.
 
 \fB\-\-activate\fR
 .RS 2m
-Set the new credentials as active. Enabled by default, use
-\fB\-\-no\-activate\fR to disable.
+Set the new account to active. Enabled by default, use \fB\-\-no\-activate\fR to
+disable.
 
 .RE
 \fB\-\-brief\fR
@@ -46,13 +47,15 @@ Minimal user output.
 .RE
 \fB\-\-force\fR
 .RS 2m
-Re\-run the web flow even if the given account has valid credentials.
+Re\-run the web authorization flow even if the given account has valid
+credentials.
 
 .RE
 \fB\-\-launch\-browser\fR
 .RS 2m
-Launch a web browser instead of printing a URL to be copied. Enabled by default,
-use \fB\-\-no\-launch\-browser\fR to disable.
+Launch a browser for authorization. If not enabled or DISPLAY variable is not
+set, prints a URL to standard output to be copied. Enabled by default, use
+\fB\-\-no\-launch\-browser\fR to disable.
 
 
 .RE

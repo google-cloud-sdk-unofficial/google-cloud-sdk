@@ -54,8 +54,3 @@ class Repositories(base.Group):
           to revert to a standard installation.
       """,
   }
-
-  @staticmethod
-  def RepoCompleter(prefix, parsed_args, **unused_kwargs):
-    repos = update_manager.UpdateManager.GetAdditionalRepositories()
-    return [r for r in repos if r.startswith(prefix)]

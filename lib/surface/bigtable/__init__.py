@@ -15,8 +15,8 @@
 """The main command group for bigtable."""
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import apis
 from googlecloudsdk.core import properties
-from googlecloudsdk.third_party.apis.bigtableclusteradmin import v1
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -32,8 +32,7 @@ class Bigtable(base.Group):
       args: argparse.Namespace: The same namespace given to the corresponding
           .Run() invocation.
     """
-    context['clusteradmin'] = v1.BigtableclusteradminV1(
-        get_credentials=False, http=self.Http(),
-        url=properties.VALUES.api_endpoint_overrides.bigtableclusteradmin.Get())
-    context['clusteradmin-msgs'] = v1.bigtableclusteradmin_v1_messages
+    context['clusteradmin'] = apis.GetClientInstance(
+        'bigtable', 'v1', self.Http())
+    context['clusteradmin-msgs'] = apis.GetMessagesModule('bigtable', 'v1')
 

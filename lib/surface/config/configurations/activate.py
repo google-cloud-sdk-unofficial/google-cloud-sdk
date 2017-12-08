@@ -15,6 +15,7 @@
 """Command to activate named configuration."""
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.config import completers
 from googlecloudsdk.core import log
 from googlecloudsdk.core import named_configs
 
@@ -43,9 +44,10 @@ class Activate(base.SilentCommand):
   @staticmethod
   def Args(parser):
     """Adds args for this command."""
-    parser.add_argument(
+    configuration_arg = parser.add_argument(
         'configuration_name',
         help='Configuration name to activate')
+    configuration_arg.completer = completers.NamedConfigCompleter
 
   def Run(self, args):
     named_configs.ActivateNamedConfig(args.configuration_name)

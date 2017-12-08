@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Implements the command for SSHing into an instance."""
-import getpass
 import sys
 
 from googlecloudsdk.api_lib.compute import gaia_utils
@@ -112,7 +111,7 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
       if self._use_accounts_service:  # Using Account Service.
         user = gaia_utils.GetDefaultAccountName(self.http)
       else:  # Uploading keys through metadata.
-        user = getpass.getuser()
+        user = ssh_utils.GetDefaultSshUsername(warn_on_account_user=True)
       instance = parts[0]
     elif len(parts) == 2:
       user, instance = parts

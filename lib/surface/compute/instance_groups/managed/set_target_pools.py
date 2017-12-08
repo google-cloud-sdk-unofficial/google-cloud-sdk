@@ -14,29 +14,51 @@
 """Command for setting target pools of managed instance group."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import constants
+from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 
 
+def _AddArgs(parser, multizonal):
+  """Add args."""
+  parser.add_argument('name', help='Managed instance group name.')
+  parser.add_argument(
+      '--target-pools',
+      required=True,
+      type=arg_parsers.ArgList(min_length=0),
+      action=arg_parsers.FloatingListValuesCatcher(),
+      metavar='TARGET_POOL',
+      help=('Compute Engine Target Pools to add the instances to. '
+            'Target Pools must be specified by name or by URL. Example: '
+            '--target-pool target-pool-1,target-pool-2.'))
+  if multizonal:
+    scope_parser = parser.add_mutually_exclusive_group()
+    utils.AddRegionFlag(
+        scope_parser,
+        resource_type='instance group manager',
+        operation_type='set target pools',
+        explanation=constants.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
+    utils.AddZoneFlag(
+        scope_parser,
+        resource_type='instance group manager',
+        operation_type='set target pools',
+        explanation=constants.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
+  else:
+    utils.AddZoneFlag(
+        parser,
+        resource_type='instance group manager',
+        operation_type='set target pools')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class SetTargetPools(base_classes.BaseAsyncMutator):
   """Set target pools of managed instance group."""
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('name', help='Managed instance group name.')
-    parser.add_argument(
-        '--target-pools',
-        required=True,
-        type=arg_parsers.ArgList(min_length=0),
-        action=arg_parsers.FloatingListValuesCatcher(),
-        metavar='TARGET_POOL',
-        help=('Compute Engine Target Pools to add the instances to. '
-              'Target Pools must be specified by name or by URL. Example: '
-              '--target-pool target-pool-1,target-pool-2.'))
-    utils.AddZoneFlag(
-        parser,
-        resource_type='instance group manager',
-        operation_type='set target pools')
+    _AddArgs(parser=parser, multizonal=False)
 
   @property
   def method(self):
@@ -70,6 +92,58 @@ class SetTargetPools(base_classes.BaseAsyncMutator):
     return [request]
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SetTargetPoolsAlpha(SetTargetPools,
+                          instance_groups_utils.InstanceGroupReferenceMixin):
+  """Set target pools of managed instance group."""
+
+  @staticmethod
+  def Args(parser):
+    _AddArgs(parser=parser, multizonal=True)
+
+  def CreateRequests(self, args):
+    group_ref = self.CreateInstanceGroupReference(
+        name=args.name, region=args.region, zone=args.zone)
+
+    if group_ref.Collection() == 'compute.instanceGroupManagers':
+      region = utils.ZoneNameToRegionName(group_ref.zone)
+    else:
+      region = group_ref.region
+
+    pool_refs = self.CreateRegionalReferences(
+        args.target_pools, region, resource_type='targetPools')
+    pools = [pool_ref.SelfLink() for pool_ref in pool_refs]
+
+    if group_ref.Collection() == 'compute.instanceGroupManagers':
+      service = self.compute.instanceGroupManagers
+      request = (
+          self.messages.ComputeInstanceGroupManagersSetTargetPoolsRequest(
+              instanceGroupManager=group_ref.Name(),
+              instanceGroupManagersSetTargetPoolsRequest=(
+                  self.messages.InstanceGroupManagersSetTargetPoolsRequest(
+                      targetPools=pools,
+                  )
+              ),
+              project=self.project,
+              zone=group_ref.zone,)
+      )
+    else:
+      service = self.compute.regionInstanceGroupManagers
+      request = (
+          self.messages.ComputeRegionInstanceGroupManagersSetTargetPoolsRequest(
+              instanceGroupManager=group_ref.Name(),
+              regionInstanceGroupManagersSetTargetPoolsRequest=(
+                  self.messages.
+                  RegionInstanceGroupManagersSetTargetPoolsRequest(
+                      targetPools=pools,
+                  )
+              ),
+              project=self.project,
+              region=group_ref.region,)
+      )
+    return [(service, self.method, request)]
+
+
 SetTargetPools.detailed_help = {
     'brief': 'Set instance template for managed instance group.',
     'DESCRIPTION': """
@@ -83,3 +157,4 @@ created in the managed instance group will be added to all of the provided
 target pools for load balancing purposes.
 """,
 }
+SetTargetPoolsAlpha.detailed_help = SetTargetPools.detailed_help

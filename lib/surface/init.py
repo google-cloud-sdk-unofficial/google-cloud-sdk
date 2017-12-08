@@ -36,26 +36,30 @@ class Init(base.Command):
       'DESCRIPTION': """\
           {description}
 
-          {command} launches a interactive getting-started gcloud
-          workflow, and replaces  `gcloud auth login` as the recommended
-          command to execute after newly installing gcloud.  This workflow
-          performs a variety of setup tasks, including the following:
+          {command} launches an interactive Getting Started workflow for gcloud.
+          It replaces `gcloud auth login` as the recommended command to execute
+          after you install the Cloud SDK. {command} performs the following
+          setup steps:
 
-            - launching an authorization flow or selecting credentials
-            - setting properties including project, default Google Compute
-              Engine zone, and default Google Compute Engine region
-            - suggesting cloning a source repository
+            - Authorizes gcloud and other SDK tools to access Google Cloud
+              Platform using your user account credentials, or lets you select
+              from accounts whose credentials are already available. {command}
+              uses the same browser-based authorization flow as
+              `gcloud auth login`.
+            - Sets properties in a gcloud configuration, including the current
+              project and the default Google Compute Engine region and zone.
+            - Clones a Cloud source repository (optional).
 
-          Most users will run {command} to get started with gcloud. Subsequent
-          {command} invocations can be use to create new gcloud configurations
+          Most users run {command} to get started with gcloud. You can use
+          subsequent {command} invocations to create new gcloud configurations
           or to reinitialize existing configurations.  See `gcloud topic
-          configurations` for additional information about configurations.
+          configurations` for additional information.
 
           Properties set by `gcloud init` are local and persistent. They are
-          not affected by remote changes to your project. For instance, your
-          configuration's default Compute Engine zone will remain stable, even
-          if you or another user changes the project default zone in the
-          Developer Console website.  You can resync your configuration at any
+          not affected by remote changes to your project. For instance, the
+          default Compute Engine zone in your configuration remains stable,
+          even if you or another user changes the project-level default zone in
+          the Cloud Platform Console.  You can resync your configuration at any
           time by rerunning `gcloud init`.
 
           (Available since version 0.9.79. Run $ gcloud --version to see which
@@ -72,7 +76,8 @@ class Init(base.Command):
     parser.add_argument(
         '--console-only',
         action='store_true',
-        help=('Don\'t launch a browser for authentication.'))
+        help=('Prevent the command from launching a browser for '
+              'authorization.'))
 
   def Run(self, args):
     """Allows user to select configuration, and initialize it."""
@@ -133,7 +138,7 @@ class Init(base.Command):
     auth_info = self._RunCmd(['auth', 'list'])
     if auth_info and auth_info.accounts:
       idx = console_io.PromptChoice(
-          auth_info.accounts + ['Login with new credentials'],
+          auth_info.accounts + ['Log in with new credentials'],
           message='Pick credentials to use:',
           prompt_string=None)
       if idx is None:
@@ -141,7 +146,8 @@ class Init(base.Command):
       new_credentials = idx == len(auth_info.accounts)
     else:
       answer = console_io.PromptContinue(
-          prompt_string='To continue, you must login. Would you like to login')
+          prompt_string='To continue, you must log in. Would you like to log '
+                        'in')
       if not answer:
         return False
       new_credentials = True
@@ -322,13 +328,12 @@ https://console.developers.google.com/apis page.
     """Allows user to clone one of the projects repositories."""
     answer = console_io.PromptContinue(
         prompt_string='Do you want to use Google\'s source hosting (see '
-        'https://cloud.google.com/tools/cloud-repositories/)')
+        '"https://cloud.google.com/source-repositories/docs/")')
     if not answer:
       return
 
     try:
-      source.Source.SetApiEndpoint(
-          self.Http(), properties.VALUES.api_endpoint_overrides.source.Get())
+      source.Source.SetApiEndpoint(self.Http())
       project = source.Project(project_id)
       repos = project.ListRepos()
     except Exception:  # pylint: disable=broad-except
@@ -339,10 +344,10 @@ https://console.developers.google.com/apis page.
     if repos:
       repos = sorted(repo.name or 'default' for repo in repos)
       log.status.write(
-          'This project has one or more associated git repositories.\n')
+          'This project has one or more associated Git repositories.\n')
       idx = console_io.PromptChoice(
           ['[{0}]'.format(repo) for repo in repos] + ['Do not clone'],
-          message='Pick git repository to clone to your local machine:',
+          message='Pick Git repository to clone to your local machine:',
           prompt_string=None)
       if idx >= 0 and idx < len(repos):
         repo_name = repos[idx]
@@ -350,7 +355,7 @@ https://console.developers.google.com/apis page.
         return
     elif repos is None:
       answer = console_io.PromptContinue(
-          prompt_string='Generally projects have a git repository named '
+          prompt_string='Generally projects have a Git repository named '
           '[default]. Would you like to try clone it')
       if not answer:
         return
@@ -435,7 +440,7 @@ https://console.developers.google.com/apis page.
       # Best effort to force result of Execute eagerly.  Don't just check
       # that result is iterable to avoid category errors (e.g., accidently
       # converting a string or dict to a list).
-      if type(result) is types.GeneratorType:
+      if isinstance(result, types.GeneratorType):
         return list(result)
       return result
 

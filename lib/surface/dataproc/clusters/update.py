@@ -67,7 +67,7 @@ class Update(base.Command):
 
     cluster_ref = util.ParseCluster(args.name, self.context)
 
-    cluster_config = messages.ClusterConfiguration()
+    cluster_config = messages.ClusterConfig()
     changed_fields = []
 
     has_changes = False
@@ -78,18 +78,18 @@ class Update(base.Command):
       args.num_workers = args.new_num_workers
 
     if args.num_workers is not None:
-      worker_config = messages.InstanceGroupConfiguration(
+      worker_config = messages.InstanceGroupConfig(
           numInstances=args.num_workers)
-      cluster_config.workerConfiguration = worker_config
-      changed_fields.append('configuration.worker_configuration.num_instances')
+      cluster_config.workerConfig = worker_config
+      changed_fields.append('config.worker_config.num_instances')
       has_changes = True
 
     if args.num_preemptible_workers is not None:
-      worker_config = messages.InstanceGroupConfiguration(
+      worker_config = messages.InstanceGroupConfig(
           numInstances=args.num_preemptible_workers)
-      cluster_config.secondaryWorkerConfiguration = worker_config
+      cluster_config.secondaryWorkerConfig = worker_config
       changed_fields.append(
-          'configuration.secondary_worker_configuration.num_instances')
+          'config.secondary_worker_config.num_instances')
       has_changes = True
 
     if not has_changes:
@@ -97,24 +97,25 @@ class Update(base.Command):
           'Must specify at least one cluster parameter to update.')
 
     cluster = messages.Cluster(
-        configuration=cluster_config,
+        config=cluster_config,
         clusterName=cluster_ref.clusterName,
         projectId=cluster_ref.projectId)
 
-    request = messages.DataprocProjectsClustersPatchRequest(
+    request = messages.DataprocProjectsRegionsClustersPatchRequest(
         clusterName=cluster_ref.clusterName,
+        region=cluster_ref.region,
         projectId=cluster_ref.projectId,
         cluster=cluster,
         updateMask=','.join(changed_fields))
 
-    operation = client.projects_clusters.Patch(request)
+    operation = client.projects_regions_clusters.Patch(request)
     util.WaitForOperation(
         operation,
         self.context,
         message='Waiting for cluster update operation',
         timeout_s=3600 * 3)
 
-    cluster = client.projects_clusters.Get(cluster_ref.Request())
+    cluster = client.projects_regions_clusters.Get(cluster_ref.Request())
     log.UpdatedResource(cluster_ref)
     return cluster
 

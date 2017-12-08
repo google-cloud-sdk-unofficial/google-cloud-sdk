@@ -26,12 +26,18 @@ from googlecloudsdk.third_party.py27 import py27_collections as collections
 
 
 class List(base.Command):
-  """List the accounts for known credentials."""
+  """Lists credentialed accounts.
+
+  Lists accounts whose credentials have been obtained using `gcloud init`,
+  `gcloud auth login` and `gcloud auth activate-service-account`, and shows
+  which account is active. The active account is used by gcloud and other Cloud
+  SDK tools to access Google Cloud Platform.
+  """
 
   @staticmethod
   def Args(parser):
     parser.add_argument('--filter-account',
-                        help='List only credentials for one account.')
+                        help='List only the specified account.')
 
   def Run(self, args):
     """List the account for known credentials."""

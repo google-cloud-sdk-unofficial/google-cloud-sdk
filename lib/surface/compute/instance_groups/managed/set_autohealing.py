@@ -14,23 +14,43 @@
 """Command for setting autohealing policy of managed instance group."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import constants
+from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+def _AddArgs(parser, multizonal):
+  """Adds args."""
+  parser.add_argument('name', help='Managed instance group name.')
+  managed_instance_groups_utils.AddAutohealingArgs(parser)
+  if multizonal:
+    scope_parser = parser.add_mutually_exclusive_group()
+    utils.AddRegionFlag(
+        scope_parser,
+        resource_type='instance group manager',
+        operation_type='set autohealing policy',
+        explanation=constants.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
+    utils.AddZoneFlag(
+        scope_parser,
+        resource_type='instance group manager',
+        operation_type='set autohealing policy',
+        explanation=constants.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
+  else:
+    utils.AddZoneFlag(
+        parser,
+        resource_type='instance group manager',
+        operation_type='set autohealing policy')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SetAutohealing(base_classes.BaseAsyncMutator):
   """Set autohealing policy of instance group manager."""
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('name', help='Managed instance group name.')
-    managed_instance_groups_utils.AddAutohealingArgs(parser)
-    utils.AddZoneFlag(
-        parser,
-        resource_type='instance group manager',
-        operation_type='set autohealing policy')
+    _AddArgs(parser=parser, multizonal=False)
 
   @property
   def method(self):
@@ -60,6 +80,48 @@ class SetAutohealing(base_classes.BaseAsyncMutator):
     return [request]
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SetAutohealingAlpha(SetAutohealing,
+                          instance_groups_utils.InstanceGroupReferenceMixin):
+  """Set autohealing policy of instance group manager."""
+
+  @staticmethod
+  def Args(parser):
+    _AddArgs(parser=parser, multizonal=True)
+
+  def CreateRequests(self, args):
+    group_ref = self.CreateInstanceGroupReference(
+        name=args.name, region=args.region, zone=args.zone)
+    auto_healing_policies = (
+        managed_instance_groups_utils.CreateAutohealingPolicies(self, args))
+
+    if group_ref.Collection() == 'compute.instanceGroupManagers':
+      service = self.compute.instanceGroupManagers
+      request = (
+          self.messages.
+          ComputeInstanceGroupManagersSetAutoHealingPoliciesRequest(
+              project=self.project,
+              zone=group_ref.zone,
+              instanceGroupManager=group_ref.Name(),
+              instanceGroupManagersSetAutoHealingRequest=(
+                  self.messages.InstanceGroupManagersSetAutoHealingRequest(
+                      autoHealingPolicies=auto_healing_policies))))
+    else:
+      service = self.compute.regionInstanceGroupManagers
+      request = (
+          self.messages.
+          ComputeRegionInstanceGroupManagersSetAutoHealingPoliciesRequest(
+              project=self.project,
+              region=group_ref.region,
+              instanceGroupManager=group_ref.Name(),
+              regionInstanceGroupManagersSetAutoHealingRequest=(
+                  self.messages.
+                  RegionInstanceGroupManagersSetAutoHealingRequest(
+                      autoHealingPolicies=auto_healing_policies))))
+
+    return [(service, self.method, request)]
+
+
 SetAutohealing.detailed_help = {
     'brief': 'Set autohealing policy for managed instance group.',
     'DESCRIPTION': """
@@ -78,3 +140,4 @@ refrain from autohealing the instance even if the instance is reported as not
 RUNNING or UNHEALTHY.
 """,
 }
+SetAutohealingAlpha.detailed_help = SetAutohealing.detailed_help

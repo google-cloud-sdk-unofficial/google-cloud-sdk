@@ -44,8 +44,9 @@ class Delete(base.Command):
 
     cluster_ref = util.ParseCluster(args.name, self.context)
 
-    request = messages.DataprocProjectsClustersDeleteRequest(
+    request = messages.DataprocProjectsRegionsClustersDeleteRequest(
         clusterName=cluster_ref.clusterName,
+        region=cluster_ref.region,
         projectId=cluster_ref.projectId)
 
     if not console_io.PromptContinue(
@@ -53,7 +54,7 @@ class Delete(base.Command):
         'deleted.'.format(args.name)):
       raise exceptions.ToolException('Deletion aborted by user.')
 
-    operation = client.projects_clusters.Delete(request)
+    operation = client.projects_regions_clusters.Delete(request)
     operation = util.WaitForOperation(
         operation, self.context, 'Waiting for cluster deletion operation')
     log.DeletedResource(cluster_ref)

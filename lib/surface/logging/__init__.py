@@ -17,11 +17,10 @@
 import argparse
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import apis
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
-from googlecloudsdk.third_party.apis.logging import v1beta3
-from googlecloudsdk.third_party.apis.logging import v2beta1
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -38,28 +37,20 @@ class Logging(base.Group):
     Returns:
       The updated context.
     """
-    url = properties.VALUES.api_endpoint_overrides.logging.Get()
-
     # All logging collections use projectId, so we can set a default value.
     resources.SetParamDefault(
         api='logging', collection=None, param='projectsId',
         resolver=resolvers.FromProperty(properties.VALUES.core.project))
 
-    client_v1beta3 = v1beta3.LoggingV1beta3(
-        url=url,
-        http=self.Http(),
-        get_credentials=False)
+    context['logging_client_v1beta3'] = apis.GetClientInstance(
+        'logging', 'v1beta3', self.Http())
+    context['logging_messages_v1beta3'] = apis.GetMessagesModule(
+        'logging', 'v1beta3')
 
-    context['logging_client_v1beta3'] = client_v1beta3
-    context['logging_messages_v1beta3'] = v1beta3
-
-    client_v2beta1 = v2beta1.LoggingV2beta1(
-        url=url,
-        http=self.Http(),
-        get_credentials=False)
-
-    context['logging_client_v2beta1'] = client_v2beta1
-    context['logging_messages_v2beta1'] = v2beta1
+    context['logging_client_v2beta1'] = apis.GetClientInstance(
+        'logging', 'v2beta1', self.Http())
+    context['logging_messages_v2beta1'] = apis.GetMessagesModule(
+        'logging', 'v2beta1')
 
     context['logging_resources'] = resources
     return context

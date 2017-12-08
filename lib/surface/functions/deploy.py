@@ -177,8 +177,9 @@ class Deploy(base.Command):
     function = self._PrepareFunctionWithoutSources(name, args)
     if args.source_url:
       messages = self.context['functions_messages']
-      # At most one of [args.source_tag, args.source_branch,
-      # args.source_revision] is set: enforced by the arg parser.
+      if len(filter(None, [args.source_tag, args.source_branch,
+                           args.source_revision])) > 1:  # double check
+        raise exceptions.FunctionsError('Invalid source parameters.')
       function.sourceRepository = messages.SourceRepository(
           tag=args.source_tag, branch=args.source_branch,
           revision=args.source_revision, repositoryUrl=args.source_url,
@@ -189,7 +190,9 @@ class Deploy(base.Command):
 
   def _PrepareSourcesOnGcs(self, args):
     remote_zip_file = self._GenerateFileName(args)
-    # args.bucket is not None: Enforced in _CheckArgs().
+    if args.bucket is None:  # double check
+      raise exceptions.FunctionsError('Missing bucket parameter'
+                                      ' for function sources.')
     gcs_url = storage.BuildRemoteDestination(args.bucket, remote_zip_file)
     with file_utils.TemporaryDirectory() as tmp_dir:
       zip_file = self._CreateZipFile(tmp_dir, args)
@@ -239,6 +242,10 @@ class Deploy(base.Command):
             '--source-url is provided')
       if args.source is None:
         args.source = '.'
+      if args.bucket is None:
+        raise exceptions.FunctionsError(
+            'argument --bucket: required when the function is deployed from'
+            ' a local directory (when argument --source-url is not provided)')
       util.ValidateDirectoryExistsOrRaiseFunctionError(args.source)
     else:
       if args.source is None:

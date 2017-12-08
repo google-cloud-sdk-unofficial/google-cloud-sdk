@@ -90,12 +90,12 @@ class Pig(base_classes.JobSubmitter):
   def ConfigureJob(self, job, args):
     messages = self.context['dataproc_messages']
 
-    log_config = self.BuildLoggingConfiguration(args.driver_log_levels)
+    log_config = self.BuildLoggingConfig(args.driver_log_levels)
     pig_job = messages.PigJob(
         continueOnFailure=args.continue_on_failure,
         jarFileUris=self.files_by_type['jars'],
         queryFileUri=self.files_by_type['file'],
-        loggingConfiguration=log_config)
+        loggingConfig=log_config)
 
     if args.queries:
       pig_job.queryList = messages.QueryList(queries=args.queries)

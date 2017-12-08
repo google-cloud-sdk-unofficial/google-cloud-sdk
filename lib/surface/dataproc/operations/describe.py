@@ -40,10 +40,10 @@ class Describe(base.Command):
     client = self.context['dataproc_client']
     messages = self.context['dataproc_messages']
 
-    request = messages.DataprocOperationsGetRequest(
+    request = messages.DataprocProjectsRegionsOperationsGetRequest(
         name=args.operation)
 
-    operation = client.operations.Get(request)
+    operation = client.projects_regions_operations.Get(request)
     return operation
 
   def Display(self, args, result):

@@ -24,9 +24,8 @@ of the default behavior.
 """
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import apis
 from googlecloudsdk.core import properties
-from googlecloudsdk.third_party.apis.pubsub.v1 import pubsub_v1_client as cli
-from googlecloudsdk.third_party.apis.pubsub.v1 import pubsub_v1_messages
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -48,8 +47,5 @@ class Pubsub(base.Group):
       args: argparse.Namespace: The same namespace given to the corresponding
           .Run() invocation.
     """
-    pubsub_url = properties.VALUES.api_endpoint_overrides.pubsub.Get()
-    context['pubsub_msgs'] = pubsub_v1_messages
-    context['pubsub'] = cli.PubsubV1(url=(pubsub_url or ''),
-                                     get_credentials=False,
-                                     http=self.Http())
+    context['pubsub_msgs'] = apis.GetMessagesModule('pubsub', 'v1')
+    context['pubsub'] = apis.GetClientInstance('pubsub', 'v1', self.Http())

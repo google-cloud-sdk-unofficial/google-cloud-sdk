@@ -17,16 +17,18 @@
 import argparse
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import apis
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
-from googlecloudsdk.third_party.apis.dataproc.v1beta1 import dataproc_v1beta1_client
-from googlecloudsdk.third_party.apis.dataproc.v1beta1 import dataproc_v1beta1_messages
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Dataproc(base.Group):
   """Create and manage Google Cloud Dataproc clusters and jobs."""
+
+  # The only dataproc region
+  REGION = 'global'
 
   detailed_help = {
       'DESCRIPTION': '{description}',
@@ -43,20 +45,26 @@ class Dataproc(base.Group):
 
   def Filter(self, context, args):
     context['http'] = self.Http()
-    context['dataproc_endpoint'] = (
-        properties.VALUES.api_endpoint_overrides.dataproc.Get())
-    context['dataproc_messages'] = dataproc_v1beta1_messages
+    context['dataproc_messages'] = apis.GetMessagesModule('dataproc', 'v1')
     context['resources'] = resources
 
-    context['dataproc_client'] = dataproc_v1beta1_client.DataprocV1beta1(
-        get_credentials=False,
-        http=context['http'],
-        url=context['dataproc_endpoint'])
+    # TODO(user): Move outside of context in a place that will be easier to
+    # convert into a property when there are multiple regions.
+    context['dataproc_region'] = self.REGION
+
+    context['dataproc_client'] = apis.GetClientInstance(
+        'dataproc', 'v1', context['http'])
 
     resources.SetParamDefault(
         api='dataproc',
         collection=None,
         param='projectId',
         resolver=resolvers.FromProperty(properties.VALUES.core.project))
+
+    resources.SetParamDefault(
+        api='dataproc',
+        collection=None,
+        param='region',
+        resolver=lambda: context['dataproc_region'])
 
     return context

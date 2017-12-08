@@ -1,0 +1,56 @@
+
+.TH "GCLOUD_DATAPROC_OPERATIONS_LIST" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud dataproc operations list \- view the list of all operations
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud dataproc operations list\fR [\fB\-\-cluster\fR\ \fICLUSTER\fR] [\fB\-\-state\-filter\fR\ \fISTATE_FILTER\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+View the list of all operations.
+
+
+
+.SH "FLAGS"
+
+\fB\-\-cluster\fR \fICLUSTER\fR
+.RS 2m
+Restrict to the operations of this Dataproc cluster.
+
+.RE
+\fB\-\-state\-filter\fR \fISTATE_FILTER\fR
+.RS 2m
+Filter by cluster state. Choices are ['active', 'inactive'].
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To see the list of all operations, run:
+
+.RS 2m
+$ gcloud dataproc operations list
+.RE
+
+To see the list of all active operations in a cluster, run:
+
+.RS 2m
+$ gcloud dataproc operations list \-\-state\-filter active \e
+    \-\-cluster my_cluster
+.RE

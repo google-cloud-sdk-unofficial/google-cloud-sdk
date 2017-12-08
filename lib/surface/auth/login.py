@@ -44,11 +44,12 @@ _DISPLAY_VARIABLES = ['DISPLAY', 'WAYLAND_DISPLAY', 'MIR_SOCKET']
 
 
 class Login(base.Command):
-  """Get credentials for the tools in the Google Cloud SDK via a web flow.
+  """Authorize gcloud to access Google Cloud Platform.
 
-  Obtains access credentials for the Google Cloud Platform resources of the
-  given account, via a web flow.  If the account already has valid credentials,
-  it is set as active without re-running the web flow.
+  Obtains access credentials for your user account via a web-based authorization
+  flow. If valid credentials for an account are already available from a prior
+  authorization, the account is set to active without rerunning the flow. Use
+  `gcloud auth list` to view credentialed accounts.
   """
 
   @staticmethod
@@ -58,10 +59,11 @@ class Login(base.Command):
     parser.add_argument(
         '--launch-browser',
         action='store_true', default=True, dest='launch_browser',
-        help='Launch a web browser instead of printing a URL to be copied.')
+        help='Launch a browser for authorization. If not enabled or DISPLAY '
+        'variable is not set, prints a URL to standard output to be copied.')
     parser.add_argument(
         '--activate', action='store_true', default=True,
-        help='Set the new credentials as active.')
+        help='Set the new account to active.')
     # --do-not-activate for (hidden) backwards compatibility.
     parser.add_argument(
         '--do-not-activate', action='store_false', dest='activate',
@@ -71,10 +73,10 @@ class Login(base.Command):
         help='Minimal user output.')
     parser.add_argument(
         '--force', action='store_true',
-        help='Re-run the web flow even if the given account has valid '
-        'credentials.')
+        help='Re-run the web authorization flow even if the given account has '
+        'valid credentials.')
     parser.add_argument(
-        'account', nargs='?', help='The account to log in as.')
+        'account', nargs='?', help='User account used for authorization.')
 
   def Format(self, unused_args):
     return None

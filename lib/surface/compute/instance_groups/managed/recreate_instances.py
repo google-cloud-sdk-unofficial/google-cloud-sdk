@@ -14,29 +14,52 @@
 """Command for recreating instances managed by a managed instance group."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import constants
+from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 
 
-class RecreateInstances(base_classes.BaseAsyncMutator):
-  """Recreate instances managed by a managed instance group."""
-
-  @staticmethod
-  def Args(parser):
-    parser.add_argument('name',
-                        help='Managed instance group name.')
-    parser.add_argument(
-        '--instances',
-        type=arg_parsers.ArgList(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
-        metavar='INSTANCE',
-        required=True,
-        help='Names of instances to recreate.')
+def _AddArgs(parser, multizonal):
+  """Adds args."""
+  parser.add_argument('name',
+                      help='Managed instance group name.')
+  parser.add_argument(
+      '--instances',
+      type=arg_parsers.ArgList(min_length=1),
+      action=arg_parsers.FloatingListValuesCatcher(),
+      metavar='INSTANCE',
+      required=True,
+      help='Names of instances to recreate.')
+  if multizonal:
+    scope_parser = parser.add_mutually_exclusive_group()
+    utils.AddRegionFlag(
+        scope_parser,
+        resource_type='instance group',
+        operation_type='recreate instances',
+        explanation=constants.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
+    utils.AddZoneFlag(
+        scope_parser,
+        resource_type='instance group manager',
+        operation_type='recreate instances',
+        explanation=constants.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
+  else:
     utils.AddZoneFlag(
         parser,
         resource_type='instance group manager',
         operation_type='recreate instances')
 
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class RecreateInstances(base_classes.BaseAsyncMutator):
+  """Recreate instances managed by a managed instance group."""
+
+  @staticmethod
+  def Args(parser):
+    _AddArgs(parser=parser, multizonal=False)
+
+  @property
   def method(self):
     return 'RecreateInstances'
 
@@ -54,7 +77,7 @@ class RecreateInstances(base_classes.BaseAsyncMutator):
                                                zone_ref.zone,
                                                resource_type='instances')
     instances = [instance_ref.SelfLink() for instance_ref in instances_ref]
-    return [(self.method(),
+    return [(self.method,
              self.messages.ComputeInstanceGroupManagersRecreateInstancesRequest(
                  instanceGroupManager=zone_ref.Name(),
                  instanceGroupManagersRecreateInstancesRequest=(
@@ -68,6 +91,52 @@ class RecreateInstances(base_classes.BaseAsyncMutator):
              ),),]
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class RecreateInstancesAlpha(RecreateInstances,
+                             instance_groups_utils.InstancesReferenceMixin,
+                             instance_groups_utils.InstanceGroupReferenceMixin):
+  """Recreate instances managed by a managed instance group."""
+
+  @staticmethod
+  def Args(parser):
+    _AddArgs(parser=parser, multizonal=True)
+
+  def CreateRequests(self, args):
+    errors = []
+    group_ref = self.CreateInstanceGroupReference(
+        name=args.name, region=args.region, zone=args.zone)
+    instances = self.CreateInstanceReferences(group_ref, args.instances, errors)
+
+    if group_ref.Collection() == 'compute.instanceGroupManagers':
+      service = self.compute.instanceGroupManagers
+      request = (
+          self.messages.ComputeInstanceGroupManagersRecreateInstancesRequest(
+              instanceGroupManager=group_ref.Name(),
+              instanceGroupManagersRecreateInstancesRequest=(
+                  self.messages.InstanceGroupManagersRecreateInstancesRequest(
+                      instances=instances,
+                  )
+              ),
+              project=self.project,
+              zone=group_ref.zone,
+          ))
+    else:
+      service = self.compute.regionInstanceGroupManagers
+      request = (
+          self.messages.
+          ComputeRegionInstanceGroupManagersRecreateInstancesRequest(
+              instanceGroupManager=group_ref.Name(),
+              regionInstanceGroupManagersRecreateRequest=(
+                  self.messages.RegionInstanceGroupManagersRecreateRequest(
+                      instances=instances,)
+              ),
+              project=self.project,
+              region=group_ref.region,
+          ))
+
+    return [(service, self.method, request)]
+
+
 RecreateInstances.detailed_help = {
     'brief': 'Recreate instances managed by a managed instance group.',
     'DESCRIPTION': """
@@ -77,3 +146,4 @@ recreated based on the latest instance template configured for the managed
 instance group.
 """,
 }
+RecreateInstancesAlpha.detailed_help = RecreateInstances.detailed_help

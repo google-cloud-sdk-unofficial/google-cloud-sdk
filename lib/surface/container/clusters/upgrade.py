@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Upgrade cluster command."""
-import argparse
 from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import base
@@ -108,7 +107,9 @@ class Upgrade(base.Command):
     """
     parser.add_argument(
         '--master',
-        help=argparse.SUPPRESS,
+        help='Upgrade the cluster\'s master to the latest version of Kubernetes'
+        ' supported on Container Engine. Nodes cannot be upgraded at the same'
+        ' time as the master.',
         action='store_true')
     parser.add_argument(
         '--wait',

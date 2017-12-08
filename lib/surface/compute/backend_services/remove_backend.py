@@ -13,12 +13,44 @@
 # limitations under the License.
 """Command for removing a backend from a backend service."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
+def _AddArgs(parser, multizonal=False):
+  """Adds args."""
+  g = parser.add_mutually_exclusive_group(required=True)
+  g.add_argument(
+      '--group',
+      help=('The name of the legacy instance group '
+            '(deprecated resourceViews API) to remove. '
+            'Use --instance-group flag instead.'))
+  g.add_argument(
+      '--instance-group',
+      help='The name or URI of the instance group to remove.')
+
+  scope_parser = parser
+  if multizonal:
+    scope_parser = parser.add_mutually_exclusive_group()
+    utils.AddRegionFlag(
+        scope_parser,
+        resource_type='instance group',
+        operation_type='remove from the backend service')
+  utils.AddZoneFlag(
+      parser,
+      resource_type='instance group',
+      operation_type='remove from the backend service')
+
+  parser.add_argument(
+      'name',
+      help='The name of the backend service.')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class RemoveBackend(base_classes.ReadWriteCommand):
   """Remove a backend from a backend service.
 
@@ -33,24 +65,7 @@ class RemoveBackend(base_classes.ReadWriteCommand):
 
   @staticmethod
   def Args(parser):
-    g = parser.add_mutually_exclusive_group(required=True)
-    g.add_argument(
-        '--group',
-        help=('The name of the legacy instance group '
-              '(deprecated resourceViews API) to remove. '
-              'Use --instance-group flag instead.'))
-    g.add_argument(
-        '--instance-group',
-        help='The name or URI of the instance group to remove.')
-
-    utils.AddZoneFlag(
-        parser,
-        resource_type='instance group',
-        operation_type='remove from the backend service')
-
-    parser.add_argument(
-        'name',
-        help='The name of the backend service.')
+    _AddArgs(parser, multizonal=False)
 
   @property
   def service(self):
@@ -78,6 +93,10 @@ class RemoveBackend(base_classes.ReadWriteCommand):
                 backendServiceResource=replacement,
                 project=self.project))
 
+  def CreateGroupReference(self, args):
+    return self.CreateZonalReference(
+        args.instance_group, args.zone, resource_type='instanceGroups')
+
   def Modify(self, args, existing):
     replacement = copy.deepcopy(existing)
 
@@ -88,8 +107,7 @@ class RemoveBackend(base_classes.ReadWriteCommand):
       group_ref = self.CreateZonalReference(
           args.group, args.zone, resource_type='zoneViews')
     else:
-      group_ref = self.CreateZonalReference(
-          args.instance_group, args.zone, resource_type='instanceGroups')
+      group_ref = self.CreateGroupReference(args)
 
     group_uri = group_ref.SelfLink()
 
@@ -106,3 +124,28 @@ class RemoveBackend(base_classes.ReadWriteCommand):
       replacement.backends.pop(backend_idx)
 
     return replacement
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class RemoveBackendAlpha(RemoveBackend,
+                         instance_groups_utils.InstanceGroupReferenceMixin):
+  """Remove a backend from a backend service.
+
+  *{command}* is used to remove a backend from a backend
+  service.
+
+  Before removing a backend, it is a good idea to "drain" the
+  backend first. A backend can be drained by setting its
+  capacity scaler to zero through 'gcloud compute
+  backend-services edit'.
+  """
+
+  @staticmethod
+  def Args(parser):
+    _AddArgs(parser, multizonal=True)
+
+  def CreateGroupReference(self, args):
+    return self.CreateInstanceGroupReference(
+        name=args.instance_group, region=args.region, zone=args.zone,
+        zonal_resource_type='instanceGroups',
+        regional_resource_type='regionInstanceGroups')

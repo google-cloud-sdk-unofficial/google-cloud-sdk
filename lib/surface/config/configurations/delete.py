@@ -15,6 +15,7 @@
 """Command to delete named configuration."""
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.config import completers
 from googlecloudsdk.core import log
 from googlecloudsdk.core import named_configs
 from googlecloudsdk.core.console import console_io
@@ -51,11 +52,12 @@ class Delete(base.SilentCommand):
   @staticmethod
   def Args(parser):
     """Adds args for this command."""
-    parser.add_argument(
+    configuration_arg = parser.add_argument(
         'configuration_names',
         nargs='+',
         help=('Configuration names to delete, '
               'can not be currently active configuration.'))
+    configuration_arg.completer = completers.NamedConfigCompleter
 
   def Run(self, args):
     # Fail the delete operation when we're attempting to delete the

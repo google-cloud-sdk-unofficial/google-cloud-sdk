@@ -92,14 +92,14 @@ cluster, run:
   def ConfigureJob(self, job, args):
     messages = self.context['dataproc_messages']
 
-    log_config = self.BuildLoggingConfiguration(args.driver_log_levels)
+    log_config = self.BuildLoggingConfig(args.driver_log_levels)
     pyspark_job = messages.PySparkJob(
         args=args.job_args,
         archiveUris=self.files_by_type['archives'],
         fileUris=self.files_by_type['files'],
         pythonFileUris=self.files_by_type['py_files'],
         mainPythonFileUri=self.files_by_type['py_file'],
-        loggingConfiguration=log_config)
+        loggingConfig=log_config)
 
     if args.properties:
       pyspark_job.properties = encoding.DictToMessage(

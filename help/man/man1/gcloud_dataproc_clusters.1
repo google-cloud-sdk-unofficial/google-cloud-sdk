@@ -1,0 +1,95 @@
+
+.TH "GCLOUD_DATAPROC_CLUSTERS" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud dataproc clusters \- create and manage Google Cloud Dataproc clusters
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud dataproc clusters\fR \fICOMMAND\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Create and manage Google Cloud Dataproc clusters.
+
+
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "COMMANDS"
+
+\f5\fICOMMAND\fR\fR is one of the following:
+
+\fBcreate\fR
+.RS 2m
+Create a cluster.
+
+.RE
+\fBdelete\fR
+.RS 2m
+Delete a cluster.
+
+.RE
+\fBdescribe\fR
+.RS 2m
+View the details of a cluster.
+
+.RE
+\fBdiagnose\fR
+.RS 2m
+Run a detailed diagnostic on a cluster.
+
+.RE
+\fBlist\fR
+.RS 2m
+View a list of all clusters in a project.
+
+.RE
+\fBupdate\fR
+.RS 2m
+Update the number of worker nodes in a cluster.
+
+
+.RE
+
+.SH "EXAMPLES"
+
+To create a cluster, run:
+
+.RS 2m
+$ gcloud dataproc clusters create my_cluster
+.RE
+
+To resize a cluster, run:
+
+.RS 2m
+$ gcloud dataproc clusters update my_cluster \-\-num_workers 5
+.RE
+
+To delete a cluster, run:
+
+.RS 2m
+$ gcloud dataproc clusters delete my_cluster
+.RE
+
+To view the details of a cluster, run:
+
+.RS 2m
+$ gcloud dataproc clusters describe my_cluster
+.RE
+
+To see the list of all clusters, run:
+
+.RS 2m
+$ gcloud dataproc clusters list
+.RE

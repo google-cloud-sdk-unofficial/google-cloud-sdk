@@ -42,14 +42,14 @@ class Delete(base.Command):
     client = self.context['dataproc_client']
     messages = self.context['dataproc_messages']
 
-    request = messages.DataprocOperationsDeleteRequest(
+    request = messages.DataprocProjectsRegionsOperationsDeleteRequest(
         name=args.operation)
 
     if not console_io.PromptContinue(
         message="The operation '{0}' will be deleted.".format(args.operation)):
       raise exceptions.ToolException('Deletion aborted by user.')
 
-    client.operations.Delete(request)
+    client.projects_regions_operations.Delete(request)
 
     # TODO(user) Check that operation was deleted.
 

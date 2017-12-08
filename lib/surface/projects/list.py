@@ -22,6 +22,7 @@ from googlecloudsdk.core import remote_completion
 from googlecloudsdk.core import resources
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base.Command):
   """List all active Projects.
 

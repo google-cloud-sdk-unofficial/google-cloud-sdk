@@ -16,10 +16,9 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.core import apis
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.credentials import store
-from googlecloudsdk.third_party.apis.deploymentmanager import v2 as deploymentmanager_v2
-from googlecloudsdk.third_party.apis.deploymentmanager.v2 import deploymentmanager_v2_messages as v2_messages
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -51,15 +50,9 @@ class DmV2(base.Group):
       ToolException: When no project is specified.
     """
 
-    # Apitools client to make API requests.
-    url = '/'.join([properties.VALUES.core.api_host.Get(), 'deploymentmanager'])
-
     # v2
-    context['deploymentmanager-client'] = (
-        deploymentmanager_v2.DeploymentmanagerV2(
-            get_credentials=False, url='/'.join([url, 'v2']),
-            http=self.Http())
-    )
-    context['deploymentmanager-messages'] = v2_messages
-
+    context['deploymentmanager-client'] = apis.GetClientInstance(
+        'deploymentmanager', 'v2', self.Http())
+    context['deploymentmanager-messages'] = apis.GetMessagesModule(
+        'deploymentmanager', 'v2')
     return context

@@ -15,6 +15,7 @@
 """Command to describe named configuration."""
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.config import completers
 from googlecloudsdk.core import log
 from googlecloudsdk.core import named_configs
 from googlecloudsdk.core import properties
@@ -46,9 +47,10 @@ class Describe(base.Command):
   @staticmethod
   def Args(parser):
     """Adds args for this command."""
-    parser.add_argument(
+    configuration_arg = parser.add_argument(
         'configuration_name',
         help='Configuration name to descrive')
+    configuration_arg.completer = completers.NamedConfigCompleter
     parser.add_argument(
         '--all', action='store_true',
         help='Include unset properties in output.')

@@ -27,12 +27,11 @@ import argparse
 
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import apis
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources as cloud_resources
-from googlecloudsdk.third_party.apis.dataflow.v1b3 import dataflow_v1b3_client
-from googlecloudsdk.third_party.apis.dataflow.v1b3 import dataflow_v1b3_messages
 
 
 SERVICE_NAME = 'dataflow'
@@ -76,13 +75,10 @@ class Dataflow(base.Group):
         api='dataflow', collection=None, param='projectId',
         resolver=resolvers.FromProperty(properties.VALUES.core.project))
 
-    context[DATAFLOW_MESSAGES_MODULE_KEY] = dataflow_v1b3_messages
-
-    context[DATAFLOW_APITOOLS_CLIENT_KEY] = (
-        dataflow_v1b3_client.DataflowV1b3(
-            url=properties.VALUES.api_endpoint_overrides.dataflow.Get(),
-            get_credentials=False,
-            http=self.Http()))
+    context[DATAFLOW_MESSAGES_MODULE_KEY] = apis.GetMessagesModule(
+        'dataflow', 'v1b3')
+    context[DATAFLOW_APITOOLS_CLIENT_KEY] = apis.GetClientInstance(
+        'dataflow', 'v1b3', self.Http())
     context[DATAFLOW_REGISTRY_KEY] = cloud_resources.REGISTRY
 
     if args.endpoint:

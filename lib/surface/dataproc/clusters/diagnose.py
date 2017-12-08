@@ -39,12 +39,13 @@ class Diagnose(base.Command):
 
     cluster_ref = util.ParseCluster(args.name, self.context)
 
-    request = messages.DataprocProjectsClustersDiagnoseRequest(
+    request = messages.DataprocProjectsRegionsClustersDiagnoseRequest(
         clusterName=cluster_ref.clusterName,
+        region=cluster_ref.region,
         projectId=cluster_ref.projectId)
 
     try:
-      operation = client.projects_clusters.Diagnose(request)
+      operation = client.projects_regions_clusters.Diagnose(request)
       # TODO(user): Stream output during polling.
       operation = util.WaitForOperation(
           operation, self.context,

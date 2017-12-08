@@ -14,14 +14,16 @@
 
 """The Delete command."""
 
+import copy
+
 from googlecloudsdk.api_lib.app import appengine_api_client
+from googlecloudsdk.api_lib.app import service_util
 from googlecloudsdk.api_lib.app import version_util
-from googlecloudsdk.api_lib.app.api import operations
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util import text
 
 
 class VersionsDeleteError(exceptions.Error):
@@ -73,44 +75,50 @@ class Delete(base.Command):
   def Run(self, args):
     client = appengine_api_client.GetApiClient(self.Http(timeout=None))
     services = client.ListServices()
-    versions = version_util.GetMatchingVersions(client.ListVersions(services),
+    all_versions = client.ListVersions(services)
+    versions = version_util.GetMatchingVersions(all_versions,
                                                 args.versions, args.service,
                                                 client.project)
 
+    services_to_delete = []
+    for service in services:
+      if (len([v for v in all_versions if v.service == service.id]) ==
+          len([v for v in versions if v.service == service.id])):
+        services_to_delete.append(service)
+        for version in copy.copy(versions):
+          if version.service == service.id:
+            versions.remove(version)
+
     for version in versions:
       if version.traffic_split:
-        # TODO(user): mention `set-traffic` after b/24008284 is fixed.
-        # TODO(user): mention `migrate` it's implemented.
-        # TODO(user): mention `services delete` after it's implemented.
+        # TODO(user): mention `migrate` once it's implemented.
         raise VersionsDeleteError(
             'Version [{version}] is currently serving {allocation:.2f}% of '
             'traffic for service [{service}].\n\n'
             'Please move all traffic away by deploying a new version with the'
-            '`--promote` argument.'.format(
+            '`--promote` argument or running `gcloud preview app services '
+            'set-traffic`.'.format(
                 version=version.id,
                 allocation=version.traffic_split * 100,
                 service=version.service))
+
+    if services_to_delete:
+      word = text.Pluralize(len(services_to_delete), 'service')
+      log.warn('Requested deletion of all existing versions for the following '
+               '{0}:'.format(word))
+      printer = console_io.ListPrinter('')
+      printer.Print(services_to_delete, output_stream=log.status)
+      console_io.PromptContinue(prompt_string=(
+          '\nYou cannot delete all versions of a service. Would you like to '
+          'delete the entire {0} instead?').format(word), cancel_on_no=True)
+      service_util.DeleteServices(client, services_to_delete)
+
     if versions:
       printer = console_io.ListPrinter('Deleting the following versions:')
       printer.Print(versions, output_stream=log.status)
       console_io.PromptContinue(cancel_on_no=True)
     else:
-      log.warn('No matching versions found.')
+      if not services_to_delete:
+        log.warn('No matching versions found.')
 
-    errors = {}
-    for version in sorted(versions):
-      try:
-        with console_io.ProgressTracker('Deleting [{0}]'.format(version)):
-          client.DeleteVersion(version.service, version.id)
-      except (calliope_exceptions.HttpException, operations.OperationError,
-              operations.OperationTimeoutError) as err:
-        errors[version] = str(err)
-    if errors:
-      printable_errors = {}
-      for version, error_msg in errors.items():
-        short_name = '[{0}/{1}]'.format(version.service, version.id)
-        printable_errors[short_name] = '{0}: {1}'.format(short_name, error_msg)
-      raise VersionsDeleteError(
-          'Issues deleting version(s): {0}\n\n'.format(
-              ', '.join(printable_errors.keys())) +
-          '\n\n'.join(printable_errors.values()))
+    version_util.DeleteVersions(client, versions)

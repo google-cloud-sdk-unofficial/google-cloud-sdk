@@ -1,0 +1,44 @@
+
+.TH "GCLOUD_DATAPROC_JOBS_KILL" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud dataproc jobs kill \- kill an active job
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud dataproc jobs kill\fR \fIJOB_ID\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Kill an active job.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIJOB_ID\fR
+.RS 2m
+The ID of the job to kill.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To cancel a job, run:
+
+.RS 2m
+$ gcloud dataproc jobs kill job_id
+.RE

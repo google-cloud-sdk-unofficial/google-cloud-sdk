@@ -25,12 +25,11 @@ of the default behavior.
 from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.core import apis
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.credentials import store
-from googlecloudsdk.third_party.apis.genomics.v1 import genomics_v1_client
-from googlecloudsdk.third_party.apis.genomics.v1 import genomics_v1_messages
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -65,13 +64,10 @@ class Genomics(base.Group):
     resolver = resolvers.FromProperty(project)
     resources.SetParamDefault('genomics', None, 'project', resolver)
 
-    genomics_client = genomics_v1_client.GenomicsV1(
-        url=properties.VALUES.api_endpoint_overrides.genomics.Get(),
-        get_credentials=False,
-        http=self.Http())
-
-    context[lib.GENOMICS_APITOOLS_CLIENT_KEY] = genomics_client
-    context[lib.GENOMICS_MESSAGES_MODULE_KEY] = genomics_v1_messages
+    context[lib.GENOMICS_APITOOLS_CLIENT_KEY] = apis.GetClientInstance(
+        'genomics', 'v1', self.Http())
+    context[lib.GENOMICS_MESSAGES_MODULE_KEY] = apis.GetMessagesModule(
+        'genomics', 'v1')
     context[lib.GENOMICS_RESOURCES_KEY] = resources
 
     return context

@@ -1,0 +1,122 @@
+
+.TH "GCLOUD_DATAPROC_JOBS_SUBMIT" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud dataproc jobs submit \- submit Google Cloud Dataproc jobs to execute on a cluster
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud dataproc jobs submit\fR \fICOMMAND\fR [\fB\-\-async\fR] [\fB\-\-bucket\fR\ \fIBUCKET\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Submit Google Cloud Dataproc jobs to execute on a cluster.
+
+
+
+.SH "FLAGS"
+
+\fB\-\-async\fR
+.RS 2m
+Does not wait for the job to run.
+
+.RE
+\fB\-\-bucket\fR \fIBUCKET\fR
+.RS 2m
+The Cloud Storage bucket to stage files in. Default's to the cluster's
+configured bucket
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "COMMANDS"
+
+\f5\fICOMMAND\fR\fR is one of the following:
+
+\fBhadoop\fR
+.RS 2m
+Submit a Hadoop job to a cluster.
+
+.RE
+\fBhive\fR
+.RS 2m
+Submit a Hive job to a cluster.
+
+.RE
+\fBpig\fR
+.RS 2m
+Submit a Pig job to a cluster.
+
+.RE
+\fBpyspark\fR
+.RS 2m
+Submit a PySpark job to a cluster.
+
+.RE
+\fBspark\fR
+.RS 2m
+Submit a Java or Scala Spark job to a cluster.
+
+.RE
+\fBspark\-sql\fR
+.RS 2m
+Submit a Spark SQL job to a cluster.
+
+
+.RE
+
+.SH "EXAMPLES"
+
+To submit a Hadoop MapReduce job, run:
+
+.RS 2m
+$ gcloud dataproc jobs submit hadoop \-\-cluster my_cluster \e
+    \-\-jar my_jar.jar arg1 arg2
+.RE
+
+To submit a Spark Scala or Java job, run:
+
+.RS 2m
+$ gcloud dataproc jobs submit spark \-\-cluster my_cluster \e
+    \-\-jar my_jar.jar arg1 arg2
+.RE
+
+To submit a PySpark job, run:
+
+.RS 2m
+$ gcloud dataproc jobs submit pyspark \-\-cluster my_cluster \e
+    my_script.py arg1 arg2
+.RE
+
+To submit a Spark SQL job, run:
+
+.RS 2m
+$ gcloud dataproc jobs submit spark\-sql \-\-cluster my_cluster \e
+    \-\-file my_queries.q
+.RE
+
+To submit a Pig job, run:
+
+.RS 2m
+$ gcloud dataproc jobs submit pig \-\-cluster my_cluster \e
+    \-\-file my_script.pig
+.RE
+
+To submit a Hive job, run:
+
+.RS 2m
+$ gcloud dataproc jobs submit hive \-\-cluster my_cluster \e
+    \-\-file my_queries.q
+.RE

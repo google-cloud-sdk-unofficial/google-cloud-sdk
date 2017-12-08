@@ -14,14 +14,51 @@
 """Command for listing managed instance groups."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
+
+
+def _AutoscalerWithErrorInList(resources):
+  """Checks, if there exists autoscaler, which reports errors."""
+  for resource in resources:
+    if resource['autoscaled'] == 'yes (*)':
+      return True
+  return False
+
+
+class ListDynamicPropertisMixin(object):
+  """Untilies for computling Autoscaler related data for 'list' commands."""
+
+  def ComputeDynamicProperties(self, args, items):
+    """Add Autoscaler information if Autoscaler is defined for the item."""
+    _ = args
+    # Items are expected to be IGMs.
+    items = list(items)
+    for mig in managed_instance_groups_utils.AddAutoscalersToMigs(
+        migs_iterator=self.ComputeInstanceGroupSize(items=items),
+        project=self.project,
+        compute=self.compute,
+        http=self.http,
+        batch_url=self.batch_url,
+        fail_when_api_not_supported=False):
+      if 'autoscaler' in mig and mig['autoscaler'] is not None:
+        if (hasattr(mig['autoscaler'], 'status') and mig['autoscaler'].status ==
+            self.messages.Autoscaler.StatusValueValuesEnum.ERROR):
+          mig['autoscaled'] = 'yes (*)'
+        else:
+          mig['autoscaled'] = 'yes'
+      else:
+        mig['autoscaled'] = 'no'
+      yield mig
 
 
 # TODO(user): This acts like
 # instance-groups list --only-managed
 # so they should share code.
-class List(base_classes.ZonalLister,
-           base_classes.InstanceGroupManagerDynamicProperiesMixin):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class List(ListDynamicPropertisMixin,
+           base_classes.InstanceGroupManagerDynamicProperiesMixin,
+           base_classes.ZonalLister):
   """List Google Compute Engine managed instance groups."""
 
   @property
@@ -40,35 +77,54 @@ class List(base_classes.ZonalLister,
     """Prints the given resources."""
     resources = list(resources)
     super(List, self).Display(args, resources)
-    if self._AutoscalerWithErrorInList(resources):
+    if _AutoscalerWithErrorInList(resources):
       log.err.Print('(*) - there are errors in your autoscaling setup, please '
                     'describe the resource to see details')
 
-  def ComputeDynamicProperties(self, args, items):
-    """Add Autoscaler information if Autoscaler is defined for the item."""
-    # Items are expected to be IGMs.
-    for mig in managed_instance_groups_utils.AddAutoscalersToMigs(
-        migs_iterator=self.ComputeInstanceGroupSize(items=items),
-        project=self.project,
-        compute=self.compute,
-        http=self.http,
-        batch_url=self.batch_url,
-        fail_when_api_not_supported=False):
-      if 'autoscaler' in mig and mig['autoscaler'] is not None:
-        if (hasattr(mig['autoscaler'], 'status') and mig['autoscaler'].status ==
-            self.messages.Autoscaler.StatusValueValuesEnum.ERROR):
-          mig['autoscaled'] = 'yes (*)'
-        else:
-          mig['autoscaled'] = 'yes'
-      else:
-        mig['autoscaled'] = 'no'
-      yield mig
 
-  def _AutoscalerWithErrorInList(self, resources):
-    for resource in resources:
-      if resource['autoscaled'] == 'yes (*)':
-        return True
-    return False
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListDynamicPropertisMixin,
+                base_classes.InstanceGroupManagerDynamicProperiesMixin,
+                base_classes.MultiScopeLister):
+  """List Google Compute Engine managed instance groups."""
+
+  SCOPES = [base_classes.ScopeType.regional_scope,
+            base_classes.ScopeType.zonal_scope]
+
+  @staticmethod
+  def Args(parser):
+    base_classes.MultiScopeLister.AddScopeArgs(parser, ListAlpha.SCOPES)
+
+  @property
+  def global_service(self):
+    return None
+
+  @property
+  def regional_service(self):
+    return self.compute.regionInstanceGroupManagers
+
+  @property
+  def zonal_service(self):
+    return self.compute.instanceGroupManagers
+
+  @property
+  def aggregation_service(self):
+    return self.compute.instanceGroupManagers
+
+  @property
+  def resource_type(self):
+    return 'instanceGroupManagers'
+
+  def Display(self, args, resources):
+    """Prints the given resources."""
+    resources = list(resources)
+    super(ListAlpha, self).Display(args, resources)
+    if _AutoscalerWithErrorInList(resources):
+      log.err.Print('(*) - there are errors in your autoscaling setup, please '
+                    'describe the resource to see details')
 
 
-List.detailed_help = base_classes.GetZonalListerHelp('managed instance groups')
+List.detailed_help = base_classes.GetZonalListerHelp(
+    'managed instance groups')
+ListAlpha.detailed_help = base_classes.GetMultiScopeListerHelp(
+    'managed instance groups', ListAlpha.SCOPES)

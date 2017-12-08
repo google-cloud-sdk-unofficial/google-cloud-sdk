@@ -1,4 +1,4 @@
-"""Generated message classes for dataproc version v1beta1.
+"""Generated message classes for dataproc version v1.
 
 An API for managing Hadoop-based clusters and jobs on Google Cloud Platform.
 """
@@ -11,55 +11,21 @@ from googlecloudsdk.third_party.apitools.base.py import encoding
 package = 'dataproc'
 
 
-class Binding(_messages.Message):
-  """Associates `members` with a `role`.
-
-  Fields:
-    members: Specifies the identities requesting access for a Cloud Platform
-      resource. `members` can have the following values:  * `allUsers`: A
-      special identifier that represents anyone who is    on the internet;
-      with or without a Google account.  * `allAuthenticatedUsers`: A special
-      identifier that represents anyone    who is authenticated with a Google
-      account or a service account.  * `user:{emailid}`: An email address that
-      represents a specific Google    account. For example, `alice@gmail.com`
-      or `joe@example.com`.  * `serviceAccount:{emailid}`: An email address
-      that represents a service    account. For example, `my-other-
-      app@appspot.gserviceaccount.com`.  * `group:{emailid}`: An email address
-      that represents a Google group.    For example, `admins@example.com`.  *
-      `domain:{domain}`: A Google Apps domain name that represents all the
-      users of that domain. For example, `google.com` or `example.com`.
-    role: Role that is assigned to `members`. For example, `roles/viewer`,
-      `roles/editor`, or `roles/owner`. Required
-  """
-
-  members = _messages.StringField(1, repeated=True)
-  role = _messages.StringField(2)
-
-
 class CancelJobRequest(_messages.Message):
   """A request to cancel a job."""
 
 
-class CancelOperationRequest(_messages.Message):
-  """The request message for Operations.CancelOperation."""
-
-
-class CloudAuditOptions(_messages.Message):
-  """Write a Cloud Audit log"""
-
-
 class Cluster(_messages.Message):
-  """Describes the identifying information, configuration, and status of a
-  cluster of Google Compute Engine instances.
+  """Describes the identifying information, config, and status of a cluster of
+  Google Compute Engine instances.
 
   Fields:
     clusterName: [Required] The cluster name. Cluster names within a project
       must be unique. Names from deleted clusters can be reused.
     clusterUuid: [Output-only] A cluster UUID (Unique Universal Identifier).
       Cloud Dataproc generates this value when it creates the cluster.
-    configuration: [Required] The cluster configuration. Note that Cloud
-      Dataproc may set default values, and values may change when clusters are
-      updated.
+    config: [Required] The cluster config. Note that Cloud Dataproc may set
+      default values, and values may change when clusters are updated.
     projectId: [Required] The Google Cloud Platform project ID that the
       cluster belongs to.
     status: [Output-only] Cluster status.
@@ -68,49 +34,49 @@ class Cluster(_messages.Message):
 
   clusterName = _messages.StringField(1)
   clusterUuid = _messages.StringField(2)
-  configuration = _messages.MessageField('ClusterConfiguration', 3)
+  config = _messages.MessageField('ClusterConfig', 3)
   projectId = _messages.StringField(4)
   status = _messages.MessageField('ClusterStatus', 5)
   statusHistory = _messages.MessageField('ClusterStatus', 6, repeated=True)
 
 
-class ClusterConfiguration(_messages.Message):
-  """The cluster configuration.
+class ClusterConfig(_messages.Message):
+  """The cluster config.
 
   Fields:
-    configurationBucket: [Optional] A Google Cloud Storage staging bucket used
-      for sharing generated SSH keys and configuration. If you do not specify
-      a staging bucket, Cloud Dataproc will determine an appropriate Cloud
-      Storage location (US, ASIA, or EU) for your cluster's staging bucket
-      according to the Google Compute Engine zone where your cluster is
-      deployed, and then it will create and manage this project-level, per-
-      location bucket for you.
-    gceClusterConfiguration: [Optional] The shared Google Compute Engine
-      configuration settings for all instances in a cluster.
+    configBucket: [Optional] A Google Cloud Storage staging bucket used for
+      sharing generated SSH keys and config. If you do not specify a staging
+      bucket, Cloud Dataproc will determine an appropriate Cloud Storage
+      location (US, ASIA, or EU) for your cluster's staging bucket according
+      to the Google Compute Engine zone where your cluster is deployed, and
+      then it will create and manage this project-level, per-location bucket
+      for you.
+    gceClusterConfig: [Optional] The shared Google Compute Engine config
+      settings for all instances in a cluster.
     initializationActions: [Optional] Commands to execute on each node after
-      configuration is completed. By default, executables are run on master
-      and all worker nodes. You can test a node's <code>role</code> metadata
-      to run an executable on a master or worker node, as shown below:
+      config is completed. By default, executables are run on master and all
+      worker nodes. You can test a node's <code>role</code> metadata to run an
+      executable on a master or worker node, as shown below:
       ROLE=$(/usr/share/google/get_metadata_value attributes/role)     if [[
       "${ROLE}" == 'Master' ]]; then       ... master specific actions ...
       else       ... worker specific actions ...     fi
-    masterConfiguration: [Optional] The Google Compute Engine configuration
-      settings for the master instance in a cluster.
-    secondaryWorkerConfiguration: [Optional] The Google Compute Engine
-      configuration settings for additional worker instances in a cluster.
-    softwareConfiguration: [Optional] The configuration settings for software
-      inside the cluster.
-    workerConfiguration: [Optional] The Google Compute Engine configuration
-      settings for worker instances in a cluster.
+    masterConfig: [Optional] The Google Compute Engine config settings for the
+      master instance in a cluster.
+    secondaryWorkerConfig: [Optional] The Google Compute Engine config
+      settings for additional worker instances in a cluster.
+    softwareConfig: [Optional] The config settings for software inside the
+      cluster.
+    workerConfig: [Optional] The Google Compute Engine config settings for
+      worker instances in a cluster.
   """
 
-  configurationBucket = _messages.StringField(1)
-  gceClusterConfiguration = _messages.MessageField('GceClusterConfiguration', 2)
+  configBucket = _messages.StringField(1)
+  gceClusterConfig = _messages.MessageField('GceClusterConfig', 2)
   initializationActions = _messages.MessageField('NodeInitializationAction', 3, repeated=True)
-  masterConfiguration = _messages.MessageField('InstanceGroupConfiguration', 4)
-  secondaryWorkerConfiguration = _messages.MessageField('InstanceGroupConfiguration', 5)
-  softwareConfiguration = _messages.MessageField('SoftwareConfiguration', 6)
-  workerConfiguration = _messages.MessageField('InstanceGroupConfiguration', 7)
+  masterConfig = _messages.MessageField('InstanceGroupConfig', 4)
+  secondaryWorkerConfig = _messages.MessageField('InstanceGroupConfig', 5)
+  softwareConfig = _messages.MessageField('SoftwareConfig', 6)
+  workerConfig = _messages.MessageField('InstanceGroupConfig', 7)
 
 
 class ClusterOperationMetadata(_messages.Message):
@@ -204,161 +170,49 @@ class ClusterStatus(_messages.Message):
   stateStartTime = _messages.StringField(3)
 
 
-class Condition(_messages.Message):
-  """A condition to be met.
-
-  Enums:
-    IamValueValuesEnum: Trusted attributes supplied by the IAM system.
-    OpValueValuesEnum: An operator to apply the subject with.
-    SysValueValuesEnum: Trusted attributes supplied by any service that owns
-      resources and uses the IAM system for access control.
+class DataprocMediaDownloadRequest(_messages.Message):
+  """A DataprocMediaDownloadRequest object.
 
   Fields:
-    iam: Trusted attributes supplied by the IAM system.
-    op: An operator to apply the subject with.
-    svc: Trusted attributes discharged by the service.
-    sys: Trusted attributes supplied by any service that owns resources and
-      uses the IAM system for access control.
-    value: The object of the condition. Exactly one of these must be set.
-    values: The objects of the condition. This is mutually exclusive with
-      'value'.
+    resourceName: Name of the media that is being downloaded.  See
+      [][ByteStream.ReadRequest.resource_name].
   """
 
-  class IamValueValuesEnum(_messages.Enum):
-    """Trusted attributes supplied by the IAM system.
-
-    Values:
-      NO_ATTR: Default non-attribute.
-      AUTHORITY: Either principal or (if present) authority
-      ATTRIBUTION: selector Always the original principal, but making clear
-    """
-    NO_ATTR = 0
-    AUTHORITY = 1
-    ATTRIBUTION = 2
-
-  class OpValueValuesEnum(_messages.Enum):
-    """An operator to apply the subject with.
-
-    Values:
-      NO_OP: Default no-op.
-      EQUALS: Equality check.
-      NOT_EQUALS: Non-equality check.
-      IN: Set-inclusion check.
-      NOT_IN: Set-exclusion check.
-      DISCHARGED: Subject is discharged
-    """
-    NO_OP = 0
-    EQUALS = 1
-    NOT_EQUALS = 2
-    IN = 3
-    NOT_IN = 4
-    DISCHARGED = 5
-
-  class SysValueValuesEnum(_messages.Enum):
-    """Trusted attributes supplied by any service that owns resources and uses
-    the IAM system for access control.
-
-    Values:
-      NO_ATTR: Default non-attribute type
-      REGION: Region of the resource
-      SERVICE: Service name
-      NAME: Resource name
-      IP: IP address of the caller
-    """
-    NO_ATTR = 0
-    REGION = 1
-    SERVICE = 2
-    NAME = 3
-    IP = 4
-
-  iam = _messages.EnumField('IamValueValuesEnum', 1)
-  op = _messages.EnumField('OpValueValuesEnum', 2)
-  svc = _messages.StringField(3)
-  sys = _messages.EnumField('SysValueValuesEnum', 4)
-  value = _messages.StringField(5)
-  values = _messages.StringField(6, repeated=True)
+  resourceName = _messages.StringField(1, required=True)
 
 
-class CounterOptions(_messages.Message):
-  """Options for counters
+class DataprocProjectsRegionsClustersCreateRequest(_messages.Message):
+  """A DataprocProjectsRegionsClustersCreateRequest object.
 
   Fields:
-    field: The field value to attribute.
-    metric: The metric to update.
+    cluster: A Cluster resource to be passed as the request body.
+    projectId: [Required] The ID of the Google Cloud Platform project that the
+      cluster belongs to.
+    region: [Required] The Dataproc region in which to handle the request.
   """
 
-  field = _messages.StringField(1)
-  metric = _messages.StringField(2)
+  cluster = _messages.MessageField('Cluster', 1)
+  projectId = _messages.StringField(2, required=True)
+  region = _messages.StringField(3, required=True)
 
 
-class DataAccessOptions(_messages.Message):
-  """Write a Data Access (Gin) log"""
-
-
-class DataprocOperationsCancelRequest(_messages.Message):
-  """A DataprocOperationsCancelRequest object.
-
-  Fields:
-    cancelOperationRequest: A CancelOperationRequest resource to be passed as
-      the request body.
-    name: The name of the operation resource to be cancelled.
-  """
-
-  cancelOperationRequest = _messages.MessageField('CancelOperationRequest', 1)
-  name = _messages.StringField(2, required=True)
-
-
-class DataprocOperationsDeleteRequest(_messages.Message):
-  """A DataprocOperationsDeleteRequest object.
-
-  Fields:
-    name: The name of the operation resource to be deleted.
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class DataprocOperationsGetRequest(_messages.Message):
-  """A DataprocOperationsGetRequest object.
-
-  Fields:
-    name: The name of the operation resource.
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class DataprocOperationsListRequest(_messages.Message):
-  """A DataprocOperationsListRequest object.
-
-  Fields:
-    filter: The standard list filter.
-    name: The name of the operation collection.
-    pageSize: The standard list page size.
-    pageToken: The standard list page token.
-  """
-
-  filter = _messages.StringField(1)
-  name = _messages.StringField(2, required=True)
-  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(4)
-
-
-class DataprocProjectsClustersDeleteRequest(_messages.Message):
-  """A DataprocProjectsClustersDeleteRequest object.
+class DataprocProjectsRegionsClustersDeleteRequest(_messages.Message):
+  """A DataprocProjectsRegionsClustersDeleteRequest object.
 
   Fields:
     clusterName: [Required] The cluster name.
     projectId: [Required] The ID of the Google Cloud Platform project that the
       cluster belongs to.
+    region: [Required] The Dataproc region in which to handle the request.
   """
 
   clusterName = _messages.StringField(1, required=True)
   projectId = _messages.StringField(2, required=True)
+  region = _messages.StringField(3, required=True)
 
 
-class DataprocProjectsClustersDiagnoseRequest(_messages.Message):
-  """A DataprocProjectsClustersDiagnoseRequest object.
+class DataprocProjectsRegionsClustersDiagnoseRequest(_messages.Message):
+  """A DataprocProjectsRegionsClustersDiagnoseRequest object.
 
   Fields:
     clusterName: [Required] The cluster name.
@@ -366,117 +220,77 @@ class DataprocProjectsClustersDiagnoseRequest(_messages.Message):
       the request body.
     projectId: [Required] The ID of the Google Cloud Platform project that the
       cluster belongs to.
+    region: [Required] The Dataproc region in which to handle the request.
   """
 
   clusterName = _messages.StringField(1, required=True)
   diagnoseClusterRequest = _messages.MessageField('DiagnoseClusterRequest', 2)
   projectId = _messages.StringField(3, required=True)
+  region = _messages.StringField(4, required=True)
 
 
-class DataprocProjectsClustersGetIamPolicyRequest(_messages.Message):
-  """A DataprocProjectsClustersGetIamPolicyRequest object.
-
-  Fields:
-    resource: REQUIRED: The resource for which the policy is being requested.
-      `resource` is usually specified as a path, such as
-      `projects/*project*/zones/*zone*/disks/*disk*`.  The format for the path
-      specified in this value is resource specific and is specified in the
-      `getIamPolicy` documentation.
-  """
-
-  resource = _messages.StringField(1, required=True)
-
-
-class DataprocProjectsClustersGetRequest(_messages.Message):
-  """A DataprocProjectsClustersGetRequest object.
+class DataprocProjectsRegionsClustersGetRequest(_messages.Message):
+  """A DataprocProjectsRegionsClustersGetRequest object.
 
   Fields:
     clusterName: [Required] The cluster name.
     projectId: [Required] The ID of the Google Cloud Platform project that the
       cluster belongs to.
+    region: [Required] The Dataproc region in which to handle the request.
   """
 
   clusterName = _messages.StringField(1, required=True)
   projectId = _messages.StringField(2, required=True)
+  region = _messages.StringField(3, required=True)
 
 
-class DataprocProjectsClustersListRequest(_messages.Message):
-  """A DataprocProjectsClustersListRequest object.
+class DataprocProjectsRegionsClustersListRequest(_messages.Message):
+  """A DataprocProjectsRegionsClustersListRequest object.
 
   Fields:
     pageSize: The standard List page size.
     pageToken: The standard List page token.
     projectId: [Required] The ID of the Google Cloud Platform project that the
       cluster belongs to.
+    region: [Required] The Dataproc region in which to handle the request.
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(2)
   projectId = _messages.StringField(3, required=True)
+  region = _messages.StringField(4, required=True)
 
 
-class DataprocProjectsClustersPatchRequest(_messages.Message):
-  """A DataprocProjectsClustersPatchRequest object.
+class DataprocProjectsRegionsClustersPatchRequest(_messages.Message):
+  """A DataprocProjectsRegionsClustersPatchRequest object.
 
   Fields:
     cluster: A Cluster resource to be passed as the request body.
     clusterName: [Required] The cluster name.
     projectId: [Required] The ID of the Google Cloud Platform project the
       cluster belongs to.
+    region: [Required] The Dataproc region in which to handle the request.
     updateMask: [Required] Specifies the path, relative to
       <code>Cluster</code>, of the field to update. For example, to change the
       number of workers in a cluster to 5, the <code>update_mask</code>
       parameter would be specified as
-      <code>configuration.worker_configuration.num_instances</code>, and the
-      `PATCH` request body would specify the new value, as follows:      {
-      "configuration":{         "workerConfiguration":{
-      "numInstances":"5"         }       }     } <strong>Note:</strong>
-      Currently, <code>configuration.worker_configuration.num_instances</code>
-      is the only field that can be updated.
+      <code>config.worker_config.num_instances</code>, and the `PATCH` request
+      body would specify the new value, as follows:      {       "config":{
+      "workerConfig":{           "numInstances":"5"         }       }     }
+      <strong>Note:</strong> Currently,
+      <code>config.worker_config.num_instances</code> is the only field that
+      can be updated.
   """
 
   cluster = _messages.MessageField('Cluster', 1)
   clusterName = _messages.StringField(2, required=True)
   projectId = _messages.StringField(3, required=True)
-  updateMask = _messages.StringField(4)
+  region = _messages.StringField(4, required=True)
+  updateMask = _messages.StringField(5)
 
 
-class DataprocProjectsClustersSetIamPolicyRequest(_messages.Message):
-  """A DataprocProjectsClustersSetIamPolicyRequest object.
-
-  Fields:
-    resource: REQUIRED: The resource for which the policy is being specified.
-      `resource` is usually specified as a path, such as
-      `projects/*project*/zones/*zone*/disks/*disk*`.  The format for the path
-      specified in this value is resource specific and is specified in the
-      `setIamPolicy` documentation.
-    setIamPolicyRequest: A SetIamPolicyRequest resource to be passed as the
-      request body.
-  """
-
-  resource = _messages.StringField(1, required=True)
-  setIamPolicyRequest = _messages.MessageField('SetIamPolicyRequest', 2)
-
-
-class DataprocProjectsClustersTestIamPermissionsRequest(_messages.Message):
-  """A DataprocProjectsClustersTestIamPermissionsRequest object.
-
-  Fields:
-    resource: REQUIRED: The resource for which the policy detail is being
-      requested. `resource` is usually specified as a path, such as
-      `projects/*project*/zones/*zone*/disks/*disk*`.  The format for the path
-      specified in this value is resource specific and is specified in the
-      `testIamPermissions` documentation.
-    testIamPermissionsRequest: A TestIamPermissionsRequest resource to be
-      passed as the request body.
-  """
-
-  resource = _messages.StringField(1, required=True)
-  testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
-
-
-class DataprocProjectsJobsCancelRequest(_messages.Message):
-  """A DataprocProjectsJobsCancelRequest object.
+class DataprocProjectsRegionsJobsCancelRequest(_messages.Message):
+  """A DataprocProjectsRegionsJobsCancelRequest object.
 
   Fields:
     cancelJobRequest: A CancelJobRequest resource to be passed as the request
@@ -484,55 +298,47 @@ class DataprocProjectsJobsCancelRequest(_messages.Message):
     jobId: [Required] The job ID.
     projectId: [Required] The ID of the Google Cloud Platform project that the
       job belongs to.
+    region: [Required] The Dataproc region in which to handle the request.
   """
 
   cancelJobRequest = _messages.MessageField('CancelJobRequest', 1)
   jobId = _messages.StringField(2, required=True)
   projectId = _messages.StringField(3, required=True)
+  region = _messages.StringField(4, required=True)
 
 
-class DataprocProjectsJobsDeleteRequest(_messages.Message):
-  """A DataprocProjectsJobsDeleteRequest object.
-
-  Fields:
-    jobId: [Required] The job ID.
-    projectId: [Required] The ID of the Google Cloud Platform project that the
-      job belongs to.
-  """
-
-  jobId = _messages.StringField(1, required=True)
-  projectId = _messages.StringField(2, required=True)
-
-
-class DataprocProjectsJobsGetIamPolicyRequest(_messages.Message):
-  """A DataprocProjectsJobsGetIamPolicyRequest object.
-
-  Fields:
-    resource: REQUIRED: The resource for which the policy is being requested.
-      `resource` is usually specified as a path, such as
-      `projects/*project*/zones/*zone*/disks/*disk*`.  The format for the path
-      specified in this value is resource specific and is specified in the
-      `getIamPolicy` documentation.
-  """
-
-  resource = _messages.StringField(1, required=True)
-
-
-class DataprocProjectsJobsGetRequest(_messages.Message):
-  """A DataprocProjectsJobsGetRequest object.
+class DataprocProjectsRegionsJobsDeleteRequest(_messages.Message):
+  """A DataprocProjectsRegionsJobsDeleteRequest object.
 
   Fields:
     jobId: [Required] The job ID.
     projectId: [Required] The ID of the Google Cloud Platform project that the
       job belongs to.
+    region: [Required] The Dataproc region in which to handle the request.
   """
 
   jobId = _messages.StringField(1, required=True)
   projectId = _messages.StringField(2, required=True)
+  region = _messages.StringField(3, required=True)
 
 
-class DataprocProjectsJobsListRequest(_messages.Message):
-  """A DataprocProjectsJobsListRequest object.
+class DataprocProjectsRegionsJobsGetRequest(_messages.Message):
+  """A DataprocProjectsRegionsJobsGetRequest object.
+
+  Fields:
+    jobId: [Required] The job ID.
+    projectId: [Required] The ID of the Google Cloud Platform project that the
+      job belongs to.
+    region: [Required] The Dataproc region in which to handle the request.
+  """
+
+  jobId = _messages.StringField(1, required=True)
+  projectId = _messages.StringField(2, required=True)
+  region = _messages.StringField(3, required=True)
+
+
+class DataprocProjectsRegionsJobsListRequest(_messages.Message):
+  """A DataprocProjectsRegionsJobsListRequest object.
 
   Enums:
     JobStateMatcherValueValuesEnum: [Optional] Specifies enumerated categories
@@ -548,6 +354,7 @@ class DataprocProjectsJobsListRequest(_messages.Message):
       request the next page of results.
     projectId: [Required] The ID of the Google Cloud Platform project that the
       job belongs to.
+    region: [Required] The Dataproc region in which to handle the request.
   """
 
   class JobStateMatcherValueValuesEnum(_messages.Enum):
@@ -567,54 +374,69 @@ class DataprocProjectsJobsListRequest(_messages.Message):
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   projectId = _messages.StringField(5, required=True)
+  region = _messages.StringField(6, required=True)
 
 
-class DataprocProjectsJobsSetIamPolicyRequest(_messages.Message):
-  """A DataprocProjectsJobsSetIamPolicyRequest object.
-
-  Fields:
-    resource: REQUIRED: The resource for which the policy is being specified.
-      `resource` is usually specified as a path, such as
-      `projects/*project*/zones/*zone*/disks/*disk*`.  The format for the path
-      specified in this value is resource specific and is specified in the
-      `setIamPolicy` documentation.
-    setIamPolicyRequest: A SetIamPolicyRequest resource to be passed as the
-      request body.
-  """
-
-  resource = _messages.StringField(1, required=True)
-  setIamPolicyRequest = _messages.MessageField('SetIamPolicyRequest', 2)
-
-
-class DataprocProjectsJobsSubmitRequest(_messages.Message):
-  """A DataprocProjectsJobsSubmitRequest object.
+class DataprocProjectsRegionsJobsSubmitRequest(_messages.Message):
+  """A DataprocProjectsRegionsJobsSubmitRequest object.
 
   Fields:
     projectId: [Required] The ID of the Google Cloud Platform project that the
       job belongs to.
+    region: [Required] The Dataproc region in which to handle the request.
     submitJobRequest: A SubmitJobRequest resource to be passed as the request
       body.
   """
 
   projectId = _messages.StringField(1, required=True)
-  submitJobRequest = _messages.MessageField('SubmitJobRequest', 2)
+  region = _messages.StringField(2, required=True)
+  submitJobRequest = _messages.MessageField('SubmitJobRequest', 3)
 
 
-class DataprocProjectsJobsTestIamPermissionsRequest(_messages.Message):
-  """A DataprocProjectsJobsTestIamPermissionsRequest object.
+class DataprocProjectsRegionsOperationsCancelRequest(_messages.Message):
+  """A DataprocProjectsRegionsOperationsCancelRequest object.
 
   Fields:
-    resource: REQUIRED: The resource for which the policy detail is being
-      requested. `resource` is usually specified as a path, such as
-      `projects/*project*/zones/*zone*/disks/*disk*`.  The format for the path
-      specified in this value is resource specific and is specified in the
-      `testIamPermissions` documentation.
-    testIamPermissionsRequest: A TestIamPermissionsRequest resource to be
-      passed as the request body.
+    name: The name of the operation resource to be cancelled.
   """
 
-  resource = _messages.StringField(1, required=True)
-  testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
+  name = _messages.StringField(1, required=True)
+
+
+class DataprocProjectsRegionsOperationsDeleteRequest(_messages.Message):
+  """A DataprocProjectsRegionsOperationsDeleteRequest object.
+
+  Fields:
+    name: The name of the operation resource to be deleted.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DataprocProjectsRegionsOperationsGetRequest(_messages.Message):
+  """A DataprocProjectsRegionsOperationsGetRequest object.
+
+  Fields:
+    name: The name of the operation resource.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DataprocProjectsRegionsOperationsListRequest(_messages.Message):
+  """A DataprocProjectsRegionsOperationsListRequest object.
+
+  Fields:
+    filter: The standard list filter.
+    name: The name of the operation collection.
+    pageSize: The standard list page size.
+    pageToken: The standard list page token.
+  """
+
+  filter = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
 
 
 class DiagnoseClusterOutputLocation(_messages.Message):
@@ -645,16 +467,16 @@ class DiagnoseClusterResults(_messages.Message):
   outputUri = _messages.StringField(1)
 
 
-class DiskConfiguration(_messages.Message):
-  """Specifies the configuration of disk options for a group of VM instances.
+class DiskConfig(_messages.Message):
+  """Specifies the config of disk options for a group of VM instances.
 
   Fields:
     bootDiskSizeGb: [Optional] Size in GB of the boot disk (default is 500GB).
     numLocalSsds: [Optional] Number of attached SSDs, from 0 to 4 (default is
       0). If SSDs are not attached, the boot disk is used to store runtime
       logs and HDFS data. If one or more SSDs are attached, this runtime bulk
-      data is spread across them, and the boot disk contains only basic
-      configuration and installed binaries.
+      data is spread across them, and the boot disk contains only basic config
+      and installed binaries.
   """
 
   bootDiskSizeGb = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -671,9 +493,9 @@ class Empty(_messages.Message):
 
 
 
-class GceClusterConfiguration(_messages.Message):
-  """Common configuration settings for resources of Google Compute Engine
-  cluster instances, applicable to all instances in the cluster.
+class GceClusterConfig(_messages.Message):
+  """Common config settings for resources of Google Compute Engine cluster
+  instances, applicable to all instances in the cluster.
 
   Messages:
     MetadataValue: The Google Compute Engine metadata entries to add to all
@@ -683,9 +505,12 @@ class GceClusterConfiguration(_messages.Message):
     metadata: The Google Compute Engine metadata entries to add to all
       instances.
     networkUri: The Google Compute Engine network to be used for machine
-      communications. Inbound SSH connections are necessary to complete
-      cluster configuration. Example:
-      `compute.googleapis.com/projects/[project_id]/zones/us-east1-a/default`.
+      communications. Cannot be specified with subnetwork_uri. If neither
+      network_uri nor subnetwork_uri is specified, the "default" network of
+      the project is used, if it exists. Cannot be a "Custom Subnet Network"
+      (see https://cloud.google.com/compute/docs/subnetworks for more
+      information). Example:
+      `compute.googleapis.com/projects/[project_id]/regions/global/default`.
     serviceAccountScopes: The URIs of service account scopes to be included in
       Google Compute Engine instances. The following base set of scopes is
       always included: -
@@ -697,6 +522,9 @@ class GceClusterConfiguration(_messages.Message):
       https://www.googleapis.com/auth/bigtable.admin.table -
       https://www.googleapis.com/auth/bigtable.data -
       https://www.googleapis.com/auth/devstorage.full_control
+    subnetworkUri: The Google Compute Engine subnetwork to be used for machine
+      communications. Cannot be specified with network_uri. Example:
+      `compute.googleapis.com/projects/[project_id]/regions/us-east1/sub0`.
     tags: The Google Compute Engine tags to add to all instances.
     zoneUri: [Required] The zone where the Google Compute Engine cluster will
       be located. Example: `compute.googleapis.com/projects/[project_id]/zones
@@ -730,8 +558,9 @@ class GceClusterConfiguration(_messages.Message):
   metadata = _messages.MessageField('MetadataValue', 1)
   networkUri = _messages.StringField(2)
   serviceAccountScopes = _messages.StringField(3, repeated=True)
-  tags = _messages.StringField(4, repeated=True)
-  zoneUri = _messages.StringField(5)
+  subnetworkUri = _messages.StringField(4)
+  tags = _messages.StringField(5, repeated=True)
+  zoneUri = _messages.StringField(6)
 
 
 class HadoopJob(_messages.Message):
@@ -756,8 +585,7 @@ class HadoopJob(_messages.Message):
       parallel tasks.
     jarFileUris: [Optional] Jar file URIs to add to the CLASSPATHs of the
       Hadoop driver and tasks.
-    loggingConfiguration: [Optional] The runtime log configuration for job
-      execution.
+    loggingConfig: [Optional] The runtime log config for job execution.
     mainClass: The name of the driver's main class. The jar file containing
       the class must be in the default CLASSPATH or specified in
       `jar_file_uris`.
@@ -803,7 +631,7 @@ class HadoopJob(_messages.Message):
   args = _messages.StringField(2, repeated=True)
   fileUris = _messages.StringField(3, repeated=True)
   jarFileUris = _messages.StringField(4, repeated=True)
-  loggingConfiguration = _messages.MessageField('LoggingConfiguration', 5)
+  loggingConfig = _messages.MessageField('LoggingConfig', 5)
   mainClass = _messages.StringField(6)
   mainJarFileUri = _messages.StringField(7)
   properties = _messages.MessageField('PropertiesValue', 8)
@@ -901,14 +729,14 @@ class HiveJob(_messages.Message):
   scriptVariables = _messages.MessageField('ScriptVariablesValue', 6)
 
 
-class InstanceGroupConfiguration(_messages.Message):
-  """The configuration settings for Google Compute Engine resources in an
-  instance group, such as a master or worker group.
+class InstanceGroupConfig(_messages.Message):
+  """The config settings for Google Compute Engine resources in an instance
+  group, such as a master or worker group.
 
   Fields:
-    diskConfiguration: Disk option configuration settings.
+    diskConfig: Disk option config settings.
     imageUri: [Output-only] The Google Compute Engine image resource used for
-      cluster instances. Inferred from `SoftwareConfiguration.image_version`.
+      cluster instances. Inferred from `SoftwareConfig.image_version`.
       Example: `compute.googleapis.com/projects/debian-cloud/global/images
       /backports-debian-7-wheezy-v20140904`.
     instanceNames: The list of instance names. Dataproc derives the names from
@@ -919,19 +747,19 @@ class InstanceGroupConfiguration(_messages.Message):
     machineTypeUri: The Google Compute Engine machine type used for cluster
       instances. Example: `compute.googleapis.com/projects/[project_id]/zones
       /us-east1-a/machineTypes/n1-standard-2`.
-    managedGroupConfiguration: [Output-only] The configuration for Google
-      Compute Engine Instance Group Manager that manages this group. This is
-      only used for preemptible instance groups.
+    managedGroupConfig: [Output-only] The config for Google Compute Engine
+      Instance Group Manager that manages this group. This is only used for
+      preemptible instance groups.
     numInstances: The number of VM instances in the instance group. For master
       instance groups, must be set to 1.
   """
 
-  diskConfiguration = _messages.MessageField('DiskConfiguration', 1)
+  diskConfig = _messages.MessageField('DiskConfig', 1)
   imageUri = _messages.StringField(2)
   instanceNames = _messages.StringField(3, repeated=True)
   isPreemptible = _messages.BooleanField(4)
   machineTypeUri = _messages.StringField(5)
-  managedGroupConfiguration = _messages.MessageField('ManagedGroupConfiguration', 6)
+  managedGroupConfig = _messages.MessageField('ManagedGroupConfig', 6)
   numInstances = _messages.IntegerField(7, variant=_messages.Variant.INT32)
 
 
@@ -943,16 +771,10 @@ class Job(_messages.Message):
       miscellaneous control files which may be used as part of job setup and
       handling. If not present, control files may be placed in the same
       location as `driver_output_uri`.
-    driverInputResourceUri: [Output-only] A URI pointing to the location of
-      the stdin of the job's driver program, only set if the job is
-      interactive.
     driverOutputResourceUri: [Output-only] A URI pointing to the location of
       the stdout of the job's driver program.
     hadoopJob: Job is a Hadoop job.
     hiveJob: Job is a Hive job.
-    interactive: [Optional] If set to `true`, the driver's stdin will be kept
-      open and `driver_input_uri` will be set to provide a path at which
-      additional input can be sent to the driver.
     pigJob: Job is a Pig job.
     placement: [Required] Job information, including how, when, and where to
       run the job.
@@ -975,25 +797,23 @@ class Job(_messages.Message):
   """
 
   driverControlFilesUri = _messages.StringField(1)
-  driverInputResourceUri = _messages.StringField(2)
-  driverOutputResourceUri = _messages.StringField(3)
-  hadoopJob = _messages.MessageField('HadoopJob', 4)
-  hiveJob = _messages.MessageField('HiveJob', 5)
-  interactive = _messages.BooleanField(6)
-  pigJob = _messages.MessageField('PigJob', 7)
-  placement = _messages.MessageField('JobPlacement', 8)
-  pysparkJob = _messages.MessageField('PySparkJob', 9)
-  reference = _messages.MessageField('JobReference', 10)
-  sparkJob = _messages.MessageField('SparkJob', 11)
-  sparkSqlJob = _messages.MessageField('SparkSqlJob', 12)
-  status = _messages.MessageField('JobStatus', 13)
-  statusHistory = _messages.MessageField('JobStatus', 14, repeated=True)
-  submittedBy = _messages.StringField(15)
-  yarnApplications = _messages.MessageField('YarnApplication', 16, repeated=True)
+  driverOutputResourceUri = _messages.StringField(2)
+  hadoopJob = _messages.MessageField('HadoopJob', 3)
+  hiveJob = _messages.MessageField('HiveJob', 4)
+  pigJob = _messages.MessageField('PigJob', 5)
+  placement = _messages.MessageField('JobPlacement', 6)
+  pysparkJob = _messages.MessageField('PySparkJob', 7)
+  reference = _messages.MessageField('JobReference', 8)
+  sparkJob = _messages.MessageField('SparkJob', 9)
+  sparkSqlJob = _messages.MessageField('SparkSqlJob', 10)
+  status = _messages.MessageField('JobStatus', 11)
+  statusHistory = _messages.MessageField('JobStatus', 12, repeated=True)
+  submittedBy = _messages.StringField(13)
+  yarnApplications = _messages.MessageField('YarnApplication', 14, repeated=True)
 
 
 class JobPlacement(_messages.Message):
-  """Cloud Dataproc job configuration.
+  """Cloud Dataproc job config.
 
   Fields:
     clusterName: [Required] The name of the cluster where the job will be
@@ -1108,33 +928,8 @@ class ListOperationsResponse(_messages.Message):
   operations = _messages.MessageField('Operation', 2, repeated=True)
 
 
-class LogConfig(_messages.Message):
-  """Specifies what kind of log the caller must write Increment a streamz
-  counter with the specified metric and field names.  Metric names should
-  start with a '/', generally be lowercase-only, and end in "_count". Field
-  names should not contain an initial slash. The actual exported metric names
-  will have "/iam/policy" prepended.  Field names correspond to IAM request
-  parameters and field values are their respective values.  At present only
-  "iam_principal", corresponding to IAMContext.principal, is supported.
-  Examples:   counter { metric: "/debug_access_count"  field: "iam_principal"
-  }   ==> increment counter /iam/policy/backend_debug_access_count
-  {iam_principal=[value of IAMContext.principal]}  At this time we do not
-  support: * multiple field names (though this may be supported in the future)
-  * decrementing the counter * incrementing it by anything other than 1
-
-  Fields:
-    cloudAudit: Cloud audit options.
-    counter: Counter options.
-    dataAccess: Data access options.
-  """
-
-  cloudAudit = _messages.MessageField('CloudAuditOptions', 1)
-  counter = _messages.MessageField('CounterOptions', 2)
-  dataAccess = _messages.MessageField('DataAccessOptions', 3)
-
-
-class LoggingConfiguration(_messages.Message):
-  """The runtime logging configuration of the job.
+class LoggingConfig(_messages.Message):
+  """The runtime logging config of the job.
 
   Messages:
     DriverLogLevelsValue: The per-package log levels for the driver. This may
@@ -1204,7 +999,7 @@ class LoggingConfiguration(_messages.Message):
   driverLogLevels = _messages.MessageField('DriverLogLevelsValue', 1)
 
 
-class ManagedGroupConfiguration(_messages.Message):
+class ManagedGroupConfig(_messages.Message):
   """Specifies the resources used to actively manage an instance group.
 
   Fields:
@@ -1216,6 +1011,16 @@ class ManagedGroupConfiguration(_messages.Message):
 
   instanceGroupManagerName = _messages.StringField(1)
   instanceTemplateName = _messages.StringField(2)
+
+
+class Media(_messages.Message):
+  """Media resource.
+
+  Fields:
+    resourceName: Name of the media resource.
+  """
+
+  resourceName = _messages.StringField(1)
 
 
 class NodeInitializationAction(_messages.Message):
@@ -1442,8 +1247,7 @@ class PigJob(_messages.Message):
       useful when executing independent parallel queries.
     jarFileUris: [Optional] HCFS URIs of jar files to add to the CLASSPATH of
       the Pig Client and Hadoop MapReduce (MR) tasks. Can contain Pig UDFs.
-    loggingConfiguration: [Optional] The runtime log configuration for job
-      execution.
+    loggingConfig: [Optional] The runtime log config for job execution.
     properties: [Optional] A mapping of property names to values, used to
       configure Pig. Properties that conflict with values set by the Cloud
       Dataproc API may be overwritten. Can include properties set in
@@ -1511,49 +1315,11 @@ class PigJob(_messages.Message):
 
   continueOnFailure = _messages.BooleanField(1)
   jarFileUris = _messages.StringField(2, repeated=True)
-  loggingConfiguration = _messages.MessageField('LoggingConfiguration', 3)
+  loggingConfig = _messages.MessageField('LoggingConfig', 3)
   properties = _messages.MessageField('PropertiesValue', 4)
   queryFileUri = _messages.StringField(5)
   queryList = _messages.MessageField('QueryList', 6)
   scriptVariables = _messages.MessageField('ScriptVariablesValue', 7)
-
-
-class Policy(_messages.Message):
-  """Defines an Identity and Access Management (IAM) policy. It is used to
-  specify access control policies for Cloud Platform resources.   A `Policy`
-  consists of a list of `bindings`. A `Binding` binds a list of `members` to a
-  `role`, where the members can be user accounts, Google groups, Google
-  domains, and service accounts. A `role` is a named list of permissions
-  defined by IAM.  **Example**      {         "bindings": [          {
-  "role": "roles/owner",              "members": [
-  "user:mike@example.com",              "group:admins@example.com",
-  "domain:google.com",              "serviceAccount:my-other-
-  app@appspot.gserviceaccount.com"]          },          {
-  "role": "roles/viewer",              "members": ["user:sean@example.com"]
-  }          ]     }  For a description of IAM and its features, see the [IAM
-  developer's guide](https://cloud.google.com/iam).
-
-  Fields:
-    bindings: Associates a list of `members` to a `role`. Multiple `bindings`
-      must not be specified for the same `role`. `bindings` with no members
-      will result in an error.
-    etag: `etag` is used for optimistic concurrency control as a way to help
-      prevent simultaneous updates of a policy from overwriting each other. It
-      is strongly suggested that systems make use of the `etag` in the read-
-      modify-write cycle to perform policy updates in order to avoid race
-      conditions: An `etag` is returned in the response to `getIamPolicy`, and
-      systems are expected to put that etag in the request to `setIamPolicy`
-      to ensure that their change will be applied to the same version of the
-      policy.  If no `etag` is provided in the call to `setIamPolicy`, then
-      the existing policy is overwritten blindly.
-    rules: A Rule attribute.
-    version: Version of the `Policy`. The default version is 0.
-  """
-
-  bindings = _messages.MessageField('Binding', 1, repeated=True)
-  etag = _messages.BytesField(2)
-  rules = _messages.MessageField('Rule', 3, repeated=True)
-  version = _messages.IntegerField(4, variant=_messages.Variant.INT32)
 
 
 class PySparkJob(_messages.Message):
@@ -1576,8 +1342,7 @@ class PySparkJob(_messages.Message):
       parallel tasks.
     jarFileUris: [Optional] HCFS URIs of jar files to add to the CLASSPATHs of
       the Python driver and tasks.
-    loggingConfiguration: [Optional] The runtime log configuration for job
-      execution.
+    loggingConfig: [Optional] The runtime log config for job execution.
     mainPythonFileUri: [Required] The Hadoop Compatible Filesystem (HCFS) URI
       of the main Python file to use as the driver. Must be a .py file.
     properties: [Optional] A mapping of property names to values, used to
@@ -1619,7 +1384,7 @@ class PySparkJob(_messages.Message):
   args = _messages.StringField(2, repeated=True)
   fileUris = _messages.StringField(3, repeated=True)
   jarFileUris = _messages.StringField(4, repeated=True)
-  loggingConfiguration = _messages.MessageField('LoggingConfiguration', 5)
+  loggingConfig = _messages.MessageField('LoggingConfig', 5)
   mainPythonFileUri = _messages.StringField(6)
   properties = _messages.MessageField('PropertiesValue', 7)
   pythonFileUris = _messages.StringField(8, repeated=True)
@@ -1641,77 +1406,12 @@ class QueryList(_messages.Message):
   queries = _messages.StringField(1, repeated=True)
 
 
-class Rule(_messages.Message):
-  """A rule to be applied in a Policy.
-
-  Enums:
-    ActionValueValuesEnum: Required
-
-  Fields:
-    action: Required
-    conditions: Additional restrictions that must be met
-    description: Human-readable description of the rule.
-    in_: The rule matches if the PRINCIPAL/AUTHORITY_SELECTOR is in this set
-      of entries.
-    logConfig: The config returned to callers of tech.iam.IAM.CheckPolicy for
-      any entries that match the LOG action.
-    notIn: The rule matches if the PRINCIPAL/AUTHORITY_SELECTOR is not in this
-      set of entries. The format for in and not_in entries is the same as for
-      members in a Binding (see google/iam/v1/policy.proto).
-    permissions: A permission is a string of form '<service>.<resource
-      type>.<verb>' (e.g., 'storage.buckets.list'). A value of '*' matches all
-      permissions, and a verb part of '*' (e.g., 'storage.buckets.*') matches
-      all verbs.
-  """
-
-  class ActionValueValuesEnum(_messages.Enum):
-    """Required
-
-    Values:
-      NO_ACTION: Default no action.
-      ALLOW: Matching 'Entries' grant access.
-      ALLOW_WITH_LOG: Matching 'Entries' grant access and the caller promises
-        to log the request per the returned log_configs.
-      DENY: Matching 'Entries' deny access.
-      DENY_WITH_LOG: Matching 'Entries' deny access and the caller promises to
-        log the request per the returned log_configs.
-      LOG: Matching 'Entries' tell IAM.Check callers to generate logs.
-    """
-    NO_ACTION = 0
-    ALLOW = 1
-    ALLOW_WITH_LOG = 2
-    DENY = 3
-    DENY_WITH_LOG = 4
-    LOG = 5
-
-  action = _messages.EnumField('ActionValueValuesEnum', 1)
-  conditions = _messages.MessageField('Condition', 2, repeated=True)
-  description = _messages.StringField(3)
-  in_ = _messages.StringField(4, repeated=True)
-  logConfig = _messages.MessageField('LogConfig', 5, repeated=True)
-  notIn = _messages.StringField(6, repeated=True)
-  permissions = _messages.StringField(7, repeated=True)
-
-
-class SetIamPolicyRequest(_messages.Message):
-  """Request message for `SetIamPolicy` method.
-
-  Fields:
-    policy: REQUIRED: The complete policy to be applied to the `resource`. The
-      size of the policy is limited to a few 10s of KB. An empty policy is a
-      valid policy but certain Cloud Platform services (such as Projects)
-      might reject them.
-  """
-
-  policy = _messages.MessageField('Policy', 1)
-
-
-class SoftwareConfiguration(_messages.Message):
-  """Specifies the selection and configuration of software inside the cluster.
+class SoftwareConfig(_messages.Message):
+  """Specifies the selection and config of software inside the cluster.
 
   Messages:
-    PropertiesValue: [Optional] The properties to set on daemon configuration
-      files.  Property keys are specified in "prefix:property" format, such as
+    PropertiesValue: [Optional] The properties to set on daemon config files.
+      Property keys are specified in "prefix:property" format, such as
       "core:fs.defaultFS". The following are supported prefixes and their
       mappings:   core - core-site.xml   hdfs - hdfs-site.xml   mapred -
       mapred-site.xml   yarn - yarn-site.xml   hive - hive-site.xml   pig -
@@ -1722,8 +1422,8 @@ class SoftwareConfiguration(_messages.Message):
       must match the regular expression `[0-9]+\.[0-9]+`. If unspecified, it
       defaults to the latest version (see [Cloud Dataproc
       Versioning](/dataproc/versioning)).
-    properties: [Optional] The properties to set on daemon configuration
-      files.  Property keys are specified in "prefix:property" format, such as
+    properties: [Optional] The properties to set on daemon config files.
+      Property keys are specified in "prefix:property" format, such as
       "core:fs.defaultFS". The following are supported prefixes and their
       mappings:   core - core-site.xml   hdfs - hdfs-site.xml   mapred -
       mapred-site.xml   yarn - yarn-site.xml   hive - hive-site.xml   pig -
@@ -1732,12 +1432,12 @@ class SoftwareConfiguration(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class PropertiesValue(_messages.Message):
-    """[Optional] The properties to set on daemon configuration files.
-    Property keys are specified in "prefix:property" format, such as
-    "core:fs.defaultFS". The following are supported prefixes and their
-    mappings:   core - core-site.xml   hdfs - hdfs-site.xml   mapred - mapred-
-    site.xml   yarn - yarn-site.xml   hive - hive-site.xml   pig -
-    pig.properties   spark - spark-defaults.conf
+    """[Optional] The properties to set on daemon config files.  Property keys
+    are specified in "prefix:property" format, such as "core:fs.defaultFS".
+    The following are supported prefixes and their mappings:   core - core-
+    site.xml   hdfs - hdfs-site.xml   mapred - mapred-site.xml   yarn - yarn-
+    site.xml   hive - hive-site.xml   pig - pig.properties   spark - spark-
+    defaults.conf
 
     Messages:
       AdditionalProperty: An additional property for a PropertiesValue object.
@@ -1784,8 +1484,7 @@ class SparkJob(_messages.Message):
       parallel tasks.
     jarFileUris: [Optional] HCFS URIs of jar files to add to the CLASSPATHs of
       the Spark driver and tasks.
-    loggingConfiguration: [Optional] The runtime log configuration for job
-      execution.
+    loggingConfig: [Optional] The runtime log config for job execution.
     mainClass: The name of the driver's main class. The jar file that contains
       the class must be in the default CLASSPATH or specified in
       `jar_file_uris`.
@@ -1828,7 +1527,7 @@ class SparkJob(_messages.Message):
   args = _messages.StringField(2, repeated=True)
   fileUris = _messages.StringField(3, repeated=True)
   jarFileUris = _messages.StringField(4, repeated=True)
-  loggingConfiguration = _messages.MessageField('LoggingConfiguration', 5)
+  loggingConfig = _messages.MessageField('LoggingConfig', 5)
   mainClass = _messages.StringField(6)
   mainJarFileUri = _messages.StringField(7)
   properties = _messages.MessageField('PropertiesValue', 8)
@@ -1847,8 +1546,7 @@ class SparkSqlJob(_messages.Message):
   Fields:
     jarFileUris: [Optional] HCFS URIs of jar files to be added to the Spark
       CLASSPATH.
-    loggingConfiguration: [Optional] The runtime log configuration for job
-      execution.
+    loggingConfig: [Optional] The runtime log config for job execution.
     properties: [Optional] A mapping of property names to values, used to
       configure Spark SQL's SparkConf. Properties that conflict with values
       set by the Cloud Dataproc API may be overwritten.
@@ -1911,7 +1609,7 @@ class SparkSqlJob(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   jarFileUris = _messages.StringField(1, repeated=True)
-  loggingConfiguration = _messages.MessageField('LoggingConfiguration', 2)
+  loggingConfig = _messages.MessageField('LoggingConfig', 2)
   properties = _messages.MessageField('PropertiesValue', 3)
   queryFileUri = _messages.StringField(4)
   queryList = _messages.MessageField('QueryList', 5)
@@ -2073,29 +1771,6 @@ class SubmitJobRequest(_messages.Message):
   job = _messages.MessageField('Job', 1)
 
 
-class TestIamPermissionsRequest(_messages.Message):
-  """Request message for `TestIamPermissions` method.
-
-  Fields:
-    permissions: The set of permissions to check for the `resource`.
-      Permissions with wildcards (such as '*' or 'storage.*') are not allowed.
-      For more information see IAM Overview.
-  """
-
-  permissions = _messages.StringField(1, repeated=True)
-
-
-class TestIamPermissionsResponse(_messages.Message):
-  """Response message for `TestIamPermissions` method.
-
-  Fields:
-    permissions: A subset of `TestPermissionsRequest.permissions` that the
-      caller is allowed.
-  """
-
-  permissions = _messages.StringField(1, repeated=True)
-
-
 class YarnApplication(_messages.Message):
   """A YARN application created by a job. Application information is a subset
   of
@@ -2145,9 +1820,6 @@ class YarnApplication(_messages.Message):
   trackingUrl = _messages.StringField(4)
 
 
-encoding.AddCustomJsonFieldMapping(
-    Rule, 'in_', 'in',
-    package=u'dataproc')
 encoding.AddCustomJsonFieldMapping(
     StandardQueryParameters, 'f__xgafv', '$.xgafv',
     package=u'dataproc')

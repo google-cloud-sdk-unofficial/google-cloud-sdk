@@ -15,6 +15,7 @@
 """Command to list properties."""
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.config import completers
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import named_configs
@@ -64,7 +65,7 @@ class List(base.Command):
         nargs='?',
         help='The property to be listed. Note that SECTION/ is optional while '
         'referring to properties in the core section.')
-    property_arg.completer = List.group_class.PropertiesCompleter
+    property_arg.completer = completers.PropertiesCompleter
 
   def _GetPropertiesToDisplay(self, args):
     """List available regular properties."""
