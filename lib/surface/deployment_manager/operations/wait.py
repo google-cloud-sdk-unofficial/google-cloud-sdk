@@ -68,12 +68,15 @@ class Wait(base.Command):
     Raises:
       DeploymentManagerError: Operation finished with error(s) or timed out.
     """
+    client = self.context['deploymentmanager-client']
+    messages = self.context['deploymentmanager-messages']
     project = properties.VALUES.core.project.Get(required=True)
     failed_ops = []
     for operation_name in args.operation_name:
       try:
-        dm_v2_util.WaitForOperation(
-            operation_name, project, self.context, '', OPERATION_TIMEOUT)
+        dm_v2_util.WaitForOperation(client, messages,
+                                    operation_name, project, '',
+                                    OPERATION_TIMEOUT)
       except DeploymentManagerError:
         failed_ops.append(operation_name)
     if failed_ops:

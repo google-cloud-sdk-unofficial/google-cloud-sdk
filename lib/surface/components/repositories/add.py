@@ -22,7 +22,7 @@ from googlecloudsdk.core.updater import snapshots
 from googlecloudsdk.core.updater import update_manager
 
 
-class Add(base.Command):
+class Add(base.SilentCommand):
   """Add a new Trusted Tester component repository.
   """
   detailed_help = {
@@ -86,7 +86,3 @@ class Add(base.Command):
       log.status.Print(
           'Repository already added, skipping: [{repo}]'.format(repo=url))
     return added
-
-  def Display(self, unused_args, unused_urls):
-    # Don't print anything by default.
-    pass

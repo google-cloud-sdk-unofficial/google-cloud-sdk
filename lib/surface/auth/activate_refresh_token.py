@@ -23,7 +23,7 @@ from googlecloudsdk.core.credentials import store as c_store
 
 
 @base.Hidden
-class ActivateRefreshToken(base.Command):
+class ActivateRefreshToken(base.SilentCommand):
   """Get credentials via an existing refresh token.
 
   Use an oauth2 refresh token to manufacture credentials for Google APIs. This
@@ -66,6 +66,3 @@ class ActivateRefreshToken(base.Command):
     log.status.Print('Activated refresh token credentials: [{0}]'
                      .format(account))
     return creds
-
-  def Format(self, unused_args):
-    return 'none'

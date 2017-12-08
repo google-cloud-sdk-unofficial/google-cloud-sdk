@@ -20,7 +20,7 @@ from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core.credentials import store as c_store
 
 
-class Revoke(base.Command):
+class Revoke(base.SilentCommand):
   """Revoke Application Default Credentials.
 
   Revokes Application Default Credentials that have been set up by commands
@@ -47,6 +47,3 @@ class Revoke(base.Command):
     auth_util.RevokeCredsInWellKnownFile(args.brief)
 
     return ''
-
-  def Display(self, unused_args, result):
-    pass

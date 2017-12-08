@@ -22,7 +22,7 @@ from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.core import log
 
 
-class InvalidateCache(base_classes.BaseCommand):
+class InvalidateCache(base_classes.NoOutputMutator):
   """Invalidate specified objects for a URL map in Cloud CDN caches."""
 
   @staticmethod
@@ -124,9 +124,6 @@ class InvalidateCache(base_classes.BaseCommand):
       utils.RaiseToolException(errors)
 
     return resources
-
-  def Format(self, args):
-    return 'none'
 
 
 InvalidateCache.detailed_help = {

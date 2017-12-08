@@ -156,8 +156,8 @@ class Create(base.Command):
     else:
       op_name = operation.name
       try:
-        dm_v2_util.WaitForOperation(op_name, project, self.context, 'create',
-                                    OPERATION_TIMEOUT)
+        dm_v2_util.WaitForOperation(client, messages, op_name, project,
+                                    'create', OPERATION_TIMEOUT)
         log.status.Print('Create operation ' + op_name
                          + ' completed successfully.')
       except exceptions.ToolException:

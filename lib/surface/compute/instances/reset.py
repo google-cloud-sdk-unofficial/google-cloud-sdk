@@ -59,12 +59,6 @@ class Reset(base_classes.NoOutputAsyncMutator):
       request_list.append(request)
     return request_list
 
-  def Display(self, _, resources):
-    # There is no need to display anything when resetting an
-    # instance. Instead, we consume the generator returned from Run()
-    # to invoke the logic that waits for the reset to complete.
-    list(resources)
-
 
 Reset.detailed_help = {
     'brief': 'Reset a virtual machine instance',

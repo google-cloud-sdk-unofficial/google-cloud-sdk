@@ -117,8 +117,8 @@ class Delete(base.Command):
       else:
         op_name = operation.name
         try:
-          dm_v2_util.WaitForOperation(op_name, project, self.context, 'delete',
-                                      OPERATION_TIMEOUT)
+          dm_v2_util.WaitForOperation(client, messages, op_name, project,
+                                      'delete', OPERATION_TIMEOUT)
           log.status.Print('Delete operation ' + op_name
                            + ' completed successfully.')
         except (exceptions.ToolException, DeploymentManagerError):

@@ -105,6 +105,16 @@ class Tag(Repository):
   def __str__(self):
     return '{base}:{tag}'.format(base=super(Tag, self).__str__(), tag=self.tag)
 
+  def __eq__(self, other):
+    return (other and self.repository == other.repository and
+            self.tag == other.tag)
+
+  def __ne__(self, other):
+    return not self.__eq__(other)
+
+  def __hash__(self):
+    return hash((self.repository, self.tag))
+
 
 class Digest(Repository):
   """Stores a docker repository digest in a structured form."""
@@ -129,3 +139,13 @@ class Digest(Repository):
   def __str__(self):
     return '{base}@{digest}'.format(base=super(Digest, self).__str__(),
                                     digest=self.digest)
+
+  def __eq__(self, other):
+    return (other and self._repository == other.repository and
+            self.digest == other.digest)
+
+  def __ne__(self, other):
+    return not self.__eq__(other)
+
+  def __hash__(self):
+    return hash((self.repository, self.digest))

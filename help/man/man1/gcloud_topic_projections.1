@@ -182,13 +182,49 @@ Returns this value if the decoding fails.
 
 .RE
 .RE
-\fBduration\fR(unit=1, undefined="")
+\fBduration\fR(start="", end="", parts=3, precision=3, calendar=true, unit=1, undefined="")
 .RS 2m
-Formats the resource as a duration string.
+Formats the resource as an ISO 8601 duration string. The ISO 8601 Duration
+(https://en.wikipedia.org/wiki/ISO_8601#Durations) format is:
+"[\-]P[nY][nM][nD][T[nH][nM][n[.m]S]]". The 0 duration is "P0". Otherwise at
+least one part will always be displayed. Negative durations are prefixed by
+"\-". "T" disambiguates months "P2M" to the left of "T" and minutes "PT5M" to
+the right. If the resource is a datetime then the duration of \f5resource \-
+current_time\fR is returned.
 
 
 The arguments are:
 
+\fB\f5start\fR\fR
+.RS 2m
+The name of a start time attribute in the resource. The duration of the \f5end
+\- start\fR time attributes in resource is returned. If \f5end\fR is not
+specified then the current time is used.
+.RE
+\fB\f5end\fR\fR
+.RS 2m
+The name of an end time attribute in the resource. Defaults to the current time
+if omitted. Ignored if \f5start\fR is not specified.
+.RE
+\fB\f5parts\fR\fR
+.RS 2m
+Format at most this many duration parts starting with largest non\-zero part.
+.RE
+\fB\f5precision\fR\fR
+.RS 2m
+Format the last duration part with precision digits after the decimal point.
+Trailing "0" and "." are always stripped.
+.RE
+\fB\f5calendar\fR\fR
+.RS 2m
+Allow time units larger than hours in formated durations if true. Durations
+specifying hours or smaller units are exact across daylight savings time
+boundaries. On by default. Use calendar=false to disable. For example, if
+\f5calendar=true\fR then at the daylight savings boundary 2016\-03\-13T01:00:00
++ P1D => 2016\-03\-14T01:00:00 but 2016\-03\-13T01:00:00 + PT24H =>
+2016\-03\-14T03:00:00. Similarly, a +P1Y duration will be inexact but "calendar
+correct", yielding the same month and day number next year, even in leap years.
+.RE
 \fB\f5unit\fR\fR
 .RS 2m
 Divide the resource numeric value by \fIunit\fR to yield seconds.

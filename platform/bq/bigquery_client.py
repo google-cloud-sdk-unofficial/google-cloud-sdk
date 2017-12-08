@@ -42,6 +42,7 @@ _DEFAULT = object()
 _MAX_RESULTS = 100000
 
 
+
 def _Typecheck(obj, types, message=None, method=None):
   if not isinstance(obj, types):
     if not message:
@@ -95,14 +96,21 @@ def _OverwriteCurrentLine(s, previous_token=None):
 
   # Erase any previous, in case new string is shorter.
   if previous_token is not None:
-    sys.stdout.write('\r' + (' ' * previous_token))
+    sys.stderr.write('\r' + (' ' * previous_token))
   # Put new string.
-  sys.stdout.write('\r' + s)
+  sys.stderr.write('\r' + s)
   # Display.
-  sys.stdout.flush()
+  sys.stderr.flush()
   return len(s)
 
 
+def _FormatLabels(labels):
+  """Format a resource's labels for printing."""
+  result_lines = []
+  for key, value in labels.iteritems():
+    label_str = '%s:%s' % (key, value)
+    result_lines.extend([label_str])
+  return '\n'.join(result_lines)
 
 
 
@@ -960,6 +968,7 @@ class BigqueryClient(object):
         formatter.AddColumns(('datasetId',))
       if print_format == 'show':
         formatter.AddColumns(('Last modified', 'ACLs',))
+        formatter.AddColumns(('Labels',))
     elif reference_type == ApiClientHelper.TableReference:
       if print_format == 'list':
         formatter.AddColumns(('tableId', 'Type',))
@@ -1208,6 +1217,8 @@ class BigqueryClient(object):
           int(result['lastModifiedTime']) / 1000)
     if 'access' in result:
       result['ACLs'] = BigqueryClient.FormatAcl(result['access'])
+    if 'labels' in result:
+      result['Labels'] = _FormatLabels(result['labels'])
     return result
 
   @staticmethod
@@ -1276,11 +1287,14 @@ class BigqueryClient(object):
   def _PrepareListRequest(self,
                           reference,
                           max_results=None,
-                          page_token=None):
+                          page_token=None,
+                          filter_expression=None):
     """Create and populate a list request."""
     request = dict(reference)
     if max_results is not None:
       request['maxResults'] = max_results
+    if filter_expression is not None:
+      request['filter'] = filter_expression
     if page_token is not None:
       request['pageToken'] = page_token
     return request
@@ -1359,14 +1373,16 @@ class BigqueryClient(object):
                    reference=None,
                    max_results=None,
                    page_token=None,
-                   list_all=None):
+                   list_all=None,
+                   filter_expression=None):
     """List the datasets associated with this reference."""
     reference = self._NormalizeProjectReference(reference)
     _Typecheck(reference, ApiClientHelper.ProjectReference,
                method='ListDatasets')
     request = self._PrepareListRequest(reference,
                                        max_results,
-                                       page_token)
+                                       page_token,
+                                       filter_expression)
     if list_all is not None:
       request['all'] = list_all
     result = self.apiclient.datasets().list(**request).execute()
@@ -1375,7 +1391,8 @@ class BigqueryClient(object):
       while 'nextPageToken' in result and len(results) < max_results:
         request = self._PrepareListRequest(reference,
                                            max_results - len(results),
-                                           result['nextPageToken'])
+                                           result['nextPageToken'],
+                                           filter_expression)
         if list_all is not None:
           request['all'] = list_all
         result = self.apiclient.datasets().list(**request).execute()
@@ -1636,9 +1653,15 @@ class BigqueryClient(object):
 
     self.apiclient.tables().patch(body=body, **dict(reference)).execute()
 
-  def UpdateDataset(self, reference,
-                    description=None, friendly_name=None, acl=None,
-                    default_table_expiration_ms=None):
+  def UpdateDataset(self,
+                    reference,
+                    description=None,
+                    friendly_name=None,
+                    acl=None,
+                    default_table_expiration_ms=None,
+                    labels_to_set=None,
+                    label_keys_to_remove=None,
+                    ):
     """Updates a dataset.
 
     Args:
@@ -1648,6 +1671,9 @@ class BigqueryClient(object):
       acl: an optional ACL for the dataset, as a list of dicts.
       default_table_expiration_ms: optional number of milliseconds for the
         default expiration duration for new tables created in this dataset.
+      labels_to_set: an optional dict of labels to set on this dataset.
+      label_keys_to_remove: an optional list of label keys to remove from this
+        dataset.
 
     Raises:
       TypeError: if reference is not a DatasetReference.
@@ -1667,6 +1693,14 @@ class BigqueryClient(object):
       dataset['access'] = acl
     if default_table_expiration_ms is not None:
       dataset['defaultTableExpirationMs'] = default_table_expiration_ms
+    if 'labels' not in dataset:
+      dataset['labels'] = {}
+    if labels_to_set:
+      for label_key, label_value in labels_to_set.iteritems():
+        dataset['labels'][label_key] = label_value
+    if label_keys_to_remove:
+      for label_key in label_keys_to_remove:
+        dataset['labels'].pop(label_key, None)
 
     request = self.apiclient.datasets().update(body=dataset, **dict(reference))
 

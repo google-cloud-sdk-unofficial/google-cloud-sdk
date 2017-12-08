@@ -34,35 +34,13 @@ class RemoveQuota(base.Command, base_classes.BaseServiceManagementCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    views = services_util.GetCallerViews()
-
     consumers_flags.CONSUMER_PROJECT_FLAG.AddToParser(parser)
     consumers_flags.SERVICE_FLAG.AddToParser(parser)
 
-    override = parser.add_mutually_exclusive_group(required=True)
-    override.add_argument(
-        '--consumer',
-        action='store_true',
-        default=False,
-        help='Remove a consumer quota override. Or use --producer')
-    override.add_argument(
-        '--producer',
-        action='store_true',
-        default=False,
-        help='Remove a producer quota override. Or use --consumer')
-
-    parser.add_argument(
-        '--view',
-        default='CONSUMER',
-        type=lambda x: str(x).upper(),
-        choices=sorted(views.keys()),
-        help=('The consumer settings view to use. Choose from {0}').format(
-            ', '.join(sorted(views.keys()))))
-
     # TODO(user): Improve the documentation of these flags with extended help
     parser.add_argument(
-        'quota_limit_key',
-        help='The quota limit key in this format GroupName/LimitName.')
+        '--limit-key',
+        help='The quota limit key in the format GroupName/LimitName.')
 
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -83,15 +61,21 @@ class RemoveQuota(base.Command, base_classes.BaseServiceManagementCommand):
     patch_request = (self.services_messages
                      .ServicemanagementServicesProjectSettingsPatchRequest)
 
+    # When the optional consumer-project flag is set, we assume that the
+    # command is called by a service producer to act on one of their consumers'
+    # projects.
     views = services_util.GetCallerViews()
+    view = views['PRODUCER'] if args.consumer_project else views['CONSUMER']
+
+    consumer_project_id = services_util.GetValidatedProject(
+        args.consumer_project)
 
     # Get the current list of quota settings to see if the quota override
     # exists in the first place.
-
     request = get_request(
         serviceName=args.service,
-        consumerProjectId=args.consumer_project,
-        view=views.get(args.view),
+        consumerProjectId=consumer_project_id,
+        view=view,
     )
 
     response = self.services_client.services_projectSettings.Get(request)
@@ -99,26 +83,27 @@ class RemoveQuota(base.Command, base_classes.BaseServiceManagementCommand):
     # Check to see if the quota override was present in the first place.
     override_present = False
     overrides = None
-    if args.consumer:
-      if response.quotaSettings and response.quotaSettings.consumerOverrides:
-        overrides = response.quotaSettings.consumerOverrides
-      else:
-        overrides = (self.services_messages.QuotaSettings
-                     .ConsumerOverridesValue())
-    elif args.producer:
+    if args.consumer_project:
       if response.quotaSettings and response.quotaSettings.producerOverrides:
         overrides = response.quotaSettings.producerOverrides
       else:
         overrides = (self.services_messages.QuotaSettings
                      .ProducerOverridesValue())
+    else:
+      if response.quotaSettings and response.quotaSettings.consumerOverrides:
+        overrides = response.quotaSettings.consumerOverrides
+      else:
+        overrides = (self.services_messages.QuotaSettings
+                     .ConsumerOverridesValue())
+
     if overrides:
       for override in overrides.additionalProperties:
-        if override.key == args.quota_limit_key:
+        if override.key == args.limit_key:
           override_present = True
           break
 
     if not override_present:
-      log.warn('No quota override found for "{0}"'.format(args.quota_limit_key))
+      log.warn('No quota override found for "{0}"'.format(args.limit_key))
       return
 
     project_settings = self.services_messages.ProjectSettings(
@@ -126,11 +111,11 @@ class RemoveQuota(base.Command, base_classes.BaseServiceManagementCommand):
     )
 
     update_mask = 'quota_settings.{0}_overrides["{1}"]'.format(
-        'consumer' if args.consumer else 'producer', args.quota_limit_key)
+        'producer' if args.consumer_project else 'consumer', args.limit_key)
 
     request = patch_request(
         serviceName=args.service,
-        consumerProjectId=args.consumer_project,
+        consumerProjectId=consumer_project_id,
         projectSettings=project_settings,
         updateMask=update_mask)
 

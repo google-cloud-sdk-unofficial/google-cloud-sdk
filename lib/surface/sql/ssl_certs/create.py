@@ -37,7 +37,7 @@ class _BaseAddCert(object):
     """
     parser.add_argument(
         'common_name',
-        help='User supplied name. Constrained to [a-zA-Z.-_ ]+.')
+        help='User supplied name. Constrained to ```[a-zA-Z.-_ ]+```.')
     parser.add_argument(
         'cert_file',
         default=None,

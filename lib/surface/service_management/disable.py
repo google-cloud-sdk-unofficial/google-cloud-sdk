@@ -49,6 +49,11 @@ class Disable(base.Command, base_classes.BaseServiceManagementCommand):
     Returns:
       The response from the consumer settings API call.
     """
+    # Validates the consumer_project argument, or returns the current active
+    # project if none is provided.
+    consumer_project_id = services_util.GetValidatedProject(
+        args.consumer_project)
+
     # Shorten the patch request name for better readability
     patch_request = (self.services_messages
                      .ServicemanagementServicesProjectSettingsPatchRequest)
@@ -62,7 +67,7 @@ class Disable(base.Command, base_classes.BaseServiceManagementCommand):
 
     request = patch_request(
         serviceName=args.service,
-        consumerProjectId=args.consumer_project,
+        consumerProjectId=consumer_project_id,
         projectSettings=project_settings,
         updateMask='usage_settings.consumer_enable_status')
 

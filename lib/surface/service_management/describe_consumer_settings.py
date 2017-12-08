@@ -34,18 +34,8 @@ class DescribeConsumerSettings(base.Command,
           on the command line after this command. Positional arguments are
           allowed.
     """
-    views = services_util.GetCallerViews()
-
     consumers_flags.CONSUMER_PROJECT_FLAG.AddToParser(parser)
     consumers_flags.SERVICE_FLAG.AddToParser(parser)
-
-    parser.add_argument(
-        '--view',
-        default='CONSUMER',
-        type=lambda x: str(x).upper(),
-        choices=sorted(views.keys()),
-        help=('The consumer settings view to describe. Choose from {0}').format(
-            ', '.join(sorted(views.keys()))))
 
   @http_error_handler.HandleHttpErrors
   def Run(self, args):
@@ -61,12 +51,20 @@ class DescribeConsumerSettings(base.Command,
     # Shorten the request name for better readability
     get_request = (self.services_messages
                    .ServicemanagementServicesProjectSettingsGetRequest)
+
+    # When the optional consumer-project flag is set, we assume that the
+    # command is called by a service producer to act on one of their consumers'
+    # projects.
     views = services_util.GetCallerViews()
+    view = views['PRODUCER'] if args.consumer_project else views['CONSUMER']
+
+    consumer_project_id = services_util.GetValidatedProject(
+        args.consumer_project)
 
     request = get_request(
         serviceName=args.service,
-        consumerProjectId=args.consumer_project,
-        view=views.get(args.view)
+        consumerProjectId=consumer_project_id,
+        view=view
     )
 
     return self.services_client.services_projectSettings.Get(request)

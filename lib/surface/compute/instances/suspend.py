@@ -61,12 +61,6 @@ class Suspend(base_classes.NoOutputAsyncMutator):
     return [self._CreateSuspendRequest(name, args.zone)
             for name in args.name]
 
-  def Display(self, unused_args, resources):
-    # There is no need to display anything when stopping an
-    # instance. Instead, we consume the generator returned from Run()
-    # to invoke the logic that waits for the stop to complete.
-    list(resources)
-
 
 Suspend.detailed_help = {
     'brief': 'Suspend a virtual machine instance',

@@ -167,6 +167,12 @@ class Login(base.Command):
           'error saving Application Default Credentials: ' + str(e))
     if not brief:
       log.status.write('Saved Application Default Credentials.\n')
+      log.warning(
+          '`gcloud auth login` will stop writing application default '
+          'credentials\nin a future release. See:\n    '
+          'https://developers.google.com/identity/protocols/'
+          'application-default-credentials#toolcloudsdk'
+          '\nfor more information.')
 
     if not brief:
       log.status.write(

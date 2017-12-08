@@ -93,5 +93,5 @@ class List(base.Command):
         config_name))
     return self._GetPropertiesToDisplay(args)
 
-  def Display(self, _, result):
-    properties.DisplayProperties(log.out, result)
+  def Format(self, _):
+    return 'config'

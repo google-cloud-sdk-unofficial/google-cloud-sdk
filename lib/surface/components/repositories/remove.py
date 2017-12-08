@@ -23,7 +23,7 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.updater import update_manager
 
 
-class Remove(base.Command):
+class Remove(base.SilentCommand):
   """Remove a registered Trusted Test component repository.
   """
   detailed_help = {
@@ -99,7 +99,3 @@ class Remove(base.Command):
     for removed_repo in removed_repos:
       log.status.Print('Removed repository: [{repo}]'.format(repo=removed_repo))
     return removed_repos
-
-  def Display(self, unused_args, unused_removed_repos):
-    # Don't print anything by default.
-    pass

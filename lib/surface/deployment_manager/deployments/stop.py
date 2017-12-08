@@ -116,7 +116,7 @@ class Stop(base.Command):
     else:
       op_name = operation.name
       try:
-        dm_v2_util.WaitForOperation(op_name, project, self.context, 'stop',
+        dm_v2_util.WaitForOperation(client, messages, op_name, project, 'stop',
                                     OPERATION_TIMEOUT)
         log.status.Print('Stop operation ' + op_name
                          + ' completed successfully.')

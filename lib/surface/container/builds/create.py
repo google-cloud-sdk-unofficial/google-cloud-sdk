@@ -26,11 +26,9 @@ from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.core import apis as core_apis
-from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
-from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.resource import resource_transform
 from googlecloudsdk.core.util import times
 
@@ -66,7 +64,7 @@ class Create(base.Command):
     )
     build_config = parser.add_mutually_exclusive_group(required=True)
     build_config.add_argument(
-        '--tag',
+        '--tag', '-t',
         help='The tag to use with a "docker build" image creation.',
     )
     build_config.add_argument(
@@ -163,12 +161,11 @@ class Create(base.Command):
         source_snapshot = snapshot.Snapshot(args.source)
         size_str = resource_transform.TransformSize(
             source_snapshot.uncompressed_size)
-        if not console_io.PromptContinue(
-            'Uploading tarball archive of {num_files} file(s) totalling'
-            ' {size} before compression.'.format(
+        log.status.write(
+            'Creating temporary tarball archive of {num_files} file(s)'
+            ' totalling {size} before compression.\n'.format(
                 num_files=len(source_snapshot.files),
-                size=size_str)):
-          raise core_exceptions.Error('canceled by user')
+                size=size_str))
         staged_source_obj = source_snapshot.CopyTarballToGCS(
             gcs_client, gcs_source_staging)
         build_config.source = messages.Source(

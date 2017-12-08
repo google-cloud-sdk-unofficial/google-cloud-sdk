@@ -218,8 +218,8 @@ class Update(base.Command):
     else:
       op_name = operation.name
       try:
-        dm_v2_util.WaitForOperation(op_name, project, self.context, 'update',
-                                    OPERATION_TIMEOUT)
+        dm_v2_util.WaitForOperation(client, messages, op_name, project,
+                                    'update', OPERATION_TIMEOUT)
         log.status.Print('Update operation ' + op_name
                          + ' completed successfully.')
       except exceptions.ToolException:

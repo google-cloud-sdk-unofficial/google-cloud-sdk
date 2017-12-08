@@ -59,12 +59,6 @@ class Stop(base_classes.NoOutputAsyncMutator):
       request_list.append(request)
     return request_list
 
-  def Format(self, _):
-    # There is no need to display anything when stopping an
-    # instance. Instead, format 'none' consume the generator returned from
-    # Run() to invoke the logic that waits for the stop to complete.
-    return 'none'
-
 
 Stop.detailed_help = {
     'brief': 'Stop a virtual machine instance',

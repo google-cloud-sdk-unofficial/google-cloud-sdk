@@ -124,7 +124,8 @@ class Filters(base.Command):
           pattern ```abc``` matches ```abc```, the pattern ```abc*``` matches
           ```abc``` and ```abcxyz```, the pattern ```*xyz``` matches ```xyz```
           and ```abcxyz```, and the pattern ```*``` matches any non-empty
-          string.
+          string. Use _key_```:*``` to test if _key_ is defined and
+          ```-```_key_```:*``` to test if _key_ is undefined.
 
           _key_ *:(* _simple-pattern_ ... *)*:::
 

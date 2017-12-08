@@ -51,8 +51,12 @@ class Enable(base.Command, base_classes.BaseServiceManagementCommand):
     Returns:
       The response from the consumer settings API call.
     """
+    # Validates the consumer_project argument, or returns the current active
+    # project if none is provided.
+    consumer_project_id = services_util.GetValidatedProject(
+        args.consumer_project)
 
     operation = enable_api.EnableServiceApiCall(
-        args.consumer_project, args.service)
+        consumer_project_id, args.service)
 
     return services_util.ProcessOperationResult(operation, args.async)

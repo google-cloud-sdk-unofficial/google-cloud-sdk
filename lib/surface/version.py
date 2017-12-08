@@ -15,11 +15,9 @@
 """Command to print version information for Cloud SDK components.
 """
 
-import textwrap
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import config
-from googlecloudsdk.core import log
 from googlecloudsdk.core.updater import update_manager
 
 
@@ -35,19 +33,11 @@ class Version(base.Command):
     if config.Paths().sdk_root:
       # Components are only valid if this is a built Cloud SDK.
       manager = update_manager.UpdateManager()
-      return manager.GetCurrentVersionsInformation()
-    return []
+      versions = dict(manager.GetCurrentVersionsInformation())
+    else:
+      versions = {}
+    versions['Google Cloud SDK'] = config.CLOUD_SDK_VERSION
+    return versions
 
-  def Display(self, args, result):
-    printables = []
-    for name in sorted(result):
-      version = result[name]
-      printables.append('{name} {version}'.format(name=name, version=version))
-    component_versions = '\n'.join(printables)
-    log.Print(textwrap.dedent("""\
-Google Cloud SDK {cloudsdk_version}
-
-{component_versions}
-""".format(
-    cloudsdk_version=config.CLOUD_SDK_VERSION,
-    component_versions=component_versions)))
+  def Format(self, args):
+    return 'flattened[no-pad,separator=" "]'

@@ -14,7 +14,6 @@
 """Command to move a project into an organization."""
 
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
-from googlecloudsdk.api_lib.cloudresourcemanager import projects_util
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import flags
@@ -69,10 +68,7 @@ class Move(base.Command):
   def Format(self, args):
     return self.ListFormat(args)
 
-  # HandleKnownHttpErrors needs to be the first one to handle errors.
-  # It needs to be placed after http_error_handler.HandleHttpErrors.
   @http_error_handler.HandleHttpErrors
-  @projects_util.HandleKnownHttpErrors
   def Run(self, args):
     project_ref = command_lib_util.ParseProject(args.id)
     result = projects_api.Update(project_ref, organization=args.organization)

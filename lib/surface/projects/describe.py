@@ -15,7 +15,6 @@
 """Command to show metadata for a specified project."""
 
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
-from googlecloudsdk.api_lib.cloudresourcemanager import projects_util
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import flags
@@ -52,10 +51,7 @@ class Describe(base.DescribeCommand):
   def Args(parser):
     flags.GetProjectFlag('describe').AddToParser(parser)
 
-  # HandleKnownHttpErrors needs to be the first one to handle errors.
-  # It needs to be placed after http_error_handler.HandleHttpErrors.
   @http_error_handler.HandleHttpErrors
-  @projects_util.HandleKnownHttpErrors
   def Run(self, args):
     project_ref = command_lib_util.ParseProject(args.id)
     return projects_api.Get(project_ref)

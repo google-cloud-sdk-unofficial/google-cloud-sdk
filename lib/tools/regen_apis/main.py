@@ -19,7 +19,7 @@ import os
 import pprint
 import sys
 
-from googlecloudsdk.tools.regen_apis import regen
+from tools.regen_apis import regen
 import yaml
 
 
@@ -73,6 +73,7 @@ def main(argv=None):
         logging.info('Generating %s %s', api_name, api_version)
         regen.GenerateApi(args.base_dir, root_dir,
                           api_name, api_version, api_config)
+  regen.GenerateApiMap(args.base_dir, root_dir, config['apis'])
 
 
 if __name__ == '__main__':

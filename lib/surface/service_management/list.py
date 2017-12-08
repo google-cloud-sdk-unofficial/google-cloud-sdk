@@ -17,9 +17,9 @@
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.service_management import base_classes
+from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
 
 
 class List(base.ListCommand, base_classes.BaseServiceManagementCommand):
@@ -93,7 +93,7 @@ class List(base.ListCommand, base_classes.BaseServiceManagementCommand):
     if not (args.enabled or args.available or args.produced):
       args.enabled = True
 
-    validated_project = self._GetValidatedProject(args.project)
+    validated_project = services_util.GetValidatedProject(args.project)
 
     if args.enabled:
       request = self._GetEnabledListRequest(validated_project)
@@ -135,11 +135,3 @@ class List(base.ListCommand, base_classes.BaseServiceManagementCommand):
     return self.services_messages.ServicemanagementServicesListRequest(
         producerProjectId=project_id
     )
-
-  def _GetValidatedProject(self, project_id):
-    # If supplied a project explicitly, validate it, then return it.
-    if project_id:
-      properties.VALUES.core.project.Validate(project_id)
-    else:
-      project_id = properties.VALUES.core.project.Get(required=True)
-    return project_id

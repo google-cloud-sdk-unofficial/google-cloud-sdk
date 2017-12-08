@@ -28,7 +28,7 @@ from googlecloudsdk.core.credentials import store as c_store
 from oauth2client import client
 
 
-class ActivateServiceAccount(base.Command):
+class ActivateServiceAccount(base.SilentCommand):
   """Authorize access to Google Cloud Platform using a service account.
 
   Obtains access credentials for the service account using a .json (preferred)
@@ -154,6 +154,3 @@ class ActivateServiceAccount(base.Command):
     log.status.Print('Activated service account credentials for: [{0}]'
                      .format(account))
     return cred
-
-  def Format(self, unused_args):
-    return 'none'

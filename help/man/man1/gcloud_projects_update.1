@@ -11,13 +11,13 @@ gcloud projects update \- update the name of a project
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud projects update\fR \fIPROJECT_ID\fR \fB\-\-name\fR \fINAME\fR [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud projects update\fR \fIPROJECT_ID\fR [\fB\-\-name\fR\ \fINAME\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
 .SH "DESCRIPTION"
 
-Updates the given project with new name.
+Update the the name of the given project.
 
 This command can fail for the following reasons:
 .RS 2m
@@ -41,7 +41,7 @@ ID for the project you want to update.
 
 .RE
 
-.SH "REQUIRED FLAGS"
+.SH "FLAGS"
 
 \fB\-\-name\fR \fINAME\fR
 .RS 2m
@@ -59,8 +59,8 @@ Run \fB$ gcloud help\fR for a description of flags available to all commands.
 .SH "EXAMPLES"
 
 The following command updates a project with the ID \f5example\-foo\-bar\-1\fR
-to have the name "Foo Bar and Grill":
+to have the name "Foo Bar & Grill":
 
 .RS 2m
-$ gcloud projects update example\-foo\-bar\-1 \-\-name="Foo Bar and Grill"
+$ gcloud projects update example\-foo\-bar\-1 \-\-name="Foo Bar & Grill"
 .RE

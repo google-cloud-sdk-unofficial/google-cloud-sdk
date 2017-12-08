@@ -15,10 +15,10 @@
 """Command to create a new project."""
 
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
-from googlecloudsdk.api_lib.cloudresourcemanager import projects_util
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import util as command_lib_util
+from googlecloudsdk.command_lib.util import labels_util
 
 from googlecloudsdk.core import log
 
@@ -33,10 +33,10 @@ class Create(base.CreateCommand):
 
   detailed_help = {
       'EXAMPLES': """
-          The following command creates a project with the ID
-          `example-foo-bar-1` and the name `Happy project`:
+          The following command creates a project with ID
+          `example-foo-bar-1`, name `Happy project` and label `type=happy`:
 
-            $ {command} example-foo-bar-1 --name="Happy project"
+            $ {command} example-foo-bar-1 --name="Happy project" --labels=type=happy
       """,
   }
 
@@ -48,6 +48,7 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
+    labels_util.AddCreateLabelsFlags(parser)
     parser.add_argument('id', metavar='PROJECT_ID',
                         help='ID for the project you want to create.')
     parser.add_argument('--name',
@@ -58,12 +59,13 @@ class Create(base.CreateCommand):
                         default=True,
                         help='Enable cloudapis.googleapis.com during creation.')
 
-  # HandleKnownHttpErrors needs to be the first one to handle errors.
-  # It needs to be placed after http_error_handler.HandleHttpErrors.
   @http_error_handler.HandleHttpErrors
-  @projects_util.HandleKnownHttpErrors
   def Run(self, args):
     project_ref = command_lib_util.ParseProject(args.id)
-    result = projects_api.Create(project_ref, args.name, args.enable_cloud_apis)
+    result = projects_api.Create(
+        project_ref,
+        args.name,
+        args.enable_cloud_apis,
+        update_labels=labels_util.GetUpdateLabelsDictFromArgs(args))
     log.CreatedResource(project_ref)
     return result

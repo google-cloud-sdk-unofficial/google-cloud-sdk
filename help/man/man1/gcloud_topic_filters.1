@@ -147,7 +147,8 @@ characters must match), case insensitive, and allows one \f5*\fR operator that
 matches any sequence of 0 or more characters. The pattern \f5abc\fR matches
 \f5abc\fR, the pattern \f5abc*\fR matches \f5abc\fR and \f5abcxyz\fR, the
 pattern \f5*xyz\fR matches \f5xyz\fR and \f5abcxyz\fR, and the pattern \f5*\fR
-matches any non\-empty string.
+matches any non\-empty string. Use \fIkey\fR\f5:*\fR to test if \fIkey\fR is
+defined and \f5\-\fR\fIkey\fR\f5:*\fR to test if \fIkey\fR is undefined.
 
 .RE
 \fIkey\fR \fB:(\fR \fIsimple\-pattern\fR ... \fB)\fR

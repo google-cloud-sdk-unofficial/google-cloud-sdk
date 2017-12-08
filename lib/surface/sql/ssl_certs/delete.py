@@ -39,7 +39,7 @@ class _BaseDelete(object):
     base.ASYNC_FLAG.AddToParser(parser)
     parser.add_argument(
         'common_name',
-        help='User supplied name. Constrained to [a-zA-Z.-_ ]+.')
+        help='User supplied name. Constrained to ```[a-zA-Z.-_ ]+```.')
     flags.INSTANCE_FLAG.AddToParser(parser)
 
 

@@ -423,6 +423,28 @@ def _NormalizeFieldDelimiter(field_delimiter):
 
 
 
+def _ParseLabels(labels):
+  """Parses a list of user-supplied strings representing labels.
+
+  Args:
+    labels: A list of user-supplied strings representing labels.  It is expected
+        to be in the format "key:value".
+
+  Returns:
+    A dict mapping label keys to label values.
+
+  Raises:
+    UsageError: Incorrect label arguments were supplied.
+  """
+  labels_dict = {}
+  for key_value in labels:
+    k, _, v = key_value.partition(':')
+    k = k.strip()
+    if k in labels_dict:
+      raise app.UsageError('Cannot specify label key "%s" multiple times' % k)
+    if k.strip():
+      labels_dict[k.strip()] = v.strip()
+  return labels_dict
 
 
 class TablePrinter(object):
@@ -1492,7 +1514,8 @@ class _Extract(BigqueryCmd):
 
     Arguments:
       source_table: Source table to extract.
-      destination_uris: One or more Google Storage URIs, separated by commas.
+      destination_uris: One or more Google Cloud Storage URIs, separated by
+        commas.
     """
     client = Client.Get()
     kwds = {
@@ -1682,6 +1705,20 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         'datasets', False,
         'Show datasets described by this identifier.',
         short_name='d', flag_values=fv)
+    flags.DEFINE_string(
+        'page_token', None,
+        'Start listing from this page token.',
+        short_name='k', flag_values=fv)
+    flags.DEFINE_string('filter',
+                        None,
+                        'Show datasets that match the filter expression. '
+                        'Use a space-separated list of label keys and values '
+                        'in the form "labels.key:value". Datasets must match '
+                        'all provided filter expressions. See '
+                        # pylint: disable=g-line-too-long
+                        'https://cloud.google.com/bigquery/docs/labeling-datasets#filtering_datasets_using_labels'
+                        'for details',
+                        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier=''):
@@ -1698,6 +1735,8 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
       bq ls -p -n 1000
       bq ls mydataset
       bq ls -a
+      bq ls --filter labels.color:red
+      bq ls --filter 'labels.color:red labels.size:*'
     """
 
     # pylint: disable=g-doc-exception
@@ -1763,7 +1802,8 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
           client.ListDatasets(reference,
                               max_results=self.max_results,
                               list_all=self.a,
-                              page_token=page_token))
+                              page_token=page_token,
+                              filter_expression=self.filter))
     else:  # isinstance(reference, DatasetReference):
       BigqueryClient.ConfigureFormatter(formatter, TableReference)
       results = map(  # pylint: disable=g-long-lambda
@@ -2158,6 +2198,14 @@ class _Update(BigqueryCmd):
         'description', None,
         'Description of the dataset, table or view.',
         flag_values=fv)
+    flags.DEFINE_multistring(
+        'set_label', None,
+        'A label to set on a dataset. The format is "key:value"',
+        flag_values=fv)
+    flags.DEFINE_multistring(
+        'clear_label', None,
+        'A label key to remove from a dataset.',
+        flag_values=fv)
     flags.DEFINE_integer(
         'expiration', None,
         'Expiration time, in seconds from now, of a table or view. '
@@ -2260,8 +2308,20 @@ class _Update(BigqueryCmd):
       if self.default_table_expiration is not None:
         default_table_exp_ms = self.default_table_expiration * 1000
 
-      _UpdateDataset(client, reference, self.description, self.source,
-                     default_table_exp_ms)
+      label_keys_to_remove = None
+      labels_to_set = None
+      if self.set_label is not None:
+        labels_to_set = _ParseLabels(self.set_label)
+      if self.clear_label is not None:
+        label_keys_to_remove = set(self.clear_label)
+      _UpdateDataset(client,
+                     reference,
+                     self.description,
+                     self.source,
+                     default_table_exp_ms,
+                     labels_to_set,
+                     label_keys_to_remove,
+                     )
       print "Dataset '%s' successfully updated." % (reference,)
     elif isinstance(reference, TableReference):
       object_name = 'Table'
@@ -2311,8 +2371,14 @@ class _Update(BigqueryCmd):
       print "%s '%s' successfully updated." % (object_name, reference,)
 
 
-def _UpdateDataset(client, reference, description, source,
-                   default_table_expiration_ms):
+def _UpdateDataset(client,
+                   reference,
+                   description,
+                   source,
+                   default_table_expiration_ms,
+                   labels_to_set,
+                   label_keys_to_remove,
+                   ):
   """Updates a dataset.
 
   Reads JSON file if specified and loads updated values, before calling bigquery
@@ -2325,6 +2391,9 @@ def _UpdateDataset(client, reference, description, source,
     source: an optional filename containing the JSON payload.
     default_table_expiration_ms: optional number of milliseconds for the
       default expiration duration for new tables created in this dataset.
+    labels_to_set: an optional dict of labels to set on this dataset.
+    label_keys_to_remove: an optional list of label keys to remove from this
+      dataset.
 
   Raises:
     UsageError: when incorrect usage or invalid args are used.
@@ -2345,8 +2414,13 @@ def _UpdateDataset(client, reference, description, source,
       except ValueError as e:
         raise app.UsageError('Error decoding JSON schema from file %s: %s'
                              % (source, e))
-  client.UpdateDataset(reference, description=description, acl=acl,
-                       default_table_expiration_ms=default_table_expiration_ms)
+  client.UpdateDataset(reference,
+                       description=description,
+                       acl=acl,
+                       default_table_expiration_ms=default_table_expiration_ms,
+                       labels_to_set=labels_to_set,
+                       label_keys_to_remove=label_keys_to_remove,
+                       )
 
 
 class _Show(BigqueryCmd):
@@ -2397,7 +2471,7 @@ class _Show(BigqueryCmd):
 
 
 def _PrintJobMessages(printable_job_info):
-  """Prints errors or warnings from a job formatted for printing.
+  """Prints additional info from a job formatted for printing.
 
   If the job had a fatal error, non-fatal warnings are not shown.
 
@@ -2642,7 +2716,6 @@ class _Insert(BigqueryCmd):
           len(batch) == FLAGS.max_rows_per_request):
         result, errors = Flush()
       if errors: break
-    # Send rest of the batched rows if insertErrors does exist or is empty.
     if batch and not errors:
       result, errors = Flush()
 

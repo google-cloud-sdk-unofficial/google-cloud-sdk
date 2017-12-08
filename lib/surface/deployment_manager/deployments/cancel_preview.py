@@ -121,7 +121,7 @@ class CancelPreview(base.Command):
     else:
       op_name = operation.name
       try:
-        dm_v2_util.WaitForOperation(op_name, project, self.context,
+        dm_v2_util.WaitForOperation(client, messages, op_name, project,
                                     'cancel-preview', OPERATION_TIMEOUT)
         log.status.Print('Cancel preview operation ' + op_name
                          + ' completed successfully.')
