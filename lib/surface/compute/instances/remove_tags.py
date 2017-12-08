@@ -58,7 +58,7 @@ RemoveTags.detailed_help = {
         *{command}* is used to remove tags to Google Compute Engine virtual
         machine instances.  For example:
 
-          $ {command} example-instance --tags tag-1 tag-2
+          $ {command} example-instance --tags tag-1,tag-2
 
         will remove tags ``tag-1'' and ``tag-2'' from the existing tags of
         'example-instance'.

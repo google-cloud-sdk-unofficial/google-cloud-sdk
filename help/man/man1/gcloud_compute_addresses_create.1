@@ -43,7 +43,7 @@ flag, a parallel list of names for the addresses can be provided. For example,
 
 .RS 2m
 $ gcloud compute addresses create ADDRESS\-1 ADDRESS\-2 \e
-    \-\-addresses 162.222.181.197 162.222.181.198 \-\-region us\-central1
+    \-\-addresses 162.222.181.197,162.222.181.198 \-\-region us\-central1
 .RE
 
 will result in 162.222.181.197 being reserved as 'ADDRESS\-1' and
@@ -111,8 +111,8 @@ being used by virtual machine instances in the \f5\fIus\-central1\fR\fR region,
 run:
 
 .RS 2m
-$ gcloud compute addresses create \-\-addresses 162.222.181.198 \e
-    23.251.146.189 \-\-region us\-central1
+$ gcloud compute addresses create \e
+    \-\-addresses 162.222.181.198,23.251.146.189 \-\-region us\-central1
 .RE
 
 In the above invocation, the two addresses will be assigned random names.

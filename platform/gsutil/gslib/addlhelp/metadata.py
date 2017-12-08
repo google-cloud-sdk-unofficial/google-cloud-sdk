@@ -139,7 +139,8 @@ _DETAILED_HELP_TEXT = ("""
   avoided.
 
   Note also that gsutil provides an easy way to cause content to be compressed
-  and stored with Content-Encoding: gzip: see the -z option in "gsutil help cp".
+  and stored with Content-Encoding: gzip: see the -z and -Z options in
+  "gsutil help cp".
 
 
 <B>CONTENT-DISPOSITION</B>
@@ -152,17 +153,18 @@ _DETAILED_HELP_TEXT = ("""
   Setting the Content-Disposition allows you to control presentation style
   of the content, for example determining whether an attachment should be
   automatically displayed vs should require some form of action from the user to
-  open it.  See http://www.w3.org/Protocols/rfc2616/rfc2616-sec19.html#sec19.5.1
+  open it.  See https://tools.ietf.org/html/rfc6266
   for more details about the meaning of Content-Disposition.
 
 
 <B>CUSTOM METADATA</B>
   You can add your own custom metadata (e.g,. for use by your application)
-  to an object by setting a header that starts with "x-goog-meta", for example:
+  to a Google Cloud Storage object by setting a header that starts with
+  "x-goog-meta", for example:
 
     gsutil -h x-goog-meta-reviewer:jane cp mycode.java gs://bucket/reviews
 
-  You can add multiple differently named custom metadata fields to each object.
+  You can add multiple differently-named custom metadata fields to each object.
 
 
 <B>SETTABLE FIELDS; FIELD VALUES</B>

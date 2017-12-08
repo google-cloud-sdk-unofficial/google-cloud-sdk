@@ -66,7 +66,7 @@ List.detailed_help = {
         To list all of the addresses from the ``us-central1'' and the
         ``europe-west1'' regions, run:
 
-          $ {command} --regions us-central1 europe-west1
+          $ {command} --regions us-central1,europe-west1
         """,
 
 }

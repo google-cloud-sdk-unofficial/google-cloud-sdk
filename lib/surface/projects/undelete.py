@@ -20,7 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Undelete(base.Command):
   """Undelete a Project."""
 

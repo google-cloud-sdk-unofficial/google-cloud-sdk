@@ -20,7 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base_classes.BaseAsyncCreator):
   """Create Google Compute Engine images."""
 
@@ -115,8 +115,8 @@ class Create(base_classes.BaseAsyncCreator):
     return [request]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class CreateBeta(Create):
 
   @staticmethod
   def Args(parser):
@@ -145,4 +145,4 @@ Create.detailed_help = {
         """,
 }
 
-CreateAlpha.detailed_help = Create.detailed_help
+CreateBeta.detailed_help = Create.detailed_help

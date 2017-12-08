@@ -156,7 +156,11 @@ Aligned left\-adjusted columns with optional title, column headings and sorting.
 This format requires a projection to define the table columns. The default
 column headings are the disambiguated right hand components of the column keys
 in ANGRY_SNAKE_CASE. For example, the projection keys (first.name, last.name)
-produce the default column heading ('NAME', 'LAST_NAME').
+produce the default column heading ('NAME', 'LAST_NAME'). If
+\fB\-\-page\-size\fR=\fIN\fR is specified then output is grouped into tables
+with at most \fIN\fR rows. Headings, alignment and sorting are done per\-page.
+The title, if any, is printed before the first table. The legend, if any, is
+printed after the last table.
 
 The format attributes are:
 
@@ -194,13 +198,6 @@ may be: \fBout\fR (the default), \fBstatus\fR (standard error), \fBdebug\fR,
 .RS 2m
 Sets the column horizontal pad to \fIN\fR spaces. The default is 1 for box, 2
 otherwise.
-.RE
-\fBpage=N\fR
-.RS 2m
-If \fIN\fR > 0 then output is grouped into tables with \fIN\fR rows. The last
-table may have less rows. Headings, alignment and sorting are done per\-page.
-The title, if any, is printed before the first table. The legend, if any, is
-printed after the last table.
 .RE
 \fBtitle=\fITITLE\fR\fR
 .RS 2m

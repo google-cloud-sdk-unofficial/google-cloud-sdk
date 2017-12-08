@@ -213,12 +213,12 @@ AddPathMatcher.detailed_help = {
         ``--delete-orphaned-path-matcher'' is provided.
         """,
     'EXAMPLES': """\
-        To create a rule for mapping the paths ```/search``` and
-        ```/search/*``` to the hypothetical ```search-service``` and
-        ```/images/*``` to the ```images-service``` under the hosts
-        ```google.com``` and ```*.google.com```, run:
+        To create a rule for mapping the path ```/search/*``` to the
+        hypothetical ```search-service``` and ```/images/*``` to the
+        ```images-service``` under the hosts ```google.com``` and
+        ```*.google.com```, run:
 
-          $ {command} MY-URL-MAP --path-matcher-name MY-MATCHER --default-service MY-DEFAULT-SERVICE --path-rules /search=search-service '/search/*=search_service' '/images/*=images-service' --new-hosts google.com '*.google.com'
+          $ {command} MY-URL-MAP --path-matcher-name MY-MATCHER --default-service MY-DEFAULT-SERVICE --path-rules '/search/*=search_service,/images/*=images-service' --new-hosts 'google.com,*.google.com'
 
         Note that a default service must be provided to handle paths
         for which there is no mapping.

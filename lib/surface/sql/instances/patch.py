@@ -101,12 +101,12 @@ class _BasePatch(object):
         metavar='FLAG=VALUE',
         required=False,
         action=arg_parsers.FloatingListValuesCatcher(),
-        help='A space-separated list of database flags to set on the instance. '
+        help='A comma-separated list of database flags to set on the instance. '
         'Use an equals sign to separate flag name and value. Flags without '
         'values, like skip_grant_tables, can be written out without a value '
         'after, e.g., `skip_grant_tables=`. Use on/off for '
         'booleans. View the Instance Resource API for allowed flags. '
-        '(e.g., `--database-flags max_allowed_packet=55555 skip_grant_tables= '
+        '(e.g., `--database-flags max_allowed_packet=55555,skip_grant_tables=,'
         'log_output=1`)')
     database_flags_group.add_argument(
         '--clear-database-flags',

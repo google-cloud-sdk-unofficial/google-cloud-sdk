@@ -94,25 +94,26 @@ _DETAILED_HELP_TEXT = ("""
   can have interoperability problems, for a number of reasons unrelated to
   gsutil. For example:
 
-    - Windows filenames are case-insensitive, while GCS, Linux and MacOS are
-      not. Thus, for example, if you have two filenames on Linux differing only
-      in case and upload both to GCS and then subsequently download them to
-      Windows, you will end up with just one file whose contents came from the
-      last of these files to be written to the filesystem. Moreover, case
-      translation is handled by tables that change across OS versions.
-    - Mac OS performs character encoding decomposition based on tables stored in
-      the OS, and the tables change between Unicode versions. Thus the encoding
-      used by an external library may not match that performed by the the OS.
-    - Windows console support for Unicode is difficult to use correctly.
+  - Windows filenames are case-insensitive, while Google Cloud Storage, Linux,
+    and MacOS are not. Thus, for example, if you have two filenames on Linux
+    differing only in case and upload both to Google Cloud Storage and then 
+    subsequently download them to Windows, you will end up with just one file
+    whose contents came from the last of these files to be written to the
+    filesystem.
+  - Mac OS performs character encoding decomposition based on tables stored in
+    the OS, and the tables change between Unicode versions. Thus the encoding
+    used by an external library may not match that performed by the OS.
+  - Windows console support for Unicode is difficult to use correctly.
 
   For a more thorough list of such issues see `this presentation
   <http://www.i18nguy.com/unicode/filename-issues-iuc33.pdf>`_
 
   These problems mostly arise when sharing data across platforms (e.g.,
-  uploading data from a Windows machine to GCS, and then downloading from GCS
-  to a machine running MacOS). Unfortunately these problems are a consequence
-  of the lack of a filename encoding standard, and users need to be aware of the
-  kinds of problems that can arise when copying filenames across platforms.
+  uploading data from a Windows machine to Google Cloud Storage, and then
+  downloading from Google Cloud Storage to a machine running MacOS).
+  Unfortunately these problems are a consequence of the lack of a filename
+  encoding standard, and users need to be aware of the kinds of problems that
+  can arise when copying filenames across platforms.
 
   There is one precaution users can exercise to prevent some of these problems:
   When using the Windows console specify wildcards or folders (using the -R
@@ -123,8 +124,9 @@ _DETAILED_HELP_TEXT = ("""
   Open-source tools are available to convert filenames for non-Unicode files.
   For example, to convert from latin1 (a common Windows encoding) to Unicode,
   you can use
-  `Windows iconv <http://gnuwin32.sourceforge.net/packages/libiconv.htm>`_. For
-  *nix systems, you can use `libiconv https://www.gnu.org/software/libiconv/`_.
+  `Windows iconv <http://gnuwin32.sourceforge.net/packages/libiconv.htm>`_.
+  For Unix-based systems, you can use
+  `libiconv <https://www.gnu.org/software/libiconv/>`_.
 """)
 
 

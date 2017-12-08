@@ -24,6 +24,7 @@ from gslib.command import Command
 from gslib.command_argument import CommandArgument
 from gslib.cs_api_map import ApiSelector
 from gslib.exception import CommandException
+from gslib.exception import NO_URLS_MATCHED_TARGET
 from gslib.help_provider import CreateHelpText
 from gslib.storage_url import StorageUrlFromString
 from gslib.third_party.storage_apitools import storage_v1_messages as apitools_messages
@@ -46,7 +47,7 @@ _SET_DESCRIPTION = """
   The set sub-command has two sub-commands:
 
 <B>ON</B>
-  The "gsutil set on" command will enable access logging of the
+  The "gsutil logging set on" command will enable access logging of the
   buckets named by the specified URLs, outputting log files in the specified
   logging_bucket. logging_bucket must already exist, and all URLs must name
   buckets (e.g., gs://bucket). The required bucket parameter specifies the
@@ -61,8 +62,9 @@ _SET_DESCRIPTION = """
   gs://mybucket2 to be logged to objects prefixed with the name "AccessLog",
   with those log objects written to the bucket gs://my_logging_bucket.
 
-  Next, you need to grant cloud-storage-analytics@google.com write access to
-  the log bucket, using this command:
+  In addition to enabling logging on your bucket(s), you will also need to grant
+  cloud-storage-analytics@google.com write access to the log bucket, using this
+  command:
 
     gsutil acl ch -g cloud-storage-analytics@google.com:W gs://my_logging_bucket
 
@@ -108,7 +110,7 @@ _DESCRIPTION = """
 
 <B>ACCESS LOG AND STORAGE DATA FIELDS</B>
   For a complete list of access log fields and storage data fields, see:
-  https://developers.google.com/storage/docs/accesslogs#reviewing
+  https://cloud.google.com/storage/docs/access-logs#format
 """
 
 _DETAILED_HELP_TEXT = CreateHelpText(_SYNOPSIS, _DESCRIPTION)
@@ -203,7 +205,7 @@ class LoggingCommand(Command):
         self.gsutil_api.PatchBucket(url.bucket_name, bucket_metadata,
                                     provider=url.scheme, fields=['id'])
     if not some_matched:
-      raise CommandException('No URLs matched')
+      raise CommandException(NO_URLS_MATCHED_TARGET % list(self.args))
     return 0
 
   def _Disable(self):
@@ -222,7 +224,7 @@ class LoggingCommand(Command):
         self.gsutil_api.PatchBucket(url.bucket_name, bucket_metadata,
                                     provider=url.scheme, fields=['id'])
     if not some_matched:
-      raise CommandException('No URLs matched')
+      raise CommandException(NO_URLS_MATCHED_TARGET % list(self.args))
     return 0
 
   def RunCommand(self):

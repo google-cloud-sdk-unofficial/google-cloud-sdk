@@ -66,10 +66,10 @@ _DETAILED_HELP_TEXT = ("""
 
 <B>DESCRIPTION</B>
   The gsutil rsync command makes the contents under dst_url the same as the
-  contents under src_url, by copying any missing files/objects, and (if the
-  -d option is specified) deleting any extra files/objects. For example, to
-  make gs://mybucket/data match the contents of the local directory "data"
-  you could do:
+  contents under src_url, by copying any missing files/objects (or those whose
+  data has changed), and (if the -d option is specified) deleting any extra
+  files/objects. For example, to make gs://mybucket/data match the contents of
+  the local directory "data" you could do:
 
     gsutil rsync -d data gs://mybucket/data
 
@@ -147,18 +147,18 @@ _DETAILED_HELP_TEXT = ("""
   specify with the rsync command, there are two more safety measures your can
   take when using gsutil rsync -d:
 
-    1. Try running the command with the rsync -n option first, to see what it
-       would do without actually performing the operations. For example, if
-       you run the command:
+  1. Try running the command with the rsync -n option first, to see what it
+     would do without actually performing the operations. For example, if
+     you run the command:
 
-         gsutil -m rsync -r -d -n gs://your-bucket/data gs://your-bucket
-       
-       it will be immediately evident that running that command without the -n
-       option would cause many objects to be deleted.
+       gsutil -m rsync -r -d -n gs://your-bucket/data gs://your-bucket
 
-    2. Enable object versioning in your bucket, which will allow you to restore
-       objects if you accidentally delete them. For more details see
-       "gsutil help versions".
+     it will be immediately evident that running that command without the -n
+     option would cause many objects to be deleted.
+
+  2. Enable object versioning in your bucket, which will allow you to restore
+     objects if you accidentally delete them. For more details see
+     "gsutil help versions".
 
 
 <B>IMPACT OF BUCKET LISTING EVENTUAL CONSISTENCY</B>
@@ -168,8 +168,16 @@ _DETAILED_HELP_TEXT = ("""
   consistent, if you upload new objects or delete objects from a bucket and then
   immediately run gsutil rsync with that bucket as the source or destination,
   it's possible the rsync command will not see the recent updates and thus
-  synchronize incorrectly. You can rerun the rsync operation again later to
-  correct the incorrect synchronization.
+  synchronize incorrectly. For example, if you rsync to a bucket immediately
+  after uploading to or deleting objects from that bucket, it's possible gsutil
+  will re-upload objects that have already been uploaded or attempt to delete
+  objects that were already deleted. A more troublesome problem can occur if
+  you run gsutil rsync, specifying a bucket as the source immediately after
+  uploading to or deleting objects from that bucket. In that case it's possible
+  rsync will miss copying objects to, or deleting objects from, the destination.
+  If this happens you can rerun the rsync operation again later (after the
+  bucket listing has "caught up"), to cause the missing objects to be copied and
+  extra objects to be deleted.
 
 
 <B>CHECKSUM VALIDATION AND FAILURE HANDLING</B>
@@ -180,11 +188,14 @@ _DETAILED_HELP_TEXT = ("""
   if it does, please contact gs-team@google.com.
 
   The rsync command will retry when failures occur, but if enough failures
-  happen during a particular copy or delete operation the command will skip that
-  object and move on. At the end of the synchronization run if any failures were
-  not successfully retried, the rsync command will report the count of failures,
-  and exit with non-zero status. At this point you can run the rsync command
-  again, and it will attempt any remaining needed copy and/or delete operations.
+  happen during a particular copy or delete operation the command will fail.
+
+  If the -C option is provided, the command will instead skip the failing
+  object and move on. At the end of the synchronization run if any failures
+  were not successfully retried, the rsync command will report the count of
+  failures, and exit with non-zero status. At this point you can run the rsync
+  command again, and it will attempt any remaining needed copy and/or delete
+  operations.
 
   Note that there are cases where retrying will never succeed, such as if you
   don't have write permission to the destination bucket or if the destination
@@ -199,9 +210,9 @@ _DETAILED_HELP_TEXT = ("""
   the source and destination sizes match. If they match, it next checks if their
   checksums match, using checksums if available (see below). Unlike the Unix
   rsync command, gsutil rsync does not use timestamps to determine if the
-  file/object changed, because the GCS API does not permit the caller to set an
-  object's timestamp (hence, timestamps of identical files/objects cannot be
-  made to match).
+  file/object changed, because the Google Cloud Storage API does not permit the
+  caller to set an object's timestamp (hence, timestamps of identical
+  files/objects cannot be made to match).
 
   Checksums will not be available in two cases:
 
@@ -213,9 +224,15 @@ _DETAILED_HELP_TEXT = ("""
      change without changing sizes (e.g., if you have files that contain fixed
      width data, such as timestamps).
 
-  2. When comparing composite GCS objects with objects at a cloud provider that
-     does not support CRC32C (which is the only checksum available for composite
-     objects). See 'gsutil help compose' for details about composite objects.
+  2. When comparing composite Google Cloud Storage objects with objects at a
+     cloud provider that does not support CRC32C (which is the only checksum
+     available for composite objects). See 'gsutil help compose' for details
+     about composite objects.
+
+  Note that change detection is based only on data content, not metadata fields.
+  For example, if you have two buckets that each contain an object with the same
+  name and you update the metadata on one of the objects and then run gsutil
+  rsync, it will treat the objects as identical and not perform any updates.
 
 
 <B>COPYING IN THE CLOUD AND METADATA PRESERVATION</B>
@@ -252,7 +269,7 @@ _DETAILED_HELP_TEXT = ("""
 <B>LIMITATIONS</B>
   1. The gsutil rsync command doesn't make the destination object's timestamps
      match those of the source object (it can't; timestamp setting is not
-     allowed by the GCS API).
+     allowed by the Google Cloud Storage API).
 
   2. The gsutil rsync command considers only the current object generations in
      the source and destination buckets when deciding what to copy / delete. If

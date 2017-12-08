@@ -15,11 +15,8 @@
 """The Browse command."""
 
 
-from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import browser_dispatcher
-from googlecloudsdk.api_lib.app import version_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
@@ -59,22 +56,6 @@ class Browse(base.Command):
                               'default service.'))
 
   def Run(self, args):
-    if ':' in properties.VALUES.core.project.Get(required=True):
-      raise browser_dispatcher.UnsupportedAppIdError(
-          '`browse` command is currently unsupported for app IDs with custom '
-          'domains.')
-    client = appengine_api_client.GetApiClient(self.Http(timeout=None))
-    services = client.ListServices()
-    versions = version_util.GetMatchingVersions(client.ListVersions(services),
-                                                args.versions, args.service,
-                                                client.project)
-    if not args.service and not any('/' in v for v in args.versions):
-      # If no resource paths were provided and the service was not specified,
-      # assume the default service.
-      versions = [v for v in versions if v.service == 'default']
-
-    if not versions:
-      log.warn('No matching versions found.')
-
-    for version in versions:
-      browser_dispatcher.BrowseApp(version.project, version.service, version.id)
+    project = properties.VALUES.core.project.Get(required=True)
+    for version in args.versions:
+      browser_dispatcher.BrowseApp(project, args.service, version)

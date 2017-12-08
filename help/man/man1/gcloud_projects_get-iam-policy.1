@@ -1,0 +1,45 @@
+
+.TH "GCLOUD_PROJECTS_GET\-IAM\-POLICY" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud projects get\-iam\-policy \- get IAM policy for a project
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud projects get\-iam\-policy\fR \fIPROJECT_ID\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Gets the IAM policy for a project, given a project ID.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIPROJECT_ID\fR
+.RS 2m
+ID for the project whose policy you want to get.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+The following command prints the IAM policy for a project with the ID
+\f5example\-project\-id\-1\fR:
+
+.RS 2m
+$ gcloud projects get\-iam\-policy example\-project\-id\-1
+.RE

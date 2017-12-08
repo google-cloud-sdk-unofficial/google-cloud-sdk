@@ -27,10 +27,10 @@ from gslib.command import Command
 from gslib.command_argument import CommandArgument
 from gslib.commands.compose import MAX_COMPONENT_COUNT
 from gslib.copy_helper import CreateCopyHelperOpts
+from gslib.copy_helper import GZIP_ALL_FILES
 from gslib.copy_helper import ItemExistsError
 from gslib.copy_helper import Manifest
 from gslib.copy_helper import PARALLEL_UPLOAD_TEMP_NAMESPACE
-from gslib.copy_helper import GZIP_ALL_FILES
 from gslib.copy_helper import SkipUnsupportedObjectError
 from gslib.cs_api_map import ApiSelector
 from gslib.exception import CommandException
@@ -136,7 +136,7 @@ _NAME_CONSTRUCTION_TEXT = """
   the object gs://my-bucket/subdir/a/b/c.
 
   Note: If you use the
-  `Google Developers Console <https://console.developers.google.com>`_
+  `Google Cloud Platform Console <https://console.cloud.google.com>`_
   to create folders, it does so by creating a "placeholder" object that ends
   with a "/" character. gsutil skips these objects when downloading from the
   cloud to the local file system, because attempting to create a file that
@@ -367,7 +367,7 @@ _SLICED_OBJECT_DOWNLOADS_TEXT = """
   a non-sliced object download will instead be performed.
 
   Note: since sliced object downloads cause multiple writes to occur at various
-  locations on disk, this mechansim can degrade performance for disks with slow
+  locations on disk, this mechanism can degrade performance for disks with slow
   seek times, especially for large numbers of slices. While the default number
   of slices is set small to avoid this problem, you can disable sliced object
   download if necessary by setting the "sliced_object_download_threshold"
@@ -379,7 +379,7 @@ _SLICED_OBJECT_DOWNLOADS_TEXT = """
 _PARALLEL_COMPOSITE_UPLOADS_TEXT = """
 <B>PARALLEL COMPOSITE UPLOADS</B>
   gsutil can automatically use
-  `object composition <https://developers.google.com/storage/docs/composite-objects>`_
+  `object composition <https://cloud.google.com/storage/docs/composite-objects>`_
   to perform uploads in parallel for large, local files being uploaded to Google
   Cloud Storage. If enabled (see next paragraph), a large file will be split
   into component pieces that are uploaded in parallel and then composed in the
@@ -440,17 +440,15 @@ _PARALLEL_COMPOSITE_UPLOADS_TEXT = """
   exit status from the gsutil command.  This can be done in a bash script, for
   example, by doing:
 
-     gsutil cp ./local-file gs://your-bucket/your-object
-     if [ "$status" -ne "0" ] ; then
-       << Code that handles failures >>
-     fi
+    if ! gsutil cp ./local-file gs://your-bucket/your-object; then
+      << Code that handles failures >>
+    fi
 
   Or, for copying a directory, use this instead:
 
-     gsutil cp -c -L cp.log -r ./dir gs://bucket
-     if [ "$status" -ne "0" ] ; then
-       << Code that handles failures >>
-     fi
+    if ! gsutil cp -c -L cp.log -r ./dir gs://bucket; then
+      << Code that handles failures >>
+    fi
 
   One important caveat is that files uploaded using parallel composite uploads
   are subject to a maximum number of components limit. For example, if you
@@ -872,7 +870,7 @@ class CpCommand(Command):
                        '%s is already being copied by another gsutil process '
                        'or thread (did you specify the same source URL twice?) '
                        % (src_url, dst_url))
-    except Exception, e:
+    except Exception, e:  # pylint: disable=broad-except
       if (copy_helper_opts.no_clobber and
           copy_helper.IsNoClobberServerException(e)):
         message = 'Rejected (noclobber): %s' % dst_url

@@ -88,6 +88,6 @@ AddMembers.detailed_help = {
 
         To add multiple users to multiple groups, run:
 
-          $ {command} example-group-1 example-group-2 --members example-user-1 example-user-2
+          $ {command} example-group-1 example-group-2 --members example-user-1,example-user-2
         """,
 }

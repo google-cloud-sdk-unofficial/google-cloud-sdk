@@ -113,6 +113,6 @@ AddHostRule.detailed_help = {
         To create a host rule mapping the ```*-foo.google.com``` and
         ```google.com``` hosts to the ```www``` path matcher, run:
 
-          $ {command} MY-URL-MAP --hosts '*-foo.google.com' google.com --path-matcher-name www
+          $ {command} MY-URL-MAP --hosts '*-foo.google.com,google.com' --path-matcher-name www
         """,
 }

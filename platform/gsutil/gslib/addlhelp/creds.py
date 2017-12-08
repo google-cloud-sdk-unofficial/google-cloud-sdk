@@ -60,11 +60,12 @@ _DETAILED_HELP_TEXT = ("""
   (e.g., by running BOTO_CONFIG=~/.boto_user_account gsutil ls).
 
   Note that when using the standalone version of gsutil with the JSON API you
-  can configure at most one of the following types of GCS credentials in a
-  single boto config file: OAuth2 User Account, OAuth2 Service Account. In
-  addition to these, you may also have S3 HMAC credentials (necessary for using
-  s3:// URLs) and GCE Internal Service Account credentials. GCE Internal Service
-  Account credentials are used only when OAuth2 credentials are not present.
+  can configure at most one of the following types of Google Cloud Storage
+  credentials in a single boto config file: OAuth2 User Account, OAuth2 Service
+  Account. In addition to these, you may also have S3 HMAC credentials
+  (necessary for using s3:// URLs) and Google Compute Engine Internal Service
+  Account credentials. Google Compute Engine Internal Service Account
+  credentials are used only when OAuth2 credentials are not present.
 
 
 <B>SUPPORTED CREDENTIAL TYPES</B>
@@ -111,36 +112,25 @@ _DETAILED_HELP_TEXT = ("""
     bucket ACLs, but the canned ACL options remove OWNER access from
     Editors, can lead to unexpected results. The solution to this problem is to
     ensure the service account is an Owner in the Permissions tab for your
-    project. To find the email address of your service account, visit the
-    `Google Developers Console <https://cloud.google.com/console#/project>`_,
-    click on the project you're using, click "APIs & auth", and click
-    "Credentials".
+    project.
 
-    To create a service account, visit the Google Developers Console and then:
-
-       - Click "APIs & auth" in the left sidebar.
-
-       - Click "Credentials".
-
-       - Click "Create New Client ID".
-
-       - Select "Service Account" as your application type.
-
-       - Save the JSON private key or the .p12 private key and password
-         provided.
-
-    For further information about account roles, see:
-      https://developers.google.com/console/help/#DifferentRoles
+    To set up a service account for use with "gsutil config -e", see:
+      https://developers.google.com/console/help/new/#serviceaccounts
 
     For more details about OAuth2 service accounts, see:
       https://developers.google.com/accounts/docs/OAuth2ServiceAccount
 
-  GCE Internal Service Account:
-    This is the type of service account used for accounts hosted by App Engine
-    or GCE. Such credentials are created automatically for you on GCE when you
-    run the gcutil addinstance command with the --service_account flag.
+    For further information about account roles, see:
+      https://developers.google.com/console/help/#DifferentRoles
 
-    For more details about GCE service accounts, see:
+  Google Compute Engine Internal Service Account:
+    This is the type of service account used for accounts hosted by App Engine
+    or Google Compute Engine. Such credentials are created automatically for
+    you on Google Compute Engine when you run the gcloud compute instances
+    creates command and the credentials can be controlled with the --scopes
+    flag.
+
+    For more details about Google Compute Engine service accounts, see:
       https://developers.google.com/compute/docs/authentication;
 
     For more details about App Engine service accounts, see:

@@ -21,7 +21,7 @@ from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update the name of a Project."""
 

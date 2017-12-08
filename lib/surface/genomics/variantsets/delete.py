@@ -51,9 +51,8 @@ class Delete(base.Command):
     """
 
     prompt_message = (
-        'Deleting variant set {0} will delete all its contents '
-        '(variants, callsets, and calls). '
-        'The variant set object is not deleted.'
+        'Deleting variant set {0} will also delete all its contents '
+        '(variants, callsets, and calls).'
         ).format(args.variant_set_id)
 
     if not console_io.PromptContinue(message=prompt_message):

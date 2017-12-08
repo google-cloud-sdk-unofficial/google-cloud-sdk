@@ -40,6 +40,9 @@ class JSONObject(object):
                 result[attr] = _make_serializable(val)
         return result
 
+    # Alias old style naming so this interoperates with gcloud's appinfo.
+    ToDict = to_dict
+
 
 def _make_serializable(obj):
     """Converts objects to serializable form."""
@@ -81,14 +84,23 @@ def print_status(message, *args):
     _write_msg(type='print_status', message=message % args)
 
 
-def send_runtime_params(params):
+def send_runtime_params(params, appinfo=None):
     """Send runtime parameters back to the controller.
 
     Args:
         params: ({str: object, ...}) Set of runtime parameters.  Must be
             json-encodable.
+        appinfo: ({str: object, ...} or None) Contents of the app.yaml file to
+            be produced by the runtime definition.  Required fields may be
+            added to this by the framework, the only thing an application
+            needs to provide is the "runtime" field and any additional data
+            fields.
     """
-    _write_msg(type='runtime_parameters', runtime_data=params)
+    if appinfo is not None:
+        _write_msg(type='runtime_parameters', runtime_data=params,
+                   appinfo=appinfo)
+    else:
+        _write_msg(type='runtime_parameters', runtime_data=params)
 
 
 def get_config():

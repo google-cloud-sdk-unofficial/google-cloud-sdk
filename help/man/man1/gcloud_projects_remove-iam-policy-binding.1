@@ -1,0 +1,65 @@
+
+.TH "GCLOUD_PROJECTS_REMOVE\-IAM\-POLICY\-BINDING" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud projects remove\-iam\-policy\-binding \- remove IAM policy binding for a project
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud projects remove\-iam\-policy\-binding\fR \fIPROJECT_ID\fR \fB\-\-member\fR \fIMEMBER\fR \fB\-\-role\fR \fIROLE\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Removes a policy binding to the IAM policy of a project, given a project ID and
+the binding.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIPROJECT_ID\fR
+.RS 2m
+ID for the project you want to update.
+
+
+.RE
+
+.SH "REQUIRED FLAGS"
+
+\fB\-\-member\fR \fIMEMBER\fR
+.RS 2m
+The member to remove from the binding.
+
+.RE
+\fB\-\-role\fR \fIROLE\fR
+.RS 2m
+The role to remove the member from.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+The following command will remove a IAM policy binding for the role of
+\'roles/editor' for the user 'test\-user@gmail.com' on project with identifier
+\'example\-project\-id\-1'
+
+.RS 2m
+$ gcloud projects remove\-iam\-policy\-binding example\-project\-id\-1 \e
+    \-\-member='user:test\-user@gmail.com' \-\-role='roles/editor'
+.RE
+
+See https://cloud.google.com/iam/docs/managing\-policies for details of policy
+role and member types.

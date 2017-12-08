@@ -20,7 +20,6 @@ import textwrap
 from googlecloudsdk.api_lib.auth import util as auth_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
-from googlecloudsdk.core import config
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
@@ -142,18 +141,19 @@ class Login(base.Command):
     properties.PersistProperty(properties.VALUES.core.account, account)
     if project:
       properties.PersistProperty(properties.VALUES.core.project, project)
-    if not config.Paths().workspace_dir:
-      google_creds = client.GoogleCredentials(
-          creds.access_token, creds.client_id, creds.client_secret,
-          creds.refresh_token, creds.token_expiry, creds.token_uri,
-          creds.user_agent, creds.revoke_uri)
-      try:
-        client.save_to_well_known_file(google_creds)
-      except IOError as e:
-        raise c_exc.ToolException(
-            'error saving Application Default Credentials: ' + str(e))
-      if not brief:
-        log.status.write('Saved Application Default Credentials.\n')
+
+    google_creds = client.GoogleCredentials(
+        creds.access_token, creds.client_id, creds.client_secret,
+        creds.refresh_token, creds.token_expiry, creds.token_uri,
+        creds.user_agent, creds.revoke_uri)
+    try:
+      client.save_to_well_known_file(google_creds)
+    except IOError as e:
+      raise c_exc.ToolException(
+          'error saving Application Default Credentials: ' + str(e))
+    if not brief:
+      log.status.write('Saved Application Default Credentials.\n')
+
     if not brief:
       log.status.write(
           '\nYou are now logged in as [{account}].\n'

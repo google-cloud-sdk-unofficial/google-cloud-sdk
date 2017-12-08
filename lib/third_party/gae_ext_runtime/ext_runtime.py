@@ -33,6 +33,7 @@ try:
 except ImportError:
   import subprocess
 
+from . import comm
 
 WRITING_FILE_MESSAGE = 'Writing [{0}] to [{1}].'
 FILE_EXISTS_MESSAGE = 'Not writing [{0}], it already exists.'
@@ -118,6 +119,17 @@ class Configurator(object):
   a successful match of the runtime's heuristics.
   """
 
+  def CollectData(self):
+    """Collect all information on this application.
+
+    This is called after the runtime type is detected and may gather
+    additional information from the source code and from the user.  Whereas
+    performing user queries during detection is deprecated, user queries are
+    allowed in CollectData().
+
+    The base class version of this does nothing.
+    """
+
   def GenerateConfigs(self):
     """Generate all configuration files for the module.
 
@@ -174,6 +186,23 @@ class DefaultExecutionEnvironment(ExecutionEnvironment):
   def Print(self, message):
     print message
 
+
+def _AugmentAppInfo(appinfo):
+  """Augment appinfo with required fields.
+
+  Adds a set of required fields to an appinfo dictionary.
+
+  Args:
+    appinfo: ({str: object, ...})
+
+  Returns:
+    ({str: object, ...}) The original object with all required fields.
+  """
+  appinfo['vm'] = True
+  appinfo['api_version'] = 1
+  return appinfo
+
+
 class ExternalRuntimeConfigurator(Configurator):
   """Configurator for general externalized runtimes.
 
@@ -182,10 +211,12 @@ class ExternalRuntimeConfigurator(Configurator):
     params: (Params) Runtime parameters.
     data: ({str: object, ...} or None) Optional dictionary of runtime data
       passed back through a runtime_parameters message.
+    generated_appinfo: ({str: object, ...} or None) Generated appinfo if any
+      is produced by the runtime.
     path: (str) Path to the user's source directory.
   """
 
-  def __init__(self, runtime, params, data, path):
+  def __init__(self, runtime, params, data, generated_appinfo, path, env):
     """Constructor.
 
     Args:
@@ -193,14 +224,58 @@ class ExternalRuntimeConfigurator(Configurator):
       params: (Params) Runtime parameters.
       data: ({str: object, ...} or None) Optional dictionary of runtime data
         passed back through a runtime_parameters message.
+      generated_appinfo: ({str: object, ...} or None) Optional dictionary
+        representing the contents of app.yaml if the runtime produces this.
       path: (str) Path to the user's source directory.
+      env: (ExecutionEnvironment)
     """
     self.runtime = runtime
     self.params = params
     self.data = data
+    self.generated_appinfo = (
+        _AugmentAppInfo(generated_appinfo) if generated_appinfo else None)
     self.path = path
+    self.env = env
+
+  def MaybeWriteAppYaml(self):
+    """Generates the app.yaml file if it doesn't already exist."""
+    # We never want to do this for "deploy" (though this should never be an
+    # issue because we won't generate it if it already exists).
+    if self.params.deploy:
+      return
+
+    if not self.generated_appinfo:
+      logging.warn('No configuration information provided by runtime '
+                   '[{0}].'.format(self.runtime.name))
+      return
+
+    notify = logging.info if self.params.deploy else self.env.Print
+    # TODO(user): The config file need not be named app.yaml.  We need to
+    # pass the appinfo file name in through params. and use it here.
+    filename = os.path.join(self.path, 'app.yaml')
+    if os.path.exists(filename):
+      notify(FILE_EXISTS_MESSAGE.format('app.yaml'))
+      return
+
+    notify(WRITING_FILE_MESSAGE.format('app.yaml', self.path))
+    with open(filename, 'w') as f:
+      yaml.safe_dump(self.generated_appinfo, f, default_flow_style=False)
+
+  def SetGeneratedAppInfo(self, generated_appinfo):
+    """Sets the generated appinfo.
+
+    Since this is assumed to be done after "detect", don't augment the
+    appinfo, and always set it in both the params object and the generated
+    appinfo attribute.
+    """
+    self.generated_appinfo = generated_appinfo
+    self.params.appinfo = comm.dict_to_object(generated_appinfo)
+
+  def CollectData(self):
+    self.runtime.CollectData(self)
 
   def GenerateConfigs(self):
+    self.MaybeWriteAppYaml()
     return self.runtime.GenerateConfigs(self)
 
 
@@ -264,6 +339,7 @@ class PluginResult(object):
   def __init__(self):
     self.exit_code = -1
     self.runtime_data = None
+    self.generated_appinfo = None
     self.docker_context = None
     self.files = []
 
@@ -297,6 +373,7 @@ _RUNTIME_SCHEMA = schema.Message(
         files_to_copy=schema.RepeatedField(element=schema.Value(converter=str)),
         ),
     detect=_EXEC_SECTION,
+    collect_data=_EXEC_SECTION,
     pre_build=_EXEC_SECTION,
     post_build=_EXEC_SECTION)
 
@@ -326,6 +403,10 @@ class ExternalizedRuntime(object):
     except ValueError as ex:
       raise InvalidRuntimeDefinition(
           'Invalid runtime definition: {0}'.format(ex.message))
+
+  @property
+  def name(self):
+    return self.config.get('name', 'unnamed')
 
   @staticmethod
   def Load(path, env):
@@ -389,6 +470,7 @@ class ExternalizedRuntime(object):
         result.runtime_data = message['runtime_data']
       except KeyError:
         logging.error(_MISSING_FIELD_ERROR.format('runtime_data', msg_type))
+      result.generated_appinfo = message.get('appinfo')
     elif msg_type == 'gen_file':
       try:
         # TODO(user): deal with 'encoding'
@@ -526,10 +608,31 @@ class ExternalizedRuntime(object):
         return None
       else:
         return ExternalRuntimeConfigurator(self, params, result.runtime_data,
-                                           path)
+                                           result.generated_appinfo,
+                                           path,
+                                           self.env)
 
     else:
       return None
+
+  def CollectData(self, configurator):
+    """Do data collection on a detected runtime.
+
+    Args:
+      configurator: (ExternalRuntimeConfigurator) The configurator retuned by
+        Detect().
+
+    Raises:
+      InvalidRuntimeDefinition: For a variety of problems with the runtime
+        definition.
+    """
+    collect_data = self.config.get('collectData')
+    if collect_data:
+      result = self.RunPlugin('collect_data', collect_data,
+                              configurator.params,
+                              runtime_data=configurator.data)
+      if result.generated_appinfo:
+        configurator.SetGeneratedAppInfo(result.generated_appinfo)
 
   # The legacy runtimes use "Fingerprint" for this function, the externalized
   # runtime code uses "Detect" to mirror the name in runtime.yaml, so alias it.

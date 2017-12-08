@@ -18,4 +18,4 @@ from googlecloudsdk.calliope import base
 
 
 class Keys(base.Group):
-  """Manaage service account keys."""
+  """Manage service account keys."""

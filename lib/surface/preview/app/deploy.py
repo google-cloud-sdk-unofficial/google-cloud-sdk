@@ -60,6 +60,10 @@ PROMOTE_MESSAGE = """\
 """
 
 
+class NoAppIdentifiedError(exceptions.Error):
+  pass
+
+
 class _AppEngineClients(object):
   """Value class for App Engine client objects."""
 
@@ -317,6 +321,7 @@ class Deploy(base.Command):
       parser: argparse.ArgumentParser, the parser for this command.
     """
     flags.SERVER_FLAG.AddToParser(parser)
+    flags.IGNORE_CERTS_FLAG.AddToParser(parser)
     parser.add_argument(
         '--version',
         help='The version of the app that will be created or replaced by this '
@@ -379,7 +384,7 @@ class Deploy(base.Command):
         'Promote the deployed version to receive all traffic.\n\n'
         'True by default. To change the default behavior for your current '
         'environment, run:\n\n'
-        '    $ gcloud config set app/promote_by_default false\n\n')
+        '    $ gcloud config set app/promote_by_default false')
 
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)
@@ -401,6 +406,11 @@ class Deploy(base.Command):
         params = ext_runtime.Params(deploy=True)
         configurator = fingerprinter.IdentifyDirectory(os.getcwd(),
                                                        params=params)
+        if configurator is None:
+          raise NoAppIdentifiedError(
+              'Could not identify an app in the current directory.\n\n'
+              'Please prepare an app.yaml file for your application manually '
+              'and deploy again.')
         config_cleanup = configurator.GenerateConfigs()
         log.status.Print('\nCreated [{0}] in the current directory.\n'.format(
             DEFAULT_DEPLOYABLE))
@@ -414,7 +424,8 @@ class Deploy(base.Command):
       remote_build = docker_build_property == 'remote'
 
     clients = _AppEngineClients(
-        appengine_client.AppengineClient(args.server),
+        appengine_client.AppengineClient(args.server,
+                                         args.ignore_bad_certs),
         appengine_api_client.GetApiClient(self.Http(timeout=None)))
     log.debug('API endpoint: [{endpoint}], API version: [{version}]'.format(
         endpoint=clients.api.client.url,

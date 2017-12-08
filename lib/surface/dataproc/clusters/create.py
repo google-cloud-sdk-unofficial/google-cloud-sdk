@@ -80,11 +80,23 @@ class Create(base.Command):
         help='The Google Cloud Storage bucket to use with the Google Cloud '
         'Storage connector. A bucket is auto created when this parameter is '
         'not specified.')
-    parser.add_argument(
+
+    netparser = parser.add_mutually_exclusive_group()
+    network = netparser.add_argument(
         '--network',
-        help='The Compute Engine network that the cluster will connect to. '
-        'Google Cloud Dataproc will use this network when creating routes '
-        'and firewalls for the clusters. Defaults to the \'default\' network.')
+        help='Specifies the network that the cluster will be part of.')
+    network.detailed_help = """\
+        The Compute Engine network that the VM instances of the cluster will be
+        part of. This is mutually exclusive with --subnet. If neither is
+        specified, this defaults to the "default" network.
+        """
+    subnet = netparser.add_argument(
+        '--subnet',
+        help='Specifies the subnet that the cluster will be part of.')
+    subnet.detailed_help = """\
+        Specifies the subnet that the cluster will be part of. This is mutally
+        exclusive with --network.
+        """
     parser.add_argument(
         '--zone', '-z',
         help='The compute zone (e.g. us-central1-a) for the cluster.',
@@ -204,7 +216,8 @@ Alias,URI
         args.image,
         args.master_machine_type,
         args.worker_machine_type,
-        args.network)
+        args.network,
+        args.subnet)
 
     init_actions = []
     timeout_str = str(args.initialization_action_timeout) + 's'
@@ -223,6 +236,7 @@ Alias,URI
 
     gce_cluster_config = messages.GceClusterConfig(
         networkUri=compute_uris['network'],
+        subnetworkUri=compute_uris['subnetwork'],
         serviceAccountScopes=expanded_scopes,
         zoneUri=compute_uris['zone'])
 

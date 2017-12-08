@@ -131,9 +131,9 @@ class Deploy(base.Command):
         return None
       raise
 
-  def _GenerateFileName(self, args):
+  def _GenerateRemoteZipFileName(self, args):
     sufix = ''.join(random.choice(string.ascii_lowercase) for _ in range(12))
-    return '{0}-{1}-{2}'.format(args.region, args.name, sufix)
+    return '{0}-{1}-{2}.zip'.format(args.region, args.name, sufix)
 
   def _UploadFile(self, source, target):
     return storage.Upload(source, target)
@@ -193,7 +193,7 @@ class Deploy(base.Command):
     return deploy_method(location, function)
 
   def _PrepareSourcesOnGcs(self, args):
-    remote_zip_file = self._GenerateFileName(args)
+    remote_zip_file = self._GenerateRemoteZipFileName(args)
     if args.bucket is None:  # double check
       raise exceptions.FunctionsError('Missing bucket parameter'
                                       ' for function sources.')

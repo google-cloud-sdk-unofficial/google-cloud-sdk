@@ -21,7 +21,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Delete(base.Command):
   """Delete a Project."""
 

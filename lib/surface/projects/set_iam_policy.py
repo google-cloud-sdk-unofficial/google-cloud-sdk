@@ -19,7 +19,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core.iam import iam_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class SetIamPolicy(base.Command):
   """Set IAM policy for a project.
 

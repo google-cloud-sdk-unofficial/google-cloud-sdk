@@ -1,0 +1,65 @@
+
+.TH "GCLOUD_PROJECTS_ADD\-IAM\-POLICY\-BINDING" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud projects add\-iam\-policy\-binding \- add IAM policy binding for a project
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud projects add\-iam\-policy\-binding\fR \fIPROJECT_ID\fR \fB\-\-member\fR \fIMEMBER\fR \fB\-\-role\fR \fIROLE\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Adds a policy binding to the IAM policy of a project, given a project ID and the
+binding.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIPROJECT_ID\fR
+.RS 2m
+ID for the project you want to update
+
+
+.RE
+
+.SH "REQUIRED FLAGS"
+
+\fB\-\-member\fR \fIMEMBER\fR
+.RS 2m
+The member to add to the binding.
+
+.RE
+\fB\-\-role\fR \fIROLE\fR
+.RS 2m
+Define the role of the member.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+The following command will add an IAM policy binding for the role of
+\'roles/editor' for the user 'test\-user@gmail.com' on a project with identifier
+\'example\-project\-id\-1'
+
+.RS 2m
+$ gcloud projects add\-iam\-policy\-binding example\-project\-id\-1 \e
+    \-\-member='user:test\-user@gmail.com' \-\-role='roles/editor'
+.RE
+
+See https://cloud.google.com/iam/docs/managing\-policies for details of policy
+role and member types.

@@ -1,0 +1,70 @@
+
+.TH "GCLOUD_PREVIEW_APP_BROWSE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud preview app browse \- \fB(BETA)\fR open the current app in a web browser
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud preview app browse\fR [\fB\-\-service\fR\ \fISERVICE\fR,\ \fB\-s\fR\ \fISERVICE\fR] [\fB\-\-version\fR\ \fIVERSION\fR,\ \fB\-v\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fB(BETA)\fR Open the current app in a web browser.
+
+
+
+.SH "FLAGS"
+
+\fB\-\-service\fR \fISERVICE\fR, \fB\-s\fR \fISERVICE\fR
+.RS 2m
+The service that should be opened. If not specified, use the default service.
+May be used in conjunction with \f5\-\-version\fR.
+
+.RE
+\fB\-\-version\fR \fIVERSION\fR, \fB\-v\fR \fIVERSION\fR
+.RS 2m
+The version of the app that should be opened. If not specified, choose a version
+based on the service's traffic split.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To open the default service, run:
+
+.RS 2m
+$ gcloud preview app browse
+.RE
+
+To open a specific service, run:
+
+.RS 2m
+$ gcloud preview app browse \-\-service="myService"
+.RE
+
+To open a specific version, run:
+
+.RS 2m
+$ gcloud preview app browse \-\-service="myService" \-\-version="v1"
+.RE
+
+
+
+.SH "NOTES"
+
+This command is currently in BETA and may change without notice.
+

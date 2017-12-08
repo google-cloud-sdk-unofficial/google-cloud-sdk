@@ -368,7 +368,7 @@ class ResetWindowsPassword(base_classes.ReadWriteCommand):
     if self.old_metadata_keys:
       log.warn(OLD_KEYS_WARNING.format(self.ref.Name(), self.ref.Name(),
                                        self.ref.zone,
-                                       ' '.join(self.old_metadata_keys)))
+                                       ','.join(self.old_metadata_keys)))
 
     log.info('Total Elapsed Time: {0}'
              .format(time_utils.CurrentTimeSec() - start))

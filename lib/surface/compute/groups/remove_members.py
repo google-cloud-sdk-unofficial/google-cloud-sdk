@@ -30,8 +30,7 @@ class RemoveMembers(base_classes.NoOutputAsyncMutator,
     parser.add_argument(
         'names',
         metavar='NAME',
-        type=arg_parsers.ArgList(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
+        nargs='+',
         help='The names of the groups to remove members from.')
 
     parser.add_argument(
@@ -89,6 +88,6 @@ RemoveMembers.detailed_help = {
         To remove multiple users from multiple groups with
         one command, run
 
-          $ {command} example-group-1 example-group-2 --members example-user-1 example-user-2
+          $ {command} example-group-1 example-group-2 --members example-user-1,example-user-2
         """,
 }

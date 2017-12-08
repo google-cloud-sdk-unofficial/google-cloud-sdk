@@ -39,7 +39,7 @@ class Create(base_classes.ListOutputMixin, addresses_utils.AddressesMutator):
         providing this flag, a parallel list of names for the addresses can
         be provided. For example,
 
-          $ {command} ADDRESS-1 ADDRESS-2 --addresses 162.222.181.197 162.222.181.198 --region us-central1
+          $ {command} ADDRESS-1 ADDRESS-2 --addresses 162.222.181.197,162.222.181.198 --region us-central1
 
         will result in 162.222.181.197 being reserved as
         'ADDRESS-1' and 162.222.181.198 as 'ADDRESS-2'. If
@@ -143,7 +143,7 @@ Create.detailed_help = {
         23.251.146.189 which are being used by virtual machine
         instances in the ``us-central1'' region, run:
 
-          $ {command} --addresses 162.222.181.198 23.251.146.189 --region us-central1
+          $ {command} --addresses 162.222.181.198,23.251.146.189 --region us-central1
 
         In the above invocation, the two addresses will be assigned
         random names.

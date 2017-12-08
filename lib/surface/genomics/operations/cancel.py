@@ -21,6 +21,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
+_OPERATIONS_PREFIX = 'operations/'
+
 
 class Cancel(base.Command):
   """Cancels an operation.
@@ -31,7 +33,9 @@ class Cancel(base.Command):
     """Register flags for this command."""
     parser.add_argument('name',
                         type=str,
-                        help='The name of the operation to be canceled.')
+                        help='The name of the operation to be canceled. The '
+                        '"{0}" prefix for the name is optional.'
+                        .format(_OPERATIONS_PREFIX))
 
   @genomics_util.ReraiseHttpException
   def Run(self, args):
@@ -50,14 +54,18 @@ class Cancel(base.Command):
     apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
     genomics_messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
 
+    name = args.name
+    if not name.startswith(_OPERATIONS_PREFIX):
+      name = _OPERATIONS_PREFIX + name
+
     # Look it up first so that we can display it
     op = apitools_client.operations.Get(
-        genomics_messages.GenomicsOperationsGetRequest(name=args.name))
+        genomics_messages.GenomicsOperationsGetRequest(name=name))
     self.format(op)
 
     if not console_io.PromptContinue(message='This operation will be canceled'):
       raise GenomicsError('Cancel aborted by user.')
 
     apitools_client.operations.Cancel(
-        genomics_messages.GenomicsOperationsCancelRequest(name=args.name))
-    log.status.write('Canceled [{0}].\n'.format(args.name))
+        genomics_messages.GenomicsOperationsCancelRequest(name=name))
+    log.status.write('Canceled [{0}].\n'.format(name))

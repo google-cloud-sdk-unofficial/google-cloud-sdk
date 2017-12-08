@@ -22,6 +22,7 @@ from gslib.command import Command
 from gslib.command_argument import CommandArgument
 from gslib.cs_api_map import ApiSelector
 from gslib.exception import CommandException
+from gslib.exception import NO_URLS_MATCHED_TARGET
 from gslib.help_provider import CreateHelpText
 from gslib.third_party.storage_apitools import storage_v1_messages as apitools_messages
 from gslib.translation_helper import LifecycleTranslation
@@ -59,7 +60,7 @@ _DESCRIPTION = """
   The lifecycle command can be used to get or set lifecycle management policies
   for the given bucket(s). This command is supported for buckets only, not
   objects. For more information on object lifecycle management, please see the
-  `developer guide <https://developers.google.com/storage/docs/lifecycle>`_.
+  `Google Cloud Storage docs <https://cloud.google.com/storage/docs/lifecycle>`_.
 
   The lifecycle command has two sub-commands:
 """ + _GET_DESCRIPTION + _SET_DESCRIPTION + """
@@ -159,7 +160,7 @@ class LifecycleCommand(Command):
           self.gsutil_api.PatchBucket(url.bucket_name, bucket_metadata,
                                       provider=url.scheme, fields=['id'])
     if not some_matched:
-      raise CommandException('No URLs matched')
+      raise CommandException(NO_URLS_MATCHED_TARGET % list(url_args))
     return 0
 
   def _GetLifecycleConfig(self):
