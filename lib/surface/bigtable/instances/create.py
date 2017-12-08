@@ -31,7 +31,6 @@ class CreateInstance(base.CreateCommand):
      .AddClusterStorage(in_instance=True).AddClusterZone(in_instance=True)
      .AddAsync())
 
-  @util.MapHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

@@ -52,5 +52,5 @@ class Undelete(base.CreateCommand):
   def Run(self, args):
     project_ref = command_lib_util.ParseProject(args.id)
     result = projects_api.Undelete(project_ref)
-    log.status.write('Undeleted [{r}].\n'.format(r=project_ref))
+    log.RestoredResource(project_ref, kind='project')
     return result

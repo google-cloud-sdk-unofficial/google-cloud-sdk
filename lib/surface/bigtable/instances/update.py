@@ -27,7 +27,6 @@ class UpdateInstance(base.Command):
     """Register flags for this command."""
     arguments.ArgAdder(parser).AddInstance().AddInstanceDescription()
 
-  @util.MapHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

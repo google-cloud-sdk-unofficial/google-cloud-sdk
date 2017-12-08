@@ -14,7 +14,6 @@
 
 """Cancel operation command."""
 
-from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
@@ -37,7 +36,6 @@ class Cancel(base.Command):
   def Args(parser):
     parser.add_argument('operation', help='The ID of the operation to cancel.')
 
-  @util.HandleHttpError
   def Run(self, args):
     client = self.context['dataproc_client']
     messages = self.context['dataproc_messages']

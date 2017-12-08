@@ -14,7 +14,6 @@
 
 """gcloud dns project-info describe command."""
 
-from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
 
 
@@ -40,7 +39,6 @@ class Describe(base.DescribeCommand):
         'dns_project', metavar='PROJECT_ID',
         help='The identifier for the project you want DNS related info for.')
 
-  @util.HandleHttpError
   def Run(self, args):
     dns = self.context['dns_client']
     resources = self.context['dns_resources']

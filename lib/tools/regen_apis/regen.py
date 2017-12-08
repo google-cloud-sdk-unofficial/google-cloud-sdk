@@ -19,8 +19,7 @@ import os
 import re
 
 from apitools.gen import gen_client
-from googlecloudsdk.api_lib.util import resource
-from googlecloudsdk.core import apis as core_apis
+from googlecloudsdk.api_lib.util import resource as resource_util
 from tools.regen_apis import api_def
 from mako import runtime
 from mako import template
@@ -132,18 +131,11 @@ def _MakeApiMap(root_package, api_config):
       has_default = has_default or default
       version = api_config.get('version', api_version)
       client_classpath = '.'.join([
-          root_package,
-          api_name,
-          api_version,
           '_'.join([api_name, version, 'client']),
           _CamelCase(api_name) + _CamelCase(version)])
-      messages_modulepath = '.'.join([
-          root_package,
-          api_name,
-          api_version,
-          '_'.join([api_name, version, 'messages']),
-      ])
+      messages_modulepath = '_'.join([api_name, version, 'messages'])
       api_versions_map[api_version] = api_def.APIDef(
+          '.'.join([root_package, api_name, api_version]),
           client_classpath, messages_modulepath, default)
     if has_default:
       apis_with_default.add(api_name)
@@ -209,19 +201,23 @@ def _ExtractResources(api_name, api_version, base_url, infos):
           # Remove api name from collection. It might not match passed in, or
           # even api name in url. We choose to use api name as defined by url.
           collection_name = collection_name.split('.', 1)[1]
-          path = get_method.get('flatPath')
-          if not path:
-            path = get_method.get('path')
+          flat_path = get_method.get('flatPath')
+          path = get_method.get('path')
           # Normalize base url so it includes api_version.
           url = base_url + path
-          url_api_name, _, path = core_apis.SplitDefaultEndpointUrl(url)
+          url_api_name, _, path = resource_util.SplitDefaultEndpointUrl(url)
+          if flat_path:
+            _, _, flat_path = resource_util.SplitDefaultEndpointUrl(
+                base_url + flat_path)
           # Use url_api_name instead as it is assumed to be source of truth.
           # Also note that api_version not always equal to url_api_version,
           # this is the case where api_version is an alias.
           url = url[:-len(path)]
-          collection_info = resource.CollectionInfo(
+          collection_info = resource_util.CollectionInfo(
               url_api_name, api_version, url, collection_name,
-              get_method.get('requestType'), path, _GetPathParams(path))
+              get_method.get('requestType'), path,
+              [flat_path] if flat_path else [],
+              _GetPathParams(path))
           collections.append(collection_info)
     else:
       subresource_collections = _ExtractResources(
@@ -231,7 +227,7 @@ def _ExtractResources(api_name, api_version, base_url, infos):
 
 
 def GenerateResourceModule(base_dir, root_dir, api_config):
-  """Create resource.py file in the given root_dir with for given api_config.
+  """Create resource.py file for each api with for given api_config.
 
   Args:
       base_dir: str, Path of directory for the project.
@@ -243,10 +239,6 @@ def GenerateResourceModule(base_dir, root_dir, api_config):
   tpl = template.Template(filename=os.path.join(os.path.dirname(__file__),
                                                 'resources.tpl'))
 
-  resource_file_name = os.path.join(base_dir, root_dir, 'resources.py')
-  logging.debug('Generating resource module at %s', resource_file_name)
-
-  collections = []
   for api_name, api_version_config in api_config.iteritems():
     for api_version, api_config in api_version_config.iteritems():
       discovery_doc = os.path.join(base_dir, root_dir,
@@ -267,8 +259,21 @@ def GenerateResourceModule(base_dir, root_dir, api_config):
       except AmbiguousResourcePath as e:
         logging.warn(e)
         continue
-      collections.extend(resource_collections)
+      custom_resources = api_config.get('resources', {})
+      if custom_resources:
+        for collection in resource_collections:
+          if collection.name in custom_resources:
+            collection.flat_paths.extend(custom_resources[collection.name])
 
-  with open(resource_file_name, 'wb') as output_file:
-    ctx = runtime.Context(output_file, collections=sorted(collections))
-    tpl.render_context(ctx)
+      api_dir = os.path.join(base_dir, root_dir, api_name, api_version)
+      if not os.path.exists(api_dir):
+        os.makedirs(api_dir)
+      resource_file_name = os.path.join(api_dir, 'resources.py')
+      logging.debug('Generating resource module at %s', resource_file_name)
+
+      if resource_collections:
+        with open(resource_file_name, 'wb') as output_file:
+          ctx = runtime.Context(output_file,
+                                collections=sorted(resource_collections),
+                                base_url=resource_collections[0].base_url)
+          tpl.render_context(ctx)

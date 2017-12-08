@@ -20,7 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
-class Update(base.Command):
+class Update(base.UpdateCommand):
   """Updates a dataset name.
   """
 
@@ -53,15 +53,7 @@ class Update(base.Command):
         dataset=genomics_messages.Dataset(name=args.name,),
         datasetId=args.id,)
 
-    return apitools_client.datasets.Patch(request)
-
-  def Display(self, args, dataset):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      dataset: The value returned from the Run() method.
-    """
-    if dataset:
-      log.Print('Updated dataset {0}, name: {1}'.format(
-          dataset.id, dataset.name))
+    result = apitools_client.datasets.Patch(request)
+    log.UpdatedResource('{0}, id: {1}'.format(result.name, result.id),
+                        kind='dataset')
+    return result

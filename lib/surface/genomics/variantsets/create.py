@@ -20,7 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
-class Create(base.Command):
+class Create(base.CreateCommand):
   """Creates a variant set belonging to a specified dataset.
   """
 
@@ -68,15 +68,9 @@ class Create(base.Command):
         name=args.name,
         description=args.description)
 
-    return apitools_client.variantsets.Create(variantset)
-
-  def Display(self, args_unused, variantset):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args_unused: The arguments that command was run with.
-      variantset: The value returned from the Run() method.
-    """
-    log.Print('Created variant set id: {0} "{1}", belonging to dataset id: {2}'
-              .format(variantset.id, variantset.name, variantset.datasetId))
-    log.CreatedResource(variantset.id)
+    result = apitools_client.variantsets.Create(variantset)
+    log.CreatedResource('{0}, id: {1}'.format(result.name, result.id),
+                        kind='variant set',
+                        details='belonging to dataset [id: {0}]'.format(
+                            result.datasetId))
+    return result

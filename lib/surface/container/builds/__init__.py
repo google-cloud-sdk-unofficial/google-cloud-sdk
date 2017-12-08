@@ -38,11 +38,6 @@ class Builds(base.Group):
       The refined command context.
     """
 
-    # client = core_apis.GetClientInstance('cloudbuild', 'v1')
-    # registry = resources.REGISTRY.CloneAndSwitchAPIs(client)
-    # registry = registry.CloneAndSwitchAPIs(
-    #     core_apis.GetClientInstance('storage', 'v1'))
-
     resources.REGISTRY.SetParamDefault(
         api='cloudbuild', collection=None, param='projectId',
         resolver=resolvers.FromProperty(properties.VALUES.core.project))

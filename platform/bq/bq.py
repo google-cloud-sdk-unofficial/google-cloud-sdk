@@ -1005,12 +1005,14 @@ class _Load(BigqueryCmd):
         ['CSV',
          'NEWLINE_DELIMITED_JSON',
          'DATASTORE_BACKUP',
-         'AVRO'],
+         'AVRO',
+         'PARQUET'],
         'Format of source data. Options include:'
         '\n CSV'
         '\n NEWLINE_DELIMITED_JSON'
         '\n DATASTORE_BACKUP'
-        '\n AVRO',
+        '\n AVRO'
+        '\n PARQUET (experimental)',
         flag_values=fv)
     flags.DEFINE_list(
         'projection_fields', [],
@@ -1023,6 +1025,15 @@ class _Load(BigqueryCmd):
         'autodetect', None,
         'Enable auto detection of schema and options for formats that are not '
         'self describing like CSV and JSON.',
+        flag_values=fv)
+    flags.DEFINE_multistring(
+        'schema_update_option', None,
+        'Can be specified when append to a table, or replace a table partition.'
+        ' When specified, the schema of the destination table will be updated '
+        'with the schema of the new data. One or more of the following options '
+        'can be specified:'
+        '\n ALLOW_FIELD_ADDITION: allow new fields to be added'
+        '\n ALLOW_FIELD_RELAXATION: allow relaxing required fields to nullable',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -1090,6 +1101,8 @@ class _Load(BigqueryCmd):
       opts['ignore_unknown_values'] = self.ignore_unknown_values
     if self.autodetect is not None:
       opts['autodetect'] = self.autodetect
+    if self.schema_update_option:
+      opts['schema_update_options'] = self.schema_update_option
     job = client.Load(table_reference, source, schema=schema, **opts)
     if FLAGS.sync:
       _PrintJobMessages(client.FormatJobInfo(job))
@@ -1328,6 +1341,23 @@ class _Query(BigqueryCmd):
         ('Whether to use Legacy SQL for the query. If not set, the default '
          'value is true.'),
         flag_values=fv)
+    flags.DEFINE_multistring(
+        'schema_update_option', None,
+        'Can be specified when append to a table, or replace a table partition.'
+        ' When specified, the schema of the destination table will be updated '
+        'with the schema of the new data. One or more of the following options '
+        'can be specified:'
+        '\n ALLOW_FIELD_ADDITION: allow new fields to be added'
+        '\n ALLOW_FIELD_RELAXATION: allow relaxing required fields to nullable',
+        flag_values=fv)
+    flags.DEFINE_multistring(
+        'parameter',
+        None,
+        ('Either a file containing a JSON list of query parameters, or a query '
+         'parameter in the form "name:type:value". An empty name produces '
+         'a positional parameter. The type may be ommitted to assume STRING: '
+         'name::value or ::value. The value "NULL" produces a null value.'),
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, *args):
@@ -1354,6 +1384,10 @@ class _Query(BigqueryCmd):
       external_table_defs = {}
       for raw_table_def in self.external_table_definition:
         table_name_and_def = raw_table_def.split('::', 1)
+        if len(table_name_and_def) < 2:
+          raise app.UsageError(
+              'external_table_definition parameter is invalid, expected :: as '
+              'the separator.')
         external_table_defs[table_name_and_def[0]] = _GetExternalDataConfig(
             table_name_and_def[1])
       kwds['external_table_definitions_json'] = dict(external_table_defs)
@@ -1363,6 +1397,10 @@ class _Query(BigqueryCmd):
       kwds['maximum_billing_tier'] = self.maximum_billing_tier
     if self.maximum_bytes_billed:
       kwds['maximum_bytes_billed'] = self.maximum_bytes_billed
+    if self.schema_update_option:
+      kwds['schema_update_options'] = self.schema_update_option
+    if self.parameter:
+      kwds['query_parameters'] = _ParseParameters(self.parameter)
     query = ' '.join(args)
     if not query:
       query = sys.stdin.read()
@@ -1956,7 +1994,7 @@ class _Copy(BigqueryCmd):
 
 
 def _ParseTimePartitioning(partitioning_type=None,
-                           partitioning_expiration=None):
+                           partitioning_expiration=None): # pylint: disable=line-too-long
   """Parses time partitioning from the arguments.
 
   Args:
@@ -2162,7 +2200,9 @@ class _Make(BigqueryCmd):
       if self.view_udf_resource:
         view_udf_resources = _ParseUdfResources(self.view_udf_resource)
       time_partitioning = _ParseTimePartitioning(
-          self.time_partitioning_type, self.time_partitioning_expiration)
+          self.time_partitioning_type,
+          self.time_partitioning_expiration
+      )
       client.CreateTable(reference,
                          ignore_existing=True,
                          schema=schema,
@@ -2357,7 +2397,9 @@ class _Update(BigqueryCmd):
       if self.view_udf_resource:
         view_udf_resources = _ParseUdfResources(self.view_udf_resource)
       time_partitioning = _ParseTimePartitioning(
-          self.time_partitioning_type, self.time_partitioning_expiration)
+          self.time_partitioning_type,
+          self.time_partitioning_expiration
+      )
       client.UpdateTable(reference,
                          schema=schema,
                          description=self.description,
@@ -3170,6 +3212,120 @@ def _ParseUdfResources(udf_resources):
     for uri in external_udf_resources:
       udfs.append({'resourceUri': uri})
   return udfs
+
+
+def _ParseParameters(parameters):
+  if not parameters:
+    return None
+  results = []
+  for param_string in parameters:
+    if os.path.isfile(param_string):
+      with open(param_string) as f:
+        results += json.load(f)
+    else:
+      results.append(_ParseParameter(param_string))
+  return results
+
+
+def _ParseParameter(param_string):
+  name, param_string = param_string.split(':', 1)
+  type_dict, value_dict = _ParseParameterTypeAndValue(param_string)
+  result = {'parameterType': type_dict, 'parameterValue': value_dict}
+  if name:
+    result['name'] = name
+  return result
+
+
+def _ParseParameterTypeAndValue(param_string):
+  """Parse a string of the form <recursive_type>:<value> into each part."""
+  type_string, value_string = param_string.split(':', 1)
+  if not type_string:
+    type_string = 'STRING'
+  type_dict = _ParseParameterType(type_string)
+  return type_dict, _ParseParameterValue(type_dict, value_string)
+
+
+def _ParseParameterType(type_string):
+  """Parse a parameter type string into a JSON dict for the BigQuery API."""
+  type_dict = {'type': type_string.upper()}
+  if type_string.upper().startswith('ARRAY<') and type_string.endswith('>'):
+    type_dict = {
+        'type': 'ARRAY',
+        'arrayType': _ParseParameterType(type_string[6:-1])
+    }
+  if type_string.startswith('STRUCT<') and type_string.endswith('>'):
+    type_dict = {
+        'type': 'STRUCT',
+        'structTypes': _ParseStructType(type_string[7:-1])
+    }
+  if not type_string:
+    raise app.UsageError('Query parameter missing type')
+  return type_dict
+
+
+def _ParseStructType(type_string):
+  """Parse a Struct QueryParameter type into a JSON dict form."""
+  subtypes = []
+  for name, sub_type in _StructTypeSplit(type_string):
+    subtypes.append({'type': _ParseParameterType(sub_type), 'name': name})
+  return subtypes
+
+
+def _StructTypeSplit(type_string):
+  """Yields single field-name, sub-types tuple from a StructType string.
+
+  Raises:
+    UsageError: When a field name is missing.
+  """
+  while type_string:
+    next_span = type_string.split(',', 1)[0]
+    if '<' in next_span:
+      angle_count = 0
+      i = 0
+      for i in xrange(next_span.find('<'), len(type_string)):
+        if type_string[i] == '<':
+          angle_count += 1
+        if type_string[i] == '>':
+          angle_count -= 1
+        if angle_count == 0:
+          break
+      if angle_count != 0:
+        raise app.UsageError('Malformatted struct type')
+      next_span = type_string[:i + 1]
+    type_string = type_string[len(next_span) + 1:]
+    splits = next_span.split(None, 1)
+    if len(splits) != 2:
+      raise app.UsageError('Struct parameter missing name for field')
+    yield splits
+
+
+def _ParseParameterValue(type_dict, value_input):
+  """Parse a parameter value of type `type_dict` from value_input.
+
+  Arguments:
+    type_dict: The JSON-dict type as which to parse `value_input`.
+    value_input: Either a string representing the value, or a JSON dict for
+        array and value types.
+  """
+  if 'structTypes' in type_dict:
+    if isinstance(value_input, str):
+      if value_input == 'NULL':
+        return {'structValues': None}
+      value_input = json.loads(value_input)
+    type_map = dict([(x['name'], x['type']) for x in type_dict['structTypes']])
+    values = {}
+    for (field_name, value) in value_input.iteritems():
+      values[field_name] = _ParseParameterValue(type_map[field_name], value)
+    return {'structValues': values}
+  if 'arrayType' in type_dict:
+    if isinstance(value_input, str):
+      if value_input == 'NULL':
+        return {'arrayValues': None}
+      value_input = json.loads(value_input)
+    values = [_ParseParameterValue(type_dict['arrayType'], x) for x in
+              value_input]
+    return {'arrayValues': values}
+  return {'value': value_input if value_input != 'NULL' else None}
 
 
 def main(unused_argv):

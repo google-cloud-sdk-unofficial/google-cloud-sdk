@@ -37,7 +37,6 @@ class Describe(base.DescribeCommand):
         metavar='JOB_ID',
         help='The ID of the job to describe.')
 
-  @util.HandleHttpError
   def Run(self, args):
     client = self.context['dataproc_client']
 

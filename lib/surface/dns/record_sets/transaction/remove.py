@@ -59,7 +59,6 @@ class Remove(base.Command):
         'data', nargs='+',
         help='DNS name of the record-set to be removed.')
 
-  @util.HandleHttpError
   def Run(self, args):
     with trans_util.TransactionFile(args.transaction_file) as trans_file:
       change = trans_util.ChangeFromYamlFile(trans_file)

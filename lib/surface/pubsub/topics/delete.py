@@ -13,11 +13,12 @@
 # limitations under the License.
 """Cloud Pub/Sub topics delete command."""
 
-import json
 from apitools.base.py import exceptions as api_ex
 
+from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
+from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
@@ -56,7 +57,11 @@ class Delete(base.DeleteCommand):
 
       try:
         pubsub.projects_topics.Delete(delete_req)
-        yield util.TopicDisplayDict(topic)
-      except api_ex.HttpError as exc:
-        yield util.TopicDisplayDict(topic,
-                                    json.loads(exc.content)['error']['message'])
+        failed = None
+      except api_ex.HttpError as error:
+        exc = exceptions.HttpException(error)
+        failed = exc.payload.status_message
+
+      result = util.TopicDisplayDict(topic, failed)
+      log.DeletedResource(topic.name, kind='topic', failed=failed)
+      yield result

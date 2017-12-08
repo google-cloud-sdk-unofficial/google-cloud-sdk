@@ -55,8 +55,8 @@ def _DoFilter(context, api_version_default):
 
   context['sql_client'] = apis.GetClientInstance('sql', api_version_default)
   context['sql_messages'] = apis.GetMessagesModule('sql', api_version_default)
-  context['registry'] = cloud_resources.REGISTRY.CloneAndSwitchAPIs(
-      context['sql_client'])
+  context['registry'] = cloud_resources.REGISTRY.Clone()
+  context['registry'].RegisterApiByName('sql', api_version_default)
 
   return context
 

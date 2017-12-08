@@ -41,7 +41,6 @@ class Describe(base.DescribeCommand):
         'change_id', metavar='CHANGE_ID',
         help='The ID of the change you want details for.')
 
-  @util.HandleHttpError
   def Run(self, args):
     dns = self.context['dns_client']
     resources = self.context['dns_resources']

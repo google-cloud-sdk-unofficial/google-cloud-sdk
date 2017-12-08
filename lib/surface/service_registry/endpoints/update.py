@@ -23,26 +23,23 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
-class Update(base.Command):
+class Update(base.UpdateCommand):
   """Update an endpoint.
 
   This command updates the contents of an endpoint entry in Service Registry.
+
+  ## EXAMPLES
+
+  To update an endpoint in Service Registry
+
+    $ {command} ENDPOINT_NAME --target ADDRESS:PORT
+        --networks NETWORK_URL
+
+  For additional addresses, just repeat the --address flag, and to see
+  more options be sure to use
+
+    $ {command} --help
   """
-
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To update an endpoint in Service Registry
-
-            $ {command} ENDPOINT_NAME --target ADDRESS:PORT
-                --networks NETWORK_URL
-
-          For additional addresses, just repeat the --address flag, and to see
-          more options be sure to use
-
-            $ {command} --help
-          """,
-  }
 
   @staticmethod
   def Args(parser):
@@ -107,5 +104,4 @@ class Update(base.Command):
     )
 
     return writer.call_service_registry(
-        client.endpoints.Update, request, args.async,
-        'Updated [{0}] successfully.'.format(args.endpoint_name))
+        client.endpoints.Update, request, args.async, log.UpdatedResource)

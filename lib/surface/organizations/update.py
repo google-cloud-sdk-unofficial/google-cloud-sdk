@@ -16,7 +16,6 @@
 
 import textwrap
 
-from googlecloudsdk.api_lib.organizations import errors
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.organizations import flags
 from googlecloudsdk.command_lib.organizations import orgs_base
@@ -53,7 +52,6 @@ class Update(orgs_base.OrganizationCommand):
   def Format(self, args):
     return self.ListFormat(args)
 
-  @errors.HandleHttpError
   def Run(self, args):
     client = self.OrganizationsClient()
     org_ref = self.GetOrganizationRef(args.id)

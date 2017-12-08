@@ -55,7 +55,6 @@ class Export(base.Command):
         action='store_true',
         help='Indicates that records-file should be in the zone file format.')
 
-  @util.HandleHttpError
   def Run(self, args):
     dns = self.context['dns_client']
     messages = self.context['dns_messages']

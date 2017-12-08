@@ -38,7 +38,6 @@ class Wait(base.Command):
         metavar='JOB_ID',
         help='The ID of the job to wait.')
 
-  @util.HandleHttpError
   def Run(self, args):
     client = self.context['dataproc_client']
     messages = self.context['dataproc_messages']

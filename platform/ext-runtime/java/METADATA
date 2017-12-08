@@ -1,0 +1,15 @@
+# Format: google3/devtools/metadata/metadata.proto (go/google3metadata)
+
+name: "gae-xrt-java"
+description:
+    "This is the Google App Engine Externalized Runtime Definition for Java. "
+    "See https://go/gae-xrt for more info."
+
+third_party {
+  url {
+    type: ARCHIVE
+    value: "https://team.git.corp.google.com/byo-runtimes/java-ext-runtime/+archive/ceff40242a35b501f32175ac46b0584f520343ad.tar.gz"
+  }
+  version: "ceff40242a35b501f32175ac46b0584f520343ad"
+  last_upgrade_date { year: 2016 month: 3 day: 1 }
+}

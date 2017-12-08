@@ -1,0 +1,15 @@
+# Format: google3/devtools/metadata/metadata.proto (go/google3metadata)
+
+name: "gae-xrt-python"
+description:
+    "This is the Google App Engine Externalized Runtime Definition for Python. "
+    "See https://go/gae-xrt for more info."
+
+third_party {
+  url {
+    type: ARCHIVE
+    value: "https://team.git.corp.google.com/byo-runtimes/python-ext-runtime/+archive/dd18b5762a68784673e3fa8304535d33df1e69e4.tar.gz"
+  }
+  version: "dd18b5762a68784673e3fa8304535d33df1e69e4"
+  last_upgrade_date { year: 2016 month: 2 day: 19 }
+}

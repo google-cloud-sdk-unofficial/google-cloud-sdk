@@ -20,7 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
-class Delete(base.Command):
+class Delete(base.DeleteCommand):
   """Delete source captures."""
 
   detailed_help = {
@@ -44,15 +44,6 @@ class Delete(base.Command):
     deleted_list = []
     for name in args.capture_id:
       d = manager.DeleteCapture(name)
-      log.DeletedResource(d)
+      log.DeletedResource(d, kind='source capture')
       deleted_list.append(d)
-    return deleted_list
-
-  def Display(self, args, deleted_list):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      deleted_list: The captures deleted by the Run() method.
-    """
-    log.Print('Deleted {0} captures.'.format(len(deleted_list)))
+    return [deleted_list]

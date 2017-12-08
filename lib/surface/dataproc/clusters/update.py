@@ -61,7 +61,6 @@ class Update(base.Command):
         type=int,
         help=argparse.SUPPRESS)
 
-  @util.HandleHttpError
   def Run(self, args):
     client = self.context['dataproc_client']
     messages = self.context['dataproc_messages']

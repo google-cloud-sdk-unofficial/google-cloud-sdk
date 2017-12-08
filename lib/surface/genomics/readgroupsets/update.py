@@ -21,7 +21,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
-class Update(base.Command):
+class Update(base.UpdateCommand):
   """Updates a readgroupset name and/or referenceSetId.
   """
 
@@ -70,18 +70,11 @@ class Update(base.Command):
         updateMask=','.join(mask)
     )
 
-    return apitools_client.readgroupsets.Patch(request)
-
-  def Display(self, args, readgroupset):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      readgroupset: The value returned from the Run() method.
-    """
-    if readgroupset:
-      log.Print('Updated readgroupset {0}'.format(readgroupset.id))
-      if args.name:
-        log.Print('  name: {0}'.format(readgroupset.name))
-      if args.reference_set_id:
-        log.Print('  referenceSetId: {0}'.format(readgroupset.referenceSetId))
+    result = apitools_client.readgroupsets.Patch(request)
+    name = str(result.id)
+    if result.name:
+      name += ', name: {0}'.format(result.name)
+    if result.referenceSetId:
+      name += ', referenceSetId: {0}'.format(result.referenceSetId)
+    log.UpdatedResource(name, kind='readgroupset')
+    return result

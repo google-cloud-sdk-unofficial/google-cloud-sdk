@@ -75,7 +75,7 @@ class AddIamPolicyBinding(
     except apitools_exceptions.HttpError as error:
       # If the error is a 404, no IAM policy exists, so just create a blank one.
       exc = exceptions.HttpException(error)
-      if exc.status_code == 404:
+      if exc.payload.status_code == 404:
         policy = self.services_messages.Policy()
       else:
         raise

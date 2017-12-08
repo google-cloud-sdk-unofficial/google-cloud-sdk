@@ -16,7 +16,6 @@
 
 import httplib
 
-from googlecloudsdk.api_lib.organizations import errors
 from googlecloudsdk.api_lib.util import http_retry
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
@@ -41,7 +40,6 @@ class AddIamPolicyBinding(orgs_base.OrganizationCommand):
     iam_util.AddArgsForAddIamPolicyBinding(parser, 'id',
                                            'cloudresourcemanager.organizations')
 
-  @errors.HandleHttpError
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
     messages = self.OrganizationsMessages()

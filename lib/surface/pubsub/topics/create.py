@@ -13,12 +13,12 @@
 # limitations under the License.
 """Cloud Pub/Sub topics create command."""
 
-import json
-
 from apitools.base.py import exceptions as api_ex
 
+from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
+from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
@@ -49,12 +49,19 @@ class Create(base.CreateCommand):
     msgs = self.context['pubsub_msgs']
     pubsub = self.context['pubsub']
 
-    for topic_name in args.topic:
+    for topic in args.topic:
       topic_name = resources.REGISTRY.Parse(
-          topic_name, collection=util.TOPICS_COLLECTION).Name()
+          topic, collection=util.TOPICS_COLLECTION).Name()
       topic = msgs.Topic(name=util.TopicFormat(topic_name))
+
       try:
-        yield util.TopicDisplayDict(pubsub.projects_topics.Create(topic))
-      except api_ex.HttpError as exc:
-        yield util.TopicDisplayDict(topic,
-                                    json.loads(exc.content)['error']['message'])
+        result = pubsub.projects_topics.Create(topic)
+        failed = None
+      except api_ex.HttpError as error:
+        result = topic
+        exc = exceptions.HttpException(error)
+        failed = exc.payload.status_message
+
+      result = util.TopicDisplayDict(result, failed)
+      log.CreatedResource(topic_name, kind='topic', failed=failed)
+      yield result

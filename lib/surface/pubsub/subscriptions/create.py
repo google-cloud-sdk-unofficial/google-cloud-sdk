@@ -13,18 +13,17 @@
 # limitations under the License.
 """Cloud Pub/Sub subscription create command."""
 
-import json
 from apitools.base.py import exceptions as api_ex
 
+from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.projects import util as projects_util
 from googlecloudsdk.command_lib.pubsub import util
+from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
-from googlecloudsdk.core.resource import resource_projector
 
 
-class Create(base.Command):
+class Create(base.CreateCommand):
   """Creates one or more Cloud Pub/Sub subscriptions.
 
   Creates one or more Cloud Pub/Sub subscriptions for a given topic.
@@ -90,54 +89,25 @@ class Create(base.Command):
     topic_name = resources.REGISTRY.Parse(
         args.topic, collection=util.TOPICS_COLLECTION).Name()
 
-    for subscription in args.subscription:
+    for subscription_name in args.subscription:
       subscription_name = resources.REGISTRY.Parse(
-          subscription, collection=util.SUBSCRIPTIONS_COLLECTION).Name()
-      create_req = msgs.Subscription(
+          subscription_name, collection=util.SUBSCRIPTIONS_COLLECTION).Name()
+      subscription = msgs.Subscription(
           name=util.SubscriptionFormat(subscription_name),
           topic=util.TopicFormat(topic_name, topic_project),
           ackDeadlineSeconds=args.ack_deadline)
       if args.push_endpoint:
-        create_req.pushConfig = msgs.PushConfig(pushEndpoint=args.push_endpoint)
+        subscription.pushConfig = msgs.PushConfig(
+            pushEndpoint=args.push_endpoint)
 
       try:
-        yield SubscriptionDisplayDict(
-            pubsub.projects_subscriptions.Create(create_req))
-      except api_ex.HttpError as exc:
-        raise exceptions.HttpException(
-            json.loads(exc.content)['error']['message'])
+        result = pubsub.projects_subscriptions.Create(subscription)
+        failed = None
+      except api_ex.HttpError as error:
+        result = subscription
+        exc = exceptions.HttpException(error)
+        failed = exc.payload.status_message
 
-
-def SubscriptionDisplayDict(subscription, error_msg=''):
-  """Creates a serializable from a Cloud Pub/Sub create Subscription operation.
-
-  Args:
-    subscription: (Cloud Pub/Sub Subscription) Subscription to be serialized.
-    error_msg: (string) An error message to be added to the serialized
-               result, if any.
-  Returns:
-    A serialized object representing a Cloud Pub/Sub Subscription
-    create operation.
-  """
-  subs_create_dict = resource_projector.MakeSerializable(subscription)
-
-  push_endpoint = ''
-  subscription_type = 'pull'
-  if subscription.pushConfig:
-    push_endpoint = subscription.pushConfig.pushEndpoint
-    subscription_type = 'push'
-    del subs_create_dict['pushConfig']
-
-  success = True
-  if error_msg:
-    success = False
-
-  subs_create_dict['subscriptionId'] = subscription.name
-  subs_create_dict['type'] = subscription_type
-  subs_create_dict['topic'] = subscription.topic
-  subs_create_dict['pushEndpoint'] = push_endpoint
-  subs_create_dict['success'] = success
-  subs_create_dict['reason'] = error_msg
-  del subs_create_dict['name']
-
-  return subs_create_dict
+      result = util.SubscriptionDisplayDict(result, failed)
+      log.CreatedResource(subscription_name, kind='subscription', failed=failed)
+      yield result

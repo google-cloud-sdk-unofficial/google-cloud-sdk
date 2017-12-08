@@ -48,7 +48,6 @@ class Start(base.Command):
   def Args(parser):
     util.ZONE_FLAG.AddToParser(parser)
 
-  @util.HandleHttpError
   def Run(self, args):
     if os.path.isfile(args.transaction_file):
       raise exceptions.ToolException(

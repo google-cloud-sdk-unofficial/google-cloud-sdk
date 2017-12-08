@@ -14,7 +14,6 @@
 
 """gcloud dns managed-zone delete command."""
 
-from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
@@ -41,7 +40,6 @@ class Delete(base.Command):
                         completion_resource='dns.managedZones',
                         help='Name of the empty managed-zone to be deleted.')
 
-  @util.HandleHttpError
   def Run(self, args):
     dns = self.context['dns_client']
     messages = self.context['dns_messages']

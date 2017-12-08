@@ -20,7 +20,7 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateCluster(base.Command):
+class CreateCluster(base.CreateCommand):
   """Create a new Bigtable cluster."""
 
   @staticmethod
@@ -35,7 +35,6 @@ class CreateCluster(base.Command):
         type=str.upper,
         help='Storage class for the cluster.')
 
-  @util.MapHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -64,17 +63,6 @@ class CreateCluster(base.Command):
           self.context,
           result.currentOperation.name,
           'Creating cluster')
+    log.CreatedResource(args.cluster, kind='cluster', async=args.async,
+                        details='in zone [{0}]'.format(args.zone))
     return result
-
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    # Always use this log module for printing (never use print directly).
-    # This allows us to control the verbosity of commands in a global way.
-    writer = log.out
-    writer.Print('Cluster [{0}] in zone [{1}] creat{2}.'.format(
-        args.cluster, args.zone, 'ion in progress' if args.async else 'ed'))

@@ -31,7 +31,6 @@ class ListClustersAlpha(base.ListCommand):
     """Register flags for this command."""
     pass
 
-  @util.MapHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -64,7 +63,6 @@ class ListClusters(base.ListCommand):
                                            required=False,
                                            multiple=True)
 
-  @util.MapHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

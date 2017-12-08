@@ -38,7 +38,6 @@ class Delete(base.DeleteCommand):
     parser.add_argument('name', help='The name of the cluster to delete.')
     base.ASYNC_FLAG.AddToParser(parser)
 
-  @util.HandleHttpError
   def Run(self, args):
     client = self.context['dataproc_client']
     messages = self.context['dataproc_messages']

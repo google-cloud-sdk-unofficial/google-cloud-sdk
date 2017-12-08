@@ -13,16 +13,16 @@
 # limitations under the License.
 """Cloud Pub/Sub subscription delete command."""
 
-import json
 from apitools.base.py import exceptions as api_ex
 
+from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
-from googlecloudsdk.core.resource import resource_printer
-from googlecloudsdk.core.util import text
+from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
 
 
-class Delete(base.Command):
+class Delete(base.DeleteCommand):
   """Deletes one or more Cloud Pub/Sub subscriptions."""
 
   @staticmethod
@@ -32,6 +32,9 @@ class Delete(base.Command):
     parser.add_argument('subscription', nargs='+',
                         help='One or more subscription names to delete.')
 
+  def Collection(self):
+    return util.SUBSCRIPTIONS_COLLECTION
+
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -39,48 +42,29 @@ class Delete(base.Command):
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
 
-    Returns:
-      A 2-tuple of lists, one populated with the subscription paths that were
-      successfully deleted, the other one with the list of subscription paths
-      that could not be deleted.
+    Yields:
+      A serialized object (dict) describing the results of the operation.
+      This description fits the Resource described in the ResourceRegistry under
+      'pubsub.projects.subscriptions'.
     """
     msgs = self.context['pubsub_msgs']
     pubsub = self.context['pubsub']
 
-    succeeded = []
-    failed = []
-
     for subscription_name in args.subscription:
+      subscription_name = resources.REGISTRY.Parse(
+          subscription_name, collection=self.Collection()).Name()
+      subscription = msgs.Subscription(
+          name=util.SubscriptionFormat(subscription_name))
       delete_req = msgs.PubsubProjectsSubscriptionsDeleteRequest(
-          subscription=util.SubscriptionFormat(subscription_name))
+          subscription=util.SubscriptionFormat(subscription.name))
+
       try:
         pubsub.projects_subscriptions.Delete(delete_req)
-        succeeded.append(delete_req.subscription)
-      except api_ex.HttpError as e:
-        failed.append((delete_req.subscription,
-                       json.loads(e.content)['error']['message']))
+        failed = None
+      except api_ex.HttpError as error:
+        exc = exceptions.HttpException(error)
+        failed = exc.payload.status_message
 
-    return succeeded, failed
-
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    succeeded, failed = result
-    successes = len(succeeded)
-    failures = len(failed)
-
-    if successes:
-      fmt = 'list[title="{0} {1} deleted successfully"]'.format(
-          successes, text.Pluralize(successes, 'subscription'))
-      resource_printer.Print([subscription for subscription in succeeded], fmt)
-
-    if failures:
-      fmt = 'list[title="{0} {1} failed"]'.format(
-          failures, text.Pluralize(failures, 'subscription'))
-      resource_printer.Print(
-          ['{0} (reason: {1})'.format(subs, reason) for subs, reason in failed],
-          fmt)
+      result = util.SubscriptionDisplayDict(subscription, failed)
+      log.DeletedResource(subscription.name, kind='subscription', failed=failed)
+      yield result

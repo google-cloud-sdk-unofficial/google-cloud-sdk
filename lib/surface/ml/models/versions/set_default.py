@@ -63,7 +63,7 @@ class BetaSetDefault(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    flags.GetModelName(positional=False).AddToParser(parser)
+    flags.GetModelName(positional=False, required=True).AddToParser(parser)
     flags.VERSION_NAME.AddToParser(parser)
 
   def Run(self, args):

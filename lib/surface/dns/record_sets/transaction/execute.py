@@ -49,7 +49,6 @@ class Execute(base.ListCommand):
   def Format(self, args):
     return self.ListFormat(args)
 
-  @util.HandleHttpError
   def Run(self, args):
     with transaction_util.TransactionFile(args.transaction_file) as trans_file:
       change = transaction_util.ChangeFromYamlFile(trans_file)

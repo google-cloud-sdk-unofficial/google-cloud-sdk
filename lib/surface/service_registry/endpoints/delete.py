@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.service_registry import arg_support
 from googlecloudsdk.api_lib.service_registry import constants
 from googlecloudsdk.api_lib.service_registry import write_support
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
@@ -80,5 +81,4 @@ class Delete(base.Command):
     )
 
     return writer.call_service_registry(
-        client.endpoints.Delete, request, args.async,
-        'Deleted [{0}] successfully.'.format(args.endpoint_name))
+        client.endpoints.Delete, request, args.async, log.DeletedResource)

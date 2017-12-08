@@ -52,7 +52,6 @@ class Create(base.Command):
   def Format(self, args):
     return self.ListFormat(args)
 
-  @util.HandleHttpError
   def Run(self, args):
     dns = self.context['dns_client']
     messages = self.context['dns_messages']

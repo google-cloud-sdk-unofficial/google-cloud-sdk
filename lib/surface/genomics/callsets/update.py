@@ -20,7 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
-class Update(base.Command):
+class Update(base.UpdateCommand):
   """Updates a call set name.
   """
 
@@ -61,14 +61,7 @@ class Update(base.Command):
         callSetId=args.id,
     )
 
-    return apitools_client.callsets.Patch(request)
-
-  def Display(self, args_unused, call_set):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args_unused: The arguments that command was run with.
-      call_set: The value returned from the Run() method.
-    """
-    log.Print('Updated call set {0}, id: {1}'.format(
-        call_set.name, call_set.id))
+    result = apitools_client.callsets.Patch(request)
+    log.UpdatedResource('{0}, id: {1}'.format(result.name, result.id),
+                        kind='call set')
+    return result

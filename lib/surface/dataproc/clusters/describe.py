@@ -34,7 +34,6 @@ class Describe(base.DescribeCommand):
   def Args(parser):
     parser.add_argument('name', help='The name of the cluster to describe.')
 
-  @util.HandleHttpError
   def Run(self, args):
     client = self.context['dataproc_client']
 

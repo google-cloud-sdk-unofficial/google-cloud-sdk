@@ -15,7 +15,6 @@
 
 import textwrap
 
-from googlecloudsdk.api_lib.organizations import errors
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.organizations import flags
 from googlecloudsdk.command_lib.organizations import orgs_base
@@ -45,7 +44,6 @@ class Describe(orgs_base.OrganizationCommand, base.DescribeCommand):
   def Args(parser):
     flags.IdArg('you want to describe.').AddToParser(parser)
 
-  @errors.HandleHttpError
   def Run(self, args):
     request = self.GetOrganizationRef(args.id).Request()
     return self.OrganizationsClient().Get(request)

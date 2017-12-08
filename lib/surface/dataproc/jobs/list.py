@@ -75,7 +75,6 @@ class List(base.ListCommand):
   def Collection(self):
     return 'dataproc.jobs'
 
-  @util.HandleHttpError
   def Run(self, args):
     client = self.context['dataproc_client']
     messages = self.context['dataproc_messages']

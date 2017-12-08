@@ -14,7 +14,6 @@
 
 """Describe operation command."""
 
-from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 
 
@@ -35,7 +34,6 @@ class Describe(base.DescribeCommand):
     parser.add_argument(
         'operation', help='The ID of the operation to describe.')
 
-  @util.HandleHttpError
   def Run(self, args):
     client = self.context['dataproc_client']
     messages = self.context['dataproc_messages']

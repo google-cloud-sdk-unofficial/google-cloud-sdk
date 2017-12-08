@@ -74,7 +74,7 @@ class RuntimeTests(testutil.TestBase):
         dockerfile_contents = [
             constants.DOCKERFILE_JAVA8_PREAMBLE,
             constants.DOCKERFILE_INSTALL_APP.format('foo.jar'),
-            constants.DOCKERFILE_JAVA8_ENTRYPOINT.format('foo.jar'),
+            constants.DOCKERFILE_JAVA8_JAR_CMD.format('foo.jar'),
         ]
         self.assert_file_exists_with_contents('Dockerfile',
                                               ''.join(dockerfile_contents))
@@ -97,7 +97,7 @@ class RuntimeTests(testutil.TestBase):
         dockerfile_contents = [
             constants.DOCKERFILE_JAVA8_PREAMBLE,
             constants.DOCKERFILE_INSTALL_APP.format('foo.jar'),
-            constants.DOCKERFILE_JAVA8_ENTRYPOINT.format('foo.jar'),
+            constants.DOCKERFILE_JAVA8_JAR_CMD.format('foo.jar'),
         ]
         self.assert_file_exists_with_contents('Dockerfile',
                                               ''.join(dockerfile_contents))
@@ -138,7 +138,7 @@ class RuntimeTests(testutil.TestBase):
         dockerfile_contents = [
             constants.DOCKERFILE_JAVA8_PREAMBLE,
             constants.DOCKERFILE_INSTALL_APP.format('foo.jar'),
-            constants.DOCKERFILE_JAVA8_ENTRYPOINT.format('foo.jar'),
+            constants.DOCKERFILE_JAVA8_JAR_CMD.format('foo.jar'),
         ]
         self.assert_file_exists_with_contents('Dockerfile',
                                               ''.join(dockerfile_contents))

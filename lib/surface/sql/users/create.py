@@ -19,6 +19,7 @@ Creates a user in a given instance with specified username, host, and password.
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
@@ -80,11 +81,14 @@ class CreateBeta(base.CreateCommand):
     operation_ref = resources.Create('sql.operations',
                                      operation=result_operation.name,
                                      project=instance_ref.project,
-                                     instance=instance_ref.instance,)
+                                     instance=instance_ref.instance)
     if args.async:
-      return sql_client.operations.Get(operation_ref.Request())
+      result = sql_client.operations.Get(operation_ref.Request())
+    else:
+      operations.OperationsV1Beta4.WaitForOperation(
+          sql_client, operation_ref, 'Creating Cloud SQL user')
+      result = new_user
 
-    operations.OperationsV1Beta4.WaitForOperation(sql_client, operation_ref,
-                                                  'Creating Cloud SQL user')
+    log.CreatedResource(args.username, kind='user', async=args.async)
 
-    return new_user
+    return result

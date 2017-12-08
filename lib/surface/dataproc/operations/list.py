@@ -15,7 +15,6 @@
 """List operation command."""
 import json
 
-from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
@@ -58,7 +57,6 @@ class List(base.ListCommand):
   def Collection(self):
     return 'dataproc.operations'
 
-  @util.HandleHttpError
   def Run(self, args):
     client = self.context['dataproc_client']
     messages = self.context['dataproc_messages']

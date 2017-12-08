@@ -16,7 +16,6 @@
 
 from apitools.base.py import list_pager
 
-from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -50,7 +49,6 @@ class List(base.ListCommand):
           self.Collection(), managedZone=resource.name).SelfLink()
     return _GetUri
 
-  @util.HandleHttpError
   def Run(self, args):
     dns_client = self.context['dns_client']
     dns_messages = self.context['dns_messages']

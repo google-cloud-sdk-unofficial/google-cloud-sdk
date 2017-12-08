@@ -52,16 +52,18 @@ class ServiceRegistry(base.Group):
       ToolException: When no project is specified.
     """
 
-    client = apis.GetClientInstance('serviceregistry', 'v1alpha')
-    context[constants.CLIENT] = client
-    context[constants.MESSAGES] = apis.GetMessagesModule(
-        'serviceregistry', 'v1alpha')
+    api_name = 'serviceregistry'
+    api_version = 'v1alpha'
+    context[constants.CLIENT] = apis.GetClientInstance(api_name, api_version)
+    context[constants.MESSAGES] = apis.GetMessagesModule(api_name, api_version)
 
     project = properties.VALUES.core.project
     resolver = resolvers.FromProperty(project)
-    resources.REGISTRY.SetParamDefault(
-        'serviceregistry', None, 'project', resolver)
-    # guarantee we use the same API as our client
-    context[constants.RESOURCES] = resources.REGISTRY.CloneAndSwitchAPIs(client)
+
+    registry = resources.REGISTRY.Clone()
+    registry.SetParamDefault('serviceregistry', None, 'project', resolver)
+    registry.RegisterApiByName(api_name, api_version)
+
+    context[constants.RESOURCES] = registry
 
     return context

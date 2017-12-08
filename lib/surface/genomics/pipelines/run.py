@@ -62,7 +62,7 @@ def _ValidateAndMergeArgInputs(args):
   return arg_inputs
 
 
-class Run(base.Command):
+class Run(base.SilentCommand):
   """Defines and runs a pipeline.
 
   A pipeline is a transformation of a set of inputs to a set of outputs.
@@ -293,13 +293,6 @@ https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_regio
                 email=args.service_account_email,
                 scopes=args.service_account_scopes),
             resources=resources))
-    return apitools_client.pipelines.Run(request)
-
-  def Display(self, args_unused, operation):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args_unused: The arguments that command was run with.
-      operation: The value returned from the Run() method.
-    """
-    log.Print('Running: [{0}]'.format(operation.name))
+    result = apitools_client.pipelines.Run(request)
+    log.status.Print('Running [{0}].'.format(result.name))
+    return result

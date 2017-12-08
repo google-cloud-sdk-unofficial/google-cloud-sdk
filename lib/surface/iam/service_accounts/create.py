@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.iam import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope.exceptions import InvalidArgumentException
 from googlecloudsdk.command_lib.iam import base_classes
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
@@ -62,7 +63,7 @@ class Create(base_classes.BaseIamCommand, base.CreateCommand):
 
     project = properties.VALUES.core.project.Get(required=True)
 
-    return self.iam_client.projects_serviceAccounts.Create(
+    result = self.iam_client.projects_serviceAccounts.Create(
         self.messages.IamProjectsServiceAccountsCreateRequest(
             name=utils.ProjectToProjectResourceName(project),
             createServiceAccountRequest=
@@ -70,3 +71,5 @@ class Create(base_classes.BaseIamCommand, base.CreateCommand):
                 accountId=args.name,
                 serviceAccount=self.messages.ServiceAccount(
                     displayName=args.display_name))))
+    log.CreatedResource(args.name, kind='service account')
+    return result

@@ -14,7 +14,6 @@
 
 """gcloud dns managed-zone describe command."""
 
-from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
 
 
@@ -40,7 +39,6 @@ class Describe(base.DescribeCommand):
         completion_resource='dns.managedZones',
         help='The name of the managed-zone you want details for.')
 
-  @util.HandleHttpError
   def Run(self, args):
     dns = self.context['dns_client']
     resources = self.context['dns_resources']

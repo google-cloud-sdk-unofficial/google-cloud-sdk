@@ -63,7 +63,8 @@ class DeployBeta(base.SilentCommand):
     deploy_util.ArgsDeploy(parser)
 
   def Run(self, args):
-    return deploy_util.RunDeploy(self, args, enable_endpoints=True)
+    return deploy_util.RunDeploy(self, args, enable_endpoints=True,
+                                 app_create=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.PREVIEW)

@@ -180,7 +180,7 @@ class Create(base.Command):
         unused_root, ext = os.path.splitext(args.source)
         if ext not in _ALLOWED_SOURCE_EXT:
           raise c_exceptions.BadFileException(
-              'Local file [{src}] is none of '+_ALLOWED_SOURCE_EXT.join(', '))
+              'Local file [{src}] is none of '+', '.join(_ALLOWED_SOURCE_EXT))
         log.status.write(
             'Uploading local file [{src}] to '
             '[gs://{bucket}/{object}]\n'.format(

@@ -22,7 +22,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-class DatasetsRestore(base.Command):
+class DatasetsRestore(base.UpdateCommand):
   """Restores a deleted dataset.
   """
 
@@ -58,15 +58,7 @@ class DatasetsRestore(base.Command):
     dataset = genomics_messages.GenomicsDatasetsUndeleteRequest(
         datasetId=args.id)
 
-    return apitools_client.datasets.Undelete(dataset)
-
-  def Display(self, args_unused, dataset):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args_unused: The arguments that command was run with.
-      dataset: The value returned from the Run() method.
-    """
-    if dataset:
-      log.Print('Restored dataset {0}, name: {1}'.format(
-          dataset.id, dataset.name))
+    result = apitools_client.datasets.Undelete(dataset)
+    log.RestoredResource('{0}, id: {1}'.format(result.name, result.id),
+                         kind='dataset')
+    return result

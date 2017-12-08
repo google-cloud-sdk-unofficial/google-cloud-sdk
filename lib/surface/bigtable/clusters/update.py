@@ -22,7 +22,7 @@ from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateClusterAlpha(base.Command):
+class UpdateClusterAlpha(base.UpdateCommand):
   """Update a Bigtable cluster's friendly name and serving nodes."""
 
   @staticmethod
@@ -31,7 +31,6 @@ class UpdateClusterAlpha(base.Command):
     util.AddClusterIdArgs(parser)
     util.AddClusterInfoArgs(parser)
 
-  @util.MapHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -49,28 +48,17 @@ class UpdateClusterAlpha(base.Command):
         serveNodes=args.nodes)
     result = cli.projects_zones_clusters.Update(msg)
     if not args.async:
+      # TODO(b/31449385): needs test coverage
       util.WaitForOp(
           self.context,
           result.currentOperation.name,
           'Updating cluster')
+    log.UpdatedResource(args.cluster, kind='cluster', async=args.async)
     return result
-
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    # Always use this log module for printing (never use print directly).
-    # This allows us to control the verbosity of commands in a global way.
-    writer = log.out
-    writer.Print('Cluster [{0}] in zone [{1}] update{2}.'.format(
-        args.cluster, args.zone, ' in progress' if args.async else 'd'))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateCluster(base.Command):
+class UpdateCluster(base.UpdateCommand):
   """Update a Bigtable cluster's friendly name and serving nodes."""
 
   @staticmethod
@@ -79,7 +67,6 @@ class UpdateCluster(base.Command):
     (arguments.ArgAdder(parser).AddCluster().AddInstance(positional=False)
      .AddClusterNodes().AddAsync())
 
-  @util.MapHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -107,4 +94,5 @@ class UpdateCluster(base.Command):
       # TODO(user): enable this line when b/29563942 is fixed in apitools
       pass
       # util.WaitForOpV2(result, 'Updating cluster')
+    log.UpdatedResource(args.cluster, kind='cluster', async=args.async)
     return result

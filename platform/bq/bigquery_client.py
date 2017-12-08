@@ -43,6 +43,7 @@ _MAX_RESULTS = 100000
 
 
 
+
 def _Typecheck(obj, types, message=None, method=None):
   if not isinstance(obj, types):
     if not message:
@@ -551,36 +552,45 @@ class BigqueryClient(object):
       except IOError:
         discovery_document = None
     if discovery_document is None:
-      try:
-        new_apiclient = discovery.build(
-            'bigquery', self.api_version, http=http,
-            discoveryServiceUrl=self.GetDiscoveryUrl(),
-            model=bigquery_model,
-            requestBuilder=bigquery_http)
-      except (httplib2.HttpLib2Error, apiclient.errors.HttpError), e:
-        # We can't find the specified server. This can be thrown for
-        # multiple reasons, so inspect the error.
-        if hasattr(e, 'content'):
+      # Attempt to retrieve discovery doc with retry logic for transient,
+      # retry-able errors.
+      max_retries = 3
+      iterations = 0
+      while iterations < max_retries and discovery_document is None:
+        try:
+          _, discovery_document = http.request(self.GetDiscoveryUrl().format(
+              api='bigquery', apiVersion=self.api_version))
+        except (httplib2.HttpLib2Error, apiclient.errors.HttpError), e:
+          # We can't find the specified server. This can be thrown for
+          # multiple reasons, so inspect the error.
+          if hasattr(e, 'content'):
+            if iterations == max_retries - 1:
+              raise BigqueryCommunicationError(
+                  'Cannot contact server. Please try again.\nError: %r'
+                  '\nContent: %s' % (e, e.content))
+          else:
+            if iterations == max_retries - 1:
+              raise BigqueryCommunicationError(
+                  'Cannot contact server. Please try again.\n'
+                  'Traceback: %s' % (traceback.format_exc(),))
+        except IOError, e:
+          if iterations == max_retries - 1:
+            raise BigqueryCommunicationError(
+                'Cannot contact server. Please try again.\nError: %r' % (e,))
+        except apiclient.errors.UnknownApiNameOrVersion, e:
+          # We can't resolve the discovery url for the given server.
+          # Don't retry in this case.
           raise BigqueryCommunicationError(
-              'Cannot contact server. Please try again.\nError: %r'
-              '\nContent: %s' % (e, e.content))
-        else:
-          raise BigqueryCommunicationError(
-              'Cannot contact server. Please try again.\n'
-              'Traceback: %s' % (traceback.format_exc(),))
-      except IOError, e:
-        raise BigqueryCommunicationError(
-            'Cannot contact server. Please try again.\nError: %r' % (e,))
-      except apiclient.errors.UnknownApiNameOrVersion, e:
-        # We can't resolve the discovery url for the given server.
-        raise BigqueryCommunicationError(
-            'Invalid API name or version: %s' % (str(e),))
-    else:
-      new_apiclient = discovery.build_from_document(
-          discovery_document, http=http,
-          model=bigquery_model,
-          requestBuilder=bigquery_http)
-    return new_apiclient
+              'Invalid API name or version: %s' % (str(e),))
+        # Wait briefly before retrying with exponentially increasing wait.
+        time.sleep(2 ** iterations)
+        iterations += 1
+    return discovery.build_from_document(
+        discovery_document,
+        http=http,
+        model=bigquery_model,
+        requestBuilder=bigquery_http)
+
 
   @property
   def apiclient(self):
@@ -593,6 +603,7 @@ class BigqueryClient(object):
     """Return the apiclient that supports insert operation."""
     insert_client = self.apiclient
     return insert_client
+
 
   #################################
   ## Utility methods
@@ -904,9 +915,10 @@ class BigqueryClient(object):
     if max_rows is None:
       raise ValueError('max_rows is required')
     table_ref = ApiClientHelper.TableReference.Create(**table_dict)
-    return _TableTableReader(self.apiclient, self.max_rows_per_request,
-                             table_ref).ReadSchemaAndRows(start_row,
-                                                          max_rows)
+    table_reader = _TableTableReader(self.apiclient,
+                                     self.max_rows_per_request,
+                                     table_ref)
+    return table_reader.ReadSchemaAndRows(start_row, max_rows)
 
   def ReadSchemaAndJobRows(self, job_dict, start_row=None, max_rows=None):
     """Convenience method to get the schema and rows from job query result.
@@ -2323,6 +2335,8 @@ class BigqueryClient(object):
             maximum_billing_tier=None,
             maximum_bytes_billed=None,
             use_legacy_sql=None,
+            schema_update_options=None,
+            query_parameters=None,
             **kwds):
     # pylint: disable=g-doc-args
     """Execute the given query, returning the created job.
@@ -2361,6 +2375,9 @@ class BigqueryClient(object):
       maximum_bytes_billed: Upper limit for bytes billed.
       use_legacy_sql: Whether to use Legacy SQL. If not set, the default value
           is true.
+      schema_update_options: schema update options when appending to the
+          destination table or truncating a table partition.
+      query_parameters: parameter values for use_legacy_sql=False queries.
       **kwds: Passed on to self.ExecuteJob.
 
     Raises:
@@ -2397,18 +2414,31 @@ class BigqueryClient(object):
         maximum_billing_tier=maximum_billing_tier,
         maximum_bytes_billed=maximum_bytes_billed,
         use_legacy_sql=use_legacy_sql,
+        schema_update_options=schema_update_options,
+        query_parameters=query_parameters,
         min_completion_ratio=min_completion_ratio)
     request = {'query': query_config}
     _ApplyParameters(request, dry_run=dry_run)
     return self.ExecuteJob(request, **kwds)
 
-  def Load(self, destination_table_reference, source,
-           schema=None, create_disposition=None, write_disposition=None,
-           field_delimiter=None, skip_leading_rows=None, encoding=None,
-           quote=None, max_bad_records=None, allow_quoted_newlines=None,
-           source_format=None, allow_jagged_rows=None,
-           ignore_unknown_values=None, projection_fields=None,
+  def Load(self,
+           destination_table_reference,
+           source,
+           schema=None,
+           create_disposition=None,
+           write_disposition=None,
+           field_delimiter=None,
+           skip_leading_rows=None,
+           encoding=None,
+           quote=None,
+           max_bad_records=None,
+           allow_quoted_newlines=None,
+           source_format=None,
+           allow_jagged_rows=None,
+           ignore_unknown_values=None,
+           projection_fields=None,
            autodetect=None,
+           schema_update_options=None,
            **kwds):
     """Load the given data into BigQuery.
 
@@ -2445,6 +2475,8 @@ class BigqueryClient(object):
           Datastore backup.
       autodetect: Optional. If true, then we automatically infer the schema
           and options of the source files if they are CSV or JSON formats.
+      schema_update_options: schema update options when appending to the
+          destination table or truncating a table partition.
       **kwds: Passed on to self.ExecuteJob.
 
     Returns:
@@ -2461,15 +2493,20 @@ class BigqueryClient(object):
     if schema is not None:
       load_config['schema'] = {'fields': BigqueryClient.ReadSchema(schema)}
     _ApplyParameters(
-        load_config, create_disposition=create_disposition,
-        write_disposition=write_disposition, field_delimiter=field_delimiter,
-        skip_leading_rows=skip_leading_rows, encoding=encoding,
-        quote=quote, max_bad_records=max_bad_records,
+        load_config,
+        create_disposition=create_disposition,
+        write_disposition=write_disposition,
+        field_delimiter=field_delimiter,
+        skip_leading_rows=skip_leading_rows,
+        encoding=encoding,
+        quote=quote,
+        max_bad_records=max_bad_records,
         source_format=source_format,
         allow_quoted_newlines=allow_quoted_newlines,
         allow_jagged_rows=allow_jagged_rows,
         ignore_unknown_values=ignore_unknown_values,
         projection_fields=projection_fields,
+        schema_update_options=schema_update_options,
         autodetect=autodetect)
     return self.ExecuteJob(configuration={'load': load_config},
                            upload_file=upload_file, **kwds)
@@ -2640,6 +2677,7 @@ class _TableTableReader(_TableReader):
     self.max_rows_per_request = max_rows_per_request
     self._apiclient = local_apiclient
 
+
   def _GetPrintContext(self):
     return '%r' % (self.table_ref,)
 
@@ -2650,7 +2688,8 @@ class _TableTableReader(_TableReader):
       kwds['pageToken'] = page_token
     else:
       kwds['startIndex'] = start_row
-    data = self._apiclient.tabledata().list(**kwds).execute()
+    if data is None:
+      data = self._apiclient.tabledata().list(**kwds).execute()
     page_token = data.get('pageToken', None)
     rows = data.get('rows', [])
 

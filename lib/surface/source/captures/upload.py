@@ -19,12 +19,13 @@ TODO(user) make capture a group with "create", "list", etc.
 
 import json
 import os
+
 from googlecloudsdk.api_lib.source import capture
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
-class Upload(base.Command):
+class Upload(base.SilentCommand):
   """Upload a source capture from given input files."""
 
   detailed_help = {
@@ -91,17 +92,12 @@ class Upload(base.Command):
       json_filename = 'source-contexts.json'
     with open(json_filename, 'w') as source_context_file:
       json.dump(result['source_contexts'], source_context_file)
-    log.Print('Created context file {0}\n'.format(json_filename))
+    result = dict(result)
+    result['context_file'] = json_filename
+    log.status.write('Created context file {0}.\n'.format(
+        json_filename))
+    log.status.write('Created source capture {0}.\n'.format(
+        unicode(result['capture']).split('/')[-1]))
+    log.status.write('Wrote {0} files, {1} bytes.\n'.format(
+        result['files_written'], result['size_written']))
     return result
-
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    log.Print(
-        ('Created source capture {capture.id}.\n'
-         'Wrote {files_written} files, {size_written} bytes.\n').
-        format(**result))

@@ -86,7 +86,6 @@ class Import(base.Command):
   def Format(self, args):
     return self.ListFormat(args)
 
-  @util.HandleHttpError
   def Run(self, args):
     if not os.path.exists(args.records_file):
       raise exceptions.ToolException(

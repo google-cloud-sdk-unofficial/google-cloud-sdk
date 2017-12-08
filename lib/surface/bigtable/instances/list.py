@@ -26,7 +26,6 @@ class ListInstances(base.ListCommand):
     """Register flags for this command."""
     pass
 
-  @util.MapHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

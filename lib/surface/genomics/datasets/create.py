@@ -20,7 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
-class Create(base.Command):
+class Create(base.CreateCommand):
   """Creates a dataset with a specified name.
 
   A dataset is a collection of genomics objects such as reads and variants.
@@ -54,13 +54,7 @@ class Create(base.Command):
         projectId=genomics_util.GetProjectId(),
     )
 
-    return apitools_client.datasets.Create(dataset)
-
-  def Display(self, args_unused, dataset):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args_unused: The arguments that command was run with.
-      dataset: The value returned from the Run() method.
-    """
-    log.Print('Created dataset {0}, id: {1}'.format(dataset.name, dataset.id))
+    result = apitools_client.datasets.Create(dataset)
+    log.CreatedResource('{0}, id: {1}'.format(result.name, result.id),
+                        kind='dataset')
+    return result

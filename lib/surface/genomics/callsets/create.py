@@ -20,7 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
-class Create(base.Command):
+class Create(base.CreateCommand):
   """Creates a call set with a specified name.
 
   A call set is a collection of variant calls, typically for one sample.
@@ -64,16 +64,7 @@ class Create(base.Command):
         variantSetIds=[args.variant_set_id],
     )
 
-    return apitools_client.callsets.Create(call_set)
-
-  def Display(self, args_unused, call_set):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args_unused: The arguments that command was run with.
-      call_set: The value returned from the Run() method.
-    """
-    log.Print('Created call set {0}, id: {1}'.format(
-        call_set.name, call_set.id))
-    log.CreatedResource('{0} ({1})'.format(call_set.id,
-                                           call_set.name))
+    result = apitools_client.callsets.Create(call_set)
+    log.CreatedResource('{0}, id: {1}'.format(result.name, result.id),
+                        kind='call set')
+    return result

@@ -20,7 +20,7 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteCluster(base.Command):
+class DeleteCluster(base.DeleteCommand):
   """Delete a Bigtable cluster (along with all its data)."""
 
   @staticmethod
@@ -28,7 +28,6 @@ class DeleteCluster(base.Command):
     """Register flags for this command."""
     util.AddClusterIdArgs(parser)
 
-  @util.MapHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -43,17 +42,7 @@ class DeleteCluster(base.Command):
     msg = (self.context['clusteradmin-msgs'].
            BigtableclusteradminProjectsZonesClustersDeleteRequest(
                name=util.ClusterUrl(args)))
-    return cli.projects_zones_clusters.Delete(msg)
-
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    # Always use this log module for printing (never use print directly).
-    # This allows us to control the verbosity of commands in a global way.
-    writer = log.out
-    writer.Print('Cluster [{0}] in zone [{1}] marked for deletion.'.format(
-        args.cluster, args.zone))
+    result = cli.projects_zones_clusters.Delete(msg)
+    log.DeletedResource(args.cluster, kind='cluster',
+                        details='in zone [{0}]'.format(args.zone))
+    return result

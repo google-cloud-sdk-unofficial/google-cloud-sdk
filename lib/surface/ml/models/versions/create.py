@@ -76,7 +76,7 @@ class BetaCreate(base.CreateCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    flags.GetModelName(positional=False).AddToParser(parser)
+    flags.GetModelName(positional=False, required=True).AddToParser(parser)
     flags.VERSION_NAME.AddToParser(parser)
     flags.VERSION_DATA.AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
@@ -94,12 +94,15 @@ class BetaCreate(base.CreateCommand):
     op = versions.Create(args.model, args.version, args.origin)
     if args.async:
       return op
+    client = apis.GetClientInstance('ml', 'v1beta1')
+    registry = resources.REGISTRY.Clone()
+    registry.RegisterApiByName('ml', 'v1beta1')
+
     with console_io.ProgressTracker(
         'Creating version (this might take a few minutes)...'):
-      client = apis.GetClientInstance('ml', 'v1beta1')
       operations.WaitForOperation(
           client.projects_operations,
           op,
           # TODO(b/31062835): remove CloneAndSwitchAPI
-          registry=resources.REGISTRY.CloneAndSwitchAPIs(client))
+          registry=registry)
     return op.response

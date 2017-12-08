@@ -51,18 +51,16 @@ class List(base.ListCommand):
   def Collection(self):
     return 'dns.changes'
 
-  @util.HandleHttpError
   def Run(self, args):
     dns_client = self.context['dns_client']
     dns_messages = self.context['dns_messages']
 
     project_id = properties.VALUES.core.project.Get(required=True)
 
-    for resource in list_pager.YieldFromList(
+    return list_pager.YieldFromList(
         dns_client.changes,
         dns_messages.DnsChangesListRequest(
             project=project_id,
             managedZone=args.zone,
             sortOrder=args.sort_order),
-        limit=args.limit, field='changes'):
-      yield resource
+        limit=args.limit, field='changes')

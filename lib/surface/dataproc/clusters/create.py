@@ -259,7 +259,6 @@ class Create(base.CreateCommand):
                'Use equivalent --worker-boot-disk-size=%sGB flag.',
                args.worker_boot_disk_size_gb)
 
-  @util.HandleHttpError
   def Run(self, args):
     self.ValidateArgs(args)
 
@@ -344,8 +343,10 @@ class Create(base.CreateCommand):
         softwareConfig=software_config,
     )
 
-    # Secondary worker group is optional.
-    if args.num_preemptible_workers is not None:
+    # Secondary worker group is optional. However, users may specify
+    # future pVM disk size at creation time.
+    if (args.num_preemptible_workers is not None or
+        preemptible_worker_boot_disk_size_gb is not None):
       cluster_config.secondaryWorkerConfig = (
           messages.InstanceGroupConfig(
               numInstances=args.num_preemptible_workers,

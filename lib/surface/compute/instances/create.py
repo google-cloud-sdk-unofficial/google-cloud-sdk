@@ -51,13 +51,15 @@ DETAILED_HELP = {
 }
 
 
-def _CommonArgs(parser):
+def _CommonArgs(parser, multiple_network_interface_cards):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser)
   instances_flags.AddLocalSsdArgs(parser)
   instances_flags.AddCanIpForwardArgs(parser)
-  instances_flags.AddAddressArgs(parser, instances=True)
+  instances_flags.AddAddressArgs(
+      parser, instances=True,
+      multiple_network_interface_cards=multiple_network_interface_cards)
   instances_flags.AddMachineTypeArgs(parser)
   instances_flags.AddMaintenancePolicyArgs(parser)
   instances_flags.AddNoRestartOnFailureArgs(parser)
@@ -78,14 +80,15 @@ def _CommonArgs(parser):
   csek_utils.AddCsekKeyArgs(parser)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base_classes.BaseAsyncCreator,
              image_utils.ImageExpander,
              zone_utils.ZoneResourceFetcher):
   """Create Google Compute Engine virtual machine instances."""
 
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser)
+  @classmethod
+  def Args(cls, parser):
+    _CommonArgs(parser, multiple_network_interface_cards=False)
 
   @property
   def service(self):
@@ -102,6 +105,7 @@ class Create(base_classes.BaseAsyncCreator,
   def CreateRequests(self, args):
     instances_flags.ValidateDiskFlags(args)
     instances_flags.ValidateLocalSsdFlags(args)
+    instances_flags.ValidateAddressFlags(args)
 
     # This feature is only exposed in alpha/beta
     allow_rsa_encrypted = self.ReleaseTrack() in [base.ReleaseTrack.ALPHA,
@@ -142,15 +146,24 @@ class Create(base_classes.BaseAsyncCreator,
     # Check if the zone is deprecated or has maintenance coming.
     self.WarnForZonalCreation(instance_refs)
 
-    network_interface = instance_utils.CreateNetworkInterfaceMessage(
-        scope_prompter=self,
-        compute_client=self.compute_client,
-        network=args.network,
-        subnet=args.subnet,
-        private_network_ip=args.private_network_ip,
-        no_address=args.no_address,
-        address=args.address,
-        instance_refs=instance_refs)
+    if hasattr(args, 'network_interface') and args.network_interface:
+      network_interfaces = instance_utils.CreateNetworkInterfaceMessages(
+          scope_prompter=self,
+          compute_client=self.compute_client,
+          network_interface_arg=args.network_interface,
+          instance_refs=instance_refs)
+    else:
+      network_interfaces = [
+          instance_utils.CreateNetworkInterfaceMessage(
+              scope_prompter=self,
+              compute_client=self.compute_client,
+              network=args.network,
+              subnet=args.subnet,
+              private_network_ip=args.private_network_ip,
+              no_address=args.no_address,
+              address=args.address,
+              instance_refs=instance_refs)
+      ]
 
     machine_type_uris = instance_utils.CreateMachineTypeUris(
         scope_prompter=self,
@@ -214,7 +227,7 @@ class Create(base_classes.BaseAsyncCreator,
               machineType=machine_type_uri,
               metadata=metadata,
               name=instance_ref.Name(),
-              networkInterfaces=[network_interface],
+              networkInterfaces=network_interfaces,
               serviceAccounts=service_accounts,
               scheduling=scheduling,
               tags=tags,
@@ -223,6 +236,20 @@ class Create(base_classes.BaseAsyncCreator,
           zone=instance_ref.zone))
 
     return requests
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create Google Compute Engine virtual machine instances."""
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create Google Compute Engine virtual machine instances."""
+
+  @classmethod
+  def Args(cls, parser):
+    _CommonArgs(parser, multiple_network_interface_cards=True)
 
 
 Create.detailed_help = DETAILED_HELP

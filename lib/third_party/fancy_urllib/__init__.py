@@ -207,19 +207,8 @@ def create_fancy_connection(tunnel_host=None, key_file=None,
         # SNI(Server Name Indication) is required by many websites when talking
         # HTTPS, SSLContext is introduced in python 2.7.9, its wrap_socket()
         # supports SNI while ssl.wrap_socket does not.
-        try:
-          # PROTOCOL_SSLv23 is currently recommended for max interoperability.
+        if sys.version_info[2] >= 9:
           context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-        except AttributeError:
-          context = None
-          if sys.version_info[2] < 9:
-            logging.warning("Unable to create SSLContext because your python27 "
-                          "version is below 2.7.9, using ssl.wrap_socket.")
-          else:
-            logging.warning("Unable to create SSLContext, using "
-                            "ssl.wrap_socket.")
-
-        if context:
           context.verify_mode = self.cert_reqs
           if self.ca_certs:
             try:
@@ -232,11 +221,21 @@ def create_fancy_connection(tunnel_host=None, key_file=None,
           # even if OpenSSL does not have SNI.
           self.sock = context.wrap_socket(self.sock, server_hostname=self.host)
         else:
-          self.sock = ssl.wrap_socket(self.sock,
-                                      keyfile=self.key_file,
-                                      certfile=self.cert_file,
-                                      ca_certs=self.ca_certs,
-                                      cert_reqs=self.cert_reqs)
+          logging.debug("Unable to create SSLContext because your python27 "
+                        "version is below 2.7.9, using ssl.wrap_socket.")
+          try:
+            self.sock = ssl.wrap_socket(self.sock,
+                                        keyfile=self.key_file,
+                                        certfile=self.cert_file,
+                                        ca_certs=self.ca_certs,
+                                        cert_reqs=self.cert_reqs)
+          except SSLError, e:
+            # Example scenario(b/30594951): running on python2.7.6,
+            # fetching https://readme.io
+            logging.error("ssl.wrap_socket faled with %s\ncurrent python "
+                          "version is:\n %s\ntry upgrading your python.",
+                          str(e), sys.version)
+            raise SSLError(e)
 
         if self.cert_reqs & ssl.CERT_REQUIRED:
           cert = self.sock.getpeercert()

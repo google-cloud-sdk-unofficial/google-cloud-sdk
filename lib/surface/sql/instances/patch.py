@@ -308,6 +308,36 @@ class PatchBeta(_BasePatch, base.Command):
         'However, if an instance runs out of available space, it can result in '
         'the instance going offline, dropping existing connections.'
     ).AddToParser(parser)
+    parser.add_argument(
+        '--storage-size',
+        type=arg_parsers.BinarySize(lower_bound='10GB', upper_bound='10230GB',
+                                    suggested_binary_size_scales=['GB']),
+        help='Amount of storage allocated to the instance. Must be an integer '
+             'number of GB between 10GB and 10230GB inclusive.')
+    parser.add_argument(
+        '--maintenance-release-channel',
+        choices={'production': 'Production updates are stable and recommended '
+                               'for applications in production.',
+                 'preview': 'Preview updates release prior to production '
+                            'updates. You may wish to use the preview channel '
+                            'for dev/test applications so that you can preview '
+                            'their compatibility with your application prior '
+                            'to the production release.'},
+        type=str.lower,
+        help="Which channel's updates to apply during the maintenance window.")
+    parser.add_argument(
+        '--maintenance-window-day',
+        choices=arg_parsers.DayOfWeek.DAYS,
+        type=arg_parsers.DayOfWeek.Parse,
+        help='Day of week for maintenance window, in UTC time zone.')
+    parser.add_argument(
+        '--maintenance-window-hour',
+        type=arg_parsers.BoundedInt(lower_bound=0, upper_bound=23),
+        help='Hour of day for maintenance window, in UTC time zone.')
+    parser.add_argument(
+        '--maintenance-window-any',
+        action='store_true',
+        help='Removes the user-specified maintenance window.')
 
   def Run(self, args):
     """Updates settings of a Cloud SQL instance using the patch api method.
@@ -342,6 +372,9 @@ class PatchBeta(_BasePatch, base.Command):
     patch_instance.name = instance_ref.instance
 
     cleared_fields = self._GetConfirmedClearedFields(args, patch_instance)
+    # beta only
+    if args.maintenance_window_any:
+      cleared_fields.append('settings.maintenanceWindow')
 
     with sql_client.IncludeFields(cleared_fields):
       result_operation = sql_client.instances.Patch(
