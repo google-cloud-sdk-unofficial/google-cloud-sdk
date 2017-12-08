@@ -15,7 +15,6 @@
 """Implementation of gcloud genomics variants delete.
 """
 
-from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
@@ -43,8 +42,8 @@ class Delete(base.Command):
       The ID of the variant that was deleted.
     """
     vid = args.id
-    apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
-    genomics_messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
+    apitools_client = genomics_util.GetGenomicsClient()
+    genomics_messages = genomics_util.GetGenomicsMessages()
 
     request = genomics_messages.GenomicsVariantsDeleteRequest(
         variantId=vid,

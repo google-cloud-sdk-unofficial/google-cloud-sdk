@@ -44,7 +44,11 @@ class Delete(base.Command):
     client.projects.DeleteEvents(
         cer_api.ClouderrorreportingProjectsDeleteEventsRequest(
             projectName='projects/' + project))
-    log.DeletedResource('projects/' + project + '/events')
+
+    log.status.Print('All error events in the project were deleted.')
+    log.status.Print()
+    log.status.Print('It may take several minutes until '
+                     'the deleted error events stop being visible.')
 
 Delete.detailed_help = {
     'DESCRIPTION': """\

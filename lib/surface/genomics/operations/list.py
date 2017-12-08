@@ -14,7 +14,6 @@
 """Implementation of the gcloud genomics operations list command.
 """
 
-from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.third_party.apitools.base.py import list_pager
@@ -88,8 +87,8 @@ class List(base.Command):
     """
     genomics_util.ValidateLimitFlag(args.limit)
 
-    apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
-    genomics_messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
+    apitools_client = genomics_util.GetGenomicsClient()
+    genomics_messages = genomics_util.GetGenomicsMessages()
 
     if args.where:
       args.where += ' AND '

@@ -15,7 +15,6 @@
 """Implementation of gcloud genomics datasets create.
 """
 
-from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
@@ -30,8 +29,9 @@ class Create(base.Command):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    parser.add_argument(
-        'name', help='The name of the dataset being created.')
+    parser.add_argument('--name',
+                        help='The name of the dataset being created.',
+                        required=True)
 
   @genomics_util.ReraiseHttpException
   def Run(self, args):
@@ -47,8 +47,8 @@ class Create(base.Command):
     Returns:
       None
     """
-    apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
-    genomics_messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
+    apitools_client = genomics_util.GetGenomicsClient()
+    genomics_messages = genomics_util.GetGenomicsMessages()
 
     dataset = genomics_messages.Dataset(
         name=args.name,

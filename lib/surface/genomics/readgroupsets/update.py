@@ -15,7 +15,6 @@
 """Implementation of gcloud genomics readgroupsets update.
 """
 
-from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.api_lib.genomics.exceptions import GenomicsError
 from googlecloudsdk.calliope import base
@@ -50,8 +49,8 @@ class Update(base.Command):
     Returns:
       None
     """
-    apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
-    genomics_messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
+    apitools_client = genomics_util.GetGenomicsClient()
+    genomics_messages = genomics_util.GetGenomicsMessages()
 
     if not (args.name or args.reference_set_id):
       raise GenomicsError('Must specify --name and/or --reference-set-id')

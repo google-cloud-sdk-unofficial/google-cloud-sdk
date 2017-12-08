@@ -18,6 +18,7 @@ import textwrap
 from googlecloudsdk.api_lib.projects import util
 from googlecloudsdk.api_lib.service_management import enable_api
 from googlecloudsdk.api_lib.service_management import services_util
+from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import apis
 from googlecloudsdk.core import log
@@ -51,7 +52,10 @@ class Create(util.ProjectCommand, base.CreateCommand):
                         default=True,
                         help='Enable cloudapis.googleapis.com during creation.')
 
-  @util.HandleHttpError
+  # util.HandleKnownHttpErrors needs to be the first one to handle errors.
+  # It needs to be placed after http_error_handler.HandleHttpErrors.
+  @http_error_handler.HandleHttpErrors
+  @util.HandleKnownHttpErrors
   def Run(self, args):
     projects = util.GetClient()
     messages = util.GetMessages()
@@ -67,9 +71,7 @@ class Create(util.ProjectCommand, base.CreateCommand):
     if args.enable_cloud_apis:
       # Enable cloudapis.googleapis.com
       services_client = apis.GetClientInstance('servicemanagement', 'v1')
-      services_messages = apis.GetMessagesModule('servicemanagement', 'v1')
       enable_operation = enable_api.EnableServiceApiCall(
-          services_client, services_messages,
           project_ref.Name(), 'cloudapis.googleapis.com')
       services_util.WaitForOperation(enable_operation.name, services_client)
       # TODO(user): Retry in case it failed?

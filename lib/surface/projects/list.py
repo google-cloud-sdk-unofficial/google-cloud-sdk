@@ -16,6 +16,7 @@
 import textwrap
 from googlecloudsdk.api_lib.projects import projects_api
 from googlecloudsdk.api_lib.projects import util
+from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 
 
@@ -40,7 +41,10 @@ class List(util.ProjectCommand, base.ListCommand):
       """),
   }
 
-  @util.HandleHttpError
+  # util.HandleKnownHttpErrors needs to be the first one to handle errors.
+  # It needs to be placed after http_error_handler.HandleHttpErrors.
+  @http_error_handler.HandleHttpErrors
+  @util.HandleKnownHttpErrors
   def Run(self, args):
     """Run the list command."""
 

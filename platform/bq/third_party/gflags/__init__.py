@@ -30,7 +30,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # ---
-# Author: Chad Lester
 # Design and style contributions by:
 #   Amit Patel, Bogdan Cocosel, Daniel Dulitz, Eric Tiedemann,
 #   Eric Veach, Laurence Gonsalves, Matthew Springer

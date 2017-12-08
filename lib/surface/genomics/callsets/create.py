@@ -15,7 +15,6 @@
 """Implementation of gcloud genomics callsets create.
 """
 
-from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
@@ -36,8 +35,9 @@ class Create(base.Command):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    parser.add_argument(
-        'name', help='The name of the call set being created.')
+    parser.add_argument('--name',
+                        help='The name of the call set being created.',
+                        required=True)
     parser.add_argument(
         '--variant-set-id',
         required=True,
@@ -58,8 +58,8 @@ class Create(base.Command):
     Returns:
       None
     """
-    apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
-    genomics_messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
+    apitools_client = genomics_util.GetGenomicsClient()
+    genomics_messages = genomics_util.GetGenomicsMessages()
     call_set = genomics_messages.CallSet(
         name=args.name,
         variantSetIds=[args.variant_set_id],

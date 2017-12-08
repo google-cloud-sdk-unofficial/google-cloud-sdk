@@ -15,7 +15,6 @@
 """Implementation of gcloud genomics callsets delete.
 """
 
-from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.api_lib.genomics.exceptions import GenomicsError
 from googlecloudsdk.calliope import base
@@ -48,14 +47,14 @@ class Delete(base.Command):
       None
     """
     # Look it up first so that we can display the name
-    existing_cs = genomics_util.GetCallSet(self.context, args.id)
+    existing_cs = genomics_util.GetCallSet(args.id)
     prompt_message = (
         'Deleting call set {0} ({1}) will delete all objects in the '
         'call set.').format(existing_cs.id, existing_cs.name)
     if not console_io.PromptContinue(message=prompt_message):
       raise GenomicsError('Deletion aborted by user.')
-    apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
-    genomics_messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
+    apitools_client = genomics_util.GetGenomicsClient()
+    genomics_messages = genomics_util.GetGenomicsMessages()
     call_set = genomics_messages.GenomicsCallsetsDeleteRequest(
         callSetId=args.id,
     )

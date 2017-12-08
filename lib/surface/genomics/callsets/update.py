@@ -15,7 +15,6 @@
 """Implementation of gcloud genomics callsets update.
 """
 
-from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
@@ -48,8 +47,8 @@ class Update(base.Command):
     Returns:
       None
     """
-    apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
-    genomics_messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
+    apitools_client = genomics_util.GetGenomicsClient()
+    genomics_messages = genomics_util.GetGenomicsMessages()
 
     request = genomics_messages.GenomicsCallsetsPatchRequest(
         callSet=genomics_messages.CallSet(

@@ -13,9 +13,10 @@
 # limitations under the License.
 """Implementation of gcloud genomics datasets describe.
 """
-from googlecloudsdk.api_lib import genomics as lib
+
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import resources
 
 
 class Describe(base.Command):
@@ -40,9 +41,7 @@ class Describe(base.Command):
     Returns:
       a Dataset message
     """
-    apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
-    resources = self.context[lib.GENOMICS_RESOURCES_KEY]
-
+    apitools_client = genomics_util.GetGenomicsClient()
     dataset_resource = resources.Parse(args.id, collection='genomics.datasets')
     return apitools_client.datasets.Get(dataset_resource.Request())
 

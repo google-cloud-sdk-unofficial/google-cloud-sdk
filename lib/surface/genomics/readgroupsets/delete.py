@@ -14,7 +14,6 @@
 
 """Implementation of gcloud genomics readgroupsets delete."""
 
-from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.api_lib.genomics.exceptions import GenomicsError
 from googlecloudsdk.calliope import base
@@ -47,8 +46,8 @@ class Delete(base.Command):
     Returns:
       None
     """
-    apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
-    genomics_messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
+    apitools_client = genomics_util.GetGenomicsClient()
+    genomics_messages = genomics_util.GetGenomicsMessages()
 
     # Look it up first so that we can display the name
     existing_rgs = apitools_client.readgroupsets.Get(

@@ -15,6 +15,7 @@
 """The command to perform any necessary post installation steps."""
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.static_completion import table
 from googlecloudsdk.core import remote_completion
 from googlecloudsdk.core.updater import local_state
 
@@ -35,4 +36,5 @@ class PostProcess(base.SilentCommand):
     # Re-set remote completion cache.
     remote_completion.RemoteCompletion.ResetCache()
 
-
+    # Re-generate static completion table.
+    table.Update(self.cli)

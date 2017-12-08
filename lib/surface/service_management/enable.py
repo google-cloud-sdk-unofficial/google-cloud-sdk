@@ -53,7 +53,6 @@ class Enable(base.Command, base_classes.BaseServiceManagementCommand):
     """
 
     operation = enable_api.EnableServiceApiCall(
-        self.services_client, self.services_messages,
         args.consumer_project, args.service)
 
     return services_util.ProcessOperationResult(operation, args.async)

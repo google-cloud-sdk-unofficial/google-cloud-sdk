@@ -14,10 +14,10 @@
 
 """Command for deleting backend services."""
 
-from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.api_lib.compute.backend_services import client
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute.backend_services import flags
+from googlecloudsdk.command_lib.compute import flags as compute_flags
 
 
 class Delete(base.Command):
@@ -26,37 +26,31 @@ class Delete(base.Command):
     *{command}* deletes one or more backend services.
   """
 
+  _BACKEND_SERVICE_ARG = compute_flags.ResourceArgument(
+      resource_name='backend service',
+      completion_resource_id='compute.backendServices',
+      plural=True,
+      global_collection='compute.backendServices')
+
   @staticmethod
   def Args(parser):
-    flags.AddBackendServiceName(parser, is_plural=True)
+    Delete._BACKEND_SERVICE_ARG.AddArgument(parser)
 
   def Run(self, args):
-    refs = [
-        self.context['resources'].Parse(backend_service_name,
-                                        collection='compute.backendServices')
-        for backend_service_name in args.names]
+    refs = Delete._BACKEND_SERVICE_ARG.ResolveAsResource(
+        args, self.context['resources'], default_scope='global')
     utils.PromptForDeletion(refs)
 
-    client = self.context['compute']
-    messages = client.MESSAGES_MODULE
+    compute_client = self.context['client']
 
     requests = []
     for ref in refs:
-      request = (
-          client.backendServices,
-          'Delete',
-          messages.ComputeBackendServicesDeleteRequest(
-              backendService=ref.Name(),
-              project=ref.project))
-      requests.append(request)
+      backend_service = client.BackendService(
+          ref, compute_client=compute_client)
+      requests.extend(backend_service.Delete(only_generate_request=True))
 
     errors = []
-    resources = list(request_helper.MakeRequests(
-        requests=requests,
-        http=client.http,
-        batch_url=self.context['batch-url'],
-        errors=errors,
-        custom_get_requests=None))
+    resources = compute_client.MakeRequests(requests, errors)
 
     if errors:
       utils.RaiseToolException(errors)

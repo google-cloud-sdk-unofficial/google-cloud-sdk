@@ -11,7 +11,7 @@ gcloud compute images create \- create Google Compute Engine images
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute images create\fR \fINAME\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-family\fR\ \fIFAMILY\fR] [\fB\-\-source\-disk\-zone\fR\ \fISOURCE_DISK_ZONE\fR] [\fB\-\-source\-disk\fR\ \fISOURCE_DISK\fR\ |\ \fB\-\-source\-uri\fR\ \fISOURCE_URI\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute images create\fR \fINAME\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-family\fR\ \fIFAMILY\fR] [\fB\-\-licenses\fR\ [\fILICENSES\fR,...]] [\fB\-\-source\-disk\-zone\fR\ \fISOURCE_DISK_ZONE\fR] [\fB\-\-source\-disk\fR\ \fISOURCE_DISK\fR\ |\ \fB\-\-source\-uri\fR\ \fISOURCE_URI\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -51,6 +51,11 @@ An optional, textual description for the image being created.
 .RS 2m
 The family of the image. When creating an instance or disk, specifying a family
 will cause the latest non\-deprecated image in the family to be used.
+
+.RE
+\fB\-\-licenses\fR [\fILICENSES\fR,...]
+.RS 2m
+Comma\-separated list of URIs to license resources.
 
 .RE
 \fB\-\-source\-disk\fR \fISOURCE_DISK\fR

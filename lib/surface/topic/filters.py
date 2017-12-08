@@ -119,16 +119,17 @@ class Filters(base.Command):
           _key_ *:* _simple-pattern_:::
 
           True if _key_ matches _simple-pattern_. The match is anchored (all
-          characters must match), case insensitive, and allows one *\\**
+          characters must match), case insensitive, and allows one ```*```
           operator that matches any sequence of 0 or more characters. The
-          pattern `abc` matches `abc`, the pattern `abc\\*` matches `abc` and
-          `abcxyz`, the pattern `\\*xyz` matches `xyz` and `abcxyz`, and the
-          pattern `\\*` matches any non-empty string.
+          pattern ```abc``` matches ```abc```, the pattern ```abc*``` matches
+          ```abc``` and ```abcxyz```, the pattern ```*xyz``` matches ```xyz```
+          and ```abcxyz```, and the pattern ```*``` matches any non-empty
+          string.
 
           _key_ *:(* _simple-pattern_ ... *)*:::
 
-          True if _key_ any _simple-pattern_ in the (space, tab, newline, *,*)
-          separated list.
+          True if _key_ matches any _simple-pattern_ in the
+          (space, tab, newline, comma) separated list.
 
           _key_ *~* _value_:::
 

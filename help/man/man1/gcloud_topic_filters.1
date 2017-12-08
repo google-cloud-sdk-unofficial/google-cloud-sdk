@@ -143,31 +143,30 @@ comparison is used.
 \fIkey\fR \fB:\fR \fIsimple\-pattern\fR
 .RS 2m
 True if \fIkey\fR matches \fIsimple\-pattern\fR. The match is anchored (all
-characters must match), case insensitive, and allows one \fB\e** operator that
+characters must match), case insensitive, and allows one \f5*\fR operator that
 matches any sequence of 0 or more characters. The pattern \f5abc\fR matches
-\f5abc\fR, the pattern \f5abc\e\fR\fR matches \f5abc\fR and \f5abcxyz\fR, the
-pattern \f5\e*xyz\fR matches \f5xyz\fR and \f5abcxyz\fR, and the pattern
-\f5\e\fB\fR matches any non\-empty string.
+\f5abc\fR, the pattern \f5abc*\fR matches \f5abc\fR and \f5abcxyz\fR, the
+pattern \f5*xyz\fR matches \f5xyz\fR and \f5abcxyz\fR, and the pattern \f5*\fR
+matches any non\-empty string.
 
 .RE
-\fIkey\fR \fR:(\fB \fIsimple\-pattern\fR ... \fR)\fB
+\fIkey\fR \fB:(\fR \fIsimple\-pattern\fR ... \fB)\fR
 .RS 2m
-True if \fIkey\fR any \fIsimple\-pattern\fR in the (space, tab, newline,
-\fR,\fB) separated list.
+True if \fIkey\fR matches any \fIsimple\-pattern\fR in the (space, tab, newline,
+comma) separated list.
 
 .RE
-\fIkey\fR \fR~\fB \fIvalue\fR
+\fIkey\fR \fB~\fR \fIvalue\fR
 .RS 2m
 True if \fIkey\fR matches the RE (regular expression) pattern \fIvalue\fR.
 
 .RE
-\fIkey\fR \fR!\fB~ \fIvalue\fR
+\fIkey\fR \fB!\fR~ \fIvalue\fR
 .RS 2m
 True if \fIkey\fR does not match the RE (regular expression) pattern
 \fIvalue\fR.
 
 
-\fR
 .RE
 .RE
 

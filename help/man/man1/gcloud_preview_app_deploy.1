@@ -11,7 +11,7 @@ gcloud preview app deploy \- \fB(BETA)\fR deploy the local code and/or configura
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud preview app deploy\fR [\fIDEPLOYABLES\fR\ ...] [\fB\-\-bucket\fR\ \fIBUCKET\fR] [\fB\-\-docker\-build\fR\ \fIDOCKER_BUILD\fR] [\fB\-\-force\fR] [\fB\-\-image\-url\fR\ \fIIMAGE_URL\fR] [\fB\-\-promote\fR] [\fB\-\-stop\-previous\-version\fR] [\fB\-\-version\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud preview app deploy\fR [\fIDEPLOYABLES\fR\ ...] [\fB\-\-bucket\fR\ \fIBUCKET\fR] [\fB\-\-force\fR] [\fB\-\-image\-url\fR\ \fIIMAGE_URL\fR] [\fB\-\-promote\fR] [\fB\-\-stop\-previous\-version\fR] [\fB\-\-version\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -20,15 +20,6 @@ gcloud preview app deploy \- \fB(BETA)\fR deploy the local code and/or configura
 App Engine server. As an input it takes one or more \f5\fIDEPLOYABLES\fR\fR that
 should be uploaded. A \f5\fIDEPLOYABLE\fR\fR can be a service's .yaml file or a
 configuration's .yaml file.
-
-To use a temporary VM (with the default \f5\-\-docker\-build=remote\fR setting),
-rather than the Container Builder API to perform docker builds, run:
-
-.RS 2m
-$ gcloud config set app/use_cloud_build false
-.RE
-
-See https://cloud.google.com/container\-builder/docs/ for more information.
 
 
 
@@ -51,13 +42,6 @@ app.yaml) in the current directory.
 The Google Cloud Storage bucket used to stage files associated with the
 deployment. If this argument is not specified, the application's default code
 bucket is used.
-
-.RE
-\fB\-\-docker\-build\fR \fIDOCKER_BUILD\fR
-.RS 2m
-Perform a hosted ('remote') or local ('local') Docker build. To perform a local
-build, you must have your local docker environment configured correctly. The
-default is a hosted build.
 
 .RE
 \fB\-\-force\fR
@@ -90,8 +74,9 @@ invocation. Use \fB\-\-no\-promote\fR to disable.
 \fB\-\-stop\-previous\-version\fR
 .RS 2m
 Stop the previously running version when deploying a new version that receives
-all traffic (off by default). Use \fB\-\-no\-stop\-previous\-version\fR to
-disable.
+all traffic (off by default). Overrides the default \fBstop_previous_version\fR
+property value for this command invocation. Use
+\fB\-\-no\-stop\-previous\-version\fR to disable.
 
 .RE
 \fB\-\-version\fR \fIVERSION\fR

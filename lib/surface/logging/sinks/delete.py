@@ -93,10 +93,10 @@ class Delete(base.Command):
     except apitools_exceptions.HttpError as error:
       project_sink = not args.log and not args.service
       # Suggest the user to add --log or --log-service flag.
-      if project_sink and error.status_code == 404:
-        log.Print(('Project sink was not found. '
-                   'Did you forget to add --log or --log-service flag?'))
-      raise exceptions.HttpException(util.GetError(error))
+      if project_sink and error.response.status == 404:
+        log.status.Print(('Project sink was not found. '
+                          'Did you forget to add --log or --log-service flag?'))
+      raise error
 
 
 Delete.detailed_help = {

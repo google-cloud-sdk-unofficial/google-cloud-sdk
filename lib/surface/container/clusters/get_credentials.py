@@ -58,7 +58,10 @@ class GetCredentials(base.Command):
     log.status.Print('Fetching cluster endpoint and auth data.')
     # Call DescribeCluster to get auth info and cache for next time
     cluster = adapter.GetCluster(cluster_ref)
-    if not cluster.masterAuth:
+    auth = cluster.masterAuth
+    has_creds = (auth and ((auth.clientCertificate and auth.clientKey) or
+                           (auth.username and auth.password)))
+    if not has_creds and not util.ClusterConfig.UseGCPAuthProvider(cluster):
       raise util.Error(
           'get-credentials requires edit permission on {0}'.format(
               cluster_ref.projectId))

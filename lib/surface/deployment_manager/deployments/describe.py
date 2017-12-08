@@ -60,8 +60,14 @@ class Describe(base.DescribeCommand):
 
   def Format(self, unused_args):
     """No need to list the id fields by default."""
-    return ('default(deployment.name, resources[].name, resources[].type, '
-            'resources[].update)')
+    return ('default(deployment.name, deployment.id, deployment.fingerprint, '
+            'deployment.insertTime, deployment.manifest.basename(), '
+            'deployment.operation.operationType, deployment.operation.name, '
+            'deployment.operation.progress, deployment.operation.status, '
+            'deployment.operation.user, deployment.operation.endTime, '
+            'deployment.operation.startTime, deployment.operation.error, '
+            'resources[].name, resources[].type, '
+            'resources[].update.state.yesno(no="COMPLETED"))')
 
   def Run(self, args):
     """Run 'deployments describe'.

@@ -14,7 +14,6 @@
 """Implementation of gcloud genomics variantsets export.
 """
 
-from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -73,8 +72,8 @@ class Export(base.Command):
     Returns:
       an ExportVariantSetResponse
     """
-    apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
-    genomics_messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
+    apitools_client = genomics_util.GetGenomicsClient()
+    genomics_messages = genomics_util.GetGenomicsMessages()
     enum = genomics_messages.ExportVariantSetRequest.FormatValueValuesEnum
     call_set_ids = args.call_set_ids if args.call_set_ids else []
     project_id = args.bigquery_project

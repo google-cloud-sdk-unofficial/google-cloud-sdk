@@ -69,13 +69,16 @@ class ActivateServiceAccount(base.Command):
 
     json_key = self.LoadKeyFile(args.key_file)
 
-    cred = service_account.ServiceAccountCredentials(
-        service_account_id=json_key['client_id'],
-        service_account_email=json_key['client_email'],
-        private_key_id=json_key['private_key_id'],
-        private_key_pkcs8_text=json_key['private_key'],
-        scopes=[],
-        user_agent=config.CLOUDSDK_USER_AGENT)
+    try:
+      cred = service_account.ServiceAccountCredentials(
+          service_account_id=json_key['client_id'],
+          service_account_email=json_key['client_email'],
+          private_key_id=json_key['private_key_id'],
+          private_key_pkcs8_text=json_key['private_key'],
+          scopes=[],
+          user_agent=config.CLOUDSDK_USER_AGENT)
+    except KeyError:
+      raise c_exc.ToolException('The .json key file is not in a valid format.')
 
     self.SaveCredentials(cred, args.brief)
 

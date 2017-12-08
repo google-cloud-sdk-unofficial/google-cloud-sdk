@@ -16,6 +16,7 @@
 
 import textwrap
 from googlecloudsdk.api_lib.projects import util
+from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
@@ -46,7 +47,10 @@ class Undelete(util.ProjectCommand, base.CreateCommand):
     parser.add_argument('id', metavar='PROJECT_ID',
                         help='ID for the project you want to undelete.')
 
-  @util.HandleHttpError
+  # util.HandleKnownHttpErrors needs to be the first one to handle errors.
+  # It needs to be placed after http_error_handler.HandleHttpErrors.
+  @http_error_handler.HandleHttpErrors
+  @util.HandleKnownHttpErrors
   def Run(self, args):
     projects = util.GetClient()
     messages = util.GetMessages()

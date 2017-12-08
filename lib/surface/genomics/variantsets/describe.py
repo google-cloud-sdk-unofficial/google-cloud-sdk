@@ -14,7 +14,6 @@
 
 """Implementation of gcloud genomics variantsets describe.
 """
-from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import base
 
@@ -26,9 +25,7 @@ class Describe(base.Command):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    parser.add_argument(
-        'id',
-        type=int, help='The ID of the variant set to describe.')
+    parser.add_argument('id', help='The ID of the variant set to describe.')
 
   @genomics_util.ReraiseHttpException
   def Run(self, args):
@@ -44,12 +41,11 @@ class Describe(base.Command):
     Returns:
       a VariantSet whose id matches args.id.
     """
-    apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
-    genomics_messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
+    apitools_client = genomics_util.GetGenomicsClient()
+    genomics_messages = genomics_util.GetGenomicsMessages()
 
     get_request = genomics_messages.GenomicsVariantsetsGetRequest(
-        variantSetId=str(args.id),
-    )
+        variantSetId=args.id,)
 
     return apitools_client.variantsets.Get(get_request)
 

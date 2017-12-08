@@ -14,7 +14,6 @@
 
 """readgroupsets list command."""
 
-from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.third_party.apitools.base.py import list_pager
@@ -67,10 +66,9 @@ class List(base.ListCommand):
     """
     genomics_util.ValidateLimitFlag(args.limit)
 
-    apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
-    req_class = (self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
-                 .SearchReadGroupSetsRequest)
-    messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
+    apitools_client = genomics_util.GetGenomicsClient()
+    messages = genomics_util.GetGenomicsMessages()
+    req_class = messages.SearchReadGroupSetsRequest
     fields = genomics_util.GetQueryFields(
         self.GetReferencedKeyNames(args), 'readGroupSets')
     if fields:

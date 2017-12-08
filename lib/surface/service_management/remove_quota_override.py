@@ -125,7 +125,7 @@ class RemoveQuota(base.Command, base_classes.BaseServiceManagementCommand):
         quotaSettings=self.services_messages.QuotaSettings(),
     )
 
-    update_mask = 'quota_settings.{0}_overrides[{1}]'.format(
+    update_mask = 'quota_settings.{0}_overrides["{1}"]'.format(
         'consumer' if args.consumer else 'producer', args.quota_limit_key)
 
     request = patch_request(

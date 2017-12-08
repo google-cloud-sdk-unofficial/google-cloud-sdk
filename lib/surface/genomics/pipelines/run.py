@@ -134,6 +134,12 @@ class Run(base.Command):
              https://www.googleapis.com/auth/compute, and
              https://www.googleapis.com/auth/devstorage.full_control''')
 
+    parser.add_argument(
+        '--zones',
+        type=arg_parsers.ArgList(),
+        completion_resource='compute.zones',
+        help='''List of Compute Engine zones the pipeline can run in''')
+
   @genomics_util.ReraiseHttpException
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -149,8 +155,8 @@ class Run(base.Command):
     Returns:
       Operation representing the running pipeline.
     """
-    apitools_client = self.context[lib.GENOMICS_APITOOLS_V1A2_CLIENT_KEY]
-    genomics_messages = self.context[lib.GENOMICS_MESSAGES_V1A2_MODULE_KEY]
+    apitools_client = genomics_util.GetGenomicsClient('v1alpha2')
+    genomics_messages = genomics_util.GetGenomicsMessages('v1alpha2')
 
     pipeline = genomics_util.GetFileAsMessage(
         args.pipeline_file,
@@ -165,6 +171,10 @@ class Run(base.Command):
         args.outputs,
         genomics_messages.RunPipelineArgs.OutputsValue.AdditionalProperty)
 
+    # Set "overrides" on the resources. If the user did not pass anything on
+    # the command line, do not set anything in the resource: preserve the
+    # user-intent "did not set" vs. "set an empty value/list"
+
     resources = genomics_messages.PipelineResources(
         preemptible=args.preemptible)
     if args.memory:
@@ -172,11 +182,13 @@ class Run(base.Command):
     if args.disk_size:
       resources.disks = []
       for disk_encoding in args.disk_size.split(','):
-        disk_args = disk_encoding.split(':')
+        disk_args = disk_encoding.split(':', 1)
         resources.disks.append(genomics_messages.Disk(
             name=disk_args[0],
             sizeGb=int(disk_args[1])
         ))
+    if args.zones:
+      resources.zones = args.zones
 
     request = genomics_messages.RunPipelineRequest(
         ephemeralPipeline=pipeline,

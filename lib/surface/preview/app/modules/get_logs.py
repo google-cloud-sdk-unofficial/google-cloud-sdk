@@ -14,10 +14,10 @@
 
 """The gcloud app get-logs command."""
 from googlecloudsdk.api_lib.app import appengine_client
-from googlecloudsdk.api_lib.app import flags
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.app import flags
 
 
 class GetLogs(base.Command):

@@ -105,6 +105,8 @@ def _OverwriteCurrentLine(s, previous_token=None):
 
 
 
+
+
 def ConfigurePythonLogger(apilog=None):
   """Sets up Python logger, which BigqueryClient logs with.
 
@@ -1505,8 +1507,8 @@ class BigqueryClient(object):
                   view_query=None,
                   external_data_config=None,
                   view_udf_resources=None,
-                  time_partitioning=None
-                 ):
+                  use_legacy_sql=None,
+                  time_partitioning=None):
     """Create a table corresponding to TableReference.
 
     Args:
@@ -1523,6 +1525,8 @@ class BigqueryClient(object):
         an external table. For example, a BigQuery table backed by CSV files
         in GCS.
       view_udf_resources: optional UDF resources used in a view.
+      use_legacy_sql: Whether to use Legacy SQL. If not set, the default
+        behavior is true.
       time_partitioning: if set, enables time based partitioning on the table
         and configures the partitioning.
 
@@ -1548,6 +1552,8 @@ class BigqueryClient(object):
         if view_udf_resources is not None:
           view_args['userDefinedFunctionResources'] = view_udf_resources
         body['view'] = view_args
+        if use_legacy_sql is not None:
+          view_args['useLegacySql'] = use_legacy_sql
       if external_data_config is not None:
         body['externalDataConfiguration'] = external_data_config
       if time_partitioning is not None:
@@ -1568,8 +1574,8 @@ class BigqueryClient(object):
                   view_query=None,
                   external_data_config=None,
                   view_udf_resources=None,
-                  time_partitioning=None
-                 ):
+                  use_legacy_sql=None,
+                  time_partitioning=None):
     """Updates a table.
 
     Args:
@@ -1584,6 +1590,8 @@ class BigqueryClient(object):
         an external table. For example, a BigQuery table backed by CSV files
         in GCS.
       view_udf_resources: optional UDF resources used in a view.
+      use_legacy_sql: Whether to use Legacy SQL. If not set, the default
+        behavior is true.
       time_partitioning: if set, enables time based partitioning on the table
         and configures the partitioning.
 
@@ -1609,6 +1617,8 @@ class BigqueryClient(object):
       if view_udf_resources is not None:
         view_args['userDefinedFunctionResources'] = view_udf_resources
       body['view'] = view_args
+      if use_legacy_sql is not None:
+        view_args['useLegacySql'] = use_legacy_sql
     if external_data_config is not None:
       body['externalDataConfiguration'] = external_data_config
     if time_partitioning is not None:
@@ -1635,17 +1645,30 @@ class BigqueryClient(object):
     _Typecheck(reference, ApiClientHelper.DatasetReference,
                method='UpdateDataset')
 
-    body = BigqueryClient.ConstructObjectInfo(reference)
-    if friendly_name is not None:
-      body['friendlyName'] = friendly_name
-    if description is not None:
-      body['description'] = description
-    if acl is not None:
-      body['access'] = acl
-    if default_table_expiration_ms is not None:
-      body['defaultTableExpirationMs'] = default_table_expiration_ms
+    # Get the existing dataset and associated ETag.
+    dataset = self.apiclient.datasets().get(**dict(reference)).execute()
 
-    self.apiclient.datasets().patch(body=body, **dict(reference)).execute()
+    # Merge in the changes.
+    if friendly_name is not None:
+      dataset['friendlyName'] = friendly_name
+    if description is not None:
+      dataset['description'] = description
+    if acl is not None:
+      dataset['access'] = acl
+    if default_table_expiration_ms is not None:
+      dataset['defaultTableExpirationMs'] = default_table_expiration_ms
+
+    request = self.apiclient.datasets().update(body=dataset, **dict(reference))
+
+    # Perform a conditional update to protect against concurrent
+    # modifications to this dataset.  By placing the ETag returned in
+    # the get operation into the If-Match header, the API server will
+    # make sure the dataset hasn't changed.  If there is a conflicting
+    # change, this update will fail with a "Precondition failed"
+    # error.
+    if dataset['etag'] is not None:
+      request.headers['If-Match'] = dataset['etag']
+    request.execute()
 
   def DeleteDataset(self, reference, ignore_not_found=False,
                     delete_contents=None):

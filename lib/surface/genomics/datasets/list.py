@@ -15,7 +15,6 @@
 """Implementation of gcloud genomics datasets list.
 """
 
-from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import list_printer
@@ -58,10 +57,8 @@ class List(base.Command):
     """
     genomics_util.ValidateLimitFlag(args.limit)
 
-    apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
-    req_class = (self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
-                 .GenomicsDatasetsListRequest)
-    request = req_class(
+    apitools_client = genomics_util.GetGenomicsClient()
+    request = genomics_util.GetGenomicsMessages().GenomicsDatasetsListRequest(
         projectId=genomics_util.GetProjectId())
     return list_pager.YieldFromList(
         apitools_client.datasets,

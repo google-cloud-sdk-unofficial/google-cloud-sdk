@@ -16,7 +16,6 @@
 """
 
 import sys
-from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.api_lib.genomics.exceptions import GenomicsError
 from googlecloudsdk.calliope import arg_parsers
@@ -85,8 +84,8 @@ class Import(base.Command):
     Returns:
       an Operation message which tracks the asynchronous import
     """
-    apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
-    genomics_messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
+    apitools_client = genomics_util.GetGenomicsClient()
+    genomics_messages = genomics_util.GetGenomicsMessages()
 
     if not args.source_uris:
       raise GenomicsError('at least one value is required for --source-uris')

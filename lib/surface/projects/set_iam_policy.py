@@ -15,6 +15,7 @@
 """Command to set IAM policy for a resource."""
 
 from googlecloudsdk.api_lib.projects import util
+from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core.iam import iam_util
 
@@ -48,7 +49,10 @@ class SetIamPolicy(util.ProjectCommand):
                              'IAM policy.')
     parser.add_argument('policy_file', help='JSON file with the IAM policy')
 
-  @util.HandleHttpError
+  # util.HandleKnownHttpErrors needs to be the first one to handle errors.
+  # It needs to be placed after http_error_handler.HandleHttpErrors.
+  @http_error_handler.HandleHttpErrors
+  @util.HandleKnownHttpErrors
   def Run(self, args):
     projects = util.GetClient()
     messages = util.GetMessages()

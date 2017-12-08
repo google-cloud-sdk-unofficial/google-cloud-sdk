@@ -17,6 +17,7 @@
 import argparse
 import sys
 
+from googlecloudsdk.api_lib.compute import client_adapter
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
@@ -29,10 +30,11 @@ DETAILED_HELP = {
 }
 
 
-def _DoFilter(context, api_client_default):
+def _DoFilter(context, api_version):
   """Set up paramter defaults."""
   utils.SetResourceParamDefaults()
-  utils.UpdateContextEndpointEntries(context, api_client_default)
+  compute_client = client_adapter.ClientAdapter(api_version)
+  utils.UpdateContextEndpointEntries(context, compute_client)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -45,7 +47,7 @@ class Compute(base.Group):
     pass
 
   def Filter(self, context, unused_args):
-    _DoFilter(context, 'v1')
+    _DoFilter(context, api_version='v1')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -58,7 +60,7 @@ class ComputeBeta(base.Group):
     pass
 
   def Filter(self, context, unused_args):
-    _DoFilter(context, 'beta')
+    _DoFilter(context, api_version='beta')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -71,4 +73,4 @@ class ComputeAlpha(base.Group):
     pass
 
   def Filter(self, context, unused_args):
-    _DoFilter(context, 'alpha')
+    _DoFilter(context, api_version='alpha')

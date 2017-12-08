@@ -14,14 +14,12 @@
 
 """Command for getting health status of backend(s) in a backend service."""
 
-from googlecloudsdk.api_lib.compute import request_helper
-from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.api_lib.compute.backend_services import client
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute.backend_services import flags
-from googlecloudsdk.core import exceptions
+from googlecloudsdk.command_lib.compute import flags as compute_flags
 
 
-class GetHealth(base.Command):
+class GetHealth(base.ListCommand):
   """Get backend health statuses from a backend service.
 
   *{command}* is used to request the current health status of
@@ -44,92 +42,25 @@ class GetHealth(base.Command):
   so will have no health status.
   """
 
+  _BACKEND_SERVICE_ARG = compute_flags.ResourceArgument(
+      resource_name='backend service',
+      completion_resource_id='compute.backendService',
+      global_collection='compute.backendServices')
+
   @staticmethod
   def Args(parser):
-    flags.AddBackendServiceName(parser)
-
-  def _GetBackendService(self, client, backend_service_ref):
-    """Fetches the backend service resource."""
-    errors = []
-    messages = client.MESSAGES_MODULE
-    objects = list(request_helper.MakeRequests(
-        requests=[(client.backendServices,
-                   'Get',
-                   messages.ComputeBackendServicesGetRequest(
-                       project=backend_service_ref.project,
-                       backendService=backend_service_ref.Name()
-                   ))],
-        http=client.http,
-        batch_url=self.context['batch-url'],
-        errors=errors,
-        custom_get_requests=None))
-    if errors:
-      utils.RaiseToolException(
-          errors,
-          error_message='Could not fetch backend service:')
-    return objects[0]
+    GetHealth._BACKEND_SERVICE_ARG.AddArgument(parser)
 
   def Run(self, args):
     """Returns a list of backendServiceGroupHealth objects."""
-    backend_service_ref = self.context['resources'].Parse(
-        args.name,
-        collection='compute.backendServices')
-    client = self.context['compute']
-    backend_service = self._GetBackendService(client, backend_service_ref)
-    if not backend_service.backends:
-      return
+    if args.uri:
+      args.uri = False
+      self.SetFormat('value(status.healthStatus[].instance)')
 
-    messages = client.MESSAGES_MODULE
-    # Call GetHealth for each group in the backend service
-    requests = []
-    for backend in backend_service.backends:
-      request_message = messages.ComputeBackendServicesGetHealthRequest(
-          resourceGroupReference=messages.ResourceGroupReference(
-              group=backend.group),
-          project=backend_service_ref.project,
-          backendService=backend_service_ref.Name())
-      requests.append((client.backendServices, 'GetHealth', request_message))
+    ref = GetHealth._BACKEND_SERVICE_ARG.ResolveAsResource(
+        args, self.context['resources'], default_scope='global')
 
-    # Instead of batching-up all requests and making a single
-    # request_helper.MakeRequests call, go one backend at a time.
-    # We do this because getHealth responses don't say what resource
-    # they correspond to.  It's not obvious how to reliably match up
-    # responses and backends when there are errors.  Addtionally the contract
-    # for MakeRequests doesn't guarantee response order will match
-    # request order.
-    #
-    # TODO(b/25015230) Simply make a batch request once the response
-    # gives more information.
-    errors = []
-    for request in requests:
-      # The list() call below is itended to force the generator returned by
-      # MakeRequests.  If there are exceptions the command will abort, which is
-      # expected.  Having a list simplifies some of the checks that follow.
-      resources = list(request_helper.MakeRequests(
-          requests=[request],
-          http=client.http,
-          batch_url=self.context['batch-url'],
-          errors=errors,
-          custom_get_requests=None))
+    backend_service = client.BackendService(
+        ref, compute_client=self.context['client'])
 
-      if len(resources) is 0:
-        #  Request failed, error information will accumulate in errors
-        continue
-
-      try:
-        [resource] = resources
-      except ValueError:
-        # Intended to throw iff resources contains more than one element.  Just
-        # want to avoid a user potentially seeing an index out of bounds
-        # exception.
-        raise exceptions.InternalError('Invariant failure')
-
-      yield {
-          'backend': request[2].resourceGroupReference.group,
-          'status': resource
-      }
-
-    if errors:
-      utils.RaiseToolException(
-          errors,
-          error_message='Could not get health for some groups:')
+    return backend_service.GetHealth()

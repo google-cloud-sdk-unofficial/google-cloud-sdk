@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
+from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Update(base.Command):
@@ -125,12 +126,20 @@ class Update(base.Command):
 
     # Calling Update on a non-existing sink creates it.
     # We need to make sure it exists, otherwise we would create it.
-    if args.log:
-      sink = self.GetLogSink()
-    elif args.service:
-      sink = self.GetLogServiceSink()
-    else:
-      sink = self.GetProjectSink()
+    try:
+      if args.log:
+        sink = self.GetLogSink()
+      elif args.service:
+        sink = self.GetLogServiceSink()
+      else:
+        sink = self.GetProjectSink()
+    except apitools_exceptions.HttpError as error:
+      project_sink = not args.log and not args.service
+      # Suggest the user to add --log or --log-service flag.
+      if project_sink and error.response.status == 404:
+        log.status.Print(('Project sink was not found. '
+                          'Did you forget to add --log or --log-service flag?'))
+      raise error
 
     # Only update fields that were passed to the command.
     if args.destination:

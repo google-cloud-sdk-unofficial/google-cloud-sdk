@@ -47,7 +47,7 @@ class Watch(base.Command):
 
           To wait for user-specified period of 20 seconds, run:
 
-            $ {command} my-var --config-name my-config --timeout 20
+            $ {command} my-var --config-name my-config --max-wait 20
 
           If a watch command returns due to a timeout, the command's exit value
           will be 2. All other errors result in an exit value of 1. If the

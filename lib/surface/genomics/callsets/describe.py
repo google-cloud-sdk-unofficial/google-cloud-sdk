@@ -39,7 +39,7 @@ class Describe(base.Command):
     Returns:
       a CallSet message
     """
-    return genomics_util.GetCallSet(self.context, str(args.id))
+    return genomics_util.GetCallSet(args.id)
 
   def Display(self, args_unused, call_set):
     """This method is called to print the result of the Run() method.

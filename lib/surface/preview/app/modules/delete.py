@@ -15,9 +15,9 @@
 """The Delete command."""
 
 from googlecloudsdk.api_lib.app import appengine_api_client
-from googlecloudsdk.api_lib.app import flags
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.app import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 

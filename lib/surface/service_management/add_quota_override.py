@@ -43,6 +43,7 @@ class AddQuotaOverride(base.Command, base_classes.BaseServiceManagementCommand):
 
     parser.add_argument(
         '--quota-limit',
+        required=True,
         metavar='LIMIT',
         type=arg_parsers.BoundedInt(-1, sys.maxint),
         help='Set the quota configuration limit, 0 to block, -1 for unlimited.')
@@ -89,8 +90,6 @@ class AddQuotaOverride(base.Command, base_classes.BaseServiceManagementCommand):
     patch_request = (self.services_messages
                      .ServicemanagementServicesProjectSettingsPatchRequest)
 
-    # TODO(user): What happens  when --quota-limit is not specified?
-    #   Should there be a default value? Should it be required?
     quota_override = self.services_messages.QuotaLimitOverride(
         limit=args.quota_limit)
 
@@ -126,7 +125,7 @@ class AddQuotaOverride(base.Command, base_classes.BaseServiceManagementCommand):
         quotaSettings=quota_settings,
     )
 
-    update_mask = 'quota_settings.{0}_overrides[{1}]'.format(
+    update_mask = 'quota_settings.{0}_overrides["{1}"]'.format(
         'consumer' if args.consumer else 'producer', args.quota_limit_key)
     request = patch_request(
         serviceName=args.service,

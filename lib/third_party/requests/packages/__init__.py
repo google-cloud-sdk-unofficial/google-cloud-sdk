@@ -104,4 +104,5 @@ class VendorAlias(object):
         return module
 
 
+# usage of this library. See http://b/19681403 for background.
 #sys.meta_path.append(VendorAlias(["urllib3", "chardet"]))

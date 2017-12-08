@@ -17,6 +17,7 @@
 import httplib
 
 from googlecloudsdk.api_lib.projects import util
+from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.api_lib.util import http_retry
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core.iam import iam_util
@@ -42,7 +43,10 @@ class RemoveIamPolicyBinding(util.ProjectCommand):
     iam_util.AddArgsForRemoveIamPolicyBinding(
         parser, 'id', 'cloudresourcemanager.projects')
 
-  @util.HandleHttpError
+  # util.HandleKnownHttpErrors needs to be the first one to handle errors.
+  # It needs to be placed after http_error_handler.HandleHttpErrors.
+  @http_error_handler.HandleHttpErrors
+  @util.HandleKnownHttpErrors
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
     projects = util.GetClient()

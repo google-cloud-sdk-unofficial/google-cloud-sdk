@@ -15,7 +15,6 @@
 """Implementation of gcloud genomics datasets restore.
 """
 
-from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.api_lib.genomics.exceptions import GenomicsError
 from googlecloudsdk.calliope import base
@@ -31,7 +30,6 @@ class DatasetsRestore(base.Command):
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument('id',
-                        type=int,
                         help='The ID of the deleted dataset to be restored.')
 
   @genomics_util.ReraiseHttpException
@@ -55,12 +53,11 @@ class DatasetsRestore(base.Command):
     if not console_io.PromptContinue(message=prompt_message):
       raise GenomicsError('Restore aborted by user.')
 
-    apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
-    genomics_messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
+    apitools_client = genomics_util.GetGenomicsClient()
+    genomics_messages = genomics_util.GetGenomicsMessages()
 
     dataset = genomics_messages.GenomicsDatasetsUndeleteRequest(
-        datasetId=str(args.id),
-    )
+        datasetId=args.id)
 
     return apitools_client.datasets.Undelete(dataset)
 

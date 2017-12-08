@@ -14,7 +14,6 @@
 
 """call sets list command."""
 
-from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import list_printer
@@ -69,9 +68,8 @@ class List(base.Command):
     """
     genomics_util.ValidateLimitFlag(args.limit)
 
-    apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
-    req_class = (self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
-                 .SearchCallSetsRequest)
+    apitools_client = genomics_util.GetGenomicsClient()
+    req_class = genomics_util.GetGenomicsMessages().SearchCallSetsRequest
     request = req_class(
         name=args.name,
         variantSetIds=args.variant_set_ids)

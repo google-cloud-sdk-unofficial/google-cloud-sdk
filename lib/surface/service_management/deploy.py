@@ -17,6 +17,7 @@
 import os
 
 from googlecloudsdk.api_lib.service_management import base_classes
+from googlecloudsdk.api_lib.service_management import enable_api
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
@@ -80,6 +81,10 @@ class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
           'Could not read JSON or YAML from service config file %s.'
           % args.service_config_file)
 
+    # Check to see if the Endpoints meta service needs to be enabled.
+    enable_api.EnableServiceIfDisabled(
+        self.project, services_util.GetEndpointsServiceName(), args.async)
+
     # Check if the provided file is a swagger spec that needs to be converted
     # to Google Service Configuration
     if 'swagger' in service_config_dict:
@@ -131,14 +136,10 @@ class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
 
     operation = self.services_client.services.Update(request)
 
-    # Validate the response type to avoid surprise errors below
-    services_util.RaiseIfResultNotTypeOf(
-        operation, self.services_messages.Operation)
-
     service_name = None
     config_id = None
     # Fish the serviceName and serviceConfig.id fields from the proto Any
-    # that is returned in operation.response
+    # that is returned in result.response
     for prop in operation.response.additionalProperties:
       if prop.key == 'serviceName':
         service_name = prop.value.string_value
@@ -147,13 +148,21 @@ class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
           if item.key == 'id':
             config_id = item.value.string_value
             break
+      elif prop.key == 'producerProjectId':
+        producer_project_id = prop.value.string_value
 
     if service_name and config_id:
+      # Print this to screen not to the log because the output is needed by the
+      # human user.
       log.status.Print(
           ('\nService Configuration with version "{0}" uploaded '
            'for service "{1}"\n').format(config_id, service_name))
     else:
-      log.error('Failed to retrieve Service Name and '
-                'Service Configuration Version')
+      raise calliope_exceptions.ToolException(
+          'Failed to retrieve Service Name and Service Configuration Version')
 
-    return services_util.ProcessOperationResult(operation, args.async)
+    services_util.ProcessOperationResult(operation, args.async)
+
+    # Check to see if the service is already enabled
+    enable_api.EnableServiceIfDisabled(
+        producer_project_id, service_name, args.async)

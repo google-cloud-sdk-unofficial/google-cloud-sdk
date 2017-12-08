@@ -13,7 +13,6 @@
 # limitations under the License.
 """Implementation of gcloud genomics variants import.
 """
-from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -88,8 +87,8 @@ class Import(base.Command):
     Returns:
       an ImportVariantsResponse message
     """
-    apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
-    genomics_messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
+    apitools_client = genomics_util.GetGenomicsClient()
+    genomics_messages = genomics_util.GetGenomicsMessages()
 
     format_enum = genomics_messages.ImportVariantsRequest.FormatValueValuesEnum
     file_format = format_enum.FORMAT_VCF

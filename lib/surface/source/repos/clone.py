@@ -179,23 +179,22 @@ class CloneAlpha(base.Command):
     project = source.Project(project_id)
     if not project.GetRepo(args.src):
       message = ('Repository "{src}" in project "{prj}" does not yet '
-                 'exist. Would you like to create it (y/N)?'.format(
-                     src=args.src, prj=project_id))
+                 'exist.'.format(src=args.src, prj=project_id))
+      prompt_string = 'Would you like to create it'
       if args.autocreate or console_io.PromptContinue(
-          message=message, default=False):
+          message=message, prompt_string=prompt_string, default=False):
         try:
           project.CreateRepo(args.src)
         except exceptions.HttpError as e:
           message = ('Failed to create repository [{src}] for Project '
                      '[{prj}] with error [{err}]. Please retry with:\n'
-                     '  $ gcloud source repos create {src}\n'.format(
+                     '  $ gcloud alpha source repos create {src}\n'.format(
                          prj=project_id, err=e, src=args.src))
           raise source.RepoCreationError(message=message)
       else:
         message = ('Cannot clone from a non-existent repo. Please create it '
-                   'with:\n  $ gcloud source repos create {src}\n and try '
-                   'cloning again.'.format(
-                       src=args.src))
+                   'with:\n  $ gcloud alpha source repos create {src}\n and '
+                   'try cloning again.'.format(src=args.src))
         raise source.RepoNoExistError(message=message)
     project_repo = git.Git(project_id, args.src)
     path = project_repo.Clone(destination_path=args.dst or args.src,

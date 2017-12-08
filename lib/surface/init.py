@@ -130,8 +130,9 @@ class Init(base.Command):
     auth_info = self._RunCmd(['auth', 'list'])
     if auth_info and auth_info.accounts:
       idx = console_io.PromptChoice(
-          auth_info.accounts + ['Log in with new credentials'],
-          message='Pick credentials to use:',
+          auth_info.accounts + ['Log in with a new account'],
+          message='Choose the account you would like use to perform operations '
+                  'for this configuration:',
           prompt_string=None)
       if idx is None:
         return None
@@ -376,13 +377,10 @@ https://console.developers.google.com/apis page.
   def _CreateConfiguration(self):
     configuration_name = console_io.PromptResponse(
         'Enter configuration name:  ')
-    new_config_name = self._RunCmd(['config', 'configurations', 'create'],
-                                   [configuration_name])
-    if new_config_name:
-      self._RunCmd(['config', 'configurations', 'activate'],
-                   [configuration_name])
-      named_configs.ActivePropertiesFile.Invalidate()
-    return new_config_name
+    named_configs.ConfigurationStore.CreateConfig(configuration_name)
+    named_configs.ConfigurationStore.ActivateConfig(configuration_name)
+    named_configs.ActivePropertiesFile.Invalidate()
+    return configuration_name
 
   def _CreateBotoConfig(self):
     gsutil_path = _FindGsutil()

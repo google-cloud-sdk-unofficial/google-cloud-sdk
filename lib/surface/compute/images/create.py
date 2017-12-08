@@ -15,6 +15,7 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
@@ -70,6 +71,11 @@ class Create(base_classes.BaseAsyncCreator):
     )
 
     parser.add_argument(
+        '--licenses',
+        type=arg_parsers.ArgList(),
+        help='Comma-separated list of URIs to license resources.')
+
+    parser.add_argument(
         'name',
         metavar='NAME',
         help='The name of the image to create.')
@@ -111,6 +117,9 @@ class Create(base_classes.BaseAsyncCreator):
           flag_names=['--source-disk-zone'],
           resource_type='disks')
       image.sourceDisk = source_disk_ref.SelfLink()
+
+    if args.licenses:
+      image.licenses = args.licenses
 
     request = self.messages.ComputeImagesInsertRequest(
         image=image,

@@ -12,8 +12,62 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for describing instance groups."""
+
+from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
+from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Describe(instance_groups_utils.InstanceGroupDescribe):
   pass
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(base_classes.MultiScopeDescriber):
+  """Describe an instance group."""
+
+  SCOPES = (base_classes.ScopeType.regional_scope,
+            base_classes.ScopeType.zonal_scope)
+
+  @property
+  def global_service(self):
+    return None
+
+  @property
+  def regional_service(self):
+    return self.compute.regionInstanceGroups
+
+  @property
+  def zonal_service(self):
+    return self.compute.instanceGroups
+
+  @property
+  def global_resource_type(self):
+    return None
+
+  @property
+  def regional_resource_type(self):
+    return 'regionInstanceGroups'
+
+  @property
+  def zonal_resource_type(self):
+    return 'instanceGroups'
+
+  @staticmethod
+  def Args(parser):
+    base_classes.MultiScopeDescriber.AddScopeArgs(
+        parser, 'instanceGroups', DescribeAlpha.SCOPES)
+
+  def ComputeDynamicProperties(self, args, items):
+    return instance_groups_utils.ComputeInstanceGroupManagerMembership(
+        compute=self.compute,
+        project=self.project,
+        http=self.http,
+        batch_url=self.batch_url,
+        items=items,
+        filter_mode=instance_groups_utils.InstanceGroupFilteringMode.ALL_GROUPS)
+
+
+DescribeAlpha.detailed_help = base_classes.GetMultiScopeDescriberHelp(
+    'instance group', DescribeAlpha.SCOPES)

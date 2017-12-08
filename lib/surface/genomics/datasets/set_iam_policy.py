@@ -15,10 +15,10 @@
 """Implementation of gcloud genomics datasets set-iam-policy.
 """
 
-from googlecloudsdk.calliope import base
-from googlecloudsdk.core.iam import iam_util
-from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import genomics_util
+from googlecloudsdk.calliope import base
+from googlecloudsdk.core import resources
+from googlecloudsdk.core.iam import iam_util
 
 
 class SetIamPolicy(base.Command):
@@ -38,9 +38,8 @@ class SetIamPolicy(base.Command):
 
   @genomics_util.ReraiseHttpException
   def Run(self, args):
-    apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
-    messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
-    resources = self.context[lib.GENOMICS_RESOURCES_KEY]
+    apitools_client = genomics_util.GetGenomicsClient()
+    messages = genomics_util.GetGenomicsMessages()
 
     dataset_resource = resources.Parse(args.id, collection='genomics.datasets')
 

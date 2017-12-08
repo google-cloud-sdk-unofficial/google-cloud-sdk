@@ -14,7 +14,6 @@
 
 """reference sets list command."""
 
-from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -75,8 +74,8 @@ class List(base.Command):
     """
     genomics_util.ValidateLimitFlag(args.limit)
 
-    apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
-    req_class = (self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
+    apitools_client = genomics_util.GetGenomicsClient()
+    req_class = (genomics_util.GetGenomicsMessages()
                  .SearchReferenceSetsRequest)
     request = req_class(
         md5checksums=args.md5checksums,

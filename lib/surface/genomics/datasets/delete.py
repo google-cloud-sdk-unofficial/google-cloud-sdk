@@ -15,7 +15,6 @@
 """Implementation of gcloud genomics datasets delete.
 """
 
-from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.api_lib.genomics.exceptions import GenomicsError
 from googlecloudsdk.calliope import base
@@ -48,7 +47,7 @@ class DatasetsDelete(base.Command):
       None
     """
     # Look it up first so that we can display the name
-    existing_ds = genomics_util.GetDataset(self.context, args.id)
+    existing_ds = genomics_util.GetDataset(args.id)
 
     prompt_message = (
         'Deleting dataset {0} ({1}) will delete all objects in the dataset. '
@@ -59,8 +58,8 @@ class DatasetsDelete(base.Command):
     if not console_io.PromptContinue(message=prompt_message):
       raise GenomicsError('Deletion aborted by user.')
 
-    apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
-    genomics_messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
+    apitools_client = genomics_util.GetGenomicsClient()
+    genomics_messages = genomics_util.GetGenomicsMessages()
 
     dataset = genomics_messages.GenomicsDatasetsDeleteRequest(
         datasetId=str(args.id),

@@ -16,6 +16,8 @@
 
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
+from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Describe(base.DescribeCommand):
@@ -62,13 +64,21 @@ class Describe(base.DescribeCommand):
     Returns:
       The specified sink with its destination.
     """
-    if args.log:
-      return util.TypedLogSink(self.GetLogSink(), log_name=args.log)
-    elif args.service:
-      return util.TypedLogSink(self.GetLogServiceSink(),
-                               service_name=args.service)
-    else:
-      return util.TypedLogSink(self.GetProjectSink())
+    try:
+      if args.log:
+        return util.TypedLogSink(self.GetLogSink(), log_name=args.log)
+      elif args.service:
+        return util.TypedLogSink(self.GetLogServiceSink(),
+                                 service_name=args.service)
+      else:
+        return util.TypedLogSink(self.GetProjectSink())
+    except apitools_exceptions.HttpError as error:
+      project_sink = not args.log and not args.service
+      # Suggest the user to add --log or --log-service flag.
+      if project_sink and error.response.status == 404:
+        log.status.Print(('Project sink was not found. '
+                          'Did you forget to add --log or --log-service flag?'))
+      raise error
 
 
 Describe.detailed_help = {

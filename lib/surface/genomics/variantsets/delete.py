@@ -15,7 +15,6 @@
 """Implementation of gcloud genomics variantsets delete.
 """
 
-from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.api_lib.genomics.exceptions import GenomicsError
 from googlecloudsdk.calliope import base
@@ -31,7 +30,6 @@ class Delete(base.Command):
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument('variant_set_id',
-                        type=int,
                         help='The ID of the variant set to be deleted.')
 
   @genomics_util.ReraiseHttpException
@@ -50,8 +48,8 @@ class Delete(base.Command):
       None
     """
 
-    apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
-    genomics_messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
+    apitools_client = genomics_util.GetGenomicsClient()
+    genomics_messages = genomics_util.GetGenomicsMessages()
 
     get_request = genomics_messages.GenomicsVariantsetsGetRequest(
         variantSetId=str(args.variant_set_id))
@@ -67,8 +65,7 @@ class Delete(base.Command):
       raise GenomicsError('Deletion aborted by user.')
 
     req = genomics_messages.GenomicsVariantsetsDeleteRequest(
-        variantSetId=str(args.variant_set_id),
-    )
+        variantSetId=args.variant_set_id,)
 
     ret = apitools_client.variantsets.Delete(req)
     log.DeletedResource('{0}: "{1}"'.format(args.variant_set_id,

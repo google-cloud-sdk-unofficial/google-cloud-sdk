@@ -8,6 +8,7 @@ __author__ = 'craigcitro@google.com (Craig Citro)'
 
 import cmd
 import codecs
+import collections
 import datetime
 import httplib
 import json
@@ -318,66 +319,6 @@ def _GetFormatterFromFlags(secondary_format='sparse'):
     return table_formatter.GetFormatter(secondary_format)
 
 
-def _ExpandForPrinting(fields, rows, formatter):
-  """Expand entries that require special bq-specific formatting."""
-  return [_ExpandRowForPrinting(fields, row, formatter) for row in rows]
-
-
-def _ExpandRowForPrinting(fields, row, formatter):
-  """Expand entries in a single row with bq-specific formatting."""
-  def NormalizeTimestamp(entry, field):  # pylint: disable=unused-argument
-    try:
-      date = datetime.datetime.utcfromtimestamp(float(entry))
-      return date.strftime('%Y-%m-%d %H:%M:%S')
-    except ValueError:
-      return '<date out of range for display>'
-
-  def NormalizeRecord(entry, field):
-    if isinstance(formatter, table_formatter.JsonFormatter):
-      subfields = field.get('fields', [])
-      subresults = _ExpandRowForPrinting(subfields, entry, formatter)
-      subfield_names = [subfield.get('name', '') for subfield in subfields]
-      result = {}
-      for subfield_name, subfield_data in zip(subfield_names, subresults):
-        result[subfield_name] = subfield_data
-      return result
-    else:
-      return entry
-
-  def NormalizeRepeatedRecord(entry, field):
-    if isinstance(formatter, table_formatter.JsonFormatter):
-      return [NormalizeRecord(record, field) for record in entry]
-    else:
-      return entry
-
-  column_normalizers = {}
-  for i, field in enumerate(fields):
-    if field['type'].upper() == 'TIMESTAMP':
-      column_normalizers[i] = NormalizeTimestamp
-    elif field['type'].upper() == 'RECORD':
-      if field.get('mode', 'NULLABLE').upper() == 'REPEATED':
-        column_normalizers[i] = NormalizeRepeatedRecord
-      else:
-        column_normalizers[i] = NormalizeRecord
-
-  def NormalizeNone():
-    if isinstance(formatter, table_formatter.JsonFormatter):
-      return None
-    elif isinstance(formatter, table_formatter.CsvFormatter):
-      return ''
-    else:
-      return 'NULL'
-
-  def NormalizeEntry(i, entry):
-    if entry is None:
-      return NormalizeNone()
-    elif i in column_normalizers:
-      return column_normalizers[i](entry, fields[i])
-    return entry
-
-  return [NormalizeEntry(i, e) for i, e in enumerate(row)]
-
-
 def _PrintDryRunInfo(job):
   num_bytes = job['statistics']['query']['totalBytesProcessed']
   if FLAGS.format in ['prettyjson', 'json']:
@@ -465,6 +406,8 @@ def _NormalizeFieldDelimiter(field_delimiter):
 
 
 
+
+
 class TablePrinter(object):
   """Base class for printing a table, with a default implementation."""
 
@@ -474,10 +417,91 @@ class TablePrinter(object):
     for key, value in kwds.iteritems():
       setattr(self, key, value)
 
+  @staticmethod
+  def _ValidateFields(fields, formatter):
+    if isinstance(formatter, table_formatter.CsvFormatter):
+      for field in fields:
+        if field['type'].upper() == 'RECORD':
+          raise app.UsageError(('Error printing table: Cannot print record '
+                                'field "%s" in CSV format.') % field['name'])
+        if field.get('mode', 'NULLABLE').upper() == 'REPEATED':
+          raise app.UsageError(('Error printing table: Cannot print repeated '
+                                'field "%s" in CSV format.') % (field['name']))
+
+  @staticmethod
+  def _ExpandForPrinting(fields, rows, formatter):
+    """Expand entries that require special bq-specific formatting."""
+    return [TablePrinter._ExpandRowForPrinting(fields, row, formatter)
+            for row in rows]
+
+  @staticmethod
+  def _ExpandRowForPrinting(fields, row, formatter):
+    """Expand entries in a single row with bq-specific formatting."""
+    def NormalizeTimestampValue(timestamp):  # pylint: disable=unused-argument
+      try:
+        date = datetime.datetime.utcfromtimestamp(float(timestamp))
+        return date.strftime('%Y-%m-%d %H:%M:%S')
+      except ValueError:
+        return '<date out of range for display>'
+
+    def NormalizeTimestamp(entry, field):
+      if field.get('mode', 'NULLABLE').upper() == 'REPEATED':
+        return [NormalizeTimestampValue(timestamp) for timestamp in entry]
+      else:
+        return NormalizeTimestampValue(entry)
+
+    def NormalizeRecordValue(entry, field):
+      """Normalizes a record, including values of subfields."""
+      subfields = field.get('fields', [])
+      subresults = TablePrinter._ExpandRowForPrinting(
+          subfields, entry, table_formatter.JsonFormatter())
+      subfield_names = [subfield.get('name', '') for subfield in subfields]
+      result = collections.OrderedDict()
+      for subfield_name, subfield_data in zip(subfield_names, subresults):
+        result[subfield_name] = subfield_data
+      # If we're printing outside of a JSON context, we want to materialize the
+      # dict as a string to remove the unicode marker prefix from strings.
+      # (In JSON format, the overall formatting pass takes care of this.)
+      if isinstance(formatter, table_formatter.JsonFormatter):
+        return result
+      else:
+        return json.dumps(result, separators=(',', ':'), ensure_ascii=False)
+
+    def NormalizeRecord(entry, field):
+      if field.get('mode', 'NULLABLE').upper() == 'REPEATED':
+        return [NormalizeRecordValue(record, field) for record in entry]
+      else:
+        return NormalizeRecordValue(entry, field)
+
+    column_normalizers = {}
+    for i, field in enumerate(fields):
+      if field['type'].upper() == 'TIMESTAMP':
+        column_normalizers[i] = NormalizeTimestamp
+      elif field['type'].upper() == 'RECORD':
+        column_normalizers[i] = NormalizeRecord
+
+    def NormalizeNone():
+      if isinstance(formatter, table_formatter.JsonFormatter):
+        return None
+      elif isinstance(formatter, table_formatter.CsvFormatter):
+        return ''
+      else:
+        return 'NULL'
+
+    def NormalizeEntry(i, entry):
+      if entry is None:
+        return NormalizeNone()
+      elif i in column_normalizers:
+        return column_normalizers[i](entry, fields[i])
+      return entry
+
+    return [NormalizeEntry(i, e) for i, e in enumerate(row)]
+
   def PrintTable(self, fields, rows):
     formatter = _GetFormatterFromFlags(secondary_format='pretty')
+    self._ValidateFields(fields, formatter)
     formatter.AddFields(fields)
-    rows = _ExpandForPrinting(fields, rows, formatter)
+    rows = self._ExpandForPrinting(fields, rows, formatter)
     formatter.AddRows(rows)
     formatter.Print()
 
@@ -1093,7 +1117,7 @@ def _CreateExternalTableDefinition(
       else:
         external_table_def['googleSheetsOptions'] = yaml.load("""
             {
-                "containsColumnNames": false
+                "skipLeadingRows": 0
             }
         """)
 
@@ -1458,6 +1482,141 @@ class _Extract(BigqueryCmd):
       self.PrintJobStartInfo(job)
 
 
+class _Partition(BigqueryCmd):  # pylint: disable=missing-docstring
+  usage = """partition source_prefix destination_table"""
+
+  def __init__(self, name, fv):
+    super(_Partition, self).__init__(name, fv)
+    flags.DEFINE_boolean(
+        'no_clobber', False,
+        'Do not overwrite an existing partition.',
+        short_name='n', flag_values=fv)
+    flags.DEFINE_string(
+        'time_partitioning_type',
+        'DAY',
+        'Enables time based partitioning on the table and set the type. The '
+        'only type accepted is DAY, which will generate one partition per day.',
+        flag_values=fv)
+    flags.DEFINE_integer(
+        'time_partitioning_expiration',
+        None,
+        'Enables time based partitioning on the table and set the number of '
+        'seconds for which to keep the storage for a partition. The storage '
+        'will have an expiration time of its creation time plus this value. '
+        'A negative number means no expiration.',
+        flag_values=fv)
+
+  def RunWithArgs(self, source_prefix, destination_table):
+    """Copies source tables into partitioned tables.
+
+    Copies tables of the format <prefix><YYYYmmdd> to a destination
+    partitioned table, with the date suffix of the source tables
+    becoming the partition date of the destination table partitions.
+
+    If the destination table does not exist, one will be created with
+    a schema and that matches the last table that matches the supplied
+    prefix.
+
+    Examples:
+      bq partition dataset1.sharded_ dataset2.partitioned_table
+    """
+
+    client = Client.Get()
+    formatter = _GetFormatterFromFlags()
+
+    source_table_prefix = client.GetReference(source_prefix)
+    _Typecheck(source_table_prefix, TableReference,
+               'Cannot determine table associated with "%s"' % (source_prefix,))
+    destination_table = client.GetReference(destination_table)
+    _Typecheck(destination_table, TableReference,
+               'Cannot determine table associated with "%s"' % (
+                   destination_table,))
+
+    source_dataset = source_table_prefix.GetDatasetReference()
+    source_id_prefix = source_table_prefix.tableId
+    source_id_len = len(source_id_prefix)
+
+    job_id_prefix = _GetJobIdFromFlags()
+    if isinstance(job_id_prefix, JobIdGenerator):
+      job_id_prefix = job_id_prefix.Generate(
+          [source_table_prefix, destination_table])
+
+    destination_dataset = destination_table.GetDatasetReference()
+
+    BigqueryClient.ConfigureFormatter(formatter, TableReference)
+    results = map(
+        client.FormatTableInfo,
+        client.ListTables(source_dataset, max_results=1000 * 1000))
+
+    print 'Copying %d source partitions to %s' % (
+        len(results), destination_table)
+
+    dates = []
+    representative_table = None
+    for result in results:
+      if result['tableId'].startswith(source_id_prefix):
+        suffix = result['tableId'][source_id_len:]
+        try:
+          table_date = datetime.datetime.strptime(suffix,
+                                                  '%Y%m%d')
+
+          dates.append(table_date.strftime('%Y%m%d'))
+          representative_table = result
+        except ValueError:
+          pass
+
+    if not representative_table:
+      print 'No matching source tables found'
+      return
+
+    # Check to see if we need to create the destination table.
+    if not client.TableExists(destination_table):
+      source_table_id = representative_table['tableId']
+      source_table_ref = source_dataset.GetTableReference(source_table_id)
+      source_table_schema = client.GetTableSchema(source_table_ref)
+
+      time_partitioning = _ParseTimePartitioning(
+          self.time_partitioning_type, self.time_partitioning_expiration)
+
+      print 'Creating table: %s with schema from %s and partition spec %s' % (
+          destination_table, source_table_ref, time_partitioning)
+
+      client.CreateTable(destination_table,
+                         schema=source_table_schema,
+                         time_partitioning=time_partitioning)
+      print '%s successfully created.' % (destination_table,)
+
+    for date_str in dates:
+      destination_table_id = '%s$%s' % (destination_table.tableId,
+                                        date_str)
+      source_table_id = '%s%s' % (source_id_prefix,
+                                  date_str)
+      current_job_id = '%s%s' % (job_id_prefix, date_str)
+
+      source_table = source_dataset.GetTableReference(source_table_id)
+      destination_partition = destination_dataset.GetTableReference(
+          destination_table_id)
+
+      avoid_copy = False
+      if self.no_clobber:
+        maybe_destination_partition = client.TableExists(destination_partition)
+        avoid_copy = (maybe_destination_partition
+                      and int(maybe_destination_partition['numBytes']) > 0)
+
+      if avoid_copy:
+        print "Table '%s' already exists, skipping" % (destination_partition,)
+      else:
+        print 'Copying %s to %s' % (source_table, destination_partition)
+        kwds = {
+            'write_disposition': 'WRITE_TRUNCATE',
+            'job_id': current_job_id,
+            }
+        job = client.CopyTable([source_table], destination_partition, **kwds)
+        if not FLAGS.sync:
+          self.PrintJobStartInfo(job)
+        else:
+          print 'Successfully copied %s to %s' % (source_table,
+                                                  destination_partition)
 
 
 class _List(BigqueryCmd):  # pylint: disable=missing-docstring
@@ -1812,6 +1971,12 @@ class _Make(BigqueryCmd):
         'evaluate immediately as a User-Defined Function resource used '
         'by the view.',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'use_legacy_sql',
+        None,
+        ('Whether to use Legacy SQL for the view. If not set, the default '
+         'behavior is true.'),
+        flag_values=fv)
     flags.DEFINE_string(
         'time_partitioning_type',
         None,
@@ -1919,17 +2084,16 @@ class _Make(BigqueryCmd):
         view_udf_resources = _ParseUdfResources(self.view_udf_resource)
       time_partitioning = _ParseTimePartitioning(
           self.time_partitioning_type, self.time_partitioning_expiration)
-      client.CreateTable(
-          reference,
-          ignore_existing=True,
-          schema=schema,
-          description=self.description,
-          expiration=expiration,
-          view_query=query_arg,
-          view_udf_resources=view_udf_resources,
-          external_data_config=external_data_config,
-          time_partitioning=time_partitioning
-      )
+      client.CreateTable(reference,
+                         ignore_existing=True,
+                         schema=schema,
+                         description=self.description,
+                         expiration=expiration,
+                         view_query=query_arg,
+                         view_udf_resources=view_udf_resources,
+                         use_legacy_sql=self.use_legacy_sql,
+                         external_data_config=external_data_config,
+                         time_partitioning=time_partitioning)
       print "%s '%s' successfully created." % (object_name, reference,)
 
 
@@ -1987,6 +2151,12 @@ class _Update(BigqueryCmd):
         'The URI or local filesystem path of a code file to load and '
         'evaluate immediately as a User-Defined Function resource used '
         'by the view.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'use_legacy_sql',
+        None,
+        ('Whether to use Legacy SQL for the view. If not set, the default '
+         'behavior is true.'),
         flag_values=fv)
     flags.DEFINE_string(
         'time_partitioning_type',
@@ -2088,16 +2258,15 @@ class _Update(BigqueryCmd):
         view_udf_resources = _ParseUdfResources(self.view_udf_resource)
       time_partitioning = _ParseTimePartitioning(
           self.time_partitioning_type, self.time_partitioning_expiration)
-      client.UpdateTable(
-          reference,
-          schema=schema,
-          description=self.description,
-          expiration=expiration,
-          view_query=query_arg,
-          view_udf_resources=view_udf_resources,
-          external_data_config=external_data_config,
-          time_partitioning=time_partitioning
-      )
+      client.UpdateTable(reference,
+                         schema=schema,
+                         description=self.description,
+                         expiration=expiration,
+                         view_query=query_arg,
+                         view_udf_resources=view_udf_resources,
+                         use_legacy_sql=self.use_legacy_sql,
+                         external_data_config=external_data_config,
+                         time_partitioning=time_partitioning)
 
       print "%s '%s' successfully updated." % (object_name, reference,)
 
@@ -2904,6 +3073,7 @@ def main(unused_argv):
         'ls': _List,
         'mk': _Make,
         'mkdef': _MakeExternalTableDefinition,
+        'partition': _Partition,
         'query': _Query,
         'rm': _Delete,
         'shell': _Repl,

@@ -15,7 +15,6 @@
 """Implementation of gcloud genomics variants list.
 """
 
-from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -86,19 +85,20 @@ class List(base.ListCommand):
     """
     genomics_util.ValidateLimitFlag(args.limit_calls, 'limit-calls')
 
-    apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
-    messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
+    apitools_client = genomics_util.GetGenomicsClient()
+    genomics_messages = genomics_util.GetGenomicsMessages()
+
     fields = genomics_util.GetQueryFields(self.GetReferencedKeyNames(args),
                                           'variants')
     if fields:
-      global_params = messages.StandardQueryParameters(fields=fields)
+      global_params = genomics_messages.StandardQueryParameters(fields=fields)
     else:
       global_params = None
 
     variant_set_id = [args.variant_set_id] if args.variant_set_id else []
     pager = list_pager.YieldFromList(
         apitools_client.variants,
-        messages.SearchVariantsRequest(
+        genomics_messages.SearchVariantsRequest(
             variantSetIds=variant_set_id,
             callSetIds=args.call_set_ids,
             referenceName=args.reference_name,

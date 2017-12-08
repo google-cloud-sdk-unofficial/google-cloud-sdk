@@ -63,11 +63,4 @@ class Genomics(base.Group):
     project = properties.VALUES.core.project
     resolver = resolvers.FromProperty(project)
     resources.SetParamDefault('genomics', None, 'project', resolver)
-
-    context[lib.GENOMICS_APITOOLS_CLIENT_KEY] = apis.GetClientInstance(
-        'genomics', 'v1')
-    context[lib.GENOMICS_MESSAGES_MODULE_KEY] = apis.GetMessagesModule(
-        'genomics', 'v1')
-    context[lib.GENOMICS_RESOURCES_KEY] = resources
-
     return context
