@@ -40,7 +40,7 @@ class Create(base.CreateCommand):
     messages = cloudkms_base.GetMessagesModule()
 
     key_ring_ref = flags.ParseKeyRingName(args)
-    parent_ref = flags.ParseLocationName(args)
+    parent_ref = flags.ParseParentFromResource(key_ring_ref)
     req = messages.CloudkmsProjectsLocationsKeyRingsCreateRequest(
         parent=parent_ref.RelativeName(),
         keyRingId=key_ring_ref.Name(),

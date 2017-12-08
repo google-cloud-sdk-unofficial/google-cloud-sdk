@@ -157,6 +157,7 @@ class Update(base.UpdateCommand):
     flags.AddNetworkPolicyFlags(group, hidden=True)
     flags.AddLoggingServiceFlag(group, hidden=True)
     flags.AddEnableAuditLoggingFlag(group, hidden=True)
+    flags.AddMaintenanceWindowFlag(group, hidden=True, add_unset_text=True)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -269,6 +270,12 @@ class Update(base.UpdateCommand):
         op_ref = adapter.SetLoggingService(cluster_ref, args.logging_service)
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif args.maintenance_window is not None:
+      try:
+        op_ref = adapter.SetMaintenanceWindow(cluster_ref,
+                                              args.maintenance_window)
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     else:
       enable_master_authorized_networks = args.enable_master_authorized_networks
 
@@ -323,6 +330,7 @@ class UpdateBeta(Update):
     flags.AddNetworkPolicyFlags(group, hidden=True)
     flags.AddLoggingServiceFlag(group)
     flags.AddEnableAuditLoggingFlag(group, hidden=True)
+    flags.AddMaintenanceWindowFlag(group, hidden=True, add_unset_text=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -347,3 +355,4 @@ class UpdateAlpha(Update):
     flags.AddNetworkPolicyFlags(group, hidden=False)
     flags.AddLoggingServiceFlag(group)
     flags.AddEnableAuditLoggingFlag(group, hidden=True)
+    flags.AddMaintenanceWindowFlag(group, hidden=True, add_unset_text=True)

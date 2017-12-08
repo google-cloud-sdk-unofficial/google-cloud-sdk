@@ -174,43 +174,47 @@ def ParseCreateOptionsBase(args):
   cluster_ipv4_cidr = args.cluster_ipv4_cidr
   enable_master_authorized_networks = args.enable_master_authorized_networks
   return api_adapter.CreateClusterOptions(
-      node_machine_type=args.machine_type,
-      scopes=args.scopes,
-      enable_cloud_endpoints=args.enable_cloud_endpoints,
-      num_nodes=args.num_nodes,
       additional_zones=args.additional_zones,
-      user=args.username,
-      password=args.password,
-      cluster_version=args.cluster_version,
-      network=args.network,
-      subnetwork=args.subnetwork,
       cluster_ipv4_cidr=cluster_ipv4_cidr,
-      node_disk_size_gb=args.disk_size,
+      cluster_secondary_range_name=args.cluster_secondary_range_name,
+      cluster_version=args.cluster_version,
+      create_subnetwork=args.create_subnetwork,
+      disable_addons=args.disable_addons,
+      disk_type=args.disk_type,
+      enable_autorepair=args.enable_autorepair,
+      enable_autoscaling=args.enable_autoscaling,
+      enable_autoupgrade=args.enable_autoupgrade,
+      enable_cloud_endpoints=args.enable_cloud_endpoints,
       enable_cloud_logging=args.enable_cloud_logging,
       enable_cloud_monitoring=args.enable_cloud_monitoring,
-      enable_kubernetes_alpha=args.enable_kubernetes_alpha,
-      disable_addons=args.disable_addons,
-      local_ssd_count=args.local_ssd_count,
-      tags=args.tags,
-      node_labels=args.node_labels,
-      enable_autoscaling=args.enable_autoscaling,
-      max_nodes=args.max_nodes,
-      min_nodes=args.min_nodes,
-      image_type=args.image_type,
-      max_nodes_per_pool=args.max_nodes_per_pool,
-      preemptible=args.preemptible,
-      enable_autorepair=args.enable_autorepair,
-      enable_autoupgrade=args.enable_autoupgrade,
-      service_account=args.service_account,
-      enable_master_authorized_networks=enable_master_authorized_networks,
-      master_authorized_networks=args.master_authorized_networks,
-      enable_legacy_authorization=args.enable_legacy_authorization,
-      labels=args.labels,
-      disk_type=args.disk_type,
-      enable_network_policy=args.enable_network_policy,
-      services_ipv4_cidr=args.services_ipv4_cidr,
       enable_ip_alias=args.enable_ip_alias,
-      create_subnetwork=args.create_subnetwork)
+      enable_kubernetes_alpha=args.enable_kubernetes_alpha,
+      enable_legacy_authorization=args.enable_legacy_authorization,
+      enable_master_authorized_networks=enable_master_authorized_networks,
+      enable_network_policy=args.enable_network_policy,
+      image_type=args.image_type,
+      labels=args.labels,
+      local_ssd_count=args.local_ssd_count,
+      maintenance_window=args.maintenance_window,
+      master_authorized_networks=args.master_authorized_networks,
+      max_nodes=args.max_nodes,
+      max_nodes_per_pool=args.max_nodes_per_pool,
+      min_nodes=args.min_nodes,
+      network=args.network,
+      node_disk_size_gb=args.disk_size,
+      node_labels=args.node_labels,
+      node_machine_type=args.machine_type,
+      node_taints=args.node_taints,
+      num_nodes=args.num_nodes,
+      password=args.password,
+      preemptible=args.preemptible,
+      scopes=args.scopes,
+      service_account=args.service_account,
+      services_ipv4_cidr=args.services_ipv4_cidr,
+      services_secondary_range_name=args.services_secondary_range_name,
+      subnetwork=args.subnetwork,
+      tags=args.tags,
+      user=args.username)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -222,18 +226,20 @@ class Create(base.CreateCommand):
     _Args(parser)
     _AddAdditionalZonesFlag(parser)
     flags.AddClusterAutoscalingFlags(parser, hidden=True)
-    flags.AddLocalSSDFlag(parser, suppressed=True)
-    flags.AddEnableKubernetesAlphaFlag(parser, suppressed=True)
-    flags.AddPreemptibleFlag(parser, suppressed=True)
     flags.AddEnableAutoRepairFlag(parser, suppressed=True)
     flags.AddEnableAutoUpgradeFlag(parser, suppressed=True)
-    flags.AddServiceAccountFlag(parser, suppressed=True)
-    flags.AddMasterAuthorizedNetworksFlags(parser, hidden=True)
+    flags.AddEnableKubernetesAlphaFlag(parser, suppressed=True)
     flags.AddEnableLegacyAuthorizationFlag(parser, hidden=True)
-    flags.AddLabelsFlag(parser, suppressed=True)
-    flags.AddNetworkPolicyFlags(parser, hidden=True)
     flags.AddIPAliasFlags(parser, hidden=True)
+    flags.AddLabelsFlag(parser, suppressed=True)
+    flags.AddLocalSSDFlag(parser, suppressed=True)
+    flags.AddMaintenanceWindowFlag(parser, hidden=True)
+    flags.AddMasterAuthorizedNetworksFlags(parser, hidden=True)
+    flags.AddNetworkPolicyFlags(parser, hidden=True)
+    flags.AddNodeTaintsFlag(parser, hidden=True)
     flags.AddOldClusterScopesFlag(parser)
+    flags.AddPreemptibleFlag(parser, suppressed=True)
+    flags.AddServiceAccountFlag(parser, suppressed=True)
 
   def ParseCreateOptions(self, args):
     return ParseCreateOptionsBase(args)
@@ -326,20 +332,23 @@ class CreateBeta(Create):
   def Args(parser):
     _Args(parser)
     _AddAdditionalZonesFlag(parser)
+
     flags.AddClusterAutoscalingFlags(parser)
-    flags.AddLocalSSDFlag(parser)
-    flags.AddEnableKubernetesAlphaFlag(parser)
-    flags.AddPreemptibleFlag(parser)
+    flags.AddClusterScopesFlag(parser)
     flags.AddEnableAutoRepairFlag(parser)
     flags.AddEnableAutoUpgradeFlag(parser)
-    flags.AddServiceAccountFlag(parser)
-    flags.AddMasterAuthorizedNetworksFlags(parser)
+    flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddEnableLegacyAuthorizationFlag(parser)
+    flags.AddIPAliasFlags(parser, hidden=False)
     flags.AddLabelsFlag(parser)
-    flags.AddNetworkPolicyFlags(parser, hidden=True)
-    flags.AddIPAliasFlags(parser, hidden=True)
-    flags.AddClusterScopesFlag(parser)
+    flags.AddLocalSSDFlag(parser)
+    flags.AddMaintenanceWindowFlag(parser, hidden=True)
+    flags.AddMasterAuthorizedNetworksFlags(parser)
     flags.AddMinCpuPlatformFlag(parser, hidden=True)
+    flags.AddNetworkPolicyFlags(parser, hidden=True)
+    flags.AddNodeTaintsFlag(parser, hidden=True)
+    flags.AddPreemptibleFlag(parser)
+    flags.AddServiceAccountFlag(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -356,23 +365,26 @@ class CreateAlpha(Create):
     _Args(parser)
     group = parser.add_mutually_exclusive_group()
     _AddAdditionalZonesFlag(group, deprecated=True)
-    flags.AddNodeLocationsFlag(group)
+
+    flags.AddAcceleratorArgs(parser)
     flags.AddClusterAutoscalingFlags(parser)
-    flags.AddLocalSSDFlag(parser)
-    flags.AddEnableKubernetesAlphaFlag(parser)
-    flags.AddPreemptibleFlag(parser)
+    flags.AddClusterScopesFlag(parser)
+    flags.AddEnableAuditLoggingFlag(parser, hidden=True)
     flags.AddEnableAutoRepairFlag(parser)
     flags.AddEnableAutoUpgradeFlag(parser)
-    flags.AddServiceAccountFlag(parser)
-    flags.AddMasterAuthorizedNetworksFlags(parser)
+    flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddEnableLegacyAuthorizationFlag(parser)
+    flags.AddIPAliasFlags(parser, hidden=False)
     flags.AddLabelsFlag(parser)
-    flags.AddNetworkPolicyFlags(parser, hidden=False)
-    flags.AddIPAliasFlags(parser)
-    flags.AddAcceleratorArgs(parser)
-    flags.AddEnableAuditLoggingFlag(parser, hidden=True)
-    flags.AddClusterScopesFlag(parser)
+    flags.AddLocalSSDFlag(parser)
+    flags.AddMaintenanceWindowFlag(parser, hidden=True)
+    flags.AddMasterAuthorizedNetworksFlags(parser)
     flags.AddMinCpuPlatformFlag(parser, hidden=True)
+    flags.AddNetworkPolicyFlags(parser, hidden=False)
+    flags.AddNodeLocationsFlag(group)
+    flags.AddNodeTaintsFlag(parser, hidden=True)
+    flags.AddPreemptibleFlag(parser)
+    flags.AddServiceAccountFlag(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)

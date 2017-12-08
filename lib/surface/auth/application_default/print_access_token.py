@@ -24,12 +24,20 @@ from oauth2client import client
 
 
 class PrintAccessToken(base.Command):
-  """Print an access token for the your current Application Default Credentials.
+  r"""Print an access token for your current Application Default Credentials.
 
   Once you have generated Application Default Credentials using
   `{parent_command} login`, you can use this command to generate and print
   an access token that can be directly used for making an API call. This can be
   useful for manually testing out APIs via curl.
+
+  In order to print details of the access token, such as the associated account
+  and the token's expiration time in seconds, run:
+
+    $ curl https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=\
+    $(gcloud auth application-default print-access-token)
+
+  This command should be used sparingly and for debugging alone.
   """
 
   @staticmethod

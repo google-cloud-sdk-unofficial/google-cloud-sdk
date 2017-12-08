@@ -12,16 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Updates the settings of a Cloud SQL instance."""
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 from apitools.base.py import encoding
 
-from googlecloudsdk.api_lib.sql import api_util
-from googlecloudsdk.api_lib.sql import instances
+from googlecloudsdk.api_lib.sql import api_util as common_api_util
+from googlecloudsdk.api_lib.sql import instances as api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.sql import flags
+from googlecloudsdk.command_lib.sql import instances as command_util
 from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -183,12 +187,13 @@ def AddBaseArgs(parser):
             'Instance will be restarted.'))
 
 
-def RunBasePatchCommand(args):
+def RunBasePatchCommand(args, release_track):
   """Updates settings of a Cloud SQL instance using the patch api method.
 
   Args:
     args: argparse.Namespace, The arguments that this command was invoked
         with.
+    release_track: base.ReleaseTrack, the release track that this was run under.
 
   Returns:
     A dict object representing the operations resource describing the patch
@@ -196,13 +201,13 @@ def RunBasePatchCommand(args):
   Raises:
     HttpException: A http error response was received while executing api
         request.
-    ToolException: An error other than http error occured while executing the
+    ToolException: An error other than http error occurred while executing the
         command.
   """
   if args.diff and not args.IsSpecified('format'):
     args.format = 'diff(old, new)'
 
-  client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+  client = common_api_util.SqlClient(common_api_util.API_VERSION_DEFAULT)
   sql_client = client.sql_client
   sql_messages = client.sql_messages
 
@@ -215,14 +220,18 @@ def RunBasePatchCommand(args):
   # If --authorized-networks is used, confirm that the user knows the networks
   # will get overwritten.
   if args.authorized_networks:
-    instances.InstancesV1Beta4.PrintAndConfirmAuthorizedNetworksOverwrite()
+    api_util.InstancesV1Beta4.PrintAndConfirmAuthorizedNetworksOverwrite()
 
   original_instance_resource = sql_client.instances.Get(
       sql_messages.SqlInstancesGetRequest(
           project=instance_ref.project, instance=instance_ref.instance))
 
-  patch_instance = instances.InstancesV1Beta4.ConstructInstanceFromArgs(
-      sql_messages, args, original=original_instance_resource)
+  patch_instance = (
+      command_util.InstancesV1Beta4.ConstructPatchInstanceFromArgs(
+          sql_messages,
+          args,
+          original=original_instance_resource,
+          release_track=release_track))
   patch_instance.project = instance_ref.project
   patch_instance.name = instance_ref.instance
 
@@ -264,7 +273,7 @@ class Patch(base.UpdateCommand):
   """Updates the settings of a Cloud SQL instance."""
 
   def Run(self, args):
-    return RunBasePatchCommand(args)
+    return RunBasePatchCommand(args, self.ReleaseTrack())
 
   @staticmethod
   def Args(parser):
@@ -281,7 +290,7 @@ class PatchBeta(base.UpdateCommand):
     if args.clear_labels and (args.update_labels or args.remove_labels):
       conflict = '--update-labels' if args.update_labels else '--remove-labels'
       raise exceptions.ConflictingArgumentsException('--clear-labels', conflict)
-    return RunBasePatchCommand(args)
+    return RunBasePatchCommand(args, self.ReleaseTrack())
 
   @staticmethod
   def Args(parser):

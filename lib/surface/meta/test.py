@@ -85,7 +85,7 @@ class Test(base.Command):
     execution_utils.Exec(['bash', args.exec_file])
 
   def _RunIsInteractive(self, args):
-    sys.exit(int(console_io.IsInteractive(heuristic=True)))
+    sys.exit(int(not console_io.IsInteractive(heuristic=True)))
 
   def _RunInterrupt(self, args):
     try:

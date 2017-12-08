@@ -23,8 +23,7 @@ from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class UpdateGA(base.SilentCommand):
+class Update(base.SilentCommand):
   """Update a target HTTPS proxy.
 
   *{command}* is used to change the SSL certificate and/or URL map of
@@ -34,20 +33,28 @@ class UpdateGA(base.SilentCommand):
   target HTTPS proxy in turn points to a URL map that defines the rules
   for routing the requests. The URL map's job is to map URLs to
   backend services which handle the actual requests. The target
-  HTTPS proxy also points to an SSL certificate used for
+  HTTPS proxy also points to at most 10 SSL certificates used for
   server-side authentication.
   """
 
   SSL_CERTIFICATE_ARG = None
+  SSL_CERTIFICATES_ARG = None
   TARGET_HTTPS_PROXY_ARG = None
   URL_MAP_ARG = None
 
   @classmethod
   def Args(cls, parser):
+    certs = parser.add_mutually_exclusive_group()
     cls.SSL_CERTIFICATE_ARG = (
         ssl_certificates_flags.SslCertificateArgumentForOtherResource(
             'target HTTPS proxy', required=False))
-    cls.SSL_CERTIFICATE_ARG.AddArgument(parser)
+    cls.SSL_CERTIFICATE_ARG.AddArgument(parser, mutex_group=certs)
+    cls.SSL_CERTIFICATES_ARG = (
+        ssl_certificates_flags.SslCertificatesArgumentForOtherResource(
+            'target HTTPS proxy', required=False))
+    cls.SSL_CERTIFICATES_ARG.AddArgument(
+        parser, mutex_group=certs, cust_metavar='SSL_CERTIFICATE')
+
     cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument()
     cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser, operation_type='update')
     cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy(
@@ -97,58 +104,6 @@ class UpdateGA(base.SilentCommand):
                    urlMap=url_map_ref.SelfLink()))))
 
     return client.MakeRequests(requests)
-
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-
-    if not args.ssl_certificate and not args.url_map:
-      raise exceptions.ToolException(
-          'You must specify at least one of [--ssl-certificate] or '
-          '[--url-map].')
-
-    if args.ssl_certificate:
-      ssl_certificate_ref = self.SSL_CERTIFICATE_ARG.ResolveAsResource(
-          args, holder.resources)
-      return self._CreateRequestsWithCertRefs(args, [ssl_certificate_ref])
-
-    return self._CreateRequestsWithCertRefs(args, [])
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateGA):
-  """Update a target HTTPS proxy.
-
-  *{command}* is used to change the SSL certificate and/or URL map of
-  existing target HTTPS proxies. A target HTTPS proxy is referenced
-  by one or more forwarding rules which
-  define which packets the proxy is responsible for routing. The
-  target HTTPS proxy in turn points to a URL map that defines the rules
-  for routing the requests. The URL map's job is to map URLs to
-  backend services which handle the actual requests. The target
-  HTTPS proxy also points to at most 10 SSL certificates used for
-  server-side authentication.
-  """
-
-  SSL_CERTIFICATES_ARG = None
-
-  @classmethod
-  def Args(cls, parser):
-    certs = parser.add_mutually_exclusive_group()
-    cls.SSL_CERTIFICATE_ARG = (
-        ssl_certificates_flags.SslCertificateArgumentForOtherResource(
-            'target HTTPS proxy', required=False))
-    cls.SSL_CERTIFICATE_ARG.AddArgument(parser, mutex_group=certs)
-    cls.SSL_CERTIFICATES_ARG = (
-        ssl_certificates_flags.SslCertificatesArgumentForOtherResource(
-            'target HTTPS proxy', required=False))
-    cls.SSL_CERTIFICATES_ARG.AddArgument(
-        parser, mutex_group=certs, cust_metavar='SSL_CERTIFICATE')
-
-    cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument()
-    cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser)
-    cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy(
-        required=False, proxy_type='HTTPS')
-    cls.URL_MAP_ARG.AddArgument(parser)
 
   def _GetSslCertificatesList(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

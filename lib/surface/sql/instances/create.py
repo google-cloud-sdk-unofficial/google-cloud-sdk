@@ -12,17 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Creates a new Cloud SQL instance."""
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import argparse
 
 from apitools.base.py import exceptions as apitools_exceptions
 
-from googlecloudsdk.api_lib.sql import api_util
-from googlecloudsdk.api_lib.sql import instances
+from googlecloudsdk.api_lib.sql import api_util as common_api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.sql import flags
+from googlecloudsdk.command_lib.sql import instances as command_util
 from googlecloudsdk.command_lib.sql import validate as command_validate
 from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
@@ -134,12 +138,13 @@ def AddBaseArgs(parser):
             'available here: https://cloud.google.com/sql/pricing.'))
 
 
-def RunBaseCreateCommand(args):
+def RunBaseCreateCommand(args, release_track):
   """Creates a new Cloud SQL instance.
 
   Args:
     args: argparse.Namespace, The arguments that this command was invoked
         with.
+    release_track: base.ReleaseTrack, the release track that this was run under.
 
   Returns:
     A dict object representing the operations resource describing the create
@@ -147,10 +152,10 @@ def RunBaseCreateCommand(args):
   Raises:
     HttpException: A http error response was received while executing api
         request.
-    ToolException: An error other than http error occured while executing the
+    ToolException: An error other than http error occurred while executing the
         command.
   """
-  client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+  client = common_api_util.SqlClient(common_api_util.API_VERSION_DEFAULT)
   sql_client = client.sql_client
   sql_messages = client.sql_messages
 
@@ -191,8 +196,12 @@ def RunBaseCreateCommand(args):
     if not args.IsSpecified('tier'):
       args.tier = master_instance_resource.settings.tier
 
-  instance_resource = instances.InstancesV1Beta4.ConstructInstanceFromArgs(
-      sql_messages, args, instance_ref=instance_ref)
+  instance_resource = (
+      command_util.InstancesV1Beta4.ConstructCreateInstanceFromArgs(
+          sql_messages,
+          args,
+          instance_ref=instance_ref,
+          release_track=release_track))
 
   if args.pricing_plan == 'PACKAGE':
     console_io.PromptContinue(
@@ -243,7 +252,7 @@ class Create(base.Command):
   """Creates a new Cloud SQL instance."""
 
   def Run(self, args):
-    return RunBaseCreateCommand(args)
+    return RunBaseCreateCommand(args, self.ReleaseTrack())
 
   @staticmethod
   def Args(parser):
@@ -256,7 +265,7 @@ class CreateBeta(base.Command):
   """Creates a new Cloud SQL instance."""
 
   def Run(self, args):
-    return RunBaseCreateCommand(args)
+    return RunBaseCreateCommand(args, self.ReleaseTrack())
 
   @staticmethod
   def Args(parser):

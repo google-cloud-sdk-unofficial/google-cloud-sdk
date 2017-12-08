@@ -27,6 +27,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.command_lib.functions.deploy import util as deploy_util
+from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import files as file_utils
@@ -63,6 +64,7 @@ def _FunctionArgs(parser):
             'failure.'),
       action='store_true',
   )
+  labels_util.AddUpdateLabelsFlags(parser)
 
 
 def _SourceCodeArgs(parser):
@@ -375,12 +377,12 @@ class Deploy(base.Command):
     self._ApplyNonSourceArgsToFunction(
         base_function, name, args.entry_point, args.timeout,
         args.trigger_http, trigger_params, retry, args.memory)
+    messages = util.GetApiMessagesModule()
     if args.source:
       deploy_util.AddSourceToFunction(
           base_function, args.source, args.include_ignored_files, args.name,
           args.stage_bucket)
     elif args.source_url:
-      messages = util.GetApiMessagesModule()
       source_path = args.source_path
       source_branch = args.source_branch or 'master'
       base_function.sourceRepository = messages.SourceRepository(
@@ -390,6 +392,9 @@ class Deploy(base.Command):
     elif is_new_function or args.local_path or args.stage_bucket:
       # Do not change source of existing function unless instructed to.
       base_function.sourceArchiveUrl = self._PrepareSourcesOnGcs(args)
+    base_function.labels = labels_util.UpdateLabels(
+        base_function.labels, messages.CloudFunction.LabelsValue,
+        update_labels=args.update_labels, remove_labels=args.remove_labels)
 
   def _ValidateAfterCheckingFunctionsExistence(self, function, args):
     if not args.IsSpecified('stage_bucket') and (
@@ -449,7 +454,6 @@ class Deploy(base.Command):
     Raises:
       FunctionsError if command line parameters are not valid.
     """
-
     trigger_params = deploy_util.DeduceAndCheckArgs(args)
     project = properties.VALUES.core.project.Get(required=True)
     location_ref = resources.REGISTRY.Parse(

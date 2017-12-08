@@ -21,16 +21,16 @@ from googlecloudsdk.core import properties
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class List(base.ListCommand):
-  """List submitted Cloud Datastore admin operations and their status.
+  """List pending Cloud Datastore admin operations and their status.
 
   Filters are case-sensitive and have the following syntax:
 
     field = value [AND [field = value]] ...
 
-  where `field` is one of `kind`, `namespace`, `status.done`, `type`, or
-  `labels.[KEY]`, and `[KEY]` is a label key. `status.done` is a boolean.
-  `kind` and `namespace` may be `*` to query for operations on all kinds and/or
-  all namespaces. `type` may be one of `export_entities` or `import_entities`.
+  where `field` is one of `kind`, `namespace`, `type`, or `labels.[KEY]`, and
+  `[KEY]` is a label key. `kind` and `namespace` may be `*` to query for
+  operations on all kinds and/or all namespaces. `type` may be one of
+  `export_entities` or `import_entities`.
 
   Only the logical `AND` operator is
   supported; space-separated items are treated as having an implicit `AND`
@@ -41,10 +41,6 @@ class List(base.ListCommand):
   To see the list of all operations, run:
 
     $ {command}
-
-  To show all running operations, run:
-
-    $ {command} --filter='done:false'
 
   To see the list of all export operations, run:
 

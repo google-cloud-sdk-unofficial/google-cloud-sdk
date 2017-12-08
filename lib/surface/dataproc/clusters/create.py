@@ -541,22 +541,26 @@ class CreateBeta(Create):
         '--max-idle',
         type=arg_parsers.Duration(),
         help="""\
-        The duration before cluster is auto-deleted after last job completes.
-        """,
-        hidden=True)
+        The duration before cluster is auto-deleted after last job completes,
+        such as "30m", "2h" or "1d".
+        """)
 
     auto_delete_group = parser.add_mutually_exclusive_group()
     auto_delete_group.add_argument(
         '--max-age',
         type=arg_parsers.Duration(),
-        help='The lifespan of the cluster before it is auto-deleted.',
-        hidden=True)
+        help="""\
+        The lifespan of the cluster before it is auto-deleted, such as "30m",
+        "2h" or "1d".
+        """)
 
     auto_delete_group.add_argument(
         '--expiration-time',
         type=arg_parsers.Datetime.Parse,
-        help='The time when cluster will be auto-deleted.',
-        hidden=True)
+        help="""\
+        The time when cluster will be auto-deleted, such as
+        "2017-08-29T18:52:51.142Z"
+        """)
 
     for instance_type in ('master', 'worker'):
       help_msg = """\

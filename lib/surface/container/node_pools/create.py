@@ -108,6 +108,7 @@ def ParseCreateNodePoolOptionsBase(args):
       local_ssd_count=args.local_ssd_count,
       tags=args.tags,
       node_labels=args.node_labels,
+      node_taints=args.node_taints,
       enable_autoscaling=args.enable_autoscaling,
       max_nodes=args.max_nodes,
       min_nodes=args.min_nodes,
@@ -133,6 +134,7 @@ class Create(base.CreateCommand):
     flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True, suppressed=True)
     flags.AddServiceAccountFlag(parser, suppressed=True)
     flags.AddOldNodePoolScopesFlag(parser)
+    flags.AddNodeTaintsFlag(parser, for_node_pool=True, hidden=True)
 
   def ParseCreateNodePoolOptions(self, args):
     return ParseCreateNodePoolOptionsBase(args)
@@ -201,6 +203,7 @@ class CreateBeta(Create):
     flags.AddServiceAccountFlag(parser)
     flags.AddNodePoolScopesFlag(parser)
     flags.AddMinCpuPlatformFlag(parser, for_node_pool=True, hidden=True)
+    flags.AddNodeTaintsFlag(parser, for_node_pool=True, hidden=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -230,6 +233,7 @@ class CreateAlpha(Create):
     flags.AddAcceleratorArgs(parser)
     flags.AddNodePoolScopesFlag(parser)
     flags.AddMinCpuPlatformFlag(parser, for_node_pool=True, hidden=True)
+    flags.AddNodeTaintsFlag(parser, for_node_pool=True, hidden=True)
 
 
 Create.detailed_help = DETAILED_HELP

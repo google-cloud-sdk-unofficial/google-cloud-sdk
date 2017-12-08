@@ -25,5 +25,25 @@ class Auth(base.Group):
   """Manage oauth2 credentials for the Google Cloud SDK.
 
   The gcloud auth command group lets you grant and revoke authorization to Cloud
-  SDK (gcloud) to access Google Cloud Platform.
+  SDK (gcloud) to access Google Cloud Platform. Typically, when scripting Cloud
+  SDK tools for use on multiple machines, using `gcloud auth
+  activate-service-account` is recommended.
+
+  While running `gcloud auth` commands, the `--account` flag can be specified
+  to any command to use that account without activation.
+
+  ## EXAMPLES
+
+  To authenticate a user account with gcloud and minimal user output, run:
+
+    $ gcloud auth login --brief
+
+  To list all credentialed accounts and identify the current active account,
+  run:
+
+    $ gcloud auth list
+
+  To revoke credentials for a user account, run:
+
+    $ gcloud auth revoke test@gmail.com
   """

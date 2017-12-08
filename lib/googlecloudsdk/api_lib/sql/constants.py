@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Defines tool-wide constants."""
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 # Defaults for instance creation.
 DEFAULT_MACHINE_TYPE = 'db-n1-standard-1'
@@ -31,3 +34,6 @@ EXE_FLAGS = {
         'hostname': '-h'
     }
 }
+
+# Size conversions.
+BYTES_TO_GB = 1 << 30

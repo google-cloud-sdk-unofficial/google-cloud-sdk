@@ -41,6 +41,7 @@ class List(base.ListCommand):
         table(
           name,
           purpose,
+          labels.list(),
           primary.name.segment(9):label=PRIMARY_ID,
           primary.state:label=PRIMARY_STATE)
     """)

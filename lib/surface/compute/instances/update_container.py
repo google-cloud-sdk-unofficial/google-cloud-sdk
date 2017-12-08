@@ -199,9 +199,9 @@ class UpdateContainer(base.UpdateCommand):
 
     env_group.add_argument(
         '--remove-container-env',
-        type=arg_parsers.ArgList,
+        type=arg_parsers.ArgList(),
         action='append',
-        metavar='KEY[,KEY,...]',
+        metavar='KEY',
         help="""\
         Removes environment variables `KEY` from container declaration Does
         nothing, if a variable is not present.
@@ -227,8 +227,9 @@ class UpdateContainer(base.UpdateCommand):
 
     parser.add_argument(
         '--container-restart-policy',
-        choices=['NEVER', 'ON-FAILURE', 'ALWAYS'],
+        choices=['never', 'on-failure', 'always'],
         metavar='POLICY',
+        type=str.lower,
         help="""\
         Sets container restart policy to the specified value.
         """)
@@ -278,7 +279,7 @@ class UpdateContainer(base.UpdateCommand):
         operation_poller = poller.Poller(client.apitools_client.instances)
         return waiter.WaitFor(
             operation_poller, operation_ref,
-            'Restarting container [{0}]'.format(instance_ref.Name()))
+            'Restarting instance [{0}]'.format(instance_ref.Name()))
 
     raise containers_utils.NoGceContainerDeclarationMetadataKey()
 

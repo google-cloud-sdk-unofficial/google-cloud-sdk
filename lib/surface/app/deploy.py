@@ -27,10 +27,6 @@ _DETAILED_HELP = {
         Engine server.  As an input it takes one or more ``DEPLOYABLES'' that
         should be uploaded.  A ``DEPLOYABLE'' can be a service's .yaml file or a
         configuration's .yaml file.
-
-        This command supports App Engine flexible task queue files. The format
-        of task queue files can be found at:
-        https://cloud.google.com/appengine/docs/python/config/queueref
         """,
     'EXAMPLES': """\
         To deploy a single service, run:

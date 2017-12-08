@@ -26,9 +26,18 @@ class List(base.ListCommand):
   Lists accounts whose credentials have been obtained using `gcloud init`,
   `gcloud auth login` and `gcloud auth activate-service-account`, and shows
   which account is active. The active account is used by gcloud and other Cloud
-  SDK tools to access Google Cloud Platform.
+  SDK tools to access Google Cloud Platform. While there is no limit on the
+  number of accounts with stored credentials, there is only one active account.
 
   ## EXAMPLES
+
+  To set an existing account to be the current active account, run:
+
+    $ gcloud config set core/account your-email-account@gmail.com
+
+  If you don't have an existing account, create one using:
+
+    $ gcloud init
 
   To list the active account name:
 

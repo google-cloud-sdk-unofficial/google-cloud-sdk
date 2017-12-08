@@ -151,16 +151,8 @@ class SshGA(base.Command):
       options = ssh_helper.GetConfig(ssh_utils.HostKeyAlias(instance),
                                      args.strict_host_key_checking)
 
-    extra_flags = []
+    extra_flags = ssh.ParseAndSubstituteSSHFlags(args, remote, ip_address)
     remainder = []
-
-    if args.ssh_flag:
-      for flag in args.ssh_flag:
-        for flag_part in flag.split():  # We want grouping here
-          dereferenced_flag = (
-              flag_part.replace('%USER%', remote.user)
-              .replace('%INSTANCE%', ip_address))
-          extra_flags.append(dereferenced_flag)
 
     if args.ssh_args:
       remainder.extend(args.ssh_args)
