@@ -21,6 +21,7 @@ from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
@@ -128,7 +129,10 @@ class Scp(ssh_utils.BaseSSHCLICommand):
           'your invocation refers to [{0}] instances: [{1}].'.format(
               len(instances), ', '.join(sorted(instances))))
 
-    instance_ref = self.CreateZonalReference(instances.pop(), args.zone)
+    instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
+        [instance], flags.ScopeEnum.ZONE, args.zone, self.resources,
+        scope_lister=flags.GetDefaultScopeLister(
+            self.compute_client, self.project))[0]
     instance = self.GetInstance(instance_ref)
     external_ip_address = ssh_utils.GetExternalIPAddress(instance)
 
@@ -159,7 +163,7 @@ class Scp(ssh_utils.BaseSSHCLICommand):
             ssh_utils.UserHost(file_spec.user, external_ip_address),
             file_spec.file_path))
 
-    self.ActuallyRun(args, scp_args, user, instance)
+    self.ActuallyRun(args, scp_args, user, instance, instance_ref.project)
 
 Scp.detailed_help = {
     'brief': 'Copy files to and from Google Compute Engine virtual machines '

@@ -291,6 +291,10 @@ def _GetCredentialsFromFlags():
   if FLAGS.use_gce_service_account:
     return _GetServiceAccountCredentialsFromFlags(None)
 
+  if FLAGS.application_default_credential_file:
+    return oauth2client.client.GoogleCredentials.from_stream(
+        FLAGS.application_default_credential_file)
+
 
   if FLAGS.service_account:
     credentials_getter = _GetServiceAccountCredentialsFromFlags
@@ -1035,6 +1039,11 @@ class _Load(BigqueryCmd):
         '\n ALLOW_FIELD_ADDITION: allow new fields to be added'
         '\n ALLOW_FIELD_RELAXATION: allow relaxing required fields to nullable',
         flag_values=fv)
+    flags.DEFINE_string(
+        'null_marker', None,
+        'An optional custom string that will represent a NULL value'
+        'in CSV import data.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, destination_table, source, schema=None):
@@ -1103,6 +1112,8 @@ class _Load(BigqueryCmd):
       opts['autodetect'] = self.autodetect
     if self.schema_update_option:
       opts['schema_update_options'] = self.schema_update_option
+    if self.null_marker:
+      opts['null_marker'] = self.null_marker
     job = client.Load(table_reference, source, schema=schema, **opts)
     if FLAGS.sync:
       _PrintJobMessages(client.FormatJobInfo(job))
@@ -2341,6 +2352,14 @@ class _Update(BigqueryCmd):
       reference = client.GetReference(identifier)
       _Typecheck(reference, (DatasetReference, TableReference),
                  "Invalid identifier '%s' for update." % (identifier,))
+
+    label_keys_to_remove = None
+    labels_to_set = None
+    if self.set_label is not None:
+      labels_to_set = _ParseLabels(self.set_label)
+    if self.clear_label is not None:
+      label_keys_to_remove = set(self.clear_label)
+
     if isinstance(reference, DatasetReference):
       if self.schema:
         raise app.UsageError('Cannot specify schema with a dataset.')
@@ -2356,13 +2375,6 @@ class _Update(BigqueryCmd):
       default_table_exp_ms = None
       if self.default_table_expiration is not None:
         default_table_exp_ms = self.default_table_expiration * 1000
-
-      label_keys_to_remove = None
-      labels_to_set = None
-      if self.set_label is not None:
-        labels_to_set = _ParseLabels(self.set_label)
-      if self.clear_label is not None:
-        label_keys_to_remove = set(self.clear_label)
       _UpdateDataset(client,
                      reference,
                      self.description,

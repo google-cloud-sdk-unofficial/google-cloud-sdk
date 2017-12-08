@@ -90,7 +90,7 @@ def main(args):
     if got_npm_start or os.path.exists(os.path.join(path, 'server.js')):
       runtime = 'custom' if config.params.custom else 'nodejs'
       appinfo = {'runtime': runtime,
-                 'vm': True}
+                 'env': 'flex'}
       comm.send_runtime_params({'got_package_json': got_package_json,
                                 'got_npm_start': got_npm_start,
                                 'node_version': node_version},

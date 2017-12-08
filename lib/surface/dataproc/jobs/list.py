@@ -47,7 +47,15 @@ class TypedJob(util.Bunch):
 class List(base.ListCommand):
   """List jobs in a project.
 
-  List jobs in a project.
+  List jobs in a project. An optional filter can be used to constrain the jobs
+  returned. Filters are case-sensitive and have the following syntax:
+
+    [field = value] AND [field [= value]] ...
+
+  where `field` is `status.state` or `labels.[KEY]`, and `[KEY]` is a label
+  key. `value` can be ```*``` to match all values. `status.state` can be either
+  `ACTIVE` or `INACTIVE`. Only the logical `AND` operator is supported;
+  space-separated items are treated as having an implicit `AND` operator.
 
   ## EXAMPLES
 
@@ -55,9 +63,10 @@ class List(base.ListCommand):
 
     $ {command}
 
-  To see the list of all active jobs in a cluster, run:
+  To see a list of all active jobs in cluster `my_cluster` with a label of
+  `env=staging`, run:
 
-    $ {command} --state-filter active --cluster my_cluster
+    $ {command} --filter='status.state = ACTIVE AND placement.clusterName = my_cluster AND labels.env = staging'
   """
 
   @staticmethod

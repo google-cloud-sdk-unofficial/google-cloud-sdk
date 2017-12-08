@@ -18,25 +18,25 @@ from googlecloudsdk.calliope import base
 
 
 class Operations(base.Group):
-  """View and manage Google Cloud Dataproc operations."""
+  """View and manage Google Cloud Dataproc operations.
 
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To cancel an active operation, run:
+  View and manage Google Cloud Dataproc operations.
 
-            $ {command} cancel operation_id
+  ## EXAMPLES
 
-          To view the details of an operation, run:
+  To cancel an active operation, run:
 
-            $ {command} describe operation_id
+    $ {command} cancel operation_id
 
-          To see the list of all operations, run:
+  To view the details of an operation, run:
 
-            $ {command} list
+    $ {command} describe operation_id
 
-          To delete the record of an inactive operation, run:
+  To see the list of all operations, run:
 
-            $ {command} delete operation_id
-          """,
-  }
+    $ {command} list
+
+  To delete the record of an inactive operation, run:
+
+    $ {command} delete operation_id
+  """

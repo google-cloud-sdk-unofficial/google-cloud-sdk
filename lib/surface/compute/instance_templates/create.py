@@ -122,14 +122,18 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
     if hasattr(args, 'network_interface') and args.network_interface:
       network_interfaces = (
           instance_template_utils.CreateNetworkInterfaceMessages)(
-              scope_prompter=self,
+              resources=self.resources,
+              scope_lister=flags.GetDefaultScopeLister(
+                  self.compute_client, self.project),
               messages=self.messages,
               network_interface_arg=args.network_interface,
               region=args.region)
     else:
       network_interfaces = [
           instance_template_utils.CreateNetworkInterfaceMessage(
-              scope_prompter=self,
+              resources=self.resources,
+              scope_lister=flags.GetDefaultScopeLister(
+                  self.compute_client, self.project),
               messages=self.messages,
               network=args.network,
               region=args.region,

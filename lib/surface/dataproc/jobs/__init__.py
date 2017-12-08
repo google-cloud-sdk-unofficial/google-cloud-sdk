@@ -18,33 +18,35 @@ from googlecloudsdk.calliope import base
 
 
 class Jobs(base.Group):
-  """Submit and manage Google Cloud Dataproc jobs."""
+  """Submit and manage Google Cloud Dataproc jobs.
 
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To learn about the types of jobs that can be submitted, run:
+  Submit and manage Google Cloud Dataproc jobs.
 
-            $ {command} submit
+  ## EXAMPLES
 
-          To view the output of a job as it runs, run:
+  To learn about the types of jobs that can be submitted, run:
 
-            $ {command} wait job_id
+    $ {command} submit
 
-          To cancel an active job, run:
+  To view the output of a job as it runs, run:
 
-            $ {command} kill job_id
+    $ {command} wait job_id
 
-          To view the details of a job, run:
+  To cancel an active job, run:
 
-            $ {command} describe job_id
+    $ {command} kill job_id
 
-          To see the list of all jobs, run:
+  To view the details of a job, run:
 
-            $ {command} list
+    $ {command} describe job_id
 
-          To delete the record of an inactive job, run:
+  To see the list of all jobs, run:
 
-            $ {command} delete job_id
-          """,
-  }
+    $ {command} list
+
+  To delete the record of an inactive job, run:
+
+    $ {command} delete job_id
+  """
+
+  pass

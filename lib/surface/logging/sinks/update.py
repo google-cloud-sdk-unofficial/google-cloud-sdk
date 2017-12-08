@@ -44,6 +44,11 @@ class Update(base.UpdateCommand):
         help=('Format of the log entries being exported. Detailed information: '
               'https://cloud.google.com/logging/docs/api/introduction_v2'),
         choices=('V1', 'V2'))
+    parser.add_argument(
+        '--unique-writer-identity', required=False, action='store_true',
+        help=('Whether to create a new writer identity for this sink. Only '
+              'available for project sinks. This will soon become the '
+              'default.'))
 
   def Collection(self):
     return 'logging.sinks'
@@ -71,12 +76,14 @@ class Update(base.UpdateCommand):
   def GetProjectSink(self):
     """Returns a project sink specified by the arguments."""
     # Use V2 logging API for project sinks.
-    client = self.context['logging_client_v2beta1']
-    messages = self.context['logging_messages_v2beta1']
+    client = self.context['logging_client_v2']
+    messages = self.context['logging_messages_v2']
     sink_ref = self.context['sink_reference']
     return client.projects_sinks.Get(
         messages.LoggingProjectsSinksGetRequest(
-            projectsId=sink_ref.projectsId, sinksId=sink_ref.sinksId))
+            sinkName=util.CreateResourceName(
+                'projects/{0}'.format(sink_ref.projectsId), 'sinks',
+                sink_ref.sinksId)))
 
   def UpdateLogSink(self, sink_data):
     """Updates a log sink specified by the arguments."""
@@ -99,11 +106,11 @@ class Update(base.UpdateCommand):
             logServicesId=sink_ref.logServicesId, sinksId=sink_data['name'],
             logSink=messages.LogSink(**sink_data)))
 
-  def UpdateProjectSink(self, sink_data):
+  def UpdateProjectSink(self, sink_data, unique_writer_identity):
     """Updates a project sink specified by the arguments."""
     # Use V2 logging API for project sinks.
-    client = self.context['logging_client_v2beta1']
-    messages = self.context['logging_messages_v2beta1']
+    client = self.context['logging_client_v2']
+    messages = self.context['logging_messages_v2']
     sink_ref = self.context['sink_reference']
     # Change string value to enum.
     sink_data['outputVersionFormat'] = getattr(
@@ -111,8 +118,11 @@ class Update(base.UpdateCommand):
         sink_data['outputVersionFormat'])
     return client.projects_sinks.Update(
         messages.LoggingProjectsSinksUpdateRequest(
-            projectsId=sink_ref.projectsId, sinksId=sink_data['name'],
-            logSink=messages.LogSink(**sink_data)))
+            sinkName=util.CreateResourceName(
+                'projects/{0}'.format(sink_ref.projectsId), 'sinks',
+                sink_data['name']),
+            logSink=messages.LogSink(**sink_data),
+            uniqueWriterIdentity=unique_writer_identity))
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -179,7 +189,8 @@ class Update(base.UpdateCommand):
         sink_data['outputVersionFormat'] = args.output_version_format
       else:
         sink_data['outputVersionFormat'] = sink.outputVersionFormat.name
-      result = util.TypedLogSink(self.UpdateProjectSink(sink_data))
+      result = util.TypedLogSink(
+          self.UpdateProjectSink(sink_data, args.unique_writer_identity))
       kind = 'project sink'
     log.UpdatedResource(sink_ref, kind=kind)
     util.PrintPermissionInstructions(result.destination, result.writer_identity)

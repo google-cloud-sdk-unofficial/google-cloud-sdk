@@ -40,8 +40,8 @@ class List(base.ListCommand):
     Returns:
       The list of log entries.
     """
-    client = self.context['logging_client_v2beta1']
-    messages = self.context['logging_messages_v2beta1']
+    client = self.context['logging_client_v2']
+    messages = self.context['logging_messages_v2']
 
     return list_pager.YieldFromList(
         client.monitoredResourceDescriptors,

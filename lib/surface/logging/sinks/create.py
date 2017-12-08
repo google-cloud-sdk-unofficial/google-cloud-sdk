@@ -40,6 +40,11 @@ class Create(base.CreateCommand):
         help=('Format of the log entries being exported. Detailed information: '
               'https://cloud.google.com/logging/docs/api/introduction_v2'),
         choices=('V1', 'V2'), default='V1')
+    parser.add_argument(
+        '--unique-writer-identity', required=False, action='store_true',
+        help=('Whether to create a new writer identity for this sink. Only '
+              'available for project sinks. This will soon become the '
+              'default.'))
 
   def Collection(self):
     return 'logging.sinks'
@@ -65,20 +70,22 @@ class Create(base.CreateCommand):
             logServicesId=sink_ref.logServicesId,
             logSink=messages.LogSink(**sink_data)))
 
-  def CreateProjectSink(self, sink_data):
+  def CreateProjectSink(self, sink_data, unique_writer_identity):
     """Creates a project sink specified by the arguments."""
     # Use V2 logging API for project sinks.
-    client = self.context['logging_client_v2beta1']
-    messages = self.context['logging_messages_v2beta1']
+    client = self.context['logging_client_v2']
+    messages = self.context['logging_messages_v2']
     sink_ref = self.context['sink_reference']
     # Change string value to enum.
     sink_data['outputVersionFormat'] = getattr(
         messages.LogSink.OutputVersionFormatValueValuesEnum,
         sink_data['outputVersionFormat'])
+    # TODO(b/32504514): Use resource parser
     return client.projects_sinks.Create(
         messages.LoggingProjectsSinksCreateRequest(
-            projectsId=sink_ref.projectsId,
-            logSink=messages.LogSink(**sink_data)))
+            parent='projects/{0}'.format(sink_ref.projectsId),
+            logSink=messages.LogSink(**sink_data),
+            uniqueWriterIdentity=unique_writer_identity))
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -110,7 +117,8 @@ class Create(base.CreateCommand):
                                  service_name=args.service)
     else:
       sink_data['outputVersionFormat'] = args.output_version_format
-      result = util.TypedLogSink(self.CreateProjectSink(sink_data))
+      result = util.TypedLogSink(
+          self.CreateProjectSink(sink_data, args.unique_writer_identity))
     log.CreatedResource(sink_ref)
     self._epilog_result_destination = result.destination
     self._writer_identity = result.writer_identity

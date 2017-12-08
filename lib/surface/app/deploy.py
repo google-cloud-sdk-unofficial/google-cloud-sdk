@@ -50,7 +50,7 @@ class DeployGA(base.SilentCommand):
     deploy_util.ArgsDeploy(parser)
 
   def Run(self, args):
-    return deploy_util.RunDeploy(args)
+    return deploy_util.RunDeploy(args, app_create=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

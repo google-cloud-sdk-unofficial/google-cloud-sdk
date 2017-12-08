@@ -89,24 +89,20 @@ class SetAutoscaling(base_classes.BaseAsyncMutator):
         scope_type=scope_type,
         project=self.project)
     autoscaler_name = getattr(autoscaler, 'name', None)
+    new_one = autoscaler_name is None
+    autoscaler_name = autoscaler_name or args.name
 
     if _IsZonalGroup(igm_ref):
-      as_ref = self.CreateZonalReference(
-          autoscaler_name or args.name, scope_name,
-          resource_type='autoscalers')
+      autoscaler_resource = managed_instance_groups_utils.BuildAutoscaler(
+          args, self.messages, igm_ref, autoscaler_name, zone=scope_name)
     else:
-      as_ref = self.CreateRegionalReference(
-          autoscaler_name or args.name, scope_name,
-          resource_type='regionAutoscalers')
-
-    autoscaler_resource = managed_instance_groups_utils.BuildAutoscaler(
-        args, self.messages, as_ref, igm_ref)
-    if not _IsZonalGroup(igm_ref):
-      region_link = self.CreateRegionalReference(
-          as_ref.region, as_ref.region, resource_type='regions')
+      autoscaler_resource = managed_instance_groups_utils.BuildAutoscaler(
+          args, self.messages, igm_ref, autoscaler_name, region=scope_name)
+      region_link = self.resources.Parse(
+          scope_name, collection='compute.regions')
       autoscaler_resource.region = region_link.SelfLink()
 
-    return autoscaler_resource, autoscaler_name is None
+    return autoscaler_resource, new_one
 
   def ScopeRequest(self, request, igm_ref):
     if _IsZonalGroup(igm_ref):

@@ -17,6 +17,7 @@
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib import info_holder
 from googlecloudsdk.core import log
+from googlecloudsdk.core.diagnostics import network_diagnostics
 from googlecloudsdk.core.util import platforms
 
 
@@ -33,8 +34,15 @@ class Info(base.Command):
         '--show-log',
         action='store_true',
         help='Print the contents of the last log file.')
+    parser.add_argument(
+        '--run-diagnostics',
+        action='store_true',
+        help='Run diagnostics on your installation of the Cloud SDK.')
 
   def Run(self, args):
+    if args.run_diagnostics:
+      network_diagnostics.NetworkDiagnostic().RunChecks()
+      return
     holder = info_holder.InfoHolder()
     python_version = platforms.PythonVersion()
     if not python_version.IsSupported():
@@ -44,7 +52,8 @@ class Info(base.Command):
     return holder
 
   def Display(self, args, info):
-    log.Print(info)
+    if not args.run_diagnostics:
+      log.Print(info)
 
     if args.show_log and info.logs.last_log:
       log.Print('\nContents of log file: [{0}]\n'

@@ -11,7 +11,7 @@ gcloud init \- initialize or reinitialize gcloud
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud init\fR [\fB\-\-console\-only\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud init\fR [\fB\-\-console\-only\fR] [\fB\-\-skip\-diagnostics\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -57,6 +57,11 @@ you are running.)
 \fB\-\-console\-only\fR
 .RS 2m
 Prevent the command from launching a browser for authorization.
+
+.RE
+\fB\-\-skip\-diagnostics\fR
+.RS 2m
+Do not run diagnostics.
 
 
 .RE

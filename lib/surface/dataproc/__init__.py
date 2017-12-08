@@ -25,23 +25,23 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Dataproc(base.Group):
-  """Create and manage Google Cloud Dataproc clusters and jobs."""
+  """Create and manage Google Cloud Dataproc clusters and jobs.
+
+  Create and manage Google Cloud Dataproc clusters and jobs.
+
+  ## EXAMPLES
+
+  To see how to create and manage clusters, run:
+
+    $ {command} clusters
+
+  To see how to submit and manage jobs, run:
+
+    $ {command} jobs
+  """
 
   # The only dataproc region
   REGION = 'global'
-
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To see how to create and manage clusters, run:
-
-            $ {command} clusters
-
-          To see how to submit and manage jobs, run:
-
-            $ {command} jobs
-          """,
-  }
 
   def Filter(self, context, args):
     context['dataproc_messages'] = apis.GetMessagesModule('dataproc', 'v1')

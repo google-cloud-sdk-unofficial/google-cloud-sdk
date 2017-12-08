@@ -336,8 +336,8 @@ class RuntimeTests(testutil.TestBase):
             app_yaml_contents,
             textwrap.dedent("""\
                 entrypoint: my_entrypoint
+                env: flex
                 runtime: custom
-                vm: true
                 """))
         self.assertEqual(set(os.listdir(self.temp_path)),
                          {'test.py', 'app.yaml', '.dockerignore', 'Dockerfile'})
@@ -352,8 +352,8 @@ class RuntimeTests(testutil.TestBase):
             app_yaml_contents,
             textwrap.dedent("""\
                 entrypoint: my_entrypoint
+                env: flex
                 runtime: custom
-                vm: true
                 """))
         self.assertEqual(set(os.listdir(self.temp_path)),
                          {'test.py', 'app.yaml'})

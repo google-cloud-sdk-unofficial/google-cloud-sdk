@@ -110,8 +110,8 @@ class CreateGA(base_classes.BaseAsyncCreator,
           project=self.project,
           zone=group_ref.zone)
     else:
-      region_link = self.CreateRegionalReference(
-          group_ref.region, group_ref.region, resource_type='regions')
+      region_link = self.resources.Parse(
+          group_ref.region, collection='compute.regions')
       instance_group_manager.region = region_link.SelfLink()
       return self.messages.ComputeRegionInstanceGroupManagersInsertRequest(
           instanceGroupManager=instance_group_manager,
@@ -133,8 +133,8 @@ class CreateGA(base_classes.BaseAsyncCreator,
                ComputeManagedInstanceGroupsInsertRequest message object.
     """
     group_ref = self.CreateGroupReference(args)
-    template_ref = self.CreateGlobalReference(args.template,
-                                              resource_type='instanceTemplates')
+    template_ref = self.resources.Parse(args.template,
+                                        collection='compute.instanceTemplates')
     if args.target_pool:
       region = self.GetRegionForGroup(group_ref)
       pool_refs = self.CreateRegionalReferences(

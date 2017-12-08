@@ -26,7 +26,24 @@ from googlecloudsdk.core import log
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Spark(base_classes.JobSubmitter):
-  """Submit a Spark job to a cluster."""
+  """Submit a Spark job to a cluster.
+
+  Submit a Spark job to a cluster.
+
+  ## EXAMPLES
+
+  To submit a Spark job that runs the main class of a jar, run:
+
+    $ {command} --cluster my_cluster --jar my_jar.jar arg1 arg2
+
+  To submit a Spark job that runs a specific class of a jar, run:
+
+    $ {command} --cluster my_cluster --class org.my.main.Class --jars my_jar1.jar,my_jar2.jar arg1 arg2
+
+  To submit a Spark job that runs a jar that is already on the cluster, run:
+
+    $ {command} --cluster my_cluster --class org.apache.spark.examples.SparkPi --jars file:///usr/lib/spark/lib/spark-examples.jar 1000
+  """
 
   @staticmethod
   def Args(parser):
@@ -47,7 +64,24 @@ class Spark(base_classes.JobSubmitter):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SparkBeta(base_classes.JobSubmitterBeta):
-  """Submit a Spark job to a cluster using Beta features of gcloud dataproc."""
+  """Submit a Spark job to a cluster.
+
+  Submit a Spark job to a cluster.
+
+  ## EXAMPLES
+
+  To submit a Spark job that runs the main class of a jar, run:
+
+    $ {command} --cluster my_cluster --jar my_jar.jar arg1 arg2
+
+  To submit a Spark job that runs a specific class of a jar, run:
+
+    $ {command} --cluster my_cluster --class org.my.main.Class --jars my_jar1.jar,my_jar2.jar arg1 arg2
+
+  To submit a Spark job that runs a jar that is already on the cluster, run:
+
+    $ {command} --cluster my_cluster --class org.apache.spark.examples.SparkPi --jars file:///usr/lib/spark/lib/spark-examples.jar 1000
+  """
 
   @staticmethod
   def Args(parser):
@@ -159,22 +193,3 @@ class SparkBase(object):
           args.properties, messages.SparkJob.PropertiesValue)
 
     job.sparkJob = spark_job
-
-Spark.detailed_help = {
-    'DESCRIPTION': '{description}',
-    'EXAMPLES': """\
-        To submit a Spark job that runs the main class of a jar, run:
-
-          $ {command} --cluster my_cluster --jar my_jar.jar arg1 arg2
-
-        To submit a Spark job that runs a specific class of a jar, run:
-
-          $ {command} --cluster my_cluster --class org.my.main.Class --jars my_jar1.jar,my_jar2.jar arg1 arg2
-
-        To submit a Spark job that runs a jar that is already on the \
-cluster, run:
-
-          $ {command} --cluster my_cluster --class org.apache.spark.examples.SparkPi --jars file:///usr/lib/spark/lib/spark-examples.jar 1000
-        """,
-}
-SparkBeta.detailed_help = Spark.detailed_help

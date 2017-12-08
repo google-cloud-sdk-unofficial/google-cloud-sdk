@@ -19,16 +19,16 @@ from googlecloudsdk.calliope import base
 
 
 class Describe(base.DescribeCommand):
-  """View the details of a job."""
+  """View the details of a job.
 
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To view the details of a job, run:
+  View the details of a job.
 
-            $ {command} job_id
-          """,
-  }
+  ## EXAMPLES
+
+  To view the details of a job, run:
+
+    $ {command} job_id
+  """
 
   @staticmethod
   def Args(parser):

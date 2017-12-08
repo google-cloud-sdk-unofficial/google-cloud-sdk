@@ -18,16 +18,16 @@ from googlecloudsdk.calliope import base
 
 
 class Describe(base.DescribeCommand):
-  """View the details of an operation."""
+  """View the details of an operation.
 
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To view the details of an operation, run:
+  View the details of an operation.
 
-            $ {command} operation_id
-          """,
-  }
+  ## EXAMPLES
+
+  To view the details of an operation, run:
+
+    $ {command} operation_id
+  """
 
   @staticmethod
   def Args(parser):

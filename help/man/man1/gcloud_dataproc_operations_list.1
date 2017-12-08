@@ -17,7 +17,19 @@ gcloud dataproc operations list \- view the list of all operations
 
 .SH "DESCRIPTION"
 
-View the list of all operations.
+View a list of operations in a project. An optional filter can be used to
+constrain the operations returned. Filters are case\-sensitive and have the
+following syntax:
+
+.RS 2m
+field = value [AND [field = value]] ...
+.RE
+
+where \f5field\fR is either of \f5status.state\fR or \f5labels.[KEY]\fR, where
+\f5[KEY]\fR is a label key. \f5value\fR can be \f5*\fR to match all values.
+\f5status.state\fR is one of: \f5PENDING\fR, \f5ACTIVE\fR, \f5DONE\fR. Only the
+logical \f5AND\fR operator is supported; space\-separated items are treated as
+having an implicit \f5AND\fR operator.
 
 
 
@@ -25,13 +37,16 @@ View the list of all operations.
 
 \fB\-\-cluster\fR=\fICLUSTER\fR
 .RS 2m
-Restrict to the operations of this Dataproc cluster.
+Restrict to the operations of this Dataproc cluster. This flag is ignored when
+\-\-filter is specified. The equivalent term in a \-\-filter expression is:
+\f5clusterName = myclustername\fR
 
 .RE
 \fB\-\-state\-filter\fR=\fISTATE_FILTER\fR
 .RS 2m
-Filter by cluster state. \fISTATE_FILTER\fR must be one of: \fBactive\fR,
-\fBinactive\fR.
+Filter by cluster state. This flag is ignored when \-\-filter is specified. The
+equivalent term in a \-\-filter expression is: \f5status.state = ACTIVE\fR.
+\fISTATE_FILTER\fR must be one of: \fBactive\fR, \fBinactive\fR.
 
 
 .RE
@@ -84,9 +99,18 @@ To see the list of all operations, run:
 $ gcloud dataproc operations list
 .RE
 
-To see the list of all active operations in a cluster, run:
+To see the list of all active operations in a cluster named mycluster, run:
 
 .RS 2m
-$ gcloud dataproc operations list \-\-state\-filter active \e
-    \-\-cluster my_cluster
+$ gcloud dataproc operations list \e
+    \-\-filter='status.state = RUNNING AND clusterName = mycluster'
+.RE
+
+To see a list of all pending operations the label \f5env=staging\fR on cluster
+\f5mycluster\fR, run:
+
+.RS 2m
+$ gcloud dataproc operations list \e
+    \-\-filter='status.state = PENDING  AND labels.env = staging AND
+ clusterName = mycluster'
 .RE

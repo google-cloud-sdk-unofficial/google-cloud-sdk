@@ -18,8 +18,23 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
 from googlecloudsdk.api_lib.compute import path_simplifier
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
+
+
+def _RaiseIfMixZoneRegion(igm_refs):
+  zones_num = 0
+  regions_num = 0
+  for igm in igm_refs:
+    if hasattr(igm, 'zone'):
+      zones_num += 1
+    if hasattr(igm, 'region'):
+      regions_num += 1
+  if zones_num > 0 and regions_num > 0:
+    raise exceptions.ToolException(
+        'Not Supported: You can not mix delete of zonal and regional '
+        'Managed Instance Groups')
 
 
 class Delete(base_classes.BaseAsyncMutator):
@@ -109,6 +124,11 @@ class Delete(base_classes.BaseAsyncMutator):
             scope_lister=flags.GetDefaultScopeLister(
                 self.compute_client, self.project))
     scope_name = self._GetCommonScopeNameForRefs(igm_refs)
+
+    # Disable ability to mix zonal and regional MIG delete in one command.
+    # This is temporary workaround of missing functionality
+    # FIXME(b/32276307)
+    _RaiseIfMixZoneRegion(igm_refs)
 
     utils.PromptForDeletion(
         igm_refs, scope_name=scope_name, prompt_title=None)

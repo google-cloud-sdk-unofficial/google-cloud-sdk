@@ -49,8 +49,8 @@ class SetInstanceTemplate(base_classes.BaseAsyncMutator):
                    args, self.resources, default_scope=flags.ScopeEnum.ZONE,
                    scope_lister=flags.GetDefaultScopeLister(
                        self.compute_client, self.project))
-    template_ref = self.CreateGlobalReference(
-        args.template, resource_type='instanceTemplates')
+    template_ref = self.resources.Parse(
+        args.template, collection='compute.instanceTemplates')
 
     if igm_ref.Collection() == 'compute.instanceGroupManagers':
       service = self.compute.instanceGroupManagers

@@ -23,7 +23,20 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Hive(base_classes.JobSubmitter):
-  """Submit a Hive job to a cluster."""
+  """Submit a Hive job to a cluster.
+
+  Submit a Hive job to a cluster.
+
+  ## EXAMPLES
+
+  To submit a Hive job with a local script, run:
+
+    $ {command} --cluster my_cluster --file my_queries.q
+
+  To submit a Hive job with inline queries, run:
+
+    $ {command} --cluster my_cluster -e "CREATE EXTERNAL TABLE foo(bar int) LOCATION 'gs://my_bucket/'" -e "SELECT * FROM foo WHERE bar > 2"
+  """
 
   @staticmethod
   def Args(parser):
@@ -43,7 +56,20 @@ class Hive(base_classes.JobSubmitter):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class HiveBeta(base_classes.JobSubmitterBeta):
-  """Submit a Hive job to a cluster using Beta features of gcloud dataproc."""
+  """Submit a Hive job to a cluster.
+
+  Submit a Hive job to a cluster.
+
+  ## EXAMPLES
+
+  To submit a Hive job with a local script, run:
+
+    $ {command} --cluster my_cluster --file my_queries.q
+
+  To submit a Hive job with inline queries, run:
+
+    $ {command} --cluster my_cluster -e "CREATE EXTERNAL TABLE foo(bar int) LOCATION 'gs://my_bucket/'" -e "SELECT * FROM foo WHERE bar > 2"
+  """
 
   @staticmethod
   def Args(parser):
@@ -133,17 +159,3 @@ class HiveBase(object):
           args.properties, messages.HiveJob.PropertiesValue)
 
     job.hiveJob = hive_job
-
-Hive.detailed_help = {
-    'DESCRIPTION': '{description}',
-    'EXAMPLES': """\
-        To submit a Hive job with a local script, run:
-
-          $ {command} --cluster my_cluster --file my_queries.q
-
-        To submit a Hive job with inline queries, run:
-
-          $ {command} --cluster my_cluster -e "CREATE EXTERNAL TABLE foo(bar int) LOCATION 'gs://my_bucket/'" -e "SELECT * FROM foo WHERE bar > 2"
-        """,
-}
-HiveBeta.detailed_help = Hive.detailed_help

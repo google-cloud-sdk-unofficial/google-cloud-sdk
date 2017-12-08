@@ -16,23 +16,47 @@
 import enum
 
 
-BASE_URL = 'https://logging.googleapis.com/v2beta1/'
+BASE_URL = 'https://logging.googleapis.com/v2/'
 
 
 class Collections(enum.Enum):
   """Collections for all supported apis."""
 
+  BILLINGACCOUNTS_SINKS = (
+      'billingAccounts.sinks',
+      '{+sinkName}',
+      {
+          '':
+              'billingAccounts/{billingAccountsId}/sinks/{sinksId}',
+      },
+      [u'sinkName']
+  )
+  ORGANIZATIONS_SINKS = (
+      'organizations.sinks',
+      '{+sinkName}',
+      {
+          '':
+              'organizations/{organizationsId}/sinks/{sinksId}',
+      },
+      [u'sinkName']
+  )
   PROJECTS_METRICS = (
       'projects.metrics',
-      'projects/{projectsId}/metrics/{metricsId}',
-      {},
-      [u'projectsId', u'metricsId']
+      '{+metricName}',
+      {
+          '':
+              'projects/{projectsId}/metrics/{metricsId}',
+      },
+      [u'metricName']
   )
   PROJECTS_SINKS = (
       'projects.sinks',
-      'projects/{projectsId}/sinks/{sinksId}',
-      {},
-      [u'projectsId', u'sinksId']
+      '{+sinkName}',
+      {
+          '':
+              'projects/{projectsId}/sinks/{sinksId}',
+      },
+      [u'sinkName']
   )
 
   def __init__(self, collection_name, path, flat_paths, params):

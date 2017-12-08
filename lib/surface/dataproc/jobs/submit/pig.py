@@ -23,7 +23,20 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Pig(base_classes.JobSubmitter):
-  """Submit a Pig job to a cluster."""
+  """Submit a Pig job to a cluster.
+
+  Submit a Pig job to a cluster.
+
+  ## EXAMPLES
+
+  To submit a Pig job with a local script, run:
+
+    $ {command} --cluster my_cluster --file my_queries.pig
+
+  To submit a Pig job with inline queries, run:
+
+    $ {command} --cluster my_cluster -e "LNS = LOAD 'gs://my_bucket/my_file.txt' AS (line)" -e "WORDS = FOREACH LNS GENERATE FLATTEN(TOKENIZE(line)) AS word" -e "GROUPS = GROUP WORDS BY word" -e "WORD_COUNTS = FOREACH GROUPS GENERATE group, COUNT(WORDS)" -e "DUMP WORD_COUNTS"
+  """
 
   @staticmethod
   def Args(parser):
@@ -44,7 +57,20 @@ class Pig(base_classes.JobSubmitter):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class PigBeta(base_classes.JobSubmitterBeta):
-  """Submit a Pig job to a cluster with gcloud dataproc beta features."""
+  """Submit a Pig job to a cluster.
+
+  Submit a Pig job to a cluster.
+
+  ## EXAMPLES
+
+  To submit a Pig job with a local script, run:
+
+    $ {command} --cluster my_cluster --file my_queries.pig
+
+  To submit a Pig job with inline queries, run:
+
+    $ {command} --cluster my_cluster -e "LNS = LOAD 'gs://my_bucket/my_file.txt' AS (line)" -e "WORDS = FOREACH LNS GENERATE FLATTEN(TOKENIZE(line)) AS word" -e "GROUPS = GROUP WORDS BY word" -e "WORD_COUNTS = FOREACH GROUPS GENERATE group, COUNT(WORDS)" -e "DUMP WORD_COUNTS"
+  """
 
   @staticmethod
   def Args(parser):

@@ -23,7 +23,20 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class SparkSql(base_classes.JobSubmitter):
-  """Submit a Spark SQL job to a cluster."""
+  """Submit a Spark SQL job to a cluster.
+
+  Submit a Spark SQL job to a cluster.
+
+  ## EXAMPLES
+
+  To submit a Spark SQL job with a local script, run:
+
+    $ {command} --cluster my_cluster --file my_queries.ql
+
+  To submit a Spark SQL job with inline queries, run:
+
+    $ {command} --cluster my_cluster -e "CREATE EXTERNAL TABLE foo(bar int) LOCATION 'gs://my_bucket/'" -e "SELECT * FROM foo WHERE bar > 2"
+  """
 
   @staticmethod
   def Args(parser):
@@ -44,7 +57,20 @@ class SparkSql(base_classes.JobSubmitter):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SparkSqlBeta(base_classes.JobSubmitterBeta):
-  """Submit a Spark SQL job to a cluster using Beta features."""
+  """Submit a Spark SQL job to a cluster.
+
+  Submit a Spark SQL job to a cluster.
+
+  ## EXAMPLES
+
+  To submit a Spark SQL job with a local script, run:
+
+    $ {command} --cluster my_cluster --file my_queries.ql
+
+  To submit a Spark SQL job with inline queries, run:
+
+    $ {command} --cluster my_cluster -e "CREATE EXTERNAL TABLE foo(bar int) LOCATION 'gs://my_bucket/'" -e "SELECT * FROM foo WHERE bar > 2"
+  """
 
   @staticmethod
   def Args(parser):
@@ -138,17 +164,3 @@ class SparkSqlBase(object):
           args.properties, messages.SparkSqlJob.PropertiesValue)
 
     job.sparkSqlJob = spark_sql_job
-
-SparkSql.detailed_help = {
-    'DESCRIPTION': '{description}',
-    'EXAMPLES': """\
-      To submit a Spark SQL job with a local script, run:
-
-        $ {command} --cluster my_cluster --file my_queries.ql
-
-      To submit a Spark SQL job with inline queries, run:
-
-        $ {command} --cluster my_cluster -e "CREATE EXTERNAL TABLE foo(bar int) LOCATION 'gs://my_bucket/'" -e "SELECT * FROM foo WHERE bar > 2"
-      """,
-}
-SparkSqlBeta.detailed_help = SparkSql.detailed_help

@@ -22,16 +22,16 @@ from googlecloudsdk.core.console import console_io
 
 
 class Kill(base.Command):
-  """Kill an active job."""
+  """Kill an active job.
 
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To cancel a job, run:
+  Kill an active job.
 
-            $ {command} job_id
-          """,
-  }
+  ## EXAMPLES
+
+  To cancel a job, run:
+
+    $ {command} job_id
+  """
 
   @staticmethod
   def Args(parser):

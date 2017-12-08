@@ -1,0 +1,75 @@
+
+.TH "GCLOUD_APP_REGIONS_LIST" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud app regions list \- list the availability of flex and standard environments for each region
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud app regions list\fR [\fB\-\-filter\fR=\fIEXPRESSION\fR] [\fB\-\-limit\fR=\fILIMIT\fR] [\fB\-\-page\-size\fR=\fIPAGE_SIZE\fR] [\fB\-\-sort\-by\fR=[\fIFIELD\fR,...]] [\fB\-\-uri\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+
+.SH "DESCRIPTION"
+
+List the availability of flex and standard environments for each region.
+
+
+
+.SH "LIST COMMAND FLAGS"
+
+\fB\-\-filter\fR=\fIEXPRESSION\fR
+.RS 2m
+Apply a Boolean filter \fIEXPRESSION\fR to each resource item to be listed. If
+the expression evaluates True then that item is listed. For more details run $
+gcloud topic filters. If \fB\-\-limit\fR is also specified then it is applied
+after \fB\-\-filter\fR.
+
+.RE
+\fB\-\-limit\fR=\fILIMIT\fR
+.RS 2m
+The maximum number of resources to list. The default is \fBunlimited\fR. If
+\fB\-\-filter\fR is also specified then it is applied before \fB\-\-limit\fR.
+
+.RE
+\fB\-\-page\-size\fR=\fIPAGE_SIZE\fR
+.RS 2m
+Some services group resource list output into pages. This flag specifies the
+maximum number of resources per page. The default is determined by the service
+if it supports paging, otherwise it is \fBunlimited\fR (no paging). Paging may
+be applied before or after \fB\-\-filter\fR and \fB\-\-limit\fR depending on the
+service.
+
+.RE
+\fB\-\-sort\-by\fR=[\fIFIELD\fR,...]
+.RS 2m
+A comma\-separated list of resource field key names to sort by. The default
+order is ascending. Prefix a field with ``~'' for descending order on that
+field.
+
+.RE
+\fB\-\-uri\fR
+.RS 2m
+Print a list of resource URIs instead of the default output.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To view regional availability of App Engine runtime environments, run:
+
+.RS 2m
+$ gcloud app regions list
+.RE

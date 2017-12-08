@@ -21,6 +21,7 @@ from googlecloudsdk.api_lib.compute import ssh_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.core.util import platforms
 
 
@@ -121,7 +122,10 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
           'Expected argument of the form [USER@]INSTANCE; received [{0}].'
           .format(args.user_host))
 
-    instance_ref = self.CreateZonalReference(instance, args.zone)
+    instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
+        [instance], flags.ScopeEnum.ZONE, args.zone, self.resources,
+        scope_lister=flags.GetDefaultScopeLister(
+            self.compute_client, self.project))[0]
     instance = self.GetInstance(instance_ref)
     external_ip_address = ssh_utils.GetExternalIPAddress(instance)
 
@@ -166,7 +170,8 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
     # don't want to consider it an error. We do, however, want to propagate its
     # return code.
     return_code = self.ActuallyRun(
-        args, ssh_args, user, instance, strict_error_checking=False,
+        args, ssh_args, user, instance, instance_ref.project,
+        strict_error_checking=False,
         use_account_service=self._use_accounts_service)
     if return_code:
       # Can't raise an exception because we don't want any "ERROR" message

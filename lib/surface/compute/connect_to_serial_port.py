@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.core import http
 from googlecloudsdk.core import log
 
@@ -145,7 +146,10 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
                  'updating gcloud and connecting again.'
                  .format(SERIAL_PORT_GATEWAY, HOST_KEY_URL))
 
-    instance_ref = self.CreateZonalReference(instance, args.zone)
+    instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
+        [instance], flags.ScopeEnum.ZONE, args.zone, self.resources,
+        scope_lister=flags.GetDefaultScopeLister(
+            self.compute_client, self.project))[0]
     instance = self.GetInstance(instance_ref)
 
     ssh_args = [self.ssh_executable]
@@ -177,7 +181,7 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
     # the instance itself through SSH, so the instance doesn't need to have
     # fully booted to connect to the serial port.
     return_code = self.ActuallyRun(
-        args, ssh_args, user, instance,
+        args, ssh_args, user, instance, instance_ref.project,
         strict_error_checking=False, use_account_service=False,
         wait_for_sshable=False)
     if return_code:

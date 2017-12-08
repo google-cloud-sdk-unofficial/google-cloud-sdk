@@ -25,7 +25,19 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class PySpark(base_classes.JobSubmitter):
-  """Submit a PySpark job to a cluster."""
+  """Submit a PySpark job to a cluster.
+
+  Submit a PySpark job to a cluster.
+
+  ## EXAMPLES
+  To submit a PySpark job with a local script, run:
+
+    $ {command} --cluster my_cluster my_script.py
+
+  To submit a Spark job that runs a script that is already on the cluster, run:
+
+    $ {command} --cluster my_cluster file:///usr/lib/spark/examples/src/main/python/pi.py 100
+  """
 
   @staticmethod
   def Args(parser):
@@ -46,7 +58,19 @@ class PySpark(base_classes.JobSubmitter):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class PySparkBeta(base_classes.JobSubmitterBeta):
-  """Submit a PySpark job to a cluster with gcloud dataproc beta features."""
+  """Submit a PySpark job to a cluster.
+
+  Submit a PySpark job to a cluster.
+
+  ## EXAMPLES
+  To submit a PySpark job with a local script, run:
+
+    $ {command} --cluster my_cluster my_script.py
+
+  To submit a Spark job that runs a script that is already on the cluster, run:
+
+    $ {command} --cluster my_cluster file:///usr/lib/spark/examples/src/main/python/pi.py 100
+  """
 
   @staticmethod
   def Args(parser):

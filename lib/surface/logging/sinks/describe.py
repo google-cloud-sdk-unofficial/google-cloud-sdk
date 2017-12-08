@@ -56,12 +56,15 @@ class Describe(base.DescribeCommand):
   def GetProjectSink(self):
     """Returns a project sink specified by the arguments."""
     # Use V2 logging API for project sinks.
-    client = self.context['logging_client_v2beta1']
-    messages = self.context['logging_messages_v2beta1']
+    client = self.context['logging_client_v2']
+    messages = self.context['logging_messages_v2']
     sink_ref = self.context['sink_reference']
+    # TODO(b/32504514): Use resource parser
     return client.projects_sinks.Get(
         messages.LoggingProjectsSinksGetRequest(
-            projectsId=sink_ref.projectsId, sinksId=sink_ref.sinksId))
+            sinkName=util.CreateResourceName(
+                'projects/{0}'.format(sink_ref.projectsId), 'sinks',
+                sink_ref.sinksId)))
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

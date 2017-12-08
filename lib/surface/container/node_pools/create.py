@@ -109,10 +109,13 @@ are always added, even if not explicitly specified.
 SCOPE can be either the full URI of the scope or an alias.
 Available aliases are:
 
+[options="header",format="csv",grid="none",frame="none"]
+|========
 Alias,URI
 {aliases}
+|========
 """.format(
-    aliases='\n        '.join(
+    aliases='\n'.join(
         ','.join(value) for value in
         sorted(constants.SCOPES.iteritems()))))
   parser.add_argument(

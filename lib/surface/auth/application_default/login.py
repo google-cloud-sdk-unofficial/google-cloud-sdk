@@ -67,10 +67,11 @@ class Login(base.Command):
     parser.add_argument(
         '--scopes',
         type=arg_parsers.ArgList(min_length=1),
-        help='The names of the scopes to authorize for. By default the '
-        'https://www.googleapis.com/auth/cloud-platform scope is used. '
+        help='The names of the scopes to authorize for. By default '
+        '{0} scopes are used. '
         'The list of possible scopes can be found at: '
-        '[](https://developers.google.com/identity/protocols/googlescopes).')
+        '[](https://developers.google.com/identity/protocols/googlescopes).'
+        .format(', '.join(auth_util.DEFAULT_SCOPES)))
 
   def Format(self, unused_args):
     return None
@@ -107,7 +108,7 @@ class Login(base.Command):
       console_io.PromptContinue(
           message=message, throw_if_unattended=True, cancel_on_no=True)
 
-    scopes = args.scopes or [auth_util.CLOUD_PLATFORM_SCOPE]
+    scopes = args.scopes or auth_util.DEFAULT_SCOPES
     launch_browser = auth_util.ShouldLaunchBrowser(args.launch_browser)
     if args.client_id_file:
       creds = auth_util.DoInstalledAppBrowserFlow(

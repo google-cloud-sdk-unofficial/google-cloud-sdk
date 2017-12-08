@@ -76,7 +76,7 @@ class RuntimeTestCase(testutil.TestBase):
 
         app_yaml = self.file_contents('app.yaml')
         self.assertIn('runtime: php\n', app_yaml)
-        self.assertIn('vm: true\n', app_yaml)
+        self.assertIn('env: flex\n', app_yaml)
         self.assertIn('runtime_config:\n  document_root: .\n', app_yaml)
 
         self.assertFalse(os.path.exists(self.full_path('Dockerfile')))
@@ -93,7 +93,7 @@ class RuntimeTestCase(testutil.TestBase):
 
         app_yaml = self.file_contents('app.yaml')
         self.assertIn('runtime: php\n', app_yaml)
-        self.assertIn('vm: true\n', app_yaml)
+        self.assertIn('env: flex\n', app_yaml)
         self.assertIn('runtime_config:\n  document_root: .\n', app_yaml)
 
         self.assertFalse(os.path.exists(self.full_path('Dockerfile')))

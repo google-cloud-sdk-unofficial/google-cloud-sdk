@@ -1643,31 +1643,42 @@ class BigqueryClient(object):
     """
     _Typecheck(reference, ApiClientHelper.TableReference, method='UpdateTable')
 
-    body = BigqueryClient.ConstructObjectInfo(reference)
+    # Get the existing table and associated ETag.
+    table = self.apiclient.tables().get(**dict(reference)).execute()
     if schema:
-      body['schema'] = {'fields': schema}
+      table['schema'] = {'fields': schema}
     if friendly_name is not None:
-      body['friendlyName'] = friendly_name
+      table['friendlyName'] = friendly_name
     if description is not None:
-      body['description'] = description
+      table['description'] = description
     if expiration is not None:
       if expiration == 0:
-        body['expirationTime'] = None
+        table['expirationTime'] = None
       else:
-        body['expirationTime'] = expiration
+        table['expirationTime'] = expiration
     if view_query is not None:
       view_args = {'query': view_query}
       if view_udf_resources is not None:
         view_args['userDefinedFunctionResources'] = view_udf_resources
-      body['view'] = view_args
+      table['view'] = view_args
       if use_legacy_sql is not None:
         view_args['useLegacySql'] = use_legacy_sql
     if external_data_config is not None:
-      body['externalDataConfiguration'] = external_data_config
+      table['externalDataConfiguration'] = external_data_config
     if time_partitioning is not None:
-      body['timePartitioning'] = time_partitioning
+      table['timePartitioning'] = time_partitioning
 
-    self.apiclient.tables().patch(body=body, **dict(reference)).execute()
+    request = self.apiclient.tables().update(body=table, **dict(reference))
+
+    # Perform a conditional update to protect against concurrent
+    # modifications to this table.  By placing the ETag returned in
+    # the get operation into the If-Match header, the API server will
+    # make sure the table hasn't changed.  If there is a conflicting
+    # change, this update will fail with a "Precondition failed"
+    # error.
+    if table['etag'] is not None:
+      request.headers['If-Match'] = table['etag']
+    request.execute()
 
   def UpdateDataset(self,
                     reference,
@@ -2446,6 +2457,7 @@ class BigqueryClient(object):
            projection_fields=None,
            autodetect=None,
            schema_update_options=None,
+           null_marker=None,
            **kwds):
     """Load the given data into BigQuery.
 
@@ -2484,6 +2496,7 @@ class BigqueryClient(object):
           and options of the source files if they are CSV or JSON formats.
       schema_update_options: schema update options when appending to the
           destination table or truncating a table partition.
+      null_marker: Optional. String that will be interpreted as a NULL value.
       **kwds: Passed on to self.ExecuteJob.
 
     Returns:
@@ -2514,6 +2527,7 @@ class BigqueryClient(object):
         ignore_unknown_values=ignore_unknown_values,
         projection_fields=projection_fields,
         schema_update_options=schema_update_options,
+        null_marker=null_marker,
         autodetect=autodetect)
     return self.ExecuteJob(configuration={'load': load_config},
                            upload_file=upload_file, **kwds)
@@ -2695,6 +2709,7 @@ class _TableTableReader(_TableReader):
       kwds['pageToken'] = page_token
     else:
       kwds['startIndex'] = start_row
+    data = None
     if data is None:
       data = self._apiclient.tabledata().list(**kwds).execute()
     page_token = data.get('pageToken', None)

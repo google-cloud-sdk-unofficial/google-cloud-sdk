@@ -42,7 +42,7 @@ class RuntimeTests(testutil.TestBase):
         with open(self.full_path('app.yaml')) as f:
             contents = yaml.load(f)
         self.assertEqual(contents,
-                         {'runtime': 'go', 'api_version': 'go1', 'vm': True})
+                         {'runtime': 'go', 'api_version': 'go1', 'env': 'flex'})
 
         self.assert_no_file('Dockerfile')
         self.assert_no_file('.dockerignore')
@@ -61,7 +61,7 @@ class RuntimeTests(testutil.TestBase):
         with open(self.full_path('app.yaml')) as f:
             contents = yaml.load(f)
         self.assertEqual(contents,
-                         {'runtime': 'go', 'api_version': 'go1', 'vm': True})
+                         {'runtime': 'go', 'api_version': 'go1', 'env': 'flex'})
 
         self.assert_no_file('Dockerfile')
         self.assert_no_file('.dockerignore')
@@ -80,7 +80,7 @@ class RuntimeTests(testutil.TestBase):
         self.generate_configs(custom=True)
         self.assert_file_exists_with_contents(
             'app.yaml',
-            'api_version: go1\nruntime: go\nvm: true\n')
+            'api_version: go1\nenv: flex\nruntime: go\n')
         self.assert_file_exists_with_contents(
             'Dockerfile',
             self.read_runtime_def_file('data', 'Dockerfile'))
@@ -94,7 +94,7 @@ class RuntimeTests(testutil.TestBase):
         cfg_files = self.generate_config_data(custom=True)
         self.assert_file_exists_with_contents(
             'app.yaml',
-            'api_version: go1\nruntime: go\nvm: true\n')
+            'api_version: go1\nenv: flex\nruntime: go\n')
         self.assert_genfile_exists_with_contents(
             cfg_files,
             'Dockerfile',

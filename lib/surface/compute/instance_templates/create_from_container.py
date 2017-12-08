@@ -101,7 +101,9 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
     containers_utils.ValidateUserMetadata(user_metadata)
 
     network_interface = instance_template_utils.CreateNetworkInterfaceMessage(
-        scope_prompter=self,
+        resources=self.resources,
+        scope_lister=flags.GetDefaultScopeLister(
+            self.compute_client, self.project),
         messages=self.messages,
         network=args.network,
         region=args.region,

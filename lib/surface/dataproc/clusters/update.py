@@ -23,20 +23,20 @@ from googlecloudsdk.core import log
 
 
 class Update(base.UpdateCommand):
-  """Update the number of worker nodes in a cluster."""
+  """Update the number of worker nodes in a cluster.
 
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To resize a cluster, run:
+  Update the number of worker nodes in a cluster.
 
-            $ {command} my_cluster --num-workers 5
+  ## EXAMPLES
 
-          To change the number preemptible workers in a cluster, run:
+  To resize a cluster, run:
 
-            $ {command} my_cluster --num-preemptible-workers 5
-          """,
-  }
+    $ {command} my_cluster --num-workers 5
+
+  To change the number preemptible workers in a cluster, run:
+
+    $ {command} my_cluster --num-preemptible-workers 5
+  """
 
   @staticmethod
   def Args(parser):

@@ -197,10 +197,10 @@ class ExternalRuntimeConfigurator(Configurator):
     self.data = data
     if generated_appinfo:
 
-      # Add vm: true if we don't have an "env" field.
+      # Add env: flex if we don't have an "env" field.
       self.generated_appinfo = {}
       if not generated_appinfo.has_key('env'):
-        self.generated_appinfo['vm'] = True
+        self.generated_appinfo['env'] = 'flex'
 
       # And then update with the values provided by the runtime def.
       self.generated_appinfo.update(generated_appinfo)

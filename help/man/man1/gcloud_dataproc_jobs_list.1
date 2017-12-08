@@ -17,7 +17,18 @@ gcloud dataproc jobs list \- list jobs in a project
 
 .SH "DESCRIPTION"
 
-List jobs in a project.
+List jobs in a project. An optional filter can be used to constrain the jobs
+returned. Filters are case\-sensitive and have the following syntax:
+
+.RS 2m
+[field = value] AND [field [= value]] ...
+.RE
+
+where \f5field\fR is \f5status.state\fR or \f5labels.[KEY]\fR, and \f5[KEY]\fR
+is a label key. \f5value\fR can be \f5*\fR to match all values.
+\f5status.state\fR can be either \f5ACTIVE\fR or \f5INACTIVE\fR. Only the
+logical \f5AND\fR operator is supported; space\-separated items are treated as
+having an implicit \f5AND\fR operator.
 
 
 
@@ -84,9 +95,11 @@ To see the list of all jobs, run:
 $ gcloud dataproc jobs list
 .RE
 
-To see the list of all active jobs in a cluster, run:
+To see a list of all active jobs in cluster \f5my_cluster\fR with a label of
+\f5env=staging\fR, run:
 
 .RS 2m
-$ gcloud dataproc jobs list \-\-state\-filter active \e
-    \-\-cluster my_cluster
+$ gcloud dataproc jobs list \e
+    \-\-filter='status.state = ACTIVE AND placement.clusterName =
+ my_cluster AND labels.env = staging'
 .RE

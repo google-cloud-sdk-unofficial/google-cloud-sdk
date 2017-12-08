@@ -145,7 +145,7 @@ class RuntimeTests(testutil.TestBase):
         configurator = self.detect()
         self.assertEqual(configurator.generated_appinfo,
                          {u'runtime': 'nodejs',
-                          u'vm': True})
+                          u'env': 'flex'})
 
     def test_detect_custom(self):
         """Ensure that appinfo is correct with custom=True."""
@@ -154,7 +154,7 @@ class RuntimeTests(testutil.TestBase):
         configurator = self.detect(custom=True)
         self.assertEqual(configurator.generated_appinfo,
                          {'runtime': 'custom',
-                          'vm': True})
+                          'env': 'flex'})
 
     def test_detect_no_start_no_server(self):
         """Ensure that detect fails if no scripts.start field, no server.js."""
@@ -170,7 +170,7 @@ class RuntimeTests(testutil.TestBase):
         configurator = self.detect()
         self.assertEqual(configurator.generated_appinfo,
                          {'runtime': 'nodejs',
-                          'vm': True})
+                          'env': 'flex'})
 
     def test_node_js_with_engines(self):
         self.write_file('foo.js', 'bogus contents')

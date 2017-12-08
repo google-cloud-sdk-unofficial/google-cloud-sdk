@@ -70,7 +70,7 @@ def main(args):
     }
     appinfo =  {
         'runtime': 'custom' if config.params.custom else 'ruby',
-        'vm': True,
+        'env': 'flex',
         'entrypoint': entrypoint,
     }
     comm.send_runtime_params(runtime_data, appinfo=appinfo)

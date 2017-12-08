@@ -157,7 +157,7 @@ class ListGA(base_classes.BaseLister):
                  project=project)))
       if args.regions is not None:
         args_region_names = [
-            self.CreateGlobalReference(region, resource_type='regions').Name()
+            self.resources.Parse(region, collection='compute.regions').Name()
             for region in args.regions or []]
         # If no regions were provided by the user, fetch a list.
         region_names = (
@@ -176,7 +176,7 @@ class ListGA(base_classes.BaseLister):
                    project=self.project)))
       if args.zones is not None:
         args_zone_names = [
-            self.CreateGlobalReference(zone, resource_type='zones').Name()
+            self.resources.Parse(zone, collection='compute.zones').Name()
             for zone in args.zones or []]
         # If no zones were provided by the user, fetch a list.
         zone_names = (

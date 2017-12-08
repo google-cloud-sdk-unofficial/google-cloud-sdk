@@ -59,10 +59,11 @@ class List(base.ListCommand):
   def ListProjectSinks(self, project):
     """List project sinks from the specified project."""
     # Use V2 logging API for project sinks.
-    client = self.context['logging_client_v2beta1']
-    messages = self.context['logging_messages_v2beta1']
+    client = self.context['logging_client_v2']
+    messages = self.context['logging_messages_v2']
     result = client.projects_sinks.List(
-        messages.LoggingProjectsSinksListRequest(projectsId=project))
+        messages.LoggingProjectsSinksListRequest(
+            parent='projects/{0}'.format(project)))
     for sink in result.sinks:
       yield util.TypedLogSink(sink)
 

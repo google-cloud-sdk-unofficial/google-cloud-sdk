@@ -26,9 +26,13 @@ class GenerateHelpDocs(base.Command):
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'md_file', help='The path to a file containing markdown to render.')
+        'md_file',
+        help='The path to a file containing markdown to render.')
     parser.add_argument(
-        '--style', default='text', help='The output format of the renderer.')
+        '--style',
+        default='text',
+        choices=sorted(render_document.STYLES.keys()),
+        help='The renderer output format.')
 
   def Run(self, args):
     with open(args.md_file, 'r') as f:

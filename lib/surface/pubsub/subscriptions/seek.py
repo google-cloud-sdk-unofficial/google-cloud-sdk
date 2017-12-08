@@ -34,10 +34,11 @@ class SeekAlpha(base.Command):
     seek_to_parser = parser.add_mutually_exclusive_group(required=True)
     seek_to_parser.add_argument(
         '--time', type=arg_parsers.Datetime.Parse,
-        help=('The time to seek to. Messages in the subscription that'
-              ' were published before this time are marked as acknowledged, and'
-              ' messages retained in the subscription that were published after'
-              ' this time are marked as unacknowledged.'))
+        help=('The time to seek to. Messages in the subscription that '
+              'were published before this time are marked as acknowledged, and '
+              'messages retained in the subscription that were published after '
+              'this time are marked as unacknowledged. See `gcloud topic '
+              'datetimes` for information on time formats.'))
     seek_to_parser.add_argument(
         '--snapshot',
         help=('The name of the snapshot. The snapshot\'s topic must be the same'
@@ -45,8 +46,8 @@ class SeekAlpha(base.Command):
     parser.add_argument(
         '--snapshot-project', default='',
         help=('The name of the project the snapshot belongs to (if seeking to '
-              ' a snapshot). If not set, it defaults to the currently selected'
-              ' cloud project.'))
+              'a snapshot). If not set, it defaults to the currently selected '
+              'cloud project.'))
 
   def Collection(self):
     return util.SUBSCRIPTIONS_SEEK_COLLECTION

@@ -63,7 +63,7 @@ def main(args):
                     'type': 'runtime_parameters',
                     'appinfo': {
                         'runtime': 'custom' if params['custom'] else 'php',
-                        'vm': True,
+                        'env': 'flex',
                         'entrypoint': entrypoint,
                         'runtime_config': {
                             'document_root': root,

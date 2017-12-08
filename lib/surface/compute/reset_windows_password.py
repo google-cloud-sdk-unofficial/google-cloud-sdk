@@ -25,6 +25,7 @@ from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import time_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
@@ -112,15 +113,7 @@ class ResetWindowsPassword(base_classes.ReadWriteCommand):
         If omitted, the username is derived from your authenticated
         account email address.
         """
-
-    parser.add_argument(
-        'instance',
-        help='The name of the Windows instance to reset the password for.')
-
-    flags.AddZoneFlag(
-        parser,
-        resource_type='instance',
-        operation_type='reset password for')
+    instance_flags.INSTANCE_ARG.AddArgument(parser)
 
   @property
   def service(self):
@@ -148,7 +141,9 @@ class ResetWindowsPassword(base_classes.ReadWriteCommand):
                 zone=self.ref.zone))
 
   def CreateReference(self, args):
-    return self.CreateZonalReference(args.instance, args.zone)
+    return instance_flags.INSTANCE_ARG.ResolveAsResource(
+        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
+            self.compute_client, self.project))
 
   def Modify(self, args, existing):
     new_object = copy.deepcopy(existing)
@@ -323,9 +318,9 @@ class ResetWindowsPassword(base_classes.ReadWriteCommand):
     else:
       user = gaia_utils.MapGaiaEmailToDefaultAccountName(email)
 
-    if args.instance == user:
+    if args.name == user:
       raise utils.InvalidUserError(
-          MACHINE_USERNAME_SAME_ERROR.format(user, args.instance))
+          MACHINE_USERNAME_SAME_ERROR.format(user, args.name))
 
     # Warn user (This warning doesn't show for non-interactive sessions).
     message = RESET_PASSWORD_WARNING.format(user)
@@ -337,7 +332,7 @@ class ResetWindowsPassword(base_classes.ReadWriteCommand):
         cancel_on_no=True)
 
     log.status.Print('Resetting and retrieving password for [{0}] on [{1}]'
-                     .format(user, args.instance))
+                     .format(user, args.name))
 
     # Get Encryption Keys.
     key = crypt.GetKeyPair()

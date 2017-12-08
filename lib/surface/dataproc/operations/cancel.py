@@ -21,16 +21,16 @@ from googlecloudsdk.core.console import console_io
 
 
 class Cancel(base.Command):
-  """Cancel an active operation."""
+  """Cancel an active operation.
 
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To cancel an operation, run:
+  Cancel an active operation.
 
-            $ {command} operation_id
-          """,
-  }
+  ## EXAMPLES
+
+  To cancel an operation, run:
+
+    $ {command} operation_id
+  """
 
   @staticmethod
   def Args(parser):

@@ -55,7 +55,21 @@ class List(base.ListCommand):
 class ListBeta(List):
   """View a list of clusters in a project.
 
-  View a list of clusters in a project.
+  View a list of clusters in a project. An optional filter can be used to
+  constrain the clusters returned. Filters are case-sensitive and have the
+  following syntax:
+
+    field = value [AND [field = value]] ...
+
+  where `field` is one of `status.state`, `clusterName`, or `labels.[KEY]`,
+  and `[KEY]` is a label key. `value` can be ```*``` to match all values.
+  `status.state` can be one of the following: `ACTIVE`, `INACTIVE`,
+  `CREATING`, `RUNNING`, `ERROR`, `DELETING`, or `UPDATING`. `ACTIVE`
+  contains the `CREATING`, `UPDATING`, and `RUNNING` states. `INACTIVE`
+  contains the `DELETING` and `ERROR` states. `clusterName` is the name of the
+  cluster provided at creation time. Only the logical `AND` operator is
+  supported; space-separated items are treated as having an implicit `AND`
+  operator.
 
   ## EXAMPLES
 
@@ -63,9 +77,17 @@ class ListBeta(List):
 
     $ {command}
 
+  To show a cluster whose name is `mycluster`, run:
+
+    $ {command} --filter='clusterName = mycluster'
+
   To see the list of all clusters with particular labels, run:
 
-    $ {command} --filter='labels.env = staging AND labels.starred'
+    $ {command} --filter='labels.env = staging AND labels.starred = *'
+
+  To see a list of all active clusters with particular labels, run:
+
+    $ {command} --filter='status.state = ACTIVE labels.env = staging AND labels.starred = *'
   """
 
   def Run(self, args):

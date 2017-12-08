@@ -28,13 +28,15 @@ class StreamLogs(base.Command):
     flags.JOB_NAME.AddToParser(parser)
     flags.POLLING_INTERVAL.AddToParser(parser)
     flags.ALLOW_MULTILINE_LOGS.AddToParser(parser)
+    flags.TASK_NAME.AddToParser(parser)
 
   def Run(self, args):
     """Run the stream-logs command."""
     log_fetcher = jobs.LogFetcher(job_id=args.job,
                                   polling_interval=args.polling_interval,
                                   allow_multiline_logs=
-                                  args.allow_multiline_logs)
+                                  args.allow_multiline_logs,
+                                  task_name=args.task_name)
     return log_fetcher.YieldLogs()
 
   def Format(self, args):

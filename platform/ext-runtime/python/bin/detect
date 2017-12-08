@@ -122,7 +122,7 @@ def Main(args):
                             'python_version': python_version},
                            appinfo={'runtime': runtime,
                                     'entrypoint': entrypoint,
-                                    'vm': True})
+                                    'env': 'flex'})
   return 0
 
 if __name__ == '__main__':

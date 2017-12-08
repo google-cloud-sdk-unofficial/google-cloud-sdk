@@ -21,16 +21,16 @@ from googlecloudsdk.core.console import console_io
 
 
 class Delete(base.DeleteCommand):
-  """Delete the record of an inactive operation."""
+  """Delete the record of an inactive operation.
 
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To delete the record of an operation, run:
+  Delete the record of an inactive operation.
 
-            $ {command} operation_id
-          """,
-  }
+  ## EXAMPLES
+
+  To delete the record of an operation, run:
+
+    $ {command} operation_id
+  """
 
   @staticmethod
   def Args(parser):

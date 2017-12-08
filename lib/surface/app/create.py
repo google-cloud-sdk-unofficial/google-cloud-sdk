@@ -21,7 +21,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create an App Engine app within the current Google Cloud Project."""
 
@@ -57,10 +57,9 @@ class Create(base.CreateCommand):
     elif console_io.CanPrompt():
       create_util.CreateAppInteractively(api_client, project)
     else:
-      # TODO(b/30666930): Remove `beta` when regions list is GA
       raise create_util.UnspecifiedRegionError(
           'Prompts are disabled. Region must be specified either by the '
-          '`--region` flag or interactively. Use `gcloud beta app regions '
+          '`--region` flag or interactively. Use `gcloud app regions '
           'list` to list available regions.')
     log.status.Print('Success! The app is now created. Please use '
                      '`gcloud app deploy` to deploy your first app.')

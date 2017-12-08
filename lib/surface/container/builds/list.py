@@ -18,6 +18,7 @@ from apitools.base.py import list_pager
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import apis as core_apis
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 class List(base.ListCommand):
@@ -39,6 +40,20 @@ class List(base.ListCommand):
 
   def Collection(self):
     return 'cloudbuild.projects.builds'
+
+  def GetUriFunc(self):
+    registry = resources.REGISTRY.Clone()
+
+    def _BuildToURI(build):
+      build_ref = registry.Parse(
+          None,
+          params={
+              'project': build.projectId,
+              'id': build.id,
+          },
+          collection=self.Collection())
+      return build_ref.SelfLink()
+    return _BuildToURI
 
   # TODO(user,b/29048700): Until resolution of this bug, the error message
   # printed by gcloud (for 404s, eg) will be really terrible.

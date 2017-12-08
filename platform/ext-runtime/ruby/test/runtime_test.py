@@ -147,7 +147,7 @@ class RuntimeTestCase(testutil.TestBase):
 
         app_yaml = self.file_contents('app.yaml')
         self.assertIn('runtime: ruby\n', app_yaml)
-        self.assertIn('vm: true\n', app_yaml)
+        self.assertIn('env: flex\n', app_yaml)
         self.assertIn('entrypoint: bundle exec rackup -p $PORT -E deployment\n',
                       app_yaml)
 
@@ -170,7 +170,7 @@ class RuntimeTestCase(testutil.TestBase):
 
         app_yaml = self.file_contents('app.yaml')
         self.assertIn('runtime: ruby\n', app_yaml)
-        self.assertIn('vm: true\n', app_yaml)
+        self.assertIn('env: flex\n', app_yaml)
         self.assertIn('entrypoint: bundle exec rackup -p $PORT -E deployment\n',
                       app_yaml)
 
@@ -244,7 +244,7 @@ class RuntimeTestCase(testutil.TestBase):
 
         app_yaml = self.file_contents('app.yaml')
         self.assertIn('runtime: custom\n', app_yaml)
-        self.assertIn('vm: true\n', app_yaml)
+        self.assertIn('env: flex\n', app_yaml)
         self.assertIn('entrypoint: bundle exec rackup -p $PORT -E deployment\n',
                       app_yaml)
 
@@ -278,7 +278,7 @@ class RuntimeTestCase(testutil.TestBase):
 
         app_yaml = self.file_contents('app.yaml')
         self.assertIn('runtime: custom\n', app_yaml)
-        self.assertIn('vm: true\n', app_yaml)
+        self.assertIn('env: flex\n', app_yaml)
         self.assertIn('entrypoint: bundle exec rackup -p $PORT -E deployment\n',
                       app_yaml)
 

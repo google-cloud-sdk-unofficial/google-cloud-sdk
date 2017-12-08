@@ -14,6 +14,7 @@
 
 """'logging logs delete' command."""
 
+from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
@@ -36,17 +37,19 @@ class Delete(base.DeleteCommand):
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
     """
-    client = self.context['logging_client_v2beta1']
-    messages = self.context['logging_messages_v2beta1']
+    client = self.context['logging_client_v2']
+    messages = self.context['logging_messages_v2']
     project = properties.VALUES.core.project.Get(required=True)
 
     if not console_io.PromptContinue(
         'Really delete all log entries from [%s]?' % args.log_name):
       raise exceptions.ToolException('action canceled by user')
 
+    # TODO(b/32504514): Use resource parser
     client.projects_logs.Delete(
         messages.LoggingProjectsLogsDeleteRequest(
-            projectsId=project, logsId=args.log_name))
+            logName=util.CreateLogResourceName(
+                'projects/{0}'.format(project), args.log_name)))
     log.DeletedResource(args.log_name)
 
 

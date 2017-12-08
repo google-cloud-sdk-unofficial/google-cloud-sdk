@@ -22,16 +22,16 @@ from googlecloudsdk.core.console import console_io
 
 
 class Delete(base.DeleteCommand):
-  """Delete the record of an inactive job."""
+  """Delete the record of an inactive job.
 
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To delete the record of a job, run:
+  Delete the record of an inactive job.
 
-            $ {command} job_id
-          """,
-  }
+  ## EXAMPLES
+
+  To delete the record of a job, run:
+
+    $ {command} job_id
+  """
 
   @staticmethod
   def Args(parser):

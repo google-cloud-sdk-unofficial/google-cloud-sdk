@@ -53,7 +53,7 @@ class RuntimeTests(testutil.TestBase):
         self.assertFalse(os.path.exists(self.full_path(*path)))
 
     def make_app_yaml(self, runtime):
-        return 'runtime: {runtime}\nvm: true\n'.format(runtime=runtime)
+        return 'env: flex\nruntime: {runtime}\n'.format(runtime=runtime)
 
     def test_java_all_defaults(self):
         self.write_file('foo.jar', '')
@@ -71,7 +71,7 @@ class RuntimeTests(testutil.TestBase):
             '.dockerignore',
             self.read_runtime_def_file('data', 'dockerignore'))
         dockerfile_contents = [
-            constants.DOCKERFILE_JAVA8_PREAMBLE,
+            constants.DOCKERFILE_JAVA_PREAMBLE,
             constants.DOCKERFILE_INSTALL_APP.format('foo.jar'),
             constants.DOCKERFILE_JAVA8_JAR_CMD.format('foo.jar'),
         ]
@@ -99,7 +99,7 @@ class RuntimeTests(testutil.TestBase):
             '.dockerignore',
             self.read_runtime_def_file('data', 'dockerignore'))
         dockerfile_contents = [
-            constants.DOCKERFILE_JAVA8_PREAMBLE,
+            constants.DOCKERFILE_JAVA_PREAMBLE,
             constants.DOCKERFILE_INSTALL_APP.format('foo.jar'),
             constants.DOCKERFILE_JAVA8_JAR_CMD.format('foo.jar'),
         ]
@@ -122,7 +122,7 @@ class RuntimeTests(testutil.TestBase):
             '.dockerignore',
             self.read_runtime_def_file('data', 'dockerignore'))
         dockerfile_contents = [
-            constants.DOCKERFILE_JAVA8_PREAMBLE,
+            constants.DOCKERFILE_JAVA_PREAMBLE,
             constants.DOCKERFILE_INSTALL_APP.format('foo.jar'),
             constants.DOCKERFILE_JAVA8_JAR_CMD.format('foo.jar'),
         ]
@@ -146,7 +146,7 @@ class RuntimeTests(testutil.TestBase):
             '.dockerignore',
             self.read_runtime_def_file('data', 'dockerignore'))
         dockerfile_contents = [
-            constants.DOCKERFILE_JAVA8_PREAMBLE,
+            constants.DOCKERFILE_JAVA_PREAMBLE,
             constants.DOCKERFILE_INSTALL_APP.format('foo.jar'),
             constants.DOCKERFILE_JAVA8_JAR_CMD.format('foo.jar'),
         ]
@@ -171,7 +171,7 @@ class RuntimeTests(testutil.TestBase):
 
         self.generate_configs(deploy=True)
         dockerfile_contents = [
-            constants.DOCKERFILE_JETTY9_PREAMBLE,
+            constants.DOCKERFILE_JETTY_PREAMBLE,
             constants.DOCKERFILE_INSTALL_WAR.format('foo.war'),
         ]
         self.assert_file_exists_with_contents('Dockerfile',
@@ -191,7 +191,7 @@ class RuntimeTests(testutil.TestBase):
 
         cfg_files = self.generate_config_data(deploy=True)
         dockerfile_contents = [
-            constants.DOCKERFILE_JETTY9_PREAMBLE,
+            constants.DOCKERFILE_JETTY_PREAMBLE,
             constants.DOCKERFILE_INSTALL_WAR.format('foo.war'),
         ]
         self.assert_genfile_exists_with_contents(
@@ -214,7 +214,7 @@ class RuntimeTests(testutil.TestBase):
 
         self.generate_configs(deploy=True)
         dockerfile_contents = [
-            constants.DOCKERFILE_JAVA8_PREAMBLE,
+            constants.DOCKERFILE_JAVA_PREAMBLE,
             constants.DOCKERFILE_INSTALL_APP.format('foo.jar'),
             constants.DOCKERFILE_JAVA8_JAR_CMD.format('foo.jar'),
         ]
@@ -236,7 +236,7 @@ class RuntimeTests(testutil.TestBase):
 
         cfg_files = self.generate_config_data(deploy=True)
         dockerfile_contents = [
-            constants.DOCKERFILE_JAVA8_PREAMBLE,
+            constants.DOCKERFILE_JAVA_PREAMBLE,
             constants.DOCKERFILE_INSTALL_APP.format('foo.jar'),
             constants.DOCKERFILE_JAVA8_JAR_CMD.format('foo.jar'),
         ]
@@ -260,7 +260,7 @@ class RuntimeTests(testutil.TestBase):
 
         self.generate_configs(deploy=True)
         dockerfile_contents = [
-            constants.DOCKERFILE_LEGACY_PREAMBLE,
+            constants.DOCKERFILE_COMPAT_PREAMBLE,
             constants.DOCKERFILE_INSTALL_APP.format('.'),
         ]
         self.assert_file_exists_with_contents('Dockerfile',
@@ -281,7 +281,7 @@ class RuntimeTests(testutil.TestBase):
 
         cfg_files = self.generate_config_data(deploy=True)
         dockerfile_contents = [
-            constants.DOCKERFILE_LEGACY_PREAMBLE,
+            constants.DOCKERFILE_COMPAT_PREAMBLE,
             constants.DOCKERFILE_INSTALL_APP.format('.'),
         ]
         self.assert_genfile_exists_with_contents(
@@ -539,12 +539,14 @@ class RuntimeTests(testutil.TestBase):
     def test_detect_appinfo_war(self):
         self.write_file('foo.war', '')
         configurator = self.detect()
-        self.assertEqual(configurator.generated_appinfo, {'runtime':'java', 'vm':True})
+        self.assertEqual(configurator.generated_appinfo, {'runtime':'java',
+                                                          'env': 'flex'})
 
     def test_detect_appinfo_jar(self):
         self.write_file('foo.jar', '')
         configurator = self.detect()
-        self.assertEqual(configurator.generated_appinfo, {'runtime':'java', 'vm':True})
+        self.assertEqual(configurator.generated_appinfo, {'runtime':'java',
+                                                          'env': 'flex'})
 
 if __name__ == '__main__':
   unittest.main()

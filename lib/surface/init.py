@@ -83,6 +83,10 @@ class Init(base.Command):
         action='store_true',
         help=('Prevent the command from launching a browser for '
               'authorization.'))
+    parser.add_argument(
+        '--skip-diagnostics',
+        action='store_true',
+        help='Do not run diagnostics.')
 
   def Run(self, args):
     """Allows user to select configuration, and initialize it."""
@@ -108,8 +112,20 @@ class Init(base.Command):
     log.status.write('Your current configuration has been set to: [{0}]\n\n'
                      .format(configuration_name))
 
-    if not network_diagnostics.NetworkDiagnostic().RunChecks():
-      return
+    if not args.skip_diagnostics:
+      log.status.write('You can skip diagnostics next time by using the '
+                       'following flag:\n')
+      log.status.write('  gcloud init --skip-diagnostics\n\n')
+      network_passed = network_diagnostics.NetworkDiagnostic().RunChecks()
+      if not network_passed:
+        if not console_io.PromptContinue(
+            message='Network errors detected.',
+            prompt_string='Would you like to continue anyways',
+            default=False):
+          log.status.write('You can re-run diagnostics with the following '
+                           'command:\n')
+          log.status.write('  gcloud info --run-diagnostics\n\n')
+          return
 
     if not self._PickAccount(args.console_only, preselected=args.account):
       return

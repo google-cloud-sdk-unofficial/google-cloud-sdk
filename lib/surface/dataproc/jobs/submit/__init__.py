@@ -20,36 +20,36 @@ from googlecloudsdk.calliope import base
 
 
 class Submit(base.Group):
-  """Submit Google Cloud Dataproc jobs to execute on a cluster."""
+  """Submit Google Cloud Dataproc jobs to execute on a cluster.
 
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To submit a Hadoop MapReduce job, run:
+  Submit Google Cloud Dataproc jobs to execute on a cluster.
 
-            $ {command} hadoop --cluster my_cluster --jar my_jar.jar arg1 arg2
+  ## EXAMPLES
 
-          To submit a Spark Scala or Java job, run:
+  To submit a Hadoop MapReduce job, run:
 
-            $ {command} spark --cluster my_cluster --jar my_jar.jar arg1 arg2
+    $ {command} hadoop --cluster my_cluster --jar my_jar.jar arg1 arg2
 
-          To submit a PySpark job, run:
+  To submit a Spark Scala or Java job, run:
 
-            $ {command} pyspark --cluster my_cluster my_script.py arg1 arg2
+    $ {command} spark --cluster my_cluster --jar my_jar.jar arg1 arg2
 
-          To submit a Spark SQL job, run:
+  To submit a PySpark job, run:
 
-            $ {command} spark-sql --cluster my_cluster --file my_queries.q
+    $ {command} pyspark --cluster my_cluster my_script.py arg1 arg2
 
-          To submit a Pig job, run:
+  To submit a Spark SQL job, run:
 
-            $ {command} pig --cluster my_cluster --file my_script.pig
+    $ {command} spark-sql --cluster my_cluster --file my_queries.q
 
-          To submit a Hive job, run:
+  To submit a Pig job, run:
 
-            $ {command} hive --cluster my_cluster --file my_queries.q
-          """,
-  }
+    $ {command} pig --cluster my_cluster --file my_script.pig
+
+  To submit a Hive job, run:
+
+    $ {command} hive --cluster my_cluster --file my_queries.q
+  """
 
   @staticmethod
   def Args(parser):
