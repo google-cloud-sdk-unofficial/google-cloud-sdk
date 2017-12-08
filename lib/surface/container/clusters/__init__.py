@@ -24,10 +24,10 @@ from googlecloudsdk.core import properties
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Clusters(base.Group):
-  """Deploy and teardown Google Container Engine clusters.
+  """Deploy and teardown Google Kubernetes Engine clusters.
 
   The gcloud container clusters command group lets you deploy and teardown
-  Google Container Engine clusters.
+  Google Kubernetes Engine clusters.
 
   See $ gcloud docker --help for information about deploying docker images
   to clusters.
@@ -63,10 +63,10 @@ class Clusters(base.Group):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ClustersAlphaBeta(Clusters):
-  """Deploy and teardown Google Container Engine clusters.
+  """Deploy and teardown Google Kubernetes Engine clusters.
 
   The gcloud container clusters command group lets you deploy and teardown
-  Google Container Engine clusters.
+  Google Kubernetes Engine clusters.
 
   See $ gcloud docker --help for information about deploying docker images
   to clusters.

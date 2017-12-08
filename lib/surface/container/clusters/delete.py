@@ -17,6 +17,7 @@ import argparse
 
 from apitools.base.py import exceptions as apitools_exceptions
 
+from googlecloudsdk.api_lib.container import kubeconfig as kconfig
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -103,9 +104,13 @@ class Delete(base.DeleteCommand):
               'Deleting cluster {0}'.format(cluster_ref.clusterId),
               timeout_s=args.timeout)
           # Purge cached config files
-          util.ClusterConfig.Purge(cluster_ref.clusterId,
-                                   adapter.Zone(cluster_ref),
-                                   cluster_ref.projectId)
+          try:
+            util.ClusterConfig.Purge(cluster_ref.clusterId,
+                                     adapter.Zone(cluster_ref),
+                                     cluster_ref.projectId)
+          except kconfig.MissingEnvVarError as error:
+            log.warning(error.message)
+
           if properties.VALUES.container.cluster.Get() == cluster_ref.clusterId:
             properties.PersistProperty(
                 properties.VALUES.container.cluster, None)

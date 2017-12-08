@@ -13,13 +13,15 @@
 # limitations under the License.
 """Cloud Pub/Sub subscriptions set-iam-policy command."""
 from googlecloudsdk.api_lib.pubsub import subscriptions
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.pubsub import flags
-from googlecloudsdk.command_lib.pubsub import util
+from googlecloudsdk.command_lib.pubsub import resource_args
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class SetIamPolicy(base_classes.BaseIamCommand):
   """Set the IAM policy for a Cloud Pub/Sub Subscription."""
 
@@ -28,14 +30,14 @@ class SetIamPolicy(base_classes.BaseIamCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddSubscriptionResourceArg(parser, 'to set an IAM policy on.')
+    resource_args.AddSubscriptionResourceArg(parser, 'to set an IAM policy on.')
     flags.AddIamPolicyFileFlag(parser)
 
   def Run(self, args):
     client = subscriptions.SubscriptionsClient()
     messages = client.messages
 
-    subscription_ref = util.ParseSubscription(args.subscription)
+    subscription_ref = args.CONCEPTS.subscription.Parse()
     policy = iam_util.ParsePolicyFile(args.policy_file, messages.Policy)
 
     response = client.SetIamPolicy(

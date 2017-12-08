@@ -25,17 +25,17 @@ from googlecloudsdk.core import properties
 class Container(base.Group):
   """Deploy and manage clusters of machines for running containers.
 
-  The gcloud container command group lets you create and manage Google Container
-  Engine containers and clusters.
+  The gcloud container command group lets you create and manage Google
+  Kubernetes Engine containers and clusters.
 
-  Container Engine is a cluster manager and orchestration system for
-  running your Docker containers. Container Engine schedules your containers
+  Kubernetes Engine is a cluster manager and orchestration system for
+  running your Docker containers. Kubernetes Engine schedules your containers
   into the cluster and manages them automatically based on requirements you
   define, such as CPU and memory.
 
-  More information on Container Engine can be found here:
-  https://cloud.google.com/container-engine and detailed documentation
-  can be found here: https://cloud.google.com/container-engine/docs/
+  More information on Kubernetes Engine can be found here:
+  https://cloud.google.com/kubernetes-engine and detailed documentation
+  can be found here: https://cloud.google.com/kubernetes-engine/docs/
   """
 
   @staticmethod

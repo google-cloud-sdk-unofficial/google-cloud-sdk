@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Poll long-running video analysis operation until it completes.
@@ -16,11 +16,8 @@
 
   arguments:
     resource:
-      help_text: The operation to wait for.
-      params:
-        - api_field: operationsId
-          arg_name: operation_id
-          help_text: The ID of the operation to wait for.
+      help_text: ID for the operation to poll until complete.
+      spec: !REF googlecloudsdk.command_lib.ml.video.resources:operation
 
   async:
     collection: videointelligence.operations

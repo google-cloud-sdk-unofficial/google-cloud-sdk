@@ -60,7 +60,7 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
     type_providers.AddApiOptionsFileFlag(parser)
     type_providers.AddDescriptionFlag(parser)
     type_providers.AddDescriptorUrlFlag(parser)
-    labels_util.AddUpdateLabelsFlags(parser)
+    labels_util.AddUpdateLabelsFlags(parser, enable_clear=False)
 
   def Run(self, args):
     """Run 'type-providers update'.

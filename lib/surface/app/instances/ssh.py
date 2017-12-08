@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.app import ssh_common
 from googlecloudsdk.command_lib.util.ssh import containers
 from googlecloudsdk.command_lib.util.ssh import ssh
 from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
 
 
 def _ArgsCommon(parser):
@@ -86,13 +87,26 @@ class SshGa(base.Command):
       int, The exit code of the SSH command.
     """
     api_client = appengine_api_client.GetApiClientForTrack(self.ReleaseTrack())
+
+    try:
+      res = resources.REGISTRY.Parse(
+          args.instance,
+          collection='appengine.apps.services.versions.instances')
+      service = res.servicesId
+      version = res.versionsId
+      instance = res.instancesId
+    except resources.RequiredFieldOmittedException:
+      service = args.service
+      version = args.version
+      instance = args.instance
+
     env = ssh.Environment.Current()
     env.RequireSSH()
     keys = ssh.Keys.FromFilename()
     keys.EnsureKeysExist(overwrite=False)
-    connection_details = ssh_common.PopulatePublicKey(
-        api_client, args.service, args.version, args.instance,
-        keys.GetPublicKey())
+    connection_details = ssh_common.PopulatePublicKey(api_client, service,
+                                                      version, instance,
+                                                      keys.GetPublicKey())
     remote_command = containers.GetRemoteCommand(args.container, args.command)
     tty = containers.GetTty(args.container, args.command)
     cmd = ssh.SSHCommand(
@@ -118,4 +132,3 @@ class SshBeta(SshGa):
         'they are not available. Please use `--service` and `--version` '
         'instead.')
     super(SshBeta, self).Run(args)
-

@@ -15,16 +15,25 @@
 from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
+from googlecloudsdk.core import properties
 
 
+def _Run(args, legacy_output=False):
+  client = topics.TopicsClient()
+  for topic in client.List(util.ParseProject(), page_size=args.page_size):
+    if legacy_output:
+      topic = util.ListTopicDisplayDict(topic)
+    yield topic
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """Lists Cloud Pub/Sub topics within a project.
-
-  Lists all of the Cloud Pub/Sub topics that exist in a given project that
-  match the given topic name filter.
-  """
+  """Lists Cloud Pub/Sub topics within a project."""
 
   detailed_help = {
+      'DESCRIPTION': """\
+          Lists all of the Cloud Pub/Sub topics that exist in a given project that
+          match the given topic name filter.""",
       'EXAMPLES': """\
           To filter results by topic name (ie. only show topic 'mytopic'), run:
 
@@ -46,16 +55,13 @@ class List(base.ListCommand):
     parser.display_info.AddUriFunc(util.TopicUriFunc)
 
   def Run(self, args):
-    """This is what gets called when the user runs this command.
+    return _Run(args)
 
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
 
-    Yields:
-      Topic paths that match the regular expression in args.name_filter.
-    """
-    client = topics.TopicsClient()
-    for topic in client.List(util.ParseProject(), page_size=args.page_size):
-      yield util.ListTopicDisplayDict(topic)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class ListBeta(List):
+  """Lists Cloud Pub/Sub topics within a project."""
 
+  def Run(self, args):
+    legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
+    return _Run(args, legacy_output=legacy_output)

@@ -146,8 +146,8 @@ class Create(base.CreateCommand):
   @staticmethod
   def ConfigureCluster(messages, args, cluster):
     """Performs any additional configuration of the cluster."""
-    cluster.labels = labels_util.Diff.FromCreateArgs(args).Apply(
-        messages.Cluster.LabelsValue)
+    cluster.labels = labels_util.ParseCreateArgs(args,
+                                                 messages.Cluster.LabelsValue)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

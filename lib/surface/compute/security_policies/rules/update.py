@@ -34,7 +34,7 @@ class Update(base.UpdateCommand):
   For example to update the description and IP ranges of a rule at priority
   1000, run:
 
-        $ *{command}* 1000 \
+        $ {command} 1000 \
             --security-policy my-policy \
             --description "block 1.2.3.4/32" \
             --src-ip-ranges 1.2.3.4/32

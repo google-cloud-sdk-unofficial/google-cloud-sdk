@@ -14,7 +14,6 @@
 """Command group for ml speech."""
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.ml.speech import speech_command_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
@@ -30,8 +29,4 @@ class Speech(base.Group):
   For audio 60 seconds or longer, use:
 
     $ {command} recognize-long-running
-
-  {auth_hints}
   """
-
-  detailed_help = {'auth_hints': speech_command_util.SPEECH_AUTH_HELP}

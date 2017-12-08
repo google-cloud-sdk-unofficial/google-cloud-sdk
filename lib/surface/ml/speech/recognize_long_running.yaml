@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Get transcripts of longer audio from an audio file.
@@ -23,9 +23,6 @@
       To poll the operation until it's complete, run:
 
         $ {parent_command} operations wait OPERATION_ID
-
-      {auth_hints}
-    auth_hints: !COMMON help_text.auth_hints
 
   request:
     collection: speech.speech

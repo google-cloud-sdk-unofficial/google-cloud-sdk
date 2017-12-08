@@ -58,15 +58,15 @@ class Update(base.UpdateCommand):
     snapshot_ref = Update.SnapshotArg.ResolveAsResource(
         args, holder.resources)
 
-    update_labels, remove_labels = labels_util.GetAndValidateOpsFromArgs(args)
+    labels_diff = labels_util.GetAndValidateOpsFromArgs(args)
 
     snapshot = client.snapshots.Get(
         messages.ComputeSnapshotsGetRequest(**snapshot_ref.AsDict()))
 
-    replacement = labels_util.Diff(update_labels, remove_labels).Apply(
+    labels_update = labels_diff.Apply(
         messages.GlobalSetLabelsRequest.LabelsValue, snapshot.labels)
 
-    if not replacement:
+    if not labels_update.needs_update:
       return snapshot
 
     request = messages.ComputeSnapshotsSetLabelsRequest(
@@ -75,7 +75,7 @@ class Update(base.UpdateCommand):
         globalSetLabelsRequest=
         messages.GlobalSetLabelsRequest(
             labelFingerprint=snapshot.labelFingerprint,
-            labels=replacement))
+            labels=labels_update.labels))
 
     operation = client.snapshots.SetLabels(request)
     operation_ref = holder.resources.Parse(

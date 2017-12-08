@@ -15,10 +15,7 @@
   arguments:
     resource:
       help_text: The device you want to list the configs for.
-      params:
-        - _COMMON_: args.region
-        - _COMMON_: args.registry
-        - _COMMON_: args.device
+      spec: !REF googlecloudsdk.command_lib.iot.resources:device
 
   output:
     format: table(version, cloudUpdateTime, deviceAckTime)

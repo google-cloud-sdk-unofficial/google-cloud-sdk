@@ -13,8 +13,12 @@
 # limitations under the License.
 """Command for suspending an instance."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute.operations import poller
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances import flags
+from googlecloudsdk.core import exceptions
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -44,6 +48,7 @@ class Suspend(base.SilentCommand):
         action='store_true',
         help=('If provided, local SSD data is discarded.'))
     # TODO(b/36057354): consider adding detailed help.
+    base.ASYNC_FLAG.AddToParser(parser)
 
   def _CreateSuspendRequest(self, client, instance_ref, discard_local_ssd):
     return client.messages.ComputeInstancesSuspendRequest(
@@ -66,5 +71,35 @@ class Suspend(base.SilentCommand):
       requests.append((client.apitools_client.instances,
                        'Suspend', self._CreateSuspendRequest(
                            client, instance_ref, args.discard_local_ssd)))
-    return client.MakeRequests(requests)
 
+    errors_to_collect = []
+    responses = client.BatchRequests(requests, errors_to_collect)
+    if errors_to_collect:
+      raise exceptions.MultiError(errors_to_collect)
+
+    operation_refs = [holder.resources.Parse(r.selfLink) for r in responses]
+
+    if args.async:
+      for operation_ref in operation_refs:
+        log.status.Print('Suspend instance in progress for [{}].'.format(
+            operation_ref.SelfLink()))
+      log.status.Print(
+          'Use [gcloud compute operations describe URI] command to check the '
+          'status of the operation(s).'
+      )
+      return responses
+
+    operation_poller = poller.BatchPoller(
+        client, client.apitools_client.instances, instance_refs)
+
+    result = waiter.WaitFor(
+        operation_poller,
+        poller.OperationBatch(operation_refs),
+        'Suspending instance(s) {0}'.format(', '.join(
+            i.Name() for i in instance_refs)),
+        max_wait_ms=None)
+
+    for instance_ref in instance_refs:
+      log.status.Print('Updated [{0}].'.format(instance_ref))
+
+    return result

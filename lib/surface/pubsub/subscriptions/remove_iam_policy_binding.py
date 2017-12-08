@@ -13,12 +13,13 @@
 # limitations under the License.
 """Cloud Pub/Sub subscriptions remove-iam-policy-binding command."""
 from googlecloudsdk.api_lib.pubsub import subscriptions
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
-from googlecloudsdk.command_lib.pubsub import flags
-from googlecloudsdk.command_lib.pubsub import util
+from googlecloudsdk.command_lib.pubsub import resource_args
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class RemoveIamPolicyBinding(base_classes.BaseIamCommand):
   """Removes an IAM policy binding for a Cloud Pub/Sub Subscription."""
 
@@ -27,12 +28,12 @@ class RemoveIamPolicyBinding(base_classes.BaseIamCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddSubscriptionResourceArg(parser,
-                                     'to remove an IAM policy binding from.')
+    resource_args.AddSubscriptionResourceArg(
+        parser, 'to remove an IAM policy binding from.')
     iam_util.AddArgsForRemoveIamPolicyBinding(parser)
 
   def Run(self, args):
     client = subscriptions.SubscriptionsClient()
-    subscription_ref = util.ParseSubscription(args.subscription)
+    subscription_ref = args.CONCEPTS.subscription.Parse()
     return client.RemoveIamPolicyBinding(subscription_ref,
                                          args.member, args.role)

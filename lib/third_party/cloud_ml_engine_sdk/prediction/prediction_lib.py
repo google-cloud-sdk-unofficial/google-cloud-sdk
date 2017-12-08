@@ -20,21 +20,26 @@ Important changes:
 - Remove interfaces for TensorFlowModel (they don't change behavior).
 - Set from_client(skip_preprocessing=True) and remove the pre-processing code.
 """
+import __builtin__
 import base64
 import collections
 from contextlib import contextmanager
+import importlib
 import inspect
 import json
 import logging
 import os
+import pickle
 import pydoc  # used for importing python classes from their FQN
+import StringIO
 import timeit
 
 from _interfaces import Model
+from _interfaces import PredictionClient
 from enum import Enum
 import numpy as np
 
-import tensorflow.contrib   # pylint: disable=unused-import
+import tensorflow.contrib  # pylint: disable=unused-import
 from tensorflow.python.client import session as tf_session
 from tensorflow.python.framework import dtypes
 from tensorflow.python.saved_model import loader
@@ -50,8 +55,14 @@ class UserClassType(Enum):
   processor_class = "processor_class"
 
 
-INPUTS_KEY = "inputs"
-OUTPUTS_KEY = "outputs"
+ENGINE = "Prediction-Engine"
+ENGINE_RUN_TIME = "Prediction-Engine-Run-Time"
+FRAMEWORK = "Framework"
+SCIKIT_LEARN_FRAMEWORK_NAME = "scikit_learn"
+XGBOOST_FRAMEWORK_NAME = "xgboost"
+TENSORFLOW_FRAMEWORK_NAME = "tensorflow"
+PREPROCESS_TIME = "Prediction-Preprocess-Time"
+POSTPROCESS_TIME = "Prediction-Postprocess-Time"
 # Keys for the name of the methods that the user provided `Processor`
 # class should implement.
 PREPROCESS_KEY = "preprocess"
@@ -59,22 +70,24 @@ POSTPROCESS_KEY = "postprocess"
 FROM_MODEL_KEY = "from_model_path"
 
 # Additional TF keyword arguments
+INPUTS_KEY = "inputs"
+OUTPUTS_KEY = "outputs"
 SIGNATURE_KEY = "signature_name"
 
 # Stats
-ENGINE = "Prediction-Engine"
-FRAMEWORK = "Framework"
-PREPROCESS_TIME = "Prediction-Preprocess-Time"
-POSTPROCESS_TIME = "Prediction-Postprocess-Time"
 COLUMNARIZE_TIME = "Prediction-Columnarize-Time"
 UNALIAS_TIME = "Prediction-Unalias-Time"
 ENCODE_TIME = "Prediction-Encode-Time"
-ENGINE_RUN_TIME = "Prediction-Engine-Run-Time"
 SESSION_RUN_TIME = "Prediction-Session-Run-Time"
 ALIAS_TIME = "Prediction-Alias-Time"
 ROWIFY_TIME = "Prediction-Rowify-Time"
 # TODO(b/67586901): Consider removing INPUT_PROCESSING_TIME during cleanup.
 SESSION_RUN_ENGINE_NAME = "TF_SESSION_RUN"
+
+# Scikit-learn and XGBoost related constants
+MODEL_FILE_NAME_JOBLIB = "model.joblib"
+MODEL_FILE_NAME_PICKLE = "model.pkl"
+MODEL_FILE_NAME_BST = "model.bst"
 
 PredictionErrorType = collections.namedtuple(
     "PredictionErrorType", ("message", "code"))
@@ -482,6 +495,7 @@ def _update_dtypes(graph, interface):
                        (alias, dtype, info.dtype))
 
 
+# (TODO:b/68775232): Move this to a Tensorflow specific library.
 class SessionClient(object):
   """A client for Prediction that uses Session.run."""
 
@@ -519,7 +533,7 @@ class SessionClient(object):
     """
     stats = stats or Stats()
     stats[ENGINE] = "SessionRun"
-    stats[FRAMEWORK] = "TENSORFLOW"
+    stats[FRAMEWORK] = TENSORFLOW_FRAMEWORK_NAME
 
     with stats.time(UNALIAS_TIME):
       try:
@@ -544,25 +558,6 @@ class SessionClient(object):
 
     with stats.time(ALIAS_TIME):
       return dict(zip(signature.outputs.iterkeys(), outputs))
-
-
-def create_model(client, model_path, **kwargs):
-  """Creates and returns the appropriate model.
-
-  Creates and returns the TensorFlowModel if no user specified model is
-  provided. Otherwise, the user specified model is imported, created, and
-  returned.
-
-  Args:
-    client: An instance of ModelServerClient for performing prediction.
-    model_path: the path to either session_bundle or SavedModel
-    **kwargs: keyword arguments to pass to TensorFlowModel.from_client.
-
-  Returns:
-    An instance of the appropriate model class.
-  """
-  return (load_model_class(client, model_path) or
-          TensorFlowModel.from_client(client, model_path, **kwargs))
 
 
 def load_model_class(client, model_path):
@@ -703,6 +698,7 @@ def _validate_fn_signature(fn, required_arg_names, expected_fn_name, cls_name):
           (fn.__name__, required_arg_names, inspect.getargspec(fn).args))
 
 
+# (TODO:b/68775232): Move this to a Tensorflow specific library.
 class TensorFlowModel(BaseModel):
   """The default implementation of the Model interface that uses TensorFlow.
 
@@ -712,19 +708,19 @@ class TensorFlowModel(BaseModel):
   client.
   """
 
-  def __init__(self, client, preprocess_fn=None, postprocess_fn=None):
+  def __init__(self, client):
     """Constructs a TensorFlowModel.
 
     Args:
       client: An instance of ModelServerClient or SessionClient.
-      preprocess_fn: a function to run on each instance before calling predict,
-          if this parameter is not None. See class docstring.
-      postprocess_fn: a function to run on each instance after calling predict,
-          if this parameter is not None. See class docstring.
     """
     super(TensorFlowModel, self).__init__(client)
-    self._preprocess_fn = preprocess_fn
-    self._postprocess_fn = postprocess_fn
+    self._preprocess_fn = None
+    self._postprocess_fn = None
+    processor_cls = _new_processor_class()
+    if processor_cls:
+      self._preprocess_fn = getattr(processor_cls, PREPROCESS_KEY, None)
+      self._postprocess_fn = getattr(processor_cls, POSTPROCESS_KEY, None)
 
   def _get_columns(self, instances, stats, signature):
     """Columnarize the instances, appending input_name, if necessary.
@@ -856,8 +852,8 @@ class TensorFlowModel(BaseModel):
 
     with stats.time(ENCODE_TIME):
       try:
-        postprocessed_outputs = encode_base64(postprocessed_outputs,
-                                              signature.outputs)
+        postprocessed_outputs = encode_base64(
+            postprocessed_outputs, signature.outputs)
       except PredictionError as e:
         logging.error("Encode base64 failed: %s", e)
         raise PredictionError(PredictionError.INVALID_OUTPUTS,
@@ -875,19 +871,10 @@ class TensorFlowModel(BaseModel):
 
       return postprocessed_outputs
 
-  # TODO(b/34686738). Seems like this should be split into helper methods:
-  #   default_preprocess_fn(model_path, skip_preprocessing) and
-  #   default_model_and_preprocessor.
   @classmethod
   def from_client(cls, client, unused_model_path, **unused_kwargs):
     """Creates a TensorFlowModel from a SessionClient and model data files."""
-    processor_cls = _new_processor_class()
-    if processor_cls:
-      return cls(client,
-                 getattr(processor_cls, PREPROCESS_KEY, None),
-                 getattr(processor_cls, POSTPROCESS_KEY, None))
-    else:
-      return cls(client)
+    return cls(client)
 
   @property
   def signature_map(self):
@@ -912,6 +899,61 @@ class TensorFlowModel(BaseModel):
           "No signature found for signature key %s." % kwargs[SIGNATURE_KEY])
 
 
+# This class is specific to Scikit-learn, and should be moved to a separate
+# module. However due to gcloud's complicated copying mechanism we need to keep
+# things in one file for now.
+class SklearnClient(PredictionClient):
+  """A loaded scikit-learn model to be used for prediction."""
+
+  def __init__(self, predictor):
+    self._predictor = predictor
+
+  def predict(self, inputs, stats=None, **kwargs):
+    stats = stats or Stats()
+    stats[FRAMEWORK] = SCIKIT_LEARN_FRAMEWORK_NAME
+    stats[ENGINE] = SCIKIT_LEARN_FRAMEWORK_NAME
+    try:
+      return self._predictor.predict(inputs, **kwargs)
+    except Exception as e:
+      logging.exception("Exception while predicting with sklearn model.")
+      raise PredictionError(PredictionError.FAILED_TO_RUN_MODEL,
+                            "Exception during sklearn prediction: " + str(e))
+
+
+# (TODO:b/68775232) This class is specific to Xgboost, and should be moved to a
+# separate module. However due to gcloud's complicated copying mechanism we need
+# to keep things in one file for now.
+class XgboostClient(PredictionClient):
+  """A loaded xgboost model to be used for prediction."""
+
+  def __init__(self, booster):
+    self._booster = booster
+
+  def predict(self, inputs, stats=None, **kwargs):
+    stats = stats or Stats()
+    stats[FRAMEWORK] = XGBOOST_FRAMEWORK_NAME
+    stats[ENGINE] = XGBOOST_FRAMEWORK_NAME
+    # TODO(b/64574886): Move this to the top once b/64574886 is resolved.
+    # Before then, it would work in production since we install xgboost in
+    # the Dockerfile, but the problem is the unit test that will fail to build
+    # and run since xgboost can not be added as a dependency to this target.
+    import xgboost as xgb  # pylint: disable=g-import-not-at-top
+    try:
+      inputs_dmatrix = xgb.DMatrix(inputs)
+    except Exception as e:
+      logging.exception("Could not initialize DMatrix from inputs: ")
+      raise PredictionError(
+          PredictionError.FAILED_TO_RUN_MODEL,
+          "Could not initialize DMatrix from inputs: " + str(e))
+    try:
+      return self._booster.predict(inputs_dmatrix, **kwargs)
+    except Exception as e:
+      logging.exception("Exception during predicting with xgboost model: ")
+      raise PredictionError(PredictionError.FAILED_TO_RUN_MODEL,
+                            "Exception during xgboost prediction: " + str(e))
+
+
+# (TODO:b/68775232) Move this to a separate Scikit-learn specific library.
 class SklearnModel(BaseModel):
   """The implementation of Scikit-learn Model.
   """
@@ -927,6 +969,11 @@ class SklearnModel(BaseModel):
       self._postprocess = self._user_processor.postprocess
     else:
       self._postprocess = self._null_processor
+
+  def predict(self, instances, stats=None, **kwargs):
+    """Override the predict method to remove TF-specific args from kwargs."""
+    kwargs.pop(SIGNATURE_KEY, None)
+    return super(SklearnModel, self).predict(instances, stats, **kwargs)
 
   def preprocess(self, instances, stats=None, **kwargs):
     # TODO(b/67383676) Consider changing this to a more generic type.
@@ -951,12 +998,194 @@ class SklearnModel(BaseModel):
     return instances
 
 
+# (TODO:b/68775232): Move this to a XGboost specific library.
 class XGBoostModel(SklearnModel):
   """The implementation of XGboost Model.
   """
 
   def __init__(self, client):
     super(XGBoostModel, self).__init__(client)
+
+
+def create_sklearn_client(model_path, unused_tags):
+  """Returns a prediction client for the corresponding sklearn model."""
+  logging.info("Loading the scikit-learn model file from %s", model_path)
+  sklearn_predictor = _load_joblib_or_pickle_model(model_path)
+  if not sklearn_predictor:
+    error_msg = "Could not find either {} or {} in {}".format(
+        MODEL_FILE_NAME_JOBLIB, MODEL_FILE_NAME_PICKLE, model_path)
+    logging.critical(error_msg)
+    raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
+
+  return SklearnClient(sklearn_predictor)
+
+
+def create_sklearn_model(model_path, unused_flags):
+  """Returns a sklearn model from the given model_path."""
+  return SklearnModel(create_sklearn_client(model_path, None))
+
+
+def create_xgboost_client(model_path, unused_tags):
+  """Returns a prediction client for the corresponding xgboost model."""
+  logging.info("Loading the xgboost model from %s", model_path)
+  # TODO(b/64574886): Move this to the top once b/64574886 is resolved. Before
+  # then, it would work in production since we install xgboost in the
+  # Dockerfile, but the problem is the unit test that will fail to build and run
+  # since xgboost can not be added as a dependency to this target.
+  import xgboost as xgb  # pylint: disable=g-import-not-at-top
+  try:
+    booster = _load_joblib_or_pickle_model(model_path) or xgb.Booster(
+        model_file=os.path.join(model_path, MODEL_FILE_NAME_BST))
+  except xgb.core.XGBoostError as e:
+    error_msg = "Could not load the model: {}. {}.".format(
+        os.path.join(model_path, MODEL_FILE_NAME_BST), str(e))
+    logging.critical(error_msg)
+    raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
+  return XgboostClient(booster)
+
+
+def create_xgboost_model(model_path, unused_flags):
+  """Returns a xgboost model from the given model_path."""
+  return XGBoostModel(create_xgboost_client(model_path, None))
+
+
+# (TODO:b/68775232): Move this to a Tensorflow specific library.
+def create_tf_session_client(model_dir, tags):
+  return SessionClient(*load_model(model_dir, tags))
+
+# (TODO:b/68775232): Move this to a separate utils library.
+_PICKLE_MODULE_WHITELIST = [
+    "sklearn", "copy_reg", "xgboost", "numpy", "scipy", "pandas"
+]
+_PICKLE_CLASS_WHITELIST = {
+    "__builtin__": (__builtin__, [
+        "basestring",
+        "bool",
+        "buffer",
+        "bytearray",
+        "bytes",
+        "complex",
+        "dict",
+        "enumerate",
+        "float",
+        "frozenset",
+        "int",
+        "list",
+        "long",
+        "reversed",
+        "set",
+        "slice",
+        "str",
+        "tuple",
+        "unicode",
+        "xrange",
+        "object",
+    ],),
+}
+
+
+class _RestrictedUnpickler(pickle.Unpickler):
+  """Restricted Unpickler implementation.
+
+  Prevents execution of code from pickled data by allowing only importing
+  whitelisted modules.
+  """
+
+  def find_class(self, module_name, name):
+    if module_name.split(".")[0] in _PICKLE_MODULE_WHITELIST:
+      module = importlib.import_module(module_name)
+      return getattr(module, name)
+
+    (module, safe_names) = _PICKLE_CLASS_WHITELIST.get(module_name, (None, []))
+    if name in safe_names:
+      return getattr(module, name)
+    # Forbid everything else.
+    raise pickle.UnpicklingError("Importing global module: %s.%s is forbidden" %
+                                 (module_name, name))
+
+  @classmethod
+  def load_string(class_, pickle_string):
+    return class_(StringIO.StringIO(pickle_string)).load()
+
+
+def _load_joblib_or_pickle_model(model_path):
+  """Loads either a .joblib or .pkl file.
+
+  Loads one of MODEL_FILE_NAME_JOBLIB or MODEL_FILE_NAME_PICKLE files if they
+  exist.
+
+  Arguments:
+    model_path: The path to the directory that contains the model file.
+
+  Raises:
+    PredictionError: If there is a problem while loading the file.
+
+  Returns:
+    A loaded scikit-learn predictor object or None if neither
+    MODEL_FILE_NAME_JOBLIB nor MODEL_FILE_NAME_PICKLE files are found.
+  """
+  try:
+    # If we put this at the top, we need to add a dependency to sklearn
+    # anywhere that prediction_lib is called.
+    from sklearn.externals import joblib  # pylint: disable=g-import-not-at-top
+  except Exception as e:
+    error_msg = "Could not import sklearn module."
+    logging.critical(error_msg)
+    raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
+  try:
+    if os.path.exists(os.path.join(model_path, MODEL_FILE_NAME_JOBLIB)):
+      model_file_name = os.path.join(model_path, MODEL_FILE_NAME_JOBLIB)
+      logging.info("Loading model %s using joblib.", model_file_name)
+      return joblib.load(os.path.join(model_path, MODEL_FILE_NAME_JOBLIB))
+
+    elif os.path.exists(os.path.join(model_path, MODEL_FILE_NAME_PICKLE)):
+      model_file_name = os.path.join(model_path, MODEL_FILE_NAME_PICKLE)
+      logging.info("Loading model %s using pickle.", model_file_name)
+      with open(os.path.join(model_path, MODEL_FILE_NAME_PICKLE), "rb") as f:
+        return _RestrictedUnpickler.load_string(f.read())
+  except Exception as e:
+    error_msg = "Could not load the model: {}. {}.".format(
+        model_file_name, str(e))
+    logging.critical(error_msg)
+    raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
+  return None
+
+
+_FRAMEWORK_TO_MODEL_MAP = {
+    TENSORFLOW_FRAMEWORK_NAME: (TensorFlowModel, create_tf_session_client),
+    SCIKIT_LEARN_FRAMEWORK_NAME: (SklearnModel, create_sklearn_client),
+    XGBOOST_FRAMEWORK_NAME: (XGBoostModel, create_xgboost_client)
+}
+
+
+def create_model(client,
+                 model_path,
+                 framework=TENSORFLOW_FRAMEWORK_NAME,
+                 **unused_kwargs):
+  """Creates and returns the appropriate model.
+
+  Creates and returns a Model if no user specified model is
+  provided. Otherwise, the user specified model is imported, created, and
+  returned.
+
+  Args:
+    client: An instance of PredictionClient for performing prediction.
+    model_path: The path to the exported model (e.g. session_bundle or
+      SavedModel)
+    framework: The framework used to train the model.
+
+  Returns:
+    An instance of the appropriate model class.
+  """
+  model_cls = _FRAMEWORK_TO_MODEL_MAP[framework][0]
+  return (load_model_class(client, model_path) or
+          model_cls(client))
+
+
+def create_client(framework, model_path, tags):
+  framework = framework or TENSORFLOW_FRAMEWORK_NAME
+  create_client_fn = _FRAMEWORK_TO_MODEL_MAP[framework][1]
+  return create_client_fn(model_path, tags)
 
 
 def decode_base64(data):
@@ -979,7 +1208,6 @@ def encode_base64(instances, outputs_map):
 
   if not instances:
     return instances
-
   first_value = instances[0]
   if not isinstance(first_value, dict):
     if len(outputs_map) != 1:
@@ -1015,13 +1243,11 @@ def local_predict(
     model_dir=None,
     tags=(tag_constants.SERVING,),
     signature_name=signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY,
-    instances=None):
+    instances=None,
+    framework=TENSORFLOW_FRAMEWORK_NAME):
   """Run a prediction locally."""
   instances = decode_base64(instances)
-  client = SessionClient(*load_model(model_dir, tags))
-  model = create_model(client, model_dir)
+  client = create_client(framework, model_dir, tags)
+  model = create_model(client, model_dir, framework)
   _, predictions = model.predict(instances, signature_name=signature_name)
-  predictions = list(predictions)
-  predictions = encode_base64(predictions,
-                              model.signature_map[signature_name].outputs)
-  return {"predictions": predictions}
+  return {"predictions": list(predictions)}

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Detect explicit content in videos.
@@ -11,9 +11,6 @@
       VERY_LIKELY. When Explicit Content Detection evaluates a video, it does so on
       a per-frame basis and considers visual content only (not audio).
 
-      {auth_help}
-    auth_help: !COMMON help_text.auth_help
-
   request:
     _COMMON_: request
     static_fields:
@@ -25,7 +22,6 @@
     _COMMON_: async
 
   arguments:
-    additional_arguments_hook: googlecloudsdk.command_lib.ml.video.video_command_util:AdditionalFlagsHook
     params:
       - _COMMON_args
 

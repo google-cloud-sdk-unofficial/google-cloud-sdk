@@ -14,18 +14,30 @@
 """Cloud Pub/Sub topics list_subscriptions command."""
 from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.pubsub import flags
+from googlecloudsdk.command_lib.pubsub import resource_args
 from googlecloudsdk.command_lib.pubsub import util
+from googlecloudsdk.core import properties
 
 
+def _Run(args, legacy_output=False):
+  client = topics.TopicsClient()
+
+  topic_ref = args.CONCEPTS.topic.Parse()
+  for topic_sub in client.ListSubscriptions(topic_ref,
+                                            page_size=args.page_size):
+    if legacy_output:
+      topic_sub = util.ListTopicSubscriptionDisplayDict(topic_sub)
+    yield topic_sub
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListSubscriptions(base.ListCommand):
-  """Lists Cloud Pub/Sub subscriptions from a given topic.
-
-  Lists all of the Cloud Pub/Sub subscriptions attached to the given topic and
-  that match the given filter.
-  """
+  """Lists Cloud Pub/Sub subscriptions from a given topic."""
 
   detailed_help = {
+      'DESCRIPTION': """\
+          Lists all of the Cloud Pub/Sub subscriptions attached to the given
+          topic and that match the given filter.""",
       'EXAMPLES': """\
           To filter results by subscription name
           (ie. only show subscription 'mysubs'), run:
@@ -47,22 +59,16 @@ class ListSubscriptions(base.ListCommand):
     parser.display_info.AddFormat('yaml')
     parser.display_info.AddUriFunc(util.SubscriptionUriFunc)
 
-    flags.AddTopicResourceArg(parser, 'to list subscriptions for.')
+    resource_args.AddTopicResourceArg(parser, 'to list subscriptions for.')
 
   def Run(self, args):
-    """This is what gets called when the user runs this command.
+    return _Run(args)
 
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
 
-    Yields:
-      Subscriptions paths that match the regular expression in args.name_filter.
-    """
-    client = topics.TopicsClient()
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class ListSubscriptionsBeta(ListSubscriptions):
+  """Lists Cloud Pub/Sub subscriptions from a given topic."""
 
-    topic_ref = util.ParseTopic(args.topic)
-    for topic_sub in client.ListSubscriptions(topic_ref,
-                                              page_size=args.page_size):
-      yield util.ListTopicSubscriptionDisplayDict(topic_sub)
-
+  def Run(self, args):
+    legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
+    return _Run(args, legacy_output=legacy_output)

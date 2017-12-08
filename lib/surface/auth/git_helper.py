@@ -55,6 +55,8 @@ class GitHelper(base.Command):
   STORE = 'store'
   METHODS = [GET, STORE]
 
+  GOOGLESOURCE = 'googlesource.com'
+
   @staticmethod
   def Args(parser):
     parser.add_argument('method',
@@ -78,16 +80,26 @@ class GitHelper(base.Command):
     info = self._ParseInput()
     credentialed_domains = [
         'source.developers.google.com',
-        'googlesource.com',  # Requires a different username value.
+        GitHelper.GOOGLESOURCE,  # Requires a different username value.
+    ]
+    credentialed_domains_suffix = [
+        '.'+GitHelper.GOOGLESOURCE,
     ]
     extra = properties.VALUES.core.credentialed_hosted_repo_domains.Get()
     if extra:
       credentialed_domains.extend(extra.split(','))
-    if info.get('host') not in credentialed_domains:
+    host = info.get('host')
+    def ValidateHost(host):
       if args.ignore_unknown:
         return
+      if host in credentialed_domains:
+        return
+      for suffix in credentialed_domains_suffix:
+        if host.endswith(suffix):
+          return
       raise auth_exceptions.GitCredentialHelperError(
-          'Unknown host [{host}].'.format(host=info.get('host')))
+          'Unknown host [{host}].'.format(host=host))
+    ValidateHost(host)
 
     if args.method == GitHelper.GET:
       account = properties.VALUES.core.account.Get()
@@ -105,7 +117,8 @@ class GitHelper(base.Command):
 
       # For googlesource.com, any username beginning with "git-" is accepted
       # and the identity of the user is extracted from the token server-side.
-      if info.get('host') == 'googlesource.com':
+      if (host == GitHelper.GOOGLESOURCE
+          or host.endswith('.'+GitHelper.GOOGLESOURCE)):
         sent_account = 'git-account'
       else:
         sent_account = account

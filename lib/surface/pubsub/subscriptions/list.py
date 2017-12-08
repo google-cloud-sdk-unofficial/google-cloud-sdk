@@ -15,38 +15,38 @@
 from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
+from googlecloudsdk.core import properties
 
 
+def _Run(args, legacy_output=False):
+  client = subscriptions.SubscriptionsClient()
+  for sub in client.List(util.ParseProject(), page_size=args.page_size):
+    if legacy_output:
+      sub = util.ListSubscriptionDisplayDict(sub)
+    yield sub
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """Lists Cloud Pub/Sub subscriptions.
+  """Lists Cloud Pub/Sub subscriptions."""
 
-  Lists all of the Cloud Pub/Sub subscriptions that exist in a given project.
-  """
+  detailed_help = {
+      'DESCRIPTION': 'Lists all of the Cloud Pub/Sub subscriptions that exist '
+                     'in a given project.'
+  }
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat("""
-          table[box](
-            projectId:label=PROJECT,
-            subscriptionId:label=SUBSCRIPTION,
-            topicId:label=TOPIC,
-            type,
-            ackDeadlineSeconds:label=ACK_DEADLINE
-          )
-        """)
     parser.display_info.AddUriFunc(util.SubscriptionUriFunc)
 
   def Run(self, args):
-    """This is what gets called when the user runs this command.
+    return _Run(args)
 
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
 
-    Yields:
-      Subscription paths that match the regular expression in args.name_filter.
-    """
-    client = subscriptions.SubscriptionsClient()
-    for sub in client.List(util.ParseProject(), page_size=args.page_size):
-      yield util.ListSubscriptionDisplayDict(sub)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class ListBeta(List):
+  """Lists Cloud Pub/Sub subscriptions."""
 
+  def Run(self, args):
+    legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
+    return _Run(args, legacy_output=legacy_output)

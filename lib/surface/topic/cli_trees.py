@@ -1,4 +1,4 @@
-# Copyright 2015 Google Inc. All Rights Reserved.
+# Copyright 2017 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,14 +27,14 @@ class CliTrees(base.TopicCommand):
   commands, flags, positionals, help text, and completer module paths for a
   CLI. A CLI tree is often much faster to load and access than one generated
   at runtime from an active CLI. It is also a more compact representation.
-  A properly formed CLI tree can used to reproduce the help documentation for
-  an entire CLI.
+  A properly formed CLI tree can be used to reproduce the help documentation
+  for an entire CLI.
 
   ### CLI Tree Data Files
 
-  A CLI tree may be the *TREE* attribute in a Python module or a dictionary
-  in a JSON file. By convention, the module or JSON file base name is the
-  corresponding CLI name.
+  A CLI tree is a dictionary in a JSON file. By convention, the file base name
+  is the corresponding CLI name. For example, the CLI tree file name for
+  *gcloud* is *gcloud.json*.
 
   CLI trees associated with Cloud SDK modules are installed in the
   *data/cli* subdirectory of the Cloud SDK installation root:

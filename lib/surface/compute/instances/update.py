@@ -14,6 +14,7 @@
 """Command for labels update to instances."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
@@ -42,12 +43,13 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine virtual machine."""
 
   @staticmethod
   def Args(parser):
+
     flags.INSTANCE_ARG.AddArgument(parser, operation_type='update')
     labels_util.AddUpdateLabelsFlags(parser)
     flags.AddMinCpuPlatformArgs(parser, Update.ReleaseTrack())
@@ -67,6 +69,7 @@ class Update(base.UpdateCommand):
     labels_operation_ref = None
     min_cpu_platform_operation_ref = None
     deletion_protection_operation_ref = None
+    shielded_vm_config_ref = None
 
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
     if labels_diff.MayHaveUpdates():
@@ -95,17 +98,49 @@ class Update(base.UpdateCommand):
         operation_poller, deletion_protection_operation_ref,
         'Setting deletion protection of instance [{0}] to [{1}]',
         instance_ref.Name(), args.deletion_protection) or result
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      if (hasattr(args, 'shielded_vm_secure_boot') or
+          hasattr(args, 'shielded_vm_vtpm')):
+        shielded_vm_config_ref = self._GetShieldedVMConfigRef(
+            instance_ref, args, holder)
+        result = self._WaitForResult(
+            operation_poller, shielded_vm_config_ref,
+            'Setting shieldedVMConfig  of instance [{0}]',
+            instance_ref.Name()) or result
+
     return result
+
+  def _GetShieldedVMConfigRef(self, instance_ref, args, holder):
+    client = holder.client.apitools_client
+    messages = holder.client.messages
+
+    if (args.shielded_vm_secure_boot is None and
+        args.shielded_vm_vtpm is None):
+      return None
+    shieldedvm_config_message = instance_utils.CreateShieldedVmConfigMessage(
+        messages,
+        args.shielded_vm_secure_boot,
+        args.shielded_vm_vtpm)
+
+    request = messages.ComputeInstancesUpdateShieldedVmConfigRequest(
+        instance=instance_ref.Name(),
+        project=instance_ref.project,
+        shieldedVmConfig=shieldedvm_config_message,
+        zone=instance_ref.zone)
+
+    operation = client.instances.UpdateShieldedVmConfig(request)
+    return holder.resources.Parse(
+        operation.selfLink, collection='compute.zoneOperations')
 
   def _GetLabelsOperationRef(self, labels_diff, instance, instance_ref, holder):
     client = holder.client.apitools_client
     messages = holder.client.messages
 
-    replacement = labels_diff.Apply(
+    labels_update = labels_diff.Apply(
         messages.InstancesSetLabelsRequest.LabelsValue,
         instance.labels)
 
-    if replacement:
+    if labels_update.needs_update:
       request = messages.ComputeInstancesSetLabelsRequest(
           project=instance_ref.project,
           instance=instance_ref.instance,
@@ -113,7 +148,7 @@ class Update(base.UpdateCommand):
           instancesSetLabelsRequest=
           messages.InstancesSetLabelsRequest(
               labelFingerprint=instance.labelFingerprint,
-              labels=replacement))
+              labels=labels_update.labels))
 
       operation = client.instances.SetLabels(request)
       return holder.resources.Parse(
@@ -166,6 +201,19 @@ class UpdateBeta(Update):
     labels_util.AddUpdateLabelsFlags(parser)
     flags.AddMinCpuPlatformArgs(parser, UpdateBeta.ReleaseTrack())
     flags.AddDeletionProtectionFlag(parser, use_default_value=False)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update a Google Compute Engine virtual machine."""
+
+  @staticmethod
+  def Args(parser):
+    flags.INSTANCE_ARG.AddArgument(parser, operation_type='update')
+    labels_util.AddUpdateLabelsFlags(parser)
+    flags.AddMinCpuPlatformArgs(parser, UpdateAlpha.ReleaseTrack())
+    flags.AddDeletionProtectionFlag(parser, use_default_value=False)
+    flags.AddShieldedVMConfigArgs(parser)
 
 
 Update.detailed_help = DETAILED_HELP

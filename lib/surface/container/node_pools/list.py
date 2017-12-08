@@ -23,7 +23,7 @@ from googlecloudsdk.core import properties
 
 DETAILED_HELP = {
     'DESCRIPTION': """\
-        *{command}* displays all node pools in the Google Container Engine
+        *{command}* displays all node pools in the Google Kubernetes Engine
         cluster.
         """,
     'EXAMPLES': """\

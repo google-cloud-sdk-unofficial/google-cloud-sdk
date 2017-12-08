@@ -14,7 +14,6 @@
 """Delete images command."""
 
 from containerregistry.client import docker_name
-from containerregistry.client.v2_2 import docker_http
 from containerregistry.client.v2_2 import docker_session
 from googlecloudsdk.api_lib.container.images import util
 from googlecloudsdk.calliope import base
@@ -84,61 +83,62 @@ class Delete(base.DeleteCommand):
     # Deletes the layers. Ex. gcr.io/google-appengine/java(@DIGEST|:TAG).
 
     http_obj = http.Http()
-    # collect input/validate
-    digests, explicit_tags = self._ProcessImageNames(args.image_names)
+    with util.WrapExpectedDockerlessErrors():
+      # collect input/validate
+      digests, explicit_tags = self._ProcessImageNames(args.image_names)
 
-    # Resolve tags to digests.
-    for tag in explicit_tags:
-      digests.add(util.GetDigestFromName(str(tag)))
-
-    # Find all the tags that reference digests to be deleted.
-    all_tags = set()
-    for digest in digests:
-      all_tags.update(util.GetDockerTagsForDigest(digest, http_obj))
-
-    # Find all the tags that weren't specified explicitly.
-    implicit_tags = all_tags.difference(explicit_tags)
-
-    if implicit_tags and not args.force_delete_tags:
-      log.error('Tags:')
+      # Resolve tags to digests.
       for tag in explicit_tags:
-        log.error('- ' + str(tag))
-      raise exceptions.Error(
-          'This operation will implicitly delete the tags listed above. '
-          'Please manually remove with the `untag` command or re-run with '
-          '--force-delete-tags to confirm.')
+        digests.add(util.GetDigestFromName(str(tag)))
 
-    # Print the digests to be deleted.
-    if digests:
-      log.status.Print('Digests:')
-    for digest in digests:
-      self._PrintDigest(digest, http_obj)
+      # Find all the tags that reference digests to be deleted.
+      all_tags = set()
+      for digest in digests:
+        all_tags.update(util.GetDockerTagsForDigest(digest, http_obj))
 
-    # Print the tags to be deleted.
-    if explicit_tags:
-      log.status.Print('Tags:')
-    for tag in explicit_tags:
-      log.status.Print('- ' + str(tag))
+      # Find all the tags that weren't specified explicitly.
+      implicit_tags = all_tags.difference(explicit_tags)
 
-    # Prompt the user for consent to delete all the above.
-    console_io.PromptContinue(
-        'This operation will delete the tags and images identified by the '
-        'digests above.',
-        default=True,
-        cancel_on_no=True)
+      if implicit_tags and not args.force_delete_tags:
+        log.error('Tags:')
+        for tag in explicit_tags:
+          log.error('- ' + str(tag))
+        raise exceptions.Error(
+            'This operation will implicitly delete the tags listed above. '
+            'Please manually remove with the `untag` command or re-run with '
+            '--force-delete-tags to confirm.')
 
-    # The user has given explicit consent, merge the tags.
-    explicit_tags.update(implicit_tags)
+      # Print the digests to be deleted.
+      if digests:
+        log.status.Print('Digests:')
+      for digest in digests:
+        self._PrintDigest(digest, http_obj)
 
-    # delete and collect output
-    result = []
-    for tag in explicit_tags:  # tags must be deleted before digests
-      self._DeleteDockerTagOrDigest(tag, http_obj)
-      result.append({'name': str(tag)})
-    for digest in digests:
-      self._DeleteDockerTagOrDigest(digest, http_obj)
-      result.append({'name': str(digest)})
-    return result
+      # Print the tags to be deleted.
+      if explicit_tags:
+        log.status.Print('Tags:')
+      for tag in explicit_tags:
+        log.status.Print('- ' + str(tag))
+
+      # Prompt the user for consent to delete all the above.
+      console_io.PromptContinue(
+          'This operation will delete the tags and images identified by the '
+          'digests above.',
+          default=True,
+          cancel_on_no=True)
+
+      # The user has given explicit consent, merge the tags.
+      explicit_tags.update(implicit_tags)
+
+      # delete and collect output
+      result = []
+      for tag in explicit_tags:  # tags must be deleted before digests
+        self._DeleteDockerTagOrDigest(tag, http_obj)
+        result.append({'name': str(tag)})
+      for digest in digests:
+        self._DeleteDockerTagOrDigest(digest, http_obj)
+        result.append({'name': str(digest)})
+      return result
 
   def _ProcessImageNames(self, image_names):
     digests = set()
@@ -151,21 +151,10 @@ class Delete(base.DeleteCommand):
         tags.add(docker_obj)
     return [digests, tags]
 
-  def _MapDeleteErr(self, err, tag_or_digest):
-    return util.GcloudifyRecoverableV2Errors(err, {
-        403: 'Delete failed, access denied: {0}'.format(tag_or_digest),
-        404: 'Delete failed, image not found: {0}'.format(tag_or_digest)
-    })
-
   def _DeleteDockerTagOrDigest(self, tag_or_digest, http_obj):
-    try:
-      docker_session.Delete(
-          creds=util.CredentialProvider(),
-          name=tag_or_digest,
-          transport=http_obj)
-      log.DeletedResource(tag_or_digest)
-    except docker_http.V2DiagnosticException as err:
-      raise self._MapDeleteErr(err, tag_or_digest)
+    docker_session.Delete(
+        creds=util.CredentialProvider(), name=tag_or_digest, transport=http_obj)
+    log.DeletedResource(tag_or_digest)
 
   def _DeleteDigestAndAssociatedTags(self, digest, http_obj):
     # Digest must not have any tags in order to be deleted.
@@ -175,12 +164,9 @@ class Delete(base.DeleteCommand):
     for tag in tag_list:
       log.DeletedResource(tag)
 
-    try:
-      docker_session.Delete(
-          creds=util.CredentialProvider(), name=digest, transport=http_obj)
-      log.DeletedResource(digest)
-    except docker_http.V2DiagnosticException as err:
-      raise self._MapDeleteErr(err, digest)
+    docker_session.Delete(
+        creds=util.CredentialProvider(), name=digest, transport=http_obj)
+    log.DeletedResource(digest)
 
   def _PrintDigest(self, digest, http_obj):
     log.status.Print('- ' + str(digest))

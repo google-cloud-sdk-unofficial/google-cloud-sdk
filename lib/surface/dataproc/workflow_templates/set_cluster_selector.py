@@ -49,7 +49,7 @@ class SetClusterSelector(base.UpdateCommand):
         template, args.version)
 
     labels = labels_util.Diff(additions=args.cluster_labels).Apply(
-        dataproc.messages.ClusterSelector.ClusterLabelsValue)
+        dataproc.messages.ClusterSelector.ClusterLabelsValue).GetOrNone()
 
     cluster_selector = dataproc.messages.ClusterSelector(
         clusterLabels=labels, zone=properties.VALUES.compute.zone.GetOrFail())

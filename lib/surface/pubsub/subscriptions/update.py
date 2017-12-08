@@ -16,6 +16,7 @@ from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import flags
+from googlecloudsdk.command_lib.pubsub import resource_args
 from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
@@ -34,7 +35,7 @@ class UpdateAlpha(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    flags.AddSubscriptionResourceArg(parser, 'to update.')
+    resource_args.AddSubscriptionResourceArg(parser, 'to update.')
     flags.AddSubscriptionSettingsFlags(parser, cls.ReleaseTrack(),
                                        is_update=True)
 
@@ -58,24 +59,18 @@ class UpdateAlpha(base.UpdateCommand):
       API subscriptions.Patch command.
     """
     client = subscriptions.SubscriptionsClient()
-    subscription_ref = util.ParseSubscription(args.subscription)
+    subscription_ref = args.CONCEPTS.subscription.Parse()
 
-    labels_diff = labels_util.Diff.FromUpdateArgs(args)
-    if labels_diff.MayHaveUpdates():
-      original_subscription = client.Get(subscription_ref)
-      labels = labels_diff.Apply(
-          client.messages.Subscription.LabelsValue,
-          original_subscription.labels)
-    else:
-      labels = None
+    labels_update = labels_util.ProcessUpdateArgsLazy(
+        args, client.messages.Subscription.LabelsValue,
+        orig_labels_thunk=lambda: client.Get(subscription_ref).labels)
     result = client.Patch(
         subscription_ref,
         ack_deadline=args.ack_deadline,
         push_config=util.ParsePushConfig(args.push_endpoint),
         retain_acked_messages=args.retain_acked_messages,
-        labels=labels,
+        labels=labels_update.GetOrNone(),
         message_retention_duration=args.message_retention_duration)
 
-    result = util.SubscriptionDisplayDict(result)
     log.UpdatedResource(subscription_ref.RelativeName(), kind='subscription')
     return result

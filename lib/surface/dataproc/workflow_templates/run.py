@@ -21,6 +21,10 @@ from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core import log
 
 
+@base.Deprecate(is_removed=False,
+                warning='Workflow template run command is deprecated, please '
+                        'use instantiate command: "gcloud beta dataproc '
+                        'workflow-templates instantiate"')
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Run(base.CreateCommand):
   """Run a workflow template."""
@@ -32,6 +36,7 @@ class Run(base.CreateCommand):
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
+    # TODO (b/68774667): deprecate Run command in favor of Instantiate command.
     dataproc = dp.Dataproc(self.ReleaseTrack())
     msgs = dataproc.messages
     template = util.ParseWorkflowTemplates(args.template, dataproc)

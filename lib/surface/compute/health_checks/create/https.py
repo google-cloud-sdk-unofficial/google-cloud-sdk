@@ -90,7 +90,8 @@ Create.detailed_help = {
         *{command}* is used to create a HTTPS health check. HTTPS health checks
         monitor instances in a load balancer controlled by a target pool. All
         arguments to the command are optional except for the name of the health
-        check. For more information on load balancing, see
+        check. Note, by default, this health check monitors TCP port 80.
+        For more information on load balancing, see
         [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
         """,
 }

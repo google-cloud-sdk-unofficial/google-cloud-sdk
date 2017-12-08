@@ -18,74 +18,98 @@ from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import flags
+from googlecloudsdk.command_lib.pubsub import resource_args
 from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class CreateBeta(base.CreateCommand):
-  """Creates one or more Cloud Pub/Sub subscriptions.
+def _Run(args, enable_labels=False, legacy_output=False):
+  """Creates one or more subscriptions."""
+  client = subscriptions.SubscriptionsClient()
 
-  Creates one or more Cloud Pub/Sub subscriptions for a given topic.
-  The new subscription defaults to a PULL subscription unless a push endpoint
-  is specified.
-  """
+  topic_ref = args.CONCEPTS.topic.Parse()
+  push_config = util.ParsePushConfig(args.push_endpoint)
+  retain_acked_messages = getattr(args, 'retain_acked_messages', None)
+  retention_duration = getattr(args, 'message_retention_duration', None)
+  if retention_duration:
+    retention_duration = util.FormatDuration(retention_duration)
+
+  labels = None
+  if enable_labels:
+    labels = labels_util.ParseCreateArgs(
+        args, client.messages.Subscription.LabelsValue)
+
+  failed = []
+  for subscription_ref in args.CONCEPTS.subscription.Parse():
+
+    try:
+      result = client.Create(subscription_ref, topic_ref, args.ack_deadline,
+                             push_config, retain_acked_messages,
+                             retention_duration, labels=labels)
+    except api_ex.HttpError as error:
+      exc = exceptions.HttpException(error)
+      log.CreatedResource(subscription_ref.RelativeName(),
+                          kind='subscription',
+                          failed=exc.payload.status_message)
+      failed.append(subscription_ref.subscriptionsId)
+      continue
+
+    if legacy_output:
+      result = util.SubscriptionDisplayDict(result)
+
+    log.CreatedResource(subscription_ref.RelativeName(), kind='subscription')
+    yield result
+
+  if failed:
+    raise util.RequestsFailedError(failed, 'create')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Create(base.CreateCommand):
+  """Creates one or more Cloud Pub/Sub subscriptions."""
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Creates one or more Cloud Pub/Sub subscriptions for a given topic.
+          The new subscription defaults to a PULL subscription unless a push
+          endpoint is specified."""
+  }
 
   @classmethod
   def Args(cls, parser):
-    flags.AddSubscriptionResourceArg(parser, 'to create.', plural=True)
-    flags.AddSubscriptionTopicResourceFlags(parser)
+    topic_help_text = ('from which this subscription is receiving messages. '
+                       'Each subscription is attached to a single topic.')
+    topic = resource_args.CreateTopicResourceArg(topic_help_text,
+                                                 positional=False)
+    subscription = resource_args.CreateSubscriptionResourceArg(
+        'to create.',
+        plural=True)
+    resource_args.AddResourceArgs(parser, [topic, subscription])
+    flags.AddSubscriptionSettingsFlags(parser, cls.ReleaseTrack())
+
+  def Run(self, args):
+    return _Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class CreateBeta(Create):
+  """Creates one or more Cloud Pub/Sub subscriptions."""
+
+  @classmethod
+  def Args(cls, parser):
+    topic_help_text = ('from which this subscription is receiving messages. '
+                       'Each subscription is attached to a single topic.')
+    topic = resource_args.CreateTopicResourceArg(topic_help_text,
+                                                 positional=False)
+    subscription = resource_args.CreateSubscriptionResourceArg(
+        'to create.',
+        plural=True)
+    resource_args.AddResourceArgs(parser, [topic, subscription])
     flags.AddSubscriptionSettingsFlags(parser, cls.ReleaseTrack())
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Yields:
-      A serialized object (dict) describing the results of the operation.
-      This description fits the Resource described in the ResourceRegistry under
-      'pubsub.projects.subscriptions'.
-
-    Raises:
-      util.RequestFailedError: if any of the requests to the API failed.
-    """
-    client = subscriptions.SubscriptionsClient()
-
-    topic_ref = util.ParseTopic(args.topic, args.topic_project)
-    push_config = util.ParsePushConfig(args.push_endpoint)
-    retain_acked_messages = getattr(args, 'retain_acked_messages', None)
-    retention_duration = getattr(args, 'message_retention_duration', None)
-    if retention_duration:
-      retention_duration = util.FormatDuration(retention_duration)
-
-    labels = labels_util.Diff.FromCreateArgs(args).Apply(
-        client.messages.Subscription.LabelsValue)
-
-    failed = []
-    for subscription_name in args.subscription:
-      subscription_ref = util.ParseSubscription(subscription_name)
-
-      try:
-        result = client.Create(subscription_ref, topic_ref, args.ack_deadline,
-                               push_config, retain_acked_messages,
-                               retention_duration, labels=labels)
-      except api_ex.HttpError as error:
-        exc = exceptions.HttpException(error)
-        log.CreatedResource(subscription_ref.RelativeName(),
-                            kind='subscription',
-                            failed=exc.payload.status_message)
-        failed.append(subscription_name)
-        continue
-
-      result = util.SubscriptionDisplayDict(result)
-      log.CreatedResource(subscription_ref.RelativeName(), kind='subscription')
-
-      yield result
-
-    if failed:
-      raise util.RequestsFailedError(failed, 'create')
+    legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
+    return _Run(args, enable_labels=True, legacy_output=legacy_output)

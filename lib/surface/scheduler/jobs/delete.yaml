@@ -8,6 +8,5 @@
   arguments:
     resource:
       help_text: The job you want to delete.
-      params:
-        - _COMMON_: args.location
-        - _COMMON_: args.job
+      spec: !REF googlecloudsdk.command_lib.scheduler.resources:job
+      removed_flags: [ location ]

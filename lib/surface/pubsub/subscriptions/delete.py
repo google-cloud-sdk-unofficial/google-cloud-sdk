@@ -17,54 +17,58 @@ from apitools.base.py import exceptions as api_ex
 from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.pubsub import flags
+from googlecloudsdk.command_lib.pubsub import resource_args
 from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
+def _Run(args, legacy_output=False):
+  """Deletes one or more subscriptions."""
+  client = subscriptions.SubscriptionsClient()
+
+  failed = []
+  for subscription_ref in args.CONCEPTS.subscription.Parse():
+
+    try:
+      result = client.Delete(subscription_ref)
+    except api_ex.HttpError as error:
+      exc = exceptions.HttpException(error)
+      log.DeletedResource(subscription_ref.RelativeName(),
+                          kind='subscription',
+                          failed=exc.payload.status_message)
+      failed.append(subscription_ref.subscriptionsId)
+      continue
+
+    subscription = client.messages.Subscription(
+        name=subscription_ref.RelativeName())
+
+    if legacy_output:
+      result = util.SubscriptionDisplayDict(subscription)
+
+    log.DeletedResource(subscription_ref.RelativeName(), kind='subscription')
+    yield result
+
+  if failed:
+    raise util.RequestsFailedError(failed, 'delete')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Deletes one or more Cloud Pub/Sub subscriptions."""
 
   @staticmethod
   def Args(parser):
-    flags.AddSubscriptionResourceArg(parser, 'to delete.', plural=True)
+    resource_args.AddSubscriptionResourceArg(parser, 'to delete.', plural=True)
 
   def Run(self, args):
-    """This is what gets called when the user runs this command.
+    return _Run(args)
 
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
 
-    Yields:
-      A serialized object (dict) describing the results of the operation.
-      This description fits the Resource described in the ResourceRegistry under
-      'pubsub.projects.subscriptions'.
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class DeleteBeta(Delete):
+  """Deletes one or more Cloud Pub/Sub subscriptions."""
 
-    Raises:
-      util.RequestFailedError: if any of the requests to the API failed.
-    """
-    client = subscriptions.SubscriptionsClient()
-
-    failed = []
-    for subscription_name in args.subscription:
-      subscription_ref = util.ParseSubscription(subscription_name)
-
-      try:
-        client.Delete(subscription_ref)
-      except api_ex.HttpError as error:
-        exc = exceptions.HttpException(error)
-        log.DeletedResource(subscription_ref.RelativeName(),
-                            kind='subscription',
-                            failed=exc.payload.status_message)
-        failed.append(subscription_name)
-        continue
-
-      subscription = client.messages.Subscription(
-          name=subscription_ref.RelativeName())
-      result = util.SubscriptionDisplayDict(subscription)
-      log.DeletedResource(subscription_ref.RelativeName(), kind='subscription')
-      yield result
-
-    if failed:
-      raise util.RequestsFailedError(failed, 'delete')
+  def Run(self, args):
+    legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
+    return _Run(args, legacy_output=legacy_output)

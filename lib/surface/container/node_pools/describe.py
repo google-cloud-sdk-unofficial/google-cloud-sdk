@@ -25,7 +25,7 @@ class Describe(base.DescribeCommand):
   """Describe an existing node pool for a cluster.
 
   *{command}* displays all data associated with the node pool in the
-  Google Container Engine cluster.
+  Google Kubernetes Engine cluster.
   """
 
   @staticmethod

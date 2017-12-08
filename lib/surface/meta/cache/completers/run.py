@@ -67,7 +67,7 @@ class AddCompleterResourceFlags(parser_extensions.DynamicPositionalAction):
     kwargs = namespace.kwargs or {}
     self.__completer = _GetCompleter(
         module_path, qualify=namespace.qualify, **kwargs)
-    args = {}
+    args = []
     if self.__completer.parameters:
       for parameter in self.__completer.parameters:
         dest = parameter_info_lib.GetDestFromParam(parameter.name)
@@ -75,12 +75,13 @@ class AddCompleterResourceFlags(parser_extensions.DynamicPositionalAction):
           # Don't add if its already been added.
           continue
         flag = parameter_info_lib.GetFlagFromDest(dest)
-        args[parameter.name] = base.Argument(
+        arg = base.Argument(
             flag,
             dest=dest,
             category='RESOURCE COMPLETER',
             help='{} `{}` parameter value.'.format(
                 self.__completer.__class__.__name__, parameter.name))
+        args.append(arg)
     self.__argument = base.Argument(
         'resource_to_complete',
         nargs='?',
@@ -88,7 +89,7 @@ class AddCompleterResourceFlags(parser_extensions.DynamicPositionalAction):
               'interactive loop that reads a partial resource name from the '
               'input and lists the possible prefix matches on the output '
               'or displays an ERROR message.'))
-    args[self.__argument.name] = self.__argument
+    args.append(self.__argument)
     return args
 
   def Completions(self, prefix, parsed_args, **kwargs):

@@ -1,9 +1,3 @@
-help_text:
-  auth_help: |
-    This command requires a service account from a project that has enabled the
-    Video Intelligence API. To learn more about how to use a service account
-    with gcloud, please run `gcloud auth activate-service-account --help`.
-
 request:
   collection: videointelligence.videos
   method: annotate
@@ -18,6 +12,11 @@ async:
     name: operationsId
 
 args:
+  - arg_name: input_path
+    is_positional: True
+    help_text: |
+      The path to the video to be analyzed. Must be a local path or a Google
+      Cloud Storage URI.
   - api_field: outputUri
     arg_name: output-uri
     help_text: |

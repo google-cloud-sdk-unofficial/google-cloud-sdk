@@ -1,13 +1,10 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Detect popular natural and man-made structures within an image.
     DESCRIPTION: |
       Google Cloud Vision will recognize landmarks in an image, such as "Palace
       of Fine Arts."
-
-      {auth_hints}
-    auth_hints: !COMMON help_text.auth_hints
 
   request:
     _COMMON_: request

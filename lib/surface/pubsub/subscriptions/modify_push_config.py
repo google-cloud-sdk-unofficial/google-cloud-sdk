@@ -15,32 +15,45 @@
 from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import flags
+from googlecloudsdk.command_lib.pubsub import resource_args
 from googlecloudsdk.command_lib.pubsub import util
+from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
+def _Run(args, legacy_output=False):
+  """Modifies the push config for a subscription."""
+  client = subscriptions.SubscriptionsClient()
+
+  subscription_ref = args.CONCEPTS.subscription.Parse()
+  push_config = util.ParsePushConfig(args.push_endpoint)
+  result = client.ModifyPushConfig(subscription_ref, push_config)
+
+  log.UpdatedResource(subscription_ref.RelativeName(), kind='subscription')
+  if legacy_output:
+    return {'subscriptionId': subscription_ref.RelativeName(),
+            'pushEndpoint': args.push_endpoint}
+  else:
+    return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class ModifyPushConfig(base.Command):
   """Modifies the push configuration of a Cloud Pub/Sub subscription."""
 
   @staticmethod
   def Args(parser):
-    flags.AddSubscriptionResourceArg(parser, 'to modify.')
+    resource_args.AddSubscriptionResourceArg(parser, 'to modify.')
     flags.AddPushEndpointFlag(parser, required=True)
 
   def Run(self, args):
-    """This is what gets called when the user runs this command.
+    return _Run(args)
 
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
 
-    Returns:
-      None
-    """
-    client = subscriptions.SubscriptionsClient()
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class ModifyPushConfigBeta(ModifyPushConfig):
+  """Modifies the push configuration of a Cloud Pub/Sub subscription."""
 
-    subscription_ref = util.ParseSubscription(args.subscription)
-    push_config = util.ParsePushConfig(args.push_endpoint)
-    client.ModifyPushConfig(subscription_ref, push_config)
-
-    return {'subscriptionId': subscription_ref.RelativeName(),
-            'pushEndpoint': args.push_endpoint}
+  def Run(self, args):
+    legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
+    return _Run(args, legacy_output=legacy_output)

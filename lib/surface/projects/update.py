@@ -98,6 +98,7 @@ class Update(base.UpdateCommand):
     if args.name is None:
       raise ArgumentError('--name must be specified.')
     project_ref = command_lib_util.ParseProject(args.id)
-    result = projects_api.Update(project_ref, name=args.name)
+    result = projects_api.Update(project_ref, name=args.name,
+                                 labels_diff=labels_util.Diff())
     log.UpdatedResource(project_ref)
     return result

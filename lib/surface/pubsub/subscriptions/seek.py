@@ -16,6 +16,7 @@ from googlecloudsdk.api_lib.pubsub import subscriptions
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import flags
+from googlecloudsdk.command_lib.pubsub import resource_args
 from googlecloudsdk.command_lib.pubsub import util
 
 
@@ -32,7 +33,7 @@ class SeekAlpha(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddSubscriptionResourceArg(parser, 'to affect.')
+    resource_args.AddSubscriptionResourceArg(parser, 'to affect.')
     flags.AddSeekFlags(parser)
 
   def Run(self, args):
@@ -49,7 +50,7 @@ class SeekAlpha(base.Command):
     """
     client = subscriptions.SubscriptionsClient()
 
-    subscription_ref = util.ParseSubscription(args.subscription)
+    subscription_ref = args.CONCEPTS.subscription.Parse()
     result = {'subscriptionId': subscription_ref.RelativeName()}
 
     snapshot_ref = None

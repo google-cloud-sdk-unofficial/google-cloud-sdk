@@ -9,13 +9,13 @@
     static_fields:
       fieldMask: blocked,name
 
+  response:
+    id_field: name
+
   arguments:
     resource:
       help_text: The registry you want to list the devices for.
-      response_id_field: name
-      params:
-        - _COMMON_: args.region
-        - _COMMON_: args.registry
+      spec: !REF googlecloudsdk.command_lib.iot.resources:registry
 
     params:
       - api_field: deviceIds

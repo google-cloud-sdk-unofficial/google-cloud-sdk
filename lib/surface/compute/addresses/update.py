@@ -80,9 +80,9 @@ class Update(base.UpdateCommand):
               **address_ref.AsDict()))
       labels_value = messages.RegionSetLabelsRequest.LabelsValue
 
-    replacement = labels_diff.Apply(labels_value, address.labels)
+    labels_update = labels_diff.Apply(labels_value, address.labels)
 
-    if not replacement:
+    if not labels_update.needs_update:
       return address
 
     if address_ref.Collection() == 'compute.globalAddresses':
@@ -91,7 +91,7 @@ class Update(base.UpdateCommand):
           resource=address_ref.Name(),
           globalSetLabelsRequest=messages.GlobalSetLabelsRequest(
               labelFingerprint=address.labelFingerprint,
-              labels=replacement))
+              labels=labels_update.labels))
 
       operation = client.globalAddresses.SetLabels(request)
       operation_ref = holder.resources.Parse(
@@ -105,7 +105,7 @@ class Update(base.UpdateCommand):
           region=address_ref.region,
           regionSetLabelsRequest=messages.RegionSetLabelsRequest(
               labelFingerprint=address.labelFingerprint,
-              labels=replacement))
+              labels=labels_update.labels))
 
       operation = client.addresses.SetLabels(request)
       operation_ref = holder.resources.Parse(

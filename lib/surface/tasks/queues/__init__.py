@@ -15,7 +15,6 @@
 from googlecloudsdk.calliope import base
 
 
-# TODO(b/64460484): Add descriptions of App Engine vs. pull queues.
 class Queues(base.Group):
   """Manage Cloud Tasks queues.
 

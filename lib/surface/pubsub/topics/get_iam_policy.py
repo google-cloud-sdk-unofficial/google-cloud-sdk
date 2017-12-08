@@ -15,10 +15,10 @@
 from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import base_classes
-from googlecloudsdk.command_lib.pubsub import flags
-from googlecloudsdk.command_lib.pubsub import util
+from googlecloudsdk.command_lib.pubsub import resource_args
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class GetIamPolicy(base_classes.BaseIamCommand, base.ListCommand):
   """Get the IAM policy for a Cloud Pub/Sub Topic."""
 
@@ -35,11 +35,11 @@ class GetIamPolicy(base_classes.BaseIamCommand, base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddTopicResourceArg(parser, 'to get the IAM policy of.')
+    resource_args.AddTopicResourceArg(parser, 'to get the IAM policy of.')
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     client = topics.TopicsClient()
-    topic_ref = util.ParseTopic(args.topic)
+    topic_ref = args.CONCEPTS.topic.Parse()
 
     return client.GetIamPolicy(topic_ref)

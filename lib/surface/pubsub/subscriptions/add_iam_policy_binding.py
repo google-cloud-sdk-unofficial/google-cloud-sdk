@@ -13,12 +13,13 @@
 # limitations under the License.
 """Cloud Pub/Sub subscriptions add-iam-policy-binding command."""
 from googlecloudsdk.api_lib.pubsub import subscriptions
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
-from googlecloudsdk.command_lib.pubsub import flags
-from googlecloudsdk.command_lib.pubsub import util
+from googlecloudsdk.command_lib.pubsub import resource_args
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class AddIamPolicyBinding(base_classes.BaseIamCommand):
   """Add an IAM policy binding to a Cloud Pub/Sub Subscription."""
 
@@ -27,12 +28,11 @@ class AddIamPolicyBinding(base_classes.BaseIamCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddSubscriptionResourceArg(parser,
-                                     'to add an IAM policy binding to.')
+    resource_args.AddSubscriptionResourceArg(parser,
+                                             'to add an IAM policy binding to.')
     iam_util.AddArgsForAddIamPolicyBinding(parser)
 
   def Run(self, args):
     client = subscriptions.SubscriptionsClient()
-    subscription_ref = util.ParseSubscription(args.subscription)
+    subscription_ref = args.CONCEPTS.subscription.Parse()
     return client.AddIamPolicyBinding(subscription_ref, args.member, args.role)
-

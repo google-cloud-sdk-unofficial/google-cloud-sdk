@@ -13,9 +13,6 @@
 # limitations under the License.
 """Command to show Container Analysis Data for a specified image."""
 
-from contextlib import contextmanager
-
-from containerregistry.client.v2_2 import docker_http
 from googlecloudsdk.api_lib.container.images import container_data_util
 from googlecloudsdk.api_lib.container.images import util
 from googlecloudsdk.calliope import base
@@ -28,17 +25,6 @@ _DEFAULT_KINDS = [
     'IMAGE_BASIS',
     'DEPLOYABLE',
 ]
-
-
-@contextmanager
-def RecoverFromDiagnosticException(image_name):
-  try:
-    yield
-  except docker_http.V2DiagnosticException as err:
-    raise util.GcloudifyRecoverableV2Errors(err, {
-        403: 'Describe failed, access denied: {0}'.format(image_name),
-        404: 'Describe failed, not found: {0}'.format(image_name)
-    })
 
 
 def _CommonArgs(parser):
@@ -83,7 +69,7 @@ class Describe(base.DescribeCommand):
       Some value that we want to have printed later.
     """
 
-    with RecoverFromDiagnosticException(args.image_name):
+    with util.WrapExpectedDockerlessErrors(args.image_name):
       img_name = util.GetDigestFromName(args.image_name)
       return container_data_util.ContainerData(
           registry=img_name.registry,
@@ -176,7 +162,7 @@ class DescribeAlpha(Describe):
       else:
         occ_filter = args.metadata_filter
 
-      with RecoverFromDiagnosticException(args.image_name):
+      with util.WrapExpectedDockerlessErrors(args.image_name):
         img_name = util.GetDigestFromName(args.image_name)
         data = util.TransformContainerAnalysisData(
             img_name, occ_filter,
@@ -200,7 +186,7 @@ class DescribeAlpha(Describe):
           del data.deployment_summary
         return data
     else:
-      with RecoverFromDiagnosticException(args.image_name):
+      with util.WrapExpectedDockerlessErrors(args.image_name):
         img_name = util.GetDigestFromName(args.image_name)
         return container_data_util.ContainerData(
             registry=img_name.registry,

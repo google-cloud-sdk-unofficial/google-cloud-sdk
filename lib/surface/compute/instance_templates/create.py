@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.util import labels_util
 
 def _CommonArgs(parser,
                 release_track,
+                support_source_instance,
                 support_create_disk=False,
                 support_network_tier=False,
                 support_local_ssd_size=False,
@@ -75,6 +76,8 @@ def _CommonArgs(parser,
   Create.InstanceTemplateArg = (
       instance_templates_flags.MakeInstanceTemplateArg())
   Create.InstanceTemplateArg.AddArgument(parser, operation_type='create')
+  if support_source_instance:
+    instance_templates_flags.MakeSourceInstanceArg().AddArgument(parser)
 
 
 def _ValidateInstancesFlags(args):
@@ -93,8 +96,19 @@ def _ValidateInstancesFlags(args):
   instances_flags.ValidateAcceleratorArgs(args)
 
 
+def _AddSourceInstanceToTemplate(
+    compute_api, args, support_source_instance, instance_template):
+  if not support_source_instance or not args.source_instance:
+    return
+  source_instance_arg = instance_templates_flags.MakeSourceInstanceArg()
+  source_instance_ref = source_instance_arg.ResolveAsResource(
+      args, compute_api.resources)
+  instance_template.sourceInstance = source_instance_ref.SelfLink()
+
+
 def _RunCreate(compute_api,
                args,
+               support_source_instance,
                support_network_tier=False,
                support_labels=False):
   """Common routine for creating instance template.
@@ -105,6 +119,7 @@ def _RunCreate(compute_api,
       compute_api: The compute api.
       args: argparse.Namespace, An object that contains the values for the
           arguments specified in the .Args() method.
+      support_source_instance: indicates whether source instance is supported.
       support_network_tier: Indicates whether network tier is supported or not.
       support_labels: Indicates whether user labels are supported or not.
 
@@ -245,23 +260,28 @@ def _RunCreate(compute_api,
       instance_template_utils.CreateAcceleratorConfigMessages(
           client.messages, getattr(args, 'accelerator', None)))
 
-  request = client.messages.ComputeInstanceTemplatesInsertRequest(
-      instanceTemplate=client.messages.InstanceTemplate(
-          properties=client.messages.InstanceProperties(
-              machineType=machine_type,
-              disks=disks,
-              canIpForward=args.can_ip_forward,
-              metadata=metadata,
-              minCpuPlatform=args.min_cpu_platform,
-              networkInterfaces=network_interfaces,
-              serviceAccounts=service_accounts,
-              scheduling=scheduling,
-              tags=tags,
-              guestAccelerators=guest_accelerators,
-          ),
-          description=args.description,
-          name=instance_template_ref.Name(),
+  instance_template = client.messages.InstanceTemplate(
+      properties=client.messages.InstanceProperties(
+          machineType=machine_type,
+          disks=disks,
+          canIpForward=args.can_ip_forward,
+          metadata=metadata,
+          minCpuPlatform=args.min_cpu_platform,
+          networkInterfaces=network_interfaces,
+          serviceAccounts=service_accounts,
+          scheduling=scheduling,
+          tags=tags,
+          guestAccelerators=guest_accelerators,
       ),
+      description=args.description,
+      name=instance_template_ref.Name(),
+  )
+
+  _AddSourceInstanceToTemplate(
+      compute_api, args, support_source_instance, instance_template)
+
+  request = client.messages.ComputeInstanceTemplatesInsertRequest(
+      instanceTemplate=instance_template,
       project=instance_template_ref.project)
 
   if support_labels and args.labels:
@@ -290,10 +310,15 @@ class Create(base.CreateCommand):
   Instance templates are global resources, and can be used to create
   instances in any zone.
   """
+  _support_source_instance = True
 
   @classmethod
   def Args(cls, parser):
-    _CommonArgs(parser, release_track=base.ReleaseTrack.GA)
+    _CommonArgs(
+        parser,
+        release_track=base.ReleaseTrack.GA,
+        support_source_instance=cls._support_source_instance,
+    )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
 
   def Run(self, args):
@@ -306,7 +331,11 @@ class Create(base.CreateCommand):
     Returns:
       A resource object dispatched by display.Displayer().
     """
-    return _RunCreate(base_classes.ComputeApiHolder(base.ReleaseTrack.GA), args)
+    return _RunCreate(
+        base_classes.ComputeApiHolder(base.ReleaseTrack.GA),
+        args,
+        support_source_instance=self._support_source_instance,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -323,6 +352,7 @@ class CreateBeta(Create):
   Instance templates are global resources, and can be used to create
   instances in any zone.
   """
+  _support_source_instance = True
 
   @classmethod
   def Args(cls, parser):
@@ -332,7 +362,9 @@ class CreateBeta(Create):
         support_create_disk=False,
         support_network_tier=False,
         support_local_ssd_size=False,
-        support_labels=True)
+        support_labels=True,
+        support_source_instance=cls._support_source_instance,
+    )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
 
   def Run(self, args):
@@ -349,7 +381,9 @@ class CreateBeta(Create):
         base_classes.ComputeApiHolder(base.ReleaseTrack.BETA),
         args=args,
         support_network_tier=False,
-        support_labels=True)
+        support_labels=True,
+        support_source_instance=self._support_source_instance,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -366,6 +400,7 @@ class CreateAlpha(Create):
   Instance templates are global resources, and can be used to create
   instances in any zone.
   """
+  _support_source_instance = True
 
   @classmethod
   def Args(cls, parser):
@@ -375,7 +410,9 @@ class CreateAlpha(Create):
         support_create_disk=True,
         support_network_tier=True,
         support_local_ssd_size=True,
-        support_labels=True)
+        support_labels=True,
+        support_source_instance=cls._support_source_instance,
+    )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
 
   def Run(self, args):
@@ -392,4 +429,6 @@ class CreateAlpha(Create):
         base_classes.ComputeApiHolder(base.ReleaseTrack.ALPHA),
         args=args,
         support_network_tier=True,
-        support_labels=True)
+        support_labels=True,
+        support_source_instance=self._support_source_instance,
+    )

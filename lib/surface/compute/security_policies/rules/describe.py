@@ -26,10 +26,9 @@ from googlecloudsdk.core import properties
 
 
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine security policy.
+  """Describe a Google Compute Engine security policy rule.
 
-  *{command}* displays all data associated with a Google Compute Engine security
-   policy rule.
+  *{command}* displays all data associated with a security policy rule.
   """
 
   SECURITY_POLICY_ARG = None

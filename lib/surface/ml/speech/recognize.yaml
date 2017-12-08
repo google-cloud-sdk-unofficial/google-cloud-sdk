@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Get transcripts of short (less than 60 seconds) audio from an audio file.
@@ -8,9 +8,6 @@
 
       If the audio is longer than 60 seconds, you will get an error. Please use
       `{parent_command} recognize-long-running` instead.
-
-      {auth_hints}
-    auth_hints: !COMMON help_text.auth_hints
 
   request:
     collection: speech.speech

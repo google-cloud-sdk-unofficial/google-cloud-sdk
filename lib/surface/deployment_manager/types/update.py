@@ -56,7 +56,7 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
     composite_types.AddCompositeTypeNameFlag(parser)
     composite_types.AddDescriptionFlag(parser)
     composite_types.AddStatusFlag(parser)
-    labels_util.AddUpdateLabelsFlags(parser)
+    labels_util.AddUpdateLabelsFlags(parser, enable_clear=False)
 
   def Run(self, args):
     """Run 'types update'.

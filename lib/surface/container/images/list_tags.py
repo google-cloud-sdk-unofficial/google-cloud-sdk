@@ -16,7 +16,6 @@
 import heapq
 import sys
 
-from containerregistry.client.v2_2 import docker_http
 from containerregistry.client.v2_2 import docker_image
 from googlecloudsdk.api_lib.container.images import util
 from googlecloudsdk.calliope import arg_parsers
@@ -112,20 +111,15 @@ class ListTagsGAandBETA(base.ListCommand):
     """
     repository = util.ValidateRepositoryPath(args.image_name)
     http_obj = http.Http()
-    with docker_image.FromRegistry(
-        basic_creds=util.CredentialProvider(),
-        name=repository,
-        transport=http_obj) as image:
-      try:
+    with util.WrapExpectedDockerlessErrors(repository):
+      with docker_image.FromRegistry(
+          basic_creds=util.CredentialProvider(),
+          name=repository,
+          transport=http_obj) as image:
         manifests = image.manifests()
         return util.TransformManifests(
             manifests,
             repository)
-      except docker_http.V2DiagnosticException as err:
-        raise util.GcloudifyRecoverableV2Errors(err, {
-            403: 'Access denied: {0}'.format(repository),
-            404: 'Not found: {0}'.format(repository)
-        })
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -181,11 +175,11 @@ class ListTagsALPHA(ListTagsGAandBETA, base.ListCommand):
 
     repository = util.ValidateRepositoryPath(args.image_name)
     http_obj = http.Http()
-    with docker_image.FromRegistry(
-        basic_creds=util.CredentialProvider(),
-        name=repository,
-        transport=http_obj) as image:
-      try:
+    with util.WrapExpectedDockerlessErrors(repository):
+      with docker_image.FromRegistry(
+          basic_creds=util.CredentialProvider(),
+          name=repository,
+          transport=http_obj) as image:
         manifests = image.manifests()
         # Only consider the top _DEFAULT_SHOW_OCCURRENCES_FROM images
         # to reduce computation time.
@@ -204,8 +198,3 @@ class ListTagsALPHA(ListTagsGAandBETA, base.ListCommand):
             show_occurrences=args.show_occurrences,
             occurrence_filter=args.occurrence_filter,
             resource_urls=most_recent_resource_urls)
-      except docker_http.V2DiagnosticException as err:
-        raise util.GcloudifyRecoverableV2Errors(err, {
-            403: 'Access denied: {0}'.format(repository),
-            404: 'Not found: {0}'.format(repository)
-        })

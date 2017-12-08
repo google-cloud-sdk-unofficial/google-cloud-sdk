@@ -17,61 +17,61 @@ from apitools.base.py import exceptions as api_ex
 from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.pubsub import flags
+from googlecloudsdk.command_lib.pubsub import resource_args
 from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
+def _Run(args, legacy_output=False):
+  """Deletes one or more topics."""
+  client = topics.TopicsClient()
+
+  failed = []
+  for topic_ref in args.CONCEPTS.topic.Parse():
+
+    try:
+      result = client.Delete(topic_ref)
+    except api_ex.HttpError as error:
+      exc = exceptions.HttpException(error)
+      log.DeletedResource(topic_ref.RelativeName(), kind='topic',
+                          failed=exc.payload.status_message)
+      failed.append(topic_ref.topicsId)
+      continue
+
+    topic = client.messages.Topic(name=topic_ref.RelativeName())
+    if legacy_output:
+      result = util.TopicDisplayDict(topic)
+    log.DeletedResource(topic_ref.RelativeName(), kind='topic')
+    yield result
+
+  if failed:
+    raise util.RequestsFailedError(failed, 'delete')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
-  """Deletes one or more Cloud Pub/Sub topics.
+  """Deletes one or more Cloud Pub/Sub topics."""
 
-  Deletes one or more Cloud Pub/Sub topics.
+  detailed_help = {
+      'EXAMPLES': """\
+          To delete a Cloud Pub/Sub topic, run:
 
-  ## EXAMPLES
-
-  To delete a Cloud Pub/Sub topic, run:
-
-      $ {command} mytopic
-  """
+              $ {command} mytopic"""
+  }
 
   @staticmethod
   def Args(parser):
-    flags.AddTopicResourceArg(parser, 'to delete.', plural=True)
+    resource_args.AddTopicResourceArg(parser, 'to delete.', plural=True)
 
   def Run(self, args):
-    """This is what gets called when the user runs this command.
+    return _Run(args)
 
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
 
-    Yields:
-      A serialized object (dict) describing the results of the operation.
-      This description fits the Resource described in the ResourceRegistry under
-      'pubsub.projects.topics'.
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class DeleteBeta(Delete):
+  """Deletes one or more Cloud Pub/Sub topics."""
 
-    Raises:
-      util.RequestFailedError: if any of the requests to the API failed.
-    """
-    client = topics.TopicsClient()
-
-    failed = []
-    for topic_name in args.topic:
-      topic_ref = util.ParseTopic(topic_name)
-
-      try:
-        result = client.Delete(topic_ref)
-      except api_ex.HttpError as error:
-        exc = exceptions.HttpException(error)
-        log.DeletedResource(topic_ref.RelativeName(), kind='topic',
-                            failed=exc.payload.status_message)
-        failed.append(topic_name)
-        continue
-
-      topic = client.messages.Topic(name=topic_ref.RelativeName())
-      result = util.TopicDisplayDict(topic)
-      log.DeletedResource(topic_ref.RelativeName(), kind='topic')
-      yield result
-
-    if failed:
-      raise util.RequestsFailedError(failed, 'delete')
+  def Run(self, args):
+    legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
+    return _Run(args, legacy_output=legacy_output)

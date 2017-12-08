@@ -93,7 +93,7 @@ Cannot be used with the "--create-subnetwork" option.
   parser.add_argument(
       '--network',
       help='The Compute Engine Network that the cluster will connect to. '
-      'Google Container Engine will use this network when creating routes '
+      'Google Kubernetes Engine will use this network when creating routes '
       'and firewalls for the clusters. Defaults to the \'default\' network.')
   parser.add_argument(
       '--cluster-ipv4-cidr',
@@ -131,7 +131,7 @@ Cannot be used with the "--create-subnetwork" option.
       '--max-nodes-per-pool',
       type=arg_parsers.BoundedInt(100, api_adapter.MAX_NODES_PER_POOL),
       help='The maximum number of nodes to allocate per default initial node '
-      'pool. Container Engine will automatically create enough nodes pools '
+      'pool. Kubernetes Engine will automatically create enough nodes pools '
       'such that each node pool contains less than '
       '--max-nodes-per-pool nodes. Defaults to {nodes} nodes, but can be set '
       'as low as 100 nodes per pool on initial create.'.format(
@@ -192,6 +192,7 @@ def ParseCreateOptionsBase(args):
       cluster_ipv4_cidr=cluster_ipv4_cidr,
       cluster_secondary_range_name=args.cluster_secondary_range_name,
       cluster_version=args.cluster_version,
+      node_version=args.node_version,
       create_subnetwork=args.create_subnetwork,
       disable_addons=args.disable_addons,
       disk_type=args.disk_type,
@@ -255,6 +256,7 @@ class Create(base.CreateCommand):
     flags.AddOldClusterScopesFlag(parser)
     flags.AddPreemptibleFlag(parser, suppressed=True)
     flags.AddServiceAccountFlag(parser, suppressed=True)
+    flags.AddNodeVersionFlag(parser, hidden=True)
 
   def ParseCreateOptions(self, args):
     return ParseCreateOptionsBase(args)
@@ -363,15 +365,21 @@ class CreateBeta(Create):
     flags.AddMaintenanceWindowFlag(parser)
     flags.AddMasterAuthorizedNetworksFlags(parser)
     flags.AddMinCpuPlatformFlag(parser)
+    # TODO(b/64091817) Un-hide once we're ready to release.
+    flags.AddWorkloadMetadataFromNodeFlag(parser, hidden=True)
     flags.AddNetworkPolicyFlags(parser, hidden=True)
     flags.AddNodeTaintsFlag(parser)
     flags.AddPreemptibleFlag(parser)
     flags.AddServiceAccountFlag(parser)
+    flags.AddNodeVersionFlag(parser)
+    flags.AddPodSecurityPolicyFlag(parser, hidden=True)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
     ops.node_locations = args.node_locations
     ops.min_cpu_platform = args.min_cpu_platform
+    ops.workload_metadata_from_node = args.workload_metadata_from_node
+    ops.enable_pod_security_policy = args.enable_pod_security_policy
     return ops
 
 
@@ -403,10 +411,12 @@ class CreateAlpha(Create):
     flags.AddWorkloadMetadataFromNodeFlag(parser, hidden=True)
     flags.AddNetworkPolicyFlags(parser, hidden=False)
     flags.AddEnableSharedNetworkFlag(parser, hidden=True)
-    flags.AddAutoprovisioningFlags(parser, hidden=True)
+    flags.AddAutoprovisioningFlags(parser, hidden=False)
     flags.AddNodeTaintsFlag(parser)
     flags.AddPreemptibleFlag(parser)
     flags.AddServiceAccountFlag(parser)
+    flags.AddNodeVersionFlag(parser)
+    flags.AddPodSecurityPolicyFlag(parser, hidden=True)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -421,4 +431,5 @@ class CreateAlpha(Create):
     ops.min_cpu_platform = args.min_cpu_platform
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.enable_shared_network = args.enable_shared_network
+    ops.enable_pod_security_policy = args.enable_pod_security_policy
     return ops

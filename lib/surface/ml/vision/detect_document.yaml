@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Detect dense text in an image.
@@ -12,10 +12,7 @@
       Cloud Vision documentation at https://cloud.google.com/vision/docs/.
 
       {language_hints}
-
-      {auth_hints}
     language_hints: !COMMON help_text.language_hints
-    auth_hints: !COMMON help_text.auth_hints
 
   request:
     _COMMON_: request

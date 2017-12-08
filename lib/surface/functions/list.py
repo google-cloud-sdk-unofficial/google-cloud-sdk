@@ -22,7 +22,6 @@ from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as base_exceptions
-from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
@@ -32,9 +31,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    regions_group = parser.add_mutually_exclusive_group()
-    flags.AddDeprecatedRegionFlag(regions_group)
-    regions_group.add_argument(
+    parser.add_argument(
         '--regions',
         metavar='REGION',
         help=('Regions containing functions to list. By default functions from '
@@ -50,12 +47,9 @@ class List(base.ListCommand):
   def Run(self, args):
     client = util.GetApiClientInstance()
     messages = util.GetApiMessagesModule()
-    locations = []
     if args.regions:
       locations = args.regions
-    if args.region:
-      locations += [args.region]
-    if not locations:
+    else:
       locations = ['-']
     project = properties.VALUES.core.project.GetOrFail()
     limit = args.limit

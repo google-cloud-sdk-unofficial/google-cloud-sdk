@@ -17,6 +17,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import files
 
 
@@ -57,12 +58,21 @@ class GetPublicKey(base_classes.BaseIamCommand, base.Command):
     parser.display_info.AddFormat(iam_util.SERVICE_ACCOUNT_KEY_FORMAT)
 
   def Run(self, args):
+    key_ref = resources.REGISTRY.Parse(
+        args.key,
+        collection='iam.projects.serviceAccounts.keys',
+        params={
+            'serviceAccountsId': args.iam_account,
+            'projectsId': '-'
+        })
+    key = key_ref.keysId
+
     result = self.iam_client.projects_serviceAccounts_keys.Get(
         self.messages.IamProjectsServiceAccountsKeysGetRequest(
-            name=iam_util.EmailAndKeyToResourceName(args.iam_account, args.key),
+            name=key_ref.RelativeName(),
             publicKeyType=iam_util.PublicKeyTypeFromString(args.type)))
     files.WriteFileOrStdoutContents(
         args.output_file, content=result.publicKeyData, binary=True)
 
     log.status.Print('written key [{0}] for [{2}] as [{1}]'.format(
-        args.key, args.output_file, args.iam_account))
+        key, args.output_file, args.iam_account))

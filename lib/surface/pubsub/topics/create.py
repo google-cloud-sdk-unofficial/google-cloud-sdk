@@ -17,65 +17,71 @@ from apitools.base.py import exceptions as api_ex
 from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.pubsub import flags
+from googlecloudsdk.command_lib.pubsub import resource_args
 from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
+def _Run(args, enable_labels=False, legacy_output=False):
+  """Creates one or more topics."""
+  client = topics.TopicsClient()
+
+  labels = None
+  if enable_labels:
+    labels = labels_util.ParseCreateArgs(args,
+                                         client.messages.Topic.LabelsValue)
+
+  failed = []
+  for topic_ref in args.CONCEPTS.topic.Parse():
+
+    try:
+      result = client.Create(topic_ref, labels=labels)
+    except api_ex.HttpError as error:
+      exc = exceptions.HttpException(error)
+      log.CreatedResource(topic_ref.RelativeName(), kind='topic',
+                          failed=exc.payload.status_message)
+      failed.append(topic_ref.topicsId)
+      continue
+
+    if legacy_output:
+      result = util.TopicDisplayDict(result)
+    log.CreatedResource(topic_ref.RelativeName(), kind='topic')
+    yield result
+
+  if failed:
+    raise util.RequestsFailedError(failed, 'create')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Creates one or more Cloud Pub/Sub topics.
+  """Creates one or more Cloud Pub/Sub topics."""
 
-  Creates one or more Cloud Pub/Sub topics.
+  detailed_help = {
+      'EXAMPLES': """\
+          To create a Cloud Pub/Sub topic, run:
 
-  ## EXAMPLES
-
-  To create a Cloud Pub/Sub topic, run:
-
-    $ {command} mytopic
-  """
+              $ {command} mytopic"""
+  }
 
   @staticmethod
   def Args(parser):
-    flags.AddTopicResourceArg(parser, 'to create.', plural=True)
+    resource_args.AddTopicResourceArg(parser, 'to create.', plural=True)
+
+  def Run(self, args):
+    return _Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class CreateBeta(Create):
+  """Creates one or more Cloud Pub/Sub topics."""
+
+  @classmethod
+  def Args(cls, parser):
+    resource_args.AddTopicResourceArg(parser, 'to create.', plural=True)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Yields:
-      A serialized object (dict) describing the results of the operation.
-      This description fits the Resource described in the ResourceRegistry under
-      'pubsub.projects.topics'.
-
-    Raises:
-      util.RequestFailedError: if any of the requests to the API failed.
-    """
-    client = topics.TopicsClient()
-
-    labels = labels_util.Diff.FromCreateArgs(args).Apply(
-        client.messages.Topic.LabelsValue)
-
-    failed = []
-    for topic_name in args.topic:
-      topic_ref = util.ParseTopic(topic_name)
-
-      try:
-        result = client.Create(topic_ref, labels=labels)
-      except api_ex.HttpError as error:
-        exc = exceptions.HttpException(error)
-        log.CreatedResource(topic_ref.RelativeName(), kind='topic',
-                            failed=exc.payload.status_message)
-        failed.append(topic_name)
-        continue
-
-      result = util.TopicDisplayDict(result)
-      log.CreatedResource(topic_ref.RelativeName(), kind='topic')
-      yield result
-
-    if failed:
-      raise util.RequestsFailedError(failed, 'create')
+    legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
+    return _Run(args, enable_labels=True, legacy_output=legacy_output)

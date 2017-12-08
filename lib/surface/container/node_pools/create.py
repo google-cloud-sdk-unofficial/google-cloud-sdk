@@ -29,7 +29,7 @@ DETAILED_HELP = {
     'DESCRIPTION':
         """\
         *{command}* facilitates the creation of a node pool in a Google
-        Container Engine cluster. A variety of options exists to customize the
+        Kubernetes Engine cluster. A variety of options exists to customize the
         node configuration and the number of nodes created.
         """,
     'EXAMPLES':
@@ -104,6 +104,7 @@ def ParseCreateNodePoolOptionsBase(args):
       machine_type=args.machine_type,
       disk_size_gb=args.disk_size,
       scopes=args.scopes,
+      node_version=args.node_version,
       enable_cloud_endpoints=args.enable_cloud_endpoints,
       num_nodes=args.num_nodes,
       local_ssd_count=args.local_ssd_count,
@@ -135,6 +136,7 @@ class Create(base.CreateCommand):
     flags.AddServiceAccountFlag(parser, suppressed=True)
     flags.AddOldNodePoolScopesFlag(parser)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True, hidden=True)
+    flags.AddNodeVersionFlag(parser, hidden=True)
 
   def ParseCreateNodePoolOptions(self, args):
     return ParseCreateNodePoolOptionsBase(args)
@@ -202,11 +204,15 @@ class CreateBeta(Create):
     flags.AddServiceAccountFlag(parser)
     flags.AddNodePoolScopesFlag(parser)
     flags.AddMinCpuPlatformFlag(parser, for_node_pool=True)
+    # TODO(b/64091817) Un-hide once we're ready to release.
+    flags.AddWorkloadMetadataFromNodeFlag(parser, hidden=True)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True)
+    flags.AddNodeVersionFlag(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
     ops.min_cpu_platform = args.min_cpu_platform
+    ops.workload_metadata_from_node = args.workload_metadata_from_node
     return ops
 
 
@@ -219,12 +225,14 @@ class CreateAlpha(Create):
     ops.accelerators = args.accelerator
     ops.min_cpu_platform = args.min_cpu_platform
     ops.workload_metadata_from_node = args.workload_metadata_from_node
+    ops.enable_autoprovisioning = args.enable_autoprovisioning
     return ops
 
   @staticmethod
   def Args(parser):
     _Args(parser)
     flags.AddClusterAutoscalingFlags(parser)
+    flags.AddNodePoolAutoprovisioningFlag(parser, hidden=True)
     flags.AddLocalSSDFlag(parser)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True)
@@ -234,6 +242,7 @@ class CreateAlpha(Create):
     flags.AddMinCpuPlatformFlag(parser, for_node_pool=True)
     flags.AddWorkloadMetadataFromNodeFlag(parser, hidden=True)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True)
+    flags.AddNodeVersionFlag(parser)
 
 
 Create.detailed_help = DETAILED_HELP

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Get description of a long-running video analysis operation.
@@ -16,11 +16,8 @@
 
   arguments:
     resource:
-      help_text: The operation to describe.
-      params:
-        - api_field: operationsId
-          arg_name: operation_id
-          help_text: ID for the operation to describe
+      help_text: The ID of the operation to describe.
+      spec: !REF googlecloudsdk.command_lib.ml.video.resources:operation
 
   output:
     format: json

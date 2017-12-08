@@ -104,14 +104,14 @@ class Update(base.UpdateCommand):
               **forwarding_rule_ref.AsDict()))
       labels_value = messages.RegionSetLabelsRequest.LabelsValue
 
-    replacement = labels_diff.Apply(labels_value, forwarding_rule.labels)
+    labels_update = labels_diff.Apply(labels_value, forwarding_rule.labels)
 
-    if not replacement:
+    if not labels_update.needs_update:
       return forwarding_rule
 
     if forwarding_rule_ref.Collection() == 'compute.globalForwardingRules':
       request = self._CreateGlobalSetLabelsRequest(
-          messages, forwarding_rule_ref, forwarding_rule, replacement)
+          messages, forwarding_rule_ref, forwarding_rule, labels_update.labels)
 
       operation = client.globalForwardingRules.SetLabels(request)
       operation_ref = holder.resources.Parse(
@@ -120,7 +120,7 @@ class Update(base.UpdateCommand):
       operation_poller = poller.Poller(client.globalForwardingRules)
     else:
       request = self._CreateRegionalSetLabelsRequest(
-          messages, forwarding_rule_ref, forwarding_rule, replacement)
+          messages, forwarding_rule_ref, forwarding_rule, labels_update.labels)
 
       operation = client.forwardingRules.SetLabels(request)
       operation_ref = holder.resources.Parse(
@@ -218,7 +218,7 @@ class UpdateAlpha(Update):
     forwarding_rule = objects[0]
 
     forwarding_rule_replacement = self.Modify(messages, args, forwarding_rule)
-    label_replacement = labels_diff.Apply(labels_value, forwarding_rule.labels)
+    label_update = labels_diff.Apply(labels_value, forwarding_rule.labels)
 
     # Create requests.
     requests = []
@@ -230,9 +230,9 @@ class UpdateAlpha(Update):
             forwardingRuleResource=forwarding_rule_replacement,
             project=forwarding_rule_ref.project)
         requests.append((client.globalForwardingRules, 'Patch', request))
-      if label_replacement:
+      if label_update.needs_update:
         request = self._CreateGlobalSetLabelsRequest(
-            messages, forwarding_rule_ref, forwarding_rule, label_replacement)
+            messages, forwarding_rule_ref, forwarding_rule, label_update.labels)
         requests.append((client.globalForwardingRules, 'SetLabels', request))
     else:
       if forwarding_rule_replacement:
@@ -242,9 +242,9 @@ class UpdateAlpha(Update):
             project=forwarding_rule_ref.project,
             region=forwarding_rule_ref.region)
         requests.append((client.forwardingRules, 'Patch', request))
-      if label_replacement:
+      if label_update.needs_update:
         request = self._CreateRegionalSetLabelsRequest(
-            messages, forwarding_rule_ref, forwarding_rule, label_replacement)
+            messages, forwarding_rule_ref, forwarding_rule, label_update.labels)
         requests.append((client.forwardingRules, 'SetLabels', request))
 
     return holder.client.MakeRequests(requests)

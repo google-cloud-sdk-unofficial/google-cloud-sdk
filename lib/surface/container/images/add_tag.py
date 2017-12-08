@@ -13,14 +13,12 @@
 # limitations under the License.
 """Add tag command."""
 
-import httplib
-
 from containerregistry.client import docker_name
-from containerregistry.client.v2 import docker_http as v2_docker_http
 from containerregistry.client.v2 import docker_image as v2_image
 from containerregistry.client.v2 import docker_session as v2_session
-from containerregistry.client.v2_2 import docker_http as v2_2_docker_http
+from containerregistry.client.v2_2 import docker_http
 from containerregistry.client.v2_2 import docker_image as v2_2_image
+from containerregistry.client.v2_2 import docker_image_list
 from containerregistry.client.v2_2 import docker_session as v2_2_session
 from googlecloudsdk.api_lib.container.images import util
 from googlecloudsdk.calliope import base
@@ -92,8 +90,17 @@ class Create(base.CreateCommand):
         default=True,
         cancel_on_no=True)
     creds = util.CredentialProvider()
-    try:
-      with v2_2_image.FromRegistry(src_name, creds, http_obj) as v2_2_img:
+    with util.WrapExpectedDockerlessErrors():
+      with docker_image_list.FromRegistry(
+          src_name, creds, http_obj) as manifest_list:
+        if manifest_list.exists():
+          Push(manifest_list, dest_name, creds, http_obj, src_name,
+               v2_2_session.Push)
+          return
+
+      with v2_2_image.FromRegistry(
+          src_name, creds, http_obj,
+          accepted_mimes=docker_http.SUPPORTED_MANIFEST_MIMES) as v2_2_img:
         if v2_2_img.exists():
           Push(v2_2_img, dest_name, creds, http_obj, src_name,
                v2_2_session.Push)
@@ -101,10 +108,3 @@ class Create(base.CreateCommand):
 
       with v2_image.FromRegistry(src_name, creds, http_obj) as v2_img:
         Push(v2_img, dest_name, creds, http_obj, src_name, v2_session.Push)
-
-    except (v2_docker_http.V2DiagnosticException,
-            v2_2_docker_http.V2DiagnosticException) as err:
-      raise util.GcloudifyRecoverableV2Errors(err, {
-          httplib.FORBIDDEN: 'Add-tag failed, access denied.',
-          httplib.NOT_FOUND: 'Add-tag failed, not found: {0}'.format(src_name)
-      })

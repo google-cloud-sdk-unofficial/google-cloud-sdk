@@ -76,9 +76,15 @@ from tensorflow.python.saved_model import signature_constants
 from tensorflow.python.saved_model import tag_constants
 from google.cloud.ml.dataflow import _aggregators as aggregators
 from google.cloud.ml.dataflow import batch_prediction_pipeline
+from google.cloud.ml.prediction import prediction_lib as mlprediction
 # pylint: enable=g-import-not-at-top
 
 FILE_FORMAT_SUPPORTED = ["text", "tfrecord", "tfrecord_gzip"]
+FRAMEWORKS_SUPPORTED = [
+    mlprediction.TENSORFLOW_FRAMEWORK_NAME,
+    mlprediction.SCIKIT_LEARN_FRAMEWORK_NAME,
+    mlprediction.XGBOOST_FRAMEWORK_NAME
+]
 FILE_LIST_SEPARATOR = ","
 
 
@@ -159,6 +165,13 @@ class BatchPredictionOptions(PipelineOptions):
         help=("User's CloudML job id. It is not the job id of the Dataflow job."
               " The logs are sent to user job project in Stackdriver with job"
               " id as its label."))
+    parser.add_value_provider_argument(
+        "--framework",
+        dest="framework",
+        default=mlprediction.TENSORFLOW_FRAMEWORK_NAME,
+        choices=FRAMEWORKS_SUPPORTED,
+        help=("The framework used to train the model against. Supported "
+              "frameworks: %s" % FRAMEWORKS_SUPPORTED))
 
 
 if __name__ == "__main__":
@@ -175,3 +188,8 @@ if __name__ == "__main__":
       p,
       dataflow_pipeline_options.view_as(BatchPredictionOptions),
       aggregator_dict)
+  # From beam 2.1.0, the main thread exits. When using DirectRunner, we want to
+  # explicitly block the execution when DirectRunner is used.
+  if dataflow_pipeline_options.get_all_options().get("runner",
+                                                     None) != "DataflowRunner":
+    result.wait_until_finish()

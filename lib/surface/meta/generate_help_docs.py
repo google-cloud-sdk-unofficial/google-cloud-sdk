@@ -190,6 +190,6 @@ class GenerateHelpDocs(base.Command):
     if args.update_help_text_dir:
       changes = help_util.HelpTextUpdater(
           self._cli_power_users_only, args.update_help_text_dir,
-          test=args.test).Update()
+          test=args.test).Update(args.restrict)
       if changes and args.test:
         raise HelpTextOutOfDateError('Help text files must be updated.')

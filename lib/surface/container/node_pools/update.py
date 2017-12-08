@@ -26,7 +26,7 @@ from googlecloudsdk.core import log
 
 DETAILED_HELP = {
     'DESCRIPTION': """\
-        *{command}* updates a node pool in a Google Container Engine cluster.
+        *{command}* updates a node pool in a Google Kubernetes Engine cluster.
         """,
     'EXAMPLES': """\
         To turn on node auto repair in "node-pool-1" in the cluster
@@ -61,8 +61,11 @@ class Update(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddEnableAutoRepairFlag(parser, suppressed=True, for_node_pool=True)
-    flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True)
+    node_management_group = parser.add_argument_group('Node management',
+                                                      required=True)
+    flags.AddEnableAutoRepairFlag(node_management_group,
+                                  suppressed=True, for_node_pool=True)
+    flags.AddEnableAutoUpgradeFlag(node_management_group, for_node_pool=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     return api_adapter.UpdateNodePoolOptions(
@@ -87,10 +90,6 @@ class Update(base.UpdateCommand):
     location = location_get(args)
     pool_ref = adapter.ParseNodePool(args.name, location)
     options = self.ParseUpdateNodePoolOptions(args)
-    if options.enable_autorepair is None and options.enable_autoupgrade is None:
-      raise exceptions.MinimumArgumentException(
-          ['--[no-]enable-autoupgrade', '--[no-]enable-autorepair'],
-          'Please reformat your request.')
 
     if options.enable_autorepair is not None:
       log.status.Print(messages.AutoUpdateUpgradeRepairMessage(
@@ -121,8 +120,10 @@ class UpdateBeta(Update):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddEnableAutoRepairFlag(parser, for_node_pool=True)
-    flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True)
+    node_management_group = parser.add_argument_group('Node management',
+                                                      required=True)
+    flags.AddEnableAutoRepairFlag(node_management_group, for_node_pool=True)
+    flags.AddEnableAutoUpgradeFlag(node_management_group, for_node_pool=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -132,8 +133,21 @@ class UpdateAlpha(Update):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddEnableAutoRepairFlag(parser, for_node_pool=True)
-    flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True)
+    group = parser.add_mutually_exclusive_group(required=True)
+    node_management_group = group.add_argument_group('Node management')
+    flags.AddEnableAutoRepairFlag(node_management_group, for_node_pool=True)
+    flags.AddEnableAutoUpgradeFlag(node_management_group, for_node_pool=True)
+    autoscaling_group = flags.AddClusterAutoscalingFlags(group, hidden=False)
+    flags.AddNodePoolAutoprovisioningFlag(autoscaling_group, hidden=True)
 
+  def ParseUpdateNodePoolOptions(self, args):
+    ops = api_adapter.UpdateNodePoolOptions(
+        enable_autorepair=args.enable_autorepair,
+        enable_autoupgrade=args.enable_autoupgrade,
+        enable_autoscaling=args.enable_autoscaling,
+        max_nodes=args.max_nodes,
+        min_nodes=args.min_nodes,
+        enable_autoprovisioning=args.enable_autoprovisioning)
+    return ops
 
 Update.detailed_help = DETAILED_HELP

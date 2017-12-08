@@ -67,7 +67,7 @@ class Describe(base.DescribeCommand, dm_base.DmCommand):
                 insertTime, manifest.basename(), labels, operation.operationType,
                 operation.name, operation.progress, operation.status,
                 operation.user, operation.endTime, operation.startTime,
-                operation.error, update)',
+                operation.error, operation.warnings, update)',
                 resources:format='table(
                   name:label=NAME,
                   type:label=TYPE,
@@ -151,7 +151,7 @@ class DescribeAlpha(Describe):
                 insertTime, manifest.basename(), labels, operation.operationType,
                 operation.name, operation.progress, operation.status,
                 operation.user, operation.endTime, operation.startTime,
-                operation.error, update)',
+                operation.error, operation.warnings, update)',
                 resources:format='table(
                   name:label=NAME,
                   type:label=TYPE,

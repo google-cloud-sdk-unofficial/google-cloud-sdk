@@ -15,39 +15,56 @@
 from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import flags
-from googlecloudsdk.command_lib.pubsub import util
+from googlecloudsdk.command_lib.pubsub import resource_args
+from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
+def _Run(args, ack_ids, legacy_output=False):
+  client = subscriptions.SubscriptionsClient()
+
+  subscription_ref = args.CONCEPTS.subscription.Parse()
+  result = client.Ack(ack_ids, subscription_ref)
+
+  log.status.Print('Acked the messages with the following ackIds: [{}]'
+                   .format(','.join(ack_ids)))
+  if legacy_output:
+    return {'subscriptionId': subscription_ref.RelativeName(),
+            'ackIds': ack_ids}
+  else:
+    return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Ack(base.Command):
-  """Acknowledges one or more messages on the specified subscription.
+  """Acknowledges one or more messages on the specified subscription."""
 
-  Acknowledges one or more messages as having been successfully received.
-  If a delivered message is not acknowledged, Cloud Pub/Sub will attempt to
-  deliver it again.
-  """
+  detailed_help = {
+      'DESCRIPTION': """\
+          Acknowledges one or more messages as having been successfully received.
+          If a delivered message is not acknowledged, Cloud Pub/Sub will attempt
+          to deliver it again."""
+  }
 
   @staticmethod
   def Args(parser):
-    flags.AddSubscriptionResourceArg(parser, 'to ACK messages on.')
+    resource_args.AddSubscriptionResourceArg(parser, 'to ACK messages on.')
     flags.AddAckIdFlag(parser, 'acknowledge.')
 
   def Run(self, args):
-    """This is what gets called when the user runs this command.
+    return _Run(args, args.ack_ids)
 
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
 
-    Returns:
-      Ack display dictionary with information about the acknowledged messages
-      and related subscription.
-    """
-    client = subscriptions.SubscriptionsClient()
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class AckBeta(Ack):
+  """Acknowledges one or more messages on the specified subscription."""
 
-    subscription_ref = util.ParseSubscription(args.subscription)
-    client.Ack(args.ack_id, subscription_ref)
+  @staticmethod
+  def Args(parser):
+    resource_args.AddSubscriptionResourceArg(parser, 'to ACK messages on.')
+    flags.AddAckIdFlag(parser, 'acknowledge.', add_deprecated=True)
 
-    # Using this dict, instead of returning the AcknowledgeRequest directly,
-    # to preserve the naming conventions for subscriptionId.
-    return {'subscriptionId': subscription_ref.RelativeName(),
-            'ackIds': args.ack_id}
+  def Run(self, args):
+    ack_ids = flags.ParseAckIdsArgs(args)
+    legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
+    return _Run(args, ack_ids, legacy_output=legacy_output)

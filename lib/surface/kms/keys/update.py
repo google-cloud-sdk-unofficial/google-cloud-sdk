@@ -104,7 +104,8 @@ class Update(base.UpdateCommand):
   def ProcessFlags(self, args):
     fields_to_update = []
 
-    if args.update_labels or args.remove_labels:
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    if labels_diff.MayHaveUpdates():
       fields_to_update.append('labels')
     if args.remove_rotation_schedule:
       if args.rotation_period or args.next_rotation_time:
@@ -121,8 +122,8 @@ class Update(base.UpdateCommand):
     if not args.primary_version and not fields_to_update:
       raise exceptions.ToolException(
           'At least one of --primary-version or --update-labels or --remove-'
-          'labels or --rotation-period or --next-rotation-time or --remove-'
-          'rotation-schedule must be specified.')
+          'labels or --clear-labels or --rotation-period or --next-rotation-'
+          'time or --remove-rotation-schedule must be specified.')
 
     return fields_to_update
 
@@ -153,7 +154,7 @@ class Update(base.UpdateCommand):
         name=crypto_key_ref.RelativeName(),
         cryptoKey=messages.CryptoKey(
             labels=labels_util.Diff.FromUpdateArgs(args).Apply(
-                messages.CryptoKey.LabelsValue, crypto_key.labels)))
+                messages.CryptoKey.LabelsValue, crypto_key.labels).GetOrNone()))
     req.updateMask = ','.join(fields_to_update)
     flags.SetNextRotationTime(args, req.cryptoKey)
     flags.SetRotationPeriod(args, req.cryptoKey)

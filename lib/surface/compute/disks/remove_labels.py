@@ -74,18 +74,18 @@ class RemoveLabels(base.UpdateCommand):
     labels_diff = labels_util.Diff(subtractions=remove_labels)
     if disk_ref.Collection() == 'compute.disks':
       operation_collection = 'compute.zoneOperations'
-      replacement = labels_diff.Apply(messages.ZoneSetLabelsRequest.LabelsValue,
-                                      disk.labels)
+      labels_update = labels_diff.Apply(
+          messages.ZoneSetLabelsRequest.LabelsValue, disk.labels)
       request = messages.ComputeDisksSetLabelsRequest(
           project=disk_ref.project,
           resource=disk_ref.disk,
           zone=disk_ref.zone,
           zoneSetLabelsRequest=messages.ZoneSetLabelsRequest(
               labelFingerprint=disk.labelFingerprint,
-              labels=replacement))
+              labels=labels_update.GetOrNone()))
     else:
       operation_collection = 'compute.regionOperations'
-      replacement = labels_diff.Apply(
+      labels_update = labels_diff.Apply(
           messages.RegionSetLabelsRequest.LabelsValue, disk.labels)
       request = messages.ComputeRegionDisksSetLabelsRequest(
           project=disk_ref.project,
@@ -93,9 +93,9 @@ class RemoveLabels(base.UpdateCommand):
           region=disk_ref.region,
           regionSetLabelsRequest=messages.RegionSetLabelsRequest(
               labelFingerprint=disk.labelFingerprint,
-              labels=replacement))
+              labels=labels_update.GetOrNone()))
 
-    if not replacement:
+    if not labels_update.needs_update:
       return disk
 
     operation = service.SetLabels(request)

@@ -33,7 +33,7 @@ class Create(base.CreateCommand):
   For example to create a rule at priority 1000 to block the IP range
   1.2.3.0/24, run:
 
-        $ *{command}* 1000 \
+        $ {command} 1000 \
             --security-policy my-policy \
             --description "block 1.2.3.0/24" \
             --src-ip-ranges 1.2.3.0/24

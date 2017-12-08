@@ -106,13 +106,13 @@ class PredictionDoFn(beam.DoFn):
   class _ModelState(object):
     """Atomic representation of the in-memory state of the model."""
 
-    def __init__(self, model_dir, tags, skip_preprocessing):
+    def __init__(self,
+                 model_dir,
+                 tags,
+                 framework=mlprediction.TENSORFLOW_FRAMEWORK_NAME):
       self.model_dir = model_dir
-
-      session, signature_map = mlprediction.load_model(model_dir, tags=tags)
-      client = mlprediction.SessionClient(session, signature_map)
-      self.model = mlprediction.create_model(
-          client, model_dir, skip_preprocessing=skip_preprocessing)
+      client = mlprediction.create_client(framework, model_dir, tags)
+      self.model = mlprediction.create_model(client, model_dir, framework)
 
   # TODO(b/33746781): Get rid of this and instead use self._model_state for
   # all initialization detection.
@@ -127,7 +127,8 @@ class PredictionDoFn(beam.DoFn):
                    signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY),
                skip_preprocessing=False,
                target="",
-               config=None):
+               config=None,
+               framework=mlprediction.TENSORFLOW_FRAMEWORK_NAME):
     """Constructor of Prediction beam.DoFn class.
 
     Args:
@@ -145,6 +146,8 @@ class PredictionDoFn(beam.DoFn):
               most cases, users should not set the target.
       config: A ConfigProto proto with configuration options. See config in
               tf.Session()
+      framework: The framework used to train this model. Available frameworks:
+               "TENSORFLOW", "SCIKIT_LEARN", and "XGBOOST".
 
     Side Inputs:
       model_dir: The directory containing the model to load and the
@@ -162,6 +165,8 @@ class PredictionDoFn(beam.DoFn):
       tags = StaticValueProvider(str, tags)
     if isinstance(signature_name, basestring):
       signature_name = StaticValueProvider(str, signature_name)
+    if isinstance(framework, basestring):
+      framework = StaticValueProvider(str, framework)
 
     self._user_project_id = user_project_id
     self._user_job_id = user_job_id
@@ -173,7 +178,7 @@ class PredictionDoFn(beam.DoFn):
     self._model_state = None
     self._cloud_logger = None
     self._tag_list = []
-
+    self._framework = framework
     # Metrics.
     self._model_load_seconds_distribution = beam.metrics.Metrics.distribution(
         _METRICS_NAMESPACE, "model_load_seconds")
@@ -201,13 +206,13 @@ class PredictionDoFn(beam.DoFn):
     try:
       if isinstance(model_dir, ValueProvider):
         model_dir = model_dir.get()
-
+      framework = self._framework.get()
       if self._model_state is None:
         if (getattr(self._thread_local, "model_state", None) is None or
             self._thread_local.model_state.model_dir != model_dir):
           start = datetime.datetime.now()
           self._thread_local.model_state = self._ModelState(
-              model_dir, self._tag_list, self._skip_preprocessing)
+              model_dir, self._tag_list, framework)
           self._model_load_seconds_distribution.update(
               int((datetime.datetime.now() - start).total_seconds()))
         self._model_state = self._thread_local.model_state
@@ -215,26 +220,27 @@ class PredictionDoFn(beam.DoFn):
         assert self._model_state.model_dir == model_dir
 
       # Try to load it.
-      if self._signature_name in self._model_state.model.signature_map:
-        # Even though predict() checks the signature in TensorFlowModel,
-        # we need to duplicate this check here to determine the single string
-        # input case.
-        signature = self._model_state.model.signature_map[self._signature_name]
-      else:
-        raise mlprediction.PredictionError(
-            mlprediction.PredictionError.INVALID_INPUTS,
-            "No signature found for signature key %s." % self._signature_name)
-      if self._model_state.model.is_single_string_input(signature):
-        loaded_data = element
+      if framework == mlprediction.TENSORFLOW_FRAMEWORK_NAME:
+        if self._signature_name in self._model_state.model.signature_map:
+          # Even though predict() checks the signature in TensorFlowModel,
+          # we need to duplicate this check here to determine the single string
+          # input case.
+          signature = self._model_state.model.signature_map[
+              self._signature_name]
+          if self._model_state.model.is_single_string_input(signature):
+            loaded_data = element
+          else:
+            loaded_data = [json.loads(d) for d in element]
+        else:
+          raise mlprediction.PredictionError(
+              mlprediction.PredictionError.INVALID_INPUTS,
+              "No signature found for signature key %s." % self._signature_name)
       else:
         loaded_data = [json.loads(d) for d in element]
       instances = mlprediction.decode_base64(loaded_data)
       inputs, predictions = self._model_state.model.predict(
           instances, signature_name=self._signature_name)
       predictions = list(predictions)
-      predictions = mlprediction.encode_base64(
-          predictions, signature.outputs)
-
       if self._aggregator_dict:
         aggr = self._aggregator_dict.get(
             aggregators.AggregatorName.ML_PREDICTIONS, None)
@@ -294,6 +300,7 @@ class BatchPredict(beam.PTransform):
                target="",
                config=None,
                return_input=False,
+               framework=mlprediction.TENSORFLOW_FRAMEWORK_NAME,
                **kwargs):
     """Constructs the transform.
 
@@ -320,25 +327,11 @@ class BatchPredict(beam.PTransform):
               config in tf.Session()
       return_input: if true, the transforms returns a tuple of [input, output]
                     otherwise only the output is returned.
+      framework: The framework used to train this model. Available frameworks:
+                 "TENSORFLOW", "SCIKIT_LEARN", and "XGBOOST".
       **kwargs: Other named arguments, e.g. label, passed to base PTransform.
     """
     super(BatchPredict, self).__init__(**kwargs)
-
-    if not isinstance(tags, (basestring, ValueProvider)):
-      raise TypeError("%s: tags must be of type string"
-                      " or ValueProvider; got %r instead"
-                      % (self.__class__.__name__, tags))
-    if isinstance(tags, basestring):
-      tags = StaticValueProvider(str, tags)
-    self._tags = tags
-
-    if not isinstance(signature_name, (basestring, ValueProvider)):
-      raise TypeError("%s: signature_name must be of type string"
-                      " or ValueProvider; got %r instead"
-                      % (self.__class__.__name__, signature_name))
-    if isinstance(signature_name, basestring):
-      signature_name = StaticValueProvider(str, signature_name)
-    self._signature_name = signature_name
 
     if not isinstance(batch_size, (int, ValueProvider)):
       raise TypeError("%s: batch_size must be of type int"
@@ -346,10 +339,26 @@ class BatchPredict(beam.PTransform):
                       % (self.__class__.__name__, batch_size))
     if isinstance(batch_size, int):
       batch_size = StaticValueProvider(int, batch_size)
+    if framework == mlprediction.TENSORFLOW_FRAMEWORK_NAME:
+      if not isinstance(tags, (basestring, ValueProvider)):
+        raise TypeError("%s: tags must be of type string"
+                        " or ValueProvider; got %r instead" %
+                        (self.__class__.__name__, tags))
+      if isinstance(tags, basestring):
+        tags = StaticValueProvider(str, tags)
+
+      if not isinstance(signature_name, (basestring, ValueProvider)):
+        raise TypeError("%s: signature_name must be of type string"
+                        " or ValueProvider; got %r instead"
+                        % (self.__class__.__name__, signature_name))
+      if isinstance(signature_name, basestring):
+        signature_name = StaticValueProvider(str, signature_name)
 
     self._batch_size = batch_size
-
+    self._framework = framework
     self._aggregator_dict = aggregator_dict
+    self._tags = tags
+    self._signature_name = signature_name
 
     if not isinstance(user_project_id, (basestring, ValueProvider)):
       raise TypeError("%s: user_project_id must be of type string"
@@ -395,7 +404,8 @@ class BatchPredict(beam.PTransform):
                       self._signature_name,
                       skip_preprocessing=False,
                       target=self._target,
-                      config=self._config), self._model_dir).with_outputs(
+                      config=self._config,
+                      framework=self._framework), self._model_dir).with_outputs(
                           "errors", main="main"))
     input_output, errors = result.main, result.errors
     if self._return_input:

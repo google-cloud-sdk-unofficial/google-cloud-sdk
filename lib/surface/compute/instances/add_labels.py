@@ -47,10 +47,10 @@ class InstancesAddLabels(base.UpdateCommand):
     instance = client.instances.Get(
         messages.ComputeInstancesGetRequest(**instance_ref.AsDict()))
 
-    replacement = labels_util.Diff(additions=add_labels).Apply(
+    labels_update = labels_util.Diff(additions=add_labels).Apply(
         messages.InstancesSetLabelsRequest.LabelsValue, instance.labels)
 
-    if not replacement:
+    if not labels_update.needs_update:
       return instance
 
     request = messages.ComputeInstancesSetLabelsRequest(
@@ -60,7 +60,7 @@ class InstancesAddLabels(base.UpdateCommand):
         instancesSetLabelsRequest=
         messages.InstancesSetLabelsRequest(
             labelFingerprint=instance.labelFingerprint,
-            labels=replacement))
+            labels=labels_update.labels))
 
     operation = client.instances.SetLabels(request)
     operation_ref = holder.resources.Parse(

@@ -1,12 +1,9 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Get description of a long-running speech recognition operation.
     DESCRIPTION: |
       Get information about a long-running speech recognition operation.
-
-        {auth_help}
-    auth_help: !COMMON help_text.auth_help
 
   request:
     collection: speech.operations
@@ -16,11 +13,8 @@
 
   arguments:
     resource:
-      help_text: The operation to describe.
-      params:
-        - api_field: operationsId
-          arg_name: operation_id
-          help_text: The ID of the operation to describe.
+      help_text: The ID of the operation to describe.
+      spec: !REF googlecloudsdk.command_lib.ml.speech.resources:operation
 
   output:
     format: json

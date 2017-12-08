@@ -31,9 +31,9 @@ class GetCredentials(base.Command):
   """Fetch credentials for a running cluster.
 
   {command} updates a kubeconfig file with appropriate credentials and endpoint
-  information to point kubectl at a specific cluster in Google Container Engine.
-  It takes a project and a zone as parameters, passed through by set defaults or
-  flags.
+  information to point kubectl at a specific cluster in Google Kubernetes
+  Engine. It takes a project and a zone as parameters, passed through by set
+  defaults or flags.
   By default, credentials are written to HOME/.kube/config. You can provide an
   alternate path by setting the KUBECONFIG environment variable.
 
@@ -41,7 +41,7 @@ class GetCredentials(base.Command):
   with multiple clusters. It can also be used to access a previously created
   cluster from a new workstation.
 
-  See [](https://cloud.google.com/container-engine/docs/kubectl) for
+  See [](https://cloud.google.com/kubernetes-engine/docs/kubectl) for
   kubectl documentation.
   """
   detailed_help = {

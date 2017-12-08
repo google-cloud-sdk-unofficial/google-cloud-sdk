@@ -78,8 +78,8 @@ class Create(base.CreateCommand):
     subscription_ref = util.ParseSubscription(
         args.subscription, args.subscription_project)
 
-    labels = labels_util.Diff.FromCreateArgs(args).Apply(
-        client.messages.CreateSnapshotRequest.LabelsValue)
+    labels = labels_util.ParseCreateArgs(
+        args, client.messages.CreateSnapshotRequest.LabelsValue)
 
     failed = []
     for snapshot_name in args.snapshot:

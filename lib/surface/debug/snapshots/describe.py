@@ -44,5 +44,6 @@ class Describe(base.DescribeCommand):
     debugger = debug.Debugger(project_id)
     debuggee = debugger.FindDebuggee(args.target)
     return debuggee.ListBreakpoints(args.location,
+                                    include_all_users=True,
                                     resource_ids=args.ids,
                                     restrict_to_type=debugger.SNAPSHOT_TYPE)

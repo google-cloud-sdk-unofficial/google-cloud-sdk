@@ -13,9 +13,11 @@
 # limitations under the License.
 
 """The 'gcloud firebase test android models list' command."""
+import re
 
 from googlecloudsdk.api_lib.firebase.test import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
 
 
 class List(base.ListCommand):
@@ -30,15 +32,15 @@ class List(base.ListCommand):
           command in the CLI. Positional arguments are allowed.
     """
     parser.display_info.AddFormat("""
-          table[box](
-            id:label=MODEL_ID,
-            manufacturer:label=MAKE,
-            name:label=MODEL_NAME,
-            form.color(blue=VIRTUAL,yellow=PHYSICAL):label=FORM,
-            format("{0:4} x {1}", screenY, screenX):label=RESOLUTION,
-            supportedVersionIds.list(undefined="none"):label=OS_VERSION_IDS,
-            tags.list().color(green=default,red=deprecated,yellow=preview)
-          )
+        table[box](
+          id:label=MODEL_ID,
+          manufacturer:label=MAKE,
+          name:label=MODEL_NAME,
+          form.color(blue=VIRTUAL,yellow=PHYSICAL):label=FORM,
+          format("{0:4} x {1}", screenY, screenX):label=RESOLUTION,
+          supportedVersionIds.list(undefined="none"):label=OS_VERSION_IDS,
+          tags.join(sep=", ").color(green=default,red=deprecated,yellow=preview)
+        )
     """)
 
   def Run(self, args):
@@ -53,4 +55,25 @@ class List(base.ListCommand):
       with no currently supported OS versions are filtered out.
     """
     catalog = util.GetAndroidCatalog(self.context)
-    return [model for model in catalog.models if model.supportedVersionIds]
+    filtered_models = [
+        model for model in catalog.models if model.supportedVersionIds
+    ]
+    self._epilog = self._warn_on_deprecated_tag(filtered_models)
+
+    return filtered_models
+
+  def Epilog(self, resources_were_displayed=True):
+    super(List, self).Epilog(resources_were_displayed)
+
+    if self._epilog:
+      log.warn(self._epilog)
+
+  @staticmethod
+  def _warn_on_deprecated_tag(models):
+    for model in models:
+      for tag in model.tags:
+        if re.match('deprecated', tag):
+          return (
+              'Some devices are deprecated. Learn more at '
+              'https://firebase.google.com/docs/test-lab/overview#deprecation')
+    return None

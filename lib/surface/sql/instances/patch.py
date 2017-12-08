@@ -287,9 +287,6 @@ class PatchBeta(base.UpdateCommand):
 
   def Run(self, args):
     # Validate labels flags
-    if args.clear_labels and (args.update_labels or args.remove_labels):
-      conflict = '--update-labels' if args.update_labels else '--remove-labels'
-      raise exceptions.ConflictingArgumentsException('--clear-labels', conflict)
     return RunBasePatchCommand(args, self.ReleaseTrack())
 
   @staticmethod
@@ -298,9 +295,4 @@ class PatchBeta(base.UpdateCommand):
     AddBaseArgs(parser)
     flags.AddAvailabilityType(parser)
     flags.AddInstanceResizeLimit(parser)
-    labels_util.AddUpdateLabelsFlags(parser)
-    parser.add_argument(
-        '--clear-labels',
-        required=False,
-        action='store_true',
-        help=('Remove all labels, if any are set.'))
+    labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)

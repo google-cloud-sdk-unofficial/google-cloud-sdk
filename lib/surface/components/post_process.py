@@ -15,9 +15,6 @@
 """The command to perform any necessary post installation steps."""
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import log
-from googlecloudsdk.core.cache import exceptions as cache_exceptions
-from googlecloudsdk.core.cache import resource_cache
 from googlecloudsdk.core.updater import local_state
 
 
@@ -30,17 +27,6 @@ class PostProcess(base.SilentCommand):
     parser.add_argument('data', nargs='*', default='')
 
   def Run(self, args):
-    # Delete the deprecated completion cache.
-    resource_cache.DeleteDeprecatedCache()
-
-    # Delete the completion cache.
-    try:
-      resource_cache.ResourceCache(create=False).Delete()
-    except cache_exceptions.CacheNotFound:
-      pass
-    except cache_exceptions.Error as e:
-      log.info('Unexpected resource cache error ignored: [%s].', e)
-
     # Re-compile python files.
     state = local_state.InstallationState.ForCurrent()
     state.CompilePythonFiles()

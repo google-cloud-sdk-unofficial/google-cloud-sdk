@@ -1,12 +1,9 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Detect faces within an image.
     DESCRIPTION: |
       Detect faces within an image.
-
-      {auth_hints}
-    auth_hints: !COMMON help_text.auth_hints
 
   request:
     _COMMON_: request

@@ -14,21 +14,19 @@
 """Cloud Pub/Sub topics update command."""
 from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.pubsub import util
+from googlecloudsdk.command_lib.pubsub import resource_args
 from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Updates an existing Cloud Pub/Sub topic."""
 
   @staticmethod
   def Args(parser):
     """Registers flags for this command."""
-
-    parser.add_argument('topic',
-                        help='Name of the topic to update.')
-
+    resource_args.AddTopicResourceArg(parser, 'to update.')
     labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):
@@ -46,16 +44,12 @@ class Update(base.UpdateCommand):
       API topics.Patch command.
     """
     client = topics.TopicsClient()
-    topic_ref = util.ParseTopic(args.topic)
+    topic_ref = args.CONCEPTS.topic.Parse()
 
-    labels_diff = labels_util.Diff.FromUpdateArgs(args)
-    if labels_diff.MayHaveUpdates():
-      original_topic = client.Get(topic_ref)
-      labels = labels_diff.Apply(
-          client.messages.Topic.LabelsValue, original_topic.labels)
-    else:
-      labels = None
-    result = client.Patch(topic_ref, labels=labels)
+    labels_update = labels_util.ProcessUpdateArgsLazy(
+        args, client.messages.Topic.LabelsValue,
+        orig_labels_thunk=lambda: client.Get(topic_ref).labels)
+    result = client.Patch(topic_ref, labels=labels_update.GetOrNone())
 
     log.UpdatedResource(topic_ref.RelativeName(), kind='topic')
     return result

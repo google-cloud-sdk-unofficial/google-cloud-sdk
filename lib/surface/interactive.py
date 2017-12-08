@@ -19,6 +19,7 @@ from __future__ import unicode_literals
 import StringIO
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.meta import generate_cli_trees
 from googlecloudsdk.command_lib.shell import application
 from googlecloudsdk.command_lib.shell import bindings
 from googlecloudsdk.command_lib.shell import config as configuration
@@ -29,14 +30,24 @@ from googlecloudsdk.core.document_renderers import render_document
 _FEATURES = """
 * auto-completion for *gcloud* commands, flags and resource arguments
 * support for other CLIs including *bq*, *gsutil* and *kubectl*
-* state preservation across commands: *cd*, local and environment variables
+* state preservation across commands: *cd*, local/environment variables
 """
 
 _SPLASH = """
 # Welcome to the gcloud interactive shell environment.
 
-Features in this release include:
-""" + _FEATURES + """
+Tips:
+
+* start by typing "gcloud " to get auto-suggestions
+* hit *F7* at any point in the command line to make it the default prefix
+* hit *F8* at any point in the command line to open the detailed help
+  page in your browser, if available, or to display it in the terminal
+* run `gcloud alpha interactive --help` for detailed interactive help
+* to enable autocompletion and active help for *gsutil* and *kubectl*:
+  * exit `gcloud alpha interactive`
+  * run `gcloud alpha interactive --update-cli-trees`
+  * it takes a few minutes, but will not be needed in a future release
+
 Run *$ gcloud feedback* to report bugs or request new features.
 
 """
@@ -46,9 +57,10 @@ def _GetKeyBindingsHelp():
   """Returns the function key bindings help markdown."""
   lines = []
   for key in bindings.KeyBindings().bindings:
-    if key.help_text:
+    help_text = key.GetHelp(markdown=True)
+    if help_text:
       lines.append('\n{}:::'.format(key.GetLabel(markdown=True)))
-      lines.append(key.help_text)
+      lines.append(help_text)
   return '\n'.join(lines)
 
 
@@ -71,7 +83,6 @@ def _GetPropertiesHelp():
   return '\n'.join(lines)
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Interactive(base.Command):
   """Start the gcloud interactive shell.
@@ -82,7 +93,7 @@ class Interactive(base.Command):
 
   ### Display
 
-  The *{command}* display window is divided into 5 sections, described here
+  The *{command}* display window is divided into sections, described here
   from top to bottom.
 
   *Previous Output*::
@@ -98,16 +109,14 @@ class Interactive(base.Command):
 
   *Active Help*::
 
-  Help text snippets for _known_ commands are displayed in this section as
-  commands are typed.
+  As you type, this section displays in-line help summaries for commands, flags
+  and arguments. You can toggle active help on and off via the *F2* key.
 
   *Status Display*::
 
-  Current *gcloud* project and user information displayed in this section.
-
-  *Function Keys*::
-
-  Function keys toggle mode/state settings or run specific actions.
+  Current *gcloud* project and account information, and function key
+  descriptions and settings are displayed in this section. Function keys
+  toggle mode/state settings or run specific actions.
   {bindings}
 
   ### Auto and TAB Completion
@@ -137,8 +146,8 @@ class Interactive(base.Command):
   also run the *exit* command at the prompt.
 
   *^W*:::
-  If a command is not currently running, then the last word on the command line
-  is deleted. This is handy for "walking back" partial completions.
+  If a command is not currently running, then the last word on the command
+  line is deleted. This is handy for "walking back" partial completions.
 
   ### Command history
 
@@ -177,21 +186,7 @@ class Interactive(base.Command):
   *{command}* uses CLI tree data files for typeahead, command line completion
   and help snippet generation. A few CLI trees are installed with their
   respective Cloud SDK components: *gcloud* (core component), *bq*, *gsutil*,
-  and *kubectl*.
-
-  By default, CLI trees for other commands are JSON files generated on demand
-  from their *man*(1) or *man7.org* man pages. They are cached in the *cli*
-  subdirectory of the global config directory:
-
-    $(gcloud info --format="value(config.paths.global_config_dir)")/cli
-
-  The generated trees are a close approximation. You can construct your own,
-  especially for hierarchical CLIs like *git*(1) that are hard to extract
-  from man pages. See `$ gcloud topic cli-trees` for details.
-
-  Run this command to list the current CLI trees in your project:
-
-      $ gcloud meta cli-trees list
+  and *kubectl*. See `$ gcloud topic cli-trees` for details.
 
   ## EXAMPLES
 
@@ -203,11 +198,11 @@ class Interactive(base.Command):
 
   Although the goal is to provide the same experience across all platforms,
   the underlying open-source libraries are biased in this decreasing order:
-  *linux*, *macos*, *Windows*. As the alpha implementation matures, the
-  platform differences will subside.
+  *linux*, *macos*, *Windows*. As the alpha implementation matures the platform
+  differences will subside.
 
-  On *Windows* install *git*(1) for a *bash*(1) experience. *{command}*
-  will then use the *git* (MinGW) *bash* instead of *cmd.exe*.
+  On Windows install *git*(1) for a *bash*(1) experience. *{command}* will
+  then use the *git* (MinGW) *bash* instead of *cmd.exe*.
 
   Please run *$ gcloud feedback* to report bugs or request new features.
   """
@@ -234,6 +229,7 @@ class Interactive(base.Command):
         help='Enable completion of hidden commands and flags.')
     parser.add_argument(
         '--prompt',
+        hidden=True,
         help='The interactive shell prompt.')
     parser.add_argument(
         '--suggest',
@@ -242,8 +238,22 @@ class Interactive(base.Command):
         default=None,
         help=('Enable auto suggestion from history. The defaults are currently '
               'too rudimentary for prime time.'))
+    # TODO(b/69033748): drop this workaround when the trees are packaged
+    parser.add_argument(
+        '--update-cli-trees',
+        action='store_true',
+        help=('Update the *bq*, *gsutil* and *kubectl* CLI trees, if the '
+              'corresponding command components have been installed. '
+              'Run with this flag *once* to enable completion and active help '
+              'for these commands. NOTICE: it may take a few minutes to '
+              'complete. This is a workaround that will be automatic (and '
+              '_faster_) in a future release.'))
 
   def Run(self, args):
+    # TODO(b/69033748): drop this workaround when the trees are packaged
+    if args.update_cli_trees:
+      generate_cli_trees.UpdateCliTrees(
+          warn_on_exceptions=True, verbose=not args.quiet)
     if not args.quiet:
       render_document.RenderDocument(fin=StringIO.StringIO(_SPLASH))
     config = configuration.Config(

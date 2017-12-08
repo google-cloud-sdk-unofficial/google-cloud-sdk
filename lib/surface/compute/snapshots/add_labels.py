@@ -64,11 +64,11 @@ class SnapshotsAddLabels(base.UpdateCommand):
     snapshot = client.snapshots.Get(
         messages.ComputeSnapshotsGetRequest(**snapshot_ref.AsDict()))
 
-    replacement = labels_util.Diff(additions=add_labels).Apply(
+    labels_update = labels_util.Diff(additions=add_labels).Apply(
         messages.GlobalSetLabelsRequest.LabelsValue,
         snapshot.labels)
 
-    if not replacement:
+    if not labels_update.needs_update:
       return snapshot
 
     request = messages.ComputeSnapshotsSetLabelsRequest(
@@ -77,7 +77,7 @@ class SnapshotsAddLabels(base.UpdateCommand):
         globalSetLabelsRequest=
         messages.GlobalSetLabelsRequest(
             labelFingerprint=snapshot.labelFingerprint,
-            labels=replacement))
+            labels=labels_update.labels))
 
     operation = client.snapshots.SetLabels(request)
     operation_ref = holder.resources.Parse(

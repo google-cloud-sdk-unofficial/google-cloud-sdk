@@ -26,7 +26,8 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     instance_groups_flags.GetInstanceGroupManagerArg(
-        region_flag=False).AddArgument(parser, operation_type='describe')
+        region_flag=False).AddArgument(
+            parser, operation_type='list instance configs for')
     parser.display_info.AddFormat("""table(
         items.instance,
         items.override.disks.deviceName)

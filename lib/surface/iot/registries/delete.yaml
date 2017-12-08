@@ -10,6 +10,4 @@
   arguments:
     resource:
       help_text: The registry you want to delete.
-      params:
-        - _COMMON_: args.region
-        - _COMMON_: args.registry
+      spec: !REF googlecloudsdk.command_lib.iot.resources:registry

@@ -111,8 +111,8 @@ class Create(base.CreateCommand):
       raise exceptions.RequiredArgumentException(
           'PROJECT_ID', 'an id must be provided for the new project')
     project_ref = command_lib_util.ParseProject(project_id)
-    labels = labels_util.Diff.FromCreateArgs(args).Apply(
-        projects_util.GetMessages().Project.LabelsValue)
+    labels = labels_util.ParseCreateArgs(
+        args, projects_util.GetMessages().Project.LabelsValue)
     try:
       create_op = projects_api.Create(
           project_ref,

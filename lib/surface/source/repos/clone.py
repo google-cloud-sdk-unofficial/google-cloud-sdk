@@ -98,7 +98,8 @@ class CloneGA(base.Command):
       raise c_exc.InvalidArgumentException('REPOSITORY_NAME', message)
     if hasattr(repo, 'mirrorConfig') and repo.mirrorConfig:
       mirror_url = repo.mirrorConfig.url
-      self.ActionIfMirror(args.src, res.projectsId, mirror_url)
+      self.ActionIfMirror(
+          project=res.projectsId, repo=args.src, mirror_url=mirror_url)
     # do the actual clone
     git_helper = git.Git(res.projectsId, args.src, uri=repo.url)
     path = git_helper.Clone(

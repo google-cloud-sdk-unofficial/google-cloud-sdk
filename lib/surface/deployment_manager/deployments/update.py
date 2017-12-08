@@ -128,7 +128,7 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
           'This flag cannot be used with --config.',
           dest='manifest_id')
 
-    labels_util.AddUpdateLabelsFlags(parser)
+    labels_util.AddUpdateLabelsFlags(parser, enable_clear=False)
 
     parser.add_argument(
         '--preview',

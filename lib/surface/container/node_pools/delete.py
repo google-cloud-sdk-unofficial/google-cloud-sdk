@@ -28,7 +28,7 @@ from googlecloudsdk.core.console import console_io
 
 DETAILED_HELP = {
     'DESCRIPTION': """\
-        *{command}* deletes a node pool from a Google Container Engine cluster.
+        *{command}* deletes a node pool from a Google Kubernetes Engine cluster.
         This command does not gracefully drain the nodes prior to deleting them.
         Use "kubectl drain NODE_NAME" to drain each node to have containers
         running on these nodes terminate gracefully.

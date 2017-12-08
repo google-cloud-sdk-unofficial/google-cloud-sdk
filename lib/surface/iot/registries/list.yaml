@@ -7,12 +7,13 @@
   request:
     collection: cloudiot.projects.locations.registries
 
+  response:
+    id_field: name
+
   arguments:
     resource:
       help_text: The location you want to list the registries for.
-      response_id_field: name
-      params:
-        - _COMMON_: args.region
+      spec: !REF googlecloudsdk.command_lib.iot.resources:region
 
   output:
     format: |

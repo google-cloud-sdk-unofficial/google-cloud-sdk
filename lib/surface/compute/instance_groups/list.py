@@ -68,7 +68,8 @@ class List(base.ListCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
+    request_data = lister.ParseMultiScopeFlags(
+        args, holder.resources, holder.client.messages.InstanceGroup)
 
     list_implementation = lister.MultiScopeLister(
         client,

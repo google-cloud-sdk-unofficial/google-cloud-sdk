@@ -61,7 +61,8 @@ class RemoveMetadata(base.UpdateCommand):
                 **project_ref.AsDict()))
 
   def Modify(self, client, args, existing):
-    new_object = encoding.CopyProtoMessage(existing)
+    new_object = encoding.JsonToMessage(
+        type(existing), encoding.MessageToJson(existing))
     existing_metadata = existing.commonInstanceMetadata
     new_object.commonInstanceMetadata = metadata_utils.RemoveEntries(
         client.messages,

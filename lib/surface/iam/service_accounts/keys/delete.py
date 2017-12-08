@@ -16,6 +16,7 @@
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
@@ -35,14 +36,21 @@ class Delete(base_classes.BaseIamCommand):
                         help='The key to delete.')
 
   def Run(self, args):
+    key_ref = resources.REGISTRY.Parse(
+        args.key,
+        collection='iam.projects.serviceAccounts.keys',
+        params={
+            'serviceAccountsId': args.iam_account,
+            'projectsId': '-'
+        })
+    key = key_ref.keysId
     console_io.PromptContinue(
         message='You are about to delete key [{0}] for service '
         'account [{1}].'.format(args.key, args.account),
         cancel_on_no=True)
     self.iam_client.projects_serviceAccounts_keys.Delete(
         self.messages.IamProjectsServiceAccountsKeysDeleteRequest(
-            name=iam_util.EmailAndKeyToResourceName(args.iam_account,
-                                                    args.key)))
+            name=key_ref.RelativeName()))
 
     log.status.Print('deleted key [{1}] for service account [{0}]'.format(
-        args.iam_account, args.key))
+        args.iam_account, key))

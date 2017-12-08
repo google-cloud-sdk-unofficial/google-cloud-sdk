@@ -155,9 +155,8 @@ class CreateWithContainer(base.CreateCommand):
         custom_memory=args.custom_memory,
         ext=getattr(args, 'custom_extensions', None))
 
-  def _GetDisks(self, args, client, holder, instance_template_ref):
+  def _GetDisks(self, args, client, holder, instance_template_ref, image_uri):
     boot_disk_size_gb = self._GetBootDiskSize(args)
-    image_uri = self._GetImageUri(args, client, holder, instance_template_ref)
     return self._CreateDiskMessages(
         holder, args, boot_disk_size_gb, image_uri,
         instance_template_ref.project)
@@ -176,12 +175,16 @@ class CreateWithContainer(base.CreateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
     instance_template_ref = self._GetInstanceTemplateRef(args, holder)
+    image_uri = self._GetImageUri(args, client, holder, instance_template_ref)
+    labels = containers_utils.GetLabelsMessageWithCosVersion(
+        None, image_uri, holder.resources, client.messages.InstanceProperties)
     metadata = self._GetUserMetadata(args, client, instance_template_ref)
     network_interface = self._GetNetworkInterface(args, client, holder)
     scheduling = self._GetScheduling(args, client)
     service_accounts = self._GetServiceAccounts(args, client)
     machine_type = self._GetMachineType(args)
-    disks = self._GetDisks(args, client, holder, instance_template_ref)
+    disks = self._GetDisks(
+        args, client, holder, instance_template_ref, image_uri)
 
     request = client.messages.ComputeInstanceTemplatesInsertRequest(
         instanceTemplate=client.messages.InstanceTemplate(
@@ -189,6 +192,7 @@ class CreateWithContainer(base.CreateCommand):
                 machineType=machine_type,
                 disks=disks,
                 canIpForward=args.can_ip_forward,
+                labels=labels,
                 metadata=metadata,
                 minCpuPlatform=args.min_cpu_platform,
                 networkInterfaces=[network_interface],
@@ -273,12 +277,16 @@ class CreateWithContainerAlpha(CreateWithContainer):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
     instance_template_ref = self._GetInstanceTemplateRef(args, holder)
+    image_uri = self._GetImageUri(args, client, holder, instance_template_ref)
+    labels = containers_utils.GetLabelsMessageWithCosVersion(
+        None, image_uri, holder.resources, client.messages.InstanceProperties)
     metadata = self._GetUserMetadata(args, client, instance_template_ref)
     network_interface = self._GetNetworkInterface(args, client, holder)
     scheduling = self._GetScheduling(args, client)
     service_accounts = self._GetServiceAccounts(args, client)
     machine_type = self._GetMachineType(args)
-    disks = self._GetDisks(args, client, holder, instance_template_ref)
+    disks = self._GetDisks(
+        args, client, holder, instance_template_ref, image_uri)
 
     request = client.messages.ComputeInstanceTemplatesInsertRequest(
         instanceTemplate=client.messages.InstanceTemplate(
@@ -286,6 +294,7 @@ class CreateWithContainerAlpha(CreateWithContainer):
                 machineType=machine_type,
                 disks=disks,
                 canIpForward=args.can_ip_forward,
+                labels=labels,
                 metadata=metadata,
                 minCpuPlatform=args.min_cpu_platform,
                 networkInterfaces=[network_interface],

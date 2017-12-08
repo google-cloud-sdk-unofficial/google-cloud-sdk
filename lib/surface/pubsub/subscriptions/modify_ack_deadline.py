@@ -15,9 +15,16 @@
 from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import flags
-from googlecloudsdk.command_lib.pubsub import util
+from googlecloudsdk.command_lib.pubsub import resource_args
+from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning='This command has been renamed. Please use '
+            '`modify-message-ack-deadline` instead.')
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ModifyAckDeadline(base.Command):
   """Modifies the ACK deadline for a specific Cloud Pub/Sub message.
 
@@ -28,8 +35,8 @@ class ModifyAckDeadline(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddSubscriptionResourceArg(parser, 'messages belong to.')
-    flags.AddAckIdFlag(parser, 'modify the deadline for.')
+    resource_args.AddSubscriptionResourceArg(parser, 'messages belong to.')
+    flags.AddAckIdFlag(parser, 'modify the deadline for.', add_deprecated=True)
     flags.AddAckDeadlineFlag(parser, required=True)
 
   def Run(self, args):
@@ -45,9 +52,20 @@ class ModifyAckDeadline(base.Command):
     """
     client = subscriptions.SubscriptionsClient()
 
-    subscription_ref = util.ParseSubscription(args.subscription)
-    client.ModifyAckDeadline(subscription_ref, args.ack_id, args.ack_deadline)
+    subscription_ref = args.CONCEPTS.subscription.Parse()
+    ack_ids = flags.ParseAckIdsArgs(args)
+    result = client.ModifyAckDeadline(
+        subscription_ref, ack_ids, args.ack_deadline)
 
-    return {'subscriptionId': subscription_ref.RelativeName(),
-            'ackId': args.ack_id,
-            'ackDeadlineSeconds': args.ack_deadline}
+    log.status.Print('Set ackDeadlineSeconds to [{0}] for messages with ackId '
+                     '[{1}]] for subscription [{2}]'.format(
+                         args.ack_deadline, ','.join(ack_ids),
+                         subscription_ref.RelativeName()))
+
+    legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
+    if legacy_output:
+      return {'subscriptionId': subscription_ref.RelativeName(),
+              'ackId': ack_ids,
+              'ackDeadlineSeconds': args.ack_deadline}
+    else:
+      return result

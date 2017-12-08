@@ -54,9 +54,12 @@ class InstancesRemoveLabels(base.UpdateCommand):
         for label in instance.labels.additionalProperties:
           remove_labels[label.key] = label.value
 
-    replacement = labels_util.Diff(subtractions=remove_labels).Apply(
+    labels_update = labels_util.Diff(subtractions=remove_labels).Apply(
         messages.InstancesSetLabelsRequest.LabelsValue,
         instance.labels)
+    if not labels_update.needs_update:
+      return instance
+
     request = messages.ComputeInstancesSetLabelsRequest(
         project=instance_ref.project,
         instance=instance_ref.instance,
@@ -64,10 +67,7 @@ class InstancesRemoveLabels(base.UpdateCommand):
         instancesSetLabelsRequest=
         messages.InstancesSetLabelsRequest(
             labelFingerprint=instance.labelFingerprint,
-            labels=replacement))
-
-    if not replacement:
-      return instance
+            labels=labels_update.labels))
 
     operation = client.instances.SetLabels(request)
     operation_ref = holder.resources.Parse(

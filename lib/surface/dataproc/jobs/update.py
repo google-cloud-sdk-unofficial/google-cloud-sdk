@@ -58,26 +58,20 @@ class Update(base.UpdateCommand):
 
     changed_fields = []
 
+    orig_job = dataproc.client.projects_regions_jobs.Get(
+        dataproc.messages.DataprocProjectsRegionsJobsGetRequest(
+            projectId=job_ref.projectId,
+            region=job_ref.region,
+            jobId=job_ref.jobId))
+
     # Update labels if the user requested it
-    labels = None
-    labels_diff = labels_util.Diff.FromUpdateArgs(args)
-    if labels_diff.MayHaveUpdates():
+    labels_update_result = labels_util.Diff.FromUpdateArgs(args).Apply(
+        dataproc.messages.Job.LabelsValue, orig_job.labels)
+    if labels_update_result.needs_update:
       changed_fields.append('labels')
 
-      # We need to fetch the job first so we know what the labels look like. The
-      # labels_util will fill out the proto for us with all the updates and
-      # removals, but first we need to provide the current state of the labels
-      orig_job = dataproc.client.projects_regions_jobs.Get(
-          dataproc.messages.DataprocProjectsRegionsJobsGetRequest(
-              projectId=job_ref.projectId,
-              region=job_ref.region,
-              jobId=job_ref.jobId))
-
-      labels = labels_diff.Apply(
-          dataproc.messages.Job.LabelsValue, orig_job.labels)
-
     updated_job = orig_job
-    updated_job.labels = labels
+    updated_job.labels = labels_update_result.GetOrNone()
     request = dataproc.messages.DataprocProjectsRegionsJobsPatchRequest(
         projectId=job_ref.projectId,
         region=job_ref.region,

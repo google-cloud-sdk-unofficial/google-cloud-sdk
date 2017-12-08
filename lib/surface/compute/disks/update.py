@@ -61,25 +61,26 @@ class Update(base.UpdateCommand):
         args, holder.resources,
         scope_lister=flags.GetDefaultScopeLister(holder.client))
 
-    update_labels, remove_labels = labels_util.GetAndValidateOpsFromArgs(args)
+    labels_diff = labels_util.GetAndValidateOpsFromArgs(args)
 
     service = client.disks
     request_type = messages.ComputeDisksGetRequest
 
     disk = service.Get(request_type(**disk_ref.AsDict()))
 
-    replacement = labels_util.Diff(update_labels, remove_labels).Apply(
-        messages.ZoneSetLabelsRequest.LabelsValue, disk.labels)
+    labels_update = labels_diff.Apply(messages.ZoneSetLabelsRequest.LabelsValue,
+                                      disk.labels)
+
+    if not labels_update.needs_update:
+      return disk
+
     request = messages.ComputeDisksSetLabelsRequest(
         project=disk_ref.project,
         resource=disk_ref.disk,
         zone=disk_ref.zone,
         zoneSetLabelsRequest=messages.ZoneSetLabelsRequest(
             labelFingerprint=disk.labelFingerprint,
-            labels=replacement))
-
-    if not replacement:
-      return disk
+            labels=labels_update.labels))
 
     operation = service.SetLabels(request)
     operation_ref = holder.resources.Parse(
@@ -116,31 +117,30 @@ class UpdateAlpha(base.UpdateCommand):
   DISK_ARG = None
 
   def GetLabelsReplacementRequest(
-      self, disk_ref, disk, messages, update_labels, remove_labels):
-    labels_diff = labels_util.Diff(update_labels, remove_labels)
+      self, disk_ref, disk, messages, labels_diff):
     if disk_ref.Collection() == 'compute.disks':
       # TODO(b/69033695): Cover this branch via unit tests
-      replacement = labels_diff.Apply(messages.ZoneSetLabelsRequest.LabelsValue,
-                                      disk.labels)
-      if replacement:
+      labels_update = labels_diff.Apply(
+          messages.ZoneSetLabelsRequest.LabelsValue, disk.labels)
+      if labels_update.needs_update:
         return messages.ComputeDisksSetLabelsRequest(
             project=disk_ref.project,
             resource=disk_ref.disk,
             zone=disk_ref.zone,
             zoneSetLabelsRequest=messages.ZoneSetLabelsRequest(
                 labelFingerprint=disk.labelFingerprint,
-                labels=replacement))
+                labels=labels_update.labels))
     else:
-      replacement = labels_diff.Apply(
+      labels_update = labels_diff.Apply(
           messages.RegionSetLabelsRequest.LabelsValue, disk.labels)
-      if replacement:
+      if labels_update.needs_update:
         return messages.ComputeRegionDisksSetLabelsRequest(
             project=disk_ref.project,
             resource=disk_ref.disk,
             region=disk_ref.region,
             regionSetLabelsRequest=messages.RegionSetLabelsRequest(
                 labelFingerprint=disk.labelFingerprint,
-                labels=replacement))
+                labels=labels_update.labels))
     return None
 
   def GetOperationCollection(self, disk_ref):
@@ -172,13 +172,13 @@ class UpdateAlpha(base.UpdateCommand):
     disk_ref = self.DISK_ARG.ResolveAsResource(
         args, holder.resources,
         scope_lister=flags.GetDefaultScopeLister(holder.client))
-    update_labels, remove_labels = labels_util.GetAndValidateOpsFromArgs(args)
+    labels_diff = labels_util.GetAndValidateOpsFromArgs(args)
 
     service = self.GetDisksService(disk_ref, client)
     disk = service.Get(self.GetDiskGetRequest(disk_ref, messages))
 
     set_labels_request = self.GetLabelsReplacementRequest(
-        disk_ref, disk, messages, update_labels, remove_labels)
+        disk_ref, disk, messages, labels_diff)
 
     if not set_labels_request:
       return disk

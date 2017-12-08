@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.container import flags
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Operations(base.Group):
-  """Get and list operations for Google Container Engine clusters."""
+  """Get and list operations for Google Kubernetes Engine clusters."""
 
   @staticmethod
   def Args(parser):
@@ -52,7 +52,7 @@ class Operations(base.Group):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class OperationsAlphaBeta(Operations):
-  """Get and list operations for Google Container Engine clusters."""
+  """Get and list operations for Google Kubernetes Engine clusters."""
 
   @staticmethod
   def Args(parser):

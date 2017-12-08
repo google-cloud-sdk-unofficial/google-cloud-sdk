@@ -129,13 +129,8 @@ class Update(base.UpdateCommand):
         cluster_config.lifecycleConfig = lifecycle_config
         has_changes = True
 
-    # Update labels if the user requested it
-    labels = None
-    labels_diff = labels_util.Diff.FromUpdateArgs(args)
-    if labels_diff.MayHaveUpdates():
-      has_changes = True
-      changed_fields.append('labels')
-
+    # Put in a thunk so we only make this call if needed
+    def _GetCurrentLabels():
       # We need to fetch cluster first so we know what the labels look like. The
       # labels_util will fill out the proto for us with all the updates and
       # removals, but first we need to provide the current state of the labels
@@ -146,8 +141,14 @@ class Update(base.UpdateCommand):
               clusterName=cluster_ref.clusterName))
       current_cluster = dataproc.client.projects_regions_clusters.Get(
           get_cluster_request)
-      labels = labels_diff.Apply(
-          dataproc.messages.Cluster.LabelsValue, current_cluster.labels)
+      return current_cluster.labels
+    labels_update = labels_util.ProcessUpdateArgsLazy(
+        args, dataproc.messages.Cluster.LabelsValue,
+        orig_labels_thunk=_GetCurrentLabels)
+    if labels_update.needs_update:
+      has_changes = True
+      changed_fields.append('labels')
+    labels = labels_update.GetOrNone()
 
     if not has_changes:
       raise exceptions.ArgumentError(
@@ -245,18 +246,16 @@ class UpdateBeta(Update):
         '--max-idle',
         type=arg_parsers.Duration(),
         help="""\
-        The duration before cluster is auto-deleted after last job completes,
+        The duration before cluster is auto-deleted after last job finished,
         such as "30m", "2h" or "1d".
-        """,
-        hidden=True)
+        """)
     idle_delete_group.add_argument(
         '--no-max-idle',
         action='store_true',
         help="""\
-        Cancel the cluster scheduled deletion which executes after a sepecified
-        cluster idle period.
-        """,
-        hidden=True)
+        Cancels the cluster auto-deletion by cluster idle duration (configured
+         by --max-idle flag)
+        """)
 
     auto_delete_group = parser.add_mutually_exclusive_group()
     auto_delete_group.add_argument(
@@ -265,22 +264,18 @@ class UpdateBeta(Update):
         help="""\
         The lifespan of the cluster before it is auto-deleted, such as "30m",
         "2h" or "1d".
-        """,
-        hidden=True)
+        """)
     auto_delete_group.add_argument(
         '--expiration-time',
         type=arg_parsers.Datetime.Parse,
         help="""\
         The time when cluster will be auto-deleted, such as
         "2017-08-29T18:52:51.142Z"
-        """,
-        hidden=True)
+        """)
     auto_delete_group.add_argument(
         '--no-max-age',
         action='store_true',
         help="""\
-        Cancel the cluster scheduled deletion which executes at a specific time
-        or after a fixed specific period. In other words, it cancel the cluster
-        scheduled deletion set by both --max-age and --expiration-time flags.
-        """,
-        hidden=True)
+        Cancels the cluster auto-deletion by maximum cluster age (configured by
+         --max-age or --expiration-time flags)
+        """)

@@ -21,7 +21,6 @@ from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.functions import exceptions
 from googlecloudsdk.api_lib.functions import operations
 from googlecloudsdk.api_lib.functions import util
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
@@ -30,7 +29,6 @@ from googlecloudsdk.command_lib.functions.deploy import util as deploy_util
 from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
-from googlecloudsdk.core.util import files as file_utils
 
 _DEPLOY_WAIT_NOTICE = 'Deploying function (may take a while - up to 2 minutes)'
 _NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE = (
@@ -59,8 +57,9 @@ def _FunctionArgs(parser):
       '--timeout',
       help="""\
       The function execution timeout, e.g. 30s for 30 seconds. Defaults to
-      original value for existing function or 60 seconds for new functions.""",
-      type=arg_parsers.Duration(lower_bound='1s'))
+      original value for existing function or 60 seconds for new functions.
+      Cannot be more than 540s.""",
+      type=arg_parsers.Duration(lower_bound='1s', upper_bound='540s'))
   parser.add_argument(
       '--retry',
       help=('If specified, then the function will be retried in case of a '
@@ -75,31 +74,7 @@ def _FunctionArgs(parser):
 
 def _SourceCodeArgs(parser):
   """Add arguments specyfying functions source code to the parser."""
-  path_group = parser.add_mutually_exclusive_group()
-
-  path_group.add_argument(
-      '--local-path',
-      help=('Path to local directory with source code. Required with '
-            '--stage-bucket flag. Size of uncompressed files to deploy must be '
-            'no more than 512MB.'),
-      action=actions.DeprecationAction(
-          '--local-path',
-          warn='The {flag_name} flag is deprecated; use --source instead.',
-          removed=False,
-      ),
-  )
-  path_group.add_argument(
-      '--source-path',
-      help=('Path to directory with source code in Cloud Source '
-            'Repositories, when you specify this parameter --source-url flag '
-            'is required.'),
-      action=actions.DeprecationAction(
-          '--source-path',
-          warn='The {flag_name} flag is deprecated; use --source instead.',
-          removed=False,
-      ),
-  )
-  path_group.add_argument(
+  parser.add_argument(
       '--source',
       help="""\
       Location of source code to deploy.
@@ -135,69 +110,12 @@ def _SourceCodeArgs(parser):
       directory. Existing functions keep their old source.
       """)
 
-  source_group = parser.add_mutually_exclusive_group()
-  source_group.add_argument(
+  parser.add_argument(
       '--stage-bucket',
       help=('Name of Google Cloud Storage bucket in which source code will '
             'be stored. Required if a function is deployed from a local '
             'directory.'),
       type=util.ValidateAndStandarizeBucketUriOrRaise)
-  source_group.add_argument(
-      '--source-url',
-      help=('The Url of a remote repository that holds the function being '
-            'deployed. It is of the form: '
-            'https://source.developers.google.com/p/{project_id}/'
-            'r/{repo_name}/, where you should substitute your data for '
-            'values inside the curly brackets. You can omit "r/{repo_name}/" '
-            'in which case the "default" repository is taken. '
-            'One of the parameters --source-revision, --source-branch, '
-            'or --source-tag can be given to specify the version in the '
-            'repository. If none of them are provided, the last revision '
-            'from the master branch is used. If this parameter is given, '
-            'the parameter --source is required and describes the path '
-            'inside the repository.'),
-      action=actions.DeprecationAction(
-          '--source-url',
-          warn='The {flag_name} flag is deprecated; use --source instead.',
-          removed=False,
-      ),
-  )
-  source_version_group = parser.add_mutually_exclusive_group()
-  source_version_group.add_argument(
-      '--source-revision',
-      help=('The revision ID (for instance, git commit hash) that will be '
-            'used to get the source code of the function. Can be specified '
-            'only together with --source-url parameter.'),
-      action=actions.DeprecationAction(
-          '--source-revision',
-          warn='The {flag_name} flag is deprecated; use --source instead.',
-          removed=False,
-      ),
-  )
-  source_version_group.add_argument(
-      '--source-branch',
-      help=('The branch that will be used to get the source code of the '
-            'function.  The most recent revision on this branch will be '
-            'used. Can be specified only together with --source-url '
-            'parameter. If not specified defaults to `master`.'),
-      action=actions.DeprecationAction(
-          '--source-branch',
-          warn='The {flag_name} flag is deprecated; use --source instead.',
-          removed=False,
-      ),
-  )
-  source_version_group.add_argument(
-      '--source-tag',
-      help="""\
-      The revision tag for the source that will be used as the source
-      code of the function. Can be specified only together with
-      --source-url parameter.""",
-      action=actions.DeprecationAction(
-          '--source-tag',
-          warn='The {flag_name} flag is deprecated; use --source instead.',
-          removed=False,
-      ),
-  )
   parser.add_argument(
       '--entry-point',
       type=util.ValidateEntryPointNameOrRaise,
@@ -208,22 +126,6 @@ def _SourceCodeArgs(parser):
       You can use this flag to override the default behavior, by specifying
       the name of a JavaScript function that will be executed when the
       Google Cloud Function is triggered."""
-  )
-  parser.add_argument(
-      '--include-ignored-files',
-      help=('Deploy source from the local filesystem, skipping files specified '
-            'in `.gcloudignore` file (see `gcloud topic gcloudignore` for more '
-            'information). If the `.gcloudignore` file doesn\'t exist, it will '
-            'be created.'),
-      default=False,
-      action=actions.DeprecationAction(
-          '--include-ignored-files',
-          warn=('The {flag_name} flag is deprecated; use `.gcloudignore` file '
-                'instead. See `gcloud topic gcloudignore` for more '
-                'information.'),
-          removed=False,
-          action='store_true',
-      ),
   )
 
 
@@ -341,62 +243,52 @@ class Deploy(base.Command):
     return event_trigger
 
   def _ApplyNonSourceArgsToFunction(
-      self, function, name, entry_point, timeout_sec, trigger_http,
-      trigger_params, retry, memory):
+      self, function, update_mask, messages, args, name, trigger_params):
     """Modifies a function object without touching in the sources properties.
 
     Args:
       function: message, function resource to be modified.
-      name: str, name of the function (resource).
-      entry_point: str, name of the function (in deployed code) to be executed.
-      timeout_sec: int, maximum time allowed for function execution, in seconds.
-      trigger_http: bool, indicates whether function should have a HTTPS
-                    trigger; when truthy trigger_params argument is ignored.
+      update_mask: update mask to which modified fields will be added.
+      messages: messages module.
+      args: parsed commandline arguments.
+      name: str, name of the function.
       trigger_params: None or dict from str to str, the dict is assumed to
                       contain exactly the following keys: trigger_provider,
                       trigger_event, trigger_resource.
-      retry: bool, indicates if function should retry.
-      memory: int, memory limit for the function in bytes.
     """
-    messages = util.GetApiMessagesModule()
     function.name = name
-    if entry_point:
-      function.entryPoint = entry_point
-    if timeout_sec:
-      function.timeout = str(timeout_sec) + 's'
-    if trigger_http:
-      function.eventTrigger = None
+    if args.entry_point:
+      function.entryPoint = args.entry_point
+      update_mask.append('entryPoint')
+    if args.timeout:
+      function.timeout = '{}s'.format(args.timeout)
+      update_mask.append('timeout')
+    if args.trigger_http:
+      deploy_util.CleanOldTriggerInfo(function, update_mask)
       function.httpsTrigger = messages.HttpsTrigger()
-    elif trigger_params:
+    if trigger_params:
+      deploy_util.CleanOldTriggerInfo(function, update_mask)
       function.eventTrigger = self._EventTrigger(**trigger_params)
-      function.httpsTrigger = None
-    if retry:
-      function.eventTrigger.failurePolicy = messages.FailurePolicy()
-      function.eventTrigger.failurePolicy.retry = messages.Retry()
+    if args.IsSpecified('retry'):
+      update_mask.append('eventTrigger.failurePolicy')
+      if args.retry:
+        function.eventTrigger.failurePolicy = messages.FailurePolicy()
+        function.eventTrigger.failurePolicy.retry = messages.Retry()
+      else:
+        function.eventTrigger.failurePolicy = None
     elif function.eventTrigger:
       function.eventTrigger.failurePolicy = None
-    if memory:
-      function.availableMemoryMb = utils.BytesToMb(memory)
-
-  def _GetSourceUrlFromArgs(
-      self, project, tag, branch, revision, source_url, source_path):
-    if revision:
-      revision_segment = '/revisions/' + revision
-    elif tag:
-      revision_segment = '/fixed-aliases/' + tag
-    elif branch:
-      revision_segment = '/moveable-aliases/' + branch
-    else:
-      revision_segment = ''
-    return '{}{}/{}'.format(source_url, revision_segment, source_path)
+    if args.memory:
+      function.availableMemoryMb = utils.BytesToMb(args.memory)
+      update_mask.append('memory')
 
   def _ApplyArgsToFunction(
-      self, base_function, is_new_function, trigger_params, name, args,
+      self, function, is_new_function, trigger_params, name, args,
       project):
     """Apply values from args to base_function.
 
     Args:
-        base_function: function message to modify
+        function: function message to modify
         is_new_function: bool, indicates if this is a new function (and source
                          code for it must be deployed) or an existing function
                          (so it may keep its old source code).
@@ -404,46 +296,34 @@ class Deploy(base.Command):
         name: relative name of the function.
         args: commandline args specyfying how to modify the function.
         project: project of the function.
+    Returns:
+      Pair of function and update mask.
     """
-    if args.IsSpecified('retry'):
-      retry = args.retry
-    else:
-      retry = None
-    self._ApplyNonSourceArgsToFunction(
-        base_function, name, args.entry_point, args.timeout,
-        args.trigger_http, trigger_params, retry, args.memory)
-    messages = util.GetApiMessagesModule()
-    if args.source:
-      deploy_util.AddSourceToFunction(
-          base_function, args.source, args.include_ignored_files, args.name,
-          args.stage_bucket, messages)
-    elif args.source_url:
-      deploy_util.CleanOldSourceInfo(base_function)
-      source_path = args.source_path
-      source_branch = args.source_branch or 'master'
-      base_function.sourceRepository = messages.SourceRepository(
-          url=self._GetSourceUrlFromArgs(
-              project, tag=args.source_tag, branch=source_branch,
-              revision=args.source_revision, source_url=args.source_url,
-              source_path=source_path))
+    update_mask = []
 
-    elif args.stage_bucket:
-      # Do not change source of existing function unless instructed to.
-      deploy_util.CleanOldSourceInfo(base_function)
-      base_function.sourceArchiveUrl = self._PrepareSourcesOnGcs(args)
-    elif is_new_function or args.local_path:
+    messages = util.GetApiMessagesModule()
+    self._ApplyNonSourceArgsToFunction(
+        function, update_mask, messages, args, name, trigger_params)
+    if args.source or args.stage_bucket:
+      deploy_util.AddSourceToFunction(
+          function, update_mask, args.source, args.name, args.stage_bucket,
+          messages)
+    elif is_new_function:
       raise exceptions.FunctionsError(
           'argument --stage-bucket: required when the function is deployed '
           'from a local directory.')
-    # Set information about deplouyment tool.
+    # Set information about deployment tool.
     labels_to_update = args.update_labels or {}
     labels_to_update['deployment-tool'] = 'cli-gcloud'
     labels_diff = labels_util.Diff(additions=labels_to_update,
-                                   subtractions=args.remove_labels)
-    updated_labels = labels_diff.Apply(messages.CloudFunction.LabelsValue,
-                                       base_function.labels)
-    if updated_labels is not None:
-      base_function.labels = updated_labels
+                                   subtractions=args.remove_labels,
+                                   clear=args.clear_labels)
+    labels_update = labels_diff.Apply(messages.CloudFunction.LabelsValue,
+                                      function.labels)
+    if labels_update.needs_update:
+      function.labels = labels_update.labels
+      update_mask.append('labels')
+    return function, ','.join(sorted(update_mask))
 
   def _ValidateAfterCheckingFunctionsExistence(self, function, args):
     if function is None:
@@ -457,14 +337,6 @@ class Deploy(base.Command):
             'You must specify a trigger when deploying a new function.'
         )
 
-  def _PrepareSourcesOnGcs(self, args):
-    """Create a zip file and upload it to GCS as specified by args."""
-    with file_utils.TemporaryDirectory() as tmp_dir:
-      local_path = deploy_util.GetLocalPath(args)
-      zip_file = deploy_util.CreateSourcesZipFile(
-          tmp_dir, local_path, args.include_ignored_files)
-      return deploy_util.UploadFile(zip_file, args.name, args.stage_bucket)
-
   @util.CatchHTTPErrorRaiseHTTPException
   def _CreateFunction(self, location, function):
     client = util.GetApiClientInstance()
@@ -476,14 +348,14 @@ class Deploy(base.Command):
     return self._GetExistingFunction(function.name)
 
   @util.CatchHTTPErrorRaiseHTTPException
-  def _UpdateFunction(self, unused_location, function):
+  def _UpdateFunction(self, function, update_mask):
     client = util.GetApiClientInstance()
     messages = client.MESSAGES_MODULE
     op = client.projects_locations_functions.Patch(
         messages.CloudfunctionsProjectsLocationsFunctionsPatchRequest(
             cloudFunction=function,
             name=function.name,
-            updateMask=None,
+            updateMask=update_mask,
         )
     )
     operations.Wait(op, messages, client, _DEPLOY_WAIT_NOTICE)
@@ -535,9 +407,10 @@ class Deploy(base.Command):
     if is_new_function:
       messages = util.GetApiMessagesModule()
       function = messages.CloudFunction()
-    self._ApplyArgsToFunction(function, is_new_function, trigger_params,
-                              function_url, args, project)
+    function, update_mask = self._ApplyArgsToFunction(
+        function, is_new_function, trigger_params, function_url, args,
+        project)
     if is_new_function:
       return self._CreateFunction(location, function)
     else:
-      return self._UpdateFunction(location, function)
+      return self._UpdateFunction(function, update_mask)

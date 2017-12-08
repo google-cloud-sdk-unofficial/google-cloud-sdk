@@ -1,13 +1,10 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Detect explicit content in an image.
     DESCRIPTION: |
       Safe Search Detection detects adult content, violent content, medical
       content and spoof content in an image.
-
-      {auth_hints}
-    auth_hints: !COMMON help_text.auth_hints
 
   request:
     _COMMON_: request

@@ -275,7 +275,7 @@ class Update(base.UpdateCommand):
       console_io.PromptContinue(
           message='This will start an IP Rotation on cluster [{name}]. The '
           'master will be updated to serve on a new IP address in addition to '
-          'the current IP address. Container Engine will then recreate all '
+          'the current IP address. Kubernetes Engine will then recreate all '
           'nodes ({num_nodes} nodes) to point to the new IP address. This '
           'operation is long-running and will block other operations on the '
           'cluster (including delete) until it has run to completion.'.format(
@@ -368,6 +368,12 @@ class UpdateBeta(Update):
     flags.AddNetworkPolicyFlags(group)
     flags.AddLoggingServiceFlag(group)
     flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
+    flags.AddPodSecurityPolicyFlag(group, hidden=True)
+
+  def ParseUpdateOptions(self, args, locations):
+    opts = container_command_util.ParseUpdateOptionsBase(args, locations)
+    opts.enable_pod_security_policy = args.enable_pod_security_policy
+    return opts
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -391,8 +397,10 @@ class UpdateAlpha(Update):
     flags.AddRemoveLabelsFlag(group)
     flags.AddNetworkPolicyFlags(group, hidden=False)
     flags.AddLoggingServiceFlag(group)
-    flags.AddAutoprovisioningFlags(parser, group, hidden=True)
+    flags.AddAutoprovisioningFlags(parser, group, hidden=False)
     flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
+    flags.AddPodSecurityPolicyFlag(group, hidden=True)
+    flags.AddEnableBinAuthzFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -401,4 +409,6 @@ class UpdateAlpha(Update):
     opts.max_cpu = args.max_cpu
     opts.min_memory = args.min_memory
     opts.max_memory = args.max_memory
+    opts.enable_pod_security_policy = args.enable_pod_security_policy
+    opts.enable_binauthz = args.enable_binauthz
     return opts

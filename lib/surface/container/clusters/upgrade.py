@@ -100,7 +100,7 @@ You can find the list of allowed versions for upgrades by running:
   parser.add_argument(
       '--master',
       help='Upgrade the cluster\'s master to the latest version of Kubernetes'
-      ' supported on Container Engine. Nodes cannot be upgraded at the same'
+      ' supported on Kubernetes Engine. Nodes cannot be upgraded at the same'
       ' time as the master.',
       action='store_true')
   flags.AddAsyncFlag(parser)

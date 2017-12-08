@@ -53,7 +53,8 @@ def run(p, args, aggregator_dict):
                          batch_size=args.batch_size,
                          aggregator_dict=aggregator_dict,
                          user_project_id=args.user_project_id,
-                         user_job_id=args.user_job_id))
+                         user_job_id=args.user_job_id,
+                         framework=args.framework))
 
   # Convert predictions to JSON and then write to output files.
   _ = (results

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Poll long-running speech recognition operation until it completes.
@@ -7,20 +7,14 @@
       the operation is complete, this command will display the results of the
       transcription.
 
-      {auth_help}
-    auth_help: !COMMON help_text.auth_help
-
   request:
     collection: speech.operations
     api_version: v1
 
   arguments:
     resource:
-      help_text: The operation to wait for.
-      params:
-        - api_field: operationsId
-          arg_name: operation_id
-          help_text: The ID of the operation to wait for.
+      help_text: The ID of the operation to wait for.
+      spec: !REF googlecloudsdk.command_lib.ml.speech.resources:operation
 
   async:
     collection: speech.operations

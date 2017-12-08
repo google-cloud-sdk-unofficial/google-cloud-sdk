@@ -38,10 +38,9 @@ class Create(base.CreateCommand):
     regions_ref = util.ParseRegion(dataproc)
 
     workflow_template = messages.WorkflowTemplate(
-        id=args.template, name=template_ref.RelativeName())
-    labels = labels_util.Diff.FromCreateArgs(args).Apply(
-        messages.WorkflowTemplate.LabelsValue)
-    workflow_template.labels = labels
+        id=args.template, name=template_ref.RelativeName(),
+        labels=labels_util.ParseCreateArgs(
+            args, messages.WorkflowTemplate.LabelsValue))
 
     request = messages.DataprocProjectsRegionsWorkflowTemplatesCreateRequest(
         parent=regions_ref.RelativeName(), workflowTemplate=workflow_template)

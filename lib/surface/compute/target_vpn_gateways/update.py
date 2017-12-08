@@ -109,13 +109,14 @@ class Update(base.UpdateCommand):
             **target_vpn_gateway_ref.AsDict()))
     labels_value = messages.RegionSetLabelsRequest.LabelsValue
 
-    replacement = labels_diff.Apply(labels_value, target_vpn_gateway.labels)
+    labels_update = labels_diff.Apply(labels_value, target_vpn_gateway.labels)
 
-    if not replacement:
+    if not labels_update.needs_update:
       return target_vpn_gateway
 
     request = self._CreateRegionalSetLabelsRequest(
-        messages, target_vpn_gateway_ref, target_vpn_gateway, replacement)
+        messages, target_vpn_gateway_ref, target_vpn_gateway,
+        labels_update.labels)
 
     operation = client.targetVpnGateways.SetLabels(request)
     operation_ref = holder.resources.Parse(

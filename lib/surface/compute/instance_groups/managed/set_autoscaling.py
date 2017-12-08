@@ -152,7 +152,7 @@ class SetAutoscaling(base.Command):
     if re.match(r'^gke-.*-[0-9a-f]{1,8}-grp$', args.name):
       prompt_message = (
           'You should not use Compute Engine\'s autoscaling feature '
-          'on instance groups created by Container Engine. '
+          'on instance groups created by Kubernetes Engine. '
           'Do you want to continue?')
       if not console_io.PromptContinue(message=prompt_message, default=False):
         raise exceptions.ToolException('Setting autoscaling aborted by user.')

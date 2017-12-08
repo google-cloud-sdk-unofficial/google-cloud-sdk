@@ -39,6 +39,8 @@ class Shell(base.Command):
   *{command}* has menu based auto completion and displays help snippets
   as each part of a *gcloud* sub-command is typed. The initial context is
   set to *gcloud*; you only need to enter subcommands.
+
+  *(DEPRECATED)* Please use $ gcloud alpha interactive.
   """
 
   def Run(self, args):

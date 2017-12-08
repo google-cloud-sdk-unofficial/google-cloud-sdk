@@ -15,56 +15,67 @@
 from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import flags
+from googlecloudsdk.command_lib.pubsub import resource_args
 from googlecloudsdk.command_lib.pubsub import util
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_projector
 
 
+def _Run(args, message_body, legacy_output=False):
+  """Publishes a message to a topic."""
+  client = topics.TopicsClient()
+
+  attributes = util.ParseAttributes(args.attribute, messages=client.messages)
+  topic_ref = args.CONCEPTS.topic.Parse()
+
+  result = client.Publish(topic_ref, message_body, attributes)
+
+  if legacy_output:
+    # We only allow to publish one message at a time, so do not return a
+    # list of messageId.
+    result = resource_projector.MakeSerializable(result)
+    result['messageIds'] = result['messageIds'][0]
+  return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Publish(base.Command):
-  """Publishes a message to the specified topic.
+  """Publishes a message to the specified topic."""
 
-  Publishes a message to the specified topic name for testing and
-  troubleshooting. Use with caution: all associated subscribers must be
-  able to consume and acknowledge any message you publish, otherwise the
-  system will continuously re-attempt delivery of the bad message for 7 days.
+  detailed_help = {
+      'DESCRIPTION': """\
+          Publishes a message to the specified topic name for testing and
+          troubleshooting. Use with caution: all associated subscribers must
+          be able to consume and acknowledge any message you publish,
+          otherwise the system will continuously re-attempt delivery of the
+          bad message for 7 days.""",
+      'EXAMPLES': """\
+          To publish messages in a batch to a specific Cloud Pub/Sub topic,
+          run:
 
-  ## EXAMPLES
-
-  To publish messages in a batch to a specific Cloud Pub/Sub topic,
-  run:
-
-    $ {command} mytopic "Hello World!" --attribute KEY1=VAL1,KEY2=VAL2
-  """
+            $ {command} mytopic "Hello World!" --attribute KEY1=VAL1,KEY2=VAL2
+      """
+  }
 
   @staticmethod
   def Args(parser):
-    flags.AddTopicResourceArg(parser, 'to publish messages to.')
+    resource_args.AddTopicResourceArg(parser, 'to publish messages to.')
     flags.AddPublishMessageFlags(parser)
 
   def Run(self, args):
-    """This is what gets called when the user runs this command.
+    return _Run(args, args.message)
 
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
 
-    Returns:
-      PublishResponse with the response of the Publish operation.
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class PublishBeta(Publish):
+  """Publishes a message to the specified topic."""
 
-    Raises:
-      topics.EmptyMessageException: if neither message or attributes is
-        specified.
-      topics.PublishOperationException: When something went wrong with the
-        publish operation.
-    """
-    client = topics.TopicsClient()
+  @staticmethod
+  def Args(parser):
+    resource_args.AddTopicResourceArg(parser, 'to publish messages to.')
+    flags.AddPublishMessageFlags(parser, add_deprecated=True)
 
-    attributes = util.ParseAttributes(args.attribute, messages=client.messages)
-    topic_ref = util.ParseTopic(args.topic)
-
-    result = client.Publish(topic_ref, args.message_body, attributes)
-
-    # We only allow to publish one message at a time, so do not return a
-    # list of messageId.
-    resource = resource_projector.MakeSerializable(result)
-    resource['messageIds'] = result.messageIds[0]
-    return resource
+  def Run(self, args):
+    message_body = flags.ParseMessageBody(args)
+    legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
+    return _Run(args, message_body, legacy_output=legacy_output)

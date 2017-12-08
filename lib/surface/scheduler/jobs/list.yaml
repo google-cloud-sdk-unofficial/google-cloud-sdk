@@ -5,12 +5,14 @@
   request:
     collection: cloudscheduler.projects.locations.jobs
 
+  response:
+    id_field: name
+
   arguments:
     resource:
       help_text: The location you want to list the devices for.
-      response_id_field: name
-      params:
-        - _COMMON_: args.location
+      spec: !REF googlecloudsdk.command_lib.scheduler.resources:location
+      removed_flags: [ location ]
 
   output:
       format: |

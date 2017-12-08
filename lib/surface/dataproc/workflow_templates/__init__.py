@@ -28,9 +28,9 @@ class WorkflowTemplates(base.Group):
 
     $ {command} create my_template
 
-  To run a workflow template, run:
+  To instantiate a workflow template, run:
 
-    $ {command} run my_template
+    $ {command} instantiate my_template
 
   To delete a workflow template, run:
 

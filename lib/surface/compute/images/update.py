@@ -62,15 +62,15 @@ class Update(base.UpdateCommand):
         args, holder.resources,
         scope_lister=flags.GetDefaultScopeLister(holder.client))
 
-    update_labels, remove_labels = labels_util.GetAndValidateOpsFromArgs(args)
+    labels_diff = labels_util.GetAndValidateOpsFromArgs(args)
 
     image = client.images.Get(
         messages.ComputeImagesGetRequest(**image_ref.AsDict()))
 
-    replacement = labels_util.Diff(update_labels, remove_labels).Apply(
+    labels_update = labels_diff.Apply(
         messages.GlobalSetLabelsRequest.LabelsValue, image.labels)
 
-    if not replacement:
+    if not labels_update.needs_update:
       return image
 
     request = messages.ComputeImagesSetLabelsRequest(
@@ -79,7 +79,7 @@ class Update(base.UpdateCommand):
         globalSetLabelsRequest=
         messages.GlobalSetLabelsRequest(
             labelFingerprint=image.labelFingerprint,
-            labels=replacement))
+            labels=labels_update.labels))
 
     operation = client.images.SetLabels(request)
     operation_ref = holder.resources.Parse(

@@ -14,15 +14,10 @@
 """Command group for ml speech operations."""
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.ml.speech import speech_command_util
 
 
 class Operations(base.Group):
   """Interact with Google Cloud Speech operations.
 
   Get information about Google Cloud Speech long-running operations.
-
-  {auth_hints}
   """
-
-  detailed_help = {'auth_hints': speech_command_util.SPEECH_AUTH_HELP}

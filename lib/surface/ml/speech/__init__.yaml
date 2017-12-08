@@ -1,13 +1,3 @@
-help_text:
-  auth_hints: |
-    To use the Google Cloud Speech API, use a service account belonging to a
-    project that has Google Cloud Speech enabled. Please see
-    https://cloud.google.com/speech/docs/common/auth
-    for directions on setting up an account to use with the API. After setting
-    up the account, download the key file and run:
-
-      $ gcloud auth activate-service-account --key-file=$KEY_FILE
-
 args:
   - api_field: audio
     arg_name: audio

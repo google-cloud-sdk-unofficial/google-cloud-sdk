@@ -298,8 +298,8 @@ https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_regio
                 additionalProperties=outputs),
             clientId=args.run_id,
             logging=genomics_messages.LoggingOptions(gcsPath=args.logging),
-            labels=labels_util.Diff.FromCreateArgs(args).Apply(
-                genomics_messages.RunPipelineArgs.LabelsValue),
+            labels=labels_util.ParseCreateArgs(
+                args, genomics_messages.RunPipelineArgs.LabelsValue),
             projectId=genomics_util.GetProjectId(),
             serviceAccount=genomics_messages.ServiceAccount(
                 email=args.service_account_email,

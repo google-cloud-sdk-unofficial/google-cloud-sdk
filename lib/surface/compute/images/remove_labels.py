@@ -55,19 +55,19 @@ class ImagesRemoveLabels(base.UpdateCommand):
         for label in image.labels.additionalProperties:
           remove_labels[label.key] = label.value
 
-    replacement = labels_util.Diff(subtractions=remove_labels).Apply(
+    labels_update = labels_util.Diff(subtractions=remove_labels).Apply(
         messages.GlobalSetLabelsRequest.LabelsValue,
         image.labels)
+    if not labels_update.needs_update:
+      return image
+
     request = messages.ComputeImagesSetLabelsRequest(
         project=image_ref.project,
         resource=image_ref.image,
         globalSetLabelsRequest=
         messages.GlobalSetLabelsRequest(
             labelFingerprint=image.labelFingerprint,
-            labels=replacement))
-
-    if not replacement:
-      return image
+            labels=labels_update.labels))
 
     operation = client.images.SetLabels(request)
     operation_ref = holder.resources.Parse(

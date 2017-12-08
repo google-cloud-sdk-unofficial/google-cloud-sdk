@@ -2,6 +2,7 @@ app-engine-go: google-cloud-sdk-app-engine-go
 app-engine-java: google-cloud-sdk-app-engine-java
 app-engine-php: unavailable
 app-engine-python: google-cloud-sdk-app-engine-python
+app-engine-python-extras: unavailable
 alpha: google-cloud-sdk
 beta: google-cloud-sdk
 bigtable: google-cloud-sdk-bigtable-emulator
