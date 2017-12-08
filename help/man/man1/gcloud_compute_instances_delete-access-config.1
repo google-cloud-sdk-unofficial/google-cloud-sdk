@@ -25,30 +25,31 @@ machines.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the instance.
 
 
 .RE
+.sp
 
 .SH "FLAGS"
 
-\fB\-\-access\-config\-name\fR=\fIACCESS_CONFIG_NAME\fR; default="external\-nat"
 .RS 2m
+.TP 2m
+\fB\-\-access\-config\-name\fR=\fIACCESS_CONFIG_NAME\fR; default="external\-nat"
 Specifies the name of the access configuration to delete.
 \f5\fIexternal\-nat\fR\fR is used as the default if this flag is not provided.
 
-.RE
+.TP 2m
 \fB\-\-network\-interface\fR=\fINETWORK_INTERFACE\fR; default="nic0"
-.RS 2m
 Specifies the name of the network interface from which to delete the access
 configuration. If this is not provided, then \f5\fInic0\fR\fR is used as the
 default.
 
-.RE
+.TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
-.RS 2m
 The zone of the instance to operate on. If not specified, you will be prompted
 to select a zone.
 
@@ -76,6 +77,7 @@ Alternatively, the zone can be stored in the environment variable
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

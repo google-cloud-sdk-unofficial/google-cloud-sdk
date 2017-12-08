@@ -76,9 +76,7 @@ Multiple locations can be specified, separated by commas. For example:
       help='The name of the Google Compute Engine subnetwork '
       '(https://cloud.google.com/compute/docs/subnetworks) to which the '
       'cluster is connected. If specified, the cluster\'s network must be a '
-      '"custom subnet" network. Specification of subnetworks is an '
-      'alpha feature, and requires that the '
-      'Google Compute Engine alpha API be enabled.')
+      '"custom subnet" network.')
   parser.add_argument(
       '--disable-addons',
       type=arg_parsers.ArgList(

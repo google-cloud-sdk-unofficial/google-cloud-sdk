@@ -24,17 +24,20 @@ metadata entries.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the instance whose metadata should be modified.
 
 
 .RE
+.sp
 
 .SH "FLAGS"
 
-\fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
+.TP 2m
+\fB\-\-zone\fR=\fIZONE\fR
 The zone of the instance to set metadata on. If not specified, you will be
 prompted to select a zone.
 
@@ -61,19 +64,21 @@ Alternatively, the zone can be stored in the environment variable
 \f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
 
 .RE
+.sp
 At most one of these may be specified:
 
-\fB\-\-all\fR
 .RS 2m
+.TP 2m
+\fB\-\-all\fR
 If provided, all metadata entries are removed.
 
-.RE
+.TP 2m
 \fB\-\-keys\fR=\fIKEY\fR,[\fIKEY\fR,...]
-.RS 2m
 The keys of the entries to remove.
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

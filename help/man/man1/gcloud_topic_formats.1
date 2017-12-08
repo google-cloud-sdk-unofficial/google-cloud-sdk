@@ -16,21 +16,19 @@ they are pretty\-printed on the standard output. The
 \fB\-\-format=\fR\fINAME\fR[\fIATTRIBUTES\fR]\fB(\fR\fIPROJECTION\fR\fB)\fR flag
 changes the default output:
 
+.RS 2m
+.TP 2m
 \fINAME\fR
-.RS 2m
 The format name.
-.RE
+.TP 2m
 \fIATTRIBUTES\fR
-.RS 2m
 Format specific attributes. Resource formats are described in detail below.
-.RE
+.TP 2m
 \fIPROJECTION\fR
-.RS 2m
 A list of resource keys that selects the data listed. For details run $ gcloud
 topic projections.
-.RE
+.TP 2m
 \fIresource keys\fR
-.RS 2m
 Keys are names for resource resource items. For details run $ gcloud topic
 resource\-keys. Most \fBgcloud\fR \fBlist\fR commands have a
 \fB\-\-filter=\fR\fIEXPRESSION\fR flag that selects resources to be listed. For
@@ -38,26 +36,27 @@ details run $ gcloud topic filters.
 
 
 .RE
+.sp
 
 .SH "Formats"
 
 A format expression has 3 parts:
 
+.RS 2m
+.TP 2m
 \fINAME\fR
-.RS 2m
 \fIname\fR
-.RE
+.TP 2m
 \fIATTRIBUTES\fR
-.RS 2m
 \fB[\fR [no\-]\fIattribute\-name\fR[=\fIvalue\fR] [, ... ] \fB]\fR
-.RE
+.TP 2m
 \fIPROJECTION\fR
-.RS 2m
 \fB(\fR \fIresource\-key\fR [, ...] \fB)\fR \fINAME\fR is required,
 \fIATTRIBUTES\fR are optional, and \fIPROJECTIONS\fR may be required for some
 formats. Unknown attribute names are silently ignored.
 
 .RE
+.sp
 Each \fBgcloud\fR \fBlist\fR command has a default format expression. The
 \fB\-\-format\fR flag can alter or replace the default. For example,
 
@@ -75,251 +74,248 @@ lists the resource in \fBjson\fR format.
 
 The formats and format specific attributes are:
 
-\fBconfig\fR
 .RS 2m
+.TP 2m
+\fBconfig\fR
 A dictionary of dictionaries in config style.
 
 The format attributes are:
 
+.RS 2m
+.TP 2m
 \fBexport\fR
-.RS 2m
 Display the dictionary as a list of system specific environment export commands.
-.RE
+.TP 2m
 \fBunset\fR
-.RS 2m
 Display the dictionary as a list of system specific environment unset commands.
 
 .RE
-.RE
+.sp
+.TP 2m
 \fBcsv\fR
-.RS 2m
 Comma Separated Values (http://www.ietf.org/rfc/rfc4180.txt) with no keys. This
 format requires a projection to define the values to be printed.
 
 The format attributes are:
 
+.RS 2m
+.TP 2m
 \fBdelimiter="string"\fR
-.RS 2m
 The string printed between list value items, default ";".
-.RE
+.TP 2m
 \fBno\-heading\fR
-.RS 2m
 Disables the initial key name heading record.
-.RE
+.TP 2m
 \fBseparator="string"\fR
-.RS 2m
 The string printed between values, default ",".
-.RE
+.TP 2m
 \fBterminator="string"\fR
-.RS 2m
 The string printed after each record, default "\en" (newline).
 
 .RE
-.RE
+.sp
+.TP 2m
 \fBdefault\fR
-.RS 2m
 An alias for the \fByaml\fR format.
 
-.RE
+.TP 2m
 \fBdiff\fR
-.RS 2m
 A unified diff of the first two projection columns.
 
 The format attributes are:
 
-\fBformat\fR
 .RS 2m
+.TP 2m
+\fBformat\fR
 The format of the diffed resources. Each resource is converted to this format
 and the diff of the converted resources is displayed. The default is
 \'flattened'.
 
 .RE
-.RE
+.sp
+.TP 2m
 \fBdisable\fR
-.RS 2m
 Disables formatted output and does not consume the resources.
 
-.RE
+.TP 2m
 \fBflattened\fR
-.RS 2m
 A flattened tree. Each output line contains one \fBkey\fR:\fBvalue\fR pair.
 
 The format attributes are:
 
-\fBno\-pad\fR
 .RS 2m
+.TP 2m
+\fBno\-pad\fR
 Don't print space after the separator. The default adjusts the space to align
 the values into the same output column. Use \fBno\-pad\fR for comparing resource
 outputs.
-.RE
+.TP 2m
 \fBseparator=\fISEPARATOR\fR\fR
-.RS 2m
 Print \fISEPARATOR\fR between the \fBkey\fR and \fBvalue\fR. The default is ":
 ".
 
 .RE
-.RE
+.sp
+.TP 2m
 \fBjson\fR
-.RS 2m
 JSON (http://www.json.org), JavaScript Object Notation.
 
 The format attributes are:
 
-\fBno\-undefined\fR
 .RS 2m
+.TP 2m
+\fBno\-undefined\fR
 Does not display resource data items with null values.
 
 .RE
-.RE
+.sp
+.TP 2m
 \fBlist\fR
-.RS 2m
 An ordered list of items.
 
 The format attributes are:
 
+.RS 2m
+.TP 2m
 \fBalways\-display\-title\fR
-.RS 2m
 Display the title even if there are no records.
-.RE
+.TP 2m
 \fBcompact\fR
-.RS 2m
 Display all items in a record on one line.
 
 .RE
-.RE
+.sp
+.TP 2m
 \fBmulti\fR
-.RS 2m
 Each projection key must have a subformat defined by the :format=FORMAT\-STRING
-attribute. For example, \fI\-\-format='multi(data:format=json,
-info:format="table[box](a, b, c)")'\fR formats the \fBdata\fR field as JSON and
-the \fBinfo\fR field as a boxed table.
+attribute. For example,
 
-.RE
-\fBnone\fR
 .RS 2m
+`\-\-format="multi(data:format=json, info:format='table[box](a, b, c)')"`
+.RE
+
+formats the \fBdata\fR field as JSON and the \fBinfo\fR field as a boxed table.
+
+.TP 2m
+\fBnone\fR
 Disables formatted output and consumes the resources.
 
-.RE
+.TP 2m
 \fBobject\fR
-.RS 2m
 Bypasses JSON\-serialization and prints the object representation of each
 resource.
 
 The format attributes are:
 
+.RS 2m
+.TP 2m
 \fBseparator\fR
-.RS 2m
 The line printed between resources.
-.RE
+.TP 2m
 \fBterminator\fR
-.RS 2m
 The line printed after each resource.
 
 .RE
-.RE
+.sp
+.TP 2m
 \fBtable\fR
-.RS 2m
 Aligned left\-adjusted columns with optional title, column headings and sorting.
 This format requires a projection to define the table columns. The default
 column headings are the disambiguated right hand components of the column keys
 in ANGRY_SNAKE_CASE. For example, the projection keys (first.name, last.name)
-produce the default column heading ('NAME', 'LAST_NAME'). If
-\fB\-\-page\-size\fR=\fIN\fR is specified then output is grouped into tables
+produce the default column heading ('NAME', 'LAST_NAME').
+
+If \fB\-\-page\-size\fR=\fIN\fR is specified then output is grouped into tables
 with at most \fIN\fR rows. Headings, alignment and sorting are done per\-page.
 The title, if any, is printed before the first table.
 
 The format attributes are:
 
+.RS 2m
+.TP 2m
 \fBbox\fR
-.RS 2m
 Prints a box around the entire table and each cell, including the title if any.
-.RE
+.TP 2m
 \fBformat=\fIFORMAT\-STRING\fR\fR
-.RS 2m
 Prints the key data indented by 4 spaces using \fIFORMAT\-STRING\fR which can
 reference any of the supported formats.
-.RE
+.TP 2m
 \fBno\-heading\fR
-.RS 2m
 Disables the column headings.
-.RE
+.TP 2m
 \fBoptional\fR
-.RS 2m
 Does not display the column if it is empty.
-.RE
+.TP 2m
 \fBpad=N\fR
-.RS 2m
 Sets the column horizontal pad to \fIN\fR spaces. The default is 1 for box, 2
 otherwise.
-.RE
+.TP 2m
 \fBtitle=\fITITLE\fR\fR
-.RS 2m
 Prints a centered \fITITLE\fR at the top of the table, within the table box if
 \fBbox\fR is enabled.
 
 .RE
-.RE
+.sp
+.TP 2m
 \fBtext\fR
-.RS 2m
 An alias for the \fBflattened\fR format.
 
-.RE
+.TP 2m
 \fBvalue\fR
-.RS 2m
 CSV with no heading and <TAB> separator instead of <COMMA>. Used to retrieve
 individual resource values. This format requires a projection to define the
 value(s) to be printed.
 
 The format attributes are:
 
+.RS 2m
+.TP 2m
 \fBdelimiter="string"\fR
-.RS 2m
 The string printed between list value items, default ";".
-.RE
+.TP 2m
 \fBquote\fR
-.RS 2m
 "..." quote values that contain delimiter, separator or terminator strings.
-.RE
+.TP 2m
 \fBseparator="string"\fR
-.RS 2m
 The string printed between values, default "\et" (tab).
-.RE
+.TP 2m
 \fBterminator="string"\fR
-.RS 2m
 The string printed after each record, default "\en" (newline).
 
 .RE
-.RE
+.sp
+.TP 2m
 \fByaml\fR
-.RS 2m
 YAML (http://www.yaml.org), YAML ain't markup language.
 
 The format attributes are:
 
+.RS 2m
+.TP 2m
 \fBnull=string\fR
-.RS 2m
 Display string instead of \f5null\fR for null/None values.
-.RE
+.TP 2m
 \fBno\-undefined\fR
-.RS 2m
 Does not display resource data items with null values.
 
 .RE
 .RE
+.sp
 All formats have these attributes:
 
+.RS 2m
+.TP 2m
 \fBdisable\fR
-.RS 2m
 Disables formatted output and does not consume the resources.
-.RE
+.TP 2m
 \fBprivate\fR
-.RS 2m
 Disables log file output. Use this for sensitive resource data that should not
 be displayed in log files. Explicit command line IO redirection overrides this
 attribute.
 
 
 .RE
+.sp
 
 .SH "EXAMPLES"
 

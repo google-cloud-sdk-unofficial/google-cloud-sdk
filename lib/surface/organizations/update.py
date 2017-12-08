@@ -32,6 +32,9 @@ class Update(orgs_base.OrganizationCommand):
       * There is no organization with the given ID.
       * The active account does not have permission to update the given
         organization.
+
+  DEPRECATED: This command is deprecated and will be removed in a future
+  release.
   """
 
   detailed_help = {
@@ -53,6 +56,8 @@ class Update(orgs_base.OrganizationCommand):
     return self.ListFormat(args)
 
   def Run(self, args):
+    log.warn(
+        'This command is deprecated and will be removed in a future release.')
     service = self.OrganizationsClient()
     org_ref = self.GetOrganizationRef(args.id)
     request = (service.client.MESSAGES_MODULE

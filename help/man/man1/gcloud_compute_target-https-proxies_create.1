@@ -29,39 +29,44 @@ for server\-side authentication.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the target HTTPS proxy.
 
 
 .RE
+.sp
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-ssl\-certificate\fR=\fISSL_CERTIFICATE\fR
 .RS 2m
+.TP 2m
+\fB\-\-ssl\-certificate\fR=\fISSL_CERTIFICATE\fR
 A reference to an SSL certificate resource that is used for server\-side
 authentication. The SSL certificate must exist and cannot be deleted while
 referenced by a target HTTPS proxy.
 
-.RE
+.TP 2m
 \fB\-\-url\-map\fR=\fIURL_MAP\fR
-.RS 2m
 A reference to a URL map resource that defines the mapping of URLs to backend
 services. The URL map must exist and cannot be deleted while referenced by a
 target HTTPS proxy.
 
 
 .RE
+.sp
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-description\fR=\fIDESCRIPTION\fR
 .RS 2m
+.TP 2m
+\fB\-\-description\fR=\fIDESCRIPTION\fR
 An optional, textual description for the target HTTPS proxy.
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

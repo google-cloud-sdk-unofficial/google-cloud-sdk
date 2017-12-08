@@ -25,28 +25,28 @@ Run \f5$ gcloud topic configurations\fR for an overview of named configurations.
 
 .SH "LIST COMMAND FLAGS"
 
-\fB\-\-filter\fR=\fIEXPRESSION\fR
 .RS 2m
+.TP 2m
+\fB\-\-filter\fR=\fIEXPRESSION\fR
 Apply a Boolean filter \fIEXPRESSION\fR to each resource item to be listed. If
 the expression evaluates True then that item is listed. For more details run $
 gcloud topic filters. If \fB\-\-limit\fR is also specified then it is applied
 after \fB\-\-filter\fR.
 
-.RE
+.TP 2m
 \fB\-\-limit\fR=\fILIMIT\fR
-.RS 2m
 The maximum number of resources to list. The default is \fBunlimited\fR. If
 \fB\-\-filter\fR is also specified then it is applied before \fB\-\-limit\fR.
 
-.RE
+.TP 2m
 \fB\-\-sort\-by\fR=[\fIFIELD\fR,...]
-.RS 2m
 A comma\-separated list of resource field key names to sort by. The default
 order is ascending. Prefix a field with ``~'' for descending order on that
 field.
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

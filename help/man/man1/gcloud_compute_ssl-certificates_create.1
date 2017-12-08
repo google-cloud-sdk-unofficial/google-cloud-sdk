@@ -26,38 +26,43 @@ stored.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the SSL certificate.
 
 
 .RE
+.sp
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-certificate\fR=\fILOCAL_FILE_PATH\fR
 .RS 2m
+.TP 2m
+\fB\-\-certificate\fR=\fILOCAL_FILE_PATH\fR
 The path to a local certificate file. The certificate must be in PEM format. The
 certificate chain must be no greater than 5 certs long. The chain must include
 at least one intermediate cert.
 
-.RE
+.TP 2m
 \fB\-\-private\-key\fR=\fILOCAL_FILE_PATH\fR
-.RS 2m
 The path to a local private key file. The private key must be in PEM format and
 must use RSA or ECDSA encryption.
 
 
 .RE
+.sp
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-description\fR=\fIDESCRIPTION\fR
 .RS 2m
+.TP 2m
+\fB\-\-description\fR=\fIDESCRIPTION\fR
 An optional, textual description for the SSL certificate.
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

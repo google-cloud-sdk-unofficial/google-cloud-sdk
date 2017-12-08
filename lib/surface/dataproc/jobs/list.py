@@ -15,6 +15,7 @@
 """List job command."""
 
 from apitools.base.py import encoding
+from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
@@ -109,8 +110,13 @@ class List(base.ListCommand):
         raise exceptions.ToolException(
             'Invalid state-filter; [{0}].'.format(args.state_filter))
 
-    response = client.projects_regions_jobs.List(request)
-    return [TypedJob(job) for job in response.jobs]
+    jobs = list_pager.YieldFromList(
+        client.projects_regions_jobs,
+        request,
+        limit=args.limit, field='jobs',
+        batch_size=args.page_size,
+        batch_size_attribute='pageSize')
+    return (TypedJob(job) for job in jobs)
 
   @staticmethod
   def GetRequest(messages, project, region, args):

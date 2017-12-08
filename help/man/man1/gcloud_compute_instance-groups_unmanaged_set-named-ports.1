@@ -29,17 +29,20 @@ of named ports for all instances in an instance group.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the instance group.
 
 
 .RE
+.sp
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-named\-ports\fR=[\fINAME\fR:\fIPORT\fR,...]
 .RS 2m
+.TP 2m
+\fB\-\-named\-ports\fR=[\fINAME\fR:\fIPORT\fR,...]
 The comma\-separated list of key:value pairs representing the service name and
 the port that it is running on.
 
@@ -53,11 +56,13 @@ $ gcloud compute instance\-groups unmanaged set\-named\-ports \e
 
 
 .RE
+.sp
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
+.TP 2m
+\fB\-\-zone\fR=\fIZONE\fR
 The zone of the instance group to operate on. If not specified, you will be
 prompted to select a zone.
 
@@ -85,6 +90,7 @@ Alternatively, the zone can be stored in the environment variable
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

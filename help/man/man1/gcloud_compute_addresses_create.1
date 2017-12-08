@@ -27,17 +27,20 @@ the \f5\fI\-\-addresses\fR\fR flag.
 
 .SH "POSITIONAL ARGUMENTS"
 
-[\fINAME\fR ...]
 .RS 2m
+.TP 2m
+[\fINAME\fR ...]
 The address names to operate on.
 
 
 .RE
+.sp
 
 .SH "FLAGS"
 
-\fB\-\-addresses\fR=\fIADDRESS\fR,[\fIADDRESS\fR,...]
 .RS 2m
+.TP 2m
+\fB\-\-addresses\fR=\fIADDRESS\fR,[\fIADDRESS\fR,...]
 Ephemeral IP addresses to promote to reserved status. Only addresses that are
 being used by resources in the project can be promoted. When providing this
 flag, a parallel list of names for the addresses can be provided. For example,
@@ -51,21 +54,21 @@ will result in 162.222.181.197 being reserved as 'ADDRESS\-1' and
 162.222.181.198 as 'ADDRESS\-2'. If no names are given, randomly\-generated
 names will be assigned to the IP addresses.
 
-.RE
+.TP 2m
 \fB\-\-description\fR=\fIDESCRIPTION\fR
-.RS 2m
 An optional textual description for the addresses.
 
 .RE
+.sp
 At most one of these may be specified:
 
-\fB\-\-global\fR
 .RS 2m
+.TP 2m
+\fB\-\-global\fR
 If provided, it is assumed the address name is global.
 
-.RE
+.TP 2m
 \fB\-\-region\fR=\fIREGION\fR
-.RS 2m
 The region of the address name to operate on. If not specified, you will be
 prompted to select a region.
 
@@ -93,6 +96,7 @@ Alternatively, the region can be stored in the environment variable
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

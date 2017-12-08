@@ -24,24 +24,26 @@ services.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the backend service.
 
 
 .RE
+.sp
 
 .SH "FLAGS"
 
-\fB\-\-affinity\-cookie\-ttl\fR=\fIAFFINITY_COOKIE_TTL\fR
 .RS 2m
+.TP 2m
+\fB\-\-affinity\-cookie\-ttl\fR=\fIAFFINITY_COOKIE_TTL\fR
 If session\-affinity is set to "generated_cookie", this flag sets the TTL, in
 seconds, of the resulting cookie. A setting of 0 indicates that the cookie
 should be transient.
 
-.RE
+.TP 2m
 \fB\-\-connection\-draining\-timeout\fR=\fICONNECTION_DRAINING_TIMEOUT\fR
-.RS 2m
 Connection draining timeout to be used during removal of VMs from instance
 groups. This guarantees that for the specified time all existing connections to
 a VM will remain untouched, but no new connections will be accepted. Set timeout
@@ -50,46 +52,39 @@ of up to one hour. If the flag is omitted API default value (0s) will be used.
 Valid units for this flag are \f5s\fR for seconds, \f5m\fR for minutes, and
 \f5h\fR for hours.
 
-.RE
+.TP 2m
 \fB\-\-description\fR=\fIDESCRIPTION\fR
-.RS 2m
 An optional, textual description for the backend service.
 
-.RE
+.TP 2m
 \fB\-\-enable\-cdn\fR
-.RS 2m
 Enable Cloud CDN for the backend service. Cloud CDN can cache HTTP responses
 from a backend service at the edge of the network, close to users. Cloud CDN is
 disabled by default. Use \fB\-\-no\-enable\-cdn\fR to disable.
 
-.RE
+.TP 2m
 \fB\-\-health\-checks\fR=\fIHEALTH_CHECK\fR,[\fIHEALTH_CHECK\fR,...]
-.RS 2m
 Specifies a list of health check objects for checking the health of the backend
 service. Health checks need not be for the same protocol as that of the backend
 service.
 
-.RE
+.TP 2m
 \fB\-\-http\-health\-checks\fR=\fIHTTP_HEALTH_CHECK\fR,[\fIHTTP_HEALTH_CHECK\fR,...]
-.RS 2m
 Specifies a list of HTTP health check objects for checking the health of the
 backend service.
 
-.RE
+.TP 2m
 \fB\-\-https\-health\-checks\fR=\fIHTTPS_HEALTH_CHECK\fR,[\fIHTTPS_HEALTH_CHECK\fR,...]
-.RS 2m
 Specifies a list of HTTPS health check objects for checking the health of the
 backend service.
 
-.RE
+.TP 2m
 \fB\-\-port\fR=\fIPORT\fR
-.RS 2m
 The TCP port to use when connecting to the backend. \-\-port is being deprecated
 in favor of \-\-port\-name.
 
-.RE
+.TP 2m
 \fB\-\-port\-name\fR=\fIPORT_NAME\fR
-.RS 2m
 The name of a service that has been added to an instance group in this backend.
 Instance group services map a name to a port number which is used by the load
 balancing service. Only one \f5\fIport\-name\fR\fR may be added to a backend
@@ -99,35 +94,32 @@ differ between instances. If you do not specify this flag, your instance groups
 must have a service named \f5\fIhttp\fR\fR configured. See also \f5gcloud
 compute instance\-groups set\-named\-ports \-\-help\fR.
 
-.RE
+.TP 2m
 \fB\-\-protocol\fR=\fIPROTOCOL\fR
-.RS 2m
 The protocol for incoming requests. \fIPROTOCOL\fR must be one of: \fBHTTP\fR,
 \fBHTTPS\fR, \fBSSL\fR, \fBTCP\fR, \fBUDP\fR.
 
-.RE
+.TP 2m
 \fB\-\-session\-affinity\fR=\fISESSION_AFFINITY\fR
-.RS 2m
 The type of session affinity to use for this backend service.
 \fISESSION_AFFINITY\fR must be one of:
 
+.RS 2m
+.TP 2m
 \fBCLIENT_IP\fR
-.RS 2m
 Route requests to instances based on the hash of the client's IP address.
-.RE
+.TP 2m
 \fBGENERATED_COOKIE\fR
-.RS 2m
 Route requests to instances based on the contents of the "GCLB" cookie set by
 the load balancer.
-.RE
+.TP 2m
 \fBNONE\fR
-.RS 2m
 Session affinity is disabled.
 
 .RE
-.RE
+.sp
+.TP 2m
 \fB\-\-timeout\fR=\fITIMEOUT\fR
-.RS 2m
 The amount of time to wait for a backend to respond to a request before
 considering the request failed. For example, specifying \f5\fI10s\fR\fR will
 give backends 10 seconds to respond to requests. Valid units for this flag are
@@ -135,6 +127,7 @@ give backends 10 seconds to respond to requests. Valid units for this flag are
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

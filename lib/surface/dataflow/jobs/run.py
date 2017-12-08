@@ -40,6 +40,10 @@ class Run(base.Command):
         required=True)
 
     parser.add_argument(
+        '--job-name',
+        help='The unique name to assign to the job.')
+
+    parser.add_argument(
         '--parameters',
         metavar='PARAMETERS',
         type=arg_parsers.ArgDict(),
@@ -62,6 +66,7 @@ class Run(base.Command):
     job = apis.Templates.Create(
         project_id=properties.VALUES.core.project.Get(required=True),
         gcs_location=args.gcs_location,
+        job_name=args.job_name,
         parameters=args.parameters)
 
     return job

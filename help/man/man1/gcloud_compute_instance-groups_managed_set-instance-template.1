@@ -28,28 +28,33 @@ to all new instances added to the managed instance group.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the managed instance group.
 
 
 .RE
+.sp
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-template\fR=\fITEMPLATE\fR
 .RS 2m
+.TP 2m
+\fB\-\-template\fR=\fITEMPLATE\fR
 Compute Engine instance template resource to be used.
 
 
 .RE
+.sp
 
 .SH "OPTIONAL FLAGS"
 
 At most one of these may be specified:
 
-\fB\-\-region\fR=\fIREGION\fR
 .RS 2m
+.TP 2m
+\fB\-\-region\fR=\fIREGION\fR
 The region of the managed instance group to operate on. If not specified, you
 will be prompted to select a region.
 
@@ -59,9 +64,8 @@ A list of regions can be fetched by running:
 $ gcloud compute regions list
 .RE
 
-.RE
+.TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
-.RS 2m
 The zone of the managed instance group to operate on. If not specified, you will
 be prompted to select a zone.
 
@@ -73,6 +77,7 @@ $ gcloud compute zones list
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

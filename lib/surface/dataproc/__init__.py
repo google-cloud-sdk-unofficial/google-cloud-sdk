@@ -50,7 +50,6 @@ class Dataproc(base.Group):
     # TODO(user): Move outside of context in a place that will be easier to
     # convert into a property when there are multiple regions.
     context['dataproc_region'] = self.REGION
-
     context['dataproc_client'] = apis.GetClientInstance('dataproc', 'v1')
 
     resources.REGISTRY.SetParamDefault(
@@ -58,11 +57,23 @@ class Dataproc(base.Group):
         collection=None,
         param='projectId',
         resolver=resolvers.FromProperty(properties.VALUES.core.project))
-
     resources.REGISTRY.SetParamDefault(
         api='dataproc',
         collection=None,
         param='region',
+        resolver=lambda: context['dataproc_region'])
+
+    # These two properties are artifacts of how our Operations API get
+    # converted into generated libraries.
+    resources.REGISTRY.SetParamDefault(
+        api='dataproc',
+        collection=None,
+        param='projectsId',
+        resolver=resolvers.FromProperty(properties.VALUES.core.project))
+    resources.REGISTRY.SetParamDefault(
+        api='dataproc',
+        collection=None,
+        param='regionsId',
         resolver=lambda: context['dataproc_region'])
 
     return context

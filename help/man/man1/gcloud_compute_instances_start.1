@@ -26,26 +26,28 @@ Engine virtual machine. Only a stopped virtual machine can be started.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAMES\fR [\fINAMES\fR ...]
 .RS 2m
+.TP 2m
+\fINAMES\fR [\fINAMES\fR ...]
 The names of the instances.
 
 
 .RE
+.sp
 
 .SH "FLAGS"
 
-\fB\-\-csek\-key\-file\fR=\fIFILE\fR
 .RS 2m
+.TP 2m
+\fB\-\-csek\-key\-file\fR=\fIFILE\fR
 Path to a Customer\-Supplied Encryption Key (CSEK) key file, mapping Google
 Compute Engine resources to user managed keys to be used when creating,
 mounting, or snapshotting disks. See
 https://cloud.google.com/compute/docs/disks/customer\-supplied\-encryption for
 more details.
 
-.RE
+.TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
-.RS 2m
 The zone of the instance to operate on. If not specified, you will be prompted
 to select a zone.
 
@@ -73,6 +75,7 @@ Alternatively, the zone can be stored in the environment variable
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

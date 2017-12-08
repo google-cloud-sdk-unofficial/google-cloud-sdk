@@ -82,4 +82,5 @@ class List(base.ListCommand):
             projectId=properties.VALUES.core.project.Get(),
             filter=ongoing_filter),
         field='builds',
+        batch_size=args.page_size,
         batch_size_attribute='pageSize')

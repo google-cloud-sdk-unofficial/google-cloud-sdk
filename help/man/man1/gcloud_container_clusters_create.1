@@ -23,17 +23,20 @@ Create a cluster for running containers.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of this cluster.
 
 
 .RE
+.sp
 
 .SH "FLAGS"
 
-\fB\-\-additional\-zones\fR=\fIZONE\fR,[\fIZONE\fR,...]
 .RS 2m
+.TP 2m
+\fB\-\-additional\-zones\fR=\fIZONE\fR,[\fIZONE\fR,...]
 The set of additional zones in which the specified node footprint should be
 replicated. All zones must be in the same region as the cluster's primary zone.
 If additional\-zones is not specified, all nodes will be in the cluster's
@@ -52,54 +55,46 @@ $ gcloud container clusters create example\-cluster \e
 .RE
 
 
-.RE
+.TP 2m
 \fB\-\-async\fR
-.RS 2m
 Don't wait for the operation to complete. Use \fB\-\-no\-async\fR to disable.
 
-.RE
+.TP 2m
 \fB\-\-cluster\-ipv4\-cidr\fR=\fICLUSTER_IPV4_CIDR\fR
-.RS 2m
 The IP address range for the pods in this cluster in CIDR notation (e.g.
 10.0.0.0/14). Due to kube\-proxy limitations, this range must be a subset of the
 10.0.0.0/8 space. Defaults to server\-specified
 
-.RE
+.TP 2m
 \fB\-\-disable\-addons\fR=[\fIDISABLE_ADDONS\fR,...]
-.RS 2m
 List of cluster addons to disable. Options are HttpLoadBalancing,
 HorizontalPodAutoscaling. \fIDISABLE_ADDONS\fR must be one of:
 \fBHttpLoadBalancing\fR, \fBHorizontalPodAutoscaling\fR.
 
-.RE
+.TP 2m
 \fB\-\-disk\-size\fR=\fIDISK_SIZE\fR
-.RS 2m
 Size in GB for node VM boot disks. Defaults to 100GB.
 
-.RE
+.TP 2m
 \fB\-\-enable\-cloud\-endpoints\fR
-.RS 2m
 Automatically enable Google Cloud Endpoints to take advantage of API management
 features. Enabled by default, use \fB\-\-no\-enable\-cloud\-endpoints\fR to
 disable.
 
-.RE
+.TP 2m
 \fB\-\-enable\-cloud\-logging\fR
-.RS 2m
 Automatically send logs from the cluster to the Google Cloud Logging API.
 Enabled by default, use \fB\-\-no\-enable\-cloud\-logging\fR to disable.
 
-.RE
+.TP 2m
 \fB\-\-enable\-cloud\-monitoring\fR
-.RS 2m
 Automatically send metrics from pods in the cluster to the Google Cloud
 Monitoring API. VM metrics will be collected by Google Compute Engine regardless
 of this setting. Enabled by default, use \fB\-\-no\-enable\-cloud\-monitoring\fR
 to disable.
 
-.RE
+.TP 2m
 \fB\-\-image\-type\fR=\fIIMAGE_TYPE\fR
-.RS 2m
 The image type to use for the cluster. Defaults to server\-specified.
 
 Image Type specifies the base OS that the nodes in the cluster will run on. If
@@ -115,29 +110,25 @@ $ gcloud container get\-server\-config
 .RE
 
 
-.RE
+.TP 2m
 \fB\-\-machine\-type\fR=\fIMACHINE_TYPE\fR, \fB\-m\fR \fIMACHINE_TYPE\fR
-.RS 2m
 The type of machine to use for nodes. Defaults to server\-specified
 
-.RE
+.TP 2m
 \fB\-\-max\-nodes\-per\-pool\fR=\fIMAX_NODES_PER_POOL\fR
-.RS 2m
 The maximum number of nodes to allocate per default initial node pool. Container
 engine will automatically create enough nodes pools such that each node pool
 contains less than \-\-max\-nodes\-per\-pool nodes. Defaults to 1000 nodes, but
 can be set as low as 100 nodes per pool on initial create.
 
-.RE
+.TP 2m
 \fB\-\-network\fR=\fINETWORK\fR
-.RS 2m
 The Compute Engine Network that the cluster will connect to. Google Container
 Engine will use this network when creating routes and firewalls for the
 clusters. Defaults to the 'default' network.
 
-.RE
+.TP 2m
 \fB\-\-node\-labels\fR=[\fINODE_LABELS\fR,...]
-.RS 2m
 Applies the given kubernetes labels on all nodes in the new node\-pool. Example:
 
 .RS 2m
@@ -149,20 +140,17 @@ New nodes, including ones created by resize or recreate, will have these labels
 on the kubernetes API node object and can be used in nodeSelectors. See
 http://kubernetes.io/docs/user\-guide/node\-selection/ for examples.
 
-.RE
+.TP 2m
 \fB\-\-num\-nodes\fR=\fINUM_NODES\fR; default="3"
-.RS 2m
 The number of nodes to be created in each of the cluster's zones.
 
-.RE
+.TP 2m
 \fB\-\-password\fR=\fIPASSWORD\fR
-.RS 2m
 The password to use for cluster auth. Defaults to a server\-specified
 randomly\-generated string.
 
-.RE
+.TP 2m
 \fB\-\-scopes\fR=\fISCOPE\fR,[\fISCOPE\fR,...]
-.RS 2m
 Specifies scopes for the node instances. The project's default service account
 is used. Examples:
 
@@ -213,33 +201,29 @@ userinfo\-email,https://www.googleapis.com/auth/userinfo.email
 .TE
 
 
-.RE
+.TP 2m
 \fB\-\-subnetwork\fR=\fISUBNETWORK\fR
-.RS 2m
 The name of the Google Compute Engine subnetwork
 (https://cloud.google.com/compute/docs/subnetworks) to which the cluster is
 connected. If specified, the cluster's network must be a "custom subnet"
-network. Specification of subnetworks is an alpha feature, and requires that the
-Google Compute Engine alpha API be enabled.
+network.
 
-.RE
+.TP 2m
 \fB\-\-username\fR=\fIUSERNAME\fR, \fB\-u\fR \fIUSERNAME\fR; default="admin"
-.RS 2m
 The user name to use for cluster auth.
 
-.RE
+.TP 2m
 \fB\-\-wait\fR
-.RS 2m
 DEPRECATED, use \-\-no\-async. Poll the operation for completion after issuing a
 create request. Use \fB\-\-no\-wait\fR to disable.
 
-.RE
+.TP 2m
 \fB\-\-zone\fR=\fIZONE\fR, \fB\-z\fR \fIZONE\fR
-.RS 2m
 The compute zone (e.g. us\-central1\-a) for the cluster
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

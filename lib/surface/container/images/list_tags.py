@@ -20,6 +20,13 @@ from googlecloudsdk.api_lib.container.images import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import http
 
+# Add to this as we add columns.
+_DEFAULT_KINDS = [
+    'BUILD_DETAILS',
+    'IMAGE_BASIS',
+    'PACKAGE_VULNERABILITY',
+]
+
 
 class List(base.ListCommand):
   """List tags and digests for the specified image."""
@@ -51,7 +58,12 @@ class List(base.ListCommand):
     """
     parser.add_argument(
         '--show-occurrences',
-        action='store_true', default=False, help=argparse.SUPPRESS)
+        action='store_true', default=True, help=argparse.SUPPRESS)
+    parser.add_argument(
+        '--occurrence-filter',
+        default=' OR '.join(['kind = "{kind}"'.format(kind=x)
+                             for x in _DEFAULT_KINDS]),
+        help=argparse.SUPPRESS)
     parser.add_argument(
         'image',
         help='The name of the image. Format: *.gcr.io/repository/image')
@@ -76,4 +88,5 @@ class List(base.ListCommand):
         name=repository,
         transport=http_obj) as image:
       return util.TransformManifests(image.manifests(), repository,
-                                     show_occurrences=args.show_occurrences)
+                                     show_occurrences=args.show_occurrences,
+                                     occurrence_filter=args.occurrence_filter)

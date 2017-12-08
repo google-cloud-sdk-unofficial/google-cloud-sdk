@@ -35,26 +35,31 @@ compute backend\-services edit\fR.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the backend service.
 
 
 .RE
+.sp
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-instance\-group\fR=\fIINSTANCE_GROUP\fR
 .RS 2m
+.TP 2m
+\fB\-\-instance\-group\fR=\fIINSTANCE_GROUP\fR
 The name or URI of a Google Cloud Instance Group.
 
 
 .RE
+.sp
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-balancing\-mode\fR=\fIBALANCING_MODE\fR
 .RS 2m
+.TP 2m
+\fB\-\-balancing\-mode\fR=\fIBALANCING_MODE\fR
 Defines the strategy for balancing load.
 
 \fBRATE\fR and the max rate arguments are available only in backend services
@@ -66,23 +71,22 @@ For backend services with TCP/SSL protocol either \fBUTILIZATION\fR or
 
 \fIBALANCING_MODE\fR must be one of:
 
-\fBCONNECTION\fR
 .RS 2m
+.TP 2m
+\fBCONNECTION\fR
 Spreads load based on how many concurrent connections the group can handle.
 There are two ways to specify max connections: \fB\-\-max\-connections\fR which
 defines the max number of connections for the whole group or
 \fB\-\-max\-connections\-per\-instance\fR, which defines the max number of
 connections on a per\-instance basis.
-.RE
+.TP 2m
 \fBRATE\fR
-.RS 2m
 Spreads load based on how many requests per second (RPS) the group can handle.
 There are two ways to specify max RPS: \fB\-\-max\-rate\fR which defines the max
 RPS for the whole group or \fB\-\-max\-rate\-per\-instance\fR, which defines the
 max RPS on a per\-instance basis.
-.RE
+.TP 2m
 \fBUTILIZATION\fR
-.RS 2m
 Relies on the CPU utilization of the instances in the group when balancing load.
 Use \fB\-\-max\-utilization\fR to set a maximum target CPU utilization for each
 instance. Use \fB\-\-max\-rate\-per\-instance\fR or \fB\-\-max\-rate\fR to
@@ -92,29 +96,29 @@ based on connections (for TCP/SSL) in addition to CPU by setting
 
 
 .RE
-.RE
+.sp
+.TP 2m
 \fB\-\-capacity\-scaler\fR=\fICAPACITY_SCALER\fR
-.RS 2m
 A float in the range [0.0, 1.0] that scales the maximum parameters for the group
 (e.g., max rate). A value of 0.0 will cause no requests to be sent to the group
 (i.e., it adds the group in a \f5\fIdrained\fR\fR state).
 
-.RE
+.TP 2m
 \fB\-\-description\fR=\fIDESCRIPTION\fR
-.RS 2m
 An optional, textual description for the backend.
 
-.RE
+.TP 2m
 \fB\-\-max\-utilization\fR=\fIMAX_UTILIZATION\fR
-.RS 2m
 The target CPU utilization for the group as a float in the range [0.0, 1.0].
 This flag can only be provided when the balancing mode is \fBUTILIZATION\fR.
 
 .RE
+.sp
 At most one of these may be specified:
 
-\fB\-\-instance\-group\-region\fR=\fIINSTANCE_GROUP_REGION\fR
 .RS 2m
+.TP 2m
+\fB\-\-instance\-group\-region\fR=\fIINSTANCE_GROUP_REGION\fR
 The region of the instance group to add to the backend service. If not
 specified, you will be prompted to select a region.
 
@@ -124,9 +128,8 @@ A list of regions can be fetched by running:
 $ gcloud compute regions list
 .RE
 
-.RE
+.TP 2m
 \fB\-\-instance\-group\-zone\fR=\fIINSTANCE_GROUP_ZONE\fR
-.RS 2m
 The zone of the instance group to add to the backend service. If not specified,
 you will be prompted to select a zone.
 
@@ -136,36 +139,35 @@ A list of zones can be fetched by running:
 $ gcloud compute zones list
 .RE
 
-.RE
+.TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
-.RS 2m
 The zone of the instance group to add to the backend service. DEPRECATED, use
 \-\-instance\-group\-zone flag instead.
 
 .RE
+.sp
 At most one of these may be specified:
 
-\fB\-\-max\-connections\fR=\fIMAX_CONNECTIONS\fR
 .RS 2m
+.TP 2m
+\fB\-\-max\-connections\fR=\fIMAX_CONNECTIONS\fR
 Maximum concurrent connections that the group can handle.
 
-.RE
+.TP 2m
 \fB\-\-max\-connections\-per\-instance\fR=\fIMAX_CONNECTIONS_PER_INSTANCE\fR
-.RS 2m
 The maximum concurrent connections per\-instance.
 
-.RE
+.TP 2m
 \fB\-\-max\-rate\fR=\fIMAX_RATE\fR
-.RS 2m
 Maximum requests per second (RPS) that the group can handle.
 
-.RE
+.TP 2m
 \fB\-\-max\-rate\-per\-instance\fR=\fIMAX_RATE_PER_INSTANCE\fR
-.RS 2m
 The maximum per\-instance requests per second (RPS).
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

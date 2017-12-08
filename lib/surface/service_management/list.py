@@ -89,7 +89,7 @@ class List(base.ListCommand, base_classes.BaseServiceManagementCommand):
     if args.enabled:
       request = services_util.GetEnabledListRequest(validated_project)
     elif args.available:
-      request = services_util.GetAvailableListRequest(validated_project)
+      request = services_util.GetAvailableListRequest()
     elif args.produced:
       request = services_util.GetProducedListRequest(validated_project)
 

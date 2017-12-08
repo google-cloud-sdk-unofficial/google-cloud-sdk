@@ -14,11 +14,7 @@
 
 """config command group."""
 
-import argparse
-
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as c_exc
-from googlecloudsdk.core import config
 from googlecloudsdk.core import properties
 
 

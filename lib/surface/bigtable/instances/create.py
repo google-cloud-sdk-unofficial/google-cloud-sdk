@@ -13,9 +13,10 @@
 # limitations under the License.
 """bigtable instances create command."""
 
-from googlecloudsdk.api_lib.bigtable import util
+from googlecloudsdk.api_lib.bigtable import util as bigtable_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
+from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
@@ -41,12 +42,12 @@ class CreateInstance(base.CreateCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    cli = util.GetAdminClient()
+    cli = bigtable_util.GetAdminClient()
     ref = resources.REGISTRY.Parse(
         args.instance, collection='bigtableadmin.projects.instances')
     parent_ref = resources.REGISTRY.Create(
         'bigtableadmin.projects', projectId=ref.projectsId)
-    msgs = util.GetAdminMessages()
+    msgs = bigtable_util.GetAdminMessages()
     msg = msgs.CreateInstanceRequest(
         instanceId=ref.Name(),
         parent=parent_ref.RelativeName(),
@@ -62,11 +63,18 @@ class CreateInstance(base.CreateCommand):
                                 args.cluster_storage_type)),
                         # TODO(user): switch location to resource
                         # when b/29566669 is fixed on API
-                        location=util.LocationUrl(args.cluster_zone)))
+                        location=bigtable_util.LocationUrl(args.cluster_zone)))
             ]))
     result = cli.projects_instances.Create(msg)
-    if not args.async:
-      # TODO(user): enable this line when b/29563942 is fixed in apitools
-      pass
-      # util.WaitForOpV2(result, 'Creating instance')
-    return result
+    operation_ref = resources.REGISTRY.ParseRelativeName(
+        result.name, 'bigtableadmin.operations')
+
+    if args.async:
+      log.CreatedResource(
+          operation_ref,
+          kind='bigtable instance {0}'.format(ref.Name()),
+          async=True)
+      return result
+
+    return bigtable_util.WaitForInstance(
+        cli, operation_ref, 'Creating bigtable instance {0}'.format(ref.Name()))

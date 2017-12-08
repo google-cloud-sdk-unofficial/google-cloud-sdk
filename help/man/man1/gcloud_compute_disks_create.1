@@ -41,37 +41,37 @@ $ gcloud compute disks create my\-disk\-1 my\-disk\-2 \-\-zone us\-east1\-a
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fIDISK_NAME\fR [\fIDISK_NAME\fR ...]
 .RS 2m
+.TP 2m
+\fIDISK_NAME\fR [\fIDISK_NAME\fR ...]
 The names of the disks.
 
 
 .RE
+.sp
 
 .SH "FLAGS"
 
-\fB\-\-csek\-key\-file\fR=\fIFILE\fR
 .RS 2m
+.TP 2m
+\fB\-\-csek\-key\-file\fR=\fIFILE\fR
 Path to a Customer\-Supplied Encryption Key (CSEK) key file, mapping Google
 Compute Engine resources to user managed keys to be used when creating,
 mounting, or snapshotting disks. See
 https://cloud.google.com/compute/docs/disks/customer\-supplied\-encryption for
 more details.
 
-.RE
+.TP 2m
 \fB\-\-description\fR=\fIDESCRIPTION\fR
-.RS 2m
 An optional, textual description for the disks being created.
 
-.RE
+.TP 2m
 \fB\-\-image\-project\fR=\fIIMAGE_PROJECT\fR
-.RS 2m
 The project against which all image and image family references will be
 resolved. See \f5\fI\-\-image\fR\fR for more details.
 
-.RE
+.TP 2m
 \fB\-\-require\-csek\-key\-create\fR
-.RS 2m
 Refuse to create resources not protected by a user managed key in the key file
 when \-\-csek\-key\-file is given. This behavior is enabled by default to
 prevent incorrect gcloud invocations from accidentally creating resources with
@@ -82,24 +82,21 @@ https://cloud.google.com/compute/docs/disks/customer\-supplied\-encryption for
 more details. Enabled by default, use \fB\-\-no\-require\-csek\-key\-create\fR
 to disable.
 
-.RE
+.TP 2m
 \fB\-\-size\fR=\fISIZE\fR
-.RS 2m
 Indicates the size of the disks. The value must be a whole number followed by a
 size unit of \f5\fIKB\fR\fR for kilobyte, \f5\fIMB\fR\fR for megabyte,
 \f5\fIGB\fR\fR for gigabyte, or \f5\fITB\fR\fR for terabyte. For example,
 \f5\fI10GB\fR\fR will produce 10 gigabyte disks. Disk size must be a multiple of
 10 GB.
 
-.RE
+.TP 2m
 \fB\-\-type\fR=\fITYPE\fR
-.RS 2m
 Specifies the type of disk to create. To get a list of available disk types, run
 \f5gcloud compute disk\-types list\fR. The default disk type is pd\-standard.
 
-.RE
+.TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
-.RS 2m
 The zone of the disk to operate on. If not specified, you will be prompted to
 select a zone.
 
@@ -126,10 +123,12 @@ Alternatively, the zone can be stored in the environment variable
 \f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
 
 .RE
+.sp
 At most one of these may be specified:
 
-\fB\-\-image\fR=\fIIMAGE\fR
 .RS 2m
+.TP 2m
+\fB\-\-image\fR=\fIIMAGE\fR
 An image to apply to the disks being created. When using this option, the size
 of the disks must be at least as large as the image size. Use
 \f5\fI\-\-size\fR\fR to adjust the size of the disks.
@@ -137,16 +136,14 @@ of the disks must be at least as large as the image size. Use
 This flag is mutually exclusive with \f5\fI\-\-source\-snapshot\fR\fR and
 \f5\fI\-\-image\-family\fR\fR.
 
-.RE
+.TP 2m
 \fB\-\-image\-family\fR=\fIIMAGE_FAMILY\fR
-.RS 2m
 The family of the image that the boot disk will be initialized with. When a
 family is used instead of an image, the latest non\-deprecated image associated
 with that family is used.
 
-.RE
+.TP 2m
 \fB\-\-source\-snapshot\fR=\fISOURCE_SNAPSHOT\fR
-.RS 2m
 A source snapshot used to create the disks. It is safe to delete a snapshot
 after a disk has been created from the snapshot. In such cases, the disks will
 no longer reference the deleted snapshot. To get a list of snapshots in your
@@ -159,6 +156,7 @@ snapshot size. Use \fB\-\-size\fR to adjust the size of the disks.
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

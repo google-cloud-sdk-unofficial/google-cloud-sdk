@@ -38,22 +38,24 @@ persistent Kubernetes resources will get rescheduled.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the cluster to upgrade.
 
 
 .RE
+.sp
 
 .SH "FLAGS"
 
-\fB\-\-async\fR
 .RS 2m
+.TP 2m
+\fB\-\-async\fR
 Don't wait for the operation to complete. Use \fB\-\-no\-async\fR to disable.
 
-.RE
+.TP 2m
 \fB\-\-cluster\-version\fR=\fICLUSTER_VERSION\fR
-.RS 2m
 The Kubernetes release version to which to upgrade the cluster's nodes.
 
 If provided, the \-\-cluster\-version must be no greater than the cluster
@@ -66,9 +68,8 @@ You can find the list of allowed versions for upgrades by running:
 $ gcloud container get\-server\-config
 .RE
 
-.RE
+.TP 2m
 \fB\-\-image\-type\fR=\fIIMAGE_TYPE\fR
-.RS 2m
 The image type to use for the cluster/node pool. Defaults to server\-specified.
 
 Image Type specifies the base OS that the nodes in the cluster/node pool will
@@ -84,30 +85,27 @@ $ gcloud container get\-server\-config
 .RE
 
 
-.RE
+.TP 2m
 \fB\-\-master\fR
-.RS 2m
 Upgrade the cluster's master to the latest version of Kubernetes supported on
 Container Engine. Nodes cannot be upgraded at the same time as the master.
 
-.RE
+.TP 2m
 \fB\-\-node\-pool\fR=\fINODE_POOL\fR
-.RS 2m
 The node pool to upgrade.
 
-.RE
+.TP 2m
 \fB\-\-wait\fR
-.RS 2m
 DEPRECATED, use \-\-no\-async. Poll the operation for completion after issuing a
 create request. Use \fB\-\-no\-wait\fR to disable.
 
-.RE
+.TP 2m
 \fB\-\-zone\fR=\fIZONE\fR, \fB\-z\fR \fIZONE\fR
-.RS 2m
 The compute zone (e.g. us\-central1\-a) for the cluster
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

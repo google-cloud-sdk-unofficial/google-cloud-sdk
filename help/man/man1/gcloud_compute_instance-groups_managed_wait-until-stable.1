@@ -23,24 +23,29 @@ Waits until state of managed instance group is stable.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the managed instance group.
 
 
 .RE
+.sp
 
 .SH "FLAGS"
 
-\fB\-\-timeout\fR=\fITIMEOUT\fR
 .RS 2m
+.TP 2m
+\fB\-\-timeout\fR=\fITIMEOUT\fR
 Timeout in seconds for waiting for group becoming stable.
 
 .RE
+.sp
 At most one of these may be specified:
 
-\fB\-\-region\fR=\fIREGION\fR
 .RS 2m
+.TP 2m
+\fB\-\-region\fR=\fIREGION\fR
 The region of the managed instance group to operate on. If not specified, you
 will be prompted to select a region.
 
@@ -50,9 +55,8 @@ A list of regions can be fetched by running:
 $ gcloud compute regions list
 .RE
 
-.RE
+.TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
-.RS 2m
 The zone of the managed instance group to operate on. If not specified, you will
 be prompted to select a zone.
 
@@ -64,6 +68,7 @@ $ gcloud compute zones list
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

@@ -319,6 +319,40 @@ class RuntimeTests(testutil.TestBase):
         self.assertEqual({f.filename for f in cfg_files},
                          {'Dockerfile', '.dockerignore'})
 
+    def test_python_with_explicit_python34(self):
+        self.write_file('test.py', 'test file')
+        config = testutil.AppInfoFake(runtime='python',
+                                      entrypoint='run_me_some_python!',
+                                      runtime_config=dict(python_version='3.4'))
+        self.generate_configs(appinfo=config, deploy=True)
+        self.assert_file_exists_with_contents(
+            'Dockerfile',
+            self.DOCKERFILE_PREAMBLE +
+            self.DOCKERFILE_VIRTUALENV_TEMPLATE.format(
+                python_version='3.4') +
+            self.DOCKERFILE_INSTALL_APP +
+            'CMD run_me_some_python!\n')
+
+        self.assertEqual(set(os.listdir(self.temp_path)),
+                         {'test.py', '.dockerignore', 'Dockerfile'})
+
+    def test_python_with_explicit_python35(self):
+        self.write_file('test.py', 'test file')
+        config = testutil.AppInfoFake(runtime='python',
+                                      entrypoint='run_me_some_python!',
+                                      runtime_config=dict(python_version='3.5'))
+        self.generate_configs(appinfo=config, deploy=True)
+        self.assert_file_exists_with_contents(
+            'Dockerfile',
+            self.DOCKERFILE_PREAMBLE +
+            self.DOCKERFILE_VIRTUALENV_TEMPLATE.format(
+                python_version='3.5') +
+            self.DOCKERFILE_INSTALL_APP +
+            'CMD run_me_some_python!\n')
+
+        self.assertEqual(set(os.listdir(self.temp_path)),
+                         {'test.py', '.dockerignore', 'Dockerfile'})
+
     def test_python_with_invalid_version(self):
         self.write_file('test.py', 'test file')
         config = testutil.AppInfoFake(
@@ -381,4 +415,3 @@ class RuntimeTests(testutil.TestBase):
 
 if __name__ == '__main__':
     unittest.main()
-

@@ -4,6 +4,7 @@ import httplib
 import logging
 import urllib
 import urlparse
+import concurrent.futures
 from containerregistry.client import docker_name
 from containerregistry.client.v2_2 import docker_http
 from containerregistry.client.v2_2 import util
@@ -12,14 +13,19 @@ from containerregistry.client.v2_2 import util
 class Push(object):
   """Push encapsulates a Registry v2 Docker push session."""
 
-  def __init__(self, name, creds, transport, mount=None):
+  def __init__(self, name, creds, transport, mount=None, threads=1):
     """Constructor.
+
+    If multiple threads are used, the caller *must* ensure that the provided
+    transport is thread-safe, as well as the image that is being uploaded.
+    It is notable that tarfile and httplib2.Http in Python are NOT threadsafe.
 
     Args:
       name: docker_name.Tag, the fully-qualified name of the tag to push
       creds: docker_creds._CredentialProvider, provider for authorizing requests
       transport: httplib2.Http, the http transport to use for sending requests
       mount: list of docker_name.Repository, repos from which to mount blobs.
+      threads: the number of threads to use for uploads.
 
     Raises:
       ValueError: an incorrectly typed argument was supplied.
@@ -33,6 +39,7 @@ class Push(object):
     self._transport = docker_http.Transport(
         name, creds, transport, docker_http.PUSH)
     self._mount = mount
+    self._threads = threads
 
   def _base_url(self):
     return '{scheme}://{registry}/v2/{repository}'.format(
@@ -212,10 +219,17 @@ class Push(object):
         logging.info('Tag points to the right manifest, skipping push.')
         return
       logging.info('Manifest exists, skipping blob uploads and pushing tag.')
-    else:
-      # TODO(user): Parallelize this loop (e.g. futures.ThreadPoolExecutor)
+    elif self._threads == 1:
       for digest in image.blob_set():
         self._upload_one(image, digest)
+    else:
+      with concurrent.futures.ThreadPoolExecutor(
+          max_workers=self._threads) as executor:
+        future_to_params = {
+            executor.submit(self._upload_one, image, digest): (image, digest)
+            for digest in image.blob_set()}
+        for future in concurrent.futures.as_completed(future_to_params):
+          future.result()
 
     # This should complete the upload by uploading the manifest.
     self._put_manifest(image)

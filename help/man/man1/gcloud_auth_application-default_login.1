@@ -35,20 +35,19 @@ overwritten.
 
 .SH "FLAGS"
 
-\fB\-\-client\-id\-file\fR=\fICLIENT_ID_FILE\fR
 .RS 2m
+.TP 2m
+\fB\-\-client\-id\-file\fR=\fICLIENT_ID_FILE\fR
 A file containing your own client id to use to login.
 
-.RE
+.TP 2m
 \fB\-\-launch\-browser\fR
-.RS 2m
 Launch a browser for authorization. If not enabled or DISPLAY variable is not
 set, prints a URL to standard output to be copied. Enabled by default, use
 \fB\-\-no\-launch\-browser\fR to disable.
 
-.RE
+.TP 2m
 \fB\-\-scopes\fR=\fISCOPES\fR,[\fISCOPES\fR,...]
-.RS 2m
 The names of the scopes to authorize for. By default
 https://www.googleapis.com/auth/userinfo.email,
 https://www.googleapis.com/auth/cloud\-platform scopes are used. The list of
@@ -57,6 +56,7 @@ https://developers.google.com/identity/protocols/googlescopes.
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

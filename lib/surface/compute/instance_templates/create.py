@@ -24,7 +24,8 @@ from googlecloudsdk.command_lib.compute.instance_templates import flags as insta
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 
 
-def _CommonArgs(parser, multiple_network_interface_cards, release_track):
+def _CommonArgs(parser, multiple_network_interface_cards, release_track,
+                support_alias_ip_ranges):
   """Common arguments used in Alpha, Beta, and GA."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser)
@@ -34,7 +35,8 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track):
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(
       parser, instances=False,
-      multiple_network_interface_cards=multiple_network_interface_cards)
+      multiple_network_interface_cards=multiple_network_interface_cards,
+      support_alias_ip_ranges=support_alias_ip_ranges)
   instances_flags.AddMachineTypeArgs(parser)
   instances_flags.AddMaintenancePolicyArgs(parser)
   instances_flags.AddNoRestartOnFailureArgs(parser)
@@ -75,7 +77,8 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, multiple_network_interface_cards=False,
-                release_track=base.ReleaseTrack.GA)
+                release_track=base.ReleaseTrack.GA,
+                support_alias_ip_ranges=False)
 
   @property
   def service(self):
@@ -243,8 +246,9 @@ class CreateBeta(Create):
 
   @classmethod
   def Args(cls, parser):
-    _CommonArgs(parser, multiple_network_interface_cards=True,
-                release_track=base.ReleaseTrack.BETA)
+    _CommonArgs(parser, multiple_network_interface_cards=False,
+                release_track=base.ReleaseTrack.BETA,
+                support_alias_ip_ranges=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -265,4 +269,5 @@ class CreateAlpha(Create):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, multiple_network_interface_cards=True,
-                release_track=base.ReleaseTrack.ALPHA)
+                release_track=base.ReleaseTrack.ALPHA,
+                support_alias_ip_ranges=True)

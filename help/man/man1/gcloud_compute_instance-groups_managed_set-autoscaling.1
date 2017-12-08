@@ -28,86 +28,86 @@ https://cloud.google.com/compute/docs/autoscaler/multiple\-policies
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the managed instance group.
 
 
 .RE
+.sp
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-max\-num\-replicas\fR=\fIMAX_NUM_REPLICAS\fR
 .RS 2m
+.TP 2m
+\fB\-\-max\-num\-replicas\fR=\fIMAX_NUM_REPLICAS\fR
 Maximum number of replicas Autoscaler will set.
 
 
 .RE
+.sp
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-cool\-down\-period\fR=\fICOOL_DOWN_PERIOD\fR
 .RS 2m
+.TP 2m
+\fB\-\-cool\-down\-period\fR=\fICOOL_DOWN_PERIOD\fR
 Number of seconds Autoscaler will wait between resizing collection. Note: The
 Autoscaler waits 10 minutes before scaling down, the value entered here is in
 addition to the initial 10 minute period.
 
-.RE
+.TP 2m
 \fB\-\-custom\-metric\-utilization\fR=[\fImetric\fR=\fIMETRIC\fR],[\fIutilization\-target\fR=\fIUTILIZATION\-TARGET\fR],[\fIutilization\-target\-type\fR=\fIUTILIZATION\-TARGET\-TYPE\fR]
-.RS 2m
 Adds a target metric value for the to the Autoscaler.
 
-\fBmetric\fR
 .RS 2m
+.TP 2m
+\fBmetric\fR
 Protocol\-free URL of a Google Cloud Monitoring metric.
 
-.RE
+.TP 2m
 \fButilization\-target\fR
-.RS 2m
 Value of the metric Autoscaler will aim to maintain (greater than 0.0).
 
-.RE
+.TP 2m
 \fButilization\-target\-type\fR
-.RS 2m
 How target is expressed. Valid values: DELTA_PER_MINUTE, DELTA_PER_SECOND,
 GAUGE.
 .RE
-.RE
+.sp
+.TP 2m
 \fB\-\-description\fR=\fIDESCRIPTION\fR
-.RS 2m
 Notes about Autoscaler.
 
-.RE
+.TP 2m
 \fB\-\-min\-num\-replicas\fR=\fIMIN_NUM_REPLICAS\fR
-.RS 2m
 Minimum number of replicas Autoscaler will set.
 
-.RE
+.TP 2m
 \fB\-\-scale\-based\-on\-cpu\fR
-.RS 2m
 Autoscaler will be based on CPU utilization.
 
-.RE
+.TP 2m
 \fB\-\-scale\-based\-on\-load\-balancing\fR
-.RS 2m
 Use autoscaling based on load balancing utilization.
 
-.RE
+.TP 2m
 \fB\-\-target\-cpu\-utilization\fR=\fITARGET_CPU_UTILIZATION\fR
-.RS 2m
 Autoscaler will aim to maintain CPU utilization at target level (0.0 to 1.0).
 
-.RE
+.TP 2m
 \fB\-\-target\-load\-balancing\-utilization\fR=\fITARGET_LOAD_BALANCING_UTILIZATION\fR
-.RS 2m
 Autoscaler will aim to maintain the load balancing utilization level (greater
 than 0.0).
 
 .RE
+.sp
 At most one of these may be specified:
 
-\fB\-\-region\fR=\fIREGION\fR
 .RS 2m
+.TP 2m
+\fB\-\-region\fR=\fIREGION\fR
 The region of the managed instance group to operate on. If not specified, you
 will be prompted to select a region.
 
@@ -117,9 +117,8 @@ A list of regions can be fetched by running:
 $ gcloud compute regions list
 .RE
 
-.RE
+.TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
-.RS 2m
 The zone of the managed instance group to operate on. If not specified, you will
 be prompted to select a zone.
 
@@ -131,6 +130,7 @@ $ gcloud compute zones list
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

@@ -24,22 +24,21 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0])))
 sys.path.append(os.path.join(ROOT_DIR, 'lib'))
 
 import comm
-
-DEFAULT_PYTHON_INTERPRETER_VERSION = '2'
-VALID_PYTHON_INTERPRETER_VERSIONS = ['2', '3']
+import versions
 
 def PythonVersionFromRuntimeConfig(runtime_config):
   """Validate the python_version section of runtime_config, if present.
 
-  Valid values are set in VALID_PYTHON_INTERPRETER_VERSION. If runtime_config is
-  false-equivalent or if the python_version field is absent,
-  DEFAULT_PYTHON_INTERPRETER_VERSION is used as the default.
+  Valid values are set in versions.PYTHON_INTERPRETER_VERSION_MAP. If
+  runtime_config is false-equivalent or if the python_version field is
+  absent, versions.DEFAULT_PYTHON_INTERPRETER_VERSION is used as the
+  default.
 
   Args:
     runtime_config: A valid runtime_config.
 
   Returns:
-    One of the strings from VALID_PYTHON_INTERPETER_VERSIONS.
+    One of the strings from versions.PYTHON_INTERPRETER_VERSION_MAP.keys().
 
   Raises:
     ValueError: If the contents of the python_version field are not valid.
@@ -50,8 +49,8 @@ def PythonVersionFromRuntimeConfig(runtime_config):
     python_version = runtime_config.python_version
 
   if not python_version:
-    return DEFAULT_PYTHON_INTERPRETER_VERSION
-  elif python_version in VALID_PYTHON_INTERPRETER_VERSIONS:
+    return versions.DEFAULT_PYTHON_INTERPRETER_VERSION
+  elif python_version in versions.PYTHON_INTERPRETER_VERSION_MAP:
     return python_version
   else:
     raise ValueError('Unsupported or invalid python version specified.')
@@ -110,9 +109,10 @@ def Main(args):
         appinfo.runtime_config if appinfo else None)
   except ValueError:
     # The python version was selected, but set to an invalid result.
+    valid_versions = str(sorted(versions.PYTHON_INTERPRETER_VERSION_MAP.keys()))
     comm.error('The python_version selected in runtime_config is invalid or not '
                'supported. Please select from the following options:\n'
-               '%s', str(VALID_PYTHON_INTERPRETER_VERSIONS))
+               '%s', valid_versions)
     return 1
 
   runtime = 'custom' if config.params.custom else 'python'

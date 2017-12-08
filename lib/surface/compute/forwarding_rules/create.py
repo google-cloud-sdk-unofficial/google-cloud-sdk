@@ -17,13 +17,13 @@ from googlecloudsdk.api_lib.compute import forwarding_rules_utils as utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.forwarding_rules import flags
 from googlecloudsdk.core import log
 
 
 def _Args(parser, include_beta, include_alpha=False):
   """Argument parsing."""
-  flags.AddCommonFlags(parser)
   flags.AddUpdateArgs(parser, include_beta=include_beta)
   flags.AddAddress(parser)
   flags.AddIPProtocols(parser, include_alpha=include_alpha)
@@ -35,9 +35,13 @@ def _Args(parser, include_beta, include_alpha=False):
 class Create(utils.ForwardingRulesTargetMutator):
   """Create a forwarding rule to direct network traffic to a load balancer."""
 
-  @staticmethod
-  def Args(parser):
+  FORWARDING_RULE_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
     _Args(parser, include_beta=False, include_alpha=False)
+    cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
   @property
   def method(self):
@@ -50,6 +54,15 @@ class Create(utils.ForwardingRulesTargetMutator):
     else:
       return
 
+  def CreateRequests(self, args):
+    """Overrides."""
+    self.global_request = getattr(args, 'global')
+
+    if self.global_request:
+      return self.CreateGlobalRequests(args)
+    else:
+      return self.CreateRegionalRequests(args)
+
   def CreateGlobalRequests(self, args):
     """Create a globally scoped request."""
     port_range = _ResolvePortRange(args.port_range, args.ports)
@@ -57,8 +70,8 @@ class Create(utils.ForwardingRulesTargetMutator):
       raise exceptions.ToolException(
           '[--ports] is required for global forwarding rules.')
     target_ref = self.GetGlobalTarget(args)
-    forwarding_rule_ref = self.CreateGlobalReference(
-        args.name, resource_type='globalForwardingRules')
+    forwarding_rule_ref = self.FORWARDING_RULE_ARG.ResolveAsResource(
+        args, self.resources)
     protocol = self.ConstructProtocol(args)
 
     request = self.messages.ComputeGlobalForwardingRulesInsertRequest(
@@ -75,9 +88,14 @@ class Create(utils.ForwardingRulesTargetMutator):
 
   def CreateRegionalRequests(self, args):
     """Create a regionally scoped request."""
-    target_ref, target_region = self.GetRegionalTarget(args)
-    forwarding_rule_ref = self.CreateRegionalReference(args.name, args.region or
-                                                       target_region)
+    target_ref, region_ref = self.GetRegionalTarget(args)
+    if not args.region and region_ref:
+      args.region = region_ref
+    forwarding_rule_ref = self.FORWARDING_RULE_ARG.ResolveAsResource(
+        args,
+        self.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
+                                                         self.project))
     protocol = self.ConstructProtocol(args)
 
     request = self.messages.ComputeForwardingRulesInsertRequest(
@@ -98,15 +116,22 @@ class Create(utils.ForwardingRulesTargetMutator):
 class CreateBeta(Create):
   """Create a forwarding rule to direct network traffic to a load balancer."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
+    cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
     _Args(parser, include_beta=True, include_alpha=False)
+    cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
   def CreateRegionalRequests(self, args):
     """Create a regionally scoped request."""
-    target_ref, target_region = self.GetRegionalTarget(args)
-    forwarding_rule_ref = self.CreateRegionalReference(args.name, args.region or
-                                                       target_region)
+    target_ref, region_ref = self.GetRegionalTarget(args)
+    if not args.region and region_ref:
+      args.region = region_ref
+    forwarding_rule_ref = self.FORWARDING_RULE_ARG.ResolveAsResource(
+        args,
+        self.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
+                                                         self.project))
     protocol = self.ConstructProtocol(args)
 
     forwarding_rule = self.messages.ForwardingRule(
@@ -125,12 +150,13 @@ class CreateBeta(Create):
           forwarding_rule.portRange = None
           forwarding_rule.ports = [str(p) for p in _GetPortList(args.ports)]
         if args.subnet is not None:
-          forwarding_rule.subnetwork = self.CreateRegionalReference(
-              args.subnet, forwarding_rule.region,
-              resource_type='subnetworks').SelfLink()
+          if not args.subnet_region:
+            args.subnet_region = forwarding_rule_ref.region
+          forwarding_rule.subnetwork = flags.SUBNET_ARG.ResolveAsResource(
+              args, self.resources).SelfLink()
         if args.network is not None:
-          forwarding_rule.network = self.CreateGlobalReference(
-              args.network, resource_type='networks').SelfLink()
+          forwarding_rule.network = flags.NETWORK_ARG.ResolveAsResource(
+              args, self.resources).SelfLink()
     else:
       forwarding_rule.target = target_ref.SelfLink()
     request = self.messages.ComputeForwardingRulesInsertRequest(
@@ -145,9 +171,11 @@ class CreateBeta(Create):
 class CreateAlpha(CreateBeta):
   """Create a forwarding rule to direct network traffic to a load balancer."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
+    cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
     _Args(parser, include_beta=True, include_alpha=True)
+    cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
 
 Create.detailed_help = {

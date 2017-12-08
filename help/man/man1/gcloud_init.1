@@ -29,12 +29,11 @@ Authorizes gcloud and other SDK tools to access Google Cloud Platform using your
 user account credentials, or lets you select from accounts whose credentials are
 already available. gcloud init uses the same browser\-based authorization flow
 as \f5gcloud auth login\fR.
-.RE
-.RS 2m
 .IP "\(bu" 2m
 Sets properties in a gcloud configuration, including the current project and the
 default Google Compute Engine region and zone.
 .RE
+.sp
 
 Most users run gcloud init to get started with gcloud. You can use subsequent
 gcloud init invocations to create new gcloud configurations or to reinitialize
@@ -54,17 +53,18 @@ you are running.)
 
 .SH "FLAGS"
 
-\fB\-\-console\-only\fR
 .RS 2m
+.TP 2m
+\fB\-\-console\-only\fR
 Prevent the command from launching a browser for authorization.
 
-.RE
+.TP 2m
 \fB\-\-skip\-diagnostics\fR
-.RS 2m
 Do not run diagnostics.
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

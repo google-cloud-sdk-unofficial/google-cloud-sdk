@@ -11,7 +11,7 @@ gcloud compute forwarding\-rules create \- create a forwarding rule to direct ne
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute forwarding\-rules create\fR \fINAME\fR (\fB\-\-target\-http\-proxy\fR=\fITARGET_HTTP_PROXY\fR\ |\ \fB\-\-target\-https\-proxy\fR=\fITARGET_HTTPS_PROXY\fR\ |\ \fB\-\-target\-instance\fR=\fITARGET_INSTANCE\fR\ |\ \fB\-\-target\-pool\fR=\fITARGET_POOL\fR\ |\ \fB\-\-target\-ssl\-proxy\fR=\fITARGET_SSL_PROXY\fR\ |\ \fB\-\-target\-vpn\-gateway\fR=\fITARGET_VPN_GATEWAY\fR) [\fB\-\-address\fR=\fIADDRESS\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-ip\-protocol\fR=\fIIP_PROTOCOL\fR] [\fB\-\-target\-instance\-zone\fR=\fITARGET_INSTANCE_ZONE\fR] [\fB\-\-global\fR\ |\ \fB\-\-region\fR=\fIREGION\fR] [\fB\-\-port\-range\fR=[\fIPORT\fR\ |\ \fIPORT\-PORT\fR]\ |\ \fB\-\-ports\fR=[\fIPORT\fR\ |\ \fIPORT\-PORT\fR],[[\fIPORT\fR\ |\ \fIPORT\-PORT\fR],...]] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute forwarding\-rules create\fR \fINAME\fR (\fB\-\-target\-http\-proxy\fR=\fITARGET_HTTP_PROXY\fR\ |\ \fB\-\-target\-https\-proxy\fR=\fITARGET_HTTPS_PROXY\fR\ |\ \fB\-\-target\-instance\fR=\fITARGET_INSTANCE\fR\ |\ \fB\-\-target\-pool\fR=\fITARGET_POOL\fR\ |\ \fB\-\-target\-ssl\-proxy\fR=\fITARGET_SSL_PROXY\fR\ |\ \fB\-\-target\-vpn\-gateway\fR=\fITARGET_VPN_GATEWAY\fR) [\fB\-\-address\fR=\fIADDRESS\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-ip\-protocol\fR=\fIIP_PROTOCOL\fR] [\fB\-\-target\-instance\-zone\fR=\fITARGET_INSTANCE_ZONE\fR] [\fB\-\-target\-pool\-region\fR=\fITARGET_POOL_REGION\fR] [\fB\-\-target\-vpn\-gateway\-region\fR=\fITARGET_VPN_GATEWAY_REGION\fR] [\fB\-\-global\fR\ |\ \fB\-\-region\fR=\fIREGION\fR] [\fB\-\-port\-range\fR=[\fIPORT\fR\ |\ \fIPORT\-PORT\fR]\ |\ \fB\-\-ports\fR=[\fIPORT\fR\ |\ \fIPORT\-PORT\fR],[[\fIPORT\fR\ |\ \fIPORT\-PORT\fR],...]] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -43,29 +43,30 @@ be specified.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the forwarding rule.
 
 
 .RE
+.sp
 
 .SH "REQUIRED FLAGS"
 
 Exactly one of these must be specified:
 
-\fB\-\-target\-http\-proxy\fR=\fITARGET_HTTP_PROXY\fR
 .RS 2m
+.TP 2m
+\fB\-\-target\-http\-proxy\fR=\fITARGET_HTTP_PROXY\fR
 The target HTTP proxy that will receive the traffic.
 
-.RE
+.TP 2m
 \fB\-\-target\-https\-proxy\fR=\fITARGET_HTTPS_PROXY\fR
-.RS 2m
 The target HTTPS proxy that will receive the traffic.
 
-.RE
+.TP 2m
 \fB\-\-target\-instance\fR=\fITARGET_INSTANCE\fR
-.RS 2m
 The name of the target instance that will receive the traffic. The target
 instance must be in a zone that's in the forwarding rule's region. Global
 forwarding rules may not direct traffic to target instances. If not specified,
@@ -93,30 +94,29 @@ $ gcloud config unset compute/zone
 Alternatively, the zone can be stored in the environment variable
 \f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
 
-.RE
+.TP 2m
 \fB\-\-target\-pool\fR=\fITARGET_POOL\fR
-.RS 2m
 The target pool that will receive the traffic. The target pool must be in the
 same region as the forwarding rule. Global forwarding rules may not direct
 traffic to target pools.
 
-.RE
+.TP 2m
 \fB\-\-target\-ssl\-proxy\fR=\fITARGET_SSL_PROXY\fR
-.RS 2m
 The target SSL proxy that will receive the traffic.
 
-.RE
+.TP 2m
 \fB\-\-target\-vpn\-gateway\fR=\fITARGET_VPN_GATEWAY\fR
-.RS 2m
 The target VPN gateway that will receive forwarded traffic.
 
 
 .RE
+.sp
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-address\fR=\fIADDRESS\fR
 .RS 2m
+.TP 2m
+\fB\-\-address\fR=\fIADDRESS\fR
 The external IP address that the forwarding rule will serve. All traffic sent to
 this IP address is directed to the target pointed to by the forwarding rule. If
 the address is reserved, it must either (1) reside in the global scope if the
@@ -125,33 +125,40 @@ reside in the same region as the forwarding rule if the forwarding rule is being
 configured to point to a target pool or target instance. If this flag is
 omitted, an ephemeral IP address is assigned.
 
-.RE
+.TP 2m
 \fB\-\-description\fR=\fIDESCRIPTION\fR
-.RS 2m
 An optional textual description for the forwarding rule.
 
-.RE
+.TP 2m
 \fB\-\-ip\-protocol\fR=\fIIP_PROTOCOL\fR
-.RS 2m
 The IP protocol that the rule will serve. The default is TCP. \fIIP_PROTOCOL\fR
 must be one of: \fBAH\fR, \fBESP\fR, \fBSCTP\fR, \fBTCP\fR, \fBUDP\fR.
 
-.RE
+.TP 2m
 \fB\-\-target\-instance\-zone\fR=\fITARGET_INSTANCE_ZONE\fR
-.RS 2m
-The zone of the target instance.
+The zone of the target instance to operate on.
+
+.TP 2m
+\fB\-\-target\-pool\-region\fR=\fITARGET_POOL_REGION\fR
+The region of the target pool to operate on. If not specified it will be set the
+region of the forwarding rule.
+
+.TP 2m
+\fB\-\-target\-vpn\-gateway\-region\fR=\fITARGET_VPN_GATEWAY_REGION\fR
+The region of the VPN gateway to operate on. If not specified it will be set the
+region of the forwarding rule.
 
 .RE
+.sp
 At most one of these may be specified:
 
+.RS 2m
+.TP 2m
 \fB\-\-global\fR
-.RS 2m
-If provided, assume the forwarding rules are global. A forwarding rule is global
-if it references a target HTTP proxy.
+If provided, it is assumed the forwarding rule is global.
 
-.RE
+.TP 2m
 \fB\-\-region\fR=\fIREGION\fR
-.RS 2m
 The region of the forwarding rule to operate on. If not specified, you will be
 prompted to select a region.
 
@@ -178,10 +185,12 @@ Alternatively, the region can be stored in the environment variable
 \f5\fICLOUDSDK_COMPUTE_REGION\fR\fR.
 
 .RE
+.sp
 At most one of these may be specified:
 
-\fB\-\-port\-range\fR=[\fIPORT\fR | \fIPORT\-PORT\fR]
 .RS 2m
+.TP 2m
+\fB\-\-port\-range\fR=[\fIPORT\fR | \fIPORT\-PORT\fR]
 DEPRECATED, use \-\-ports. If specified, only packets addressed to ports in the
 specified range will be forwarded. If not specified for regional forwarding
 rules, all ports are matched. This flag is required for global forwarding rules.
@@ -189,9 +198,8 @@ rules, all ports are matched. This flag is required for global forwarding rules.
 Either an individual port (\f5\-\-port\-range 80\fR) or a range of ports
 (\f5\-\-port\-range 3000\-3100\fR) may be specified.
 
-.RE
+.TP 2m
 \fB\-\-ports\fR=[\fIPORT\fR | \fIPORT\-PORT\fR],[[\fIPORT\fR | \fIPORT\-PORT\fR],...]
-.RS 2m
 If specified, only packets addressed to ports in the specified list will be
 forwarded. If not specified for regional forwarding rules, all ports are
 matched. This flag is required for global forwarding rules and accepts a single
@@ -202,6 +210,7 @@ Individual ports and ranges can be specified, for example (\f5\-\-ports
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

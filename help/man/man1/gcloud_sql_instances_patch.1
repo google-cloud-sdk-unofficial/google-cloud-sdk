@@ -23,137 +23,133 @@ Updates the settings of a Cloud SQL instance.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fIINSTANCE\fR
 .RS 2m
+.TP 2m
+\fIINSTANCE\fR
 Cloud SQL instance ID.
 
 
 .RE
+.sp
 
 .SH "FLAGS"
 
-\fB\-\-activation\-policy\fR=\fIACTIVATION_POLICY\fR
 .RS 2m
+.TP 2m
+\fB\-\-activation\-policy\fR=\fIACTIVATION_POLICY\fR
 The activation policy for this instance. This specifies when the instance should
 be activated and is applicable only when the instance state is RUNNABLE.
 \fIACTIVATION_POLICY\fR must be one of: \fBALWAYS\fR, \fBNEVER\fR,
 \fBON_DEMAND\fR.
 
-.RE
+.TP 2m
 \fB\-\-assign\-ip\fR
-.RS 2m
 The instance must be assigned an IP address. Use \fB\-\-no\-assign\-ip\fR to
 disable.
 
-.RE
+.TP 2m
 \fB\-\-async\fR
-.RS 2m
 Do not wait for the operation to complete.
 
-.RE
+.TP 2m
 \fB\-\-diff\fR
-.RS 2m
 Show what changed as a result of the update.
 
-.RE
+.TP 2m
 \fB\-\-enable\-bin\-log\fR
-.RS 2m
 Enable binary log. If backup configuration is disabled, binary log should be
 disabled as well. Use \fB\-\-no\-enable\-bin\-log\fR to disable.
 
-.RE
+.TP 2m
 \fB\-\-enable\-database\-replication\fR
-.RS 2m
 Enable database replication. Applicable only for read replica instance(s).
 WARNING: Instance will be restarted. Use
 \fB\-\-no\-enable\-database\-replication\fR to disable.
 
-.RE
+.TP 2m
 \fB\-\-follow\-gae\-app\fR=\fIFOLLOW_GAE_APP\fR
-.RS 2m
 The App Engine app this instance should follow. It must be in the same region as
 the instance. WARNING: Instance may be restarted.
 
-.RE
+.TP 2m
 \fB\-\-gce\-zone\fR=\fIGCE_ZONE\fR
-.RS 2m
 The preferred Compute Engine zone (e.g. us\-central1\-a, us\-central1\-b, etc.).
 WARNING: Instance may be restarted.
 
-.RE
+.TP 2m
 \fB\-\-pricing\-plan\fR=\fIPRICING_PLAN\fR, \fB\-p\fR \fIPRICING_PLAN\fR
-.RS 2m
 The pricing plan for this instance. \fIPRICING_PLAN\fR must be one of:
 \fBPER_USE\fR, \fBPACKAGE\fR.
 
-.RE
+.TP 2m
 \fB\-\-replication\fR=\fIREPLICATION\fR
-.RS 2m
 The type of replication this instance uses. \fIREPLICATION\fR must be one of:
 \fBSYNCHRONOUS\fR, \fBASYNCHRONOUS\fR.
 
-.RE
+.TP 2m
 \fB\-\-require\-ssl\fR
-.RS 2m
 mysqld should default to 'REQUIRE X509' for users connecting over IP. Use
 \fB\-\-no\-require\-ssl\fR to disable.
 
-.RE
+.TP 2m
 \fB\-\-tier\fR=\fITIER\fR, \fB\-t\fR \fITIER\fR
-.RS 2m
 The tier of service for this instance, for example D0, D1. WARNING: Instance
 will be restarted.
 
 .RE
+.sp
 At most one of these may be specified:
 
-\fB\-\-authorized\-gae\-apps\fR=\fIAPP\fR,[\fIAPP\fR,...]
 .RS 2m
+.TP 2m
+\fB\-\-authorized\-gae\-apps\fR=\fIAPP\fR,[\fIAPP\fR,...]
 A list of App Engine app IDs that can access this instance.
 
-.RE
+.TP 2m
 \fB\-\-clear\-gae\-apps\fR
-.RS 2m
 Specified to clear the list of App Engine apps that can access this instance.
 
 .RE
+.sp
 At most one of these may be specified:
 
-\fB\-\-authorized\-networks\fR=\fINETWORK\fR,[\fINETWORK\fR,...]
 .RS 2m
+.TP 2m
+\fB\-\-authorized\-networks\fR=\fINETWORK\fR,[\fINETWORK\fR,...]
 The list of external networks that are allowed to connect to the instance.
 Specified in CIDR notation, also known as 'slash' notation (e.g.
 192.168.100.0/24).
 
-.RE
+.TP 2m
 \fB\-\-clear\-authorized\-networks\fR
-.RS 2m
 Clear the list of external networks that are allowed to connect to the instance.
 
 .RE
+.sp
 At most one of these may be specified:
 
-\fB\-\-backup\-start\-time\fR=\fIBACKUP_START_TIME\fR
 .RS 2m
+.TP 2m
+\fB\-\-backup\-start\-time\fR=\fIBACKUP_START_TIME\fR
 The start time of daily backups, specified in the 24 hour format \- HH:MM, in
 the UTC timezone.
 
-.RE
+.TP 2m
 \fB\-\-no\-backup\fR
-.RS 2m
 Specified if daily backup should be disabled.
 
 .RE
+.sp
 At most one of these may be specified:
 
-\fB\-\-clear\-database\-flags\fR
 .RS 2m
+.TP 2m
+\fB\-\-clear\-database\-flags\fR
 Clear the database flags set on the instance. WARNING: Instance will be
 restarted.
 
-.RE
+.TP 2m
 \fB\-\-database\-flags\fR=\fIFLAG\fR=\fIVALUE\fR,[\fIFLAG\fR=\fIVALUE\fR,...]
-.RS 2m
 A comma\-separated list of database flags to set on the instance. Use an equals
 sign to separate flag name and value. Flags without values, like
 skip_grant_tables, can be written out without a value after, e.g.,
@@ -163,6 +159,7 @@ max_allowed_packet=55555,skip_grant_tables=,log_output=1\fR)
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

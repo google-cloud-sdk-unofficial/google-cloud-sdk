@@ -30,20 +30,21 @@ will have an empty passphrase).
 
 .SH "POSITIONAL ARGUMENTS"
 
-[\fIUSER\fR@]\fIINSTANCE\fR
 .RS 2m
+.TP 2m
+[\fIUSER\fR@]\fIINSTANCE\fR
 Specifies the instance to SSH into.
 
 \f5\fIUSER\fR\fR specifies the username with which to SSH. If omitted, $USER
 from the environment is selected.
 
-.RE
+.TP 2m
 [\-\- \fISSH_ARGS\fR ...]
-.RS 2m
 Flags and positionals passed to the underlying ssh implementation.
 
 
 .RE
+.sp
 The '\-\-' argument must be specified between gcloud specific args on the left
 and SSH_ARGS on the right. IMPORTANT: previously, commands allowed the omission
 of the \-\-, and unparsed arguments were treated as implementation args. This
@@ -58,37 +59,34 @@ $ gcloud compute ssh example\-instance \-\-zone us\-central1\-a \-\- \-vvv \e
 
 .SH "FLAGS"
 
-\fB\-\-command\fR=\fICOMMAND\fR
 .RS 2m
+.TP 2m
+\fB\-\-command\fR=\fICOMMAND\fR
 A command to run on the virtual machine.
 
 Runs the command on the target instance and then exits.
 
-.RE
+.TP 2m
 \fB\-\-container\fR=\fICONTAINER\fR
-.RS 2m
 The name of a container inside of the virtual machine instance to connect to.
 This only applies to virtual machines that are using a Google container virtual
 machine image. For more information, see
 https://cloud.google.com/compute/docs/containers
 
 
-.RE
+.TP 2m
 \fB\-\-dry\-run\fR
-.RS 2m
 If provided, prints the command that would be run to standard out instead of
 executing it.
 
-.RE
+.TP 2m
 \fB\-\-plain\fR
-.RS 2m
 Suppresses the automatic addition of \fBssh(1)\fR/\fBscp(1)\fR flags. This flag
 is useful if you want to take care of authentication yourself or use specific
 ssh/scp features.
 
-.RE
+.TP 2m
 \fB\-\-ssh\-flag\fR=\fISSH_FLAG\fR
-.RS 2m
 Additional flags to be passed to \fBssh(1)\fR. It is recommended that flags be
 passed using an assignment operator and quotes. This flag will replace
 occurences of \f5\fI%USER%\fR\fR and \f5\fI%INSTANCE%\fR\fR with their
@@ -103,24 +101,21 @@ is equivalent to passing the flags \f5\fI\-\-vvv\fR\fR and \f5\fI\-L
 80:162.222.181.197:80\fR\fR to \fBssh(1)\fR if the external IP address of
 \'example\-instance' is 162.222.181.197.
 
-.RE
+.TP 2m
 \fB\-\-ssh\-key\-file\fR=\fISSH_KEY_FILE\fR
-.RS 2m
 The path to the SSH key file. By default, this is
 \f5\fI~/.ssh/google_compute_engine\fR\fR.
 
-.RE
+.TP 2m
 \fB\-\-strict\-host\-key\-checking\fR=\fISTRICT_HOST_KEY_CHECKING\fR
-.RS 2m
 Override the default behavior of StrictHostKeyChecking. By default,
 StrictHostKeyChecking is set to 'no' the first time you connect to an instance
 and will be set to 'yes' for all subsequent connections. Use this flag to
 specify a value for the connection. \fISTRICT_HOST_KEY_CHECKING\fR must be one
 of: \fByes\fR, \fBno\fR, \fBask\fR.
 
-.RE
+.TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
-.RS 2m
 The zone of the instance to connect to. If not specified, you will be prompted
 to select a zone.
 
@@ -148,6 +143,7 @@ Alternatively, the zone can be stored in the environment variable
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

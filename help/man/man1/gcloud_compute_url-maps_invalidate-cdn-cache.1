@@ -28,17 +28,20 @@ content is cached for some or all URLs with the given path.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fIURLMAP\fR
 .RS 2m
+.TP 2m
+\fIURLMAP\fR
 The name of the URL map.
 
 
 .RE
+.sp
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-path\fR=\fIPATH\fR
 .RS 2m
+.TP 2m
+\fB\-\-path\fR=\fIPATH\fR
 A path specifying which objects to invalidate. PATH must start with ``/'' and
 the only place a ``*'' is allowed is at the end following a ``/''. It will be
 matched against URL paths, which do not include scheme, host, or any text after
@@ -54,39 +57,32 @@ Examples:
 .RS 2m
 .IP "\(em" 2m
 ``'', ``*'', anything that doesn't start with ``/'': error
-.RE
-.RS 2m
 .IP "\(em" 2m
 ``/'': just the root URL
-.RE
-.RS 2m
 .IP "\(em" 2m
 ``/*'': everything
-.RE
-.RS 2m
 .IP "\(em" 2m
 ``/x/y'': ``/x/y'' only (and not ``/x/y/'')
-.RE
-.RS 2m
 .IP "\(em" 2m
 ``/x/y/'': ``/x/y/'' only (and not ``/x/y'')
-.RE
-.RS 2m
 .IP "\(em" 2m
 ``/x/y/*'': ``/x/y/'' and everything under it
 .RE
 .RE
+.sp
 
 
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-async\fR
 .RS 2m
+.TP 2m
+\fB\-\-async\fR
 Do not wait for the operation to complete.
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

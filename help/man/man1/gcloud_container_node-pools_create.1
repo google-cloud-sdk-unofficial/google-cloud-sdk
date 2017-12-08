@@ -25,34 +25,34 @@ customize the node configuration and the number of nodes created.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the node pool to create.
 
 
 .RE
+.sp
 
 .SH "FLAGS"
 
-\fB\-\-cluster\fR=\fICLUSTER\fR
 .RS 2m
+.TP 2m
+\fB\-\-cluster\fR=\fICLUSTER\fR
 The cluster to add the node pool to.
 
-.RE
+.TP 2m
 \fB\-\-disk\-size\fR=\fIDISK_SIZE\fR
-.RS 2m
 Size in GB for node VM boot disks. Defaults to 100GB.
 
-.RE
+.TP 2m
 \fB\-\-enable\-cloud\-endpoints\fR
-.RS 2m
 Automatically enable Google Cloud Endpoints to take advantage of API management
 features. Enabled by default, use \fB\-\-no\-enable\-cloud\-endpoints\fR to
 disable.
 
-.RE
+.TP 2m
 \fB\-\-image\-type\fR=\fIIMAGE_TYPE\fR
-.RS 2m
 The image type to use for the node pool. Defaults to server\-specified.
 
 Image Type specifies the base OS that the nodes in the node pool will run on. If
@@ -68,14 +68,12 @@ $ gcloud container get\-server\-config
 .RE
 
 
-.RE
+.TP 2m
 \fB\-\-machine\-type\fR=\fIMACHINE_TYPE\fR, \fB\-m\fR \fIMACHINE_TYPE\fR
-.RS 2m
 The type of machine to use for nodes. Defaults to server\-specified
 
-.RE
+.TP 2m
 \fB\-\-node\-labels\fR=[\fINODE_LABELS\fR,...]
-.RS 2m
 Applies the given kubernetes labels on all nodes in the new node\-pool. Example:
 
 .RS 2m
@@ -88,14 +86,12 @@ New nodes, including ones created by resize or recreate, will have these labels
 on the kubernetes API node object and can be used in nodeSelectors. See
 http://kubernetes.io/docs/user\-guide/node\-selection/ for examples.
 
-.RE
+.TP 2m
 \fB\-\-num\-nodes\fR=\fINUM_NODES\fR; default="3"
-.RS 2m
 The number of nodes in the node pool in each of the cluster's zones.
 
-.RE
+.TP 2m
 \fB\-\-scopes\fR=\fISCOPE\fR,[\fISCOPE\fR,...]
-.RS 2m
 Specifies scopes for the node instances. The project's default service account
 is used. Examples:
 
@@ -148,13 +144,13 @@ userinfo\-email,https://www.googleapis.com/auth/userinfo.email
 .TE
 
 
-.RE
+.TP 2m
 \fB\-\-zone\fR=\fIZONE\fR, \fB\-z\fR \fIZONE\fR
-.RS 2m
 The compute zone (e.g. us\-central1\-a) for the cluster
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

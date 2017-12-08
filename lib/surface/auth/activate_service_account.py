@@ -96,6 +96,9 @@ class ActivateServiceAccount(base.SilentCommand):
           scopes=config.CLOUDSDK_SCOPES,
           user_agent=config.CLOUDSDK_USER_AGENT)
     else:
+      log.warning('.p12 service account keys are not recomended unless it is '
+                  'necessary for backwards compatability. Please switch to '
+                  'a newer .json service account key for this account.')
       account = args.account
       if not account:
         raise c_exc.RequiredArgumentException(
@@ -116,11 +119,13 @@ class ActivateServiceAccount(base.SilentCommand):
                'PyOpenSSL, you will need to enable site packages by '
                'setting the environment variable CLOUDSDK_PYTHON_SITEPACKAGES '
                'to 1. If that does not work, see '
-               'https://developers.google.com/cloud/sdk/crypto for details.'))
+               'https://developers.google.com/cloud/sdk/crypto for details '
+               'or consider using .json private key instead.'))
         else:
           raise c_exc.ToolException(
               ('PyOpenSSL is not available. See '
-               'https://developers.google.com/cloud/sdk/crypto for details.'))
+               'https://developers.google.com/cloud/sdk/crypto for details '
+               'or consider using .json private key instead.'))
 
       if password:
         cred = client.SignedJwtAssertionCredentials(

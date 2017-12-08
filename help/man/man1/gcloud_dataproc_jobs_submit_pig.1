@@ -23,64 +23,60 @@ Submit a Pig job to a cluster.
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-cluster\fR=\fICLUSTER\fR
 .RS 2m
+.TP 2m
+\fB\-\-cluster\fR=\fICLUSTER\fR
 The Dataproc cluster to submit the job to.
 
 
 .RE
+.sp
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-async\fR
 .RS 2m
+.TP 2m
+\fB\-\-async\fR
 Does not wait for the job to run.
 
-.RE
+.TP 2m
 \fB\-\-bucket\fR=\fIBUCKET\fR
-.RS 2m
 The Cloud Storage bucket to stage files in. Defaults to the cluster's configured
 bucket.
 
-.RE
+.TP 2m
 \fB\-\-continue\-on\-failure\fR
-.RS 2m
 Whether to continue if a single query fails.
 
-.RE
+.TP 2m
 \fB\-\-driver\-log\-levels\fR=[\fIPACKAGE\fR=\fILEVEL\fR,...]
-.RS 2m
 A list of package to log4j log level pairs to configure driver logging. For
 example: root=FATAL,com.example=INFO
 
-.RE
+.TP 2m
 \fB\-\-execute\fR=\fIQUERY\fR, \fB\-e\fR \fIQUERY\fR
-.RS 2m
 A Pig query to execute as part of the job.
 
-.RE
+.TP 2m
 \fB\-\-file\fR=\fIFILE\fR, \fB\-f\fR \fIFILE\fR
-.RS 2m
 HCFS URI of file containing Pig script to execute as the job.
 
-.RE
+.TP 2m
 \fB\-\-jars\fR=[\fIJAR\fR,...]
-.RS 2m
 Comma separated list of jar files to be provided to Pig and MR. May contain
 UDFs.
 
-.RE
+.TP 2m
 \fB\-\-params\fR=[\fIPARAM\fR=\fIVALUE\fR,...]
-.RS 2m
 A list of key value pairs to set variables in the Pig queries.
 
-.RE
+.TP 2m
 \fB\-\-properties\fR=[\fIPROPERTY\fR=\fIVALUE\fR,...]
-.RS 2m
 A list of key value pairs to configure Pig.
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

@@ -23,7 +23,14 @@ from googlecloudsdk.command_lib.iam import iam_util
 
 
 class GetIamPolicy(base_classes.BaseIamCommand):
-  """Get the IAM policy for a service account."""
+  """Get the IAM policy for a service account.
+
+  This command gets the IAM policy for a service account. If formatted as
+  JSON, the output can be edited and used as a policy file for
+  set-iam-policy. The output includes an "etag" field identifying the version
+  emitted and allowing detection of concurrent policy updates; see
+  $ gcloud iam service-accounts set-iam-policy for additional details.
+  """
 
   detailed_help = {
       'DESCRIPTION': '{description}',

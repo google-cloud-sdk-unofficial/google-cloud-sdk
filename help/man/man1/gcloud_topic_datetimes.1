@@ -26,11 +26,10 @@ value defaults are:
 .RS 2m
 .IP "\(bu" 2m
 year, month, day \- current value
-.RE
-.RS 2m
 .IP "\(bu" 2m
 hour, minute, second, fractional second \- 0
 .RE
+.sp
 
 The supported absolute date/time input formats are listed here.
 
@@ -149,35 +148,22 @@ character suffix:
 .RS 2m
 .IP "\(bu" 2m
 P \- period (the duration designator)
-.RE
-.RS 2m
 .IP "\(bu" 2m
 Y \- year
-.RE
-.RS 2m
 .IP "\(bu" 2m
 M \- minute if after T or H, month otherwise
-.RE
-.RS 2m
 .IP "\(bu" 2m
 D \- day
-.RE
-.RS 2m
 .IP "\(bu" 2m
 T \- separates date parts from time parts
-.RE
-.RS 2m
 .IP "\(bu" 2m
 H \- hour
-.RE
-.RS 2m
 .IP "\(bu" 2m
 M \- minute if after T or H, month otherwise
-.RE
-.RS 2m
 .IP "\(bu" 2m
 S \- second (for fractional seconds, use decimal value for seconds)
 .RE
+.sp
 
 At least one part must be specified. Omitted parts default to 0.
 
@@ -193,12 +179,9 @@ For example:
 .RS 2m
 .IP "\(bu" 2m
 1 month ago: \-p1m
-.RE
-.RS 2m
 .IP "\(bu" 2m
 30 minutes from now: +pt30m
-.RE
-.RS 2m
 .IP "\(bu" 2m
 2 hours and 30 minutes ago: \-p2h30m
 .RE
+.sp

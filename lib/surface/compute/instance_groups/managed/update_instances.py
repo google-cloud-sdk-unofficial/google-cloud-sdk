@@ -14,7 +14,11 @@
 """Command for updating instances of managed instance group."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
+from googlecloudsdk.api_lib.compute import property_selector
+from googlecloudsdk.api_lib.compute import request_helper
+from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -88,7 +92,7 @@ def _AddArgs(parser):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateInstancesAlpha(base_classes.BaseAsyncMutator):
+class UpdateInstancesAlpha(base_classes.BaseCommand):
   """Update instances of managed instance group."""
 
   @staticmethod
@@ -98,18 +102,30 @@ class UpdateInstancesAlpha(base_classes.BaseAsyncMutator):
         parser)
 
   @property
-  def method(self):
-    return 'Patch'
-
-  @property
-  def service(self):
-    return self.compute.instanceGroupManagers
-
-  @property
   def resource_type(self):
     return 'instanceGroupManagers'
 
-  def CreateRequests(self, args):
+  def Run(self, args):
+    cleared_fields = []
+    (service, method, request) = self.CreateRequest(args, cleared_fields)
+    errors = []
+    with self.compute_client.apitools_client.IncludeFields(cleared_fields):
+      resources = list(request_helper.MakeRequests(
+          requests=[(service, method, request)],
+          http=self.http,
+          batch_url=self.batch_url,
+          errors=errors,
+          custom_get_requests=None))
+    resources = lister.ProcessResults(
+        resources=resources,
+        field_selector=property_selector.PropertySelector(
+            properties=None,
+            transformations=self.transformations))
+    if errors:
+      utils.RaiseToolException(errors)
+    return resources
+
+  def CreateRequest(self, args, cleared_fields):
     resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
     default_scope = flags.ScopeEnum.ZONE
     scope_lister = flags.GetDefaultScopeLister(
@@ -183,7 +199,17 @@ class UpdateInstancesAlpha(base_classes.BaseAsyncMutator):
           instanceGroupManagerResource=igm_resource,
           project=self.project,
           region=igm_ref.region))
-    return [(service, self.method, request)]
+    # Due to 'Patch' semantics, we have to clear either 'fixed' or 'percent'.
+    # Otherwise, we'll get an error that both 'fixed' and 'percent' are set.
+    if max_surge is not None:
+      cleared_fields.append(
+          'updatePolicy.maxSurge.fixed' if max_surge.fixed is None
+          else 'updatePolicy.maxSurge.percent')
+    if max_unavailable is not None:
+      cleared_fields.append(
+          'updatePolicy.maxUnavailable.fixed' if max_unavailable.fixed is None
+          else 'updatePolicy.maxUnavailable.percent')
+    return (service, 'Patch', request)
 
 
 UpdateInstancesAlpha.detailed_help = {

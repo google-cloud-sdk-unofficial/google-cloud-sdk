@@ -36,34 +36,38 @@ instance. See \fBgcloud compute firewall\-rules create\fR(1) for more details.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the instance whose tags should be modified.
 
 
 .RE
+.sp
 
 .SH "REQUIRED FLAGS"
 
 Exactly one of these must be specified:
 
-\fB\-\-all\fR
 .RS 2m
+.TP 2m
+\fB\-\-all\fR
 Remove all tags from the instance.
 
-.RE
+.TP 2m
 \fB\-\-tags\fR=\fITAG\fR,[\fITAG\fR,...]
-.RS 2m
 Specifies strings to be removed from the instance tags. Multiple tags can be
 removed by repeating this flag.
 
 
 .RE
+.sp
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
+.TP 2m
+\fB\-\-zone\fR=\fIZONE\fR
 The zone of the instance to set tags on. If not specified, you will be prompted
 to select a zone.
 
@@ -91,6 +95,7 @@ Alternatively, the zone can be stored in the environment variable
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

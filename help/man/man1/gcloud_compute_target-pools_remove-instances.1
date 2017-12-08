@@ -26,26 +26,31 @@ https://cloud.google.com/compute/docs/load\-balancing\-and\-autoscaling/
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the target pool from which to remove the instances.
 
 
 .RE
+.sp
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-instances\fR=\fIINSTANCE\fR,[\fIINSTANCE\fR,...]
 .RS 2m
+.TP 2m
+\fB\-\-instances\fR=\fIINSTANCE\fR,[\fIINSTANCE\fR,...]
 Specifies a list of instances to remove from the target pool.
 
 
 .RE
+.sp
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-instances\-zone\fR=\fIINSTANCES_ZONE\fR
 .RS 2m
+.TP 2m
+\fB\-\-instances\-zone\fR=\fIINSTANCES_ZONE\fR
 The zone of the instances to remove from the target pool. If not specified, you
 will be prompted to select a zone.
 
@@ -71,20 +76,19 @@ $ gcloud config unset compute/zone
 Alternatively, the zone can be stored in the environment variable
 \f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
 
-.RE
+.TP 2m
 \fB\-\-region\fR=\fIREGION\fR
-.RS 2m
 The region of the target pool to operate on. If not specified it will be set the
 region of the instances.
 
-.RE
+.TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
-.RS 2m
 The zone of the instances to remove from the target pool. DEPRECATED, use
 \-\-instances\-zone. If not specified, you will be prompted to select a zone.
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

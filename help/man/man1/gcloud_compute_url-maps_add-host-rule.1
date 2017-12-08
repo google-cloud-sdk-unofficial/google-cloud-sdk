@@ -29,40 +29,45 @@ used to add path matchers.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the URL map.
 
 
 .RE
+.sp
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-hosts\fR=\fIHOST\fR,[\fIHOST\fR,...]
 .RS 2m
+.TP 2m
+\fB\-\-hosts\fR=\fIHOST\fR,[\fIHOST\fR,...]
 The set of hosts to match requests against. Each host must be a fully qualified
 domain name (FQDN) with the exception that the host can begin with a ``*'' or
 ``*\-''. ``*'' acts as a glob and will match any string of atoms to the left
 where an atom is separated by dots (``.'') or dashes (``\-'').
 
-.RE
+.TP 2m
 \fB\-\-path\-matcher\-name\fR=\fIPATH_MATCHER_NAME\fR
-.RS 2m
 The name of the patch matcher to use if a request matches this host rule. The
 patch matcher must already exist in the URL map (see \f5gcloud compute url\-maps
 add\-path\-matcher\fR).
 
 
 .RE
+.sp
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-description\fR=\fIDESCRIPTION\fR
 .RS 2m
+.TP 2m
+\fB\-\-description\fR=\fIDESCRIPTION\fR
 An optional, textual description for the host rule.
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

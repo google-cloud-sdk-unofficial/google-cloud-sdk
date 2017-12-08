@@ -24,35 +24,33 @@ Google App Engine app in a human readable format.
 
 .SH "FLAGS"
 
-\fB\-\-level\fR=\fILEVEL\fR; default="any"
 .RS 2m
+.TP 2m
+\fB\-\-level\fR=\fILEVEL\fR; default="any"
 Filter entries with severity equal to or higher than a given level. \fILEVEL\fR
 must be one of: \fBcritical\fR, \fBerror\fR, \fBwarning\fR, \fBinfo\fR,
 \fBdebug\fR, \fBany\fR.
 
-.RE
+.TP 2m
 \fB\-\-limit\fR=\fILIMIT\fR; default="200"
-.RS 2m
 Number of log entries to show.
 
-.RE
+.TP 2m
 \fB\-\-logs\fR=\fIAPP_LOG\fR,[\fIAPP_LOG\fR,...]; default="stderr,stdout,crash.log"
-.RS 2m
 Filter entries from a particular set of logs. Must be a comma\-separated list of
 log names (request_log, stdout, stderr, etc).
 
-.RE
+.TP 2m
 \fB\-\-service\fR=\fISERVICE\fR, \fB\-s\fR \fISERVICE\fR
-.RS 2m
 Limit to specific service.
 
-.RE
+.TP 2m
 \fB\-\-version\fR=\fIVERSION\fR, \fB\-v\fR \fIVERSION\fR
-.RS 2m
 Limit to specific version.
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

@@ -15,6 +15,8 @@
 """List operation command."""
 import json
 
+from apitools.base.py import list_pager
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
@@ -104,5 +106,9 @@ class List(base.ListCommand):
     request = messages.DataprocProjectsRegionsOperationsListRequest(
         name=name, filter=op_filter)
 
-    response = client.projects_regions_operations.List(request)
-    return response.operations
+    return list_pager.YieldFromList(
+        client.projects_regions_operations,
+        request,
+        limit=args.limit, field='operations',
+        batch_size=args.page_size,
+        batch_size_attribute='pageSize')

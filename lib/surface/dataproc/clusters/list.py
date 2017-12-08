@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """List cluster command."""
+from apitools.base.py import list_pager
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
@@ -47,8 +48,13 @@ class List(base.ListCommand):
 
     request = messages.DataprocProjectsRegionsClustersListRequest(
         projectId=project, region=region)
-    response = client.projects_regions_clusters.List(request)
-    return response.clusters
+
+    return list_pager.YieldFromList(
+        client.projects_regions_clusters,
+        request,
+        limit=args.limit, field='clusters',
+        batch_size=args.page_size,
+        batch_size_attribute='pageSize')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)

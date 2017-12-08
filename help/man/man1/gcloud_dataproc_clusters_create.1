@@ -23,94 +23,84 @@ Create a cluster.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of this cluster.
 
 
 .RE
+.sp
 
 .SH "FLAGS"
 
-\fB\-\-async\fR
 .RS 2m
+.TP 2m
+\fB\-\-async\fR
 Display information about the operation in progress and don't wait for the
 operation to complete.
 
-.RE
+.TP 2m
 \fB\-\-bucket\fR=\fIBUCKET\fR
-.RS 2m
 The Google Cloud Storage bucket to use with the Google Cloud Storage connector.
 A bucket is auto created when this parameter is not specified.
 
-.RE
+.TP 2m
 \fB\-\-image\-version\fR=\fIVERSION\fR
-.RS 2m
 The image version to use for the cluster. Defaults to the latest version.
 
-.RE
+.TP 2m
 \fB\-\-initialization\-action\-timeout\fR=\fITIMEOUT\fR; default="10m"
-.RS 2m
 The maximum duration of each initialization action.
 
-.RE
+.TP 2m
 \fB\-\-initialization\-actions\fR=\fICLOUD_STORAGE_URI\fR,[\fICLOUD_STORAGE_URI\fR,...]
-.RS 2m
 A list of Google Cloud Storage URIs of executables to run on each node in the
 cluster.
 
-.RE
+.TP 2m
 \fB\-\-master\-boot\-disk\-size\fR=\fIMASTER_BOOT_DISK_SIZE\fR
-.RS 2m
 The size of the boot disk. The value must be a whole number followed by a size
 unit of \f5\fIKB\fR\fR for kilobyte, \f5\fIMB\fR\fR for megabyte, \f5\fIGB\fR\fR
 for gigabyte, or \f5\fITB\fR\fR for terabyte. For example, \f5\fI10GB\fR\fR will
 produce a 10 gigabyte disk. The minimum size a boot disk can have is 10 GB. Disk
 size must be a multiple of 1 GB.
 
-.RE
+.TP 2m
 \fB\-\-master\-machine\-type\fR=\fIMASTER_MACHINE_TYPE\fR
-.RS 2m
 The type of machine to use for the master. Defaults to server\-specified.
 
-.RE
+.TP 2m
 \fB\-\-metadata\fR=\fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]
-.RS 2m
 Metadata to be made available to the guest operating system running on the
 instances
 
-.RE
+.TP 2m
 \fB\-\-num\-master\-local\-ssds\fR=\fINUM_MASTER_LOCAL_SSDS\fR
-.RS 2m
 The number of local SSDs to attach to the master in a cluster.
 
-.RE
+.TP 2m
 \fB\-\-num\-preemptible\-workers\fR=\fINUM_PREEMPTIBLE_WORKERS\fR
-.RS 2m
 The number of preemptible worker nodes in the cluster.
 
-.RE
+.TP 2m
 \fB\-\-num\-worker\-local\-ssds\fR=\fINUM_WORKER_LOCAL_SSDS\fR
-.RS 2m
 The number of local SSDs to attach to each worker in a cluster.
 
-.RE
+.TP 2m
 \fB\-\-num\-workers\fR=\fINUM_WORKERS\fR
-.RS 2m
 The number of worker nodes in the cluster. Defaults to server\-specified.
 
-.RE
+.TP 2m
 \fB\-\-preemptible\-worker\-boot\-disk\-size\fR=\fIPREEMPTIBLE_WORKER_BOOT_DISK_SIZE\fR
-.RS 2m
 The size of the boot disk. The value must be a whole number followed by a size
 unit of \f5\fIKB\fR\fR for kilobyte, \f5\fIMB\fR\fR for megabyte, \f5\fIGB\fR\fR
 for gigabyte, or \f5\fITB\fR\fR for terabyte. For example, \f5\fI10GB\fR\fR will
 produce a 10 gigabyte disk. The minimum size a boot disk can have is 10 GB. Disk
 size must be a multiple of 1 GB.
 
-.RE
+.TP 2m
 \fB\-\-properties\fR=[\fIPREFIX\fR:\fIPROPERTY\fR=\fIVALUE\fR,...]
-.RS 2m
 Specifies configuration properties for installed packages, such as Hadoop and
 Spark.
 
@@ -134,9 +124,8 @@ spark,spark\-defaults.conf
 .TE
 
 
-.RE
+.TP 2m
 \fB\-\-scopes\fR=\fISCOPE\fR,[\fISCOPE\fR,...]
-.RS 2m
 Specifies scopes for the node instances. The project's default service account
 is used. Multiple SCOPEs can specified, separated by commas. Examples:
 
@@ -210,49 +199,47 @@ useraccounts\-rw,https://www.googleapis.com/auth/cloud.useraccounts
 userinfo\-email,https://www.googleapis.com/auth/userinfo.email
 .TE
 
-.RE
+.TP 2m
 \fB\-\-tags\fR=\fITAG\fR,[\fITAG\fR,...]
-.RS 2m
 Specifies a list of tags to apply to the instances for identifying the instances
 to which network firewall rules will apply. See \fBgcloud compute
 firewall\-rules create\fR(1) for more details.
 
-.RE
+.TP 2m
 \fB\-\-worker\-boot\-disk\-size\fR=\fIWORKER_BOOT_DISK_SIZE\fR
-.RS 2m
 The size of the boot disk. The value must be a whole number followed by a size
 unit of \f5\fIKB\fR\fR for kilobyte, \f5\fIMB\fR\fR for megabyte, \f5\fIGB\fR\fR
 for gigabyte, or \f5\fITB\fR\fR for terabyte. For example, \f5\fI10GB\fR\fR will
 produce a 10 gigabyte disk. The minimum size a boot disk can have is 10 GB. Disk
 size must be a multiple of 1 GB.
 
-.RE
+.TP 2m
 \fB\-\-worker\-machine\-type\fR=\fIWORKER_MACHINE_TYPE\fR
-.RS 2m
 The type of machine to use for workers. Defaults to server\-specified.
 
-.RE
+.TP 2m
 \fB\-\-zone\fR=\fIZONE\fR, \fB\-z\fR \fIZONE\fR
-.RS 2m
 The compute zone (e.g. us\-central1\-a) for the cluster.
 
 .RE
+.sp
 At most one of these may be specified:
 
-\fB\-\-network\fR=\fINETWORK\fR
 .RS 2m
+.TP 2m
+\fB\-\-network\fR=\fINETWORK\fR
 The Compute Engine network that the VM instances of the cluster will be part of.
 This is mutually exclusive with \-\-subnet. If neither is specified, this
 defaults to the "default" network.
 
-.RE
+.TP 2m
 \fB\-\-subnet\fR=\fISUBNET\fR
-.RS 2m
 Specifies the subnet that the cluster will be part of. This is mutally exclusive
 with \-\-network.
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

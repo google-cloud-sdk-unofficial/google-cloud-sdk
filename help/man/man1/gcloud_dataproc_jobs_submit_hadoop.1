@@ -23,8 +23,9 @@ Submit a Hadoop job to a cluster.
 
 .SH "POSITIONAL ARGUMENTS"
 
-[\-\- \fIJOB_ARGS\fR ...]
 .RS 2m
+.TP 2m
+[\-\- \fIJOB_ARGS\fR ...]
 The arguments to pass to the driver.
 
 The '\-\-' argument must be specified between gcloud specific args on the left
@@ -34,69 +35,66 @@ usage is being deprecated and will be removed in March 2017.
 
 
 .RE
+.sp
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-cluster\fR=\fICLUSTER\fR
 .RS 2m
+.TP 2m
+\fB\-\-cluster\fR=\fICLUSTER\fR
 The Dataproc cluster to submit the job to.
 
 
 .RE
+.sp
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-archives\fR=[\fIARCHIVE\fR,...]
 .RS 2m
+.TP 2m
+\fB\-\-archives\fR=[\fIARCHIVE\fR,...]
 Comma separated list of archives to be provided to the job. must be one of the
 following file formats: .zip, .tar, .tar.gz, or .tgz.
 
-.RE
+.TP 2m
 \fB\-\-async\fR
-.RS 2m
 Does not wait for the job to run.
 
-.RE
+.TP 2m
 \fB\-\-bucket\fR=\fIBUCKET\fR
-.RS 2m
 The Cloud Storage bucket to stage files in. Defaults to the cluster's configured
 bucket.
 
-.RE
+.TP 2m
 \fB\-\-class\fR=\fIMAIN_CLASS\fR
-.RS 2m
 The class containing the main method of the driver. Must be in a provided jar or
 jar that is already on the classpath
 
-.RE
+.TP 2m
 \fB\-\-driver\-log\-levels\fR=[\fIPACKAGE\fR=\fILEVEL\fR,...]
-.RS 2m
 A list of package to log4j log level pairs to configure driver logging. For
 example: root=FATAL,com.example=INFO
 
-.RE
+.TP 2m
 \fB\-\-files\fR=[\fIFILE\fR,...]
-.RS 2m
 Comma separated list of files to be provided to the job.
 
-.RE
+.TP 2m
 \fB\-\-jar\fR=\fIMAIN_JAR\fR
-.RS 2m
 The HCFS URI of jar file containing the driver jar.
 
-.RE
+.TP 2m
 \fB\-\-jars\fR=[\fIJAR\fR,...]
-.RS 2m
 Comma separated list of jar files to be provided to the MR and driver
 classpaths.
 
-.RE
+.TP 2m
 \fB\-\-properties\fR=[\fIPROPERTY\fR=\fIVALUE\fR,...]
-.RS 2m
 A list of key value pairs to configure Hadoop.
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

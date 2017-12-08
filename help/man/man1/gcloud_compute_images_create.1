@@ -34,42 +34,41 @@ https://cloud.google.com/compute/docs/creating\-custom\-image
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the image to create.
 
 
 .RE
+.sp
 
 .SH "FLAGS"
 
-\fB\-\-csek\-key\-file\fR=\fIFILE\fR
 .RS 2m
+.TP 2m
+\fB\-\-csek\-key\-file\fR=\fIFILE\fR
 Path to a Customer\-Supplied Encryption Key (CSEK) key file, mapping Google
 Compute Engine images to user managed keys to be used when creating, mounting,
 or snapshotting disks. See
 https://cloud.google.com/compute/docs/disks/customer\-supplied\-encryption for
 more details.
 
-.RE
+.TP 2m
 \fB\-\-description\fR=\fIDESCRIPTION\fR
-.RS 2m
 An optional, textual description for the image being created.
 
-.RE
+.TP 2m
 \fB\-\-family\fR=\fIFAMILY\fR
-.RS 2m
 The family of the image. When creating an instance or disk, specifying a family
 will cause the latest non\-deprecated image in the family to be used.
 
-.RE
+.TP 2m
 \fB\-\-licenses\fR=[\fILICENSES\fR,...]
-.RS 2m
 Comma\-separated list of URIs to license resources.
 
-.RE
+.TP 2m
 \fB\-\-require\-csek\-key\-create\fR
-.RS 2m
 Refuse to create images not protected by a user managed key in the key file when
 \-\-csek\-key\-file is given. This behavior is enabled by default to prevent
 incorrect gcloud invocations from accidentally creating images with no user
@@ -79,18 +78,16 @@ See https://cloud.google.com/compute/docs/disks/customer\-supplied\-encryption
 for more details. Enabled by default, use
 \fB\-\-no\-require\-csek\-key\-create\fR to disable.
 
-.RE
+.TP 2m
 \fB\-\-source\-disk\fR=\fISOURCE_DISK\fR
-.RS 2m
 A source disk to create the image from. The value for this option can be the
 name of a disk with the zone specified via \f5\fI\-\-source\-disk\-zone\fR\fR
 flag.
 
 This flag is mutually exclusive with \f5\fI\-\-source\-uri\fR\fR.
 
-.RE
+.TP 2m
 \fB\-\-source\-disk\-zone\fR=\fISOURCE_DISK_ZONE\fR
-.RS 2m
 The zone of the source disk to operate on. If not specified, you will be
 prompted to select a zone.
 
@@ -116,9 +113,8 @@ $ gcloud config unset compute/zone
 Alternatively, the zone can be stored in the environment variable
 \f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
 
-.RE
+.TP 2m
 \fB\-\-source\-uri\fR=\fISOURCE_URI\fR
-.RS 2m
 The full Google Cloud Storage URI where the disk image is stored. This file must
 be a gzip\-compressed tarball whose name ends in \f5\fI.tar.gz\fR\fR.
 
@@ -126,6 +122,7 @@ This flag is mutually exclusive with \f5\fI\-\-source\-disk\fR\fR.
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

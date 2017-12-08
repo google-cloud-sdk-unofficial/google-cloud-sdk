@@ -109,6 +109,13 @@ class PySparkBase(object):
         help=('Comma separated list of Python files to be provided to the job.'
               'Must be one of the following file formats" .py, ,.zip, or .egg'))
     parser.add_argument(
+        '--jars',
+        type=arg_parsers.ArgList(),
+        metavar='JAR',
+        default=[],
+        help=('Comma separated list of jar files to be provided to the '
+              'executor and driver classpaths.'))
+    parser.add_argument(
         '--files',
         type=arg_parsers.ArgList(),
         metavar='FILE',
@@ -145,7 +152,8 @@ class PySparkBase(object):
         'py_file': args.py_file,
         'py_files': args.py_files,
         'archives': args.archives,
-        'files': args.files}
+        'files': args.files,
+        'jars': args.jars}
 
   @staticmethod
   def ConfigureJob(messages, job, log_config, files_by_type, args):
@@ -155,6 +163,7 @@ class PySparkBase(object):
         args=args.job_args,
         archiveUris=files_by_type['archives'],
         fileUris=files_by_type['files'],
+        jarFileUris=files_by_type['jars'],
         pythonFileUris=files_by_type['py_files'],
         mainPythonFileUri=files_by_type['py_file'],
         loggingConfig=log_config)

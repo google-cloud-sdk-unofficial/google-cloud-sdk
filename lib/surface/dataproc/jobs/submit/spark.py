@@ -124,7 +124,7 @@ class SparkBase(object):
         metavar='JAR',
         default=[],
         help=('Comma separated list of jar files to be provided to the '
-              'Executor and driver classpaths.'))
+              'executor and driver classpaths.'))
     parser.add_argument(
         '--files',
         type=arg_parsers.ArgList(),

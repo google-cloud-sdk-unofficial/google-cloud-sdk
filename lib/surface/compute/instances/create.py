@@ -44,15 +44,15 @@ DETAILED_HELP = {
         """,
     'EXAMPLES': """\
         To create an instance with the latest ``Red Hat Enterprise Linux
-        6'' image available, run:
+        7'' image available, run:
 
           $ {command} example-instance --image-family rhel-7 --image-project rhel-cloud --zone us-central1-a
         """,
 }
 
 
-def _CommonArgs(parser, multiple_network_interface_cards,
-                release_track):
+def _CommonArgs(parser, multiple_network_interface_cards, release_track,
+                support_alias_ip_ranges):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser)
@@ -62,7 +62,8 @@ def _CommonArgs(parser, multiple_network_interface_cards,
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(
       parser, instances=True,
-      multiple_network_interface_cards=multiple_network_interface_cards)
+      multiple_network_interface_cards=multiple_network_interface_cards,
+      support_alias_ip_ranges=support_alias_ip_ranges)
   instances_flags.AddMachineTypeArgs(parser)
   instances_flags.AddMaintenancePolicyArgs(parser)
   instances_flags.AddNoRestartOnFailureArgs(parser)
@@ -92,7 +93,8 @@ class Create(base_classes.BaseAsyncCreator,
   @classmethod
   def Args(cls, parser):
     _CommonArgs(parser, multiple_network_interface_cards=False,
-                release_track=base.ReleaseTrack.GA)
+                release_track=base.ReleaseTrack.GA,
+                support_alias_ip_ranges=False)
 
   @property
   def service(self):
@@ -270,7 +272,8 @@ class CreateBeta(Create):
   @classmethod
   def Args(cls, parser):
     _CommonArgs(parser, multiple_network_interface_cards=False,
-                release_track=base.ReleaseTrack.BETA)
+                release_track=base.ReleaseTrack.BETA,
+                support_alias_ip_ranges=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -280,7 +283,8 @@ class CreateAlpha(Create):
   @classmethod
   def Args(cls, parser):
     _CommonArgs(parser, multiple_network_interface_cards=True,
-                release_track=base.ReleaseTrack.ALPHA)
+                release_track=base.ReleaseTrack.ALPHA,
+                support_alias_ip_ranges=True)
 
 
 Create.detailed_help = DETAILED_HELP

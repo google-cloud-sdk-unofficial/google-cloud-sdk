@@ -28,28 +28,33 @@ compute backend\-services edit'.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the backend service.
 
 
 .RE
+.sp
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-instance\-group\fR=\fIINSTANCE_GROUP\fR
 .RS 2m
+.TP 2m
+\fB\-\-instance\-group\fR=\fIINSTANCE_GROUP\fR
 The name or URI of a Google Cloud Instance Group.
 
 
 .RE
+.sp
 
 .SH "OPTIONAL FLAGS"
 
 At most one of these may be specified:
 
-\fB\-\-instance\-group\-region\fR=\fIINSTANCE_GROUP_REGION\fR
 .RS 2m
+.TP 2m
+\fB\-\-instance\-group\-region\fR=\fIINSTANCE_GROUP_REGION\fR
 The region of the instance group to remove from the backend service. If not
 specified, you will be prompted to select a region.
 
@@ -59,9 +64,8 @@ A list of regions can be fetched by running:
 $ gcloud compute regions list
 .RE
 
-.RE
+.TP 2m
 \fB\-\-instance\-group\-zone\fR=\fIINSTANCE_GROUP_ZONE\fR
-.RS 2m
 The zone of the instance group to remove from the backend service. If not
 specified, you will be prompted to select a zone.
 
@@ -71,14 +75,14 @@ A list of zones can be fetched by running:
 $ gcloud compute zones list
 .RE
 
-.RE
+.TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
-.RS 2m
 The zone of the instance group to remove from the backend service. DEPRECATED,
 use \-\-instance\-group\-zone flag instead.
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

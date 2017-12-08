@@ -35,51 +35,55 @@ will create one managed instance group called
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the managed instance group.
 
 
 .RE
+.sp
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-size\fR=\fISIZE\fR
 .RS 2m
+.TP 2m
+\fB\-\-size\fR=\fISIZE\fR
 The initial number of instances you want in this group.
 
-.RE
+.TP 2m
 \fB\-\-template\fR=\fITEMPLATE\fR
-.RS 2m
 Specifies the instance template to use when creating new instances.
 
 
 .RE
+.sp
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-base\-instance\-name\fR=\fIBASE_INSTANCE_NAME\fR
 .RS 2m
+.TP 2m
+\fB\-\-base\-instance\-name\fR=\fIBASE_INSTANCE_NAME\fR
 The base name to use for the Compute Engine instances that will be created with
 the managed instance group. If not provided base instance name will be the
 prefix of instance group name.
 
-.RE
+.TP 2m
 \fB\-\-description\fR=\fIDESCRIPTION\fR
-.RS 2m
 An optional description for this group.
 
-.RE
+.TP 2m
 \fB\-\-target\-pool\fR=[\fITARGET_POOL\fR,...]
-.RS 2m
 Specifies any target pools you want the instances of this managed instance group
 to be part of.
 
 .RE
+.sp
 At most one of these may be specified:
 
-\fB\-\-region\fR=\fIREGION\fR
 .RS 2m
+.TP 2m
+\fB\-\-region\fR=\fIREGION\fR
 The region of the managed instance group to operate on. If not specified, you
 will be prompted to select a region.
 
@@ -89,9 +93,8 @@ A list of regions can be fetched by running:
 $ gcloud compute regions list
 .RE
 
-.RE
+.TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
-.RS 2m
 The zone of the managed instance group to operate on. If not specified, you will
 be prompted to select a zone.
 
@@ -103,6 +106,7 @@ $ gcloud compute zones list
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

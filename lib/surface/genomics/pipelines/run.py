@@ -113,6 +113,7 @@ class Run(base.SilentCommand):
     parser.add_argument(
         '--inputs',
         category=base.COMMONLY_USED_FLAGS,
+        metavar='NAME=VALUE',
         type=arg_parsers.ArgDict(),
         action=arg_parsers.UpdateAction,
         help='''Map of input PipelineParameter names to values.
@@ -124,6 +125,7 @@ class Run(base.SilentCommand):
     parser.add_argument(
         '--inputs-from-file',
         category=base.COMMONLY_USED_FLAGS,
+        metavar='NAME=FILE',
         type=arg_parsers.ArgDict(),
         action=arg_parsers.UpdateAction,
         help='''Map of input PipelineParameter names to values.
@@ -136,6 +138,7 @@ class Run(base.SilentCommand):
     parser.add_argument(
         '--outputs',
         category=base.COMMONLY_USED_FLAGS,
+        metavar='NAME=VALUE',
         type=arg_parsers.ArgDict(),
         action=arg_parsers.UpdateAction,
         help='''Map of output PipelineParameter names to values.
@@ -191,6 +194,7 @@ class Run(base.SilentCommand):
 
     parser.add_argument(
         '--service-account-scopes',
+        metavar='SCOPE',
         type=arg_parsers.ArgList(),
         default=[],
         help='''List of additional scopes to be made available for this service
@@ -204,6 +208,7 @@ class Run(base.SilentCommand):
 
     parser.add_argument(
         '--zones',
+        metavar='ZONE',
         type=arg_parsers.ArgList(),
         completion_resource='compute.zones',
         help='''List of Compute Engine zones the pipeline can run in.

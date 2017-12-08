@@ -72,12 +72,16 @@ class FromRegistry(DockerImage):
 
   def _content(self, suffix, accepted_mimes=None):
     """Fetches content of the resources from registry by http calls."""
+    if isinstance(self._name, docker_name.Repository):
+      suffix = '{repository}/{suffix}'.format(
+          repository=self._name.repository,
+          suffix=suffix)
+
     if suffix not in self._response:
       _, self._response[suffix] = self._transport.Request(
-          '{scheme}://{registry}/v2/{repository}/{suffix}'.format(
+          '{scheme}://{registry}/v2/{suffix}'.format(
               scheme=docker_http.Scheme(self._name.registry),
               registry=self._name.registry,
-              repository=self._name.repository,
               suffix=suffix),
           accepted_codes=[httplib.OK],
           accepted_mimes=accepted_mimes)

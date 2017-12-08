@@ -32,17 +32,20 @@ add\-instances'.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the target pool.
 
 
 .RE
+.sp
 
 .SH "FLAGS"
 
-\fB\-\-backup\-pool\fR=\fIBACKUP_POOL\fR
 .RS 2m
+.TP 2m
+\fB\-\-backup\-pool\fR=\fIBACKUP_POOL\fR
 Together with \f5\fI\-\-failover\-ratio\fR\fR, this flag defines the fallback
 behavior of the target pool (primary pool) to be created by this command. If the
 ratio of the healthy instances in the primary pool is at or below the specified
@@ -50,14 +53,12 @@ ratio of the healthy instances in the primary pool is at or below the specified
 load\-balanced IP address will be directed to the backup pool. If this flag is
 provided, then \f5\fI\-\-failover\-ratio\fR\fR is required.
 
-.RE
+.TP 2m
 \fB\-\-description\fR=\fIDESCRIPTION\fR
-.RS 2m
 An optional description of this target pool.
 
-.RE
+.TP 2m
 \fB\-\-failover\-ratio\fR=\fIFAILOVER_RATIO\fR
-.RS 2m
 Together with \f5\fI\-\-backup\-pool\fR\fR, defines the fallback behavior of the
 target pool (primary pool) to be created by this command. If the ratio of the
 healthy instances in the primary pool is at or below this number, traffic
@@ -69,27 +70,24 @@ set, the traffic will be directed the instances in this pool in the
 with the best effort, or to all instances when no instance is healthy. If this
 flag is provided, then \f5\fI\-\-backup\-pool\fR\fR is required.
 
-.RE
+.TP 2m
 \fB\-\-health\-check\fR=\fIHEALTH_CHECK\fR
-.RS 2m
 DEPRECATED, use \-\-http\-health\-check. Specifies an HTTP health check resource
 to use to determine the health of instances in this pool. If no health check is
 specified, traffic will be sent to all instances in this target pool as if the
 instances were healthy, but the health status of this pool will appear as
 unhealthy as a warning that this target pool does not have a health check.
 
-.RE
+.TP 2m
 \fB\-\-http\-health\-check\fR=\fIHTTP_HEALTH_CHECK\fR
-.RS 2m
 Specifies an HTTP health check resource to use to determine the health of
 instances in this pool. If no health check is specified, traffic will be sent to
 all instances in this target pool as if the instances were healthy, but the
 health status of this pool will appear as unhealthy as a warning that this
 target pool does not have a health check.
 
-.RE
+.TP 2m
 \fB\-\-region\fR=\fIREGION\fR
-.RS 2m
 The region of the target pool to create. If not specified, you will be prompted
 to select a region.
 
@@ -115,34 +113,32 @@ $ gcloud config unset compute/region
 Alternatively, the region can be stored in the environment variable
 \f5\fICLOUDSDK_COMPUTE_REGION\fR\fR.
 
-.RE
+.TP 2m
 \fB\-\-session\-affinity\fR=\fISESSION_AFFINITY\fR; default="NONE"
-.RS 2m
 The type of session affinity to use for this backend service.
 \fISESSION_AFFINITY\fR must be one of:
 
+.RS 2m
+.TP 2m
 \fBCLIENT_IP\fR
-.RS 2m
 Route requests to instances based on the hash of the client's IP address.
-.RE
+.TP 2m
 \fBCLIENT_IP_PROTO\fR
-.RS 2m
 Connections from the same client IP with the same IP protocol willgo to the same
 VM in the pool while that VM remains healthy. This option cannot be used for
 HTTP(s) load balancing.
-.RE
+.TP 2m
 \fBGENERATED_COOKIE\fR
-.RS 2m
 Route requests to instances based on the contents of the "GCLB" cookie set by
 the load balancer.
-.RE
+.TP 2m
 \fBNONE\fR
-.RS 2m
 Session affinity is disabled.
 
 
 .RE
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

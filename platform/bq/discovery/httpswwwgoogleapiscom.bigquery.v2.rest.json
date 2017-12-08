@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20161101",
+ "revision": "20161109",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -1548,6 +1548,13 @@
      "description": "[Output-only] The type of the resource.",
      "default": "bigquery#table"
     },
+    "labels": {
+     "type": "object",
+     "description": "[Experimental] The labels associated with this table. You can use these to organize and group your tables. Label keys and values can be no longer than 63 characters, can only contain letters, numeric characters, underscores and dashes. International characters are allowed. Label values are optional. Label keys must start with a letter and must be unique within a dataset. Both keys and values are additionally constrained to be \u003c= 128 bytes in size.",
+     "additionalProperties": {
+      "type": "string"
+     }
+    },
     "lastModifiedTime": {
      "type": "string",
      "description": "[Output-only] The time when this table was last modified, in milliseconds since the epoch.",
@@ -1778,6 +1785,13 @@
         "type": "string",
         "description": "The resource type.",
         "default": "bigquery#table"
+       },
+       "labels": {
+        "type": "object",
+        "description": "[Experimental] The labels associated with this table. You can use these to organize and group your tables.",
+        "additionalProperties": {
+         "type": "string"
+        }
        },
        "tableReference": {
         "$ref": "TableReference",

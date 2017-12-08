@@ -30,62 +30,66 @@ orphaned as a result of the operation, this command will fail unless
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the URL map.
 
 
 .RE
+.sp
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-default\-service\fR=\fIDEFAULT_SERVICE\fR
 .RS 2m
+.TP 2m
+\fB\-\-default\-service\fR=\fIDEFAULT_SERVICE\fR
 A backend service that will be used for requests that the path matcher cannot
 match.
 
-.RE
+.TP 2m
 \fB\-\-path\-matcher\-name\fR=\fIPATH_MATCHER_NAME\fR
-.RS 2m
 The name to assign to the path matcher.
 
 
 .RE
+.sp
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-delete\-orphaned\-path\-matcher\fR
 .RS 2m
+.TP 2m
+\fB\-\-delete\-orphaned\-path\-matcher\fR
 If provided and a path matcher is orphaned as a result of this command, the
 command removes the orphaned path matcher instead of failing.
 
-.RE
+.TP 2m
 \fB\-\-description\fR=\fIDESCRIPTION\fR
-.RS 2m
 An optional, textual description for the path matcher.
 
-.RE
+.TP 2m
 \fB\-\-path\-rules\fR=\fIPATH\fR=\fISERVICE\fR,[\fIPATH\fR=\fISERVICE\fR,...]
-.RS 2m
 Rules for mapping request paths to services.
 
 .RE
+.sp
 At most one of these may be specified:
 
-\fB\-\-existing\-host\fR=\fIEXISTING_HOST\fR
 .RS 2m
+.TP 2m
+\fB\-\-existing\-host\fR=\fIEXISTING_HOST\fR
 An existing host rule to tie the new path matcher to. Although host rules can
 contain more than one host, only a single host is needed to uniquely identify
 the host rule.
 
-.RE
+.TP 2m
 \fB\-\-new\-hosts\fR=\fINEW_HOST\fR,[\fINEW_HOST\fR,...]
-.RS 2m
 If specified, a new host rule with the given hosts is created and the path
 matcher is tied to the new host rule.
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

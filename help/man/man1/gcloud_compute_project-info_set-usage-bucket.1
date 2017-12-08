@@ -39,8 +39,9 @@ $ gcloud compute project\-info set\-usage\-bucket \-\-bucket
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-bucket\fR=\fIBUCKET\fR
 .RS 2m
+.TP 2m
+\fB\-\-bucket\fR=\fIBUCKET\fR
 The URI of a Google Cloud Storage bucket where the usage report object should be
 stored. The Google Service Account for performing usage reporting is granted
 write access to this bucket. The user running this command must be an owner of
@@ -54,11 +55,13 @@ $ gcloud compute project\-info set\-usage\-bucket \-\-bucket
 
 
 .RE
+.sp
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-prefix\fR=\fIPREFIX\fR
 .RS 2m
+.TP 2m
+\fB\-\-prefix\fR=\fIPREFIX\fR
 An optional prefix for the name of the usage report object stored in the bucket.
 If not supplied, then this defaults to \f5\fIusage\fR\fR. The report is stored
 as a CSV file named PREFIX_gce_YYYYMMDD.csv where YYYYMMDD is the day of the
@@ -68,6 +71,7 @@ the usage bucket.
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

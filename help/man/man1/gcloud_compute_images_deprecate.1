@@ -23,57 +23,62 @@ gcloud compute images deprecate \- manage deprecation status of Google Compute E
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the disk image.
 
 
 .RE
+.sp
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-state\fR=\fISTATE\fR
 .RS 2m
+.TP 2m
+\fB\-\-state\fR=\fISTATE\fR
 The deprecation state to set on the image. \fISTATE\fR must be one of:
 
+.RS 2m
+.TP 2m
 \fBACTIVE\fR
-.RS 2m
 The image is currently supported.
-.RE
+.TP 2m
 \fBDELETED\fR
-.RS 2m
 New uses result in an error. Setting this state will not automatically delete
 the image. You must still make a request to delete the image to remove it from
 the image list.
-.RE
+.TP 2m
 \fBDEPRECATED\fR
-.RS 2m
 Operations which create a new \fBDEPRECATED\fR resource return successfully, but
 with a warning indicating that the image is deprecated and recommending its
 replacement.
-.RE
+.TP 2m
 \fBOBSOLETE\fR
-.RS 2m
 New uses result in an error.
 
 
 .RE
 .RE
+.sp
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-replacement\fR=\fIREPLACEMENT\fR
 .RS 2m
+.TP 2m
+\fB\-\-replacement\fR=\fIREPLACEMENT\fR
 Specifies a Compute Engine image as a replacement for the image being phased
 out. Users of the deprecated image will be advised to switch to this
 replacement. For example, \fB\-\-replacement example\-image\fR or
 \fB\-\-replacement projects/google/global/images/example\-image\fR.
 
 .RE
+.sp
 At most one of these may be specified:
 
-\fB\-\-delete\-in\fR=\fIDELETE_IN\fR
 .RS 2m
+.TP 2m
+\fB\-\-delete\-in\fR=\fIDELETE_IN\fR
 Specifies the amount of time until the image will be marked as DELETED. Note:
 The image will not actually be deleted \- this field is only for informational
 purposes (see below). For instance, specifying \f5\fI30d\fR\fR will mark as
@@ -86,9 +91,8 @@ marked as deleted. An explicit request to delete the image must be made in order
 to remove it from the image list. This flag is mutually exclusive with
 \fB\-\-delete\-on\fR.
 
-.RE
+.TP 2m
 \fB\-\-delete\-on\fR=\fIDELETE_ON\fR
-.RS 2m
 Similar to \fB\-\-delete\-in\fR, but specifies an absolute time when the image
 will be marked as DELETED. Note: The image will not actually be deleted \- this
 field is for informational purposes (see the description of \-\-delete\-in for
@@ -99,23 +103,25 @@ midnight on January 2, 2020 in UTC. This flag is mutually exclusive with
 \fB\-\-delete\-in\fR.
 
 .RE
+.sp
 At most one of these may be specified:
 
-\fB\-\-obsolete\-in\fR=\fIOBSOLETE_IN\fR
 .RS 2m
+.TP 2m
+\fB\-\-obsolete\-in\fR=\fIOBSOLETE_IN\fR
 Specifies time (in the same format as \fB\-\-delete\-in\fR) until the image will
 be marked OBSOLETE. State will not be changed \- it is only for informational
 purposes. This flag is mutually exclusive with \fB\-\-obsolete\-on\fR.
 
-.RE
+.TP 2m
 \fB\-\-obsolete\-on\fR=\fIOBSOLETE_ON\fR
-.RS 2m
 Specifies time (in the same format as \fB\-\-delete\-on\fR) when this image will
 be marked as OBSOLETE. State will not be changed \- it has only informational
 purpose. This flag is mutually exclusive with \fB\-\-obsolete\-in\fR.
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

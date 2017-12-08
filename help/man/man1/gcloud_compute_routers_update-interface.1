@@ -24,36 +24,39 @@ a router.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the router.
 
 
 .RE
+.sp
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-interface\-name\fR=\fIINTERFACE_NAME\fR
 .RS 2m
+.TP 2m
+\fB\-\-interface\-name\fR=\fIINTERFACE_NAME\fR
 The name of the interface being updated.
 
 
 .RE
+.sp
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-ip\-address\fR=\fIIP_ADDRESS\fR
 .RS 2m
+.TP 2m
+\fB\-\-ip\-address\fR=\fIIP_ADDRESS\fR
 The link local address of the router for this interface.
 
-.RE
+.TP 2m
 \fB\-\-mask\-length\fR=\fIMASK_LENGTH\fR
-.RS 2m
 The mask for network used for the server IP address.
 
-.RE
+.TP 2m
 \fB\-\-region\fR=\fIREGION\fR
-.RS 2m
 The region of the router to update. If not specified, you will be prompted to
 select a region.
 
@@ -79,13 +82,13 @@ $ gcloud config unset compute/region
 Alternatively, the region can be stored in the environment variable
 \f5\fICLOUDSDK_COMPUTE_REGION\fR\fR.
 
-.RE
+.TP 2m
 \fB\-\-vpn\-tunnel\fR=\fIVPN_TUNNEL\fR
-.RS 2m
 The tunnel of the interface being updated.
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

@@ -73,7 +73,7 @@ class GetValue(base.Command):
       if not value:
         # Writing message to stderr but returning any potentially empty
         # value to caller as is
-        log.err.write('(unset)')
+        log.err.Print('(unset)')
     except properties.InvalidValueError as e:
       # Writing warning to stderr but returning invalid value as is
       log.warn(str(e))

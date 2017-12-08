@@ -22,6 +22,7 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0])))
 sys.path.append(os.path.join(ROOT_DIR, 'lib'))
 
 import comm
+import versions
 
 ROOT = comm.RuntimeDefinitionRoot(ROOT_DIR)
 
@@ -38,9 +39,10 @@ def Main(args):
     # Generate the Dockerfile.
     out = StringIO.StringIO()
     out.write(ROOT.read_file('data', 'Dockerfile.preamble'))
-    python_version = '3.4' if runtime_data.python_version == '3' else ''
+    docker_python_version = versions.PYTHON_INTERPRETER_VERSION_MAP[
+        runtime_data.python_version]
     out.write(ROOT.read_file('data', 'Dockerfile.virtualenv.template').format(
-              python_version=python_version))
+              python_version=docker_python_version))
 
     if runtime_data.got_requirements_txt:
       out.write(ROOT.read_file('data', 'Dockerfile.requirements_txt'))

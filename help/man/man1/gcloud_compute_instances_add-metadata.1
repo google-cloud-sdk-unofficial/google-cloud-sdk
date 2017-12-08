@@ -29,17 +29,20 @@ remain unaffected.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the instance whose metadata should be modified.
 
 
 .RE
+.sp
 
 .SH "FLAGS"
 
-\fB\-\-metadata\fR=\fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]
 .RS 2m
+.TP 2m
+\fB\-\-metadata\fR=\fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]
 Metadata to be made available to the guest operating system running on the
 instances. Each metadata entry is a key/value pair separated by an equals sign.
 Metadata keys must be unique and less than 128 bytes in length. Values must be
@@ -51,35 +54,39 @@ In images that have Compute Engine tools installed on them, such as the official
 images (https://cloud.google.com/compute/docs/images), the following metadata
 keys have special meanings:
 
-\fBstartup\-script\fR
 .RS 2m
+.TP 2m
+\fBstartup\-script\fR
 Specifies a script that will be executed by the instances once they start
 running. For convenience, \f5\fI\-\-metadata\-from\-file\fR\fR can be used to
 pull the value from a file.
 
-.RE
+.TP 2m
 \fBstartup\-script\-url\fR
-.RS 2m
 Same as \f5\fIstartup\-script\fR\fR except that the script contents are pulled
 from a publicly\-accessible location on the web.
 
 
 .RE
 .RE
+.sp
 At least one of [\-\-metadata] or [\-\-metadata\-from\-file] is required.
 
-\fB\-\-metadata\-from\-file\fR=\fIKEY\fR=\fILOCAL_FILE_PATH\fR,[\fIKEY\fR=\fILOCAL_FILE_PATH\fR,...]
 .RS 2m
+.TP 2m
+\fB\-\-metadata\-from\-file\fR=\fIKEY\fR=\fILOCAL_FILE_PATH\fR,[\fIKEY\fR=\fILOCAL_FILE_PATH\fR,...]
 Same as \f5\fI\-\-metadata\fR\fR except that the value for the entry will be
 read from a local file. This is useful for values that are too large such as
 \f5\fIstartup\-script\fR\fR contents.
 
 
 .RE
+.sp
 At least one of [\-\-metadata] or [\-\-metadata\-from\-file] is required.
 
-\fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
+.TP 2m
+\fB\-\-zone\fR=\fIZONE\fR
 The zone of the instance to set metadata on. If not specified, you will be
 prompted to select a zone.
 
@@ -107,6 +114,7 @@ Alternatively, the zone can be stored in the environment variable
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

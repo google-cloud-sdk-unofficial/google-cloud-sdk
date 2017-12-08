@@ -3,6 +3,7 @@
 import httplib
 import json
 import re
+import threading
 import urllib
 
 from containerregistry.client import docker_creds
@@ -121,6 +122,7 @@ class Transport(object):
     self._basic_creds = creds
     self._transport = transport
     self._action = action
+    self._lock = threading.Lock()
 
     _CheckState(action in ACTIONS,
                 'Invalid action supplied to docker_http.Transport: %s' % action)
@@ -210,8 +212,9 @@ class Transport(object):
     _CheckState('token' in wrapper_object,
                 'Malformed JSON response: %s' % content)
 
-    # We have successfully reauthenticated.
-    self._bearer_creds = docker_creds.Bearer(wrapper_object['token'])
+    with self._lock:
+      # We have successfully reauthenticated.
+      self._bearer_creds = docker_creds.Bearer(wrapper_object['token'])
 
   # pylint: disable=invalid-name
   def Request(self,

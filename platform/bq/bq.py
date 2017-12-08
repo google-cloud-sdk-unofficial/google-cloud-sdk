@@ -52,6 +52,7 @@ except ImportError:
   from oauth2client.gce import AppAssertionCredentials
 import oauth2client.devshell
 import oauth2client.file
+import oauth2client.service_account
 import oauth2client.tools
 import yaml
 
@@ -280,7 +281,66 @@ def _GetCredentialsFromOAuthFlow(storage):
   return credentials
 
 
+def _GetApplicationDefaultCredentialFromFile(filename):
+  """Loads credentials from given application default credential file."""
+  with open(filename) as file_obj:
+    credentials = json.load(file_obj)
+
+  if credentials['type'] == oauth2client.client.AUTHORIZED_USER:
+    return oauth2client.client.OAuth2Credentials(
+        access_token=None,
+        client_id=credentials['client_id'],
+        client_secret=credentials['client_secret'],
+        refresh_token=credentials['refresh_token'],
+        token_expiry=None,
+        token_uri=oauth2client.client.GOOGLE_TOKEN_URI,
+        user_agent=_CLIENT_USER_AGENT)
+  else:  # Service account
+    return oauth2client.service_account._ServiceAccountCredentials(  # pylint: disable=protected-access
+        service_account_id=credentials['client_id'],
+        service_account_email=credentials['client_email'],
+        private_key_id=credentials['private_key_id'],
+        private_key_pkcs8_text=credentials['private_key'],
+        scopes=[_CLIENT_SCOPE],
+        user_agent=_CLIENT_USER_AGENT)
+
+
+# pylint: disable=protected-access
+# Patches in oauth2client service account implementation.
+# Later versions (2.0+) of oauth2client do not have this issue.
+def _ServiceAccountCredentialsToJson(self):
+  """Serializes service account credentials to json."""
+  self.service_account_name = self._service_account_email
+  strip = (['_private_key'] +
+           oauth2client.client.Credentials.NON_SERIALIZED_MEMBERS)
+  return self._to_json(strip)
+
+
+@classmethod
+def _ServiceAccountCredentialsFromJson(cls, s):
+  """Deserializes service account credentials from json."""
+  data = json.loads(s)
+  retval = cls(  # pylint: disable=not-callable
+      service_account_id=data['_service_account_id'],
+      service_account_email=data['_service_account_email'],
+      private_key_id=data['_private_key_id'],
+      private_key_pkcs8_text=data['_private_key_pkcs8_text'],
+      scopes=[_CLIENT_SCOPE],
+      user_agent=_CLIENT_USER_AGENT)
+  retval.invalid = data['invalid']
+  retval.access_token = data['access_token']
+  return retval
+
+
+oauth2client.service_account._ServiceAccountCredentials.to_json = (
+    _ServiceAccountCredentialsToJson)
+oauth2client.service_account._ServiceAccountCredentials.from_json = (
+    _ServiceAccountCredentialsFromJson)
+# pylint: enable=protected-access
+
+
 def _GetCredentialsFromFlags():
+  """Returns credentials based on user supplied flags."""
   try:
     return oauth2client.devshell.DevshellCredentials()
   except:  # pylint: disable=bare-except
@@ -291,10 +351,6 @@ def _GetCredentialsFromFlags():
   if FLAGS.use_gce_service_account:
     return _GetServiceAccountCredentialsFromFlags(None)
 
-  if FLAGS.application_default_credential_file:
-    return oauth2client.client.GoogleCredentials.from_stream(
-        FLAGS.application_default_credential_file)
-
 
   if FLAGS.service_account:
     credentials_getter = _GetServiceAccountCredentialsFromFlags
@@ -303,6 +359,15 @@ def _GetCredentialsFromFlags():
       raise app.UsageError(
           'The flag --service_account_credential_file must be specified '
           'if --service_account is used.')
+  elif FLAGS.application_default_credential_file:
+    def credentials_getter(unused_storage):   # pylint: disable=invalid-name
+      return _GetApplicationDefaultCredentialFromFile(
+          FLAGS.application_default_credential_file)
+    credential_file = FLAGS.credential_file
+    if not credential_file:
+      raise app.UsageError(
+          'The flag --credential_file must be specified if '
+          '--application_default_credential_file is used.')
   else:
     credentials_getter = _GetCredentialsFromOAuthFlow
     credential_file = FLAGS.credential_file

@@ -24,53 +24,53 @@ router.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the router.
 
 
 .RE
+.sp
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-peer\-name\fR=\fIPEER_NAME\fR
 .RS 2m
+.TP 2m
+\fB\-\-peer\-name\fR=\fIPEER_NAME\fR
 The name of the peer being modified.
 
 
 .RE
+.sp
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-advertised\-route\-priority\fR=\fIADVERTISED_ROUTE_PRIORITY\fR
 .RS 2m
+.TP 2m
+\fB\-\-advertised\-route\-priority\fR=\fIADVERTISED_ROUTE_PRIORITY\fR
 The priority of routes advertised to this BGP peer. In the case where there is
 more than one matching route of maximum length, the routes with lowest priority
 value win. 0 <= priority <= 65535.
 
-.RE
+.TP 2m
 \fB\-\-interface\fR=\fIINTERFACE\fR
-.RS 2m
 The new interface of the peer being modified.
 
-.RE
+.TP 2m
 \fB\-\-ip\-address\fR=\fIIP_ADDRESS\fR
-.RS 2m
 The new link local address of the router for this peer.
 
-.RE
+.TP 2m
 \fB\-\-peer\-asn\fR=\fIPEER_ASN\fR
-.RS 2m
 The new asn of the peer being modified.
 
-.RE
+.TP 2m
 \fB\-\-peer\-ip\-address\fR=\fIPEER_IP_ADDRESS\fR
-.RS 2m
 The new link local address of the peer.
 
-.RE
+.TP 2m
 \fB\-\-region\fR=\fIREGION\fR
-.RS 2m
 The region of the router to update. If not specified, you will be prompted to
 select a region.
 
@@ -98,6 +98,7 @@ Alternatively, the region can be stored in the environment variable
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

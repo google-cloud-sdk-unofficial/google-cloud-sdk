@@ -30,30 +30,35 @@ target pools for load balancing purposes.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the managed instance group.
 
 
 .RE
+.sp
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-target\-pools\fR=[\fITARGET_POOL\fR,...]
 .RS 2m
+.TP 2m
+\fB\-\-target\-pools\fR=[\fITARGET_POOL\fR,...]
 Compute Engine Target Pools to add the instances to. Target Pools must be
 specified by name or by URL. Example: \-\-target\-pool
 target\-pool\-1,target\-pool\-2.
 
 
 .RE
+.sp
 
 .SH "OPTIONAL FLAGS"
 
 At most one of these may be specified:
 
-\fB\-\-region\fR=\fIREGION\fR
 .RS 2m
+.TP 2m
+\fB\-\-region\fR=\fIREGION\fR
 The region of the managed instance group to operate on. If not specified, you
 will be prompted to select a region.
 
@@ -63,9 +68,8 @@ A list of regions can be fetched by running:
 $ gcloud compute regions list
 .RE
 
-.RE
+.TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
-.RS 2m
 The zone of the managed instance group to operate on. If not specified, you will
 be prompted to select a zone.
 
@@ -77,6 +81,7 @@ $ gcloud compute zones list
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

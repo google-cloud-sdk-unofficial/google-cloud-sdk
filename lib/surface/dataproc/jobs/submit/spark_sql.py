@@ -115,7 +115,7 @@ class SparkSqlBase(object):
         metavar='JAR',
         default=[],
         help=('Comma separated list of jar files to be provided to the '
-              'Hive and MR. May contain UDFs.'))
+              'executor and driver classpaths. May contain UDFs.'))
     parser.add_argument(
         '--params',
         type=arg_parsers.ArgDict(),

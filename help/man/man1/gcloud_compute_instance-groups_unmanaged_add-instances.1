@@ -30,27 +30,32 @@ $ gcloud compute instance\-groups unmanaged add\-instances \e
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the instance group.
 
 
 .RE
+.sp
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-instances\fR=\fIINSTANCE\fR,[\fIINSTANCE\fR,...]
 .RS 2m
+.TP 2m
+\fB\-\-instances\fR=\fIINSTANCE\fR,[\fIINSTANCE\fR,...]
 A list of names of instances to add to the instance group. These must exist
 beforehand and must live in the same zone as the instance group.
 
 
 .RE
+.sp
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
+.TP 2m
+\fB\-\-zone\fR=\fIZONE\fR
 The zone of the instance group to operate on. If not specified, you will be
 prompted to select a zone.
 
@@ -78,6 +83,7 @@ Alternatively, the zone can be stored in the environment variable
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

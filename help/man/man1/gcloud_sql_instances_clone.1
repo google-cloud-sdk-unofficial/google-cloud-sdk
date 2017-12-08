@@ -29,36 +29,36 @@ the most recent binary log coordinates at the time the command is executed.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fISOURCE\fR
 .RS 2m
+.TP 2m
+\fISOURCE\fR
 Cloud SQL instance ID of the source.
 
-.RE
+.TP 2m
 \fIDESTINATION\fR
-.RS 2m
 Cloud SQL instance ID of the clone.
 
 
 .RE
+.sp
 
 .SH "FLAGS"
 
-\fB\-\-async\fR
 .RS 2m
+.TP 2m
+\fB\-\-async\fR
 Display information about the operation in progress and don't wait for the
 operation to complete.
 
-.RE
+.TP 2m
 \fB\-\-bin\-log\-file\-name\fR=\fIBIN_LOG_FILE_NAME\fR
-.RS 2m
 Represents the name of the binary log file created by the source instance if it
 has binary logs enabled. If specified, is the point up to which the source
 instance is cloned. It must be specified along with \-\-bin\-log\-position to
 form a valid binary log coordinates. e.g., mysql\-bin.000001
 
-.RE
+.TP 2m
 \fB\-\-bin\-log\-position\fR=\fIBIN_LOG_POSITION\fR
-.RS 2m
 Represents the position (offset) inside the binary log file created by the
 source instance if it has binary logs enabled. If specified, is the point up to
 which the source instance is cloned. It must be specified along with
@@ -67,6 +67,7 @@ value)
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

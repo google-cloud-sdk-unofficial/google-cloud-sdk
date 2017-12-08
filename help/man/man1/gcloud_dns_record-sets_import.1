@@ -30,41 +30,45 @@ all the records\-sets currently in the managed\-zone.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fIRECORDS_FILE\fR
 .RS 2m
+.TP 2m
+\fIRECORDS_FILE\fR
 File from which record\-sets should be imported.
 
 
 .RE
+.sp
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-zone\fR=\fIZONE\fR, \fB\-z\fR \fIZONE\fR
 .RS 2m
+.TP 2m
+\fB\-\-zone\fR=\fIZONE\fR, \fB\-z\fR \fIZONE\fR
 Name of the managed\-zone whose record\-sets you want to manage.
 
 
 .RE
+.sp
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-delete\-all\-existing\fR
 .RS 2m
+.TP 2m
+\fB\-\-delete\-all\-existing\fR
 Indicates that all existing record\-sets should be deleted before importing the
 record\-sets in the records\-file.
 
-.RE
+.TP 2m
 \fB\-\-replace\-origin\-ns\fR
-.RS 2m
 Indicates that NS records for the origin of a zone should be imported if defined
 
-.RE
+.TP 2m
 \fB\-\-zone\-file\-format\fR
-.RS 2m
 Indicates that the records\-file is in the zone file format.
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

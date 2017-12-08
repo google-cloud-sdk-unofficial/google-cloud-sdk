@@ -24,17 +24,20 @@ allow incoming traffic to a network.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR
 .RS 2m
+.TP 2m
+\fINAME\fR
 The name of the firewall rule to create.
 
 
 .RE
+.sp
 
 .SH "REQUIRED FLAGS"
 
-\fB\-\-allow\fR=\fIPROTOCOL\fR[:\fIPORT\fR[\-\fIPORT\fR]],[\fIPROTOCOL\fR[:\fIPORT\fR[\-\fIPORT\fR]],...]
 .RS 2m
+.TP 2m
+\fB\-\-allow\fR=\fIPROTOCOL\fR[:\fIPORT\fR[\-\fIPORT\fR]],[\fIPROTOCOL\fR[:\fIPORT\fR[\-\fIPORT\fR]],...]
 A list of protocols and ports whose traffic will be allowed.
 
 PROTOCOL is the IP protocol whose traffic will be allowed. PROTOCOL can be
@@ -55,22 +58,22 @@ TCP and UDP rules must include a port or port range.
 
 
 .RE
+.sp
 
 .SH "OPTIONAL FLAGS"
 
-\fB\-\-description\fR=\fIDESCRIPTION\fR
 .RS 2m
+.TP 2m
+\fB\-\-description\fR=\fIDESCRIPTION\fR
 A textual description for the firewall rule.
 
-.RE
+.TP 2m
 \fB\-\-network\fR=\fINETWORK\fR; default="default"
-.RS 2m
 The network to which this rule is attached. If omitted, the rule is attached to
 the \f5\fIdefault\fR\fR network.
 
-.RE
+.TP 2m
 \fB\-\-source\-ranges\fR=\fICIDR_RANGE\fR,[\fICIDR_RANGE\fR,...]
-.RS 2m
 A list of IP address blocks that are allowed to make inbound connections that
 match the firewall rule to the instances on the network. The IP address blocks
 must be specified in CIDR format:
@@ -80,18 +83,16 @@ If neither \-\-source\-ranges nor \-\-source\-tags is provided, then this flag
 will default to 0.0.0.0/0, allowing all sources. Multiple IP address blocks can
 be specified if they are separated by spaces.
 
-.RE
+.TP 2m
 \fB\-\-source\-tags\fR=\fITAG\fR,[\fITAG\fR,...]
-.RS 2m
 A list of instance tags indicating the set of instances on the network which may
 make network connections that match the firewall rule. If omitted, all instances
 on the network can make connections that match the rule.
 
 Tags can be assigned to instances during instance creation.
 
-.RE
+.TP 2m
 \fB\-\-target\-tags\fR=\fITAG\fR,[\fITAG\fR,...]
-.RS 2m
 A list of instance tags indicating the set of instances on the network which may
 accept inbound connections that match the firewall rule. If omitted, all
 instances on the network can receive inbound connections that match the rule.
@@ -100,6 +101,7 @@ Tags can be assigned to instances during instance creation.
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 

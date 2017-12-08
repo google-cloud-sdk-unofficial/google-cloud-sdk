@@ -29,8 +29,9 @@ For more information please visit https://gcr.io/
 
 .SH "POSITIONAL ARGUMENTS"
 
-[\-\- \fIDOCKER_ARGS\fR ...]
 .RS 2m
+.TP 2m
+[\-\- \fIDOCKER_ARGS\fR ...]
 Arguments to pass to docker.
 
 The '\-\-' argument must be specified between gcloud specific args on the left
@@ -40,26 +41,27 @@ args. This usage is being deprecated and will be removed in March 2017.
 
 
 .RE
+.sp
 
 .SH "FLAGS"
 
-\fB\-\-authorize\-only\fR, \fB\-a\fR
 .RS 2m
+.TP 2m
+\fB\-\-authorize\-only\fR, \fB\-a\fR
 Configure docker authorization only, do not launch the docker command\-line.
 
-.RE
+.TP 2m
 \fB\-\-docker\-host\fR=\fIDOCKER_HOST\fR
-.RS 2m
 The URL to connect to Docker Daemon. Format: tcp://host:port or
 unix:///path/to/socket.
 
-.RE
+.TP 2m
 \fB\-\-server\fR=\fISERVER\fR,[\fISERVER\fR,...], \fB\-s\fR \fISERVER\fR,[\fISERVER\fR,...]; default="gcr.io,us.gcr.io,eu.gcr.io,asia.gcr.io,b.gcr.io,bucket.gcr.io,appengine.gcr.io,gcr.kubernetes.io"
-.RS 2m
 The address of the Google Cloud Registry.
 
 
 .RE
+.sp
 
 .SH "GLOBAL FLAGS"
 
