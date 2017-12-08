@@ -123,29 +123,28 @@ class ListCommands(base.Command):
 
   @staticmethod
   def Args(parser):
-    completions = parser.add_argument(
+    parser.add_argument(
         '--completions',
         action='store_true',
-        help='Write the TAB completion static data on the standard output.')
-    completions.detailed_help = (
-        'Write the static TAB completion data on the standard output. The data '
-        'is a shell script containing variable definitons of the form ```' +
-        _COMPLETIONS_PREFIX + '{COMMAND.PATH}``` for each dotted command path.'
+        help=("""\
+              Write the static TAB completion data on the standard output. The
+              data is a shell script containing variable definitons of the
+              form ```""" +
+              _COMPLETIONS_PREFIX +
+              '{COMMAND.PATH}``` for each dotted command path.')
     )
     parser.add_argument(
         '--flags',
         action='store_true',
         help='Include the non-global flags for each command/group.')
-    flag_values = parser.add_argument(
+    parser.add_argument(
         '--flag-values',
         action='store_true',
-        help=('Include the non-global flags and flag values/types for each '
-              'command/group.'))
-    flag_values.detailed_help = (
-        'Include the non-global flags and flag values/types for each '
-        'command/group. Flags with fixed choice values will be listed as '
-        '--flag=choice1,..., and flags with typed values will be listed '
-        'as --flag=:type:.')
+        help="""\
+        Include the non-global flags and flag values/types for each
+        command/group. Flags with fixed choice values will be listed as
+        --flag=choice1,..., and flags with typed values will be listed
+        as --flag=:type:.""")
     parser.add_argument(
         '--hidden',
         action='store_true',

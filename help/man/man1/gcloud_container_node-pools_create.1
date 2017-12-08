@@ -39,7 +39,8 @@ The name of the node pool to create.
 .RS 2m
 .TP 2m
 \fB\-\-cluster\fR=\fICLUSTER\fR
-The cluster to add the node pool to.
+The cluster to add the node pool to. Overrides the default
+\fBcontainer/cluster\fR property value for this command invocation.
 
 .TP 2m
 \fB\-\-disk\-size\fR=\fIDISK_SIZE\fR
@@ -66,7 +67,6 @@ following command.
 .RS 2m
 $ gcloud container get\-server\-config
 .RE
-
 
 .TP 2m
 \fB\-\-machine\-type\fR=\fIMACHINE_TYPE\fR, \fB\-m\fR \fIMACHINE_TYPE\fR
@@ -149,7 +149,6 @@ useraccounts\-rw,https://www.googleapis.com/auth/cloud.useraccounts
 userinfo\-email,https://www.googleapis.com/auth/userinfo.email
 .TE
 
-
 .TP 2m
 \fB\-\-tags\fR=\fITAG\fR,[\fITAG\fR,...]
 Applies the given Compute Engine tags (comma separated) on all nodes in the new
@@ -165,10 +164,10 @@ the Compute Engine API instance object and can be used in firewall rules. See
 https://cloud.google.com/sdk/gcloud/reference/compute/firewall\-rules/create for
 examples.
 
-
 .TP 2m
 \fB\-\-zone\fR=\fIZONE\fR, \fB\-z\fR \fIZONE\fR
-The compute zone (e.g. us\-central1\-a) for the cluster
+The compute zone (e.g. us\-central1\-a) for the cluster. Overrides the default
+\fBcompute/zone\fR property value for this command invocation.
 
 
 .RE

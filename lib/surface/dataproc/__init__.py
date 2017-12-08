@@ -50,21 +50,26 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+# The default Dataproc region.
+_DEFAULT_REGION = 'global'
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Dataproc(base.Group):
   """Create and manage Google Cloud Dataproc clusters and jobs."""
   detailed_help = DETAILED_HELP
-
-  # The only dataproc region
-  REGION = 'global'
 
   def Filter(self, context, args):
     context['dataproc_messages'] = apis.GetMessagesModule('dataproc', 'v1')
     context['resources'] = resources.REGISTRY
 
-    # TODO(user): Move outside of context in a place that will be easier to
-    # convert into a property when there are multiple regions.
-    context['dataproc_region'] = self.REGION
+    # TODO(b/35708327): Move outside of context in a place that will be easier
+    # to convert into a property when there are multiple regions.
+    if hasattr(args, 'region'):
+      context['dataproc_region'] = args.region
+    else:
+      context['dataproc_region'] = _DEFAULT_REGION
+
     context['dataproc_client'] = apis.GetClientInstance('dataproc', 'v1')
 
     resources.REGISTRY.SetParamDefault(
@@ -92,3 +97,24 @@ class Dataproc(base.Group):
         resolver=lambda: context['dataproc_region'])
 
     return context
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DataprocBeta(Dataproc):
+  """Create and manage Google Cloud Dataproc clusters and jobs."""
+
+  @staticmethod
+  def Args(parser):
+    parser.add_argument(
+        '--region',
+        default=_DEFAULT_REGION,
+        help=('Specifies the Dataproc region to use. Each Dataproc region '
+              'constitutes an independent resource namespace constrained to '
+              'deploying instances into GCE zones inside the region. The '
+              'default value of "global" is a special multi-region namespace '
+              'which is capable of deploying instances into all GCE zones '
+              'globally, and is disjoint from other Dataproc regions. This '
+              'region parameter corresponds to the /regions/<region> segment '
+              'of the Dataproc resource URIs being referenced.'),
+        hidden=True)
+

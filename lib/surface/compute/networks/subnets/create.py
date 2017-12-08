@@ -41,7 +41,7 @@ def _AddArgs(cls, parser):
       help='The IP space allocated to this subnetwork in CIDR format.')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base_classes.BaseAsyncCreator):
   """Define a subnet for a network in custom subnet mode."""
 
@@ -87,8 +87,8 @@ class Create(base_classes.BaseAsyncCreator):
     return [request]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
   """Define a subnet for a network in custom subnet mode."""
 
   @classmethod
@@ -100,29 +100,66 @@ class CreateAlpha(Create):
         default=False,
         help=('Enable/disable access to Google Cloud APIs from this subnet for '
               'instances without a public ip address.'))
-    secondary_range = parser.add_argument(
+
+  def CreateRequests(self, args):
+    """Returns a list of requests for adding a subnetwork."""
+    network_ref = self.NETWORK_ARG.ResolveAsResource(args, self.resources)
+    subnet_ref = self.SUBNETWORK_ARG.ResolveAsResource(
+        args,
+        self.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
+                                                         self.project))
+
+    request = self.messages.ComputeSubnetworksInsertRequest(
+        subnetwork=self.messages.Subnetwork(
+            name=subnet_ref.Name(),
+            description=args.description,
+            network=network_ref.SelfLink(),
+            ipCidrRange=args.range,
+            privateIpGoogleAccess=args.enable_private_ip_google_access,
+        ),
+        region=subnet_ref.region,
+        project=self.project)
+
+    return [request]
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Define a subnet for a network in custom subnet mode."""
+
+  @classmethod
+  def Args(cls, parser):
+    _AddArgs(cls, parser)
+    parser.add_argument(
+        '--enable-private-ip-google-access',
+        action='store_true',
+        default=False,
+        help=('Enable/disable access to Google Cloud APIs from this subnet for '
+              'instances without a public ip address.'))
+    parser.add_argument(
         '--secondary-range',
         type=arg_parsers.ArgDict(spec={'name': str, 'range': str}),
         action='append',
         metavar='PROPERTY=VALUE',
-        help='A secondary IP range available for aliasing '
-             'within this subnetwork.')
+        help="""\
+        Adds a secondary IP range to the Subnetwork for use in IP aliasing.
 
-    secondary_range.detailed_help = """
-     Adds a secondary IP range to the Subnetwork for use in IP aliasing.
+        For example, `--secondary-range name=range1,range=192.168.64.0/24` adds
+        a secondary range 192.168.64.0/24 with name range1.
 
-     For example, `--secondary-range name=range1,range=192.168.64.0/24` adds
-     a secondary range 192.168.64.0/24 with name range1.
-
-     *name*::: Name of the secondary range.
-     *range*::: IP range in CIDR format.
-    """
+        *name*::: Name of the secondary range.
+        *range*::: IP range in CIDR format.
+        """)
 
   def CreateRequests(self, args):
     """Returns a list of requests for adding a subnetwork. Overrides."""
-    network_ref = self.CreateGlobalReference(
-        args.network, resource_type='networks')
-    subnet_ref = self.CreateRegionalReference(args.name, args.region)
+    network_ref = self.NETWORK_ARG.ResolveAsResource(args, self.resources)
+    subnet_ref = self.SUBNETWORK_ARG.ResolveAsResource(
+        args,
+        self.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
+                                                         self.project))
 
     request = self.messages.ComputeSubnetworksInsertRequest(
         subnetwork=self.messages.Subnetwork(

@@ -39,14 +39,13 @@ class Create(base_classes.BaseAsyncCreator):
         'The network to which this rule is attached.', required=False)
     firewalls_utils.AddCommonArgs(parser, for_update=False)
 
-    network = parser.add_argument(
+    parser.add_argument(
         '--network',
         default='default',
-        help='The network to which this rule is attached.')
-    network.detailed_help = """\
+        help="""\
         The network to which this rule is attached. If omitted, the
         rule is attached to the ``default'' network.
-        """
+        """)
 
   @property
   def service(self):
@@ -102,14 +101,13 @@ class AlphaCreate(Create):
     firewalls_utils.AddCommonArgs(
         parser, for_update=False, with_egress_support=True)
 
-    network = parser.add_argument(
+    parser.add_argument(
         '--network',
         default='default',
-        help='The network to which this rule is attached.')
-    network.detailed_help = """\
+        help="""\
         The network to which this rule is attached. If omitted, the
         rule is attached to the ``default'' network.
-        """
+        """)
 
   def Collection(self):
     """Returns the resource collection path."""

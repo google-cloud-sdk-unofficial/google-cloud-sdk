@@ -31,7 +31,6 @@ Zero or more logpoint resource identifiers. The specified logpoints will be
 listed.
 
 
-
 .RE
 .sp
 
@@ -48,7 +47,6 @@ default, use \fB\-\-no\-all\-users\fR to disable.
 Include logpoints which failed or expired in the last INCLUDE_INACTIVE seconds.
 If the value is "unlimited", all failed or expired logpoints will be included.
 
-
 .TP 2m
 \fB\-\-location\fR=\fILOCATION\-REGEXP\fR
 A regular expression to match against logpoint locations. All logpoints matching
@@ -61,14 +59,12 @@ gcloud debug logpoints list \e
     \-\-location foo.py:[1\-3] \-\-location bar.py:4
 .RE
 
-
 .TP 2m
 \fB\-\-target\fR=(\fIID\fR|\fIDESCRIPTION_REGEXP\fR)
 The debug target. It may be a target ID or name obtained from 'debug targets
 list', or it may be a regular expression uniquely specifying a debuggee based on
 its description or name. For App Engine projects, if not specified, the default
 target is the most recent deployment of the default module and version.
-
 
 
 .RE

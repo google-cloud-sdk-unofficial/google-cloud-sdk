@@ -36,73 +36,66 @@ class Update(base_classes.ReadWriteCommand):
     cls.HTTPS_HEALTH_CHECKS_ARG = flags.HttpsHealthCheckArgument()
     cls.HTTPS_HEALTH_CHECKS_ARG.AddArgument(parser)
 
-    host = parser.add_argument(
+    parser.add_argument(
         '--host',
-        help='The value of the host header used by the HTTPS health check.')
-    host.detailed_help = """\
+        help="""\
         The value of the host header used in this HTTPS health check request.
         By default, this is empty and Google Compute Engine automatically sets
         the host header in health requests to the same external IP address as
         the forwarding rule associated with the target pool. Setting this to
         an empty string will clear any existing host value.
-        """
+        """)
 
-    port = parser.add_argument(
+    parser.add_argument(
         '--port',
-        help='The TCP port number for the health request.',
-        type=int)
-    port.detailed_help = """\
+        type=int,
+        help="""\
         The TCP port number that this health check monitors.
-        """
+        """)
 
-    request_path = parser.add_argument(
+    parser.add_argument(
         '--request-path',
-        help='The request path for the health check.')
-    request_path.detailed_help = """\
+        help="""\
         The request path that this health check monitors. For example,
         ``/healthcheck''.
-        """
+        """)
 
-    check_interval_sec = parser.add_argument(
+    parser.add_argument(
         '--check-interval',
-        help='How often to run the check.',
-        type=arg_parsers.Duration())
-    check_interval_sec.detailed_help = """\
+        type=arg_parsers.Duration(),
+        help="""\
         How often to perform a health check for an instance. For example,
         specifying ``10s'' will run the check every 10 seconds. Valid units
         for this flag are ``s'' for seconds and ``m'' for minutes.
-        """
+        """)
 
-    timeout_sec = parser.add_argument(
+    parser.add_argument(
         '--timeout',
-        help='How long to wait until check is a failure.',
-        type=arg_parsers.Duration())
-    timeout_sec.detailed_help = """\
+        type=arg_parsers.Duration(),
+        help="""\
         If Google Compute Engine doesn't receive an HTTPS 200 response from the
         instance by the time specified by the value of this flag, the health
         check request is considered a failure. For example, specifying ``10s''
         will cause the check to wait for 10 seconds before considering the
         request a failure.  Valid units for this flag are ``s'' for seconds and
         ``m'' for minutes.
-        """
+        """)
 
-    unhealthy_threshold = parser.add_argument(
+    parser.add_argument(
         '--unhealthy-threshold',
-        help='Consecutive failures to mark instance unhealthy.',
-        type=int)
-    unhealthy_threshold.detailed_help = """\
+        type=int,
+        help="""\
         The number of consecutive health check failures before a healthy
         instance is marked as unhealthy.
-        """
+        """)
 
-    healthy_threshold = parser.add_argument(
+    parser.add_argument(
         '--healthy-threshold',
-        help='Consecutive successes to mark instance healthy.',
-        type=int)
-    healthy_threshold.detailed_help = """\
+        type=int,
+        help="""\
         The number of consecutive successful health checks before an
         unhealthy instance is marked as healthy.
-        """
+        """)
 
     parser.add_argument(
         '--description',

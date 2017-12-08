@@ -17,6 +17,7 @@
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
+from googlecloudsdk.api_lib.util import exceptions as api_exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.deployment_manager import dm_base
 from googlecloudsdk.command_lib.deployment_manager import dm_beta_base
@@ -72,6 +73,22 @@ class List(base.ListCommand):
       log.status.Print('No types were found for your project!')
 
 
+def TypeProviderClient():
+  """Return a Type Provider client specially suited for listing types.
+
+  Listing types requires many API calls, some of which may fail due to bad
+  user configurations which show up as errors that are retryable. We can
+  alleviate some of the latency and usability issues this causes by tuning
+  the client.
+
+  Returns:
+    A Type Provider API client.
+  """
+  main_client = dm_beta_base.GetClient()
+  main_client.num_retries = 2
+  return main_client.typeProviders
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListALPHA(base.ListCommand):
   """Describe a type provider type."""
@@ -110,50 +127,62 @@ class ListALPHA(base.ListCommand):
     type_provider_ref = dm_beta_base.GetResources().Parse(
         args.provider if args.provider else 'NOT_A_PROVIDER',
         collection='deploymentmanager.typeProviders')
+    self.page_size = args.page_size
+    self.limit = args.limit
+    self.project = type_provider_ref.project
+
     if not args.provider:
-      type_providers = self.GetTypeProviders(type_provider_ref.project,
-                                             args.page_size,
-                                             args.limit)
+      type_providers = self._GetTypeProviders()
     else:
       type_providers = [type_provider_ref.typeProvider]
 
     return dm_v2_util.YieldWithHttpExceptions(
-        self.YieldTypes(type_providers,
-                        type_provider_ref.project,
-                        args.page_size,
-                        args.limit))
+        self._YieldPrintableTypesOrErrors(type_providers))
 
-  def GetTypeProviders(self, project, page_size, limit):
+  def _GetTypeProviders(self):
     request = (dm_beta_base.GetMessages().
                DeploymentmanagerTypeProvidersListRequest(
-                   project=project))
-    type_providers = []
-    paginated_providers = dm_v2_util.YieldWithHttpExceptions(
-        list_pager.YieldFromList(dm_beta_base.GetClient().typeProviders,
+                   project=self.project))
+    providers = dm_v2_util.YieldWithHttpExceptions(
+        list_pager.YieldFromList(TypeProviderClient(),
                                  request,
                                  field='typeProviders',
-                                 batch_size=page_size,
-                                 limit=limit))
-    for type_provider in paginated_providers:
-      type_providers.append(type_provider.name)
+                                 batch_size=self.page_size,
+                                 limit=self.limit))
 
-    return type_providers
+    return [provider.name for provider in providers]
 
-  def YieldTypes(self, type_providers, project, page_size, limit):
+  def _YieldPrintableTypesOrErrors(self, type_providers):
+    """Yield dicts of types list, provider, and (optionally) an error message.
+
+    Args:
+      type_providers: A list of Type Provider names to grab Type Info
+        messages for.
+
+    Yields:
+      A dict object with a list of types, a type provider, and (optionally)
+      an error message for display.
+
+    """
     for type_provider in type_providers:
       request = (dm_beta_base.GetMessages().
                  DeploymentmanagerTypeProvidersListTypesRequest(
-                     project=project,
+                     project=self.project,
                      typeProvider=type_provider))
-      paginated_types = list_pager.YieldFromList(
-          dm_beta_base.GetClient().typeProviders,
-          request,
-          method='ListTypes',
-          field='types',
-          batch_size=page_size,
-          limit=limit)
-      for t in paginated_types:
-        yield {'type': t, 'provider': type_provider}
+      try:
+        paginated_types = dm_v2_util.YieldWithHttpExceptions(
+            list_pager.YieldFromList(TypeProviderClient(),
+                                     request,
+                                     method='ListTypes',
+                                     field='types',
+                                     batch_size=self.page_size,
+                                     limit=self.limit))
+        yield {'types': list(paginated_types),
+               'provider': type_provider}
+      except api_exceptions.HttpException as error:
+        yield {'types': [],
+               'provider': type_provider,
+               'error': error.message}
 
-  def Format(self, unused_args):
-    return 'table(type.name, provider)'
+  def Format(self, args):
+    return 'yaml(provider, error, types.map().format("{0}", name))'

@@ -20,7 +20,7 @@ __all__ = (
 )
 
 
-def _output_screen_diff(output, screen, current_pos, previous_screen=None, last_char=None,
+def _output_screen_diff(output, screen, current_pos, previous_screen=None, last_token=None,
                         is_done=False, attrs_for_token=None, size=None, previous_width=0):  # XXX: drop is_done
     """
     Render the diff between this screen and the previous screen.
@@ -35,7 +35,7 @@ def _output_screen_diff(output, screen, current_pos, previous_screen=None, last_
     Don't change things without profiling first.
 
     :param current_pos: Current cursor position.
-    :param last_char: `Char` instance that represents the output attributes of
+    :param last_token: `Token` instance that represents the output attributes of
             the last drawn character. (Color/attributes.)
     :param attrs_for_token: :class:`._TokenToAttrsCache` instance.
     :param width: The width of the terminal.
@@ -44,8 +44,7 @@ def _output_screen_diff(output, screen, current_pos, previous_screen=None, last_
     width, height = size.columns, size.rows
 
     #: Remember the last printed character.
-    last_char = [last_char]  # nonlocal
-    background_turned_on = [False]  # Nonlocal
+    last_token = [last_token]  # nonlocal
 
     #: Variable for capturing the output.
     write = output.write
@@ -65,7 +64,7 @@ def _output_screen_diff(output, screen, current_pos, previous_screen=None, last_
     def reset_attributes():
         " Wrapper around Output.reset_attributes. "
         _output_reset_attributes()
-        last_char[0] = None  # Forget last char after resetting attributes.
+        last_token[0] = None  # Forget last char after resetting attributes.
 
     def move_cursor(new):
         " Move cursor to this `new` point. Returns the given Point. "
@@ -100,19 +99,14 @@ def _output_screen_diff(output, screen, current_pos, previous_screen=None, last_
         """
         # If the last printed character has the same token, it also has the
         # same style, so we don't output it.
-        if last_char[0] and last_char[0].token == char.token:
+        the_last_token = last_token[0]
+
+        if the_last_token and the_last_token == char.token:
             write(char.char)
         else:
-            attrs = attrs_for_token[char.token]
-
-            _output_set_attributes(attrs)
-
-            # If we print something with a background color, remember that.
-            background_turned_on[0] = bool(attrs.bgcolor)
-
+            _output_set_attributes(attrs_for_token[char.token])
             write(char.char)
-
-        last_char[0] = char
+            last_token[0] = char.token
 
     # Disable autowrap
     if not previous_screen:
@@ -194,19 +188,18 @@ def _output_screen_diff(output, screen, current_pos, previous_screen=None, last_
         current_pos = move_cursor(screen.cursor_position)
 
     if is_done:
-        reset_attributes()
         output.enable_autowrap()
 
-    # If the last printed character has a background color, always reset.
-    # (Many terminals give weird artifacs on resize events when there is an
-    # active background color.)
-    if background_turned_on[0]:
-        reset_attributes()
+    # Always reset the color attributes. This is important because a background
+    # thread could print data to stdout and we want that to be displayed in the
+    # default colors. (Also, if a background color has been set, many terminals
+    # give weird artifacs on resize events.)
+    reset_attributes()
 
     if screen.show_cursor or is_done:
         output.show_cursor()
 
-    return current_pos, last_char[0]
+    return current_pos, last_token[0]
 
 
 class HeightIsUnknownError(Exception):
@@ -254,6 +247,10 @@ class Renderer(object):
         self._mouse_support_enabled = False
         self._bracketed_paste_enabled = False
 
+        # Waiting for CPR flag. True when we send the request, but didn't got a
+        # response.
+        self.waiting_for_cpr = False
+
         self.reset(_scroll=True)
 
     def reset(self, _scroll=False, leave_alternate_screen=True):
@@ -266,7 +263,7 @@ class Renderer(object):
         # instance a toolbar at the bottom position.)
         self._last_screen = None
         self._last_size = None
-        self._last_char = None
+        self._last_token = None
 
         # When the style hash changes, we have to do a full redraw as well as
         # clear the `_attrs_for_token` dictionary.
@@ -349,6 +346,7 @@ class Renderer(object):
                 self._min_available_height = self.output.get_size().rows
             else:
                 # Asks for a cursor position report (CPR).
+                self.waiting_for_cpr = True
                 self.output.ask_for_cpr()
 
     def report_absolute_cursor_row(self, row):
@@ -363,6 +361,8 @@ class Renderer(object):
 
         # Set the
         self._min_available_height = rows_below_cursor
+
+        self.waiting_for_cpr = False
 
     def render(self, cli, layout, is_done=False):
         """
@@ -434,9 +434,9 @@ class Renderer(object):
             screen.replace_all_tokens(Token.Aborted)
 
         # Process diff and write to output.
-        self._cursor_pos, self._last_char = _output_screen_diff(
+        self._cursor_pos, self._last_token = _output_screen_diff(
             output, screen, self._cursor_pos,
-            self._last_screen, self._last_char, is_done,
+            self._last_screen, self._last_token, is_done,
             attrs_for_token=self._attrs_for_token,
             size=size,
             previous_width=(self._last_size.columns if self._last_size else 0))

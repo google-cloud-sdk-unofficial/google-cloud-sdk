@@ -101,15 +101,13 @@ class _BaseCreate(object):
         help='A valid IP-v4 address representing the remote tunnel endpoint')
 
     # TODO(user) Add other group members
-    shared_secret = parser.add_argument(
+    parser.add_argument(
         '--shared-secret',
         type=ValidateSimpleSharedSecret,
         required=True,
-        help='A shared secret consisting of printable characters')
-    shared_secret.detailed_help = (
-        'A shared secret consisting of printable characters.  Valid '
-        'arguments match the regular expression ' +
-        _PRINTABLE_CHARS_PATTERN)
+        help="""\
+        A shared secret consisting of printable characters.  Valid
+        arguments match the regular expression """ + _PRINTABLE_CHARS_PATTERN)
 
     parser.add_argument(
         '--ike-networks',

@@ -57,35 +57,31 @@ class SetTraffic(base.Command):
   def Args(parser):
     parser.add_argument('services', nargs='*', help=(
         'The services to modify.'))
-    splits = parser.add_argument(
+    parser.add_argument(
         '--splits',
         required=True,
         type=arg_parsers.ArgDict(min_length=1),
-        help='List of key value pairs containing versions '
-             'and their proportional traffic split.')
-    splits.detailed_help = (
-        'Key-value pairs describing what proportion of traffic should go to '
-        'each version. The split values are added together and used as '
-        'weights. The exact values do not matter, only their relation to each '
-        'other. For example, v1=2,v2=2 is equivalent to v1=.5,v2=.5')
+        help="""\
+        Key-value pairs describing what proportion of traffic should go to
+        each version. The split values are added together and used as
+        weights. The exact values do not matter, only their relation to each
+        other. For example, v1=2,v2=2 is equivalent to v1=.5,v2=.5""")
     parser.add_argument(
         '--split-by',
         choices=['cookie', 'ip'],
         default='ip',
         help='Whether to split traffic based on cookies or IP addresses.')
-    migrate = parser.add_argument(
+    parser.add_argument(
         '--migrate',
         action='store_true',
         default=False,
-        help='Whether to use traffic migration during the operation.')
-    migrate.detailed_help = (
-        'The migrate flag determines whether or not to use traffic migration '
-        'during the operation. Traffic migration will attempt to automatically '
-        'migrate traffic from the previous version to the new version, giving '
-        'the autoscaler time to respond. See the documentation here: '
-        '[](https://cloud.google.com/appengine/docs/python/console/'
-        'trafficmigration) for more information.'
-    )
+        help="""\
+The migrate flag determines whether or not to use traffic migration
+during the operation. Traffic migration will attempt to automatically
+migrate traffic from the previous version to the new version, giving
+the autoscaler time to respond. See the documentation here:
+[](https://cloud.google.com/appengine/docs/python/console/trafficmigration)
+for more information.""")
 
   def Run(self, args):
     if args.migrate and len(args.splits) > 1:

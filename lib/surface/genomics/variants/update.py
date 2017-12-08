@@ -27,12 +27,11 @@ class Update(base.UpdateCommand):
     """Register flags for this command."""
     parser.add_argument('id',
                         help='The ID of the variant to be updated.')
-    names = parser.add_argument(
+    parser.add_argument(
         '--names',
         type=arg_parsers.ArgList(min_length=1),
         required=True,
-        help='Comma-delimited list of new variant names.')
-    names.detailed_help = 'The new variant names replace existing names.'
+        help='The new variant names replace existing names.')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

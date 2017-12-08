@@ -17,11 +17,5 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class OrganizationsAlpha(base.Group):
+class Organizations(base.Group):
   """Configure organizations for cross-project networking (XPN)."""
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class OrganizationsBeta(base.Group):
-  """View organizations for cross-project networking (XPN)."""

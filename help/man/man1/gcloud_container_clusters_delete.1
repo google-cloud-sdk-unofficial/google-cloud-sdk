@@ -37,16 +37,17 @@ The names of the clusters to delete.
 .RS 2m
 .TP 2m
 \fB\-\-async\fR
-Don't wait for the operation to complete. Use \fB\-\-no\-async\fR to disable.
+Don't wait for the operation to complete.
 
 .TP 2m
 \fB\-\-wait\fR
 DEPRECATED, use \-\-no\-async. Poll the operation for completion after issuing a
-create request. Use \fB\-\-no\-wait\fR to disable.
+create request.
 
 .TP 2m
 \fB\-\-zone\fR=\fIZONE\fR, \fB\-z\fR \fIZONE\fR
-The compute zone (e.g. us\-central1\-a) for the cluster
+The compute zone (e.g. us\-central1\-a) for the cluster. Overrides the default
+\fBcompute/zone\fR property value for this command invocation.
 
 
 .RE

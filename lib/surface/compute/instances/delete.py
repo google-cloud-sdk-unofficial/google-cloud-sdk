@@ -35,35 +35,31 @@ class Delete(base_classes.ZonalDeleter):
   def Args(parser):
     auto_delete_override = parser.add_mutually_exclusive_group()
 
-    delete_disks = auto_delete_override.add_argument(
+    auto_delete_override.add_argument(
         '--delete-disks',
         choices=AUTO_DELETE_OVERRIDE_CHOICES,
         metavar='DISK-TYPE',
-        help=('The types of disks to delete with instance deletion '
-              "regardless of the disks' auto-delete configuration."))
-    delete_disks.detailed_help = """\
+        help="""\
         The types of disks to delete with instance deletion regardless
         of the disks' auto-delete configuration. When this flag is
         provided, the auto-delete bits on the attached disks are
         modified accordingly before the instance deletion requests are
         issued. For more information on disk auto-deletion, see
         [](https://cloud.google.com/compute/docs/disks/persistent-disks#updateautodelete)
-        """
+        """)
 
-    keep_disks = auto_delete_override.add_argument(
+    auto_delete_override.add_argument(
         '--keep-disks',
         choices=AUTO_DELETE_OVERRIDE_CHOICES,
         metavar='DISK-TYPE',
-        help=('The types of disks to not delete with instance deletion '
-              "regardless of the disks' auto-delete configuration."))
-    keep_disks.detailed_help = """\
+        help="""\
         The types of disks to not delete with instance deletion regardless
         of the disks' auto-delete configuration. When this flag is
         provided, the auto-delete bits on the attached disks are
         modified accordingly before the instance deletion requests are
         issued. For more information on disk auto-deletion, see
         [](https://cloud.google.com/compute/docs/disks/persistent-disks#updateautodelete)
-        """
+        """)
 
     instance_flags.INSTANCES_ARG.AddArgument(parser)
 

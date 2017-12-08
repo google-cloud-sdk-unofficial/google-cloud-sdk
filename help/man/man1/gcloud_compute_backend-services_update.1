@@ -60,7 +60,7 @@ An optional, textual description for the backend service.
 \fB\-\-enable\-cdn\fR
 Enable Cloud CDN for the backend service. Cloud CDN can cache HTTP responses
 from a backend service at the edge of the network, close to users. Cloud CDN is
-disabled by default. Use \fB\-\-no\-enable\-cdn\fR to disable.
+disabled by default.
 
 .TP 2m
 \fB\-\-health\-checks\fR=\fIHEALTH_CHECK\fR,[\fIHEALTH_CHECK\fR,...]
@@ -146,7 +146,8 @@ If provided, it is assumed the backend service is global.
 
 .TP 2m
 \fB\-\-region\fR=\fIREGION\fR
-The region of the backend service to operate on.
+The region of the backend service to operate on. Overrides the default
+\fBcompute/region\fR property value for this command invocation.
 
 
 .RE

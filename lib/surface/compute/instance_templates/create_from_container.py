@@ -104,8 +104,7 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
 
     network_interface = instance_template_utils.CreateNetworkInterfaceMessage(
         resources=self.resources,
-        scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client, self.project),
+        scope_lister=flags.GetDefaultScopeLister(self.compute_client),
         messages=self.messages,
         network=args.network,
         region=args.region,
@@ -159,7 +158,7 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
             description=args.description,
             name=instance_template_ref.Name(),
         ),
-        project=self.project)
+        project=instance_template_ref.project)
 
     return [request]
 

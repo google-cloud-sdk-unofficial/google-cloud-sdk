@@ -37,29 +37,25 @@ class SetDiskAutoDelete(base_classes.ReadWriteCommand):
 
     disk_group = parser.add_mutually_exclusive_group(required=True)
 
-    disk = disk_group.add_argument(
+    disk_group.add_argument(
         '--disk',
-        help=('Specify a disk to set auto-delete for by persistent disk '
-              'name.'))
-    disk.detailed_help = """\
+        help="""\
         Specifies a disk to set auto-delete for by its resource name. If
         you specify a disk to set auto-delete for by persistent disk name,
         then you must not specify its device name using the
         ``--device-name'' flag.
-        """
+        """)
 
-    device_name = disk_group.add_argument(
+    disk_group.add_argument(
         '--device-name',
-        help=('Specify a disk to set auto-delete for by the name the '
-              'guest operating system sees.'))
-    device_name.detailed_help = """\
+        help="""\
         Specifies a disk to set auto-delete for by its device name,
         which is the name that the guest operating system sees. The
         device name is set at the time that the disk is attached to the
         instance, and need not be the same as the persistent disk name.
         If the disk's device name is specified, then its persistent disk
         name must not be specified using the ``--disk'' flag.
-        """
+        """)
 
   @property
   def service(self):

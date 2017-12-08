@@ -117,13 +117,12 @@ class ConfigSSH(ssh_utils.BaseSSHCommand):
   def Args(parser):
     ssh_utils.BaseSSHCommand.Args(parser)
 
-    ssh_config_file = parser.add_argument(
+    parser.add_argument(
         '--ssh-config-file',
-        help='Specifies an alternative per-user SSH configuration file.')
-    ssh_config_file.detailed_help = """\
+        help="""\
         Specifies an alternative per-user SSH configuration file. By
         default, this is ``{0}''.
-        """.format(ssh.PER_USER_SSH_CONFIG_FILE)
+        """.format(ssh.PER_USER_SSH_CONFIG_FILE))
 
     parser.add_argument(
         '--dry-run',

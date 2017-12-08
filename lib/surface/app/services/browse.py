@@ -48,14 +48,19 @@ class Browse(base.Command):
 
   @staticmethod
   def Args(parser):
-    versions = parser.add_argument('services', nargs='+',
-                                   help='The services to open.')
-    versions.detailed_help = (
-        'The services to open (optionally filtered by the --version flag).')
-    parser.add_argument('--version', '-v',
-                        help=('If specified, open services with a '
-                              'given version. If not specified, use a '
-                              "version based on the service's traffic split ."))
+    parser.add_argument(
+        'services',
+        nargs='+',
+        help="""\
+        The services to open (optionally filtered by the --version flag).""")
+
+    parser.add_argument(
+        '--version',
+        '-v',
+        help="""\
+            If specified, open services with a given version. If not
+            specified, use a version based on the service's traffic split .
+            """)
 
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)

@@ -73,13 +73,11 @@ class Scp(ssh_utils.BaseSSHCLICommand):
         metavar='[[USER@]INSTANCE:]DEST')
 
     # TODO(b/21515936): Use flags.AddZoneFlag when copy_files supports URIs
-    zone = parser.add_argument(
+    parser.add_argument(
         '--zone',
-        help='The zone of the instance to copy files to/from.',
-        action=actions.StoreProperty(properties.VALUES.compute.zone))
-    zone.detailed_help = (
-        'The zone of the instance to copy files to/from.\n\n' +
-        flags.ZONE_PROPERTY_EXPLANATION)
+        action=actions.StoreProperty(properties.VALUES.compute.zone),
+        help=('The zone of the instance to copy files to/from.\n\n' +
+              flags.ZONE_PROPERTY_EXPLANATION))
 
   def Run(self, args):
     super(Scp, self).Run(args)
@@ -135,8 +133,7 @@ class Scp(ssh_utils.BaseSSHCLICommand):
 
     instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
         [instance], compute_scope.ScopeEnum.ZONE, args.zone, self.resources,
-        scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client, self.project))[0]
+        scope_lister=flags.GetDefaultScopeLister(self.compute_client))[0]
     instance = self.GetInstance(instance_ref)
     external_ip_address = ssh_utils.GetExternalIPAddress(instance)
 

@@ -35,30 +35,27 @@ class AddHostRule(base_classes.ReadWriteCommand):
         '--description',
         help='An optional, textual description for the host rule.')
 
-    hosts = parser.add_argument(
+    parser.add_argument(
         '--hosts',
         type=arg_parsers.ArgList(min_length=1),
         metavar='HOST',
         required=True,
-        help='The set of hosts to match requests against.')
-    hosts.detailed_help = """\
+        help="""\
         The set of hosts to match requests against. Each host must be
         a fully qualified domain name (FQDN) with the exception that
         the host can begin with a ``*'' or ``*-''. ``*'' acts as a
         glob and will match any string of atoms to the left where an
         atom is separated by dots (``.'') or dashes (``-'').
-        """
+        """)
 
-    path_matcher = parser.add_argument(
+    parser.add_argument(
         '--path-matcher-name',
         required=True,
-        help=('The name of the patch matcher to use if a request matches this '
-              'host rule.'))
-    path_matcher.detailed_help = """\
+        help="""\
         The name of the patch matcher to use if a request matches this
         host rule. The patch matcher must already exist in the URL map
         (see `gcloud compute url-maps add-path-matcher`).
-        """
+        """)
 
   @property
   def service(self):

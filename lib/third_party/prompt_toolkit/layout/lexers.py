@@ -150,6 +150,17 @@ class PygmentsLexer(Lexer):
     """
     Lexer that calls a pygments lexer.
 
+    Example::
+
+        from pygments.lexers import HtmlLexer
+        lexer = PygmentsLexer(HtmlLexer)
+
+    Note: Don't forget to also load a Pygments compatible style. E.g.::
+
+        from prompt_toolkit.styles.from_pygments import style_from_pygments
+        from pygments.styles import get_style_by_name
+        style = style_from_pygments(get_style_by_name('monokai'))
+
     :param pygments_lexer_cls: A `Lexer` from Pygments.
     :param sync_from_start: Start lexing at the start of the document. This
         will always give the best results, but it will be slow for bigger
@@ -191,6 +202,7 @@ class PygmentsLexer(Lexer):
         """
         Create a `Lexer` from a filename.
         """
+        # Inline imports: the Pygments dependency is optional!
         from pygments.util import ClassNotFound
         from pygments.lexers import get_lexer_for_filename
 
@@ -230,9 +242,17 @@ class PygmentsLexer(Lexer):
             Create a generator that yields the lexed lines.
             Each iteration it yields a (line_number, [(token, text), ...]) tuple.
             """
-            text = '\n'.join(document.lines[start_lineno:])[column:]
-            return enumerate(split_lines(self.pygments_lexer.get_tokens(text)),
-                                  start_lineno)
+            def get_tokens():
+                text = '\n'.join(document.lines[start_lineno:])[column:]
+
+                # We call `get_tokens_unprocessed`, because `get_tokens` will
+                # still replace \r\n and \r by \n.  (We don't want that,
+                # Pygments should return exactly the same amount of text, as we
+                # have given as input.)
+                for _, t, v in self.pygments_lexer.get_tokens_unprocessed(text):
+                    yield t, v
+
+            return enumerate(split_lines(get_tokens()), start_lineno)
 
         def get_generator(i):
             """

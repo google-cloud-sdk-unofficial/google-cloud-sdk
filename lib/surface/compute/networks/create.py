@@ -74,16 +74,15 @@ class Create(base_classes.BaseAsyncCreator):
         },
         required=False,
         help='The network type.')
-    range_arg = parser.add_argument(
+    parser.add_argument(
         '--range',
-        help='Specifies the IPv4 address range of this network.')
-    range_arg.detailed_help = """\
+        help="""\
         Specifies the IPv4 address range of legacy mode networks. The range
         must be specified in CIDR format:
         [](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
 
         This flag only works if mode is legacy.
-        """
+        """)
 
   def CreateRequests(self, args):
     """Returns the request necessary for adding the network."""

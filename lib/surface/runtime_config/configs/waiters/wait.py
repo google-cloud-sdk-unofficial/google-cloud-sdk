@@ -47,18 +47,17 @@ class Wait(base.Command):
     """
     flags.AddConfigFlag(parser)
 
-    max_wait = parser.add_argument(
+    parser.add_argument(
         '--max-wait',
-        help='The maximum amount of time to wait for a waiter to finish.',
         type=arg_parsers.Duration(lower_bound='1s',
                                   upper_bound='{0}s'.format(
-                                      util.MAX_WAITER_TIMEOUT)))
-    max_wait.detailed_help = """\
+                                      util.MAX_WAITER_TIMEOUT)),
+        help="""\
         The maximum amount of time to wait for a waiter to finish.
         Timeout values can be specified as seconds, minutes, or hours, using the
         's', 'm', and 'h' suffixes respectively. If no suffix is specified, the
         unit is assumed to be seconds.
-        """
+        """)
 
     parser.add_argument('name', help='The waiter name.')
 

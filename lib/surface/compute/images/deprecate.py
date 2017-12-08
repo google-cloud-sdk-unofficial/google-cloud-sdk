@@ -71,27 +71,23 @@ class DeprecateImages(base_classes.NoOutputAsyncMutator):
 
     delete_group = parser.add_mutually_exclusive_group()
 
-    delete_on = delete_group.add_argument(
+    delete_group.add_argument(
         '--delete-on',
-        help=('Specifies the date and time when the image will be marked as '
-              'DELETED. State will not be changed.'))
-    delete_on.detailed_help = """\
-       Similar to *--delete-in*, but specifies an absolute time when the image
-       will be marked as DELETED. Note: The image will not actually be
-       deleted - this field is for informational purposes (see the description
-       of --delete-in for more details). The date and time specified must be
-       valid RFC 3339 full-date or date-time. For times in UTC, this looks
-       like ``YYYY-MM-DDTHH:MM:SSZ''. For example: 2020-01-02T00:00:00Z for
-       midnight on January 2, 2020 in UTC.
-       This flag is mutually exclusive with *--delete-in*.
-       """
+        help="""\
+        Similar to *--delete-in*, but specifies an absolute time when the image
+        will be marked as DELETED. Note: The image will not actually be
+        deleted - this field is for informational purposes (see the description
+        of --delete-in for more details). The date and time specified must be
+        valid RFC 3339 full-date or date-time. For times in UTC, this looks
+        like ``YYYY-MM-DDTHH:MM:SSZ''. For example: 2020-01-02T00:00:00Z for
+        midnight on January 2, 2020 in UTC.
+        This flag is mutually exclusive with *--delete-in*.
+        """)
 
-    delete_in = delete_group.add_argument(
+    delete_group.add_argument(
         '--delete-in',
-        help=('Specifies the amount of time until the image will be marked as '
-              'DELETED. State will not be changed.'),
-        type=arg_parsers.Duration())
-    delete_in.detailed_help = """\
+        type=arg_parsers.Duration(),
+        help="""\
        Specifies the amount of time until the image will be marked as DELETED.
        Note: The image will not actually be deleted - this field is only for
        informational purposes (see below). For instance, specifying ``30d'' will
@@ -103,32 +99,28 @@ class DeprecateImages(base_classes.NoOutputAsyncMutator):
        only be marked as deleted. An explicit request to delete the image must
        be made in order to remove it from the image list.
        This flag is mutually exclusive with *--delete-on*.
-       """
+       """)
 
     obsolete_group = parser.add_mutually_exclusive_group()
 
-    obsolete_on = obsolete_group.add_argument(
+    obsolete_group.add_argument(
         '--obsolete-on',
-        help=('Specifies the date and time when this image will be marked as '
-              'OBSOLETE. State will not be changed.'))
-    obsolete_on.detailed_help = """\
+        help="""\
        Specifies time (in the same format as *--delete-on*) when this image will
        be marked as OBSOLETE. State will not be changed - it has only
        informational purpose.
        This flag is mutually exclusive with *--obsolete-in*.
-       """
+       """)
 
-    obsolete_in = obsolete_group.add_argument(
+    obsolete_group.add_argument(
         '--obsolete-in',
-        help=('Specifies the amount of time until the image will be marked as '
-              'OBSOLETE. State will not be changed.'),
-        type=arg_parsers.Duration())
-    obsolete_in.detailed_help = """\
+        type=arg_parsers.Duration(),
+        help="""\
        Specifies time (in the same format as *--delete-in*) until the image
        will be marked OBSOLETE. State will not be changed - it is only for
        informational purposes.
        This flag is mutually exclusive with *--obsolete-on*.
-       """
+       """)
 
   @property
   def service(self):
@@ -185,7 +177,7 @@ class DeprecateImages(base_classes.NoOutputAsyncMutator):
             obsolete=obsolete_time,
             replacement=replacement_uri),
         image=image_ref.Name(),
-        project=self.project)
+        project=image_ref.project)
 
     return [request]
 

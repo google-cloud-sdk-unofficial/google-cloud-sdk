@@ -37,15 +37,14 @@ class List(base_classes.BaseLister):
     else:
       preview_image_projects = '(none)'
 
-    preview_images = parser.add_argument(
+    parser.add_argument(
         '--preview-images',
         action='store_true',
         default=False,
-        help='Show images that are in limited preview.')
-    preview_images.detailed_help = """\
-       Show images that are in limited preview. The preview image projects
-       are: {0}
-       """.format(preview_image_projects)
+        help="""\
+        Show images that are in limited preview. The preview image projects
+        are: {0}
+        """.format(preview_image_projects))
     # --show-preview-images for backwards compatibility. --preview-images for
     # consistency with --standard-images.
     parser.add_argument(
@@ -54,15 +53,14 @@ class List(base_classes.BaseLister):
         action='store_true',
         help=argparse.SUPPRESS)
 
-    standard_images = parser.add_argument(
+    parser.add_argument(
         '--standard-images',
         action='store_true',
         default=True,
-        help='Show images from well-known image projects.')
-    standard_images.detailed_help = """\
+        help="""\
        Show images from well-known image projects.  The well known image
        projects are: {0}.
-       """.format(', '.join(constants.PUBLIC_IMAGE_PROJECTS))
+       """.format(', '.join(constants.PUBLIC_IMAGE_PROJECTS)))
 
   @property
   def service(self):

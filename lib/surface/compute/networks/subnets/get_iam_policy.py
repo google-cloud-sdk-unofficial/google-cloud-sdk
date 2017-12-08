@@ -17,7 +17,7 @@ from googlecloudsdk.api_lib.compute import iam_base_classes
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class GetIamPolicy(iam_base_classes.RegionalGetIamPolicy):
   """Get the IAM policy for a Google Compute Engine subnetwork resource."""
 

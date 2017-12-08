@@ -46,13 +46,14 @@ being used by resources in the project can be promoted. When providing this
 flag, a parallel list of names for the addresses can be provided. For example,
 
 .RS 2m
-$ gcloud compute addresses create ADDRESS\-1 ADDRESS\-2 \e
-    \-\-addresses 162.222.181.197,162.222.181.198 \-\-region us\-central1
+$ gcloud compute addresses create ADDRESS\-1 ADDRESS\-2             \e
+  \-\-addresses 162.222.181.197,162.222.181.198             \e
+  \-\-region us\-central1
 .RE
 
 will result in 162.222.181.197 being reserved as 'ADDRESS\-1' and
-162.222.181.198 as 'ADDRESS\-2'. If no names are given, randomly\-generated
-names will be assigned to the IP addresses.
+162.222.181.198 as 'ADDRESS\-2'. If no names are given, server\-generated names
+will be assigned to the IP addresses.
 
 .TP 2m
 \fB\-\-description\fR=\fIDESCRIPTION\fR

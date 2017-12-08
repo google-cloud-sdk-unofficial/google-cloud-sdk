@@ -65,32 +65,29 @@ class _BaseClone(object):
     parser.add_argument(
         'destination',
         help='Cloud SQL instance ID of the clone.')
-    filename_arg = parser.add_argument(
+    parser.add_argument(
         '--bin-log-file-name',
         required=False,
-        help='Binary log file for the source instance.')
-    filename_arg.detailed_help = """\
+        help="""\
         Represents the name of the binary log file created by the source
         instance if it has binary logs enabled.
         If specified, is the point up to which the source instance is cloned.
         It must be specified along with --bin-log-position to form a valid
         binary log coordinates.
         e.g., mysql-bin.000001
-        """
-    position_arg = parser.add_argument(
+        """)
+    parser.add_argument(
         '--bin-log-position',
         type=int,
         required=False,
-        help='Position within the binary log file that represents the point'
-        ' up to which the source is cloned.')
-    position_arg.detailed_help = """\
+        help="""\
         Represents the position (offset) inside the binary log file created by
         the source instance if it has binary logs enabled.
         If specified, is the point up to which the source instance is cloned.
         It must be specified along with --bin-log-file to form a valid binary
         log coordinates.
         e.g., 123 (a numeric value)
-        """
+        """)
 
   def _CheckSourceAndDestination(self, source_instance_ref,
                                  destination_instance_ref):

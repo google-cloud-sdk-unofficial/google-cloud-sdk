@@ -35,7 +35,7 @@ class SetUsageBucket(base_classes.NoOutputAsyncMutator):
     bucket_group.add_argument(
         '--no-bucket', action='store_true',
         help='Unsets the bucket. This disables usage report storage.')
-    bucket = bucket_group.add_argument(
+    bucket_group.add_argument(
         '--bucket',
         nargs='?',
         action=arg_parsers.HandleNoArgAction(
@@ -43,28 +43,25 @@ class SetUsageBucket(base_classes.NoOutputAsyncMutator):
             'Use of --bucket without an argument is deprecated and will stop '
             'working in the future. To unset the bucket, please use '
             '--no-bucket'),
-        help=('The URI of a Google Cloud Storage bucket where the usage report '
-              'object should be stored'))
-    bucket.detailed_help = """\
+        help="""\
         The URI of a Google Cloud Storage bucket where the usage
         report object should be stored. The Google Service Account for
         performing usage reporting is granted write access to this bucket.
         The user running this command must be an owner of the bucket.
 
         To clear the usage bucket, use --no-bucket.
-        """
+        """)
 
-    prefix = parser.add_argument(
+    parser.add_argument(
         '--prefix',
-        help='An optional prefix for the name of the usage report object.')
-    prefix.detailed_help = """\
+        help="""\
         An optional prefix for the name of the usage report object stored in
         the bucket. If not supplied, then this defaults to ``usage''. The
         report is stored as a CSV file named PREFIX_gce_YYYYMMDD.csv where
         YYYYMMDD is the day of the usage according to Pacific Time. The prefix
         should conform to Google Cloud Storage object naming conventions.
         This flag must not be provided when clearing the usage bucket.
-        """
+        """)
 
   @property
   def service(self):

@@ -39,7 +39,7 @@ class Gcloud(base.Group):
         help='Google Cloud Platform user account to use for invocation.',
         action=actions.StoreProperty(properties.VALUES.core.account))
 
-    project_arg = parser.add_argument(
+    parser.add_argument(
         '--project',
         metavar='PROJECT_ID',
         dest='project',
@@ -47,27 +47,24 @@ class Gcloud(base.Group):
         suggestion_aliases=['--application'],
         completion_resource='cloudresourcemanager.projects',
         list_command_path='beta.projects',
-        help='Google Cloud Platform project ID to use for this invocation.',
-        action=actions.StoreProperty(properties.VALUES.core.project))
-
-    project_arg.detailed_help = """\
+        action=actions.StoreProperty(properties.VALUES.core.project),
+        help="""\
         The Google Cloud Platform project name to use for this invocation. If
         omitted then the current project is assumed.
-        """
+        """)
     # Must have a None default so properties are not always overridden when the
     # arg is not provided.
-    quiet_arg = parser.add_argument(
+    parser.add_argument(
         '--quiet',
         '-q',
         default=None,
         category=base.COMMONLY_USED_FLAGS,
-        help='Disable all interactive prompts.',
         action=actions.StoreConstProperty(
-            properties.VALUES.core.disable_prompts, True))
-    quiet_arg.detailed_help = """\
+            properties.VALUES.core.disable_prompts, True),
+        help="""\
         Disable all interactive prompts when running gcloud commands. If input
         is required, defaults will be used, or an error will be raised.
-        """
+        """)
 
     trace_group = parser.add_mutually_exclusive_group()
     trace_group.add_argument(

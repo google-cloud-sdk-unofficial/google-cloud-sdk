@@ -31,7 +31,6 @@ Zero or more snapshot resource identifiers. The specified snapshots will be
 displayed.
 
 
-
 .RE
 .sp
 
@@ -42,12 +41,10 @@ displayed.
 \fB\-\-all\-users\fR
 If set, display snapshots from all users, rather than only the current user.
 
-
 .TP 2m
 \fB\-\-include\-inactive\fR=\fIINCLUDE_INACTIVE\fR; default="300"
 Include snapshots which have completed in the last INCLUDE_INACTIVE seconds. If
 the value is "unlimited", all inactive snapshots will be included.
-
 
 .TP 2m
 \fB\-\-location\fR=\fILOCATION\-REGEXP\fR
@@ -61,14 +58,12 @@ gcloud debug snapshots list \e
     \-\-location foo.py:[1\-3] \-\-location bar.py:4
 .RE
 
-
 .TP 2m
 \fB\-\-target\fR=(\fIID\fR|\fIDESCRIPTION_REGEXP\fR)
 The debug target. It may be a target ID or name obtained from 'debug targets
 list', or it may be a regular expression uniquely specifying a debuggee based on
 its description or name. For App Engine projects, if not specified, the default
 target is the most recent deployment of the default module and version.
-
 
 
 .RE

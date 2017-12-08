@@ -29,18 +29,17 @@ CONTINUE_WITH_RESIZE_PROMPT = textwrap.dedent("""
 
 def _CommonArgs(parser):
   Resize.disks_arg.AddArgument(parser)
-  size = parser.add_argument(
+  parser.add_argument(
       '--size',
       required=True,
       type=arg_parsers.BinarySize(lower_bound='1GB'),
-      help='Indicates the new size of the disks.')
-  size.detailed_help = """\
+      help="""\
         Indicates the new size of the disks. The value must be a whole
         number followed by a size unit of ``KB'' for kilobyte, ``MB''
         for megabyte, ``GB'' for gigabyte, or ``TB'' for terabyte. For
         example, ``10GB'' will produce 10 gigabyte disks.  Disk size
         must be a multiple of 10 GB.
-        """
+        """)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA,
@@ -82,13 +81,13 @@ class Resize(base_classes.BaseAsyncMutator):
       if disk_ref.Collection() == 'compute.disks':
         request = self.messages.ComputeDisksResizeRequest(
             disk=disk_ref.Name(),
-            project=self.project,
+            project=disk_ref.project,
             zone=disk_ref.zone,
             disksResizeRequest=self.messages.DisksResizeRequest(sizeGb=size_gb))
       elif disk_ref.Collection() == 'compute.regionDisks':
         request = self.messages.ComputeRegionDisksResizeRequest(
             disk=disk_ref.Name(),
-            project=self.project,
+            project=disk_ref.project,
             region=disk_ref.region,
             regionDisksResizeRequest=self.messages.RegionDisksResizeRequest(
                 sizeGb=size_gb))

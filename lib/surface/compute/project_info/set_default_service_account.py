@@ -25,10 +25,9 @@ class SetDefaultServiceAccount(base_classes.NoOutputAsyncMutator):
   @staticmethod
   def Args(parser):
     accounts_group = parser.add_mutually_exclusive_group()
-    service_account = accounts_group.add_argument(
+    accounts_group.add_argument(
         '--service-account',
-        help='The service account email address to set as default.')
-    service_account.detailed_help = """\
+        help="""\
         The email address of the service account that will be set as the default
         service account for all newly created instances in the project.
 
@@ -36,13 +35,11 @@ class SetDefaultServiceAccount(base_classes.NoOutputAsyncMutator):
         example@project.iam.gserviceaccount.com:
 
           $ {command} --service-account example@project.iam.gserviceaccount.com
-        """
-    no_service_account = accounts_group.add_argument(
+        """)
+    accounts_group.add_argument(
         '--no-service-account',
         action='store_true',
-        help='Sets the default service account as no service account from the '
-             'project.')
-    no_service_account.detailed_help = """\
+        help="""\
         Sets the default service account on the project as no service account.
         This causes newly created instances to not run as a service account
         by default.
@@ -51,7 +48,7 @@ class SetDefaultServiceAccount(base_classes.NoOutputAsyncMutator):
         flag:
 
           $ {command} --no-service-account
-        """
+        """)
 
   @property
   def service(self):

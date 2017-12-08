@@ -68,7 +68,6 @@ with HTTP based protocols.
 For backend services with TCP/SSL protocol either \fBUTILIZATION\fR or
 \fBCONNECTION\fR are available.
 
-
 \fIBALANCING_MODE\fR must be one of:
 
 .RS 2m
@@ -123,7 +122,8 @@ If provided, it is assumed the backend service is global.
 
 .TP 2m
 \fB\-\-region\fR=\fIREGION\fR
-The region of the backend service to operate on.
+The region of the backend service to operate on. Overrides the default
+\fBcompute/region\fR property value for this command invocation.
 
 .RE
 .sp
@@ -141,6 +141,9 @@ A list of regions can be fetched by running:
 $ gcloud compute regions list
 .RE
 
+Overrides the default \fBcompute/region\fR property value for this command
+invocation.
+
 .TP 2m
 \fB\-\-instance\-group\-zone\fR=\fIINSTANCE_GROUP_ZONE\fR
 The zone of the instance group to add to the backend service. If not specified,
@@ -152,10 +155,14 @@ A list of zones can be fetched by running:
 $ gcloud compute zones list
 .RE
 
+Overrides the default \fBcompute/zone\fR property value for this command
+invocation.
+
 .TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
 The zone of the instance group to add to the backend service. DEPRECATED, use
-\-\-instance\-group\-zone flag instead.
+\-\-instance\-group\-zone flag instead. Overrides the default \fBcompute/zone\fR
+property value for this command invocation.
 
 .RE
 .sp

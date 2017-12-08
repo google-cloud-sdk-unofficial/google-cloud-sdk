@@ -45,16 +45,15 @@ class AddKeys(base_classes.NoOutputAsyncMutator):
         '--description',
         help='A description of the public keys')
 
-    expiration = parser.add_argument(
+    parser.add_argument(
         '--expire',
-        help='How long until the public keys expire, e.g. 7d for 7 days',
-        type=arg_parsers.Duration())
-    expiration.detailed_help = """\
+        type=arg_parsers.Duration(),
+        help="""\
         Public keys can be configured to expire after a specified amount
         of time. For example, specifying ``12h'' will cause the key to expire
         after 12 hours. Valid units for this flag are ``s'' for seconds, ``m''
         for minutes, ``h'' for hours, and ''d'' for days.
-        """
+        """)
 
   @property
   def service(self):

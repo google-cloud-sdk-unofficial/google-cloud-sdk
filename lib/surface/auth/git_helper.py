@@ -75,7 +75,7 @@ class GitHelper(base.Command):
           .format(meth=args.method, methods=', '.join(GitHelper.METHODS)))
 
     info = self._ParseInput()
-    credentialed_domains = ['code.google.com', 'source.developers.google.com']
+    credentialed_domains = ['source.developers.google.com']
     extra = properties.VALUES.core.credentialed_hosted_repo_domains.Get()
     if extra:
       credentialed_domains.extend(extra.split(','))

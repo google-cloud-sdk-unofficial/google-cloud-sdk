@@ -25,15 +25,14 @@ class SetSchedulingInstances(base_classes.NoOutputAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    restart_on_failure = parser.add_argument(
+    parser.add_argument(
         '--restart-on-failure',
         action='store_true',
         default=None,  # Tri-valued: None => don't change the setting.
-        help='Restart instances if they are terminated by Compute Engine.')
-    restart_on_failure.detailed_help = """\
-        The instances will be restarted if they are terminated by Compute '
-        Engine.  This does not affect terminations performed by the user.'
-        """
+        help="""\
+        The instances will be restarted if they are terminated by Compute
+        Engine.  This does not affect terminations performed by the user.
+        """)
 
     instance_flags.AddMaintenancePolicyArgs(parser)
     instance_flags.INSTANCE_ARG.AddArgument(parser)

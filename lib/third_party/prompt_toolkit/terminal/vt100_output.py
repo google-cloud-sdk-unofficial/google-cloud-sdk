@@ -8,7 +8,7 @@ http://pygments.org/
 """
 from __future__ import unicode_literals
 
-from prompt_toolkit.filters import to_simple_filter
+from prompt_toolkit.filters import to_simple_filter, Condition
 from prompt_toolkit.layout.screen import Size
 from prompt_toolkit.renderer import Output
 from prompt_toolkit.styles import ANSI_COLOR_NAMES
@@ -16,6 +16,7 @@ from prompt_toolkit.styles import ANSI_COLOR_NAMES
 from six.moves import range
 import array
 import errno
+import os
 import six
 
 __all__ = (
@@ -24,84 +25,116 @@ __all__ = (
 
 
 FG_ANSI_COLORS = {
-    'ansiblack':   30,
     'ansidefault': 39,
-    'ansiwhite':   97,
 
     # Low intensity.
-    'ansired':         31,
-    'ansigreen':       32,
-    'ansiyellow':      33,
-    'ansiblue':        34,
-    'ansifuchsia':     35,
-    'ansiturquoise':   36,
+    'ansiblack':       30,
+    'ansidarkred':     31,
+    'ansidarkgreen':   32,
+    'ansibrown':       33,
+    'ansidarkblue':    34,
+    'ansipurple':      35,
+    'ansiteal':        36,
     'ansilightgray':   37,
 
-
     # High intensity.
-    'ansidarkgray':    90,  # Bright black.
-    'ansidarkred':     91,
-    'ansidarkgreen':   92,
-    'ansibrown':       93,
-    'ansidarkblue':    94,
-    'ansipurple':      95,
-    'ansiteal':        96,
+    'ansidarkgray':    90,
+    'ansired':         91,
+    'ansigreen':       92,
+    'ansiyellow':      93,
+    'ansiblue':        94,
+    'ansifuchsia':     95,
+    'ansiturquoise':   96,
+    'ansiwhite':       97,
 }
 
 BG_ANSI_COLORS = {
-    'ansiblack':       40,
     'ansidefault':     49,
-    'ansiwhite':       107,
 
     # Low intensity.
-    'ansired':         41,
-    'ansigreen':       42,
-    'ansiyellow':      43,
-    'ansiblue':        44,
-    'ansifuchsia':     45,
-    'ansiturquoise':   46,
+    'ansiblack':       40,
+    'ansidarkred':     41,
+    'ansidarkgreen':   42,
+    'ansibrown':       43,
+    'ansidarkblue':    44,
+    'ansipurple':      45,
+    'ansiteal':        46,
     'ansilightgray':   47,
 
     # High intensity.
-    'ansidarkgray':    100,  # bright black.
-    'ansidarkred':     101,
-    'ansidarkgreen':   102,
-    'ansibrown':       103,
-    'ansidarkblue':    104,
-    'ansipurple':      105,
-    'ansiteal':        106,
+    'ansidarkgray':    100,
+    'ansired':         101,
+    'ansigreen':       102,
+    'ansiyellow':      103,
+    'ansiblue':        104,
+    'ansifuchsia':     105,
+    'ansiturquoise':   106,
+    'ansiwhite':       107,
 }
 
 
 ANSI_COLORS_TO_RGB = {
-    'ansiblack':   (0x00, 0x00, 0x00),
-    'ansidefault': (0x00, 0x00, 0x00),  # Don't use, 'default' doesn't really have a value.
-    'ansiwhite':   (0xff, 0xff, 0xff),
+    'ansidefault':   (0x00, 0x00, 0x00),  # Don't use, 'default' doesn't really have a value.
+    'ansiblack':     (0x00, 0x00, 0x00),
+    'ansidarkgray':  (0x7f, 0x7f, 0x7f), 
+    'ansiwhite':     (0xff, 0xff, 0xff),
+    'ansilightgray': (0xe5, 0xe5, 0xe5),
 
     # Low intensity.
-    'ansired':         (0xcd, 0x00, 0x00),
-    'ansigreen':       (0x00, 0xcd, 0x00),
-    'ansiyellow':      (0xcd, 0xcd, 0x00),
-    'ansiblue':        (0x00, 0x00, 0xcd),
-    'ansifuchsia':     (0xcd, 0x00, 0xcd),
-    'ansiturquoise':   (0x00, 0xcd, 0xcd),
-    'ansilightgray':   (0xe5, 0xe5, 0xe5),
-
+    'ansidarkred':     (0xcd, 0x00, 0x00),
+    'ansidarkgreen':   (0x00, 0xcd, 0x00),
+    'ansibrown':       (0xcd, 0xcd, 0x00),
+    'ansidarkblue':    (0x00, 0x00, 0xcd),
+    'ansipurple':      (0xcd, 0x00, 0xcd),
+    'ansiteal':        (0x00, 0xcd, 0xcd),
 
     # High intensity.
-    'ansidarkgray':    (0x7f, 0x7f, 0x7f),  # Bright black.
-    'ansidarkred':     (0xff, 0x00, 0x00),
-    'ansidarkgreen':   (0x00, 0xff, 0x00),
-    'ansibrown':       (0xff, 0xff, 0x00),
-    'ansidarkblue':    (0x00, 0x00, 0xff),
-    'ansipurple':      (0xff, 0x00, 0xff),
-    'ansiteal':        (0x00, 0xff, 0xff),
+    'ansired':         (0xff, 0x00, 0x00),
+    'ansigreen':       (0x00, 0xff, 0x00),
+    'ansiyellow':      (0xff, 0xff, 0x00),
+    'ansiblue':        (0x00, 0x00, 0xff),
+    'ansifuchsia':     (0xff, 0x00, 0xff),
+    'ansiturquoise':   (0x00, 0xff, 0xff),
 }
 
 
 assert set(FG_ANSI_COLORS) == set(ANSI_COLOR_NAMES)
 assert set(BG_ANSI_COLORS) == set(ANSI_COLOR_NAMES)
 assert set(ANSI_COLORS_TO_RGB) == set(ANSI_COLOR_NAMES)
+
+
+def _get_closest_ansi_color(r, g, b, exclude=()):
+    """
+    Find closest ANSI color. Return it by name.
+
+    :param r: Red (Between 0 and 255.)
+    :param g: Green (Between 0 and 255.)
+    :param b: Blue (Between 0 and 255.)
+    :param exclude: A tuple of color names to exclude. (E.g. ``('ansired', )``.)
+    """
+    assert isinstance(exclude, tuple)
+
+    # When we have a bit of saturation, avoid the gray-like colors, otherwise,
+    # too often the distance to the gray color is less.
+    saturation = abs(r - g) + abs(g - b) + abs(b - r)  # Between 0..510
+
+    if saturation > 30:
+        exclude += ('ansilightgray', 'ansidarkgray', 'ansiwhite', 'ansiblack')
+
+    # Take the closest color.
+    # (Thanks to Pygments for this part.)
+    distance = 257*257*3  # "infinity" (>distance from #000000 to #ffffff)
+    match = 'ansidefault'
+
+    for name, (r2, g2, b2) in ANSI_COLORS_TO_RGB.items():
+        if name != 'ansidefault' and name not in exclude:
+            d = (r - r2) ** 2 + (g - g2) ** 2 + (b - b2) ** 2
+
+            if d < distance:
+                match = name
+                distance = d
+
+    return match
 
 
 class _16ColorCache(dict):
@@ -114,21 +147,19 @@ class _16ColorCache(dict):
         assert isinstance(bg, bool)
         self.bg = bg
 
-    def __missing__(self, value):
+    def get_code(self, value, exclude=()):
+        """
+        Return a (ansi_code, ansi_name) tuple. (E.g. ``(44, 'ansiblue')``.) for
+        a given (r,g,b) value.
+        """
+        key = (value, exclude)
+        if key not in self:
+            self[key] = self._get(value, exclude)
+        return self[key]
+
+    def _get(self, value, exclude=()):
         r, g, b = value
-
-        # Find closest color.
-        # (Thanks to Pygments for this!)
-        distance = 257*257*3  # "infinity" (>distance from #000000 to #ffffff)
-        match = 'default'
-
-        for name, (r2, g2, b2) in ANSI_COLORS_TO_RGB.items():
-            if name != 'default':
-                d = (r - r2) ** 2 + (g - g2) ** 2 + (b - b2) ** 2
-
-                if d < distance:
-                    match = name
-                    distance = d
+        match = _get_closest_ansi_color(r, g, b, exclude=exclude)
 
         # Turn color name into code.
         if self.bg:
@@ -137,7 +168,7 @@ class _16ColorCache(dict):
             code = FG_ANSI_COLORS[match]
 
         self[value] = code
-        return code
+        return code, match
 
 
 class _256ColorCache(dict):
@@ -214,19 +245,17 @@ class _EscapeCodeCache(dict):
 
     :param true_color: When True, use 24bit colors instead of 256 colors.
     """
-    def __init__(self, true_color=False, term='xterm'):
+    def __init__(self, true_color=False, ansi_colors_only=False):
         assert isinstance(true_color, bool)
         self.true_color = true_color
-        self.term = term
+        self.ansi_colors_only = to_simple_filter(ansi_colors_only)
 
     def __missing__(self, attrs):
         fgcolor, bgcolor, bold, underline, italic, blink, reverse = attrs
         parts = []
 
-        if fgcolor:
-            parts.extend(self._color_to_code(fgcolor))
-        if bgcolor:
-            parts.extend(self._color_to_code(bgcolor, True))
+        parts.extend(self._colors_to_code(fgcolor, bgcolor))
+
         if bold:
             parts.append('1')
         if italic:
@@ -258,42 +287,58 @@ class _EscapeCodeCache(dict):
             b = rgb & 0xff
             return r, g, b
 
-    def _color_to_code(self, color, bg=False):
+    def _colors_to_code(self, fg_color, bg_color):
         " Return a tuple with the vt100 values  that represent this color. "
-        table = BG_ANSI_COLORS if bg else FG_ANSI_COLORS
+        # When requesting ANSI colors only, and both fg/bg color were converted
+        # to ANSI, ensure that the foreground and background color are not the
+        # same. (Unless they were explicitely defined to be the same color.)
+        fg_ansi = [()]
 
-        # 16 ANSI colors. (Given by name.)
-        if color in table:
-            result = (table[color], )
+        def get(color, bg):
+            table = BG_ANSI_COLORS if bg else FG_ANSI_COLORS
 
-        # RGB colors. (Defined as 'ffffff'.)
-        else:
-            try:
-                rgb = self._color_name_to_rgb(color)
-            except ValueError:
+            if color is None:
                 return ()
 
-            # When only 16 colors are supported, use that.
-            if self._supports_only_16_colors():
-                if bg:
-                    result = (_16_bg_colors[rgb], )
-                else:
-                    result = (_16_fg_colors[rgb], )
+            # 16 ANSI colors. (Given by name.)
+            elif color in table:
+                return (table[color], )
 
-            # True colors. (Only when this feature is enabled.)
-            elif self.true_color:
-                r, g, b = rgb
-                result = (48 if bg else 38, 2, r, g, b)
-
-            # 256 RGB colors.
+            # RGB colors. (Defined as 'ffffff'.)
             else:
-                result = (48 if bg else 38, 5, _256_colors[rgb])
+                try:
+                    rgb = self._color_name_to_rgb(color)
+                except ValueError:
+                    return ()
+
+                # When only 16 colors are supported, use that.
+                if self.ansi_colors_only():
+                    if bg:  # Background.
+                        if fg_color != bg_color:
+                            exclude = (fg_ansi[0], )
+                        else:
+                            exclude = ()
+                        code, name = _16_bg_colors.get_code(rgb, exclude=exclude)
+                        return (code, )
+                    else:  # Foreground.
+                        code, name = _16_fg_colors.get_code(rgb)
+                        fg_ansi[0] = name
+                        return (code, )
+
+                # True colors. (Only when this feature is enabled.)
+                elif self.true_color:
+                    r, g, b = rgb
+                    return (48 if bg else 38, 2, r, g, b)
+
+                # 256 RGB colors.
+                else:
+                    return (48 if bg else 38, 5, _256_colors[rgb])
+
+        result = []
+        result.extend(get(fg_color, False))
+        result.extend(get(bg_color, True))
 
         return map(six.text_type, result)
-
-    def _supports_only_16_colors(self):
-        " True when the given terminal only supports 16 colors. "
-        return self.term in ('linux', 'eterm-color')
 
 
 def _get_size(fileno):
@@ -314,7 +359,10 @@ def _get_size(fileno):
     buf = array.array(b'h' if six.PY2 else u'h', [0, 0, 0, 0])
 
     # Do TIOCGWINSZ (Get)
-    fcntl.ioctl(fileno, termios.TIOCGWINSZ, buf, True)
+    # Note: We should not pass 'True' as a fourth parameter to 'ioctl'. (True
+    #       is the default.) This causes segmentation faults on some systems.
+    #       See: https://github.com/jonathanslenders/python-prompt-toolkit/pull/364
+    fcntl.ioctl(fileno, termios.TIOCGWINSZ, buf)
 
     # Return rows, cols
     return buf[0], buf[1]
@@ -325,11 +373,14 @@ class Vt100_Output(Output):
     :param get_size: A callable which returns the `Size` of the output terminal.
     :param stdout: Any object with has a `write` and `flush` method + an 'encoding' property.
     :param true_color: Use 24bit color instead of 256 colors. (Can be a :class:`SimpleFilter`.)
+        When `ansi_colors_only` is set, only 16 colors are used.
+    :param ansi_colors_only: Restrict to 16 ANSI colors only.
     :param term: The terminal environment variable. (xterm, xterm-256color, linux, ...)
     :param write_binary: Encode the output before writing it. If `True` (the
         default), the `stdout` object is supposed to expose an `encoding` attribute.
     """
-    def __init__(self, stdout, get_size, true_color=False, term=None, write_binary=True):
+    def __init__(self, stdout, get_size, true_color=False,
+                 ansi_colors_only=None, term=None, write_binary=True):
         assert callable(get_size)
         assert term is None or isinstance(term, six.text_type)
         assert all(hasattr(stdout, a) for a in ('write', 'flush'))
@@ -344,22 +395,39 @@ class Vt100_Output(Output):
         self.true_color = to_simple_filter(true_color)
         self.term = term or 'xterm'
 
+        # ANSI colors only?
+        if ansi_colors_only is None:
+            # When not given, use the following default.
+            ANSI_COLORS_ONLY = bool(os.environ.get(
+                'PROMPT_TOOLKIT_ANSI_COLORS_ONLY', False))
+
+            @Condition
+            def ansi_colors_only():
+                return ANSI_COLORS_ONLY or term in ('linux', 'eterm-color')
+        else:
+            ansi_colors_only = to_simple_filter(ansi_colors_only)
+
+        self.ansi_colors_only = ansi_colors_only
+
         # Cache for escape codes.
-        self._escape_code_cache = _EscapeCodeCache(true_color=False, term=term)
-        self._escape_code_cache_true_color = _EscapeCodeCache(true_color=True, term=term)
+        self._escape_code_cache = _EscapeCodeCache(ansi_colors_only=ansi_colors_only)
+        self._escape_code_cache_true_color = _EscapeCodeCache(
+            true_color=True, ansi_colors_only=ansi_colors_only)
 
     @classmethod
-    def from_pty(cls, stdout, true_color=False, term=None):
+    def from_pty(cls, stdout, true_color=False, ansi_colors_only=None, term=None):
         """
         Create an Output class from a pseudo terminal.
         (This will take the dimensions by reading the pseudo
         terminal attributes.)
         """
+        assert stdout.isatty()
         def get_size():
             rows, columns = _get_size(stdout.fileno())
             return Size(rows=rows, columns=columns)
 
-        return cls(stdout, get_size, true_color=true_color, term=term)
+        return cls(stdout, get_size, true_color=true_color,
+                   ansi_colors_only=ansi_colors_only, term=term)
 
     def fileno(self):
         " Return file descriptor. "
@@ -444,7 +512,7 @@ class Vt100_Output(Output):
 
         :param attrs: `Attrs` instance.
         """
-        if self.true_color():
+        if self.true_color() and not self.ansi_colors_only():
             self.write_raw(self._escape_code_cache_true_color[attrs])
         else:
             self.write_raw(self._escape_code_cache[attrs])

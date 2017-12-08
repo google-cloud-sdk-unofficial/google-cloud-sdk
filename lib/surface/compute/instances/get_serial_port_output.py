@@ -34,28 +34,24 @@ class GetSerialPortOutput(base_classes.BaseCommand):
     """Add expected arguments."""
     instance_flags.INSTANCE_ARG.AddArgument(parser)
 
-    port = parser.add_argument(
+    parser.add_argument(
         '--port',
-        help=('The number of the requested serial port. '
-              'Can be 1-4, default is 1.'),
-        type=arg_parsers.BoundedInt(1, 4))
-    port.detailed_help = """\
+        type=arg_parsers.BoundedInt(1, 4),
+        help="""\
         Instances can support up to four serial port outputs, numbered 1 through
         4. By default, this command will return the output of the first serial
         port. Setting this flag will return the output of the requested serial
         port.
-        """
-    start = parser.add_argument(
+        """)
+    parser.add_argument(
         '--start',
-        help=('The starting byte position of serial port data requested.'),
-        type=int)
-
-    start.detailed_help = """\
+        type=int,
+        help="""\
         Specifies the byte index (zero-based) of the first byte you want
         returned.  Use this flag if you want to continue getting the output from
         a previous request that was too long to return in one attempt.  The last
         byte returned in a request will be reported on STDERR.
-        """
+        """)
 
   def Run(self, args):
     instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(

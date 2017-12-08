@@ -80,18 +80,19 @@ def _Args(parser):
       'name',
       metavar='NAME',
       help='The name of the cluster to upgrade.')
-  cv = flags.AddClusterVersionFlag(parser, 'master or nodes')
-  cv.detailed_help = """\
-    The Kubernetes release version to which to upgrade the cluster's nodes.
+  flags.AddClusterVersionFlag(
+      parser,
+      help="""\
+The Kubernetes release version to which to upgrade the cluster's nodes.
 
-    If provided, the --cluster-version must be no greater than the cluster
-    master's minor version (x.*X*.x), and must be a latest patch version
-    (x.x.*X*).
+If provided, the --cluster-version must be no greater than the cluster
+master's minor version (x.*X*.x), and must be a latest patch version
+(x.x.*X*).
 
-    You can find the list of allowed versions for upgrades by running:
+You can find the list of allowed versions for upgrades by running:
 
-      $ gcloud container get-server-config
-  """
+  $ gcloud container get-server-config
+""")
   parser.add_argument(
       '--node-pool',
       help='The node pool to upgrade.')

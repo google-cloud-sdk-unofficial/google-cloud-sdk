@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.cloudbuild import snapshot
 from googlecloudsdk.api_lib.storage import storage_api
 from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.calliope import actions
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.cloudbuild import execution
@@ -88,6 +89,27 @@ class Submit(base.CreateCommand):
              'assumed (eg "10" is 10 seconds).',
         action=actions.StoreProperty(properties.VALUES.container.build_timeout),
     )
+    parser.add_argument(
+        '--substitutions',
+        metavar='```_```KEY=VALUE',
+        type=arg_parsers.ArgDict(),
+        help="""\
+Parameters to be substituted in the build specification.
+
+For example (using some nonsensical substitution keys; all keys must begin with
+an underscore):
+
+    $ gcloud container builds submit . \\
+        --config config.yaml \\
+        --substitutions _FAVORITE_COLOR=blue,_NUM_CANDIES=10
+
+This will result in a build where every occurrence of ```${_FAVORITE_COLOR}```
+in certain fields is replaced by "blue", and similarly for ```${_NUM_CANDIES}```
+and "10".
+
+For more details, see:
+https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
+""")
     build_config = parser.add_mutually_exclusive_group(required=True)
     build_config.add_argument(
         '--tag', '-t',
@@ -168,9 +190,12 @@ class Submit(base.CreateCommand):
               ),
           ],
           timeout=timeout_str,
+          substitutions=cloudbuild_util.EncodeSubstitutions(args.substitutions,
+                                                            messages)
       )
     elif args.config:
-      build_config = config.LoadCloudbuildConfigFromPath(args.config, messages)
+      build_config = config.LoadCloudbuildConfigFromPath(
+          args.config, messages, params=args.substitutions)
 
     # If timeout was set by flag, overwrite the config file.
     if timeout_str:

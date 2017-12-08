@@ -258,17 +258,16 @@ class Lint(base.Command):
 
   @staticmethod
   def Args(parser):
-    checks_arg = parser.add_argument(
+    parser.add_argument(
         'checks',
         metavar='CHECKS',
         nargs='*',
         default=[],
-        help='Restrict validation to the specified checks.')
-    checks_arg.detailed_help = """\
+        help="""\
 A list of checks to apply to gcloud groups and commands.
 If omitted will run all available checks.
 Available Checks:
-""" + _FormatCheckList(_LINT_CHECKS)
+""" + _FormatCheckList(_LINT_CHECKS))
 
   def Run(self, args):
     # pylint: disable=protected-access

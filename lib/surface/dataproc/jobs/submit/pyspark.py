@@ -160,7 +160,7 @@ class PySparkBase(object):
     """Populates the pysparkJob member of the given job."""
 
     pyspark_job = messages.PySparkJob(
-        args=args.job_args,
+        args=args.job_args or [],
         archiveUris=files_by_type['archives'],
         fileUris=files_by_type['files'],
         jarFileUris=files_by_type['jars'],

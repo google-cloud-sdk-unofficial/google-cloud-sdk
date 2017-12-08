@@ -27,7 +27,7 @@ from .enums import DEFAULT_BUFFER, SEARCH_BUFFER, EditingMode
 from .filters import IsDone, HasFocus, RendererHeightIsKnown, to_simple_filter, to_cli_filter, Condition
 from .history import InMemoryHistory
 from .interface import CommandLineInterface, Application, AbortAction
-from .key_binding.manager import KeyBindingManager
+from .key_binding.defaults import load_key_bindings_for_prompt
 from .key_binding.registry import Registry
 from .keys import Keys
 from .layout import Window, HSplit, FloatContainer, Float
@@ -37,7 +37,7 @@ from .layout.dimension import LayoutDimension
 from .layout.lexers import PygmentsLexer
 from .layout.margins import PromptMargin, ConditionalMargin
 from .layout.menus import CompletionsMenu, MultiColumnCompletionsMenu
-from .layout.processors import PasswordProcessor, ConditionalProcessor, AppendAutoSuggestion, HighlightSearchProcessor, HighlightSelectionProcessor
+from .layout.processors import PasswordProcessor, ConditionalProcessor, AppendAutoSuggestion, HighlightSearchProcessor, HighlightSelectionProcessor, DisplayMultipleCursors
 from .layout.prompt import DefaultPrompt
 from .layout.screen import Char
 from .layout.toolbars import ValidationToolbar, SystemToolbar, ArgToolbar, SearchToolbar
@@ -77,8 +77,10 @@ __all__ = (
     'prompt',
     'prompt_async',
     'create_confirm_application',
+    'run_application',
     'confirm',
     'print_tokens',
+    'clear',
 )
 
 
@@ -96,12 +98,14 @@ def create_eventloop(inputhook=None, recognize_win32_paste=True):
         return Loop(inputhook=inputhook)
 
 
-def create_output(stdout=None, true_color=False):
+def create_output(stdout=None, true_color=False, ansi_colors_only=None):
     """
     Return an :class:`~prompt_toolkit.output.Output` instance for the command
     line.
 
     :param true_color: When True, use 24bit colors instead of 256 colors.
+        (`bool` or :class:`~prompt_toolkit.filters.SimpleFilter`.)
+    :param ansi_colors_only: When True, restrict to 16 ANSI colors only.
         (`bool` or :class:`~prompt_toolkit.filters.SimpleFilter`.)
     """
     stdout = stdout or sys.__stdout__
@@ -117,7 +121,9 @@ def create_output(stdout=None, true_color=False):
         if PY2:
             term = term.decode('utf-8')
 
-        return Vt100_Output.from_pty(stdout, true_color=true_color, term=term)
+        return Vt100_Output.from_pty(
+            stdout, true_color=true_color,
+            ansi_colors_only=ansi_colors_only, term=term)
 
 
 def create_asyncio_eventloop(loop=None):
@@ -256,7 +262,8 @@ def create_prompt_layout(message='', lexer=None, is_password=False,
             HasFocus(SEARCH_BUFFER)),
         HighlightSelectionProcessor(),
         ConditionalProcessor(AppendAutoSuggestion(), HasFocus(DEFAULT_BUFFER) & ~IsDone()),
-        ConditionalProcessor(PasswordProcessor(), is_password)
+        ConditionalProcessor(PasswordProcessor(), is_password),
+        DisplayMultipleCursors(DEFAULT_BUFFER),
     ]
 
     if extra_input_processors:
@@ -288,7 +295,7 @@ def create_prompt_layout(message='', lexer=None, is_password=False,
             # Reserve the space, either when there are completions, or when
             # `complete_while_typing` is true and we expect completions very
             # soon.
-            if buff.complete_while_typing(cli) or buff.complete_state is not None:
+            if buff.complete_while_typing() or buff.complete_state is not None:
                 return LayoutDimension(min=reserve_space_for_menu)
 
         return LayoutDimension()
@@ -403,10 +410,10 @@ def create_prompt_application(
     :param editing_mode: ``EditingMode.VI`` or ``EditingMode.EMACS``.
     :param vi_mode: `bool`, if True, Identical to ``editing_mode=EditingMode.VI``.
     :param complete_while_typing: `bool` or
-        :class:`~prompt_toolkit.filters.CLIFilter`. Enable autocompletion while
-        typing.
+        :class:`~prompt_toolkit.filters.SimpleFilter`. Enable autocompletion
+        while typing.
     :param enable_history_search: `bool` or
-        :class:`~prompt_toolkit.filters.CLIFilter`. Enable up-arrow parting
+        :class:`~prompt_toolkit.filters.SimpleFilter`. Enable up-arrow parting
         string matching.
     :param lexer: :class:`~prompt_toolkit.layout.lexers.Lexer` to be used for
         the syntax highlighting.
@@ -442,9 +449,9 @@ def create_prompt_application(
         be edited by the user.)
     """
     if key_bindings_registry is None:
-        key_bindings_registry = KeyBindingManager.for_prompt(
+        key_bindings_registry = load_key_bindings_for_prompt(
             enable_system_bindings=enable_system_bindings,
-            enable_open_in_editor=enable_open_in_editor).registry
+            enable_open_in_editor=enable_open_in_editor)
 
     # Ensure backwards-compatibility, when `vi_mode` is passed.
     if vi_mode:
@@ -499,6 +506,7 @@ def create_prompt_application(
         mouse_support=mouse_support,
         editing_mode=editing_mode,
         erase_when_done=erase_when_done,
+        reverse_vi_search_direction=True,
         on_abort=on_abort,
         on_exit=on_exit)
 
@@ -586,7 +594,7 @@ def run_application(
         cli.on_stop += stop_refresh_loop
 
     # Replace stdout.
-    patch_context = cli.patch_stdout_context() if patch_stdout else DummyContext()
+    patch_context = cli.patch_stdout_context(raw=True) if patch_stdout else DummyContext()
 
     # Read input and return it.
     if return_asyncio_coroutine:
@@ -594,27 +602,27 @@ def run_application(
         exec_context = {'patch_context': patch_context, 'cli': cli,
                         'Document': Document}
         exec_(textwrap.dedent('''
-        import asyncio
-
-        @asyncio.coroutine
         def prompt_coro():
-            with patch_context:
-                result = yield from cli.run_async(reset_current_buffer=False)
+            # Inline import, because it slows down startup when asyncio is not
+            # needed.
+            import asyncio
 
-            if isinstance(result, Document):  # Backwards-compatibility.
-                return result.text
-            return result
+            @asyncio.coroutine
+            def run():
+                with patch_context:
+                    result = yield from cli.run_async()
+
+                if isinstance(result, Document):  # Backwards-compatibility.
+                    return result.text
+                return result
+            return run()
         '''), exec_context)
 
         return exec_context['prompt_coro']()
     else:
-        # Note: We pass `reset_current_buffer=False`, because that way it's easy to
-        #       give DEFAULT_BUFFER a default value, without it getting erased. We
-        #       don't have to reset anyway, because this is the first and only time
-        #       that this CommandLineInterface will run.
         try:
             with patch_context:
-                result = cli.run(reset_current_buffer=False)
+                result = cli.run()
 
             if isinstance(result, Document):  # Backwards-compatibility.
                 return result.text
@@ -663,7 +671,7 @@ def confirm(message='Confirm (y or n) '):
     return run_application(app)
 
 
-def print_tokens(tokens, style=None, true_color=False):
+def print_tokens(tokens, style=None, true_color=False, file=None):
     """
     Print a list of (Token, text) tuples in the given style to the output.
     E.g.::
@@ -681,16 +689,29 @@ def print_tokens(tokens, style=None, true_color=False):
     :param tokens: List of ``(Token, text)`` tuples.
     :param style: :class:`.Style` instance for the color scheme.
     :param true_color: When True, use 24bit colors instead of 256 colors.
+    :param file: The output file. This can be `sys.stdout` or `sys.stderr`.
     """
+    if style is None:
+        style = DEFAULT_STYLE
     assert isinstance(style, Style)
 
-    output = create_output(true_color=true_color)
+    output = create_output(true_color=true_color, stdout=file)
     renderer_print_tokens(output, tokens, style)
+
+
+def clear():
+    """
+    Clear the screen.
+    """
+    out = create_output()
+    out.erase_screen()
+    out.cursor_goto(0, 0)
+    out.flush()
 
 
 # Deprecated alias for `prompt`.
 get_input = prompt
-# Deprecated alias for create_default_layout
+# Deprecated alias for create_prompt_layout
 create_default_layout = create_prompt_layout
-# Deprecated alias for create_default_application
+# Deprecated alias for create_prompt_application
 create_default_application = create_prompt_application

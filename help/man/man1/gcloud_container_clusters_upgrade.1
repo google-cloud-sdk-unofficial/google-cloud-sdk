@@ -52,7 +52,7 @@ The name of the cluster to upgrade.
 .RS 2m
 .TP 2m
 \fB\-\-async\fR
-Don't wait for the operation to complete. Use \fB\-\-no\-async\fR to disable.
+Don't wait for the operation to complete.
 
 .TP 2m
 \fB\-\-cluster\-version\fR=\fICLUSTER_VERSION\fR
@@ -84,7 +84,6 @@ following command.
 $ gcloud container get\-server\-config
 .RE
 
-
 .TP 2m
 \fB\-\-master\fR
 Upgrade the cluster's master to the latest version of Kubernetes supported on
@@ -97,11 +96,12 @@ The node pool to upgrade.
 .TP 2m
 \fB\-\-wait\fR
 DEPRECATED, use \-\-no\-async. Poll the operation for completion after issuing a
-create request. Use \fB\-\-no\-wait\fR to disable.
+create request.
 
 .TP 2m
 \fB\-\-zone\fR=\fIZONE\fR, \fB\-z\fR \fIZONE\fR
-The compute zone (e.g. us\-central1\-a) for the cluster
+The compute zone (e.g. us\-central1\-a) for the cluster. Overrides the default
+\fBcompute/zone\fR property value for this command invocation.
 
 
 .RE

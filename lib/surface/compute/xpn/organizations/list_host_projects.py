@@ -42,7 +42,7 @@ class ListHostProjects(base.ListCommand):
     return command_lib_util.PROJECTS_COLLECTION
 
   def Run(self, args):
-    xpn_client = xpn_api.GetXpnClient(api_version='beta')
+    xpn_client = xpn_api.GetXpnClient()
     project = properties.VALUES.core.project.Get(required=True)
     organization_id = args.id
     return xpn_client.ListOrganizationHostProjects(

@@ -39,7 +39,6 @@ simply the file name, or the file name preceded by enough path components to
 differentiate it from other files with the same name. It is an error to provide
 a file name that is not unique in the debug target.
 
-
 .TP 2m
 \fILOG_FORMAT_STRING\fR
 A format string which will be logged every time the logpoint location is
@@ -51,7 +50,6 @@ The value of the expression will then replace the {} expression in the resulting
 log output. For example, if you specify the format string "a={a}, b={b}", and
 the logpoint is hit when local variable a is 1 and b is 2, the resulting log
 output would be "a=1, b=2".
-
 
 
 .RE
@@ -66,7 +64,6 @@ A condition to restrict when the log output is generated. When the logpoint is
 hit, the condition will be evaluated, and the log output will be generated only
 if the condition is true.
 
-
 .TP 2m
 \fB\-\-log\-level\fR=\fILOG_LEVEL\fR; default="info"
 The logging level to use when producing the log message. \fILOG_LEVEL\fR must be
@@ -79,7 +76,6 @@ list', or it may be a regular expression uniquely specifying a debuggee based on
 its description or name. For App Engine projects, if not specified, the default
 target is the most recent deployment of the default module and version.
 
-
 .TP 2m
 \fB\-\-wait\fR=\fIWAIT\fR; default="10"
 The number of seconds to wait to ensure that no error is returned from a
@@ -87,7 +83,6 @@ debugger agent when creating the logpoint. When a logpoint is created, there
 will be a delay before the agents see and apply the logpoint. Until at least one
 agent has attempted to enable the logpoint, it cannot be determined if the
 logpoint is valid.
-
 
 
 .RE

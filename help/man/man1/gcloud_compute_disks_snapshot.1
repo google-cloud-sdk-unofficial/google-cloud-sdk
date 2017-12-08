@@ -11,7 +11,7 @@ gcloud compute disks snapshot \- create snapshots of Google Compute Engine persi
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute disks snapshot\fR \fIDISK_NAME\fR [\fIDISK_NAME\fR\ ...] [\fB\-\-async\fR] [\fB\-\-csek\-key\-file\fR=\fIFILE\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-snapshot\-names\fR=\fISNAPSHOT_NAME\fR,[\fISNAPSHOT_NAME\fR,...]] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute disks snapshot\fR \fIDISK_NAME\fR [\fIDISK_NAME\fR\ ...] [\fB\-\-async\fR] [\fB\-\-csek\-key\-file\fR=\fIFILE\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-guest\-flush\fR] [\fB\-\-snapshot\-names\fR=\fISNAPSHOT_NAME\fR,[\fISNAPSHOT_NAME\fR,...]] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -56,6 +56,12 @@ more details.
 .TP 2m
 \fB\-\-description\fR=\fIDESCRIPTION\fR
 An optional, textual description for the snapshots being created.
+
+.TP 2m
+\fB\-\-guest\-flush\fR
+Create an application consistent snapshot by informing the OS to prepare for the
+snapshot process. Currently only supported on Windows instances using the Volume
+Shadow Copy Service (VSS).
 
 .TP 2m
 \fB\-\-snapshot\-names\fR=\fISNAPSHOT_NAME\fR,[\fISNAPSHOT_NAME\fR,...]

@@ -13,10 +13,10 @@
 # limitations under the License.
 """Add tag command."""
 
-
 from containerregistry.client import docker_name
 from containerregistry.client.v2 import docker_image as v2_image
 from containerregistry.client.v2 import docker_session as v2_session
+from containerregistry.client.v2_2 import docker_http
 from containerregistry.client.v2_2 import docker_image as v2_2_image
 from containerregistry.client.v2_2 import docker_session as v2_2_session
 from googlecloudsdk.api_lib.container.images import util
@@ -30,13 +30,15 @@ class Create(base.CreateCommand):
   """Adds tags to existing image."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           The container images add-tag command adds the tag specified in
           the second tag parameter to the image referenced in the first
           tag parameter. Repositories must be hosted by the Google Container
           Registry.
       """,
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
           Add a tag to another tag:
 
             $ {{command}} gcr.io/myproject/myimage:mytag1
@@ -65,32 +67,39 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('src_image',
-                        help=('The fully qualified image '
-                              'reference to add a tag for.\n'
-                              '*.gcr.io/repository:tag'
-                              '*.gcr.io/repository@digest'))
-    parser.add_argument('dest_image',
-                        help=('The fully qualified image '
-                              'reference to be the new tag.\n'
-                              '*.gcr.io/repository:tag'))
+    parser.add_argument(
+        'src_image',
+        help=('The fully qualified image '
+              'reference to add a tag for.\n'
+              '*.gcr.io/repository:tag'
+              '*.gcr.io/repository@digest'))
+    parser.add_argument(
+        'dest_image',
+        help=('The fully qualified image '
+              'reference to be the new tag.\n'
+              '*.gcr.io/repository:tag'))
 
   def Run(self, args):
+    # pylint: disable=missing-docstring
     def Push(image, dest_name, creds, http_obj, src_name, session_push_type):
-      with session_push_type(dest_name, creds, http_obj) as push:
-        push.upload(image)
-        log.CreatedResource(dest_name)
-      log.UpdatedResource(src_name)
+      try:
+        with session_push_type(dest_name, creds, http_obj) as push:
+          push.upload(image)
+          log.CreatedResource(dest_name)
+        log.UpdatedResource(src_name)
+      except docker_http.V2DiagnosticException as err:
+        raise util.GcloudifyRecoverableV2Errors(
+            err, {403: 'Tagging failed, access denied: {0}'.format(dest_name)})
 
     http_obj = http.Http()
 
     src_name = util.GetDockerImageFromTagOrDigest(args.src_image)
     dest_name = docker_name.Tag(args.dest_image)
 
-    console_io.PromptContinue('This will tag {0} with {1}'
-                              .format(src_name, dest_name),
-                              default=True,
-                              cancel_on_no=True)
+    console_io.PromptContinue(
+        'This will tag {0} with {1}'.format(src_name, dest_name),
+        default=True,
+        cancel_on_no=True)
     creds = util.CredentialProvider()
 
     with v2_2_image.FromRegistry(src_name, creds, http_obj) as v2_2_img:

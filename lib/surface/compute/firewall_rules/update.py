@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.compute.firewall_rules import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class UpdateFirewall(base_classes.ReadWriteCommand):
+class UpdateFirewall(base_classes.BaseCommand):
   """Update a firewall rule."""
   with_egress_firewall = False
 
@@ -41,10 +41,14 @@ class UpdateFirewall(base_classes.ReadWriteCommand):
   def resource_type(self):
     return 'firewalls'
 
-  def CreateReference(self, args):
+  def Format(self, unused_args):
+    # Do not print the modifed the firewall in the output.
+    return 'none'
+
+  def _CreateReference(self, args):
     return self.FIREWALL_RULE_ARG.ResolveAsResource(args, self.resources)
 
-  def Run(self, args):
+  def ValidateArgument(self, args):
     self.new_allowed = firewalls_utils.ParseRules(
         args.allow, self.messages, firewalls_utils.ActionType.ALLOW)
 
@@ -60,26 +64,42 @@ class UpdateFirewall(base_classes.ReadWriteCommand):
       raise calliope_exceptions.ToolException(
           'At least one property must be modified.')
 
-    return super(UpdateFirewall, self).Run(args)
+  def Run(self, args):
+    self.ValidateArgument(args)
+    # Set the resource reference which used in composing resource-get request.
+    resource_reference = self._CreateReference(args)
+    get_request = self._GetGetRequest(resource_reference, args)
+    cleared_fields = []
+    objects = self.compute_client.MakeRequests([get_request])
 
-  def GetGetRequest(self, args):
+    new_object = self.Modify(args, objects[0], cleared_fields)
+
+    # If existing object is equal to the proposed object or if
+    # Modify() returns None, then there is no work to be done, so we
+    # print the resource and return.
+    if not new_object or objects[0] == new_object:
+      return objects[0]
+
+    with self.compute.IncludeFields(cleared_fields):
+      resource_list = self.compute_client.MakeRequests(
+          [self._GetSetRequest(args, new_object, objects[0])])
+
+    return resource_list
+
+  def _GetGetRequest(self, resource_reference, args):
     """Returns the request for the existing Firewall resource."""
-    return (self.service,
-            'Get',
-            self.messages.ComputeFirewallsGetRequest(
-                firewall=self.ref.Name(),
-                project=self.project))
+    return (self.service, 'Get', self.messages.ComputeFirewallsGetRequest(
+        firewall=resource_reference.Name(), project=self.project))
 
-  def GetSetRequest(self, args, replacement, existing):
-    return (self.service,
-            'Update',
-            self.messages.ComputeFirewallsUpdateRequest(
-                firewall=replacement.name,
-                firewallResource=replacement,
-                project=self.project))
+  def _GetSetRequest(self, args, replacement, existing):
+    request = (self.messages.ComputeFirewallsPatchRequest(
+        firewall=replacement.name,
+        firewallResource=replacement,
+        project=self.project))
+    return (self.service, 'Patch', request)
 
-  def Modify(self, args, existing):
-    """Returns a modified Firewall message."""
+  def Modify(self, args, existing, cleared_fields):
+    """Returns a modified Firewall message and included fields."""
     if args.allow is None:
       allowed = existing.allowed
     else:
@@ -90,6 +110,7 @@ class UpdateFirewall(base_classes.ReadWriteCommand):
     elif args.description is None:
       description = existing.description
     else:
+      cleared_fields.append('description')
       description = None
 
     if args.source_ranges:
@@ -97,6 +118,7 @@ class UpdateFirewall(base_classes.ReadWriteCommand):
     elif args.source_ranges is None:
       source_ranges = existing.sourceRanges
     else:
+      cleared_fields.append('sourceRanges')
       source_ranges = []
 
     if args.source_tags:
@@ -104,6 +126,7 @@ class UpdateFirewall(base_classes.ReadWriteCommand):
     elif args.source_tags is None:
       source_tags = existing.sourceTags
     else:
+      cleared_fields.append('sourceTags')
       source_tags = []
 
     if args.target_tags:
@@ -111,6 +134,7 @@ class UpdateFirewall(base_classes.ReadWriteCommand):
     elif args.target_tags is None:
       target_tags = existing.targetTags
     else:
+      cleared_fields.append('targetTags')
       target_tags = []
 
     new_firewall = self.messages.Firewall(
@@ -122,7 +146,6 @@ class UpdateFirewall(base_classes.ReadWriteCommand):
         sourceTags=source_tags,
         targetTags=target_tags,
     )
-
     return new_firewall
 
 
@@ -141,21 +164,24 @@ class AlphaUpdateFirewall(UpdateFirewall):
   """Update a firewall rule."""
   with_egress_firewall = True
 
+  def ValidateArgument(self, args):
+    super(AlphaUpdateFirewall, self).ValidateArgument(args)
+    if args.rules and args.allow:
+      raise firewalls_utils.ArgumentValidationError(
+          'Can NOT specify --rules and --allow in the same request.')
+
   @classmethod
   def Args(cls, parser):
     cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument(operation_type='update')
     cls.FIREWALL_RULE_ARG.AddArgument(parser)
     firewalls_utils.AddCommonArgs(parser, True, True)
 
-  def Modify(self, args, existing):
+  def Modify(self, args, existing, cleared_fields):
     """Returns a modified Firewall message."""
 
     # TODO(user): Remove the check once allow was deprecated.
-    if args.rules and args.allow:
-      raise firewalls_utils.ArgumentValidationError(
-          'Can NOT specify --rules and --allow in the same request.')
-
-    new_firewall = super(AlphaUpdateFirewall, self).Modify(args, existing)
+    new_firewall = super(AlphaUpdateFirewall, self).Modify(
+        args, existing, cleared_fields)
 
     if args.rules:
       if existing.allowed:
@@ -172,10 +198,13 @@ class AlphaUpdateFirewall(UpdateFirewall):
     else:
       new_firewall.priority = args.priority
 
-    if args.destination_ranges is None:
+    if args.destination_ranges:
+      new_firewall.destinationRanges = args.destination_ranges
+    elif args.destination_ranges is None:
       new_firewall.destinationRanges = existing.destinationRanges
     else:
-      new_firewall.destinationRanges = args.destination_ranges
+      new_firewall.destinationRanges = []
+      cleared_fields.append('destinationRanges')
 
     return new_firewall
 

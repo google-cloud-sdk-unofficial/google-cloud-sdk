@@ -48,6 +48,7 @@ class _BasePatch(object):
           on the command line after this command. Positional arguments are
           allowed.
     """
+    # TODO(b/35705305): move common flags to command_lib.sql.flags
     parser.add_argument(
         '--activation-policy',
         required=False,
@@ -119,13 +120,6 @@ class _BasePatch(object):
         help='Clear the database flags set on the instance. '
         'WARNING: Instance will be restarted.')
     parser.add_argument(
-        '--cpu',
-        type=int,
-        required=False,
-        help='A whole number value indicating how many cores are desired in'
-        'the machine. Both --cpu and --memory must be specified if a custom '
-        'machine type is desired, and the --tier flag must be omitted.')
-    parser.add_argument(
         '--enable-bin-log',
         action='store_true',
         default=None,  # Tri-valued: None => don't change the setting.
@@ -147,15 +141,6 @@ class _BasePatch(object):
         'instance',
         completion_resource='sql.instances',
         help='Cloud SQL instance ID.')
-    parser.add_argument(
-        '--memory',
-        type=arg_parsers.BinarySize(),
-        required=False,
-        help='A whole number value indicating how much memory is desired in '
-        'the machine. A size unit should be provided (eg. 3072MiB or 9GiB) - '
-        'if no units are specified, GiB is assumed. Both --cpu and --memory '
-        'must be specified if a custom machine type is desired, and the --tier '
-        'flag must be omitted.')
     parser.add_argument(
         '--pricing-plan',
         '-p',
@@ -324,9 +309,7 @@ class PatchBeta(_BasePatch, base.Command):
         '--storage-auto-increase',
         action='store_true',
         default=None,
-        help='Adds storage capacity whenever space is low. Up to 25 GB per '
-        'increase. All increases are permanent.',
-        detailed_help='Storage size can be increased, but it cannot be '
+        help='Storage size can be increased, but it cannot be '
         'decreased; storage increases are permanent for the life of the '
         'instance. With this setting enabled, a spike in storage requirements '
         'can result in permanently increased storage costs for your instance. '
@@ -363,6 +346,22 @@ class PatchBeta(_BasePatch, base.Command):
         '--maintenance-window-any',
         action='store_true',
         help='Removes the user-specified maintenance window.')
+    parser.add_argument(
+        '--cpu',
+        type=int,
+        required=False,
+        help='A whole number value indicating how many cores are desired in'
+        'the machine. Both --cpu and --memory must be specified if a custom '
+        'machine type is desired, and the --tier flag must be omitted.')
+    parser.add_argument(
+        '--memory',
+        type=arg_parsers.BinarySize(),
+        required=False,
+        help='A whole number value indicating how much memory is desired in '
+        'the machine. A size unit should be provided (eg. 3072MiB or 9GiB) - '
+        'if no units are specified, GiB is assumed. Both --cpu and --memory '
+        'must be specified if a custom machine type is desired, and the --tier '
+        'flag must be omitted.')
 
   def Run(self, args):
     """Updates settings of a Cloud SQL instance using the patch api method.

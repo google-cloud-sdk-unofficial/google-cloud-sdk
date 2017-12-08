@@ -20,7 +20,6 @@ from googlecloudsdk.api_lib.compute.backend_services import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
-from googlecloudsdk.core import properties
 
 
 class GetHealth(base.ListCommand):
@@ -38,8 +37,7 @@ class GetHealth(base.ListCommand):
         args,
         holder.resources,
         default_scope=backend_services_utils.GetDefaultScope(),
-        scope_lister=compute_flags.GetDefaultScopeLister(
-            holder.client, properties.VALUES.core.project))
+        scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
 
   def Run(self, args):
     """Returns a list of backendServiceGroupHealth objects."""

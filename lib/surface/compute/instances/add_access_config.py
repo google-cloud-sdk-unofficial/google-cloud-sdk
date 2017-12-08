@@ -31,27 +31,24 @@ DETAILED_HELP = {
 def _Args(parser, support_public_dns, support_network_tier):
   """Register parser args common to all tracks."""
 
-  access_config_name = parser.add_argument(
+  parser.add_argument(
       '--access-config-name',
       default=constants.DEFAULT_ACCESS_CONFIG_NAME,
-      help='Specifies the name of the new access configuration.')
-  access_config_name.detailed_help = """\
+      help="""\
       Specifies the name of the new access configuration. ``{0}''
       is used as the default if this flag is not provided.
-      """.format(constants.DEFAULT_ACCESS_CONFIG_NAME)
+      """.format(constants.DEFAULT_ACCESS_CONFIG_NAME))
 
-  address = parser.add_argument(
+  parser.add_argument(
       '--address',
       action=arg_parsers.StoreOnceAction,
-      help=('Specifies the external IP address of the new access '
-            'configuration.'))
-  address.detailed_help = """\
+      help="""\
       Specifies the external IP address of the new access
       configuration. If this is not specified, then the service will
       choose an available ephemeral IP address. If an explicit IP
       address is given, then that IP address must be reserved by the
       project and not be in use by another resource.
-      """
+      """)
 
   instance_flags.AddNetworkInterfaceArgs(parser)
   if support_public_dns:

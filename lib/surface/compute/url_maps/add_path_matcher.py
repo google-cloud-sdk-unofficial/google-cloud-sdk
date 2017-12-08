@@ -54,14 +54,13 @@ def _Args(parser):
       help=('If specified, a new host rule with the given hosts is created '
             'and the path matcher is tied to the new host rule.'))
 
-  existing_host = host_rule.add_argument(
+  host_rule.add_argument(
       '--existing-host',
-      help='An existing host rule to tie the new path matcher to.')
-  existing_host.detailed_help = """\
+      help="""\
       An existing host rule to tie the new path matcher to. Although
       host rules can contain more than one host, only a single host
       is needed to uniquely identify the host rule.
-      """
+      """)
 
   parser.add_argument(
       '--delete-orphaned-path-matcher',

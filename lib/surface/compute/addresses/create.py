@@ -14,7 +14,6 @@
 """Command for reserving IP addresses."""
 
 from googlecloudsdk.api_lib.compute import addresses_utils as utils
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.addresses import flags
 
@@ -24,29 +23,7 @@ def _Args(cls, parser):
 
   cls.ADDRESSES_ARG = flags.AddressArgument(required=False)
   cls.ADDRESSES_ARG.AddArgument(parser)
-
-  addresses = parser.add_argument(
-      '--addresses',
-      metavar='ADDRESS',
-      type=arg_parsers.ArgList(min_length=1),
-      help='Ephemeral IP addresses to promote to reserved status.')
-  addresses.detailed_help = """\
-      Ephemeral IP addresses to promote to reserved status. Only addresses
-      that are being used by resources in the project can be promoted. When
-      providing this flag, a parallel list of names for the addresses can
-      be provided. For example,
-
-        $ {command} ADDRESS-1 ADDRESS-2 --addresses 162.222.181.197,162.222.181.198 --region us-central1
-
-      will result in 162.222.181.197 being reserved as
-      'ADDRESS-1' and 162.222.181.198 as 'ADDRESS-2'. If
-      no names are given, randomly-generated names will be assigned
-      to the IP addresses.
-      """
-
-  parser.add_argument(
-      '--description',
-      help='An optional textual description for the addresses.')
+  flags.AddDescription(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
@@ -58,6 +35,7 @@ class Create(utils.AddressesMutator):
   @classmethod
   def Args(cls, parser):
     _Args(cls, parser)
+    flags.AddAddresses(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -67,6 +45,7 @@ class CreateAlpha(Create):
   @classmethod
   def Args(cls, parser):
     _Args(cls, parser)
+    flags.AddAddressesAndIPVersions(parser, required=False)
 
     parser.add_argument(
         '--network-tier',
@@ -86,10 +65,20 @@ class CreateAlpha(Create):
     """Override."""
     network_tier = self.ConstructNetworkTier(args)
 
+    if args.ip_version or (address is None and self.global_request):
+      ip_version = self.messages.Address.IpVersionValueValuesEnum(
+          args.ip_version or 'IPV4')
+    else:
+      # IP version is only specified in global requests if an address is not
+      # specified to determine whether an ipv4 or ipv6 address should be
+      # allocated.
+      ip_version = None
+
     return self.messages.Address(
         address=address,
         description=args.description,
         networkTier=network_tier,
+        ipVersion=ip_version,
         name=address_ref.Name())
 
 

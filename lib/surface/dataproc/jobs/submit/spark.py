@@ -178,7 +178,7 @@ class SparkBase(object):
     """Populates the sparkJob member of the given job."""
 
     spark_job = messages.SparkJob(
-        args=args.job_args,
+        args=args.job_args or [],
         archiveUris=files_by_type['archives'],
         fileUris=files_by_type['files'],
         jarFileUris=files_by_type['jars'],

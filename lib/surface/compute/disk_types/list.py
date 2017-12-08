@@ -49,13 +49,12 @@ class ListAlpha(base.ListCommand):
         completion_resource='compute.diskTypes',
         help=('If provided, show details for the specified names and/or URIs '
               'of resources.'))
-    regexp = parser.add_argument(
+    parser.add_argument(
         '--regexp', '-r',
-        help='A regular expression to filter the names of the results on.')
-    regexp.detailed_help = """\
+        help="""\
         A regular expression to filter the names of the results on. Any names
         that do not match the entire regular expression will be filtered out.
-        """
+        """)
 
     scope = parser.add_mutually_exclusive_group()
     scope.add_argument(

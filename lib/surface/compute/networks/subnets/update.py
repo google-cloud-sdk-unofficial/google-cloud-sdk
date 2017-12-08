@@ -16,23 +16,24 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.networks.subnets import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base_classes.BaseAsyncMutator):
   """Updates properties of an existing Google Compute Engine subnetwork."""
 
-  @staticmethod
-  def Args(parser):
+  SUBNETWORK_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
     """The command arguments handler.
 
     Args:
       parser: An argparse.ArgumentParser instance.
     """
-    parser.add_argument(
-        'name',
-        help='The name of the subnetwork.')
+    cls.SUBNETWORK_ARG = flags.SubnetworkArgument()
+    cls.SUBNETWORK_ARG.AddArgument(parser)
 
     parser.add_argument(
         '--enable-private-ip-google-access',
@@ -40,11 +41,6 @@ class Update(base_classes.BaseAsyncMutator):
         default=None,  # Tri-valued, None => do not change.
         help=('Enable/disable access to Google Cloud APIs from this subnet for '
               'instances without a public ip address.'))
-
-    flags.AddRegionFlag(
-        parser,
-        resource_type='subnetwork',
-        operation_type='update')
 
   @property
   def service(self):
@@ -61,7 +57,7 @@ class Update(base_classes.BaseAsyncMutator):
   def CreateRequests(self, args):
     """Returns a list of (request method, protobuf) tuples for the requests."""
     request_list = []
-    subnet_ref = self.CreateRegionalReference(args.name, args.region)
+    subnet_ref = self.SUBNETWORK_ARG.ResolveAsResource(args, self.resources)
 
     if args.enable_private_ip_google_access is not None:
       google_access = self.messages.SubnetworksSetPrivateIpGoogleAccessRequest()

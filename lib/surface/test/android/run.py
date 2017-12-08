@@ -43,7 +43,7 @@ class Run(base.ListCommand):
           *{command}* invokes and monitors tests in Firebase Test Lab for
           Android.
 
-          Three main types of tests are currently supported:
+          Two main types of tests are currently supported:
           - *robo*: runs a smart, automated exploration of the activities in
             your Android app which records any installation failures or crashes
             and builds an activity map with associated screenshots and video.
@@ -92,7 +92,7 @@ class Run(base.ListCommand):
           To run an instrumentation test against the default test environment,
           but using a specific Google Cloud Storage bucket to hold the raw test
           results and specifying the name under which the history of your tests
-          will be collected and displayed in the Google Developers Console, run:
+          will be collected and displayed in the Firebase console, run:
 
             $ {command} --app APP_APK --test TEST_APK --results-bucket excelsior-app-results-bucket --results-history-name 'Excelsior App Test History'
 

@@ -19,8 +19,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base_classes.BaseAsyncMutator):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CreateBeta(base_classes.BaseAsyncMutator):
   """Create a Google Compute Engine network peering."""
 
   @property

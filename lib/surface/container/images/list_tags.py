@@ -15,6 +15,7 @@
 
 import argparse
 
+from containerregistry.client.v2_2 import docker_http
 from containerregistry.client.v2_2 import docker_image
 from googlecloudsdk.api_lib.container.images import util
 from googlecloudsdk.calliope import base
@@ -32,12 +33,14 @@ class ListTags(base.ListCommand):
   """List tags and digests for the specified image."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           The container images list-tags command of gcloud lists metadata about
           tags and digests for the specified container image. Images must be
           hosted by the Google Container Registry.
       """,
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
           List the tags in a specified image:
 
             $ {{command}} gcr.io/myproject/myimage
@@ -58,11 +61,13 @@ class ListTags(base.ListCommand):
     """
     parser.add_argument(
         '--show-occurrences',
-        action='store_true', default=False, help=argparse.SUPPRESS)
+        action='store_true',
+        default=False,
+        help=argparse.SUPPRESS)
     parser.add_argument(
         '--occurrence-filter',
-        default=' OR '.join(['kind = "{kind}"'.format(kind=x)
-                             for x in _DEFAULT_KINDS]),
+        default=' OR '.join(
+            ['kind = "{kind}"'.format(kind=x) for x in _DEFAULT_KINDS]),
         help=argparse.SUPPRESS)
     parser.add_argument(
         'image',
@@ -90,6 +95,14 @@ class ListTags(base.ListCommand):
         basic_creds=util.CredentialProvider(),
         name=repository,
         transport=http_obj) as image:
-      return util.TransformManifests(image.manifests(), repository,
-                                     show_occurrences=args.show_occurrences,
-                                     occurrence_filter=args.occurrence_filter)
+      try:
+        return util.TransformManifests(
+            image.manifests(),
+            repository,
+            show_occurrences=args.show_occurrences,
+            occurrence_filter=args.occurrence_filter)
+      except docker_http.V2DiagnosticException as err:
+        raise util.GcloudifyRecoverableV2Errors(err, {
+            403: 'Access denied: {0}'.format(repository),
+            404: 'Not found: {0}'.format(repository)
+        })

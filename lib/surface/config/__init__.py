@@ -29,7 +29,7 @@ class Config(base.Group):
   A configuration is a set of properties that govern the behavior of gcloud
   and other Cloud SDK tools. The initial `default` configuration is set when
   `gcloud init` is run. You can create additional named configurations using
-  `gcloud init` or `{command} configuration create`.
+  `gcloud init` or `{command} configurations create`.
 
   To switch between configurations, use `{command} configurations activate`.
 

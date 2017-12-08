@@ -27,6 +27,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.disks import create
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.core import log
 
@@ -74,10 +75,9 @@ def _SourceArgs(parser, source_snapshot_arg):
         """
     return template
 
-  image = source_group.add_argument(
+  source_group.add_argument(
       '--image',
-      help='An image to apply to the disks being created.')
-  image.detailed_help = AddImageHelp
+      help=AddImageHelp)
 
   image_utils.AddImageProjectFlag(parser)
 
@@ -95,32 +95,29 @@ def _CommonArgs(parser, source_snapshot_arg):
   Create.disks_arg.AddArgument(parser)
   parser.add_argument(
       '--description',
-      help=(
-          'An optional, textual description for the disks being created.'))
+      help='An optional, textual description for the disks being created.')
 
-  size = parser.add_argument(
+  parser.add_argument(
       '--size',
       type=arg_parsers.BinarySize(
           lower_bound='1GB',
           suggested_binary_size_scales=['GB', 'GiB', 'TB', 'TiB', 'PiB', 'PB']),
-      help='Indicates the size of the disks.')
-  size.detailed_help = """\
+      help="""\
       Indicates the size of the disks. The value must be a whole
       number followed by a size unit of ``KB'' for kilobyte, ``MB''
       for megabyte, ``GB'' for gigabyte, or ``TB'' for terabyte. For
       example, ``10GB'' will produce 10 gigabyte disks.  Disk size
       must be a multiple of 10 GB.
-      """
+      """)
 
-  disk_type = parser.add_argument(
+  parser.add_argument(
       '--type',
       completion_resource='compute.diskTypes',
-      help='Specifies the type of disk to create.')
-  disk_type.detailed_help = """\
+      help="""\
       Specifies the type of disk to create. To get a
       list of available disk types, run `gcloud compute disk-types list`.
       The default disk type is pd-standard.
-      """
+      """)
 
   _SourceArgs(parser, source_snapshot_arg)
 
@@ -143,14 +140,28 @@ class Create(base.Command):
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
 
-  def Validate(self, args):
-    pass
+  def ValidateAndParse(self, args, compute_holder):
+    """Validate flags and parse disks references.
+
+    Subclasses may override it to customize parsing.
+
+    Args:
+      args: The argument namespace
+      compute_holder: base_classes.ComputeApiHolder instance
+
+    Returns:
+      List of compute.regionDisks resources.
+    """
+    return Create.disks_arg.ResolveAsResource(
+        args,
+        compute_holder.resources,
+        scope_lister=flags.GetDefaultScopeLister(compute_holder.client))
 
   def Run(self, args):
     compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = compute_holder.client
 
-    self.Validate(args)
+    disk_refs = self.ValidateAndParse(args, compute_holder)
 
     size_gb = utils.BytesToGb(args.size)
 
@@ -164,9 +175,6 @@ class Create(base.Command):
     utils.WarnIfDiskSizeIsTooSmall(size_gb, args.type)
 
     requests = []
-    disk_refs = Create.disks_arg.ResolveAsResource(
-        args, compute_holder.resources,
-        scope_lister=flags.GetDefaultScopeLister(client))
 
     # Check if the zone is deprecated or has maintenance coming.
     zone_resource_fetcher = zone_utils.ZoneResourceFetcher(client)
@@ -311,17 +319,19 @@ class CreateAlpha(Create):
 
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
 
-  def Validate(self, args):
+  def ValidateAndParse(self, args, compute_holder):
     if args.replica_zones is None and args.region is not None:
       raise exceptions.RequiredArgumentException(
           '--replica-zones',
           '--replica-zones is required for regional disk creation')
     if args.replica_zones is not None:
-      if args.region is None:
-        raise exceptions.RequiredArgumentException(
-            '--region',
-            '--replica-zones is used only for regional disk creation')
       if len(args.replica_zones) != 2:
         raise exceptions.InvalidArgumentException(
-            '--replica-zones',
-            'Exactly two zones are required.')
+            '--replica-zones', 'Exactly two zones are required.')
+      return create.ParseRegionDisksResources(
+          compute_holder.resources, args.DISK_NAME, args.replica_zones,
+          args.project, args.region)
+    return Create.disks_arg.ResolveAsResource(
+        args,
+        compute_holder.resources,
+        scope_lister=flags.GetDefaultScopeLister(compute_holder.client))

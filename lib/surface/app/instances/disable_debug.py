@@ -49,27 +49,24 @@ class DisableDebug(base.Command):
 
   @staticmethod
   def Args(parser):
-    instance = parser.add_argument(
+    parser.add_argument(
         'instance', nargs='?',
-        help=('The instance to disable debug mode on.'))
-    instance.detailed_help = (
-        'The instance ID to disable debug mode on. If not specified, '
-        'select instance interactively. Must uniquely specify (with other '
-        'flags) exactly one instance')
+        help="""\
+        The instance ID to disable debug mode on. If not specified,
+        select instance interactively. Must uniquely specify (with other
+        flags) exactly one instance""")
 
-    service = parser.add_argument(
+    parser.add_argument(
         '--service', '-s',
-        help='Only match instances belonging to this service.')
-    service.detailed_help = (
-        'If specified, only match instances belonging to the given service. '
-        'This affects both interactive and non-interactive selection.')
+        help="""\
+        If specified, only match instances belonging to the given service.
+        This affects both interactive and non-interactive selection.""")
 
-    version = parser.add_argument(
+    parser.add_argument(
         '--version', '-v',
-        help='Only match instances belonging to this version.')
-    version.detailed_help = (
-        'If specified, only match instances belonging to the given version. '
-        'This affects both interactive and non-interactive selection.')
+        help="""\
+        If specified, only match instances belonging to the given version.
+        This affects both interactive and non-interactive selection.""")
 
   def Run(self, args):
     api_client = appengine_api_client.GetApiClient()

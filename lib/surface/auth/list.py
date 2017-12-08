@@ -45,11 +45,12 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     base.URI_FLAG.RemoveFromParser(parser)
-    filter_account = parser.add_argument(
-        '--filter-account', help='List only credentials for one account.')
-    filter_account.detailed_help = (
-        'List only credentials for one account. Use '
-        '--filter="account~_PATTERN_" to select accounts that match _PATTERN_.')
+    parser.add_argument(
+        '--filter-account',
+        help="""\
+        List only credentials for one account. Use
+        --filter="account~_PATTERN_" to select accounts that match
+        _PATTERN_.""")
 
   def Run(self, args):
     accounts = c_store.AvailableAccounts()

@@ -19,7 +19,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.shell import application
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Shell(base.Command):
   """Start the gcloud shell.

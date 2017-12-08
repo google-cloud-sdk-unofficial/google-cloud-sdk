@@ -25,7 +25,7 @@ class Android(base.Group):
           Explore physical and virtual Android devices and Android OS versions
           which are available as test targets. Also run tests against your
           Android app on these devices, monitor your test progress, and view
-          detailed test results in the Google Developers Console.
+          detailed test results in the Firebase console.
           """,
 
       'EXAMPLES': """\

@@ -28,9 +28,11 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import retry
+from googlecloudsdk.core.util import text
 
 
-def _WhitelistClientIP(instance_ref, sql_client, sql_messages, resources):
+def _WhitelistClientIP(instance_ref, sql_client, sql_messages, resources,
+                       minutes=5):
   """Add CLIENT_IP to the authorized networks list.
 
   Makes an API call to add CLIENT_IP to the authorized networks list.
@@ -45,6 +47,7 @@ def _WhitelistClientIP(instance_ref, sql_client, sql_messages, resources):
         version to be used.
     resources: resources.Registry, The registry that can create resource refs
         for the sql version to be used.
+    minutes: How long the client IP will be whitelisted for, in minutes.
 
   Returns:
     string, The name of the authorized network rule. Callers can use this name
@@ -60,7 +63,7 @@ def _WhitelistClientIP(instance_ref, sql_client, sql_messages, resources):
   acl_name = 'sql connect at time {0}'.format(datetime_now)
   user_acl = sql_messages.AclEntry(
       name=acl_name,
-      expirationTime=datetime_now + datetime.timedelta(minutes=1),
+      expirationTime=datetime_now + datetime.timedelta(minutes=minutes),
       value='CLIENT_IP')
 
   try:
@@ -83,7 +86,8 @@ def _WhitelistClientIP(instance_ref, sql_client, sql_messages, resources):
       operation=result.name,
       project=instance_ref.project,
       instance=instance_ref.instance)
-  message = 'Whitelisting your IP for incoming connection for 1 minute'
+  message = ('Whitelisting your IP for incoming connection for '
+             '{0} {1}'.format(minutes, text.Pluralize(minutes, 'minute')))
 
   operations.OperationsV1Beta4.WaitForOperation(
       sql_client, operation_ref, message)

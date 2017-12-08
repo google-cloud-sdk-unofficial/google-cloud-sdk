@@ -54,10 +54,9 @@ class Create(base_classes.BaseAsyncCreator):
     cls.TARGET_POOL_ARG = flags.TargetPoolArgument()
     cls.TARGET_POOL_ARG.AddArgument(parser, operation_type='create')
 
-    backup_pool = parser.add_argument(
+    parser.add_argument(
         '--backup-pool',
-        help='Defines the fallback pool for the target pool.')
-    backup_pool.detailed_help = """\
+        help="""\
         Together with ``--failover-ratio'', this flag defines the fallback
         behavior of the target pool (primary pool) to be created by this
         command. If the ratio of the healthy instances in the primary pool
@@ -65,18 +64,16 @@ class Create(base_classes.BaseAsyncCreator):
         arriving at the load-balanced IP address will be directed to the
         backup pool. If this flag is provided, then ``--failover-ratio'' is
         required.
-        """
+        """)
 
     parser.add_argument(
         '--description',
         help='An optional description of this target pool.')
 
-    failover_ratio = parser.add_argument(
+    parser.add_argument(
         '--failover-ratio',
         type=float,
-        help=('The ratio of healthy instances below which the backup pool '
-              'will be used.'))
-    failover_ratio.detailed_help = """\
+        help="""\
         Together with ``--backup-pool'', defines the fallback behavior of the
         target pool (primary pool) to be created by this command. If the
         ratio of the healthy instances in the primary pool is at or below this
@@ -89,14 +86,12 @@ class Create(base_classes.BaseAsyncCreator):
         spread to the healthy instances with the best effort, or to all
         instances when no instance is healthy.
         If this flag is provided, then ``--backup-pool'' is required.
-        """
+        """)
 
-    health_check = parser.add_argument(
+    parser.add_argument(
         '--health-check',
-        help=('Specifies HttpHealthCheck to determine the health of instances '
-              'in the pool.'),
-        metavar='HEALTH_CHECK')
-    health_check.detailed_help = """\
+        metavar='HEALTH_CHECK',
+        help="""\
         DEPRECATED, use --http-health-check.
         Specifies an HTTP health check resource to use to determine the health
         of instances in this pool. If no health check is specified, traffic will
@@ -104,7 +99,7 @@ class Create(base_classes.BaseAsyncCreator):
         were healthy, but the health status of this pool will appear as
         unhealthy as a warning that this target pool does not have a health
         check.
-        """
+        """)
 
     backend_services_flags.AddSessionAffinity(parser, target_pools=True)
 

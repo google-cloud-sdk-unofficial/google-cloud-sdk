@@ -65,42 +65,37 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
         action='store_true',
         help=argparse.SUPPRESS)
 
-    user_host = parser.add_argument(
+    parser.add_argument(
         'user_host',
         completion_resource='compute.instances',
-        help='Specifies the user/instance for the serial port connection',
-        metavar='[USER@]INSTANCE')
-    user_host.detailed_help = """\
+        metavar='[USER@]INSTANCE',
+        help="""\
         Specifies the user/instance for the serial port connection.
 
         ``USER'' specifies the username to authenticate as. If omitted,
         the current OS user is selected.
-        """
+        """)
 
-    port = parser.add_argument(
+    parser.add_argument(
         '--port',
-        help=('The number of the requested serial port. '
-              'Can be 1-4, default is 1.'),
-        type=arg_parsers.BoundedInt(1, 4))
-    port.detailed_help = """\
+        help="""\
         The number of the requested serial port. Can be 1-4, default is 1.
 
         Instances can support up to four serial ports. By default, this
         command will connect to the first serial port. Setting this flag
         will connect to the requested serial port.
-        """
+        """)
 
-    extra_args = parser.add_argument(
+    parser.add_argument(
         '--extra-args',
-        help=('Extra key-value pairs to pass to the connection.'),
         type=arg_parsers.ArgDict(min_length=1),
         default={},
-        metavar='KEY=VALUE')
-    extra_args.detailed_help = """\
+        metavar='KEY=VALUE',
+        help="""\
         Optional arguments can be passed to the serial port connection by
         passing key-value pairs to this flag, such as max-connections=N or
         replay-lines=N. See {0} for additional options.
-        """.format(SERIAL_PORT_HELP)
+        """.format(SERIAL_PORT_HELP))
 
     parser.add_argument(
         '--serial-port-gateway',
@@ -154,8 +149,7 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
 
     instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
         [instance], compute_scope.ScopeEnum.ZONE, args.zone, self.resources,
-        scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client, self.project))[0]
+        scope_lister=flags.GetDefaultScopeLister(self.compute_client))[0]
     instance = self.GetInstance(instance_ref)
 
     ssh_args = [self.env.ssh]

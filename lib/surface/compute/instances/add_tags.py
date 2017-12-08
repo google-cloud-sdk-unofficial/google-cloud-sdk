@@ -25,17 +25,16 @@ class InstancesAddTags(base_classes.InstanceTagsMutatorMixin,
   @staticmethod
   def Args(parser):
     base_classes.InstanceTagsMutatorMixin.Args(parser)
-    tags = parser.add_argument(
+    parser.add_argument(
         '--tags',
         required=True,
         type=arg_parsers.ArgList(min_length=1),
-        help='A list of tags to attach to the instance.',
-        metavar='TAG')
-    tags.detailed_help = """\
+        metavar='TAG',
+        help="""\
         Specifies strings to be attached to the instance for later
         identifying the instance when adding network firewall rules.
         Multiple tags can be attached by repeating this flag.
-        """
+        """)
 
   def Modify(self, args, existing):
     new_object = copy.deepcopy(existing)

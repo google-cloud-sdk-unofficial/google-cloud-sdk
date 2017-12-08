@@ -10,7 +10,7 @@ import string
 import weakref
 from six.moves import range, map
 
-from .selection import SelectionType, SelectionState
+from .selection import SelectionType, SelectionState, PasteMode
 from .clipboard import ClipboardData
 
 __all__ = ('Document',)
@@ -480,6 +480,9 @@ class Document(object):
         Return an index relative to the cursor position pointing to the start
         of the next word. Return `None` if nothing was found.
         """
+        if count < 0:
+            return self.find_previous_word_beginning(count=-count, WORD=WORD)
+
         regex = _FIND_BIG_WORD_RE if WORD else _FIND_WORD_RE
         iterator = regex.finditer(self.text_after_cursor)
 
@@ -499,6 +502,9 @@ class Document(object):
         Return an index relative to the cursor position pointing to the end
         of the next word. Return `None` if nothing was found.
         """
+        if count < 0:
+            return self.find_previous_word_ending(count=-count, WORD=WORD)
+
         if include_current_position:
             text = self.text_after_cursor
         else:
@@ -525,6 +531,9 @@ class Document(object):
         Return an index relative to the cursor position pointing to the start
         of the previous word. Return `None` if nothing was found.
         """
+        if count < 0:
+            return self.find_next_word_beginning(count=-count, WORD=WORD)
+
         regex = _FIND_BIG_WORD_RE if WORD else _FIND_WORD_RE
         iterator = regex.finditer(self.text_before_cursor[::-1])
 
@@ -540,6 +549,9 @@ class Document(object):
         Return an index relative to the cursor position pointing to the end
         of the previous word. Return `None` if nothing was found.
         """
+        if count < 0:
+            return self.find_next_word_ending(count=-count, WORD=WORD)
+
         text_before_cursor = self.text_after_cursor[:1] + self.text_before_cursor[::-1]
 
         regex = _FIND_BIG_WORD_RE if WORD else _FIND_WORD_RE
@@ -594,12 +606,18 @@ class Document(object):
         """
         Relative position for cursor left.
         """
+        if count < 0:
+            return self.get_cursor_right_position(-count)
+
         return - min(self.cursor_position_col, count)
 
     def get_cursor_right_position(self, count=1):
         """
         Relative position for cursor_right.
         """
+        if count < 0:
+            return self.get_cursor_left_position(-count)
+
         return min(count, len(self.current_line_after_cursor))
 
     def get_cursor_up_position(self, count=1, preferred_column=None):
@@ -856,24 +874,30 @@ class Document(object):
         else:
             return self, ClipboardData('')
 
-    def paste_clipboard_data(self, data, before=False, count=1):
+    def paste_clipboard_data(self, data, paste_mode=PasteMode.EMACS, count=1):
         """
         Return a new :class:`.Document` instance which contains the result if
         we would paste this data at the current cursor position.
 
-        :param before: Paste before the cursor position. (For line/character mode.)
+        :param paste_mode: Where to paste. (Before/after/emacs.)
         :param count: When >1, Paste multiple times.
         """
         assert isinstance(data, ClipboardData)
+        assert paste_mode in (PasteMode.VI_BEFORE, PasteMode.VI_AFTER, PasteMode.EMACS)
+
+        before = (paste_mode == PasteMode.VI_BEFORE)
+        after = (paste_mode == PasteMode.VI_AFTER)
 
         if data.type == SelectionType.CHARACTERS:
-            if before:
-                new_text = self.text_before_cursor + data.text * count + self.text_after_cursor
-                new_cursor_position = self.cursor_position + len(data.text) * count - 1
-            else:
+            if after:
                 new_text = (self.text[:self.cursor_position + 1] + data.text * count +
                             self.text[self.cursor_position + 1:])
-                new_cursor_position = self.cursor_position + len(data.text) * count
+            else:
+                new_text = self.text_before_cursor + data.text * count + self.text_after_cursor
+
+            new_cursor_position = self.cursor_position + len(data.text) * count
+            if before:
+                new_cursor_position -= 1
 
         elif data.type == SelectionType.LINES:
             l = self.cursor_position_row

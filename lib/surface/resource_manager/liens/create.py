@@ -19,7 +19,6 @@ from googlecloudsdk.command_lib.resource_manager import liens_base
 from googlecloudsdk.core import properties
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(liens_base.LienCommand):
   """Create a new lien.

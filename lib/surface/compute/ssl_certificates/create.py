@@ -38,26 +38,24 @@ class Create(base_classes.BaseAsyncCreator):
         '--description',
         help='An optional, textual description for the SSL certificate.')
 
-    certificate = parser.add_argument(
+    parser.add_argument(
         '--certificate',
         required=True,
         metavar='LOCAL_FILE_PATH',
-        help='The path to a local certificate file.')
-    certificate.detailed_help = """\
+        help="""\
         The path to a local certificate file. The certificate must be in PEM
         format.  The certificate chain must be no greater than 5 certs long. The
         chain must include at least one intermediate cert.
-        """
+        """)
 
-    private_key = parser.add_argument(
+    parser.add_argument(
         '--private-key',
         required=True,
         metavar='LOCAL_FILE_PATH',
-        help='The path to a local private key file.')
-    private_key.detailed_help = """\
+        help="""\
         The path to a local private key file. The private key must be in PEM
         format and must use RSA or ECDSA encryption.
-        """
+        """)
 
   @property
   def service(self):

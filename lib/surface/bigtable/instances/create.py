@@ -30,7 +30,16 @@ class CreateInstance(base.CreateCommand):
      .AddInstanceDescription(required=True)
      .AddCluster(positional=False).AddClusterNodes(in_instance=True)
      .AddClusterStorage(in_instance=True).AddClusterZone(in_instance=True)
-     .AddAsync())
+     .AddAsync().AddInstanceType(
+         additional_choices={
+             'DEVELOPMENT':
+                 'Development instances are low-cost instances meant '
+                 'for development and testing only. They do not '
+                 'provide high availability and no service level '
+                 'agreement applies.'
+         },
+         default='PRODUCTION',
+         help_text='The type of instance to create.'))
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -51,20 +60,21 @@ class CreateInstance(base.CreateCommand):
     msg = msgs.CreateInstanceRequest(
         instanceId=ref.Name(),
         parent=parent_ref.RelativeName(),
-        instance=msgs.Instance(displayName=args.description),
-        clusters=msgs.CreateInstanceRequest.ClustersValue(
-            additionalProperties=[
-                msgs.CreateInstanceRequest.ClustersValue.AdditionalProperty(
-                    key=args.cluster,
-                    value=msgs.Cluster(
-                        serveNodes=args.cluster_num_nodes,
-                        defaultStorageType=(
-                            msgs.Cluster.DefaultStorageTypeValueValuesEnum(
-                                args.cluster_storage_type)),
-                        # TODO(user): switch location to resource
-                        # when b/29566669 is fixed on API
-                        location=bigtable_util.LocationUrl(args.cluster_zone)))
-            ]))
+        instance=msgs.Instance(
+            displayName=args.description,
+            type=msgs.Instance.TypeValueValuesEnum(args.instance_type)),
+        clusters=msgs.CreateInstanceRequest.ClustersValue(additionalProperties=[
+            msgs.CreateInstanceRequest.ClustersValue.AdditionalProperty(
+                key=args.cluster,
+                value=msgs.Cluster(
+                    serveNodes=args.cluster_num_nodes,
+                    defaultStorageType=(
+                        msgs.Cluster.DefaultStorageTypeValueValuesEnum(
+                            args.cluster_storage_type)),
+                    # TODO(user): switch location to resource
+                    # when b/29566669 is fixed on API
+                    location=bigtable_util.LocationUrl(args.cluster_zone)))
+        ]))
     result = cli.projects_instances.Create(msg)
     operation_ref = resources.REGISTRY.ParseRelativeName(
         result.name, 'bigtableadmin.operations')

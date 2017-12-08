@@ -25,15 +25,14 @@ class RemoveTags(base_classes.InstanceTagsMutatorMixin,
   @staticmethod
   def Args(parser):
     tags_group = parser.add_mutually_exclusive_group(required=True)
-    tags = tags_group.add_argument(
+    tags_group.add_argument(
         '--tags',
+        metavar='TAG',
         type=arg_parsers.ArgList(min_length=1),
-        help='Tags to remove from the instance.',
-        metavar='TAG')
-    tags.detailed_help = """\
+        help="""\
         Specifies strings to be removed from the instance tags.
         Multiple tags can be removed by repeating this flag.
-        """
+        """)
     tags_group.add_argument(
         '--all',
         action='store_true',

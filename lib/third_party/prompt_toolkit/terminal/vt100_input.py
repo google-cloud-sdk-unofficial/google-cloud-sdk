@@ -151,15 +151,27 @@ ANSI_SEQUENCES = {
     '\x1b[1;5B': Keys.ControlDown,   # Cursor Mode
     '\x1b[1;5C': Keys.ControlRight,  # Cursor Mode
     '\x1b[1;5D': Keys.ControlLeft,   # Cursor Mode
-    '\x1bOA': Keys.ControlUp,       # Application Mode (tmux)
-    '\x1bOB': Keys.ControlDown,     # Application Mode (tmux)
-    '\x1bOC': Keys.ControlRight,    # Application Mode (tmux)
-    '\x1bOD': Keys.ControlLeft,     # Application Mode (tmux)
+
+    '\x1b[1;2A': Keys.ShiftUp,
+    '\x1b[1;2B': Keys.ShiftDown,
+    '\x1b[1;2C': Keys.ShiftRight,
+    '\x1b[1;2D': Keys.ShiftLeft,
+
+    # Tmux sends following keystrokes when control+arrow is pressed, but for
+    # Emacs ansi-term sends the same sequences for normal arrow keys. Consider
+    # it a normal arrow press, because that's more important.
+    '\x1bOA': Keys.Up,
+    '\x1bOB': Keys.Down,
+    '\x1bOC': Keys.Right,
+    '\x1bOD': Keys.Left,
 
     '\x1b[5A': Keys.ControlUp,
     '\x1b[5B': Keys.ControlDown,
     '\x1b[5C': Keys.ControlRight,
     '\x1b[5D': Keys.ControlLeft,
+
+    '\x1bOc': Keys.ControlRight, # rxvt
+    '\x1bOd': Keys.ControlLeft,  # rxvt
 
     '\x1b[200~': Keys.BracketedPaste,  # Start of bracketed paste.
 
@@ -355,8 +367,10 @@ class InputStream(object):
 
                 # Quit bracketed paste mode and handle remaining input.
                 self._in_bracketed_paste = False
+                remaining = self._paste_buffer[end_index + len(end_mark):]
                 self._paste_buffer = ''
-                self.feed(self._paste_buffer[end_index + len(end_mark):])
+
+                self.feed(remaining)
 
         # Handle normal input character by character.
         else:
@@ -369,8 +383,16 @@ class InputStream(object):
                 else:
                     # Replace \r by \n. (Some clients send \r instead of \n
                     # when enter is pressed. E.g. telnet and some other
-                    # terminals.) It's also too complicated to handle \r and \n
-                    # separetely in the key bindings.
+                    # terminals.)
+
+                    # XXX: We should remove this in a future version. It *is*
+                    #      now possible to recognise the difference.
+                    #      (We remove ICRNL/INLCR/IGNCR below.)
+                    #      However, this breaks IPython and maybe other applications,
+                    #      because they bind ControlJ (\n) for handling the Enter key.
+
+                    #      When this is removed, replace Enter=ControlJ by
+                    #      Enter=ControlM in keys.py.
                     if c == '\r':
                         c = '\n'
                     self._input_parser.send(c)
@@ -403,36 +425,88 @@ class raw_mode(object):
 
         with raw_mode(stdin):
             ''' the pseudo-terminal stdin is now used in raw mode '''
+
+    We ignore errors when executing `tcgetattr` fails.
     """
+    # There are several reasons for ignoring errors:
+    # 1. To avoid the "Inappropriate ioctl for device" crash if somebody would
+    #    execute this code (In a Python REPL, for instance):
+    #
+    #         import os; f = open(os.devnull); os.dup2(f.fileno(), 0)
+    #
+    #    The result is that the eventloop will stop correctly, because it has
+    #    to logic to quit when stdin is closed. However, we should not fail at
+    #    this point. See:
+    #      https://github.com/jonathanslenders/python-prompt-toolkit/pull/393
+    #      https://github.com/jonathanslenders/python-prompt-toolkit/issues/392
+
+    # 2. Related, when stdin is an SSH pipe, and no full terminal was allocated.
+    #    See: https://github.com/jonathanslenders/python-prompt-toolkit/pull/165
     def __init__(self, fileno):
         self.fileno = fileno
-        self.attrs_before = termios.tcgetattr(fileno)
+        try:
+            self.attrs_before = termios.tcgetattr(fileno)
+        except termios.error:
+            # Ignore attribute errors.
+            self.attrs_before = None
 
     def __enter__(self):
         # NOTE: On os X systems, using pty.setraw() fails. Therefor we are using this:
-        newattr = termios.tcgetattr(self.fileno)
-        newattr[tty.LFLAG] = self._patch(newattr[tty.LFLAG])
-        termios.tcsetattr(self.fileno, termios.TCSANOW, newattr)
+        try:
+            newattr = termios.tcgetattr(self.fileno)
+        except termios.error:
+            pass
+        else:
+            newattr[tty.LFLAG] = self._patch_lflag(newattr[tty.LFLAG])
+            newattr[tty.IFLAG] = self._patch_iflag(newattr[tty.IFLAG])
+            termios.tcsetattr(self.fileno, termios.TCSANOW, newattr)
 
-        # Put the terminal in cursor mode. (Instead of application mode.)
-        os.write(self.fileno, b'\x1b[?1l')
+            # Put the terminal in cursor mode. (Instead of application mode.)
+            os.write(self.fileno, b'\x1b[?1l')
 
-    def _patch(self, attrs):
+    @classmethod
+    def _patch_lflag(cls, attrs):
         return attrs & ~(termios.ECHO | termios.ICANON | termios.IEXTEN | termios.ISIG)
 
-    def __exit__(self, *a, **kw):
-        termios.tcsetattr(self.fileno, termios.TCSANOW, self.attrs_before)
+    @classmethod
+    def _patch_iflag(cls, attrs):
+        return attrs & ~(
+            # Disable XON/XOFF flow control on output and input.
+            # (Don't capture Ctrl-S and Ctrl-Q.)
+            # Like executing: "stty -ixon."
+            termios.IXON | termios.IXOFF |
 
-        # # Put the terminal in application mode.
-        # self._stdout.write('\x1b[?1h')
+            # Don't translate carriage return into newline on input.
+            termios.ICRNL | termios.INLCR | termios.IGNCR
+        )
+
+    def __exit__(self, *a, **kw):
+        if self.attrs_before is not None:
+            try:
+                termios.tcsetattr(self.fileno, termios.TCSANOW, self.attrs_before)
+            except termios.error:
+                pass
+
+            # # Put the terminal in application mode.
+            # self._stdout.write('\x1b[?1h')
 
 
 class cooked_mode(raw_mode):
     """
-    (The opposide of ``raw_mode``::
+    The opposide of ``raw_mode``, used when we need cooked mode inside a
+    `raw_mode` block.  Used in `CommandLineInterface.run_in_terminal`.::
 
         with cooked_mode(stdin):
             ''' the pseudo-terminal stdin is now used in cooked mode. '''
     """
-    def _patch(self, attrs):
+    @classmethod
+    def _patch_lflag(cls, attrs):
         return attrs | (termios.ECHO | termios.ICANON | termios.IEXTEN | termios.ISIG)
+
+    @classmethod
+    def _patch_iflag(cls, attrs):
+        # Turn the ICRNL flag back on. (Without this, calling `input()` in
+        # run_in_terminal doesn't work and displays ^M instead. Ptpython
+        # evaluates commands using `run_in_terminal`, so it's important that
+        # they translate ^M back into ^J.)
+        return attrs | termios.ICRNL

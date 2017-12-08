@@ -33,8 +33,7 @@ class Create(base_classes.BaseAsyncCreator):
   def Args(cls, parser):
     """Adds arguments to the supplied parser."""
     cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
-        'A reference to a network in this project',
-        detailed_help="""\
+        """\
         A reference to a network in this project to
         contain the VPN Gateway.
         """)

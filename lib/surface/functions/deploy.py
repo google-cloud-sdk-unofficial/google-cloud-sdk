@@ -42,15 +42,15 @@ def _FunctionArgs(parser):
   parser.add_argument(
       'name', help='Intended name of the new function.',
       type=util.ValidateFunctionNameOrRaise)
-  memory = parser.add_argument(
-      '--memory', help='Amount of memory available to the function.',
+  parser.add_argument(
+      '--memory',
       type=arg_parsers.BinarySize(
-          suggested_binary_size_scales=['KB', 'MB', 'MiB', 'GB', 'GiB']))
-  memory.detailed_help = """\
-    The amount of memory allocated to your function.
+          suggested_binary_size_scales=['KB', 'MB', 'MiB', 'GB', 'GiB']),
+      help="""\
+      The amount of memory allocated to your function.
 
-    Allowed values are: 128MB, 256MB, 512MB, 1024MB, and 2048MB.
-    """
+      Allowed values are: 128MB, 256MB, 512MB, 1024MB, and 2048MB.
+      """)
   parser.add_argument(
       '--timeout',
       help=('The function execution timeout, e.g. 30s for 30 seconds. '
@@ -105,27 +105,27 @@ def _SourceCodeArgs(parser):
             'parameter. If not specified defaults to `master`.'))
   source_version_group.add_argument(
       '--source-tag',
-      help=('The revision tag for the source that will be used as the source '
-            'code of the function. Can be specified only together with '
-            '--source-url parameter.'))
-  entry_point = parser.add_argument(
+      help="""\
+      The revision tag for the source that will be used as the source
+      code of the function. Can be specified only together with
+      --source-url parameter.""")
+  parser.add_argument(
       '--entry-point',
-      help='Specified function to run when triggering event happens.',
-      type=util.ValidateEntryPointNameOrRaise)
-  entry_point.detailed_help = (
-      'By default when a Google Cloud Function is triggered, it executes a '
-      'JavaScript function with the same name. Or, if it cannot find a '
-      'function with the same name, it executes a function named `function`. '
-      'You can use this flag to override the default behavior, by specifying '
-      'the name of a JavaScript function that will be executed when the '
-      'Google Cloud Function is triggered.'
+      type=util.ValidateEntryPointNameOrRaise,
+      help="""\
+      By default when a Google Cloud Function is triggered, it executes a
+      JavaScript function with the same name. Or, if it cannot find a
+      function with the same name, it executes a function named `function`.
+      You can use this flag to override the default behavior, by specifying
+      the name of a JavaScript function that will be executed when the
+      Google Cloud Function is triggered."""
   )
   parser.add_argument(
-      '--include-node-modules',
-      help=('Include the content of node_modules with deployed sources. This '
-            'flag has an effect only if a function is deployed from a local '
-            'directory.'),
-      default=True,
+      '--include-ignored-files',
+      help=('Deploy sources together with files which are normally ignored '
+            '(contents of node_modules directory). This flag has an effect '
+            'only if a function is deployed from a local directory.'),
+      default=False,
       action='store_true')
 
 
@@ -143,14 +143,13 @@ def _TriggerArgs(parser):
       help=('Google Cloud Storage bucket name. Every change in files in this '
             'bucket will trigger function execution.'),
       type=util.ValidateAndStandarizeBucketUriOrRaise)
-  trigger_http = trigger_group.add_argument(
+  trigger_group.add_argument(
       '--trigger-http', action='store_true',
-      help='Associates an HTTP endpoint with this function.')
-  trigger_http.detailed_help = (
-      'Function will be assigned an endpoint, which you can view by using '
-      'the `describe` command. Any HTTP request (of a supported type) to the '
-      'endpoint will trigger function execution. Supported HTTP request '
-      'types are: POST, PUT, GET, DELETE, and OPTIONS.')
+      help="""\
+      Function will be assigned an endpoint, which you can view by using
+      the `describe` command. Any HTTP request (of a supported type) to the
+      endpoint will trigger function execution. Supported HTTP request
+      types are: POST, PUT, GET, DELETE, and OPTIONS.""")
   trigger_group.add_argument(
       '--trigger-provider',
       metavar='PROVIDER',
@@ -158,6 +157,7 @@ def _TriggerArgs(parser):
       help=('Trigger this function in response to an event in another '
             'service. For a list of acceptable values, call `gcloud '
             'functions event-types list`.'),
+      hidden=True,
       )
   trigger_provider_spec_group = parser.add_argument_group()
   # The validation performed by argparse is incomplete, as the set of valid
@@ -171,6 +171,7 @@ def _TriggerArgs(parser):
       help=('Specifies which action should trigger the function. If omitted, '
             'a default EVENT_TYPE for --trigger-provider will be used. For a '
             'list of acceptable values, call functions event_types list.'),
+      hidden=True,
   )
   # check later as type of applicable input depends on options above
   trigger_provider_spec_group.add_argument(
@@ -180,6 +181,7 @@ def _TriggerArgs(parser):
             'observed. E.g. if --trigger-provider is cloud.storage, '
             '--trigger-resource must be a bucket name. For a list of '
             'expected resources, call functions event_types list.'),
+      hidden=True,
   )
 
 
@@ -220,15 +222,17 @@ class Deploy(base.Command):
     zip_file_name = os.path.join(tmp_dir, 'fun.zip')
     local_path = deploy_util.GetLocalPath(args)
     try:
-      if args.include_node_modules:
+      if args.include_ignored_files:
         archive.MakeZipFromDir(zip_file_name, local_path)
       else:
         log.info('Not including node_modules in deployed code. To include '
-                 'node_modules in uploaded code use --include-node-modules '
+                 'node_modules in uploaded code use --include-ignored-files '
                  'flag.')
         archive.MakeZipFromDir(
-            zip_file_name, local_path, skip_file_regex=re.escape(
-                'node_modules' + os.sep))
+            zip_file_name,
+            local_path,
+            skip_file_regex=r'(node_modules{}.*)|(node_modules)'.format(
+                re.escape(os.sep)))
     except ValueError as e:
       raise exceptions.FunctionsError(
           'Error creating a ZIP archive with the source code '

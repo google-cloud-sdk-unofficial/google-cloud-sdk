@@ -55,17 +55,18 @@ def _ResolveProtocol(messages, args, default='HTTP'):
 
 
 def AddIapFlag(parser):
-  iap_flag = flags.AddIap(parser)
   # TODO(b/34479878): It would be nice if the auto-generated help text were
   # a bit better so we didn't need to be quite so verbose here.
-  iap_flag.detailed_help = """\
-    Configure Identity Aware Proxy (IAP) service. You can configure IAP to be
-    'enabled' or 'disabled' (default). If it is enabled you can provide values
-    for 'oauth2-client-id' and 'oauth2-client-secret'. For example,
-    '--iap=enabled,oauth2-client-id=foo,oauth2-client-secret=bar' will
-    turn IAP on, and '--iap=disabled' will turn it off. See
-    https://cloud.google.com/iap/ for more information about this feature.
-    """
+  flags.AddIap(
+      parser,
+      help="""\
+      Configure Identity Aware Proxy (IAP) service. You can configure IAP to be
+      'enabled' or 'disabled' (default). If it is enabled you can provide values
+      for 'oauth2-client-id' and 'oauth2-client-secret'. For example,
+      '--iap=enabled,oauth2-client-id=foo,oauth2-client-secret=bar' will
+      turn IAP on, and '--iap=disabled' will turn it off. See
+      https://cloud.google.com/iap/ for more information about this feature.
+      """)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

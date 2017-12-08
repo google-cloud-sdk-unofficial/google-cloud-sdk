@@ -130,8 +130,9 @@ class Docker(base.Command):
 
     # TODO(user): reconcile with the 'gcloud app' docker stuff,
     # which should be using a gcloud config property.
-    docker_args = (args.docker_args if not args.docker_host else
-                   ['-H', args.docker_host] + args.docker_args)
+    docker_args = args.docker_args or []
+    docker_args = (docker_args if not args.docker_host else
+                   ['-H', args.docker_host] + docker_args)
 
     result = docker.Execute(docker_args)
     # Explicitly avoid displaying an error message that might

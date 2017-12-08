@@ -31,20 +31,18 @@ def _Args(parser):
   """Argument parsing for ssh, including hook for remote completion."""
   ssh_utils.BaseSSHCLICommand.Args(parser)
 
-  command = parser.add_argument(
+  parser.add_argument(
       '--command',
-      help='A command to run on the virtual machine.')
-  command.detailed_help = """\
+      help="""\
       A command to run on the virtual machine.
 
       Runs the command on the target instance and then exits.
-      """
+      """)
 
-  ssh_flags = parser.add_argument(
+  parser.add_argument(
       '--ssh-flag',
       action='append',
-      help='Additional flags to be passed to ssh.')
-  ssh_flags.detailed_help = """\
+      help="""\
       Additional flags to be passed to *ssh(1)*. It is recommended that flags
       be passed using an assignment operator and quotes. This flag will
       replace occurences of ``%USER%'' and ``%INSTANCE%'' with their
@@ -55,7 +53,7 @@ def _Args(parser):
       is equivalent to passing the flags ``--vvv'' and ``-L
       80:162.222.181.197:80'' to *ssh(1)* if the external IP address of
       'example-instance' is 162.222.181.197.
-      """
+      """)
 
   parser.add_argument(
       '--container',
@@ -66,18 +64,16 @@ def _Args(parser):
           see [](https://cloud.google.com/compute/docs/containers)
           """)
 
-  user_host = parser.add_argument(
+  parser.add_argument(
       'user_host',
       completion_resource='compute.instances',
-      help='Specifies the instance to SSH into.',
-      metavar='[USER@]INSTANCE')
-
-  user_host.detailed_help = """\
+      metavar='[USER@]INSTANCE',
+      help="""\
       Specifies the instance to SSH into.
 
       ``USER'' specifies the username with which to SSH. If omitted,
       $USER from the environment is selected.
-      """
+      """)
 
   parser.add_argument(
       'ssh_args',
@@ -126,8 +122,7 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
 
     instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
         [instance], compute_scope.ScopeEnum.ZONE, args.zone, self.resources,
-        scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client, self.project))[0]
+        scope_lister=flags.GetDefaultScopeLister(self.compute_client))[0]
     instance = self.GetInstance(instance_ref)
     external_ip_address = ssh_utils.GetExternalIPAddress(instance)
 

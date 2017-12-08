@@ -43,7 +43,6 @@ enough path components to differntiate it from other files with the same name.
 If the file name is not unique in the debug target, the behavior is unspecified.
 
 
-
 .RE
 .sp
 
@@ -56,12 +55,10 @@ A condition to restrict when the snapshot is taken. When the snapshot location
 is executed, the condition will be evaluated, and the snapshot will be generated
 only if the condition is true.
 
-
 .TP 2m
 \fB\-\-expression\fR=\fIEXPRESSION\fR
 An expression to evaluate when the snapshot is taken. You may specify
 \-\-expression multiple times.
-
 
 .TP 2m
 \fB\-\-target\fR=(\fIID\fR|\fIDESCRIPTION_REGEXP\fR)
@@ -70,7 +67,6 @@ list', or it may be a regular expression uniquely specifying a debuggee based on
 its description or name. For App Engine projects, if not specified, the default
 target is the most recent deployment of the default module and version.
 
-
 .TP 2m
 \fB\-\-wait\fR=\fIWAIT\fR; default="10"
 The number of seconds to wait to ensure that no error is returned from a
@@ -78,7 +74,6 @@ debugger agent when creating the snapshot. When a snapshot is created, there
 will be a delay before the agents see and apply the snapshot. Until at least one
 agent has attempted to enable the snapshot, it cannot be determined if the
 snapshot is valid.
-
 
 
 .RE

@@ -27,7 +27,6 @@ def _Args(parser, include_beta, include_alpha=False):
   """Argument parsing."""
   flags.AddUpdateArgs(parser, include_beta=include_beta,
                       include_alpha=include_alpha)
-  flags.ADDRESS_ARG.AddArgument(parser)
   flags.AddIPProtocols(parser)
   flags.AddDescription(parser)
   flags.AddPortsAndPortRange(parser)
@@ -53,6 +52,7 @@ class Create(utils.ForwardingRulesTargetMutator):
   def Args(cls, parser):
     cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
     _Args(parser, include_beta=False, include_alpha=False)
+    flags.ADDRESS_ARG.AddArgument(parser)
     cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
   @property
@@ -184,6 +184,7 @@ class CreateBeta(Create):
   def Args(cls, parser):
     cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
     _Args(parser, include_beta=True, include_alpha=False)
+    flags.ADDRESS_ARG.AddArgument(parser)
     cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
 
@@ -195,6 +196,7 @@ class CreateAlpha(Create):
   def Args(cls, parser):
     cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
     _Args(parser, include_beta=True, include_alpha=True)
+    flags.AddAddressesAndIPVersions(parser, required=False)
     cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
   def ConstructNetworkTier(self, args):
@@ -214,6 +216,12 @@ class CreateAlpha(Create):
     protocol = self.ConstructProtocol(args)
     network_tier = self.ConstructNetworkTier(args)
 
+    if args.address is None or args.ip_version:
+      ip_version = self.messages.ForwardingRule.IpVersionValueValuesEnum(
+          args.ip_version or 'IPV4')
+    else:
+      ip_version = None
+
     address = self._ResolveAddress(
         args, compute_flags.compute_scope.ScopeEnum.GLOBAL)
 
@@ -224,6 +232,7 @@ class CreateAlpha(Create):
         IPProtocol=protocol,
         portRange=port_range,
         target=target_ref.SelfLink(),
+        ipVersion=ip_version,
         networkTier=network_tier)
     if args.load_balancing_scheme == 'INTERNAL':
       forwarding_rule.loadBalancingScheme = (

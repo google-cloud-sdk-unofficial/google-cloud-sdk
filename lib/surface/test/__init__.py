@@ -16,10 +16,11 @@
 
 import argparse
 
+from googlecloudsdk.api_lib.test import endpoints
+from googlecloudsdk.api_lib.test import exceptions
 from googlecloudsdk.api_lib.test import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resolvers
@@ -46,16 +47,8 @@ class Test(base.Group):
     Returns:
       The refined command context.
     """
-    # Get service endpoints and ensure they are compatible with each other
-    testing_url = properties.VALUES.api_endpoint_overrides.testing.Get()
-    toolresults_url = properties.VALUES.api_endpoint_overrides.toolresults.Get()
-    log.info('Test Service endpoint: [{0}]'.format(testing_url))
-    log.info('Tool Results endpoint: [{0}]'.format(toolresults_url))
-    if ((toolresults_url is None or 'apis.com/toolresults' in toolresults_url)
-        != (testing_url is None or 'testing.googleapis' in testing_url)):
-      raise exceptions.ToolException(
-          'Service endpoints [{0}] and [{1}] are not compatible.'
-          .format(testing_url, toolresults_url))
+    # Make sure service endpoints are compatible with each other.
+    endpoints.ValidateTestServiceEndpoints()
 
     # Create the client for the Testing service.
     context['testing_client'] = apis.GetClientInstance('testing', 'v1')

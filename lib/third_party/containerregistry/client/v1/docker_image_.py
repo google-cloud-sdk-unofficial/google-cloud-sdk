@@ -29,8 +29,9 @@ import tarfile
 import tempfile
 import threading
 
-from containerregistry.client import docker_creds
+from containerregistry.client import docker_creds  # pylint: disable=unused-import
 from containerregistry.client import docker_name
+from containerregistry.client.v1 import docker_creds as v1_creds
 from containerregistry.client.v1 import docker_http
 
 import httplib2  # pylint: disable=unused-import
@@ -272,7 +273,7 @@ class FromRegistry(DockerImage):
     # The response should have an X-Docker-Token header, which
     # we should extract and annotate subsequent requests with:
     #   Authorization: Token {extracted value}
-    self._creds = docker_creds.Token(resp['x-docker-token'])
+    self._creds = v1_creds.Token(resp['x-docker-token'])
 
     self._endpoint = resp['x-docker-endpoints']
     # TODO(user): Consider also supporting cookies, which are

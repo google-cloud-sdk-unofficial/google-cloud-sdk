@@ -11,7 +11,7 @@ gcloud \- manage Google Cloud Platform resources and developer workflow
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud\fR \fIGROUP\fR | \fICOMMAND\fR [\fB\-\-account\fR=\fIACCOUNT\fR] [\fB\-\-configuration\fR=\fICONFIGURATION\fR] [\fB\-\-flatten\fR=[\fIKEY\fR,...]] [\fB\-\-format\fR=\fIFORMAT\fR] [\fB\-\-help\fR] [\fB\-\-project\fR=\fIPROJECT_ID\fR] [\fB\-\-quiet\fR,\ \fB\-q\fR] [\fB\-\-verbosity\fR=\fIVERBOSITY\fR;\ default="warning"] [\fB\-h\fR] [\fB\-v\fR,\ \fB\-\-version\fR] [\fB\-\-log\-http\fR] [\fB\-\-trace\-token\fR=\fITRACE_TOKEN\fR] [\fB\-\-no\-user\-output\-enabled\fR]
+\f5gcloud\fR \fIGROUP\fR | \fICOMMAND\fR [\fB\-\-account\fR=\fIACCOUNT\fR] [\fB\-\-configuration\fR=\fICONFIGURATION\fR] [\fB\-\-flatten\fR=[\fIKEY\fR,...]] [\fB\-\-format\fR=\fIFORMAT\fR] [\fB\-\-help\fR] [\fB\-\-project\fR=\fIPROJECT_ID\fR] [\fB\-\-quiet\fR,\ \fB\-q\fR] [\fB\-\-verbosity\fR=\fIVERBOSITY\fR;\ default="warning"] [\fB\-h\fR] [\fB\-\-version\fR,\ \fB\-v\fR] [\fB\-\-log\-http\fR] [\fB\-\-trace\-token\fR=\fITRACE_TOKEN\fR] [\fB\-\-no\-user\-output\-enabled\fR]
 
 
 
@@ -27,7 +27,8 @@ workflow, and interactions with the Google Cloud Platform APIs.
 .RS 2m
 .TP 2m
 \fB\-\-account\fR=\fIACCOUNT\fR
-Google Cloud Platform user account to use for invocation.
+Google Cloud Platform user account to use for invocation. Overrides the default
+\fBcore/account\fR property value for this command invocation.
 
 .TP 2m
 \fB\-\-configuration\fR=\fICONFIGURATION\fR
@@ -63,12 +64,14 @@ Display detailed help.
 .TP 2m
 \fB\-\-project\fR=\fIPROJECT_ID\fR
 The Google Cloud Platform project name to use for this invocation. If omitted
-then the current project is assumed.
+then the current project is assumed. Overrides the default \fBcore/project\fR
+property value for this command invocation.
 
 .TP 2m
 \fB\-\-quiet\fR, \fB\-q\fR
 Disable all interactive prompts when running gcloud commands. If input is
-required, defaults will be used, or an error will be raised.
+required, defaults will be used, or an error will be raised. Overrides the
+default \fBcore/disable_prompts\fR property value for this command invocation.
 
 .TP 2m
 \fB\-\-verbosity\fR=\fIVERBOSITY\fR; default="warning"
@@ -80,7 +83,7 @@ Override the default verbosity for this command. \fIVERBOSITY\fR must be one of:
 Print a summary help and exit.
 
 .TP 2m
-\fB\-v\fR, \fB\-\-version\fR
+\fB\-\-version\fR, \fB\-v\fR
 Print version information and exit. This flag is only available at the global
 level.
 
@@ -94,17 +97,18 @@ level.
 .TP 2m
 \fB\-\-log\-http\fR
 Log all HTTP server requests and responses to stderr. Overrides the default
-\fBlog_http\fR property value for this command invocation. Use
-\fB\-\-no\-log\-http\fR to disable.
+\fBcore/log_http\fR property value for this command invocation.
 
 .TP 2m
 \fB\-\-trace\-token\fR=\fITRACE_TOKEN\fR
 Token used to route traces of service requests for investigation of issues.
+Overrides the default \fBcore/trace_token\fR property value for this command
+invocation.
 
 .TP 2m
 \fB\-\-user\-output\-enabled\fR
 Print user intended output to the console. Overrides the default
-\fBuser_output_enabled\fR property value for this command invocation. Use
+\fBcore/user_output_enabled\fR property value for this command invocation. Use
 \fB\-\-no\-user\-output\-enabled\fR to disable.
 
 
@@ -167,6 +171,10 @@ Manage your Cloud DNS managed\-zones and record\-sets.
 .TP 2m
 \fBiam\fR
 Manage IAM service accounts and keys.
+
+.TP 2m
+\fBml\-engine\fR
+Cloud ML Engine command groups.
 
 .TP 2m
 \fBorganizations\fR

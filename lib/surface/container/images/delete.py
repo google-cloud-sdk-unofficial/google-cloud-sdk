@@ -14,6 +14,7 @@
 """Delete images command."""
 
 from containerregistry.client import docker_name
+from containerregistry.client.v2_2 import docker_http
 from containerregistry.client.v2_2 import docker_session
 from googlecloudsdk.api_lib.container.images import util
 from googlecloudsdk.calliope import base
@@ -32,14 +33,16 @@ class Delete(base.DeleteCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           The container images delete command deletes the specified tag or
           digest from the registry. If a tag is specified, only the tag is
           deleted from the registry and image layers remain accessible by
           digest. If a digest is specified, image layers are fully deleted from
           the registry.
       """,
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
           Deletes the tag or digest from the input IMAGE_NAME:
 
             $ {{command}} <IMAGE_NAME>
@@ -58,10 +61,12 @@ class Delete(base.DeleteCommand):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
           to capture some information, but behaves like an ArgumentParser.
     """
-    parser.add_argument('image_names', nargs='+',
-                        help=('The IMAGE_NAME or IMAGE_NAMES to delete\n'
-                              'Format For Digest: *.gcr.io/repository@<digest>'
-                              'Format For Tag: *.gcr.io/repository:<tag>'))
+    parser.add_argument(
+        'image_names',
+        nargs='+',
+        help=('The IMAGE_NAME or IMAGE_NAMES to delete\n'
+              'Format For Digest: *.gcr.io/repository@<digest>'
+              'Format For Tag: *.gcr.io/repository:<tag>'))
 
   def Run(self, args):
     """This is what ts called when the user runs this command.
@@ -90,16 +95,17 @@ class Delete(base.DeleteCommand):
     if tags:
       log.status.Print('Tags:')
     for tag in tags:
-      log.status.Print('- '+str(tag))
+      log.status.Print('- ' + str(tag))
     for digest in digests:
       tags.update(util.GetDockerTagsForDigest(digest, http_obj))
     # prompt
-    console_io.PromptContinue('This operation will delete the above tags '
-                              'and/or digests. Tag deletions only delete the'
-                              'tag. Digest deletions also delete the '
-                              'underlying image layers.',
-                              default=True,
-                              cancel_on_no=True)
+    console_io.PromptContinue(
+        'This operation will delete the above tags '
+        'and/or digests. Tag deletions only delete the'
+        'tag. Digest deletions also delete the '
+        'underlying image layers.',
+        default=True,
+        cancel_on_no=True)
     # delete and collect output
     result = []
     for tag in tags:  # tags must be deleted before digests
@@ -121,25 +127,39 @@ class Delete(base.DeleteCommand):
         tags.add(docker_obj)
     return [digests, tags]
 
+  def _MapDeleteErr(self, err, tag_or_digest):
+    return util.GcloudifyRecoverableV2Errors(err, {
+        403: 'Delete failed, access denied: {0}'.format(tag_or_digest),
+        404: 'Delete failed, image not found: {0}'.format(tag_or_digest)
+    })
+
   def _DeleteDockerTagOrDigest(self, tag_or_digest, http_obj):
-    docker_session.Delete(creds=util.CredentialProvider(),
-                          name=tag_or_digest,
-                          transport=http_obj)
-    log.DeletedResource(tag_or_digest)
+    try:
+      docker_session.Delete(
+          creds=util.CredentialProvider(),
+          name=tag_or_digest,
+          transport=http_obj)
+      log.DeletedResource(tag_or_digest)
+    except docker_http.V2DiagnosticException as err:
+      raise self._MapDeleteErr(err, tag_or_digest)
 
   def _DeleteDigestAndAssociatedTags(self, digest, http_obj):
-    # digest must not have any tags in order to be deleted
+    # Digest must not have any tags in order to be deleted.
+    # Errors raised from tag deletion are deliberately uncaught.
     util.DeleteTagsFromDigest(digest, http_obj)
     tag_list = util.GetTagNamesForDigest(digest, http_obj)
     for tag in tag_list:
       log.DeletedResource(tag)
-    docker_session.Delete(creds=util.CredentialProvider(),
-                          name=digest,
-                          transport=http_obj)
-    log.DeletedResource(digest)
+
+    try:
+      docker_session.Delete(
+          creds=util.CredentialProvider(), name=digest, transport=http_obj)
+      log.DeletedResource(digest)
+    except docker_http.V2DiagnosticException as err:
+      raise self._MapDeleteErr(err, digest)
 
   def _PrintDigest(self, digest, http_obj):
-    log.status.Print('- '+str(digest))
+    log.status.Print('- ' + str(digest))
     self._DisplayDigestTags(digest, http_obj)
 
   def _DisplayDigestTags(self, digest, http_obj):

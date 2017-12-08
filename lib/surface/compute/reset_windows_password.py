@@ -104,14 +104,13 @@ class ResetWindowsPassword(base_classes.ReadWriteCommand):
   def Args(parser):
     base_classes.ReadWriteCommand.Args(parser)
 
-    user = parser.add_argument(
+    parser.add_argument(
         '--user',
-        help='Specifies the username to reset a password for.')
-    user.detailed_help = """\
+        help="""\
         ``USER'' specifies the username to get the password for.
         If omitted, the username is derived from your authenticated
         account email address.
-        """
+        """)
     instance_flags.INSTANCE_ARG.AddArgument(parser)
 
   @property
@@ -127,7 +126,7 @@ class ResetWindowsPassword(base_classes.ReadWriteCommand):
             'Get',
             self.messages.ComputeInstancesGetRequest(
                 instance=self.ref.Name(),
-                project=self.project,
+                project=self.ref.project,
                 zone=self.ref.zone))
 
   def GetSetRequest(self, args, replacement, existing):
@@ -136,13 +135,13 @@ class ResetWindowsPassword(base_classes.ReadWriteCommand):
             self.messages.ComputeInstancesSetMetadataRequest(
                 instance=self.ref.Name(),
                 metadata=replacement.metadata,
-                project=self.project,
+                project=self.ref.project,
                 zone=self.ref.zone))
 
   def CreateReference(self, args):
     return instance_flags.INSTANCE_ARG.ResolveAsResource(
         args, self.resources, scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client, self.project))
+            self.compute_client))
 
   def Modify(self, args, existing):
     new_object = copy.deepcopy(existing)
@@ -237,7 +236,7 @@ class ResetWindowsPassword(base_classes.ReadWriteCommand):
                'GetSerialPortOutput',
                self.messages.ComputeInstancesGetSerialPortOutputRequest(
                    instance=self.ref.Name(),
-                   project=self.project,
+                   project=self.ref.project,
                    port=port,
                    zone=self.ref.zone))
     errors = []

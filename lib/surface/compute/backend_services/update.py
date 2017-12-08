@@ -28,19 +28,21 @@ from googlecloudsdk.core import log
 
 
 def AddIapFlag(parser):
-  iap_flag = flags.AddIap(parser)
   # TODO(b/34479878): It would be nice if the auto-generated help text were
   # a bit better so we didn't need to be quite so verbose here.
-  iap_flag.detailed_help = """\
-    Change the Identity Aware Proxy (IAP) service configuration for the backend
-    service. You can set IAP to 'enabled' or 'disabled', or modify the OAuth2
-    client configuration (oauth2-client-id and oauth2-client-secret) used by
-    IAP. If any fields are unspecified, their values will not be modified. For
-    instance, if IAP is enabled, '--iap=disabled' will disable IAP, and a
-    subsequent '--iap=enabled' will then enable it with the same OAuth2 client
-    configuration as the first time it was enabled. See
-    https://cloud.google.com/iap/ for more information about this feature.
-    """
+  flags.AddIap(
+      parser,
+      help="""\
+      Change the Identity Aware Proxy (IAP) service configuration for the
+      backend service. You can set IAP to 'enabled' or 'disabled', or modify
+      the OAuth2 client configuration (oauth2-client-id and
+      oauth2-client-secret) used by IAP. If any fields are unspecified, their
+      values will not be modified. For instance, if IAP is enabled,
+      '--iap=disabled' will disable IAP, and a subsequent '--iap=enabled' will
+      then enable it with the same OAuth2 client configuration as the first
+      time it was enabled. See
+      https://cloud.google.com/iap/ for more information about this feature.
+      """)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

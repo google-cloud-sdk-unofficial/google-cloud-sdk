@@ -12,7 +12,7 @@ from .enums import IncrementalSearchDirection
 from .filters import to_simple_filter
 from .history import History, InMemoryHistory
 from .search_state import SearchState
-from .selection import SelectionType, SelectionState
+from .selection import SelectionType, SelectionState, PasteMode
 from .utils import Event
 from .cache import FastDictCache
 from .validation import ValidationError
@@ -86,11 +86,25 @@ class AcceptAction(object):
 
 
 def _return_document_handler(cli, buffer):
+    # Set return value.
     cli.set_return_value(buffer.document)
+
+    # Make sure that if we run this UI again, that we reset this buffer, next
+    # time.
+    def reset_this_buffer():
+        buffer.reset()
+    cli.pre_run_callables.append(reset_this_buffer)
 
 
 AcceptAction.RETURN_DOCUMENT = AcceptAction(_return_document_handler)
 AcceptAction.IGNORE = AcceptAction(handler=None)
+
+
+class ValidationState(object):
+    " The validation state of a buffer. This is set after the validation. "
+    VALID = 'VALID'
+    INVALID = 'INVALID'
+    UNKNOWN = 'UNKNOWN'
 
 
 class CompletionState(object):
@@ -148,6 +162,24 @@ class CompletionState(object):
         """
         if self.complete_index is not None:
             return self.current_completions[self.complete_index]
+
+
+_QUOTED_WORDS_RE = re.compile(r"""(\s+|".*?"|'.*?')""")
+
+
+class YankNthArgState(object):
+    """
+    For yank-last-arg/yank-nth-arg: Keep track of where we are in the history.
+    """
+    def __init__(self, history_position=0, n=-1, previous_inserted_word=''):
+        self.history_position = history_position
+        self.previous_inserted_word = previous_inserted_word
+        self.n = n
+
+    def __repr__(self):
+        return '%s(history_position=%r, n=%r, previous_inserted_word=%r)' % (
+            self.__class__.__name__, self.history_position, self.n,
+            self.previous_inserted_word)
 
 
 class Buffer(object):
@@ -252,15 +284,28 @@ class Buffer(object):
 
         # `ValidationError` instance. (Will be set when the input is wrong.)
         self.validation_error = None
+        self.validation_state = ValidationState.UNKNOWN
 
         # State of the selection.
         self.selection_state = None
+
+        # Multiple cursor mode. (When we press 'I' or 'A' in visual-block mode,
+        # we can insert text on multiple lines at once. This is implemented by
+        # using multiple cursors.)
+        self.multiple_cursor_positions = []
 
         # When doing consecutive up/down movements, prefer to stay at this column.
         self.preferred_column = None
 
         # State of complete browser
         self.complete_state = None  # For interactive completion through Ctrl-N/Ctrl-P.
+
+        # State of Emacs yank-nth-arg completion.
+        self.yank_nth_arg_state = None  # for yank-nth-arg.
+
+        # Remember the document that we had *right before* the last paste
+        # operation. This is used for rotating through the kill ring.
+        self.document_before_paste = None
 
         # Current suggestion.
         self.suggestion = None
@@ -367,7 +412,10 @@ class Buffer(object):
     def _text_changed(self):
         # Remove any validation errors and complete state.
         self.validation_error = None
+        self.validation_state = ValidationState.UNKNOWN
         self.complete_state = None
+        self.yank_nth_arg_state = None
+        self.document_before_paste = None
         self.selection_state = None
         self.suggestion = None
         self.preferred_column = None
@@ -378,7 +426,10 @@ class Buffer(object):
     def _cursor_position_changed(self):
         # Remove any validation errors and complete state.
         self.validation_error = None
+        self.validation_state = ValidationState.UNKNOWN
         self.complete_state = None
+        self.yank_nth_arg_state = None
+        self.document_before_paste = None
 
         # Unset preferred_column. (Will be set after the cursor movement, if
         # required.)
@@ -537,7 +588,7 @@ class Buffer(object):
         # Remember the original column for the next up/down movement.
         self.preferred_column = original_column
 
-    def auto_up(self, count=1):
+    def auto_up(self, count=1, go_to_start_of_line_if_history_changes=False):
         """
         If we're not on the first line (of a multiline input) go a line up,
         otherwise go back in history. (If nothing is selected.)
@@ -549,7 +600,11 @@ class Buffer(object):
         elif not self.selection_state:
             self.history_backward(count=count)
 
-    def auto_down(self, count=1):
+            # Go to the start of the line?
+            if go_to_start_of_line_if_history_changes:
+                self.cursor_position += self.document.get_start_of_line_position()
+
+    def auto_down(self, count=1, go_to_start_of_line_if_history_changes=False):
         """
         If we're not on the last line (of a multiline input) go a line down,
         otherwise go forward in history. (If nothing is selected.)
@@ -561,9 +616,14 @@ class Buffer(object):
         elif not self.selection_state:
             self.history_forward(count=count)
 
+            # Go to the start of the line?
+            if go_to_start_of_line_if_history_changes:
+                self.cursor_position += self.document.get_start_of_line_position()
+
     def delete_before_cursor(self, count=1):
         """
-        Delete character before cursor, return deleted character.
+        Delete specified number of characters before cursor and return the
+        deleted text.
         """
         assert count >= 0
         deleted = ''
@@ -581,7 +641,7 @@ class Buffer(object):
 
     def delete(self, count=1):
         """
-        Delete one character. Return deleted character.
+        Delete specified number of characters and Return the deleted text.
         """
         if self.cursor_position < len(self.text):
             deleted = self.document.text_after_cursor[:count]
@@ -845,6 +905,63 @@ class Buffer(object):
         if found_something:
             self.cursor_position = len(self.text)
 
+    def yank_nth_arg(self, n=None, _yank_last_arg=False):
+        """
+        Pick nth word from previous history entry (depending on current
+        `yank_nth_arg_state`) and insert it at current position. Rotate through
+        history if called repeatedly. If no `n` has been given, take the first
+        argument. (The second word.)
+
+        :param n: (None or int), The index of the word from the previous line
+            to take.
+        """
+        assert n is None or isinstance(n, int)
+
+        if not len(self.history):
+            return
+
+        # Make sure we have a `YankNthArgState`.
+        if self.yank_nth_arg_state is None:
+            state = YankNthArgState(n=-1 if _yank_last_arg else 1)
+        else:
+            state = self.yank_nth_arg_state
+
+        if n is not None:
+            state.n = n
+
+        # Get new history position.
+        new_pos = state.history_position - 1
+        if -new_pos > len(self.history):
+            new_pos = -1
+
+        # Take argument from line.
+        line = self.history[new_pos]
+
+        words = [w.strip() for w in _QUOTED_WORDS_RE.split(line)]
+        words = [w for w in words if w]
+        try:
+            word = words[state.n]
+        except IndexError:
+            word = ''
+
+        # Insert new argument.
+        if state.previous_inserted_word:
+            self.delete_before_cursor(len(state.previous_inserted_word))
+        self.insert_text(word)
+
+        # Save state again for next completion. (Note that the 'insert'
+        # operation from above clears `self.yank_nth_arg_state`.)
+        state.previous_inserted_word = word
+        state.history_position = new_pos
+        self.yank_nth_arg_state = state
+
+    def yank_last_arg(self, n=None):
+        """
+        Like `yank_nth_arg`, but if no argument has been given, yank the last
+        word by default.
+        """
+        self.yank_nth_arg(n=n, _yank_last_arg=True)
+
     def start_selection(self, selection_type=SelectionType.CHARACTERS):
         """
         Take the current cursor position as the start of this selection.
@@ -868,12 +985,19 @@ class Buffer(object):
         """
         return self.copy_selection(_cut=True)
 
-    def paste_clipboard_data(self, data, before=False, count=1):
+    def paste_clipboard_data(self, data, paste_mode=PasteMode.EMACS, count=1):
         """
         Insert the data from the clipboard.
         """
         assert isinstance(data, ClipboardData)
-        self.document = self.document.paste_clipboard_data(data, before=before, count=count)
+        assert paste_mode in (PasteMode.VI_BEFORE, PasteMode.VI_AFTER, PasteMode.EMACS)
+
+        original_document = self.document
+        self.document = self.document.paste_clipboard_data(data, paste_mode=paste_mode, count=count)
+
+        # Remember original document. This assignment should come at the end,
+        # because assigning to 'document' will erase it.
+        self.document_before_paste = original_document
 
     def newline(self, copy_margin=True):
         """
@@ -968,7 +1092,10 @@ class Buffer(object):
         """
         Returns `True` if valid.
         """
-        self.validation_error = None
+        # Don't call the validator again, if it was already called for the
+        # current input.
+        if self.validation_state != ValidationState.UNKNOWN:
+            return self.validation_state == ValidationState.VALID
 
         # Validate first. If not valid, set validation exception.
         if self.validator:
@@ -979,9 +1106,12 @@ class Buffer(object):
                 cursor_position = e.cursor_position
                 self.cursor_position = min(max(0, cursor_position), len(self.text))
 
+                self.validation_state = ValidationState.INVALID
                 self.validation_error = e
                 return False
 
+        self.validation_state = ValidationState.VALID
+        self.validation_error = None
         return True
 
     def append_to_history(self):
@@ -1070,7 +1200,10 @@ class Buffer(object):
     def document_for_search(self, search_state):
         """
         Return a :class:`~prompt_toolkit.document.Document` instance that has
-        the text/cursor position for this search, if we would apply it.
+        the text/cursor position for this search, if we would apply it. This
+        will be used in the
+        :class:`~prompt_toolkit.layout.controls.BufferControl` to display
+        feedback while searching.
         """
         search_result = self._search(search_state, include_current_position=True)
 
@@ -1078,7 +1211,30 @@ class Buffer(object):
             return self.document
         else:
             working_index, cursor_position = search_result
-            return Document(self._working_lines[working_index], cursor_position)
+
+            # Keep selection, when `working_index` was not changed.
+            if working_index == self.working_index:
+                selection = self.selection_state
+            else:
+                selection = None
+
+            return Document(self._working_lines[working_index],
+                            cursor_position, selection=selection)
+
+    def get_search_position(self, search_state, include_current_position=True, count=1):
+        """
+        Get the cursor position for this search.
+        (This operation won't change the `working_index`. It's won't go through
+        the history. Vi text objects can't span multiple items.)
+        """
+        search_result = self._search(
+            search_state, include_current_position=include_current_position, count=count)
+
+        if search_result is None:
+            return self.cursor_position
+        else:
+            working_index, cursor_position = search_result
+            return cursor_position
 
     def apply_search(self, search_state, include_current_position=True, count=1):
         """
@@ -1140,11 +1296,13 @@ class Buffer(object):
 
         Return True when we received a zero return code.
         """
-        # If the 'EDITOR' environment variable has been set, use that one.
+        # If the 'VISUAL' or 'EDITOR' environment variable has been set, use that.
         # Otherwise, fall back to the first available editor that we can find.
+        visual = os.environ.get('VISUAL')
         editor = os.environ.get('EDITOR')
 
         editors = [
+            visual,
             editor,
 
             # Order of preference.

@@ -20,7 +20,6 @@ from googlecloudsdk.command_lib.resource_manager import liens_base
 from googlecloudsdk.core import log
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(liens_base.LienCommand):
   """Delete a lien.

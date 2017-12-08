@@ -42,10 +42,11 @@ class Browse(base.Command):
 
   @staticmethod
   def Args(parser):
-    versions = parser.add_argument('versions', nargs='+',
-                                   help='The versions to open.')
-    versions.detailed_help = (
-        'The versions to open (optionally filtered by the --service flag).')
+    parser.add_argument(
+        'versions',
+        nargs='+',
+        help="""\
+        The versions to open (optionally filtered by the --service flag).""")
     parser.add_argument('--service', '-s',
                         help=('If specified, only open versions from the '
                               'given service. If not specified, use the '

@@ -18,8 +18,8 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base_classes.GlobalLister):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ListBeta(base_classes.GlobalLister):
   """List Google Compute Engine network peerings."""
 
   @property
@@ -46,8 +46,8 @@ class ListAlpha(base_classes.GlobalLister):
         yield peering
 
   def GetResources(self, args, errors):
-    networks = super(ListAlpha, self).GetResources(args, errors)
+    networks = super(ListBeta, self).GetResources(args, errors)
     return (network for network in networks if network.peerings and args.network
             is None or network.name == args.network)
 
-ListAlpha.detailed_help = base_classes.GetGlobalListerHelp('peerings')
+ListBeta.detailed_help = base_classes.GetGlobalListerHelp('peerings')

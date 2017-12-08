@@ -62,20 +62,18 @@ class Create(base.CreateCommand):
     flags.AddConfigFlag(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
-    timeout = parser.add_argument(
+    parser.add_argument(
         '--timeout',
-        help=('The amount of time to wait before failing with '
-              'DEADLINE_EXCEEDED.'),
         type=arg_parsers.Duration(lower_bound='1s',
                                   upper_bound='{0}s'.format(
                                       util.MAX_WAITER_TIMEOUT)),
-        required=True)
-    timeout.detailed_help = """\
+        required=True,
+        help="""\
         The amount of time to wait before failing with DEADLINE_EXCEEDED.
         Timeout values can be specified as seconds, minutes, or hours, using the
         's', 'm', and 'h' suffixes respectively. If no suffix is specified, the
         unit is assumed to be seconds.
-        """
+        """)
 
     parser.add_argument(
         '--success-cardinality-path',

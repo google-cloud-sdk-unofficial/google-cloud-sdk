@@ -39,17 +39,6 @@ DETAILED_HELP = {
 }
 
 
-def _AddGuestFlushArgument(parser):
-  parser.add_argument(
-      '--guest-flush',
-      action='store_true',
-      default=False,
-      help=('Create an application consistent snapshot by informing the OS '
-            'to prepare for the snapshot process. Currently only supported '
-            'on Windows instances using the Volume Shadow Copy Service '
-            '(VSS).'))
-
-
 def _CommonArgs(parser):
   """Add parser arguments common to all tracks."""
   SnapshotDisks.disks_arg.AddArgument(parser)
@@ -58,12 +47,11 @@ def _CommonArgs(parser):
       '--description',
       help=('An optional, textual description for the snapshots being '
             'created.'))
-  snapshot_names = parser.add_argument(
+  parser.add_argument(
       '--snapshot-names',
       type=arg_parsers.ArgList(min_length=1),
       metavar='SNAPSHOT_NAME',
-      help='Names to assign to the snapshots.')
-  snapshot_names.detailed_help = """\
+      help="""\
       Names to assign to the snapshots. Without this option, the
       name of each snapshot will be a random, 16-character
       hexadecimal number that starts with a letter. The values of
@@ -73,7 +61,15 @@ def _CommonArgs(parser):
 
       will result in ``my-disk-1'' being snapshotted as
       ``snapshot-1'', ``my-disk-2'' as ``snapshot-2'', and so on.
-      """
+      """)
+  parser.add_argument(
+      '--guest-flush',
+      action='store_true',
+      default=False,
+      help=('Create an application consistent snapshot by informing the OS '
+            'to prepare for the snapshot process. Currently only supported '
+            'on Windows instances using the Volume Shadow Copy Service '
+            '(VSS).'))
   csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
 
   base.ASYNC_FLAG.AddToParser(parser)
@@ -185,7 +181,6 @@ class SnapshotDisksBeta(SnapshotDisks):
   def Args(parser):
     SnapshotDisks.disks_arg = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(parser)
-    _AddGuestFlushArgument(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -197,7 +192,6 @@ class SnapshotDisksAlpha(SnapshotDisks):
     SnapshotDisks.disks_arg = disks_flags.MakeDiskArgZonalOrRegional(
         plural=True)
     _CommonArgs(parser)
-    _AddGuestFlushArgument(parser)
 
 
 SnapshotDisks.detailed_help = DETAILED_HELP

@@ -3,7 +3,6 @@ The main `CommandLineInterface` class and logic.
 """
 from __future__ import unicode_literals
 
-import datetime
 import functools
 import os
 import signal
@@ -11,6 +10,7 @@ import six
 import sys
 import textwrap
 import threading
+import time
 import types
 import weakref
 
@@ -66,7 +66,7 @@ class CommandLineInterface(object):
     """
     def __init__(self, application, eventloop=None, input=None, output=None):
         assert isinstance(application, Application)
-        assert isinstance(eventloop, EventLoop)
+        assert isinstance(eventloop, EventLoop), 'Passing an eventloop is required.'
         assert output is None or isinstance(output, Output)
         assert input is None or isinstance(input, Input)
 
@@ -86,6 +86,9 @@ class CommandLineInterface(object):
 
         #: EditingMode.VI or EditingMode.EMACS
         self.editing_mode = application.editing_mode
+
+        #: Quoted insert. This flag is set if we go into quoted insert mode.
+        self.quoted_insert = False
 
         #: Vi state. (For Vi key bindings.)
         self.vi_state = ViState()
@@ -144,6 +147,10 @@ class CommandLineInterface(object):
     @property
     def clipboard(self):
         return self.application.clipboard
+
+    @property
+    def pre_run_callables(self):
+        return self.application.pre_run_callables
 
     def add_buffer(self, name, buffer, focus=False):
         """
@@ -268,7 +275,10 @@ class CommandLineInterface(object):
         """
         Reset everything, for reading the next input.
 
-        :param reset_current_buffer: If True, also reset the focussed buffer.
+        :param reset_current_buffer: XXX: not used anymore. The reason for
+            having this option in the past was when this CommandLineInterface
+            is run multiple times, that we could reset the buffer content from
+            the previous run. This is now handled in the AcceptAction.
         """
         # Notice that we don't reset the buffers. (This happens just before
         # returning, and when we have multiple buffers, we clearly want the
@@ -284,9 +294,6 @@ class CommandLineInterface(object):
         self.input_processor.reset()
         self.layout.reset()
         self.vi_state.reset()
-
-        if reset_current_buffer:
-            self.current_buffer.reset()
 
         # Search new search state. (Does also remember what has to be
         # highlighted.)
@@ -326,11 +333,16 @@ class CommandLineInterface(object):
                 self._redraw()
 
             # Call redraw in the eventloop (thread safe).
-            # Give it low priority. If there is other I/O or CPU intensive
-            # stuff to handle, give that priority, but max postpone x seconds.
-            _max_postpone_until = datetime.datetime.now() + datetime.timedelta(
-                seconds=self.max_render_postpone_time)
-            self.eventloop.call_from_executor(redraw, _max_postpone_until=_max_postpone_until)
+            # Usually with the high priority, in order to make the application
+            # feel responsive, but this can be tuned by changing the value of
+            # `max_render_postpone_time`.
+            if self.max_render_postpone_time:
+                _max_postpone_until = time.time() + self.max_render_postpone_time
+            else:
+                _max_postpone_until = None
+
+            self.eventloop.call_from_executor(
+                redraw, _max_postpone_until=_max_postpone_until)
 
     # Depracated alias for 'invalidate'.
     request_redraw = invalidate
@@ -360,12 +372,27 @@ class CommandLineInterface(object):
         self.renderer.request_absolute_cursor_position()
         self._redraw()
 
+    def _load_next_buffer_indexes(self):
+        for buff, index in self._next_buffer_indexes.items():
+            if buff in self.buffers:
+                self.buffers[buff].working_index = index
+
+    def _pre_run(self, pre_run=None):
+        " Called during `run`. "
+        if pre_run:
+            pre_run()
+
+        # Process registered "pre_run_callables" and clear list.
+        for c in self.pre_run_callables:
+            c()
+        del self.pre_run_callables[:]
+
     def run(self, reset_current_buffer=False, pre_run=None):
         """
         Read input from the command line.
         This runs the eventloop until a return value has been set.
 
-        :param reset_current_buffer: Reset content of current buffer.
+        :param reset_current_buffer: XXX: Not used anymore.
         :param pre_run: Callable that is called right after the reset has taken
             place. This allows custom initialisation.
         """
@@ -375,11 +402,10 @@ class CommandLineInterface(object):
             self._is_running = True
 
             self.on_start.fire()
-            self.reset(reset_current_buffer=reset_current_buffer)
+            self.reset()
 
             # Call pre_run.
-            if pre_run:
-                pre_run()
+            self._pre_run(pre_run)
 
             # Run eventloop in raw mode.
             with self.input.raw_mode():
@@ -416,41 +442,41 @@ class CommandLineInterface(object):
 
             This is only available on Python >3.3, with asyncio.
             """
-            assert pre_run is None or callable(pre_run)
-
-            try:
-                self._is_running = True
-
-                self.on_start.fire()
-                self.reset(reset_current_buffer=reset_current_buffer)
-
-                # Call pre_run.
-                if pre_run:
-                    pre_run()
-
-                with self.input.raw_mode():
-                    self.renderer.request_absolute_cursor_position()
-                    self._redraw()
-
-                    yield from self.eventloop.run_as_coroutine(
-                            self.input, self.create_eventloop_callbacks())
-
-                return self.return_value()
-            finally:
-                if not self.is_done:
-                    self._exit_flag = True
-                    self._redraw()
-
-                self.renderer.reset()
-                self.on_stop.fire()
-                self._is_running = False
-
-        try:
+            # Inline import, because it slows down startup when asyncio is not
+            # needed.
             import asyncio
-        except ImportError:
-            pass
-        else:
-            run_async = asyncio.coroutine(run_async)
+
+            @asyncio.coroutine
+            def run():
+                assert pre_run is None or callable(pre_run)
+
+                try:
+                    self._is_running = True
+
+                    self.on_start.fire()
+                    self.reset()
+
+                    # Call pre_run.
+                    self._pre_run(pre_run)
+
+                    with self.input.raw_mode():
+                        self.renderer.request_absolute_cursor_position()
+                        self._redraw()
+
+                        yield from self.eventloop.run_as_coroutine(
+                                self.input, self.create_eventloop_callbacks())
+
+                    return self.return_value()
+                finally:
+                    if not self.is_done:
+                        self._exit_flag = True
+                        self._redraw()
+
+                    self.renderer.reset()
+                    self.on_stop.fire()
+                    self._is_running = False
+
+            return run()
         '''))
     except SyntaxError:
         # Python2, or early versions of Python 3.
@@ -613,7 +639,6 @@ class CommandLineInterface(object):
         # Run system command.
         with self.input.cooked_mode():
             result = func()
-
 
         # Redraw interface again.
         self.renderer.reset()
@@ -856,21 +881,28 @@ class CommandLineInterface(object):
                         set_completions = True
                         select_first_anyway = False
 
-                        # When the commond part has to be inserted, and there
+                        # When the common part has to be inserted, and there
                         # is a common part.
                         if insert_common_part:
                             common_part = get_common_complete_suffix(document, completions)
                             if common_part:
-                                # Insert + run completer again.
+                                # Insert the common part, update completions.
                                 buffer.insert_text(common_part)
-                                async_completer()
-                                set_completions = False
+                                if len(completions) > 1:
+                                    # (Don't call `async_completer` again, but
+                                    # recalculate completions. See:
+                                    # https://github.com/ipython/ipython/issues/9658)
+                                    completions[:] = [
+                                        c.new_completion_from_position(len(common_part))
+                                        for c in completions]
+                                else:
+                                    set_completions = False
                             else:
                                 # When we were asked to insert the "common"
                                 # prefix, but there was no common suffix but
                                 # still exactly one match, then select the
                                 # first. (It could be that we have a completion
-                                # which does * expension, like '*.py', with
+                                # which does * expansion, like '*.py', with
                                 # exactly one match.)
                                 if len(completions) == 1:
                                     select_first_anyway = True
@@ -947,13 +979,18 @@ class CommandLineInterface(object):
         """
         return _StdoutProxy(self, raw=raw)
 
-    def patch_stdout_context(self, raw=False):
+    def patch_stdout_context(self, raw=False, patch_stdout=True, patch_stderr=True):
         """
         Return a context manager that will replace ``sys.stdout`` with a proxy
         that makes sure that all printed text will appear above the prompt, and
         that it doesn't destroy the output from the renderer.
+
+        :param patch_stdout: Replace `sys.stdout`.
+        :param patch_stderr: Replace `sys.stderr`.
         """
-        return _PatchStdoutContext(self.stdout_proxy(raw=raw))
+        return _PatchStdoutContext(
+            self.stdout_proxy(raw=raw),
+            patch_stdout=patch_stdout, patch_stderr=patch_stderr)
 
     def create_eventloop_callbacks(self):
         return _InterfaceEventLoopCallbacks(self)
@@ -1007,15 +1044,26 @@ class _InterfaceEventLoopCallbacks(EventLoopCallbacks):
 
 
 class _PatchStdoutContext(object):
-    def __init__(self, new_stdout):
+    def __init__(self, new_stdout, patch_stdout=True, patch_stderr=True):
         self.new_stdout = new_stdout
+        self.patch_stdout = patch_stdout
+        self.patch_stderr = patch_stderr
 
     def __enter__(self):
         self.original_stdout = sys.stdout
-        sys.stdout = self.new_stdout
+        self.original_stderr = sys.stderr
+
+        if self.patch_stdout:
+            sys.stdout = self.new_stdout
+        if self.patch_stderr:
+            sys.stderr = self.new_stdout
 
     def __exit__(self, *a, **kw):
-        sys.stdout = self.original_stdout
+        if self.patch_stdout:
+            sys.stdout = self.original_stdout
+
+        if self.patch_stderr:
+            sys.stderr = self.original_stderr
 
 
 class _StdoutProxy(object):

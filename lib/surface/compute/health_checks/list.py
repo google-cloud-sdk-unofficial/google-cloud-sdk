@@ -25,14 +25,13 @@ class _BaseList(object):
   def Args(parser):
     base_classes.BaseLister.Args(parser)
 
-    protocol = parser.add_argument(
+    parser.add_argument(
         '--protocol',
-        help='The health check protocol to be listed. Default is all listed.')
-    protocol.detailed_help = """\
+        help="""\
         If protocol is specified, only health checks for that protocol are
         listed, and protocol-specific columns are added to the output. By
         default, health checks for all protocols are listed.
-        """
+        """)
 
   def _ConvertProtocolArgToValue(self, args):
     # Get the dictionary that maps strings to numbers, e.g. "HTTP" to 0.

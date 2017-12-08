@@ -18,8 +18,8 @@ from googlecloudsdk.api_lib.compute import networks_utils
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(base_classes.BaseAsyncMutator):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DeleteBeta(base_classes.BaseAsyncMutator):
   """Delete a Google Compute Engine network peering."""
 
   @property

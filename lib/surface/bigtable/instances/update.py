@@ -13,7 +13,7 @@
 # limitations under the License.
 """bigtable instances update command."""
 
-from googlecloudsdk.api_lib.bigtable import util
+from googlecloudsdk.api_lib.bigtable import util as bigtable_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import log
@@ -26,7 +26,11 @@ class UpdateInstance(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    arguments.ArgAdder(parser).AddInstance().AddInstanceDescription()
+    (arguments.ArgAdder(parser).AddInstance().AddInstanceDescription()
+     .AddInstanceType(
+         help_text='Change the instance type. Note development instances can '
+         'be promoted to production instances, but production instances '
+         'cannot be downgraded to development.'))
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -38,15 +42,17 @@ class UpdateInstance(base.UpdateCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    cli = util.GetAdminClient()
+    cli = bigtable_util.GetAdminClient()
     ref = resources.REGISTRY.Parse(
         args.instance, collection='bigtableadmin.projects.instances')
-    msg = util.GetAdminMessages().BigtableadminProjectsInstancesGetRequest(
-        name=ref.RelativeName())
-    instance = cli.projects_instances.Get(msg)
+    msgs = bigtable_util.GetAdminMessages()
+    instance = cli.projects_instances.Get(
+        msgs.BigtableadminProjectsInstancesGetRequest(name=ref.RelativeName()))
     instance.state = None  # must be unset when calling Update
     if args.description:
       instance.displayName = args.description
+    if args.instance_type:
+      instance.type = msgs.Instance.TypeValueValuesEnum(args.instance_type)
     instance = cli.projects_instances.Update(instance)
     log.UpdatedResource(instance.name, kind='instance')
     return instance

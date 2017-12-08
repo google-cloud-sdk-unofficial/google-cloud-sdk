@@ -29,37 +29,32 @@ from googlecloudsdk.core import properties
 def _AddGaHops(next_hop_group):
   """Attach arguments for GA next-hops to the a parser group."""
 
-  next_hop_instance = next_hop_group.add_argument(
+  next_hop_group.add_argument(
       '--next-hop-instance',
-      help=('Specifies the name of an instance that should handle traffic '
-            'matching this route.'))
-  next_hop_instance.detailed_help = """\
+      help="""\
       Specifies the name of an instance that should handle traffic
       matching this route. When this flag is specified, the zone of
       the instance must be specified using
       ``--next-hop-instance-zone''.
-      """
+      """)
 
-  next_hop_address = next_hop_group.add_argument(
+  next_hop_group.add_argument(
       '--next-hop-address',
-      help=('Specifies the IP address of an instance that should handle '
-            'matching packets.'))
-  next_hop_address.detailed_help = """\
+      help="""\
       Specifies the IP address of an instance that should handle
       matching packets. The instance must have IP forwarding enabled
       (i.e., include ``--can-ip-forward'' when creating the instance
       using `gcloud compute instances create`)
-      """
+      """)
 
-  next_hop_gateway = next_hop_group.add_argument(
+  next_hop_group.add_argument(
       '--next-hop-gateway',
-      help='Specifies the gateway that should handle matching packets.')
-  next_hop_gateway.detailed_help = """\
+      help="""\
       Specifies the gateway that should handle matching
       packets. Currently, the only acceptable value is
       ``default-internet-gateway'' which is a gateway operated by
       Google Compute Engine.
-      """
+      """)
 
   next_hop_group.add_argument(
       '--next-hop-vpn-tunnel',
@@ -78,57 +73,48 @@ def _Args(parser):
       default='default',
       help='Specifies the network to which the route will be applied.')
 
-  tags = parser.add_argument(
+  parser.add_argument(
       '--tags',
       type=arg_parsers.ArgList(min_length=1),
       default=[],
       metavar='TAG',
-      help='Identifies the set of instances that this route will apply to.')
-  tags.detailed_help = """\
+      help="""\
       Identifies the set of instances that this route will apply to. If no
       tags are provided, the route will apply to all instances in the network.
-      """
+      """)
 
-  destination_range = parser.add_argument(
+  parser.add_argument(
       '--destination-range',
       required=True,
-      help=('The destination range of outgoing packets that the route will '
-            'apply to.'))
-  destination_range.detailed_help = """\
+      help="""\
       The destination range of outgoing packets that the route will
       apply to. To match all traffic, use ``0.0.0.0/0''.
-      """
+      """)
 
-  priority = parser.add_argument(
+  parser.add_argument(
       '--priority',
       default=1000,
-      help=('Specifies the priority of this route relative to other routes '
-            'with the same specificity.'),
-      type=int)
-  priority.detailed_help = """\
+      type=int,
+      help="""\
       Specifies the priority of this route relative to other routes
       with the same specificity. The lower the value, the higher the
       priority.
-      """
+      """)
 
   next_hop = parser.add_mutually_exclusive_group(required=True)
 
   _AddGaHops(next_hop)
 
-  next_hop_instance_zone = parser.add_argument(
+  parser.add_argument(
       '--next-hop-instance-zone',
-      help='The zone of the next hop instance.',
-      action=actions.StoreProperty(properties.VALUES.compute.zone))
-  next_hop_instance_zone.detailed_help = ("""\
-      The zone of the next hop instance.
-      """ + compute_flags.ZONE_PROPERTY_EXPLANATION)
+      action=actions.StoreProperty(properties.VALUES.compute.zone),
+      help=('The zone of the next hop instance. ' +
+            compute_flags.ZONE_PROPERTY_EXPLANATION))
 
-  next_hop_vpn_tunnel_region = parser.add_argument(
+  parser.add_argument(
       '--next-hop-vpn-tunnel-region',
-      help='The region of the next hop vpn tunnel.')
-  next_hop_vpn_tunnel_region.detailed_help = ("""\
-     The region of the next hop vpn tunnel.
-     """ + compute_flags.REGION_PROPERTY_EXPLANATION)
+      help=('The region of the next hop vpn tunnel. ' +
+            compute_flags.REGION_PROPERTY_EXPLANATION))
 
 
 def _CreateRequests(cmd, args):

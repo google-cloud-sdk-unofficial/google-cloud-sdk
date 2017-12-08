@@ -76,14 +76,13 @@ class Create(base.CreateCommand):
   def Args(parser):
     labels_util.AddCreateLabelsFlags(parser)
     type_ = arg_parsers.RegexpValidator(r'[a-z][a-z0-9-]{5,29}', ID_DESCRIPTION)
-    project_id = parser.add_argument(
+    parser.add_argument(
         'id',
         metavar='PROJECT_ID',
         type=type_,
         nargs='?',
-        help='ID for the project you want to create.')
-    project_id.detailed_help = ('ID for the project you want to create.'
-                                '\n\n{0}'.format(ID_DESCRIPTION))
+        help='ID for the project you want to create.\n\n{0}'.format(
+            ID_DESCRIPTION))
     parser.add_argument(
         '--name',
         help='Name for the project you want to create. '

@@ -27,13 +27,12 @@ class Help(base.Command):
 
   @staticmethod
   def Args(parser):
-    command_arg = parser.add_argument(
+    parser.add_argument(
         'command',
         nargs='*',
-        help='The commands to get help for.')
-    command_arg.detailed_help = """\
+        help="""\
         A sequence of group and command names with no flags.
-        """
+        """)
 
   def Run(self, args):
     # --document=style=help to signal the metrics.Help() 'help' label in

@@ -36,17 +36,15 @@ class TailSerialPortOutput(base_classes.BaseCommand):
   @staticmethod
   def Args(parser):
     instance_flags.INSTANCE_ARG.AddArgument(parser)
-    port = parser.add_argument(
+    parser.add_argument(
         '--port',
-        help=('The number of the requested serial port. '
-              'Can be 1-4, default is 1.'),
-        type=arg_parsers.BoundedInt(1, 4))
-    port.detailed_help = """\
+        type=arg_parsers.BoundedInt(1, 4),
+        help="""\
         Instances can support up to four serial port outputs, numbered 1 through
         4. By default, this command will return the output of the first serial
         port. Setting this flag will return the output of the requested serial
         port.
-        """
+        """)
 
   @property
   def resource_type(self):

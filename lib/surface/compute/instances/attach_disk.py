@@ -133,18 +133,17 @@ class AttachDiskAlpha(AttachDisk):
   @staticmethod
   def Args(parser):
     instance_flags.AddDiskScopeFlag(parser)
-    force_attach = parser.add_argument(
+    parser.add_argument(
         '--force-attach',
         default=False,
         action='store_true',
-        help='Attach the disk to the instance even if there is another '
-             'instance currently attached to it.',
-        hidden=True)
-    force_attach.detailed_help = """\
-    Attach the disk to the instance even if there is another instance currently
-    attached to it. The server will attempt to detach the disk cleanly from the existing
-    instance but will force attach to the new instance if that's not possible and will
-    continue to try to detach from the previous instance in the background."""
+        hidden=True,
+        help="""\
+Attach the disk to the instance even if there is another instance currently
+attached to it. The server will attempt to detach the disk cleanly from the
+existing instance but will force attach to the new instance if that's not
+possible and will continue to try to detach from the previous instance in the
+background.""")
     _CommonArgs(parser)
 
   def ParseDiskRef(self, args, instance_ref):

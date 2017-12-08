@@ -1,4 +1,6 @@
-"""prompt_toolkit ==============
+"""
+prompt_toolkit
+==============
 
 Author: Jonathan Slenders
 
@@ -11,10 +13,10 @@ See the examples directory to learn about the usage.
 Probably, to get started, you meight also want to have a look at
 `prompt_toolkit.shortcuts.prompt`.
 """
-from prompt_toolkit.interface import CommandLineInterface
-from prompt_toolkit.application import AbortAction, Application
-from prompt_toolkit.shortcuts import prompt
+from .interface import CommandLineInterface
+from .application import AbortAction, Application
+from .shortcuts import prompt, prompt_async
+
 
 # Don't forget to update in `docs/conf.py`!
-__version__ = '1.0.3'
-__all__ = ['application', 'auto_suggest']
+__version__ = '1.0.13'

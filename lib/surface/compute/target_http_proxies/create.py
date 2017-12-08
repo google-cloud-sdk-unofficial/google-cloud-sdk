@@ -31,16 +31,14 @@ class Create(base_classes.BaseAsyncCreator):
         '--description',
         help='An optional, textual description for the target HTTP proxy.')
 
-    url_map = parser.add_argument(
+    parser.add_argument(
         '--url-map',
         required=True,
-        help=('A reference to a URL map resource that defines the mapping of '
-              'URLs to backend services.'))
-    url_map.detailed_help = """\
+        help="""\
         A reference to a URL map resource that defines the mapping of
         URLs to backend services. The URL map must exist and cannot be
         deleted while referenced by a target HTTP proxy.
-        """
+        """)
 
   @property
   def service(self):

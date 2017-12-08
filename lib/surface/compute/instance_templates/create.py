@@ -258,9 +258,11 @@ class CreateBeta(Create):
 
   @classmethod
   def Args(cls, parser):
-    _CommonArgs(parser, multiple_network_interface_cards=False,
-                release_track=base.ReleaseTrack.BETA,
-                support_alias_ip_ranges=False)
+    _CommonArgs(
+        parser,
+        multiple_network_interface_cards=True,
+        release_track=base.ReleaseTrack.BETA,
+        support_alias_ip_ranges=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

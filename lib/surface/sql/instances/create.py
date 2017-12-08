@@ -26,6 +26,8 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import remote_completion
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.resource import resource_lex
+from googlecloudsdk.core.resource import resource_property
 
 
 class _BaseCreate(object):
@@ -42,6 +44,7 @@ class _BaseCreate(object):
           on the command line after this command. Positional arguments are
           allowed.
     """
+    # TODO(b/35705305): move common flags to command_lib.sql.flags
     base.ASYNC_FLAG.AddToParser(parser)
     parser.add_argument(
         '--activation-policy',
@@ -86,13 +89,6 @@ class _BaseCreate(object):
         default=True,
         help='Enables daily backup.')
     parser.add_argument(
-        '--cpu',
-        type=int,
-        required=False,
-        help='A whole number value indicating how many cores are desired in'
-        'the machine. Both --cpu and --memory must be specified if a custom '
-        'machine type is desired, and the --tier flag must be omitted.')
-    parser.add_argument(
         '--database-version',
         required=False,
         default='MYSQL_5_6',
@@ -124,15 +120,6 @@ class _BaseCreate(object):
         help='Name of the instance which will act as master in the replication '
         'setup. The newly created instance will be a read replica of the '
         'specified master instance.')
-    parser.add_argument(
-        '--memory',
-        type=arg_parsers.BinarySize(),
-        required=False,
-        help='A whole number value indicating how much memory is desired in '
-        'the machine. A size unit should be provided (eg. 3072MiB or 9GiB) - '
-        'if no units are specified, GiB is assumed. Both --cpu and --memory '
-        'must be specified if a custom machine type is desired, and the --tier '
-        'flag must be omitted.')
     parser.add_argument(
         '--on-premises-host-port',
         required=False,
@@ -257,8 +244,17 @@ class Create(_BaseCreate, base.Command):
       cache = remote_completion.RemoteCompletion()
       cache.AddToCache(instance_ref.SelfLink())
       return new_resource
-    except apitools_exceptions.HttpError:
+
+    except apitools_exceptions.HttpError as error:
       log.debug('operation : %s', str(operation_ref))
+      exc = exceptions.HttpException(error)
+      if resource_property.Get(exc.payload.content,
+                               resource_lex.ParseKey('error.errors[0].reason'),
+                               None) == 'errorMaxInstancePerLabel':
+        msg = resource_property.Get(exc.payload.content,
+                                    resource_lex.ParseKey('error.message'),
+                                    None)
+        raise exceptions.HttpException(msg)
       raise
 
 
@@ -284,9 +280,7 @@ class CreateBeta(_BaseCreate, base.Command):
         '--storage-auto-increase',
         action='store_true',
         default=None,
-        help='Adds storage capacity whenever space is low. Up to 25 GB per '
-        'increase. All increases are permanent.',
-        detailed_help='Storage size can be increased, but it cannot be '
+        help='Storage size can be increased, but it cannot be '
         'decreased; storage increases are permanent for the life of the '
         'instance. With this setting enabled, a spike in storage requirements '
         'can result in permanently increased storage costs for your instance. '
@@ -323,6 +317,22 @@ class CreateBeta(_BaseCreate, base.Command):
         '--maintenance-window-hour',
         type=arg_parsers.BoundedInt(lower_bound=0, upper_bound=23),
         help='Hour of day for maintenance window, in UTC time zone.')
+    parser.add_argument(
+        '--cpu',
+        type=int,
+        required=False,
+        help='A whole number value indicating how many cores are desired in'
+        'the machine. Both --cpu and --memory must be specified if a custom '
+        'machine type is desired, and the --tier flag must be omitted.')
+    parser.add_argument(
+        '--memory',
+        type=arg_parsers.BinarySize(),
+        required=False,
+        help='A whole number value indicating how much memory is desired in '
+        'the machine. A size unit should be provided (eg. 3072MiB or 9GiB) - '
+        'if no units are specified, GiB is assumed. Both --cpu and --memory '
+        'must be specified if a custom machine type is desired, and the --tier '
+        'flag must be omitted.')
 
   def Collection(self):
     return 'sql.instances.v1beta4'
@@ -386,6 +396,14 @@ class CreateBeta(_BaseCreate, base.Command):
       cache = remote_completion.RemoteCompletion()
       cache.AddToCache(instance_ref.SelfLink())
       return new_resource
-    except apitools_exceptions.HttpError:
+    except apitools_exceptions.HttpError as error:
       log.debug('operation : %s', str(operation_ref))
+      exc = exceptions.HttpException(error)
+      if resource_property.Get(exc.payload.content,
+                               resource_lex.ParseKey('error.errors[0].reason'),
+                               None) == 'errorMaxInstancePerLabel':
+        msg = resource_property.Get(exc.payload.content,
+                                    resource_lex.ParseKey('error.message'),
+                                    None)
+        raise exceptions.HttpException(msg)
       raise

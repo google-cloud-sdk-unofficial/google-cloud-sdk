@@ -38,17 +38,15 @@ class Create(base_classes.BaseAsyncCreator):
         '--description',
         help=('An optional, textual description for the image being created.'))
 
-    source_uri = parser.add_argument(
+    parser.add_argument(
         '--source-uri',
-        help=('The full Google Cloud Storage URI where the disk image is '
-              'stored.'))
-    source_uri.detailed_help = """\
+        help="""\
         The full Google Cloud Storage URI where the disk image is stored.
         This file must be a gzip-compressed tarball whose name ends in
         ``.tar.gz''.
 
         This flag is mutually exclusive with ``--source-disk''.
-        """
+        """)
 
     flags.SOURCE_DISK_ARG.AddArgument(parser)
     parser.add_argument(
@@ -71,11 +69,7 @@ class Create(base_classes.BaseAsyncCreator):
                                    choices=cls._GUEST_OS_FEATURES),
           help=('One or more features supported by the OS in the image.'))
 
-    parser.add_argument(
-        'name',
-        metavar='NAME',
-        help='The name of the image to create.')
-
+    flags.DISK_IMAGE_ARG.AddArgument(parser, operation_type='create')
     csek_utils.AddCsekKeyArgs(parser, resource_type='image')
 
   @property
@@ -93,8 +87,9 @@ class Create(base_classes.BaseAsyncCreator):
   def CreateRequests(self, args):
     """Returns a list of requests necessary for adding images."""
 
+    image_ref = flags.DISK_IMAGE_ARG.ResolveAsResource(args, self.resources)
     image = self.messages.Image(
-        name=args.name,
+        name=image_ref.image,
         description=args.description,
         sourceType=self.messages.Image.SourceTypeValueValuesEnum.RAW,
         family=args.family)
@@ -102,7 +97,6 @@ class Create(base_classes.BaseAsyncCreator):
     csek_keys = csek_utils.CsekKeyStore.FromArgs(
         args, self._ALLOW_RSA_ENCRYPTED_CSEK_KEYS)
     if csek_keys:
-      image_ref = self.resources.Parse(args.name, collection='compute.images')
       image.imageEncryptionKey = csek_utils.MaybeToMessage(
           csek_keys.LookupKey(image_ref,
                               raise_if_missing=args.require_csek_key_create),
@@ -132,8 +126,7 @@ class Create(base_classes.BaseAsyncCreator):
     else:
       source_disk_ref = flags.SOURCE_DISK_ARG.ResolveAsResource(
           args, self.resources,
-          scope_lister=compute_flags.GetDefaultScopeLister(
-              self.compute_client, self.project))
+          scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
       image.sourceDisk = source_disk_ref.SelfLink()
       image.sourceDiskEncryptionKey = csek_utils.MaybeLookupKeyMessage(
           csek_keys, source_disk_ref, self.compute_client.apitools_client)
@@ -153,7 +146,7 @@ class Create(base_classes.BaseAsyncCreator):
 
     request = self.messages.ComputeImagesInsertRequest(
         image=image,
-        project=self.project)
+        project=image_ref.project)
 
     return [request]
 

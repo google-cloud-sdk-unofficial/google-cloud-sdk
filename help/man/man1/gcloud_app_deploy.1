@@ -67,14 +67,11 @@ run:
 $ gcloud config set app/promote_by_default false
 .RE
 
-Overrides the default \fBpromote_by_default\fR property value for this command
-invocation. Use \fB\-\-no\-promote\fR to disable.
-
 .TP 2m
 \fB\-\-stop\-previous\-version\fR
 Stop the previously running version when deploying a new version that receives
-all traffic. Overrides the default \fBstop_previous_version\fR property value
-for this command invocation. Use \fB\-\-no\-stop\-previous\-version\fR to
+all traffic. Overrides the default \fBapp/stop_previous_version\fR property
+value for this command invocation. Use \fB\-\-no\-stop\-previous\-version\fR to
 disable.
 
 .TP 2m

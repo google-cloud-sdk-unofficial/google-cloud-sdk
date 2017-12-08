@@ -36,12 +36,11 @@ class List(base.Command):
           allowed.
     """
     base.LIMIT_FLAG.AddToParser(parser)
-    f = parser.add_argument(
+    parser.add_argument(
         '--where',
         default='',
         type=str,
-        help='A filter spec for what operations to display.')
-    f.detailed_help = ("""\
+        help="""\
         A string for filtering operations. The following filter fields are
         supported:
 

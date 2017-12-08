@@ -57,39 +57,34 @@ class Start(base.Command):
     parser.add_argument(
         '--max-num-concurrent-instances', type=int,
         help='Maximum number of instances that can be updated simultaneously.')
-    min_instance_update_time = parser.add_argument(
+    parser.add_argument(
         '--min-instance-update-time', type=arg_parsers.Duration(),
-        help='Minimum amount of time spent on updating single instance.')
-    min_instance_update_time.detailed_help = """\
+        help="""\
         Specifies minimum amount of time we will spend on updating single
         instance, measuring at the start of the first update action (currently
         only 'RECREATE' call). If actual instance update takes less time we will
         simply sleep before proceeding with next instance. Valid units for this
         flag are ``s'' for seconds, ``m'' for minutes, ``h'' for hours and
         ``d'' for days. If no unit is specified, seconds is assumed.
-        """
-    instance_startup_timeout = parser.add_argument(
+        """)
+    parser.add_argument(
         '--instance-startup-timeout', type=arg_parsers.Duration(),
-        help='Maximum time until instance is running after update action.')
-    instance_startup_timeout.detailed_help = """\
+        help="""\
         Maximum amount of time we will wait after finishing all steps until
         instance is in *RUNNING* state. If this deadline is exceeded instance
         update is considered as failed. Valid units for this flag are ``s'' for
         seconds, ``m'' for minutes, ``h'' for hours and ``d'' for days. If no
         unit is specified, seconds is assumed.
-        """
-    max_num_failed_instances = parser.add_argument(
+        """)
+    parser.add_argument(
         '--max-num-failed-instances', type=int,
         help="""\
-        Maximum number of instances that can fail without failing group update.
-        """)
-    max_num_failed_instances.detailed_help = """\
         Maximum number of instance updates that can fail without failing the
         group update. Instance update is considered failed if any of its
         update actions (currently only 'RECREATE' call) failed with permanent
         failure, or if after finishing all update actions this instance is not
         running.
-        """
+        """)
 
     # TODO(user): Support --async which does not wait for state transition.
 

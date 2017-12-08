@@ -33,28 +33,10 @@ class InvalidateCdnCacheGA(base_classes.NoOutputMutator):
     cls.URL_MAP_ARG = flags.UrlMapArgument()
     cls.URL_MAP_ARG.AddArgument(parser, cust_metavar='URLMAP')
 
-    path = parser.add_argument(
+    parser.add_argument(
         '--path',
         required=True,
-        help=('Specifies the set of paths within the URL map to '
-              'invalidate.'))
-
-    host = parser.add_argument(
-        '--host',
-        required=False,
-        default=None,
-        help=('Specifies the host to restrict this invalidation to.'))
-
-    host.detailed_help = """\
-        If set, this invalidation will apply only to requests to the
-        specified host.
-        """
-    parser.add_argument(
-        '--async',
-        action='store_true',
-        help='Do not wait for the operation to complete.',)
-
-    path.detailed_help = """\
+        help="""\
         A path specifying which objects to invalidate. PATH must start with
         ``/'' and the only place a ``*'' is allowed is at the end following a
         ``/''. It will be matched against URL paths, which do not include
@@ -74,7 +56,21 @@ class InvalidateCdnCacheGA(base_classes.NoOutputMutator):
         - ``/x/y'': ``/x/y'' only (and not ``/x/y/'')
         - ``/x/y/'': ``/x/y/'' only (and not ``/x/y'')
         - ``/x/y/*'': ``/x/y/'' and everything under it
-        """
+        """)
+
+    parser.add_argument(
+        '--host',
+        required=False,
+        default=None,
+        help="""\
+        If set, this invalidation will apply only to requests to the
+        specified host.
+        """)
+
+    parser.add_argument(
+        '--async',
+        action='store_true',
+        help='Do not wait for the operation to complete.',)
 
   @property
   def method(self):

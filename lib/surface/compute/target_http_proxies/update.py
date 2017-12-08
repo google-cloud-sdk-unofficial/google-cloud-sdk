@@ -27,16 +27,14 @@ class Update(base_classes.NoOutputAsyncMutator):
     cls.TARGET_HTTP_PROXY_ARG = flags.TargetHttpProxyArgument()
     cls.TARGET_HTTP_PROXY_ARG.AddArgument(parser)
 
-    url_map = parser.add_argument(
+    parser.add_argument(
         '--url-map',
         required=True,
-        help=('A reference to a URL map resource that will define the mapping '
-              ' of URLs to backend services.'))
-    url_map.detailed_help = """\
+        help="""\
         A reference to a URL map resource that will define the mapping of
         URLs to backend services. The URL map must exist and cannot be
         deleted while referenced by a target HTTP proxy.
-        """
+        """)
 
   @property
   def service(self):

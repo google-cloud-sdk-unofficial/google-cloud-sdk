@@ -31,25 +31,22 @@ class DeleteAccessConfig(base_classes.NoOutputAsyncMutator):
   @staticmethod
   def Args(parser):
     instance_flags.INSTANCE_ARG.AddArgument(parser)
-    access_config_name = parser.add_argument(
+    parser.add_argument(
         '--access-config-name',
         default=constants.DEFAULT_ACCESS_CONFIG_NAME,
-        help='Specifies the name of the access configuration to delete.')
-    access_config_name.detailed_help = """\
+        help="""\
         Specifies the name of the access configuration to delete.
         ``{0}'' is used as the default if this flag is not provided.
-        """.format(constants.DEFAULT_ACCESS_CONFIG_NAME)
-    network_interface = parser.add_argument(
+        """.format(constants.DEFAULT_ACCESS_CONFIG_NAME))
+    parser.add_argument(
         '--network-interface',
         default=constants.DEFAULT_NETWORK_INTERFACE,
         action=arg_parsers.StoreOnceAction,
-        help=('Specifies the name of the network interface from which to '
-              'delete the access configuration.'))
-    network_interface.detailed_help = """\
+        help="""\
         Specifies the name of the network interface from which to delete the
         access configuration. If this is not provided, then ``nic0'' is used
         as the default.
-        """
+        """)
 
   @property
   def service(self):

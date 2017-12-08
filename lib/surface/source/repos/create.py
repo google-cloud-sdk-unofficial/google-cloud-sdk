@@ -50,16 +50,15 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    name = parser.add_argument(
+    parser.add_argument(
         'name',
         metavar='REPOSITORY_NAME',
         type=flags.REPO_NAME_VALIDATOR,
-        help=('Name of the repository.'))
-    name.detailed_help = """\
+        help="""\
         Name of the repository. May contain between 3 and 63 (inclusive)
         lowercase letters, digits, and hyphens. Must start with a letter, and
         may not end with a hyphen.
-        """
+        """)
 
   @c_exc.RaiseToolExceptionInsteadOf(git.Error)
   def Run(self, args):

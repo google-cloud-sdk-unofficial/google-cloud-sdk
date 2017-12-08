@@ -18,7 +18,6 @@ from googlecloudsdk.command_lib.compute.xpn import flags
 from googlecloudsdk.command_lib.compute.xpn import util as command_lib_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListAssociatedResources(base.ListCommand):
   """List the resources that can use the given project via XPN.
 

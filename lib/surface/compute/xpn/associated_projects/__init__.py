@@ -17,6 +17,5 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AssociatedProjects(base.Group):
   """Configure associated projects for cross-project networking (XPN)."""

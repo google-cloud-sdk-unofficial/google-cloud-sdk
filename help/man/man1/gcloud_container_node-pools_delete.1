@@ -38,7 +38,8 @@ The name of the node pool to delete.
 .RS 2m
 .TP 2m
 \fB\-\-cluster\fR=\fICLUSTER\fR
-The cluster from which to delete the node pool.
+The cluster from which to delete the node pool. Overrides the default
+\fBcontainer/cluster\fR property value for this command invocation.
 
 .TP 2m
 \fB\-\-wait\fR
@@ -47,7 +48,8 @@ default, use \fB\-\-no\-wait\fR to disable.
 
 .TP 2m
 \fB\-\-zone\fR=\fIZONE\fR, \fB\-z\fR \fIZONE\fR
-The compute zone (e.g. us\-central1\-a) for the cluster
+The compute zone (e.g. us\-central1\-a) for the cluster. Overrides the default
+\fBcompute/zone\fR property value for this command invocation.
 
 
 .RE

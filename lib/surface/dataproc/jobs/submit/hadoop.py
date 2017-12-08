@@ -178,7 +178,7 @@ class HadoopBase(object):
     """Populates the hadoopJob member of the given job."""
 
     hadoop_job = messages.HadoopJob(
-        args=args.job_args,
+        args=args.job_args or [],
         archiveUris=files_by_type['archives'],
         fileUris=files_by_type['files'],
         jarFileUris=files_by_type['jars'],

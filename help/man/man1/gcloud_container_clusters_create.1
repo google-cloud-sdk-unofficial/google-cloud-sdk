@@ -54,10 +54,9 @@ $ gcloud container clusters create example\-cluster \e
     \-\-additional\-zones us\-central1\-b,us\-central1\-c
 .RE
 
-
 .TP 2m
 \fB\-\-async\fR
-Don't wait for the operation to complete. Use \fB\-\-no\-async\fR to disable.
+Don't wait for the operation to complete.
 
 .TP 2m
 \fB\-\-cluster\-ipv4\-cidr\fR=\fICLUSTER_IPV4_CIDR\fR
@@ -108,7 +107,6 @@ following command.
 .RS 2m
 $ gcloud container get\-server\-config
 .RE
-
 
 .TP 2m
 \fB\-\-machine\-type\fR=\fIMACHINE_TYPE\fR, \fB\-m\fR \fIMACHINE_TYPE\fR
@@ -206,7 +204,6 @@ useraccounts\-rw,https://www.googleapis.com/auth/cloud.useraccounts
 userinfo\-email,https://www.googleapis.com/auth/userinfo.email
 .TE
 
-
 .TP 2m
 \fB\-\-subnetwork\fR=\fISUBNETWORK\fR
 The name of the Google Compute Engine subnetwork
@@ -228,7 +225,6 @@ the Compute Engine API instance object and can be used in firewall rules. See
 https://cloud.google.com/sdk/gcloud/reference/compute/firewall\-rules/create for
 examples.
 
-
 .TP 2m
 \fB\-\-username\fR=\fIUSERNAME\fR, \fB\-u\fR \fIUSERNAME\fR; default="admin"
 The user name to use for cluster auth.
@@ -236,11 +232,12 @@ The user name to use for cluster auth.
 .TP 2m
 \fB\-\-wait\fR
 DEPRECATED, use \-\-no\-async. Poll the operation for completion after issuing a
-create request. Use \fB\-\-no\-wait\fR to disable.
+create request.
 
 .TP 2m
 \fB\-\-zone\fR=\fIZONE\fR, \fB\-z\fR \fIZONE\fR
-The compute zone (e.g. us\-central1\-a) for the cluster
+The compute zone (e.g. us\-central1\-a) for the cluster. Overrides the default
+\fBcompute/zone\fR property value for this command invocation.
 
 
 .RE
