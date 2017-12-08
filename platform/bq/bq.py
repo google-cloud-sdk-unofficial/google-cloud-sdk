@@ -59,14 +59,13 @@ JobIdGeneratorFingerprint = bigquery_client.JobIdGeneratorFingerprint
 
 _VERSION_NUMBER = '2.0.22'
 _CLIENT_USER_AGENT = 'Cloud SDK Command Line Tool' + _VERSION_NUMBER
-_CLIENT_SCOPE = [
-    'https://www.googleapis.com/auth/bigquery',
-]
+_GDRIVE_SCOPE = 'https://www.googleapis.com/auth/drive'
+_CLIENT_SCOPE = 'https://www.googleapis.com/auth/bigquery'
 _CLIENT_ID = '32555940559.apps.googleusercontent.com'
 _CLIENT_INFO = {
     'client_id': _CLIENT_ID,
     'client_secret': 'ZmssLNjJy2998hD4CTg2ejr2',
-    'scope': _CLIENT_SCOPE,
+    'scope': [_CLIENT_SCOPE],
     'user_agent': _CLIENT_USER_AGENT,
     }
 _BIGQUERY_TOS_MESSAGE = (
@@ -167,7 +166,9 @@ def _UseServiceAccount():
 
 
 def _GetServiceAccountCredentialsFromFlags(storage):  # pylint: disable=unused-argument
-  client_scope = _CLIENT_SCOPE
+  client_scope = [_CLIENT_SCOPE]
+  if FLAGS.enable_gdrive:
+    client_scope.append(_GDRIVE_SCOPE)
 
   if FLAGS.use_gce_service_account:
     return oauth2client.gce.AppAssertionCredentials(client_scope)
@@ -199,14 +200,17 @@ def _GetServiceAccountCredentialsFromFlags(storage):  # pylint: disable=unused-a
 
 def _GetCredentialsFromOAuthFlow(storage):
   print
-  print '******************************************************************'
-  print '** No OAuth2 credentials found, beginning authorization process **'
-  print '******************************************************************'
+  print '********************************************************************'
+  print '** New OAuth2 credentials needed, beginning authorization process **'
+  print '********************************************************************'
   print
   if FLAGS.headless:
     print 'Running in headless mode, exiting.'
     sys.exit(1)
   client_info = _CLIENT_INFO.copy()
+  if FLAGS.enable_gdrive:
+    client_info['scope'] = list(client_info['scope'])
+    client_info['scope'].append(_GDRIVE_SCOPE)
   while True:
     # If authorization fails, we want to retry, rather than let this
     # cascade up and get caught elsewhere. If users want out of the
@@ -277,7 +281,8 @@ def _GetCredentialsFromFlags():
             'not work, you may have encountered a bug in the BigQuery CLI.'))
     sys.exit(1)
 
-  if credentials is None or credentials.invalid:
+  if (credentials is None or credentials.invalid or
+      FLAGS.enable_gdrive is not None):
     credentials = credentials_getter(storage)
     credentials.set_store(storage)
   return credentials
@@ -1665,6 +1670,12 @@ class _Make(BigqueryCmd):
         'view', '',
         'Create view with this SQL query.',
         flag_values=fv)
+    flags.DEFINE_multistring(
+        'view_udf_resource', None,
+        'The URI or local filesystem path of a code file to load and '
+        'evaluate immediately as a User-Defined Function resource used '
+        'by the view.',
+        flag_values=fv)
 
   def RunWithArgs(self, identifier='', schema=''):
     # pylint: disable=g-doc-exception
@@ -1678,6 +1689,7 @@ class _Make(BigqueryCmd):
       bq --dataset_id=new_dataset mk table
       bq mk -t new_dataset.newtable name:integer,value:string
       bq mk --view='select 1 as num' new_dataset.newview
+         (--view_udf_resource=path/to/file.js)
       bq mk -d --data_location=EU new_dataset
 
     """
@@ -1752,10 +1764,14 @@ class _Make(BigqueryCmd):
       if self.external_table_definition is not None:
         external_data_config = _GetExternalDataConfig(
             self.external_table_definition)
+      view_udf_resources = None
+      if self.view_udf_resource:
+        view_udf_resources = _ParseUdfResources(self.view_udf_resource)
       client.CreateTable(reference, ignore_existing=True, schema=schema,
                          description=self.description,
                          expiration=expiration,
                          view_query=query_arg,
+                         view_udf_resources=view_udf_resources,
                          external_data_config=external_data_config)
       print "%s '%s' successfully created." % (object_name, reference,)
 
@@ -1809,6 +1825,12 @@ class _Update(BigqueryCmd):
         'file containing a JSON table definition.'
         'The format of inline definition is "schema@format=uri".',
         flag_values=fv)
+    flags.DEFINE_multistring(
+        'view_udf_resource', None,
+        'The URI or local filesystem path of a code file to load and '
+        'evaluate immediately as a User-Defined Function resource used '
+        'by the view.',
+        flag_values=fv)
 
   def RunWithArgs(self, identifier='', schema=''):
     # pylint: disable=g-doc-exception
@@ -1821,6 +1843,7 @@ class _Update(BigqueryCmd):
       bq update --description "My table" existing_dataset.existing_table
       bq update -t existing_dataset.existing_table name:integer,value:string
       bq update --view='select 1 as num' existing_dataset.existing_view
+         (--view_udf_resource=path/to/file.js)
     """
     client = Client.Get()
 
@@ -1889,10 +1912,14 @@ class _Update(BigqueryCmd):
           schema = external_data_config['schema']['fields']
         del external_data_config['schema']
       query_arg = self.view or None
+      view_udf_resources = None
+      if self.view_udf_resource:
+        view_udf_resources = _ParseUdfResources(self.view_udf_resource)
       client.UpdateTable(reference, schema=schema,
                          description=self.description,
                          expiration=expiration,
                          view_query=query_arg,
+                         view_udf_resources=view_udf_resources,
                          external_data_config=external_data_config)
       print "%s '%s' successfully updated." % (object_name, reference,)
 
@@ -2109,7 +2136,7 @@ class _Head(BigqueryCmd):
 
 
 class _Insert(BigqueryCmd):
-  usage = """insert [-s] [-i] <table identifier> [file]"""
+  usage = """insert [-s] [-i] [-x=<suffix>] <table identifier> [file]"""
 
   def __init__(self, name, fv):
     super(_Insert, self).__init__(name, fv)
@@ -2121,6 +2148,10 @@ class _Insert(BigqueryCmd):
         'ignore_unknown_values', None,
         'Ignore any values in a row that are not present in the schema.',
         short_name='i', flag_values=fv)
+    flags.DEFINE_string(
+        'template_suffix', None,
+        'TODO(chengz): copy/paste the better comment from api jsont file.',
+        short_name='x', flag_values=fv)
 
   def RunWithArgs(self, identifier='', filename=None):
     """Inserts rows in a table.
@@ -2132,19 +2163,26 @@ class _Insert(BigqueryCmd):
     Examples:
       bq insert dataset.table /tmp/mydata.json
       echo '{"a":1, "b":2}' | bq insert dataset.table
+
+    Template table examples: (only works in vnext)
+    Insert to dataset.template_suffix table using dataset.template table as
+    its template.
+      bq --api_version=vnext insert -x=suffix dataset.table /tmp/mydata.json
     """
     if filename:
       with open(filename, 'r') as json_file:
         return self._DoInsert(identifier, json_file,
                               skip_invalid_rows=self.skip_invalid_rows,
-                              ignore_unknown_values=self.ignore_unknown_values)
+                              ignore_unknown_values=self.ignore_unknown_values,
+                              template_suffix=self.template_suffix)
     else:
       return self._DoInsert(identifier, sys.stdin,
                             skip_invalid_rows=self.skip_invalid_rows,
-                            ignore_unknown_values=self.ignore_unknown_values)
+                            ignore_unknown_values=self.ignore_unknown_values,
+                            template_suffix=self.template_suffix)
 
   def _DoInsert(self, identifier, json_file, skip_invalid_rows=None,
-                ignore_unknown_values=None):
+                ignore_unknown_values=None, template_suffix=None):
     """Insert the contents of the file into a table."""
     client = Client.Get()
     reference = client.GetReference(identifier)
@@ -2156,7 +2194,8 @@ class _Insert(BigqueryCmd):
       result = client.InsertTableRows(
           reference, batch,
           skip_invalid_rows=skip_invalid_rows,
-          ignore_unknown_values=ignore_unknown_values)
+          ignore_unknown_values=ignore_unknown_values,
+          template_suffix=template_suffix)
       del batch[:]
       return result, result.get('insertErrors', None)
     result = {}

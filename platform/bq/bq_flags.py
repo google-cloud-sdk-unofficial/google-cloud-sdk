@@ -119,6 +119,10 @@ flags.DEFINE_integer(
     'max_rows_per_request', None,
     'Specifies the max number of rows to return per read.')
 
+flags.DEFINE_boolean(
+    'enable_gdrive', None,
+    'When set to true, requests new OAuth token with GDrive scope. '
+    'When set to false, requests new OAuth token without GDrive scope.')
 
 def ResolveApiInfoFromFlags():
   """Determine an api and api_version."""

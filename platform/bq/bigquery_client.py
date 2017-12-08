@@ -795,7 +795,7 @@ class BigqueryClient(object):
     return table_info.get('schema', {})
 
   def InsertTableRows(self, table_dict, inserts, skip_invalid_rows=None,
-                      ignore_unknown_values=None):
+                      ignore_unknown_values=None, template_suffix=None):
     """Insert rows into a table.
 
     Arguments:
@@ -805,6 +805,8 @@ class BigqueryClient(object):
           invalid rows are present.
       ignore_unknown_values: Optional. Ignore any values in a row that are not
           present in the schema.
+      template_suffix: Optional. The suffix used to generate the template
+          table's name.
 
     Returns:
       result of the operation.
@@ -817,6 +819,7 @@ class BigqueryClient(object):
     op = self.apiclient.tabledata().insertAll(
         body=dict(skipInvalidRows=skip_invalid_rows,
                   ignoreUnknownValues=ignore_unknown_values,
+                  templateSuffix=template_suffix,
                   rows=map(_EncodeInsert, inserts)),
         **table_dict)
     return op.execute()
@@ -1440,7 +1443,8 @@ class BigqueryClient(object):
 
   def CreateTable(self, reference, ignore_existing=False, schema=None,
                   description=None, friendly_name=None, expiration=None,
-                  view_query=None, external_data_config=None):  # pylint: disable=line-too-long
+                  view_query=None, external_data_config=None,
+                  view_udf_resources=None):
     """Create a table corresponding to TableReference.
 
     Args:
@@ -1456,6 +1460,7 @@ class BigqueryClient(object):
       external_data_config: defines a set of external resources used to create
         an external table. For example, a BigQuery table backed by CSV files
         in GCS.
+      view_udf_resources: optional UDF resources used in a view.
 
     Raises:
       TypeError: if reference is not a TableReference.
@@ -1476,6 +1481,8 @@ class BigqueryClient(object):
         body['expirationTime'] = expiration
       if view_query is not None:
         view_args = {'query': view_query}
+        if view_udf_resources is not None:
+          view_args['userDefinedFunctionResources'] = view_udf_resources
         body['view'] = view_args
       if external_data_config is not None:
         body['externalDataConfiguration'] = external_data_config
@@ -1488,7 +1495,8 @@ class BigqueryClient(object):
 
   def UpdateTable(self, reference, schema=None,
                   description=None, friendly_name=None, expiration=None,
-                  view_query=None, external_data_config=None):  # pylint: disable=line-too-long
+                  view_query=None, external_data_config=None,
+                  view_udf_resources=None):
     """Updates a table.
 
     Args:
@@ -1502,6 +1510,7 @@ class BigqueryClient(object):
       external_data_config: defines a set of external resources used to create
         an external table. For example, a BigQuery table backed by CSV files
         in GCS.
+      view_udf_resources: optional UDF resources used in a view.
 
     Raises:
       TypeError: if reference is not a TableReference.
@@ -1522,6 +1531,8 @@ class BigqueryClient(object):
         body['expirationTime'] = expiration
     if view_query is not None:
       view_args = {'query': view_query}
+      if view_udf_resources is not None:
+        view_args['userDefinedFunctionResources'] = view_udf_resources
       body['view'] = view_args
     if external_data_config is not None:
       body['externalDataConfiguration'] = external_data_config
