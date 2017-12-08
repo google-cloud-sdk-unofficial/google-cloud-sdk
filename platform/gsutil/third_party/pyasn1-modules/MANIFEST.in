@@ -1,3 +1,0 @@
-include *.txt
-recursive-include tools *.py
-recursive-include test *.sh
