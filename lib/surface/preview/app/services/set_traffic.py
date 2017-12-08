@@ -96,8 +96,7 @@ class SetTraffic(base.Command):
     api_client = appengine_api_client.GetApiClient(self.Http(timeout=None))
 
     all_services = api_client.ListServices()
-    services = service_util.GetMatchingServices(
-        all_services, args.services, api_client.project)
+    services = service_util.GetMatchingServices(all_services, args.services)
 
     allocations = service_util.ParseTrafficAllocations(
         args.splits, args.split_by)

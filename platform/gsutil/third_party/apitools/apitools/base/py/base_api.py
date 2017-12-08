@@ -30,7 +30,6 @@ from six.moves import urllib
 
 from apitools.base.protorpclite import message_types
 from apitools.base.protorpclite import messages
-from apitools.base.py import credentials_lib
 from apitools.base.py import encoding
 from apitools.base.py import exceptions
 from apitools.base.py import http_wrapper
@@ -206,7 +205,7 @@ class _UrlBuilder(object):
         # non-ASCII, we may silently fail to encode correctly. We should
         # figure out who is responsible for owning the object -> str
         # conversion.
-        return urllib.parse.urlencode(self.query_params, doseq=True)
+        return urllib.parse.urlencode(self.query_params, True)
 
     @property
     def url(self):
@@ -293,6 +292,8 @@ class BaseApiClient(object):
             'user_agent': self._USER_AGENT,
         }
         args.update(kwds)
+        # credentials_lib can be expensive to import so do it only if needed.
+        from apitools.base.py import credentials_lib
         # TODO(craigcitro): It's a bit dangerous to pass this
         # still-half-initialized self into this method, but we might need
         # to set attributes on it associated with our credentials.

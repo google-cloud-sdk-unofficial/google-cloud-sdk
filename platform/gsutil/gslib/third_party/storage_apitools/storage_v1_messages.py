@@ -63,8 +63,8 @@ class Bucket(messages.Message):
     selfLink: The URI of this bucket.
     storageClass: The bucket's storage class. This defines how objects in the
       bucket are stored and determines the SLA and the cost of storage. Values
-      include STANDARD, NEARLINE and DURABLE_REDUCED_AVAILABILITY. Defaults to
-      STANDARD. For more information, see storage classes.
+      include standard, nearline and durable_reduced_availability. Defaults to
+      standard. For more information, see storage classes.
     timeCreated: Creation time of the bucket in RFC 3339 format.
     versioning: The bucket's versioning configuration.
     website: The bucket's website configuration.
@@ -413,6 +413,8 @@ class Object(messages.Message):
   """An object.
 
   Messages:
+    CustomerEncryptionValue: Metadata of customer-supplied encryption key, if
+      the object is encrypted by such a key.
     MetadataValue: User-provided metadata, in key/value pairs.
     OwnerValue: The owner of the object. This will always be the uploader of
       the object.
@@ -429,6 +431,8 @@ class Object(messages.Message):
     contentType: Content-Type of the object data.
     crc32c: CRC32c checksum, as described in RFC 4960, Appendix B; encoded
       using base64.
+    customerEncryption: Metadata of customer-supplied encryption key, if the
+      object is encrypted by such a key.
     etag: HTTP 1.1 Entity tag for the object.
     generation: The content generation of this object. Used for object
       versioning.
@@ -454,6 +458,18 @@ class Object(messages.Message):
       format. For buckets with versioning enabled, changing an object's
       metadata does not change this property.
   """
+
+  class CustomerEncryptionValue(messages.Message):
+    """Metadata of customer-supplied encryption key, if the object is
+    encrypted by such a key.
+
+    Fields:
+      encryptionAlgorithm: Encryption algorithm used to encrypt this object.
+      keySha256: Base64-encoded string of SHA256 of encryption key
+    """
+
+    encryptionAlgorithm = messages.StringField(1)
+    keySha256 = messages.StringField(2)
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class MetadataValue(messages.Message):
@@ -500,21 +516,22 @@ class Object(messages.Message):
   contentLanguage = messages.StringField(7)
   contentType = messages.StringField(8)
   crc32c = messages.StringField(9)
-  etag = messages.StringField(10)
-  generation = messages.IntegerField(11)
-  id = messages.StringField(12)
-  kind = messages.StringField(13, default=u'storage#object')
-  md5Hash = messages.StringField(14)
-  mediaLink = messages.StringField(15)
-  metadata = messages.MessageField('MetadataValue', 16)
-  metageneration = messages.IntegerField(17)
-  name = messages.StringField(18)
-  owner = messages.MessageField('OwnerValue', 19)
-  selfLink = messages.StringField(20)
-  size = messages.IntegerField(21, variant=messages.Variant.UINT64)
-  storageClass = messages.StringField(22)
-  timeDeleted = message_types.DateTimeField(23)
-  updated = message_types.DateTimeField(24)
+  customerEncryption = messages.MessageField('CustomerEncryptionValue', 10)
+  etag = messages.StringField(11)
+  generation = messages.IntegerField(12)
+  id = messages.StringField(13)
+  kind = messages.StringField(14, default=u'storage#object')
+  md5Hash = messages.StringField(15)
+  mediaLink = messages.StringField(16)
+  metadata = messages.MessageField('MetadataValue', 17)
+  metageneration = messages.IntegerField(18)
+  name = messages.StringField(19)
+  owner = messages.MessageField('OwnerValue', 20)
+  selfLink = messages.StringField(21)
+  size = messages.IntegerField(22, variant=messages.Variant.UINT64)
+  storageClass = messages.StringField(23)
+  timeDeleted = message_types.DateTimeField(24)
+  updated = message_types.DateTimeField(25)
 
 
 class ObjectAccessControl(messages.Message):

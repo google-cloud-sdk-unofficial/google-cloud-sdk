@@ -554,13 +554,28 @@ Returns the machine status with deprecation information if applicable.
 
 The arguments are:
 
-\fB``\f5undefined``\fI\fR
+\fB\f5undefined\fR\fR
 .RS 2m
 Returns this value if the resource cannot be formatted.
 
 
+.RE
+.RE
+The debug transform functions are:
 
-\fR
+\fBshort_status\fR()
+.RS 2m
+Returns a short description of the status of a logpoint or snapshot. Status will
+be one of ACTIVE, COMPLETED, or a short error description. If the status is an
+error, there will be additional information available in the status field of the
+object.
+
+For example\f5:\fR
+.RS 2m
+\-\-format="table(id, location, short_status()())"
+
+
+
 .RE
 .RE
 
@@ -605,10 +620,10 @@ Right.
 .RE
 \fBlabel\fR=\fILABEL\fR
 .RS 2m
-A string value used to label output. Use :label="" or :label=\fI\f5 for no
-label. The \fBtable\fR format uses \fRLABEL\fI values as column headings. Also
-sets \fRLABEL\fI as an alias for the projection key. The default label is the
-the disambiguated right hand parts of the column key name in ANGRY_SNAKE_CASE.
+A string value used to label output. Use :label="" or :label='' for no label.
+The \fBtable\fR format uses \fILABEL\fR values as column headings. Also sets
+\fILABEL\fR as an alias for the projection key. The default label is the the
+disambiguated right hand parts of the column key name in ANGRY_SNAKE_CASE.
 
 .RE
 [no\-]\fBreverse\fR
@@ -617,13 +632,12 @@ Sets the key sort order to descending. \fBno\-reverse\fR resets to the default
 ascending order.
 
 .RE
-\fBsort\fR=\fRSORT\-ORDER\fI
+\fBsort\fR=\fISORT\-ORDER\fR
 .RS 2m
 An integer counting from 1. Keys with lower sort\-order are sorted first. Keys
 with same sort order are sorted left to right.
 
 
-\fR
 .RE
 
 .SH "EXAMPLES"

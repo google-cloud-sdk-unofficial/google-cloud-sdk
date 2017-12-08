@@ -15,7 +15,6 @@
 """The 'gcloud test android run' command."""
 
 import datetime
-import os
 import random
 import string
 
@@ -29,10 +28,7 @@ from googlecloudsdk.api_lib.test import results_summary
 from googlecloudsdk.api_lib.test import tool_results
 from googlecloudsdk.api_lib.test import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import config
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
-from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -139,7 +135,6 @@ class Run(base.ListCommand):
         - a list of TestOutcome tuples (if ToolResults are available).
         - a URL string pointing to the user's results in ToolResults or GCS.
     """
-    _EnsureUserAcceptsTermsOfService()
     arg_util.Prepare(args, util.GetAndroidCatalog(self.context))
 
     project = util.GetProject()
@@ -203,28 +198,6 @@ class Run(base.ListCommand):
     """
     log.debug('gcloud test command exit_code is: {0}'.format(self.exit_code))
     return 'test.android.run.outcomes'
-
-
-def _EnsureUserAcceptsTermsOfService():
-  """Don't allow GCTL tests to run until user accepts the Terms of Service."""
-  tos_file = os.path.join(config.Paths().global_config_dir, 'GCTL_ToS_Accepted')
-  if not os.path.isfile(tos_file):
-    if properties.VALUES.core.disable_prompts.GetBool():
-      log.error('Trusted Tester Agreement has not been accepted. Please run '
-                'gcloud with prompts enabled to accept the Terms of Service.')
-      raise console_io.OperationCancelledError()
-    console_io.PromptContinue(
-        message='The Google Cloud Platform Terms of Service notwithstanding, '
-        'your use of Google Cloud Test Lab is governed by the Trusted Tester '
-        'Agreement and by using Google Cloud Test Lab, you agree to its '
-        'terms.\n\nTrusted Tester Agreement: https://goo.gl/K109WG',
-        prompt_string='Proceed',
-        default=False,
-        throw_if_unattended=True,
-        cancel_on_no=True)  # Abort unless user explicitly answers 'y'
-    log.info('User has accepted Trusted Tester Agreement.')
-    # Create an empty tos_file to mark user acceptance and avoid future prompts.
-    open(tos_file, 'w').close()
 
 
 def _UniqueGcsObjectName():

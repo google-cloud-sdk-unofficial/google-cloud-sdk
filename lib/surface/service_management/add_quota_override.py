@@ -88,35 +88,17 @@ class AddQuotaOverride(base.Command, base_classes.BaseServiceManagementCommand):
           request.
     """
     # Shorten the name for better readability
-    get_request = (self.services_messages
-                   .ServicemanagementServicesProjectSettingsGetRequest)
-    views = services_util.GetCallerViews()
-
-    # TODO(user): change this to a conditional update once the service
-    # supports it. Until then...
-    #
-    # 1. Get the current list of Quota settings
-
-    request = get_request(
-        serviceName=args.service,
-        consumerProjectId=args.consumer_project,
-        view=views.get(args.view),
-    )
-    try:
-      response = self.services_client.services_projectSettings.Get(request)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(services_util.GetError(error))
+    patch_request = (self.services_messages
+                     .ServicemanagementServicesProjectSettingsPatchRequest)
 
     # TODO(user): What happens  when --quota-limit is not specified?
     #   Should there be a default value? Should it be required?
     quota_override = self.services_messages.QuotaLimitOverride(
         limit=args.quota_limit)
 
-    # 2. Add the new quota setting to the current list
+    # Create a QuotaSettings object to store the added override
     if args.consumer:
       overrides = self.services_messages.QuotaSettings.ConsumerOverridesValue()
-      if response.quotaSettings and response.quotaSettings.consumerOverrides:
-        overrides = response.quotaSettings.consumerOverrides
 
       overrides.additionalProperties.append(
           self.services_messages.QuotaSettings.ConsumerOverridesValue
@@ -130,8 +112,6 @@ class AddQuotaOverride(base.Command, base_classes.BaseServiceManagementCommand):
       )
     elif args.producer:
       overrides = self.services_messages.QuotaSettings.ProducerOverridesValue()
-      if response.quotaSettings and response.quotaSettings.producerOverrides:
-        overrides = response.quotaSettings.producerOverrides
 
       overrides.additionalProperties.append(
           self.services_messages.QuotaSettings.ProducerOverridesValue
@@ -148,14 +128,13 @@ class AddQuotaOverride(base.Command, base_classes.BaseServiceManagementCommand):
         quotaSettings=quota_settings,
     )
 
-    update_mask = 'quota_settings.%s_overrides' % (
-        'consumer' if args.consumer else 'producer')
-    request = (self.services_messages
-               .ServicemanagementServicesProjectSettingsPatchRequest(
-                   serviceName=args.service,
-                   consumerProjectId=args.consumer_project,
-                   projectSettings=project_settings,
-                   updateMask=update_mask))
+    update_mask = 'quota_settings.{0}_overrides[{1}]'.format(
+        'consumer' if args.consumer else 'producer', args.quota_limit_key)
+    request = patch_request(
+        serviceName=args.service,
+        consumerProjectId=args.consumer_project,
+        projectSettings=project_settings,
+        updateMask=update_mask)
 
     try:
       # TODO(user): Add support for Operation completion, and --async flag

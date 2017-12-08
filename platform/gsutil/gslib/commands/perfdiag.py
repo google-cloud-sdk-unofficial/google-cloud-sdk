@@ -428,7 +428,7 @@ class PerfDiagCommand(Command):
   XML_API_HOST = boto.config.get(
       'Credentials', 'gs_host', boto.gs.connection.GSConnection.DefaultHost)
   # Google Cloud Storage XML API endpoint port.
-  XML_API_PORT = boto.config.get('Credentials', 'gs_port', 80)
+  XML_API_PORT = boto.config.getint('Credentials', 'gs_port', 80)
 
   # Maximum number of times to retry requests on 5xx errors.
   MAX_SERVER_ERROR_RETRIES = 5
@@ -864,10 +864,10 @@ class PerfDiagCommand(Command):
                 name=component_object_names[i]))
         request_components.append(src_obj_metadata)
 
-      dst_obj_metadata = apitools_messages.Object()
-      dst_obj_metadata.name = object_name
-      dst_obj_metadata.bucket = self.bucket_url.bucket_name
       def _Compose():
+        dst_obj_metadata = apitools_messages.Object()
+        dst_obj_metadata.name = object_name
+        dst_obj_metadata.bucket = self.bucket_url.bucket_name
         gsutil_api.ComposeObject(request_components, dst_obj_metadata,
                                  provider=self.provider)
       self._RunOperation(_Compose)

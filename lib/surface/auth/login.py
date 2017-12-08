@@ -20,6 +20,7 @@ import textwrap
 from googlecloudsdk.api_lib.auth import util as auth_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
+from googlecloudsdk.core import config
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
@@ -27,7 +28,6 @@ from googlecloudsdk.core.credentials import devshell as c_devshell
 from googlecloudsdk.core.credentials import gce as c_gce
 from googlecloudsdk.core.credentials import store as c_store
 from oauth2client import client
-
 
 
 class Login(base.Command):
@@ -68,6 +68,9 @@ class Login(base.Command):
         help='Re-run the web authorization flow even if the given account has '
         'valid credentials.')
     parser.add_argument(
+        '--enable-gdrive-access', action='store_true',
+        help='Enable Google Drive access.')
+    parser.add_argument(
         'account', nargs='?', help='User account used for authorization.')
 
   def Format(self, unused_args):
@@ -76,6 +79,11 @@ class Login(base.Command):
   @c_exc.RaiseToolExceptionInsteadOf(c_store.Error)
   def Run(self, args):
     """Run the authentication command."""
+
+    scopes = None
+    if args.enable_gdrive_access:
+      scopes = config.CLOUDSDK_SCOPES
+      scopes += (auth_util.GOOGLE_DRIVE_SCOPE,)
 
     if c_devshell.IsDevshellEnvironment():
       message = """
@@ -110,7 +118,7 @@ class Login(base.Command):
     account = args.account
 
     if account and not args.force:
-      creds = c_store.LoadIfValid(account=account)
+      creds = c_store.LoadIfValid(account=account, scopes=scopes)
       if creds:
         # Account already has valid creds, just switch to it.
         return self.LoginAs(account, creds, args.project, args.activate,
@@ -118,7 +126,7 @@ class Login(base.Command):
 
     # No valid creds, do the web flow.
     launch_browser = auth_util.ShouldLaunchBrowser(args.launch_browser)
-    creds = self.DoInstalledAppBrowserFlow(launch_browser)
+    creds = self.DoInstalledAppBrowserFlow(launch_browser, scopes)
     web_flow_account = creds.id_token['email']
     if account and account.lower() != web_flow_account.lower():
       raise c_exc.ToolException(
@@ -130,7 +138,7 @@ class Login(base.Command):
 
     account = web_flow_account
     # We got new creds, and they are for the correct user.
-    c_store.Store(creds, account)
+    c_store.Store(creds, account, scopes)
     return self.LoginAs(account, creds, args.project, args.activate,
                         args.brief)
 
@@ -162,10 +170,11 @@ class Login(base.Command):
               account=account, project=properties.VALUES.core.project.Get()))
     return creds
 
-  def DoInstalledAppBrowserFlow(self, launch_browser):
+  def DoInstalledAppBrowserFlow(self, launch_browser, scopes):
     """Launches a browser to get credentials."""
     try:
-      return c_store.AcquireFromWebFlow(launch_browser=launch_browser)
+      return c_store.AcquireFromWebFlow(launch_browser=launch_browser,
+                                        scopes=scopes)
     except c_store.FlowError:
       msg = 'There was a problem with web authentication.'
       if launch_browser:

@@ -87,10 +87,8 @@ class RemoveQuota(base.Command, base_classes.BaseServiceManagementCommand):
 
     views = services_util.GetCallerViews()
 
-    # TODO(user): change this to a conditional update once the service
-    # supports it. Until then...
-    #
-    # 1. Get the current list of Quota settings
+    # Get the current list of quota settings to see if the quota override
+    # exists in the first place.
 
     request = get_request(
         serviceName=args.service,
@@ -103,53 +101,37 @@ class RemoveQuota(base.Command, base_classes.BaseServiceManagementCommand):
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(services_util.GetError(error))
 
-    # 2. Add the new quota setting to the current list
-    override_removed = False
+    # Check to see if the quota override was present in the first place.
+    override_present = False
+    overrides = None
     if args.consumer:
-      overrides = self.services_messages.QuotaSettings.ConsumerOverridesValue()
       if response.quotaSettings and response.quotaSettings.consumerOverrides:
         overrides = response.quotaSettings.consumerOverrides
-
-      # Filter out the override to be deleted, if it is currently set
-      new_overrides = []
-      for override in overrides.additionalProperties:
-        if override.key != args.quota_limit_key:
-          new_overrides.append(override)
-        else:
-          override_removed = True
-      overrides.additionalProperties = new_overrides
-
-      quota_settings = self.services_messages.QuotaSettings(
-          consumerOverrides=overrides
-      )
+      else:
+        overrides = (self.services_messages.QuotaSettings
+                     .ConsumerOverridesValue())
     elif args.producer:
-      overrides = self.services_messages.QuotaSettings.ProducerOverridesValue()
       if response.quotaSettings and response.quotaSettings.producerOverrides:
         overrides = response.quotaSettings.producerOverrides
-
-      # Filter out the override to be deleted, if it is currently set
-      new_overrides = []
+      else:
+        overrides = (self.services_messages.QuotaSettings
+                     .ProducerOverridesValue())
+    if overrides:
       for override in overrides.additionalProperties:
-        if override.key != args.quota_limit_key:
-          new_overrides.append(override)
-        else:
-          override_removed = True
-      overrides.additionalProperties = new_overrides
+        if override.key == args.quota_limit_key:
+          override_present = True
+          break
 
-      quota_settings = self.services_messages.QuotaSettings(
-          producerOverrides=overrides
-      )
-
-    if not override_removed:
+    if not override_present:
       log.warn('No quota override found for "{0}"'.format(args.quota_limit_key))
       return
 
     project_settings = self.services_messages.ProjectSettings(
-        quotaSettings=quota_settings,
+        quotaSettings=self.services_messages.QuotaSettings(),
     )
 
-    update_mask = 'quota_settings.%s_overrides' % (
-        'consumer' if args.consumer else 'producer')
+    update_mask = 'quota_settings.{0}_overrides[{1}]'.format(
+        'consumer' if args.consumer else 'producer', args.quota_limit_key)
 
     request = patch_request(
         serviceName=args.service,

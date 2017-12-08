@@ -218,20 +218,12 @@ class Create(base.Command):
       # Non-empty detail on a DONE create operation should be surfaced as
       # a warning to end user.
       log.warning(operation.detail)
-    # Persist cluster config
-    current_context = kconfig.Kubeconfig.Default().current_context
-    c_config = util.ClusterConfig.Persist(cluster, cluster_ref.projectId)
-    if not c_config.has_certs:
-      # Purge config so we retry the cert fetch on next kubectl command
-      util.ClusterConfig.Purge(
-          cluster.name, cluster.zone, cluster_ref.projectId)
-      # reset current context
-      if current_context:
-        kubeconfig = kconfig.Kubeconfig.Default()
-        kubeconfig.SetCurrentContext(current_context)
-        kubeconfig.SaveToFile()
-      raise util.Error(NO_CERTS_ERROR_FMT.format(command=' '.join(
-          args.command_path[:-1] + ['get-credentials', cluster.name])))
+
+    try:
+      util.ClusterConfig.Persist(cluster, cluster_ref.projectId)
+    except kconfig.MissingEnvVarError as error:
+      log.warning(error.message)
+
     return cluster
 
   def Display(self, args, result):

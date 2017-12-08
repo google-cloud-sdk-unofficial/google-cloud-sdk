@@ -16,7 +16,6 @@
 
 from googlecloudsdk.api_lib.debug import debug
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import properties
 
 
@@ -36,11 +35,5 @@ class List(base.Command):
     debugger = debug.Debugger(project_id)
     return debugger.ListDebuggees()
 
-  def Display(self, args, targets):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      targets: The value returned from the Run() method.
-    """
-    list_printer.PrintResourceList('debug.targets', targets)
+  def Collection(self, unused_args):
+    return 'debug.targets'

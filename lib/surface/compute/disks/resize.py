@@ -23,10 +23,12 @@ from googlecloudsdk.core.console import console_io
 CONTINUE_WITH_RESIZE_PROMPT = textwrap.dedent("""
     This command increases disk size. This change is not reversible.
     For more information, see:
-    https://cloud.google.com/sdk/gcloud/reference/beta/compute/disks/resize""")
+    https://cloud.google.com/sdk/gcloud/reference/compute/disks/resize""")
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Resize(base_classes.BaseAsyncMutator):
   """Set size of a persistent disk."""
 

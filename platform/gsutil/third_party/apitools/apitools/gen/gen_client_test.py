@@ -15,11 +15,12 @@
 
 """Test for gen_client module."""
 
-from apitools.gen import gen_client
-from apitools.gen import test_utils
+import os
 
 import unittest2
-import os
+
+from apitools.gen import gen_client
+from apitools.gen import test_utils
 
 
 def GetDocPath(name):
@@ -45,6 +46,38 @@ class ClientGenCliTest(unittest2.TestCase):
                 '--infile', GetDocPath('dns_v1.json'),
                 '--outdir', tmp_dir_path,
                 '--overwrite',
+                '--root_package', 'google.apis',
+                'client'
+            ])
+            self.assertEquals(
+                set(['dns_v1_client.py', 'dns_v1_messages.py', '__init__.py']),
+                set(os.listdir(tmp_dir_path)))
+
+    def testGenClient_SimpleDocWithV4(self):
+        with test_utils.TempDir() as tmp_dir_path:
+            gen_client.main([
+                gen_client.__file__,
+                '--nogenerate_cli',
+                '--infile', GetDocPath('dns_v1.json'),
+                '--outdir', tmp_dir_path,
+                '--overwrite',
+                '--apitools_version', '0.4.12',
+                '--root_package', 'google.apis',
+                'client'
+            ])
+            self.assertEquals(
+                set(['dns_v1_client.py', 'dns_v1_messages.py', '__init__.py']),
+                set(os.listdir(tmp_dir_path)))
+
+    def testGenClient_SimpleDocWithV5(self):
+        with test_utils.TempDir() as tmp_dir_path:
+            gen_client.main([
+                gen_client.__file__,
+                '--nogenerate_cli',
+                '--infile', GetDocPath('dns_v1.json'),
+                '--outdir', tmp_dir_path,
+                '--overwrite',
+                '--apitools_version', '0.5.0',
                 '--root_package', 'google.apis',
                 'client'
             ])

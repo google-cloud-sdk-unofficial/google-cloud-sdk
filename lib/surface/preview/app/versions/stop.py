@@ -82,9 +82,7 @@ class Stop(base.Command):
     services = api_client.ListServices()
     versions = version_util.GetMatchingVersions(
         api_client.ListVersions(services),
-        args.versions,
-        args.service,
-        api_client.project)
+        args.versions, args.service)
 
     if versions:
       printer = console_io.ListPrinter('Stopping the following versions:')

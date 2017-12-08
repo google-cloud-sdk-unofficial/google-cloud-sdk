@@ -77,8 +77,7 @@ class Delete(base.Command):
     services = client.ListServices()
     all_versions = client.ListVersions(services)
     versions = version_util.GetMatchingVersions(all_versions,
-                                                args.versions, args.service,
-                                                client.project)
+                                                args.versions, args.service)
 
     services_to_delete = []
     for service in services:

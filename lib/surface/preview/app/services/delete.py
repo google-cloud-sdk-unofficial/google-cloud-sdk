@@ -51,8 +51,7 @@ class Delete(base.Command):
     # fast), and we get to control the error messages
     all_services = api_client.ListServices()
 
-    services = service_util.GetMatchingServices(all_services, args.services,
-                                                api_client.project)
+    services = service_util.GetMatchingServices(all_services, args.services)
 
     if args.version:
       console_io.PromptContinue(

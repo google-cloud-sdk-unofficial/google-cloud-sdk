@@ -85,6 +85,55 @@ class Tail(base.Command):
 
     return [m for m in response.metrics if all([pred(m) for pred in preds])]
 
+  def _IsSentinelWatermark(self, metric):
+    """This returns true if the metric is a watermark with a sentinel value.
+
+    Args:
+      metric: A single UpdateMetric returned from the API.
+    Returns:
+      True if the metric is a sentinel value, false otherwise.
+    """
+    # Currently, we only apply the change from kInt64(MAX|MIN) to sentinel
+    # values from dataflow metrics.
+
+    if not dataflow_util.DATAFLOW_METRICS_RE.match(metric.name.origin):
+      return False
+    if not dataflow_util.WINDMILL_WATERMARK_RE.match(metric.name.name):
+      return False
+    return (metric.scalar.integer_value == -1 or
+            metric.scalar.integer_value == -2)
+
+  def _GetWatermarkSentinelDescription(self, metric):
+    """This method gets the description of the watermark sentinel value.
+
+    There are only two watermark sentinel values we care about, -1 represents a
+    watermark at kInt64Min. -2 represents a watermark at kInt64Max.
+
+    Args:
+      metric: A single UpdateMetric returned from the API.
+    Returns:
+      The sentinel description on success or None on failure.
+    """
+    value = metric.scalar.integer_value
+    if value == -1:
+      return 'Unknown watermark'
+    elif value == -2:
+      return 'Max watermark'
+    return None
+
+  def _Format(self, metric):
+    """Performs extra formatting for sentinel values or otherwise.
+
+    Args:
+      metric: A single UpdateMetric returned from the API.
+    Returns:
+      The formatted metric.
+    """
+    if self._IsSentinelWatermark(metric):
+      metric.scalar.string_value = self._GetWatermarkSentinelDescription(metric)
+      metric.scalar.reset('integer_value')
+    return metric
+
   def _GetContextValue(self, metric, key):
     if metric.name.context:
       for prop in metric.name.context.additionalProperties:
@@ -99,4 +148,4 @@ class Tail(base.Command):
       args: all the arguments that were provided to this command invocation.
       metrics: The JobMetrics returned from the Run() method.
     """
-    self.format(metrics)
+    self.format([self._Format(m) for m in metrics])

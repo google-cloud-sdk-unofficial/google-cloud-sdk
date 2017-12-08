@@ -1,0 +1,4 @@
+runtime: {runtime}
+env: flex
+api_version: 1
+entrypoint: {entrypoint}

@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for creating networks."""
 
+import textwrap
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import networks_utils
 from googlecloudsdk.calliope import exceptions
@@ -113,3 +115,15 @@ class Create(base_classes.BaseAsyncCreator):
         project=self.project)
 
     return [request]
+
+  def Epilog(self, unused_args):
+    message = """\
+
+        Instances on this network will not be reachable until firewall rules
+        are created. As an example, you can allow all internal traffic between
+        instances as well as SSH, RDP, and ICMP by running:
+
+        $ gcloud compute firewall-rules create <FIREWALL_NAME> --network {0} --allow tcp,udp,icmp --source-ranges <IP_RANGE>
+        $ gcloud compute firewall-rules create <FIREWALL_NAME> --network {0} --allow tcp:22,tcp:3389,icmp
+        """.format(unused_args.name)
+    log.status.Print(textwrap.dedent(message))

@@ -35,7 +35,7 @@ class Gcloud(base.Group):
     parser.add_argument(
         '--account',
         metavar='ACCOUNT',
-        is_common=True,
+        category=base.COMMONLY_USED_FLAGS,
         help='Google Cloud Platform user account to use for invocation.',
         action=actions.StoreProperty(properties.VALUES.core.account))
 
@@ -43,7 +43,7 @@ class Gcloud(base.Group):
         '--project',
         metavar='PROJECT_ID',
         dest='project',
-        is_common=True,
+        category=base.COMMONLY_USED_FLAGS,
         suggestion_aliases=['--application'],
         completion_resource='cloudresourcemanager.projects',
         list_command_path='beta.projects',
@@ -60,7 +60,7 @@ class Gcloud(base.Group):
         '--quiet',
         '-q',
         default=None,
-        is_common=True,
+        category=base.COMMONLY_USED_FLAGS,
         help='Disable all interactive prompts.',
         action=actions.StoreConstProperty(
             properties.VALUES.core.disable_prompts, True))

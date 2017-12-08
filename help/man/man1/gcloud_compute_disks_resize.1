@@ -1,0 +1,102 @@
+
+.TH "GCLOUD_COMPUTE_DISKS_RESIZE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute disks resize \- resize a disk or disks
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute disks resize\fR \fIDISK_NAME\fR [\fIDISK_NAME\fR\ ...] \fB\-\-size\fR \fISIZE\fR [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute disks resize\fR resizes a Google Compute Engine disk(s).
+
+Only increasing disk size is supported. Disks can be resized regardless of
+whether they are attached.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIDISK_NAME\fR [\fIDISK_NAME\fR ...]
+.RS 2m
+The names of the disks to resize.
+
+
+.RE
+
+.SH "REQUIRED FLAGS"
+
+\fB\-\-size\fR \fISIZE\fR
+.RS 2m
+Indicates the new size of the disks. The value must be a whole number followed
+by a size unit of \f5\fIKB\fR\fR for kilobyte, \f5\fIMB\fR\fR for megabyte,
+\f5\fIGB\fR\fR for gigabyte, or \f5\fITB\fR\fR for terabyte. For example,
+\f5\fI10GB\fR\fR will produce 10 gigabyte disks. Disk size must be a multiple of
+10 GB.
+
+
+.RE
+
+.SH "OPTIONAL FLAGS"
+
+\fB\-\-zone\fR \fIZONE\fR
+.RS 2m
+The zone of the disks to be resized. If not specified, you will be prompted to
+select a zone.
+
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/zone\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/zone ZONE
+.RE
+
+A list of zones can be fetched by running:
+
+.RS 2m
+$ gcloud compute zones list
+.RE
+
+To unset the property, run:
+
+.RS 2m
+$ gcloud config unset compute/zone
+.RE
+
+Alternatively, the zone can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To resize a disk called example\-disk\-1 to new size 6TB, run:
+
+.RS 2m
+$ gcloud compute disks resize example\-disk\-1 \-\-size=6TB
+.RE
+
+To resize two disks called example\-disk\-2 and example\-disk\-3 to new size
+6TB, run:
+
+.RS 2m
+$ gcloud compute disks resize example\-disk\-2 example\-disk\-3 \e
+   \-\-size=6TB
+.RE
+
+This assumes that original size of each of these disks is 6TB or less.

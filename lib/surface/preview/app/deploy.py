@@ -228,8 +228,7 @@ def _GetPreviousVersion(all_services, new_version, api_client):
   """
   try:
     service_object = service_util.GetMatchingServices(all_services,
-                                                      [new_version.service],
-                                                      new_version.project)[0]
+                                                      [new_version.service])[0]
   except service_util.ServicesNotFoundError:
     return None
   for old_version in api_client.ListVersions([service_object]):

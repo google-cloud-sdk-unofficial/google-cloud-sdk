@@ -247,7 +247,13 @@ class ExternalRuntimeConfigurator(Configurator):
     # TODO(user): The config file need not be named app.yaml.  We need to
     # pass the appinfo file name in through params. and use it here.
     filename = os.path.join(self.path, 'app.yaml')
-    if os.path.exists(filename):
+
+    # Don't generate app.yaml if we've already got it.  We consider the
+    # presence of appinfo to be an indicator of the existence of app.yaml as
+    # well as the existence of the file itself because this helps with
+    # testability, as well as preventing us from writing the file if another
+    # config file is being used.
+    if self.params.appinfo or os.path.exists(filename):
       notify(FILE_EXISTS_MESSAGE.format('app.yaml'))
       return
 
@@ -256,20 +262,21 @@ class ExternalRuntimeConfigurator(Configurator):
       yaml.safe_dump(self.generated_appinfo, f, default_flow_style=False)
 
   def SetGeneratedAppInfo(self, generated_appinfo):
-    """Sets the generated appinfo.
-
-    Since this is assumed to be done after "detect", don't augment the
-    appinfo, and always set it in both the params object and the generated
-    appinfo attribute.
-    """
+    """Sets the generated appinfo."""
     self.generated_appinfo = generated_appinfo
-    self.params.appinfo = comm.dict_to_object(generated_appinfo)
 
   def CollectData(self):
     self.runtime.CollectData(self)
 
   def GenerateConfigs(self):
     self.MaybeWriteAppYaml()
+
+    # At this point, if we have don't have appinfo, but we do have generated
+    # appinfo, we want to use the generated appinfo and pass it to config
+    # generation.
+    if not self.params.appinfo and self.generated_appinfo:
+      self.params.appinfo = comm.dict_to_object(self.generated_appinfo)
+
     return self.runtime.GenerateConfigs(self)
 
 

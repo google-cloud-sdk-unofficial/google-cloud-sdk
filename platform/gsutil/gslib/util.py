@@ -40,9 +40,6 @@ from boto.exception import NoAuthHandlerFound
 from boto.gs.connection import GSConnection
 from boto.provider import Provider
 from boto.pyami.config import BotoConfigLocations
-import httplib2
-from oauth2client.client import HAS_CRYPTO
-from retry_decorator import retry_decorator
 
 import gslib
 from gslib.exception import CommandException
@@ -52,6 +49,10 @@ from gslib.translation_helper import GenerationFromUrlAndString
 from gslib.translation_helper import S3_ACL_MARKER_GUID
 from gslib.translation_helper import S3_DELETE_MARKER_GUID
 from gslib.translation_helper import S3_MARKER_GUIDS
+
+import httplib2
+from oauth2client.client import HAS_CRYPTO
+from retry_decorator import retry_decorator
 
 # Detect platform types.
 PLATFORM = str(sys.platform).lower()
@@ -84,6 +85,9 @@ try:
   HAS_RESOURCE_MODULE = True
 except ImportError, e:
   HAS_RESOURCE_MODULE = False
+
+DEBUGLEVEL_DUMP_REQUESTS = 3
+DEBUGLEVEL_DUMP_REQUESTS_AND_PAYLOADS = 4
 
 ONE_KIB = 1024
 ONE_MIB = 1024 * 1024
@@ -183,6 +187,30 @@ def UsingCrcmodExtension(crcmod):
   return (boto.config.get('GSUtil', 'test_assume_fast_crcmod', None) or
           (getattr(crcmod, 'crcmod', None) and
            getattr(crcmod.crcmod, '_usingExtension', None)))
+
+
+def ObjectIsGzipEncoded(obj_metadata):
+  """Returns true if source apitools Object has gzip content-encoding."""
+  return (obj_metadata.contentEncoding and
+          obj_metadata.contentEncoding.lower().endswith('gzip'))
+
+
+def AddAcceptEncodingGzipIfNeeded(headers_dict, compressed_encoding=False):
+  if compressed_encoding:
+    # If we send accept-encoding: gzip with a range request, the service
+    # may respond with the whole object, which would be bad for resuming.
+    # So only accept gzip encoding if the object we are downloading has
+    # a gzip content encoding.
+    # TODO: If we want to support compressive transcoding fully in the client,
+    # condition on whether we are requesting the entire range of the object.
+    # In this case, we can accept the first bytes of the object compressively
+    # transcoded, but we must perform data integrity checking on bytes after
+    # they are decompressed on-the-fly, and any connection break must be
+    # resumed without compressive transcoding since we cannot specify an
+    # offset. We would also need to ensure that hashes for downloaded data
+    # from objects stored with content-encoding:gzip continue to be calculated
+    # prior to our own on-the-fly decompression so they match the stored hashes.
+    headers_dict['accept-encoding'] = 'gzip'
 
 
 def CheckFreeSpace(path):
@@ -300,6 +328,10 @@ def GetTabCompletionCacheFilename():
 def GetPrintableExceptionString(exc):
   """Returns a short Unicode string describing the exception."""
   return unicode(exc).encode(UTF8) or str(exc.__class__)
+
+
+def PrintableStr(input_str):
+  return input_str.encode(UTF8) if input_str is not None else None
 
 
 def PrintTrackerDirDeprecationWarningIfNeeded():
@@ -533,6 +565,12 @@ def GetJsonResumableChunkSize():
   return chunk_size
 
 
+def JsonResumableChunkSizeDefined():
+  chunk_size_defined = config.get('GSUtil', 'json_resumable_chunk_size',
+                                  None)
+  return chunk_size_defined is not None
+
+
 def _RoundToNearestExponent(num):
   i = 0
   while i+1 < len(_EXP_STRINGS) and num >= (2 ** _EXP_STRINGS[i+1][0]):
@@ -698,13 +736,6 @@ def ResumableThreshold():
   return config.getint('GSUtil', 'resumable_threshold', EIGHT_MIB)
 
 
-def AddAcceptEncoding(headers):
-  """Adds accept-encoding:gzip to the dictionary of headers."""
-  # If Accept-Encoding is not already set, set it to enable gzip.
-  if 'accept-encoding' not in headers:
-    headers['accept-encoding'] = 'gzip'
-
-
 # pylint: disable=too-many-statements
 def PrintFullInfoAboutObject(bucket_listing_ref, incl_acl=True):
   """Print full info for given object (like what displays for gsutil ls -L).
@@ -763,6 +794,12 @@ def PrintFullInfoAboutObject(bucket_listing_ref, incl_acl=True):
       for ap in non_marker_props:
         meta_string = '\t\t%s:\t\t%s' % (ap.key, ap.value)
         print meta_string.encode(UTF8)
+  if obj.customerEncryption:
+    if not obj.crc32c: print '\tHash (crc32c):\t\tencrypted'
+    if not obj.md5Hash: print '\tHash (md5):\t\tencrypted'
+    print ('\tEncryption algorithm:\t%s' %
+           obj.customerEncryption.encryptionAlgorithm)
+    print '\tEncryption key SHA256:\t%s' % obj.customerEncryption.keySha256
   if obj.crc32c: print '\tHash (crc32c):\t\t%s' % obj.crc32c
   if obj.md5Hash: print '\tHash (md5):\t\t%s' % obj.md5Hash
   print '\tETag:\t\t\t%s' % obj.etag.strip('"\'')
@@ -1166,7 +1203,7 @@ def GetTermLines():
   return int(ioc)
 
 
-def FixWindowsEncodingIfNeeded(str):
+def FixWindowsEncodingIfNeeded(input_str):
   """Attempts to detect Windows CP1252 encoding and convert to UTF8.
 
   Windows doesn't provide a way to set UTF-8 for string encodings; you can set
@@ -1178,14 +1215,14 @@ def FixWindowsEncodingIfNeeded(str):
   to Unicode.
 
   Args:
-    str: The input string.
+    input_str: The input string.
   Returns:
     The converted string (or the original, if conversion wasn't needed).
   """
   if IS_CP1252:
-    return str.decode(WINDOWS_1252).encode(UTF8)
+    return input_str.decode(WINDOWS_1252).encode(UTF8)
   else:
-    return str
+    return input_str
 
 
 class GsutilStreamHandler(logging.StreamHandler):
@@ -1211,3 +1248,9 @@ def StdinIterator():
   for line in sys.stdin:
     # Strip CRLF.
     yield line.rstrip()
+
+
+def ConvertRecursiveToFlatWildcard(url_strs):
+  """A generator that adds '**' to each url string in url_strs."""
+  for url_str in url_strs:
+    yield '%s**' % url_str
