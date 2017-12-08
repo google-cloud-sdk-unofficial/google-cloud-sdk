@@ -79,7 +79,7 @@ overriding the following methods:
   __len__, __unicode__, AddRow, column_names, AddColumn
 """
 
-
+__author__ = 'craigcitro@google.com (Craig Citro)'
 
 import cStringIO
 import csv
@@ -122,7 +122,7 @@ class TableFormatter(object):
 
   def Print(self):
     if self:
-      # TODO(user): Make encoding a customizable attribute on
+      # TODO(craigcitro): Make encoding a customizable attribute on
       # the TableFormatter.
       encoding = sys.stdout.encoding or 'utf8'
       print unicode(self).encode(encoding, 'backslashreplace')
@@ -138,7 +138,7 @@ class TableFormatter(object):
 
   def AddField(self, field):
     """Add a field as a new column to this formatter."""
-    # TODO(user): Excise this bigquery-specific method.
+    # TODO(craigcitro): Excise this bigquery-specific method.
     align = 'l' if field.get('type', []) == 'STRING' else 'r'
     self.AddColumn(field['name'], align=align)
 

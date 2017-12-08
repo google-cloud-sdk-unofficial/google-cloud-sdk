@@ -79,9 +79,7 @@ Create.detailed_help = {
         To create a metric that counts the number of log entries with a
         severity level higher than WARNING, run:
 
-          $ {command} high_severity_count \\
-            "Number of high severity log entries" \\
-            "metadata.severity > WARNING"
+          $ {command} high_severity_count "Number of high severity log entries" "metadata.severity > WARNING"
 
         Detailed information about filters can be found at:
         https://cloud.google.com/logging/docs/view/advanced_filters

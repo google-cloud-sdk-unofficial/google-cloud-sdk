@@ -81,6 +81,6 @@ To remove a TXT record with multiple data values, run:
 
 .RS 2m
 $ gcloud dns record\-sets transaction remove \-z MANAGED_ZONE \e
-    \-\-name my.domain. \-\-ttl 2345 \-\-type TXT "Hello world" "Bye \e
-    world"
+    \-\-name my.domain. \-\-ttl 2345 \-\-type TXT "Hello world" \e
+    "Bye world"
 .RE

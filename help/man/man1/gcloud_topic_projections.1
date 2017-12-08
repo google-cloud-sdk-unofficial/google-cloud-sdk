@@ -249,6 +249,29 @@ x.BarFoo, and x.BAR_FOO in order for the first non\-empty value.
 
 .RE
 .RE
+\fBfloat\fR(r, precision=6, spec)
+.RS 2m
+Returns the string representation of the floating point number r. One of these
+formats is used (1) ". \fIprecision\fR \fIspec\fR" if \fIspec\fR is specified
+(2) ". \fIprecision\fR" unless 1e\-04 <= abs(r) < 1e+09 (3) ".1f" otherwise.
+
+
+The arguments are:
+
+\fB\f5r\fR\fR
+.RS 2m
+A JSON\-serializable object.
+.RE
+\fB\f5precision\fR\fR
+.RS 2m
+The maximum number of digits before and after the decimal point.
+.RE
+\fB\f5spec\fR\fR
+.RS 2m
+The printf(3) floating point format "e", "f" or "g" spec character.
+
+.RE
+.RE
 \fBformat\fR(r, fmt, args)
 .RS 2m
 Formats a sub\-projection of r.
@@ -661,8 +684,9 @@ format with column heading \fBSTART\fR):
 
 .RS 2m
 $ gcloud compute instances list \e
-    \-\-format='table(name:sort=2:align=center:label=INSTANCE, zone:\e
-sort=1:reverse, creationTimestamp.date("%Y\-%m\-%d"):label=START\e )'
+    \-\-format='table(name:sort=2:align=center:label=INSTANCE,
+ zone:sort=1:reverse,
+ creationTimestamp.date("%Y\-%m\-%d"):label=START)'
 .RE
 
 List only the \fBname\fR, \fBstatus\fR and \fBzone\fR instance resource keys in

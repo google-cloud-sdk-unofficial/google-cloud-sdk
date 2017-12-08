@@ -150,7 +150,7 @@ class GenerateHelpDocs(base.Command):
       with open(os.path.join(args.html_dir, '_menu_.html'), 'w') as out:
         WriteHtmlMenu(tree, out)
       for file_name in _HELP_HTML_DATA_FILES:
-        with open(os.path.join(args.html_dir, file_name), 'w') as out:
+        with open(os.path.join(args.html_dir, file_name), 'wb') as out:
           file_contents = pkg_resources.GetResource(
               'googlecloudsdk.api_lib.meta.help_html_data.', file_name)
           out.write(file_contents)

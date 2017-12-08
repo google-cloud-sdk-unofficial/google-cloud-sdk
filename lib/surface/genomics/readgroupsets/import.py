@@ -37,13 +37,11 @@ class Import(base.Command):
       'EXAMPLES': """\
           Import a single BAM file and associate with the GRCh38 reference set:
 
-          $ {command} --dataset-id 123 --reference-set-id "EMud_c37lKPXTQ" \
-            --source-uris "gs://mybucket/reads.bam"
+            $ {command} --dataset-id 123 --reference-set-id "EMud_c37lKPXTQ" --source-uris "gs://mybucket/reads.bam"
 
           Import a single sample which is sharded across multiple BAM files:
 
-          $ {command} --dataset-id 123 --partition-strategy MERGE_ALL \
-            --source-uris "gs://mybucket/chr?.bam,gs://mybucket/mt.bam"
+            $ {command} --dataset-id 123 --partition-strategy MERGE_ALL --source-uris "gs://mybucket/chr?.bam,gs://mybucket/mt.bam"
           """,
   }
 

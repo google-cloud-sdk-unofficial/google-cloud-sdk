@@ -42,6 +42,6 @@ class GetIamPolicy(base_classes.BaseIamCommand):
   @utils.CatchServiceAccountErrors
   def Run(self, args):
     self.SetAddress(args.account)
-    return self.iam_client.v1.GetIamPolicy(
-        self.messages.IamGetIamPolicyRequest(
+    return self.iam_client.projects_serviceAccounts.GetIamPolicy(
+        self.messages.IamProjectsServiceAccountsGetIamPolicyRequest(
             resource=utils.EmailToAccountResourceName(args.account)))

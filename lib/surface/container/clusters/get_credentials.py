@@ -58,8 +58,12 @@ class GetCredentials(base.Command):
     log.status.Print('Fetching cluster endpoint and auth data.')
     # Call DescribeCluster to get auth info and cache for next time
     cluster = adapter.GetCluster(cluster_ref)
+    if not cluster.masterAuth:
+      raise util.Error(
+          'get-credentials requires edit permission on {0}'.format(
+              cluster_ref.projectId))
     if not adapter.IsRunning(cluster):
       log.error(
           'cluster %s is not running. The kubernetes API will probably be '
           'unreachable.' % cluster_ref.clusterId)
-    util.ClusterConfig.Persist(cluster, cluster_ref.projectId, self.cli)
+    util.ClusterConfig.Persist(cluster, cluster_ref.projectId)

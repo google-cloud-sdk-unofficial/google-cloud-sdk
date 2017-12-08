@@ -60,15 +60,15 @@ class List(base.Command):
         To calculate the timestamp as seconds from the epoch, on UNIX-like
         systems (e.g.: Linux, Mac) use the 'date' command:
 
-        $ date --date '20150701' '+%s'
+          $ date --date '20150701' '+%s'
 
-        1435734000
+          1435734000
 
         or with Python (e.g.: Linux, Mac, Windows):
 
-        $ python -c 'from time import mktime, strptime; print int(mktime(strptime("01 July 2015", "%d %B %Y")))'
+          $ python -c 'from time import mktime, strptime; print int(mktime(strptime("01 July 2015", "%d %B %Y")))'
 
-        1435734000
+          1435734000
         """)
 
   @genomics_util.ReraiseHttpException

@@ -24,7 +24,7 @@ from googlecloudsdk.third_party.apis.iam.v1 import iam_v1_client
 from googlecloudsdk.third_party.apis.iam.v1 import iam_v1_messages
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Iam(base.Group):
 
   def Filter(self, context, args):

@@ -118,23 +118,23 @@ Logs can be saved to a file instead of being printed to standard out by
 specifying a file name:
 
 .RS 2m
-$ gcloud preview app modules get\-logs mymodule \e
-    \-\-version=1 ~/log_file.txt
+$ gcloud preview app modules get\-logs mymodule \-\-version=1 \e
+    ~/log_file.txt
 .RE
 
 You can append new logs to a previously downloaded log file by using \-\-append
 mode:
 
 .RS 2m
-$ gcloud preview app modules get\-logs mymodule \e
-    \-\-version=1 ~/log_file.txt \-\-append
+$ gcloud preview app modules get\-logs mymodule \-\-version=1 \e
+    ~/log_file.txt \-\-append
 .RE
 
 To download all available logs (not just the last day's worth), run:
 
 .RS 2m
-$ gcloud preview app modules get\-logs mymodule \e
-    \-\-version=1 ~/log_file.txt \-\-days=0
+$ gcloud preview app modules get\-logs mymodule \-\-version=1 \e
+    ~/log_file.txt \-\-days=0
 .RE
 
 

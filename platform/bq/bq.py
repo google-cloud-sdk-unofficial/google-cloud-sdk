@@ -4,7 +4,7 @@
 
 """Python script for interacting with BigQuery."""
 
-
+__author__ = 'craigcitro@google.com (Craig Citro)'
 
 import cmd
 import codecs
@@ -20,6 +20,11 @@ import sys
 import time
 import traceback
 import types
+
+# Add to path dependecies if present.
+_THIRD_PARTY_DIR = os.path.join(os.path.dirname(__file__), 'third_party')
+if os.path.isdir(_THIRD_PARTY_DIR):
+  sys.path.insert(0, _THIRD_PARTY_DIR)
 
 
 import apiclient
@@ -85,7 +90,7 @@ _DELIMITER_MAP = {
 # These aren't relevant for user-facing docstrings:
 # pylint: disable=g-doc-return-or-yield
 # pylint: disable=g-doc-args
-# TODO(user): Write some explanation of the structure of this file.
+# TODO(craigcitro): Write some explanation of the structure of this file.
 
 ####################
 # flags processing
@@ -136,7 +141,7 @@ def _ProcessBigqueryrc():
       if line.lstrip().startswith('#') or not line.strip():
         continue
       elif line.lstrip().startswith('['):
-        # TODO(user): Support command-specific flag sections.
+        # TODO(craigcitro): Support command-specific flag sections.
         continue
       flag, equalsign, value = line.partition('=')
       # if no value given, assume stringified boolean true
@@ -549,7 +554,7 @@ def _Typecheck(obj, types, message=None):  # pylint: disable=redefined-outer-nam
     raise app.UsageError(message)
 
 
-# TODO(user): This code uses more than the average amount of
+# TODO(craigcitro): This code uses more than the average amount of
 # Python magic. Explain what the heck is going on throughout.
 class NewCmd(appcommands.Cmd):
   """Featureful extension of appcommands.Cmd."""
@@ -562,7 +567,7 @@ class NewCmd(appcommands.Cmd):
       func = run_with_args.im_func
       code = func.func_code  # pylint: disable=redefined-outer-name
       self._full_arg_list = list(code.co_varnames[:code.co_argcount])
-      # TODO(user): There might be some corner case where this
+      # TODO(craigcitro): There might be some corner case where this
       # is *not* the right way to determine bound vs. unbound method.
       if isinstance(run_with_args.im_self, run_with_args.im_class):
         self._full_arg_list.pop(0)
@@ -1175,6 +1180,10 @@ class _Query(BigqueryCmd):
         'The URI or local filesystem path of a code file to load and '
         'evaluate immediately as a User-Defined Function resource.',
         flag_values=fv)
+    flags.DEFINE_integer(
+        'maximum_billing_tier', None,
+        'The upper limit of billing tier for the query.',
+        flag_values=fv)
 
   def RunWithArgs(self, *args):
     # pylint: disable=g-doc-exception
@@ -1205,6 +1214,8 @@ class _Query(BigqueryCmd):
       kwds['external_table_definitions_json'] = dict(external_table_defs)
     if self.udf_resource:
       kwds['udf_resources'] = _ParseUdfResources(self.udf_resource)
+    if self.maximum_billing_tier:
+      kwds['maximum_billing_tier'] = self.maximum_billing_tier
     query = ' '.join(args)
     if not query:
       query = sys.stdin.read()
@@ -2491,7 +2502,7 @@ class CommandLoop(cmd.Cmd):
   def do_help(self, command_name):
     """Print the help for command_name (if present) or general help."""
 
-    # TODO(user): Add command-specific flags.
+    # TODO(craigcitro): Add command-specific flags.
     def FormatOneCmd(name, command, command_names):
       indent_size = appcommands.GetMaxCommandLength() + 3
       if len(command_names) > 1:

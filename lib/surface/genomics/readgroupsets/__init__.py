@@ -20,5 +20,5 @@ from googlecloudsdk.calliope import base
 class ReadGroupSets(base.Group):
   """Commands for Genomics read group sets.
 
-  Commands to delete, describe, import, and list read group sets.
+  Commands to delete, describe, import, update, and list read group sets.
   """

@@ -16,10 +16,8 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.api_lib.compute import utils
-from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SetMachineType(base_classes.NoOutputAsyncMutator):
   """Set machine type for Google Compute Engine virtual machine instances."""
 

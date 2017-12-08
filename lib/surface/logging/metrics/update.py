@@ -108,13 +108,11 @@ Update.detailed_help = {
     'EXAMPLES': """\
         To update the description of a metric called high_severity_count, run:
 
-          $ {command} high_severity_count \\
-            --description="Count of high-severity log entries."
+          $ {command} high_severity_count --description="Count of high-severity log entries."
 
         To update the filter expression of the metric, run:
 
-          $ {command} high_severity_count \\
-            --filter="metadata.severity >= WARNING"
+          $ {command} high_severity_count --filter="metadata.severity >= WARNING"
 
         Detailed information about filters can be found at:
         https://cloud.google.com/logging/docs/view/advanced_filters

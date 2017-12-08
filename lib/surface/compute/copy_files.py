@@ -65,26 +65,16 @@ class CopyFiles(ssh_utils.BaseSSHCLICommand):
 
     # Parses the positional arguments.
     for arg in args.sources + [args.destination]:
-      # If the argument begins with "./" or "/", then we are dealing
-      # with a local file that can potentially contain colons, so we
-      # avoid splitting on colons. The case of remote files containing
-      # colons is handled below by splitting only on the first colon.
-      if arg.startswith('./') or arg.startswith('/'):
+      if ssh_utils.IsScpLocalPath(arg):
         file_specs.append(LocalFile(arg))
-        continue
-
-      host_file_parts = arg.split(':', 1)
-      if len(host_file_parts) == 1:
-        file_specs.append(LocalFile(host_file_parts[0]))
       else:
-        user_host, file_path = host_file_parts
+        user_host, file_path = arg.split(':', 1)
         user_host_parts = user_host.split('@', 1)
         if len(user_host_parts) == 1:
           user = getpass.getuser()
           instance = user_host_parts[0]
         else:
           user, instance = user_host_parts
-
         file_specs.append(RemoteFile(user, instance, file_path))
 
     logging.debug('Normalized arguments: %s', file_specs)

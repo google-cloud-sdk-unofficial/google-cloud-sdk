@@ -60,7 +60,7 @@ class VersionVerifier(object):
     major, minor, _ = master_version.Distance(cluster_version)
     if major != 0 or minor > 2:
       return self.UNSUPPORTED
-    elif minor != 0:
+    elif minor > 1:
       return self.SUPPORT_ENDING
     else:
       return self.UPGRADE_AVAILABLE

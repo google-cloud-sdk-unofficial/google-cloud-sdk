@@ -60,8 +60,10 @@ class Create(base_classes.BaseIamCommand):
     result = self.iam_client.projects_serviceAccounts_keys.Create(
         self.messages.IamProjectsServiceAccountsKeysCreateRequest(
             name=utils.EmailToAccountResourceName(args.iam_account),
-            privateKeyType=utils.KeyTypeToCreateKeyType(utils.KeyTypeFromString(
-                args.key_file_type))))
+            createServiceAccountKeyRequest=
+            self.messages.CreateServiceAccountKeyRequest(
+                privateKeyType=utils.KeyTypeToCreateKeyType(
+                    utils.KeyTypeFromString(args.key_file_type)))))
 
     self.WriteFile(args.output, result.privateKeyData)
     log.status.Print(

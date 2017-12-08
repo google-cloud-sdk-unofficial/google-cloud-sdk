@@ -43,14 +43,14 @@ class AddIamPolicyBinding(base_classes.BaseIamCommand):
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
     self.SetAddress(args.account)
-    policy = self.iam_client.v1.GetIamPolicy(
-        self.messages.IamGetIamPolicyRequest(
+    policy = self.iam_client.projects_serviceAccounts.GetIamPolicy(
+        self.messages.IamProjectsServiceAccountsGetIamPolicyRequest(
             resource=utils.EmailToAccountResourceName(args.account)))
 
     iam_util.AddBindingToIamPolicy(self.messages, policy, args)
 
-    return self.iam_client.v1.SetIamPolicy(
-        self.messages.IamSetIamPolicyRequest(
+    return self.iam_client.projects_serviceAccounts.SetIamPolicy(
+        self.messages.IamProjectsServiceAccountsSetIamPolicyRequest(
             resource=utils.EmailToAccountResourceName(args.account),
             setIamPolicyRequest=self.messages.SetIamPolicyRequest(
                 policy=policy)))

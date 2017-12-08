@@ -89,7 +89,6 @@ RemoveMembers.detailed_help = {
         To remove multiple users from multiple groups with
         one command, run
 
-          $ {command} example-group-1 example-group-2 \\
-              --members example-user-1 example-user-2
+          $ {command} example-group-1 example-group-2 --members example-user-1 example-user-2
         """,
 }

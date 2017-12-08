@@ -27,6 +27,12 @@ class CreateCluster(base.Command):
     """Register flags for this command."""
     util.AddClusterIdArgs(parser)
     util.AddClusterInfoArgs(parser)
+    parser.add_argument(
+        '--storage',
+        choices=['HDD', 'SSD'],
+        default='SSD',
+        type=str.upper,
+        help='Storage class for the cluster. Valid options are HDD or SSD.')
 
   @util.MapHttpError
   def Run(self, args):
@@ -40,12 +46,17 @@ class CreateCluster(base.Command):
       Some value that we want to have printed later.
     """
     cli = self.context['clusteradmin']
+    cluster = self.context['clusteradmin-msgs'].Cluster
+    storage_options = {
+        'HDD': cluster.DefaultStorageTypeValueValuesEnum.STORAGE_HDD,
+        'SSD': cluster.DefaultStorageTypeValueValuesEnum.STORAGE_SSD}
     msg = self.context['clusteradmin-msgs'].CreateClusterRequest(
         name=util.ZoneUrl(args),
         clusterId=args.cluster,
-        cluster=self.context['clusteradmin-msgs'].Cluster(
+        cluster=cluster(
             displayName=args.description,
-            serveNodes=args.nodes))
+            serveNodes=args.nodes,
+            defaultStorageType=storage_options[args.storage]))
     result = cli.projects_zones_clusters.Create(msg)
     if not args.async:
       util.WaitForOp(

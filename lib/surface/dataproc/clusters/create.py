@@ -155,8 +155,7 @@ Specifies scopes for the node instances. The project's default service account
 is used. Multiple SCOPEs can specified, separated by commas.
 Examples:
 
-  $ {{command}} example-cluster --scopes \
-https://www.googleapis.com/auth/bigtable.admin
+  $ {{command}} example-cluster --scopes https://www.googleapis.com/auth/bigtable.admin
 
   $ {{command}} example-cluster --scopes sqlservice,bigquery
 

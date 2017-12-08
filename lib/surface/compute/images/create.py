@@ -16,9 +16,11 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base_classes.BaseAsyncCreator):
   """Create Google Compute Engine images."""
 
@@ -85,6 +87,10 @@ class Create(base_classes.BaseAsyncCreator):
         description=args.description,
         sourceType=self.messages.Image.SourceTypeValueValuesEnum.RAW)
 
+    # TODO(user): consolidate when image family goes GA
+    if hasattr(args, 'family') and hasattr(image, 'family'):
+      image.family = args.family
+
     # Validate parameters.
     if args.source_disk_zone and not args.source_disk:
       raise exceptions.ToolException(
@@ -109,6 +115,17 @@ class Create(base_classes.BaseAsyncCreator):
     return [request]
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+
+  @staticmethod
+  def Args(parser):
+    Create.Args(parser)
+    parser.add_argument(
+        '--family',
+        help='The family of the image.')
+
+
 Create.detailed_help = {
     'brief': 'Create Google Compute Engine images',
     'DESCRIPTION': """\
@@ -127,3 +144,5 @@ Create.detailed_help = {
         link:https://cloud.google.com/compute/docs/creating-custom-image[].
         """,
 }
+
+CreateAlpha.detailed_help = Create.detailed_help

@@ -36,9 +36,7 @@ Delete.detailed_help = {
         in the instance group.
         For example:
 
-          $ {command} example-instance-group-1 \
-              example-instance-group-2 \
-              --zone us-central1-a
+          $ {command} example-instance-group-1 example-instance-group-2 --zone us-central1-a
 
         The above example deletes two instance groups, example-instance-group-1
         and example-instance-group-2, in the ``us-central1-a'' zone.

@@ -57,6 +57,9 @@ class Init(base.Command):
           if you or another user changes the project default zone in the
           Developer Console website.  You can resync your configuration at any
           time by rerunning `gcloud init`.
+
+          (Available since version 0.9.79. Run $ gcloud --version to see which
+          version you are running.)
           """,
   }
 
@@ -381,9 +384,16 @@ https://console.developers.google.com/apis page.
       else:
         break
 
-    self._RunCmd(['source', 'repos', 'clone'], [repo_name, clone_path])
-    log.status.write('\nGit repository has been cloned to [{0}]\n'
-                     .format(clone_path))
+    # Show output from this command in case there are errors.
+    try:
+      self._RunCmd(['source', 'repos', 'clone'], [repo_name, clone_path],
+                   disable_user_output=False)
+    except c_exc.FailedSubCommand:
+      log.warning(
+          'Was not able to run\n  '
+          '[gcloud source repos clone {0} {1}]\n'
+          'at this time. You can try running this command any time later.\n'
+          .format(repo_name, clone_path))
 
   def _CreateConfiguration(self):
     configuration_name = console_io.PromptResponse(

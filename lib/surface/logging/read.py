@@ -129,8 +129,7 @@ Read.detailed_help = {
 
         To read log entries written in a specific time window, run:
 
-          $ {command} "timestamp<='2015-05-31T23:59:59Z' AND \\
-                       timestamp>='2015-05-31T00:00:00Z'"
+          $ {command} "timestamp<='2015-05-31T23:59:59Z' AND timestamp>='2015-05-31T00:00:00Z'"
 
         Detailed information about filters can be found at:
         https://cloud.google.com/logging/docs/view/advanced_filters

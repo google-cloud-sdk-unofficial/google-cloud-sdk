@@ -87,8 +87,6 @@ class AddInstances(base_classes.NoOutputAsyncMutator):
           by name.
           For example:
 
-            $ {command} example-instance-group \
-                --instances example-instance-1 example-instance-2 \
-                --zone us-central1-a
+            $ {command} example-instance-group --instances example-instance-1 example-instance-2 --zone us-central1-a
           """,
   }

@@ -144,19 +144,15 @@ Create.detailed_help = {
     'EXAMPLES': """\
         To export all Google App Engine logs to BigQuery, run:
 
-          $ {command} --log-service=appengine.googleapis.com my-bq-sink \\
-            bigquery.googleapis.com/projects/my-project/datasets/my_dataset
+          $ {command} --log-service=appengine.googleapis.com my-bq-sink bigquery.googleapis.com/projects/my-project/datasets/my_dataset
 
         To export "syslog" from App Engine Managed VM's to Cloud Storage, run:
 
-          $ {command} --log=appengine.googleapis.com/syslog my-gcs-sink \\
-            storage.googleapis.com/my-bucket
+          $ {command} --log=appengine.googleapis.com/syslog my-gcs-sink storage.googleapis.com/my-bucket
 
         To export Google App Engine logs with ERROR severity, run:
 
-          $ {command} my-error-logs \\
-            bigquery.googleapis.com/project/my-project/dataset/my_dataset \\
-            --log-filter='metadata.serviceName="appengine.googleapis.com" AND metadata.severity=ERROR'
+          $ {command} my-error-logs bigquery.googleapis.com/project/my-project/dataset/my_dataset --log-filter='metadata.serviceName="appengine.googleapis.com" AND metadata.severity=ERROR'
 
         Detailed information about filters can be found at:
         https://cloud.google.com/logging/docs/view/advanced_filters

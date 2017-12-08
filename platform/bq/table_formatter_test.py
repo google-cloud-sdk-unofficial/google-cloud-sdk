@@ -17,7 +17,7 @@
 
 """Tests for table_formatter.py."""
 
-
+__author__ = 'craigcitro@google.com (Craig Citro)'
 
 
 from google.apputils import googletest

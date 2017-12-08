@@ -72,36 +72,29 @@ class Run(base.ListCommand):
           To invoke a monkey test against a virtual Nexus9 device in
           landscape orientation, run:
 
-            $ {command} --type monkey --app APP_APK --device-id Nexus9\
- --orientation landscape
+            $ {command} --type monkey --app APP_APK --device-id Nexus9 --orientation landscape
 
           To invoke an instrumentation test (Espresso or Robotium) against a
           physical Nexus 4 device (DEVICE_ID: mako) which is running Android API
           level 18 in French, run:
 
-            $ {command} --app APP_APK --test TEST_APK --device-id mako\
- --os-version-id 18 --locale fr --orientation portrait
+            $ {command} --app APP_APK --test TEST_APK --device-id mako --os-version-id 18 --locale fr --orientation portrait
 
           To run the same test as above using short flags, run:
 
-            $ {command} --app APP_APK --test TEST_APK -d mako -v 18 -l fr\
- -o portrait
+            $ {command} --app APP_APK --test TEST_APK -d mako -v 18 -l fr -o portrait
 
           To run a series of 5-minute robo tests against a comprehensive matrix
           of virtual and physical devices, OS versions and locales, run:
 
-            $ {command} --app APP_APK --timeout 5m\
- --device-ids mako,shamu,Nexus5,Nexus6,k3g --os-version-ids 17,18,19,21,22\
- --locales de,en_US,en_GB,es,fr,it,ru,zh
+            $ {command} --app APP_APK --timeout 5m --device-ids mako,shamu,Nexus5,Nexus6,k3g --os-version-ids 17,18,19,21,22 --locales de,en_US,en_GB,es,fr,it,ru,zh
 
           To run an instrumentation test against the default test environment,
           but using a specific Google Cloud Storage bucket to hold the raw test
           results and specifying the name under which the history of your tests
           will be collected and displayed in the Google Developers Console, run:
 
-            $ {command} --app APP_APK --test TEST_APK\
- --results-bucket excelsior-app-results-bucket\
- --results-history-name 'Excelsior App Test History'
+            $ {command} --app APP_APK --test TEST_APK --results-bucket excelsior-app-results-bucket --results-history-name 'Excelsior App Test History'
 
           All test arguments for a given test may alternatively be stored in an
           argument group within a YAML-formatted argument file. The _ARG_FILE_

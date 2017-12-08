@@ -38,6 +38,10 @@ class Delete(base.SilentCommand):
 
             $ {command} my_config
 
+          To delete several configurations, run:
+
+            $ {command} my_config1 my_config2
+
           To list get a list of existing configurations, run:
 
             $ gcloud config configurations list
@@ -48,26 +52,27 @@ class Delete(base.SilentCommand):
   def Args(parser):
     """Adds args for this command."""
     parser.add_argument(
-        'configuration_name',
-        help=('Configuration name to delete, '
+        'configuration_names',
+        nargs='+',
+        help=('Configuration names to delete, '
               'can not be currently active configuration.'))
 
   def Run(self, args):
     # Fail the delete operation when we're attempting to delete the
     # active config.
     current_config = named_configs.GetNameOfActiveNamedConfig()
-    if current_config == args.configuration_name:
+    if current_config in args.configuration_names:
       raise named_configs.NamedConfigWriteError(
           'Deleting named configuration failed because configuration '
           '[{0}] is set as active.  Use `gcloud config configurations '
           'activate` to change the active configuration.'.format(
-              args.configuration_name))
+              current_config))
 
-    console_io.PromptContinue(
-        'The following configuration will be deleted: [{0}]'.format(
-            args.configuration_name),
-        default=True,
-        cancel_on_no=True)
+    printer = console_io.ListPrinter(
+        'The following configurations will be deleted:')
+    printer.Print(args.configuration_names, output_stream=log.status)
+    console_io.PromptContinue(default=True, cancel_on_no=True)
 
-    named_configs.DeleteNamedConfig(args.configuration_name)
-    log.DeletedResource(args.configuration_name)
+    for configuration_name in args.configuration_names:
+      named_configs.DeleteNamedConfig(configuration_name)
+      log.DeletedResource(configuration_name)

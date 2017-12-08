@@ -25,14 +25,12 @@ StackOverflow, or the Cloud SDK groups page.
 """
 
 import datetime
-import os
-import re
 import textwrap
-import urllib
+
+from googlecloudsdk.api_lib import feedback_util
 from googlecloudsdk.api_lib.sdktool import info_holder
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
-from googlecloudsdk.core.console import console_attr_os
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import text as text_util
 
@@ -40,12 +38,6 @@ from googlecloudsdk.core.util import text as text_util
 STACKOVERFLOW_URL = 'http://stackoverflow.com/questions/tagged/gcloud'
 GROUPS_PAGE_URL = ('https://groups.google.com/forum/?fromgroups#!forum/'
                    'google-cloud-sdk')
-ISSUE_TRACKER_URL = 'https://code.google.com/p/google-cloud-sdk/issues'
-NEW_ISSUE_URL = 'https://code.google.com/p/google-cloud-sdk/issues/entry'
-
-# The new issue URL has a maximum length, so we need to limit the length of
-# pre-filled form fields
-MAX_URL_LENGTH = 2106
 
 
 FEEDBACK_MESSAGE = """\
@@ -65,96 +57,7 @@ channel on freenode.
 FEEDBACK_PROMPT = """\
 Would you like to file a bug using our issue tracker site at [{0}] \
 (will open a new browser tab)?\
-""".format(ISSUE_TRACKER_URL)
-
-
-COMMENT_TEMPLATE = """\
-{formatted_command}What steps will reproduce the problem?
-
-
-What is the expected output? What do you see instead?
-
-
-Please provide any additional information below.
-
-
-{formatted_traceback}Installation information:
-
-{gcloud_info}\
-"""
-
-
-TRUNCATED_INFO_MESSAGE = '[output truncated]'
-
-
-def _FormatNewIssueUrl(comment, status='New', summary=''):
-  params = {
-      'status': status,
-      'summary': summary,
-      'comment': comment,
-  }
-  return NEW_ISSUE_URL + '?' + urllib.urlencode(params)
-
-
-def OpenInBrowser(url):
-  # pylint: disable=g-import-not-at-top
-  # Import in here for performance reasons
-  import webbrowser
-  # pylint: enable=g-import-not-at-top
-  webbrowser.open_new_tab(url)
-
-
-def _UrlEncodeLen(string):
-  """Return the length of string when URL-encoded."""
-  # urlencode turns a dict into a string of 'key=value' pairs. We use a blank
-  # key and don't want to count the '='.
-  encoded = urllib.urlencode({'': string})[1:]
-  return len(encoded)
-
-
-def _UrlTruncateLines(string, url_encoded_length):
-  """Truncates the given string to the given URL-encoded length.
-
-  Always cuts at a newline.
-
-  Args:
-    string: str, the string to truncate
-    url_encoded_length: str, the length to which to truncate
-
-  Returns:
-    tuple of (str, str), where the first str is the truncated version of the
-    original string and the second str is the remainder.
-  """
-  lines = string.split('\n')
-  included_lines = []
-  excluded_lines = []
-  # Adjust the max length for the truncation message in case it is needed
-  max_str_len = (url_encoded_length -
-                 _UrlEncodeLen(TRUNCATED_INFO_MESSAGE + '\n'))
-  while (lines and
-         _UrlEncodeLen('\n'.join(included_lines + lines[:1])) <= max_str_len):
-    included_lines.append(lines.pop(0))
-  excluded_lines = lines
-  if excluded_lines:
-    included_lines.append(TRUNCATED_INFO_MESSAGE)
-  return '\n'.join(included_lines), '\n'.join(excluded_lines)
-
-
-def _GetDivider(text=''):
-  """Return a console-width divider (ex: '======================' (etc.)).
-
-  Supports messages (ex: '=== Messsage Here ===').
-
-  Args:
-    text: str, a message to display centered in the divider.
-
-  Returns:
-    str, the formatted divider
-  """
-  if text:
-    text = ' ' + text + ' '
-  width, _ = console_attr_os.GetTermSize()
-  return text.center(width, '=')
+""".format(feedback_util.ISSUE_TRACKER_URL)
 
 
 def _PrintQuiet(info_str, log_data):
@@ -183,8 +86,9 @@ def _PrintQuiet(info_str, log_data):
       [{2}].
 
       Please include the following information when filing a bug report:\
-      """).format(STACKOVERFLOW_URL, GROUPS_PAGE_URL, ISSUE_TRACKER_URL))
-  divider = _GetDivider()
+      """).format(STACKOVERFLOW_URL, GROUPS_PAGE_URL,
+                  feedback_util.ISSUE_TRACKER_URL))
+  divider = feedback_util.GetDivider()
   log.Print(divider)
   if log_data and log_data.traceback:
     log.Print(log_data.traceback)
@@ -208,99 +112,6 @@ def _SuggestIncludeRecentLogs():
                  'feedback about? This will open a new browser tab.'))
     if idx < len(recent_runs):
       return recent_runs[idx]
-
-
-# Regular expression for extracting files from a traceback
-# We only care about the files that have 'google' somewhere in them, because
-# they're ours
-_TRACEBACK_FILE_REGEXP = r'File "(.*google.*)"'
-
-
-def _CommonPrefix(paths):
-  """Given a list of paths, return the longest shared directory prefix.
-
-  We want to:
-  (1) Only split at path boundaries (i.e.
-      _CommonPrefix(['/foo/bar', '/foo/baz']) => '/foo' , not '/foo/b')
-  (2) Ignore the path basenames, even when files are identical (i.e.
-      _CommonPrefix(['/foo/bar'] * 3') => '/foo'
-
-  For these reasons, we can't just us os.path.commonprefix.
-
-  Args:
-    paths: list of str, list of path names
-
-  Returns:
-    str, common prefix
-  """
-  prefix = os.path.commonprefix(map(os.path.dirname, paths))
-  if not prefix:
-    return prefix
-  if all([path.startswith(prefix + os.path.sep) for path in paths]):
-    return prefix + os.path.sep
-  else:
-    return os.path.dirname(prefix) + os.path.sep
-
-
-def _FormatIssueBody(info, log_data=None):
-  """Construct a useful issue body with which to pre-populate the issue tracker.
-
-  Args:
-    info: InfoHolder, holds information about the Cloud SDK install
-    log_data: LogData, parsed log data for a gcloud run
-
-  Returns:
-    str, issue comment body
-  """
-  gcloud_info = str(info)
-
-  formatted_command = ''
-  if log_data and log_data.command:
-    formatted_command = 'Issue running command [{0}].\n\n'.format(
-        log_data.command)
-
-  formatted_traceback = ''
-  if log_data and log_data.traceback:
-    # Because we have a limited number of characters to work with (see
-    # MAX_URL_LENGTH), we reduce the size of the traceback by stripping out the
-    # installation root. We'll still know what files are being talked about.
-    traceback_files = re.findall(_TRACEBACK_FILE_REGEXP, log_data.traceback)
-    common_prefix = _CommonPrefix(traceback_files)
-    formatted_traceback = log_data.traceback.replace(common_prefix, '') + '\n\n'
-
-  return COMMENT_TEMPLATE.format(formatted_command=formatted_command,
-                                 gcloud_info=gcloud_info.strip(),
-                                 formatted_traceback=formatted_traceback)
-
-
-def _OpenNewIssueInBrowser(info, log_data):
-  """Opens a new tab in the web browser to the new issue page for Cloud SDK.
-
-  The page will be pre-populated with relevant information.
-
-  Args:
-    info: InfoHolder, the data from of `gcloud info`
-    log_data: LogData, parsed representation of a recent log
-  """
-  comment = _FormatIssueBody(info, log_data)
-  url = _FormatNewIssueUrl(comment)
-  if len(url) > MAX_URL_LENGTH:
-    max_info_len = MAX_URL_LENGTH - len(_FormatNewIssueUrl(''))
-    truncated, remaining = _UrlTruncateLines(comment, max_info_len)
-    log.warn('Truncating included information. '
-             'Please consider including the remainder:')
-    divider_text = 'TRUNCATED INFORMATION (PLEASE CONSIDER INCLUDING)'
-    log.status.Print(_GetDivider(divider_text))
-    log.status.Print(remaining.strip())
-    log.status.Print(_GetDivider('END ' + divider_text))
-    log.warn('The output of gcloud info is too long to pre-populate the '
-             'new issue form.')
-    log.warn('Please consider including the remainder (above).')
-    url = _FormatNewIssueUrl(truncated)
-  OpenInBrowser(url)
-  log.status.Print('Opening your browser to a new Google Cloud SDK issue.')
-  log.status.Print("If your browser doesn't open, please file an issue: " +
-                   ISSUE_TRACKER_URL)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -343,4 +154,4 @@ class Feedback(base.Command):
       if log_data or console_io.PromptContinue(
           prompt_string=('No invocation selected. Would you still like to file '
                          'a bug (will open a new browser tab)')):
-        _OpenNewIssueInBrowser(info, log_data)
+        feedback_util.OpenNewIssueInBrowser(info, log_data)

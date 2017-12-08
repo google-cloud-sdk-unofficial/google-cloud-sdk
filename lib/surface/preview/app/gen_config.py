@@ -14,20 +14,24 @@
 
 """The gen-config command."""
 
+import io
 import os
+import shutil
+import tempfile
 
 from googlecloudsdk.api_lib.app import yaml_parsing
 from googlecloudsdk.api_lib.app.ext_runtimes import fingerprinting
 from googlecloudsdk.api_lib.app.runtimes import fingerprinter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 from googlecloudsdk.third_party.appengine.api import appinfo
+from ruamel import yaml
 
 
 RUNTIME_MISMATCH_MSG = ("You've generated a Dockerfile that may be customized "
                         'for your application.  To use this Dockerfile, '
-                        'please change the runtime field in [%s] to '
-                        'custom.')
+                        'the runtime field in [{0}] must be set to custom.')
 
 
 class GenConfig(base.Command):
@@ -109,5 +113,43 @@ class GenConfig(base.Command):
                               runtime=args.runtime),
         config_filename)
 
+    # If the user has a config file, make sure that they're using a custom
+    # runtime.
+    # TODO(user): If --config is given, should it still be modified?
     if config and args.custom and config.GetEffectiveRuntime() != 'custom':
-      log.status.Print(RUNTIME_MISMATCH_MSG % config_filename)
+      alter = console_io.PromptContinue(
+          default=False, message=RUNTIME_MISMATCH_MSG.format(config_filename),
+          prompt_string='Would you like to update it now?')
+      if alter:
+        _AlterRuntime(config_filename, 'custom')
+        log.status.Print('[{0}] has been updated.'.format(config_filename))
+      else:
+        log.status.Print('Please update [{0}] manually by changing the runtime '
+                         'field to custom.'.format(config_filename))
+
+
+def _AlterRuntime(config_filename, runtime):
+  try:
+    # 0. Take backup
+    with tempfile.NamedTemporaryFile(prefix='app.yaml.') as f:
+      backup_fname = f.name
+    log.status.Print(
+        'Copying original config [{0}] to backup location [{1}].'.format(
+            config_filename, backup_fname))
+    shutil.copyfile(config_filename, backup_fname)
+    # 1. Open and parse file using ruamel
+    with open(config_filename, 'r') as yaml_file:
+      encoding = yaml_file.encoding
+      config = yaml.load(yaml_file, yaml.RoundTripLoader)
+    # 2. Alter the ruamel in-memory object representing the yaml file
+    config['runtime'] = runtime
+    # 3. Create an in-memory file buffer and write yaml file to it
+    raw_buf = io.BytesIO()
+    tmp_yaml_buf = io.TextIOWrapper(raw_buf, encoding)
+    yaml.dump(config, tmp_yaml_buf, Dumper=yaml.RoundTripDumper)
+    # 4. Overwrite the original app.yaml
+    with open(config_filename, 'wb') as yaml_file:
+      tmp_yaml_buf.seek(0)
+      yaml_file.write(raw_buf.getvalue())
+  except Exception as e:
+    raise fingerprinter.AlterConfigFileError(e)

@@ -97,8 +97,7 @@ For example, to apply the named ports to an entire instance group:
 
 .RS 2m
 $ gcloud compute instance\-groups unmanaged set\-named\-ports \e
-    example\-instance\-group                 \e
-    \-\-named\-ports example\-service:1111                 \e
+    example\-instance\-group \-\-named\-ports example\-service:1111 \e
     \-\-zone us\-central1\-a
 .RE
 
@@ -112,6 +111,5 @@ parameter:
 
 .RS 2m
 $ gcloud compute instance\-groups unmanaged set\-named\-ports \e
-    example\-instance\-group                 \-\-named\-ports ""        \e
-             \-\-zone us\-central1\-a
+    example\-instance\-group \-\-named\-ports "" \-\-zone us\-central1\-a
 .RE

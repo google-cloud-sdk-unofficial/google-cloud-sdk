@@ -97,10 +97,13 @@ are always added, even if not explicitly specified.
 SCOPE can be either the full URI of the scope or an alias.
 Available aliases are:
 
+[format="csv",options="header"]
+|========
 Alias,URI
 {aliases}
+|========
 """.format(
-    aliases='\n        '.join(
+    aliases='\n'.join(
         ','.join(value) for value in
         sorted(constants.SCOPES.iteritems()))))
   parser.add_argument(
@@ -205,8 +208,7 @@ class Create(base.Command):
     log.CreatedResource(cluster_ref)
     # Persist cluster config
     current_context = kconfig.Kubeconfig.Default().current_context
-    c_config = util.ClusterConfig.Persist(
-        cluster, cluster_ref.projectId, self.cli)
+    c_config = util.ClusterConfig.Persist(cluster, cluster_ref.projectId)
     if not c_config.has_certs:
       # Purge config so we retry the cert fetch on next kubectl command
       util.ClusterConfig.Purge(

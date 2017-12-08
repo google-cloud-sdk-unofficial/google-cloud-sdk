@@ -47,8 +47,8 @@ class SetIamPolicy(base_classes.BaseIamCommand):
         args.policy_file,
         self.messages.Policy)
 
-    return self.iam_client.v1.SetIamPolicy(
-        self.messages.IamSetIamPolicyRequest(
+    return self.iam_client.projects_serviceAccounts.SetIamPolicy(
+        self.messages.IamProjectsServiceAccountsSetIamPolicyRequest(
             resource=utils.EmailToAccountResourceName(args.account),
             setIamPolicyRequest=self.messages.SetIamPolicyRequest(
                 policy=policy)))

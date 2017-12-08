@@ -69,7 +69,7 @@ Stop.detailed_help = {
     'DESCRIPTION': """\
         *{command}* is used stop a Google Compute Engine virtual machine.
         Stopping a VM performs a clean shutdown, much like invoking the shutdown
-        functionality of a workstation or laptop. Stopping an SSD-attached VM is
-        not supported and will result in an API error.
+        functionality of a workstation or laptop. Stopping a VM with a local SSD
+        is not supported and will result in an API error.
         """,
 }

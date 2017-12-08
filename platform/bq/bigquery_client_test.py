@@ -3,7 +3,7 @@
 
 """Tests for bigquery_client.py."""
 
-
+__author__ = 'craigcitro@google.com (Craig Citro)'
 
 import itertools
 import json

@@ -31,14 +31,7 @@ class Pig(base_classes.JobSubmitter):
 
           To submit a Pig job with inline queries, run:
 
-            $ {command} --cluster my_cluster \\
-                -e "LNS = LOAD 'gs://my_bucket/my_file.txt' AS (line)" \\
-                -e "WORDS = FOREACH LNS GENERATE FLATTEN(TOKENIZE(line)) AS \
-word" \\
-                -e "GROUPS = GROUP WORDS BY word" \\
-                -e "WORD_COUNTS = FOREACH GROUPS GENERATE group, \
-COUNT(WORDS)" \\
-                -e "DUMP WORD_COUNTS"
+            $ {command} --cluster my_cluster -e "LNS = LOAD 'gs://my_bucket/my_file.txt' AS (line)" -e "WORDS = FOREACH LNS GENERATE FLATTEN(TOKENIZE(line)) AS word" -e "GROUPS = GROUP WORDS BY word" -e "WORD_COUNTS = FOREACH GROUPS GENERATE group, COUNT(WORDS)" -e "DUMP WORD_COUNTS"
           """,
   }
 

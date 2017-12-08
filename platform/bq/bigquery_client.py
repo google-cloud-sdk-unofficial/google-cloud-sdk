@@ -3,7 +3,7 @@
 
 """Bigquery Client library for Python."""
 
-
+__author__ = 'craigcitro@google.com (Craig Citro)'
 
 import abc
 import collections
@@ -1685,6 +1685,7 @@ class BigqueryClient(object):
     result = None
     retriable_errors = 0
     output_token = None
+    status = None
     while result is None:
       try:
         status, result = request.next_chunk()
@@ -2217,6 +2218,7 @@ class BigqueryClient(object):
             flatten_results=None,
             external_table_definitions_json=None,
             udf_resources=None,
+            maximum_billing_tier=None,
             **kwds):
     # pylint: disable=g-doc-args
     """Execute the given query, returning the created job.
@@ -2251,6 +2253,7 @@ class BigqueryClient(object):
       external_table_definitions_json: Json representation of external table
         definitions.
       udf_resources: Array of inline and remote UDF resources.
+      maximum_billing_tier: Upper limit for billing tier.
       **kwds: Passed on to self.ExecuteJob.
 
     Raises:
@@ -2284,6 +2287,7 @@ class BigqueryClient(object):
         write_disposition=write_disposition,
         use_query_cache=use_cache,
         flatten_results=flatten_results,
+        maximum_billing_tier=maximum_billing_tier,
         min_completion_ratio=min_completion_ratio)
     request = {'query': query_config}
     _ApplyParameters(request, dry_run=dry_run)
