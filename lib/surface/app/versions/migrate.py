@@ -15,9 +15,9 @@
 """The Migrate command."""
 
 from googlecloudsdk.api_lib.app import appengine_api_client
+from googlecloudsdk.api_lib.app import operations_util
 from googlecloudsdk.api_lib.app import service_util
 from googlecloudsdk.api_lib.app import util
-from googlecloudsdk.api_lib.app.api import operations
 from googlecloudsdk.api_lib.util import exceptions as api_exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import exceptions
@@ -29,7 +29,7 @@ class VersionsMigrateError(exceptions.Error):
   """Errors when migrating versions."""
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Migrate(base.Command):
   """Migrate traffic from one version to another for a set of services."""
 
@@ -99,8 +99,9 @@ class Migrate(base.Command):
       try:
         client.SetTrafficSplit(service, allocations,
                                shard_by='ip', migrate=True)
-      except (api_exceptions.HttpException, operations.OperationError,
-              operations.OperationTimeoutError, util.RPCError) as e:
+      except (api_exceptions.HttpException,
+              operations_util.OperationError,
+              operations_util.OperationTimeoutError, util.RPCError) as e:
         errors[service] = str(e)
 
     if errors:

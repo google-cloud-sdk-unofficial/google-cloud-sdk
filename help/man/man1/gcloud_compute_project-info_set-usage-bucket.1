@@ -11,7 +11,7 @@ gcloud compute project\-info set\-usage\-bucket \- set the usage reporting bucke
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute project\-info set\-usage\-bucket\fR \fB\-\-bucket\fR=\fIBUCKET\fR [\fB\-\-prefix\fR=\fIPREFIX\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute project\-info set\-usage\-bucket\fR [\fB\-\-prefix\fR=\fIPREFIX\fR] [\fB\-\-bucket\fR=\fIBUCKET\fR\ |\ \fB\-\-no\-bucket\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -29,35 +29,15 @@ $ gcloud compute project\-info set\-usage\-bucket \e
 .RE
 
 will cause logs of the form usage_gce_YYYYMMDD.csv to be written daily to the
-bucket \f5\fImy\-bucket\fR\fR. To disable this feature, issue the command:
+bucket \f5my\-bucket\fR. To disable this feature, issue the command:
 
 .RS 2m
-$ gcloud compute project\-info set\-usage\-bucket \-\-bucket
+$ gcloud compute project\-info set\-usage\-bucket \-\-no\-bucket
 .RE
 
 
 
-.SH "REQUIRED FLAGS"
-
-.RS 2m
-.TP 2m
-\fB\-\-bucket\fR=\fIBUCKET\fR
-The URI of a Google Cloud Storage bucket where the usage report object should be
-stored. The Google Service Account for performing usage reporting is granted
-write access to this bucket. The user running this command must be an owner of
-the bucket.
-
-To clear the usage bucket, specify this flag without an argument:
-
-.RS 2m
-$ gcloud compute project\-info set\-usage\-bucket \-\-bucket
-.RE
-
-
-.RE
-.sp
-
-.SH "OPTIONAL FLAGS"
+.SH "FLAGS"
 
 .RS 2m
 .TP 2m
@@ -68,6 +48,24 @@ as a CSV file named PREFIX_gce_YYYYMMDD.csv where YYYYMMDD is the day of the
 usage according to Pacific Time. The prefix should conform to Google Cloud
 Storage object naming conventions. This flag must not be provided when clearing
 the usage bucket.
+
+.RE
+.sp
+At most one of these may be specified:
+
+.RS 2m
+.TP 2m
+\fB\-\-bucket\fR=\fIBUCKET\fR
+The URI of a Google Cloud Storage bucket where the usage report object should be
+stored. The Google Service Account for performing usage reporting is granted
+write access to this bucket. The user running this command must be an owner of
+the bucket.
+
+To clear the usage bucket, use \-\-no\-bucket.
+
+.TP 2m
+\fB\-\-no\-bucket\fR
+Unsets the bucket. This disables usage report storage.
 
 
 .RE

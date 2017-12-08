@@ -72,8 +72,11 @@ must be specified in CIDR format:
 http://en.wikipedia.org/wiki/Classless_Inter\-Domain_Routing.
 
 Setting this will override the existing source ranges for the firewall. The
-following will clear the existing source ranges: $ gcloud compute
-firewall\-rules update MY\-RULE \-\-source\-ranges
+following will clear the existing source ranges:
+
+.RS 2m
+$ gcloud compute firewall\-rules update MY\-RULE \-\-source\-ranges
+.RE
 
 .TP 2m
 \fB\-\-source\-tags\fR=[\fITAG\fR,...]
@@ -84,8 +87,11 @@ on the network can make connections that match the rule.
 Tags can be assigned to instances during instance creation.
 
 Setting this will override the existing source tags for the firewall. The
-following will clear the existing source tags: $ gcloud compute firewall\-rules
-update MY\-RULE \-\-source\-tags
+following will clear the existing source tags:
+
+.RS 2m
+$ gcloud compute firewall\-rules update MY\-RULE \-\-source\-tags
+.RE
 
 .TP 2m
 \fB\-\-target\-tags\fR=[\fITAG\fR,...]

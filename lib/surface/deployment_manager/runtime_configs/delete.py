@@ -69,13 +69,10 @@ class Delete(base.DeleteCommand):
     messages = util.Messages()
 
     config_resource = util.ParseConfigName(args.name)
-    project = config_resource.projectsId
-    name = config_resource.Name()
 
     config_client.Delete(
         messages.RuntimeconfigProjectsConfigsDeleteRequest(
-            projectsId=project,
-            configsId=name,
+            name=config_resource.RelativeName(),
         )
     )
 

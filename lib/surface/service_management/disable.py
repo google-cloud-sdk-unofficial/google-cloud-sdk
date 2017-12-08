@@ -32,7 +32,7 @@ class Disable(base.SilentCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    common_flags.service_flag(suffix='to disable').AddToParser(parser)
+    common_flags.consumer_service_flag(suffix='to disable').AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):

@@ -66,7 +66,9 @@ def main(args):
         except (IOError, ValueError) as ex:
             # If we have an invalid or unreadable package.json file, there's
             # something funny going on here so fail recognition.
-            warn('node.js checker: error accessing package.json: %r' % ex)
+            # A package.json that exists is unusual enough that we want to warn
+            # regardless of whether the nodejs runtime was specified.
+            comm.warn('node.js checker: error accessing package.json: %r' % ex)
             return 1
 
         # See if we've got a scripts.start field.

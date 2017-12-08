@@ -18,21 +18,20 @@ from googlecloudsdk.api_lib.app import appengine_client
 from googlecloudsdk.api_lib.app import yaml_parsing
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import log
+from googlecloudsdk.command_lib.app import output_helpers
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
-from googlecloudsdk.core.resource import resource_printer
 
 
 class CreateIndexes(base.Command):
-  """Create new datastore indexes based on your local index configuration.
-
-  This command creates new datastore indexes based on your local index
-  configuration.
-  """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
+      'brief': 'Create new datastore indexes based on your local index '
+               'configuration.',
+      'DESCRIPTION': """
+This command creates new datastore indexes based on your local index
+configuration. Any indexes in your index file that do not exist will be created.
+      """,
       'EXAMPLES': """\
           To create new indexes based on your local configuration, run:
 
@@ -59,10 +58,7 @@ class CreateIndexes(base.Command):
           'index_file', 'You must provide the path to a valid index.yaml file.')
 
     info = app_config.Configs()[yaml_parsing.ConfigYamlInfo.INDEX]
-    fmt = 'list[title="You are about to update the following configurations:"]'
-    resource_printer.Print(
-        ['{0}/{1}  From: [{2}]'.format(project, info.config, info.file)],
-        fmt, out=log.status)
+    output_helpers.DisplayProposedConfigDeployments(project, [info])
     console_io.PromptContinue(default=True, throw_if_unattended=False,
                               cancel_on_no=True)
 

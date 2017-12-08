@@ -15,8 +15,8 @@
 """The Start command."""
 
 from googlecloudsdk.api_lib.app import appengine_api_client
+from googlecloudsdk.api_lib.app import operations_util
 from googlecloudsdk.api_lib.app import version_util
-from googlecloudsdk.api_lib.app.api import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import exceptions
@@ -91,8 +91,9 @@ class Start(base.Command):
       try:
         with progress_tracker.ProgressTracker('Starting [{0}]'.format(version)):
           api_client.StartVersion(version.service, version.id)
-      except (calliope_exceptions.HttpException, operations.OperationError,
-              operations.OperationTimeoutError) as err:
+      except (calliope_exceptions.HttpException,
+              operations_util.OperationError,
+              operations_util.OperationTimeoutError) as err:
         errors[version] = str(err)
     if errors:
       printable_errors = {}

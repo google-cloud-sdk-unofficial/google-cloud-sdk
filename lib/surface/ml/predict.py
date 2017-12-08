@@ -18,11 +18,14 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import predict_utilities
 
 
+INPUT_INSTANCES_LIMIT = 100
+
+
 class Predict(base.Command):
   """Run Cloud ML online prediction.
 
-     `{command}` runs a Cloud ML online prediction with the given instances.
-     This command will only accept up to 100 instances at one time. If you are
+     `{command}` sends a prediction request to Cloud ML for the given instances.
+     This command will only accept up to 100 instances at a time. If you are
      predicting on more instances, you should use batch prediction via
      $ gcloud beta ml jobs submit prediction.
   """
@@ -31,10 +34,17 @@ class Predict(base.Command):
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument('--model', required=True, help='Name of the model.')
-    parser.add_argument(
+    version = parser.add_argument(
         '--version',
-        help='Name of the version. If unspecified, the default version '
-        'of the model will be used.')
+        help='Model version to be used.')
+    version.detailed_help = """\
+Model version to be used.
+
+If unspecified, the default version of the model will be used. To list model
+versions run
+
+  $ gcloud beta ml versions list
+"""
     group = parser.add_mutually_exclusive_group(required=True)
     json_flag = group.add_argument(
         '--json-instances',
@@ -97,17 +107,8 @@ class Predict(base.Command):
     Returns:
       Some value that we want to have printed later.
     """
-
-    # Get the input instances.
-    data_format = ''
-    input_file = ''
-    if args.json_instances:
-      data_format = 'json'
-      input_file = args.json_instances
-    elif args.text_instances:
-      data_format = 'text'
-      input_file = args.text_instances
-    instances = predict_utilities.ReadInstances(input_file, data_format)
+    instances = predict_utilities.ReadInstancesFromArgs(
+        args.json_instances, args.text_instances, limit=INPUT_INSTANCES_LIMIT)
 
     results = predict.Predict(
         model_name=args.model, version_name=args.version, instances=instances)

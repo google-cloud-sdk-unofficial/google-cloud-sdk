@@ -46,7 +46,7 @@ class SetIamPolicy(base.Command):
     dataset_resource = resources.REGISTRY.Parse(
         args.id, collection='genomics.datasets')
 
-    policy = iam_util.ParseJsonPolicyFile(args.policy_file, messages.Policy)
+    policy = iam_util.ParsePolicyFile(args.policy_file, messages.Policy)
 
     policy_request = messages.GenomicsDatasetsSetIamPolicyRequest(
         resource='datasets/{0}'.format(dataset_resource.Name()),

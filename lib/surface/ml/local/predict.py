@@ -14,9 +14,7 @@
 """ml local predict command."""
 
 import json
-import os
 import subprocess
-import sys
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import local_predict
@@ -27,45 +25,6 @@ from googlecloudsdk.core import log
 
 class InvalidInstancesFileError(core_exceptions.Error):
   pass
-
-
-# TODO(b/33039554): This piece of code is similar to that used in
-# surface.ml.predict. Refactor it out to command_lib/.
-def _ReadInstances(input_file=None, data_format=None):
-  """Read the instances from input file.
-
-  Args:
-    input_file: An open file object for the input file.
-    data_format: data format of the input file, 'json' or 'text'.
-
-  Returns:
-    A list of instances.
-
-  Raises:
-    InvalidInstancesFileError: if the input_file is empty, ill-formatted,
-        or contains more than 100 instances.
-  """
-  instances = []
-
-  for line in input_file:
-    line_content = line.rstrip('\n')
-    if not line_content:
-      raise InvalidInstancesFileError('Empty line is not allowed in the '
-                                      'instances file.')
-    if data_format == 'json':
-      try:
-        instances.append(json.loads(line_content))
-      except ValueError:
-        raise InvalidInstancesFileError(
-            'Input instances are not in JSON format. '
-            'See "gcloud beta ml local predict --help" for details.')
-    elif data_format == 'text':
-      instances.append(line_content)
-
-  if not instances:
-    raise InvalidInstancesFileError('No valid instance was found.')
-
-  return instances
 
 
 class LocalPredictRuntimeError(core_exceptions.Error):
@@ -81,9 +40,9 @@ class InvalidReturnValueError(core_exceptions.Error):
 class Predict(base.Command):
   """Run prediction locally.
 
-     *{command}* runs a prediction locally with the given instances. It requires
-     the TensorFlow SDK be installed locally. Only Debian based systems are
-     supported at this time.
+     *{command}* performs prediction locally with the given instances. It
+     requires the TensorFlow SDK be installed locally. Only Debian based systems
+     are supported at this time.
   """
 
   @staticmethod
@@ -126,39 +85,17 @@ class Predict(base.Command):
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""
-
-    if sys.version_info < (2, 7):
-      # googlecloudsdk.command_lib.ml.local_predict is not supposed to run
-      # with python version less than 2.7.
-      raise LocalPredictRuntimeError('Local prediction can only run with '
-                                     'Python 2.7 or above.')
-
-    # Get the input instances.
-    data_format = ''
-    input_file = ''
-    if args.json_instances:
-      data_format = 'json'
-      input_file = args.json_instances
-    elif args.text_instances:
-      data_format = 'text'
-      input_file = args.text_instances
-    instances = predict_utilities.ReadInstances(
-        input_file, data_format, local_predict=True)
+    instances = predict_utilities.ReadInstancesFromArgs(args.json_instances,
+                                                        args.text_instances)
 
     # Start local prediction in a subprocess.
-    command = ['python', local_predict.__file__, '--model-dir', args.model_dir]
-    env = dict(os.environ)
     proc = subprocess.Popen(
-        command,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        env=env)
+        ['python', local_predict.__file__, '--model-dir', args.model_dir],
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     # Pass the instances to the process that actually runs local prediction.
     for instance in instances:
-      proc.stdin.write(json.dumps(instance))
-      proc.stdin.write('\n')
+      proc.stdin.write(json.dumps(instance) + '\n')
     proc.stdin.flush()
 
     # Get the results for the local prediction.
@@ -167,10 +104,9 @@ class Predict(base.Command):
       raise LocalPredictRuntimeError(err)
     if err:
       log.warn(err)
-    output_content = output.rstrip('\n')
+
     try:
-      predictions = json.loads(output_content)
+      return json.loads(output)
     except ValueError:
       raise InvalidReturnValueError('The output for prediction is not '
-                                    'in JSON format: ' + output_content)
-    return predictions
+                                    'in JSON format: ' + output)

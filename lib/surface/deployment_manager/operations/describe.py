@@ -21,7 +21,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deployment_manager import dm_base
 
 
-class Describe(base.DescribeCommand, dm_base.DeploymentManagerCommand):
+class Describe(base.DescribeCommand):
   """Provide information about an operation.
 
   This command prints out all available details about an operation.
@@ -62,9 +62,9 @@ class Describe(base.DescribeCommand, dm_base.DeploymentManagerCommand):
           request.
     """
     try:
-      return self.client.operations.Get(
-          self.messages.DeploymentmanagerOperationsGetRequest(
-              project=self.project,
+      return dm_base.GetClient().operations.Get(
+          dm_base.GetMessages().DeploymentmanagerOperationsGetRequest(
+              project=dm_base.GetProject(),
               operation=args.operation_name,
           )
       )

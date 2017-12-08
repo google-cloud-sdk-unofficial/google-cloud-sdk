@@ -74,15 +74,10 @@ class Describe(base.DescribeCommand):
     messages = util.Messages()
 
     waiter_resource = util.ParseWaiterName(args.name, args)
-    project = waiter_resource.projectsId
-    config = waiter_resource.configsId
-    name = waiter_resource.Name()
 
     result = waiter_client.Get(
         messages.RuntimeconfigProjectsConfigsWaitersGetRequest(
-            projectsId=project,
-            configsId=config,
-            waitersId=name,
+            name=waiter_resource.RelativeName(),
         )
     )
 

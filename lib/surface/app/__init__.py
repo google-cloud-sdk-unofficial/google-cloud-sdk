@@ -28,9 +28,9 @@ from googlecloudsdk.core.util import platforms
 DETAILED_HELP = {
     'brief': 'Manage your App Engine app.',
     'DESCRIPTION': """
-        This set of commands allows you to deploy your app, manage your existing
-        deployments, and also run your app locally.  These commands replace
-        their equivalents in the appcfg tool.
+        This set of commands allows you to deploy your app and manage your
+        existing deployments.  These commands replace their equivalents in the
+        appcfg tool.
         """,
     'EXAMPLES': """\
         To run your app locally in the development application server, run:

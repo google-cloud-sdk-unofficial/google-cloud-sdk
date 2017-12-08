@@ -80,12 +80,9 @@ class List(base.ListCommand):
     messages = util.Messages()
 
     config_resource = util.ParseConfigName(util.ConfigName(args))
-    project = config_resource.projectsId
-    config = config_resource.Name()
 
     request = messages.RuntimeconfigProjectsConfigsVariablesListRequest(
-        projectsId=project,
-        configsId=config,
+        parent=config_resource.RelativeName(),
     )
 
     page_size = args.page_size or self.DEFAULT_PAGE_SIZE

@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """bigtable clusters update command."""
 
 from googlecloudsdk.api_lib.bigtable import util
@@ -19,42 +18,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateClusterAlpha(base.UpdateCommand):
-  """Update a Bigtable cluster's friendly name and serving nodes."""
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    util.AddClusterIdArgs(parser)
-    util.AddClusterInfoArgs(parser)
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-    cli = self.context['clusteradmin']
-    msg = self.context['clusteradmin-msgs'].Cluster(
-        name=util.ClusterUrl(args),
-        displayName=args.description,
-        serveNodes=args.nodes)
-    result = cli.projects_zones_clusters.Update(msg)
-    if not args.async:
-      # TODO(b/31449385): needs test coverage
-      util.WaitForOp(
-          self.context,
-          result.currentOperation.name,
-          'Updating cluster')
-    log.UpdatedResource(args.cluster, kind='cluster', async=args.async)
-    return result
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

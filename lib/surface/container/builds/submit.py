@@ -114,7 +114,11 @@ class Submit(base.CreateCommand):
       FailedBuildException: If the build is completed and not 'SUCCESS'.
     """
 
-    safe_project = properties.VALUES.core.project.Get().replace(':', '_')
+    project = properties.VALUES.core.project.Get()
+    safe_project = project.replace(':', '_')
+    safe_project = safe_project.replace('.', '_')
+    # The string 'google' is not allowed in bucket names.
+    safe_project = safe_project.replace('google', 'elgoog')
 
     default_bucket_name = '{}_cloudbuild'.format(safe_project)
 
@@ -194,7 +198,7 @@ class Submit(base.CreateCommand):
     if default_gcs_source or default_gcs_log_dir:
       # This request returns only the buckets owned by the project.
       bucket_list_req = gcs_client.messages.StorageBucketsListRequest(
-          project=safe_project,
+          project=project,
           prefix=default_bucket_name)
       bucket_list = gcs_client.client.buckets.List(bucket_list_req)
       found_bucket = False

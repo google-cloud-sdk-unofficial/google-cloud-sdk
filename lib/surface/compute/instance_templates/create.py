@@ -31,6 +31,7 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
   instances_flags.AddDiskArgs(parser)
   if release_track in [base.ReleaseTrack.ALPHA]:
     instances_flags.AddCreateDiskArgs(parser)
+    instances_flags.AddExtendedMachineTypeArgs(parser)
   instances_flags.AddLocalSsdArgs(parser)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(
@@ -41,7 +42,11 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
   instances_flags.AddMaintenancePolicyArgs(parser)
   instances_flags.AddNoRestartOnFailureArgs(parser)
   instances_flags.AddPreemptibleVmArgs(parser)
-  instances_flags.AddScopeArgs(parser)
+  # TODO(b/33688891) After 13th Jan 2017 Move to GA
+  if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
+    instances_flags.AddServiceAccountAndScopeArgs(parser, False)
+  else:
+    instances_flags.AddScopeArgs(parser)
   instances_flags.AddTagsArgs(parser)
   instances_flags.AddCustomMachineTypeArgs(parser)
   instances_flags.AddImageArgs(parser)
@@ -110,6 +115,11 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
     self.ValidateDiskFlags(args)
     instances_flags.ValidateLocalSsdFlags(args)
     instances_flags.ValidateNicFlags(args)
+    # TODO(b/33688891) After 13th Jan 2017 Move to GA
+    if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
+      instances_flags.ValidateServiceAccountAndScopeArgs(args)
+    else:
+      instances_flags.ValidateScopeFlags(args)
 
     boot_disk_size_gb = utils.BytesToGb(args.boot_disk_size)
     utils.WarnIfDiskSizeIsTooSmall(boot_disk_size_gb, args.boot_disk_type)
@@ -153,9 +163,17 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
         preemptible=args.preemptible,
         restart_on_failure=args.restart_on_failure)
 
+    if getattr(args, 'no_service_account', True):
+      service_account = None
+    else:
+      service_account = args.service_account
     service_accounts = instance_utils.CreateServiceAccountMessages(
         messages=self.messages,
-        scopes=([] if args.no_scopes else args.scopes))
+        scopes=[] if args.no_scopes else args.scopes,
+        service_account=service_account,
+        # TODO(b/33688891) Stop silencing deprecation warning in GA
+        silence_deprecation_warning=(
+            self.ReleaseTrack() == base.ReleaseTrack.GA))
 
     create_boot_disk = not instance_utils.UseExistingBootDisk(args.disk or [])
     if create_boot_disk:
@@ -208,7 +226,8 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
     machine_type = instance_utils.InterpretMachineType(
         machine_type=args.machine_type,
         custom_cpu=args.custom_cpu,
-        custom_memory=args.custom_memory)
+        custom_memory=args.custom_memory,
+        ext=getattr(args, 'custom_extensions', None))
 
     request = self.messages.ComputeInstanceTemplatesInsertRequest(
         instanceTemplate=self.messages.InstanceTemplate(

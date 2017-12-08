@@ -11,7 +11,7 @@ gcloud container clusters create \- create a cluster for running containers
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud container clusters create\fR \fINAME\fR [\fB\-\-additional\-zones\fR=\fIZONE\fR,[\fIZONE\fR,...]] [\fB\-\-async\fR] [\fB\-\-cluster\-ipv4\-cidr\fR=\fICLUSTER_IPV4_CIDR\fR] [\fB\-\-disable\-addons\fR=[\fIDISABLE_ADDONS\fR,...]] [\fB\-\-disk\-size\fR=\fIDISK_SIZE\fR] [\fB\-\-no\-enable\-cloud\-endpoints\fR] [\fB\-\-no\-enable\-cloud\-logging\fR] [\fB\-\-no\-enable\-cloud\-monitoring\fR] [\fB\-\-image\-type\fR=\fIIMAGE_TYPE\fR] [\fB\-\-machine\-type\fR=\fIMACHINE_TYPE\fR,\ \fB\-m\fR\ \fIMACHINE_TYPE\fR] [\fB\-\-max\-nodes\-per\-pool\fR=\fIMAX_NODES_PER_POOL\fR] [\fB\-\-network\fR=\fINETWORK\fR] [\fB\-\-node\-labels\fR=[\fINODE_LABELS\fR,...]] [\fB\-\-num\-nodes\fR=\fINUM_NODES\fR;\ default="3"] [\fB\-\-password\fR=\fIPASSWORD\fR] [\fB\-\-scopes\fR=\fISCOPE\fR,[\fISCOPE\fR,...]] [\fB\-\-subnetwork\fR=\fISUBNETWORK\fR] [\fB\-\-username\fR=\fIUSERNAME\fR,\ \fB\-u\fR\ \fIUSERNAME\fR;\ default="admin"] [\fB\-\-wait\fR] [\fB\-\-zone\fR=\fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud container clusters create\fR \fINAME\fR [\fB\-\-additional\-zones\fR=\fIZONE\fR,[\fIZONE\fR,...]] [\fB\-\-async\fR] [\fB\-\-cluster\-ipv4\-cidr\fR=\fICLUSTER_IPV4_CIDR\fR] [\fB\-\-disable\-addons\fR=[\fIDISABLE_ADDONS\fR,...]] [\fB\-\-disk\-size\fR=\fIDISK_SIZE\fR] [\fB\-\-no\-enable\-cloud\-endpoints\fR] [\fB\-\-no\-enable\-cloud\-logging\fR] [\fB\-\-no\-enable\-cloud\-monitoring\fR] [\fB\-\-image\-type\fR=\fIIMAGE_TYPE\fR] [\fB\-\-machine\-type\fR=\fIMACHINE_TYPE\fR,\ \fB\-m\fR\ \fIMACHINE_TYPE\fR] [\fB\-\-max\-nodes\-per\-pool\fR=\fIMAX_NODES_PER_POOL\fR] [\fB\-\-network\fR=\fINETWORK\fR] [\fB\-\-node\-labels\fR=[\fINODE_LABELS\fR,...]] [\fB\-\-num\-nodes\fR=\fINUM_NODES\fR;\ default="3"] [\fB\-\-password\fR=\fIPASSWORD\fR] [\fB\-\-scopes\fR=\fISCOPE\fR,[\fISCOPE\fR,...]] [\fB\-\-subnetwork\fR=\fISUBNETWORK\fR] [\fB\-\-tags\fR=\fITAG\fR,[\fITAG\fR,...]] [\fB\-\-username\fR=\fIUSERNAME\fR,\ \fB\-u\fR\ \fIUSERNAME\fR;\ default="admin"] [\fB\-\-wait\fR] [\fB\-\-zone\fR=\fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -184,6 +184,12 @@ cloud\-source\-repos\-ro,https://www.googleapis.com/auth/source.read_only
 compute\-ro,https://www.googleapis.com/auth/compute.readonly
 compute\-rw,https://www.googleapis.com/auth/compute
 datastore,https://www.googleapis.com/auth/datastore
+default,https://www.googleapis.com/auth/cloud.useraccounts.readonly
+,https://www.googleapis.com/auth/devstorage.read_only
+,https://www.googleapis.com/auth/logging.write
+,https://www.googleapis.com/auth/monitoring.write
+,https://www.googleapis.com/auth/service.management.readonly
+,https://www.googleapis.com/auth/servicecontrol
 logging\-write,https://www.googleapis.com/auth/logging.write
 monitoring,https://www.googleapis.com/auth/monitoring
 monitoring\-write,https://www.googleapis.com/auth/monitoring.write
@@ -207,6 +213,21 @@ The name of the Google Compute Engine subnetwork
 (https://cloud.google.com/compute/docs/subnetworks) to which the cluster is
 connected. If specified, the cluster's network must be a "custom subnet"
 network.
+
+.TP 2m
+\fB\-\-tags\fR=\fITAG\fR,[\fITAG\fR,...]
+Applies the given Compute Engine tags (comma separated) on all nodes in the new
+node\-pool. Example:
+
+.RS 2m
+$ gcloud container clusters create example\-cluster \-\-tags=tag1,tag2
+.RE
+
+New nodes, including ones created by resize or recreate, will have these tags on
+the Compute Engine API instance object and can be used in firewall rules. See
+https://cloud.google.com/sdk/gcloud/reference/compute/firewall\-rules/create for
+examples.
+
 
 .TP 2m
 \fB\-\-username\fR=\fIUSERNAME\fR, \fB\-u\fR \fIUSERNAME\fR; default="admin"

@@ -23,8 +23,7 @@ from googlecloudsdk.command_lib.dataflow import time_util
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """Lists all jobs in a particular project.
 

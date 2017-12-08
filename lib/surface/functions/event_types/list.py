@@ -15,8 +15,6 @@
 
 'functions event-types list' command.
 """
-import itertools
-
 from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.calliope import base
 
@@ -29,19 +27,25 @@ class List(base.Command):
   `gcloud functions deploy` Event Providers are specified as
   --trigger-provider and Event Types are specified as --trigger-event.
   The table includes the type of resource expected in
-  --trigger-resource and which parameters --trigger-params takes and whether
-  they are optional, required, or not-allowed. For EVENT_TYPE and RESOURCE_TYPE
-  look at the column at right side to see if flag can be omitted.
+  --trigger-resource and whether the --trigger-path parameter is optional,
+  required, or disallowed.
+
+  * For an event type, EVENT_TYPE_DEFAULT marks whether the given event type is
+    the default for its provider (in which case the --event-type flag may be
+    omitted).
+  * For a resource, RESOURCE_OPTIONAL marks whether the resource has a
+    corresponding default value (in which case the --trigger-resource flag
+    may be omitted).
   """
 
   def Format(self, args):
     return '''\
         table(provider.label:label="EVENT_PROVIDER":sort=1,
               label:label="EVENT_TYPE":sort=2,
-              event_is_optional.yesno('Yes'):label="EVENT_TYPE_OPTIONAL",
+              event_is_optional.yesno('Yes'):label="EVENT_TYPE_DEFAULT",
               resource_type.value.name:label="RESOURCE_TYPE",
               resource_is_optional.yesno('Yes'):label="RESOURCE_OPTIONAL",
-              args_spec_view.list():label="ARGS_SPEC"
+              path_obligatoriness.name:label="PATH_PARAMETER"
         )'''
 
   def Run(self, args):
@@ -51,8 +55,9 @@ class List(base.Command):
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
 
-    Returns:
-      Function call results (error or result with execution id)
+    Yields:
+      All event types.
     """
-    return itertools.chain.from_iterable(
-        p.events for p in util.trigger_provider_registry.providers)
+    for provider in util.trigger_provider_registry.providers:
+      for event in provider.events:
+        yield event

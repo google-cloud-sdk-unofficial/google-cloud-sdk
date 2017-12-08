@@ -19,13 +19,14 @@ from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deployment_manager import dm_base
+from googlecloudsdk.command_lib.deployment_manager import flags
 from googlecloudsdk.core import log
 
 # Number of seconds (approximately) to wait for stop operation to complete.
 OPERATION_TIMEOUT = 20 * 60  # 20 mins
 
 
-class Stop(base.Command, dm_base.DeploymentManagerCommand):
+class Stop(base.Command):
   """Stop a pending or running deployment update or creation.
 
   This command will stop a currently running or pending operation on
@@ -54,15 +55,8 @@ class Stop(base.Command, dm_base.DeploymentManagerCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    parser.add_argument(
-        '--async',
-        help='Return immediately and print information about the Operation in '
-        'progress rather than waiting for the Operation to complete. '
-        '(default=False)',
-        default=False,
-        action='store_true')
-
-    parser.add_argument('deployment_name', help='Deployment name.')
+    flags.AddAsyncFlag(parser)
+    flags.AddDeploymentNameFlag(parser)
 
   def Run(self, args):
     """Run 'deployments stop'.
@@ -81,9 +75,9 @@ class Stop(base.Command, dm_base.DeploymentManagerCommand):
     """
     # Get the fingerprint from the deployment to stop.
     try:
-      current_deployment = self.client.deployments.Get(
-          self.messages.DeploymentmanagerDeploymentsGetRequest(
-              project=self.project,
+      current_deployment = dm_base.GetClient().deployments.Get(
+          dm_base.GetMessages().DeploymentmanagerDeploymentsGetRequest(
+              project=dm_base.GetProject(),
               deployment=args.deployment_name
           )
       )
@@ -95,12 +89,13 @@ class Stop(base.Command, dm_base.DeploymentManagerCommand):
       raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
 
     try:
-      operation = self.client.deployments.Stop(
-          self.messages.DeploymentmanagerDeploymentsStopRequest(
-              project=self.project,
+      operation = dm_base.GetClient().deployments.Stop(
+          dm_base.GetMessages().DeploymentmanagerDeploymentsStopRequest(
+              project=dm_base.GetProject(),
               deployment=args.deployment_name,
-              deploymentsStopRequest=self.messages.DeploymentsStopRequest(
-                  fingerprint=fingerprint,
+              deploymentsStopRequest=(
+                  dm_base.GetMessages().DeploymentsStopRequest(
+                      fingerprint=fingerprint)
               ),
           )
       )
@@ -111,10 +106,10 @@ class Stop(base.Command, dm_base.DeploymentManagerCommand):
     else:
       op_name = operation.name
       try:
-        dm_v2_util.WaitForOperation(self.client,
-                                    self.messages,
+        dm_v2_util.WaitForOperation(dm_base.GetClient(),
+                                    dm_base.GetMessages(),
                                     op_name,
-                                    self.project,
+                                    dm_base.GetProject(),
                                     'stop',
                                     OPERATION_TIMEOUT)
         log.status.Print('Stop operation ' + op_name
@@ -123,9 +118,9 @@ class Stop(base.Command, dm_base.DeploymentManagerCommand):
         raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
       try:
         # Fetch a list of the stopped resources.
-        response = self.client.resources.List(
-            self.messages.DeploymentmanagerResourcesListRequest(
-                project=self.project,
+        response = dm_base.GetClient().resources.List(
+            dm_base.GetMessages().DeploymentmanagerResourcesListRequest(
+                project=dm_base.GetProject(),
                 deployment=args.deployment_name,
             )
         )

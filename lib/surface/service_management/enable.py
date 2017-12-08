@@ -22,7 +22,13 @@ from googlecloudsdk.core import properties
 
 
 class Enable(base.SilentCommand):
-  """Enables a service on the current project."""
+  """Enables a service on the current project.
+
+  Enables a service on the current project.
+
+  More information on enabling a service can be found at:
+  https://cloud.google.com/service-management/enable-disable#enabling_services
+  """
 
   @staticmethod
   def Args(parser):
@@ -33,7 +39,7 @@ class Enable(base.SilentCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    common_flags.service_flag(suffix='to enable').AddToParser(parser)
+    common_flags.available_service_flag(suffix='to enable').AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):

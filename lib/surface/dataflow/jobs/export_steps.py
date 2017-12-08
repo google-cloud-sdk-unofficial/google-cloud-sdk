@@ -22,6 +22,7 @@ from googlecloudsdk.command_lib.dataflow import job_utils
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ExportSteps(base.Command):
   """Exports information about the steps for the given job.
 

@@ -1,0 +1,48 @@
+
+.TH "GCLOUD_DATASTORE_CREATE\-INDEXES" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud datastore create\-indexes \- create new datastore indexes based on your local index configuration
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud datastore create\-indexes\fR \fIINDEX_FILE\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+
+.SH "DESCRIPTION"
+
+This command creates new datastore indexes based on your local index
+configuration. Any indexes in your index file that do not exist will be created.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+.RS 2m
+.TP 2m
+\fIINDEX_FILE\fR
+The path to your index.yaml file.
+
+
+.RE
+.sp
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To create new indexes based on your local configuration, run:
+
+.RS 2m
+$ gcloud datastore create\-indexes ~/myapp/index.yaml
+.RE

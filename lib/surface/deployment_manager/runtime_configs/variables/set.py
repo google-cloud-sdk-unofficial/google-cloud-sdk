@@ -159,14 +159,12 @@ class Set(base.CreateCommand):
 
     project = var_resource.projectsId
     config = var_resource.configsId
-    name = var_resource.Name()
 
     result = variable_client.Create(
         messages.RuntimeconfigProjectsConfigsVariablesCreateRequest(
-            projectsId=project,
-            configsId=config,
+            parent=util.ConfigPath(project, config),
             variable=messages.Variable(
-                name=util.VariablePath(project, config, name),
+                name=var_resource.RelativeName(),
                 value=value if not args.is_text else None,
                 text=value if args.is_text else None,
             )
@@ -180,20 +178,11 @@ class Set(base.CreateCommand):
     variable_client = util.VariableClient()
     messages = util.Messages()
 
-    project = var_resource.projectsId
-    config = var_resource.configsId
-    name = var_resource.Name()
-
     result = variable_client.Update(
-        messages.RuntimeconfigProjectsConfigsVariablesUpdateRequest(
-            projectsId=project,
-            configsId=config,
-            variablesId=name,
-            variable=messages.Variable(
-                name=util.VariablePath(project, config, name),
-                value=value if not args.is_text else None,
-                text=value if args.is_text else None,
-            )
+        messages.Variable(
+            name=var_resource.RelativeName(),
+            value=value if not args.is_text else None,
+            text=value if args.is_text else None,
         )
     )
 

@@ -16,7 +16,6 @@
 
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
 
 
 class Describe(base.DescribeCommand):
@@ -41,11 +40,10 @@ class Describe(base.DescribeCommand):
     Returns:
       The specified metric with its description and configured filter.
     """
-    project = properties.VALUES.core.project.Get(required=True)
-
-    return util.GetClientV1().projects_metrics.Get(
-        util.GetMessagesV1().LoggingProjectsMetricsGetRequest(
-            metricsId=args.metric_name, projectsId=project))
+    return util.GetClient().projects_metrics.Get(
+        util.GetMessages().LoggingProjectsMetricsGetRequest(
+            metricName=util.CreateResourceName(
+                util.GetCurrentProjectParent(), 'metrics', args.metric_name)))
 
 
 Describe.detailed_help = {

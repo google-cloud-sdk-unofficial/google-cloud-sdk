@@ -34,7 +34,7 @@ class SetScopes(base_classes.NoOutputAsyncMutator):
   @staticmethod
   def Args(parser):
     flags.INSTANCE_ARG.AddArgument(parser)
-    flags.AddServiceAccountAndScopeArgs(parser)
+    flags.AddServiceAccountAndScopeArgs(parser, True)
 
   @property
   def method(self):
@@ -108,8 +108,20 @@ class SetScopes(base_classes.NoOutputAsyncMutator):
     return self._original_scopes(instance_ref)
 
   def _scopes(self, args, instance_ref):
-    return [constants.SCOPES.get(scope, scope)
-            for scope in self._unprocessed_scopes(args, instance_ref)]
+    """Get list of scopes to be assigned to the instance.
+
+    Args:
+      args: parsed command  line arguments.
+      instance_ref: reference to the instance to which scopes will be assigned.
+
+    Returns:
+      List of scope urls extracted from args, with scope aliases expanded.
+    """
+    result = []
+    for unprocessed_scope in self._unprocessed_scopes(args, instance_ref):
+      scope = constants.SCOPES.get(unprocessed_scope, [unprocessed_scope])
+      result.extend(scope)
+    return result
 
   def CreateRequests(self, args):
     flags.ValidateServiceAccountAndScopeArgs(args)

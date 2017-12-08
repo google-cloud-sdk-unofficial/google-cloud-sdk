@@ -92,6 +92,10 @@ class Projections(base.TopicCommand):
           *sort*=_SORT-ORDER_::
           An integer counting from 1. Keys with lower sort-order are sorted
           first. Keys with same sort order are sorted left to right.
+
+          *wrap*::
+          Enables the column text to be wrapped if the table would otherwise
+          be too wide for the display.
           """).format(
               description=resource_topics.ResourceDescription('projection'),
               transform_registry=

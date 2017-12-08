@@ -15,7 +15,14 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.core import exceptions
+
+
+# TODO(b/33690890): remove after deprecation
+class BucketRequiredError(exceptions.Error):
+  """One of the required bucket flags was not specified."""
 
 
 class SetUsageBucket(base_classes.NoOutputAsyncMutator):
@@ -23,10 +30,19 @@ class SetUsageBucket(base_classes.NoOutputAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    bucket = parser.add_argument(
+    # TODO(b/33690890): add required=True for this group
+    bucket_group = parser.add_mutually_exclusive_group()
+    bucket_group.add_argument(
+        '--no-bucket', action='store_true',
+        help='Unsets the bucket. This disables usage report storage.')
+    bucket = bucket_group.add_argument(
         '--bucket',
         nargs='?',
-        required=True,
+        action=arg_parsers.HandleNoArgAction(
+            'no_bucket',
+            'Use of --bucket without an argument is deprecated and will stop '
+            'working in the future. To unset the bucket, please use '
+            '--no-bucket'),
         help=('The URI of a Google Cloud Storage bucket where the usage report '
               'object should be stored'))
     bucket.detailed_help = """\
@@ -35,10 +51,7 @@ class SetUsageBucket(base_classes.NoOutputAsyncMutator):
         performing usage reporting is granted write access to this bucket.
         The user running this command must be an owner of the bucket.
 
-        To clear the usage bucket, specify this flag without an
-        argument:
-
-          $ gcloud compute project-info set-usage-bucket --bucket
+        To clear the usage bucket, use --no-bucket.
         """
 
     prefix = parser.add_argument(
@@ -66,11 +79,19 @@ class SetUsageBucket(base_classes.NoOutputAsyncMutator):
     return 'projects'
 
   def CreateRequests(self, args):
+    # TODO(b/33690890): remove this check after the deprecation
+    if args.bucket is None and not args.no_bucket:
+      # The user gave neither flag but one of them is required. Using
+      # required=True for the group would be the prefered way to handle this
+      # but it would prevent the deprecated case.
+      raise BucketRequiredError('one of the arguments --no-bucket --bucket '
+                                'is required')
+
     if not args.bucket and args.prefix:
-      raise exceptions.ToolException(
+      raise calliope_exceptions.ToolException(
           '[--prefix] cannot be specified when unsetting the usage bucket.')
 
-    bucket_uri = utils.NormalizeGoogleStorageUri(args.bucket)
+    bucket_uri = utils.NormalizeGoogleStorageUri(args.bucket or None)
 
     request = self.messages.ComputeProjectsSetUsageExportBucketRequest(
         project=self.project,
@@ -94,8 +115,8 @@ SetUsageBucket.detailed_help = {
           $ gcloud compute project-info set-usage-bucket --bucket gs://my-bucket
 
         will cause logs of the form usage_gce_YYYYMMDD.csv to be written daily
-        to the bucket ``my-bucket''. To disable this feature, issue the command:
+        to the bucket `my-bucket`. To disable this feature, issue the command:
 
-          $ gcloud compute project-info set-usage-bucket --bucket
+          $ gcloud compute project-info set-usage-bucket --no-bucket
         """,
 }

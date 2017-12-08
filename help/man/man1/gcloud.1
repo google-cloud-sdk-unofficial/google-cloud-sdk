@@ -43,7 +43,9 @@ for each item in each slice. Multiple keys and slices may be specified. This
 also flattens keys for \fB\-\-format\fR and \fB\-\-filter\fR. For example,
 \fB\-\-flatten=abc.def[]\fR flattens \fBabc.def[].ghi\fR references to
 \fBabc.def.ghi\fR. A resource record containing \fBabc.def[]\fR with N elements
-will expand to N records in the flattened output.
+will expand to N records in the flattened output. This flag interacts with other
+flags that are applied in this order: \fB\-\-flatten\fR, \fB\-\-sort\-by\fR,
+\fB\-\-filter\fR, \fB\-\-limit\fR.
 
 .TP 2m
 \fB\-\-format\fR=\fIFORMAT\fR
@@ -139,8 +141,16 @@ View and edit Cloud SDK properties.
 Deploy and manage clusters of machines for running containers.
 
 .TP 2m
+\fBdataflow\fR
+Read and manipulate Google Dataflow resources.
+
+.TP 2m
 \fBdataproc\fR
 Create and manage Google Cloud Dataproc clusters and jobs.
+
+.TP 2m
+\fBdatastore\fR
+Manage your Cloud Datastore indexes.
 
 .TP 2m
 \fBdeployment\-manager\fR

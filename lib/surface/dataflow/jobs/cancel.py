@@ -22,8 +22,7 @@ from googlecloudsdk.command_lib.dataflow import job_utils
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Cancel(base.Command):
   """Cancels all jobs that match the command line arguments.
   """

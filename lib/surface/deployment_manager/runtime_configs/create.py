@@ -82,13 +82,12 @@ class Create(base.CreateCommand):
 
     config_resource = util.ParseConfigName(args.name)
     project = config_resource.projectsId
-    name = config_resource.Name()
 
     result = config_client.Create(
         messages.RuntimeconfigProjectsConfigsCreateRequest(
-            projectsId=project,
+            parent=util.ProjectPath(project),
             runtimeConfig=messages.RuntimeConfig(
-                name=util.ConfigPath(project, name),
+                name=config_resource.RelativeName(),
                 description=args.description,
             )
         )

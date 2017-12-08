@@ -77,7 +77,7 @@ def _python_exit():
     for t, q in items:
         q.put(None)
     for t, q in items:
-        t.join()
+        t.join(sys.maxint)
 
 # Controls how many more calls than processes will be queued in the call queue.
 # A smaller number will mean that processes spend more time idle waiting for
@@ -126,7 +126,7 @@ def _process_worker(call_queue, result_queue):
             return
         try:
             r = call_item.fn(*call_item.args, **call_item.kwargs)
-        except BaseException:
+        except:
             e = sys.exc_info()[1]
             result_queue.put(_ResultItem(call_item.work_id,
                                          exception=e))
@@ -347,7 +347,7 @@ class ProcessPoolExecutor(_base.Executor):
             # Wake up queue management thread
             self._result_queue.put(None)
             if wait:
-                self._queue_management_thread.join()
+                self._queue_management_thread.join(sys.maxint)
         # To reduce the risk of openning too many files, remove references to
         # objects that use file descriptors.
         self._queue_management_thread = None

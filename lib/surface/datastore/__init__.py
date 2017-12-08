@@ -16,16 +16,12 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.PREVIEW)
-class Datastore(base.Group):
-  """Manage your Cloud Datastore.
-
-  This set of commands allows you to create and delete datastore indexes.
-  """
-
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
+DETAILED_HELP = {
+    'brief': 'Manage your Cloud Datastore indexes.',
+    'DESCRIPTION': """
+This set of commands allows you to create and delete datastore indexes.
+      """,
+    'EXAMPLES': """\
           To create new indexes from a file, run:
 
             $ {command} create-indexes index.yaml
@@ -34,4 +30,18 @@ class Datastore(base.Group):
 
             $ {command} cleanup-indexes index.yaml
           """,
-  }
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Datastore(base.Group):
+  detailed_help = DETAILED_HELP
+
+
+@base.ReleaseTracks(base.ReleaseTrack.PREVIEW)
+@base.Deprecate(
+    is_removed=False,
+    warning='This is now available in GA and preview has been deprecated. '
+            'Please use the `gcloud datastore` commands instead.')
+class DatastorePreview(base.Group):
+  detailed_help = DETAILED_HELP

@@ -33,4 +33,4 @@ class ListBeta(base.ListCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    return models.List()
+    return models.ModelsClient().List()

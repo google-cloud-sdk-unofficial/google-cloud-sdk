@@ -156,7 +156,9 @@ class Run(base.ListCommand):
 
     tr_history_picker = history_picker.ToolResultsHistoryPicker(
         project, tr_client, tr_messages)
-    history_id = tr_history_picker.FindToolResultsHistoryId(args)
+    history_name = PickHistoryName(args)
+    history_id = tr_history_picker.GetToolResultsHistoryId(history_name)
+
     matrix = matrix_creator.CreateMatrix(
         args, self.context, history_id, bucket_ops.gcs_results_root)
     monitor = matrix_ops.MatrixMonitor(
@@ -212,3 +214,27 @@ def _UniqueGcsObjectName():
   """
   return '{0}_{1}'.format(datetime.datetime.now().isoformat('_'),
                           ''.join(random.sample(string.letters, 4)))
+
+
+def PickHistoryName(args):
+  """Returns the results history name to use to look up a history ID.
+
+  The history ID corresponds to a history name. If the user provides their
+  own history name, we use that to look up the history ID; If not, but the user
+  provides an app-package name, we use the app-package name with ' (gcloud)'
+  appended as the history name. Otherwise, we punt and let the Testing service
+  determine the appropriate history ID to publish to.
+
+  Args:
+    args: an argparse namespace. All the arguments that were provided to the
+      command invocation (i.e. group and command arguments combined).
+
+  Returns:
+    Either a string containing a history name derived from user-supplied data,
+    or None if we lack the required information.
+  """
+  if args.results_history_name:
+    return args.results_history_name
+  if args.app_package:
+    return args.app_package + ' (gcloud)'
+  return None

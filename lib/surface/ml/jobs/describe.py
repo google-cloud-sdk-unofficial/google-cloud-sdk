@@ -18,6 +18,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 class DescribeBeta(base.DescribeCommand):
@@ -35,7 +36,8 @@ class DescribeBeta(base.DescribeCommand):
     flags.JOB_NAME.AddToParser(parser)
 
   def Run(self, args):
-    job = jobs.Get(args.job)
+    job_ref = resources.REGISTRY.Parse(args.job, collection='ml.projects.jobs')
+    job = jobs.JobsClient().Get(job_ref)
     self.job = job  # Hack to make the Epilog() method work.
     return job
 

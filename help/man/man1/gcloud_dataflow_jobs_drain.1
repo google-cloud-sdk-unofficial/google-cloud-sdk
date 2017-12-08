@@ -1,0 +1,39 @@
+
+.TH "GCLOUD_DATAFLOW_JOBS_DRAIN" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud dataflow jobs drain \- drains all jobs that match the command line arguments
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud dataflow jobs drain\fR \fIJOB\fR [\fIJOB\fR\ ...] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+
+.SH "DESCRIPTION"
+
+Once Drain is triggered, the pipeline will stop accepting new inputs. The input
+watermark will be advanced to infinity. Elements already in the pipeline will
+continue to be processed. Drained jobs can safely be cancelled.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+.RS 2m
+.TP 2m
+\fIJOB\fR [\fIJOB\fR ...]
+The jobs to operate on.
+
+
+.RE
+.sp
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

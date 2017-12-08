@@ -13,8 +13,8 @@
 # limitations under the License.
 """Command for creating users."""
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import gaia_utils
 from googlecloudsdk.command_lib.compute.users import utils as user_utils
+from googlecloudsdk.command_lib.util import gaia
 
 
 class Create(base_classes.BaseAsyncCreator):
@@ -54,11 +54,11 @@ class Create(base_classes.BaseAsyncCreator):
 
     owner = args.owner
     if not owner:
-      owner = gaia_utils.GetAuthenticatedGaiaEmail(self.http)
+      owner = gaia.GetAuthenticatedGaiaEmail(self.http)
 
     name = args.name
     if not name:
-      name = gaia_utils.MapGaiaEmailToDefaultAccountName(owner)
+      name = gaia.MapGaiaEmailToDefaultAccountName(owner)
 
     user_ref = self.clouduseraccounts_resources.Parse(
         name, collection='clouduseraccounts.users')

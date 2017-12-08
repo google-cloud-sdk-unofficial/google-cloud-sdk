@@ -298,6 +298,7 @@ class FailureLoggingTests(testutil.TestBase):
 
         self.errors = []
         self.debug = []
+        self.warnings = []
 
     def error_fake(self, message):
         self.errors.append(message)
@@ -305,13 +306,16 @@ class FailureLoggingTests(testutil.TestBase):
     def debug_fake(self, message):
         self.debug.append(message)
 
+    def warn_fake(self, message):
+        self.warnings.append(message)
+
     def test_invalid_package_json(self):
         self.write_file('package.json', '')
         self.write_file('server.js', '')
         with mock.patch.dict(ext_runtime._LOG_FUNCS,
-                             {'debug': self.debug_fake}):
+                             {'warn': self.warn_fake}):
             self.generate_configs()
-        self.assertTrue(self.debug[0].startswith(
+        self.assertTrue(self.warnings[0].startswith(
             'node.js checker: error accessing package.json'))
 
         variations = [
@@ -319,12 +323,12 @@ class FailureLoggingTests(testutil.TestBase):
             (None, 'nodejs'),
         ]
         for appinfo, runtime in variations:
-            self.errors = []
+            self.warnings = []
             with mock.patch.dict(ext_runtime._LOG_FUNCS,
-                                 {'error': self.error_fake}):
+                                 {'warn': self.warn_fake}):
                 self.generate_configs(appinfo=appinfo, runtime=runtime)
 
-            self.assertTrue(self.errors[0].startswith(
+            self.assertTrue(self.warnings[0].startswith(
                 'node.js checker: error accessing package.json'))
 
     def test_no_startup_script(self):

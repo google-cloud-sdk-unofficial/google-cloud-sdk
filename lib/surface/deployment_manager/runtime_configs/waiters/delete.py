@@ -71,15 +71,10 @@ class Delete(base.DeleteCommand):
     messages = util.Messages()
 
     waiter_resource = util.ParseWaiterName(args.name, args)
-    project = waiter_resource.projectsId
-    config = waiter_resource.configsId
-    name = waiter_resource.Name()
 
     waiter_client.Delete(
         messages.RuntimeconfigProjectsConfigsWaitersDeleteRequest(
-            projectsId=project,
-            configsId=config,
-            waitersId=name,
+            name=waiter_resource.RelativeName(),
         )
     )
 

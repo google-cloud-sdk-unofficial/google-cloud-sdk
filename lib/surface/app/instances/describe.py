@@ -38,10 +38,10 @@ class Describe(base.Command):
         'instance',
         help='The instance ID.')
     parser.add_argument(
-        '--service', '-s',
+        '--service', '-s', required=True,
         help='The service ID.')
     parser.add_argument(
-        '--version', '-v',
+        '--version', '-v', required=True,
         help='The version ID.')
 
   def Run(self, args):

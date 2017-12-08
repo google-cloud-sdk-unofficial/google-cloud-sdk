@@ -19,7 +19,6 @@ from googlecloudsdk.api_lib.logging import common
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.organizations import flags as organizations_flags
 
 
 class Read(base.Command):
@@ -42,8 +41,7 @@ class Read(base.Command):
         help=('Return entries that are not older than this value. '
               'Works only with DESC ordering and filters without a timestamp.'),
         default='1d')
-    organizations_flags.OrgArg(
-        'whose log entries are to be read.').AddToParser(parser)
+    util.AddNonProjectArgs(parser, 'Read log entries')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -70,14 +68,10 @@ class Read(base.Command):
     else:
       log_filter = args.log_filter
 
-    parent = None
-    if args.organization:
-      parent = 'organizations/%s' % args.organization
-
     return common.FetchLogs(log_filter,
                             order_by=args.order,
                             limit=args.limit,
-                            parent=parent)
+                            parent=util.GetParentFromArgs(args))
 
 
 Read.detailed_help = {

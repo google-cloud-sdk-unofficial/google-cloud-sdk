@@ -34,7 +34,7 @@ class Undelete(base.Command):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    common_flags.service_flag(suffix='to undelete').AddToParser(parser)
+    common_flags.producer_service_flag(suffix='to undelete').AddToParser(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
 

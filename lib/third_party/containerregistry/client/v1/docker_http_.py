@@ -63,7 +63,7 @@ def Request(
       'content-type': content_type if content_type else 'application/json',
       'Authorization': credentials.Get(),
       'X-Docker-Token': 'true',
-      'User-Agent': docker_name.USER_AGENT,
+      'user-agent': docker_name.USER_AGENT,
   }
   resp, content = transport.request(
       url, 'PUT' if body else 'GET',

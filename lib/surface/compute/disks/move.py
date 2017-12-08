@@ -14,73 +14,75 @@
 """Command for moving disks."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute.operations import poller
+from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
+from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
 
 
-class Move(base_classes.BaseAsyncMutator):
+class Move(base.SilentCommand):
   """Move a disk between zones."""
-
-  @property
-  def service(self):
-    return self.compute.projects
-
-  @property
-  def resource_type(self):
-    return 'projects'
-
-  @property
-  def method(self):
-    return 'MoveDisk'
-
-  @property
-  def custom_get_requests(self):
-    return self._target_to_get_request
 
   @staticmethod
   def Args(parser):
     disks_flags.DISK_ARG.AddArgument(parser)
+
     parser.add_argument(
         '--destination-zone',
         help='The zone to move the disk to.',
         completion_resource='compute.zones',
         required=True)
 
-  def CreateRequests(self, args):
+    base.ASYNC_FLAG.AddToParser(parser)
+
+  def Run(self, args):
     """Returns a request for moving a disk."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
 
     target_disk = disks_flags.DISK_ARG.ResolveAsResource(
-        args, self.resources,
-        scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client, self.project))
-    destination_zone = self.resources.Parse(
+        args, holder.resources,
+        scope_lister=flags.GetDefaultScopeLister(holder.client))
+    destination_zone = holder.resources.Parse(
         args.destination_zone, collection='compute.zones')
 
-    request = self.messages.ComputeProjectsMoveDiskRequest(
-        diskMoveRequest=self.messages.DiskMoveRequest(
+    client = holder.client.apitools_client
+    messages = holder.client.messages
+
+    request = messages.ComputeProjectsMoveDiskRequest(
+        diskMoveRequest=messages.DiskMoveRequest(
             destinationZone=destination_zone.SelfLink(),
             targetDisk=target_disk.SelfLink(),
         ),
-        project=self.project,
+        project=target_disk.project,
     )
 
-    destination_disk_ref = self.resources.Parse(
+    result = client.projects.MoveDisk(request)
+    operation_ref = resources.REGISTRY.Parse(
+        result.name, collection='compute.globalOperations')
+
+    if args.async:
+      log.UpdatedResource(
+          operation_ref,
+          kind='disk {0}'.format(target_disk.Name()),
+          async=True,
+          details='Run the [gcloud compute operations describe] command '
+                  'to check the status of this operation.'
+      )
+      return result
+
+    destination_disk_ref = holder.resources.Parse(
         target_disk.Name(), collection='compute.disks',
         params={'zone': destination_zone.Name()})
 
-    project_ref = self.resources.Parse(
-        self.project, collection='compute.projects')
+    operation_poller = poller.Poller(client.disks, destination_disk_ref)
 
-    self._target_to_get_request = {}
-    self._target_to_get_request[project_ref.SelfLink()] = (
-        destination_disk_ref.SelfLink(),
-        self.compute.disks,
-        self.messages.ComputeDisksGetRequest(
-            disk=target_disk.Name(),
-            project=self.project,
-            zone=destination_zone.Name()))
+    return waiter.WaitFor(
+        operation_poller, operation_ref,
+        'Moving disk {0}'.format(target_disk.Name()))
 
-    return [request]
 
 Move.detailed_help = {
     'brief': 'Move a disk between zones',

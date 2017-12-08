@@ -38,6 +38,10 @@ from oauth2client import clientsecrets
 from oauth2client import transport
 from oauth2client import util
 
+try:
+    from oauth2client.contrib import reauth
+except ImportError:
+    reauth = None
 
 __author__ = 'jcgregorio@google.com (Joe Gregorio)'
 
@@ -96,6 +100,10 @@ _WELL_KNOWN_CREDENTIALS_FILE = 'application_default_credentials.json'
 # The access token along with the seconds in which it expires.
 AccessTokenInfo = collections.namedtuple(
     'AccessTokenInfo', ['access_token', 'expires_in'])
+
+REAUTH_NEEDED_ERROR = 'invalid_grant'
+REAUTH_NEEDED_ERROR_INVALID_RAPT = 'invalid_rapt'
+REAUTH_NEEDED_ERROR_RAPT_REQUIRED = 'rapt_required'
 
 DEFAULT_ENV_NAME = 'UNKNOWN'
 
@@ -470,7 +478,7 @@ class OAuth2Credentials(Credentials):
     def __init__(self, access_token, client_id, client_secret, refresh_token,
                  token_expiry, token_uri, user_agent, revoke_uri=None,
                  id_token=None, token_response=None, scopes=None,
-                 token_info_uri=None):
+                 token_info_uri=None, rapt_token=None):
         """Create an instance of OAuth2Credentials.
 
         This constructor is not usually called by the user, instead
@@ -495,6 +503,7 @@ class OAuth2Credentials(Credentials):
             scopes: list, authorized scopes for these credentials.
           token_info_uri: string, the URI for the token info endpoint. Defaults
                           to None; scopes can not be refreshed if this is None.
+            rapt_token: string, the token for reauthentication, if any.
 
         Notes:
             store: callable, A callable that when passed a Credential
@@ -515,6 +524,8 @@ class OAuth2Credentials(Credentials):
         self.token_response = token_response
         self.scopes = set(util.string_to_scopes(scopes or []))
         self.token_info_uri = token_info_uri
+        if rapt_token:
+            self.rapt_token = rapt_token
 
         # True if the credentials have been revoked or expired and can't be
         # refreshed.
@@ -642,7 +653,9 @@ class OAuth2Credentials(Credentials):
             id_token=data.get('id_token', None),
             token_response=data.get('token_response', None),
             scopes=data.get('scopes', None),
-            token_info_uri=data.get('token_info_uri', None))
+            token_info_uri=data.get('token_info_uri', None),
+            rapt_token=data.get('rapt_token', None),
+        )
         retval.invalid = data['invalid']
         return retval
 
@@ -727,12 +740,15 @@ class OAuth2Credentials(Credentials):
 
     def _generate_refresh_request_body(self):
         """Generate the body that will be used in the refresh request."""
-        body = urllib.parse.urlencode({
+        parameters = {
             'grant_type': 'refresh_token',
             'client_id': self.client_id,
             'client_secret': self.client_secret,
             'refresh_token': self.refresh_token,
-        })
+        }
+        if getattr(self, 'rapt_token', None):
+            parameters['rapt'] = self.rapt_token
+        body = urllib.parse.urlencode(parameters)
         return body
 
     def _generate_refresh_request_headers(self):
@@ -778,13 +794,16 @@ class OAuth2Credentials(Credentials):
             finally:
                 self.store.release_lock()
 
-    def _do_refresh_request(self, http_request):
+    def _do_refresh_request(self, http_request, attempt=0):
         """Refresh the access_token using the refresh_token.
 
         Args:
             http_request: callable, a callable that matches the method
                           signature of httplib2.Http.request, used to make the
                           refresh request.
+            attempt: int, the attempt number to refresh the access token. In
+                     case of rapt requirement (reauthentication) we recursively
+                     call this function and we need a limit in case of errors.
 
         Raises:
             HttpAccessTokenRefreshError: When the refresh fails.
@@ -816,6 +835,27 @@ class OAuth2Credentials(Credentials):
             if self.store:
                 self.store.locked_put(self)
         else:
+            # Check if the we need a rapt token or if the rapt token is invalid.
+            d = {}
+            try:
+                d = json.loads(content)
+            except (TypeError, ValueError):
+              pass
+            if (reauth and attempt < 2 and
+                d.get('error') == REAUTH_NEEDED_ERROR and
+                (d.get('error_subtype') == REAUTH_NEEDED_ERROR_INVALID_RAPT or
+                 d.get('error_subtype') == REAUTH_NEEDED_ERROR_RAPT_REQUIRED)):
+                self.rapt_token = reauth.GetRaptToken(
+                    http_request,
+                    self.client_id,
+                    self.client_secret,
+                    self.refresh_token,
+                    self.token_uri,
+                    scopes=list(self.scopes),
+                )
+                self._do_refresh_request(http_request, attempt=attempt+1)
+                return
+
             # An {'error':...} response body means the token is expired or
             # revoked, so we flag the credentials as such.
             logger.info('Failed to retrieve access token: %s', content)

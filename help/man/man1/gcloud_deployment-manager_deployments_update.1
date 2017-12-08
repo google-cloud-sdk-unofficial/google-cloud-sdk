@@ -53,8 +53,10 @@ must be one of: \fBACQUIRE\fR, \fBCREATE_OR_ACQUIRE\fR.
 
 .TP 2m
 \fB\-\-delete\-policy\fR=\fIDELETE_POLICY\fR; default="DELETE"
-Delete policy for resources that have changed in the update. \fIDELETE_POLICY\fR
-must be one of: \fBABANDON\fR, \fBDELETE\fR.
+Delete policy for resources that will change as part of an update or delete.
+DELETE deletes the resource while ABANDON just removes the resource reference
+from the deployment. \fIDELETE_POLICY\fR must be one of: \fBABANDON\fR,
+\fBDELETE\fR.
 
 .TP 2m
 \fB\-\-preview\fR

@@ -115,9 +115,6 @@ class Watch(base.Command):
     messages = util.Messages()
 
     var_resource = util.ParseVariableName(args.name, args)
-    project = var_resource.projectsId
-    config = var_resource.configsId
-    name = var_resource.Name()
 
     if args.newer_than:
       newer_than = times.FormatDateTime(args.newer_than)
@@ -125,14 +122,12 @@ class Watch(base.Command):
       newer_than = None
 
     with progress_tracker.ProgressTracker(
-        'Waiting for variable [{0}] to change'.format(name)):
+        'Waiting for variable [{0}] to change'.format(var_resource.Name())):
       try:
         return util.FormatVariable(
             variable_client.Watch(
                 messages.RuntimeconfigProjectsConfigsVariablesWatchRequest(
-                    projectsId=project,
-                    configsId=config,
-                    variablesId=name,
+                    name=var_resource.RelativeName(),
                     watchVariableRequest=messages.WatchVariableRequest(
                         newerThan=newer_than,
                     )

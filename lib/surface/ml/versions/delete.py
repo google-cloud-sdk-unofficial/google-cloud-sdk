@@ -13,12 +13,10 @@
 # limitations under the License.
 """ml versions delete command."""
 
-from googlecloudsdk.api_lib.ml import operations
-from googlecloudsdk.api_lib.ml import versions
+from googlecloudsdk.api_lib.ml import versions_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
-from googlecloudsdk.core import apis
-from googlecloudsdk.core.console import progress_tracker
+from googlecloudsdk.command_lib.ml import versions_util
 
 
 class BetaDelete(base.DeleteCommand):
@@ -43,9 +41,8 @@ class BetaDelete(base.DeleteCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    op = versions.Delete(args.model, args.version)
-    client = apis.GetClientInstance('ml', 'v1beta1')
-
-    with progress_tracker.ProgressTracker('Deleting version...'):
-      operations.WaitForOperation(client.projects_operations, op)
-    return op.response
+    versions_client = versions_api.VersionsClient()
+    version_ref = versions_util.ParseVersion(args.model, args.version)
+    op = versions_client.Delete(version_ref)
+    return versions_util.WaitForOpMaybe(
+        versions_client.client, op, async_=False, msg='Deleting version...')

@@ -31,7 +31,7 @@ class GetIamPolicy(base.DescribeCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    service_flag = common_flags.service_flag(
+    service_flag = common_flags.producer_service_flag(
         suffix='whose IAM policy is to be described')
     service_flag.AddToParser(parser)
 

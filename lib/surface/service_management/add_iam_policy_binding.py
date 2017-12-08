@@ -41,7 +41,7 @@ class AddIamPolicyBinding(base.Command):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    service_flag = common_flags.service_flag(
+    service_flag = common_flags.producer_service_flag(
         suffix='to which the member is to be added')
     service_flag.AddToParser(parser)
 

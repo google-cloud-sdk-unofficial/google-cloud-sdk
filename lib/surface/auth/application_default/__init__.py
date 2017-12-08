@@ -45,7 +45,7 @@ class ApplicationDefault(base.Group):
             $ gcloud iam service-accounts keys create key.json
               --iam-account=my-account@my-project.iam.gserviceaccount.com
             $ export GOOGLE_APPLICATION_CREDENTIALS=key.json
-            $ ./my_applicaiton.sh
+            $ ./my_application.sh
 
           If you want your local application to temporarily use your own user
           credentials, run:

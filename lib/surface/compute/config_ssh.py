@@ -21,11 +21,11 @@ import stat
 import textwrap
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.api_lib.compute import path_simplifier
-from googlecloudsdk.api_lib.compute import ssh_utils
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import ssh_utils
+from googlecloudsdk.command_lib.util import ssh
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
@@ -123,7 +123,7 @@ class ConfigSSH(ssh_utils.BaseSSHCommand):
     ssh_config_file.detailed_help = """\
         Specifies an alternative per-user SSH configuration file. By
         default, this is ``{0}''.
-        """.format(constants.PER_USER_SSH_CONFIG_FILE)
+        """.format(ssh.PER_USER_SSH_CONFIG_FILE)
 
     parser.add_argument(
         '--dry-run',
@@ -159,7 +159,7 @@ class ConfigSSH(ssh_utils.BaseSSHCommand):
     super(ConfigSSH, self).Run(args)
 
     ssh_config_file = os.path.expanduser(
-        args.ssh_config_file or constants.PER_USER_SSH_CONFIG_FILE)
+        args.ssh_config_file or ssh.PER_USER_SSH_CONFIG_FILE)
 
     instances = None
     if args.remove:
@@ -169,11 +169,16 @@ class ConfigSSH(ssh_utils.BaseSSHCommand):
       instances = list(self.GetInstances())
       if instances:
         compute_section = _BuildComputeSection(instances, self.ssh_key_file,
-                                               self.known_hosts_file)
+                                               ssh.KnownHosts.DEFAULT_PATH)
       else:
         compute_section = ''
 
-    existing_content = ssh_utils.ReadFile(ssh_config_file)
+    try:
+      existing_content = files.GetFileContents(ssh_config_file)
+    except files.Error as e:
+      existing_content = ''
+      log.debug('SSH Config File [{0}] could not be opened: {1}'
+                .format(ssh_config_file, e))
     if existing_content:
       section_re = re.compile(_COMPUTE_SECTION_RE,
                               flags=re.MULTILINE | re.DOTALL)

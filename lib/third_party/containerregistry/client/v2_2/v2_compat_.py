@@ -58,25 +58,33 @@ class V22FromV2(v2_2_image.DockerImage):
       v1_compatibility = json.loads(history.get('v1Compatibility'))
       # created_by in history is the cmd which was run to create the layer.
       # Cmd in container config may be empty array.
-      histories += [{
-          'created': v1_compatibility.get('created', ''),
-          'created_by': v1_compatibility.get('container_config', {})
-                        .get('Cmd', [''])[0],
-      }]
+      history = {}
+      if 'container_config' in v1_compatibility:
+        container_config = v1_compatibility.get('container_config')
+        if container_config.get('Cmd'):
+          history['created_by'] = container_config['Cmd'][0]
+
+      if 'created' in v1_compatibility:
+        history['created'] = v1_compatibility.get('created')
+
+      histories += [history]
 
     v1_compatibility = json.loads(
         manifest_schema1.get('history', [''])[0].get('v1Compatibility', {}))
+
     config = {
         'architecture': v1_compatibility.get('architecture', ''),
         'config': v1_compatibility.get('config', {}),
         'container': v1_compatibility.get('container', ''),
         'container_config': v1_compatibility.get('container_config', {}),
-        'created': v1_compatibility.get('created', ''),
         'docker_version': v1_compatibility.get('docker_version', ''),
         'history': histories,
         'os': v1_compatibility.get('os', ''),
         'rootfs': rootfs
     }
+
+    if 'created' in v1_compatibility:
+      config['created'] = v1_compatibility.get('created')
 
     self._config_file = json.dumps(config, sort_keys=True)
     config_descriptor = {
@@ -147,10 +155,10 @@ class V2FromV22(v2_image.DockerImage):
 
     parent = ''
 
-    histories = config['history']
+    histories = config.get('history', {})
     layer_count = len(histories)
     v2_layer_index = 0
-    layers = manifest_schema2['layers']
+    layers = manifest_schema2.get('layers', {})
 
     # from base to top
     fs_layers = []
@@ -172,7 +180,9 @@ class V2FromV22(v2_image.DockerImage):
 
     manifest_schema1 = {
         'schemaVersion': 1,
-        'architecture': config['architecture'],
+        'name': 'unused',
+        'tag': 'unused',
+        'architecture': config.get('architecture', ''),
         'fsLayers': fs_layers,
         'history': v1_histories
     }
@@ -201,16 +211,25 @@ class V2FromV22(v2_image.DockerImage):
       parent,
       history
   ):
-    return json.dumps({
+    v1_compatibility = {
         'id': layer_id,
         'parent': parent,
-        'comment': history['comment'] if 'comment' in history else '',
-        'created': history['created'],
-        'container_config': {'cmd': [history['created_by']]} if
-                            'created_by' in history else {},
-        'author': history['author'] if 'author' in history else '',
+        'container_config': {
+            'cmd': [history['created_by']]
+        } if 'created_by' in history else {},
         'throwaway': True if 'empty_layer' in history else False
-    }, sort_keys=True)
+    }
+
+    if 'created' in history:
+      v1_compatibility['created'] = history.get('created')
+
+    if 'comment' in history:
+      v1_compatibility['comment'] = history.get('comment')
+
+    if 'author' in history:
+      v1_compatibility['author'] = history.get('author')
+
+    return json.dumps(v1_compatibility, sort_keys=True)
 
   def _BuildV1CompatibilityForTopLayer(
       self,
@@ -219,18 +238,22 @@ class V2FromV22(v2_image.DockerImage):
       history,
       config
   ):
-    return json.dumps({
-        'architecture': config['architecture'],
-        'container': config['container'],
-        'created': config['created'],
-        'docker_version': config['docker_version'],
-        'os': config['os'],
-        'config': config['config'],
-        'container_config': config['container_config'],
+    v1_compatibility = {
+        'architecture': config.get('architecture', ''),
+        'container': config.get('container', ''),
+        'docker_version': config.get('docker_version', ''),
+        'os': config.get('os', ''),
+        'config': config.get('config', {}),
+        'container_config': config.get('container_config', {}),
         'id': layer_id,
         'parent': parent,
         'throwaway': True if 'empty_layer' in history else False
-    }, sort_keys=True)
+    }
+
+    if 'created' in config:
+      v1_compatibility['created'] = config.get('created')
+
+    return json.dumps(v1_compatibility, sort_keys=True)
 
   def _GetSchema1LayerDigest(
       self,

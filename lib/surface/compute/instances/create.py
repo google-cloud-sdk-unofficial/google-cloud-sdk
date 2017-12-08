@@ -65,6 +65,7 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
   instances_flags.AddDiskArgs(parser)
   if release_track in [base.ReleaseTrack.ALPHA]:
     instances_flags.AddCreateDiskArgs(parser)
+    instances_flags.AddExtendedMachineTypeArgs(parser)
   instances_flags.AddLocalSsdArgs(parser)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(
@@ -75,7 +76,11 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
   instances_flags.AddMaintenancePolicyArgs(parser)
   instances_flags.AddNoRestartOnFailureArgs(parser)
   instances_flags.AddPreemptibleVmArgs(parser)
-  instances_flags.AddScopeArgs(parser)
+  # TODO(b/33688891) After 13th Jan 2017 Move to GA
+  if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
+    instances_flags.AddServiceAccountAndScopeArgs(parser, False)
+  else:
+    instances_flags.AddScopeArgs(parser)
   instances_flags.AddTagsArgs(parser)
   instances_flags.AddCustomMachineTypeArgs(parser)
   instances_flags.AddNetworkArgs(parser)
@@ -169,7 +174,11 @@ class Create(base.CreateCommand,
     instances_flags.ValidateDiskFlags(args)
     instances_flags.ValidateLocalSsdFlags(args)
     instances_flags.ValidateNicFlags(args)
-    instances_flags.ValidateScopeFlags(args)
+    # TODO(b/33688891) After 13th Jan 2017 Move to GA
+    if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
+      instances_flags.ValidateServiceAccountAndScopeArgs(args)
+    else:
+      instances_flags.ValidateScopeFlags(args)
 
     # This feature is only exposed in alpha/beta
     allow_rsa_encrypted = self.ReleaseTrack() in [base.ReleaseTrack.ALPHA,
@@ -233,6 +242,7 @@ class Create(base.CreateCommand,
         machine_type=args.machine_type,
         custom_cpu=args.custom_cpu,
         custom_memory=args.custom_memory,
+        ext=getattr(args, 'custom_extensions', None),
         instance_refs=instance_refs)
 
     create_boot_disk = not instance_utils.UseExistingBootDisk(args.disk or [])
@@ -322,9 +332,17 @@ class Create(base.CreateCommand,
         if scopes is None:
           scopes = [] if args.no_scopes else args.scopes
 
+        if getattr(args, 'no_service_account', True):
+          service_account = None
+        else:
+          service_account = args.service_account
         service_accounts = instance_utils.CreateServiceAccountMessages(
             messages=self.messages,
-            scopes=scopes)
+            scopes=scopes,
+            service_account=service_account,
+            # TODO(b/33688891) Stop silencing deprecation warning in GA
+            silence_deprecation_warning=(
+                self.ReleaseTrack() == base.ReleaseTrack.GA))
         project_to_sa[instance_ref.project] = service_accounts
       request = self.messages.ComputeInstancesInsertRequest(
           instance=self.messages.Instance(

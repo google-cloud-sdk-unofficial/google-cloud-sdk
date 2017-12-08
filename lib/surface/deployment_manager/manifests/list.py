@@ -21,7 +21,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.deployment_manager import dm_base
 
 
-class List(base.ListCommand, dm_base.DeploymentManagerCommand):
+class List(base.ListCommand):
   """List manifests in a deployment.
 
   Prints a table with summary information on all manifests in the deployment.
@@ -65,13 +65,13 @@ class List(base.ListCommand, dm_base.DeploymentManagerCommand):
       HttpException: An http error response was received while executing api
           request.
     """
-    request = self.messages.DeploymentmanagerManifestsListRequest(
-        project=self.project,
+    request = dm_base.GetMessages().DeploymentmanagerManifestsListRequest(
+        project=dm_base.GetProject(),
         deployment=args.deployment,
     )
     return dm_v2_util.YieldWithHttpExceptions(list_pager.YieldFromList(
-        self.client.manifests, request, field='manifests', limit=args.limit,
-        batch_size=args.page_size))
+        dm_base.GetClient().manifests, request, field='manifests',
+        limit=args.limit, batch_size=args.page_size))
 
   def Format(self, unused_args):
     return 'table(name, id, insertTime)'

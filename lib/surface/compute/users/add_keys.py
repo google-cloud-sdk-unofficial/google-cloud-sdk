@@ -15,11 +15,11 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import file_utils
-from googlecloudsdk.api_lib.compute import gaia_utils
-from googlecloudsdk.api_lib.compute import time_utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.users import utils as user_utils
+from googlecloudsdk.command_lib.util import gaia
+from googlecloudsdk.command_lib.util import time_util
 
 
 class AddKeys(base_classes.NoOutputAsyncMutator):
@@ -76,7 +76,7 @@ class AddKeys(base_classes.NoOutputAsyncMutator):
 
     name = args.name
     if not name:
-      name = gaia_utils.GetDefaultAccountName(self.http)
+      name = gaia.GetDefaultAccountName(self.http)
 
     user_ref = self.clouduseraccounts_resources.Parse(
         name, collection='clouduseraccounts.users')
@@ -96,7 +96,7 @@ class AddKeys(base_classes.NoOutputAsyncMutator):
         )
       public_keys.append(key_text)
 
-    formatted_expiration = time_utils.CalculateExpiration(args.expire)
+    formatted_expiration = time_util.CalculateExpiration(args.expire)
 
     requests = []
     for key in public_keys:

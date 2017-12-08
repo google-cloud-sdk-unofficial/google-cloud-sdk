@@ -49,7 +49,6 @@ def _AddArgs(parser):
                       help='Desired action.')
   parser.add_argument('--max-surge',
                       type=str,
-                      default='1',
                       help=('Maximum additional number of instances that '
                             'can be created during the update process. '
                             'This can be a fixed number (e.g. 5) or '
@@ -57,7 +56,6 @@ def _AddArgs(parser):
                             'group (e.g. 10%)'))
   parser.add_argument('--max-unavailable',
                       type=str,
-                      default='1',
                       help=('Maximum number of instances that can be '
                             'unavailable during the update process. '
                             'This can be a fixed number (e.g. 5) or '
@@ -65,7 +63,6 @@ def _AddArgs(parser):
                             'group (e.g. 10%)'))
   parser.add_argument('--min-ready',
                       type=arg_parsers.Duration(lower_bound='0s'),
-                      default='0s',
                       help=('Minimum time for which a newly created instance '
                             'should be ready to be considered available.'))
   parser.add_argument('--version-original',
@@ -157,6 +154,9 @@ class UpdateInstancesAlpha(base_classes.BaseCommand):
       managed_instance_groups_utils.ValidateVersions(
           igm_info, versions, args.force)
 
+      # TODO(user): Decide what we should do when two versions have the same
+      #              instance template (this can happen with canary restart
+      #              performed using tags).
       igm_tags = dict((version.instanceTemplate, version.tag)
                       for version in igm_info.versions)
       for version in versions:
@@ -168,8 +168,8 @@ class UpdateInstancesAlpha(base_classes.BaseCommand):
                   or [self.messages.InstanceGroupManagerVersion(
                       instanceTemplate=igm_info.instanceTemplate)])
       current_time_str = str(times.Now(times.UTC))
-      for version in versions:
-        version.tag = current_time_str
+      for i, version in enumerate(versions):
+        version.tag = '%d/%s' % (i, current_time_str)
       minimal_action = (self.messages.InstanceGroupManagerUpdatePolicy
                         .MinimalActionValueValuesEnum.RESTART)
     else:

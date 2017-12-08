@@ -123,9 +123,7 @@ Alias,URI
 {aliases}
 |========
 """.format(
-    aliases='\n'.join(
-        ','.join(value) for value in
-        sorted(compute_constants.SCOPES.iteritems()))))
+    aliases=compute_constants.ScopesForHelp()))
   parser.add_argument(
       '--enable-cloud-endpoints',
       action='store_true',
@@ -164,13 +162,19 @@ Alias,URI
       '--max-nodes-per-pool nodes. Defaults to {nodes} nodes, but can be set '
       'as low as 100 nodes per pool on initial create.'.format(
           nodes=api_adapter.MAX_NODES_PER_POOL))
-  parser.add_argument(
-      '--tags',
-      help=argparse.SUPPRESS,
-      type=arg_parsers.ArgList(min_length=1),
-      metavar='TAGS')
   flags.AddImageTypeFlag(parser, 'cluster')
   flags.AddNodeLabelsFlag(parser)
+  flags.AddTagsFlag(parser, """\
+Applies the given Compute Engine tags (comma separated) on all nodes in the new
+node-pool. Example:
+
+  $ {command} example-cluster --tags=tag1,tag2
+
+New nodes, including ones created by resize or recreate, will have these tags
+on the Compute Engine API instance object and can be used in firewall rules.
+See https://cloud.google.com/sdk/gcloud/reference/compute/firewall-rules/create
+for examples.
+""")
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

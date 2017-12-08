@@ -15,6 +15,7 @@
 """The main command group for cloud source command group."""
 
 from googlecloudsdk.api_lib.source import source
+from googlecloudsdk.api_lib.sourcerepo import sourcerepo
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resolvers
@@ -40,6 +41,11 @@ class Source(base.Group):
     resources.REGISTRY.SetParamDefault(
         api='source', collection=None, param='projectId',
         resolver=resolvers.FromProperty(properties.VALUES.core.project))
+    resources.REGISTRY.SetParamDefault(
+        api='sourcerepo', collection=None, param='projectId',
+        resolver=resolvers.FromProperty(properties.VALUES.core.project))
 
     source.Source.SetResourceParser(resources.REGISTRY)
     source.Source.SetApiEndpoint()
+    sourcerepo.Source.SetResourceParser(resources.REGISTRY)
+    sourcerepo.Source.SetApiEndpoint()

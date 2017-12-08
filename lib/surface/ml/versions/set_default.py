@@ -13,9 +13,10 @@
 # limitations under the License.
 """ml versions set-default command."""
 
-from googlecloudsdk.api_lib.ml import versions
+from googlecloudsdk.api_lib.ml import versions_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
+from googlecloudsdk.command_lib.ml import versions_util
 
 
 class BetaSetDefault(base.DescribeCommand):
@@ -41,4 +42,5 @@ class BetaSetDefault(base.DescribeCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    return versions.SetDefault(args.model, args.version)
+    version_ref = versions_util.ParseVersion(args.model, args.version)
+    return versions_api.VersionsClient().SetDefault(version_ref)

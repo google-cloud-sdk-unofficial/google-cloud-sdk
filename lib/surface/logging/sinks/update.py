@@ -46,9 +46,9 @@ class Update(base.UpdateCommand):
         choices=('V1', 'V2'))
     parser.add_argument(
         '--unique-writer-identity', required=False, action='store_true',
+        default=True,
         help=('Whether to create a new writer identity for this sink. Only '
-              'available for project sinks. This will soon become the '
-              'default.'))
+              'available for project sinks.'))
 
   def Collection(self):
     return 'logging.sinks'

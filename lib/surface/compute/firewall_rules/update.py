@@ -15,12 +15,15 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import firewalls_utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute.firewall_rules import flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class UpdateFirewall(base_classes.ReadWriteCommand):
   """Update a firewall rule."""
+  with_egress_firewall = False
 
   FIREWALL_RULE_ARG = None
 
@@ -28,7 +31,7 @@ class UpdateFirewall(base_classes.ReadWriteCommand):
   def Args(cls, parser):
     cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument(operation_type='update')
     cls.FIREWALL_RULE_ARG.AddArgument(parser)
-    firewalls_utils.AddCommonArgs(parser, True)
+    firewalls_utils.AddCommonArgs(parser, for_update=True)
 
   @property
   def service(self):
@@ -42,13 +45,17 @@ class UpdateFirewall(base_classes.ReadWriteCommand):
     return self.FIREWALL_RULE_ARG.ResolveAsResource(args, self.resources)
 
   def Run(self, args):
-    self.new_allowed = firewalls_utils.ParseAllowed(args.allow, self.messages)
+    self.new_allowed = firewalls_utils.ParseRules(
+        args.allow, self.messages, firewalls_utils.ActionType.ALLOW)
+
     args_unset = (args.allow is None
                   and args.description is None
                   and args.source_ranges is None
                   and args.source_tags is None
                   and args.target_tags is None)
-
+    if self.with_egress_firewall:
+      args_unset = (args_unset and args.destination_ranges is None and
+                    args.priority is None and args.rules is None)
     if args_unset:
       raise calliope_exceptions.ToolException(
           'At least one property must be modified.')
@@ -125,5 +132,59 @@ UpdateFirewall.detailed_help = {
         *{command}* is used to update firewall rules that allow incoming
         traffic to a network. Only arguments passed in will be updated on the
         firewall rule.  Other attributes will remain unaffected.
+        """,
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaUpdateFirewall(UpdateFirewall):
+  """Update a firewall rule."""
+  with_egress_firewall = True
+
+  @classmethod
+  def Args(cls, parser):
+    cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument(operation_type='update')
+    cls.FIREWALL_RULE_ARG.AddArgument(parser)
+    firewalls_utils.AddCommonArgs(parser, True, True)
+
+  def Modify(self, args, existing):
+    """Returns a modified Firewall message."""
+
+    # TODO(user): Remove the check once allow was deprecated.
+    if args.rules and args.allow:
+      raise firewalls_utils.ArgumentValidationError(
+          'Can NOT specify --rules and --allow in the same request.')
+
+    new_firewall = super(AlphaUpdateFirewall, self).Modify(args, existing)
+
+    if args.rules:
+      if existing.allowed:
+        new_firewall.allowed = firewalls_utils.ParseRules(
+            args.rules, self.messages, firewalls_utils.ActionType.ALLOW)
+      else:
+        new_firewall.denied = firewalls_utils.ParseRules(
+            args.rules, self.messages, firewalls_utils.ActionType.DENY)
+
+    new_firewall.direction = existing.direction
+
+    if args.priority is None:
+      new_firewall.priority = existing.priority
+    else:
+      new_firewall.priority = args.priority
+
+    if args.destination_ranges is None:
+      new_firewall.destinationRanges = existing.destinationRanges
+    else:
+      new_firewall.destinationRanges = args.destination_ranges
+
+    return new_firewall
+
+
+AlphaUpdateFirewall.detailed_help = {
+    'brief': 'Update a firewall rule',
+    'DESCRIPTION': """\
+        *{command}* is used to update firewall rules that allow/deny
+        incoming/outgoing traffic. Only arguments passed in will be updated on
+        the firewall rule.  Other attributes will remain unaffected.
         """,
 }

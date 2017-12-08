@@ -16,18 +16,27 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 
 
+def _CommonArgs(parser, release_track):
+  """Register parser args common to all tracks."""
+  instance_flags.INSTANCE_ARG.AddArgument(parser)
+  instance_flags.AddMachineTypeArgs(parser)
+  instance_flags.AddCustomMachineTypeArgs(parser)
+  if release_track in [base.ReleaseTrack.ALPHA]:
+    instance_flags.AddExtendedMachineTypeArgs(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class SetMachineType(base_classes.NoOutputAsyncMutator):
   """Set machine type for Google Compute Engine virtual machine instances."""
 
   @staticmethod
   def Args(parser):
-    instance_flags.INSTANCE_ARG.AddArgument(parser)
-    instance_flags.AddMachineTypeArgs(parser)
-    instance_flags.AddCustomMachineTypeArgs(parser)
+    _CommonArgs(parser, release_track=base.ReleaseTrack.GA)
 
   @property
   def service(self):
@@ -50,7 +59,8 @@ class SetMachineType(base_classes.NoOutputAsyncMutator):
     machine_type = instance_utils.InterpretMachineType(
         machine_type=args.machine_type,
         custom_cpu=args.custom_cpu,
-        custom_memory=args.custom_memory)
+        custom_memory=args.custom_memory,
+        ext=getattr(args, 'custom_extensions', None))
 
     instance_utils.CheckCustomCpuRamRatio(
         self.compute_client, self.project, instance_ref.zone, machine_type)
@@ -68,6 +78,15 @@ class SetMachineType(base_classes.NoOutputAsyncMutator):
         zone=instance_ref.zone)
 
     return (request,)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SetMachineTypeAlpha(SetMachineType):
+  """Set machine type for Google Compute Engine virtual machine instances."""
+
+  @classmethod
+  def Args(cls, parser):
+    _CommonArgs(parser, release_track=base.ReleaseTrack.ALPHA)
 
 
 SetMachineType.detailed_help = {

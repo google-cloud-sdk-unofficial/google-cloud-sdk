@@ -36,13 +36,7 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     base.URI_FLAG.RemoveFromParser(parser)
-    parser.add_argument(
-        'id_or_location_regexp', metavar='(ID|LOCATION-REGEXP)', nargs='*',
-        help="""\
-            Zero or more snapshot IDs, resource identifiers, or regular
-            expressions to match against snapshot locations. If present, only
-            snapshots matching one or more of these values will be displayed.
-        """)
+    debug.AddIdOptions(parser, 'snapshot', 'snapshots', 'displayed')
     parser.add_argument(
         '--all-users', action='store_true', default=False,
         help="""\
@@ -64,7 +58,7 @@ class List(base.ListCommand):
     debugger = debug.Debugger(project_id)
     debuggee = debugger.FindDebuggee(args.target)
     snapshots = debuggee.ListBreakpoints(
-        args.id_or_location_regexp, include_all_users=args.all_users,
+        args.location, resource_ids=args.ids, include_all_users=args.all_users,
         include_inactive=(args.include_inactive != 0),
         restrict_to_type=debugger.SNAPSHOT_TYPE)
     # Filter any results more than include_inactive seconds old.

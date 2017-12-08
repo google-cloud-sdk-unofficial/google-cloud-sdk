@@ -24,7 +24,7 @@ from googlecloudsdk.core import log
 OPERATION_TIMEOUT = 20 * 60  # 20 mins
 
 
-class Wait(base.Command, dm_base.DeploymentManagerCommand):
+class Wait(base.Command):
   """Wait for all operations specified to complete before returning.
 
   Polls until all operations have finished, then prints the resulting operations
@@ -71,8 +71,8 @@ class Wait(base.Command, dm_base.DeploymentManagerCommand):
     failed_ops = []
     for operation_name in args.operation_name:
       try:
-        dm_v2_util.WaitForOperation(self.client, self.messages,
-                                    operation_name, self.project, '',
+        dm_v2_util.WaitForOperation(dm_base.GetClient(), dm_base.GetMessages(),
+                                    operation_name, dm_base.GetProject(), '',
                                     OPERATION_TIMEOUT)
       except exceptions.OperationError:
         failed_ops.append(operation_name)

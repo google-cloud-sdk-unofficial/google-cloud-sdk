@@ -17,6 +17,7 @@
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Metrics(base.Group):
   """A group of subcommands for working with Dataflow metrics.
   """

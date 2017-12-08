@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deployment_manager import dm_base
 
 
-class Describe(base.DescribeCommand, dm_base.DeploymentManagerCommand):
+class Describe(base.DescribeCommand):
   """Provide information about a manifest.
 
   This command prints out all available details about a manifest.
@@ -69,9 +69,9 @@ class Describe(base.DescribeCommand, dm_base.DeploymentManagerCommand):
     """
     if not args.manifest:
       try:
-        deployment = self.client.deployments.Get(
-            self.messages.DeploymentmanagerDeploymentsGetRequest(
-                project=self.project,
+        deployment = dm_base.GetClient().deployments.Get(
+            dm_base.GetMessages().DeploymentmanagerDeploymentsGetRequest(
+                project=dm_base.GetProject(),
                 deployment=args.deployment
             )
         )
@@ -83,9 +83,9 @@ class Describe(base.DescribeCommand, dm_base.DeploymentManagerCommand):
         args.manifest = manifest
 
     try:
-      return self.client.manifests.Get(
-          self.messages.DeploymentmanagerManifestsGetRequest(
-              project=self.project,
+      return dm_base.GetClient().manifests.Get(
+          dm_base.GetMessages().DeploymentmanagerManifestsGetRequest(
+              project=dm_base.GetProject(),
               deployment=args.deployment,
               manifest=args.manifest,
           )

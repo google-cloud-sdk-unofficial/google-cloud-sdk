@@ -25,7 +25,12 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Iam(base.Group):
-  """Manage IAM service accounts and keys."""
+  """Manage IAM service accounts and keys.
+
+     Manage IAM service accounts and keys. More information on service
+     accounts can be found at:
+     https://cloud.google.com/iam/docs/service-accounts
+  """
   detailed_help = {
       'brief': 'Manage IAM service accounts and keys.',
   }

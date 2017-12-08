@@ -39,4 +39,4 @@ class DescribeBeta(base.DescribeCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    return models.Get(args.model)
+    return models.ModelsClient().Get(args.model)

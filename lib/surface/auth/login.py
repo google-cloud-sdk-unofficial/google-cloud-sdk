@@ -79,9 +79,12 @@ class Login(base.Command):
   def Run(self, args):
     """Run the authentication command."""
 
-    scopes = None
+    scopes = config.CLOUDSDK_SCOPES
+    # Add REAUTH scope in case the user has 2fact activated.
+    # This scope is only used here and when refreshing the access token.
+    scopes += (config.REAUTH_SCOPE,)
+
     if args.enable_gdrive_access:
-      scopes = config.CLOUDSDK_SCOPES
       scopes += (auth_util.GOOGLE_DRIVE_SCOPE,)
 
     if c_devshell.IsDevshellEnvironment():

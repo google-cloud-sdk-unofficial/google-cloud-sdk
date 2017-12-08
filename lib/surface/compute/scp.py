@@ -16,13 +16,14 @@
 
 import collections
 
-from googlecloudsdk.api_lib.compute import ssh_utils
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
+from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.command_lib.util import ssh
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
@@ -87,13 +88,13 @@ class Scp(ssh_utils.BaseSSHCLICommand):
 
     # Parses the positional arguments.
     for arg in args.sources + [args.destination]:
-      if ssh_utils.IsScpLocalPath(arg):
+      if ssh.IsScpLocalPath(arg):
         file_specs.append(LocalFile(arg))
       else:
         user_host, file_path = arg.split(':', 1)
         user_host_parts = user_host.split('@', 1)
         if len(user_host_parts) == 1:
-          user = ssh_utils.GetDefaultSshUsername(warn_on_account_user=True)
+          user = ssh.GetDefaultSshUsername(warn_on_account_user=True)
           instance = user_host_parts[0]
         else:
           user, instance = user_host_parts
@@ -141,7 +142,8 @@ class Scp(ssh_utils.BaseSSHCLICommand):
     scp_args = [self.scp_executable]
     if not args.plain:
       scp_args.extend(self.GetDefaultFlags())
-      scp_args.extend(self.GetHostKeyArgs(args, instance))
+      host_key_alias = self.HostKeyAlias(instance)
+      scp_args.extend(self.GetHostKeyArgs(args, host_key_alias))
 
     # apply args
     if args.quiet:
@@ -161,7 +163,7 @@ class Scp(ssh_utils.BaseSSHCLICommand):
 
       else:
         scp_args.append('{0}:{1}'.format(
-            ssh_utils.UserHost(file_spec.user, external_ip_address),
+            ssh.UserHost(file_spec.user, external_ip_address),
             file_spec.file_path))
 
     self.ActuallyRun(args, scp_args, user, instance, instance_ref.project)

@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deployment_manager import dm_base
 
 
-class Describe(base.DescribeCommand, dm_base.DeploymentManagerCommand):
+class Describe(base.DescribeCommand):
   """Provide information about a resource.
 
   This command prints out all available details about a resource.
@@ -63,9 +63,9 @@ class Describe(base.DescribeCommand, dm_base.DeploymentManagerCommand):
           request.
     """
     try:
-      return self.client.resources.Get(
-          self.messages.DeploymentmanagerResourcesGetRequest(
-              project=self.project,
+      return dm_base.GetClient().resources.Get(
+          dm_base.GetMessages().DeploymentmanagerResourcesGetRequest(
+              project=dm_base.GetProject(),
               deployment=args.deployment,
               resource=args.resource
           )

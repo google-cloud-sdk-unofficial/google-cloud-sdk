@@ -90,7 +90,8 @@ class GetLogs(base.ListCommand):
       Objects representing log entries.
     """
     log_filter = ['resource.type="cloud_function"',
-                  'resource.labels.region="%s"' % args.region]
+                  'resource.labels.region="%s"' % args.region,
+                  'logName:"cloud-functions"']
 
     if args.name:
       log_filter.append('resource.labels.function_name="%s"' % args.name)
@@ -128,13 +129,14 @@ class GetLogs(base.ListCommand):
         else:
           # Print full form of unexpected severities.
           row['level'] = severity
-      if entry.resource:
+      if entry.resource and entry.resource.labels:
         for label in entry.resource.labels.additionalProperties:
           if label.key == 'function_name':
             row['name'] = label.value
-      for label in entry.labels.additionalProperties:
-        if label.key == 'execution_id':
-          row['execution_id'] = label.value
+      if entry.labels:
+        for label in entry.labels.additionalProperties:
+          if label.key == 'execution_id':
+            row['execution_id'] = label.value
       if entry.timestamp:
         row['time_utc'] = util.FormatTimestamp(entry.timestamp)
       yield row

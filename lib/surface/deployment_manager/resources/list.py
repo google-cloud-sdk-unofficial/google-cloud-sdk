@@ -21,7 +21,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.deployment_manager import dm_base
 
 
-class List(base.ListCommand, dm_base.DeploymentManagerCommand):
+class List(base.ListCommand):
   """List resources in a deployment.
 
   Prints a table with summary information on all resources in the deployment.
@@ -67,12 +67,12 @@ class List(base.ListCommand, dm_base.DeploymentManagerCommand):
       HttpException: An http error response was received while executing api
           request.
     """
-    request = self.messages.DeploymentmanagerResourcesListRequest(
-        project=self.project,
+    request = dm_base.GetMessages().DeploymentmanagerResourcesListRequest(
+        project=dm_base.GetProject(),
         deployment=args.deployment,
     )
     return dm_v2_util.YieldWithHttpExceptions(
-        list_pager.YieldFromList(self.client.resources,
+        list_pager.YieldFromList(dm_base.GetClient().resources,
                                  request,
                                  field='resources',
                                  limit=args.limit,

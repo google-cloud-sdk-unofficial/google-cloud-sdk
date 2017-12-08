@@ -16,16 +16,9 @@
 
 from googlecloudsdk.api_lib.error_reporting import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import exceptions
+from googlecloudsdk.command_lib.error_reporting import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-
-
-class CannotOpenFileError(exceptions.Error):
-
-  def __init__(self, f, e):
-    super(CannotOpenFileError, self).__init__(
-        'Failed to open file [{f}]: {error}'.format(f=f, error=e))
 
 
 class Report(base.Command):
@@ -34,6 +27,9 @@ class Report(base.Command):
   {command} is used to report errors using the error-reporting service.
   The required arguments are a service name and either an
   error-file containing details of an error or an inline error message.
+
+  Guidelines on formatting error messages can be found at
+  https://cloud.google.com/error-reporting/docs/formatting-error-messages
 
   ## EXAMPLES
 
@@ -86,7 +82,7 @@ class Report(base.Command):
       try:
         error = open(args.message_file, 'r')
       except (OSError, IOError) as e:
-        raise CannotOpenFileError(args.message_file, e)
+        raise exceptions.CannotOpenFileError(args.message_file, e)
       error_message = error.read()
     elif args.message:
       error_message = args.message

@@ -21,7 +21,12 @@ from googlecloudsdk.core.console import console_io
 
 
 class Delete(base.DeleteCommand):
-  """Deletes a service."""
+  """Deletes a service.
+
+  Deletes a service from Google Service Management. Services that are deleted
+  will be retained in the system for 30 days. If a deleted service is still
+  within this retention window, it can be undeleted with the undelete command.
+  """
 
   @staticmethod
   def Args(parser):
@@ -32,7 +37,7 @@ class Delete(base.DeleteCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    common_flags.service_flag(suffix='to delete').AddToParser(parser)
+    common_flags.producer_service_flag(suffix='to delete').AddToParser(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
 

@@ -14,11 +14,11 @@
 """Command for removing public keys to users."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import gaia_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute.users import client as users_client
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.compute.users import utils as user_utils
+from googlecloudsdk.command_lib.util import gaia
 
 
 class RemoveKeys(base_classes.NoOutputAsyncMutator):
@@ -59,7 +59,7 @@ class RemoveKeys(base_classes.NoOutputAsyncMutator):
 
     name = args.name
     if not name:
-      name = gaia_utils.GetDefaultAccountName(self.http)
+      name = gaia.GetDefaultAccountName(self.http)
 
     user_ref = self.clouduseraccounts_resources.Parse(
         name, collection='clouduseraccounts.users')

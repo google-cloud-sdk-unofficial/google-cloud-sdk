@@ -15,12 +15,13 @@
 """Implements the command for copying files from and to virtual machines."""
 import collections
 
-from googlecloudsdk.api_lib.compute import ssh_utils
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
+from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.command_lib.util import ssh
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
@@ -66,13 +67,13 @@ class CopyFiles(ssh_utils.BaseSSHCLICommand):
 
     # Parses the positional arguments.
     for arg in args.sources + [args.destination]:
-      if ssh_utils.IsScpLocalPath(arg):
+      if ssh.IsScpLocalPath(arg):
         file_specs.append(LocalFile(arg))
       else:
         user_host, file_path = arg.split(':', 1)
         user_host_parts = user_host.split('@', 1)
         if len(user_host_parts) == 1:
-          user = ssh_utils.GetDefaultSshUsername(warn_on_account_user=True)
+          user = ssh.GetDefaultSshUsername(warn_on_account_user=True)
           source_instance = user_host_parts[0]
         else:
           user, source_instance = user_host_parts
@@ -122,7 +123,8 @@ class CopyFiles(ssh_utils.BaseSSHCLICommand):
     scp_args = [self.scp_executable]
     if not args.plain:
       scp_args.extend(self.GetDefaultFlags())
-      scp_args.extend(self.GetHostKeyArgs(args, source_instance))
+      host_key_alias = self.HostKeyAlias(source_instance)
+      scp_args.extend(self.GetHostKeyArgs(args, host_key_alias))
       scp_args.append('-r')
 
     for file_spec in file_specs:
@@ -131,7 +133,7 @@ class CopyFiles(ssh_utils.BaseSSHCLICommand):
 
       else:
         scp_args.append('{0}:{1}'.format(
-            ssh_utils.UserHost(file_spec.user, external_ip_address),
+            ssh.UserHost(file_spec.user, external_ip_address),
             file_spec.file_path))
 
     self.ActuallyRun(

@@ -13,10 +13,8 @@
 # limitations under the License.
 """Command for listing private hosts."""
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 class List(base_classes.ZonalLister):
   """List Google Compute Engine private hosts."""
 

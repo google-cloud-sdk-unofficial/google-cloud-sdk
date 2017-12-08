@@ -19,9 +19,9 @@ from googlecloudsdk.calliope import base
 class Models(base.Group):
   """Cloud ML Models commands.
 
-     A Cloud ML model is a container representing a ML application or service. A
-     model may contain multiple versions which act as the implementation of the
-     service. See also $ gcloud beta ml versions --help.
+     A Cloud ML model is a container representing an ML application or service.
+     A model may contain multiple versions which act as the implementation of
+     the service. See also $ gcloud beta ml versions --help.
 
      For more information, please see
      https://cloud.google.com/ml/docs/concepts/technical-overview#models

@@ -15,11 +15,13 @@
 from googlecloudsdk.api_lib.ml import jobs
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.logs import stream
 from googlecloudsdk.command_lib.ml import flags
 from googlecloudsdk.command_lib.ml import jobs as jobs_prep
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 from googlecloudsdk.core.resource import resource_printer
 
 
@@ -80,6 +82,7 @@ class BetaTrain(base.Command):
     flags.CONFIG.AddToParser(parser)
     flags.GetStagingBucket(required=True).AddToParser(parser)
     flags.USER_ARGS.AddToParser(parser)
+    flags.SCALE_TIER.AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Format(self, args):
@@ -102,25 +105,32 @@ class BetaTrain(base.Command):
     uris = jobs_prep.RunSetupAndUpload(
         args.packages, args.staging_bucket, args.package_path, args.job)
     log.debug('Using {0} as trainer uris'.format(uris))
+    scale_tier_enum = (jobs.GetMessagesModule().
+                       GoogleCloudMlV1beta1TrainingInput.
+                       ScaleTierValueValuesEnum)
+    scale_tier = scale_tier_enum(args.scale_tier) if args.scale_tier else None
     job = jobs.BuildTrainingJob(
         path=args.config,
         module_name=args.module_name,
         job_name=args.job,
         trainer_uri=uris,
         region=region,
+        scale_tier=scale_tier,
         user_args=args.user_args)
 
-    job = jobs.Create(job)
+    jobs_client = jobs.JobsClient()
+    job = jobs_client.Create(job)
     if args.async:
       log.status.Print('Job [{}] submitted successfully.'.format(job.jobId))
       log.status.Print(_FOLLOW_UP_MESSAGE.format(job_id=job.jobId))
       return job
 
-    log_fetcher = jobs.LogFetcher(job_id=job.jobId,
-                                  polling_interval=_POLLING_INTERVAL,
-                                  allow_multiline_logs=False)
+    log_fetcher = stream.LogFetcher(job_id=job.jobId,
+                                    polling_interval=_POLLING_INTERVAL,
+                                    allow_multiline_logs=False)
 
-    printer = resource_printer.Printer(jobs.LogFetcher.LOG_FORMAT, out=log.err)
+    printer = resource_printer.Printer(stream.LogFetcher.LOG_FORMAT,
+                                       out=log.err)
     def _CtrlCHandler(signal, frame):
       del signal, frame  # Unused
       raise KeyboardInterrupt
@@ -131,7 +141,8 @@ class BetaTrain(base.Command):
         log.status.Print('Received keyboard interrupt.')
         log.status.Print(_FOLLOW_UP_MESSAGE.format(job_id=job.jobId))
 
-    job = jobs.Get(job.jobId)
+    job_ref = resources.REGISTRY.Parse(job.jobId, collection='ml.projects.jobs')
+    job = jobs_client.Get(job_ref)
     # If the job itself failed, we will return a failure status.
     if job.state is not job.StateValueValuesEnum.SUCCEEDED:
       self.exit_code = 1

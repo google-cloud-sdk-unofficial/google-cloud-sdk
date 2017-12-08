@@ -17,7 +17,6 @@
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 
 class Write(base.SilentCommand):
@@ -26,7 +25,7 @@ class Write(base.SilentCommand):
   SEVERITY_ENUM = ('DEFAULT', 'DEBUG', 'INFO', 'NOTICE', 'WARNING',
                    'ERROR', 'CRITICAL', 'ALERT', 'EMERGENCY')
 
-  PAYLOAD_TYPE = ('text', 'json', 'struct')
+  PAYLOAD_TYPE = ('text', 'json')
 
   @staticmethod
   def Args(parser):
@@ -40,12 +39,13 @@ class Write(base.SilentCommand):
     parser.add_argument(
         '--payload-type',
         choices=Write.PAYLOAD_TYPE, default='text',
-        help=('Type of the log entry payload. Note that "json" and "struct" '
-              'are equivalent.'))
+        help=('Type of the log entry payload.'))
     parser.add_argument(
         '--severity', required=False,
         choices=Write.SEVERITY_ENUM, default='DEFAULT',
         help='Severity level of the log entry.')
+
+    util.AddNonProjectArgs(parser, 'Write log entries')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -55,18 +55,17 @@ class Write(base.SilentCommand):
         command invocation.
     """
     messages = util.GetMessages()
-    project = properties.VALUES.core.project.Get(required=True)
 
     severity_value = getattr(messages.LogEntry.SeverityValueValuesEnum,
                              args.severity.upper())
 
     entry = messages.LogEntry(
-        logName=util.CreateLogResourceName('projects/{0}'.format(project),
-                                           args.log_name),
+        logName=util.CreateLogResourceName(
+            util.GetParentFromArgs(args), args.log_name),
         resource=messages.MonitoredResource(type='global'),
         severity=severity_value)
 
-    if args.payload_type == 'json' or args.payload_type == 'struct':
+    if args.payload_type == 'json':
       json_object = util.ConvertToJsonObject(args.message)
       struct = messages.LogEntry.JsonPayloadValue()
       # Protobufs in Python do strict type-checking. We have to change the
@@ -85,7 +84,6 @@ class Write(base.SilentCommand):
     util.GetClient().entries.Write(
         messages.WriteLogEntriesRequest(entries=[entry]))
     log.status.write('Created log entry.\n')
-
 
 Write.detailed_help = {
     'DESCRIPTION': """\

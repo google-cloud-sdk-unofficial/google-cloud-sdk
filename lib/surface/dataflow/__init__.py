@@ -41,7 +41,7 @@ DATAFLOW_APITOOLS_CLIENT_KEY = 'dataflow_client'
 DATAFLOW_REGISTRY_KEY = 'dataflow_registry'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Dataflow(base.Group):
   """Read and manipulate Google Dataflow resources.
   """

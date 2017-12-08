@@ -1,0 +1,49 @@
+
+.TH "GCLOUD_DATASTORE_CLEANUP\-INDEXES" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud datastore cleanup\-indexes \- remove unused datastore indexes based on your local index configuration
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud datastore cleanup\-indexes\fR \fIINDEX_FILE\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+
+.SH "DESCRIPTION"
+
+This command removes unused datastore indexes based on your local index
+configuration. Any indexes that exist that are not in the index file will be
+removed.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+.RS 2m
+.TP 2m
+\fIINDEX_FILE\fR
+The path to your index.yaml file.
+
+
+.RE
+.sp
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To remove unused indexes based on your local configuration, run:
+
+.RS 2m
+$ gcloud datastore cleanup\-indexes ~/myapp/index.yaml
+.RE

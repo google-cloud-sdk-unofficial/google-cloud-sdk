@@ -11,7 +11,7 @@ gcloud compute forwarding\-rules create \- create a forwarding rule to direct ne
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute forwarding\-rules create\fR \fINAME\fR (\fB\-\-backend\-service\fR=\fIBACKEND_SERVICE\fR\ |\ \fB\-\-target\-http\-proxy\fR=\fITARGET_HTTP_PROXY\fR\ |\ \fB\-\-target\-https\-proxy\fR=\fITARGET_HTTPS_PROXY\fR\ |\ \fB\-\-target\-instance\fR=\fITARGET_INSTANCE\fR\ |\ \fB\-\-target\-pool\fR=\fITARGET_POOL\fR\ |\ \fB\-\-target\-ssl\-proxy\fR=\fITARGET_SSL_PROXY\fR\ |\ \fB\-\-target\-vpn\-gateway\fR=\fITARGET_VPN_GATEWAY\fR) [\fB\-\-address\fR=\fIADDRESS\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-ip\-protocol\fR=\fIIP_PROTOCOL\fR] [\fB\-\-load\-balancing\-scheme\fR=\fILOAD_BALANCING_SCHEME\fR;\ default="EXTERNAL"] [\fB\-\-network\fR=\fINETWORK\fR] [\fB\-\-subnet\fR=\fISUBNET\fR] [\fB\-\-subnet\-region\fR=\fISUBNET_REGION\fR] [\fB\-\-target\-instance\-zone\fR=\fITARGET_INSTANCE_ZONE\fR] [\fB\-\-target\-pool\-region\fR=\fITARGET_POOL_REGION\fR] [\fB\-\-target\-vpn\-gateway\-region\fR=\fITARGET_VPN_GATEWAY_REGION\fR] [\fB\-\-backend\-service\-region\fR=\fIBACKEND_SERVICE_REGION\fR\ |\ \fB\-\-global\-backend\-service\fR] [\fB\-\-global\fR\ |\ \fB\-\-region\fR=\fIREGION\fR] [\fB\-\-port\-range\fR=[\fIPORT\fR\ |\ \fIPORT\-PORT\fR]\ |\ \fB\-\-ports\fR=[\fIPORT\fR\ |\ \fIPORT\-PORT\fR],[[\fIPORT\fR\ |\ \fIPORT\-PORT\fR],...]] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute forwarding\-rules create\fR \fINAME\fR (\fB\-\-backend\-service\fR=\fIBACKEND_SERVICE\fR\ |\ \fB\-\-target\-http\-proxy\fR=\fITARGET_HTTP_PROXY\fR\ |\ \fB\-\-target\-https\-proxy\fR=\fITARGET_HTTPS_PROXY\fR\ |\ \fB\-\-target\-instance\fR=\fITARGET_INSTANCE\fR\ |\ \fB\-\-target\-pool\fR=\fITARGET_POOL\fR\ |\ \fB\-\-target\-ssl\-proxy\fR=\fITARGET_SSL_PROXY\fR\ |\ \fB\-\-target\-vpn\-gateway\fR=\fITARGET_VPN_GATEWAY\fR) [\fB\-\-address\fR=\fIADDRESS\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-ip\-protocol\fR=\fIIP_PROTOCOL\fR] [\fB\-\-load\-balancing\-scheme\fR=\fILOAD_BALANCING_SCHEME\fR;\ default="EXTERNAL"] [\fB\-\-network\fR=\fINETWORK\fR] [\fB\-\-subnet\fR=\fISUBNET\fR] [\fB\-\-subnet\-region\fR=\fISUBNET_REGION\fR] [\fB\-\-target\-instance\-zone\fR=\fITARGET_INSTANCE_ZONE\fR] [\fB\-\-target\-pool\-region\fR=\fITARGET_POOL_REGION\fR] [\fB\-\-target\-vpn\-gateway\-region\fR=\fITARGET_VPN_GATEWAY_REGION\fR] [\fB\-\-address\-region\fR=\fIADDRESS_REGION\fR\ |\ \fB\-\-global\-address\fR] [\fB\-\-backend\-service\-region\fR=\fIBACKEND_SERVICE_REGION\fR\ |\ \fB\-\-global\-backend\-service\fR] [\fB\-\-global\fR\ |\ \fB\-\-region\fR=\fIREGION\fR] [\fB\-\-port\-range\fR=[\fIPORT\fR\ |\ \fIPORT\-PORT\fR]\ |\ \fB\-\-ports\fR=[\fIPORT\fR\ |\ \fIPORT\-PORT\fR],[[\fIPORT\fR\ |\ \fIPORT\-PORT\fR],...]] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -184,6 +184,42 @@ region of the forwarding rule.
 \fB\-\-target\-vpn\-gateway\-region\fR=\fITARGET_VPN_GATEWAY_REGION\fR
 The region of the VPN gateway to operate on. If not specified it will be set the
 region of the forwarding rule.
+
+.RE
+.sp
+At most one of these may be specified:
+
+.RS 2m
+.TP 2m
+\fB\-\-address\-region\fR=\fIADDRESS_REGION\fR
+The region of the address to operate on. If not specified, you will be prompted
+to select a region.
+
+To avoid prompting when this flag is omitted, you can set the
+\f5\fIcompute/region\fR\fR property:
+
+.RS 2m
+$ gcloud config set compute/region REGION
+.RE
+
+A list of regions can be fetched by running:
+
+.RS 2m
+$ gcloud compute regions list
+.RE
+
+To unset the property, run:
+
+.RS 2m
+$ gcloud config unset compute/region
+.RE
+
+Alternatively, the region can be stored in the environment variable
+\f5\fICLOUDSDK_COMPUTE_REGION\fR\fR.
+
+.TP 2m
+\fB\-\-global\-address\fR
+If provided, it is assumed the address is global.
 
 .RE
 .sp

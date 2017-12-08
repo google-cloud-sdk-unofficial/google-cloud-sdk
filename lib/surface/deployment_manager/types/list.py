@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.deployment_manager import dm_base
 from googlecloudsdk.core import log
 
 
-class List(base.ListCommand, dm_base.DeploymentManagerCommand):
+class List(base.ListCommand):
   """List types in a project.
 
   Prints a list of the available resource types.
@@ -55,11 +55,12 @@ class List(base.ListCommand, dm_base.DeploymentManagerCommand):
       HttpException: An http error response was received while executing api
           request.
     """
-    request = self.messages.DeploymentmanagerTypesListRequest(
-        project=self.project)
+    request = dm_base.GetMessages().DeploymentmanagerTypesListRequest(
+        project=dm_base.GetProject())
     return dm_v2_util.YieldWithHttpExceptions(
-        list_pager.YieldFromList(self.client.types, request, field='types',
-                                 batch_size=args.page_size, limit=args.limit))
+        list_pager.YieldFromList(dm_base.GetClient().types, request,
+                                 field='types', batch_size=args.page_size,
+                                 limit=args.limit))
 
   def Collection(self):
     return 'deploymentmanager.types'

@@ -71,13 +71,10 @@ class Describe(base.DescribeCommand):
     messages = util.Messages()
 
     config_resource = util.ParseConfigName(args.name)
-    project = config_resource.projectsId
-    name = config_resource.Name()
 
     result = config_client.Get(
         messages.RuntimeconfigProjectsConfigsGetRequest(
-            projectsId=project,
-            configsId=name,
+            name=config_resource.RelativeName(),
         )
     )
     return util.FormatConfig(result)

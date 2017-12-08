@@ -16,13 +16,14 @@
 import argparse
 import sys
 
-from googlecloudsdk.api_lib.compute import gaia_utils
-from googlecloudsdk.api_lib.compute import ssh_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
+from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.command_lib.util import gaia
+from googlecloudsdk.command_lib.util import ssh
 from googlecloudsdk.core.util import platforms
 
 
@@ -112,9 +113,9 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
     parts = args.user_host.split('@')
     if len(parts) == 1:
       if self._use_accounts_service:  # Using Account Service.
-        user = gaia_utils.GetDefaultAccountName(self.http)
+        user = gaia.GetDefaultAccountName(self.http)
       else:  # Uploading keys through metadata.
-        user = ssh_utils.GetDefaultSshUsername(warn_on_account_user=True)
+        user = ssh.GetDefaultSshUsername(warn_on_account_user=True)
       instance = parts[0]
     elif len(parts) == 2:
       user, instance = parts
@@ -145,9 +146,10 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
               .replace('%INSTANCE%', external_ip_address))
           ssh_args.append(dereferenced_flag)
 
-    ssh_args.extend(self.GetHostKeyArgs(args, instance))
+    host_key_alias = self.HostKeyAlias(instance)
+    ssh_args.extend(self.GetHostKeyArgs(args, host_key_alias))
 
-    ssh_args.append(ssh_utils.UserHost(user, external_ip_address))
+    ssh_args.append(ssh.UserHost(user, external_ip_address))
 
     if args.ssh_args:
       ssh_args.extend(args.ssh_args)

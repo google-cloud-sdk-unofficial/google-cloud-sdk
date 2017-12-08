@@ -13,14 +13,12 @@
 # limitations under the License.
 """ml versions create command."""
 
-from googlecloudsdk.api_lib.ml import operations
-from googlecloudsdk.api_lib.ml import versions
+from googlecloudsdk.api_lib.ml import versions_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
 from googlecloudsdk.command_lib.ml import uploads
-from googlecloudsdk.core import apis
+from googlecloudsdk.command_lib.ml import versions_util
 from googlecloudsdk.core import exceptions
-from googlecloudsdk.core.console import progress_tracker
 
 
 class InvalidArgumentCombinationError(exceptions.Error):
@@ -62,14 +60,9 @@ class BetaCreate(base.CreateCommand):
           'If --origin is provided as a local path, --staging-bucket must be '
           'given as well.')
 
-    op = versions.Create(args.model, args.version, origin)
-    if args.async:
-      return op
-
-    client = apis.GetClientInstance('ml', 'v1beta1')
-    with progress_tracker.ProgressTracker(
-        'Creating version (this might take a few minutes)...'):
-      operations.WaitForOperation(
-          client.projects_operations,
-          op)
-    return op.response
+    versions_client = versions_api.VersionsClient()
+    op = versions_client.Create(
+        versions_util.ParseVersion(args.model, args.version), origin)
+    return versions_util.WaitForOpMaybe(
+        versions_client.client, op, async_=args.async,
+        msg='Creating version (this might take a few minutes)...')

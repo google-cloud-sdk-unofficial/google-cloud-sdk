@@ -186,8 +186,7 @@ Alias,URI
 """.format(
     minimum_scopes='\n'.join(constants.MINIMUM_SCOPE_URIS),
     additional_scopes='\n'.join(constants.ADDITIONAL_DEFAULT_SCOPE_URIS),
-    aliases='\n'.join(
-        ','.join(p) for p in sorted(compute_helpers.SCOPE_ALIASES.iteritems())))
+    aliases=compute_helpers.SCOPE_ALIASES_FOR_HELP)
 
   master_boot_disk = parser.add_mutually_exclusive_group()
   worker_boot_disk = parser.add_mutually_exclusive_group()

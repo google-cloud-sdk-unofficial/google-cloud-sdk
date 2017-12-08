@@ -36,16 +36,27 @@ class Wait(base.ListCommand):
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'id_or_location_regexp', metavar='(ID|LOCATION-REGEXP)', nargs='+',
+        'ids', metavar='ID', nargs='*',
         help="""\
-            One or more snapshot IDs, resource identifiers, or regular
-            expressions to match against snapshot locations. The command will
-            wait for any snapshots matching these criteria to complete.
+            Zero or more snapshot resource identifiers. The command will
+            wait for any of the specified snapshots to complete.
+        """)
+    parser.add_argument(
+        '--location', metavar='LOCATION-REGEXP', action='append',
+        help="""\
+            A regular expression to match against snapshot
+            locations. The command will wait for any snapshots matching these
+            criteria to complete. You may specify --location multiple times.
+
+            EXAMPLE:
+
+              {command} \\
+                --location foo.py:[1-3] --location bar.py:3
         """)
     parser.add_argument(
         '--all', action='store_true', default=False,
         help="""\
-            If set, wait for all the specified snapshots to complete, instead of
+            If set, wait for all of the specified snapshots to complete, instead of
             waiting for any one of them to complete.
         """)
     parser.add_argument(
@@ -70,7 +81,7 @@ class Wait(base.ListCommand):
     debuggee = debugger.FindDebuggee(args.target)
     snapshots = [
         s for s in debuggee.ListBreakpoints(
-            args.id_or_location_regexp,
+            args.location, resource_ids=args.ids,
             include_all_users=args.all_users)]
 
     ids = [s.id for s in snapshots]

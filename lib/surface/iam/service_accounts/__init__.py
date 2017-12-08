@@ -19,4 +19,12 @@ from googlecloudsdk.core import resources
 
 
 class ServiceAccounts(base.Group):
-  """Create and manipulate service accounts."""
+  """Create and manipulate service accounts.
+
+     Create and manipulate IAM service accounts. More information on service
+     accounts can be found at:
+     https://cloud.google.com/iam/docs/service-accounts
+  """
+  detailed_help = {
+      'brief': 'Create and manipulate service accounts.',
+  }

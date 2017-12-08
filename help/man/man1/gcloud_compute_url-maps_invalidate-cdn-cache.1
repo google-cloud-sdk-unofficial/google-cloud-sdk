@@ -11,7 +11,7 @@ gcloud compute url\-maps invalidate\-cdn\-cache \- invalidate specified objects 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute url\-maps invalidate\-cdn\-cache\fR \fIURLMAP\fR \fB\-\-path\fR=\fIPATH\fR [\fB\-\-async\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute url\-maps invalidate\-cdn\-cache\fR \fIURLMAP\fR \fB\-\-path\fR=\fIPATH\fR [\fB\-\-async\fR] [\fB\-\-host\fR=\fIHOST\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -79,6 +79,10 @@ Examples:
 .TP 2m
 \fB\-\-async\fR
 Do not wait for the operation to complete.
+
+.TP 2m
+\fB\-\-host\fR=\fIHOST\fR
+If set, this invalidation will apply only to requests to the specified host.
 
 
 .RE

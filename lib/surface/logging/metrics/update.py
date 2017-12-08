@@ -18,7 +18,6 @@ from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 
 class Update(base.UpdateCommand):
@@ -34,7 +33,7 @@ class Update(base.UpdateCommand):
         help=('A new description for the metric. '
               'If omitted, the description is not changed.'))
     parser.add_argument(
-        '--filter', required=False,
+        '--log-filter', required=False,
         help=('A new filter string for the metric. '
               'If omitted, the filter is not changed.'))
 
@@ -52,42 +51,36 @@ class Update(base.UpdateCommand):
       The updated metric.
     """
     # One of the flags is required to update the metric.
-    if not (args.description or args.filter):
+    if not (args.description or args.log_filter):
       raise exceptions.ToolException(
-          '--description or --filter argument is required')
-
-    client = util.GetClientV1()
-    messages = util.GetMessagesV1()
-    project = properties.VALUES.core.project.Get(required=True)
+          '--description or --log-filter argument is required')
 
     # Calling the API's Update method on a non-existing metric creates it.
     # Make sure the metric exists so we don't accidentally create it.
-    metric = client.projects_metrics.Get(
-        messages.LoggingProjectsMetricsGetRequest(
-            metricsId=args.metric_name,
-            projectsId=project))
+    metric = util.GetClient().projects_metrics.Get(
+        util.GetMessages().LoggingProjectsMetricsGetRequest(
+            metricName=util.CreateResourceName(
+                util.GetCurrentProjectParent(), 'metrics', args.metric_name)))
 
     if args.description:
       metric_description = args.description
     else:
       metric_description = metric.description
-    if args.filter:
-      metric_filter = args.filter
-      # This prevents a clash with the Cloud SDK --filter flag.
-      args.filter = None
+    if args.log_filter:
+      metric_filter = args.log_filter
     else:
       metric_filter = metric.filter
 
-    updated_metric = messages.LogMetric(
+    updated_metric = util.GetMessages().LogMetric(
         name=args.metric_name,
         description=metric_description,
         filter=metric_filter)
 
-    result = client.projects_metrics.Update(
-        messages.LoggingProjectsMetricsUpdateRequest(
-            logMetric=updated_metric,
-            metricsId=args.metric_name,
-            projectsId=project))
+    result = util.GetClient().projects_metrics.Update(
+        util.GetMessages().LoggingProjectsMetricsUpdateRequest(
+            metricName=util.CreateResourceName(
+                util.GetCurrentProjectParent(), 'metrics', args.metric_name),
+            logMetric=updated_metric))
     log.UpdatedResource(args.metric_name)
     return result
 
@@ -104,7 +97,7 @@ Update.detailed_help = {
 
         To update the filter expression of the metric, run:
 
-          $ {command} high_severity_count --filter="metadata.severity >= WARNING"
+          $ {command} high_severity_count --log-filter="severity >= WARNING"
 
         Detailed information about filters can be found at:
         [](https://cloud.google.com/logging/docs/view/advanced_filters)

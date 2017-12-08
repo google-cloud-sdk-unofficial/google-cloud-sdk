@@ -36,8 +36,11 @@ class Publish(base.Command):
 
     parser.add_argument('topic', help='Topic name to publish messages to.')
     parser.add_argument('message_body', nargs='?', default=None,
-                        help=('The body of the message to publish to the'
-                              ' given topic name.'))
+                        help=("""
+The body of the message to publish to the given topic name.
+Information on message formatting and size limits can be found at:
+https://cloud.google.com/pubsub/docs/publisher#publish
+"""))
     parser.add_argument('--attribute',
                         type=arg_parsers.ArgDict(max_length=MAX_ATTRIBUTES),
                         help=('Comma-separated list of attributes.'

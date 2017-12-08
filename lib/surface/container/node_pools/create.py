@@ -111,16 +111,20 @@ Alias,URI
 {aliases}
 |========
 """.format(
-    aliases='\n'.join(
-        ','.join(value) for value in
-        sorted(compute_constants.SCOPES.iteritems()))))
-  parser.add_argument(
-      '--tags',
-      help=argparse.SUPPRESS,
-      type=arg_parsers.ArgList(min_length=1),
-      metavar='TAGS')
+    aliases=compute_constants.ScopesForHelp()))
   flags.AddImageTypeFlag(parser, 'node pool')
   flags.AddNodeLabelsFlag(parser, for_node_pool=True)
+  flags.AddTagsFlag(parser, """\
+Applies the given Compute Engine tags (comma separated) on all nodes in the new
+node-pool. Example:
+
+  $ {command} node-pool-1 --cluster=example-cluster --tags=tag1,tag2
+
+New nodes, including ones created by resize or recreate, will have these tags
+on the Compute Engine API instance object and can be used in firewall rules.
+See https://cloud.google.com/sdk/gcloud/reference/compute/firewall-rules/create
+for examples.
+""")
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

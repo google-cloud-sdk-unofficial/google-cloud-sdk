@@ -14,74 +14,71 @@
 """Command for moving instances."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute.operations import poller
+from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
-from googlecloudsdk.command_lib.projects import util
+from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
 
 
-class Move(base_classes.NoOutputAsyncMutator):
+class Move(base.SilentCommand):
   """Move an instance between zones."""
-
-  @property
-  def service(self):
-    return self.compute.projects
-
-  @property
-  def resource_type(self):
-    return 'projects'
-
-  @property
-  def method(self):
-    return 'MoveInstance'
-
-  @property
-  def custom_get_requests(self):
-    return self._target_to_get_request
 
   @staticmethod
   def Args(parser):
     instance_flags.INSTANCE_ARG.AddArgument(parser)
+
     parser.add_argument(
         '--destination-zone',
         completion_resource='compute.zones',
         help='The zone to move the instance to.',
         required=True)
 
-  def CreateRequests(self, args):
-    """Returns a request for moving a instance."""
+    base.ASYNC_FLAG.AddToParser(parser)
 
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     target_instance = instance_flags.INSTANCE_ARG.ResolveAsResource(
-        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client, self.project))
-    destination_zone = self.resources.Parse(
+        args, holder.resources,
+        scope_lister=flags.GetDefaultScopeLister(holder.client))
+    destination_zone = holder.resources.Parse(
         args.destination_zone, collection='compute.zones')
 
-    request = self.messages.ComputeProjectsMoveInstanceRequest(
-        instanceMoveRequest=self.messages.InstanceMoveRequest(
+    client = holder.client.apitools_client
+    messages = holder.client.messages
+
+    request = messages.ComputeProjectsMoveInstanceRequest(
+        instanceMoveRequest=messages.InstanceMoveRequest(
             destinationZone=destination_zone.SelfLink(),
             targetInstance=target_instance.SelfLink(),
         ),
-        project=self.project,
+        project=target_instance.project,
     )
 
-    destination_instance_ref = self.resources.Parse(
+    result = client.projects.MoveInstance(request)
+    operation_ref = resources.REGISTRY.Parse(
+        result.name, collection='compute.globalOperations')
+
+    if args.async:
+      log.UpdatedResource(
+          operation_ref,
+          kind='gce instance {0}'.format(target_instance.Name()),
+          async=True,
+          details='Use [gcloud compute operations describe] command '
+                  'to check the status of this operation.'
+      )
+      return result
+
+    destination_instance_ref = holder.resources.Parse(
         target_instance.Name(), collection='compute.instances',
         params={'zone': destination_zone.Name()})
 
-    project_ref = self.resources.Parse(
-        self.project, collection='compute.projects')
-    util.ParseProject(args.name)
-
-    self._target_to_get_request = {}
-    self._target_to_get_request[project_ref.SelfLink()] = (
-        destination_instance_ref.SelfLink(),
-        self.compute.instances,
-        self.messages.ComputeInstancesGetRequest(
-            instance=target_instance.Name(),
-            project=self.project,
-            zone=destination_zone.Name()))
-
-    return [request]
+    operation_poller = poller.Poller(client.instances, destination_instance_ref)
+    return waiter.WaitFor(
+        operation_poller, operation_ref,
+        'Moving gce instance {0}'.format(target_instance.Name()))
 
 
 Move.detailed_help = {
@@ -99,4 +96,3 @@ Move.detailed_help = {
         will move the instance called example-instance-1, currently running in
         us-central1-b, to us-central1-f.
     """}
-

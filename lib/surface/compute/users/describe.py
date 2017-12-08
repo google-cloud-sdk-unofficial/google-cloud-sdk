@@ -13,8 +13,8 @@
 # limitations under the License.
 """Command for describing users."""
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import gaia_utils
 from googlecloudsdk.command_lib.compute.users import utils as user_utils
+from googlecloudsdk.command_lib.util import gaia
 
 
 class Describe(base_classes.BaseAsyncMutator):
@@ -49,7 +49,7 @@ class Describe(base_classes.BaseAsyncMutator):
 
     user = args.name
     if not user:
-      user = gaia_utils.GetDefaultAccountName(self.http)
+      user = gaia.GetDefaultAccountName(self.http)
 
     user_ref = self.clouduseraccounts_resources.Parse(
         user, collection='clouduseraccounts.users')

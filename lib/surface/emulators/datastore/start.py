@@ -56,7 +56,7 @@ class Start(base.Command):
         required=False,
         type=float,
         default=0.9,
-        help='Fraction of job application attempts that should succeed.')
+        help='Fraction of datastore operations that should succeed.')
 
   def Run(self, args):
     if not args.host_port:

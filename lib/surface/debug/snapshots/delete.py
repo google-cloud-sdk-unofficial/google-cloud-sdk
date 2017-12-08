@@ -34,13 +34,7 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        'id_or_location_regexp', metavar='(ID|LOCATION-REGEXP)', nargs='+',
-        help="""\
-            One or more snapshot IDs, resource identifiers, or regular
-            expressions to match against snapshot locations. All snapshots
-            matching any of these values will be deleted.
-        """)
+    debug.AddIdOptions(parser, 'snapshot', 'snapshots', 'deleted')
     parser.add_argument(
         '--all-users', action='store_true', default=False,
         help="""\
@@ -60,7 +54,8 @@ class Delete(base.DeleteCommand):
     debugger = debug.Debugger(project_id)
     debuggee = debugger.FindDebuggee(args.target)
     snapshots = debuggee.ListBreakpoints(
-        args.id_or_location_regexp, include_all_users=args.all_users,
+        args.location, resource_ids=args.ids,
+        include_all_users=args.all_users,
         include_inactive=args.include_inactive,
         restrict_to_type=debugger.SNAPSHOT_TYPE)
     if snapshots:

@@ -16,6 +16,7 @@
 import re
 import textwrap
 
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.iam import base_classes
 
@@ -46,6 +47,7 @@ class ListGrantableRoles(base_classes.BaseIamCommand):
     parser.add_argument(
         'resource',
         help=('The full resource name to get the list of roles for.'))
+    base.FILTER_FLAG.AddToParser(parser)
 
   def Run(self, args):
     resource = None

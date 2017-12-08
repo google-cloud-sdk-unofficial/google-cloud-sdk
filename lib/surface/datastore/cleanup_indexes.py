@@ -18,17 +18,21 @@ from googlecloudsdk.api_lib.app import appengine_client
 from googlecloudsdk.api_lib.app import yaml_parsing
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.app import output_helpers
+from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import console_io
 
 
 class CleanupIndexes(base.Command):
-  """Remove unused datastore indexes based on your local index configuration.
-
-  This command removes unused datastore indexes based on your local index
-  configuration.
-  """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
+      'brief': 'Remove unused datastore indexes based on your local index '
+               'configuration.',
+      'DESCRIPTION': """
+This command removes unused datastore indexes based on your local index
+configuration. Any indexes that exist that are not in the index file will be
+removed.
+      """,
       'EXAMPLES': """\
           To remove unused indexes based on your local configuration, run:
 
@@ -47,12 +51,17 @@ class CleanupIndexes(base.Command):
                         help='The path to your index.yaml file.')
 
   def Run(self, args):
+    project = properties.VALUES.core.project.Get(required=True)
     app_config = yaml_parsing.AppConfigSet([args.index_file])
 
     if yaml_parsing.ConfigYamlInfo.INDEX not in app_config.Configs():
       raise exceptions.InvalidArgumentException(
           'index_file', 'You must provide the path to a valid index.yaml file.')
 
-    client = appengine_client.AppengineClient()
     info = app_config.Configs()[yaml_parsing.ConfigYamlInfo.INDEX]
+    output_helpers.DisplayProposedConfigDeployments(project, [info])
+    console_io.PromptContinue(default=True, throw_if_unattended=False,
+                              cancel_on_no=True)
+
+    client = appengine_client.AppengineClient()
     client.CleanupIndexes(info.parsed)

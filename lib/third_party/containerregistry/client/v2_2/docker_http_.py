@@ -166,7 +166,7 @@ class Transport(object):
     #   GET H:P/v2/
     headers = {
         'content-type': 'application/json',
-        'User-Agent': docker_name.USER_AGENT,
+        'user-agent': docker_name.USER_AGENT,
     }
     resp, unused_content = self._transport.request(
         '{scheme}://{registry}/v2/'.format(scheme=Scheme(self._name.registry),
@@ -214,7 +214,7 @@ class Transport(object):
     """
     headers = {
         'content-type': 'application/json',
-        'User-Agent': docker_name.USER_AGENT,
+        'user-agent': docker_name.USER_AGENT,
         'Authorization': self._basic_creds.Get()
     }
     parameters = {
@@ -279,7 +279,7 @@ class Transport(object):
       # not hoist this.
       headers = {
           'Authorization': self._bearer_creds.Get(),
-          'User-Agent': docker_name.USER_AGENT,
+          'user-agent': docker_name.USER_AGENT,
       }
 
       if body:  # Requests w/ bodies should have content-type.

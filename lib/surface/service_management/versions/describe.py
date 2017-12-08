@@ -35,7 +35,7 @@ class Describe(base.DescribeCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    common_flags.service_flag(
+    common_flags.producer_service_flag(
         suffix='from which to retrieve the configuration').AddToParser(parser)
 
     parser.add_argument('--version',

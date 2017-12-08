@@ -13,8 +13,8 @@
 # limitations under the License.
 """ml jobs showlogs command."""
 
-from googlecloudsdk.api_lib.ml import jobs
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.logs import stream
 from googlecloudsdk.command_lib.ml import flags
 
 
@@ -31,11 +31,11 @@ class StreamLogs(base.Command):
 
   def Run(self, args):
     """Run the stream-logs command."""
-    log_fetcher = jobs.LogFetcher(job_id=args.job,
-                                  polling_interval=args.polling_interval,
-                                  allow_multiline_logs=
-                                  args.allow_multiline_logs,
-                                  task_name=args.task_name)
+    log_fetcher = stream.LogFetcher(job_id=args.job,
+                                    polling_interval=args.polling_interval,
+                                    allow_multiline_logs=
+                                    args.allow_multiline_logs,
+                                    task_name=args.task_name)
     return log_fetcher.YieldLogs()
 
   def Format(self, args):
@@ -50,4 +50,4 @@ class StreamLogs(base.Command):
     Returns:
       Some value that we want to have printed later.
     """
-    return jobs.LogFetcher.LOG_FORMAT
+    return stream.LogFetcher.LOG_FORMAT

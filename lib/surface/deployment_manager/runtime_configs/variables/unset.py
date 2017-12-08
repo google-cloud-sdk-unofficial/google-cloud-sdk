@@ -94,17 +94,12 @@ class Unset(base.DeleteCommand):
     messages = util.Messages()
 
     var_resource = util.ParseVariableName(args.name, args)
-    project = var_resource.projectsId
-    config = var_resource.configsId
-    name = var_resource.Name()
 
     try:
       variable_client.Delete(
           messages.RuntimeconfigProjectsConfigsVariablesDeleteRequest(
-              projectsId=project,
-              configsId=config,
-              variablesId=name,
-              recursive=args.recursive
+              name=var_resource.RelativeName(),
+              recursive=args.recursive,
           )
       )
 

@@ -32,7 +32,7 @@ class CheckIamPolicy(base.Command):
           allowed.
     """
 
-    service_flag = common_flags.service_flag(
+    service_flag = common_flags.producer_service_flag(
         suffix='for which to check the IAM policy')
     service_flag.AddToParser(parser)
 

@@ -22,8 +22,8 @@ from googlecloudsdk.command_lib.projects import util as command_lib_util
 class SetIamPolicy(base.Command):
   """Set IAM policy for a project.
 
-  Sets the IAM policy for a project, given a project ID and a file that
-  contains the JSON-encoded IAM policy.
+  Sets the IAM policy for a project, given a project ID and a file encoded in
+  JSON or YAML that contains the IAM policy.
 
   ## EXAMPLES
 
@@ -42,7 +42,8 @@ class SetIamPolicy(base.Command):
   @staticmethod
   def Args(parser):
     flags.GetProjectFlag('set IAM policy for').AddToParser(parser)
-    parser.add_argument('policy_file', help='JSON file with the IAM policy')
+    parser.add_argument(
+        'policy_file', help='JSON or YAML file with the IAM policy')
 
   def Run(self, args):
     project_ref = command_lib_util.ParseProject(args.id)

@@ -54,14 +54,16 @@ Filter by job state. \fISTATE_FILTER\fR must be one of: \fBactive\fR,
 .TP 2m
 \fB\-\-filter\fR=\fIEXPRESSION\fR
 Apply a Boolean filter \fIEXPRESSION\fR to each resource item to be listed. If
-the expression evaluates True then that item is listed. For more details run $
-gcloud topic filters. If \fB\-\-limit\fR is also specified then it is applied
-after \fB\-\-filter\fR.
+the expression evaluates True then that item is listed. For more details and
+examples of filter expressions run $ gcloud topic filters. This flag interacts
+with other flags that are applied in this order: \fB\-\-flatten\fR,
+\fB\-\-sort\-by\fR, \fB\-\-filter\fR, \fB\-\-limit\fR.
 
 .TP 2m
 \fB\-\-limit\fR=\fILIMIT\fR
-The maximum number of resources to list. The default is \fBunlimited\fR. If
-\fB\-\-filter\fR is also specified then it is applied before \fB\-\-limit\fR.
+The maximum number of resources to list. The default is \fBunlimited\fR. This
+flag interacts with other flags that are applied in this order:
+\fB\-\-flatten\fR, \fB\-\-sort\-by\fR, \fB\-\-filter\fR, \fB\-\-limit\fR.
 
 .TP 2m
 \fB\-\-page\-size\fR=\fIPAGE_SIZE\fR; default="100"
@@ -75,7 +77,8 @@ service.
 \fB\-\-sort\-by\fR=[\fIFIELD\fR,...]
 A comma\-separated list of resource field key names to sort by. The default
 order is ascending. Prefix a field with ``~'' for descending order on that
-field.
+field. This flag interacts with other flags that are applied in this order:
+\fB\-\-flatten\fR, \fB\-\-sort\-by\fR, \fB\-\-filter\fR, \fB\-\-limit\fR.
 
 
 .RE

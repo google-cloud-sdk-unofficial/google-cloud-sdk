@@ -13,10 +13,8 @@
 # limitations under the License.
 """Command for describing private hosts."""
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 class Describe(base_classes.ZonalDescriber):
   """Display detailed information about a host."""
 

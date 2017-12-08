@@ -81,17 +81,11 @@ class Update(base.UpdateCommand):
     messages = util.Messages()
 
     config_resource = util.ParseConfigName(args.name)
-    project = config_resource.projectsId
-    name = config_resource.Name()
 
     result = config_client.Update(
-        messages.RuntimeconfigProjectsConfigsUpdateRequest(
-            projectsId=project,
-            configsId=name,
-            runtimeConfig=messages.RuntimeConfig(
-                name=util.ConfigPath(project, name),
-                description=args.description,
-            )
+        messages.RuntimeConfig(
+            name=config_resource.RelativeName(),
+            description=args.description,
         )
     )
 

@@ -126,7 +126,6 @@ class Create(base.CreateCommand):
     waiter_resource = util.ParseWaiterName(args.name, args)
     project = waiter_resource.projectsId
     config = waiter_resource.configsId
-    name = waiter_resource.Name()
 
     success = messages.EndCondition(
         cardinality=messages.Cardinality(
@@ -147,10 +146,9 @@ class Create(base.CreateCommand):
 
     result = waiter_client.Create(
         messages.RuntimeconfigProjectsConfigsWaitersCreateRequest(
-            projectsId=project,
-            configsId=config,
+            parent=util.ConfigPath(project, config),
             waiter=messages.Waiter(
-                name=util.WaiterPath(project, config, name),
+                name=waiter_resource.RelativeName(),
                 timeout='{0}s'.format(args.timeout),
                 success=success,
                 failure=failure,
@@ -168,9 +166,7 @@ class Create(base.CreateCommand):
       self._async_resource = waiter_resource
       request = (waiter_client.client.MESSAGES_MODULE
                  .RuntimeconfigProjectsConfigsWaitersGetRequest(
-                     projectsId=waiter_resource.projectsId,
-                     configsId=waiter_resource.configsId,
-                     waitersId=waiter_resource.waitersId))
+                     name=waiter_resource.RelativeName()))
       result = waiter_client.Get(request)
     else:
       self._async_resource = None

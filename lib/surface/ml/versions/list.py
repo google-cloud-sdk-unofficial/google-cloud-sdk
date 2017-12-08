@@ -13,9 +13,10 @@
 # limitations under the License.
 """ml versions list command."""
 
-from googlecloudsdk.api_lib.ml import versions
+from googlecloudsdk.api_lib.ml import versions_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
+from googlecloudsdk.command_lib.ml import models_util
 
 
 class ListBeta(base.ListCommand):
@@ -39,5 +40,5 @@ class ListBeta(base.ListCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    return versions.List(args.model)
-
+    model_ref = models_util.ParseModel(args.model)
+    return versions_api.VersionsClient().List(model_ref)

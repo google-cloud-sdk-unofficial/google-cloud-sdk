@@ -41,9 +41,10 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
     instances_flags.AddMaintenancePolicyArgs(parser)
     instances_flags.AddNoRestartOnFailureArgs(parser)
     instances_flags.AddPreemptibleVmArgs(parser)
-    instances_flags.AddScopeArgs(parser)
+    instances_flags.AddServiceAccountAndScopeArgs(parser, False)
     instances_flags.AddTagsArgs(parser)
     instances_flags.AddCustomMachineTypeArgs(parser)
+    instances_flags.AddExtendedMachineTypeArgs(parser)
     instances_flags.AddNetworkArgs(parser)
     instances_flags.AddDockerArgs(parser)
 
@@ -82,7 +83,7 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
     instances_flags.ValidateDockerArgs(args)
     instances_flags.ValidateDiskCommonFlags(args)
     instances_flags.ValidateLocalSsdFlags(args)
-    instances_flags.ValidateScopeFlags(args)
+    instances_flags.ValidateServiceAccountAndScopeArgs(args)
     if instance_utils.UseExistingBootDisk(args.disk or []):
       raise exceptions.InvalidArgumentException(
           '--disk',
@@ -119,16 +120,22 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
         preemptible=args.preemptible,
         restart_on_failure=args.restart_on_failure)
 
+    if args.no_service_account:
+      service_account = None
+    else:
+      service_account = args.service_account
     service_accounts = instance_utils.CreateServiceAccountMessages(
         messages=self.messages,
-        scopes=([] if args.no_scopes else args.scopes))
+        scopes=[] if args.no_scopes else args.scopes,
+        service_account=service_account)
 
     image_uri = containers_utils.ExpandGciImageFlag(self.compute_client)
 
     machine_type = instance_utils.InterpretMachineType(
         machine_type=args.machine_type,
         custom_cpu=args.custom_cpu,
-        custom_memory=args.custom_memory)
+        custom_memory=args.custom_memory,
+        ext=getattr(args, 'custom_extensions', None))
 
     metadata = containers_utils.CreateMetadataMessage(
         self.messages, args.run_as_privileged, args.container_manifest,
@@ -216,10 +223,5 @@ CreateFromContainer.detailed_help = {
         privileged mode, run:
 
           $ {command} instance-template-1 --docker-image=gcr.io/google-containers/busybox --run-as-privileged
-
-        To create a template that uses a deployment described by a container
-        manifest in a containers.json file, run:
-
-          $ {command} instance-template-1 --container-manifest=containers.json
         """
 }

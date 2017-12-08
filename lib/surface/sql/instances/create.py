@@ -132,8 +132,9 @@ class _BaseCreate(object):
         '--region',
         required=False,
         default='us-central',
-        help='The geographical region '
-        '(e.g. asia-east1, europe-west1, us-central, us-east1).')
+        help='The regional location '
+        '(e.g. asia-east1, us-east1). See the full list of regions at '
+        'https://cloud.google.com/sql/docs/instance-locations.')
     parser.add_argument(
         '--replication',
         required=False,

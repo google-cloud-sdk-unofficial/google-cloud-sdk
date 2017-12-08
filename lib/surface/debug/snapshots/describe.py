@@ -34,13 +34,7 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        'id_or_location_regexp', metavar='(ID|LOCATION-REGEXP)', nargs='+',
-        help="""\
-            One or more snapshot IDs, resource identifiers, or regular
-            expressions to match against snapshot locations. Only snapshots
-            matching one or more of these values will be described.
-        """)
+    debug.AddIdOptions(parser, 'snapshot', 'snapshots', 'displayed')
 
   def Run(self, args):
     """Run the describe command."""
@@ -48,11 +42,9 @@ class Describe(base.DescribeCommand):
     self.user_email = properties.VALUES.core.account.Get(required=True)
     debugger = debug.Debugger(project_id)
     debuggee = debugger.FindDebuggee(args.target)
-    return debuggee.ListBreakpoints(args.id_or_location_regexp,
+    return debuggee.ListBreakpoints(args.location,
+                                    resource_ids=args.ids,
                                     restrict_to_type=debugger.SNAPSHOT_TYPE)
 
   def Collection(self):
     return 'debug.snapshots'
-
-  def Format(self, unused_args):
-    return 'yaml'

@@ -46,6 +46,10 @@ class DockerImage(object):
   def config_file(self):
     """The raw blob string of the config file."""
 
+  def blob_size(self, digest):
+    """The byte size of the raw blob."""
+    return len(self.blob(digest))
+
   @abc.abstractmethod
   def blob(self, digest):
     """The raw blob of the layer.
@@ -83,7 +87,8 @@ class FromRegistry(DockerImage):
   def _content(
       self,
       suffix,
-      accepted_mimes=None
+      accepted_mimes=None,
+      cache=True
   ):
     """Fetches content of the resources from registry by http calls."""
     if isinstance(self._name, docker_name.Repository):
@@ -91,15 +96,19 @@ class FromRegistry(DockerImage):
           repository=self._name.repository,
           suffix=suffix)
 
-    if suffix not in self._response:
-      _, self._response[suffix] = self._transport.Request(
-          '{scheme}://{registry}/v2/{suffix}'.format(
-              scheme=docker_http.Scheme(self._name.registry),
-              registry=self._name.registry,
-              suffix=suffix),
-          accepted_codes=[httplib.OK],
-          accepted_mimes=accepted_mimes)
-    return self._response[suffix]
+    if suffix in self._response:
+      return self._response[suffix]
+
+    _, content = self._transport.Request(
+        '{scheme}://{registry}/v2/{suffix}'.format(
+            scheme=docker_http.Scheme(self._name.registry),
+            registry=self._name.registry,
+            suffix=suffix),
+        accepted_codes=[httplib.OK],
+        accepted_mimes=accepted_mimes)
+    if cache:
+      self._response[suffix] = content
+    return content
 
   def _tags(self):
     # See //cloud/containers/registry/proto/v2/tags.proto
@@ -146,11 +155,29 @@ class FromRegistry(DockerImage):
     """Override."""
     return self.blob(self.config_blob())
 
+  def blob_size(self, digest):
+    """The byte size of the raw blob."""
+    suffix = 'blobs/' + digest
+    if isinstance(self._name, docker_name.Repository):
+      suffix = '{repository}/{suffix}'.format(
+          repository=self._name.repository,
+          suffix=suffix)
+
+    resp, unused_content = self._transport.Request(
+        '{scheme}://{registry}/v2/{suffix}'.format(
+            scheme=docker_http.Scheme(self._name.registry),
+            registry=self._name.registry,
+            suffix=suffix),
+        method='HEAD',
+        accepted_codes=[httplib.OK])
+
+    return int(resp['content-length'])
+
   # Large, do not memoize.
   def blob(self, digest):
     """Override."""
     # GET server1/v2/<name>/blobs/<digest>
-    return self._content('blobs/' + digest)
+    return self._content('blobs/' + digest, cache=False)
 
   def catalog(self, page_size=100):
     # TODO(user): Handle docker_name.Repository for /v2/<name>/_catalog

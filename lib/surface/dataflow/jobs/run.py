@@ -21,6 +21,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import properties
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Run(base.Command):
   """Runs a job from the specified path.
   """

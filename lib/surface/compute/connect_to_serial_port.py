@@ -18,13 +18,14 @@ import argparse
 import getpass
 import sys
 
-from googlecloudsdk.api_lib.compute import ssh_utils
-
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
+from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.command_lib.util import ssh
+
 from googlecloudsdk.core import http
 from googlecloudsdk.core import log
 
@@ -130,19 +131,20 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
       http_client = http.Http()
       http_response = http_client.request(HOST_KEY_URL)
       hostname = '[{0}]:{1}'.format(SERIAL_PORT_GATEWAY, CONNECTION_PORT)
+      known_hosts = ssh.KnownHosts.FromDefaultFile()
       if http_response[0]['status'] == '200':
         host_key = http_response[1].strip()
-        ssh_utils.UpdateKnownHostsFile(self.known_hosts_file, hostname,
-                                       host_key, overwrite_keys=True)
-      elif self.IsHostKeyAliasInKnownHosts(hostname):
+        known_hosts.Add(hostname, host_key, overwrite=True)
+        known_hosts.Write()
+      elif known_hosts.ContainsAlias(hostname):
         log.warn('Unable to download and update Host Key for [{0}] from [{1}]. '
                  'Attempting to connect using existing Host Key in [{2}]. If '
                  'the connection fails, please try again to update the Host '
                  'Key.'.format(SERIAL_PORT_GATEWAY, HOST_KEY_URL,
-                               self.known_hosts_file))
+                               known_hosts.file_path))
       else:
-        ssh_utils.UpdateKnownHostsFile(self.known_hosts_file, hostname,
-                                       DEFAULT_HOST_KEY)
+        known_hosts.Add(hostname, DEFAULT_HOST_KEY)
+        known_hosts.Write()
         log.warn('Unable to download Host Key for [{0}] from [{1}]. To ensure '
                  'the security of the SSH connetion, gcloud will attempt to '
                  'connect using a hard-coded Host Key value. If the connection '
@@ -176,8 +178,8 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
       for k, v in args.extra_args.items():
         constructed_username_list.append('{0}={1}'.format(k, v))
 
-    ssh_args.append(ssh_utils.UserHost('.'.join(constructed_username_list),
-                                       args.serial_port_gateway))
+    ssh_args.append(ssh.UserHost('.'.join(constructed_username_list),
+                                 args.serial_port_gateway))
 
     log.info('ssh command: {0}'.format(' '.join(ssh_args)))
 

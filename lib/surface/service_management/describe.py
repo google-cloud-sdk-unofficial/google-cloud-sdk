@@ -31,7 +31,7 @@ class Describe(base.DescribeCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    common_flags.service_flag(suffix='to describe').AddToParser(parser)
+    common_flags.producer_service_flag(suffix='to describe').AddToParser(parser)
 
   def Run(self, args):
     """Run 'service-management describe'.

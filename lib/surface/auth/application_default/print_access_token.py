@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.auth import util as auth_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from oauth2client import client
 
 
@@ -48,7 +49,13 @@ class PrintAccessToken(base.Command):
       raise c_exc.ToolException(str(e))
 
     if creds.create_scoped_required():
-      creds = creds.create_scoped([auth_util.CLOUD_PLATFORM_SCOPE])
+      creds_type = creds.serialization_data['type']
+      token_uri_override = properties.VALUES.auth.token_host.Get()
+      if creds_type == client.SERVICE_ACCOUNT and token_uri_override:
+        creds = creds.create_scoped([auth_util.CLOUD_PLATFORM_SCOPE],
+                                    token_uri=token_uri_override)
+      else:
+        creds = creds.create_scoped([auth_util.CLOUD_PLATFORM_SCOPE])
 
     access_token_info = creds.get_access_token()
     if not access_token_info:

@@ -19,6 +19,7 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 class List(base.ListCommand):
@@ -32,8 +33,8 @@ class List(base.ListCommand):
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
 
-  def Collection(self):
-    return 'logging.logs'
+  def Format(self, args):
+    return 'table(.:label=NAME)'
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -47,9 +48,11 @@ class List(base.ListCommand):
     """
     project = properties.VALUES.core.project.Get(required=True)
 
-    request = util.GetMessagesV1().LoggingProjectsLogsListRequest(
-        projectsId=project)
+    project_ref = resources.REGISTRY.Parse(
+        project, collection='cloudresourcemanager.projects')
+    request = util.GetMessages().LoggingProjectsLogsListRequest(
+        parent=project_ref.RelativeName())
 
     return list_pager.YieldFromList(
-        util.GetClientV1().projects_logs, request, field='logs',
+        util.GetClient().projects_logs, request, field='logNames',
         limit=args.limit, batch_size=None, batch_size_attribute='pageSize')

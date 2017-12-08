@@ -33,4 +33,4 @@ class ListBeta(base.ListCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    return jobs.List()
+    return jobs.JobsClient().List()

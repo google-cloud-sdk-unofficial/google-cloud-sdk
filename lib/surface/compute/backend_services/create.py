@@ -65,7 +65,7 @@ class CreateGA(backend_services_utils.BackendServiceMutator):
     flags.AddHttpsHealthChecks(parser)
     flags.AddTimeout(parser)
     flags.AddPortName(parser)
-    flags.AddProtocol(parser)
+    flags.AddProtocol(parser, default=None)
     flags.AddEnableCdn(parser, default=False)
     flags.AddSessionAffinity(parser, internal_lb=False)
     flags.AddAffinityCookieTtl(parser)

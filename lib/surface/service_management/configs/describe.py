@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.service_management import completion_callbacks
 
 
 class Describe(base.DescribeCommand):
@@ -30,8 +31,11 @@ class Describe(base.DescribeCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
+    callback = completion_callbacks.ProducerServiceFlagCompletionCallback
     parser.add_argument('--service',
                         required=True,
+                        completion_resource=services_util.SERVICES_COLLECTION,
+                        list_command_callback_fn=callback,
                         help='The service from which to retrieve the '
                              'configuration.')
 

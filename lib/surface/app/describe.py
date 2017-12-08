@@ -15,7 +15,10 @@
 """The `app services describe` command."""
 
 from googlecloudsdk.api_lib.app import appengine_api_client
+from googlecloudsdk.api_lib.app import exceptions as api_lib_exceptions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.app import exceptions
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
@@ -33,4 +36,9 @@ class Describe(base.Command):
 
   def Run(self, args):
     api_client = appengine_api_client.GetApiClient()
-    return api_client.GetApplication()
+    try:
+      return api_client.GetApplication()
+    except api_lib_exceptions.NotFoundError:
+      log.debug('No app found:', exc_info=True)
+      project = api_client.project
+      raise exceptions.MissingApplicationError(project)

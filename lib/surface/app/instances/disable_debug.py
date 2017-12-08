@@ -18,7 +18,6 @@ from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import instances_util
 from googlecloudsdk.api_lib.app import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.app import flags
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
@@ -50,8 +49,6 @@ class DisableDebug(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.SERVER_FLAG.AddToParser(parser)
-    flags.IGNORE_CERTS_FLAG.AddToParser(parser)
     instance = parser.add_argument(
         'instance', nargs='?',
         help=('The instance to disable debug mode on.'))

@@ -70,7 +70,7 @@ class List(base.ListCommand):
     project = util.Project()
 
     request = messages.RuntimeconfigProjectsConfigsListRequest(
-        projectsId=project,
+        parent=util.ProjectPath(project),
     )
 
     page_size = args.page_size or self.DEFAULT_PAGE_SIZE
@@ -78,7 +78,7 @@ class List(base.ListCommand):
     results = list_pager.YieldFromList(
         config_client, request, field='configs',
         batch_size_attribute='pageSize', limit=args.limit,
-        batch_size=page_size
+        batch_size=page_size,
     )
 
     for result in results:

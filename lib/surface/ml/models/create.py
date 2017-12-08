@@ -39,4 +39,4 @@ class CreateBeta(base.CreateCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    return models.Create(args.model)
+    return models.ModelsClient().Create(args.model)

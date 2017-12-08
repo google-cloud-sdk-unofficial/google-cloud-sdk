@@ -40,10 +40,11 @@ class List(base.ListCommand):
         command invocation (i.e. group and command arguments combined).
 
     Returns:
-      The list of device models we want to have printed later.
+      The list of device models we want to have printed later. Obsolete models
+      with no currently supported OS versions are filtered out.
     """
     catalog = util.GetAndroidCatalog(self.context)
-    return catalog.models
+    return [model for model in catalog.models if model.supportedVersionIds]
 
   def Collection(self):
     """Choose the resource collection key used to list devices by default.

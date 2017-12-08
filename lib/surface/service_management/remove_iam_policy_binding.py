@@ -38,7 +38,7 @@ class RemoveIamPolicyBinding(base.Command):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    service_flag = common_flags.service_flag(
+    service_flag = common_flags.producer_service_flag(
         suffix='from which the member is to be removed')
     service_flag.AddToParser(parser)
 

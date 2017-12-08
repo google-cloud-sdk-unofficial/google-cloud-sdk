@@ -13,8 +13,10 @@
 # limitations under the License.
 """Command for listing firewall rules."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class List(base_classes.GlobalLister):
   """List Google Compute Engine firewall rules."""
 
@@ -28,3 +30,14 @@ class List(base_classes.GlobalLister):
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp('firewall rules')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+  """List Google Compute Engine firewall rules."""
+
+  def Collection(self):
+    return 'compute.firewalls.alpha'
+
+
+ListAlpha.detailed_help = base_classes.GetGlobalListerHelp('firewall rules')

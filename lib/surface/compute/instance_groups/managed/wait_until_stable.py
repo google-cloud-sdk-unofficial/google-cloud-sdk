@@ -15,13 +15,13 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import request_helper
-from googlecloudsdk.api_lib.compute import time_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 from googlecloudsdk.command_lib.compute.instance_groups.managed import wait_info
+from googlecloudsdk.command_lib.util import time_util
 from googlecloudsdk.core import log
 
 
@@ -65,7 +65,7 @@ class WaitUntilStable(base_classes.BaseCommand):
                     self.compute_client, self.project))
 
   def Run(self, args):
-    start = time_utils.CurrentTimeSec()
+    start = time_util.CurrentTimeSec()
     group_ref = self.CreateGroupReference(args)
 
     while True:
@@ -75,9 +75,9 @@ class WaitUntilStable(base_classes.BaseCommand):
       if wait_info.IsGroupStable(responses[0]):
         break
       log.out.Print(wait_info.CreateWaitText(responses[0]))
-      time_utils.Sleep(WaitUntilStable._TIME_BETWEEN_POLLS_SEC)
+      time_util.Sleep(WaitUntilStable._TIME_BETWEEN_POLLS_SEC)
 
-      if args.timeout and time_utils.CurrentTimeSec() - start > args.timeout:
+      if args.timeout and time_util.CurrentTimeSec() - start > args.timeout:
         raise utils.TimeoutError('Timeout while waiting for group to become '
                                  'stable.')
     log.out.Print('Group is stable')
@@ -116,7 +116,7 @@ class WaitUntilStableAlpha(WaitUntilStable):
   """Waits until state of managed instance group is stable."""
 
   def Run(self, args):
-    start = time_utils.CurrentTimeSec()
+    start = time_util.CurrentTimeSec()
     group_ref = self.CreateGroupReference(args)
 
     while True:
@@ -126,9 +126,9 @@ class WaitUntilStableAlpha(WaitUntilStable):
       if wait_info.IsGroupStableAlpha(responses[0]):
         break
       log.out.Print(wait_info.CreateWaitTextAlpha(responses[0]))
-      time_utils.Sleep(WaitUntilStableAlpha._TIME_BETWEEN_POLLS_SEC)
+      time_util.Sleep(WaitUntilStableAlpha._TIME_BETWEEN_POLLS_SEC)
 
-      if args.timeout and time_utils.CurrentTimeSec() - start > args.timeout:
+      if args.timeout and time_util.CurrentTimeSec() - start > args.timeout:
         raise utils.TimeoutError('Timeout while waiting for group to become '
                                  'stable.')
     log.out.Print('Group is stable')

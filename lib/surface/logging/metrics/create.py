@@ -17,7 +17,6 @@
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 
 class Create(base.CreateCommand):
@@ -27,8 +26,13 @@ class Create(base.CreateCommand):
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument('metric_name', help='The name of the new metric.')
-    parser.add_argument('description', help='The metric\'s description.')
-    parser.add_argument('filter', help='The metric\'s filter expression.')
+    parser.add_argument(
+        '--description', required=True,
+        help='The metric\'s description.')
+    parser.add_argument(
+        '--log-filter', required=True,
+        help='The metric\'s filter expression. '
+             'The filter must be for a V2 LogEntry.')
 
   def Collection(self):
     return 'logging.metrics'
@@ -43,18 +47,14 @@ class Create(base.CreateCommand):
     Returns:
       The created metric.
     """
-    messages = util.GetMessagesV1()
-    metric_filter = args.filter
-    # This prevents a clash with the Cloud SDK --filter flag.
-    args.filter = None
-    project = properties.VALUES.core.project.Get(required=True)
+    messages = util.GetMessages()
     new_metric = messages.LogMetric(name=args.metric_name,
                                     description=args.description,
-                                    filter=metric_filter)
+                                    filter=args.log_filter)
 
-    result = util.GetClientV1().projects_metrics.Create(
+    result = util.GetClient().projects_metrics.Create(
         messages.LoggingProjectsMetricsCreateRequest(
-            projectsId=project, logMetric=new_metric))
+            parent=util.GetCurrentProjectParent(), logMetric=new_metric))
     log.CreatedResource(args.metric_name)
     return result
 
@@ -63,14 +63,13 @@ Create.detailed_help = {
     'DESCRIPTION': """\
         Creates a logs-based metric to count the number of log entries that
         match a filter expression.
-        When creating a metric, the description field can be empty but the
-        filter expression must not be empty.
+        When creating a metric, the filter expression must not be empty.
     """,
     'EXAMPLES': """\
         To create a metric that counts the number of log entries with a
         severity level higher than WARNING, run:
 
-          $ {command} high_severity_count "Number of high severity log entries" "metadata.severity > WARNING"
+          $ {command} high_severity_count --description="Number of high severity log entries" --log-filter="severity > WARNING"
 
         Detailed information about filters can be found at:
         [](https://cloud.google.com/logging/docs/view/advanced_filters)

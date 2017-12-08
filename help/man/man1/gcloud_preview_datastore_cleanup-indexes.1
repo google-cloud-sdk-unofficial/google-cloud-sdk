@@ -17,8 +17,16 @@ gcloud preview datastore cleanup\-indexes \- remove unused datastore indexes bas
 
 .SH "DESCRIPTION"
 
-\fB(PREVIEW)\fR This command removes unused datastore indexes based on your
+\fB(PREVIEW)\fR \fB(DEPRECATED)\fR Remove unused datastore indexes based on your
 local index configuration.
+
+This is now available in GA and preview has been deprecated. Please use the
+\f5gcloud datastore\fR commands instead.
+
+
+This command removes unused datastore indexes based on your local index
+configuration. Any indexes that exist that are not in the index file will be
+removed.
 
 
 

@@ -15,7 +15,6 @@
 """'error-reporting events delete' command."""
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
@@ -35,9 +34,9 @@ class Delete(base.DeleteCommand):
     project = properties.VALUES.core.project.Get(required=True)
     messages = client.MESSAGES_MODULE
 
-    if not console_io.PromptContinue(
-        'Really delete all events for project \'%s\'?' % project):
-      raise exceptions.ToolException('action canceled by user')
+    console_io.PromptContinue(
+        'Really delete all events for project \'%s\'?' % project,
+        cancel_on_no=True)
 
     client.projects.DeleteEvents(
         messages.ClouderrorreportingProjectsDeleteEventsRequest(

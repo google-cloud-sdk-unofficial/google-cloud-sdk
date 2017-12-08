@@ -52,7 +52,7 @@ class InitProject(base.Command):
         project, collection='cloudresourcemanager.projects')
     console_io.PromptContinue(
         message='\nCloud ML needs to add its service accounts to your project '
-        '({0}) as Editors. This will enable Cloud Machine Learning to access '
+        '[{0}] as Editors. This will enable Cloud Machine Learning to access '
         'resources in your project when running your training and '
         'prediction jobs.'.format(project),
         cancel_on_no=True)

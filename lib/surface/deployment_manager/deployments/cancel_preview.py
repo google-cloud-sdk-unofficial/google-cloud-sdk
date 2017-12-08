@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deployment_manager import dm_base
+from googlecloudsdk.command_lib.deployment_manager import flags
 from googlecloudsdk.core import log
 
 
@@ -27,7 +28,7 @@ from googlecloudsdk.core import log
 OPERATION_TIMEOUT = 20 * 60  # 20 mins
 
 
-class CancelPreview(base.Command, dm_base.DeploymentManagerCommand):
+class CancelPreview(base.Command):
   """Cancel a pending or running deployment preview.
 
   This command will cancel a currently running or pending preview operation on
@@ -56,16 +57,8 @@ class CancelPreview(base.Command, dm_base.DeploymentManagerCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    parser.add_argument(
-        '--async',
-        help='Return immediately and print information about the Operation in '
-        'progress rather than waiting for the Operation to complete. '
-        '(default=False)',
-        dest='async',
-        default=False,
-        action='store_true')
-
-    parser.add_argument('deployment_name', help='Deployment name.')
+    flags.AddDeploymentNameFlag(parser)
+    flags.AddAsyncFlag(parser)
 
   def Run(self, args):
     """Run 'deployments cancel-preview'.
@@ -85,9 +78,9 @@ class CancelPreview(base.Command, dm_base.DeploymentManagerCommand):
     """
     # Get the fingerprint from the previewing deployment to cancel.
     try:
-      current_deployment = self.client.deployments.Get(
-          self.messages.DeploymentmanagerDeploymentsGetRequest(
-              project=self.project,
+      current_deployment = dm_base.GetClient().deployments.Get(
+          dm_base.GetMessages().DeploymentmanagerDeploymentsGetRequest(
+              project=dm_base.GetProject(),
               deployment=args.deployment_name
           )
       )
@@ -99,12 +92,13 @@ class CancelPreview(base.Command, dm_base.DeploymentManagerCommand):
       raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
 
     try:
-      operation = self.client.deployments.CancelPreview(
-          self.messages.DeploymentmanagerDeploymentsCancelPreviewRequest(
-              project=self.project,
+      operation = dm_base.GetClient().deployments.CancelPreview(
+          dm_base.GetMessages().
+          DeploymentmanagerDeploymentsCancelPreviewRequest(
+              project=dm_base.GetProject(),
               deployment=args.deployment_name,
               deploymentsCancelPreviewRequest=
-              self.messages.DeploymentsCancelPreviewRequest(
+              dm_base.GetMessages().DeploymentsCancelPreviewRequest(
                   fingerprint=fingerprint,
               ),
           )
@@ -116,10 +110,10 @@ class CancelPreview(base.Command, dm_base.DeploymentManagerCommand):
     else:
       op_name = operation.name
       try:
-        dm_v2_util.WaitForOperation(self.client,
-                                    self.messages,
+        dm_v2_util.WaitForOperation(dm_base.GetClient(),
+                                    dm_base.GetMessages(),
                                     op_name,
-                                    self.project,
+                                    dm_base.GetProject(),
                                     'cancel-preview',
                                     OPERATION_TIMEOUT)
         log.status.Print('Cancel preview operation ' + op_name
@@ -128,9 +122,9 @@ class CancelPreview(base.Command, dm_base.DeploymentManagerCommand):
         raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
       try:
         # Fetch a list of the canceled resources.
-        response = self.client.resources.List(
-            self.messages.DeploymentmanagerResourcesListRequest(
-                project=self.project,
+        response = dm_base.GetClient().resources.List(
+            dm_base.GetMessages().DeploymentmanagerResourcesListRequest(
+                project=dm_base.GetProject(),
                 deployment=args.deployment_name,
             )
         )

@@ -19,12 +19,10 @@ from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.api_lib.compute import property_selector
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
-from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class InvalidateCdnCacheGA(base_classes.NoOutputMutator):
   """Invalidate specified objects for a URL map in Cloud CDN caches."""
 
@@ -41,6 +39,16 @@ class InvalidateCdnCacheGA(base_classes.NoOutputMutator):
         help=('Specifies the set of paths within the URL map to '
               'invalidate.'))
 
+    host = parser.add_argument(
+        '--host',
+        required=False,
+        default=None,
+        help=('Specifies the host to restrict this invalidation to.'))
+
+    host.detailed_help = """\
+        If set, this invalidation will apply only to requests to the
+        specified host.
+        """
     parser.add_argument(
         '--async',
         action='store_true',
@@ -81,8 +89,7 @@ class InvalidateCdnCacheGA(base_classes.NoOutputMutator):
     url_map_ref = self.URL_MAP_ARG.ResolveAsResource(args, self.resources)
     cache_invalidation_rule = self.messages.CacheInvalidationRule(
         path=args.path)
-    # TODO(b/31961207): Remove hasattr when --host goes GA.
-    if hasattr(args, 'host') and args.host is not None:
+    if args.host is not None:
       cache_invalidation_rule.host = args.host
     request = self.messages.ComputeUrlMapsInvalidateCacheRequest(
         project=self.project,
@@ -130,31 +137,6 @@ class InvalidateCdnCacheGA(base_classes.NoOutputMutator):
       utils.RaiseToolException(errors)
 
     return resources
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class InvalidateCdnCacheBeta(InvalidateCdnCacheGA):
-  """Invalidate specified objects for a URL map in Cloud CDN caches."""
-  pass
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class InvalidateCdnCacheAlpha(InvalidateCdnCacheGA):
-  """Invalidate specified objects for a URL map in Cloud CDN caches."""
-
-  @staticmethod
-  def Args(parser):
-    super(InvalidateCdnCacheAlpha, InvalidateCdnCacheAlpha).Args(parser)
-    host = parser.add_argument(
-        '--host',
-        required=False,
-        default=None,
-        help=('Specifies the host to restrict this invalidation to.'))
-
-    host.detailed_help = """\
-        If set, this invalidation will apply only to requests to the
-        specified host.
-        """
 
 
 InvalidateCdnCacheGA.detailed_help = {

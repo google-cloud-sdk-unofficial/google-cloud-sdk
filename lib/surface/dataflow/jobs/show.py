@@ -22,8 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataflow import job_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Show(base.Command):
   """Shows a short description of the given job.
   """
