@@ -1444,7 +1444,8 @@ class BigqueryClient(object):
   def CreateTable(self, reference, ignore_existing=False, schema=None,
                   description=None, friendly_name=None, expiration=None,
                   view_query=None, external_data_config=None,
-                  view_udf_resources=None):
+                  view_udf_resources=None
+                 ):
     """Create a table corresponding to TableReference.
 
     Args:

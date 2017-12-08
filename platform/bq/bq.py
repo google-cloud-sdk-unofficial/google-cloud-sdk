@@ -1618,6 +1618,8 @@ class _Copy(BigqueryCmd):
           source_references_str, dest_reference)
 
 
+
+
 class _Make(BigqueryCmd):
   usage = """mk [-d] <identifier>  OR  mk [-t] <identifier> [<schema>]"""
 
@@ -1767,12 +1769,15 @@ class _Make(BigqueryCmd):
       view_udf_resources = None
       if self.view_udf_resource:
         view_udf_resources = _ParseUdfResources(self.view_udf_resource)
-      client.CreateTable(reference, ignore_existing=True, schema=schema,
+      client.CreateTable(reference,
+                         ignore_existing=True,
+                         schema=schema,
                          description=self.description,
                          expiration=expiration,
                          view_query=query_arg,
                          view_udf_resources=view_udf_resources,
-                         external_data_config=external_data_config)
+                         external_data_config=external_data_config # pylint: disable=line-too-long
+                        )
       print "%s '%s' successfully created." % (object_name, reference,)
 
 

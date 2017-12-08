@@ -1,11 +1,11 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"ye6orv2F-1npMW3u9suM3a7C5Bo/nfGEuTZJVBpptlN2onsIPjCRTU4\"",
+ "etag": "\"ye6orv2F-1npMW3u9suM3a7C5Bo/hVDCl-9ESst1gd4-rcx-OJNX4DE\"",
  "discoveryVersion": "v1",
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20150905",
+ "revision": "20151116",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -307,13 +307,102 @@
     }
    }
   },
+  "ExplainQueryStage": {
+   "id": "ExplainQueryStage",
+   "type": "object",
+   "properties": {
+    "computeRatioAvg": {
+     "type": "number",
+     "description": "Relative amount of time the average shard spent on CPU-bound tasks.",
+     "format": "double"
+    },
+    "computeRatioMax": {
+     "type": "number",
+     "description": "Relative amount of time the slowest shard spent on CPU-bound tasks.",
+     "format": "double"
+    },
+    "id": {
+     "type": "string",
+     "description": "Unique ID for stage within plan.",
+     "format": "int64"
+    },
+    "name": {
+     "type": "string",
+     "description": "Human-readable name for stage."
+    },
+    "readRatioAvg": {
+     "type": "number",
+     "description": "Relative amount of time the average shard spent reading input.",
+     "format": "double"
+    },
+    "readRatioMax": {
+     "type": "number",
+     "description": "Relative amount of time the slowest shard spent reading input.",
+     "format": "double"
+    },
+    "recordsRead": {
+     "type": "string",
+     "description": "Number of records read into the stage.",
+     "format": "int64"
+    },
+    "recordsWritten": {
+     "type": "string",
+     "description": "Number of records written by the stage.",
+     "format": "int64"
+    },
+    "steps": {
+     "type": "array",
+     "description": "List of operations within the stage in dependency order (approximately chronological).",
+     "items": {
+      "$ref": "ExplainQueryStep"
+     }
+    },
+    "waitRatioAvg": {
+     "type": "number",
+     "description": "Relative amount of time the average shard spent waiting to be scheduled.",
+     "format": "double"
+    },
+    "waitRatioMax": {
+     "type": "number",
+     "description": "Relative amount of time the slowest shard spent waiting to be scheduled.",
+     "format": "double"
+    },
+    "writeRatioAvg": {
+     "type": "number",
+     "description": "Relative amount of time the average shard spent on writing output.",
+     "format": "double"
+    },
+    "writeRatioMax": {
+     "type": "number",
+     "description": "Relative amount of time the slowest shard spent on writing output.",
+     "format": "double"
+    }
+   }
+  },
+  "ExplainQueryStep": {
+   "id": "ExplainQueryStep",
+   "type": "object",
+   "properties": {
+    "kind": {
+     "type": "string",
+     "description": "Machine-readable operation type."
+    },
+    "substeps": {
+     "type": "array",
+     "description": "Human-readable stage descriptions.",
+     "items": {
+      "type": "string"
+     }
+    }
+   }
+  },
   "ExternalDataConfiguration": {
    "id": "ExternalDataConfiguration",
    "type": "object",
    "properties": {
     "compression": {
      "type": "string",
-     "description": "[Optional] The compression type of the data source. Possible values include GZIP and NONE. The default value is NONE."
+     "description": "[Optional] The compression type of the data source. Possible values include GZIP and NONE. The default value is NONE. This setting is ignored for Google Cloud Datastore backups."
     },
     "csvOptions": {
      "$ref": "CsvOptions",
@@ -321,24 +410,24 @@
     },
     "ignoreUnknownValues": {
      "type": "boolean",
-     "description": "[Optional] Indicates if BigQuery should allow extra values that are not represented in the table schema. If true, the extra values are ignored. If false, records with extra columns are treated as bad records, and if there are too many bad records, an invalid error is returned in the job result. The default value is false. The sourceFormat property determines what BigQuery treats as an extra value: CSV: Trailing columns JSON: Named values that don't match any column names"
+     "description": "[Optional] Indicates if BigQuery should allow extra values that are not represented in the table schema. If true, the extra values are ignored. If false, records with extra columns are treated as bad records, and if there are too many bad records, an invalid error is returned in the job result. The default value is false. The sourceFormat property determines what BigQuery treats as an extra value: CSV: Trailing columns JSON: Named values that don't match any column names Google Cloud Datastore backups: This setting is ignored."
     },
     "maxBadRecords": {
      "type": "integer",
-     "description": "[Optional] The maximum number of bad records that BigQuery can ignore when reading data. If the number of bad records exceeds this value, an invalid error is returned in the job result. The default value is 0, which requires that all records are valid.",
+     "description": "[Optional] The maximum number of bad records that BigQuery can ignore when reading data. If the number of bad records exceeds this value, an invalid error is returned in the job result. The default value is 0, which requires that all records are valid. This setting is ignored for Google Cloud Datastore backups.",
      "format": "int32"
     },
     "schema": {
      "$ref": "TableSchema",
-     "description": "[Required] The schema for the data."
+     "description": "[Optional] The schema for the data. Schema is required for CSV and JSON formats. Schema is disallowed for Google Cloud Datastore backups."
     },
     "sourceFormat": {
      "type": "string",
-     "description": "[Required] The data format. For CSV files, specify \"CSV\". For newline-delimited JSON, specify \"NEWLINE_DELIMITED_JSON\"."
+     "description": "[Required] The data format. For CSV files, specify \"CSV\". For newline-delimited JSON, specify \"NEWLINE_DELIMITED_JSON\". For Google Cloud Datastore backups, specify \"DATASTORE_BACKUP\"."
     },
     "sourceUris": {
      "type": "array",
-     "description": "[Required] The fully-qualified URIs that point to your data in Google Cloud Storage. Each URI can contain one '*' wildcard character and it must come after the 'bucket' name. Size limits related to load jobs apply to external data sources, plus an additional limit of 10 GB maximum size across all URIs.",
+     "description": "[Required] The fully-qualified URIs that point to your data in Google Cloud Storage. Each URI can contain one '*' wildcard character and it must come after the 'bucket' name. Size limits related to load jobs apply to external data sources, plus an additional limit of 10 GB maximum size across all URIs. For Google Cloud Datastore backups, exactly one URI can be specified, and it must end with '.backup_info'. Also, the '*' wildcard character is not allowed.",
      "items": {
       "type": "string"
      }
@@ -870,6 +959,13 @@
      "type": "boolean",
      "description": "[Output-only] Whether the query result was fetched from the query cache."
     },
+    "queryPlan": {
+     "type": "array",
+     "description": "[Output-only, Experimental] Describes execution plan for the query as a list of stages.",
+     "items": {
+      "$ref": "ExplainQueryStage"
+     }
+    },
     "totalBytesBilled": {
      "type": "string",
      "description": "[Output-only] Total bytes billed for the job.",
@@ -1269,6 +1365,10 @@
     "skipInvalidRows": {
      "type": "boolean",
      "description": "[Optional] Insert all valid rows of a request, even if invalid rows exist. The default value is false, which causes the entire request to fail if any invalid rows exist."
+    },
+    "templateSuffix": {
+     "type": "string",
+     "description": "[Experimental] If specified, treats the destination table as a base template, and inserts the rows into an instance table named \"\". BigQuery will manage creation of the instance table, using the schema of the base template table."
     }
    }
   },
@@ -1498,6 +1598,13 @@
     "query": {
      "type": "string",
      "description": "[Required] A query that BigQuery executes when the view is referenced."
+    },
+    "userDefinedFunctionResources": {
+     "type": "array",
+     "description": "[Experimental] Describes user-defined function resources used in the query.",
+     "items": {
+      "$ref": "UserDefinedFunctionResource"
+     }
     }
    }
   }
