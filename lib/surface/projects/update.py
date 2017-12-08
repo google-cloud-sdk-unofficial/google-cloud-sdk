@@ -22,7 +22,7 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class Update(base.Command):
+class Update(util.ProjectCommand):
   """Update the name of a project.
 
   Updates the given project with new name.
@@ -55,9 +55,7 @@ class Update(base.Command):
   def Run(self, args):
     projects = self.context['projects_client']
     messages = self.context['projects_messages']
-    resources = self.context['projects_resources']
-    project_ref = resources.Parse(args.id,
-                                  collection='cloudresourcemanager.projects')
+    project_ref = self.GetProject(args.id)
     result = projects.projects.Update(
         messages.Project(
             projectId=project_ref.Name(),

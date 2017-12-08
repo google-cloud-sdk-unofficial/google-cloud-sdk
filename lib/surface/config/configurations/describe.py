@@ -16,8 +16,9 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.config import completers
-from googlecloudsdk.core import named_configs
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.configurations import named_configs
+from googlecloudsdk.core.configurations import properties_file
 
 
 class Describe(base.Command):
@@ -55,19 +56,19 @@ class Describe(base.Command):
         help='Include unset properties in output.')
 
   def Run(self, args):
-    fname = named_configs.GetPathForConfigName(args.configuration_name)
-
-    if not named_configs.IsPathReadable(fname):
-      raise named_configs.NamedConfigLoadError(
-          'Reading named configuration [{0}] failed because [{1}] cannot '
-          'be read.'.format(args.configuration_name, fname))
+    all_configs = named_configs.ConfigurationStore.AllConfigs(
+        include_none_config=True)
+    config = all_configs.get(args.configuration_name, None)
+    if not config:
+      raise named_configs.NamedConfigError(
+          'The configuration [{0}] does not exist.'
+          .format(args.configuration_name))
 
     return {
-        'name': args.configuration_name,
-        'is_active': (args.configuration_name ==
-                      named_configs.GetNameOfActiveNamedConfig()),
+        'name': config.name,
+        'is_active': config.is_active,
         'properties': properties.VALUES.AllValues(
             list_unset=args.all,
-            properties_file=properties.PropertiesFile([fname]),
+            properties_file=properties_file.PropertiesFile([config.file_path]),
             only_file_contents=True),
     }

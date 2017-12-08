@@ -28,7 +28,6 @@ class Describe(base_classes.RegionalDescriber):
     # TODO(b/24898638): autocomplete
     # cli = Describe.GetCLIGenerator()
     base_classes.RegionalDescriber.Args(parser, 'compute.routers')
-    base_classes.AddFieldsFlag(parser, 'routers')
 
   @property
   def service(self):

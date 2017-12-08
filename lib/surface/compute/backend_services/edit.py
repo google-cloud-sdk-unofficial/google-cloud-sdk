@@ -15,6 +15,7 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.core import resources
 
 
@@ -31,9 +32,7 @@ class Edit(base_classes.BaseEdit):
   @staticmethod
   def Args(parser):
     base_classes.BaseEdit.Args(parser)
-    parser.add_argument(
-        'name',
-        help='The name of the backend service to modify.')
+    flags.AddBackendServiceName(parser)
 
   @property
   def service(self):

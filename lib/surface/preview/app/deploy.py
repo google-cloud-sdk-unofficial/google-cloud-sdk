@@ -23,7 +23,6 @@ from gae_ext_runtime import ext_runtime
 
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import appengine_client
-from googlecloudsdk.api_lib.app import cloud_endpoints
 from googlecloudsdk.api_lib.app import cloud_storage
 from googlecloudsdk.api_lib.app import deploy_app_command_util
 from googlecloudsdk.api_lib.app import deploy_command_util
@@ -34,6 +33,7 @@ from googlecloudsdk.api_lib.app import util
 from googlecloudsdk.api_lib.app import version_util
 from googlecloudsdk.api_lib.app import yaml_parsing
 from googlecloudsdk.api_lib.app.runtimes import fingerprinter
+from googlecloudsdk.api_lib.service_management import services_util as service_management_util
 from googlecloudsdk.api_lib.source import context_util
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
@@ -235,7 +235,7 @@ def _GetPreviousVersion(all_services, new_version, api_client):
     # Make sure not to stop the just-deployed version!
     # This can happen with a new service, or with a deployment over
     # an existing version.
-    if (old_version.is_receiving_all_traffic and
+    if (old_version.IsReceivingAllTraffic() and
         old_version.id != new_version.id):
       return old_version
 
@@ -261,7 +261,9 @@ def _StopPreviousVersionIfApplies(old_default_version, clients):
         'Previous default version [{0}] not serving, so not stopping '
         'it.'.format(old_default_version))
     return
-  if (not version_object.vm and not version_object.basicScaling and
+  is_standard = not (version_object.vm or version_object.env == 'flex' or
+                     version_object.env == 'flexible')
+  if (is_standard and not version_object.basicScaling and
       not version_object.manualScaling):
     log.info(
         'Previous default version [{0}] is an automatically scaled '
@@ -280,7 +282,7 @@ def _StopPreviousVersionIfApplies(old_default_version, clients):
              'charged.)'.format(old_default_version))
 
 
-class Deploy(base.Command):
+class Deploy(base.SilentCommand):
   """Deploy the local code and/or configuration of your app to App Engine.
 
   This command is used to deploy both code and configuration to the App Engine
@@ -418,17 +420,8 @@ class Deploy(base.Command):
 
     # If the app has enabled Endpoints API Management features, pass
     # control to the cloud_endpoints handler.
-    for _, service in app_config.Services().items():
-      if service and service.parsed and service.parsed.beta_settings:
-        bs = service.parsed.beta_settings
-        use_endpoints = bs.get('use_endpoints_api_management', '').lower()
-        if (use_endpoints in ('true', '1', 'yes') and
-            bs.get('endpoints_swagger_spec_file')):
-          cloud_endpoints.PushServiceConfig(
-              bs.get('endpoints_swagger_spec_file'),
-              project,
-              apis.GetClientInstance('servicemanagement', 'v1'),
-              apis.GetMessagesModule('servicemanagement', 'v1'))
+    service_management_util.ProcessEndpointsServices(
+        app_config.Services().items(), project)
 
     remote_build = True
     docker_build_property = properties.VALUES.app.docker_build.Get()
@@ -476,14 +469,15 @@ class Deploy(base.Command):
         # style array of extended contexts.
         source_contexts = [context_util.ExtendContextDict(source_contexts)]
 
+    services = app_config.Services()
+
     code_bucket_ref = None
-    if use_cloud_build or app_config.NonHermeticServices():
+    if services and (use_cloud_build or app_config.NonHermeticServices()):
       # If using Argo CloudBuild, we'll need to upload source to a GCS bucket.
       code_bucket_ref = self._GetCodeBucket(clients.api, args)
       metrics.CustomTimedEvent(metric_names.GET_CODE_BUCKET)
       log.debug('Using bucket [{b}].'.format(b=code_bucket_ref))
 
-    services = app_config.Services()
     if any([m.RequiresImage() for m in services.values()]):
       deploy_command_util.DoPrepareManagedVms(clients.gae)
     if args.image_url:
@@ -523,47 +517,47 @@ class Deploy(base.Command):
           storage_client)
       metrics.CustomTimedEvent(metric_name)
 
-    all_services = clients.api.ListServices()
-    # Now do deployment.
-    for (service, info) in app_config.Services().iteritems():
-      message = 'Updating service [{service}]'.format(service=service)
-      with console_io.ProgressTracker(message):
-        if args.force:
-          log.warning('The --force argument is deprecated and no longer '
-                      'required. It will be removed in a future release.')
+    new_versions = []
+    if services:
+      # We don't necessarily have permission to list services if we only want to
+      # update config files (below).
+      all_services = clients.api.ListServices()
 
-        clients.api.DeployService(service, version, info,
-                                  deployment_manifests.get(service),
-                                  images.get(service))
-        metrics.CustomTimedEvent(metric_names.DEPLOY_API)
+      # Now do deployment.
+      for (service, info) in services.iteritems():
+        message = 'Updating service [{service}]'.format(service=service)
+        new_version = version_util.Version(project, service, version)
+        with console_io.ProgressTracker(message):
+          if args.force:
+            log.warning('The --force argument is deprecated and no longer '
+                        'required. It will be removed in a future release.')
 
-        stop_previous_version = (
-            deploy_command_util.GetStopPreviousVersionFromArgs(args))
-        if promote:
-          new_version = version_util.Version(project, service, version)
-          _Promote(all_services, new_version, clients,
-                   stop_previous_version)
-        elif stop_previous_version:
-          log.info('Not stopping previous version because new version was not '
-                   'promoted.')
+          clients.api.DeployService(service, version, info,
+                                    deployment_manifests.get(service),
+                                    images.get(service))
+          metrics.CustomTimedEvent(metric_names.DEPLOY_API)
+
+          stop_previous_version = (
+              deploy_command_util.GetStopPreviousVersionFromArgs(args))
+          if promote:
+            _Promote(all_services, new_version, clients,
+                     stop_previous_version)
+          elif stop_previous_version:
+            log.info('Not stopping previous version because new version was '
+                     'not promoted.')
+        log.status.Print('Deployed service [{0}] to [{1}]'.format(
+            service, deployed_urls[service]))
+        new_versions.append(new_version)
 
     # Config files.
     for (c, info) in app_config.Configs().iteritems():
       message = 'Updating config [{config}]'.format(config=c)
       with console_io.ProgressTracker(message):
         clients.gae.UpdateConfig(c, info.parsed)
-    return deployed_urls
-
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    writer = log.out
-    for service, url in result.items():
-      writer.Print('Deployed service [{0}] to [{1}]'.format(service, url))
+    return {
+        'versions': new_versions,
+        'configs': app_config.Configs().keys()
+    }
 
   def _GetCodeBucket(self, api_client, args):
     if args.bucket:

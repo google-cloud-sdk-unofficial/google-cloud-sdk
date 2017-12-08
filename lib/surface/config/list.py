@@ -18,8 +18,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.config import completers
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
-from googlecloudsdk.core import named_configs
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.configurations import named_configs
 
 
 class BadConfigListInvocation(exceptions.Error):
@@ -86,9 +86,7 @@ class List(base.Command):
       raise BadConfigListInvocation('`gcloud config list` cannot take both '
                                     'a property name and the `--all` flag.')
 
-    config_name = named_configs.GetNameOfActiveNamedConfig()
-    if config_name is None:
-      config_name = named_configs.RESERVED_NAMED_CONFIG_NAME_NONE
+    config_name = named_configs.ConfigurationStore.ActiveConfig().name
     log.status.write('Your active configuration is: [{0}]\n\n'.format(
         config_name))
     return self._GetPropertiesToDisplay(args)

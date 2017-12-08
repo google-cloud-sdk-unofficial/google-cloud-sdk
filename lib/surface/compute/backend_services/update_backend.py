@@ -11,13 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Command for updating a backend in a backend service."""
-from googlecloudsdk.api_lib.compute import backend_services_utils
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import apis as core_apis
+from googlecloudsdk.command_lib.compute.backend_services import backend_flags
+from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
@@ -28,12 +30,13 @@ class UpdateBackend(base_classes.ReadWriteCommand):
 
   @staticmethod
   def Args(parser):
-    backend_services_utils.AddUpdatableBackendArgs(
-        parser, core_apis.GetMessagesModule('compute', 'v1'), multizonal=False)
-
-    parser.add_argument(
-        'name',
-        help='The name of the backend service to update.')
+    flags.AddBackendServiceName(parser)
+    backend_flags.AddDescription(parser)
+    backend_flags.AddInstanceGroup(parser, multizonal=False)
+    backend_flags.AddBalancingMode(parser)
+    backend_flags.AddMaxUtilization(parser)
+    backend_flags.AddRate(parser)
+    backend_flags.AddCapacityScalar(parser)
 
   @property
   def service(self):
@@ -157,12 +160,13 @@ class UpdateBackendAlpha(UpdateBackend,
 
   @staticmethod
   def Args(parser):
-    backend_services_utils.AddUpdatableBackendArgs(
-        parser, core_apis.GetMessagesModule('compute', 'v1'), multizonal=True)
-
-    parser.add_argument(
-        'name',
-        help='The name of the backend service to update.')
+    flags.AddBackendServiceName(parser)
+    backend_flags.AddDescription(parser)
+    backend_flags.AddInstanceGroup(parser, multizonal=True)
+    backend_flags.AddBalancingMode(parser)
+    backend_flags.AddMaxUtilization(parser)
+    backend_flags.AddRate(parser)
+    backend_flags.AddCapacityScalar(parser)
 
   def CreateGroupReference(self, args):
     return self.CreateInstanceGroupReference(

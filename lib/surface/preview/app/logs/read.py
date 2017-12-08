@@ -15,15 +15,14 @@
 
 from googlecloudsdk.api_lib.app import logs_util
 from googlecloudsdk.api_lib.logging import common
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 
 LOG_LEVELS = ['critical', 'error', 'warning', 'info', 'debug', 'any']
 
 
-@base.Hidden
 class Read(base.Command):
   """Reads log entries for the current App Engine app."""
 
@@ -37,8 +36,17 @@ class Read(base.Command):
     parser.add_argument('--level', required=False, default='any',
                         choices=LOG_LEVELS,
                         help='Filter entries with severity equal to or higher '
-                             'than a given level. Must be one of `{0}`.'
-                        .format('|'.join(LOG_LEVELS)))
+                             'than a given level. Must be one of `({0})`.'
+                        .format(', '.join(LOG_LEVELS)))
+
+    parser.add_argument('--logs',
+                        required=False,
+                        default=['stderr', 'stdout', 'crash.log'],
+                        metavar='APP_LOG',
+                        type=arg_parsers.ArgList(min_length=1),
+                        help=('Filter entries from a particular set of logs. '
+                              'Must be a comma-separated list of log names '
+                              '(request_log, stdout, stderr, etc).'))
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -50,16 +58,6 @@ class Read(base.Command):
     Returns:
       The list of log entries.
     """
-
-    project = properties.VALUES.core.project.Get(required=True)
-
-    # log_id -> formatter function. Note that log_id is NOT the same as logName
-    formatters = {
-        'appengine.googleapis.com/crash.log': logs_util.FormatAppEntry,
-        'appengine.googleapis.com/stderr': logs_util.FormatAppEntry,
-        'appengine.googleapis.com/stdout': logs_util.FormatAppEntry,
-    }
-
     # Logging API filters later to be AND-joined
     filters = ['resource.type="gae_app"']
 
@@ -71,14 +69,16 @@ class Read(base.Command):
     if args.level != 'any':
       filters.append('severity>={0}'.format(args.level.upper()))
 
-    printer = common.LogPrinter(project=project)
-    for log_id, fn in formatters.iteritems():
-      printer.RegisterFormatter(log_id, fn)
+    printer = logs_util.LogPrinter()
+    printer.RegisterFormatter(logs_util.FormatRequestLogEntry)
+    printer.RegisterFormatter(logs_util.FormatAppEntry)
 
     lines = []
+    log_id = lambda log_short: 'appengine.googleapis.com/%s' % log_short
+    log_ids = sorted([log_id(log_short) for log_short in args.logs])
     # pylint: disable=g-builtin-op, For the .keys() method
     for entry in common.FetchLogs(log_filter=' AND '.join(filters),
-                                  log_ids=sorted(formatters.keys()),
+                                  log_ids=sorted(log_ids),
                                   order_by='DESC',
                                   limit=args.limit):
       lines.append(printer.Format(entry))
@@ -106,5 +106,10 @@ Read.detailed_help = {
         To show only the 10 latest log entries for the default service, run:
 
           $ {command} --limit 10 --service=default
+
+        To show only the logs from the request log (recommended for standard
+        apps), run:
+
+          $ {command} --logs=request_log
     """,
 }

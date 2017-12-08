@@ -25,7 +25,6 @@ class Describe(base_classes.RegionalDescriber):
   @staticmethod
   def Args(parser):
     base_classes.RegionalDescriber.Args(parser, 'compute.targetPools')
-    base_classes.AddFieldsFlag(parser, 'targetPools')
 
   @property
   def service(self):

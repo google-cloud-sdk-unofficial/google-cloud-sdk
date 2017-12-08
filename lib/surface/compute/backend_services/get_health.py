@@ -16,6 +16,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.core import exceptions
 
 
@@ -44,11 +45,7 @@ class GetHealth(base_classes.BaseCommand):
 
   @staticmethod
   def Args(parser):
-    base_classes.AddFieldsFlag(parser, 'backendServiceGroupHealth')
-
-    parser.add_argument(
-        'name',
-        help='The name of the backend service.')
+    flags.AddBackendServiceName(parser)
 
   @property
   def service(self):

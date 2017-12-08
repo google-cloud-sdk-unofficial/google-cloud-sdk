@@ -16,12 +16,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.third_party.apis.compute.v1 import compute_v1_messages
-
-
-SESSION_AFFINITIES = sorted(
-    compute_v1_messages.TargetPool.SessionAffinityValueValuesEnum
-    .to_dict().keys())
+from googlecloudsdk.core import apis as core_apis
 
 
 class Create(base_classes.BaseAsyncCreator):
@@ -98,9 +93,14 @@ class Create(base_classes.BaseAsyncCreator):
         resource_type='target pool',
         operation_type='create')
 
+    messages = core_apis.GetMessagesModule('compute', 'v1')
+    session_affinities = sorted(messages.TargetPool
+                                .SessionAffinityValueValuesEnum
+                                .to_dict().keys())
+
     session_affinity = parser.add_argument(
         '--session-affinity',
-        choices=SESSION_AFFINITIES,
+        choices=session_affinities,
         type=lambda x: x.upper(),
         default='NONE',
         help='The session affinity option for the target pool.')

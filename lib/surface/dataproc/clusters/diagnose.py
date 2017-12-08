@@ -80,6 +80,3 @@ class Diagnose(base.Command):
           'but output did not finish streaming.')
     log.err.Print('-----------------------------------------------')
     return output_uri
-
-  def Display(self, args, result):
-    self.format(result)

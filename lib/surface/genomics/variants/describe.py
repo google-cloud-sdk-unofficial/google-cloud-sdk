@@ -27,7 +27,6 @@ class Describe(base.Command):
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument('id',
-                        type=int,
                         help='The ID of the variant to be described.')
 
   @genomics_util.ReraiseHttpException
@@ -45,7 +44,7 @@ class Describe(base.Command):
     genomics_messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
 
     request = genomics_messages.GenomicsVariantsGetRequest(
-        variantId=str(args.id),
+        variantId=args.id,
     )
 
     return apitools_client.variants.Get(request)

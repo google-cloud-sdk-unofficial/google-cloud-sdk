@@ -17,7 +17,7 @@
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.config import completers
 from googlecloudsdk.core import log
-from googlecloudsdk.core import named_configs
+from googlecloudsdk.core.configurations import named_configs
 
 
 class Activate(base.SilentCommand):
@@ -50,7 +50,7 @@ class Activate(base.SilentCommand):
     configuration_arg.completer = completers.NamedConfigCompleter
 
   def Run(self, args):
-    named_configs.ActivateNamedConfig(args.configuration_name)
+    named_configs.ConfigurationStore.ActivateConfig(args.configuration_name)
     log.status.write('Activated [{0}].\n'.format(args.configuration_name))
     return args.configuration_name
 

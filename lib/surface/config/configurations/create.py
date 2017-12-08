@@ -16,7 +16,7 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
-from googlecloudsdk.core import named_configs
+from googlecloudsdk.core.configurations import named_configs
 
 
 class Create(base.SilentCommand):
@@ -44,7 +44,7 @@ class Create(base.SilentCommand):
         help='Name of the configuration to create')
 
   def Run(self, args):
-    named_configs.CreateNamedConfig(args.configuration_name)
+    named_configs.ConfigurationStore.CreateConfig(args.configuration_name)
 
     log.CreatedResource(args.configuration_name)
     log.status.Print(

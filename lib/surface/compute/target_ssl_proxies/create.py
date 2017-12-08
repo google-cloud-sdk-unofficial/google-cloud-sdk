@@ -14,12 +14,7 @@
 """Command for creating target SSL proxies."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.third_party.apis.compute.alpha import compute_alpha_messages
-
-
-PROXY_HEADER_OPTIONS = sorted(
-    compute_alpha_messages.TargetSslProxy.ProxyHeaderValueValuesEnum.to_dict().
-    keys())
+from googlecloudsdk.core import apis as core_apis
 
 
 class Create(base_classes.BaseAsyncCreator):
@@ -51,9 +46,13 @@ class Create(base_classes.BaseAsyncCreator):
         proxy.
         """
 
+    messages = core_apis.GetMessagesModule('compute', 'alpha')
+    proxy_header_options = sorted(messages.TargetSslProxy
+                                  .ProxyHeaderValueValuesEnum.to_dict().keys())
+
     proxy_header = parser.add_argument(
         '--proxy-header',
-        choices=PROXY_HEADER_OPTIONS,
+        choices=proxy_header_options,
         help=('.'))
     proxy_header.detailed_help = """\
         Format of the proxy header that the balancer will send when creating new

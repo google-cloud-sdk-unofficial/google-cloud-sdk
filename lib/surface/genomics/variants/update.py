@@ -26,7 +26,6 @@ class Update(base.Command):
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument('id',
-                        type=int,
                         help='The ID of the variant to be updated.')
     names = parser.add_argument(
         '--names',
@@ -53,7 +52,7 @@ class Update(base.Command):
     request = genomics_messages.GenomicsVariantsPatchRequest(
         updateMask='names',
         variant=variant,
-        variantId=str(args.id),)
+        variantId=args.id)
 
     return apitools_client.variants.Patch(request)
 

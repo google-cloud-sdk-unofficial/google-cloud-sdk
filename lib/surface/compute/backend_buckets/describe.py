@@ -23,7 +23,6 @@ class DescribeAlpha(base_classes.GlobalDescriber):
   @staticmethod
   def Args(parser):
     base_classes.GlobalDescriber.Args(parser, 'compute.backendBuckets')
-    base_classes.AddFieldsFlag(parser, 'backendBuckets')
 
   @property
   def service(self):

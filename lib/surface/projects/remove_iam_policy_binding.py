@@ -23,7 +23,7 @@ from googlecloudsdk.core.iam import iam_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class RemoveIamPolicyBinding(base.Command):
+class RemoveIamPolicyBinding(util.ProjectCommand):
   """Remove IAM policy binding for a project.
 
   Removes a policy binding to the IAM policy of a project, given a project ID
@@ -39,17 +39,16 @@ class RemoveIamPolicyBinding(base.Command):
                         completion_resource='cloudresourcemanager.projects',
                         list_command_path='projects',
                         help='ID for the project you want to update.')
-    iam_util.AddArgsForRemoveIamPolicyBinding(parser)
+    iam_util.AddArgsForRemoveIamPolicyBinding(
+        parser, 'id', 'cloudresourcemanager.projects')
 
   @util.HandleHttpError
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
     projects = self.context['projects_client']
     messages = self.context['projects_messages']
-    resources = self.context['projects_resources']
 
-    project_ref = resources.Parse(args.id,
-                                  collection='cloudresourcemanager.projects')
+    project_ref = self.GetProject(args.id)
 
     policy_request = messages.CloudresourcemanagerProjectsGetIamPolicyRequest(
         resource=project_ref.Name(),
@@ -62,13 +61,3 @@ class RemoveIamPolicyBinding(base.Command):
         resource=project_ref.Name(),
         setIamPolicyRequest=messages.SetIamPolicyRequest(policy=policy))
     return projects.projects.SetIamPolicy(policy_request)
-
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    # pylint:disable=not-callable, self.format is callable.
-    self.format(result)

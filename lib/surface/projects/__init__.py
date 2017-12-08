@@ -16,7 +16,6 @@
 
 from googlecloudsdk.api_lib.projects import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
@@ -27,7 +26,6 @@ class Projects(base.Group):
   """
 
   def Filter(self, context, _):
-    context['projects_resources'] = resources
     context['projects_client'] = util.GetClient()
     context['projects_messages'] = util.GetMessages()
 
@@ -41,6 +39,5 @@ class ProjectsAlpha(base.Group):
   """
 
   def Filter(self, context, _):
-    context['projects_resources'] = resources
     context['projects_client'] = util.GetClient()
     context['projects_messages'] = util.GetMessages()

@@ -17,12 +17,11 @@
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.core import apis as core_apis
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.credentials import store
-from googlecloudsdk.third_party.apis.replicapoolupdater import v1beta1 as updater_v1beta1
-from googlecloudsdk.third_party.apis.replicapoolupdater.v1beta1 import replicapoolupdater_v1beta1_messages
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -54,10 +53,10 @@ class Updater(base.Group):
       The updated context.
     """
     properties.VALUES.compute.zone.Get(required=True)
-    context['updater_api'] = updater_v1beta1.ReplicapoolupdaterV1beta1(
-        get_credentials=False,
-        http=self.Http())
-    context['updater_messages'] = replicapoolupdater_v1beta1_messages
+    context['updater_api'] = core_apis.GetClientInstance(
+        'replicapoolupdater', 'v1beta1')
+    context['updater_messages'] = core_apis.GetMessagesModule(
+        'replicapoolupdater', 'v1beta1')
     resources.SetParamDefault(
         api='compute', collection=None, param='project',
         resolver=resolvers.FromProperty(properties.VALUES.core.project))

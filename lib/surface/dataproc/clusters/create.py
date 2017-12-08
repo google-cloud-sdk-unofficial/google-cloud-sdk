@@ -28,7 +28,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.third_party.apitools.base.py import encoding
 
 
-class Create(base.Command):
+class Create(base.CreateCommand):
   """Create a cluster."""
 
   detailed_help = {
@@ -308,6 +308,3 @@ Alias,URI
       if operation.details:
         log.error('Details:\n' + operation.details)
     return cluster
-
-  def Display(self, args, result):
-    self.format(result)

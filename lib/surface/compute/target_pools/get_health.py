@@ -25,8 +25,6 @@ class GetHealth(base_classes.BaseCommand):
 
   @staticmethod
   def Args(parser):
-    base_classes.AddFieldsFlag(parser, 'targetPoolInstanceHealth')
-
     flags.AddRegionFlag(
         parser,
         resource_type='target pool',

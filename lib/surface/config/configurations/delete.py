@@ -17,7 +17,7 @@
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.config import completers
 from googlecloudsdk.core import log
-from googlecloudsdk.core import named_configs
+from googlecloudsdk.core.configurations import named_configs
 from googlecloudsdk.core.console import console_io
 
 
@@ -62,13 +62,13 @@ class Delete(base.SilentCommand):
   def Run(self, args):
     # Fail the delete operation when we're attempting to delete the
     # active config.
-    current_config = named_configs.GetNameOfActiveNamedConfig()
-    if current_config in args.configuration_names:
-      raise named_configs.NamedConfigWriteError(
+    active_config = named_configs.ConfigurationStore.ActiveConfig()
+    if active_config.name in args.configuration_names:
+      raise named_configs.NamedConfigError(
           'Deleting named configuration failed because configuration '
           '[{0}] is set as active.  Use `gcloud config configurations '
           'activate` to change the active configuration.'.format(
-              current_config))
+              active_config.name))
 
     printer = console_io.ListPrinter(
         'The following configurations will be deleted:')
@@ -76,5 +76,5 @@ class Delete(base.SilentCommand):
     console_io.PromptContinue(default=True, cancel_on_no=True)
 
     for configuration_name in args.configuration_names:
-      named_configs.DeleteNamedConfig(configuration_name)
+      named_configs.ConfigurationStore.DeleteConfig(configuration_name)
       log.DeletedResource(configuration_name)

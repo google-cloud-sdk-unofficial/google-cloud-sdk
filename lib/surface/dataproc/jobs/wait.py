@@ -59,6 +59,3 @@ class Wait(base.Command):
     log.status.Print('Job [{0}] finished successfully.'.format(args.id))
 
     return job
-
-  def Display(self, args, result):
-    self.format(result)

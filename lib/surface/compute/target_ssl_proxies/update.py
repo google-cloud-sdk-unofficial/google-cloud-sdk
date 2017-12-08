@@ -15,12 +15,7 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.third_party.apis.compute.alpha import compute_alpha_messages
-
-
-PROXY_HEADER_OPTIONS = sorted(
-    compute_alpha_messages.TargetSslProxy.ProxyHeaderValueValuesEnum.to_dict().
-    keys())
+from googlecloudsdk.core import apis as core_apis
 
 
 class Update(base_classes.NoOutputAsyncMutator):
@@ -53,9 +48,13 @@ class Update(base_classes.NoOutputAsyncMutator):
         proxy.
         """
 
+    messages = core_apis.GetMessagesModule('compute', 'alpha')
+    proxy_header_options = sorted(messages.TargetSslProxy
+                                  .ProxyHeaderValueValuesEnum.to_dict().keys())
+
     proxy_header = parser.add_argument(
         '--proxy-header',
-        choices=PROXY_HEADER_OPTIONS,
+        choices=proxy_header_options,
         help=('Proxy header format.'))
     proxy_header.detailed_help = """\
         Format of the proxy header that the balancer will send when creating new

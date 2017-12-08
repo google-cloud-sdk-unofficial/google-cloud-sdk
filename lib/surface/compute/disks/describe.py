@@ -21,7 +21,6 @@ class Describe(base_classes.ZonalDescriber):
   @staticmethod
   def Args(parser):
     base_classes.ZonalDescriber.Args(parser, 'compute.disks')
-    base_classes.AddFieldsFlag(parser, 'disks')
 
   @property
   def service(self):

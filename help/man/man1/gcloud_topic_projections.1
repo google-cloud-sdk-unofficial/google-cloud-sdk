@@ -225,6 +225,20 @@ message.
 
 .RE
 .RE
+\fBextract\fR(keys)
+.RS 2m
+Extract an ordered list of values from the resource for the specified keys.
+
+
+The arguments are:
+
+\fB\f5keys\fR\fR
+.RS 2m
+The list of keys in the resource whose associated values will be included in the
+result.
+
+.RE
+.RE
 \fBfatal\fR(message)
 .RS 2m
 Raises an InternalError exception that generates a stack trace.
@@ -328,6 +342,29 @@ The arguments are:
 \fB\f5undefined\fR\fR
 .RS 2m
 Returns this value if the resource does not have an isoformat() attribute.
+
+.RE
+.RE
+\fBjoin\fR(sep="/", undefined="")
+.RS 2m
+Joins the elements of the resource list by the value of sep. A string resource
+is treated as a list of characters.
+
+
+The arguments are:
+
+\fB\f5sep\fR\fR
+.RS 2m
+The separator value to use when joining.
+.RE
+\fB\f5undefined\fR\fR
+.RS 2m
+Returns this value if the result after joining is empty.
+
+.RE
+For example\f5:\fR
+.RS 2m
+"a/b/c/d".split("/").join("!") returns "a!b!c!d"
 
 .RE
 .RE
@@ -451,6 +488,62 @@ divided by this. The default is 1.0.
 \fB\f5min\fR\fR
 .RS 2m
 Sizes < \fImin\fR will be listed as "< \fImin\fR".
+
+.RE
+.RE
+\fBslice\fR(op=":", undefined="")
+.RS 2m
+Returns a list slice specified by op. The op parameter consists of up to three
+colon\-delimeted integers: start, end, and step. The parameter supports
+half\-open ranges: start and end values can be omitted, representing the first
+and last positions of the resource respectively. The step value represents the
+increment between items in the resource included in the slice. A step of 2
+results in a slice that contains every other item in the resource. Negative
+values for start and end indicate that the positons should start from the last
+position of the resource. A negative value for step indicates that the slice
+should contain items in reverse order. If op contains no colons, the slice
+consists of the single item at the specified position in the resource.
+
+
+The arguments are:
+
+\fB\f5op\fR\fR
+.RS 2m
+The slice operation.
+.RE
+\fB\f5undefined\fR\fR
+.RS 2m
+Returns this value if the slice cannot be created, or the resulting slice is
+empty.
+
+.RE
+For example\f5:\fR
+.RS 2m
+.RE
+.RE
+[1,2,3].slice(1:) returns [2,3]. [1,2,3].slice(:2) returns [1,2]. [1,2,3].slice(\-1:) returns [3]. [1,2,3].slice(
+.RS 2m
+\-1) returns [3,2,1]. [1,2,3].slice(1) returns [2].
+.RE
+\fBsplit\fR(sep="/", undefined="")
+.RS 2m
+Splits a string by the value of sep.
+
+
+The arguments are:
+
+\fB\f5sep\fR\fR
+.RS 2m
+The separator value to use when splitting.
+.RE
+\fB\f5undefined\fR\fR
+.RS 2m
+Returns this value if the result after splitting is empty.
+
+.RE
+For example\f5:\fR
+.RS 2m
+"a/b/c/d".split() returns ["a", "b", "c", "d"]
 
 .RE
 .RE

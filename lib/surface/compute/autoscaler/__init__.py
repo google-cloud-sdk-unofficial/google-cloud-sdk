@@ -19,13 +19,12 @@ import argparse
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.core import apis as core_apis
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.credentials import store
-from googlecloudsdk.third_party.apis.autoscaler import v1beta2 as autoscaler_v1beta2
-from googlecloudsdk.third_party.apis.autoscaler.v1beta2 import autoscaler_v1beta2_messages as messages_v2
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -40,11 +39,12 @@ class Autoscaler(base.Group):
 
   @exceptions.RaiseToolExceptionInsteadOf(store.Error)
   def Filter(self, context, args):
-    client = autoscaler_v1beta2.AutoscalerV1beta2(
-        get_credentials=False, http=self.Http())
+    client = core_apis.GetClientInstance('autoscaler', 'v1beta2')
+    context['autoscaler-client'] = client
+
+    messages_v2 = core_apis.GetMessagesModule('autoscaler', 'v1beta2')
     context['autoscaler_messages_module'] = messages_v2
 
-    context['autoscaler-client'] = client
     resources.SetParamDefault(
         api='compute',
         collection=None,

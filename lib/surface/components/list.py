@@ -61,8 +61,6 @@ class List(base.ListCommand):
   def Format(self, args):
     attributes = [
         'box',
-        'legend=" "',
-        'empty-legend="No updates."',
         'title="Components"'
         ]
     columns = [
@@ -92,7 +90,9 @@ class List(base.ListCommand):
       yield c
     yield resource_printer_base.FinishMarker()
 
-  def Epilog(self, unused_resources_were_displayed):
+  def Epilog(self, resources_were_displayed):
+    if not resources_were_displayed:
+      log.status.write('\nNo updates.')
     log.status.write("""\
 To install or remove components at your current SDK version [{current}], run:
   $ gcloud components install COMPONENT_ID

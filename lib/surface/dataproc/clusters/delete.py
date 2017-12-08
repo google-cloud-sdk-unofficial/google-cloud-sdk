@@ -21,7 +21,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-class Delete(base.Command):
+class Delete(base.DeleteCommand):
   """Delete a cluster."""
 
   detailed_help = {
@@ -68,6 +68,3 @@ class Delete(base.Command):
     log.DeletedResource(cluster_ref)
 
     return operation
-
-  def Display(self, args, result):
-    self.format(result)

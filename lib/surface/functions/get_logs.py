@@ -17,11 +17,14 @@
 from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
 class GetLogs(base.ListCommand):
   """Show logs produced by functions.
+
+  This command is deprecated. Please use `gcloud preview app logs read` instead.
 
   This command displays log entries produced by all functions running in a
   region, or by a single function if it is specified through a command argument.
@@ -89,6 +92,8 @@ class GetLogs(base.ListCommand):
     Yields:
       Objects representing log entries.
     """
+    log.warn('This command is deprecated. '
+             'Please use `gcloud preview app logs read` instead.')
     logging_client = self.context['logging_client']
     logging = self.context['logging_messages']
 

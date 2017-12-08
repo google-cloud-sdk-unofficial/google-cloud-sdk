@@ -29,7 +29,6 @@ class Delete(base.Command):
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument('id',
-                        type=int,
                         help='The ID of the variant to be deleted.')
 
   @genomics_util.ReraiseHttpException
@@ -43,7 +42,7 @@ class Delete(base.Command):
     Returns:
       The ID of the variant that was deleted.
     """
-    vid = str(args.id)
+    vid = args.id
     apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
     genomics_messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
 

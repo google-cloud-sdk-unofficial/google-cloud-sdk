@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.debug import debug
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
@@ -81,9 +82,10 @@ class Delete(base.DeleteCommand):
     fields.append('location')
     fields.append('logLevel:label=LEVEL')
     fields.append('short_status():label="STATUS BEFORE DELETION"')
-    return """
-      [log=status,
-       empty-legend="No logpoints matched the requested values",
-       legend="Deleted Logpoints"]
-      table({0})
-    """.format(','.join(fields))
+    return 'table({0})'.format(','.join(fields))
+
+  def Epilog(self, resources_were_displayed):
+    if resources_were_displayed:
+      log.status.write('Deleted Logpoints')
+    else:
+      log.status.write('No logpoints matched the requested values')

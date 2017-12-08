@@ -28,7 +28,8 @@ NEW_ISSUE_URL = 'https://code.google.com/p/google-cloud-sdk/issues/entry'
 # pre-filled form fields
 MAX_URL_LENGTH = 2106
 
-COMMENT_TEMPLATE = """\
+
+COMMENT_PRE_STACKTRACE_TEMPLATE = """\
 {formatted_command}What steps will reproduce the problem?
 
 
@@ -38,7 +39,13 @@ What is the expected output? What do you see instead?
 Please provide any additional information below.
 
 
-{formatted_stacktrace}{exception}Installation information:
+"""
+
+COMMENT_TEMPLATE = COMMENT_PRE_STACKTRACE_TEMPLATE + """\
+{formatted_traceback}
+
+
+Installation information:
 
 {gcloud_info}\
 """
@@ -60,6 +67,15 @@ TRACEBACK_ENTRY_REGEXP = (
     r'(?P<code_snippet>.+)\n')
 
 MAX_CODE_SNIPPET_LENGTH = 40
+
+
+class CommentHolder(object):
+
+  def __init__(self, body, pre_stacktrace, stacktrace, exception):
+    self.body = body
+    self.pre_stacktrace = pre_stacktrace
+    self.stacktrace = stacktrace
+    self.exception = exception
 
 
 def _FormatNewIssueUrl(comment, status='New', summary=''):
@@ -92,6 +108,7 @@ def _FormatStackTrace(first_entry, rest):
 
 
 def _ShortenStacktrace(stacktrace, url_encoded_length):
+  # pylint: disable=g-docstring-has-escape
   """Cut out the middle entries of the stack trace to a given length.
 
   For instance:
@@ -120,6 +137,7 @@ def _ShortenStacktrace(stacktrace, url_encoded_length):
 
   Args:
     stacktrace: str, the stacktrace (might be formatted by _FormatTraceback)
+        without the leading 'Traceback (most recent call last):' or 'Trace:'
     url_encoded_length: int, the length to shorten the stacktrace to (when
         URL-encoded).
 
@@ -148,7 +166,7 @@ def _ShortenStacktrace(stacktrace, url_encoded_length):
   return _FormatStackTrace(entries[0], rest)
 
 
-def _ShortenIssueBody(comment, stacktrace, exception, url_encoded_length):
+def _ShortenIssueBody(comment, url_encoded_length):
   """Shortens the comment to be at most the given length (URL-encoded).
 
   Does one of two things:
@@ -162,9 +180,8 @@ def _ShortenIssueBody(comment, stacktrace, exception, url_encoded_length):
       That is, truncate the comment.
 
   Args:
-    comment: str, the formatted comment for inclusion before shortening.
-    stacktrace: str, the formatted stacktrace portion of the comment
-    exception: str, the exception in the comment
+    comment: CommentHolder, an object containing the formatted comment for
+        inclusion before shortening, and its constituent components
     url_encoded_length: the max length of the comment after shortening (when
         comment is URL-encoded).
 
@@ -176,33 +193,32 @@ def _ShortenIssueBody(comment, stacktrace, exception, url_encoded_length):
   # command, the stacktrace, and places for the user to provide additional
   # information.
   # * optional_info is the less essential `gcloud info output`.
-  critical_info, middle, optional_info = comment.partition(
+  critical_info, middle, optional_info = comment.body.partition(
       'Installation information:\n')
   optional_info = middle + optional_info
   # We need to count the message about truncating the output towards our total
   # character count.
   max_str_len = (url_encoded_length -
                  _UrlEncodeLen(TRUNCATED_INFO_MESSAGE + '\n'))
-  truncated_issue_body, remaining = _UrlTruncateLines(comment, max_str_len)
+  truncated_issue_body, remaining = _UrlTruncateLines(comment.body, max_str_len)
 
   # Case (1) from the docstring
   if _UrlEncodeLen(critical_info) <= max_str_len:
     return truncated_issue_body, remaining
   else:
     # Attempt to shorten stacktrace by cutting out middle
-    pre_stacktrace, _, _ = critical_info.partition('Trace:\n')
-
-    max_stacktrace_len = (
-        url_encoded_length -
-        _UrlEncodeLen(pre_stacktrace + 'Trace:\n' + exception + '\n' +
-                      TRUNCATED_INFO_MESSAGE))
-    shortened_stacktrace = ('Trace:\n' +
-                            _ShortenStacktrace(stacktrace, max_stacktrace_len))
-    critical_info_with_shortened_stacktrace = (
-        pre_stacktrace + shortened_stacktrace + exception + '\n' +
+    non_stacktrace_encoded_len = _UrlEncodeLen(
+        comment.pre_stacktrace + 'Trace:\n' + comment.exception + '\n' +
         TRUNCATED_INFO_MESSAGE)
+    max_stacktrace_len = url_encoded_length - non_stacktrace_encoded_len
+    shortened_stacktrace = _ShortenStacktrace(comment.stacktrace,
+                                              max_stacktrace_len)
+    critical_info_with_shortened_stacktrace = (
+        comment.pre_stacktrace + 'Trace:\n' + shortened_stacktrace +
+        comment.exception + '\n' + TRUNCATED_INFO_MESSAGE)
     optional_info_with_full_stacktrace = ('Full stack trace (formatted):\n' +
-                                          stacktrace + exception + '\n' +
+                                          comment.stacktrace +
+                                          comment.exception + '\n\n' +
                                           optional_info)
 
     # Case (2) from the docstring
@@ -293,7 +309,9 @@ def _FormatIssueBody(info, log_data=None):
     log_data: LogData, parsed log data for a gcloud run
 
   Returns:
-    str, issue comment body
+    CommentHolder, a class containing the issue comment body, part of comment
+        before stacktrace, the stacktrace portion of the comment, and the
+        exception
   """
   gcloud_info = str(info)
 
@@ -302,6 +320,10 @@ def _FormatIssueBody(info, log_data=None):
     formatted_command = 'Issue running command [{0}].\n\n'.format(
         log_data.command)
 
+  pre_stacktrace = COMMENT_PRE_STACKTRACE_TEMPLATE.format(
+      formatted_command=formatted_command)
+
+  formatted_traceback = ''
   formatted_stacktrace = ''
   exception = ''
   if log_data and log_data.traceback:
@@ -309,12 +331,14 @@ def _FormatIssueBody(info, log_data=None):
     # MAX_URL_LENGTH), we reduce the size of the traceback by stripping out the
     # unnecessary information, such as the runtime root and function names.
     formatted_stacktrace, exception = _FormatTraceback(log_data.traceback)
-  return (COMMENT_TEMPLATE.format(formatted_command=formatted_command,
-                                  gcloud_info=gcloud_info.strip(),
-                                  formatted_stacktrace=formatted_stacktrace,
-                                  exception=exception),
-          formatted_stacktrace,
-          exception)
+    formatted_traceback = 'Trace:\n' + formatted_stacktrace + exception
+
+  comment_body = COMMENT_TEMPLATE.format(
+      formatted_command=formatted_command, gcloud_info=gcloud_info.strip(),
+      formatted_traceback=formatted_traceback)
+
+  return CommentHolder(comment_body, pre_stacktrace, formatted_stacktrace,
+                       exception)
 
 
 def _StacktraceEntryReplacement(entry):
@@ -384,7 +408,7 @@ def _FormatTraceback(traceback):
                                 formatted_stacktrace)
 
   formatted_stacktrace = formatted_stacktrace.replace(
-      'Traceback (most recent call last):', 'Trace:')
+      'Traceback (most recent call last):\n', '')
 
   return formatted_stacktrace, exception
 
@@ -398,12 +422,11 @@ def OpenNewIssueInBrowser(info, log_data):
     info: InfoHolder, the data from of `gcloud info`
     log_data: LogData, parsed representation of a recent log
   """
-  comment, formatted_stacktrace, exception = _FormatIssueBody(info, log_data)
-  url = _FormatNewIssueUrl(comment)
+  comment = _FormatIssueBody(info, log_data)
+  url = _FormatNewIssueUrl(comment.body)
   if len(url) > MAX_URL_LENGTH:
     max_info_len = MAX_URL_LENGTH - len(_FormatNewIssueUrl(''))
-    truncated, remaining = _ShortenIssueBody(
-        comment, formatted_stacktrace, exception, max_info_len)
+    truncated, remaining = _ShortenIssueBody(comment, max_info_len)
     log.warn('Truncating included information. '
              'Please consider including the remainder:')
     divider_text = 'TRUNCATED INFORMATION (PLEASE CONSIDER INCLUDING)'

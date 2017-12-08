@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
@@ -50,7 +51,7 @@ def _Args(parser):
   parser.add_argument(
       '--num-nodes',
       type=int,
-      help='The number of nodes in the cluster.',
+      help='The number of nodes to be created in each of the cluster\'s zones.',
       default=3)
   parser.add_argument(
       '--additional-zones',
@@ -63,6 +64,9 @@ replicated. All zones must be in the same region as the cluster's primary zone.
 If additional-zones is not specified, all nodes will be in the cluster's primary
 zone.
 
+Note that `NUM_NODES` nodes will be created in each zone, such that if you
+specify `--num-nodes=4` and choose one additional zone, 8 nodes will be created.
+
 Multiple locations can be specified, separated by commas. For example:
 
   $ {{command}} example-cluster --zone us-central1-a --additional-zones us-central1-b,us-central1-c
@@ -73,7 +77,7 @@ Multiple locations can be specified, separated by commas. For example:
       'server-specified')
   parser.add_argument(
       '--subnetwork',
-      help='The name of the Google Compute Engine subnetwork'
+      help='The name of the Google Compute Engine subnetwork '
       '(https://cloud.google.com/compute/docs/subnetworks) to which the '
       'cluster is connected. If specified, the cluster\'s network must be a '
       '"custom subnet" network. Specification of subnetworks is an '
@@ -164,6 +168,7 @@ Alias,URI
       help=argparse.SUPPRESS,
       type=int,
       default=0)
+  flags.AddImageFamilyFlag(parser)
 
 
 NO_CERTS_ERROR_FMT = '''\
@@ -201,7 +206,8 @@ class Create(base.Command):
         enable_cloud_logging=args.enable_cloud_logging,
         enable_cloud_monitoring=args.enable_cloud_monitoring,
         disable_addons=args.disable_addons,
-        local_ssd_count=args.local_ssd_count)
+        local_ssd_count=args.local_ssd_count,
+        image_family=args.image_family)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

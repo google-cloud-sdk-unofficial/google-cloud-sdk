@@ -18,7 +18,7 @@ from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 
 
-class Describe(base.Command):
+class Describe(base.DescribeCommand):
   """View the details of a job."""
 
   detailed_help = {
@@ -46,6 +46,3 @@ class Describe(base.Command):
 
     job = client.projects_regions_jobs.Get(request)
     return job
-
-  def Display(self, args, result):
-    self.format(result)

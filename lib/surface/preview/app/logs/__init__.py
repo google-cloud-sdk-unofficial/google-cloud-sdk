@@ -15,7 +15,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 class Logs(base.Group):
   """Manage your App Engine logs.
 

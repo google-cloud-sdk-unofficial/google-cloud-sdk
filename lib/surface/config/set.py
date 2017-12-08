@@ -18,8 +18,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.command_lib.config import completers
 from googlecloudsdk.command_lib.config import flags
-from googlecloudsdk.core import log
-from googlecloudsdk.core import named_configs
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import remote_completion
 
@@ -65,9 +63,7 @@ class Set(base.Command):
         help='The value to be set.')
     value_arg.completer = Set.ValueCompleter
 
-    scope_args = parser.add_mutually_exclusive_group()
-    flags.DEPRECATED_SCOPE_FLAG.AddToParser(scope_args)
-    flags.INSTALLATION_FLAG.AddToParser(scope_args)
+    flags.INSTALLATION_FLAG.AddToParser(parser)
 
   @staticmethod
   def ValueCompleter(prefix, parsed_args, **unused_kwargs):
@@ -91,21 +87,14 @@ class Set(base.Command):
     return completer(prefix=prefix, parsed_args=parsed_args, **unused_kwargs)
 
   def Run(self, args):
-    if args.scope:
-      log.err.Print('The `--scope` flag is deprecated.  Please run `gcloud '
-                    'help topic configurations` and `gcloud help config set` '
-                    'for more information.')
-
-    requested_scope = flags.RequestedScope(args)
-
-    if not requested_scope:
-      named_configs.TryEnsureWriteableNamedConfig()
+    scope = (properties.Scope.INSTALLATION if args.installation
+             else properties.Scope.USER)
 
     prop = properties.FromString(args.property)
     if not prop:
       raise c_exc.InvalidArgumentException(
           'property', 'Must be in the form: [SECTION/]PROPERTY')
-    properties.PersistProperty(prop, args.value, scope=requested_scope)
+    properties.PersistProperty(prop, args.value, scope=scope)
 
 
 

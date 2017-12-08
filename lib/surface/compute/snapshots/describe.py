@@ -21,7 +21,6 @@ class Describe(base_classes.GlobalDescriber):
   @staticmethod
   def Args(parser):
     base_classes.GlobalDescriber.Args(parser, 'compute.snapshots')
-    base_classes.AddFieldsFlag(parser, 'snapshots')
 
   @property
   def service(self):

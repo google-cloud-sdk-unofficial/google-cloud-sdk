@@ -16,12 +16,7 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.third_party.apis.compute.v1 import compute_v1_messages
-
-
-MIGRATION_OPTIONS = sorted(
-    compute_v1_messages.Scheduling.OnHostMaintenanceValueValuesEnum
-    .to_dict().keys())
+from googlecloudsdk.core import apis as core_apis
 
 
 class SetSchedulingInstances(base_classes.NoOutputAsyncMutator):
@@ -40,9 +35,14 @@ class SetSchedulingInstances(base_classes.NoOutputAsyncMutator):
         Engine.  This does not affect terminations performed by the user.'
         """
 
+    messages = core_apis.GetMessagesModule('compute', 'v1')
+    migration_options = sorted(messages.Scheduling
+                               .OnHostMaintenanceValueValuesEnum
+                               .to_dict().keys())
+
     maintenance_policy = parser.add_argument(
         '--maintenance-policy',
-        choices=MIGRATION_OPTIONS,
+        choices=migration_options,
         type=lambda x: x.upper(),
         help=('Specifies the behavior of the instances when their host '
               'machines undergo maintenance.'))

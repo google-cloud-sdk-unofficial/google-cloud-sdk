@@ -18,7 +18,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.command_lib.config import completers
 from googlecloudsdk.command_lib.config import flags
-from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
@@ -57,19 +56,15 @@ class Unset(base.Command):
         'referring to properties in the core section.')
     property_arg.completer = completers.PropertiesCompleter
 
-    scope_args = parser.add_mutually_exclusive_group()
-    flags.DEPRECATED_SCOPE_FLAG.AddToParser(scope_args)
-    flags.INSTALLATION_FLAG.AddToParser(scope_args)
+    flags.INSTALLATION_FLAG.AddToParser(parser)
 
   def Run(self, args):
     """Runs this command."""
-    if args.scope:
-      log.err.Print('The `--scope` flag is deprecated.  Please run `gcloud '
-                    'help topic configurations` and `gcloud help config '
-                    'unset` for more information.')
+    scope = (properties.Scope.INSTALLATION if args.installation
+             else properties.Scope.USER)
 
     prop = properties.FromString(args.property)
     if not prop:
       raise c_exc.InvalidArgumentException(
           'property', 'Must be in the form: [SECTION/]PROPERTY')
-    properties.PersistProperty(prop, None, scope=flags.RequestedScope(args))
+    properties.PersistProperty(prop, None, scope=scope)

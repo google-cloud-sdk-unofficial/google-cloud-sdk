@@ -21,7 +21,6 @@ class Describe(base_classes.GlobalDescriber):
   @staticmethod
   def Args(parser):
     base_classes.GlobalDescriber.Args(parser, 'compute.targetHttpProxies')
-    base_classes.AddFieldsFlag(parser, 'targetHttpProxies')
 
   @property
   def service(self):

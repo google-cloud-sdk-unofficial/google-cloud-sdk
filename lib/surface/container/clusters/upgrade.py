@@ -17,6 +17,7 @@ from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util.semver import SemVer
@@ -120,6 +121,7 @@ class Upgrade(base.Command):
         default=True,
         help='Poll the operation for completion after issuing an upgrade '
         'request.')
+    flags.AddImageFamilyFlag(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -142,7 +144,8 @@ class Upgrade(base.Command):
         version=args.cluster_version,
         update_master=args.master,
         update_nodes=(not args.master),
-        node_pool=args.node_pool)
+        node_pool=args.node_pool,
+        image_family=args.image_family)
 
     if options.version:
       new_version = options.version

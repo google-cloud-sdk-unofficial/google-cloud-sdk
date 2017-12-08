@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.debug import debug
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
@@ -78,9 +79,10 @@ class Delete(base.DeleteCommand):
       fields.append('userEmail:label=USER')
     fields.append('location.format("{0}:{1}", path, line):label=LOCATION')
     fields.append('short_status():label="STATUS BEFORE DELETION"')
-    return """
-      [log=status,
-       empty-legend="No matching snapshots were found",
-       legend="Deleted Snapshots"]
-      table({0})
-    """.format(','.join(fields))
+    return 'table({0})'.format(','.join(fields))
+
+  def Epilog(self, resources_were_displayed):
+    if resources_were_displayed:
+      log.status.write('Deleted Snapshots')
+    else:
+      log.status.write('No snapshots matched the requested values')

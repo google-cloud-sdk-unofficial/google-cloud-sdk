@@ -63,7 +63,9 @@ def main(args):
         default = 'bundle exec rackup -p $PORT'
         prompt = ('This looks like a Ruby application. Please confirm the '
                   'command to run as the entrypoint:')
-        entrypoint = comm.query_user(prompt, default)
+        # Currently query_user does not seem to return the default on empty
+        # response, so do the defaulting ourselves until that is fixed.
+        entrypoint = comm.query_user(prompt, default) or default
 
     runtime_data = {
         'ruby_version': ruby_version,

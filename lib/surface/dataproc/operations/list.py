@@ -17,7 +17,6 @@ import json
 
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import properties
 
 
@@ -27,7 +26,7 @@ CLUSTER_NAME_FILTER = 'cluster_name'
 PROJECT_FILTER = 'project_id'
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """View the list of all operations."""
 
   detailed_help = {
@@ -45,6 +44,8 @@ class List(base.Command):
 
   @staticmethod
   def Args(parser):
+    base.URI_FLAG.RemoveFromParser(parser)
+
     parser.add_argument(
         '--cluster',
         help='Restrict to the operations of this Dataproc cluster.')
@@ -54,6 +55,9 @@ class List(base.Command):
         choices=sorted(STATE_MATCHER_MAP.keys()),
         help='Filter by cluster state. Choices are {0}.'.format(
             sorted(STATE_MATCHER_MAP.keys())))
+
+  def Collection(self):
+    return 'dataproc.operations'
 
   @util.HandleHttpError
   def Run(self, args):
@@ -76,6 +80,3 @@ class List(base.Command):
 
     response = client.projects_regions_operations.List(request)
     return response.operations
-
-  def Display(self, args, result):
-    list_printer.PrintResourceList('dataproc.operations', result)

@@ -24,7 +24,6 @@ class Describe(base_classes.ZonalDescriber):
   @staticmethod
   def Args(parser):
     base_classes.ZonalDescriber.Args(parser)
-    base_classes.AddFieldsFlag(parser, 'instanceGroupManagers')
 
   @property
   def service(self):

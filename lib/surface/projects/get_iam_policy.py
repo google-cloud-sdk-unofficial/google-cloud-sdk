@@ -19,7 +19,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class GetIamPolicy(base.ListCommand):
+class GetIamPolicy(util.ProjectCommand):
   """Get IAM policy for a project.
 
   Gets the IAM policy for a project, given a project ID.
@@ -45,24 +45,10 @@ class GetIamPolicy(base.ListCommand):
   def Run(self, args):
     projects = self.context['projects_client']
     messages = self.context['projects_messages']
-    resources = self.context['projects_resources']
 
-    project_ref = resources.Parse(args.id,
-                                  collection='cloudresourcemanager.projects')
+    project_ref = self.GetProject(args.id)
     policy_request = messages.CloudresourcemanagerProjectsGetIamPolicyRequest(
         resource=project_ref.Name(),
         getIamPolicyRequest=messages.GetIamPolicyRequest(),
     )
     return projects.projects.GetIamPolicy(policy_request)
-
-  def Format(self, unused_args):
-    return """\
-        table[box](
-          version,
-          etag,
-          bindings:format="table[no-heading](
-            role,
-            members:format=list
-          )"
-        )
-    """

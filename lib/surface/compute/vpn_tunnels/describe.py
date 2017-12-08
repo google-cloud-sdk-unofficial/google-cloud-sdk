@@ -27,7 +27,6 @@ class Describe(base_classes.RegionalDescriber):
     """Adds arguments to the supplied parser."""
 
     base_classes.RegionalDescriber.Args(parser, 'vpnTunnels')
-    base_classes.AddFieldsFlag(parser, 'vpnTunnels')
 
   @property
   def service(self):

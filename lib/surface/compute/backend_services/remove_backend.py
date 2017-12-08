@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.backend_services import flags as bs_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
@@ -47,9 +48,7 @@ def _AddArgs(parser, multizonal=False):
       resource_type='instance group',
       operation_type='remove from the backend service')
 
-  parser.add_argument(
-      'name',
-      help='The name of the backend service.')
+  bs_flags.AddBackendServiceName(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)

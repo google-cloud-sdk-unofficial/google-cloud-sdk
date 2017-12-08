@@ -18,7 +18,7 @@ from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 
 
-class Describe(base.Command):
+class Describe(base.DescribeCommand):
   """View the details of a cluster."""
 
   detailed_help = {
@@ -43,6 +43,3 @@ class Describe(base.Command):
 
     cluster = client.projects_regions_clusters.Get(request)
     return cluster
-
-  def Display(self, args, result):
-    self.format(result)

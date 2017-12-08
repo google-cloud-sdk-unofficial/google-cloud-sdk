@@ -21,7 +21,6 @@ class Describe(base_classes.GlobalDescriber):
   @staticmethod
   def Args(parser):
     base_classes.RegionalDescriber.Args(parser, 'compute.urlMaps')
-    base_classes.AddFieldsFlag(parser, 'urlMaps')
 
   @property
   def service(self):

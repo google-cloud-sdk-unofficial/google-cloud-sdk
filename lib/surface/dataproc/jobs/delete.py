@@ -21,7 +21,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-class Delete(base.Command):
+class Delete(base.DeleteCommand):
   """Delete the record of an inactive job."""
 
   detailed_help = {

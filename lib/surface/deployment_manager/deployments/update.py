@@ -127,6 +127,15 @@ class Update(base.Command):
   def Format(self, args):
     return self.ListFormat(args)
 
+  def Epilog(self, resources_were_displayed):
+    """Called after resources are displayed if the default format was used.
+
+    Args:
+      resources_were_displayed: True if resources were displayed.
+    """
+    if not resources_were_displayed:
+      log.status.Print('No resources or outputs found in your deployment.')
+
   def Run(self, args):
     """Run 'deployments update'.
 

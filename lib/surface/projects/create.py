@@ -55,10 +55,8 @@ class Create(util.ProjectCommand, base.CreateCommand):
   def Run(self, args):
     projects = self.context['projects_client']
     messages = self.context['projects_messages']
-    resources = self.context['projects_resources']
 
-    project_ref = resources.Parse(args.id,
-                                  collection='cloudresourcemanager.projects')
+    project_ref = self.GetProject(args.id)
 
     # Create project.
     project_creation_result = projects.projects.Create(

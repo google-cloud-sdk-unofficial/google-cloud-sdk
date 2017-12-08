@@ -22,7 +22,6 @@ class Describe(base_classes.GlobalDescriber):
   def Args(parser):
     base_classes.GlobalDescriber.Args(
         parser, 'compute.targetSslProxies')
-    base_classes.AddFieldsFlag(parser, 'targetSslProxies')
 
   @property
   def service(self):

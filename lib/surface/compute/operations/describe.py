@@ -24,7 +24,6 @@ from googlecloudsdk.core import resources as resource_exceptions
 def AddFlags(parser, is_ga):
   """Helper function for adding flags dependant on the release track."""
   base_classes.BaseDescriber.Args(parser)
-  base_classes.AddFieldsFlag(parser, 'operations')
 
   scope = parser.add_mutually_exclusive_group()
 

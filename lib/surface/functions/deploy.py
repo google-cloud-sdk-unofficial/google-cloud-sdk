@@ -101,7 +101,7 @@ class Deploy(base.Command):
         help=('Name of Pub/Sub topic. Every message published in this topic '
               'will trigger function execution with message contents passed as '
               'input data.'),
-        type=util.ValidateAndStandarizePubsubTopicNameOrRaise)
+        type=util.ValidatePubsubTopicNameOrRaise)
     trigger_group.add_argument(
         '--trigger-gs-uri',
         help=('Google Cloud Storage bucket name. Every change in files in this '
@@ -162,7 +162,9 @@ class Deploy(base.Command):
     messages = self.context['functions_messages']
     trigger = messages.FunctionTrigger()
     if args.trigger_topic:
-      trigger.pubsubTopic = args.trigger_topic
+      project = properties.VALUES.core.project.Get(required=True)
+      trigger.pubsubTopic = 'projects/{0}/topics/{1}'.format(
+          project, args.trigger_topic)
     if args.trigger_gs_uri:
       trigger.gsUri = args.trigger_gs_uri
     if args.trigger_http:
@@ -202,7 +204,9 @@ class Deploy(base.Command):
     with file_utils.TemporaryDirectory() as tmp_dir:
       zip_file = self._CreateZipFile(tmp_dir, args)
       if self._UploadFile(zip_file, gcs_url) != 0:
-        raise exceptions.FunctionsError('Function upload failed.')
+        raise exceptions.FunctionsError(
+            'Failed to upload the function source code to the bucket {0}'
+            .format(args.bucket))
     return gcs_url
 
   @util.CatchHTTPErrorRaiseHTTPException

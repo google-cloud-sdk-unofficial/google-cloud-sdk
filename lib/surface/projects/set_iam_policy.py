@@ -20,7 +20,7 @@ from googlecloudsdk.core.iam import iam_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class SetIamPolicy(base.Command):
+class SetIamPolicy(util.ProjectCommand):
   """Set IAM policy for a project.
 
   Sets the IAM policy for a project, given a project ID and a file that
@@ -52,10 +52,8 @@ class SetIamPolicy(base.Command):
   def Run(self, args):
     projects = self.context['projects_client']
     messages = self.context['projects_messages']
-    resources = self.context['projects_resources']
 
-    project_ref = resources.Parse(args.id,
-                                  collection='cloudresourcemanager.projects')
+    project_ref = self.GetProject(args.id)
 
     policy = iam_util.ParseJsonPolicyFile(args.policy_file, messages.Policy)
 
@@ -63,13 +61,3 @@ class SetIamPolicy(base.Command):
         resource=project_ref.Name(),
         setIamPolicyRequest=messages.SetIamPolicyRequest(policy=policy))
     return projects.projects.SetIamPolicy(policy_request)
-
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    # pylint:disable=not-callable, self.format is callable.
-    self.format(result)

@@ -26,7 +26,6 @@ class Describe(base_classes.GlobalDescriber):
   def Args(parser):
     base_classes.GlobalDescriber.Args(
         parser, 'compute.firewalls', list_command_path='compute.firewall-rules')
-    base_classes.AddFieldsFlag(parser, 'firewalls')
 
   @property
   def service(self):

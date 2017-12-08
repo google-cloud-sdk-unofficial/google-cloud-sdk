@@ -21,7 +21,6 @@ class Describe(base_classes.GlobalDescriber):
   @staticmethod
   def Args(parser):
     base_classes.GlobalDescriber.Args(parser, 'compute.routes')
-    base_classes.AddFieldsFlag(parser, 'routes')
 
   @property
   def service(self):

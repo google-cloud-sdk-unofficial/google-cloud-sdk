@@ -17,7 +17,7 @@ from googlecloudsdk.calliope import base
 
 
 class Modules(base.Group):
-  """View and manage your App Engine modules.
+  """Deprecated. View and manage your App Engine modules.
 
   This set of commands can be used to view and manage your existing App Engine
   modules.  To create new deployments of modules, use {parent_command} deploy.

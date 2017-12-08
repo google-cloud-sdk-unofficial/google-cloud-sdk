@@ -18,24 +18,21 @@
 
 from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import apis as core_apis
+from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
-def _Args(parser, messages):
+def _ArgsGA(parser):
   """Common arguments to create commands for each release track."""
-  backend_services_utils.AddUpdatableArgs(
-      parser,
-      messages,
-      default_protocol=None,
-      default_timeout=None)
-
-  parser.add_argument(
-      'name',
-      help='The name of the backend service to update.')
+  flags.AddBackendServiceName(parser)
+  flags.AddDescription(parser)
+  flags.AddHttpHealthChecks(parser)
+  flags.AddHttpsHealthChecks(parser)
+  flags.AddTimeout(parser, default=None)
+  flags.AddPortName(parser)
+  flags.AddProtocol(parser, default=None)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -44,7 +41,7 @@ class UpdateGA(base_classes.ReadWriteCommand):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, core_apis.GetMessagesModule('compute', 'v1'))
+    _ArgsGA(parser)
 
   @property
   def service(self):
@@ -121,79 +118,14 @@ class UpdateAlpha(UpdateGA):
   """Update a backend service."""
 
   @staticmethod
-  def AffinityOptions(backend_service):
-    return sorted(backend_service.SessionAffinityValueValuesEnum.to_dict())
-
-  @staticmethod
   def Args(parser):
-    alpha_messages = core_apis.GetMessagesModule('compute', 'alpha')
-    _Args(parser, alpha_messages)
+    _ArgsGA(parser)
 
-    connection_draining_timeout = parser.add_argument(
-        '--connection-draining-timeout',
-        type=int,
-        default=None,  # None => use default value.
-        help='Connection draining timeout in seconds.')
-    connection_draining_timeout.detailed_help = """\
-        Connection draining timeout, in seconds, to be used during removal of
-        VMs from instance groups. This guarantees that for the specified time
-        all existing connections to a VM will remain untouched, but no new
-        connections will be accepted. Set timeout to zero to disable connection
-        draining. Enable feature by specifying timeout up to one hour.
-        Connection draining is disabled by default.
-        """
-
-    enable_cdn = parser.add_argument(
-        '--enable-cdn',
-        action='store_true',
-        default=None,  # Tri-valued, None => don't change the setting.
-        help='Enable cloud CDN.')
-    enable_cdn.detailed_help = """\
-        Enable Cloud CDN for the backend service. Cloud CDN can cache HTTP
-        responses from a backend service at the edge of the network, close to
-        users.
-        """
-
-    health_checks = parser.add_argument(
-        '--health-checks',
-        type=arg_parsers.ArgList(min_length=1),
-        metavar='HEALTH_CHECK',
-        action=arg_parsers.FloatingListValuesCatcher(),
-        help=('Specifies a list of health check objects for checking the '
-              'health of the backend service.'))
-    health_checks.detailed_help = """\
-        Specifies a list of health check objects for checking the health of
-        the backend service. Health checks need not be for the same protocol
-        as that of the backend service.
-        """
-
-    session_affinity = parser.add_argument(
-        '--session-affinity',
-        choices=UpdateAlpha.AffinityOptions(alpha_messages.BackendService),
-        type=lambda x: x.upper(),
-        default=None,
-        help='The type of session affinity to use.')
-    session_affinity.detailed_help = """\
-        The type of session affinity to use for this backend service.  Possible
-        values are:
-
-          * none: Session affinity is disabled.
-          * client_ip: Route requests to instances based on the hash of the
-            client's IP address.
-          * generated_cookie: Route requests to instances based on the contents
-            of the "GCLB" cookie set by the load balancer.
-        """
-
-    affinity_cookie_ttl = parser.add_argument(
-        '--affinity-cookie-ttl',
-        type=int,
-        default=None,
-        help=('TTL in seconds of the GCLB cookie, if any'))
-    affinity_cookie_ttl.detailed_helpr = """\
-        If generated_cookie session affinity is in use, set the TTL of the
-        resulting cookie.  A setting of 0 indicates that the cookie should
-        be transient.
-        """
+    flags.AddConnectionDrainingTimeout(parser)
+    flags.AddEnableCdn(parser)
+    flags.AddHealthChecks(parser)
+    flags.AddSessionAffinity(parser, default=None)
+    flags.AddAffinityCookieTtl(parser, default=None)
 
   def Modify(self, args, existing):
     replacement = super(UpdateAlpha, self).Modify(args, existing)
@@ -241,18 +173,9 @@ class UpdateBeta(UpdateGA):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, core_apis.GetMessagesModule('compute', 'beta'))
+    _ArgsGA(parser)
 
-    enable_cdn = parser.add_argument(
-        '--enable-cdn',
-        action='store_true',
-        default=None,  # Tri-valued, None => don't change the setting.
-        help='Enable cloud CDN.')
-    enable_cdn.detailed_help = """\
-        Enable Cloud CDN for the backend service. Cloud CDN can cache HTTP
-        responses from a backend service at the edge of the network, close to
-        users.
-        """
+    flags.AddEnableCdn(parser)
 
   def Modify(self, args, existing):
     replacement = super(UpdateBeta, self).Modify(args, existing)

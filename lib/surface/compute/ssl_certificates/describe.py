@@ -21,7 +21,6 @@ class Describe(base_classes.GlobalDescriber):
   @staticmethod
   def Args(parser):
     base_classes.GlobalDescriber.Args(parser)
-    base_classes.AddFieldsFlag(parser, 'SSL certificates')
 
   @property
   def service(self):

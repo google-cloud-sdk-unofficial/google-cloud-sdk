@@ -21,7 +21,6 @@ class Describe(base_classes.GlobalDescriber):
   @staticmethod
   def Args(parser):
     base_classes.GlobalDescriber.Args(parser, 'compute.httpHealthChecks')
-    base_classes.AddFieldsFlag(parser, 'httpHealthChecks')
 
   @property
   def service(self):

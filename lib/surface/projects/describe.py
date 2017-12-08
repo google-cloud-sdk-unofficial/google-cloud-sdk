@@ -49,7 +49,5 @@ class Describe(util.ProjectCommand, base.DescribeCommand):
   @util.HandleHttpError
   def Run(self, args):
     projects = self.context['projects_client']
-    resources = self.context['projects_resources']
-    project_ref = resources.Parse(args.id,
-                                  collection='cloudresourcemanager.projects')
+    project_ref = self.GetProject(args.id)
     return projects.projects.Get(project_ref.Request())

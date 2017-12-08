@@ -21,7 +21,6 @@ class Describe(base_classes.GlobalDescriber):
   @staticmethod
   def Args(parser):
     base_classes.GlobalDescriber.Args(parser, 'compute.regions')
-    base_classes.AddFieldsFlag(parser, 'regions')
 
   @property
   def service(self):

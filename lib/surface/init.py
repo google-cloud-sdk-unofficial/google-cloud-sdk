@@ -26,6 +26,7 @@ from googlecloudsdk.core import config
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.configurations import named_configs
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import platforms
 
@@ -163,26 +164,34 @@ class Init(base.Command):
     Returns:
       Configuration name or None.
     """
+    configs = named_configs.ConfigurationStore.AllConfigs()
+    active_config = named_configs.ConfigurationStore.ActiveConfig()
 
-    configs = self._RunCmd(['config', 'configurations', 'list'])
-    if not configs:
-      new_config_name = 'default'
-      if self._RunCmd(['config', 'configurations', 'create'],
-                      [new_config_name]):
-        self._RunCmd(['config', 'configurations', 'activate'],
-                     [new_config_name])
-        properties.PropertiesFile.Invalidate()
-      return new_config_name
+    if not configs or active_config.name not in configs:
+      # Listing the configs will automatically create the default config.  The
+      # only way configs could be empty here is if there are no configurations
+      # and the --configuration flag or env var is set to something that does
+      # not exist.  If configs has items, but the active config is not in there,
+      # that similarly means that hey are using the flag or the env var and that
+      # config does not exist.  In either case, just create it and go with that
+      # one as the one that as they have already selected it.
+      named_configs.ConfigurationStore.CreateConfig(active_config.name)
+      # Need to active it in the file, not just the environment.
+      active_config.Activate()
+      return active_config.name
 
-    config_names = [cfg['name'] for cfg in configs]
-    active_configs = [cfg['name'] for cfg in configs
-                      if cfg.get('is_active', False)]
-    if not active_configs:
-      return None
+    # If there is a only 1 config, it is the default, and there are no
+    # properties set, assume it was auto created and that it should be
+    # initialized as if it didn't exist.
+    if len(configs) == 1:
+      default_config = configs.get(named_configs.DEFAULT_CONFIG_NAME, None)
+      if default_config and not default_config.GetProperties():
+        default_config.Activate()
+        return default_config.name
+
     choices = []
-    active_config = active_configs[0]
     log.status.write('Settings from your current configuration [{0}] are:\n'
-                     .format(active_config))
+                     .format(active_config.name))
     log.status.flush()
     # Not using self._RunCmd to get command actual output.
     self.cli.Execute(['config', 'list'])
@@ -191,9 +200,10 @@ class Init(base.Command):
     log.status.flush()
     choices.append(
         'Re-initialize this configuration [{0}] with new settings '.format(
-            active_config))
+            active_config.name))
     choices.append('Create a new configuration')
-    config_choices = [name for name in config_names if name != active_config]
+    config_choices = [name for name, c in sorted(configs.iteritems())
+                      if not c.is_active]
     choices.extend('Switch to and re-initialize '
                    'existing configuration: [{0}]'.format(name)
                    for name in config_choices)
@@ -202,7 +212,7 @@ class Init(base.Command):
       return None
     if idx == 0:  # If reinitialize was selected.
       self._CleanCurrentConfiguration()
-      return active_config
+      return active_config.name
     if idx == 1:  # Second option is to create new configuration.
       return self._CreateConfiguration()
     config_name = config_choices[idx - 2]
@@ -367,7 +377,7 @@ https://console.developers.google.com/apis page.
     if new_config_name:
       self._RunCmd(['config', 'configurations', 'activate'],
                    [configuration_name])
-      properties.PropertiesFile.Invalidate()
+      named_configs.ActivePropertiesFile.Invalidate()
     return new_config_name
 
   def _CreateBotoConfig(self):
@@ -413,7 +423,7 @@ information about configuring Google Cloud Storage.
     self._RunCmd(['config', 'unset'], ['project'])
     self._RunCmd(['config', 'unset'], ['compute/zone'])
     self._RunCmd(['config', 'unset'], ['compute/region'])
-    properties.PropertiesFile.Invalidate()
+    named_configs.ActivePropertiesFile.Invalidate()
 
   def _RunCmd(self, cmd, params=None, disable_user_output=True):
     if not self.cli.IsValidCommand(cmd):

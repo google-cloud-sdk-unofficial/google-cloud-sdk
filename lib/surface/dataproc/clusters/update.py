@@ -126,6 +126,3 @@ class Update(base.Command):
     cluster = client.projects_regions_clusters.Get(cluster_ref.Request())
     log.UpdatedResource(cluster_ref)
     return cluster
-
-  def Display(self, args, result):
-    self.format(result)

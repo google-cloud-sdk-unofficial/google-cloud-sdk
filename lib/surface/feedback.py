@@ -27,7 +27,7 @@ StackOverflow, or the Cloud SDK groups page.
 import datetime
 import textwrap
 
-from googlecloudsdk.api_lib import feedback_util
+from googlecloudsdk.api_lib.sdktool import feedback_util
 from googlecloudsdk.api_lib.sdktool import info_holder
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log

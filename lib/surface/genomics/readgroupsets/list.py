@@ -17,11 +17,10 @@
 from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """List genomics read group sets in a dataset.
 
   Prints a table with summary information on read group sets in the dataset.
@@ -46,11 +45,10 @@ class List(base.Command):
         '--name',
         help="""Only return read group sets for which a substring of the
              name matches this string.""")
+    base.PAGE_SIZE_FLAG.SetDefault(parser, 128)
 
-    parser.add_argument(
-        '--limit',
-        type=int,
-        help='The maximum number of results to list.')
+  def Collection(self):
+    return 'genomics.readGroupSets'
 
   @genomics_util.ReraiseHttpException
   def Run(self, args):
@@ -72,28 +70,25 @@ class List(base.Command):
     apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
     req_class = (self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
                  .SearchReadGroupSetsRequest)
-    request = req_class(
-        name=args.name,
-        datasetIds=args.dataset_ids)
-    return list_pager.YieldFromList(
-        apitools_client.readgroupsets,
-        request,
-        method='Search',
-        limit=args.limit,
-        batch_size_attribute='pageSize',
-        batch_size=args.limit,  # Use limit if any, else server default.
-        field='readGroupSets')
+    messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
+    fields = genomics_util.GetQueryFields(
+        self.GetReferencedKeyNames(args), 'readGroupSets')
+    if fields:
+      global_params = messages.StandardQueryParameters(fields=fields)
+    else:
+      global_params = None
 
-  @genomics_util.ReraiseHttpException
-  def Display(self, args, result):
-    """Display prints information about what just happened to stdout.
+    page_size = args.page_size
+    if args.limit and args.limit < page_size:
+      page_size = args.limit
 
-    Args:
-      args: The same as the args in Run.
-
-      result: a list of ReadGroupSet objects.
-
-    Raises:
-      ValueError: if result is None or not a list
-    """
-    list_printer.PrintResourceList('genomics.readGroupSets', result)
+    pager = list_pager.YieldFromList(apitools_client.readgroupsets,
+                                     req_class(name=args.name,
+                                               datasetIds=args.dataset_ids),
+                                     method='Search',
+                                     global_params=global_params,
+                                     limit=args.limit,
+                                     batch_size_attribute='pageSize',
+                                     batch_size=page_size,
+                                     field='readGroupSets')
+    return genomics_util.ReraiseHttpExceptionPager(pager)

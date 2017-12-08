@@ -26,7 +26,6 @@ class Describe(base_classes.RegionalDescriber):
   @staticmethod
   def Args(parser):
     base_classes.RegionalDescriber.Args(parser, 'compute.subnetworks')
-    base_classes.AddFieldsFlag(parser, 'subnetworks')
 
   @property
   def service(self):

@@ -71,6 +71,3 @@ class Kill(base.Command):
     log.status.Print('Killed [{0}].'.format(job_ref))
 
     return job
-
-  def Display(self, args, result):
-    self.format(result)

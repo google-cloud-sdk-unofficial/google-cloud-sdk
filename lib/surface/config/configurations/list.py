@@ -15,8 +15,9 @@
 """Command to list named configuration."""
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import named_configs
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.configurations import named_configs
+from googlecloudsdk.core.configurations import properties_file
 
 
 class List(base.ListCommand):
@@ -43,17 +44,16 @@ class List(base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
-    configs = named_configs.ListNamedConfigs(log_warnings=True)
-    for config in configs:
-      fname = named_configs.GetPathForConfigName(config.name)
-      config_props = properties.VALUES.AllValues(
+    configs = named_configs.ConfigurationStore.AllConfigs()
+    for _, config in sorted(configs.iteritems()):
+      props = properties.VALUES.AllValues(
           list_unset=True,
-          properties_file=properties.PropertiesFile([fname]),
+          properties_file=properties_file.PropertiesFile([config.file_path]),
           only_file_contents=True)
       yield {
           'name': config.name,
           'is_active': config.is_active,
-          'properties': config_props,
+          'properties': props,
       }
 
   def Format(self, args):

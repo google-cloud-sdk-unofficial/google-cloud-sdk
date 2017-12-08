@@ -17,12 +17,7 @@ import datetime
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
-from googlecloudsdk.third_party.apis.compute.v1 import compute_v1_messages
-
-
-DEPRECATION_STATUSES = sorted(
-    ['ACTIVE'] +
-    compute_v1_messages.DeprecationStatus.StateValueValuesEnum.to_dict().keys())
+from googlecloudsdk.core import apis as core_apis
 
 
 def _ResolveTime(absolute, relative_sec, current_time):
@@ -55,9 +50,13 @@ class DeprecateImages(base_classes.NoOutputAsyncMutator):
         metavar='NAME',
         help='The name of the image to set deprecation status of.')
 
+    messages = core_apis.GetMessagesModule('compute', 'v1')
+    deprecation_statuses = sorted(['ACTIVE'] + messages.DeprecationStatus
+                                  .StateValueValuesEnum.to_dict().keys())
+
     state = parser.add_argument(
         '--state',
-        choices=DEPRECATION_STATUSES,
+        choices=deprecation_statuses,
         type=lambda x: x.upper(),
         required=True,
         help='The deprecation state to set on the image.')

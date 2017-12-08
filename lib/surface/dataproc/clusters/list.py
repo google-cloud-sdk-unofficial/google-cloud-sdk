@@ -16,11 +16,10 @@
 
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import properties
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """View a list of all clusters in a project."""
 
   detailed_help = {
@@ -31,6 +30,13 @@ class List(base.Command):
             $ {command}
           """,
   }
+
+  @staticmethod
+  def Args(parser):
+    base.URI_FLAG.RemoveFromParser(parser)
+
+  def Collection(self):
+    return 'dataproc.clusters'
 
   @util.HandleHttpError
   def Run(self, args):
@@ -45,6 +51,3 @@ class List(base.Command):
 
     response = client.projects_regions_clusters.List(request)
     return response.clusters
-
-  def Display(self, args, result):
-    list_printer.PrintResourceList('dataproc.clusters', result)

@@ -17,94 +17,76 @@
 """
 
 from googlecloudsdk.api_lib.compute import backend_services_utils
-from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import apis as core_apis
+from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
-def _Args(parser, messages):
-  """Common arguments to create commands for each release track."""
-  backend_services_utils.AddUpdatableArgs(parser, messages)
+def _ResolvePort(args):
+  if args.port:
+    return args.port
+  if args.protocol in ['HTTPS', 'SSL']:
+    return 443
+  # Default to port 80, which is used for HTTP and TCP.
+  return 80
 
-  parser.add_argument(
-      'name',
-      help='The name of the backend service.')
+
+def _ResolvePortName(args):
+  """Determine port name if one was not specified."""
+  if args.port_name:
+    return args.port_name
+
+  if args.protocol == 'HTTPS':
+    return 'https'
+  if args.protocol == 'SSL':
+    return 'ssl'
+  if args.protocol == 'TCP':
+    return 'tcp'
+
+  return 'http'
+
+
+def _ResolveProtocol(messages, args, default='HTTP'):
+  return messages.BackendService.ProtocolValueValuesEnum(
+      args.protocol or default)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class CreateGA(base_classes.BaseAsyncCreator):
+class CreateGA(backend_services_utils.BackendServiceMutator):
   """Create a backend service."""
 
   @staticmethod
   def Args(parser):
-    _Args(parser, core_apis.GetMessagesModule('compute', 'v1'))
-
-  @property
-  def service(self):
-    return self.compute.backendServices
+    flags.AddBackendServiceName(parser)
+    flags.AddDescription(parser)
+    flags.AddHttpHealthChecks(parser)
+    flags.AddHttpsHealthChecks(parser)
+    flags.AddTimeout(parser)
+    flags.AddPortName(parser)
+    flags.AddProtocol(parser)
 
   @property
   def method(self):
     return 'Insert'
 
-  @property
-  def resource_type(self):
-    return 'backendServices'
-
-  def _CommonBackendServiceKwargs(self, args):
-    """Prepare BackendService kwargs for fields common to all release tracks.
-
-    Args:
-      args: CLI args to translate to BackendService proto kwargs.
-
-    Returns:
-      A dictionary of keyword arguments to be passed to the BackendService proto
-      constructor.
-    """
+  def _CreateBackendService(self, args):
     backend_services_ref = self.CreateGlobalReference(args.name)
-
-    if args.port:
-      port = args.port
-    else:
-      # Default to port 80, which is used for HTTP and TCP.
-      port = 80
-      if args.protocol in ['HTTPS', 'SSL']:
-        port = 443
-
-    if args.port_name:
-      port_name = args.port_name
-    else:
-      # args.protocol == 'HTTP'
-      port_name = 'http'
-      if args.protocol == 'HTTPS':
-        port_name = 'https'
-      elif args.protocol == 'SSL':
-        port_name = 'ssl'
-      elif args.protocol == 'TCP':
-        port_name = 'tcp'
-
-    protocol = self.messages.BackendService.ProtocolValueValuesEnum(
-        args.protocol)
-
     health_checks = backend_services_utils.GetHealthChecks(args, self)
     if not health_checks:
       raise exceptions.ToolException('At least one health check required.')
 
-    return dict(
+    return self.messages.BackendService(
         description=args.description,
-        healthChecks=health_checks,
         name=backend_services_ref.Name(),
-        port=port,
-        portName=port_name,
-        protocol=protocol,
+        healthChecks=health_checks,
+        port=_ResolvePort(args),
+        portName=_ResolvePortName(args),
+        protocol=_ResolveProtocol(self.messages, args),
         timeoutSec=args.timeout)
 
-  def CreateRequests(self, args):
+  def CreateGlobalRequests(self, args):
     request = self.messages.ComputeBackendServicesInsertRequest(
-        backendService=self.messages.BackendService(
-            **self._CommonBackendServiceKwargs(args)),
+        backendService=self._CreateBackendService(args),
         project=self.project)
 
     return [request]
@@ -115,99 +97,40 @@ class CreateAlpha(CreateGA):
   """Create a backend service."""
 
   @staticmethod
-  def AffinityOptions(backend_service):
-    return sorted(backend_service.SessionAffinityValueValuesEnum.to_dict())
-
-  @staticmethod
   def Args(parser):
-    alpha_messages = core_apis.GetMessagesModule('compute', 'alpha')
-    _Args(parser, alpha_messages)
+    flags.AddBackendServiceName(parser)
+    flags.AddDescription(parser)
+    flags.AddHttpHealthChecks(parser)
+    flags.AddHttpsHealthChecks(parser)
+    flags.AddTimeout(parser)
+    flags.AddPortName(parser)
+    flags.AddProtocol(parser)
 
-    connection_draining_timeout = parser.add_argument(
-        '--connection-draining-timeout',
-        type=int,
-        default=None,  # None => use default 'backend' value.
-        help='Connection draining timeout in seconds.')
-    connection_draining_timeout.detailed_help = """\
-        Connection draining timeout, in seconds, to be used during removal of
-        VMs from instance groups. This guarantees that for the specified time
-        all existing connections to a VM will remain untouched, but no new
-        connections will be accepted. Set timeout to zero to disable connection
-        draining. Enable feature by specifying timeout up to one hour.
-        Connection draining is disabled by default.
-        """
+    # These are in beta
+    flags.AddEnableCdn(parser)
 
-    enable_cdn = parser.add_argument(
-        '--enable-cdn',
-        action='store_true',
-        default=None,  # Tri-valued, None => don't include enableCDN property.
-        help='Enable Cloud CDN.')
-    enable_cdn.detailed_help = """\
-        Enable Cloud CDN for the backend service. Cloud CDN can cache HTTP
-        responses from a backend service at the edge of the network, close to
-        users. Cloud CDN is disabled by default.
-        """
+    # These are added for alpha
+    flags.AddConnectionDrainingTimeout(parser)
+    flags.AddHealthChecks(parser)
+    flags.AddSessionAffinity(parser)
+    flags.AddAffinityCookieTtl(parser)
 
-    health_checks = parser.add_argument(
-        '--health-checks',
-        type=arg_parsers.ArgList(min_length=1),
-        metavar='HEALTH_CHECK',
-        action=arg_parsers.FloatingListValuesCatcher(),
-        help=('Specifies a list of health check objects for checking the '
-              'health of the backend service.'))
-    health_checks.detailed_help = """\
-        Specifies a list of health check objects for checking the health of
-        the backend service. Health checks need not be for the same protocol
-        as that of the backend service.
-        """
-
-    session_affinity = parser.add_argument(
-        '--session-affinity',
-        choices=CreateAlpha.AffinityOptions(
-            alpha_messages.BackendService),
-        default='none',
-        type=lambda x: x.upper(),
-        help='The type of session affinity to use.')
-    session_affinity.detailed_help = """\
-        The type of session affinity to use for this backend service.  Possible
-        values are:
-
-          * none: Session affinity is disabled.
-          * client_ip: Route requests to instances based on the hash of the
-            client's IP address.
-          * generated_cookie: Route requests to instances based on the contents
-            of the "GCLB" cookie set by the load balancer.
-        """
-
-    affinity_cookie_ttl = parser.add_argument('--affinity-cookie-ttl',
-                                              type=int,
-                                              default=0,
-                                              help=("""\
-        If session-affinity is set to "generated_cookie", this flag sets
-        the TTL, in seconds, of the resulting cookie.
-        """))
-    affinity_cookie_ttl.detailed_helpr = """\
-        If session-affinity is set to "generated_cookie", this flag sets
-        the TTL, in seconds, of the resulting cookie.  A setting of 0
-        indicates that the cookie should be transient.
-    """
-
-  def CreateRequests(self, args):
-    kwargs = self._CommonBackendServiceKwargs(args)
+  def CreateGlobalRequests(self, args):
+    backend_service = self._CreateBackendService(args)
     if args.connection_draining_timeout is not None:
-      kwargs['connectionDraining'] = self.messages.ConnectionDraining(
+      backend_service.connectionDraining = self.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
 
     if args.enable_cdn is not None:
-      kwargs['enableCDN'] = args.enable_cdn
+      backend_service.enableCDN = args.enable_cdn
 
-    kwargs['sessionAffinity'] = (
+    backend_service.sessionAffinity = (
         self.messages.BackendService.SessionAffinityValueValuesEnum(
             args.session_affinity))
-    kwargs['affinityCookieTtlSec'] = args.affinity_cookie_ttl
+    backend_service.affinityCookieTtlSec = args.affinity_cookie_ttl
 
     request = self.messages.ComputeBackendServicesInsertRequest(
-        backendService=self.messages.BackendService(**kwargs),
+        backendService=backend_service,
         project=self.project)
 
     return [request]
@@ -219,26 +142,24 @@ class CreateBeta(CreateGA):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, core_apis.GetMessagesModule('compute', 'beta'))
+    flags.AddBackendServiceName(parser)
+    flags.AddDescription(parser)
+    flags.AddHttpHealthChecks(parser)
+    flags.AddHttpsHealthChecks(parser)
+    flags.AddTimeout(parser)
+    flags.AddPortName(parser)
+    flags.AddProtocol(parser)
 
-    enable_cdn = parser.add_argument(
-        '--enable-cdn',
-        action='store_true',
-        default=None,  # Tri-valued, None => don't include enableCDN property.
-        help='Enable Cloud CDN.')
-    enable_cdn.detailed_help = """\
-        Enable Cloud CDN for the backend service. Cloud CDN can cache HTTP
-        responses from a backend service at the edge of the network, close to
-        users. Cloud CDN is disabled by default.
-        """
+    # These are added for beta
+    flags.AddEnableCdn(parser)
 
-  def CreateRequests(self, args):
-    kwargs = self._CommonBackendServiceKwargs(args)
+  def CreateGlobalRequests(self, args):
+    backend_service = self._CreateBackendService(args)
     if args.enable_cdn is not None:
-      kwargs['enableCDN'] = args.enable_cdn
+      backend_service.enableCDN = args.enable_cdn
 
     request = self.messages.ComputeBackendServicesInsertRequest(
-        backendService=self.messages.BackendService(**kwargs),
+        backendService=backend_service,
         project=self.project)
 
     return [request]

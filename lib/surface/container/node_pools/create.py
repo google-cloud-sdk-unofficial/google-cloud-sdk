@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
@@ -53,7 +54,8 @@ def _Args(parser):
   parser.add_argument(
       '--num-nodes',
       type=int,
-      help='The number of nodes in the node pool.',
+      help='The number of nodes in the node pool in each of the '
+      'cluster\'s zones.',
       default=3)
   parser.add_argument(
       '--machine-type', '-m',
@@ -94,6 +96,7 @@ Alias,URI
       help=argparse.SUPPRESS,
       type=int,
       default=0)
+  flags.AddImageFamilyFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -110,7 +113,8 @@ class Create(base.Command):
         disk_size_gb=args.disk_size,
         scopes=args.scopes,
         num_nodes=args.num_nodes,
-        local_ssd_count=args.local_ssd_count)
+        local_ssd_count=args.local_ssd_count,
+        image_family=args.image_family)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

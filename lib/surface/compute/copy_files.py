@@ -13,12 +13,11 @@
 # limitations under the License.
 
 """Implements the command for copying files from and to virtual machines."""
-import logging
-
 from googlecloudsdk.api_lib.compute import ssh_utils
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.third_party.py27 import py27_collections as collections
 
@@ -76,7 +75,7 @@ class CopyFiles(ssh_utils.BaseSSHCLICommand):
           user, instance = user_host_parts
         file_specs.append(RemoteFile(user, instance, file_path))
 
-    logging.debug('Normalized arguments: %s', file_specs)
+    log.debug('Normalized arguments: %s', file_specs)
 
     # Validates the positional arguments.
     # TODO(user): Look into relaxing these conditions.
