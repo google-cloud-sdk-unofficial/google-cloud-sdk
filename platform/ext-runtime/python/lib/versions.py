@@ -21,7 +21,7 @@ DEFAULT_PYTHON_INTERPRETER_VERSION = '2'
 # {python_version}
 PYTHON_INTERPRETER_VERSION_MAP = {
     '2': '',
-    '3': '3.5',
+    '3': '3.6',
     '3.4': '3.4',
     '3.5': '3.5',
     '3.6': '3.6',

@@ -28,7 +28,7 @@ class GetIamPolicy(base.Command):
   ## EXAMPLES
 
   The following command prints the IAM policy for a cluster with the name
-  `example-cluster-name-1':
+  `example-cluster-name-1`:
 
     $ {command} example-cluster-name-1
   """

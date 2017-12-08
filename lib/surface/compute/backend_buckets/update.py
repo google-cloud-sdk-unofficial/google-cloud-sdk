@@ -23,6 +23,7 @@ from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a backend bucket.
 
@@ -31,12 +32,20 @@ class Update(base.UpdateCommand):
 
   BACKEND_BUCKET_ARG = None
 
-  @staticmethod
-  def Args(parser):
-    backend_buckets_utils.AddUpdatableArgs(Update, parser, 'update')
+  @classmethod
+  def Args(cls, parser):
+    """Set up arguments for this command."""
+    backend_buckets_utils.AddUpdatableArgs(cls, parser, 'update')
     backend_buckets_flags.GCS_BUCKET_ARG.AddArgument(parser)
 
+  def AnyArgsSpecified(self, args):
+    """Returns true if any args for updating backend bucket were specified."""
+    return (args.IsSpecified('description') or
+            args.IsSpecified('gcs_bucket_name') or
+            args.IsSpecified('enable_cdn'))
+
   def GetGetRequest(self, client, backend_bucket_ref):
+    """Returns a request to retrieve the backend bucket."""
     return (
         client.apitools_client.backendBuckets,
         'Get',
@@ -45,6 +54,7 @@ class Update(base.UpdateCommand):
             backendBucket=backend_bucket_ref.Name()))
 
   def GetSetRequest(self, client, backend_bucket_ref, replacement):
+    """Returns a request to update the backend bucket."""
     return (
         client.apitools_client.backendBuckets,
         'Update',
@@ -54,6 +64,7 @@ class Update(base.UpdateCommand):
             backendBucketResource=replacement))
 
   def Modify(self, args, existing):
+    """Modifies and returns the updated backend bucket."""
     replacement = encoding.CopyProtoMessage(existing)
 
     if args.description:
@@ -69,18 +80,12 @@ class Update(base.UpdateCommand):
 
     return replacement
 
-  def Run(self, args):
-    if not any([
-        args.description is not None,
-        args.gcs_bucket_name is not None,
-        args.enable_cdn is not None,
-    ]):
-      raise exceptions.ToolException('At least one property must be modified.')
-
+  def MakeRequests(self, args):
+    """Makes the requests for updating the backend bucket."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    backend_bucket_ref = Update.BACKEND_BUCKET_ARG.ResolveAsResource(
+    backend_bucket_ref = self.BACKEND_BUCKET_ARG.ResolveAsResource(
         args, holder.resources)
     get_request = self.GetGetRequest(client, backend_bucket_ref)
 
@@ -99,3 +104,43 @@ class Update(base.UpdateCommand):
 
     return client.MakeRequests(
         [self.GetSetRequest(client, backend_bucket_ref, new_object)])
+
+  def Run(self, args):
+    """Issues the request necessary for updating a backend bucket."""
+    if not self.AnyArgsSpecified(args):
+      raise exceptions.ToolException('At least one property must be modified.')
+    return self.MakeRequests(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update a backend bucket.
+
+  *{command}* is used to update backend buckets.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    """Set up arguments for this command."""
+    super(UpdateAlpha, cls).Args(parser)
+    backend_buckets_flags.AddSignedUrlCacheMaxAge(parser, unspecified_help='')
+
+  def Modify(self, args, existing):
+    """Modifies and returns the updated backend bucket."""
+    replacement = super(UpdateAlpha, self).Modify(args, existing)
+
+    if args.IsSpecified('signed_url_cache_max_age'):
+      holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+      client = holder.client
+      replacement.cdnPolicy = client.messages.BackendBucketCdnPolicy(
+          signedUrlCacheMaxAgeSec=args.signed_url_cache_max_age)
+
+    return replacement
+
+  def Run(self, args):
+    """Issues the request necessary for updating a backend bucket."""
+    if not self.AnyArgsSpecified(args) and not args.IsSpecified(
+        'signed_url_cache_max_age'):
+      raise exceptions.ToolException('At least one property must be modified.')
+
+    return super(UpdateAlpha, self).MakeRequests(args)

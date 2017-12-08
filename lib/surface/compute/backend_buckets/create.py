@@ -19,6 +19,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_buckets_flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a backend bucket.
 
@@ -29,29 +30,66 @@ class Create(base.CreateCommand):
 
   BACKEND_BUCKET_ARG = None
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
+    """Set up arguments for this command."""
     parser.display_info.AddFormat(backend_buckets_flags.DEFAULT_LIST_FORMAT)
-    backend_buckets_utils.AddUpdatableArgs(Create, parser, 'create')
+    backend_buckets_utils.AddUpdatableArgs(cls, parser, 'create')
     backend_buckets_flags.REQUIRED_GCS_BUCKET_ARG.AddArgument(parser)
+
+  def CreateBackendBucket(self, args):
+    """Creates and returns the backend bucket."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    backend_buckets_ref = self.BACKEND_BUCKET_ARG.ResolveAsResource(
+        args, holder.resources)
+
+    enable_cdn = args.enable_cdn or False
+
+    return client.messages.BackendBucket(
+        description=args.description,
+        name=backend_buckets_ref.Name(),
+        bucketName=args.gcs_bucket_name,
+        enableCdn=enable_cdn)
 
   def Run(self, args):
     """Issues the request necessary for creating a backend bucket."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    backend_buckets_ref = Create.BACKEND_BUCKET_ARG.ResolveAsResource(
+    backend_buckets_ref = self.BACKEND_BUCKET_ARG.ResolveAsResource(
         args, holder.resources)
 
-    enable_cdn = args.enable_cdn or False
+    backend_bucket = self.CreateBackendBucket(args)
 
     request = client.messages.ComputeBackendBucketsInsertRequest(
-        backendBucket=client.messages.BackendBucket(
-            description=args.description,
-            name=backend_buckets_ref.Name(),
-            bucketName=args.gcs_bucket_name,
-            enableCdn=enable_cdn),
-        project=backend_buckets_ref.project)
-
+        backendBucket=backend_bucket, project=backend_buckets_ref.project)
     return client.MakeRequests([(client.apitools_client.backendBuckets,
                                  'Insert', request)])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a backend bucket.
+
+  *{command}* is used to create backend buckets. Backend buckets
+  define a Google Cloud Storage bucket that can serve content. URL
+  maps define which requests are sent to which backend buckets.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    """Set up arguments for this command."""
+    super(CreateAlpha, cls).Args(parser)
+    backend_buckets_flags.AddSignedUrlCacheMaxAge(parser)
+
+  def CreateBackendBucket(self, args):
+    """Creates and returns the backend bucket."""
+    backend_bucket = super(CreateAlpha, self).CreateBackendBucket(args)
+    if args.IsSpecified('signed_url_cache_max_age'):
+      holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+      client = holder.client
+      backend_bucket.cdnPolicy = client.messages.BackendBucketCdnPolicy(
+          signedUrlCacheMaxAgeSec=args.signed_url_cache_max_age)
+    return backend_bucket

@@ -47,6 +47,8 @@ _MAX_RESULTS = 100000
 
 
 
+_GCS_SCHEME_PREFIX = 'gs://'
+
 
 def _Typecheck(obj, types, message=None, method=None):
   if not isinstance(obj, types):
@@ -1222,12 +1224,16 @@ class BigqueryClient(object):
       BigqueryClientError: if no valid list of sources can be determined.
     """
     sources = [source.strip() for source in source_string.split(',')]
-    gs_uris = [source for source in sources if source.startswith('gs://')]
+    gs_uris = [
+        source for source in sources if source.startswith(_GCS_SCHEME_PREFIX)
+    ]
     if not sources:
       raise BigqueryClientError('No sources specified')
     if gs_uris:
       if len(gs_uris) != len(sources):
-        raise BigqueryClientError('All URIs must begin with "gs://" if any do.')
+        raise BigqueryClientError(
+            'All URIs must begin with "{}" if any do.'.format(
+                _GCS_SCHEME_PREFIX))
       return sources
     else:
       source = sources[0]
@@ -1260,6 +1266,8 @@ class BigqueryClient(object):
           not exist.
     """
 
+    if schema.startswith(_GCS_SCHEME_PREFIX):
+      raise BigquerySchemaError('Cannot load schema files from GCS.')
     def NewField(entry):
       name, _, field_type = entry.partition(':')
       if entry.count(':') > 1 or not name.strip():
@@ -1274,12 +1282,17 @@ class BigqueryClient(object):
     elif os.path.exists(schema):
       with open(schema) as f:
         try:
-          return json.load(f)
+          loaded_json = json.load(f)
         except ValueError, e:
           raise BigquerySchemaError(
               ('Error decoding JSON schema from file %s: %s\n'
                'To specify a one-column schema, use "name:string".') % (
                    schema, e))
+      if not isinstance(loaded_json, list):
+        raise BigquerySchemaError(
+            'Error in "%s": Table schemas must be specified as JSON lists.' %
+            schema)
+      return loaded_json
     elif re.match(r'[./\\]', schema) is not None:
       # We have something that looks like a filename, but we didn't
       # find it. Tell the user about the problem now, rather than wait
@@ -3285,7 +3298,7 @@ class BigqueryClient(object):
     _Typecheck(destination_table_reference, ApiClientHelper.TableReference)
     load_config = {'destinationTable': dict(destination_table_reference)}
     sources = BigqueryClient.ProcessSources(source)
-    if sources[0].startswith('gs://'):
+    if sources[0].startswith(_GCS_SCHEME_PREFIX):
       load_config['sourceUris'] = sources
       upload_file = None
     else:
@@ -3347,9 +3360,10 @@ class BigqueryClient(object):
     _Typecheck(source_table, ApiClientHelper.TableReference)
     uris = destination_uris.split(',')
     for uri in uris:
-      if not uri.startswith('gs://'):
+      if not uri.startswith(_GCS_SCHEME_PREFIX):
         raise BigqueryClientError(
-            'Illegal URI: {}. Extract URI must start with "gs://".'.format(uri))
+            'Illegal URI: {}. Extract URI must start with "{}".'.format(
+                uri, _GCS_SCHEME_PREFIX))
     extract_config = {'sourceTable': dict(source_table)}
     _ApplyParameters(
         extract_config, destination_uris=uris,

@@ -42,7 +42,7 @@ class RuntimeTests(testutil.TestBase):
         with open(self.full_path('app.yaml')) as f:
             contents = yaml.load(f)
         self.assertEqual(contents,
-                         {'runtime': 'go', 'api_version': 'go1', 'env': 'flex'})
+                         {'runtime': 'go', 'env': 'flex'})
 
         self.assert_no_file('Dockerfile')
         self.assert_no_file('.dockerignore')
@@ -69,7 +69,7 @@ class RuntimeTests(testutil.TestBase):
         with open(self.full_path('app.yaml')) as f:
             contents = yaml.load(f)
         self.assertEqual(contents,
-                         {'runtime': 'go', 'api_version': 'go1', 'env': 'flex'})
+                         {'runtime': 'go', 'env': 'flex'})
 
         self.assert_no_file('Dockerfile')
         self.assert_no_file('.dockerignore')
@@ -88,7 +88,7 @@ class RuntimeTests(testutil.TestBase):
         self.generate_configs(custom=True)
         self.assert_file_exists_with_contents(
             'app.yaml',
-            'api_version: go1\nenv: flex\nruntime: go\n')
+            'env: flex\nruntime: go\n')
         self.assert_file_exists_with_contents(
             'Dockerfile',
             self.read_runtime_def_file('data', 'Dockerfile'))
@@ -102,7 +102,7 @@ class RuntimeTests(testutil.TestBase):
         cfg_files = self.generate_config_data(custom=True)
         self.assert_file_exists_with_contents(
             'app.yaml',
-            'api_version: go1\nenv: flex\nruntime: go\n')
+            'env: flex\nruntime: go\n')
         self.assert_genfile_exists_with_contents(
             cfg_files,
             'Dockerfile',
@@ -116,8 +116,7 @@ class RuntimeTests(testutil.TestBase):
         self.write_file('foo.go', 'package main\nfunc main')
         config = testutil.AppInfoFake(
             runtime="go",
-            env=2,
-            api_version=1)
+            env=2)
         self.assertTrue(self.generate_configs(appinfo=config,
                                               deploy=True))
 
@@ -125,8 +124,7 @@ class RuntimeTests(testutil.TestBase):
         self.write_file('foo.go', 'package main\nfunc main')
         config = testutil.AppInfoFake(
             runtime="custom",
-            env=2,
-            api_version=1)
+            env=2)
         self.assertTrue(self.generate_configs(appinfo=config,
                                               deploy=True))
 

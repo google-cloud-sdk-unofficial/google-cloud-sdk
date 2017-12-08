@@ -366,6 +366,7 @@ class CreateAlpha(Create):
     flags.AddClusterScopesFlag(parser)
     flags.AddEnableAuditLoggingFlag(parser, hidden=True)
     flags.AddEnableAutoRepairFlag(parser)
+    flags.AddEnableBinAuthzFlag(parser, hidden=True)
     flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddEnableLegacyAuthorizationFlag(parser)
     flags.AddIPAliasFlags(parser, hidden=False)
@@ -386,6 +387,7 @@ class CreateAlpha(Create):
     ops.accelerators = args.accelerator
     ops.node_locations = args.node_locations
     ops.enable_audit_logging = args.enable_audit_logging
+    ops.enable_binauthz = args.enable_binauthz
     ops.min_cpu_platform = args.min_cpu_platform
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     return ops

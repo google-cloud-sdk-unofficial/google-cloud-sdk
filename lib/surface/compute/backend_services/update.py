@@ -302,6 +302,7 @@ class UpdateAlpha(UpdateGA):
     flags.AddCacheKeyQueryStringList(parser)
     flags.AddSessionAffinity(parser, internal_lb=True)
     flags.AddAffinityCookieTtl(parser)
+    flags.AddSignedUrlCacheMaxAge(parser, unspecified_help='')
     AddIapFlag(parser)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=True, default=None)
 
@@ -317,6 +318,13 @@ class UpdateAlpha(UpdateGA):
       replacement.customRequestHeaders = []
     if args.custom_request_header is not None:
       replacement.customRequestHeaders = args.custom_request_header
+
+    backend_services_utils.ApplyCdnPolicyArgs(
+        client,
+        args,
+        replacement,
+        is_update=True,
+        apply_signed_url_cache_max_age=True)
 
     return replacement
 
@@ -334,6 +342,7 @@ class UpdateAlpha(UpdateGA):
         args.cache_key_include_query_string is not None,
         args.cache_key_query_string_whitelist is not None,
         args.cache_key_query_string_blacklist is not None,
+        args.IsSpecified('signed_url_cache_max_age'),
         args.http_health_checks,
         args.IsSpecified('iap'),
         args.port,

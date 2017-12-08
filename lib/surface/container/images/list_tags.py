@@ -13,7 +13,6 @@
 # limitations under the License.
 """List tags command."""
 
-import argparse
 import heapq
 import sys
 
@@ -30,7 +29,6 @@ from googlecloudsdk.core import http
 _DEFAULT_KINDS = [
     'BUILD_DETAILS',
     'IMAGE_BASIS',
-    'PACKAGE_VULNERABILITY',
 ]
 # How many images to consider by default.
 _DEFAULT_LIMIT = 10
@@ -47,7 +45,7 @@ _TAGS_FORMAT = """
         tags.list(),
         timestamp.date():optional,
         BUILD_DETAILS.buildDetails.provenance.sourceProvenance.sourceContext.context.cloudRepo.revisionId.notnull().list().slice(:8).join(''):optional:label=GIT_SHA,
-        PACKAGE_VULNERABILITY.vulnerabilityDetails.severity.notnull().count().list():optional:label=VULNERABILITIES,
+        vuln_counts.list():optional:label=VULNERABILITIES,
         IMAGE_BASIS.derivedImage.sort(distance).map().extract(baseResourceUrl).slice(:1).map().list().list().split('//').slice(1:).list().split('@').slice(:1).list():optional:label=FROM,
         BUILD_DETAILS.buildDetails.provenance.id.notnull().list():optional:label=BUILD
     )
@@ -59,7 +57,8 @@ class ArgumentError(exceptions.Error):
   pass
 
 
-class ListTags(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class ListTagsGAandBETA(base.ListCommand):
   """List tags and digests for the specified image."""
 
   detailed_help = {
@@ -90,21 +89,6 @@ class ListTags(base.ListCommand):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
           to capture some information, but behaves like an ArgumentParser.
     """
-    parser.add_argument(
-        '--show-occurrences',
-        action='store_true',
-        default=False,
-        help=argparse.SUPPRESS)
-    parser.add_argument(
-        '--occurrence-filter',
-        default=' OR '.join(
-            ['kind = "{kind}"'.format(kind=x) for x in _DEFAULT_KINDS]),
-        help=argparse.SUPPRESS)
-    parser.add_argument(
-        '--show-occurrences-from',
-        type=arg_parsers.BoundedInt(1, sys.maxint, unlimited=True),
-        default=_DEFAULT_SHOW_OCCURRENCES_FROM,
-        help=argparse.SUPPRESS)
     flags.AddImagePositional(parser, verb='list tags for')
     # Set flag defaults to return X most recent images instead of all.
     base.LIMIT_FLAG.SetDefault(parser, _DEFAULT_LIMIT)
@@ -113,6 +97,68 @@ class ListTags(base.ListCommand):
     # Does nothing for us, included in base.ListCommand
     base.URI_FLAG.RemoveFromParser(parser)
     parser.display_info.AddFormat(_TAGS_FORMAT)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Raises:
+      InvalidImageNameError: If the user specified an invalid image name.
+    Returns:
+      Some value that we want to have printed later.
+    """
+    repository = util.ValidateRepositoryPath(args.image_name)
+    http_obj = http.Http()
+    with docker_image.FromRegistry(
+        basic_creds=util.CredentialProvider(),
+        name=repository,
+        transport=http_obj) as image:
+      try:
+        manifests = image.manifests()
+        return util.TransformManifests(
+            manifests,
+            repository)
+      except docker_http.V2DiagnosticException as err:
+        raise util.GcloudifyRecoverableV2Errors(err, {
+            403: 'Access denied: {0}'.format(repository),
+            404: 'Not found: {0}'.format(repository)
+        })
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListTagsALPHA(ListTagsGAandBETA, base.ListCommand):
+  """List tags and digests for the specified image."""
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command.
+
+    Args:
+      parser: An argparse.ArgumentParser-like object. It is mocked out in order
+          to capture some information, but behaves like an ArgumentParser.
+    """
+    # Weird syntax, but this is how to call a static base method from the
+    # derived method in Python.
+    super(ListTagsALPHA, ListTagsALPHA).Args(parser)
+    parser.add_argument(
+        '--show-occurrences',
+        action='store_true',
+        default=False,
+        help='Whether to show summaries of the various Occurrence types.')
+    parser.add_argument(
+        '--occurrence-filter',
+        default=' OR '.join(
+            ['kind = "{kind}"'.format(kind=x) for x in _DEFAULT_KINDS]),
+        help='A filter for the Occurrences which will be summarized.')
+    parser.add_argument(
+        '--show-occurrences-from',
+        type=arg_parsers.BoundedInt(1, sys.maxint, unlimited=True),
+        default=_DEFAULT_SHOW_OCCURRENCES_FROM,
+        help=('How many of the most recent images for which to summarize '
+              'Occurences.'))
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -140,9 +186,9 @@ class ListTags(base.ListCommand):
         name=repository,
         transport=http_obj) as image:
       try:
+        manifests = image.manifests()
         # Only consider the top _DEFAULT_SHOW_OCCURRENCES_FROM images
         # to reduce computation time.
-        manifests = image.manifests()
         most_recent_resource_urls = None
         if args.show_occurrences_from:
           # This block is skipped when the user provided

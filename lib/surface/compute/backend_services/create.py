@@ -272,6 +272,7 @@ class CreateAlpha(CreateGA):
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddLoadBalancingScheme(parser)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=False, default=False)
+    flags.AddSignedUrlCacheMaxAge(parser)
     AddIapFlag(parser)
 
   def CreateGlobalRequests(self, holder, args, backend_services_ref):
@@ -290,7 +291,11 @@ class CreateAlpha(CreateGA):
       backend_service.enableCDN = args.enable_cdn
 
     backend_services_utils.ApplyCdnPolicyArgs(
-        client, args, backend_service, is_update=False)
+        client,
+        args,
+        backend_service,
+        is_update=False,
+        apply_signed_url_cache_max_age=True)
 
     if args.session_affinity is not None:
       backend_service.sessionAffinity = (

@@ -42,7 +42,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine virtual machine."""
 
@@ -50,7 +50,6 @@ class Update(base.UpdateCommand):
   def Args(parser):
     flags.INSTANCE_ARG.AddArgument(parser, operation_type='update')
     labels_util.AddUpdateLabelsFlags(parser)
-    flags.AddMinCpuPlatformArgs(parser, Update.ReleaseTrack())
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -76,7 +75,7 @@ class Update(base.UpdateCommand):
       result = instance
       labels_operation_ref = self._GetLabelsOperationRef(
           update_labels, remove_labels, instance, instance_ref, holder)
-    if args.min_cpu_platform is not None:
+    if hasattr(args, 'min_cpu_platform') and args.min_cpu_platform is not None:
       min_cpu_platform_operation_ref = self._GetMinCpuPlatformOperationRef(
           args.min_cpu_platform, instance_ref, holder)
     deletion_protection = getattr(args, 'deletion_protection', None)
@@ -145,6 +144,17 @@ class Update(base.UpdateCommand):
       return waiter.WaitFor(
           operation_poller, operation_ref, message.format(*args))
     return None
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update a Google Compute Engine virtual machine."""
+
+  @staticmethod
+  def Args(parser):
+    flags.INSTANCE_ARG.AddArgument(parser, operation_type='update')
+    labels_util.AddUpdateLabelsFlags(parser)
+    flags.AddMinCpuPlatformArgs(parser, UpdateBeta.ReleaseTrack())
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -396,10 +396,14 @@ class Deploy(base.Command):
           tag=args.source_tag, branch=source_branch,
           revision=args.source_revision, repositoryUrl=args.source_url,
           sourcePath=source_path)
-    elif is_new_function or args.local_path or args.stage_bucket:
+    elif args.stage_bucket:
       # Do not change source of existing function unless instructed to.
       deploy_util.CleanOldSourceInfo(base_function)
       base_function.sourceArchiveUrl = self._PrepareSourcesOnGcs(args)
+    elif is_new_function or args.local_path:
+      raise exceptions.FunctionsError(
+          'argument --stage-bucket: required when the function is deployed '
+          'from a local directory.')
     # Set information about deplouyment tool.
     labels_to_update = args.update_labels or {}
     labels_to_update['deployment-tool'] = 'cli-gcloud'
@@ -410,13 +414,6 @@ class Deploy(base.Command):
       base_function.labels = updated_labels
 
   def _ValidateAfterCheckingFunctionsExistence(self, function, args):
-    if not args.IsSpecified('stage_bucket') and (
-        function is None and not args.IsSpecified('source_url')):
-      raise exceptions.FunctionsError(
-          'argument --stage-bucket: required when the function is deployed '
-          'from a local directory (when argument --source-url is not '
-          'provided when deploying a new function)')
-
     if function is None:
       if (not args.IsSpecified('trigger_topic') and
           not args.IsSpecified('trigger_bucket') and

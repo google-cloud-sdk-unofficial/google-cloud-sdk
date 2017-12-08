@@ -77,9 +77,17 @@ class Delete(base.DeleteCommand):
 
     services_to_delete = []
     for service in sorted(services):
-      if (len([v for v in all_versions if v.service == service.id]) ==
-          len([v for v in versions if v.service == service.id])):
-        services_to_delete.append(service)
+      service_versions = len(
+          [v for v in all_versions if v.service == service.id])
+      versions_to_delete = len([v for v in versions if v.service == service.id])
+      if service_versions == versions_to_delete and service_versions > 0:
+        if service.id == 'default':
+          raise VersionsDeleteError(
+              'The default service (module) may not be deleted, and must '
+              'comprise at least one version.'
+          )
+        else:
+          services_to_delete.append(service)
         for version in copy.copy(versions):
           if version.service == service.id:
             versions.remove(version)

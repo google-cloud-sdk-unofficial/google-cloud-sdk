@@ -22,8 +22,8 @@ from googlecloudsdk.command_lib.tasks import parsers
 _FORMAT = '''table(
     name.basename():label="TASK_NAME",
     tasktype():label=TYPE,
-    createTime.date():label="CREATE_TIME",
-    scheduleTime.date():label="SCHEDULE_TIME",
+    createTime,
+    scheduleTime,
     taskStatus.attemptDispatchCount.yesno(no="0"):label="DISPATCH_ATTEMPTS",
     taskStatus.attemptResponseCount.yesno(no="0"):label="RESPONSE_ATTEMPTS",
     taskStatus.lastAttemptStatus.responseStatus.message.yesno(no="Unknown")

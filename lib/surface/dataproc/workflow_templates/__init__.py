@@ -16,7 +16,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class WorkflowTemplates(base.Group):
   """Create and manage Google Cloud Dataproc workflow templates.

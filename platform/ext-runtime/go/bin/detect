@@ -94,7 +94,7 @@ def main(args):
 
     # Send the app.yaml contents.
     runtime = 'custom' if comm.get_config().params.custom else 'go'
-    comm.send_runtime_params(None, {'runtime': 'go', 'api_version': 'go1'})
+    comm.send_runtime_params(None, {'runtime': 'go'})
 
     return 0
 

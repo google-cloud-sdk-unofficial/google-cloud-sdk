@@ -294,7 +294,7 @@ class RuntimeTests(testutil.TestBase):
             'Dockerfile',
             self.DOCKERFILE_PREAMBLE +
             self.DOCKERFILE_VIRTUALENV_TEMPLATE.format(
-                python_version='3.5') +
+                python_version='3.6') +
             self.DOCKERFILE_INSTALL_APP +
             'CMD run_me_some_python!\n')
 
@@ -313,7 +313,7 @@ class RuntimeTests(testutil.TestBase):
             'Dockerfile',
             self.DOCKERFILE_PREAMBLE +
             self.DOCKERFILE_VIRTUALENV_TEMPLATE.format(
-                python_version='3.5') +
+                python_version='3.6') +
             self.DOCKERFILE_INSTALL_APP +
             'CMD run_me_some_python!\n')
 
@@ -431,7 +431,7 @@ class RuntimeTests(testutil.TestBase):
             runtime_config=dict(python_version='3'))
         cfg_files = self.generate_config_data(appinfo=config, deploy=True)
         dockerfile = [f for f in cfg_files if f.filename == 'Dockerfile'][0]
-        self.assertIn('LABEL python_version=python3.5\n', dockerfile.contents)
+        self.assertIn('LABEL python_version=python3.6\n', dockerfile.contents)
 
     # NOTE: this test is also irrelevant to the runtime, convert it to
     # something appropriate to the framework.
