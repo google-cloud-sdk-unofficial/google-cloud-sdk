@@ -13,6 +13,7 @@
 # limitations under the License.
 """Command for creating instances."""
 import argparse
+import re
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import base_classes_resource_registry as resource_registry
@@ -23,6 +24,7 @@ from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute import zone_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 from googlecloudsdk.command_lib.util import labels_util
@@ -307,7 +309,8 @@ class Create(base.CreateCommand):
                   x.get('device-name'),
                   x.get('interface'),
                   x.get('size'),
-                  instance_ref.zone)
+                  instance_ref.zone,
+                  instance_ref.project)
           )
 
         if create_boot_disk:
@@ -438,7 +441,18 @@ class Create(base.CreateCommand):
     resource_parser = holder.resources
 
     requests = self._CreateRequests(args, compute_client, resource_parser)
-    return compute_client.MakeRequests(requests)
+    try:
+      return compute_client.MakeRequests(requests)
+    except exceptions.ToolException as e:
+      invalid_machine_type_message_regex = (
+          r'Invalid value for field \'resource.machineType\': .+. '
+          r'Machine type with name \'.+\' does not exist in zone \'.+\'\.')
+      if re.search(invalid_machine_type_message_regex, e.message):
+        raise exceptions.ToolException(
+            e.message +
+            '\nUse `gcloud compute machine-types list --zones` to see the '
+            'available machine  types.')
+      raise
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

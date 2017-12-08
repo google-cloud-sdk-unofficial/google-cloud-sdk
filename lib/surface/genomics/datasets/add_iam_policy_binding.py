@@ -18,6 +18,7 @@
 
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.genomics import completers
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import resources
 
@@ -37,7 +38,7 @@ class AddIamPolicyBinding(base.Command):
     parser.add_argument('id', type=str,
                         help='The ID of the dataset.')
     iam_util.AddArgsForAddIamPolicyBinding(
-        parser, 'id', 'genomics.datasets')
+        parser, completer=completers.GenomicsIamRolesCompleter)
 
   def Run(self, args):
     apitools_client = genomics_util.GetGenomicsClient()

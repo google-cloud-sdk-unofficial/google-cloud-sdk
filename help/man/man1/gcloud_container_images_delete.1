@@ -11,7 +11,7 @@ gcloud container images delete \- delete existing images
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud container images delete\fR \fIIMAGE_NAMES\fR [\fIIMAGE_NAMES\fR\ ...] [\fB\-\-force\-delete\-tags\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
+\f5gcloud container images delete\fR \fIIMAGE_NAME\fR [\fIIMAGE_NAME\fR\ ...] [\fB\-\-force\-delete\-tags\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -26,9 +26,10 @@ registry. All associated tags are also deleted.
 
 .RS 2m
 .TP 2m
-\fIIMAGE_NAMES\fR [\fIIMAGE_NAMES\fR ...]
-The IMAGE_NAME or IMAGE_NAMES to delete Format For Digest:
-*.gcr.io/repository@sha256:<digest> Format For Tag: *.gcr.io/repository:<tag>
+\fIIMAGE_NAME\fR [\fIIMAGE_NAME\fR ...]
+The fully qualified name(s) of image(s) to delete. The name(s) should be
+formatted as *.gcr.io/project_id/image_path@sha256:<digest> or
+*.gcr.io/project_id/image_path[:<tag>].
 
 
 .RE

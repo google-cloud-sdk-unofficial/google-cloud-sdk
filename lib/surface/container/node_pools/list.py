@@ -61,12 +61,11 @@ class List(base.ListCommand):
     """
     adapter = self.context['api_adapter']
 
-    project = properties.VALUES.core.project.Get(required=True)
     cluster = properties.VALUES.container.cluster.Get(required=True)
-    zone = properties.VALUES.compute.zone.Get(required=True)
+    cluster_ref = adapter.ParseCluster(cluster, getattr(args, 'region', None))
 
     try:
-      res = adapter.ListNodePools(project, zone, cluster)
+      res = adapter.ListNodePools(cluster_ref)
       return res.nodePools
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)

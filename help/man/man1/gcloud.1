@@ -71,7 +71,9 @@ property value for this command invocation.
 \fB\-\-quiet\fR, \fB\-q\fR
 Disable all interactive prompts when running gcloud commands. If input is
 required, defaults will be used, or an error will be raised. Overrides the
-default \fBcore/disable_prompts\fR property value for this command invocation.
+default core/disable_prompts property value for this command invocation. Must be
+used at the beginning of commands. This is equivalent to setting the environment
+variable \f5CLOUDSDK_CORE_DISABLE_PROMPTS\fR to 1.
 
 .TP 2m
 \fB\-\-verbosity\fR=\fIVERBOSITY\fR; default="warning"

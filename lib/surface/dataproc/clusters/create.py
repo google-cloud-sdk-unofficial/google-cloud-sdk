@@ -16,6 +16,7 @@
 
 from apitools.base.py import encoding
 
+from googlecloudsdk.api_lib.compute import constants as compute_constants
 from googlecloudsdk.api_lib.compute import utils as api_utils
 from googlecloudsdk.api_lib.dataproc import compute_helpers
 from googlecloudsdk.api_lib.dataproc import constants
@@ -177,10 +178,13 @@ Available aliases are:
 Alias,URI
 {aliases}
 |========
+
+{scope_deprecation_msg}
 """.format(
     minimum_scopes='\n'.join(constants.MINIMUM_SCOPE_URIS),
     additional_scopes='\n'.join(constants.ADDITIONAL_DEFAULT_SCOPE_URIS),
-    aliases=compute_helpers.SCOPE_ALIASES_FOR_HELP))
+    aliases=compute_helpers.SCOPE_ALIASES_FOR_HELP,
+    scope_deprecation_msg=compute_constants.DEPRECATED_SCOPES_MESSAGES))
 
   master_boot_disk = parser.add_mutually_exclusive_group()
   worker_boot_disk = parser.add_mutually_exclusive_group()
@@ -277,9 +281,9 @@ class Create(base.CreateCommand):
   def Run(self, args):
     self.ValidateArgs(args)
 
-    dataproc = dp.Dataproc()
+    dataproc = dp.Dataproc(self.ReleaseTrack())
 
-    cluster_ref = dataproc.ParseCluster(args.name)
+    cluster_ref = util.ParseCluster(args.name, dataproc)
 
     compute_resources = compute_helpers.GetComputeResources(
         self.ReleaseTrack(), args.name)
@@ -429,7 +433,8 @@ class Create(base.CreateCommand):
               cluster_ref, operation.name))
       return
 
-    operation = dataproc.WaitForOperation(
+    operation = util.WaitForOperation(
+        dataproc,
         operation,
         message='Waiting for cluster creation operation',
         timeout_s=args.timeout)

@@ -134,7 +134,7 @@ class UpdateAlpha(base.UpdateCommand):
     if args.async:
       log.UpdatedResource(
           operation_ref,
-          kind='router {0}'.format(router_ref.Name()),
+          kind='router [{0}]'.format(router_ref.Name()),
           async=True,
           details='Run the [gcloud compute operations describe] command '
           'to check the status of this operation.')
@@ -150,7 +150,7 @@ class UpdateAlpha(base.UpdateCommand):
 
     operation_poller = poller.Poller(service, target_router_ref)
     return waiter.WaitFor(operation_poller, operation_ref,
-                          'Updating router {0}'.format(router_ref.Name()))
+                          'Updating router [{0}]'.format(router_ref.Name()))
 
 
 UpdateAlpha.detailed_help = {

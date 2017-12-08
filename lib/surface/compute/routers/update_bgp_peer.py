@@ -34,7 +34,7 @@ class UpdateBgpPeer(base.UpdateCommand):
   def Args(cls, parser):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser)
-    flags.AddUpdateBgpPeerArgs(parser)
+    flags.AddBgpPeerArgs(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -80,7 +80,7 @@ class UpdateBgpPeerAlpha(base.UpdateCommand):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser)
     base.ASYNC_FLAG.AddToParser(parser)
-    flags.AddUpdateBgpPeerArgs(parser)
+    flags.AddBgpPeerArgs(parser, for_add_bgp_peer=False)
     flags.AddCustomAdvertisementArgs(parser, 'peer')
 
   def Run(self, args):
@@ -174,7 +174,8 @@ class UpdateBgpPeerAlpha(base.UpdateCommand):
     if args.async:
       log.UpdatedResource(
           operation_ref,
-          kind='peer {0} in router {1}'.format(peer.name, router_ref.Name()),
+          kind='peer [{0}] in router [{1}]'.format(peer.name,
+                                                   router_ref.Name()),
           async=True,
           details='Run the [gcloud compute operations describe] command '
           'to check the status of this operation.')
@@ -190,7 +191,7 @@ class UpdateBgpPeerAlpha(base.UpdateCommand):
 
     operation_poller = poller.Poller(service, target_router_ref)
     return waiter.WaitFor(operation_poller, operation_ref,
-                          'Updating peer {0} in router {1}'.format(
+                          'Updating peer [{0}] in router [{1}]'.format(
                               peer.name, router_ref.Name()))
 
 

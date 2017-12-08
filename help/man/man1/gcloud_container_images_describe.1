@@ -11,7 +11,7 @@ gcloud container images describe \- lists container analysis data for a given im
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud container images describe\fR \fIIMAGE\fR [\fB\-\-occurrence\-filter\fR=\fIOCCURRENCE_FILTER\fR;\ default="kind\ =\ "BUILD_DETAILS"\ OR\ kind\ =\ "PACKAGE_VULNERABILITY"\ OR\ kind\ =\ "IMAGE_BASIS""] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
+\f5gcloud container images describe\fR \fIIMAGE_NAME\fR [\fB\-\-occurrence\-filter\fR=\fIOCCURRENCE_FILTER\fR;\ default="kind\ =\ "BUILD_DETAILS"\ OR\ kind\ =\ "PACKAGE_VULNERABILITY"\ OR\ kind\ =\ "IMAGE_BASIS""] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -25,9 +25,10 @@ Lists container analysis data for a valid image.
 
 .RS 2m
 .TP 2m
-\fIIMAGE\fR
-The fully qualified image reference to describe. *.gcr.io/repository@digest,
-*.gcr.io/repository:tag
+\fIIMAGE_NAME\fR
+The fully qualified name(s) of image(s) to describe. The name(s) should be
+formatted as *.gcr.io/project_id/image_path@sha256:<digest> or
+*.gcr.io/project_id/image_path[:<tag>].
 
 
 .RE

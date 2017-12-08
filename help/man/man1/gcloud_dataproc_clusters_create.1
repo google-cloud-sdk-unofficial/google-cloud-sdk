@@ -221,6 +221,13 @@ useraccounts\-rw,https://www.googleapis.com/auth/cloud.useraccounts
 userinfo\-email,https://www.googleapis.com/auth/userinfo.email
 .TE
 
+
+DEPRECATION WARNING: 'https://www.googleapis.com/auth/sqlservice' account scope
+and \f5sql\fR alias do not provide SQL instance management capabilities and have
+been deprecated. Please, use 'https://www.googleapis.com/auth/sqlservice.admin'
+or \f5sql.admin\fR to manage your Google SQL Service instances.
+
+
 .TP 2m
 \fB\-\-service\-account\fR=\fISERVICE_ACCOUNT\fR
 The Google Cloud IAM service account to be authenticated as.

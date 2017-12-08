@@ -107,7 +107,8 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
           help='Manifest Id of a previous deployment. '
           'This flag cannot be used with --config.',
           dest='manifest_id')
-      labels_util.AddUpdateLabelsFlags(parser)
+
+    labels_util.AddUpdateLabelsFlags(parser)
 
     parser.add_argument(
         '--preview',
@@ -193,16 +194,17 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
         deployment.fingerprint = current_deployment.fingerprint or ''
 
       # Update the labels of the deployment
-      if self.ReleaseTrack() in [
-          base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
-      ]:
-        deployment.labels = self._GetUpdatedDeploymentLabels(
-            args, current_deployment)
-        # If no config or manifest_id are specified, but try to update labels,
-        # only add patch_request header when directly updating a non-previewed
-        # deployment
-        patch_request = not args.config and not args.manifest_id and (
-            bool(args.update_labels) or bool(args.remove_labels))
+
+      deployment.labels = self._GetUpdatedDeploymentLabels(
+          args, current_deployment)
+      # If no config or manifest_id are specified, but try to update labels,
+      # only add patch_request header when directly updating a non-previewed
+      # deployment
+
+      no_manifest = (self.ReleaseTrack() is
+                     base.ReleaseTrack.GA) or not args.manifest_id
+      patch_request = not args.config and no_manifest and (
+          bool(args.update_labels) or bool(args.remove_labels))
       if args.description is None:
         deployment.description = current_deployment.description
       elif not args.description or args.description.isspace():

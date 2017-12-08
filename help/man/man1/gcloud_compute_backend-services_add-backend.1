@@ -60,15 +60,7 @@ The name of the instance group to add to the backend service.
 .RS 2m
 .TP 2m
 \fB\-\-balancing\-mode\fR=\fIBALANCING_MODE\fR
-Defines the strategy for balancing load.
-
-\fBRATE\fR and the max rate arguments are available only in backend services
-with HTTP based protocols.
-
-For backend services with TCP/SSL protocol either \fBUTILIZATION\fR or
-\fBCONNECTION\fR are available.
-
-\fIBALANCING_MODE\fR must be one of:
+Defines the strategy for balancing load. \fIBALANCING_MODE\fR must be one of:
 
 .RS 2m
 .TP 2m
@@ -77,13 +69,13 @@ Spreads load based on how many concurrent connections the group can handle.
 There are two ways to specify max connections: \fB\-\-max\-connections\fR which
 defines the max number of connections for the whole group or
 \fB\-\-max\-connections\-per\-instance\fR, which defines the max number of
-connections on a per\-instance basis.
+connections on a per\-instance basis. Available for all services.
 .TP 2m
 \fBRATE\fR
 Spreads load based on how many requests per second (RPS) the group can handle.
 There are two ways to specify max RPS: \fB\-\-max\-rate\fR which defines the max
 RPS for the whole group or \fB\-\-max\-rate\-per\-instance\fR, which defines the
-max RPS on a per\-instance basis.
+max RPS on a per\-instance basis. Available only for HTTP based protocols.
 .TP 2m
 \fBUTILIZATION\fR
 Relies on the CPU utilization of the instances in the group when balancing load.
@@ -92,6 +84,7 @@ instance. Use \fB\-\-max\-rate\-per\-instance\fR or \fB\-\-max\-rate\fR to
 optionally limit based on RPS in addition to CPU. You can optionally also limit
 based on connections (for TCP/SSL) in addition to CPU by setting
 \fB\-\-max\-connections\fR or \fB\-\-max\-connections\-per\-instance\fR.
+Available for all services without \fB\-\-load\-balancing\-scheme INTERNAL\fR.
 
 
 .RE

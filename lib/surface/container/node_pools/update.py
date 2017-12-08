@@ -88,7 +88,7 @@ class Update(base.UpdateCommand):
       util.Error, if creation failed.
     """
     adapter = self.context['api_adapter']
-    pool_ref = adapter.ParseNodePool(args.name)
+    pool_ref = adapter.ParseNodePool(args.name, getattr(args, 'region', None))
     options = self.ParseUpdateNodePoolOptions(args)
     if options.enable_autorepair is None and options.enable_autoupgrade is None:
       raise exceptions.MinimumArgumentException(

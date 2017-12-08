@@ -19,7 +19,7 @@ from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
 
 
-class GetIamPolicy(base.Command):
+class GetIamPolicy(base.ListCommand):
   """Get the IAM policy for a model.
 
   Gets the IAM policy for the given model.
@@ -36,6 +36,7 @@ class GetIamPolicy(base.Command):
   @staticmethod
   def Args(parser):
     flags.GetModelName().AddToParser(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     return models_util.GetIamPolicy(models.ModelsClient(), args.model)

@@ -28,15 +28,16 @@ be hosted by the Google Container Registry.
 .RS 2m
 .TP 2m
 \fISRC_IMAGE\fR
-The fully qualified image reference to add a tag for.
-*.gcr.io/repository:tag\fB.gcr.io/repository@digest
+The fully qualified name(s) of image(s) to add a tag for. The name(s) should be
+formatted as *.gcr.io/project_id/image_path@sha256:<digest> or
+*.gcr.io/project_id/image_path[:<tag>].
 
 .TP 2m
 \fIDEST_IMAGE\fR
-The fully qualified image reference to be the new tag. *.gcr.io/repository:tag
+The fully qualified name(s) of image(s) to be the new tag. The name(s) should be
+formatted as *.gcr.io/project_id/image_path[:<tag>].
 
 
-\fR
 .RE
 .sp
 

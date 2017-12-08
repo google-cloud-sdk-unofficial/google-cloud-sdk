@@ -41,8 +41,8 @@ class RemoveIamPolicyBinding(base.Command):
   @staticmethod
   def Args(parser):
     flags.GetModelName().AddToParser(parser)
-    iam_util.AddArgsForRemoveIamPolicyBinding(parser, 'model',
-                                              models_util.MODELS_COLLECTION)
+    iam_util.AddArgsForRemoveIamPolicyBinding(
+        parser, flags.MlEngineIamRolesCompleter)
 
   def Run(self, args):
     return models_util.RemoveIamPolicyBinding(

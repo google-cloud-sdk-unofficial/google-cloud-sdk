@@ -57,7 +57,9 @@ The names of the disks to create.
 \fB\-\-csek\-key\-file\fR=\fIFILE\fR
 Path to a Customer\-Supplied Encryption Key (CSEK) key file, mapping Google
 Compute Engine resources to user managed keys to be used when creating,
-mounting, or snapshotting disks. See
+mounting, or snapshotting disks.
+
+If you pass \f5\-\fR as value of the flag the CSEK will be read from stdin. See
 https://cloud.google.com/compute/docs/disks/customer\-supplied\-encryption for
 more details.
 
@@ -102,10 +104,9 @@ to disable.
 .TP 2m
 \fB\-\-size\fR=\fISIZE\fR
 Indicates the size of the disks. The value must be a whole number followed by a
-size unit of \f5\fIKB\fR\fR for kilobyte, \f5\fIMB\fR\fR for megabyte,
-\f5\fIGB\fR\fR for gigabyte, or \f5\fITB\fR\fR for terabyte. For example,
-\f5\fI10GB\fR\fR will produce 10 gigabyte disks. Disk size must be a multiple of
-10 GB.
+size unit of \f5\fIGB\fR\fR for gigabyte, or \f5\fITB\fR\fR for terabyte. If no
+size unit is specified, GB is assumed. For example, \f5\fI10GB\fR\fR will
+produce 10 gigabyte disks. Disk size must be a multiple of 1 GB.
 
 .TP 2m
 \fB\-\-type\fR=\fITYPE\fR

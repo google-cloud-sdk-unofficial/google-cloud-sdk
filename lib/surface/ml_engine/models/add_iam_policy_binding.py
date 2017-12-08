@@ -42,8 +42,8 @@ class AddIamPolicyBinding(base.Command):
   @staticmethod
   def Args(parser):
     flags.GetModelName().AddToParser(parser)
-    iam_util.AddArgsForAddIamPolicyBinding(parser, 'model',
-                                           models_util.MODELS_COLLECTION)
+    iam_util.AddArgsForAddIamPolicyBinding(
+        parser, flags.MlEngineIamRolesCompleter)
 
   def Run(self, args):
     return models_util.AddIamPolicyBinding(models.ModelsClient(), args.model,

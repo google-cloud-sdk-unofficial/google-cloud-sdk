@@ -11,7 +11,7 @@ gcloud container images list\-tags \- list tags and digests for the specified im
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud container images list\-tags\fR \fIIMAGE\fR [\fB\-\-filter\fR=\fIEXPRESSION\fR] [\fB\-\-limit\fR=\fILIMIT\fR;\ default="10"] [\fB\-\-page\-size\fR=\fIPAGE_SIZE\fR] [\fB\-\-sort\-by\fR=[\fIFIELD\fR,...];\ default="~timestamp"] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
+\f5gcloud container images list\-tags\fR \fIIMAGE_NAME\fR [\fB\-\-filter\fR=\fIEXPRESSION\fR] [\fB\-\-limit\fR=\fILIMIT\fR;\ default="10"] [\fB\-\-page\-size\fR=\fIPAGE_SIZE\fR] [\fB\-\-sort\-by\fR=[\fIFIELD\fR,...];\ default="~timestamp"] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -27,8 +27,9 @@ Container Registry.
 
 .RS 2m
 .TP 2m
-\fIIMAGE\fR
-The name of the image. Format: *.gcr.io/repository/image
+\fIIMAGE_NAME\fR
+The fully qualified image name of the image to list tags for. The name format
+should be *.gcr.io/project_id/image_path.
 
 
 .RE

@@ -11,7 +11,7 @@ gcloud deployment\-manager deployments create \- create a deployment
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud deployment\-manager deployments create\fR \fIDEPLOYMENT_NAME\fR \fB\-\-config\fR=\fICONFIG\fR [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-preview\fR] [\fB\-\-properties\fR=[\fIPROPERTIES\fR,...]] [\fB\-\-async\fR\ |\ \fB\-\-automatic\-rollback\-on\-error\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
+\f5gcloud deployment\-manager deployments create\fR \fIDEPLOYMENT_NAME\fR \fB\-\-config\fR=\fICONFIG\fR [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-labels\fR=[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-preview\fR] [\fB\-\-properties\fR=[\fIPROPERTIES\fR,...]] [\fB\-\-async\fR\ |\ \fB\-\-automatic\-rollback\-on\-error\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -50,6 +50,10 @@ available at https://cloud.google.com/deployment\-manager/docs/configuration/.
 .TP 2m
 \fB\-\-description\fR=\fIDESCRIPTION\fR
 Optional description of the deployment to insert.
+
+.TP 2m
+\fB\-\-labels\fR=[\fIKEY\fR=\fIVALUE\fR,...]
+A list of label KEY=VALUE pairs to add.
 
 .TP 2m
 \fB\-\-preview\fR

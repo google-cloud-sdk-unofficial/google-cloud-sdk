@@ -11,7 +11,7 @@ gcloud info \- display information about the current gcloud environment
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud info\fR [\fB\-\-run\-diagnostics\fR] [\fB\-\-show\-log\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
+\f5gcloud info\fR [\fB\-\-anonymize\fR] [\fB\-\-run\-diagnostics\fR] [\fB\-\-show\-log\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -44,6 +44,11 @@ gcloud info \-\-show\-log prints the contents of the most recent log file.
 .SH "FLAGS"
 
 .RS 2m
+.TP 2m
+\fB\-\-anonymize\fR
+Minimize any personal identifiable information. Use it when sharing output with
+others.
+
 .TP 2m
 \fB\-\-run\-diagnostics\fR
 Run diagnostics on your installation of the Cloud SDK.

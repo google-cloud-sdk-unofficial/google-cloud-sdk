@@ -108,7 +108,7 @@ class Init(base.Command):
       if not network_passed:
         if not console_io.PromptContinue(
             message='Network errors detected.',
-            prompt_string='Would you like to continue anyways',
+            prompt_string='Would you like to continue anyway',
             default=False):
           log.status.write('You can re-run diagnostics with the following '
                            'command:\n')

@@ -16,6 +16,7 @@
 from containerregistry.client.v2_2 import docker_http
 from googlecloudsdk.api_lib.container.images import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container import flags
 
 # Add to this as we add more container analysis data.
 _DEFAULT_KINDS = ['BUILD_DETAILS', 'PACKAGE_VULNERABILITY', 'IMAGE_BASIS']
@@ -39,12 +40,7 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        'image',
-        help=('The fully qualified image '
-              'reference to describe.\n'
-              '*.gcr.io/repository@digest, '
-              '*.gcr.io/repository:tag'))
+    flags.AddTagOrDigestPositional(parser, verb='describe', repeated=False)
     parser.add_argument(
         '--occurrence-filter',
         default=' OR '.join(
@@ -67,11 +63,11 @@ class Describe(base.DescribeCommand):
     """
 
     try:
-      img_name = util.GetDigestFromName(args.image)
+      img_name = util.GetDigestFromName(args.image_name)
       return util.TransformContainerAnalysisData(img_name,
                                                  args.occurrence_filter)
     except docker_http.V2DiagnosticException as err:
       raise util.GcloudifyRecoverableV2Errors(err, {
-          403: 'Describe failed, access denied: {0}'.format(args.image),
-          404: 'Describe failed, not found: {0}'.format(args.image)
+          403: 'Describe failed, access denied: {0}'.format(args.image_name),
+          404: 'Describe failed, not found: {0}'.format(args.image_name)
       })

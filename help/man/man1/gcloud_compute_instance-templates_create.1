@@ -347,7 +347,7 @@ family is specified instead of an image, the latest non\-deprecated image
 associated with that family is used. It is best practice to use
 \f5\-\-image\-family\fR when the latest version of an image is needed.
 
-By default, \f5\fIdebian\-8\fR\fR is assumed for this flag.
+By default, \f5\fIdebian\-9\fR\fR is assumed for this flag.
 
 .RE
 .sp
@@ -430,8 +430,8 @@ service\-management
 .RE
 
 .RS 2m
-sql
-  \- https://www.googleapis.com/auth/sqlservice
+sql (DEPRECATED)
+  \- https://www.googleapis.com/auth/sqlservice:
 .RE
 
 .RS 2m
@@ -473,6 +473,13 @@ useraccounts\-rw
 userinfo\-email
   \- https://www.googleapis.com/auth/userinfo.email
 .RE
+
+
+DEPRECATION WARNING: 'https://www.googleapis.com/auth/sqlservice' account scope
+and \f5sql\fR alias do not provide SQL instance management capabilities and have
+been deprecated. Please, use 'https://www.googleapis.com/auth/sqlservice.admin'
+or \f5sql.admin\fR to manage your Google SQL Service instances.
+
 
 .RE
 .sp

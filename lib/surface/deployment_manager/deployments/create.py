@@ -72,9 +72,7 @@ class Create(base.CreateCommand, dm_base.DmCommand):
     flags.AddAsyncFlag(group)
     flags.AddDeploymentNameFlag(parser)
     flags.AddPropertiesFlag(parser)
-
-    if version in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-      labels_util.AddCreateLabelsFlags(parser)
+    labels_util.AddCreateLabelsFlags(parser)
 
     group.add_argument(
         '--automatic-rollback-on-error',
@@ -208,8 +206,6 @@ class Create(base.CreateCommand, dm_base.DmCommand):
   def _SetMetadata(self, args, deployment):
     if args.description:
       deployment.description = args.description
-
-  def _SetDeploymentLabels(self, args, deployment):
     label_dict = labels_util.GetUpdateLabelsDictFromArgs(args)
     if label_dict:
       deployment.labels = [
@@ -264,10 +260,6 @@ class CreateBeta(Create):
   def Args(parser):
     Create.Args(parser, version=base.ReleaseTrack.BETA)
 
-  def _SetMetadata(self, args, deployment):
-    self._SetDeploymentLabels(args, deployment)
-    super(CreateBeta, self)._SetMetadata(args, deployment)
-
 
 @base.UnicodeIsSupported
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -281,7 +273,3 @@ class CreateAlpha(Create):
   @staticmethod
   def Args(parser):
     Create.Args(parser, version=base.ReleaseTrack.ALPHA)
-
-  def _SetMetadata(self, args, deployment):
-    self._SetDeploymentLabels(args, deployment)
-    super(CreateAlpha, self)._SetMetadata(args, deployment)

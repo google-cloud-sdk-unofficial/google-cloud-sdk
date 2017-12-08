@@ -70,7 +70,9 @@ be a gzip\-compressed tarball whose name ends in \f5\fI.tar.gz\fR\fR.
 \fB\-\-csek\-key\-file\fR=\fIFILE\fR
 Path to a Customer\-Supplied Encryption Key (CSEK) key file, mapping Google
 Compute Engine images to user managed keys to be used when creating, mounting,
-or snapshotting disks. See
+or snapshotting disks.
+
+If you pass \f5\-\fR as value of the flag the CSEK will be read from stdin. See
 https://cloud.google.com/compute/docs/disks/customer\-supplied\-encryption for
 more details.
 

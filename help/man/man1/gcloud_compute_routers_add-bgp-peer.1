@@ -38,15 +38,16 @@ The name of the router to update.
 .RS 2m
 .TP 2m
 \fB\-\-interface\fR=\fIINTERFACE\fR
-The name of the interface of the peer being added.
+The name of the interface for this BGP peer.
 
 .TP 2m
 \fB\-\-peer\-asn\fR=\fIPEER_ASN\fR
-The asn of the peer being added.
+The BGP autonomous system number (ASN) for this BGP peer. For more information
+see: https://tools.ietf.org/html/rfc6996.
 
 .TP 2m
 \fB\-\-peer\-name\fR=\fIPEER_NAME\fR
-The name of the peer being added.
+The name of the new BGP peer being added.
 
 
 .RE
@@ -59,11 +60,13 @@ The name of the peer being added.
 \fB\-\-advertised\-route\-priority\fR=\fIADVERTISED_ROUTE_PRIORITY\fR
 The priority of routes advertised to this BGP peer. In the case where there is
 more than one matching route of maximum length, the routes with lowest priority
-value win. 0 <= priority <= 65535.
+value win. 0 <= priority <= 65535. If not specified, will use Google\-managed
+priorities.
 
 .TP 2m
 \fB\-\-peer\-ip\-address\fR=\fIPEER_IP_ADDRESS\fR
-The link local address of the peer.
+The link\-local address of the peer router. Must be a link\-local IPv4 address
+belonging to the range 169.254.0.0/16.
 
 .TP 2m
 \fB\-\-region\fR=\fIREGION\fR

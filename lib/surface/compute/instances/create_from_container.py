@@ -260,7 +260,8 @@ class CreateFromContainer(base.CreateCommand):
             x.get('device-name'),
             x.get('interface'),
             x.get('size'),
-            instance_ref.zone)
+            instance_ref.zone,
+            instance_ref.project)
         local_ssds.append(local_ssd)
       boot_disk = instance_utils.CreateDefaultBootAttachedDiskMessage(
           holder.client, holder.resources,

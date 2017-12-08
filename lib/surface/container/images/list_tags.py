@@ -22,6 +22,7 @@ from containerregistry.client.v2_2 import docker_image
 from googlecloudsdk.api_lib.container.images import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import http
 
@@ -104,9 +105,7 @@ class ListTags(base.ListCommand):
         type=arg_parsers.BoundedInt(1, sys.maxint, unlimited=True),
         default=_DEFAULT_SHOW_OCCURRENCES_FROM,
         help=argparse.SUPPRESS)
-    parser.add_argument(
-        'image',
-        help='The name of the image. Format: *.gcr.io/repository/image')
+    flags.AddImagePositional(parser, verb='list tags for')
     # Set flag defaults to return X most recent images instead of all.
     base.LIMIT_FLAG.SetDefault(parser, _DEFAULT_LIMIT)
     base.SORT_BY_FLAG.SetDefault(parser, _DEFAULT_SORT_BY)
@@ -134,7 +133,7 @@ class ListTags(base.ListCommand):
       raise ArgumentError(
           '--show-occurrences-from may only be set if --show-occurrences=True')
 
-    repository = util.ValidateRepositoryPath(args.image)
+    repository = util.ValidateRepositoryPath(args.image_name)
     http_obj = http.Http()
     with docker_image.FromRegistry(
         basic_creds=util.CredentialProvider(),
@@ -149,7 +148,7 @@ class ListTags(base.ListCommand):
           # This block is skipped when the user provided
           # --show-occurrences-from=unlimited on the CLI.
           most_recent_resource_urls = [
-              'https://%s@%s' % (args.image, k) for k in heapq.nlargest(
+              'https://%s@%s' % (args.image_name, k) for k in heapq.nlargest(
                   args.show_occurrences_from,
                   manifests,
                   key=lambda k: manifests[k]['timeCreatedMs'])]

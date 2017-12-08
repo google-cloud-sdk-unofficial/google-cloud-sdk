@@ -21,6 +21,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.organizations import flags
 from googlecloudsdk.command_lib.organizations import orgs_base
+from googlecloudsdk.command_lib.resource_manager import completers
 
 
 @base.ReleaseTracks(
@@ -38,8 +39,8 @@ class AddIamPolicyBinding(orgs_base.OrganizationCommand):
   @staticmethod
   def Args(parser):
     flags.IdArg('to which you want to add a binding').AddToParser(parser)
-    iam_util.AddArgsForAddIamPolicyBinding(parser, 'id',
-                                           'cloudresourcemanager.organizations')
+    iam_util.AddArgsForAddIamPolicyBinding(
+        parser, completer=completers.OrganizationsIamRolesCompleter)
 
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):

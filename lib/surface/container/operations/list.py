@@ -49,14 +49,19 @@ class List(base.ListCommand):
     adapter = self.context['api_adapter']
 
     project_id = properties.VALUES.core.project.GetOrFail()
-    zone = None
-    if args.zone:
-      zone = adapter.registry.Parse(
-          args.zone,
-          params={'project': project_id},
-          collection='compute.zones').zone
+
+    if getattr(args, 'region', None):
+      location = adapter.registry.Parse(args.region,
+                                        params={'project': project_id},
+                                        collection='compute.regions').region
+    elif getattr(args, 'zone', None):
+      location = adapter.registry.Parse(args.zone,
+                                        params={'project': project_id},
+                                        collection='compute.zones').zone
+    else:
+      location = None
 
     try:
-      return adapter.ListOperations(project_id, zone).operations
+      return adapter.ListOperations(project_id, location).operations
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)

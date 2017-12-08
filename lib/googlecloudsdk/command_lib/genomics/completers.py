@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc. All Rights Reserved.
+# Copyright 2013 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,4 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Package marker file."""
+"""Genomics resource completers."""
+
+from googlecloudsdk.command_lib.iam import completers
+
+
+class GenomicsIamRolesCompleter(completers.IamRolesCompleter):
+
+  def __init__(self, **kwargs):
+    super(GenomicsIamRolesCompleter, self).__init__(
+        resource_collection='genomics.datasets',
+        resource_dest='id',
+        **kwargs)
