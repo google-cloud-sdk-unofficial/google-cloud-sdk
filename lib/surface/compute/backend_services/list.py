@@ -15,27 +15,9 @@
 """Command for listing backend services."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class List(base_classes.GlobalLister):
-  """List backend services."""
-
-  @property
-  def service(self):
-    return self.compute.backendServices
-
-  @property
-  def resource_type(self):
-    return 'backendServices'
-
-
-List.detailed_help = base_classes.GetGlobalListerHelp('backend services')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class ListBeta(base_classes.GlobalRegionalLister):
+class List(base_classes.GlobalRegionalLister):
   """List backend services."""
 
   def Collection(self):
@@ -62,5 +44,5 @@ class ListBeta(base_classes.GlobalRegionalLister):
     return ['regionBackendServices', 'backendServices']
 
 
-ListBeta.detailed_help = base_classes.GetGlobalRegionalListerHelp(
+List.detailed_help = base_classes.GetGlobalRegionalListerHelp(
     'backend services')

@@ -15,7 +15,6 @@
 """Delete operation command."""
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -45,9 +44,10 @@ class Delete(base.DeleteCommand):
     request = messages.DataprocProjectsRegionsOperationsDeleteRequest(
         name=operation_ref.RelativeName())
 
-    if not console_io.PromptContinue(
-        message="The operation '{0}' will be deleted.".format(args.operation)):
-      raise exceptions.ToolException('Deletion aborted by user.')
+    console_io.PromptContinue(
+        message="The operation '{0}' will be deleted.".format(args.operation),
+        cancel_on_no=True,
+        cancel_string='Deletion aborted by user.')
 
     client.projects_regions_operations.Delete(request)
 

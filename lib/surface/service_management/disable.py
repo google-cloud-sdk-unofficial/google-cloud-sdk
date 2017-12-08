@@ -14,14 +14,14 @@
 
 """service-management disable command."""
 
-from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import common_flags
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
 
 
-class Disable(base.Command, base_classes.BaseServiceManagementCommand):
-  """Disables a service for a consumer project."""
+class Disable(base.Command):
+  """Disables a service on a provided (or previously configured) project."""
 
   @staticmethod
   def Args(parser):
@@ -45,11 +45,13 @@ class Disable(base.Command, base_classes.BaseServiceManagementCommand):
     Returns:
       The response from the consumer settings API call.
     """
-    request = self.services_messages.ServicemanagementServicesDisableRequest(
+    messages = services_util.GetMessagesModule()
+    client = services_util.GetClientInstance()
+
+    project = properties.VALUES.core.project.Get(required=True)
+    request = messages.ServicemanagementServicesDisableRequest(
         serviceName=args.service,
-        disableServiceRequest=self.services_messages.DisableServiceRequest(
-            consumerId='project:' + self.project
-        )
-    )
-    operation = self.services_client.services.Disable(request)
+        disableServiceRequest=messages.DisableServiceRequest(
+            consumerId='project:' + project))
+    operation = client.services.Disable(request)
     services_util.ProcessOperationResult(operation, args.async)

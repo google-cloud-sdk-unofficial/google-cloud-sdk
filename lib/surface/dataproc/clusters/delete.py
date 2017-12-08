@@ -16,7 +16,6 @@
 
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -49,10 +48,11 @@ class Delete(base.DeleteCommand):
         region=cluster_ref.region,
         projectId=cluster_ref.projectId)
 
-    if not console_io.PromptContinue(
+    console_io.PromptContinue(
         message="The cluster '{0}' and all attached disks will be "
-        'deleted.'.format(args.name)):
-      raise exceptions.ToolException('Deletion aborted by user.')
+        'deleted.'.format(args.name),
+        cancel_on_no=True,
+        cancel_string='Deletion aborted by user.')
 
     operation = client.projects_regions_clusters.Delete(request)
 

@@ -14,13 +14,12 @@
 
 """service-management operations wait command."""
 
-from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import common_flags
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
 
 
-class Wait(base.Command, base_classes.BaseServiceManagementCommand):
+class Wait(base.Command):
   """Waits for an operation to complete."""
 
   @staticmethod
@@ -44,12 +43,14 @@ class Wait(base.Command, base_classes.BaseServiceManagementCommand):
     Returns:
       If successful, the response from the operations.Get API call.
     """
+    messages = services_util.GetMessagesModule()
+    client = services_util.GetClientInstance()
+
     op_name = services_util.ParseOperationName(args.operation)
 
-    request = self.services_messages.ServicemanagementOperationsGetRequest(
-        operationsId=op_name,
-    )
+    request = messages.ServicemanagementOperationsGetRequest(
+        operationsId=op_name,)
 
-    operation = self.services_client.operations.Get(request)
+    operation = client.operations.Get(request)
 
     return services_util.ProcessOperationResult(operation, async=False)

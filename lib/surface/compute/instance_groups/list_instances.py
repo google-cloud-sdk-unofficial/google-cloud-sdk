@@ -14,6 +14,7 @@
 """Command for listing instances in instance groups."""
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 from googlecloudsdk.core import properties
 
@@ -32,7 +33,7 @@ class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
     group_ref = (
         instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
             args, self.resources,
-            default_scope=flags.ScopeEnum.ZONE,
+            default_scope=compute_scope.ScopeEnum.ZONE,
             scope_lister=flags.GetDefaultScopeLister(
                 self.compute_client, project)))
 

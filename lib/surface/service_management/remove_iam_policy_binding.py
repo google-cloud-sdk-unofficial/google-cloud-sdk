@@ -16,15 +16,14 @@
 
 import httplib
 
-from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import common_flags
+from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.api_lib.util import http_retry
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-class RemoveIamPolicyBinding(
-    base.Command, base_classes.BaseServiceManagementCommand):
+class RemoveIamPolicyBinding(base.Command):
   """Removes an IAM policy binding from a service's access policy."""
 
   detailed_help = iam_util.GetDetailedHelpForRemoveIamPolicyBinding(
@@ -61,19 +60,18 @@ class RemoveIamPolicyBinding(
         or a principal that is already a member of the service or visibility
         label.
     """
-    request = (self.services_messages
-               .ServicemanagementServicesGetIamPolicyRequest(
-                   servicesId=args.service))
+    messages = services_util.GetMessagesModule()
+    client = services_util.GetClientInstance()
+    request = messages.ServicemanagementServicesGetIamPolicyRequest(
+        servicesId=args.service)
 
-    policy = self.services_client.services.GetIamPolicy(request)
+    policy = client.services.GetIamPolicy(request)
 
     iam_util.RemoveBindingFromIamPolicy(
         policy, args.member, args.role)
 
     # Send updated access policy to backend
-    request = (self.services_messages
-               .ServicemanagementServicesSetIamPolicyRequest(
-                   servicesId=args.service,
-                   setIamPolicyRequest=(self.services_messages.
-                                        SetIamPolicyRequest(policy=policy))))
-    return self.services_client.services.SetIamPolicy(request)
+    request = messages.ServicemanagementServicesSetIamPolicyRequest(
+        servicesId=args.service,
+        setIamPolicyRequest=messages.SetIamPolicyRequest(policy=policy))
+    return client.services.SetIamPolicy(request)

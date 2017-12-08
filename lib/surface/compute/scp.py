@@ -21,6 +21,7 @@ from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -130,7 +131,7 @@ class Scp(ssh_utils.BaseSSHCLICommand):
               len(instances), ', '.join(sorted(instances))))
 
     instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
-        [instance], flags.ScopeEnum.ZONE, args.zone, self.resources,
+        [instance], compute_scope.ScopeEnum.ZONE, args.zone, self.resources,
         scope_lister=flags.GetDefaultScopeLister(
             self.compute_client, self.project))[0]
     instance = self.GetInstance(instance_ref)

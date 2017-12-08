@@ -18,20 +18,19 @@ import httplib
 
 from apitools.base.py import exceptions as apitools_exceptions
 
-from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import common_flags
+from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.api_lib.util import http_retry
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-class AddIamPolicyBinding(
-    base.Command, base_classes.BaseServiceManagementCommand):
+class AddIamPolicyBinding(base.Command):
   """Adds IAM policy binding to a service's access policy."""
 
-  detailed_help = iam_util.GetDetailedHelpForAddIamPolicyBinding(
-      'service', 'my-service')
+  detailed_help = iam_util.GetDetailedHelpForAddIamPolicyBinding('service',
+                                                                 'my-service')
 
   @staticmethod
   def Args(parser):
@@ -64,27 +63,25 @@ class AddIamPolicyBinding(
         or a principal that is already a member of the service or visibility
         label.
     """
-    request = (self.services_messages
-               .ServicemanagementServicesGetIamPolicyRequest(
-                   servicesId=args.service))
+    messages = services_util.GetMessagesModule()
+    client = services_util.GetClientInstance()
+    request = messages.ServicemanagementServicesGetIamPolicyRequest(
+        servicesId=args.service)
 
     try:
-      policy = self.services_client.services.GetIamPolicy(request)
+      policy = client.services.GetIamPolicy(request)
     except apitools_exceptions.HttpError as error:
       # If the error is a 404, no IAM policy exists, so just create a blank one.
       exc = exceptions.HttpException(error)
       if exc.payload.status_code == 404:
-        policy = self.services_messages.Policy()
+        policy = messages.Policy()
       else:
         raise
 
-    iam_util.AddBindingToIamPolicy(
-        self.services_messages, policy, args.member, args.role)
+    iam_util.AddBindingToIamPolicy(messages, policy, args.member, args.role)
 
     # Send updated access policy to backend
-    request = (self.services_messages
-               .ServicemanagementServicesSetIamPolicyRequest(
-                   servicesId=args.service,
-                   setIamPolicyRequest=(self.services_messages.
-                                        SetIamPolicyRequest(policy=policy))))
-    return self.services_client.services.SetIamPolicy(request)
+    request = messages.ServicemanagementServicesSetIamPolicyRequest(
+        servicesId=args.service,
+        setIamPolicyRequest=(messages.SetIamPolicyRequest(policy=policy)))
+    return client.services.SetIamPolicy(request)

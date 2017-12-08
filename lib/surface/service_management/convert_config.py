@@ -18,13 +18,14 @@ import os
 
 from apitools.base.py import encoding
 
-from googlecloudsdk.api_lib.service_management import base_classes
+from googlecloudsdk.api_lib.service_management import services_util
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 
 
-class ConvertConfig(base.Command, base_classes.BaseServiceManagementCommand):
+class ConvertConfig(base.Command):
   """Convert Swagger specification to Google service configuration.
 
   DEPRECATED: This command is deprecated and will be removed soon.
@@ -63,27 +64,28 @@ class ConvertConfig(base.Command, base_classes.BaseServiceManagementCommand):
     """
     log.warn('This command is deprecated and will be removed soon.')
 
+    messages = services_util.GetMessagesModule()
+    client = services_util.GetClientInstance()
+
     # TODO(user): Add support for swagger file references later
     # This requires the API to support multiple files first. b/23353397
     try:
       with open(args.open_api_file) as f:
-        open_api_spec = self.services_messages.OpenApiSpec(
-            openApiFiles=[self.services_messages.ConfigFile(
+        open_api_spec = messages.OpenApiSpec(openApiFiles=[
+            messages.ConfigFile(
                 filePath=os.path.basename(args.open_api_file),
-                contents=f.read())]
-        )
+                contents=f.read())
+        ])
     except IOError:
       raise exceptions.ToolException.FromCurrent(
           'Cannot open {f} file'.format(f=args.open_api_file))
 
-    request = self.services_messages.ConvertConfigRequest(
-        openApiSpec=open_api_spec,
-    )
+    request = messages.ConvertConfigRequest(openApiSpec=open_api_spec)
 
-    converted_config = self.services_client.v1.ConvertConfig(request)
+    converted_config = client.v1.ConvertConfig(request)
     diagnostics = converted_config.diagnostics
     if diagnostics:
-      kind = self.services_messages.Diagnostic.KindValueValuesEnum
+      kind = messages.Diagnostic.KindValueValuesEnum
       for diagnostic in diagnostics:
         logger = log.error if diagnostic.kind == kind.ERROR else log.warning
         logger('{l}: {m}'.format(l=diagnostic.location, m=diagnostic.message))

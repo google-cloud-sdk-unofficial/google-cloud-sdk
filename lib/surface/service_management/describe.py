@@ -14,12 +14,12 @@
 
 """service-management describe command."""
 
-from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import common_flags
+from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
 
 
-class Describe(base.DescribeCommand, base_classes.BaseServiceManagementCommand):
+class Describe(base.DescribeCommand):
   """Describes a service given a service name."""
 
   @staticmethod
@@ -43,8 +43,10 @@ class Describe(base.DescribeCommand, base_classes.BaseServiceManagementCommand):
     Returns:
       The response from the Get API call.
     """
-    request = self.services_messages.ServicemanagementServicesGetRequest(
-        serviceName=args.service,
-    )
+    messages = services_util.GetMessagesModule()
+    client = services_util.GetClientInstance()
 
-    return self.services_client.services.Get(request)
+    request = messages.ServicemanagementServicesGetRequest(
+        serviceName=args.service,)
+
+    return client.services.Get(request)

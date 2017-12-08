@@ -107,6 +107,13 @@ class Create(base_classes.BaseAsyncCreator):
       raise exceptions.ConflictingArgumentsException(
           '--source-uri', '--source-disk')
 
+    if not (args.source_disk or args.source_uri):
+      raise exceptions.MinimumArgumentException(
+          ['--source-uri', '--source-disk'],
+          'Please specify either the source disk or the Google Cloud Storage '
+          'URI of the disk image.'
+      )
+
     # TODO(user): use resources.REGISTRY.Parse() for GCS URIs (b/30086260).
     if args.source_uri:
       source_uri = utils.NormalizeGoogleStorageUri(args.source_uri)

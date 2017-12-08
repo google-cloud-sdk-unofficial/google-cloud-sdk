@@ -96,6 +96,7 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
     """Validates the values of all disk-related flags."""
     instances_flags.ValidateDiskCommonFlags(args)
     instances_flags.ValidateDiskBootFlags(args)
+    instances_flags.ValidateCreateDiskFlags(args)
 
   def CreateRequests(self, args):
     """Creates and returns an InstanceTemplates.Insert request.

@@ -231,7 +231,8 @@ class Transport(object):
       method: str, the HTTP method to use (defaults to GET/PUT depending on
               whether body is provided)
       body: str, the body to pass into the PUT request (or None for GET)
-      content_type: str, the mime-type of the request (or None for JSON)
+      content_type: str, the mime-type of the request (or None for JSON).
+              content_type is ignored when body is None.
 
     Raises:
       BadStateException: an unexpected internal state has been encountered.
@@ -249,10 +250,13 @@ class Transport(object):
       # self._bearer_creds may be changed by self._Refresh(), so do
       # not hoist this.
       headers = {
-          'content-type': content_type if content_type else 'application/json',
           'Authorization': self._bearer_creds.Get(),
           'User-Agent': docker_name.USER_AGENT,
       }
+
+      if body:  # Requests w/ bodies should have content-type.
+        headers['content-type'] = (content_type if content_type else
+                                   'application/json')
 
       # POST/PUT require a content-length, when no body is supplied.
       if method in ('POST', 'PUT') and not body:

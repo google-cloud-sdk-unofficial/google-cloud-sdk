@@ -1,0 +1,62 @@
+
+.TH "GCLOUD_PREVIEW_PROJECTS_SET\-IAM\-POLICY" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud preview projects set\-iam\-policy \- set IAM policy for a project
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud preview projects set\-iam\-policy\fR \fIPROJECT_ID\fR \fIPOLICY_FILE\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+
+.SH "DESCRIPTION"
+
+\fB(PREVIEW)\fR Sets the IAM policy for a project, given a project ID and a file
+that contains the JSON\-encoded IAM policy.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+.RS 2m
+.TP 2m
+\fIPROJECT_ID\fR
+ID for the project you want to set IAM policy for.
+
+.TP 2m
+\fIPOLICY_FILE\fR
+JSON file with the IAM policy
+
+
+.RE
+.sp
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+The following command reads an IAM policy defined in a JSON file
+\f5policy.json\fR and sets it for a project with the ID
+\f5example\-project\-id\-1\fR:
+
+.RS 2m
+$ gcloud preview projects set\-iam\-policy example\-project\-id\-1 \e
+    policy.json
+.RE
+
+
+
+.SH "NOTES"
+
+This command is currently in DEVELOPER PREVIEW and may change without notice.
+

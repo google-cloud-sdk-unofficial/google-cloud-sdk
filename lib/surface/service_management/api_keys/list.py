@@ -14,11 +14,12 @@
 
 """Implementation of the service-management api-keys list command."""
 
-from googlecloudsdk.api_lib.service_management import base_classes
+from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
 
 
-class List(base.ListCommand, base_classes.BaseServiceManagementCommand):
+class List(base.ListCommand):
   """Lists API keys for a project."""
 
   @staticmethod
@@ -43,9 +44,12 @@ class List(base.ListCommand, base_classes.BaseServiceManagementCommand):
     Returns:
       The response from the keys API call.
     """
+    messages = services_util.GetApiKeysMessagesModule()
+    client = services_util.GetApiKeysClientInstance()
+
     # Construct the List API Key request object
-    request = self.apikeys_messages.ApikeysProjectsApiKeysListRequest(
-        projectId=self.project,
+    request = messages.ApikeysProjectsApiKeysListRequest(
+        projectId=properties.VALUES.core.project.Get(required=True),
         pageSize=args.limit)
 
-    return self.apikeys_client.projects_apiKeys.List(request)
+    return client.projects_apiKeys.List(request)

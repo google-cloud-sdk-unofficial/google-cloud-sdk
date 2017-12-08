@@ -64,10 +64,6 @@ class TestingArgFiles(base.TopicCommand):
 
             device-ids: Nexus9
 
-          Note that while the command-line flags support both singular and
-          plural forms of each list-style argument (e.g. either --device-id
-          or --device-ids), argument files only support the plural forms.
-
           Composition
 
           A special *include: [_ARG_GROUP1_, ...]* syntax allows merging or

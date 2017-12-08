@@ -67,7 +67,8 @@ class Revoke(base.Command):
     for account in accounts:
       if active_account == account:
         properties.PersistProperty(properties.VALUES.core.account, None)
-      c_store.Revoke(account)
+      if not c_store.Revoke(account):
+        log.warn('[{}] already inactive (previously revoked?)'.format(account))
     return accounts
 
   def Format(self, unused_args):

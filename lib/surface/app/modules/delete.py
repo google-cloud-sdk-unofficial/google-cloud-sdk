@@ -15,8 +15,8 @@
 """The Delete command."""
 
 from googlecloudsdk.api_lib.app import appengine_api_client
+from googlecloudsdk.api_lib.app import exceptions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.app import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
@@ -68,4 +68,4 @@ class Delete(base.DeleteCommand):
     for module in args.modules:
       delete_results.append(api_client.DeleteVersion(module, args.version))
     if not all(delete_results):
-      raise exceptions.ToolException('Not all deletions succeeded.')
+      raise exceptions.DeleteError('Not all deletions succeeded.')

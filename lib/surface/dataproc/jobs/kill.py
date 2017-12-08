@@ -16,7 +16,6 @@
 
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -53,9 +52,10 @@ class Kill(base.Command):
 
     # TODO(user) Check if Job is still running and fail or handle 401.
 
-    if not console_io.PromptContinue(
-        message="The job '{0}' will be killed.".format(args.id)):
-      raise exceptions.ToolException('Cancellation aborted by user.')
+    console_io.PromptContinue(
+        message="The job '{0}' will be killed.".format(args.id),
+        cancel_on_no=True,
+        cancel_string='Cancellation aborted by user.')
 
     job = client.projects_regions_jobs.Cancel(request)
     log.status.Print(

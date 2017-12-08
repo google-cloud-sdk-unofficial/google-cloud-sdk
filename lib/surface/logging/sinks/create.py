@@ -51,20 +51,18 @@ class Create(base.CreateCommand):
 
   def CreateLogSink(self, sink_data):
     """Creates a log sink specified by the arguments."""
-    client = self.context['logging_client_v1beta3']
-    messages = self.context['logging_messages_v1beta3']
     sink_ref = self.context['sink_reference']
-    return client.projects_logs_sinks.Create(
+    messages = util.GetMessagesV1()
+    return util.GetClientV1().projects_logs_sinks.Create(
         messages.LoggingProjectsLogsSinksCreateRequest(
             projectsId=sink_ref.projectsId, logsId=sink_ref.logsId,
             logSink=messages.LogSink(**sink_data)))
 
   def CreateLogServiceSink(self, sink_data):
     """Creates a log service sink specified by the arguments."""
-    client = self.context['logging_client_v1beta3']
-    messages = self.context['logging_messages_v1beta3']
+    messages = util.GetMessagesV1()
     sink_ref = self.context['sink_reference']
-    return client.projects_logServices_sinks.Create(
+    return util.GetClientV1().projects_logServices_sinks.Create(
         messages.LoggingProjectsLogServicesSinksCreateRequest(
             projectsId=sink_ref.projectsId,
             logServicesId=sink_ref.logServicesId,
@@ -73,15 +71,14 @@ class Create(base.CreateCommand):
   def CreateProjectSink(self, sink_data, unique_writer_identity):
     """Creates a project sink specified by the arguments."""
     # Use V2 logging API for project sinks.
-    client = self.context['logging_client_v2']
-    messages = self.context['logging_messages_v2']
+    messages = util.GetMessages()
     sink_ref = self.context['sink_reference']
     # Change string value to enum.
     sink_data['outputVersionFormat'] = getattr(
         messages.LogSink.OutputVersionFormatValueValuesEnum,
         sink_data['outputVersionFormat'])
     # TODO(b/32504514): Use resource parser
-    return client.projects_sinks.Create(
+    return util.GetClient().projects_sinks.Create(
         messages.LoggingProjectsSinksCreateRequest(
             parent='projects/{0}'.format(sink_ref.projectsId),
             logSink=messages.LogSink(**sink_data),

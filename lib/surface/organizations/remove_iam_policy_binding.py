@@ -23,7 +23,8 @@ from googlecloudsdk.command_lib.organizations import flags
 from googlecloudsdk.command_lib.organizations import orgs_base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class RemoveIamPolicyBinding(orgs_base.OrganizationCommand):
   """Remove IAM policy binding for an organization.
 

@@ -17,8 +17,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.BETA, base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class Projects(base.Group):
   """Manage your projects.
 

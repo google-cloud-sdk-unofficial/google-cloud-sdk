@@ -13,8 +13,8 @@
 # limitations under the License.
 """Cancel build command."""
 
+from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import apis as core_apis
 from googlecloudsdk.core import log
 
 
@@ -47,8 +47,8 @@ class Cancel(base.Command):
       Some value that we want to have printed later.
     """
 
-    client = core_apis.GetClientInstance('cloudbuild', 'v1')
-    messages = core_apis.GetMessagesModule('cloudbuild', 'v1')
+    client = cloudbuild_util.GetClientInstance()
+    messages = cloudbuild_util.GetMessagesModule()
     resources = self.context['registry']
 
     build_ref = resources.Parse(

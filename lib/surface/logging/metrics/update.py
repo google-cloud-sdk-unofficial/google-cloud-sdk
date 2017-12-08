@@ -14,6 +14,7 @@
 
 """'logging metrics update' command."""
 
+from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
@@ -55,8 +56,8 @@ class Update(base.UpdateCommand):
       raise exceptions.ToolException(
           '--description or --filter argument is required')
 
-    client = self.context['logging_client_v1beta3']
-    messages = self.context['logging_messages_v1beta3']
+    client = util.GetClientV1()
+    messages = util.GetMessagesV1()
     project = properties.VALUES.core.project.Get(required=True)
 
     # Calling the API's Update method on a non-existing metric creates it.

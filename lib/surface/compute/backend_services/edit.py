@@ -15,7 +15,6 @@
 
 from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.core import resources
@@ -28,11 +27,10 @@ class InvalidResourceError(exceptions.ToolException):
   pass
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Edit(base_classes.BaseEdit):
   """Modify backend services."""
 
-  _BACKEND_SERVICE_ARG = flags.GLOBAL_BACKEND_SERVICE_ARG
+  _BACKEND_SERVICE_ARG = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG
 
   @classmethod
   def Args(cls, parser):
@@ -91,8 +89,8 @@ class Edit(base_classes.BaseEdit):
     ref = self._BACKEND_SERVICE_ARG.ResolveAsResource(
         args,
         self.resources,
-        default_scope=backend_services_utils.GetDefaultScope(self, args))
-    self.regional = backend_services_utils.IsRegionalRequest(self, args)
+        default_scope=backend_services_utils.GetDefaultScope(args))
+    self.regional = backend_services_utils.IsRegionalRequest(args)
     return ref
 
   @property
@@ -186,8 +184,3 @@ Edit.detailed_help = {
         the ``EDITOR'' environment variable.
         """,
 }
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class EditBeta(Edit):
-  _BACKEND_SERVICE_ARG = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG

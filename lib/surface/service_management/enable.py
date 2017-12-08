@@ -15,15 +15,15 @@
 """service-management enable command."""
 
 
-from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import common_flags
 from googlecloudsdk.api_lib.service_management import enable_api
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
 
 
-class Enable(base.Command, base_classes.BaseServiceManagementCommand):
-  """Enables a service for a consumer project."""
+class Enable(base.Command):
+  """Enables a service on a provided (or previously configured) project."""
 
   @staticmethod
   def Args(parser):
@@ -47,5 +47,6 @@ class Enable(base.Command, base_classes.BaseServiceManagementCommand):
     Returns:
       The response from the consumer settings API call.
     """
-    operation = enable_api.EnableServiceApiCall(self.project, args.service)
+    project = properties.VALUES.core.project.Get(required=True)
+    operation = enable_api.EnableServiceApiCall(project, args.service)
     services_util.ProcessOperationResult(operation, args.async)

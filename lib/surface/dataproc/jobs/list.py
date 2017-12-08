@@ -17,9 +17,9 @@
 from apitools.base.py import encoding
 from apitools.base.py import list_pager
 
+from googlecloudsdk.api_lib.dataproc import exceptions
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import properties
 
 
@@ -107,7 +107,7 @@ class List(base.ListCommand):
             messages.DataprocProjectsRegionsJobsListRequest
             .JobStateMatcherValueValuesEnum.NON_ACTIVE)
       else:
-        raise exceptions.ToolException(
+        raise exceptions.ArgumentError(
             'Invalid state-filter; [{0}].'.format(args.state_filter))
 
     jobs = list_pager.YieldFromList(

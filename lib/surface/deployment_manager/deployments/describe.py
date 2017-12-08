@@ -107,6 +107,8 @@ class Describe(base.DescribeCommand, dm_base.DeploymentManagerCommand):
               manifest=manifest,
           )
       )
-      outputs = dm_v2_util.FlattenLayoutOutputs(manifest_response.layout)
+      # We might be lacking a layout if the manifest failed expansion.
+      if manifest_response.layout:
+        outputs = dm_v2_util.FlattenLayoutOutputs(manifest_response.layout)
 
     return _Results(deployment, resources, outputs)

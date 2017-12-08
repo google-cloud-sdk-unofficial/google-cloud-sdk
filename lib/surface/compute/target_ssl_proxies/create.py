@@ -15,42 +15,37 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import health_checks_utils
+from googlecloudsdk.command_lib.compute.backend_services import (
+    flags as backend_service_flags)
+from googlecloudsdk.command_lib.compute.ssl_certificates import (
+    flags as ssl_certificate_flags)
+from googlecloudsdk.command_lib.compute.target_ssl_proxies import flags
 
 
 class Create(base_classes.BaseAsyncCreator):
   """Create a target SSL proxy."""
 
-  @staticmethod
-  def Args(parser):
+  BACKEND_SERVICE_ARG = None
+  SSL_CERTIFICATE_ARG = None
+  TARGET_SSL_PROXY_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
     health_checks_utils.AddProxyHeaderRelatedCreateArgs(parser)
+
+    cls.BACKEND_SERVICE_ARG = (
+        backend_service_flags.BackendServiceArgumentForTargetSslProxy())
+    cls.BACKEND_SERVICE_ARG.AddArgument(parser)
+    cls.SSL_CERTIFICATE_ARG = (
+        ssl_certificate_flags.SslCertificateArgumentForOtherResource(
+            'target SSL proxy'))
+    cls.SSL_CERTIFICATE_ARG.AddArgument(parser)
+    cls.TARGET_SSL_PROXY_ARG = flags.TargetSslProxyArgument()
+    cls.TARGET_SSL_PROXY_ARG.AddArgument(parser)
 
     parser.add_argument(
         '--description',
         help='An optional, textual description for the target SSL proxy.')
-
-    ssl_certificate = parser.add_argument(
-        '--ssl-certificate',
-        required=True,
-        help=('A reference to an SSL certificate resource that is used for '
-              'server-side authentication.'))
-    ssl_certificate.detailed_help = """\
-        A reference to an SSL certificate resource that is used for
-        server-side authentication. The SSL certificate must exist and cannot
-        be deleted while referenced by a target SSL proxy.
-        """
-
-    backend_service = parser.add_argument(
-        '--backend-service',
-        required=True,
-        help=('.'))
-    backend_service.detailed_help = """\
-        A backend service that will be used for connections to the target SSL
-        proxy.
-        """
-
-    parser.add_argument(
-        'name',
-        help='The name of the target SSL proxy.')
 
   @property
   def service(self):
@@ -65,14 +60,14 @@ class Create(base_classes.BaseAsyncCreator):
     return 'targetSslProxies'
 
   def CreateRequests(self, args):
-    ssl_certificate_ref = self.CreateGlobalReference(
-        args.ssl_certificate, resource_type='sslCertificates')
+    ssl_certificate_ref = self.SSL_CERTIFICATE_ARG.ResolveAsResource(
+        args, self.resources)
 
-    backend_service_ref = self.CreateGlobalReference(
-        args.backend_service, resource_type='backendServices')
+    backend_service_ref = self.BACKEND_SERVICE_ARG.ResolveAsResource(
+        args, self.resources)
 
-    target_ssl_proxy_ref = self.CreateGlobalReference(
-        args.name, resource_type='targetSslProxies')
+    target_ssl_proxy_ref = self.TARGET_SSL_PROXY_ARG.ResolveAsResource(
+        args, self.resources)
 
     if args.proxy_header:
       proxy_header = self.messages.TargetSslProxy.ProxyHeaderValueValuesEnum(

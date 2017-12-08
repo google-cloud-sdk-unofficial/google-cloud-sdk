@@ -14,12 +14,13 @@
 
 """Implementation of the service-management api-keys revert command."""
 
-from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import common_flags
+from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
 
 
-class Revert(base.Command, base_classes.BaseServiceManagementCommand):
+class Revert(base.Command):
   """Reverts a previous key regeneration and returns the updated key.
 
      This command swaps the current_key and previous_key fields on the
@@ -47,9 +48,12 @@ class Revert(base.Command, base_classes.BaseServiceManagementCommand):
     Returns:
       The response from the keys API call.
     """
+    messages = services_util.GetApiKeysMessagesModule()
+    client = services_util.GetApiKeysClientInstance()
+
     # Construct the Revert API Key request object
-    request = self.apikeys_messages.ApikeysProjectsApiKeysRevertRequest(
-        projectId=self.project,
+    request = messages.ApikeysProjectsApiKeysRevertRequest(
+        projectId=properties.VALUES.core.project.Get(required=True),
         keyId=args.key)
 
-    return self.apikeys_client.projects_apiKeys.Revert(request)
+    return client.projects_apiKeys.Revert(request)

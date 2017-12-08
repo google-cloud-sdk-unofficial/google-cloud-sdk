@@ -14,11 +14,14 @@
 
 """Implementation of gcloud genomics pipelines run.
 """
+import argparse
+
 from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import exceptions
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
@@ -157,6 +160,8 @@ class Run(base.SilentCommand):
             used. Stdout and stderr logs from the run are also generated and
             output as `-stdout.log` and `-stderr.log`.''')
 
+    labels_util.AddCreateLabelsFlags(parser)
+
     parser.add_argument(
         '--memory',
         category=base.COMMONLY_USED_FLAGS,
@@ -183,8 +188,7 @@ class Run(base.SilentCommand):
 
     parser.add_argument(
         '--run-id',
-        help='''Optional caller-specified identifier for this run of the
-             pipeline.''')
+        help=argparse.SUPPRESS)
 
     parser.add_argument(
         '--service-account-email',
@@ -295,6 +299,11 @@ https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_regio
                 additionalProperties=outputs),
             clientId=args.run_id,
             logging=genomics_messages.LoggingOptions(gcsPath=args.logging),
+            labels=labels_util.UpdateLabels(
+                None,
+                genomics_messages.RunPipelineArgs.LabelsValue,
+                labels_util.GetUpdateLabelsDictFromArgs(args),
+                None),
             projectId=genomics_util.GetProjectId(),
             serviceAccount=genomics_messages.ServiceAccount(
                 email=args.service_account_email,

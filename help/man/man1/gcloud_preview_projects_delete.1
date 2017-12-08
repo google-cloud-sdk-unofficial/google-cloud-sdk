@@ -1,0 +1,64 @@
+
+.TH "GCLOUD_PREVIEW_PROJECTS_DELETE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud preview projects delete \- delete a project
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud preview projects delete\fR \fIPROJECT_ID\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+
+.SH "DESCRIPTION"
+
+\fB(PREVIEW)\fR Deletes the project with the given project ID.
+
+This command can fail for the following reasons:
+.RS 2m
+.IP "\(bu" 2m
+The project specified does not exist.
+.IP "\(bu" 2m
+The active account does not have Owner permissions for the given project.
+.RE
+.sp
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+.RS 2m
+.TP 2m
+\fIPROJECT_ID\fR
+ID for the project you want to delete.
+
+
+.RE
+.sp
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+The following command deletes the project with the ID
+\f5example\-foo\-bar\-1\fR:
+
+.RS 2m
+$ gcloud preview projects delete example\-foo\-bar\-1
+.RE
+
+
+
+.SH "NOTES"
+
+This command is currently in DEVELOPER PREVIEW and may change without notice.
+

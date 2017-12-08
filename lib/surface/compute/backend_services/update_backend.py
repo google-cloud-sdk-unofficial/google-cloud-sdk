@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.backend_services import backend_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
@@ -32,7 +33,7 @@ class UpdateBackend(base_classes.ReadWriteCommand):
 
   @staticmethod
   def Args(parser):
-    flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     backend_flags.AddDescription(parser)
     backend_flags.AddInstanceGroup(
         parser, operation_type='update', with_deprecated_zone=True)
@@ -160,7 +161,7 @@ class UpdateBackend(base_classes.ReadWriteCommand):
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
 
-    self.regional = backend_services_utils.IsRegionalRequest(self, args)
+    self.regional = backend_services_utils.IsRegionalRequest(args)
 
     return super(UpdateBackend, self).Run(args)
 
@@ -212,7 +213,7 @@ class UpdateBackendAlpha(UpdateBackend):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
         args, holder.resources,
-        default_scope=compute_flags.ScopeEnum.ZONE,
+        default_scope=compute_scope.ScopeEnum.ZONE,
         scope_lister=compute_flags.GetDefaultScopeLister(
             holder.client, self.project))
 

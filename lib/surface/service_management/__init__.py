@@ -22,7 +22,7 @@ from googlecloudsdk.core import properties
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA,
                     base.ReleaseTrack.BETA)
 class ServiceManagement(base.Group):
-  """Manage service configuration via ServiceManagement v1."""
+  """Create, enable, or otherwise manage API services."""
 
   def Filter(self, context, args):
     """Context() is a filter function that can update the context.

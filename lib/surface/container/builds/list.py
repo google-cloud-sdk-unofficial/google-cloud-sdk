@@ -15,8 +15,8 @@
 
 from apitools.base.py import list_pager
 
+from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import apis as core_apis
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
@@ -68,8 +68,8 @@ class List(base.ListCommand):
       Some value that we want to have printed later.
     """
 
-    client = core_apis.GetClientInstance('cloudbuild', 'v1')
-    messages = core_apis.GetMessagesModule('cloudbuild', 'v1')
+    client = cloudbuild_util.GetClientInstance()
+    messages = cloudbuild_util.GetMessagesModule()
 
     ongoing_filter = None
     if args.ongoing:

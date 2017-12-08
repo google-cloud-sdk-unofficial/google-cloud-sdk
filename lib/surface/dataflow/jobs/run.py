@@ -35,13 +35,31 @@ class Run(base.Command):
       parser: argparse.ArgumentParser to register arguments with.
     """
     parser.add_argument(
+        'job_name',
+        metavar='JOB_NAME',
+        help='The unique name to assign to the job.')
+
+    parser.add_argument(
         '--gcs-location',
         help='The location of the job template to run.',
         required=True)
 
     parser.add_argument(
-        '--job-name',
-        help='The unique name to assign to the job.')
+        '--zone',
+        type=arg_parsers.RegexpValidator(
+            r'\w+-\w+\d-\w', 'must provide a valid zone'),
+        help='The zone to run the workers in.')
+
+    parser.add_argument(
+        '--service-account-email',
+        type=arg_parsers.RegexpValidator(
+            r'.*@.*\..*', 'must provide a valid email address'),
+        help='The service account to run the workers as.')
+
+    parser.add_argument(
+        '--max-workers',
+        type=int,
+        help='The maximum number of workers to run.')
 
     parser.add_argument(
         '--parameters',
@@ -67,6 +85,9 @@ class Run(base.Command):
         project_id=properties.VALUES.core.project.Get(required=True),
         gcs_location=args.gcs_location,
         job_name=args.job_name,
-        parameters=args.parameters)
+        parameters=args.parameters,
+        service_account_email=args.service_account_email,
+        zone=args.zone,
+        max_workers=args.max_workers)
 
     return job

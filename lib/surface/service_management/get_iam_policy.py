@@ -14,13 +14,12 @@
 
 """Command to describe the access policy for a service."""
 
-from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import common_flags
+from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
 
 
-class GetIamPolicy(
-    base.DescribeCommand, base_classes.BaseServiceManagementCommand):
+class GetIamPolicy(base.DescribeCommand):
   """Describes the IAM policy for a service."""
 
   @staticmethod
@@ -50,8 +49,10 @@ class GetIamPolicy(
       HttpException: An http error response was received while executing api
           request.
     """
-    request = (self.services_messages
-               .ServicemanagementServicesGetIamPolicyRequest(
-                   servicesId=args.service))
+    messages = services_util.GetMessagesModule()
+    client = services_util.GetClientInstance()
 
-    return self.services_client.services.GetIamPolicy(request)
+    request = messages.ServicemanagementServicesGetIamPolicyRequest(
+        servicesId=args.service)
+
+    return client.services.GetIamPolicy(request)

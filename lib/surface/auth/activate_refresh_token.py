@@ -14,12 +14,12 @@
 
 """The auth command gets tokens via oauth2."""
 
+from googlecloudsdk.api_lib.auth import refresh_token
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
-from googlecloudsdk.core.credentials import store as c_store
 
 
 @base.Hidden
@@ -50,19 +50,12 @@ class ActivateRefreshToken(base.SilentCommand):
     if not token:
       raise c_exc.InvalidArgumentException('token', 'No value provided.')
 
-    creds = c_store.AcquireFromToken(token)
-    account = args.account
-
-    c_store.Refresh(creds)
-
-    c_store.Store(creds, account)
-
-    properties.PersistProperty(properties.VALUES.core.account, account)
+    refresh_token.ActivateCredentials(args.account, token)
 
     project = args.project
     if project:
       properties.PersistProperty(properties.VALUES.core.project, project)
 
     log.status.Print('Activated refresh token credentials: [{0}]'
-                     .format(account))
-    return creds
+                     .format(args.account))
+

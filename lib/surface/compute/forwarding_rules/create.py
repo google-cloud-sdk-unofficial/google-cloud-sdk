@@ -29,9 +29,18 @@ def _Args(parser, include_beta, include_alpha=False):
   flags.AddIPProtocols(parser, include_alpha=include_alpha)
   flags.AddDescription(parser)
   flags.AddPortsAndPortRange(parser)
+  if include_alpha:
+    parser.add_argument(
+        '--service-label',
+        help='(Only for Internal Load Balancing): '
+             'https://cloud.google.com/compute/docs/load-balancing/internal/\n'
+             'The DNS label to use as the prefix of the fully qualified domain '
+             'name for this forwarding rule. The full name will be internally '
+             'generated and output as dnsName. If this field is not specified, '
+             'no DNS record will be generated and no DNS name will be output. ')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(utils.ForwardingRulesTargetMutator):
   """Create a forwarding rule to direct network traffic to a load balancer."""
 
@@ -98,48 +107,16 @@ class Create(utils.ForwardingRulesTargetMutator):
                                                          self.project))
     protocol = self.ConstructProtocol(args)
 
-    request = self.messages.ComputeForwardingRulesInsertRequest(
-        forwardingRule=self.messages.ForwardingRule(
-            description=args.description,
-            name=forwarding_rule_ref.Name(),
-            IPAddress=args.address,
-            IPProtocol=protocol,
-            portRange=_ResolvePortRange(args.port_range, args.ports),
-            target=target_ref.SelfLink(),),
-        project=self.project,
-        region=forwarding_rule_ref.region)
-
-    return [request]
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(Create):
-  """Create a forwarding rule to direct network traffic to a load balancer."""
-
-  @classmethod
-  def Args(cls, parser):
-    cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
-    _Args(parser, include_beta=True, include_alpha=False)
-    cls.FORWARDING_RULE_ARG.AddArgument(parser)
-
-  def CreateRegionalRequests(self, args):
-    """Create a regionally scoped request."""
-    target_ref, region_ref = self.GetRegionalTarget(args)
-    if not args.region and region_ref:
-      args.region = region_ref
-    forwarding_rule_ref = self.FORWARDING_RULE_ARG.ResolveAsResource(
-        args,
-        self.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
-                                                         self.project))
-    protocol = self.ConstructProtocol(args)
-
     forwarding_rule = self.messages.ForwardingRule(
         description=args.description,
         name=forwarding_rule_ref.Name(),
         IPAddress=args.address,
-        IPProtocol=protocol,
-        portRange=args.port_range)
+        IPProtocol=protocol)
+    if args.load_balancing_scheme == 'INTERNAL':
+      forwarding_rule.portRange = args.port_range
+    else:
+      forwarding_rule.portRange = (
+          _ResolvePortRange(args.port_range, args.ports))
     if target_ref.Collection() == 'compute.regionBackendServices':
       forwarding_rule.loadBalancingScheme = (
           self.messages.ForwardingRule.LoadBalancingSchemeValueValuesEnum(
@@ -159,6 +136,8 @@ class CreateBeta(Create):
               args, self.resources).SelfLink()
     else:
       forwarding_rule.target = target_ref.SelfLink()
+    if hasattr(args, 'service_label'):
+      forwarding_rule.serviceLabel = args.service_label
     request = self.messages.ComputeForwardingRulesInsertRequest(
         forwardingRule=forwarding_rule,
         project=self.project,
@@ -168,7 +147,7 @@ class CreateBeta(Create):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
+class CreateAlpha(Create):
   """Create a forwarding rule to direct network traffic to a load balancer."""
 
   @classmethod
@@ -187,9 +166,6 @@ Create.detailed_help = {
         ``--target-ssl-proxy'', or ``--target-vpn-gateway'' must be specified.
         """.format(overview=flags.FORWARDING_RULES_OVERVIEW)),
 }
-
-CreateBeta.detailed_help = Create.detailed_help
-CreateAlpha.detailed_help = Create.detailed_help
 
 
 def _GetPortRange(ports_range_list):

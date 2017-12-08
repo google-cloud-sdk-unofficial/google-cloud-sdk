@@ -99,7 +99,8 @@ def _AttachSignatures(manifest, signatures):
   prefix = manifest[0:format_length]
   suffix = _JoseBase64UrlDecode(format_tail)
   return '{prefix},"signatures":{signatures}{suffix}'.format(
-      prefix=prefix, signatures=json.dumps(signatures), suffix=suffix)
+      prefix=prefix, signatures=json.dumps(signatures, sort_keys=True),
+      suffix=suffix)
 
 
 def Digest(manifest):
@@ -120,7 +121,8 @@ def Rename(manifest, name):
   json_manifest['tag'] = name.tag
 
   # Reserialize the json to a string.
-  updated_unsigned_manifest = json.dumps(json_manifest, indent=2)
+  updated_unsigned_manifest = json.dumps(
+      json_manifest, sort_keys=True, indent=2)
 
   # Sign the updated manifest
   return Sign(updated_unsigned_manifest)

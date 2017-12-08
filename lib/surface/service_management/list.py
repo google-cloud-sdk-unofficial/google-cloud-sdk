@@ -16,12 +16,11 @@
 
 from apitools.base.py import list_pager
 
-from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
 
 
-class List(base.ListCommand, base_classes.BaseServiceManagementCommand):
+class List(base.ListCommand):
   """List services for a given project."""
 
   @staticmethod
@@ -37,31 +36,32 @@ class List(base.ListCommand, base_classes.BaseServiceManagementCommand):
     parser.add_argument('--simple-list',
                         action='store_true',
                         default=False,
-                        help=('If true, only the list of resource IDs is '
+                        help=('If true, only the list of API service names is '
                               'printed. If false, a human-readable table of '
-                              'resource information is printed.'))
+                              'service name and description information is '
+                              'printed.'))
 
     mode_group = parser.add_mutually_exclusive_group(required=False)
 
     mode_group.add_argument('--enabled',
                             action='store_true',
-                            help=('(DEFAULT) Return the services the project '
-                                  'has enabled for consumption. Or use one of '
+                            help=('(DEFAULT) Return the services which the '
+                                  'project has enabled. Or use one of '
                                   '--produced or --available.'))
 
     mode_group.add_argument('--produced',
                             action='store_true',
                             help=('Return the services that the project '
-                                  'produces. Or use one of --enabled or '
+                                  'has produced. Or use one of --enabled or '
                                   '--available.'))
 
     mode_group.add_argument('--available',
                             action='store_true',
                             help=('Return the services available to the '
-                                  'project for consumption. This list will '
-                                  'include those services the project '
-                                  'already consumes. Or use one of --enabled '
-                                  'or --produced.'))
+                                  'project to enable. This list will '
+                                  'include any services that the project '
+                                  'has already enabled. Or use one of '
+                                  '--enabled or --produced.'))
 
     # Remove unneeded list-related flags from parser
     base.URI_FLAG.RemoveFromParser(parser)
@@ -76,6 +76,8 @@ class List(base.ListCommand, base_classes.BaseServiceManagementCommand):
     Returns:
       The list of managed services for this project.
     """
+    client = services_util.GetClientInstance()
+
     if args.simple_list:
       args.format = 'value(serviceName)'
 
@@ -94,7 +96,7 @@ class List(base.ListCommand, base_classes.BaseServiceManagementCommand):
       request = services_util.GetProducedListRequest(validated_project)
 
     return list_pager.YieldFromList(
-        self.services_client.services,
+        client.services,
         request,
         limit=args.limit,
         batch_size_attribute='pageSize',

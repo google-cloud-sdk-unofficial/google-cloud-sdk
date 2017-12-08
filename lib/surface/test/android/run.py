@@ -18,6 +18,7 @@ import datetime
 import random
 import string
 
+from googlecloudsdk.api_lib.test import android_args
 from googlecloudsdk.api_lib.test import arg_util
 from googlecloudsdk.api_lib.test import ctrl_c_handler
 from googlecloudsdk.api_lib.test import exit_code
@@ -70,13 +71,13 @@ class Run(base.ListCommand):
           To invoke a robo test against a virtual Nexus9 device in
           landscape orientation, run:
 
-            $ {command} --app APP_APK --device-id Nexus9 --orientation landscape
+            $ {command} --app APP_APK --device-ids Nexus9 --orientations landscape
 
           To invoke an instrumentation test (Espresso or Robotium) against a
           physical Nexus 4 device (DEVICE_ID: mako) which is running Android API
           level 18 in French, run:
 
-            $ {command} --app APP_APK --test TEST_APK --device-id mako --os-version-id 18 --locale fr --orientation portrait
+            $ {command} --app APP_APK --test TEST_APK --device-ids mako --os-version-ids 18 --locales fr --orientations portrait
 
           To run the same test as above using short flags, run:
 
@@ -119,10 +120,8 @@ class Run(base.ListCommand):
           command in the CLI. Positional arguments are allowed.
     """
     arg_util.AddCommonTestRunArgs(parser)
-    arg_util.AddSharedCommandArgs(parser)
     arg_util.AddMatrixArgs(parser)
-    arg_util.AddInstrumentationTestArgs(parser)
-    arg_util.AddRoboTestArgs(parser)
+    arg_util.AddAndroidTestArgs(parser)
 
   def Run(self, args):
     """Run the 'gcloud test run' command to invoke a test in Firebase Test Lab.
@@ -136,7 +135,8 @@ class Run(base.ListCommand):
         - a list of TestOutcome tuples (if ToolResults are available).
         - a URL string pointing to the user's results in ToolResults or GCS.
     """
-    arg_util.Prepare(args, util.GetAndroidCatalog(self.context))
+    device_catalog = util.GetAndroidCatalog(self.context)
+    android_args.AndroidArgsManager(device_catalog).Prepare(args)
 
     project = util.GetProject()
     tr_client = self.context['toolresults_client']

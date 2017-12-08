@@ -14,11 +14,11 @@
 
 """service-management configs describe command."""
 
-from googlecloudsdk.api_lib.service_management import base_classes
+from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
 
 
-class Describe(base.DescribeCommand, base_classes.BaseServiceManagementCommand):
+class Describe(base.DescribeCommand):
   """Describes the configuration for a given version of a service."""
 
   @staticmethod
@@ -53,7 +53,9 @@ class Describe(base.DescribeCommand, base_classes.BaseServiceManagementCommand):
     return self._GetConfig(args.service, args.config_id)
 
   def _GetConfig(self, service, config_id):
-    request = self.services_messages.ServicemanagementServicesConfigsGetRequest(
-        serviceName=service,
-        configId=config_id)
-    return self.services_client.services_configs.Get(request)
+    messages = services_util.GetMessagesModule()
+    client = services_util.GetClientInstance()
+
+    request = messages.ServicemanagementServicesConfigsGetRequest(
+        serviceName=service, configId=config_id)
+    return client.services_configs.Get(request)

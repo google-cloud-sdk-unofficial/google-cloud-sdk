@@ -22,8 +22,6 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 EDITOR_ROLE = 'roles/editor'
-COMPUTE_SERVICE_ACCOUNT_PATTERN = ('serviceAccount:{0}-compute'
-                                   '@developer.gserviceaccount.com')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -70,14 +68,3 @@ class InitProject(base.Command):
                                      EDITOR_ROLE)
     log.status.Print('Added {0} as an Editor to project \'{1}\'.'.format(
         cloud_ml_service_account, project))
-
-    # Add compute service account. Only add if the API returns service account
-    # project number other than zero.
-    if resp.serviceAccountProject > 0:
-      cloud_ml_compute_service_account = COMPUTE_SERVICE_ACCOUNT_PATTERN.format(
-          resp.serviceAccountProject)
-      projects_api.AddIamPolicyBinding(project_ref,
-                                       cloud_ml_compute_service_account,
-                                       EDITOR_ROLE)
-      log.status.Print('Added {0} as an Editor to project \'{1}\'.'.format(
-          cloud_ml_compute_service_account, project))

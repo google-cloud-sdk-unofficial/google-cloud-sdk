@@ -20,7 +20,8 @@ from googlecloudsdk.command_lib.organizations import flags
 from googlecloudsdk.command_lib.organizations import orgs_base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Describe(orgs_base.OrganizationCommand, base.DescribeCommand):
   """Show metadata for an organization.
 

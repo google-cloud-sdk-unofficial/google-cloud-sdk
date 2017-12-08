@@ -18,7 +18,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import util as command_lib_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List projects accessible by the active account.
 

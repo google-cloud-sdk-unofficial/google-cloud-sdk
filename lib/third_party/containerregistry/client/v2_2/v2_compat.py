@@ -75,7 +75,7 @@ class V22FromV2(v2_2_image.DockerImage):
         'rootfs': rootfs
     }
 
-    self._config_file = json.dumps(config)
+    self._config_file = json.dumps(config, sort_keys=True)
     config_descriptor = {
         'mediaType': docker_http.CONFIG_JSON_MIME,
         'size': len(self._config_file),
@@ -88,7 +88,7 @@ class V22FromV2(v2_2_image.DockerImage):
         'config': config_descriptor,
         'layers': layers
     }
-    self._manifest = json.dumps(manifest_schema2)
+    self._manifest = json.dumps(manifest_schema2, sort_keys=True)
 
   def _GetDiffIdAndSize(self, digest):
     """Unzip the layer blob file and sha256."""
@@ -173,7 +173,7 @@ class V2FromV22(v2_image.DockerImage):
         'fsLayers': fs_layers,
         'history': v1_histories
     }
-    self._manifest = v2_util.Sign(json.dumps(manifest_schema1))
+    self._manifest = v2_util.Sign(json.dumps(manifest_schema1, sort_keys=True))
 
   def _GenerateV1LayerId(self, digest, parent, raw_config=None):
     parts = digest.rsplit(':', 1)
@@ -197,7 +197,7 @@ class V2FromV22(v2_image.DockerImage):
                             'created_by' in history else {},
         'author': history['author'] if 'author' in history else '',
         'throwaway': True if 'empty_layer' in history else False
-    })
+    }, sort_keys=True)
 
   def _BuildV1CompatibilityForTopLayer(self, layer_id, parent, history, config):
     return json.dumps({
@@ -211,7 +211,7 @@ class V2FromV22(v2_image.DockerImage):
         'id': layer_id,
         'parent': parent,
         'throwaway': True if 'empty_layer' in history else False
-    })
+    }, sort_keys=True)
 
   def _GetSchema1LayerDigest(self, history, layers, v1_layer_index,
                              v2_layer_index):

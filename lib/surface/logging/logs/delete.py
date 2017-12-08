@@ -37,8 +37,6 @@ class Delete(base.DeleteCommand):
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
     """
-    client = self.context['logging_client_v2']
-    messages = self.context['logging_messages_v2']
     project = properties.VALUES.core.project.Get(required=True)
 
     if not console_io.PromptContinue(
@@ -46,8 +44,8 @@ class Delete(base.DeleteCommand):
       raise exceptions.ToolException('action canceled by user')
 
     # TODO(b/32504514): Use resource parser
-    client.projects_logs.Delete(
-        messages.LoggingProjectsLogsDeleteRequest(
+    util.GetClient().projects_logs.Delete(
+        util.GetMessages().LoggingProjectsLogsDeleteRequest(
             logName=util.CreateLogResourceName(
                 'projects/{0}'.format(project), args.log_name)))
     log.DeletedResource(args.log_name)

@@ -16,12 +16,13 @@
 
 from apitools.base.py import list_pager
 
-from googlecloudsdk.api_lib.service_management import base_classes
+from googlecloudsdk.api_lib.service_management import services_util
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
-class List(base.ListCommand, base_classes.BaseServiceManagementCommand):
+class List(base.ListCommand):
   """Lists the configurations for a given service.
 
   DEPRECATED: This command is deprecated and will be removed.
@@ -51,15 +52,17 @@ class List(base.ListCommand, base_classes.BaseServiceManagementCommand):
     Returns:
       The response from the List API call.
     """
-    request = (self.services_messages.
-               ServicemanagementServicesConfigsListRequest(
-                   serviceName=args.service))
+    messages = services_util.GetMessagesModule()
+    client = services_util.GetClientInstance()
+
+    request = messages.ServicemanagementServicesConfigsListRequest(
+        serviceName=args.service)
 
     log.status.Print('Available configuration versions for service \'%s\':'
                      % args.service)
 
     return list_pager.YieldFromList(
-        self.services_client.services_configs,
+        client.services_configs,
         request,
         limit=args.limit,
         batch_size_attribute='pageSize',

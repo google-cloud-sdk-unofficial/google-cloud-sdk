@@ -15,7 +15,6 @@
 """Cancel operation command."""
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -45,10 +44,11 @@ class Cancel(base.Command):
     request = messages.DataprocProjectsRegionsOperationsCancelRequest(
         name=operation_ref.RelativeName())
 
-    if not console_io.PromptContinue(
+    console_io.PromptContinue(
         message="The operation '{0}' will be cancelled.".format(
-            args.operation)):
-      raise exceptions.ToolException('Cancellation aborted by user.')
+            args.operation),
+        cancel_on_no=True,
+        cancel_string='Cancellation aborted by user.')
 
     client.projects_regions_operations.Cancel(request)
     # TODO(user) Check that operation was cancelled.

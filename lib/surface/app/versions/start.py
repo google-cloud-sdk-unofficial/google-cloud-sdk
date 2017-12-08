@@ -86,7 +86,8 @@ class Start(base.Command):
     console_io.PromptContinue(cancel_on_no=True)
 
     errors = {}
-    for version in versions:
+    # Sort versions to make behavior deterministic enough for unit testing.
+    for version in sorted(versions):
       try:
         with progress_tracker.ProgressTracker('Starting [{0}]'.format(version)):
           api_client.StartVersion(version.service, version.id)

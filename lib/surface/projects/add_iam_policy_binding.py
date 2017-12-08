@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.projects import flags
 from googlecloudsdk.command_lib.projects import util as command_lib_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class AddIamPolicyBinding(base.Command):
   """Add IAM policy binding for a project.
 

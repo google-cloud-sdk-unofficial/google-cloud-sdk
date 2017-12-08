@@ -82,9 +82,6 @@ class Predict(base.Command):
     group = parser.add_mutually_exclusive_group(required=True)
     json_flag = group.add_argument(
         '--json-instances',
-        # TODO(b/31887749): make '--instances' an alias
-        # for backward compatibility.
-        '--instances',
         help='Path to a local file from which instances are read. '
         'Instances are in JSON format; newline delimited.')
     text_flag = group.add_argument(

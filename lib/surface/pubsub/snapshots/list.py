@@ -22,9 +22,13 @@ from googlecloudsdk.core.resource import resource_projector
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """Lists Cloud Pub/Sub snapshots.
+  """This feature is part of an invite-only release of the Cloud Pub/Sub API.
 
-  Lists all of the Cloud Pub/Sub snapshots that exist in a given project.
+  Lists all the snapshots in a given project.
+  This feature is part of an invitation-only release of the underlying
+  Cloud Pub/Sub API. The command will generate errors unless you have access to
+  this API. This restriction should be relaxed in the near future. Please
+  contact cloud-pubsub@google.com with any questions in the meantime.
   """
 
   def Run(self, args):

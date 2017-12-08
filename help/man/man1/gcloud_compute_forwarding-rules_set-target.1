@@ -11,7 +11,7 @@ gcloud compute forwarding\-rules set\-target \- modify a forwarding rule to dire
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute forwarding\-rules set\-target\fR \fINAME\fR (\fB\-\-target\-http\-proxy\fR=\fITARGET_HTTP_PROXY\fR\ |\ \fB\-\-target\-https\-proxy\fR=\fITARGET_HTTPS_PROXY\fR\ |\ \fB\-\-target\-instance\fR=\fITARGET_INSTANCE\fR\ |\ \fB\-\-target\-pool\fR=\fITARGET_POOL\fR\ |\ \fB\-\-target\-ssl\-proxy\fR=\fITARGET_SSL_PROXY\fR\ |\ \fB\-\-target\-vpn\-gateway\fR=\fITARGET_VPN_GATEWAY\fR) [\fB\-\-target\-instance\-zone\fR=\fITARGET_INSTANCE_ZONE\fR] [\fB\-\-target\-pool\-region\fR=\fITARGET_POOL_REGION\fR] [\fB\-\-target\-vpn\-gateway\-region\fR=\fITARGET_VPN_GATEWAY_REGION\fR] [\fB\-\-global\fR\ |\ \fB\-\-region\fR=\fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute forwarding\-rules set\-target\fR \fINAME\fR (\fB\-\-backend\-service\fR=\fIBACKEND_SERVICE\fR\ |\ \fB\-\-target\-http\-proxy\fR=\fITARGET_HTTP_PROXY\fR\ |\ \fB\-\-target\-https\-proxy\fR=\fITARGET_HTTPS_PROXY\fR\ |\ \fB\-\-target\-instance\fR=\fITARGET_INSTANCE\fR\ |\ \fB\-\-target\-pool\fR=\fITARGET_POOL\fR\ |\ \fB\-\-target\-ssl\-proxy\fR=\fITARGET_SSL_PROXY\fR\ |\ \fB\-\-target\-vpn\-gateway\fR=\fITARGET_VPN_GATEWAY\fR) [\fB\-\-load\-balancing\-scheme\fR=\fILOAD_BALANCING_SCHEME\fR;\ default="EXTERNAL"] [\fB\-\-network\fR=\fINETWORK\fR] [\fB\-\-subnet\fR=\fISUBNET\fR] [\fB\-\-subnet\-region\fR=\fISUBNET_REGION\fR] [\fB\-\-target\-instance\-zone\fR=\fITARGET_INSTANCE_ZONE\fR] [\fB\-\-target\-pool\-region\fR=\fITARGET_POOL_REGION\fR] [\fB\-\-target\-vpn\-gateway\-region\fR=\fITARGET_VPN_GATEWAY_REGION\fR] [\fB\-\-backend\-service\-region\fR=\fIBACKEND_SERVICE_REGION\fR\ |\ \fB\-\-global\-backend\-service\fR] [\fB\-\-global\fR\ |\ \fB\-\-region\fR=\fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -57,6 +57,10 @@ The name of the forwarding rule.
 Exactly one of these must be specified:
 
 .RS 2m
+.TP 2m
+\fB\-\-backend\-service\fR=\fIBACKEND_SERVICE\fR
+The target backend service that will receive the traffic.
+
 .TP 2m
 \fB\-\-target\-http\-proxy\fR=\fITARGET_HTTP_PROXY\fR
 The target HTTP proxy that will receive the traffic.
@@ -116,6 +120,39 @@ The target VPN gateway that will receive forwarded traffic.
 
 .RS 2m
 .TP 2m
+\fB\-\-load\-balancing\-scheme\fR=\fILOAD_BALANCING_SCHEME\fR; default="EXTERNAL"
+This signifies what the forwarding rule will be used for.
+\fILOAD_BALANCING_SCHEME\fR must be one of:
+
+.RS 2m
+.TP 2m
+\fBEXTERNAL\fR
+Used for HTTP or HTTPS for External Load Balancing.
+.TP 2m
+\fBINTERNAL\fR
+Used for Internal Network Load Balancing.
+
+.RE
+.sp
+.TP 2m
+\fB\-\-network\fR=\fINETWORK\fR
+(Only for Internal Load Balancing) The network that this forwarding rule applies
+to. If this field is not specified, the default network will be used. In the
+absence of the default network, this field must be specified.
+
+.TP 2m
+\fB\-\-subnet\fR=\fISUBNET\fR
+(Only for Internal Load Balancing) The subnetwork that this forwarding rule
+applies to. If the network configured for this forwarding rule is in auto subnet
+mode, the subnetwork is optional. However, if the network is in custom subnet
+mode, a subnetwork must be specified.
+
+.TP 2m
+\fB\-\-subnet\-region\fR=\fISUBNET_REGION\fR
+The region of the subnetwork to operate on. If not specified it will be set the
+region of the forwarding rule.
+
+.TP 2m
 \fB\-\-target\-instance\-zone\fR=\fITARGET_INSTANCE_ZONE\fR
 The zone of the target instance to operate on.
 
@@ -128,6 +165,20 @@ region of the forwarding rule.
 \fB\-\-target\-vpn\-gateway\-region\fR=\fITARGET_VPN_GATEWAY_REGION\fR
 The region of the VPN gateway to operate on. If not specified it will be set the
 region of the forwarding rule.
+
+.RE
+.sp
+At most one of these may be specified:
+
+.RS 2m
+.TP 2m
+\fB\-\-backend\-service\-region\fR=\fIBACKEND_SERVICE_REGION\fR
+The region of the backend service to operate on. If not specified it will be set
+the region of the forwarding rule.
+
+.TP 2m
+\fB\-\-global\-backend\-service\fR
+If provided, it is assumed the backend service is global.
 
 .RE
 .sp

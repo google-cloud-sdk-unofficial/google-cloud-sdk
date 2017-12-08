@@ -17,6 +17,7 @@ import os.path
 
 from apitools.base.py import encoding
 
+from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.cloudbuild import config
 from googlecloudsdk.api_lib.cloudbuild import logs as cb_logs
 from googlecloudsdk.api_lib.cloudbuild import snapshot
@@ -24,7 +25,6 @@ from googlecloudsdk.api_lib.storage import storage_api
 from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
-from googlecloudsdk.core import apis as core_apis
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -43,7 +43,7 @@ class FailedBuildException(core_exceptions.Error):
         'build completed with status "{status}"'.format(status=status))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Submit(base.CreateCommand):
   """Submit a build using the Google Container Builder service."""
 
@@ -101,17 +101,22 @@ class Submit(base.CreateCommand):
       FailedBuildException: If the build is completed and not 'SUCCESS'.
     """
 
-    if args.gcs_source_staging_dir is None:
-      args.gcs_source_staging_dir = 'gs://{project}_cloudbuild/source'.format(
-          project=properties.VALUES.core.project.Get(),
-      )
-    if args.gcs_log_dir is None:
-      args.gcs_log_dir = 'gs://{project}_cloudbuild/logs'.format(
-          project=properties.VALUES.core.project.Get(),
-      )
+    safe_project = properties.VALUES.core.project.Get().replace(':', '_')
 
-    client = core_apis.GetClientInstance('cloudbuild', 'v1')
-    messages = core_apis.GetMessagesModule('cloudbuild', 'v1')
+    default_bucket_name = '{}_cloudbuild'.format(safe_project)
+
+    default_gcs_source = False
+    if args.gcs_source_staging_dir is None:
+      default_gcs_source = True
+      args.gcs_source_staging_dir = 'gs://{}/source'.format(default_bucket_name)
+
+    default_gcs_log_dir = False
+    if args.gcs_log_dir is None:
+      default_gcs_log_dir = True
+      args.gcs_log_dir = 'gs://{}/logs'.format(default_bucket_name)
+
+    client = cloudbuild_util.GetClientInstance()
+    messages = cloudbuild_util.GetMessagesModule()
     registry = self.context['registry']
 
     gcs_client = storage_api.StorageClient()
@@ -151,12 +156,46 @@ class Submit(base.CreateCommand):
     # Next, stage the source to Cloud Storage.
     staged_object = '{stamp}_{tag_ish}{suffix}'.format(
         stamp=times.GetTimeStampFromDateTime(times.Now()),
-        tag_ish='_'.join(build_config.images or 'null').replace('/', '_'),
+        tag_ish='_'.join(build_config.images or ['null']).replace('/', '_'),
         suffix=suffix,
     )
     gcs_source_staging_dir = registry.Parse(
         args.gcs_source_staging_dir, collection='storage.objects')
+
+    # We first try to create the bucket, before doing all the checks, in order
+    # to avoid a race condition. If we do the check first, an attacker could
+    # be lucky enough to create the bucket after the check and before this
+    # bucket creation.
     gcs_client.CreateBucketIfNotExists(gcs_source_staging_dir.bucket)
+
+    # If no bucket is specified (for the source `default_gcs_source` or for the
+    # logs `default_gcs_log_dir`), check that the default bucket is also owned
+    # by the project (b/33046325).
+    if default_gcs_source or default_gcs_log_dir:
+      # This request returns only the buckets owned by the project.
+      bucket_list_req = gcs_client.messages.StorageBucketsListRequest(
+          project=safe_project,
+          prefix=default_bucket_name)
+      bucket_list = gcs_client.client.buckets.List(bucket_list_req)
+      found_bucket = False
+      for bucket in bucket_list.items:
+        if bucket.id == default_bucket_name:
+          found_bucket = True
+          break
+      if not found_bucket:
+        if default_gcs_source:
+          raise c_exceptions.RequiredArgumentException(
+              'gcs_source_staging_dir',
+              'A bucket with name {} already exists and is owned by '
+              'another project. Specify a bucket using '
+              '--gcs_source_staging_dir.'.format(default_bucket_name))
+        elif default_gcs_log_dir:
+          raise c_exceptions.RequiredArgumentException(
+              'gcs-log-dir',
+              'A bucket with name {} already exists and is owned by '
+              'another project. Specify a bucket to hold build logs '
+              'using --gcs-log-dir.'.format(default_bucket_name))
+
     if gcs_source_staging_dir.object:
       staged_object = gcs_source_staging_dir.object + '/' + staged_object
 

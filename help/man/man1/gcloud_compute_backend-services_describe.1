@@ -5,13 +5,13 @@
 
 .SH "NAME"
 .HP
-gcloud compute backend\-services describe \- describe a backend service
+gcloud compute backend\-services describe \- display detailed information about a backend service
 
 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute backend\-services describe\fR \fINAME\fR [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute backend\-services describe\fR \fINAME\fR [\fB\-\-global\fR\ |\ \fB\-\-region\fR=\fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -33,6 +33,40 @@ The name of the resource to fetch.
 .RE
 .sp
 
+.SH "FLAGS"
+
+At most one of these may be specified:
+
+.RS 2m
+.TP 2m
+\fB\-\-global\fR
+If provided, it is assumed that the requested resource is global.
+
+.TP 2m
+\fB\-\-region\fR=\fIREGION\fR
+The region of the resource to fetch.
+
+
+.RE
+.sp
+
 .SH "GLOBAL FLAGS"
 
 Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To get details about a global backend service, run:
+
+.RS 2m
+$ gcloud compute backend\-services describe \-\-global
+.RE
+
+To get details about a regional backend service in the \f5\fIus\-central1\fR\fR
+regions, run:
+
+.RS 2m
+$ gcloud compute backend\-services describe \-\-region us\-central1
+.RE

@@ -21,7 +21,10 @@ from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA)
 class Builds(base.Group):
   """Create and manage container builds."""
 

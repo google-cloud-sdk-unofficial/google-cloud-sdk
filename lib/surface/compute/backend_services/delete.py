@@ -22,14 +22,13 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete backend services.
 
     *{command}* deletes one or more backend services.
   """
 
-  _BACKEND_SERVICE_ARG = flags.GLOBAL_MULTI_BACKEND_SERVICE_ARG
+  _BACKEND_SERVICE_ARG = flags.GLOBAL_REGIONAL_MULTI_BACKEND_SERVICE_ARG
 
   @classmethod
   def Args(cls, parser):
@@ -40,7 +39,7 @@ class Delete(base.DeleteCommand):
     refs = self._BACKEND_SERVICE_ARG.ResolveAsResource(
         args,
         holder.resources,
-        default_scope=backend_services_utils.GetDefaultScope(self, args))
+        default_scope=backend_services_utils.GetDefaultScope(args))
     utils.PromptForDeletion(refs)
 
     requests = []
@@ -55,13 +54,3 @@ class Delete(base.DeleteCommand):
     if errors:
       utils.RaiseToolException(errors)
     return resources
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class DeleteBeta(Delete):
-  """Delete backend services.
-
-    *{command}* deletes one or more backend services.
-  """
-
-  _BACKEND_SERVICE_ARG = flags.GLOBAL_REGIONAL_MULTI_BACKEND_SERVICE_ARG

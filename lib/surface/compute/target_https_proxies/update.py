@@ -16,9 +16,9 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.ssl_certificates import (
-    flags as ssl_certificates_flags)
+    flags as ssl_certificate_flags)
 from googlecloudsdk.command_lib.compute.target_https_proxies import flags
-from googlecloudsdk.command_lib.compute.url_maps import flags as url_maps_flags
+from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
 
 
 class Update(base_classes.NoOutputAsyncMutator):
@@ -31,12 +31,12 @@ class Update(base_classes.NoOutputAsyncMutator):
   @classmethod
   def Args(cls, parser):
     cls.SSL_CERTIFICATE_ARG = (
-        ssl_certificates_flags.SslCertificateArgumentForTargetHttpsProxies(
-            required=False))
+        ssl_certificate_flags.SslCertificateArgumentForOtherResource(
+            'target HTTPS proxy', required=False))
     cls.SSL_CERTIFICATE_ARG.AddArgument(parser)
     cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument()
     cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser)
-    cls.URL_MAP_ARG = url_maps_flags.UrlMapArgumentForTargetHttpsProxy(
+    cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetHttpsProxy(
         required=False)
     cls.URL_MAP_ARG.AddArgument(parser)
 
@@ -77,20 +77,21 @@ class Update(base_classes.NoOutputAsyncMutator):
 
     if args.url_map:
       url_map_ref = self.URL_MAP_ARG.ResolveAsResource(args, self.resources)
-      requests.append(
-          ('SetUrlMap',
-           self.messages.ComputeTargetHttpsProxiesSetUrlMapRequest(
-               project=self.project,
-               targetHttpsProxy=target_https_proxy_ref.Name(),
-               urlMapReference=self.messages.UrlMapReference(
-                   urlMap=url_map_ref.SelfLink()))))
+      requests.append(('SetUrlMap',
+                       self.messages.ComputeTargetHttpsProxiesSetUrlMapRequest(
+                           project=self.project,
+                           targetHttpsProxy=target_https_proxy_ref.Name(),
+                           urlMapReference=self.messages.UrlMapReference(
+                               urlMap=url_map_ref.SelfLink()))))
 
     return requests
 
 
 Update.detailed_help = {
-    'brief': 'Update a target HTTPS proxy',
-    'DESCRIPTION': """\
+    'brief':
+        'Update a target HTTPS proxy',
+    'DESCRIPTION':
+        """\
         *{command}* is used to change the SSL certificate and/or URL map of
         existing target HTTPS proxies. A target HTTPS proxy is referenced
         by one or more forwarding rules which

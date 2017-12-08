@@ -14,12 +14,12 @@
 
 """Command to get information about a principal's permissions on a service."""
 
-from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import common_flags
+from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
 
 
-class CheckIamPolicy(base.Command, base_classes.BaseServiceManagementCommand):
+class CheckIamPolicy(base.Command):
   """Returns information about a member's permissions on a service."""
 
   @staticmethod
@@ -46,14 +46,27 @@ class CheckIamPolicy(base.Command, base_classes.BaseServiceManagementCommand):
     Returns:
       The response from the access API call.
     """
+    messages = services_util.GetMessagesModule()
+    client = services_util.GetClientInstance()
+    all_iam_permissions = [
+        'servicemanagement.services.get',
+        'servicemanagement.services.getProjectSettings',
+        'servicemanagement.services.delete',
+        'servicemanagement.services.update',
+        'servicemanagement.services.use',
+        'servicemanagement.services.updateProjectSettings',
+        'servicemanagement.services.check',
+        'servicemanagement.services.report',
+        'servicemanagement.services.setIamPolicy',
+        'servicemanagement.services.getIamPolicy',
+    ]
+
     # Shorten the query request name for better readability
-    query_request = (self.services_messages
-                     .ServicemanagementServicesTestIamPermissionsRequest)
+    query_request = messages.ServicemanagementServicesTestIamPermissionsRequest
 
     request = query_request(
         servicesId=args.service,
-        testIamPermissionsRequest=(self.services_messages.
-                                   TestIamPermissionsRequest(
-                                       permissions=self.all_iam_permissions)))
+        testIamPermissionsRequest=messages.TestIamPermissionsRequest(
+            permissions=all_iam_permissions))
 
-    return self.services_client.services.TestIamPermissions(request)
+    return client.services.TestIamPermissions(request)

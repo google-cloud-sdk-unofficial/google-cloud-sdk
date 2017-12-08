@@ -16,6 +16,7 @@
 
 from apitools.base.py import list_pager
 
+from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 
 
@@ -40,12 +41,9 @@ class List(base.ListCommand):
     Returns:
       The list of log entries.
     """
-    client = self.context['logging_client_v2']
-    messages = self.context['logging_messages_v2']
-
     return list_pager.YieldFromList(
-        client.monitoredResourceDescriptors,
-        messages.LoggingMonitoredResourceDescriptorsListRequest(),
+        util.GetClient().monitoredResourceDescriptors,
+        util.GetMessages().LoggingMonitoredResourceDescriptorsListRequest(),
         field='resourceDescriptors', limit=args.limit,
         batch_size=args.limit, batch_size_attribute='pageSize')
 

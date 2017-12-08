@@ -16,6 +16,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.addresses import flags
 
 
@@ -48,7 +49,7 @@ class Delete(base_classes.BaseAsyncMutator):
     """Overrides."""
     address_refs = self.ADDRESSES_ARG.ResolveAsResource(
         args, self.resources,
-        default_scope=compute_flags.ScopeEnum.REGION,
+        default_scope=compute_scope.ScopeEnum.REGION,
         scope_lister=compute_flags.GetDefaultScopeLister(
             self.compute_client, self.project))
 

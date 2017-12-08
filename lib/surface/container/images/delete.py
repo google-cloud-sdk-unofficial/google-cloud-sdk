@@ -32,6 +32,13 @@ class Delete(base.DeleteCommand):
   """
 
   detailed_help = {
+      'DESCRIPTION': """\
+          The container images delete command deletes the specified tag or
+          digest from the registry. If a tag is specified, only the tag is
+          deleted from the registry and image layers remain accessible by
+          digest. If a digest is specified, image layers are fully deleted from
+          the registry.
+      """,
       'EXAMPLES': """\
           Deletes the tag or digest from the input IMAGE_NAME:
 
@@ -75,14 +82,22 @@ class Delete(base.DeleteCommand):
     # collect input/validate
     digests, tags = self._ProcessImageNames(args.image_names)
     # print
+    if digests:
+      log.status.Print('Digests:')
     for digest in digests:
       self._PrintDigest(digest, http_obj)
+
+    if tags:
+      log.status.Print('Tags:')
     for tag in tags:
       log.status.Print('- '+str(tag))
     for digest in digests:
       tags.update(util.GetDockerTagsForDigest(digest, http_obj))
     # prompt
-    console_io.PromptContinue('This operation will delete the above:\n',
+    console_io.PromptContinue('This operation will delete the above tags '
+                              'and/or digests. Tag deletions only delete the'
+                              'tag. Digest deletions also delete the '
+                              'underlying image layers.',
                               default=True,
                               cancel_on_no=True)
     # delete and collect output

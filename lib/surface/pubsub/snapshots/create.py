@@ -24,7 +24,14 @@ from googlecloudsdk.core import log
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
-  """Creates one or more Cloud Pub/Sub snapshots."""
+  """This feature is part of an invite-only release of the Cloud Pub/Sub API.
+
+  Creates one or more Cloud Pub/Sub snapshots.
+  This feature is part of an invitation-only release of the underlying
+  Cloud Pub/Sub API. The command will generate errors unless you have access to
+  this API. This restriction should be relaxed in the near future. Please
+  contact cloud-pubsub@google.com with any questions in the meantime.
+  """
 
   @staticmethod
   def Args(parser):

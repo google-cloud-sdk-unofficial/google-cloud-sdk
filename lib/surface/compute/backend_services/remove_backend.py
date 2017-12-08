@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.backend_services import backend_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
@@ -38,7 +39,7 @@ class RemoveBackend(base_classes.ReadWriteCommand):
   capacity scaler to zero through 'gcloud compute
   backend-services edit'.
   """
-  _BACKEND_SERVICE_ARG = flags.GLOBAL_BACKEND_SERVICE_ARG
+  _BACKEND_SERVICE_ARG = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG
 
   @classmethod
   def Args(cls, parser):
@@ -61,7 +62,7 @@ class RemoveBackend(base_classes.ReadWriteCommand):
   def CreateReference(self, args):
     return self._BACKEND_SERVICE_ARG.ResolveAsResource(
         args, self.resources,
-        default_scope=compute_flags.ScopeEnum.GLOBAL)
+        default_scope=compute_scope.ScopeEnum.GLOBAL)
 
   def GetGetRequest(self, args):
     if self.regional:
@@ -138,7 +139,7 @@ class RemoveBackend(base_classes.ReadWriteCommand):
     return replacement
 
   def Run(self, args):
-    self.regional = backend_services_utils.IsRegionalRequest(self, args)
+    self.regional = backend_services_utils.IsRegionalRequest(args)
     return super(RemoveBackend, self).Run(args)
 
 
@@ -154,8 +155,6 @@ class RemoveBackendBeta(RemoveBackend):
   capacity scaler to zero through 'gcloud compute
   backend-services edit'.
   """
-
-  _BACKEND_SERVICE_ARG = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG
 
   @classmethod
   def Args(cls, parser):
@@ -201,6 +200,6 @@ class RemoveBackendAlpha(RemoveBackendBeta):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
         args, holder.resources,
-        default_scope=compute_flags.ScopeEnum.ZONE,
+        default_scope=compute_scope.ScopeEnum.ZONE,
         scope_lister=compute_flags.GetDefaultScopeLister(
             holder.client, self.project))

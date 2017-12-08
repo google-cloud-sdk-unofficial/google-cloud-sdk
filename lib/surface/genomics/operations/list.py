@@ -49,11 +49,14 @@ class List(base.Command):
                          epoch. Can use '>=' and/or '<=' operators.
             status     - Can be 'RUNNING', 'SUCCESS', 'FAILURE' or 'CANCELED'.
                          Only one status may be specified.
+            labels.key - 'key' is a label key to match against a target value.
 
         Example:
 
             'createTime >= 1432140000 AND
-             createTime <= 1432150000 AND status = RUNNING'
+             createTime <= 1432150000 AND
+             labels.batch = test AND
+             status = RUNNING'
 
         To calculate the timestamp as seconds from the epoch, on UNIX-like
         systems (e.g.: Linux, Mac) use the 'date' command:

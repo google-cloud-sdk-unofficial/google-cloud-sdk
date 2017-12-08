@@ -1,0 +1,81 @@
+
+.TH "GCLOUD_CONTAINER_BUILDS_SUBMIT" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud container builds submit \- submit a build using the Google Container Builder service
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud container builds submit\fR \fISOURCE\fR (\fB\-\-config\fR=\fICONFIG\fR\ |\ \fB\-\-tag\fR=\fITAG\fR,\ \fB\-t\fR\ \fITAG\fR) [\fB\-\-async\fR] [\fB\-\-gcs\-log\-dir\fR=\fIGCS_LOG_DIR\fR] [\fB\-\-gcs\-source\-staging\-dir\fR=\fIGCS_SOURCE_STAGING_DIR\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+
+.SH "DESCRIPTION"
+
+Submit a build using the Google Container Builder service.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+.RS 2m
+.TP 2m
+\fISOURCE\fR
+The source directory on local disk or tarball in Google Cloud Storage or disk to
+use for this build.
+
+
+.RE
+.sp
+
+.SH "REQUIRED FLAGS"
+
+Exactly one of these must be specified:
+
+.RS 2m
+.TP 2m
+\fB\-\-config\fR=\fICONFIG\fR
+The .yaml or .json file to use for build configuration.
+
+.TP 2m
+\fB\-\-tag\fR=\fITAG\fR, \fB\-t\fR \fITAG\fR
+The tag to use with a "docker build" image creation. The Container Builder
+service will run a remote "docker build \-t $TAG .", where $TAG is the tag
+provided by this flag. The tag must be in the gcr.io/* or *.gcr.io/* namespaces.
+
+
+.RE
+.sp
+
+.SH "OPTIONAL FLAGS"
+
+.RS 2m
+.TP 2m
+\fB\-\-async\fR
+Display information about the operation in progress and don't wait for the
+operation to complete.
+
+.TP 2m
+\fB\-\-gcs\-log\-dir\fR=\fIGCS_LOG_DIR\fR
+Directory in Google Cloud Storage to hold build logs. If the bucket does not
+exist, it will be created. If not set, gs://<project id>\fIcloudbuild/logs is
+used.
+
+.TP 2m
+\fB\-\-gcs\-source\-staging\-dir\fR=\fRGCS_SOURCE_STAGING_DIR\fI
+Directory in Google Cloud Storage to stage a copy of the source used for the
+build. If the bucket does not exist, it will be created. If not set,
+gs://<project id>\fRcloudbuild/source is used.
+
+
+.RE
+.sp
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

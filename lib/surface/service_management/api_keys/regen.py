@@ -14,12 +14,13 @@
 
 """Implementation of the service-management api-keys regen command."""
 
-from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import common_flags
+from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
 
 
-class Regen(base.Command, base_classes.BaseServiceManagementCommand):
+class Regen(base.Command):
   """Regenerates the keystring for the specified API key.
 
      After regenerating the keystring for the API key, the old keystring is
@@ -48,9 +49,12 @@ class Regen(base.Command, base_classes.BaseServiceManagementCommand):
     Returns:
       The response from the keys API call.
     """
+    messages = services_util.GetApiKeysMessagesModule()
+    client = services_util.GetApiKeysClientInstance()
+
     # Construct the Regenerate API Key request object
-    request = self.apikeys_messages.ApikeysProjectsApiKeysRegenerateRequest(
-        projectId=self.project,
+    request = messages.ApikeysProjectsApiKeysRegenerateRequest(
+        projectId=properties.VALUES.core.project.Get(required=True),
         keyId=args.key)
 
-    return self.apikeys_client.projects_apiKeys.Regenerate(request)
+    return client.projects_apiKeys.Regenerate(request)

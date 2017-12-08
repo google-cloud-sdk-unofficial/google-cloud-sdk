@@ -14,14 +14,13 @@
 
 """service-management delete command."""
 
-from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import common_flags
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core.console import console_io
 
 
-class Delete(base.Command, base_classes.BaseServiceManagementCommand):
+class Delete(base.Command):
   """Deletes a service."""
 
   @staticmethod
@@ -47,21 +46,26 @@ class Delete(base.Command, base_classes.BaseServiceManagementCommand):
     Returns:
       The response from the Delete API call (or None if cancelled).
     """
+    messages = services_util.GetMessagesModule()
+    client = services_util.GetClientInstance()
+
     # Prompt with a warning before continuing.
     continue_prompt_response = console_io.PromptContinue(
-        message='Are you sure? This will permanently delete the service '
-                'configuration and all of the associated consumer '
-                'information. This CANNOT be undone!',
+        message='Are you sure? This will set the service configuration to be '
+        'deleted, along with all of the associated consumer '
+        'information. Note: This does not immediately delete the '
+        'service configuration or data and can be undone using the '
+        'undelete command for 30 days. Only after 30 days will the '
+        'service be purged from the system.',
         prompt_string='Continue anyway',
         default=True,
         throw_if_unattended=True)
     if not continue_prompt_response:
       return
 
-    request = self.services_messages.ServicemanagementServicesDeleteRequest(
-        serviceName=args.service,
-    )
+    request = messages.ServicemanagementServicesDeleteRequest(
+        serviceName=args.service,)
 
-    operation = self.services_client.services.Delete(request)
+    operation = client.services.Delete(request)
 
     return services_util.ProcessOperationResult(operation, args.async)

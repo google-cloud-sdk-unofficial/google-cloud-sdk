@@ -16,13 +16,13 @@
 
 import os
 
-from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import enable_api
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
 class SwaggerUploadException(exceptions.Error):
@@ -31,7 +31,7 @@ class SwaggerUploadException(exceptions.Error):
     super(SwaggerUploadException, self).__init__(message)
 
 
-class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
+class Deploy(base.Command):
   """Deploys a service configuration for the given service name."""
 
   @staticmethod
@@ -61,11 +61,11 @@ class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
     return False
 
   def MakeConfigFile(self, file_contents, filename, file_type):
-    return self.messages.ConfigFile(
+    messages = services_util.GetMessagesModule()
+    return messages.ConfigFile(
         fileContents=file_contents,
         filePath=os.path.basename(filename),
-        fileType=file_type,
-    )
+        fileType=file_type,)
 
   def Run(self, args):
     """Run 'service-management deploy'.
@@ -84,15 +84,22 @@ class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
       BadFileExceptionn: if the provided service configuration files are
           invalid or cannot be read.
     """
-    self.messages = services_util.GetMessagesModule()
-    file_types = self.messages.ConfigFile.FileTypeValueValuesEnum
+    messages = services_util.GetMessagesModule()
+    client = services_util.GetClientInstance()
+
+    file_types = messages.ConfigFile.FileTypeValueValuesEnum
     self.service_name = self.service_version = config_contents = None
     config_files = []
 
     for service_config_file in args.service_config_file:
       config_contents = None
-      with open(service_config_file, 'r') as f:
-        config_contents = f.read()
+      try:
+        with open(service_config_file, 'r') as f:
+          config_contents = f.read()
+      except IOError as ex:
+        raise calliope_exceptions.BadFileException(
+            'Could not open service config file [{0}]: {1}'.format(
+                service_config_file, ex))
 
       if self.FilenameMatchesExtension(
           service_config_file, ['.json', '.yaml', '.yml']):
@@ -100,8 +107,8 @@ class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
         service_config_dict = services_util.LoadJsonOrYaml(config_contents)
         if not service_config_dict:
           raise calliope_exceptions.BadFileException(
-              'Could not read JSON or YAML from service config file %s.'
-              % args.service_config_file)
+              'Could not read JSON or YAML from service config file '
+              '[{0}].'.format(service_config_file))
 
         if 'swagger' in service_config_dict:
           if not self.service_name:
@@ -126,7 +133,7 @@ class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
           if len(args.service_config_file) > 1:
             raise calliope_exceptions.BadFileException((
                 'Ambiguous input. Found normalized service configuration in '
-                'file {0}, but received multiple input files. To upload '
+                'file [{0}], but received multiple input files. To upload '
                 'normalized service config, please provide it separately from '
                 'other input files to avoid ambiguity.').format(
                     service_config_file))
@@ -146,47 +153,50 @@ class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
                                 file_types.FILE_DESCRIPTOR_SET_PROTO))
       else:
         raise calliope_exceptions.BadFileException((
-            'Could not determine the content type of file {0}. Supported '
+            'Could not determine the content type of file [{0}]. Supported '
             'extensions are .json .yaml .yml .pb. and .descriptor').format(
                 service_config_file))
 
     # Check to see if the Endpoints meta service needs to be enabled.
     enable_api.EnableServiceIfDisabled(
-        self.project, services_util.GetEndpointsServiceName(), args.async)
+        properties.VALUES.core.project.Get(required=True),
+        services_util.GetEndpointsServiceName(),
+        args.async)
     # Check if we need to create the service.
-    services_util.CreateServiceIfNew(self.service_name, self.project)
+    services_util.CreateServiceIfNew(
+        self.service_name, properties.VALUES.core.project.Get(required=True))
 
     if config_files:
       self.service_config_id = services_util.PushMultipleServiceConfigFiles(
           self.service_name, config_files, args.async)
     else:
       self.service_config_id = services_util.PushNormalizedGoogleServiceConfig(
-          self.service_name, self.project, config_contents)
+          self.service_name,
+          properties.VALUES.core.project.Get(required=True),
+          config_contents)
 
     if not self.service_config_id:
       raise calliope_exceptions.ToolException(
           'Failed to retrieve Service Configuration Id.')
 
     # Create a Rollout for the new service configuration
-    percentages = (self.services_messages.TrafficPercentStrategy.
-                   PercentagesValue())
+    percentages = messages.TrafficPercentStrategy.PercentagesValue()
     percentages.additionalProperties.append(
-        (self.services_messages.TrafficPercentStrategy.PercentagesValue.
-         AdditionalProperty(
-             key=self.service_config_id,
-             value=100.0)))
-    traffic_percent_strategy = (
-        self.services_messages.TrafficPercentStrategy(percentages=percentages))
-    rollout = self.services_messages.Rollout(
+        (messages.TrafficPercentStrategy.PercentagesValue.AdditionalProperty(
+            key=self.service_config_id, value=100.0)))
+    traffic_percent_strategy = messages.TrafficPercentStrategy(
+        percentages=percentages)
+    rollout = messages.Rollout(
         serviceName=self.service_name,
-        trafficPercentStrategy=traffic_percent_strategy,
-    )
-    rollout_operation = self.services_client.services_rollouts.Create(rollout)
+        trafficPercentStrategy=traffic_percent_strategy,)
+    rollout_operation = client.services_rollouts.Create(rollout)
     services_util.ProcessOperationResult(rollout_operation, args.async)
 
     # Check to see if the service is already enabled
     enable_api.EnableServiceIfDisabled(
-        self.project, self.service_name, args.async)
+        properties.VALUES.core.project.Get(required=True),
+        self.service_name,
+        args.async)
 
   def Epilog(self, resources_were_displayed):
     # Print this to screen not to the log because the output is needed by the

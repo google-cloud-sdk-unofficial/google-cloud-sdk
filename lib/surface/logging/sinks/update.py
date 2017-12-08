@@ -55,7 +55,7 @@ class Update(base.UpdateCommand):
 
   def GetLogSink(self):
     """Returns a log sink specified by the arguments."""
-    client = self.context['logging_client_v1beta3']
+    client = util.GetClientV1()
     ref = self.context['sink_reference']
     return client.projects_logs_sinks.Get(
         client.MESSAGES_MODULE.LoggingProjectsLogsSinksGetRequest(
@@ -65,7 +65,7 @@ class Update(base.UpdateCommand):
 
   def GetLogServiceSink(self):
     """Returns a log service sink specified by the arguments."""
-    client = self.context['logging_client_v1beta3']
+    client = util.GetClientV1()
     ref = self.context['sink_reference']
     return client.projects_logServices_sinks.Get(
         client.MESSAGES_MODULE.LoggingProjectsLogServicesSinksGetRequest(
@@ -76,31 +76,27 @@ class Update(base.UpdateCommand):
   def GetProjectSink(self):
     """Returns a project sink specified by the arguments."""
     # Use V2 logging API for project sinks.
-    client = self.context['logging_client_v2']
-    messages = self.context['logging_messages_v2']
     sink_ref = self.context['sink_reference']
-    return client.projects_sinks.Get(
-        messages.LoggingProjectsSinksGetRequest(
+    return util.GetClient().projects_sinks.Get(
+        util.GetMessages().LoggingProjectsSinksGetRequest(
             sinkName=util.CreateResourceName(
                 'projects/{0}'.format(sink_ref.projectsId), 'sinks',
                 sink_ref.sinksId)))
 
   def UpdateLogSink(self, sink_data):
     """Updates a log sink specified by the arguments."""
-    client = self.context['logging_client_v1beta3']
-    messages = self.context['logging_messages_v1beta3']
+    messages = util.GetMessagesV1()
     sink_ref = self.context['sink_reference']
-    return client.projects_logs_sinks.Update(
+    return util.GetClientV1().projects_logs_sinks.Update(
         messages.LoggingProjectsLogsSinksUpdateRequest(
             projectsId=sink_ref.projectsId, logsId=sink_ref.logsId,
             sinksId=sink_data['name'], logSink=messages.LogSink(**sink_data)))
 
   def UpdateLogServiceSink(self, sink_data):
     """Updates a log service sink specified by the arguments."""
-    client = self.context['logging_client_v1beta3']
-    messages = self.context['logging_messages_v1beta3']
+    messages = util.GetMessagesV1()
     sink_ref = self.context['sink_reference']
-    return client.projects_logServices_sinks.Update(
+    return util.GetClientV1().projects_logServices_sinks.Update(
         messages.LoggingProjectsLogServicesSinksUpdateRequest(
             projectsId=sink_ref.projectsId,
             logServicesId=sink_ref.logServicesId, sinksId=sink_data['name'],
@@ -109,14 +105,13 @@ class Update(base.UpdateCommand):
   def UpdateProjectSink(self, sink_data, unique_writer_identity):
     """Updates a project sink specified by the arguments."""
     # Use V2 logging API for project sinks.
-    client = self.context['logging_client_v2']
-    messages = self.context['logging_messages_v2']
+    messages = util.GetMessages()
     sink_ref = self.context['sink_reference']
     # Change string value to enum.
     sink_data['outputVersionFormat'] = getattr(
         messages.LogSink.OutputVersionFormatValueValuesEnum,
         sink_data['outputVersionFormat'])
-    return client.projects_sinks.Update(
+    return util.GetClient().projects_sinks.Update(
         messages.LoggingProjectsSinksUpdateRequest(
             sinkName=util.CreateResourceName(
                 'projects/{0}'.format(sink_ref.projectsId), 'sinks',

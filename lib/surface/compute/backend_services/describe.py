@@ -16,37 +16,9 @@
 
 from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Describe(base_classes.GlobalDescriber):
-  """Describe a backend service."""
-
-  @staticmethod
-  def Args(parser):
-    base_classes.GlobalDescriber.Args(parser, 'compute.backendServices')
-
-  @property
-  def service(self):
-    return self.compute.backendServices
-
-  @property
-  def resource_type(self):
-    return 'backendServices'
-
-
-Describe.detailed_help = {
-    'brief': 'Describe a backend service',
-    'DESCRIPTION': """\
-        *{command}* displays all data associated with a backend service in a
-        project.
-        """,
-}
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class DescribeBeta(base_classes.MultiScopeDescriber):
+class Describe(base_classes.MultiScopeDescriber):
   """Describe a backend service."""
 
   SCOPES = [base_classes.ScopeType.regional_scope,
@@ -55,8 +27,7 @@ class DescribeBeta(base_classes.MultiScopeDescriber):
   @staticmethod
   def Args(parser):
     base_classes.MultiScopeDescriber.AddScopeArgs(
-        parser, 'backendServices', DescribeBeta.SCOPES,
-        command='alpha compute backend-services list')
+        parser, 'backendServices', Describe.SCOPES)
 
   def CreateReference(self, args):
     default_scope = base_classes.ScopeType.global_scope
@@ -65,7 +36,7 @@ class DescribeBeta(base_classes.MultiScopeDescriber):
             getattr(args, 'global', None) is None and
             getattr(args, 'region', None) is None)):
       default_scope = base_classes.ScopeType.regional_scope
-    return super(DescribeBeta, self).CreateReference(
+    return super(Describe, self).CreateReference(
         args, default=default_scope)
 
   @property
@@ -93,5 +64,5 @@ class DescribeBeta(base_classes.MultiScopeDescriber):
     return None
 
 
-DescribeBeta.detailed_help = base_classes.GetMultiScopeDescriberHelp(
-    'backend service', DescribeBeta.SCOPES)
+Describe.detailed_help = base_classes.GetMultiScopeDescriberHelp(
+    'backend service', Describe.SCOPES)

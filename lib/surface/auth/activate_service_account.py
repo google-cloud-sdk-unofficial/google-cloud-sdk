@@ -15,17 +15,13 @@
 """A simple auth command to bootstrap authentication with oauth2."""
 
 import getpass
-import json
-import os
 
+from googlecloudsdk.api_lib.auth import service_account as auth_service_account
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
-from googlecloudsdk.core import config
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core.credentials import service_account
 from googlecloudsdk.core.credentials import store as c_store
-from oauth2client import client
 
 
 class ActivateServiceAccount(base.SilentCommand):
@@ -63,42 +59,8 @@ class ActivateServiceAccount(base.SilentCommand):
     """Create service account credentials."""
 
     try:
-      private_key = open(args.key_file, 'rb').read()
-    except IOError as e:
-      raise c_exc.BadFileException(e)
-
-    json_key = None
-    try:
-      json_key = json.loads(private_key)
-    except ValueError:
-      pass
-
-    account = None
-    if json_key:
-      if args.password_file or args.prompt_for_password:
-        raise c_exc.InvalidArgumentException(
-            '--password-file',
-            'A .json service account key does not require a password.')
-      account = json_key.get('client_email', None)
-      if not account:
-        raise c_exc.ToolException(
-            'The .json key file is not in a valid format.')
-      if args.account and args.account != account:
-        raise c_exc.InvalidArgumentException(
-            'ACCOUNT',
-            'The given account name does not match the account name in the key '
-            'file.  This argument can be omitted when using .json keys.')
-      cred = service_account.ServiceAccountCredentials(
-          service_account_id=json_key['client_id'],
-          service_account_email=json_key['client_email'],
-          private_key_id=json_key['private_key_id'],
-          private_key_pkcs8_text=json_key['private_key'],
-          scopes=config.CLOUDSDK_SCOPES,
-          user_agent=config.CLOUDSDK_USER_AGENT)
-    else:
-      log.warning('.p12 service account keys are not recomended unless it is '
-                  'necessary for backwards compatability. Please switch to '
-                  'a newer .json service account key for this account.')
+      cred = auth_service_account.CredentialsFromAdcFile(args.key_file)
+    except auth_service_account.BadCredentialFileException:
       account = args.account
       if not account:
         raise c_exc.RequiredArgumentException(
@@ -106,51 +68,34 @@ class ActivateServiceAccount(base.SilentCommand):
       password = None
       if args.password_file:
         try:
-          password = open(args.password_file).read().strip()
+          with open(args.password_file) as f:
+            password = f.read().strip()
         except IOError as e:
           raise c_exc.UnknownArgumentException('--password-file', e)
-      if args.prompt_for_password:
+      elif args.prompt_for_password:
         password = getpass.getpass('Password: ')
 
-      if not client.HAS_CRYPTO:
-        if not os.environ.get('CLOUDSDK_PYTHON_SITEPACKAGES'):
-          raise c_exc.ToolException(
-              ('PyOpenSSL is not available. If you have already installed '
-               'PyOpenSSL, you will need to enable site packages by '
-               'setting the environment variable CLOUDSDK_PYTHON_SITEPACKAGES '
-               'to 1. If that does not work, see '
-               'https://developers.google.com/cloud/sdk/crypto for details '
-               'or consider using .json private key instead.'))
-        else:
-          raise c_exc.ToolException(
-              ('PyOpenSSL is not available. See '
-               'https://developers.google.com/cloud/sdk/crypto for details '
-               'or consider using .json private key instead.'))
+      cred = auth_service_account.CredentialsFromP12File(
+          args.key_file, account, password=password)
+    else:  # JSON format key file.
+      if args.password_file or args.prompt_for_password:
+        raise c_exc.InvalidArgumentException(
+            '--password-file',
+            'A .json service account key does not require a password.')
+      account = cred.service_account_email
+      if args.account and args.account != account:
+        raise c_exc.InvalidArgumentException(
+            'ACCOUNT',
+            'The given account name does not match the account name in the key '
+            'file.  This argument can be omitted when using .json keys.')
 
-      if password:
-        cred = client.SignedJwtAssertionCredentials(
-            service_account_name=account,
-            private_key=private_key,
-            scope=config.CLOUDSDK_SCOPES,
-            private_key_password=password,
-            user_agent=config.CLOUDSDK_USER_AGENT)
-      else:
-        cred = client.SignedJwtAssertionCredentials(
-            service_account_name=account,
-            private_key=private_key,
-            scope=config.CLOUDSDK_SCOPES,
-            user_agent=config.CLOUDSDK_USER_AGENT)
-      try:
-        c_store.Refresh(cred)
-      except c_store.TokenRefreshError as e:
-        log.file_only_logger.exception(e)
-        raise c_exc.ToolException(
-            'Failed to activate the given service account.  Please ensure the '
-            'key is valid and that you have provided the correct account name.')
-
-    c_store.Store(cred, account)
-
-    properties.PersistProperty(properties.VALUES.core.account, account)
+    try:
+      c_store.ActivateCredentials(account, cred)
+    except c_store.TokenRefreshError as e:
+      log.file_only_logger.exception(e)
+      raise auth_service_account.BadCredentialFileException(
+          'Failed to activate the given service account. '
+          'Please ensure provided key file is valid.')
 
     project = args.project
     if project:
@@ -158,4 +103,4 @@ class ActivateServiceAccount(base.SilentCommand):
 
     log.status.Print('Activated service account credentials for: [{0}]'
                      .format(account))
-    return cred
+

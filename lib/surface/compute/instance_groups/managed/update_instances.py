@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 from googlecloudsdk.command_lib.compute.managed_instance_groups import update_instances_utils
 from googlecloudsdk.core.util import times
@@ -127,7 +128,7 @@ class UpdateInstancesAlpha(base_classes.BaseCommand):
 
   def CreateRequest(self, args, cleared_fields):
     resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
-    default_scope = flags.ScopeEnum.ZONE
+    default_scope = compute_scope.ScopeEnum.ZONE
     scope_lister = flags.GetDefaultScopeLister(
         self.compute_client, self.project)
     igm_ref = resource_arg.ResolveAsResource(

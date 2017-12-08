@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.compute import ssh_utils
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -110,7 +111,8 @@ class CopyFiles(ssh_utils.BaseSSHCLICommand):
                   sorted(destination_instances))))
 
     source_instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
-        [source_instance], flags.ScopeEnum.ZONE, args.zone, self.resources,
+        [source_instance], compute_scope.ScopeEnum.ZONE, args.zone,
+        self.resources,
         scope_lister=flags.GetDefaultScopeLister(
             self.compute_client, self.project))[0]
     source_instance = self.GetInstance(source_instance_ref)

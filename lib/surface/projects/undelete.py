@@ -20,7 +20,6 @@ from googlecloudsdk.command_lib.projects import util as command_lib_util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Undelete(base.CreateCommand):
   """Undelete a project.
 

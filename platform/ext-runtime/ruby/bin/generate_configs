@@ -32,6 +32,7 @@ def main(args):
 
     entrypoint = config.runtime_data.entrypoint
     ruby_version = config.runtime_data.ruby_version
+    base_image_tag = os.environ.get('GAE_RUBY_BASE_IMAGE_TAG') or 'latest'
 
     # Locate template directory.
     template_dir = os.path.join(os.path.dirname(__file__), '..', 'templates')
@@ -42,7 +43,7 @@ def main(args):
         data = f.read()
 
         comm.gen_file('Dockerfile', data.format(ruby_version=ruby_version,
-            entrypoint=entrypoint))
+            entrypoint=entrypoint, base_image_tag=base_image_tag))
 
     # Generate .dockerignore
     path = os.path.join(template_dir, 'dockerignore.template')

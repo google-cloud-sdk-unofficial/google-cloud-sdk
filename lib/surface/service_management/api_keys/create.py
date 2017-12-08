@@ -14,17 +14,17 @@
 
 """Implementation of the service-management api-keys create command."""
 
-from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.core import properties
 
 
 SHA_EXAMPLE = 'D8:AA:43:97:59:EE:C5:95:26:6A:07:EE:1C:37:8E:F4:F0:C8:05:C8'
 API_KEY_TYPES = set(['browser', 'server', 'android', 'ios'])
 
 
-class Create(base.Command, base_classes.BaseServiceManagementCommand):
+class Create(base.Command):
   """Creates an API key for a project."""
 
   @staticmethod
@@ -75,15 +75,20 @@ class Create(base.Command, base_classes.BaseServiceManagementCommand):
     Returns:
       The response from the api-keys API call.
     """
+    client = services_util.GetApiKeysClientInstance()
+
     # Verify Android command-line arguments, if applicable
     if args.type == 'android':
       self._VerifyAndroidPackageArgs(args.allowed_entities)
 
     # Construct the Create API Key request object
     request = self._ConstructApiKeyRequest(
-        self.project, args.type, args.allowed_entities, args.display_name)
+        properties.VALUES.core.project.Get(required=True),
+        args.type,
+        args.allowed_entities,
+        args.display_name)
 
-    return self.apikeys_client.projects_apiKeys.Create(request)
+    return client.projects_apiKeys.Create(request)
 
   def _VerifyAndroidPackageArgs(self, allowed_entities):
     # Verify that each Android package is in the correct format
@@ -102,24 +107,26 @@ class Create(base.Command, base_classes.BaseServiceManagementCommand):
 
   def _ConstructApiKeyRequest(self, project, key_type, allowed_entities,
                               display_name):
+    messages = services_util.GetApiKeysMessagesModule()
+
     if key_type == 'browser':
-      key_details = self.apikeys_messages.BrowserKeyDetails()
+      key_details = messages.BrowserKeyDetails()
       if allowed_entities:
         key_details.allowedReferrers.extend(allowed_entities)
-      api_key = self.apikeys_messages.ApiKey(browserKeyDetails=key_details)
+      api_key = messages.ApiKey(browserKeyDetails=key_details)
     elif key_type == 'server':
-      key_details = self.apikeys_messages.ServerKeyDetails()
+      key_details = messages.ServerKeyDetails()
       if allowed_entities:
         key_details.allowedIps.extend(allowed_entities)
-      api_key = self.apikeys_messages.ApiKey(serverKeyDetails=key_details)
+      api_key = messages.ApiKey(serverKeyDetails=key_details)
     elif key_type == 'ios':
-      key_details = self.apikeys_messages.IosKeyDetails()
+      key_details = messages.IosKeyDetails()
       if allowed_entities:
         key_details.allowedBundleIds.extend(allowed_entities)
-      api_key = self.apikeys_messages.ApiKey(iosKeyDetails=key_details)
+      api_key = messages.ApiKey(iosKeyDetails=key_details)
     elif key_type == 'android':
       def _ConstructAndroidApplication(package, fingerprint):
-        return self.apikeys_messages.AndroidApplication(
+        return messages.AndroidApplication(
             sha1Fingerprint=services_util.GetByteStringFromFingerprint(
                 fingerprint),
             packageName=package)
@@ -127,13 +134,12 @@ class Create(base.Command, base_classes.BaseServiceManagementCommand):
       if allowed_entities:
         apps = [p.split(',') for p in allowed_entities]
 
-      key_details = self.apikeys_messages.AndroidKeyDetails()
+      key_details = messages.AndroidKeyDetails()
       key_details.allowedApplications.extend(
           [_ConstructAndroidApplication(p, f) for (p, f) in apps])
-      api_key = self.apikeys_messages.ApiKey(androidKeyDetails=key_details)
+      api_key = messages.ApiKey(androidKeyDetails=key_details)
 
     api_key.displayName = display_name
 
-    return self.apikeys_messages.ApikeysProjectsApiKeysCreateRequest(
-        projectId=project,
-        apiKey=api_key)
+    return messages.ApikeysProjectsApiKeysCreateRequest(
+        projectId=project, apiKey=api_key)

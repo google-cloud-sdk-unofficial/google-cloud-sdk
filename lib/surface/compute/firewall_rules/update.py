@@ -16,13 +16,18 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import firewalls_utils
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.compute.firewall_rules import flags
 
 
 class UpdateFirewall(base_classes.ReadWriteCommand):
   """Update a firewall rule."""
 
-  @staticmethod
-  def Args(parser):
+  FIREWALL_RULE_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument(operation_type='update')
+    cls.FIREWALL_RULE_ARG.AddArgument(parser)
     firewalls_utils.AddCommonArgs(parser, True)
 
   @property
@@ -34,7 +39,7 @@ class UpdateFirewall(base_classes.ReadWriteCommand):
     return 'firewalls'
 
   def CreateReference(self, args):
-    return self.CreateGlobalReference(args.name, resource_type='firewalls')
+    return self.FIREWALL_RULE_ARG.ResolveAsResource(args, self.resources)
 
   def Run(self, args):
     self.new_allowed = firewalls_utils.ParseAllowed(args.allow, self.messages)

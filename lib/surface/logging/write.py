@@ -54,8 +54,7 @@ class Write(base.SilentCommand):
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
     """
-    client = self.context['logging_client_v2']
-    messages = self.context['logging_messages_v2']
+    messages = util.GetMessages()
     project = properties.VALUES.core.project.Get(required=True)
 
     severity_value = getattr(messages.LogEntry.SeverityValueValuesEnum,
@@ -83,7 +82,7 @@ class Write(base.SilentCommand):
     else:
       entry.textPayload = args.message
 
-    client.entries.Write(
+    util.GetClient().entries.Write(
         messages.WriteLogEntriesRequest(entries=[entry]))
     log.status.write('Created log entry.\n')
 

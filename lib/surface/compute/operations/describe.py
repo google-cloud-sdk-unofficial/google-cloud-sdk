@@ -17,6 +17,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.operations import flags
 from googlecloudsdk.core import resources
 
@@ -62,7 +63,7 @@ class DescribeGA(base_classes.BaseDescriber):
     self._service = self.clouduseraccounts.globalAccountsOperations
     return flags.ACCOUNT_OPERATION_ARG.ResolveAsResource(
         args, self.clouduseraccounts_resources,
-        default_scope=compute_flags.ScopeEnum.GLOBAL)
+        default_scope=compute_scope.ScopeEnum.GLOBAL)
 
   def _RaiseWrongResourceCollectionException(self, got, path):
     expected_collections = [
@@ -85,7 +86,7 @@ class DescribeGA(base_classes.BaseDescriber):
 
     try:
       ref = flags.COMPUTE_OPERATION_ARG.ResolveAsResource(
-          args, self.resources, default_scope=compute_flags.ScopeEnum.GLOBAL,
+          args, self.resources, default_scope=compute_scope.ScopeEnum.GLOBAL,
           scope_lister=compute_flags.GetDefaultScopeLister(
               self.compute_client, self.project))
     except resources.WrongResourceCollectionException:

@@ -11,7 +11,7 @@ gcloud compute backend\-services get\-health \- get backend health statuses from
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute backend\-services get\-health\fR \fINAME\fR [\fB\-\-filter\fR=\fIEXPRESSION\fR] [\fB\-\-limit\fR=\fILIMIT\fR] [\fB\-\-page\-size\fR=\fIPAGE_SIZE\fR] [\fB\-\-sort\-by\fR=[\fIFIELD\fR,...]] [\fB\-\-uri\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute backend\-services get\-health\fR \fINAME\fR [\fB\-\-global\fR\ |\ \fB\-\-region\fR=\fIREGION\fR] [\fB\-\-filter\fR=\fIEXPRESSION\fR] [\fB\-\-limit\fR=\fILIMIT\fR] [\fB\-\-page\-size\fR=\fIPAGE_SIZE\fR] [\fB\-\-sort\-by\fR=[\fIFIELD\fR,...]] [\fB\-\-uri\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -41,6 +41,23 @@ have no health status.
 .TP 2m
 \fINAME\fR
 The name of the backend service.
+
+
+.RE
+.sp
+
+.SH "FLAGS"
+
+At most one of these may be specified:
+
+.RS 2m
+.TP 2m
+\fB\-\-global\fR
+If provided, it is assumed the backend service is global.
+
+.TP 2m
+\fB\-\-region\fR=\fIREGION\fR
+The region of the backend service to operate on.
 
 
 .RE

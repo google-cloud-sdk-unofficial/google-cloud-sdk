@@ -61,8 +61,9 @@ class Layer(docker_image.DockerImage):
       config['ExposedPorts'] = old_ports
     v1_compat['config'] = config
 
-    manifest['history'].insert(0, {'v1Compatibility': json.dumps(v1_compat)})
-    self._manifest = util.Sign(json.dumps(manifest))
+    manifest['history'].insert(0, {'v1Compatibility': json.dumps(
+        v1_compat, sort_keys=True)})
+    self._manifest = util.Sign(json.dumps(manifest, sort_keys=True))
 
   def manifest(self):
     """Override."""

@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.backend_services import backend_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
@@ -32,7 +33,7 @@ class AddBackend(base_classes.ReadWriteCommand):
 
   @staticmethod
   def Args(parser):
-    flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     backend_flags.AddDescription(parser)
     backend_flags.AddInstanceGroup(
         parser, operation_type='add to',
@@ -54,8 +55,9 @@ class AddBackend(base_classes.ReadWriteCommand):
     return 'backendServices'
 
   def CreateReference(self, args):
-    return flags.GLOBAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, self.resources)
+    return flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
+        args, self.resources,
+        default_scope=compute_scope.ScopeEnum.GLOBAL)
 
   def GetGetRequest(self, args):
     if self.regional:
@@ -153,7 +155,7 @@ class AddBackend(base_classes.ReadWriteCommand):
     return replacement
 
   def Run(self, args):
-    self.regional = backend_services_utils.IsRegionalRequest(self, args)
+    self.regional = backend_services_utils.IsRegionalRequest(args)
     return super(AddBackend, self).Run(args)
 
 
@@ -171,12 +173,6 @@ class AddBackendBeta(AddBackend):
     backend_flags.AddBalancingMode(parser)
     backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
-
-  def CreateReference(self, args):
-    """Overrides."""
-    return flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, self.resources,
-        default_scope=compute_flags.ScopeEnum.GLOBAL)
 
   def CreateGroupReference(self, args):
     """Overrides."""
@@ -211,7 +207,7 @@ class AddBackendAlpha(AddBackendBeta):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
         args, holder.resources,
-        default_scope=compute_flags.ScopeEnum.ZONE,
+        default_scope=compute_scope.ScopeEnum.ZONE,
         scope_lister=compute_flags.GetDefaultScopeLister(
             holder.client, self.project))
 

@@ -15,6 +15,8 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import firewalls_utils
+from googlecloudsdk.command_lib.compute.firewall_rules import flags
+from googlecloudsdk.command_lib.compute.networks import flags as network_flags
 
 
 class Create(base_classes.BaseAsyncCreator):
@@ -24,8 +26,15 @@ class Create(base_classes.BaseAsyncCreator):
   traffic to a network.
   """
 
-  @staticmethod
-  def Args(parser):
+  FIREWALL_RULE_ARG = None
+  NETWORK_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument()
+    cls.FIREWALL_RULE_ARG.AddArgument(parser)
+    cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
+        'The network to which this rule is attached.', required=False)
     firewalls_utils.AddCommonArgs(parser, False)
 
     network = parser.add_argument(
@@ -56,10 +65,9 @@ class Create(base_classes.BaseAsyncCreator):
 
     allowed = firewalls_utils.ParseAllowed(args.allow, self.messages)
 
-    network_ref = self.CreateGlobalReference(
-        args.network, resource_type='networks')
-    firewall_ref = self.CreateGlobalReference(
-        args.name, resource_type='firewalls')
+    network_ref = self.NETWORK_ARG.ResolveAsResource(args, self.resources)
+    firewall_ref = self.FIREWALL_RULE_ARG.ResolveAsResource(args,
+                                                            self.resources)
 
     request = self.messages.ComputeFirewallsInsertRequest(
         firewall=self.messages.Firewall(

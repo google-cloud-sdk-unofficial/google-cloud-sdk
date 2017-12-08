@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instances import exceptions
 from googlecloudsdk.command_lib.compute.instances import flags
 
@@ -114,7 +115,7 @@ class SetScopes(base_classes.NoOutputAsyncMutator):
     flags.ValidateServiceAccountAndScopeArgs(args)
     instance_ref = flags.INSTANCE_ARG.ResolveAsResource(
         args, self.resources,
-        default_scope=compute_flags.ScopeEnum.ZONE,
+        default_scope=compute_scope.ScopeEnum.ZONE,
         scope_lister=compute_flags.GetDefaultScopeLister(
             self.compute_client, self.project))
 

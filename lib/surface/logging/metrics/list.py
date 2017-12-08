@@ -16,6 +16,7 @@
 
 from apitools.base.py import list_pager
 
+from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
@@ -41,15 +42,14 @@ class List(base.ListCommand):
     Returns:
       The list of metrics.
     """
-    client = self.context['logging_client_v1beta3']
-    messages = self.context['logging_messages_v1beta3']
     project = properties.VALUES.core.project.Get(required=True)
 
-    request = messages.LoggingProjectsMetricsListRequest(projectsId=project)
+    request = util.GetMessagesV1().LoggingProjectsMetricsListRequest(
+        projectsId=project)
 
     return list_pager.YieldFromList(
-        client.projects_metrics, request, field='metrics', limit=args.limit,
-        batch_size=None, batch_size_attribute='pageSize')
+        util.GetClientV1().projects_metrics, request, field='metrics',
+        limit=args.limit, batch_size=None, batch_size_attribute='pageSize')
 
 
 List.detailed_help = {

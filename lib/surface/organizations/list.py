@@ -19,7 +19,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.organizations import orgs_base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class List(orgs_base.OrganizationCommand, base.ListCommand):
   """List organizations accessible by the active account.
 
@@ -32,10 +33,12 @@ class List(orgs_base.OrganizationCommand, base.ListCommand):
     messages = self.OrganizationsMessages()
     return list_pager.YieldFromList(
         self.OrganizationsClient(),
-        # Note that args.filter is not included in the ListRequest to CRM.
+        # Note that args.filter is not included in the
+        # SearchOrganizationsRequest to CRM.
         # Filtering occurs as part of the display functionality in
         # googlecloudsdk.calliope.display
-        messages.CloudresourcemanagerOrganizationsListRequest(),
+        messages.SearchOrganizationsRequest(),
+        method='Search',
         limit=args.limit,
         batch_size_attribute='pageSize',
         batch_size=args.page_size,

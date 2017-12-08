@@ -11,7 +11,7 @@ gcloud compute backend\-services list \- list Google Compute Engine backend serv
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute backend\-services list\fR [\fINAME\fR\ ...] [\fB\-\-regexp\fR=\fIREGEXP\fR,\ \fB\-r\fR\ \fIREGEXP\fR] [\fB\-\-filter\fR=\fIEXPRESSION\fR] [\fB\-\-limit\fR=\fILIMIT\fR] [\fB\-\-page\-size\fR=\fIPAGE_SIZE\fR] [\fB\-\-sort\-by\fR=[\fIFIELD\fR,...]] [\fB\-\-uri\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute backend\-services list\fR [\fINAME\fR\ ...] [\fB\-\-regexp\fR=\fIREGEXP\fR,\ \fB\-r\fR\ \fIREGEXP\fR] [\fB\-\-global\fR\ |\ \fB\-\-regions\fR=[\fIREGION\fR,...]] [\fB\-\-filter\fR=\fIEXPRESSION\fR] [\fB\-\-limit\fR=\fILIMIT\fR] [\fB\-\-page\-size\fR=\fIPAGE_SIZE\fR] [\fB\-\-sort\-by\fR=[\fIFIELD\fR,...]] [\fB\-\-uri\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -19,6 +19,10 @@ gcloud compute backend\-services list \- list Google Compute Engine backend serv
 
 \fBgcloud compute backend\-services list\fR displays all Google Compute Engine
 backend services in a project.
+
+By default, global backend services and backend services from all regions are
+listed. The results can be narrowed down by providing the \f5\fI\-\-global\fR\fR
+or \f5\fI\-\-regions\fR\fR flag.
 
 
 
@@ -40,6 +44,20 @@ If provided, show details for the specified names and/or URIs of resources.
 \fB\-\-regexp\fR=\fIREGEXP\fR, \fB\-r\fR \fIREGEXP\fR
 A regular expression to filter the names of the results on. Any names that do
 not match the entire regular expression will be filtered out.
+
+.RE
+.sp
+At most one of these may be specified:
+
+.RS 2m
+.TP 2m
+\fB\-\-global\fR
+If provided, only global resources are shown.
+
+.TP 2m
+\fB\-\-regions\fR=[\fIREGION\fR,...]
+If provided, only regional resources are shown. If arguments are provided, only
+resources from the given regions are shown.
 
 
 .RE
@@ -100,4 +118,18 @@ To list the URIs of all backend services in a project, run:
 
 .RS 2m
 $ gcloud compute backend\-services list \-\-uri
+.RE
+
+To list all global backend services in a project, run:
+
+.RS 2m
+$ gcloud compute backend\-services list \-\-global
+.RE
+
+To list all backend services in the \f5\fIus\-central1\fR\fR and
+\f5\fIeurope\-west1\fR\fR regions, run:
+
+.RS 2m
+$ gcloud compute backend\-services list \e
+    \-\-regions us\-central1,europe\-west1
 .RE

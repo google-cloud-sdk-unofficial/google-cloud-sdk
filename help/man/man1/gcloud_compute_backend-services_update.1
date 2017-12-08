@@ -11,7 +11,7 @@ gcloud compute backend\-services update \- update a backend service
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute backend\-services update\fR \fINAME\fR [\fB\-\-affinity\-cookie\-ttl\fR=\fIAFFINITY_COOKIE_TTL\fR] [\fB\-\-connection\-draining\-timeout\fR=\fICONNECTION_DRAINING_TIMEOUT\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-enable\-cdn\fR] [\fB\-\-health\-checks\fR=\fIHEALTH_CHECK\fR,[\fIHEALTH_CHECK\fR,...]] [\fB\-\-http\-health\-checks\fR=\fIHTTP_HEALTH_CHECK\fR,[\fIHTTP_HEALTH_CHECK\fR,...]] [\fB\-\-https\-health\-checks\fR=\fIHTTPS_HEALTH_CHECK\fR,[\fIHTTPS_HEALTH_CHECK\fR,...]] [\fB\-\-port\fR=\fIPORT\fR] [\fB\-\-port\-name\fR=\fIPORT_NAME\fR] [\fB\-\-protocol\fR=\fIPROTOCOL\fR] [\fB\-\-session\-affinity\fR=\fISESSION_AFFINITY\fR] [\fB\-\-timeout\fR=\fITIMEOUT\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute backend\-services update\fR \fINAME\fR [\fB\-\-affinity\-cookie\-ttl\fR=\fIAFFINITY_COOKIE_TTL\fR] [\fB\-\-connection\-draining\-timeout\fR=\fICONNECTION_DRAINING_TIMEOUT\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-enable\-cdn\fR] [\fB\-\-health\-checks\fR=\fIHEALTH_CHECK\fR,[\fIHEALTH_CHECK\fR,...]] [\fB\-\-http\-health\-checks\fR=\fIHTTP_HEALTH_CHECK\fR,[\fIHTTP_HEALTH_CHECK\fR,...]] [\fB\-\-https\-health\-checks\fR=\fIHTTPS_HEALTH_CHECK\fR,[\fIHTTPS_HEALTH_CHECK\fR,...]] [\fB\-\-port\fR=\fIPORT\fR] [\fB\-\-port\-name\fR=\fIPORT_NAME\fR] [\fB\-\-protocol\fR=\fIPROTOCOL\fR] [\fB\-\-session\-affinity\fR=\fISESSION_AFFINITY\fR] [\fB\-\-timeout\fR=\fITIMEOUT\fR] [\fB\-\-global\fR\ |\ \fB\-\-region\fR=\fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -109,6 +109,16 @@ The type of session affinity to use for this backend service.
 \fBCLIENT_IP\fR
 Route requests to instances based on the hash of the client's IP address.
 .TP 2m
+\fBCLIENT_IP_PORT_PROTO\fR
+Connections from the same client IP with the same IP protocol and port will go
+to the same VM in the backend while that VM remains healthy. This option cannot
+be used for HTTP(S) load balancing.
+.TP 2m
+\fBCLIENT_IP_PROTO\fR
+Connections from the same client IP with the same IP protocol willgo to the same
+VM in the pool while that VM remains healthy. This option cannot be used for
+HTTP(s) load balancing.
+.TP 2m
 \fBGENERATED_COOKIE\fR
 Route requests to instances based on the contents of the "GCLB" cookie set by
 the load balancer.
@@ -124,6 +134,19 @@ The amount of time to wait for a backend to respond to a request before
 considering the request failed. For example, specifying \f5\fI10s\fR\fR will
 give backends 10 seconds to respond to requests. Valid units for this flag are
 ``s'' for seconds, ``m'' for minutes, and ``h'' for hours.
+
+.RE
+.sp
+At most one of these may be specified:
+
+.RS 2m
+.TP 2m
+\fB\-\-global\fR
+If provided, it is assumed the backend service is global.
+
+.TP 2m
+\fB\-\-region\fR=\fIREGION\fR
+The region of the backend service to operate on.
 
 
 .RE

@@ -15,12 +15,11 @@
 """Diagnose cluster command."""
 
 from apitools.base.py import encoding
-from apitools.base.py import exceptions as apitools_exceptions
 
+from googlecloudsdk.api_lib.dataproc import exceptions
 from googlecloudsdk.api_lib.dataproc import storage_helpers
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import retry
 
@@ -45,24 +44,20 @@ class Diagnose(base.Command):
         region=cluster_ref.region,
         projectId=cluster_ref.projectId)
 
-    try:
-      operation = client.projects_regions_clusters.Diagnose(request)
-      # TODO(user): Stream output during polling.
-      operation = util.WaitForOperation(
-          operation, self.context,
-          message='Waiting for cluster diagnose operation')
-      response = operation.response
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(error)
+    operation = client.projects_regions_clusters.Diagnose(request)
+    # TODO(user): Stream output during polling.
+    operation = util.WaitForOperation(
+        operation, self.context,
+        message='Waiting for cluster diagnose operation')
 
-    if not response:
-      raise exceptions.ToolException('Operation is missing response')
+    if not operation.response:
+      raise exceptions.OperationError('Operation is missing response')
 
-    properties = encoding.MessageToDict(response)
+    properties = encoding.MessageToDict(operation.response)
     output_uri = properties['outputUri']
 
     if not output_uri:
-      raise exceptions.ToolException('Response is missing outputUri')
+      raise exceptions.OperationError('Response is missing outputUri')
 
     log.err.Print('Output from diagnostic:')
     log.err.Print('-----------------------------------------------')

@@ -11,7 +11,7 @@ gcloud app logs read \- reads log entries for the current App Engine app
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud app logs read\fR [\fB\-\-level\fR=\fILEVEL\fR;\ default="any"] [\fB\-\-limit\fR=\fILIMIT\fR;\ default="200"] [\fB\-\-logs\fR=\fIAPP_LOG\fR,[\fIAPP_LOG\fR,...];\ default="stderr,stdout,crash.log"] [\fB\-\-service\fR=\fISERVICE\fR,\ \fB\-s\fR\ \fISERVICE\fR] [\fB\-\-version\fR=\fIVERSION\fR,\ \fB\-v\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud app logs read\fR [\fB\-\-level\fR=\fILEVEL\fR;\ default="any"] [\fB\-\-limit\fR=\fILIMIT\fR;\ default="200"] [\fB\-\-logs\fR=\fIAPP_LOG\fR,[\fIAPP_LOG\fR,...];\ default="stderr,stdout,crash.log,nginx.requests,request_log"] [\fB\-\-service\fR=\fISERVICE\fR,\ \fB\-s\fR\ \fISERVICE\fR] [\fB\-\-version\fR=\fIVERSION\fR,\ \fB\-v\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -36,7 +36,7 @@ must be one of: \fBcritical\fR, \fBerror\fR, \fBwarning\fR, \fBinfo\fR,
 Number of log entries to show.
 
 .TP 2m
-\fB\-\-logs\fR=\fIAPP_LOG\fR,[\fIAPP_LOG\fR,...]; default="stderr,stdout,crash.log"
+\fB\-\-logs\fR=\fIAPP_LOG\fR,[\fIAPP_LOG\fR,...]; default="stderr,stdout,crash.log,nginx.requests,request_log"
 Filter entries from a particular set of logs. Must be a comma\-separated list of
 log names (request_log, stdout, stderr, etc).
 
@@ -84,8 +84,14 @@ To show only the 10 latest log entries for the default service, run:
 $ gcloud app logs read \-\-limit 10 \-\-service=default
 .RE
 
-To show only the logs from the request log (recommended for standard apps), run:
+To show only the logs from the request log for standard apps, run:
 
 .RS 2m
 $ gcloud app logs read \-\-logs=request_log
+.RE
+
+To show only the logs from the request log for Flex apps, run:
+
+.RS 2m
+$ gcloud app logs read \-\-logs=nginx.requests
 .RE

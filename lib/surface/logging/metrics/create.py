@@ -14,6 +14,7 @@
 
 """'logging metrics create' command."""
 
+from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -42,8 +43,7 @@ class Create(base.CreateCommand):
     Returns:
       The created metric.
     """
-    client = self.context['logging_client_v1beta3']
-    messages = self.context['logging_messages_v1beta3']
+    messages = util.GetMessagesV1()
     metric_filter = args.filter
     # This prevents a clash with the Cloud SDK --filter flag.
     args.filter = None
@@ -52,7 +52,7 @@ class Create(base.CreateCommand):
                                     description=args.description,
                                     filter=metric_filter)
 
-    result = client.projects_metrics.Create(
+    result = util.GetClientV1().projects_metrics.Create(
         messages.LoggingProjectsMetricsCreateRequest(
             projectsId=project, logMetric=new_metric))
     log.CreatedResource(args.metric_name)

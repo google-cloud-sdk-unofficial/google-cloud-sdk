@@ -16,9 +16,9 @@
 
 import argparse
 
+from googlecloudsdk.api_lib.dataproc import exceptions
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 
 
@@ -93,7 +93,7 @@ class Update(base.UpdateCommand):
       has_changes = True
 
     if not has_changes:
-      raise exceptions.ToolException(
+      raise exceptions.ArgumentError(
           'Must specify at least one cluster parameter to update.')
 
     cluster = messages.Cluster(

@@ -4,8 +4,8 @@ import abc
 import base64
 
 
-class _CredentialProvider(object):
-  """Interface for providing User Credentials for use with GCR."""
+class Provider(object):
+  """Interface for providing User Credentials for use with a Docker Registry."""
 
   __metaclass__ = abc.ABCMeta  # For enforcing that methods are overriden.
 
@@ -14,7 +14,7 @@ class _CredentialProvider(object):
     """Produces a value suitable for use in the Authorization header."""
 
 
-class Anonymous(_CredentialProvider):
+class Anonymous(Provider):
   """Implementation for anonymous access."""
 
   def Get(self):
@@ -22,7 +22,7 @@ class Anonymous(_CredentialProvider):
     return ''
 
 
-class _SchemeProvider(_CredentialProvider):
+class _SchemeProvider(Provider):
   """Implementation for providing a challenge response credential."""
 
   def __init__(self, scheme):

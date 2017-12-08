@@ -13,8 +13,8 @@
 # limitations under the License.
 """Describe build command."""
 
+from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import apis as core_apis
 
 
 class Describe(base.DescribeCommand):
@@ -46,7 +46,7 @@ class Describe(base.DescribeCommand):
       Some value that we want to have printed later.
     """
 
-    client = core_apis.GetClientInstance('cloudbuild', 'v1')
+    client = cloudbuild_util.GetClientInstance()
     resources = self.context['registry']
 
     build_ref = resources.Parse(

@@ -55,6 +55,7 @@ class Create(base.CreateCommand):
     if args.region:
       create_util.CreateApp(api_client, project, args.region)
     elif console_io.CanPrompt():
+      create_util.CheckAppNotExists(api_client, project)
       create_util.CreateAppInteractively(api_client, project)
     else:
       raise create_util.UnspecifiedRegionError(

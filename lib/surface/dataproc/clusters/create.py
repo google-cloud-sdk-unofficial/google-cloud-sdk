@@ -140,6 +140,9 @@ spark,spark-defaults.conf
 |========
 
 """
+  parser.add_argument(
+      '--service-account',
+      help='The Google Cloud IAM service account to be authenticated as.')
   scope_parser = parser.add_argument(
       '--scopes',
       type=arg_parsers.ArgList(min_length=1),
@@ -269,8 +272,7 @@ class Create(base.CreateCommand):
 
     cluster_ref = util.ParseCluster(args.name, self.context)
 
-    config_helper = compute_helpers.ConfigurationHelper.FromContext(
-        self.context)
+    config_helper = compute_helpers.ConfigurationHelper()
     compute_uris = config_helper.ResolveGceUris(
         args.name,
         args.image,
@@ -310,6 +312,7 @@ class Create(base.CreateCommand):
     gce_cluster_config = messages.GceClusterConfig(
         networkUri=compute_uris['network'],
         subnetworkUri=compute_uris['subnetwork'],
+        serviceAccount=args.service_account,
         serviceAccountScopes=expanded_scopes,
         zoneUri=compute_uris['zone'])
 

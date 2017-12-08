@@ -71,11 +71,13 @@ class Delete(base.DeleteCommand):
     client = appengine_api_client.GetApiClient()
     services = client.ListServices()
     all_versions = client.ListVersions(services)
-    versions = version_util.GetMatchingVersions(all_versions,
-                                                args.versions, args.service)
+    # Sort versions to make behavior deterministic enough for unit testing.
+    versions = sorted(version_util.GetMatchingVersions(all_versions,
+                                                       args.versions,
+                                                       args.service))
 
     services_to_delete = []
-    for service in services:
+    for service in sorted(services):
       if (len([v for v in all_versions if v.service == service.id]) ==
           len([v for v in versions if v.service == service.id])):
         services_to_delete.append(service)
@@ -86,6 +88,7 @@ class Delete(base.DeleteCommand):
     for version in versions:
       if version.traffic_split:
         # TODO(user): mention `migrate` once it's implemented.
+        # TODO(b/32869800): collect info on all versions before raising.
         raise VersionsDeleteError(
             'Version [{version}] is currently serving {allocation:.2f}% of '
             'traffic for service [{service}].\n\n'

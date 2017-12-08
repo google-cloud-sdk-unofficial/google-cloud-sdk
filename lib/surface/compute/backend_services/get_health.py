@@ -23,19 +23,23 @@ from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetHealth(base.ListCommand):
   """Gets health status."""
 
-  _BACKEND_SERVICE_ARG = flags.GLOBAL_BACKEND_SERVICE_ARG
+  _BACKEND_SERVICE_ARG = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG
 
   @classmethod
   def Args(cls, parser):
     cls._BACKEND_SERVICE_ARG.AddArgument(parser)
 
   def GetReference(self, holder, args):
+    """Override. Don't assume a default scope."""
     return self._BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, holder.resources, default_scope=compute_flags.ScopeEnum.GLOBAL)
+        args,
+        holder.resources,
+        default_scope=backend_services_utils.GetDefaultScope(args),
+        scope_lister=compute_flags.GetDefaultScopeLister(
+            holder.client, properties.VALUES.core.project))
 
   def Run(self, args):
     """Returns a list of backendServiceGroupHealth objects."""
@@ -75,17 +79,3 @@ GetHealth.detailed_help = {
         so will have no health status.
     """
 }
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class GetHealthBeta(GetHealth):
-  _BACKEND_SERVICE_ARG = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG
-
-  def GetReference(self, holder, args):
-    """Override. Don't assume a default scope."""
-    return self._BACKEND_SERVICE_ARG.ResolveAsResource(
-        args,
-        holder.resources,
-        default_scope=backend_services_utils.GetDefaultScope(self, args),
-        scope_lister=compute_flags.GetDefaultScopeLister(
-            holder.client, properties.VALUES.core.project))

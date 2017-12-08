@@ -21,6 +21,7 @@ from googlecloudsdk.api_lib.compute import ssh_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.core.util import platforms
 
@@ -123,7 +124,7 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
           .format(args.user_host))
 
     instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
-        [instance], flags.ScopeEnum.ZONE, args.zone, self.resources,
+        [instance], compute_scope.ScopeEnum.ZONE, args.zone, self.resources,
         scope_lister=flags.GetDefaultScopeLister(
             self.compute_client, self.project))[0]
     instance = self.GetInstance(instance_ref)

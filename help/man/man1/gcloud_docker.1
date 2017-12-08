@@ -11,7 +11,7 @@ gcloud docker \- provides the docker CLI access to the Google Container Registry
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud docker\fR [\fB\-\-authorize\-only\fR,\ \fB\-a\fR] [\fB\-\-docker\-host\fR=\fIDOCKER_HOST\fR] [\fB\-\-server\fR=\fISERVER\fR,[\fISERVER\fR,...],\ \fB\-s\fR\ \fISERVER\fR,[\fISERVER\fR,...];\ default="gcr.io,us.gcr.io,eu.gcr.io,asia.gcr.io,b.gcr.io,bucket.gcr.io,appengine.gcr.io,gcr.kubernetes.io"] [\fIGLOBAL\-FLAG\ ...\fR] [\-\-\ \fIDOCKER_ARGS\fR\ ...]
+\f5gcloud docker\fR [\fB\-\-authorize\-only\fR,\ \fB\-a\fR] [\fB\-\-docker\-host\fR=\fIDOCKER_HOST\fR] [\fB\-\-server\fR=\fISERVER\fR,[\fISERVER\fR,...],\ \fB\-s\fR\ \fISERVER\fR,[\fISERVER\fR,...];\ default="gcr.io,us.gcr.io,eu.gcr.io,asia.gcr.io,b.gcr.io,bucket.gcr.io,appengine.gcr.io,gcr.kubernetes.io,us\-mirror.gcr.io,eu\-mirror.gcr.io,asia\-mirror.gcr.io,mirror.gcr.io"] [\fIGLOBAL\-FLAG\ ...\fR] [\-\-\ \fIDOCKER_ARGS\fR\ ...]
 
 
 
@@ -56,7 +56,7 @@ The URL to connect to Docker Daemon. Format: tcp://host:port or
 unix:///path/to/socket.
 
 .TP 2m
-\fB\-\-server\fR=\fISERVER\fR,[\fISERVER\fR,...], \fB\-s\fR \fISERVER\fR,[\fISERVER\fR,...]; default="gcr.io,us.gcr.io,eu.gcr.io,asia.gcr.io,b.gcr.io,bucket.gcr.io,appengine.gcr.io,gcr.kubernetes.io"
+\fB\-\-server\fR=\fISERVER\fR,[\fISERVER\fR,...], \fB\-s\fR \fISERVER\fR,[\fISERVER\fR,...]; default="gcr.io,us.gcr.io,eu.gcr.io,asia.gcr.io,b.gcr.io,bucket.gcr.io,appengine.gcr.io,gcr.kubernetes.io,us\-mirror.gcr.io,eu\-mirror.gcr.io,asia\-mirror.gcr.io,mirror.gcr.io"
 The address of the Google Cloud Registry.
 
 

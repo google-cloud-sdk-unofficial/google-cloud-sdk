@@ -21,6 +21,8 @@ from googlecloudsdk.core import log
 
 
 LOG_LEVELS = ['critical', 'error', 'warning', 'info', 'debug', 'any']
+FLEX_REQUESTS_LOG = 'nginx.requests'
+STANDARD_REQUESTS_LOG = 'request_log'
 
 
 class Read(base.Command):
@@ -40,7 +42,11 @@ class Read(base.Command):
 
     parser.add_argument('--logs',
                         required=False,
-                        default=['stderr', 'stdout', 'crash.log'],
+                        default=['stderr',
+                                 'stdout',
+                                 'crash.log',
+                                 FLEX_REQUESTS_LOG,
+                                 STANDARD_REQUESTS_LOG],
                         metavar='APP_LOG',
                         type=arg_parsers.ArgList(min_length=1),
                         help=('Filter entries from a particular set of logs. '
@@ -106,9 +112,12 @@ Read.detailed_help = {
 
           $ {command} --limit 10 --service=default
 
-        To show only the logs from the request log (recommended for standard
-        apps), run:
+        To show only the logs from the request log for standard apps, run:
 
           $ {command} --logs=request_log
+
+        To show only the logs from the request log for Flex apps, run:
+
+          $ {command} --logs=nginx.requests
     """,
 }

@@ -38,20 +38,16 @@ class List(base.ListCommand):
 
   def ListLogSinks(self, project, log_name):
     """List log sinks from the specified log."""
-    client = self.context['logging_client_v1beta3']
-    messages = self.context['logging_messages_v1beta3']
-    result = client.projects_logs_sinks.List(
-        messages.LoggingProjectsLogsSinksListRequest(
+    result = util.GetClientV1().projects_logs_sinks.List(
+        util.GetMessagesV1().LoggingProjectsLogsSinksListRequest(
             projectsId=project, logsId=log_name))
     for sink in result.sinks:
       yield util.TypedLogSink(sink, log_name=log_name)
 
   def ListLogServiceSinks(self, project, service_name):
     """List log service sinks from the specified service."""
-    client = self.context['logging_client_v1beta3']
-    messages = self.context['logging_messages_v1beta3']
-    result = client.projects_logServices_sinks.List(
-        messages.LoggingProjectsLogServicesSinksListRequest(
+    result = util.GetClientV1().projects_logServices_sinks.List(
+        util.GetMessagesV1().LoggingProjectsLogServicesSinksListRequest(
             projectsId=project, logServicesId=service_name))
     for sink in result.sinks:
       yield util.TypedLogSink(sink, service_name=service_name)
@@ -59,18 +55,16 @@ class List(base.ListCommand):
   def ListProjectSinks(self, project):
     """List project sinks from the specified project."""
     # Use V2 logging API for project sinks.
-    client = self.context['logging_client_v2']
-    messages = self.context['logging_messages_v2']
-    result = client.projects_sinks.List(
-        messages.LoggingProjectsSinksListRequest(
+    result = util.GetClient().projects_sinks.List(
+        util.GetMessages().LoggingProjectsSinksListRequest(
             parent='projects/{0}'.format(project)))
     for sink in result.sinks:
       yield util.TypedLogSink(sink)
 
   def YieldAllSinks(self, project):
     """Yield all log and log service sinks from the specified project."""
-    client = self.context['logging_client_v1beta3']
-    messages = self.context['logging_messages_v1beta3']
+    client = util.GetClientV1()
+    messages = util.GetMessagesV1()
     # First get all the log sinks.
     response = list_pager.YieldFromList(
         client.projects_logs,

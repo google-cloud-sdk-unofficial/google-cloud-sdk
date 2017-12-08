@@ -1,0 +1,65 @@
+
+.TH "GCLOUD_PREVIEW_PROJECTS_UNDELETE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud preview projects undelete \- undelete a project
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud preview projects undelete\fR \fIPROJECT_ID\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+
+.SH "DESCRIPTION"
+
+\fB(PREVIEW)\fR Undeletes the project with the given project ID.
+
+This command can fail for the following reasons:
+.RS 2m
+.IP "\(bu" 2m
+There is no project with the given ID.
+.IP "\(bu" 2m
+The active account does not have Owner or Editor permissions for the given
+project.
+.RE
+.sp
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+.RS 2m
+.TP 2m
+\fIPROJECT_ID\fR
+ID for the project you want to undelete.
+
+
+.RE
+.sp
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+The following command undeletes the project with the ID
+\f5example\-foo\-bar\-1\fR:
+
+.RS 2m
+$ gcloud preview projects undelete example\-foo\-bar\-1
+.RE
+
+
+
+.SH "NOTES"
+
+This command is currently in DEVELOPER PREVIEW and may change without notice.
+

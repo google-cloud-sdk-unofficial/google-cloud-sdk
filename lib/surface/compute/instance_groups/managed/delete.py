@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.compute import path_simplifier
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
@@ -120,7 +121,7 @@ class Delete(base_classes.BaseAsyncMutator):
     igm_refs = (
         instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGERS_ARG.
         ResolveAsResource)(
-            args, self.resources, default_scope=flags.ScopeEnum.ZONE,
+            args, self.resources, default_scope=compute_scope.ScopeEnum.ZONE,
             scope_lister=flags.GetDefaultScopeLister(
                 self.compute_client, self.project))
     scope_name = self._GetCommonScopeNameForRefs(igm_refs)

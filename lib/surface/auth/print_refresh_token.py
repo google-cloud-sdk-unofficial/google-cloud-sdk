@@ -15,10 +15,8 @@
 """A hidden command that prints access tokens.
 """
 
+from googlecloudsdk.api_lib.auth import refresh_token
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as c_exc
-from googlecloudsdk.core.credentials import store as c_store
-from oauth2client import client
 
 
 @base.Hidden
@@ -32,16 +30,13 @@ class PrintRefreshToken(base.Command):
         help=('The account to get the access token for. Leave empty for the '
               'active account.'))
 
-  @c_exc.RaiseToolExceptionInsteadOf(c_store.Error, client.Error)
   def Run(self, args):
     """Run the helper command."""
 
-    cred = c_store.Load(args.account)
-
-    if not cred.refresh_token:
-      raise c_exc.ToolException(
-          'No access token could be obtained from the current credentials.')
-    return cred
+    return {
+        'refresh_token': refresh_token.GetForAccount(args.account)
+    }
 
   def Format(self, args):
     return 'value(refresh_token)'
+

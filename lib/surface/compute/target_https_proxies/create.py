@@ -15,9 +15,9 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.command_lib.compute.ssl_certificates import (
-    flags as ssl_certificates_flags)
+    flags as ssl_certificate_flags)
 from googlecloudsdk.command_lib.compute.target_https_proxies import flags
-from googlecloudsdk.command_lib.compute.url_maps import flags as url_maps_flags
+from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
 
 
 class Create(base_classes.BaseAsyncCreator):
@@ -30,11 +30,12 @@ class Create(base_classes.BaseAsyncCreator):
   @classmethod
   def Args(cls, parser):
     cls.SSL_CERTIFICATE_ARG = (
-        ssl_certificates_flags.SslCertificateArgumentForTargetHttpsProxies())
+        ssl_certificate_flags.SslCertificateArgumentForOtherResource(
+            'target HTTPS proxy'))
     cls.SSL_CERTIFICATE_ARG.AddArgument(parser)
     cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument()
     cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser)
-    cls.URL_MAP_ARG = url_maps_flags.UrlMapArgumentForTargetHttpsProxy()
+    cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetHttpsProxy()
     cls.URL_MAP_ARG.AddArgument(parser)
 
     parser.add_argument(
@@ -73,8 +74,10 @@ class Create(base_classes.BaseAsyncCreator):
 
 
 Create.detailed_help = {
-    'brief': 'Create a target HTTPS proxy',
-    'DESCRIPTION': """
+    'brief':
+        'Create a target HTTPS proxy',
+    'DESCRIPTION':
+        """
         *{command}* is used to create target HTTPS proxies. A target
         HTTPS proxy is referenced by one or more forwarding rules which
         define which packets the proxy is responsible for routing. The

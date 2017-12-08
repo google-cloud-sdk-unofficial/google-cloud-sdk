@@ -34,20 +34,18 @@ class Delete(base.DeleteCommand):
 
   def DeleteLogSink(self):
     """Deletes a log sink specified by the arguments."""
-    client = self.context['logging_client_v1beta3']
-    messages = self.context['logging_messages_v1beta3']
+    messages = util.GetMessagesV1()
     sink_ref = self.context['sink_reference']
-    return client.projects_logs_sinks.Delete(
+    return util.GetClientV1().projects_logs_sinks.Delete(
         messages.LoggingProjectsLogsSinksDeleteRequest(
             projectsId=sink_ref.projectsId, logsId=sink_ref.logsId,
             sinksId=sink_ref.sinksId))
 
   def DeleteLogServiceSink(self):
     """Deletes a log service sink specified by the arguments."""
-    client = self.context['logging_client_v1beta3']
-    messages = self.context['logging_messages_v1beta3']
+    messages = util.GetMessagesV1()
     sink_ref = self.context['sink_reference']
-    return client.projects_logServices_sinks.Delete(
+    return util.GetClientV1().projects_logServices_sinks.Delete(
         messages.LoggingProjectsLogServicesSinksDeleteRequest(
             projectsId=sink_ref.projectsId,
             logServicesId=sink_ref.logServicesId, sinksId=sink_ref.sinksId))
@@ -55,11 +53,10 @@ class Delete(base.DeleteCommand):
   def DeleteProjectSink(self):
     """Deletes a project sink specified by the arguments."""
     # Use V2 logging API for project sinks.
-    client = self.context['logging_client_v2']
-    messages = self.context['logging_messages_v2']
+    messages = util.GetMessages()
     sink_ref = self.context['sink_reference']
     # TODO(b/32504514): Use resource parser
-    return client.projects_sinks.Delete(
+    return util.GetClient().projects_sinks.Delete(
         messages.LoggingProjectsSinksDeleteRequest(
             sinkName=util.CreateResourceName(
                 'projects/{0}'.format(sink_ref.projectsId), 'sinks',

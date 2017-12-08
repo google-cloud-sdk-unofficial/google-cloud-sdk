@@ -14,9 +14,9 @@
 """Stream-logs command."""
 
 
+from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.cloudbuild import logs as cb_logs
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import apis as core_apis
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -49,8 +49,8 @@ class StreamLogs(base.Command):
       Some value that we want to have printed later.
     """
 
-    client = core_apis.GetClientInstance('cloudbuild', 'v1')
-    messages = core_apis.GetMessagesModule('cloudbuild', 'v1')
+    client = cloudbuild_util.GetClientInstance()
+    messages = cloudbuild_util.GetMessagesModule()
     registry = self.context['registry']
 
     build_ref = registry.Parse(

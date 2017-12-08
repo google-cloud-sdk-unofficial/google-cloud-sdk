@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.compute import zone_utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
@@ -83,7 +84,7 @@ class CreateGA(base_classes.BaseAsyncCreator,
     group_ref = group_ref = (
         instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
         ResolveAsResource)(args, self.resources,
-                           default_scope=flags.ScopeEnum.ZONE,
+                           default_scope=compute_scope.ScopeEnum.ZONE,
                            scope_lister=flags.GetDefaultScopeLister(
                                self.compute_client, self.project))
     if _IsZonalGroup(group_ref):
@@ -137,8 +138,9 @@ class CreateGA(base_classes.BaseAsyncCreator,
                                         collection='compute.instanceTemplates')
     if args.target_pool:
       region = self.GetRegionForGroup(group_ref)
-      pool_refs = self.CreateRegionalReferences(
-          args.target_pool, region, resource_type='targetPools')
+      pool_refs = [self.resources.Parse(
+          pool, params={'region': region},
+          collection='compute.targetPools') for pool in args.target_pool]
       pools = [pool_ref.SelfLink() for pool_ref in pool_refs]
     else:
       pools = []

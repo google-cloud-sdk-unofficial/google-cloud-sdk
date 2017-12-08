@@ -18,7 +18,13 @@ import os
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import walker_util
+from googlecloudsdk.command_lib.meta import help_util
+from googlecloudsdk.core import exceptions
 from googlecloudsdk.core.util import pkg_resources
+
+
+class HelpTextOutOfDateError(exceptions.Error):
+  """Help text files out of date for --test."""
 
 
 _HELP_HTML_DATA_FILES = [
@@ -114,6 +120,12 @@ class GenerateHelpDocs(base.Command):
               'subtree will be written. If not specified then DevSite '
               'documents will not be generated.'))
     parser.add_argument(
+        '--help-text-dir',
+        metavar='DIRECTORY',
+        help=('The directory where the generated help text reference document '
+              'subtree will be written. If not specified then help text '
+              'documents will not be generated.'))
+    parser.add_argument(
         '--html-dir',
         metavar='DIRECTORY',
         help=('The directory where the standalone manpage HTML files will be '
@@ -131,6 +143,17 @@ class GenerateHelpDocs(base.Command):
               'be written. If not specified then manpage documents will not be '
               'generated.'))
     parser.add_argument(
+        '--test',
+        action='store_true',
+        help='Show but do not apply --update-help-text-dir actions. Exit with '
+        'non-zero exit status if any help text file must be upfdated.')
+    parser.add_argument(
+        '--update-help-text-dir',
+        metavar='DIRECTORY',
+        help=('Update DIRECTORY help text files to match the current CLI. Use '
+              'this flag to update the help text golden files after the '
+              'help_text_test test fails.'))
+    parser.add_argument(
         'restrict',
         metavar='COMMAND/GROUP',
         nargs='*',
@@ -142,6 +165,9 @@ class GenerateHelpDocs(base.Command):
     if args.devsite_dir:
       walker_util.DevSiteGenerator(self.cli, args.devsite_dir).Walk(
           args.hidden, args.restrict)
+    if args.help_text_dir:
+      walker_util.HelpTextGenerator(
+          self.cli, args.help_text_dir).Walk(args.hidden, args.restrict)
     if args.html_dir:
       walker_util.HtmlGenerator(
           self.cli, args.html_dir).Walk(args.hidden, args.restrict)
@@ -157,3 +183,8 @@ class GenerateHelpDocs(base.Command):
     if args.manpage_dir:
       walker_util.ManPageGenerator(
           self.cli, args.manpage_dir).Walk(args.hidden, args.restrict)
+    if args.update_help_text_dir:
+      changes = help_util.HelpTextUpdater(
+          self.cli, args.update_help_text_dir, test=args.test).Update()
+      if changes and args.test:
+        raise HelpTextOutOfDateError('Help text files must be updated.')

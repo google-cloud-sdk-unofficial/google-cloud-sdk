@@ -11,7 +11,7 @@ gcloud compute backend\-services delete \- delete backend services
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute backend\-services delete\fR \fINAME\fR [\fINAME\fR\ ...] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute backend\-services delete\fR \fINAME\fR [\fINAME\fR\ ...] [\fB\-\-global\fR\ |\ \fB\-\-region\fR=\fIREGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -28,6 +28,23 @@ services.
 .TP 2m
 \fINAME\fR [\fINAME\fR ...]
 The names of the backend services.
+
+
+.RE
+.sp
+
+.SH "FLAGS"
+
+At most one of these may be specified:
+
+.RS 2m
+.TP 2m
+\fB\-\-global\fR
+If provided, it is assumed the backend service is global.
+
+.TP 2m
+\fB\-\-region\fR=\fIREGION\fR
+The region of the backend service to operate on.
 
 
 .RE

@@ -14,12 +14,13 @@
 
 """Implementation of the service-management api-keys delete command."""
 
-from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import common_flags
+from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
 
 
-class Delete(base.Command, base_classes.BaseServiceManagementCommand):
+class Delete(base.Command):
   """Deletes a key."""
 
   @staticmethod
@@ -43,12 +44,15 @@ class Delete(base.Command, base_classes.BaseServiceManagementCommand):
     Returns:
       The response from the keys API call.
     """
+    messages = services_util.GetApiKeysMessagesModule()
+    client = services_util.GetApiKeysClientInstance()
+
     # Construct the Delete API Key request object
-    request = self.apikeys_messages.ApikeysProjectsApiKeysDeleteRequest(
-        projectId=self.project,
+    request = messages.ApikeysProjectsApiKeysDeleteRequest(
+        projectId=properties.VALUES.core.project.Get(required=True),
         keyId=args.key)
 
-    result = self.apikeys_client.projects_apiKeys.Delete(request)
+    result = client.projects_apiKeys.Delete(request)
 
     # Note that we expect an empty proto as a result (google.protobuf.Empty).
     # If that's what we receive, we can assume success.

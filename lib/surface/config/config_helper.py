@@ -22,7 +22,7 @@ from googlecloudsdk.core.credentials import store
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class ConfigurationHelper(base.Command):
   """A helper for providing auth and config data to external tools."""
 

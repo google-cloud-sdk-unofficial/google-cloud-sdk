@@ -35,7 +35,7 @@ class Describe(base.DescribeCommand):
 
   def GetLogSink(self):
     """Returns a log sink specified by the arguments."""
-    client = self.context['logging_client_v1beta3']
+    client = util.GetClientV1()
     ref = self.context['sink_reference']
     return client.projects_logs_sinks.Get(
         client.MESSAGES_MODULE.LoggingProjectsLogsSinksGetRequest(
@@ -45,7 +45,7 @@ class Describe(base.DescribeCommand):
 
   def GetLogServiceSink(self):
     """Returns a log service sink specified by the arguments."""
-    client = self.context['logging_client_v1beta3']
+    client = util.GetClientV1()
     ref = self.context['sink_reference']
     return client.projects_logServices_sinks.Get(
         client.MESSAGES_MODULE.LoggingProjectsLogServicesSinksGetRequest(
@@ -56,12 +56,10 @@ class Describe(base.DescribeCommand):
   def GetProjectSink(self):
     """Returns a project sink specified by the arguments."""
     # Use V2 logging API for project sinks.
-    client = self.context['logging_client_v2']
-    messages = self.context['logging_messages_v2']
     sink_ref = self.context['sink_reference']
     # TODO(b/32504514): Use resource parser
-    return client.projects_sinks.Get(
-        messages.LoggingProjectsSinksGetRequest(
+    return util.GetClient().projects_sinks.Get(
+        util.GetMessages().LoggingProjectsSinksGetRequest(
             sinkName=util.CreateResourceName(
                 'projects/{0}'.format(sink_ref.projectsId), 'sinks',
                 sink_ref.sinksId)))

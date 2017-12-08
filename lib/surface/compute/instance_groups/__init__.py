@@ -16,10 +16,9 @@ from googlecloudsdk.calliope import base
 
 
 class InstanceGroups(base.Group):
-  """Read and manipulate Google Compute Engine instance groups."""
+  """Read and manipulate Google Compute Engine instance groups.
 
-
-InstanceGroups.detailed_help = {
-    'brief': (
-        'Read and manipulate Google Compute Engine instance groups'),
-}
+  Read and manipulate Google Compute Engine instance groups. To accommodate the
+  differences between managed and unmanaged instances, some commands (such as
+  `delete`) are in the managed or unmanaged subgroups.
+  """
