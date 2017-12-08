@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import backend_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.third_party.py27 import py27_copy as copy
@@ -174,6 +175,7 @@ class UpdateBackendBeta(UpdateBackend):
     backend_flags.AddCapacityScalar(parser)
 
   def CreateGroupReference(self, args):
+    """Overrides."""
     return instance_groups_utils.CreateInstanceGroupReference(
         scope_prompter=self,
         compute=self.compute,
@@ -194,22 +196,20 @@ class UpdateBackendAlpha(UpdateBackend):
   def Args(cls, parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     backend_flags.AddDescription(parser)
-    backend_flags.AddInstanceGroup(
-        parser, operation_type='update', multizonal=True)
+    flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(
+        parser, operation_type='update')
     backend_flags.AddBalancingMode(parser)
     backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
 
   def CreateGroupReference(self, args):
-    return instance_groups_utils.CreateInstanceGroupReference(
-        scope_prompter=self,
-        compute=self.compute,
-        resources=self.resources,
-        name=args.instance_group,
-        region=args.instance_group_region,
-        zone=args.instance_group_zone,
-        zonal_resource_type='instanceGroups',
-        regional_resource_type='regionInstanceGroups')
+    """Overrides."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    return flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
+        args, holder.resources,
+        default_scope=compute_flags.ScopeEnum.ZONE,
+        scope_lister=compute_flags.GetDefaultScopeLister(
+            holder.client, self.project))
 
 
 def _ClearMutualExclusiveBackendCapacityThresholds(backend):

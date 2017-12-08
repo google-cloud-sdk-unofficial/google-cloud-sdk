@@ -16,7 +16,7 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
-from googlecloudsdk.core.resource import resource_registry
+from googlecloudsdk.core.resource import resource_info
 from googlecloudsdk.core.updater import snapshots
 from googlecloudsdk.core.updater import update_manager
 
@@ -60,7 +60,7 @@ class List(base.ListCommand):
     return repos if repos else []
 
   def ResourceInfo(self, args):
-    return resource_registry.ResourceInfo(
+    return resource_info.ResourceInfo(
         list_format="""
           table(
             .:label=REPOSITORY,

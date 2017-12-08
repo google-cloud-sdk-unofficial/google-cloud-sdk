@@ -159,13 +159,15 @@ class RemoveBackendBeta(RemoveBackend):
         with_deprecated_zone=True)
 
   def CreateGroupReference(self, args):
+    """Overrides."""
     return instance_groups_utils.CreateInstanceGroupReference(
         scope_prompter=self,
         compute=self.compute,
         resources=self.resources,
         name=args.instance_group,
         region=args.instance_group_region,
-        zone=args.instance_group_zone,
+        zone=(args.instance_group_zone
+              if args.instance_group_zone else args.zone),
         zonal_resource_type='instanceGroups',
         regional_resource_type='regionInstanceGroups')
 
@@ -186,5 +188,14 @@ class RemoveBackendAlpha(RemoveBackendBeta):
   @classmethod
   def Args(cls, parser):
     cls._BACKEND_SERVICE_ARG.AddArgument(parser)
-    backend_flags.AddInstanceGroup(
-        parser, operation_type='remove from', multizonal=True)
+    flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(
+        parser, operation_type='remove')
+
+  def CreateGroupReference(self, args):
+    """Overrides."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    return flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
+        args, holder.resources,
+        default_scope=compute_flags.ScopeEnum.ZONE,
+        scope_lister=compute_flags.GetDefaultScopeLister(
+            holder.client, self.project))

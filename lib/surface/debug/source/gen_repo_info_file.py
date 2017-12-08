@@ -18,6 +18,7 @@ import json
 import os
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 from googlecloudsdk.third_party.appengine.tools import context_util
 
@@ -66,6 +67,13 @@ class GenRepoInfoFile(base.Command):
     output_directory = args.output_directory
     output_file = os.path.join(output_directory, output_file)
 
+    if context_util.HasPendingChanges(args.source_directory):
+      log.warn(
+          'There are uncommitted changes in directory [{0}].\n'
+          'The generated source context files will not reflect the current '
+          'state of your source code.\n'
+          'For best results, commit all changes and re-run this command.\n'
+          .format(args.source_directory))
     best_context = context_util.BestSourceContext(contexts,
                                                   args.source_directory)
     files.MakeDir(output_directory)

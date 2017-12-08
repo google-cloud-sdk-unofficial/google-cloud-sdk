@@ -65,6 +65,7 @@ class Wait(_BaseWait, base.Command):
           command.
     """
     sql_client = self.context['sql_client']
+    sql_messages = self.context['sql_messages']
     resources = self.context['registry']
 
     validate.ValidateInstanceName(args.instance)
@@ -79,7 +80,11 @@ class Wait(_BaseWait, base.Command):
       operations.OperationsV1Beta3.WaitForOperation(
           sql_client, operation_ref,
           'Waiting for [{operation}]'.format(operation=operation_ref))
-      yield sql_client.operations.Get(operation_ref.Request())
+      yield sql_client.operations.Get(
+          sql_messages.SqlOperationsGetRequest(
+              project=operation_ref.project,
+              instance=operation_ref.instance,
+              operation=operation_ref.operation))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -119,6 +124,7 @@ class WaitBeta(_BaseWait, base.Command):
           command.
     """
     sql_client = self.context['sql_client']
+    sql_messages = self.context['sql_messages']
     resources = self.context['registry']
 
     for op in args.operation:
@@ -129,4 +135,7 @@ class WaitBeta(_BaseWait, base.Command):
       operations.OperationsV1Beta4.WaitForOperation(
           sql_client, operation_ref,
           'Waiting for [{operation}]'.format(operation=operation_ref))
-      yield sql_client.operations.Get(operation_ref.Request())
+      yield sql_client.operations.Get(
+          sql_messages.SqlOperationsGetRequest(
+              project=operation_ref.project,
+              operation=operation_ref.operation))

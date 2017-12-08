@@ -83,7 +83,10 @@ class CreateBeta(base.CreateCommand):
                                      project=instance_ref.project,
                                      instance=instance_ref.instance)
     if args.async:
-      result = sql_client.operations.Get(operation_ref.Request())
+      result = sql_client.operations.Get(
+          sql_messages.SqlOperationsGetRequest(
+              project=operation_ref.project,
+              operation=operation_ref.operation))
     else:
       operations.OperationsV1Beta4.WaitForOperation(
           sql_client, operation_ref, 'Creating Cloud SQL user')

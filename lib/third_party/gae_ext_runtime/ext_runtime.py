@@ -16,7 +16,6 @@
 import json
 import logging
 import os
-import shutil
 import subprocess
 import sys
 import threading
@@ -80,35 +79,6 @@ class Params(object):
             'custom': self.custom,
             'runtime': self.runtime,
             'deploy': self.deploy}
-
-
-class Cleaner(object):
-  """Class to manage cleanup of a set of files.
-
-  Instances of this class are callable, when called they delete all of the
-  files.
-  """
-
-  def __init__(self):
-    self.__files = []
-
-  def Add(self, filename):
-    self.__files.append(filename)
-
-  def HasFiles(self):
-    """Returns true if the cleaner has files in it (would delete something)."""
-    return self.__files
-
-  def GetFiles(self):
-    """Returns the list of files in the cleaner."""
-    return self.__files
-
-  def __call__(self):
-    for filename in self.__files:
-      try:
-        os.remove(filename)
-      except (OSError, IOError) as ex:
-        logging.error('Error deleting [%s]: %s', filename, ex)
 
 
 class Configurator(object):
@@ -281,8 +251,17 @@ class ExternalRuntimeConfigurator(Configurator):
     # generation.
     if not self.params.appinfo and self.generated_appinfo:
       self.params.appinfo = comm.dict_to_object(self.generated_appinfo)
-
     return self.runtime.GenerateConfigs(self)
+
+  def GenerateConfigData(self):
+    self.MaybeWriteAppYaml()
+
+    # At this point, if we have don't have appinfo, but we do have generated
+    # appinfo, we want to use the generated appinfo and pass it to config
+    # generation.
+    if not self.params.appinfo and self.generated_appinfo:
+      self.params.appinfo = comm.dict_to_object(self.generated_appinfo)
+    return self.runtime.GenerateConfigData(self)
 
 
 def _NormalizePath(basedir, pathname):
@@ -571,7 +550,6 @@ class ExternalizedRuntime(object):
       # away with this without locking because we pass it into the thread at
       # creation and do not use it again until after we've joined the thread.
       result = PluginResult()
-
       p = subprocess.Popen([self.env.GetPythonExecutable(), normalized_path] +
                            (args if args else []),
                            stdout=subprocess.PIPE,
@@ -650,7 +628,7 @@ class ExternalizedRuntime(object):
     """Perform any additional build behavior before the application is deployed.
 
     Args:
-      configurator: (ExternalRuntimeConfiguration) The configurator returned by
+      configurator: (ExternalRuntimeConfigurator) The configurator returned by
       Detect().
     """
     prebuild = self.config.get('prebuild')
@@ -666,6 +644,74 @@ class ExternalizedRuntime(object):
   # b/25117700
   Fingerprint = Detect
 
+  def GetAllConfigFiles(self, configurator):
+    """Generate list of GeneratedFile objects.
+
+    Args:
+      configurator: Configurator, the runtime configurator
+
+    Returns:
+      [GeneratedFile] a list of GeneratedFile objects.
+
+    Raises:
+      InvalidRuntimeDefinition: For a variety of problems with the runtime
+        definition.
+    """
+
+    generate_configs = self.config.get('generateConfigs')
+    if generate_configs:
+      files_to_copy = generate_configs.get('filesToCopy')
+      if files_to_copy:
+        all_config_files = []
+
+        # Make sure there's nothing else.
+        if len(generate_configs) != 1:
+          raise InvalidRuntimeDefinition('If "files_to_copy" is specified, '
+                                         'it must be the only field in '
+                                         'generate_configs.')
+        for filename in files_to_copy:
+          full_name = _NormalizePath(self.root, filename)
+          if not os.path.isfile(full_name):
+            raise InvalidRuntimeDefinition('File [%s] specified in '
+                                           'files_to_copy, but is not in '
+                                           'the runtime definition.' %
+                                           filename)
+          with open(full_name, 'r') as file_to_read:
+            file_contents = file_to_read.read()
+          all_config_files.append(GeneratedFile(filename, file_contents))
+        return all_config_files
+      else:
+        result = self.RunPlugin('generate_configs', generate_configs,
+                                configurator.params,
+                                runtime_data=configurator.data)
+        return result.files
+
+  def GenerateConfigData(self, configurator):
+    """Do config generation on the runtime, return file objects.
+
+    Args:
+      configurator: (ExternalRuntimeConfigurator) The configurator retuned by
+        Detect().
+
+    Returns:
+      [GeneratedFile] list of generated file objects.
+    """
+    # Log or print status messages depending on whether we're in gen-config or
+    # deploy.
+    notify = logging.info if configurator.params.deploy else self.env.Print
+    all_config_files = self.GetAllConfigFiles(configurator)
+    if all_config_files is None:
+      return []
+    for config_file in all_config_files:
+      if config_file.filename == 'app.yaml':
+        config_file.WriteTo(configurator.path, notify)
+    config_files = []
+    for config_file in all_config_files:
+      if not os.path.exists(_NormalizePath(configurator.path,
+                                           config_file.filename)):
+        config_files.append(config_file)
+    return config_files
+
   def GenerateConfigs(self, configurator):
     """Do config generation on the runtime.
 
@@ -677,56 +723,19 @@ class ExternalizedRuntime(object):
         Detect().
 
     Returns:
-      (Cleaner) The cleaner for the generated files.
-
-    Raises:
-      InvalidRuntimeDefinition: For a variety of problems with the runtime
-        definition.
+      (bool) True if files were generated, False if not
     """
     # Log or print status messages depending on whether we're in gen-config or
     # deploy.
     notify = logging.info if configurator.params.deploy else self.env.Print
+    all_config_files = self.GetAllConfigFiles(configurator)
+    if all_config_files is None:
+      return
+    created = False
+    for gen_file in all_config_files:
+      if gen_file.WriteTo(configurator.path, notify) is not None:
+        created = True
+    if not created:
+      notify('All config files already exist, not generating anything.')
+    return created
 
-    generate_configs = self.config.get('generateConfigs')
-    if generate_configs:
-      cleaner = Cleaner()
-      files_to_copy = generate_configs.get('filesToCopy')
-      if files_to_copy:
-
-        # Make sure there's nothing else.
-        if len(generate_configs) != 1:
-          raise InvalidRuntimeDefinition('If "files_to_copy" is specified, '
-                                         'it must be the only field in '
-                                         'generate_configs.')
-
-        for filename in files_to_copy:
-          full_name = _NormalizePath(self.root, filename)
-          if not os.path.isfile(full_name):
-            raise InvalidRuntimeDefinition('File [%s] specified in '
-                                           'files_to_copy, but is not in '
-                                           'the runtime definition.' %
-                                           filename)
-
-          dest_path = _NormalizePath(configurator.path, filename)
-          if not os.path.exists(dest_path):
-            notify(WRITING_FILE_MESSAGE.format(filename, configurator.path))
-            cleaner.Add(dest_path)
-            shutil.copy(full_name, dest_path)
-          else:
-            notify(FILE_EXISTS_MESSAGE.format(filename))
-      else:
-        result = self.RunPlugin('generate_configs', generate_configs,
-                                configurator.params,
-                                runtime_data=configurator.data)
-        for file_info in result.files:
-          dest_filename = file_info.WriteTo(configurator.path, notify)
-
-          # Cleanup everything except app.yaml files - these are never
-          # temporary.
-          if dest_filename and file_info.filename != 'app.yaml':
-            cleaner.Add(dest_filename)
-
-      if not cleaner.HasFiles():
-        notify('All config files already exist, not generating anything.')
-
-      return cleaner

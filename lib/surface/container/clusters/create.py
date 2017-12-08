@@ -185,6 +185,7 @@ class Create(base.CreateCommand):
     flags.AddLocalSSDFlag(parser, suppressed=True)
     flags.AddEnableKubernetesAlphaFlag(parser, suppressed=True)
     flags.AddClusterVersionFlag(parser, 'master and nodes', True)
+    flags.AddPreemptibleFlag(parser, suppressed=True)
 
   def ParseCreateOptions(self, args):
     if not args.scopes:
@@ -214,7 +215,8 @@ class Create(base.CreateCommand):
         max_nodes=args.max_nodes,
         min_nodes=args.min_nodes,
         image_type=args.image_type,
-        max_nodes_per_pool=args.max_nodes_per_pool)
+        max_nodes_per_pool=args.max_nodes_per_pool,
+        preemptible=args.preemptible)
 
   def Collection(self):
     return 'container.projects.zones.clusters'
@@ -288,6 +290,7 @@ class CreateBeta(Create):
     flags.AddLocalSSDFlag(parser)
     flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddClusterVersionFlag(parser, 'master and nodes')
+    flags.AddPreemptibleFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -301,3 +304,4 @@ class CreateAlpha(Create):
     flags.AddLocalSSDFlag(parser)
     flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddClusterVersionFlag(parser, 'master and nodes')
+    flags.AddPreemptibleFlag(parser)

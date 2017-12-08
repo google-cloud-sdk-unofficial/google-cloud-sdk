@@ -43,22 +43,26 @@ def _ReadInstances(input_file=None, data_format=None):
   line_num = 0
 
   for line_num, line in enumerate(input_file):
+    line_content = line.rstrip('\n')
+    if not line_content:
+      raise InvalidInstancesFileError('Empty line is not allowed in the '
+                                      'instances file.')
     if line_num > 100:
       raise InvalidInstancesFileError(
           'Online prediction can process no more than 100 '
           'instances per file. Please use batch prediction instead.')
     if data_format == 'json':
       try:
-        instances.append(json.loads(line.rstrip('\n')))
+        instances.append(json.loads(line_content))
       except ValueError:
         raise InvalidInstancesFileError(
             'Input instances are not in JSON format. '
             'See "gcloud beta ml predict --help" for details.')
     elif data_format == 'text':
-      instances.append(line.rstrip('\n'))
+      instances.append(line_content)
 
   if not instances:
-    raise InvalidInstancesFileError('Input file is empty.')
+    raise InvalidInstancesFileError('No valid instance was found.')
 
   return instances
 

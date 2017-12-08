@@ -79,6 +79,9 @@ class DeleteBeta(base.DeleteCommand):
                                      project=instance_ref.project,
                                      instance=instance_ref.instance,)
     if args.async:
-      return sql_client.operations.Get(operation_ref.Request())
+      return sql_client.operations.Get(
+          sql_messages.SqlOperationsGetRequest(
+              project=operation_ref.project,
+              operation=operation_ref.operation))
     operations.OperationsV1Beta4.WaitForOperation(sql_client, operation_ref,
                                                   'Deleting Cloud SQL user')

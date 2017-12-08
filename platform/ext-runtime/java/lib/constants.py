@@ -13,8 +13,14 @@
 # limitations under the License.
 """Constants shared by plugin and tests."""
 
+# rutimes based on appengine-java-vm-runtime GitHub repo
 DOCKERFILE_JAVA8_PREAMBLE = 'FROM gcr.io/google_appengine/openjdk8\n'
 DOCKERFILE_JETTY9_PREAMBLE = 'FROM gcr.io/google_appengine/jetty9\n'
+
+# runtimes based on openjdk-runtime and jetty-runtime GitHub repos
+DOCKERFILE_JAVA_PREAMBLE = 'FROM gcr.io/google_appengine/openjdk\n'
+DOCKERFILE_JETTY_PREAMBLE = 'FROM gcr.io/google_appengine/jetty\n'
+
 DOCKERFILE_LEGACY_PREAMBLE = 'FROM gcr.io/google_appengine/java-compat\n'
 DOCKERFILE_COMPAT_PREAMBLE = 'FROM gcr.io/google_appengine/jetty9-compat\n'
 DOCKERFILE_CMD = 'CMD {0}\n'

@@ -133,6 +133,7 @@ class Create(base.CreateCommand):
     _Args(parser)
     flags.AddClusterAutoscalingFlags(parser, suppressed=True)
     flags.AddLocalSSDFlag(parser, suppressed=True)
+    flags.AddPreemptibleFlag(parser, for_node_pool=True, suppressed=True)
 
   def ParseCreateNodePoolOptions(self, args):
     return api_adapter.CreateNodePoolOptions(
@@ -147,7 +148,8 @@ class Create(base.CreateCommand):
         enable_autoscaling=args.enable_autoscaling,
         max_nodes=args.max_nodes,
         min_nodes=args.min_nodes,
-        image_type=args.image_type)
+        image_type=args.image_type,
+        preemptible=args.preemptible)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -201,6 +203,7 @@ class CreateBeta(Create):
     _Args(parser)
     flags.AddClusterAutoscalingFlags(parser, suppressed=True)
     flags.AddLocalSSDFlag(parser)
+    flags.AddPreemptibleFlag(parser, for_node_pool=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -212,6 +215,7 @@ class CreateAlpha(Create):
     _Args(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDFlag(parser)
+    flags.AddPreemptibleFlag(parser, for_node_pool=True)
 
 
 Create.detailed_help = DETAILED_HELP

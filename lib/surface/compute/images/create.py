@@ -14,6 +14,7 @@
 """Command for creating images."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import csek_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -25,6 +26,8 @@ from googlecloudsdk.command_lib.compute.images import flags
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base_classes.BaseAsyncCreator):
   """Create Google Compute Engine images."""
+
+  _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = False
 
   @staticmethod
   def Args(parser):
@@ -83,6 +86,19 @@ class Create(base_classes.BaseAsyncCreator):
         sourceType=self.messages.Image.SourceTypeValueValuesEnum.RAW,
         family=args.family)
 
+    if hasattr(args, 'csek_key_file'):
+      csek_keys = csek_utils.CsekKeyStore.FromArgs(
+          args, self._ALLOW_RSA_ENCRYPTED_CSEK_KEYS)
+    else:
+      csek_keys = None
+
+    if csek_keys:
+      image_ref = self.resources.Parse(args.name, collection='compute.images')
+      image.imageEncryptionKey = csek_utils.MaybeToMessage(
+          csek_keys.LookupKey(image_ref,
+                              raise_if_missing=args.require_csek_key_create),
+          self.compute_client.apitools_client)
+
     # Validate parameters.
     if args.source_disk_zone and not args.source_disk:
       raise exceptions.ToolException(
@@ -103,6 +119,8 @@ class Create(base_classes.BaseAsyncCreator):
           scope_lister=compute_flags.GetDefaultScopeLister(
               self.compute_client, self.project))
       image.sourceDisk = source_disk_ref.SelfLink()
+      image.sourceDiskEncryptionKey = csek_utils.MaybeLookupKeyMessage(
+          csek_keys, source_disk_ref, self.compute_client.apitools_client)
 
     if args.licenses:
       image.licenses = args.licenses
@@ -117,9 +135,14 @@ class Create(base_classes.BaseAsyncCreator):
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CreateBeta(Create):
 
+  # Used in CreateRequests. We only want to allow RSA key wrapping in
+  # alpha/beta, *not* GA.
+  _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = True
+
   @staticmethod
   def Args(parser):
     Create.Args(parser)
+    csek_utils.AddCsekKeyArgs(parser, resource_type='image')
 
 
 Create.detailed_help = {

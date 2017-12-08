@@ -178,11 +178,18 @@ class Clone(_BaseClone, base.Command):
     )
 
     if args.async:
-      return sql_client.operations.Get(operation_ref.Request())
+      return sql_client.operations.Get(
+          sql_messages.SqlOperationsGetRequest(
+              project=operation_ref.project,
+              instance=operation_ref.instance,
+              operation=operation_ref.operation))
     operations.OperationsV1Beta3.WaitForOperation(sql_client, operation_ref,
                                                   'Cloning Cloud SQL instance')
     log.CreatedResource(destination_instance_ref)
-    rsource = sql_client.instances.Get(destination_instance_ref.Request())
+    rsource = sql_client.instances.Get(
+        sql_messages.SqlInstancesGetRequest(
+            project=destination_instance_ref.project,
+            instance=destination_instance_ref.instance))
     cache = remote_completion.RemoteCompletion()
     cache.AddToCache(destination_instance_ref.SelfLink())
     return rsource
@@ -245,11 +252,17 @@ class CloneBeta(_BaseClone, base.Command):
     )
 
     if args.async:
-      return sql_client.operations.Get(operation_ref.Request())
+      return sql_client.operations.Get(
+          sql_messages.SqlOperationsGetRequest(
+              project=operation_ref.project,
+              operation=operation_ref.operation))
     operations.OperationsV1Beta4.WaitForOperation(sql_client, operation_ref,
                                                   'Cloning Cloud SQL instance')
     log.CreatedResource(destination_instance_ref)
-    rsource = sql_client.instances.Get(destination_instance_ref.Request())
+    rsource = sql_client.instances.Get(
+        sql_messages.SqlInstancesGetRequest(
+            project=destination_instance_ref.project,
+            instance=destination_instance_ref.instance))
     cache = remote_completion.RemoteCompletion()
     cache.AddToCache(destination_instance_ref.SelfLink())
     return rsource

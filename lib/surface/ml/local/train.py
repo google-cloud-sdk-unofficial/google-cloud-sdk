@@ -92,4 +92,5 @@ class RunLocal(base.Command):
         log.warn(_BAD_FLAGS_WARNING_MESSAGE.format(flag='--worker-count'))
       local_train.MakeProcess(args.module_name,
                               package_root,
-                              args=args.user_args).wait()
+                              args=args.user_args,
+                              task_type='master')

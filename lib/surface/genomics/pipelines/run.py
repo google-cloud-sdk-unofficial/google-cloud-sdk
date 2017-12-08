@@ -196,9 +196,11 @@ class Run(base.SilentCommand):
         help='''List of additional scopes to be made available for this service
              account. The following scopes are always requested:
 
-             https://www.googleapis.com/auth/genomics
              https://www.googleapis.com/auth/compute
-             https://www.googleapis.com/auth/devstorage.full_control''')
+             https://www.googleapis.com/auth/devstorage.full_control
+             https://www.googleapis.com/auth/genomics
+             https://www.googleapis.com/auth/logging.write
+             https://www.googleapis.com/auth/monitoring.write''')
 
     parser.add_argument(
         '--zones',

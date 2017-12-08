@@ -25,7 +25,7 @@ class Set(utils.ForwardingRulesTargetMutator):
   @staticmethod
   def Args(parser):
     flags.AddCommonFlags(parser)
-    flags.AddUpdateArgs(parser, include_beta_targets=False)
+    flags.AddUpdateArgs(parser, include_beta=False)
 
   @property
   def method(self):
@@ -67,14 +67,24 @@ class Set(utils.ForwardingRulesTargetMutator):
     return [request]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SetBeta(Set):
   """Modify a forwarding rule to direct network traffic to a new target."""
 
   @staticmethod
   def Args(parser):
     flags.AddCommonFlags(parser)
-    flags.AddUpdateArgs(parser, include_beta_targets=True)
+    flags.AddUpdateArgs(parser, include_beta=True)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SetAlpha(Set):
+  """Modify a forwarding rule to direct network traffic to a new target."""
+
+  @staticmethod
+  def Args(parser):
+    flags.AddCommonFlags(parser)
+    flags.AddUpdateArgs(parser, include_beta=True)
 
 
 Set.detailed_help = {

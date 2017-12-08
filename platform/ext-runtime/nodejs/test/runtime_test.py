@@ -40,12 +40,12 @@ class RuntimeTests(testutil.TestBase):
 
     def test_node_js_server_js_only(self):
         self.write_file('server.js', 'fake contents')
-        cleaner = self.generate_configs()
+        self.generate_configs()
         self.assert_file_exists_with_contents(
             'app.yaml',
             self.read_dist_file('data', 'app.yaml').format(runtime='nodejs'))
 
-        cleaner = self.generate_configs(deploy=True)
+        self.generate_configs(deploy=True)
         self.assert_file_exists_with_contents(
             'Dockerfile',
             self.read_dist_file('data', 'Dockerfile') + textwrap.dedent("""\
@@ -55,9 +55,38 @@ class RuntimeTests(testutil.TestBase):
         self.assert_file_exists_with_contents(
             '.dockerignore',
             self.read_dist_file('data', 'dockerignore'))
-        self.assertEqual(cleaner.GetFiles(),
-                        [self.full_path('Dockerfile'),
-                         self.full_path('.dockerignore')])
+        self.assertEqual(set(os.listdir(self.temp_path)),
+                         {'Dockerfile', '.dockerignore', 'app.yaml',
+                          'server.js'})
+
+    def test_node_js_server_js_only_no_write(self):
+        """Test generate_config_data with only .js files.
+
+        After running generate_configs(), app.yaml exists; after
+        generate_config_data(), only app.yaml should exist on disk --
+        Dockerfile and .dockerignore should be returned by the method."""
+        self.write_file('server.js', 'fake contents')
+        self.generate_configs()
+        self.assert_file_exists_with_contents(
+            'app.yaml',
+            self.read_dist_file('data', 'app.yaml').format(runtime='nodejs'))
+
+        cfg_files = self.generate_config_data(deploy=True)
+        self.assert_genfile_exists_with_contents(
+            cfg_files,
+            'Dockerfile',
+            self.read_dist_file('data', 'Dockerfile') + textwrap.dedent("""\
+                COPY . /app/
+                CMD node server.js
+                """))
+        self.assert_genfile_exists_with_contents(
+            cfg_files,
+            '.dockerignore',
+            self.read_dist_file('data', 'dockerignore'))
+        self.assertEqual(set(os.listdir(self.temp_path)),
+                         {'app.yaml', 'server.js'})
+        self.assertEqual({f.filename for f in cfg_files},
+                         {'Dockerfile', '.dockerignore'})
 
     def test_node_js_package_json(self):
         self.write_file('foo.js', 'bogus contents')
@@ -67,7 +96,7 @@ class RuntimeTests(testutil.TestBase):
             'app.yaml',
             self.read_dist_file('data', 'app.yaml').format(runtime='nodejs'))
 
-        cleaner = self.generate_configs(deploy=True)
+        self.generate_configs(deploy=True)
 
         base_dockerfile = self.read_dist_file('data', 'Dockerfile')
         self.assert_file_exists_with_contents(
@@ -78,9 +107,70 @@ class RuntimeTests(testutil.TestBase):
         self.assert_file_exists_with_contents(
             '.dockerignore',
             self.read_dist_file('data', 'dockerignore'))
-        self.assertEqual(cleaner.GetFiles(),
-                         [self.full_path('Dockerfile'),
-                          self.full_path('.dockerignore')])
+        self.assertEqual(set(os.listdir(self.temp_path)),
+                         {'Dockerfile', '.dockerignore', 'app.yaml',
+                          'foo.js', 'package.json'})
+
+    def test_node_js_package_json_no_write(self):
+        """Test generate_config_data with a nodejs file and package.json."""
+        self.write_file('foo.js', 'bogus contents')
+        self.write_file('package.json', '{"scripts": {"start": "foo.js"}}')
+        self.generate_configs()
+        self.assert_file_exists_with_contents(
+            'app.yaml',
+            self.read_dist_file('data', 'app.yaml').format(runtime='nodejs'))
+
+        cfg_files = self.generate_config_data(deploy=True)
+
+        base_dockerfile = self.read_dist_file('data', 'Dockerfile')
+        self.assert_genfile_exists_with_contents(
+            cfg_files,
+            'Dockerfile',
+            base_dockerfile + 'COPY . /app/\n' +
+            self.read_dist_file('data', 'package-json-install') +
+            'CMD npm start\n')
+        self.assert_genfile_exists_with_contents(
+            cfg_files,
+            '.dockerignore',
+            self.read_dist_file('data', 'dockerignore'))
+        self.assertEqual(set(os.listdir(self.temp_path)),
+                         {'app.yaml', 'foo.js', 'package.json'})
+        self.assertEqual({f.filename for f in cfg_files},
+                         {'Dockerfile', '.dockerignore'})
+
+    def test_detect_basic(self):
+        """Ensure that appinfo will be generated in detect method."""
+        self.write_file('foo.js', 'bogus contents')
+        self.write_file('package.json', '{"scripts": {"start": "foo.js"}}')
+        configurator = self.detect()
+        self.assertEqual(configurator.generated_appinfo,
+                         {u'runtime': 'nodejs',
+                          u'vm': True})
+
+    def test_detect_custom(self):
+        """Ensure that appinfo is correct with custom=True."""
+        self.write_file('foo.js', 'bogus contents')
+        self.write_file('package.json', '{"scripts": {"start": "foo.js"}}')
+        configurator = self.detect(custom=True)
+        self.assertEqual(configurator.generated_appinfo,
+                         {'runtime': 'custom',
+                          'vm': True})
+
+    def test_detect_no_start_no_server(self):
+        """Ensure that detect fails if no scripts.start field, no server.js."""
+        self.write_file('foo.js', 'bogus contents')
+        self.write_file('package.json', '{"scripts": {"not-start": "foo.js"}}')
+        configurator = self.detect()
+        self.assertEqual(configurator, None)
+
+    def test_detect_no_start_with_server(self):
+        """Ensure appinfo generated if no scripts.start, server.js exists."""
+        self.write_file('server.js', 'bogus contents')
+        self.write_file('package.json', '{"scripts": {"start": "foo.js"}}')
+        configurator = self.detect()
+        self.assertEqual(configurator.generated_appinfo,
+                         {'runtime': 'nodejs',
+                          'vm': True})
 
     def test_node_js_with_engines(self):
         self.write_file('foo.js', 'bogus contents')
@@ -100,28 +190,62 @@ class RuntimeTests(testutil.TestBase):
         else:
             self.fail('node install line not generated')
 
+    def test_node_js_with_engines_no_write(self):
+        """Test generate_config_data with 'engines' in package.json."""
+        self.write_file('foo.js', 'bogus contents')
+        self.write_file('package.json',
+                        '{"scripts": {"start": "foo.js"},'
+                        '"engines": {"node": "0.12.3"}}')
+        cfg_files = self.generate_config_data(deploy=True)
+        self.assertIn('Dockerfile', [f.filename for f in cfg_files])
+
+        # This just verifies that the crazy node install line is generated, it
+        # says nothing about whether or not it works.
+        rx = re.compile(r'RUN npm install')
+        line_generated = False
+        for cfg_file in cfg_files:
+            if cfg_file.filename == 'Dockerfile':
+                for line in cfg_file.contents.split('\n'):
+                    if rx.match(line):
+                        line_generated = True
+        if not line_generated:
+            self.fail('node install line not generated')
+
     def test_node_js_custom_runtime(self):
         self.write_file('server.js', 'fake contents')
-        cleaner = self.generate_configs(custom=True)
+        self.generate_configs(custom=True)
         self.assert_file_exists_with_contents(
             'app.yaml',
             self.read_dist_file('data', 'app.yaml').format(runtime='custom'))
-        self.assertEqual(sorted(cleaner.GetFiles()),
-                         [os.path.join(self.temp_path, '.dockerignore'),
-                          os.path.join(self.temp_path, 'Dockerfile')])
-        cleaner()
         self.assertEqual(sorted(os.listdir(self.temp_path)),
-                         ['app.yaml', 'server.js'])
+                         ['.dockerignore', 'Dockerfile', 'app.yaml',
+                          'server.js'])
+
+    def test_node_js_custom_runtime_no_write(self):
+        """Test generate_config_data with custom runtime.
+
+        Should generate an app.yaml on disk, the Dockerfile and
+        .dockerignore in memory."""
+        self.write_file('server.js', 'fake contents')
+        cfg_files = self.generate_config_data(custom=True)
+        self.assert_file_exists_with_contents(
+            'app.yaml',
+            self.read_dist_file('data', 'app.yaml').format(runtime='custom'))
+        self.assertEqual(set(os.listdir(self.temp_path)),
+                         {'app.yaml', 'server.js'})
+        self.assertEqual({f.filename for f in cfg_files},
+                         {'Dockerfile', '.dockerignore'})
 
     def test_node_js_runtime_field(self):
         self.write_file('server.js', 'fake contents')
         config = testutil.AppInfoFake(runtime='nodejs')
-        self.assertTrue(self.generate_configs(appinfo=config))
+        self.generate_configs(appinfo=config, deploy=True)
+        self.assertTrue(os.path.exists(self.full_path('Dockerfile')))
 
     def test_node_js_custom_runtime_field(self):
         self.write_file('server.js', 'fake contents')
         config = testutil.AppInfoFake(runtime='custom')
-        self.assertTrue(self.generate_configs(appinfo=config))
+        self.assertTrue(self.generate_configs(appinfo=config, deploy=True))
 
     def test_invalid_package_json(self):
         self.write_file('package.json', '')
@@ -188,7 +312,7 @@ class FailureLoggingTests(testutil.TestBase):
                              {'debug': self.debug_fake}):
             self.generate_configs()
         self.assertTrue(self.debug[0].startswith(
-            'node.js checker: error accesssing package.json'))
+            'node.js checker: error accessing package.json'))
 
         variations = [
             (testutil.AppInfoFake(runtime='nodejs'), None),
@@ -201,7 +325,7 @@ class FailureLoggingTests(testutil.TestBase):
                 self.generate_configs(appinfo=appinfo, runtime=runtime)
 
             self.assertTrue(self.errors[0].startswith(
-                'node.js checker: error accesssing package.json'))
+                'node.js checker: error accessing package.json'))
 
     def test_no_startup_script(self):
         with mock.patch.dict(ext_runtime._LOG_FUNCS,
@@ -226,5 +350,6 @@ class FailureLoggingTests(testutil.TestBase):
 
 if __name__ == '__main__':
   unittest.main()
+
 
 

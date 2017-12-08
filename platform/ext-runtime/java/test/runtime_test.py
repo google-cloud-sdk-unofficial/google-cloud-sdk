@@ -66,7 +66,7 @@ class RuntimeTests(testutil.TestBase):
         self.assert_no_file('Dockerfile')
         self.assert_no_file('.dockerignore')
 
-        cleaner = self.generate_configs(deploy=True)
+        self.generate_configs(deploy=True)
 
         self.assert_file_exists_with_contents(
             '.dockerignore',
@@ -79,10 +79,38 @@ class RuntimeTests(testutil.TestBase):
         self.assert_file_exists_with_contents('Dockerfile',
                                               ''.join(dockerfile_contents))
 
-        # Verify cleanup. TODO(ludo): refactor this and do it for all tests.
-        cleaner()
-        self.assertEqual(
-            sorted(os.listdir(self.temp_path)), ['app.yaml', 'foo.jar'])
+        self.assertEqual(set(os.listdir(self.temp_path)),
+                         {'.dockerignore', 'Dockerfile', 'app.yaml', 'foo.jar'})
+
+    def test_java_all_defaults_no_write(self):
+        """Test generate_config_data after writing app.yaml."""
+        self.write_file('foo.jar', '')
+
+        self.generate_configs()
+
+        self.assert_file_exists_with_contents('app.yaml',
+                                              self.make_app_yaml('java'))
+        self.assert_no_file('Dockerfile')
+        self.assert_no_file('.dockerignore')
+
+        cfg_files = self.generate_config_data(deploy=True)
+
+        self.assert_genfile_exists_with_contents(
+            cfg_files,
+            '.dockerignore',
+            self.read_runtime_def_file('data', 'dockerignore'))
+        dockerfile_contents = [
+            constants.DOCKERFILE_JAVA8_PREAMBLE,
+            constants.DOCKERFILE_INSTALL_APP.format('foo.jar'),
+            constants.DOCKERFILE_JAVA8_JAR_CMD.format('foo.jar'),
+        ]
+        self.assert_genfile_exists_with_contents(
+            cfg_files,
+            'Dockerfile',
+            ''.join(dockerfile_contents))
+
+        self.assertEqual(set(os.listdir(self.temp_path)),
+                         {'app.yaml', 'foo.jar'})
 
     def test_java_custom(self):
         self.write_file('foo.jar', '')
@@ -102,9 +130,36 @@ class RuntimeTests(testutil.TestBase):
         self.assert_file_exists_with_contents('Dockerfile',
                                               ''.join(dockerfile_contents))
 
+    def test_java_custom_no_write(self):
+        """Test generate_config_data with custom=True.
+
+        app.yaml should be written to disk. Also tests correct dockerfile
+        contents with a .jar.
+        """
+        self.write_file('foo.jar', '')
+        cfg_files = self.generate_config_data(deploy=False, custom=True)
+
+        self.assert_file_exists_with_contents('app.yaml',
+                                              self.make_app_yaml('custom'))
+
+        self.assert_genfile_exists_with_contents(
+            cfg_files,
+            '.dockerignore',
+            self.read_runtime_def_file('data', 'dockerignore'))
+        dockerfile_contents = [
+            constants.DOCKERFILE_JAVA8_PREAMBLE,
+            constants.DOCKERFILE_INSTALL_APP.format('foo.jar'),
+            constants.DOCKERFILE_JAVA8_JAR_CMD.format('foo.jar'),
+        ]
+        self.assert_genfile_exists_with_contents(
+            cfg_files,
+            'Dockerfile',
+            ''.join(dockerfile_contents))
+
     def test_java_files_no_java(self):
         self.write_file('foo.nojava', '')
-        self.assertIsNone(self.generate_configs())
+        self.assertFalse(self.generate_configs())
+        self.assertEqual(os.listdir(self.temp_path), ['foo.nojava'])
 
     def test_java_files_with_war(self):
         self.write_file('foo.war', '')
@@ -124,6 +179,30 @@ class RuntimeTests(testutil.TestBase):
                                             ''.join(dockerfile_contents))
         self.assert_file_exists_with_contents(
             '.dockerignore', self.read_runtime_def_file('data', 'dockerignore'))
+
+    def test_java_files_with_war_no_write(self):
+        """Test generate_config_data Dockerfile contents with .war file."""
+        self.write_file('foo.war', '')
+
+        self.generate_configs()
+        self.assert_file_exists_with_contents('app.yaml',
+                                              self.make_app_yaml('java'))
+        self.assert_no_file('Dockerfile')
+        self.assert_no_file('.dockerignore')
+
+        cfg_files = self.generate_config_data(deploy=True)
+        dockerfile_contents = [
+            constants.DOCKERFILE_JETTY9_PREAMBLE,
+            constants.DOCKERFILE_INSTALL_WAR.format('foo.war'),
+        ]
+        self.assert_genfile_exists_with_contents(
+            cfg_files,
+            'Dockerfile',
+            ''.join(dockerfile_contents))
+        self.assert_genfile_exists_with_contents(
+            cfg_files,
+            '.dockerignore',
+            self.read_runtime_def_file('data', 'dockerignore'))
 
     def test_java_files_with_jar(self):
         self.write_file('foo.jar', '')
@@ -146,7 +225,32 @@ class RuntimeTests(testutil.TestBase):
             '.dockerignore',
             self.read_runtime_def_file('data', 'dockerignore'))
 
-    def testJavaFilesWithWebInf(self):
+    def test_java_files_with_jar_no_write(self):
+        """Test generate_config_data Dockerfile contents with .jar file."""
+        self.write_file('foo.jar', '')
+
+        self.generate_configs()
+        self.assert_file_exists_with_contents('app.yaml',
+                                              self.make_app_yaml('java'))
+        self.assert_no_file('Dockerfile')
+        self.assert_no_file('.dockerignore')
+
+        cfg_files = self.generate_config_data(deploy=True)
+        dockerfile_contents = [
+            constants.DOCKERFILE_JAVA8_PREAMBLE,
+            constants.DOCKERFILE_INSTALL_APP.format('foo.jar'),
+            constants.DOCKERFILE_JAVA8_JAR_CMD.format('foo.jar'),
+        ]
+        self.assert_genfile_exists_with_contents(
+            cfg_files,
+            'Dockerfile',
+            ''.join(dockerfile_contents))
+        self.assert_genfile_exists_with_contents(
+            cfg_files,
+            '.dockerignore',
+            self.read_runtime_def_file('data', 'dockerignore'))
+
+    def test_java_files_with_webinf(self):
         self.write_file('WEB-INF', '')
 
         self.generate_configs()
@@ -166,6 +270,30 @@ class RuntimeTests(testutil.TestBase):
             '.dockerignore',
             self.read_runtime_def_file('data', 'dockerignore'))
 
+    def test_java_files_with_webinf_no_write(self):
+        """Test generate_config_data Dockerfile contents with 'WEB-INF' file."""
+        self.write_file('WEB-INF', '')
+
+        self.generate_configs()
+        self.assert_file_exists_with_contents('app.yaml',
+                                              self.make_app_yaml('java'))
+        self.assert_no_file('Dockerfile')
+        self.assert_no_file('.dockerignore')
+
+        cfg_files = self.generate_config_data(deploy=True)
+        dockerfile_contents = [
+            constants.DOCKERFILE_LEGACY_PREAMBLE,
+            constants.DOCKERFILE_INSTALL_APP.format('.'),
+        ]
+        self.assert_genfile_exists_with_contents(
+            cfg_files,
+            'Dockerfile',
+            ''.join(dockerfile_contents))
+        self.assert_genfile_exists_with_contents(
+            cfg_files,
+            '.dockerignore',
+            self.read_runtime_def_file('data', 'dockerignore'))
+
     def test_java_files_with_too_many_artifacts(self):
         self.write_file('WEB-INF', '')
         self.write_file('foo.jar', '')
@@ -176,7 +304,7 @@ class RuntimeTests(testutil.TestBase):
           errors.append(message)
 
         with mock.patch.dict(ext_runtime._LOG_FUNCS, {'error': ErrorFake}):
-            self.assertEqual(self.generate_configs(), None)
+            self.assertFalse(self.generate_configs())
 
         self.assertEqual(errors,
                          ['Too many java artifacts to deploy (.jar, .war, or '
@@ -188,18 +316,41 @@ class RuntimeTests(testutil.TestBase):
         self.write_file('foo.war', '')
         appinfo = testutil.AppInfoFake(
             runtime='java',
-            env='2',
+            env='flex',
             runtime_config=dict(
                 jdk='openjdk8',
                 server='jetty9'))
         self.generate_configs(appinfo=appinfo, deploy=True)
         dockerfile_contents = [
-            constants.DOCKERFILE_JETTY9_PREAMBLE,
+            constants.DOCKERFILE_JETTY_PREAMBLE,
             constants.DOCKERFILE_INSTALL_WAR.format('foo.war'),
         ]
         self.assert_file_exists_with_contents('Dockerfile',
                                               ''.join(dockerfile_contents))
         self.assert_file_exists_with_contents(
+            '.dockerignore',
+            self.read_runtime_def_file('data', 'dockerignore'))
+
+    def test_java_files_with_war_and_yaml_no_write(self):
+        """Test generate_config_data with .war and fake appinfo."""
+        self.write_file('foo.war', '')
+        appinfo = testutil.AppInfoFake(
+            runtime='java',
+            env='2',
+            runtime_config=dict(
+                jdk='openjdk8',
+                server='jetty9'))
+        cfg_files = self.generate_config_data(appinfo=appinfo, deploy=True)
+        dockerfile_contents = [
+            constants.DOCKERFILE_JETTY_PREAMBLE,
+            constants.DOCKERFILE_INSTALL_WAR.format('foo.war'),
+        ]
+        self.assert_genfile_exists_with_contents(
+            cfg_files,
+            'Dockerfile',
+            ''.join(dockerfile_contents))
+        self.assert_genfile_exists_with_contents(
+            cfg_files,
             '.dockerignore',
             self.read_runtime_def_file('data', 'dockerignore'))
 
@@ -222,6 +373,29 @@ class RuntimeTests(testutil.TestBase):
             '.dockerignore',
             self.read_runtime_def_file('data', 'dockerignore'))
 
+    def test_java_files_with_web_inf_and_yaml_and_env2_no_write(self):
+        """Test generate_config_data with .war, fake appinfo, env=2."""
+        self.write_file('WEB-INF', '')
+        config = testutil.AppInfoFake(
+            runtime='java',
+            env='2',
+            runtime_config=dict(
+                jdk='openjdk8',
+                server='jetty9'))
+        cfg_files = self.generate_config_data(appinfo=config, deploy=True)
+        dockerfile_contents = [
+            constants.DOCKERFILE_COMPAT_PREAMBLE,
+            constants.DOCKERFILE_INSTALL_APP.format('.'),
+        ]
+        self.assert_genfile_exists_with_contents(
+            cfg_files,
+            'Dockerfile',
+            ''.join(dockerfile_contents))
+        self.assert_genfile_exists_with_contents(
+            cfg_files,
+            '.dockerignore',
+            self.read_runtime_def_file('data', 'dockerignore'))
+
     def test_java_files_with_web_inf_and_yaml_and_no_env2(self):
         self.write_file('WEB-INF', '')
         config = testutil.AppInfoFake(
@@ -236,6 +410,27 @@ class RuntimeTests(testutil.TestBase):
         self.assert_file_exists_with_contents('Dockerfile',
                                               ''.join(dockerfile_contents))
         self.assert_file_exists_with_contents(
+            '.dockerignore',
+            self.read_runtime_def_file('data', 'dockerignore'))
+
+    def test_java_files_with_web_inf_and_yaml_and_no_env2_no_write(self):
+        """Test generate_config_data with .war, fake appinfo, env != 2."""
+        self.write_file('WEB-INF', '')
+        config = testutil.AppInfoFake(
+            runtime='java',
+            vm=True,
+            runtime_config=dict(server='jetty9'))
+        cfg_files = self.generate_config_data(appinfo=config, deploy=True)
+        dockerfile_contents = [
+            constants.DOCKERFILE_LEGACY_PREAMBLE,
+            constants.DOCKERFILE_INSTALL_APP.format('.'),
+        ]
+        self.assert_genfile_exists_with_contents(
+            cfg_files,
+            'Dockerfile',
+            ''.join(dockerfile_contents))
+        self.assert_genfile_exists_with_contents(
+            cfg_files,
             '.dockerignore',
             self.read_runtime_def_file('data', 'dockerignore'))
 
@@ -258,6 +453,30 @@ class RuntimeTests(testutil.TestBase):
             '.dockerignore',
             self.read_runtime_def_file('data', 'dockerignore'))
 
+    def test_java_files_with_web_inf_and_yaml_and_open_jdk8_no_env2_no_write(
+            self):
+        """Test generate_config_data with WEB-INF file, fake appinfo."""
+        self.write_file('WEB-INF', '')
+        config = testutil.AppInfoFake(
+            runtime='java',
+            vm=True,
+            runtime_config=dict(
+                jdk='openjdk8',
+                server='jetty9'))
+        cfg_files = self.generate_config_data(appinfo=config, deploy=True)
+        dockerfile_contents = [
+            constants.DOCKERFILE_COMPAT_PREAMBLE,
+            constants.DOCKERFILE_INSTALL_APP.format('.'),
+        ]
+        self.assert_genfile_exists_with_contents(
+            cfg_files,
+            'Dockerfile',
+            ''.join(dockerfile_contents))
+        self.assert_genfile_exists_with_contents(
+            cfg_files,
+            '.dockerignore',
+            self.read_runtime_def_file('data', 'dockerignore'))
+
     def test_java_files_with_config_error(self):
         self.write_file('foo.war', '')
 
@@ -272,8 +491,7 @@ class RuntimeTests(testutil.TestBase):
             runtime_config=dict(
                 jdk='openjdk9'))
         with mock.patch.dict(ext_runtime._LOG_FUNCS, {'error': ErrorFake}):
-            self.assertIsNone(
-                self.generate_configs(appinfo=config, deploy=True))
+            self.assertFalse(self.generate_configs(appinfo=config, deploy=True))
         self.assertEqual(errors, ['Unknown JDK : openjdk9.'])
 
     def test_java_custom_runtime_field(self):
@@ -281,7 +499,7 @@ class RuntimeTests(testutil.TestBase):
         config = testutil.AppInfoFake(
             runtime='java',
             env='2')
-        self.assertTrue(self.generate_configs(appinfo=config))
+        self.assertTrue(self.generate_configs(appinfo=config, deploy=True))
 
     def test_java7_runtime(self):
         self.write_file('WEB-INF', '')
@@ -299,6 +517,25 @@ class RuntimeTests(testutil.TestBase):
             '.dockerignore',
             self.read_runtime_def_file('data', 'dockerignore'))
 
+    def test_java7_runtime_no_write(self):
+        """Test generate_config_data with java7 runtime."""
+        self.write_file('WEB-INF', '')
+        config = testutil.AppInfoFake(
+            runtime='java7',
+            vm=True)
+        cfg_files = self.generate_config_data(appinfo=config, deploy=True)
+        dockerfile_contents = [
+            constants.DOCKERFILE_LEGACY_PREAMBLE,
+            constants.DOCKERFILE_INSTALL_APP.format('.'),
+        ]
+        self.assert_genfile_exists_with_contents(
+            cfg_files,
+            'Dockerfile',
+            ''.join(dockerfile_contents))
+        self.assert_genfile_exists_with_contents(
+            cfg_files,
+            '.dockerignore',
+            self.read_runtime_def_file('data', 'dockerignore'))
 
 if __name__ == '__main__':
   unittest.main()

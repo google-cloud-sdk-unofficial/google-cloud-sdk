@@ -34,19 +34,21 @@ from googlecloudsdk.core import log
 @base.UnicodeIsSupported
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Run(base.ListCommand):
-  """Invoke an Android test in Google Cloud Test Lab and view test results."""
+  """Invoke a test in Firebase Test Lab for Android and view test results."""
 
   detailed_help = {
       'DESCRIPTION': """\
-          *{command}* invokes and monitors tests in Google Cloud Test Lab.
+          *{command}* invokes and monitors tests in Firebase Test Lab for
+          Android.
 
           Three main types of tests are currently supported:
           - *robo*: runs a smart, automated exploration of the activities in
             your Android app which records any installation failures or crashes
             and builds an activity map with associated screenshots and video.
           - *instrumentation*: runs automated unit or integration tests written
-            using a testing framework. Google Cloud Test Lab initially supports
-            the Espresso and Robotium testing frameworks for Android.
+            using a testing framework. Firebase Test Lab for Android currently
+            supports the Espresso, Robotium and UI Automator 2.0 testing
+            frameworks.
 
           The type of test to run can be specified with the *--type* flag,
           although the type can often be inferred from other flags.
@@ -123,7 +125,7 @@ class Run(base.ListCommand):
     arg_util.AddRoboTestArgs(parser)
 
   def Run(self, args):
-    """Run the 'gcloud test run' command to invoke a Google Cloud Test Lab test.
+    """Run the 'gcloud test run' command to invoke a test in Firebase Test Lab.
 
     Args:
       args: an argparse namespace. All the arguments that were provided to this

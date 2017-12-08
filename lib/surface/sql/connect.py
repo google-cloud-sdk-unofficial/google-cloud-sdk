@@ -63,7 +63,10 @@ def _WhitelistClientIP(instance_ref, sql_client, sql_messages, resources):
       value='CLIENT_IP')
 
   try:
-    original = sql_client.instances.Get(instance_ref.Request())
+    original = sql_client.instances.Get(
+        sql_messages.SqlInstancesGetRequest(
+            project=instance_ref.project,
+            instance=instance_ref.instance))
   except apitools_exceptions.HttpError as error:
     raise exceptions.HttpException(error)
 
@@ -88,7 +91,11 @@ def _WhitelistClientIP(instance_ref, sql_client, sql_messages, resources):
 
 
 def _GetClientIP(instance_ref, sql_client, acl_name):
-  instance_info = sql_client.instances.Get(instance_ref.Request())
+  """Retrieves given instance and extracts its client ip."""
+  instance_info = sql_client.instances.Get(
+      sql_client.MESSAGES_MODULE.SqlInstancesGetRequest(
+          project=instance_ref.project,
+          instance=instance_ref.instance))
   networks = instance_info.settings.ipConfiguration.authorizedNetworks
   client_ip = None
   for net in networks:

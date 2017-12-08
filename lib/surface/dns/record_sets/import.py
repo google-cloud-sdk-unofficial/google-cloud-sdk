@@ -102,7 +102,10 @@ class Import(base.Command):
     # Get the managed-zone.
     zone_ref = resources.Parse(args.zone, collection='dns.managedZones')
     try:
-      zone = dns.managedZones.Get(zone_ref.Request())
+      zone = dns.managedZones.Get(
+          dns.MESSAGES_MODULE.DnsManagedZonesGetRequest(
+              project=zone_ref.project,
+              managedZone=zone_ref.managedZone))
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error)
 

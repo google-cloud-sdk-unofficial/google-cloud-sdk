@@ -49,4 +49,8 @@ class Describe(base.DescribeCommand):
         params={'managedZone': resolvers.FromArgument('--zone', args.zone)},
         collection='dns.changes')
 
-    return dns.changes.Get(change_ref.Request())
+    return dns.changes.Get(
+        dns.MESSAGES_MODULE.DnsChangesGetRequest(
+            project=change_ref.project,
+            managedZone=change_ref.managedZone,
+            changeId=change_ref.changeId))

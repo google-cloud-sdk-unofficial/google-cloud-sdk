@@ -75,7 +75,10 @@ class List(_BaseList, base.ListCommand):
     validate.ValidateInstanceName(args.instance)
     instance_ref = resources.Parse(args.instance, collection='sql.instances')
 
-    instance_resource = sql_client.instances.Get(instance_ref.Request())
+    instance_resource = sql_client.instances.Get(
+        sql_messages.SqlInstancesGetRequest(
+            project=instance_ref.project,
+            instance=instance_ref.instance))
     config_id = instance_resource.settings.backupConfiguration[0].id
 
     return list_pager.YieldFromList(

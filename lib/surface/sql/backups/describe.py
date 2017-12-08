@@ -65,7 +65,10 @@ class Describe(base.DescribeCommand):
     validate.ValidateInstanceName(args.instance)
     instance_ref = resources.Parse(args.instance, collection='sql.instances')
 
-    instance = sql_client.instances.Get(instance_ref.Request())
+    instance = sql_client.instances.Get(
+        sql_messages.SqlInstancesGetRequest(
+            project=instance_ref.project,
+            instance=instance_ref.instance))
     # At this point we support only one backup-config. So, just use that id.
     backup_config = instance.settings.backupConfiguration[0].id
     request = sql_messages.SqlBackupRunsGetRequest(

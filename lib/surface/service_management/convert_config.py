@@ -25,7 +25,10 @@ from googlecloudsdk.core import log
 
 
 class ConvertConfig(base.Command, base_classes.BaseServiceManagementCommand):
-  """Convert Swagger specification to Google service configuration."""
+  """Convert Swagger specification to Google service configuration.
+
+  DEPRECATED: This command is deprecated and will be removed soon.
+  """
 
   @staticmethod
   def Args(parser):
@@ -58,6 +61,8 @@ class ConvertConfig(base.Command, base_classes.BaseServiceManagementCommand):
       IOError: An IOError is returned if the input file cannot be read, or
           the output file cannot be written to.
     """
+    log.warn('This command is deprecated and will be removed soon.')
+
     # TODO(user): Add support for swagger file references later
     # This requires the API to support multiple files first. b/23353397
     try:

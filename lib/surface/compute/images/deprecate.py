@@ -73,27 +73,30 @@ class DeprecateImages(base_classes.NoOutputAsyncMutator):
 
     delete_on = delete_group.add_argument(
         '--delete-on',
-        help=('Specifies the date and time when the state of this image '
-              'will become DELETED.'))
+        help=('Specifies the date and time when the image will be marked as '
+              'DELETED. State will not be changed.'))
     delete_on.detailed_help = """\
-       Similar to *--delete-in*, but specifies an absolute time when the status
-       should be set to DELETED. The date and time
-       specified must be a valid RFC 3339 full-date or date-time.
-       For times in UTC, this looks like ``YYYY-MM-DDTHH:MM:SSZ''. For example:
-       2020-01-02T00:00:00Z for midnight on January 2, 2020 in UTC.
+       Similar to *--delete-in*, but specifies an absolute time when the image
+       will be marked as DELETED. Note: The image will not actually be
+       deleted - this field is for informational purposes (see the description
+       of --delete-in for more details). The date and time specified must be
+       valid RFC 3339 full-date or date-time. For times in UTC, this looks
+       like ``YYYY-MM-DDTHH:MM:SSZ''. For example: 2020-01-02T00:00:00Z for
+       midnight on January 2, 2020 in UTC.
        This flag is mutually exclusive with *--delete-in*.
        """
 
     delete_in = delete_group.add_argument(
         '--delete-in',
-        help=('Specifies the amount of time until this image should become '
-              'DELETED.'),
+        help=('Specifies the amount of time until the image will be marked as '
+              'DELETED. State will not be changed.'),
         type=arg_parsers.Duration())
     delete_in.detailed_help = """\
-       Specifies the amount of time until the image's status should be set
-       to DELETED. For instance, specifying ``30d'' will set the status to
-       DELETED in 30 days from the current system time. Valid units for this
-       flag are ``s'' for seconds, ``m'' for minutes, ``h'' for hours and
+       Specifies the amount of time until the image will be marked as DELETED.
+       Note: The image will not actually be deleted - this field is only for
+       informational purposes (see below). For instance, specifying ``30d'' will
+       mark as DELETED in 30 days from the current system time. Valid units for
+       this flag are ``s'' for seconds, ``m'' for minutes, ``h'' for hours and
        ``d'' for days. If no unit is specified, seconds is assumed.
 
        Note that the image will not be deleted automatically. The image will
@@ -106,23 +109,24 @@ class DeprecateImages(base_classes.NoOutputAsyncMutator):
 
     obsolete_on = obsolete_group.add_argument(
         '--obsolete-on',
-        help=('Specifies the date and time when the state of this image '
-              'will become OBSOLETE.'))
+        help=('Specifies the date and time when this image will be marked as '
+              'OBSOLETE. State will not be changed.'))
     obsolete_on.detailed_help = """\
-       Specifies time (in the same format as *--delete-on*) when this image's
-       status should become OBSOLETE.
+       Specifies time (in the same format as *--delete-on*) when this image will
+       be marked as OBSOLETE. State will not be changed - it has only
+       informational purpose.
        This flag is mutually exclusive with *--obsolete-in*.
        """
 
     obsolete_in = obsolete_group.add_argument(
         '--obsolete-in',
-        help=('Specifies the amount of time until this image should become '
-              'OBSOLETE.'),
+        help=('Specifies the amount of time until the image will be marked as '
+              'OBSOLETE. State will not be changed.'),
         type=arg_parsers.Duration())
     obsolete_in.detailed_help = """\
-       Specifies time (in the same format as *--delete-in*) until this image's
-       status should become OBSOLETE. Obsolete images will cause an error
-       whenever an attempt is made to apply the image to a new disk.
+       Specifies time (in the same format as *--delete-in*) until the image
+       will be marked OBSOLETE. State will not be changed - it is only for
+       informational purposes.
        This flag is mutually exclusive with *--obsolete-on*.
        """
 

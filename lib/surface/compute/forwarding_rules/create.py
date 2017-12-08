@@ -18,79 +18,17 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.forwarding_rules import flags
-from googlecloudsdk.core import apis as core_apis
 from googlecloudsdk.core import log
 
 
-def _SupportedProtocols(messages):
-  return sorted(
-      messages.ForwardingRule.IPProtocolValueValuesEnum.to_dict().keys())
-
-
-def _Args(parser, include_beta_targets):
+def _Args(parser, include_beta, include_alpha=False):
   """Argument parsing."""
   flags.AddCommonFlags(parser)
-  flags.AddUpdateArgs(parser, include_beta_targets)
-
-  address = parser.add_argument(
-      '--address',
-      help='The external IP address that the forwarding rule will serve.')
-  address.detailed_help = """\
-      The external IP address that the forwarding rule will
-      serve. All traffic sent to this IP address is directed to the
-      target pointed to by the forwarding rule. If the address is
-      reserved, it must either (1) reside in the global scope if the
-      forwarding rule is being configured to point to a target HTTP
-      proxy or (2) reside in the same region as the forwarding rule
-      if the forwarding rule is being configured to point to a
-      target pool or target instance. If this flag is omitted, an
-      ephemeral IP address is assigned.
-      """
-  v1_messages = core_apis.GetMessagesModule('compute', 'v1')
-  parser.add_argument(
-      '--ip-protocol',
-      choices=_SupportedProtocols(v1_messages),
-      type=lambda x: x.upper(),
-      help='The IP protocol that the rule will serve. The default is TCP.')
-
-  parser.add_argument(
-      '--description',
-      help='An optional textual description for the forwarding rule.')
-
-  ports_scope = parser.add_mutually_exclusive_group()
-  ports = ports_scope.add_argument(
-      '--ports',
-      metavar='[PORT | PORT-PORT]',
-      help=('If specified, only packets addressed to the ports or '
-            'port ranges will be forwarded.'),
-      type=arg_parsers.ArgList(
-          min_length=1, element_type=arg_parsers.Range.Parse),
-      default=[])
-
-  ports.detailed_help = """\
-          If specified, only packets addressed to ports in the specified
-          list will be forwarded. If not specified for regional forwarding
-          rules, all ports are matched. This flag is required for global
-          forwarding rules and accepts a single continuous set of ports.
-
-          Individual ports and ranges can be specified,
-          for example (`--ports 8000-8004` or `--ports 80`).
-          """
-  port_range = ports_scope.add_argument(
-      '--port-range',
-      type=arg_parsers.Range.Parse,
-      help='DEPRECATED, use --ports. If specified, only packets addressed to '
-           'the port or ports in the specified range will be forwarded.',
-      metavar='[PORT | PORT-PORT]')
-  port_range.detailed_help = """\
-      DEPRECATED, use --ports. If specified, only packets addressed to ports in
-      the specified range will be forwarded. If not specified for regional
-      forwarding rules, all ports are matched. This flag is required for global
-      forwarding rules.
-
-      Either an individual port (`--port-range 80`) or a range of ports
-      (`--port-range 3000-3100`) may be specified.
-      """
+  flags.AddUpdateArgs(parser, include_beta=include_beta)
+  flags.AddAddress(parser)
+  flags.AddIPProtocols(parser, include_alpha=include_alpha)
+  flags.AddDescription(parser)
+  flags.AddPortsAndPortRange(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -99,7 +37,7 @@ class Create(utils.ForwardingRulesTargetMutator):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, include_beta_targets=False)
+    _Args(parser, include_beta=False, include_alpha=False)
 
   @property
   def method(self):
@@ -130,8 +68,7 @@ class Create(utils.ForwardingRulesTargetMutator):
             IPAddress=args.address,
             IPProtocol=protocol,
             portRange=port_range,
-            target=target_ref.SelfLink(),
-        ),
+            target=target_ref.SelfLink(),),
         project=self.project)
 
     return [request]
@@ -139,8 +76,8 @@ class Create(utils.ForwardingRulesTargetMutator):
   def CreateRegionalRequests(self, args):
     """Create a regionally scoped request."""
     target_ref, target_region = self.GetRegionalTarget(args)
-    forwarding_rule_ref = self.CreateRegionalReference(
-        args.name, args.region or target_region)
+    forwarding_rule_ref = self.CreateRegionalReference(args.name, args.region or
+                                                       target_region)
     protocol = self.ConstructProtocol(args)
 
     request = self.messages.ComputeForwardingRulesInsertRequest(
@@ -150,27 +87,26 @@ class Create(utils.ForwardingRulesTargetMutator):
             IPAddress=args.address,
             IPProtocol=protocol,
             portRange=_ResolvePortRange(args.port_range, args.ports),
-            target=target_ref.SelfLink(),
-        ),
+            target=target_ref.SelfLink(),),
         project=self.project,
         region=forwarding_rule_ref.region)
 
     return [request]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a forwarding rule to direct network traffic to a load balancer."""
 
   @staticmethod
   def Args(parser):
-    _Args(parser, include_beta_targets=True)
+    _Args(parser, include_beta=True, include_alpha=False)
 
   def CreateRegionalRequests(self, args):
     """Create a regionally scoped request."""
     target_ref, target_region = self.GetRegionalTarget(args)
-    forwarding_rule_ref = self.CreateRegionalReference(
-        args.name, args.region or target_region)
+    forwarding_rule_ref = self.CreateRegionalReference(args.name, args.region or
+                                                       target_region)
     protocol = self.ConstructProtocol(args)
 
     forwarding_rule = self.messages.ForwardingRule(
@@ -205,6 +141,15 @@ class CreateBeta(Create):
     return [request]
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a forwarding rule to direct network traffic to a load balancer."""
+
+  @staticmethod
+  def Args(parser):
+    _Args(parser, include_beta=True, include_alpha=True)
+
+
 Create.detailed_help = {
     'DESCRIPTION': ("""\
         *{{command}}* is used to create a forwarding rule. {overview}
@@ -216,6 +161,7 @@ Create.detailed_help = {
 }
 
 CreateBeta.detailed_help = Create.detailed_help
+CreateAlpha.detailed_help = Create.detailed_help
 
 
 def _GetPortRange(ports_range_list):
@@ -248,4 +194,3 @@ def _GetPortList(range_list):
   for port_range in range_list:
     ports.extend(range(port_range.start, port_range.end + 1))
   return sorted(ports)
-

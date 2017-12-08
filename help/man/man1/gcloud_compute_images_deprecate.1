@@ -74,11 +74,12 @@ At most one of these may be specified:
 
 \fB\-\-delete\-in\fR=\fIDELETE_IN\fR
 .RS 2m
-Specifies the amount of time until the image's status should be set to DELETED.
-For instance, specifying \f5\fI30d\fR\fR will set the status to DELETED in 30
-days from the current system time. Valid units for this flag are ``s'' for
-seconds, ``m'' for minutes, ``h'' for hours and ``d'' for days. If no unit is
-specified, seconds is assumed.
+Specifies the amount of time until the image will be marked as DELETED. Note:
+The image will not actually be deleted \- this field is only for informational
+purposes (see below). For instance, specifying \f5\fI30d\fR\fR will mark as
+DELETED in 30 days from the current system time. Valid units for this flag are
+``s'' for seconds, ``m'' for minutes, ``h'' for hours and ``d'' for days. If no
+unit is specified, seconds is assumed.
 
 Note that the image will not be deleted automatically. The image will only be
 marked as deleted. An explicit request to delete the image must be made in order
@@ -88,9 +89,11 @@ to remove it from the image list. This flag is mutually exclusive with
 .RE
 \fB\-\-delete\-on\fR=\fIDELETE_ON\fR
 .RS 2m
-Similar to \fB\-\-delete\-in\fR, but specifies an absolute time when the status
-should be set to DELETED. The date and time specified must be a valid RFC 3339
-full\-date or date\-time. For times in UTC, this looks like
+Similar to \fB\-\-delete\-in\fR, but specifies an absolute time when the image
+will be marked as DELETED. Note: The image will not actually be deleted \- this
+field is for informational purposes (see the description of \-\-delete\-in for
+more details). The date and time specified must be valid RFC 3339 full\-date or
+date\-time. For times in UTC, this looks like
 \f5\fIYYYY\-MM\-DDTHH:MM:SSZ\fR\fR. For example: 2020\-01\-02T00:00:00Z for
 midnight on January 2, 2020 in UTC. This flag is mutually exclusive with
 \fB\-\-delete\-in\fR.
@@ -100,17 +103,16 @@ At most one of these may be specified:
 
 \fB\-\-obsolete\-in\fR=\fIOBSOLETE_IN\fR
 .RS 2m
-Specifies time (in the same format as \fB\-\-delete\-in\fR) until this image's
-status should become OBSOLETE. Obsolete images will cause an error whenever an
-attempt is made to apply the image to a new disk. This flag is mutually
-exclusive with \fB\-\-obsolete\-on\fR.
+Specifies time (in the same format as \fB\-\-delete\-in\fR) until the image will
+be marked OBSOLETE. State will not be changed \- it is only for informational
+purposes. This flag is mutually exclusive with \fB\-\-obsolete\-on\fR.
 
 .RE
 \fB\-\-obsolete\-on\fR=\fIOBSOLETE_ON\fR
 .RS 2m
-Specifies time (in the same format as \fB\-\-delete\-on\fR) when this image's
-status should become OBSOLETE. This flag is mutually exclusive with
-\fB\-\-obsolete\-in\fR.
+Specifies time (in the same format as \fB\-\-delete\-on\fR) when this image will
+be marked as OBSOLETE. State will not be changed \- it has only informational
+purpose. This flag is mutually exclusive with \fB\-\-obsolete\-in\fR.
 
 
 .RE

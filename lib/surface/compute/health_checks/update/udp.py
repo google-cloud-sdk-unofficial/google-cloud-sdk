@@ -1,4 +1,4 @@
-# Copyright 2015 Google Inc. All Rights Reserved.
+# Copyright 2016 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,15 +19,16 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import exceptions as core_exceptions
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base_classes.ReadWriteCommand):
 
-  """Update a HTTPS health check."""
+  """Update a UDP health check."""
 
   @staticmethod
   def Args(parser):
-    health_checks_utils.AddHttpRelatedUpdateArgs(parser)
-    health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'HTTPS')
+    health_checks_utils.AddUdpRelatedArgs(parser,
+                                          request_and_response_required=False)
+    health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'UDP')
 
   @property
   def service(self):
@@ -60,17 +61,16 @@ class Update(base_classes.ReadWriteCommand):
 
   def Modify(self, args, existing_check):
     """Returns a modified HealthCheck message."""
-    # We do not support using 'update https' with a health check of a
+    # We do not support using 'update udp' with a health check of a
     # different protocol.
     if (existing_check.type !=
-        self.messages.HealthCheck.TypeValueValuesEnum.HTTPS):
+        self.messages.HealthCheck.TypeValueValuesEnum.UDP):
       raise core_exceptions.Error(
-          'update https subcommand applied to health check with protocol ' +
+          'update udp subcommand applied to health check with protocol ' +
           existing_check.type.name)
 
-    # Description, PortName, and Host are the only attributes that can be
-    # cleared by passing in an empty string (but we don't want to set it to
-    # an empty string).
+    # Description and PortName are the only attributes that can be cleared by
+    # passing in an empty string (but we don't want to set it to empty string).
     if args.description:
       description = args.description
     elif args.description is None:
@@ -78,35 +78,22 @@ class Update(base_classes.ReadWriteCommand):
     else:
       description = None
 
-    if args.host:
-      host = args.host
-    elif args.host is None:
-      host = existing_check.httpsHealthCheck.host
-    else:
-      host = None
-
     if args.port_name:
       port_name = args.port_name
     elif args.port_name is None:
-      port_name = existing_check.httpsHealthCheck.portName
+      port_name = existing_check.udpHealthCheck.portName
     else:
       port_name = None
 
-    proxy_header = existing_check.httpsHealthCheck.proxyHeader
-    if args.proxy_header is not None:
-      proxy_header = self.messages.HTTPSHealthCheck.ProxyHeaderValueValuesEnum(
-          args.proxy_header)
     new_health_check = self.messages.HealthCheck(
         name=existing_check.name,
         description=description,
-        type=self.messages.HealthCheck.TypeValueValuesEnum.HTTPS,
-        httpsHealthCheck=self.messages.HTTPSHealthCheck(
-            host=host,
-            port=args.port or existing_check.httpsHealthCheck.port,
-            portName=port_name,
-            requestPath=(args.request_path or
-                         existing_check.httpsHealthCheck.requestPath),
-            proxyHeader=proxy_header),
+        type=self.messages.HealthCheck.TypeValueValuesEnum.UDP,
+        udpHealthCheck=self.messages.UDPHealthCheck(
+            request=args.request or existing_check.udpHealthCheck.request,
+            response=args.response or existing_check.udpHealthCheck.response,
+            port=args.port or existing_check.udpHealthCheck.port,
+            portName=port_name),
         checkIntervalSec=(args.check_interval or
                           existing_check.checkIntervalSec),
         timeoutSec=args.timeout or existing_check.timeoutSec,
@@ -117,67 +104,35 @@ class Update(base_classes.ReadWriteCommand):
     )
     return new_health_check
 
-  def ValidateArgs(self, args):
+  def Run(self, args):
     health_checks_utils.CheckProtocolAgnosticArgs(args)
 
     args_unset = not (args.port
-                      or args.request_path
                       or args.check_interval
                       or args.timeout
                       or args.healthy_threshold
                       or args.unhealthy_threshold
-                      or args.proxy_header)
-    if (args.description is None and args.host is None and
-        args.port_name is None and args_unset):
+                      or args.request
+                      or args.response)
+    if args.description is None and args.port_name is None and args_unset:
       raise exceptions.ToolException('At least one property must be modified.')
 
-  def Run(self, args):
-    self.ValidateArgs(args)
+    # Check that request and response are not empty. It is acceptable for it to
+    # be None.
+    if args.request is not None and not args.request:
+      raise exceptions.ToolException(
+          '"request" field for UDP can not be empty.')
+    if args.response is not None and not args.response:
+      raise exceptions.ToolException(
+          '"response" field for UDP can not be empty.')
+
     return super(Update, self).Run(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
-  """Update a HTTPS health check."""
-
-  @staticmethod
-  def Args(parser):
-    Update.Args(parser)
-    health_checks_utils.AddHttpRelatedResponseArg(parser)
-
-  def Modify(self, args, existing_check):
-    """Returns a modified HealthCheck message."""
-    new_health_check = super(UpdateAlpha, self).Modify(args, existing_check)
-
-    if args.response:
-      response = args.response
-    elif args.response is None:
-      response = existing_check.httpsHealthCheck.response
-    else:
-      response = None
-
-    new_health_check.httpsHealthCheck.response = response
-    return new_health_check
-
-  def ValidateArgs(self, args):
-    health_checks_utils.CheckProtocolAgnosticArgs(args)
-
-    args_unset = not (args.port
-                      or args.request_path
-                      or args.check_interval
-                      or args.timeout
-                      or args.healthy_threshold
-                      or args.unhealthy_threshold
-                      or args.proxy_header)
-    if (args.description is None and args.host is None and args.response is None
-        and args.port_name is None and args_unset):
-      raise exceptions.ToolException('At least one property must be modified.')
-
-
 Update.detailed_help = {
-    'brief': ('Update a HTTPS health check'),
+    'brief': ('Update a UDP health check'),
     'DESCRIPTION': """\
-        *{command}* is used to update an existing HTTPS health check. Only
+        *{command}* is used to update an existing UDP health check. Only
         arguments passed in will be updated on the health check. Other
         attributes will remain unaffected.
         """,

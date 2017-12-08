@@ -1351,6 +1351,10 @@ class _Query(BigqueryCmd):
         '\n ALLOW_FIELD_RELAXATION: allow relaxing required fields to nullable',
         flag_values=fv)
     flags.DEFINE_multistring(
+        'label', None,
+        'A label to set on a query job. The format is "key:value"',
+        flag_values=fv)
+    flags.DEFINE_multistring(
         'parameter',
         None,
         ('Either a file containing a JSON list of query parameters, or a query '
@@ -1399,6 +1403,8 @@ class _Query(BigqueryCmd):
       kwds['maximum_bytes_billed'] = self.maximum_bytes_billed
     if self.schema_update_option:
       kwds['schema_update_options'] = self.schema_update_option
+    if self.label is not None:
+      kwds['labels'] = _ParseLabels(self.label)
     if self.parameter:
       kwds['query_parameters'] = _ParseParameters(self.parameter)
     query = ' '.join(args)
@@ -1601,7 +1607,10 @@ class _Partition(BigqueryCmd):  # pylint: disable=missing-docstring
   def RunWithArgs(self, source_prefix, destination_table):
     """Copies source tables into partitioned tables.
 
-    Copies tables of the format <prefix><YYYYmmdd> to a destination
+    Usage:
+    bq partition <source_table_prefix> <destination_partitioned_table>
+
+    Copies tables of the format <source_table_prefix><YYYYmmdd> to a destination
     partitioned table, with the date suffix of the source tables
     becoming the partition date of the destination table partitions.
 
@@ -3391,7 +3400,7 @@ def run_main():
   # Put the flags for this module somewhere the flags module will look
   # for them.
   # pylint: disable=protected-access
-  new_name = flags._GetMainModule()
+  new_name = sys.argv[0]
   sys.modules[new_name] = sys.modules['__main__']
   for flag in FLAGS.FlagsByModuleDict().get(__name__, []):
     FLAGS._RegisterFlagByModule(new_name, flag)

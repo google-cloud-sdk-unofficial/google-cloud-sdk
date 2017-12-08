@@ -94,7 +94,8 @@ class UpdateInstancesAlpha(base_classes.BaseAsyncMutator):
   @staticmethod
   def Args(parser):
     _AddArgs(parser=parser)
-    instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG.AddArgument(parser)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser)
 
   @property
   def method(self):
@@ -109,7 +110,7 @@ class UpdateInstancesAlpha(base_classes.BaseAsyncMutator):
     return 'instanceGroupManagers'
 
   def CreateRequests(self, args):
-    resource_arg = instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG
+    resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
     default_scope = flags.ScopeEnum.ZONE
     scope_lister = flags.GetDefaultScopeLister(
         self.compute_client, self.project)
@@ -162,17 +163,25 @@ class UpdateInstancesAlpha(base_classes.BaseAsyncMutator):
         maxUnavailable=max_unavailable,
         minReadySec=args.min_ready,
         minimalAction=minimal_action,
-        type=update_policy_type,)
-    service = self.compute.instanceGroupManagers
-    request = (self.messages.ComputeInstanceGroupManagersPatchRequest(
-        instanceGroupManager=igm_ref.Name(),
-        instanceGroupManagerResource=(self.messages.InstanceGroupManager(
-            instanceTemplate=None,
-            updatePolicy=update_policy,
-            versions=versions)),
-        project=self.project,
-        zone=igm_ref.zone))
-
+        type=update_policy_type)
+    igm_resource = self.messages.InstanceGroupManager(
+        instanceTemplate=None,
+        updatePolicy=update_policy,
+        versions=versions)
+    if hasattr(igm_ref, 'zone'):
+      service = self.compute.instanceGroupManagers
+      request = (self.messages.ComputeInstanceGroupManagersPatchRequest(
+          instanceGroupManager=igm_ref.Name(),
+          instanceGroupManagerResource=igm_resource,
+          project=self.project,
+          zone=igm_ref.zone))
+    elif hasattr(igm_ref, 'region'):
+      service = self.compute.regionInstanceGroupManagers
+      request = (self.messages.ComputeRegionInstanceGroupManagersPatchRequest(
+          instanceGroupManager=igm_ref.Name(),
+          instanceGroupManagerResource=igm_resource,
+          project=self.project,
+          region=igm_ref.region))
     return [(service, self.method, request)]
 
 
@@ -182,3 +191,4 @@ UpdateInstancesAlpha.detailed_help = {
         *{command}* updates instances in a managed instance group,
         according to the given versions and the given update policy."""
 }
+

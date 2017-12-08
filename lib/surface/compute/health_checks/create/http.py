@@ -14,8 +14,10 @@
 """Command for creating HTTP health checks."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import health_checks_utils
+from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base_classes.BaseAsyncCreator):
   """Create a HTTP health check to monitor load balanced instances."""
 
@@ -62,6 +64,23 @@ class Create(base_classes.BaseAsyncCreator):
         project=self.project)
 
     return [request]
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a HTTP health check to monitor load balanced instances."""
+
+  @staticmethod
+  def Args(parser):
+    Create.Args(parser)
+    health_checks_utils.AddHttpRelatedResponseArg(parser)
+
+  def CreateRequests(self, args):
+    """Returns the request necessary for adding the health check."""
+
+    requests = super(CreateAlpha, self).CreateRequests(args)
+    requests[0].healthCheck.httpHealthCheck.response = args.response
+    return requests
 
 
 Create.detailed_help = {

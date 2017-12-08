@@ -14,10 +14,8 @@
 
 """Command to create named configuration."""
 
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 from googlecloudsdk.core.configurations import named_configs
 
 
@@ -50,27 +48,15 @@ class Create(base.SilentCommand):
         help='Name of the configuration to create')
     parser.add_argument(
         '--activate',
-        default=None,  # None => don't override the property
-        action=actions.StoreBooleanProperty(
-            properties.VALUES.core.activate_on_create),
+        action='store_true',
+        default=True,
         help='If true, activate this configuration upon create.')
 
   def Run(self, args):
     named_configs.ConfigurationStore.CreateConfig(args.configuration_name)
     log.CreatedResource(args.configuration_name)
 
-    activate = properties.VALUES.core.activate_on_create.GetBool()
-    if activate is None:
-      log.warn(
-          'In the future, configurations will be activated by default\n'
-          'upon create. To use this feature now, run create with the\n'
-          '--activate flag or set core/activate_on_create to true in the\n'
-          'active configuration. After that, the current default behavior\n'
-          'can be enabled by the --no-activate flag.'
-      )
-      activate = False
-
-    if activate:
+    if args.activate:
       named_configs.ConfigurationStore.ActivateConfig(args.configuration_name)
       log.status.Print('Activated [{0}].'.format(args.configuration_name))
     else:

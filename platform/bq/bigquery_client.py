@@ -971,6 +971,7 @@ class BigqueryClient(object):
         formatter.AddColumns(('Bytes Processed',))
         formatter.AddColumns(('Bytes Billed',))
         formatter.AddColumns(('Billing Tier',))
+        formatter.AddColumns(('Labels',))
     elif reference_type == ApiClientHelper.ProjectReference:
       if print_format == 'list':
         formatter.AddColumns(('projectId',))
@@ -1194,6 +1195,9 @@ class BigqueryClient(object):
       result['Bytes Billed'] = query_stats['totalBytesBilled']
     if 'billingTier' in query_stats:
       result['Billing Tier'] = query_stats['billingTier']
+    config = result.get('configuration', {})
+    if 'labels' in config:
+      result['Labels'] = _FormatLabels(config['labels'])
     return result
 
   @staticmethod
@@ -2336,6 +2340,7 @@ class BigqueryClient(object):
             maximum_bytes_billed=None,
             use_legacy_sql=None,
             schema_update_options=None,
+            labels=None,
             query_parameters=None,
             **kwds):
     # pylint: disable=g-doc-args
@@ -2377,6 +2382,7 @@ class BigqueryClient(object):
           is true.
       schema_update_options: schema update options when appending to the
           destination table or truncating a table partition.
+      labels: an optional dict of labels to set on the query job.
       query_parameters: parameter values for use_legacy_sql=False queries.
       **kwds: Passed on to self.ExecuteJob.
 
@@ -2418,7 +2424,8 @@ class BigqueryClient(object):
         query_parameters=query_parameters,
         min_completion_ratio=min_completion_ratio)
     request = {'query': query_config}
-    _ApplyParameters(request, dry_run=dry_run)
+    _ApplyParameters(request, dry_run=dry_run,
+                     labels=labels)
     return self.ExecuteJob(request, **kwds)
 
   def Load(self,

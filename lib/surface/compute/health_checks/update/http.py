@@ -14,10 +14,12 @@
 """Command for updating health checks."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import health_checks_utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import exceptions as core_exceptions
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Update(base_classes.ReadWriteCommand):
 
   """Update a HTTP health check."""
@@ -115,7 +117,7 @@ class Update(base_classes.ReadWriteCommand):
     )
     return new_health_check
 
-  def Run(self, args):
+  def ValidateArgs(self, args):
     health_checks_utils.CheckProtocolAgnosticArgs(args)
 
     args_unset = not (args.port
@@ -129,7 +131,47 @@ class Update(base_classes.ReadWriteCommand):
         args.port_name is None and args_unset):
       raise exceptions.ToolException('At least one property must be modified.')
 
+  def Run(self, args):
+    self.ValidateArgs(args)
     return super(Update, self).Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update a HTTP health check."""
+
+  @staticmethod
+  def Args(parser):
+    Update.Args(parser)
+    health_checks_utils.AddHttpRelatedResponseArg(parser)
+
+  def Modify(self, args, existing_check):
+    """Returns a modified HealthCheck message."""
+    new_health_check = super(UpdateAlpha, self).Modify(args, existing_check)
+
+    if args.response:
+      response = args.response
+    elif args.response is None:
+      response = existing_check.httpHealthCheck.response
+    else:
+      response = None
+
+    new_health_check.httpHealthCheck.response = response
+    return new_health_check
+
+  def ValidateArgs(self, args):
+    health_checks_utils.CheckProtocolAgnosticArgs(args)
+
+    args_unset = not (args.port
+                      or args.request_path
+                      or args.check_interval
+                      or args.timeout
+                      or args.healthy_threshold
+                      or args.unhealthy_threshold
+                      or args.proxy_header)
+    if (args.description is None and args.host is None and args.response is None
+        and args.port_name is None and args_unset):
+      raise exceptions.ToolException('At least one property must be modified.')
 
 
 Update.detailed_help = {

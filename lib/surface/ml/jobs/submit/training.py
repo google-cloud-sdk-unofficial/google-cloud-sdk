@@ -18,6 +18,7 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.ml import flags
 from googlecloudsdk.command_lib.ml import jobs as jobs_prep
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -33,7 +34,7 @@ class BetaTrain(base.Command):
               --staging-bucket gs://my-bucket \
               --package-path /my/code/path/trainer \
               --packages additional-dependency1.tar.gz \
-                         additional-dependency2.tar.gz
+                         additional-dependency2.whl
 
   Or by specifying an already built package:
 
@@ -42,7 +43,7 @@ class BetaTrain(base.Command):
               --staging-bucket gs://my-bucket \
               --packages trainer-0.0.1.tar.gz \
                          additional-dependency1.tar.gz \
-                         additional-dependency2.tar.gz
+                         additional-dependency2.whl
 
   If --package-path /my/code/path/trainer is specified and there is a
   setup.py file at /my/code/path/setup.py then that file will be invoked
@@ -73,6 +74,7 @@ class BetaTrain(base.Command):
     Returns:
       Some value that we want to have printed later.
     """
+    region = properties.VALUES.compute.region.Get(required=True)
     uris = jobs_prep.RunSetupAndUpload(
         args.packages, args.staging_bucket, args.package_path)
     log.debug('Using {0} as trainer uris'.format(uris))
@@ -81,6 +83,6 @@ class BetaTrain(base.Command):
         module_name=args.module_name,
         job_name=args.job,
         trainer_uri=uris,
-        region=args.region,
+        region=region,
         user_args=args.user_args)
     return jobs.Create(job)

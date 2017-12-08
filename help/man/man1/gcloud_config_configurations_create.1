@@ -11,7 +11,7 @@ gcloud config configurations create \- creates a new named configuration
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud config configurations create\fR \fICONFIGURATION_NAME\fR [\fB\-\-activate\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud config configurations create\fR \fICONFIGURATION_NAME\fR [\fB\-\-no\-activate\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -39,8 +39,7 @@ Name of the configuration to create
 
 \fB\-\-activate\fR
 .RS 2m
-If true, activate this configuration upon create. Overrides the default
-\fBactivate_on_create\fR property value for this command invocation. Use
+If true, activate this configuration upon create. Enabled by default, use
 \fB\-\-no\-activate\fR to disable.
 
 

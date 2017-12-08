@@ -94,14 +94,20 @@ class JavaConfigurator(object):
       # Customize the dockerfile.
       out = StringIO.StringIO()
       if self.artifact_to_deploy.endswith('.war'):
-          out.write(constants.DOCKERFILE_JETTY9_PREAMBLE)
+          if self.appinfo and is_flex(self.appinfo.env):
+              out.write(constants.DOCKERFILE_JETTY_PREAMBLE)
+          else:
+              out.write(constants.DOCKERFILE_JETTY9_PREAMBLE)
           out.write(constants.DOCKERFILE_INSTALL_WAR.format(
               self.artifact_to_deploy))
       if self.artifact_to_deploy.endswith('.jar'):
           if self.server is not None:
               raise JavaConfigError('Cannot use server %s '
                                     'for jar deployment.' % self.server)
-          out.write(constants.DOCKERFILE_JAVA8_PREAMBLE)
+          if self.appinfo and is_flex(self.appinfo.env):
+              out.write(constants.DOCKERFILE_JAVA_PREAMBLE)
+          else:
+              out.write(constants.DOCKERFILE_JAVA8_PREAMBLE)
           out.write(constants.DOCKERFILE_INSTALL_APP.format(
               self.artifact_to_deploy))
       if self.artifact_to_deploy == '.':

@@ -44,4 +44,7 @@ class Describe(base.DescribeCommand):
     resources = self.context['dns_resources']
     zone_ref = resources.Parse(args.dns_zone, collection='dns.managedZones')
 
-    return dns.managedZones.Get(zone_ref.Request())
+    return dns.managedZones.Get(
+        dns.MESSAGES_MODULE.DnsManagedZonesGetRequest(
+            project=zone_ref.project,
+            managedZone=zone_ref.managedZone))

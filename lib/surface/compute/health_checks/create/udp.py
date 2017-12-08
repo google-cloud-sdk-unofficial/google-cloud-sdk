@@ -1,4 +1,4 @@
-# Copyright 2015 Google Inc. All Rights Reserved.
+# Copyright 2016 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,20 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for creating HTTPS health checks."""
+"""Command for creating UDP health checks."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import health_checks_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base_classes.BaseAsyncCreator):
-  """Create a HTTPS health check to monitor load balanced instances."""
+  """Create a UDP health check to monitor load balanced instances."""
 
   @staticmethod
   def Args(parser):
-    health_checks_utils.AddHttpRelatedCreationArgs(parser)
-    health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'HTTPS')
+    health_checks_utils.AddUdpRelatedArgs(parser)
+    health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'UDP')
 
   @property
   def service(self):
@@ -43,19 +44,24 @@ class Create(base_classes.BaseAsyncCreator):
 
     health_check_ref = self.CreateGlobalReference(
         args.name, resource_type='healthChecks')
-    proxy_header = self.messages.HTTPSHealthCheck.ProxyHeaderValueValuesEnum(
-        args.proxy_header)
+    # Check that request and response are not None and empty.
+    if not args.request:
+      raise exceptions.ToolException(
+          '"request" field for UDP can not be empty.')
+    if not args.response:
+      raise exceptions.ToolException(
+          '"response" field for UDP can not be empty.')
+
     request = self.messages.ComputeHealthChecksInsertRequest(
         healthCheck=self.messages.HealthCheck(
             name=health_check_ref.Name(),
             description=args.description,
-            type=self.messages.HealthCheck.TypeValueValuesEnum.HTTPS,
-            httpsHealthCheck=self.messages.HTTPSHealthCheck(
-                host=args.host,
+            type=self.messages.HealthCheck.TypeValueValuesEnum.UDP,
+            udpHealthCheck=self.messages.UDPHealthCheck(
+                request=args.request,
+                response=args.response,
                 port=args.port,
-                portName=args.port_name,
-                requestPath=args.request_path,
-                proxyHeader=proxy_header),
+                portName=args.port_name),
             checkIntervalSec=args.check_interval,
             timeoutSec=args.timeout,
             healthyThreshold=args.healthy_threshold,
@@ -66,30 +72,13 @@ class Create(base_classes.BaseAsyncCreator):
     return [request]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
-  """Create a HTTPS health check to monitor load balanced instances."""
-
-  @staticmethod
-  def Args(parser):
-    Create.Args(parser)
-    health_checks_utils.AddHttpRelatedResponseArg(parser)
-
-  def CreateRequests(self, args):
-    """Returns the request necessary for adding the health check."""
-
-    requests = super(CreateAlpha, self).CreateRequests(args)
-    requests[0].healthCheck.httpsHealthCheck.response = args.response
-    return requests
-
-
 Create.detailed_help = {
-    'brief': ('Create a HTTPS health check to monitor load balanced instances'),
+    'brief': ('Create a UDP health check to monitor load balanced instances'),
     'DESCRIPTION': """\
-        *{command}* is used to create a HTTPS health check. HTTPS health checks
+        *{command}* is used to create a UDP health check. UDP health checks
         monitor instances in a load balancer controlled by a target pool. All
         arguments to the command are optional except for the name of the health
-        check. For more information on load balancing, see
+        check, request and response. For more information on load balancing, see
         [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
         """,
 }

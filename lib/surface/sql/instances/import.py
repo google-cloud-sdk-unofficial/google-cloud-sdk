@@ -101,7 +101,11 @@ class Import(base.Command):
     )
 
     if args.async:
-      return sql_client.operations.Get(operation_ref.Request())
+      return sql_client.operations.Get(
+          sql_messages.SqlOperationsGetRequest(
+              project=operation_ref.project,
+              instance=operation_ref.instance,
+              operation=operation_ref.operation))
 
     operations.OperationsV1Beta3.WaitForOperation(
         sql_client, operation_ref, 'Importing Cloud SQL instance')
@@ -198,7 +202,11 @@ class ImportBeta(base.Command):
     )
 
     if args.async:
-      return sql_client.operations.Get(operation_ref.Request())
+      return sql_client.operations.Get(
+          sql_messages.SqlOperationsGetRequest(
+              project=operation_ref.project,
+              instance=operation_ref.instance,
+              operation=operation_ref.operation))
 
     operations.OperationsV1Beta4.WaitForOperation(
         sql_client, operation_ref, 'Importing Cloud SQL instance')

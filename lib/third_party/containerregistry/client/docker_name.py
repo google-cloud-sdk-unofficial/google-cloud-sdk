@@ -1,4 +1,6 @@
 """This package defines Tag a way of representing an image uri."""
+import os
+import sys
 
 
 class BadNameException(Exception):
@@ -9,6 +11,11 @@ _REPOSITORY_CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789_-./'
 _TAG_CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789_-.ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 # These have the form: sha256:<hex string>
 _DIGEST_CHARS = 'sh:0123456789abcdef'
+
+# TODO(user): Add a flag to allow specifying custom app name to be appended to
+# useragent.
+_APP = os.path.basename(sys.argv[0]) if sys.argv[0] else 'console'
+USER_AGENT = '//containerregistry/client:%s' % _APP
 
 
 def _check_element(name, element, characters, min_len, max_len):

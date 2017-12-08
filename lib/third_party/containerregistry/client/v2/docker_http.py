@@ -84,8 +84,6 @@ def _CheckState(predicate, message=None):
     raise BadStateException(message if message else 'Unknown')
 
 
-USER_AGENT = '//cloud/containers/build:docker_pusher'
-
 _CHALLENGE = 'Bearer '
 _REALM_PFX = 'realm='
 _SERVICE_PFX = 'service='
@@ -143,7 +141,7 @@ class Transport(object):
     #   GET H:P/v2/
     headers = {
         'content-type': 'application/json',
-        'User-Agent': USER_AGENT,
+        'User-Agent': docker_name.USER_AGENT,
     }
     resp, unused_content = self._transport.request(
         '{scheme}://{registry}/v2/'.format(scheme=Scheme(self._name.registry),
@@ -191,7 +189,7 @@ class Transport(object):
     """
     headers = {
         'content-type': 'application/json',
-        'User-Agent': USER_AGENT,
+        'User-Agent': docker_name.USER_AGENT,
         'Authorization': self._basic_creds.Get()
     }
     parameters = {
@@ -250,7 +248,7 @@ class Transport(object):
       headers = {
           'content-type': content_type if content_type else 'application/json',
           'Authorization': self._bearer_creds.Get(),
-          'User-Agent': USER_AGENT,
+          'User-Agent': docker_name.USER_AGENT,
       }
 
       # POST/PUT require a content-length, when no body is supplied.

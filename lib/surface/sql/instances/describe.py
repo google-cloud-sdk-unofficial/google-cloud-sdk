@@ -52,12 +52,16 @@ class _BaseGet(object):
           command.
     """
     sql_client = self.context['sql_client']
+    sql_messages = self.context['sql_messages']
     resources = self.context['registry']
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = resources.Parse(args.instance, collection='sql.instances')
 
-    return sql_client.instances.Get(instance_ref.Request())
+    return sql_client.instances.Get(
+        sql_messages.SqlInstancesGetRequest(
+            project=instance_ref.project,
+            instance=instance_ref.instance))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

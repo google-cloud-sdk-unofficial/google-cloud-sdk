@@ -66,7 +66,7 @@ def main(args):
         except (IOError, ValueError) as ex:
             # If we have an invalid or unreadable package.json file, there's
             # something funny going on here so fail recognition.
-            warn('node.js checker: error accesssing package.json: %r' % ex)
+            warn('node.js checker: error accessing package.json: %r' % ex)
             return 1
 
         # See if we've got a scripts.start field.
@@ -88,9 +88,14 @@ def main(args):
                       'https://docs.npmjs.com/files/package.json#engines')
 
     if got_npm_start or os.path.exists(os.path.join(path, 'server.js')):
-        comm.send_runtime_params({'got_package_json': got_package_json,
-                                  'got_npm_start': got_npm_start,
-                                  'node_version': node_version})
+      runtime = 'custom' if config.params.custom else 'nodejs'
+      appinfo = {'runtime': runtime,
+                 'vm': True}
+      comm.send_runtime_params({'got_package_json': got_package_json,
+                                'got_npm_start': got_npm_start,
+                                'node_version': node_version},
+                                appinfo=appinfo)
+
     else:
         warn('node.js checker: No npm start and no server.js')
         return 1

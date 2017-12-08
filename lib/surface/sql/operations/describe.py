@@ -58,6 +58,7 @@ class Get(_BaseGet, base.DescribeCommand):
           command.
     """
     sql_client = self.context['sql_client']
+    sql_messages = self.context['sql_messages']
     resources = self.context['registry']
 
     validate.ValidateInstanceName(args.instance)
@@ -68,8 +69,11 @@ class Get(_BaseGet, base.DescribeCommand):
         params={'project': instance_ref.project,
                 'instance': instance_ref.instance})
 
-    result = sql_client.operations.Get(operation_ref.Request())
-    return result
+    return sql_client.operations.Get(
+        sql_messages.SqlOperationsGetRequest(
+            project=operation_ref.project,
+            instance=operation_ref.instance,
+            operation=operation_ref.operation))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -106,11 +110,14 @@ class GetBeta(_BaseGet, base.DescribeCommand):
           command.
     """
     sql_client = self.context['sql_client']
+    sql_messages = self.context['sql_messages']
     resources = self.context['registry']
 
     operation_ref = resources.Parse(
         args.operation, collection='sql.operations',
         params={'project': args.project})
 
-    result = sql_client.operations.Get(operation_ref.Request())
-    return result
+    return sql_client.operations.Get(
+        sql_messages.SqlOperationsGetRequest(
+            project=operation_ref.project,
+            operation=operation_ref.operation))

@@ -60,6 +60,27 @@ class TestBase(unittest.TestCase):
         """
         self.exec_env = exec_env
 
+    def maybe_get_configurator(self, params=None, **kwargs):
+        """Load the runtime definition.
+
+        Args:
+            params: (ext_runtime.Params) Runtime parameters.  DEPRECATED.
+                Use the keyword args, instead.
+            **kwargs: ({str: object, ...}) If specified, these are the
+                arguments to the ext_runtime.Params() constructor
+                (valid args are at this time are: appinfo, custom and deploy,
+                check ext_runtime.Params() for full details)
+
+        Returns:
+            configurator or None if configurator didn't match
+        """
+        rt = ext_runtime.ExternalizedRuntime.Load(self.runtime_def_root,
+                                                  self.exec_env)
+        params = params or ext_runtime.Params(**kwargs)
+        print params.ToDict()
+        configurator = rt.Detect(self.temp_path, params)
+        return configurator
+
     def generate_configs(self, params=None, **kwargs):
         """Load the runtime definition and generate configs from it.
 
@@ -72,20 +93,60 @@ class TestBase(unittest.TestCase):
                 check ext_runtime.Params() for full details)
 
         Returns:
-            (ext_runtime.Cleaner or None) Returns the cleaner if the runtime
-            matches, None if not.
+            (bool) Returns True if files are generated, False if not, None
+            if configurator didn't match
         """
-        rt = ext_runtime.ExternalizedRuntime.Load(self.runtime_def_root,
-                                                  self.exec_env)
-        params = params or ext_runtime.Params(**kwargs)
-        print params.ToDict()
-        configurator = rt.Detect(self.temp_path, params)
+        configurator = self.maybe_get_configurator(params, **kwargs)
         if not configurator:
-            return None
+          return None
 
         configurator.Prebuild()
 
         return configurator.GenerateConfigs()
+
+    def generate_config_data(self, params=None, **kwargs):
+        """Load the runtime definition and generate configs from it.
+
+        Args:
+            params: (ext_runtime.Params) Runtime parameters.  DEPRECATED.
+                Use the keyword args, instead.
+            **kwargs: ({str: object, ...}) If specified, these are the
+                arguments to the ext_runtime.Params() constructor
+                (valid args are at this time are: appinfo, custom and deploy,
+                check ext_runtime.Params() for full details)
+
+        Returns:
+            list(ext_runtime.GeneratedFile) Returns list of generated files.
+        """
+        configurator = self.maybe_get_configurator(params, **kwargs)
+        if not configurator:
+          return None
+
+        configurator.Prebuild()
+
+        return configurator.GenerateConfigData()
+
+    def detect(self, params=None, **kwargs):
+        """Load the runtime definition and generate configs from it.
+
+        Args:
+            params: (ext_runtime.Params) Runtime parameters.  DEPRECATED.
+                Use the keyword args, instead.
+            **kwargs: ({str: object, ...}) If specified, these are the
+                arguments to the ext_runtime.Params() constructor
+                (valid args are at this time are: appinfo, custom and deploy,
+                check ext_runtime.Params() for full details)
+
+        Returns:
+            (ext_runtime.Configurator or None) the identified runtime if found,
+            None if not.
+        """
+        rt = ext_runtime.ExternalizedRuntime.Load(self.runtime_def_root,
+                                                  self.exec_env)
+        params = params or ext_runtime.Params(**kwargs)
+        configurator = rt.Detect(self.temp_path, params)
+
+        return configurator
 
     def full_path(self, *path_components):
         """Returns the fully qualified path for a relative filename.
@@ -131,3 +192,14 @@ class TestBase(unittest.TestCase):
         with open(full_name) as fp:
             actual_contents = fp.read()
         self.assertEqual(contents, actual_contents)
+
+    def assert_genfile_exists_with_contents(self, gen_files,
+                                            filename, contents):
+        for gen_file in gen_files:
+          if gen_file.filename == filename:
+              self.assertEqual(gen_file.contents, contents)
+              break
+        else:
+          self.fail('filename {} not found in generated files {}'.format(
+              filename, gen_files))
+

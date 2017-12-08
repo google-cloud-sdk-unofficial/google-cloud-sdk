@@ -44,4 +44,6 @@ class Describe(base.DescribeCommand):
     resources = self.context['dns_resources']
     project_ref = resources.Parse(args.dns_project, collection='dns.projects')
 
-    return dns.projects.Get(project_ref.Request())
+    return dns.projects.Get(
+        dns.MESSAGES_MODULE.DnsProjectsGetRequest(
+            project=project_ref.project))

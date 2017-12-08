@@ -256,7 +256,9 @@ class Patch(_BasePatch, base.Command):
     instance_ref = resources.Parse(args.instance, collection='sql.instances')
 
     original_instance_resource = sql_client.instances.Get(
-        instance_ref.Request())
+        sql_messages.SqlInstancesGetRequest(
+            project=instance_ref.project,
+            instance=instance_ref.instance))
 
     patch_instance = instances.InstancesV1Beta3.ConstructInstanceFromArgs(
         sql_messages, args, original=original_instance_resource)
@@ -276,14 +278,21 @@ class Patch(_BasePatch, base.Command):
     )
 
     if args.async:
-      return sql_client.operations.Get(operation_ref.Request())
+      return sql_client.operations.Get(
+          sql_messages.SqlOperationsGetRequest(
+              project=operation_ref.project,
+              instance=operation_ref.instance,
+              operation=operation_ref.operation))
 
     operations.OperationsV1Beta3.WaitForOperation(
         sql_client, operation_ref, 'Patching Cloud SQL instance')
 
     log.UpdatedResource(instance_ref)
 
-    changed_instance_resource = sql_client.instances.Get(instance_ref.Request())
+    changed_instance_resource = sql_client.instances.Get(
+        sql_messages.SqlInstancesGetRequest(
+            project=instance_ref.project,
+            instance=instance_ref.instance))
     return _Result(changed_instance_resource, original_instance_resource)
 
 
@@ -364,7 +373,9 @@ class PatchBeta(_BasePatch, base.Command):
     instance_ref = resources.Parse(args.instance, collection='sql.instances')
 
     original_instance_resource = sql_client.instances.Get(
-        instance_ref.Request())
+        sql_messages.SqlInstancesGetRequest(
+            project=instance_ref.project,
+            instance=instance_ref.instance))
 
     patch_instance = instances.InstancesV1Beta4.ConstructInstanceFromArgs(
         sql_messages, args, original=original_instance_resource)
@@ -391,12 +402,19 @@ class PatchBeta(_BasePatch, base.Command):
     )
 
     if args.async:
-      return sql_client.operations.Get(operation_ref.Request())
+      return sql_client.operations.Get(
+          sql_messages.SqlOperationsGetRequest(
+              project=operation_ref.project,
+              instance=operation_ref.instance,
+              operation=operation_ref.operation))
 
     operations.OperationsV1Beta4.WaitForOperation(
         sql_client, operation_ref, 'Patching Cloud SQL instance')
 
     log.UpdatedResource(instance_ref)
 
-    changed_instance_resource = sql_client.instances.Get(instance_ref.Request())
+    changed_instance_resource = sql_client.instances.Get(
+        sql_messages.SqlInstancesGetRequest(
+            project=instance_ref.project,
+            instance=instance_ref.instance))
     return _Result(changed_instance_resource, original_instance_resource)

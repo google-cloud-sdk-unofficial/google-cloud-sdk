@@ -136,6 +136,7 @@ class ListAlpha(_BaseList, base_classes.BaseLister):
     # Returns a list of whitelisted protocols.
     whitelist = super(ListAlpha, self)._ProtocolWhitelist()
     whitelist.append(self.messages.HealthCheck.TypeValueValuesEnum.HTTP2.number)
+    whitelist.append(self.messages.HealthCheck.TypeValueValuesEnum.UDP.number)
     return whitelist
 
   def Format(self, args):
@@ -148,4 +149,9 @@ class ListAlpha(_BaseList, base_classes.BaseLister):
                         'http2HealthCheck.port:label=PORT',
                         'http2HealthCheck.requestPath:label=REQUEST_PATH',
                         'http2HealthCheck.proxyHeader:label=PROXY_HEADER'])
+      elif (protocol_value ==
+            self.messages.HealthCheck.TypeValueValuesEnum.UDP.number):
+        columns.extend(['udpHealthCheck.port:label=PORT',
+                        'udpHealthCheck.request:label=REQUEST',
+                        'udpHealthCheck.response:label=RESPONSE'])
     return 'table[]({columns})'.format(columns=','.join(columns))

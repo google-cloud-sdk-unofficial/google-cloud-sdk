@@ -124,6 +124,7 @@ flags.DEFINE_boolean(
     'When set to true, requests new OAuth token with GDrive scope. '
     'When set to false, requests new OAuth token without GDrive scope.')
 
+
 def ResolveApiInfoFromFlags():
   """Determine an api and api_version."""
   api_version = FLAGS.api_version

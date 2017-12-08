@@ -98,7 +98,11 @@ class SetRootPassword(base.Command):
     )
 
     if args.async:
-      return sql_client.operations.Get(operation_ref.Request())
+      return sql_client.operations.Get(
+          sql_messages.SqlOperationsGetRequest(
+              project=operation_ref.project,
+              instance=operation_ref.instance,
+              operation=operation_ref.operation))
 
     operations.OperationsV1Beta3.WaitForOperation(
         sql_client, operation_ref, 'Setting Cloud SQL instance password')

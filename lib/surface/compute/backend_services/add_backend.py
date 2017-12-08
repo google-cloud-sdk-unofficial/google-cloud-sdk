@@ -166,11 +166,13 @@ class AddBackendBeta(AddBackend):
     backend_flags.AddCapacityScalar(parser)
 
   def CreateReference(self, args):
+    """Overrides."""
     return flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
         args, self.resources,
         default_scope=compute_flags.ScopeEnum.GLOBAL)
 
   def CreateGroupReference(self, args):
+    """Overrides."""
     return instance_groups_utils.CreateInstanceGroupReference(
         scope_prompter=self,
         compute=self.compute,
@@ -191,22 +193,21 @@ class AddBackendAlpha(AddBackendBeta):
   def Args(parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     backend_flags.AddDescription(parser)
-    backend_flags.AddInstanceGroup(
-        parser, operation_type='add to', multizonal=True)
+    flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(
+        parser, operation_type='add')
     backend_flags.AddBalancingMode(parser)
     backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
 
   def CreateGroupReference(self, args):
-    return instance_groups_utils.CreateInstanceGroupReference(
-        scope_prompter=self,
-        compute=self.compute,
-        resources=self.resources,
-        name=args.instance_group,
-        region=args.instance_group_region,
-        zone=args.instance_group_zone,
-        zonal_resource_type='instanceGroups',
-        regional_resource_type='regionInstanceGroups')
+    """Overrides."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    return flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
+        args, holder.resources,
+        default_scope=compute_flags.ScopeEnum.ZONE,
+        scope_lister=compute_flags.GetDefaultScopeLister(
+            holder.client, self.project))
+
 
 AddBackend.detailed_help = {
     'brief': 'Add a backend to a backend service',

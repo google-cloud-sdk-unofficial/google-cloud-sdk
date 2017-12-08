@@ -28,7 +28,7 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Test(base.Group):
-  """Interact with Google Cloud Test Lab.
+  """Interact with Firebase Test Lab.
 
   Explore devices and OS versions available as test targets, run tests, monitor
   test progress, and view detailed test results.
