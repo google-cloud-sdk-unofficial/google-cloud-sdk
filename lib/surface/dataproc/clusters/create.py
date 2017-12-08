@@ -30,6 +30,7 @@ from googlecloudsdk.command_lib.compute.instances import flags as instances_flag
 from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.util import times
 
 
 def _CommonArgs(parser):
@@ -408,6 +409,22 @@ class Create(base.CreateCommand):
         initializationActions=init_actions,
         softwareConfig=software_config,)
 
+    if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+      lifecycle_config = dataproc.messages.LifecycleConfig()
+      changed_config = False
+      if args.max_age is not None:
+        lifecycle_config.autoDeleteTtl = str(args.max_age) + 's'
+        changed_config = True
+      if args.expiration_time is not None:
+        lifecycle_config.autoDeleteTime = times.FormatDateTime(
+            args.expiration_time)
+        changed_config = True
+      if args.max_idle is not None:
+        lifecycle_config.idleDeleteTtl = str(args.max_idle) + 's'
+        changed_config = True
+      if changed_config:
+        cluster_config.lifecycleConfig = lifecycle_config
+
     # Secondary worker group is optional. However, users may specify
     # future pVM disk size at creation time.
     if (args.num_preemptible_workers is not None or
@@ -519,6 +536,27 @@ class CreateBeta(Create):
       A single node cluster has all master and worker components.
       It cannot have any separate worker nodes.
       """)
+
+    parser.add_argument(
+        '--max-idle',
+        type=arg_parsers.Duration(),
+        help="""\
+        The duration before cluster is auto-deleted after last job completes.
+        """,
+        hidden=True)
+
+    auto_delete_group = parser.add_mutually_exclusive_group()
+    auto_delete_group.add_argument(
+        '--max-age',
+        type=arg_parsers.Duration(),
+        help='The lifespan of the cluster before it is auto-deleted.',
+        hidden=True)
+
+    auto_delete_group.add_argument(
+        '--expiration-time',
+        type=arg_parsers.Datetime.Parse,
+        help='The time when cluster will be auto-deleted.',
+        hidden=True)
 
     for instance_type in ('master', 'worker'):
       help_msg = """\

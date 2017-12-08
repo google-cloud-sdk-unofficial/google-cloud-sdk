@@ -139,7 +139,7 @@ def _pick_unused_port_without_server():  # Protected. pylint: disable=invalid-na
     # Try random ports first.
     rng = random.Random()
     for _ in range(10):
-        port = int(rng.randrange(32768, 60000))
+        port = int(rng.randrange(15000, 25000))
         if is_port_free(port):
             return port
 
@@ -201,8 +201,9 @@ def get_port_from_port_server(portserver_address, pid=None):
             buf = sock.recv(1024)
         finally:
             sock.close()
-    except socket.error:
-        print('Socket error when connecting to portserver.', file=sys.stderr)
+    except socket.error as e:
+        print('Socket error when connecting to portserver:', e,
+              file=sys.stderr)
         return None
 
     try:

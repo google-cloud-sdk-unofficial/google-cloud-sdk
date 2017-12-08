@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
+from googlecloudsdk.core.docker import client_lib as docker_client_utils
 from googlecloudsdk.core.docker import constants
 from googlecloudsdk.core.docker import docker
 
@@ -132,7 +133,7 @@ class Docker(base.Command):
     docker_args = (docker_args if not args.docker_host else
                    ['-H', args.docker_host] + docker_args)
 
-    result = docker.Execute(docker_args)
+    result = docker_client_utils.Execute(docker_args)
     # Explicitly avoid displaying an error message that might
     # distract from the docker error message already displayed.
     if result:

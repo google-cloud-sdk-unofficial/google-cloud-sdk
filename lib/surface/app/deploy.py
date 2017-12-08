@@ -83,7 +83,7 @@ class DeployBeta(base.SilentCommand):
         enable_endpoints=True,
         use_beta_stager=True,
         runtime_builder_strategy=runtime_builder_strategy,
-        parallel_build=False)
+        parallel_build=True)
 
 
 DeployGA.detailed_help = _DETAILED_HELP

@@ -18,6 +18,7 @@ import json
 import sys
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 
 
 class ListFromJson(base.ListCommand):
@@ -48,8 +49,16 @@ class ListFromJson(base.ListCommand):
 
   def Run(self, args):
     if args.json_file:
-      with open(args.json_file, 'r') as f:
-        resources = json.load(f)
+      try:
+        with open(args.json_file, 'r') as f:
+          resources = json.load(f)
+      except (IOError, ValueError) as e:
+        raise exceptions.BadFileException(
+            'Cannot read [{}]: {}'.format(args.json_file, e))
     else:
-      resources = json.load(sys.stdin)
+      try:
+        resources = json.load(sys.stdin)
+      except (IOError, ValueError) as e:
+        raise exceptions.BadFileException(
+            'Cannot read the standard input: {}'.format(e))
     return resources

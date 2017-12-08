@@ -34,8 +34,8 @@ class List(base.ListCommand):
 
     request_data = lister.ParseZonalFlags(args, holder.resources)
 
-    list_implementation = lister.ZonalLister(
-        client, client.apitools_client.instances)
+    list_implementation = lister.ZonalParallelLister(
+        client, client.apitools_client.instances, holder.resources)
 
     return lister.Invoke(request_data, list_implementation)
 

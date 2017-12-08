@@ -14,40 +14,39 @@
 
 """Command for listing subnetworks."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import lister
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.networks.subnets import flags
 
 
-class List(base_classes.RegionalLister):
+class List(base.ListCommand):
   """List subnetworks."""
 
   @staticmethod
   def Args(parser):
-    base_classes.RegionalLister.Args(parser)
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    lister.AddRegionsArg(parser)
 
     parser.add_argument(
         '--network',
         help='Only show subnetworks of a specific network.')
 
-    parser.display_info.AddFormat("""
-          table(
-            name,
-            region.basename(),
-            network.basename(),
-            ipCidrRange:label=RANGE
-          )
-    """)
-
-  @property
-  def service(self):
-    return self.compute.subnetworks
-
-  @property
-  def resource_type(self):
-    return 'subnetworks'
-
   def Run(self, args):
-    for resource in super(List, self).Run(args):
-      if args.network is None or resource.get('network', None) == args.network:
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    request_data = lister.ParseRegionalFlags(args, holder.resources)
+
+    list_implementation = lister.RegionalLister(
+        client, client.apitools_client.subnetworks)
+
+    for resource in lister.Invoke(request_data, list_implementation):
+      if args.network is None:
         yield resource
+      elif 'network' in resource:
+        network_ref = holder.resources.Parse(resource['network'])
+        if network_ref.Name() == args.network:
+          yield resource
 
 
 List.detailed_help = base_classes.GetRegionalListerHelp('subnetworks')

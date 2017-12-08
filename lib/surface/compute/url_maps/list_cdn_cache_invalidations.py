@@ -18,12 +18,13 @@ import sys
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
-from googlecloudsdk.api_lib.compute import request_helper
-from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
+from googlecloudsdk.core.resource import resource_projector
 
 
-class ListCacheInvalidations(base_classes.BaseLister):
+class ListCacheInvalidations(base.ListCommand):
   """List Cloud CDN cache invalidations for a URL map."""
 
   detailed_help = {
@@ -43,58 +44,42 @@ which have completed.
 
   @staticmethod
   def Args(parser):
+    parser.display_info.AddFormat("""\
+        table(
+          description,
+          operation_http_status():label=HTTP_STATUS,
+          status,
+          insertTime:label=TIMESTAMP
+        )""")
     parser.add_argument('urlmap', help='The name of the URL map.')
 
-  @property
-  def resource_type(self):
-    return 'invalidations'
-
-  @property
-  def global_service(self):
-    return self.compute.globalOperations
-
-  def GetUrlMapGetRequest(self, args):
+  def GetUrlMapGetRequest(self, client, args):
     return (
-        self.compute.urlMaps,
+        client.apitools_client.urlMaps,
         'Get',
-        self.messages.ComputeUrlMapsGetRequest(
-            project=self.project,
+        client.messages.ComputeUrlMapsGetRequest(
+            project=properties.VALUES.core.project.GetOrFail(),
             urlMap=args.urlmap))
 
-  def GetResources(self, args, errors):
-    get_request = self.GetUrlMapGetRequest(args)
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-    new_errors = []
-    objects = list(request_helper.MakeRequests(
-        requests=[get_request],
-        http=self.http,
-        batch_url=self.batch_url,
-        errors=new_errors))
-    errors.extend(new_errors)
-    if new_errors:
-      utils.RaiseToolException(
-          errors,
-          error_message='Could not fetch resource:')
+    args.uri = None
+    get_request = self.GetUrlMapGetRequest(client, args)
+
+    objects = client.MakeRequests([get_request])
     urlmap_id = objects[0].id
     filter_expr = ('(operationType eq invalidateCache) (targetId eq '
                    '{urlmap_id})').format(urlmap_id=urlmap_id)
     max_results = args.limit or constants.MAX_RESULTS_PER_PAGE
-    project = self.project
-    requests = [
-        (self.global_service, 'AggregatedList',
-         self.global_service.GetRequestType('AggregatedList')(
-             filter=filter_expr,
-             maxResults=max_results,
-             orderBy='creationTimestamp desc',
-             project=project))
-    ]
-    return request_helper.MakeRequests(requests=requests,
-                                       http=self.http,
-                                       batch_url=self.batch_url,
-                                       errors=errors)
-
-  def Run(self, args):
-    args.names = []
-    args.regexp = None
-    args.uri = None
-    return super(ListCacheInvalidations, self).Run(args)
+    project = properties.VALUES.core.project.GetOrFail()
+    requests = [(client.apitools_client.globalOperations, 'AggregatedList',
+                 client.apitools_client.globalOperations.GetRequestType(
+                     'AggregatedList')(
+                         filter=filter_expr,
+                         maxResults=max_results,
+                         orderBy='creationTimestamp desc',
+                         project=project))]
+    return resource_projector.MakeSerializable(
+        client.MakeRequests(requests=requests))

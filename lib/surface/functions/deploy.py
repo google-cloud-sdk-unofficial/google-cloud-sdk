@@ -13,12 +13,12 @@
 # limitations under the License.
 
 """'functions deploy' command."""
-import argparse
 import httplib
 
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.api_lib.functions import exceptions
 from googlecloudsdk.api_lib.functions import operations
 from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.calliope import actions
@@ -48,15 +48,19 @@ def _FunctionArgs(parser):
       The amount of memory allocated to your function.
 
       Allowed values are: 128MB, 256MB, 512MB, 1024MB, and 2048MB. By default,
-      256 MB is allocated to each function.""")
+      256 MB is allocated to each function. When deploying an update to an
+      existing function it will keep its old memory limit unless you specify
+      this flag.""")
   parser.add_argument(
       '--timeout',
-      help=('The function execution timeout, e.g. 30s for 30 seconds. '
-            'Defaults to 60 seconds.'),
+      help="""\
+      The function execution timeout, e.g. 30s for 30 seconds. Defaults to
+      original value for existing function or 60 seconds for new functions.""",
       type=arg_parsers.Duration(lower_bound='1s'))
   parser.add_argument(
       '--retry',
-      help=argparse.SUPPRESS,
+      help=('If specified, then the function will be retried in case of a '
+            'failure.'),
       action='store_true',
   )
 
@@ -114,6 +118,9 @@ def _SourceCodeArgs(parser):
       * https://source.developers.google.com/projects/([^/]+)/repos/([^/]+)/moveable-aliases/([^/]+)
       * https://source.developers.google.com/projects/([^/]+)/repos/([^/]+)/fixed-aliases/([^/]+)
       * https://source.developers.google.com/projects/([^/]+)/repos/([^/]+)
+
+      If source location is not explicitly set new functions deploy current
+      directory. Existing functions keep their old source.
       """)
 
   source_group = parser.add_mutually_exclusive_group()
@@ -201,17 +208,26 @@ def _SourceCodeArgs(parser):
 
 def _TriggerArgs(parser):
   """Add arguments specyfying functions trigger to the parser."""
-  trigger_group = parser.add_mutually_exclusive_group(required=True)
+  # You can also use --trigger-provider but it is hidden argument so not
+  # mentioning it for now.
+  one_trigger_mandatory_for_new_deployment = (
+      ' If you don\'t specify a trigger when deploying an update to an '
+      'existing function it will keep its current trigger. You must specify '
+      '`--trigger-topic`, `--trigger-bucket`, or `--trigger-http` when '
+      'deploying a new function.'
+  )
+  trigger_group = parser.add_mutually_exclusive_group()
   trigger_group.add_argument(
       '--trigger-topic',
       help=('Name of Pub/Sub topic. Every message published in this topic '
             'will trigger function execution with message contents passed as '
-            'input data.'),
+            'input data.' + one_trigger_mandatory_for_new_deployment),
       type=util.ValidatePubsubTopicNameOrRaise)
   trigger_group.add_argument(
       '--trigger-bucket',
       help=('Google Cloud Storage bucket name. Every change in files in this '
-            'bucket will trigger function execution.'),
+            'bucket will trigger function execution.' +
+            one_trigger_mandatory_for_new_deployment),
       type=util.ValidateAndStandarizeBucketUriOrRaise)
   trigger_group.add_argument(
       '--trigger-http', action='store_true',
@@ -219,14 +235,16 @@ def _TriggerArgs(parser):
       Function will be assigned an endpoint, which you can view by using
       the `describe` command. Any HTTP request (of a supported type) to the
       endpoint will trigger function execution. Supported HTTP request
-      types are: POST, PUT, GET, DELETE, and OPTIONS.""")
+      types are: POST, PUT, GET, DELETE, and OPTIONS."""
+      + one_trigger_mandatory_for_new_deployment)
   trigger_group.add_argument(
       '--trigger-provider',
       metavar='PROVIDER',
       choices=sorted(util.input_trigger_provider_registry.ProvidersLabels()),
       help=('Trigger this function in response to an event in another '
             'service. For a list of acceptable values, call `gcloud '
-            'functions event-types list`.'),
+            'functions event-types list`.' +
+            one_trigger_mandatory_for_new_deployment),
       hidden=True,
       )
   trigger_provider_spec_group = parser.add_argument_group()
@@ -301,27 +319,25 @@ class Deploy(base.Command):
             trigger_resource))
     return event_trigger
 
-  def _PrepareFunctionWithoutSources(
-      self, name, entry_point, timeout_sec, trigger_http, trigger_params,
-      retry):
-    """Creates a function object without filling in the sources properties.
+  def _ApplyNonSourceArgsToFunction(
+      self, function, name, entry_point, timeout_sec, trigger_http,
+      trigger_params, retry, memory):
+    """Modifies a function object without touching in the sources properties.
 
     Args:
+      function: message, function resource to be modified.
       name: str, name of the function (resource).
       entry_point: str, name of the function (in deployed code) to be executed.
       timeout_sec: int, maximum time allowed for function execution, in seconds.
       trigger_http: bool, indicates whether function should have a HTTPS
                     trigger; when truthy trigger_params argument is ignored.
-      trigger_params: None or dict from str to str, the dict is assmed to
+      trigger_params: None or dict from str to str, the dict is assumed to
                       contain exactly the following keys: trigger_provider,
                       trigger_event, trigger_resource.
       retry: bool, indicates if function should retry.
-
-    Returns:
-      The specified function with its description and configured filter.
+      memory: int, memory limit for the function in bytes.
     """
     messages = util.GetApiMessagesModule()
-    function = messages.CloudFunction()
     function.name = name
     if entry_point:
       function.entryPoint = entry_point
@@ -329,38 +345,73 @@ class Deploy(base.Command):
       function.timeout = str(timeout_sec) + 's'
     if trigger_http:
       function.httpsTrigger = messages.HTTPSTrigger()
-    else:
+    elif trigger_params:
       function.eventTrigger = self._EventTrigger(**trigger_params)
     if retry:
-      function.eventTrigger.retryPolicy = messages.RetryPolicy()
-      function.eventTrigger.retryPolicy.retryOnFailure = retry
-    return function
+      function.eventTrigger.failurePolicy = messages.FailurePolicy()
+      function.eventTrigger.failurePolicy.retry = messages.Retry()
+    elif function.eventTrigger:
+      function.eventTrigger.failurePolicy = None
+    if memory:
+      function.availableMemoryMb = utils.BytesToMb(memory)
 
-  def _DeployFunction(self, name, location, args, deploy_method,
-                      trigger_params):
-    function = self._PrepareFunctionWithoutSources(
-        name, args.entry_point, args.timeout, args.trigger_http, trigger_params,
-        args.retry)
+  def _ApplyArgsToFunction(
+      self, base_function, is_new_function, trigger_params, name, args):
+    """Apply values from args to base_function.
+
+    Args:
+        base_function: function message to modify
+        is_new_function: bool, indicates if this is a new function (and source
+                         code for it must be deployed) or an existing function
+                         (so it may keep its old source code).
+        trigger_params: parameters for creating functions trigger.
+        name: relative name of the function.
+        args: commandline args specyfying how to modify the function.
+    """
+    if args.IsSpecified('retry'):
+      retry = args.retry
+    else:
+      retry = None
+    self._ApplyNonSourceArgsToFunction(
+        base_function, name, args.entry_point, args.timeout,
+        args.trigger_http, trigger_params, retry, args.memory)
     if args.source:
       deploy_util.AddSourceToFunction(
-          function, args.source, args.include_ignored_files, args.name,
+          base_function, args.source, args.include_ignored_files, args.name,
           args.stage_bucket)
     elif args.source_url:
       messages = util.GetApiMessagesModule()
       source_path = args.source_path
       source_branch = args.source_branch or 'master'
-      function.sourceRepository = messages.SourceRepository(
+      base_function.sourceRepository = messages.SourceRepository(
           tag=args.source_tag, branch=source_branch,
           revision=args.source_revision, repositoryUrl=args.source_url,
           sourcePath=source_path)
-    else:
-      function.sourceArchiveUrl = self._PrepareSourcesOnGcs(args)
-    memory_mb = utils.BytesToMb(args.memory)
-    if memory_mb:
-      function.availableMemoryMb = memory_mb
-    return deploy_method(location, function)
+    elif is_new_function or args.local_path or args.stage_bucket:
+      # Do not change source of existing function unless instructed to.
+      base_function.sourceArchiveUrl = self._PrepareSourcesOnGcs(args)
+
+  def _ValidateAfterCheckingFunctionsExistence(self, function, args):
+    if not args.IsSpecified('stage_bucket') and (
+        function is None and not args.IsSpecified('source_url')):
+      raise exceptions.FunctionsError(
+          'argument --stage-bucket: required when the function is deployed '
+          'from a local directory (when argument --source-url is not '
+          'provided when deploying a new function)')
+
+    if function is None:
+      if (not args.IsSpecified('trigger_topic') and
+          not args.IsSpecified('trigger_bucket') and
+          not args.IsSpecified('trigger_http') and
+          not args.IsSpecified('trigger_provider')):
+        # --trigger-provider is hidden for now so not mentioning it.
+        raise calliope_exceptions.OneOfArgumentsRequiredException(
+            ['--trigger-topic', '--trigger-bucket', '--trigger-http'],
+            'You must specify a trigger when deploying a new function.'
+        )
 
   def _PrepareSourcesOnGcs(self, args):
+    """Create a zip file and upload it to GCS as specified by args."""
     with file_utils.TemporaryDirectory() as tmp_dir:
       local_path = deploy_util.GetLocalPath(args)
       zip_file = deploy_util.CreateSourcesZipFile(
@@ -400,9 +451,6 @@ class Deploy(base.Command):
     """
 
     trigger_params = deploy_util.DeduceAndCheckArgs(args)
-    if trigger_params is None and args.retry:
-      raise calliope_exceptions.ConflictingArgumentsException(
-          '--trigger-http', '--retry')
     project = properties.VALUES.core.project.Get(required=True)
     location_ref = resources.REGISTRY.Parse(
         properties.VALUES.functions.region.Get(),
@@ -417,9 +465,14 @@ class Deploy(base.Command):
     function_url = function_ref.RelativeName()
 
     function = self._GetExistingFunction(function_url)
-    if function is None:
-      return self._DeployFunction(function_url, location, args,
-                                  self._CreateFunction, trigger_params)
+    self._ValidateAfterCheckingFunctionsExistence(function, args)
+    is_new_function = function is None
+    if is_new_function:
+      messages = util.GetApiMessagesModule()
+      function = messages.CloudFunction()
+    self._ApplyArgsToFunction(function, is_new_function, trigger_params,
+                              function_url, args)
+    if is_new_function:
+      return self._CreateFunction(location, function)
     else:
-      return self._DeployFunction(function_url, location, args,
-                                  self._UpdateFunction, trigger_params)
+      return self._UpdateFunction(location, function)

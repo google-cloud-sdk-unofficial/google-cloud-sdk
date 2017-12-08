@@ -134,9 +134,9 @@ class Run(base.Command):
         'module_path',
         action=AddCompleterResourceFlags,
         help=('The completer module path. Run $ gcloud meta completers list` '
-              'to list the avilable completers. A completer module may declare '
-              'additional flags. Specify `--help` after _MODULE_PATH_ '
-              'for details on the module specific flags.'))
+              'to list the module paths of the available completers. A '
+              'completer module may declare additional flags. Specify `--help` '
+              'after _MODULE_PATH_ for details on the module specific flags.'))
 
   def Run(self, args):
     """Returns the results for one completion."""

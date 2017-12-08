@@ -40,7 +40,6 @@ class Create(base.CreateCommand):
         --range '10.240.0.0/29' \
         --accelerator-type 'tpu-v2' \
         --network my-tf-network \
-        --machine_type n1-standard-64 \
         --description 'My TF Node' \
         --version '1.1'
   """
@@ -53,7 +52,6 @@ class Create(base.CreateCommand):
     flags.GetNetworkFlag().AddToParser(parser)
     flags.GetVersionFlag().AddToParser(parser)
     flags.GetRangeFlag().AddToParser(parser)
-    flags.GetMachineTypeFlag().AddToParser(parser)
     compute_flags.AddZoneFlag(
         parser,
         resource_type='tpu',
@@ -70,7 +68,6 @@ class Create(base.CreateCommand):
         description=args.description,
         network=args.network,
         accelerator_type=args.accelerator_type,
-        machine_type=args.machine_type,
         version=args.version,
         zone=args.zone)
 

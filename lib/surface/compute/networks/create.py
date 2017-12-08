@@ -61,7 +61,9 @@ class Create(base.CreateCommand):
     cls.NETWORK_ARG = flags.NetworkArgument()
     cls.NETWORK_ARG.AddArgument(parser, operation_type='create')
 
-    network_utils.AddCreateArgs(parser)
+    network_utils.AddCreateBaseArgs(parser)
+    # TODO(b/64980447): Deprecate this arg and use --subnet-mode instead.
+    network_utils.AddCreateModeArg(parser)
 
   def Run(self, args):
     """Issues the request necessary for adding the network."""
@@ -110,7 +112,7 @@ class Create(base.CreateCommand):
     EpilogText(self._network_name)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CreateBeta(base.CreateCommand):
   """Create a Google Compute Engine network.
 
@@ -126,11 +128,13 @@ class CreateBeta(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    parser.display_info.AddFormat(flags.ALPHA_BETA_LIST_FORMAT)
+    parser.display_info.AddFormat(flags.BETA_LIST_FORMAT)
     cls.NETWORK_ARG = flags.NetworkArgument()
     cls.NETWORK_ARG.AddArgument(parser, operation_type='create')
 
-    network_utils.AddCreateBetaArgs(parser)
+    network_utils.AddCreateBaseArgs(parser)
+    network_utils.AddCreateSubnetModeArg(parser)
+    network_utils.AddCreateBgpRoutingModeArg(parser)
 
   def Run(self, args):
     """Issues the request necessary for adding the network."""
@@ -158,23 +162,3 @@ class CreateBeta(base.CreateCommand):
 
   def Epilog(self, resources_were_displayed=True):
     EpilogText(self._network_name)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  """Create a Google Compute Engine network.
-
-  *{command}* is used to create virtual networks. A network
-  performs the same function that a router does in a home
-  network: it describes the network range and gateway IP
-  address, handles communication between instances, and serves
-  as a gateway between instances and callers outside the
-  network.
-  """
-
-  @classmethod
-  def Args(cls, parser):
-    parser.display_info.AddFormat(flags.ALPHA_BETA_LIST_FORMAT)
-    cls.NETWORK_ARG = flags.NetworkArgument()
-    cls.NETWORK_ARG.AddArgument(parser)
-    network_utils.AddCreateAlphaArgs(parser)

@@ -18,7 +18,9 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA,
+                    base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Auth(base.Group):
   """Manage oauth2 credentials for the Google Cloud SDK.
 

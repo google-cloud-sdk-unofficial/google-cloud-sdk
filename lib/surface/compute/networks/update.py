@@ -20,7 +20,7 @@ from googlecloudsdk.command_lib.compute.networks import network_utils
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine Network."""
 
@@ -30,7 +30,7 @@ class Update(base.UpdateCommand):
   def Args(cls, parser):
     cls.NETWORK_ARG = flags.NetworkArgument()
     cls.NETWORK_ARG.AddArgument(parser)
-    network_utils.AddUpdateAlphaArgs(parser)
+    network_utils.AddUpdateBetaArgs(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -64,18 +64,6 @@ class Update(base.UpdateCommand):
               networkResource=network_resource))
 
     return resource
-
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(Update):
-  """Update a Google Compute Engine network."""
-
-  @classmethod
-  def Args(cls, parser):
-    cls.NETWORK_ARG = flags.NetworkArgument()
-    cls.NETWORK_ARG.AddArgument(parser)
-    network_utils.AddUpdateBetaArgs(parser)
 
 
 Update.detailed_help = {

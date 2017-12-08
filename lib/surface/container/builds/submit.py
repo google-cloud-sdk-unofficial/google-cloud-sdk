@@ -165,7 +165,7 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
       FailedBuildException: If the build is completed and not 'SUCCESS'.
     """
 
-    project = properties.VALUES.core.project.Get()
+    project = properties.VALUES.core.project.Get(required=True)
     safe_project = project.replace(':', '_')
     safe_project = safe_project.replace('.', '_')
     # The string 'google' is not allowed in bucket names.

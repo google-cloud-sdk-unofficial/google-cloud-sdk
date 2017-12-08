@@ -31,6 +31,7 @@ class List(base.ListCommand):
   def Args(parser):
     parser.display_info.AddFormat("""\
        table[box](module_path,
+                  type,
                   collection,
                   api_version,
                   attachments:format="table[box](

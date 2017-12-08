@@ -15,6 +15,7 @@
 
 from googlecloudsdk.api_lib.app.api import appengine_firewall_api_client as api_client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.app import firewall_rules_util
 from googlecloudsdk.command_lib.app import flags
 from googlecloudsdk.core import log
@@ -41,9 +42,13 @@ class Delete(base.DeleteCommand):
     flags.FIREWALL_PRIORITY_FLAG.AddToParser(parser)
 
   def Run(self, args):
+    priority = firewall_rules_util.ParsePriority(args.priority)
+    if priority == firewall_rules_util.DEFAULT_RULE_PRIORITY:
+      raise exceptions.InvalidArgumentException(
+          'priority', 'The `default` can not be deleted, only updated.')
+
     console_io.PromptContinue(
-        prompt_string='You are about to delete rule [{0}].'.format(
-            args.priority),
+        prompt_string='You are about to delete rule [{0}].'.format(priority),
         cancel_on_no=True)
 
     client = api_client.AppengineFirewallApiClient.GetApiClient('v1beta')
@@ -51,7 +56,7 @@ class Delete(base.DeleteCommand):
     registry.RegisterApiByName('appengine', 'v1beta')
 
     resource = firewall_rules_util.ParseFirewallRule(registry, client.project,
-                                                     args.priority)
+                                                     priority)
     client.Delete(resource)
 
-    log.DeletedResource(args.priority)
+    log.DeletedResource(priority)

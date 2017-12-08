@@ -82,7 +82,7 @@ class Start(base.Command):
       component = emulator.emulator_component
       if (args.emulators is not None and
           (flag in args.emulators or 'all' in args.emulators)):
-        java.CheckIfJavaIsInstalled(title)
+        java.RequireJavaInstalled(title)
         util.EnsureComponentIsInstalled(component, title)
 
     local_emulator_ports = {}

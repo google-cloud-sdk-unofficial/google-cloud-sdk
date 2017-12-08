@@ -17,8 +17,6 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import flags
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
 class List(base.ListCommand):
@@ -51,11 +49,7 @@ class List(base.ListCommand):
     client = cloudkms_base.GetClientInstance()
     messages = cloudkms_base.GetMessagesModule()
 
-    key_ring_ref = resources.REGISTRY.Create(
-        flags.KEY_RING_COLLECTION,
-        keyRingsId=args.MakeGetOrRaise('--keyring'),
-        locationsId=args.MakeGetOrRaise('--location'),
-        projectsId=properties.VALUES.core.project.GetOrFail)
+    key_ring_ref = flags.ParseKeyRingName(args)
 
     request = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysListRequest(
         parent=key_ring_ref.RelativeName())

@@ -246,7 +246,6 @@ class CreateAlpha(CreateGA):
         parser, operation_type='create')
     instance_groups_flags.AddZonesFlag(parser)
 
-  # TODO(b/62898965): Use ResourcceResolver instead of resources.Parse().
   def CreateGroupReference(self, args, client, resources):
     if args.zones:
       zone_ref = resources.Parse(
@@ -265,7 +264,6 @@ class CreateAlpha(CreateGA):
                 default_scope=compute_scope.ScopeEnum.ZONE,
                 scope_lister=flags.GetDefaultScopeLister(client))
 
-  # TODO(b/62898965): Use ResourcceResolver instead of resources.Parse().
   def _CreateDistributionPolicy(self, zones, resources, messages):
     if zones:
       policy_zones = []
