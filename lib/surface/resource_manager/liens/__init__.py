@@ -13,6 +13,7 @@
 # limitations under the License.
 """The group for the Cloud Resource Manager Liens CLI."""
 
+from googlecloudsdk.api_lib.resource_manager import liens
 from googlecloudsdk.calliope import base
 
 
@@ -23,3 +24,7 @@ class Liens(base.Group):
 
   Commands to manage your Cloud Resource Liens.
   """
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddUriFunc(liens.GetUri)

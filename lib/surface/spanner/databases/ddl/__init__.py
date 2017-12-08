@@ -17,5 +17,5 @@ from googlecloudsdk.calliope import base
 
 
 class Ddl(base.Group):
-  """Cloud Spanner databases DDL commands."""
+  """Manage the DDL for Cloud Spanner databases."""
   pass

@@ -67,9 +67,16 @@ class List(base.ListCommand):
                               'unspecified or 0, defaults to the length of the '
                               'reference.'))
     base.PAGE_SIZE_FLAG.SetDefault(parser, 512)
-
-  def Collection(self):
-    return 'genomics.variants'
+    parser.display_info.AddFormat("""
+          table(
+            variantSetId,
+            referenceName,
+            start,
+            end,
+            referenceBases,
+            alternateBases
+          )
+        """)
 
   def RewriteError(self, msg):
     return (msg.replace('variantSetIds', '--variant-set-id')

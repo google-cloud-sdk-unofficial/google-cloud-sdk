@@ -15,6 +15,7 @@
 
 from apitools.base.py import exceptions
 
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -57,13 +58,14 @@ class Delete(base.DeleteCommand):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
     operation_ref = None
 
     validate.ValidateInstanceName(args.instance)
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
 
     if not console_io.PromptContinue(
         'All of the instance data will be lost when the instance is deleted.'):
@@ -74,7 +76,7 @@ class Delete(base.DeleteCommand):
               instance=instance_ref.instance,
               project=instance_ref.project))
 
-      operation_ref = resources.Create(
+      operation_ref = client.resource_parser.Create(
           'sql.operations',
           operation=result.operation,
           project=instance_ref.project,
@@ -125,13 +127,14 @@ class DeleteBeta(base.Command):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
     operation_ref = None
 
     validate.ValidateInstanceName(args.instance)
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
 
     if not console_io.PromptContinue(
         'All of the instance data will be lost when the instance is deleted.'):
@@ -142,7 +145,7 @@ class DeleteBeta(base.Command):
               instance=instance_ref.instance,
               project=instance_ref.project))
 
-      operation_ref = resources.Create(
+      operation_ref = client.resource_parser.Create(
           'sql.operations',
           operation=result.name,
           project=instance_ref.project)

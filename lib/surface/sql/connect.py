@@ -19,6 +19,7 @@ import datetime
 from apitools.base.protorpclite import util as protorpc_util
 from apitools.base.py import exceptions as apitools_exceptions
 
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import constants
 from googlecloudsdk.api_lib.sql import network
 from googlecloudsdk.api_lib.sql import operations
@@ -84,8 +85,7 @@ def _WhitelistClientIP(instance_ref, sql_client, sql_messages, resources,
   operation_ref = resources.Create(
       'sql.operations',
       operation=result.name,
-      project=instance_ref.project,
-      instance=instance_ref.instance)
+      project=instance_ref.project)
   message = ('Whitelisting your IP for incoming connection for '
              '{0} {1}'.format(minutes, text.Pluralize(minutes, 'minute')))
 
@@ -157,15 +157,16 @@ class Connect(base.Command):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     validate.ValidateInstanceName(args.instance)
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
 
     acl_name = _WhitelistClientIP(instance_ref, sql_client, sql_messages,
-                                  resources)
+                                  client.resource_parser)
 
     # Get the client IP that the server sees. Sadly we can only do this by
     # checking the name of the authorized network rule.

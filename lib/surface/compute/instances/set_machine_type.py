@@ -68,7 +68,10 @@ class SetMachineType(base_classes.NoOutputAsyncMutator):
 
     machine_type_uri = self.resources.Parse(
         machine_type, collection='compute.machineTypes',
-        params={'zone': instance_ref.zone}).SelfLink()
+        params={
+            'project': instance_ref.project,
+            'zone': instance_ref.zone
+        }).SelfLink()
 
     set_machine_type_request = self.messages.InstancesSetMachineTypeRequest(
         machineType=machine_type_uri)

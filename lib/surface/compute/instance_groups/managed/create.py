@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
+from googlecloudsdk.core import properties
 
 
 def _AddInstanceGroupManagerArgs(parser):
@@ -113,7 +114,9 @@ class CreateGA(base_classes.BaseAsyncCreator,
           zone=group_ref.zone)
     else:
       region_link = self.resources.Parse(
-          group_ref.region, collection='compute.regions')
+          group_ref.region,
+          params={'project': properties.VALUES.core.project.GetOrFail},
+          collection='compute.regions')
       instance_group_manager.region = region_link.SelfLink()
       return self.messages.ComputeRegionInstanceGroupManagersInsertRequest(
           instanceGroupManager=instance_group_manager,
@@ -135,12 +138,18 @@ class CreateGA(base_classes.BaseAsyncCreator,
                ComputeManagedInstanceGroupsInsertRequest message object.
     """
     group_ref = self.CreateGroupReference(args)
-    template_ref = self.resources.Parse(args.template,
-                                        collection='compute.instanceTemplates')
+    template_ref = self.resources.Parse(
+        args.template,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='compute.instanceTemplates')
     if args.target_pool:
       region = self.GetRegionForGroup(group_ref)
       pool_refs = [self.resources.Parse(
-          pool, params={'region': region},
+          pool,
+          params={
+              'project': properties.VALUES.core.project.GetOrFail,
+              'region': region
+          },
           collection='compute.targetPools') for pool in args.target_pool]
       pools = [pool_ref.SelfLink() for pool_ref in pool_refs]
     else:

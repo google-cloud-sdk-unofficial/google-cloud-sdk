@@ -13,6 +13,7 @@
 # limitations under the License.
 """Causes a high-availability Cloud SQL instance to failover to its replica."""
 
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -52,12 +53,13 @@ class Failover(base.Command):
           command.
     """
 
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     validate.ValidateInstanceName(args.instance)
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
 
     console_io.PromptContinue(
         message='Failover will be initiated. Existing connections to the '
@@ -80,7 +82,7 @@ class Failover(base.Command):
                 settingsVersion=instance.settings.settingsVersion)))
     result_operation = sql_client.instances.Failover(request)
 
-    operation_ref = resources.Create(
+    operation_ref = client.resource_parser.Create(
         'sql.operations',
         operation=result_operation.name,
         project=instance_ref.project)

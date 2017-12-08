@@ -13,19 +13,16 @@
 # limitations under the License.
 """Command to move a folder."""
 
-import textwrap
-
 from googlecloudsdk.api_lib.resource_manager import folders
 from googlecloudsdk.api_lib.resource_manager import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_manager import flags
-from googlecloudsdk.command_lib.resource_manager import folders_base
 from googlecloudsdk.core import log
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Move(folders_base.FolderCommand):
+class Move(base.UpdateCommand):
   """Move a folder to a new position within the same organization.
 
   Move the given folder under a new parent folder or under the organization.
@@ -36,21 +33,19 @@ class Move(folders_base.FolderCommand):
       * There is no parent with the given type and ID.
       * The new parent is not in the same organization of the given folder.
       * Permission missing for performing this move.
+
+  ## EXAMPLES
+
+  The following command moves a folder with the ID `123456789` into a
+  folder with the ID `2345`:
+
+    $ {command} 123456789 --folder 2345
+
+  The following command moves a folder with the ID `123456789` into an
+  organization with ID `1234`:
+
+    $ {command} 123456789 --organization 1234
   """
-
-  detailed_help = {
-      'EXAMPLES': textwrap.dedent("""
-        The following command moves a folder with the ID `123456789` into a
-        folder with the ID `2345`:
-
-        $ {command} 123456789 --folder 2345
-
-        The following command moves a folder with the ID `123456789` into an
-        organization with ID `1234`:
-
-        $ {command} 123456789 --organization 1234
-        """),
-  }
 
   @staticmethod
   def Args(parser):

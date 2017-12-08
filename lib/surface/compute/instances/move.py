@@ -44,7 +44,9 @@ class Move(base.SilentCommand):
         args, holder.resources,
         scope_lister=flags.GetDefaultScopeLister(holder.client))
     destination_zone = holder.resources.Parse(
-        args.destination_zone, collection='compute.zones')
+        args.destination_zone,
+        params={'project': target_instance.project},
+        collection='compute.zones')
 
     client = holder.client.apitools_client
     messages = holder.client.messages
@@ -59,7 +61,9 @@ class Move(base.SilentCommand):
 
     result = client.projects.MoveInstance(request)
     operation_ref = resources.REGISTRY.Parse(
-        result.name, collection='compute.globalOperations')
+        result.name,
+        params={'project': target_instance.project},
+        collection='compute.globalOperations')
 
     if args.async:
       log.UpdatedResource(
@@ -73,7 +77,10 @@ class Move(base.SilentCommand):
 
     destination_instance_ref = holder.resources.Parse(
         target_instance.Name(), collection='compute.instances',
-        params={'zone': destination_zone.Name()})
+        params={
+            'project': target_instance.project,
+            'zone': destination_zone.Name()
+        })
 
     operation_poller = poller.Poller(client.instances, destination_instance_ref)
     return waiter.WaitFor(

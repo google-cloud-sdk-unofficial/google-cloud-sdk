@@ -20,6 +20,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.users import utils as user_utils
 from googlecloudsdk.command_lib.util import gaia
 from googlecloudsdk.command_lib.util import time_util
+from googlecloudsdk.core import properties
 
 
 class AddKeys(base_classes.NoOutputAsyncMutator):
@@ -78,7 +79,9 @@ class AddKeys(base_classes.NoOutputAsyncMutator):
       name = gaia.GetDefaultAccountName(self.http)
 
     user_ref = self.clouduseraccounts_resources.Parse(
-        name, collection='clouduseraccounts.users')
+        name,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='clouduseraccounts.users')
 
     valid_key_types = [
         'ssh-rsa', 'ssh-dss', 'ecdsa-sha2-nistp256', 'ssh-ed25519']

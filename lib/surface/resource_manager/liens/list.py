@@ -17,16 +17,25 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.resource_manager import error
 from googlecloudsdk.api_lib.resource_manager import liens
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.resource_manager import liens_base
 from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(liens_base.LienCommand, base.ListCommand):
+class List(base.ListCommand):
   """List liens associated with the specified project.
 
   List all liens which are associated with the specified project.
   """
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""
+          table(
+            name.segment(),
+            origin,
+            reason
+          )
+        """)
 
   @error.YieldErrorDetails
   def Run(self, args):

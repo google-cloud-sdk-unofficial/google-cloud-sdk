@@ -11,10 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Sets the IAM policy for the repository.
-"""
-
-import textwrap
+"""Sets the IAM policy for the repository."""
 
 from googlecloudsdk.api_lib.sourcerepo import sourcerepo
 from googlecloudsdk.calliope import base
@@ -26,24 +23,16 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SetIamPolicy(base.UpdateCommand):
-  """Sets the IAM policy for the named repository."""
+  """Sets the IAM policy for the named repository.
 
-  detailed_help = {
-      'DESCRIPTION':
-          """\
-          This command sets the IAM policy for the given repository from the
-          policy in the provided file.
-      """,
-      'EXAMPLES':
-          textwrap.dedent("""\
-          To set the IAM policy, issue the following command:
-            $ gcloud beta source repos set-iam-policy REPO_NAME POLICY_FILE
-      """),
-  }
+  This command sets the IAM policy for the given repository from the
+  policy in the provided file.
 
-  def Format(self, unused_args):
-    """Overrides super.Format to set the default printing style to yaml."""
-    return 'yaml'
+  ## EXAMPLES
+
+  To set the IAM policy, issue the following command:
+    $ gcloud beta source repos set-iam-policy REPO_NAME POLICY_FILE
+  """
 
   @staticmethod
   def Args(parser):
@@ -55,6 +44,7 @@ class SetIamPolicy(base.UpdateCommand):
         help=('JSON file with IAM policy. '
               'See https://cloud.google.com/resource-manager/'
               'reference/rest/Shared.Types/Policy'))
+    parser.display_info.AddFormat('default')
 
   def Run(self, args):
     """Sets the IAM policy for the repository.

@@ -29,25 +29,21 @@ from googlecloudsdk.third_party.appengine.tools import context_util
 
 
 class Upload(base.CreateCommand):
-  """Upload a source capture from given input files."""
+  """Upload a source capture from given input files.
 
-  detailed_help = {
-      'DESCRIPTION': """\
-          This command uploads a capture of the specified source directory to
-          a Google-hosted Git repository accessible with the current project's
-          credentials. If the name of an existing capture is provided, the
-          existing capture will be modified to include the new files.
-          Otherwise a new capture will be created to hold the files.
+  This command uploads a capture of the specified source directory to
+  a Google-hosted Git repository accessible with the current project's
+  credentials. If the name of an existing capture is provided, the
+  existing capture will be modified to include the new files.
+  Otherwise a new capture will be created to hold the files.
 
-          When creating a capture, this command can also produce a source
-          context json file describing the capture.
+  When creating a capture, this command can also produce a source
+  context json file describing the capture.
 
-          See [](https://cloud.google.com/tools/cloud-debugger/) for details on
-          where to deploy the source context json file in order to enable
-          Cloud Diagnostic tools to display the captured sources.
-
-      """
-  }
+  See https://cloud.google.com/tools/cloud-debugger/ for details on
+  where to deploy the source context json file in order to enable
+  Cloud Diagnostic tools to display the captured sources.
+  """
 
   @staticmethod
   def Args(parser):
@@ -80,12 +76,13 @@ class Upload(base.CreateCommand):
             files (source-context.json and source-contexts.json) will be
             created in that directory.
         """)
-
-  def Collection(self):
-    return 'source.captures.upload'
-
-  def Format(self, args):
-    return self.ListFormat(args)
+    parser.display_info.AddFormat("""
+          flattened(
+            capture.id,
+            context_file,
+            extended_context_file
+          )
+        """)
 
   def Run(self, args):
     """Run the capture upload command."""

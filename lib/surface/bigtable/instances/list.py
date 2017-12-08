@@ -26,7 +26,13 @@ class ListInstances(base.ListCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    pass
+    parser.display_info.AddFormat("""
+          table(
+            name.basename():sort=1,
+            displayName,
+            state
+          )
+        """)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -49,6 +55,3 @@ class ListInstances(base.ListCommand):
         msg,
         field='instances',
         batch_size_attribute=None)
-
-  def Collection(self):
-    return 'bigtable.instances.list'

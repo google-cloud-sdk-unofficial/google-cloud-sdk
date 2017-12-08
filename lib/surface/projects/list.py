@@ -36,11 +36,9 @@ class List(base.ListCommand):
     $ {command} --limit=5
   """
 
-  def Collection(self):
-    return command_lib_util.PROJECTS_COLLECTION
-
-  def GetUriFunc(self):
-    return command_lib_util.ProjectsUriFunc
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(command_lib_util.LIST_FORMAT)
 
   def Run(self, args):
     """Run the list command."""

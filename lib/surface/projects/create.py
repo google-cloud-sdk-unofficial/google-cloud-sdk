@@ -44,12 +44,6 @@ ID_DESCRIPTION = ('Project IDs must start with a lowercase letter and can '
 class _BaseCreate(object):
   """Create command base for all release tracks of project create."""
 
-  def Collection(self):
-    return command_lib_util.PROJECTS_COLLECTION
-
-  def GetUriFunc(self):
-    return command_lib_util.ProjectsUriFunc
-
   @staticmethod
   def Args(parser):
     """Default argument specification."""

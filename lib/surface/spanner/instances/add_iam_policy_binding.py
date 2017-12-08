@@ -22,7 +22,7 @@ from googlecloudsdk.core import resources
 
 
 class AddIamPolicyBinding(base.Command):
-  """Add IAM policy binding to Cloud Spanner instance."""
+  """Add an IAM policy binding to a Cloud Spanner instance."""
 
   @staticmethod
   def Args(parser):

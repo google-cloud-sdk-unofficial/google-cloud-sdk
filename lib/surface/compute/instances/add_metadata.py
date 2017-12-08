@@ -37,5 +37,16 @@ InstancesAddMetadata.detailed_help = {
 
         Only metadata keys that are provided are mutated. Existing
         metadata entries will remain unaffected.
+
+        In order to retrieve custom metadata, run:
+
+            $ gcloud compute instances describe example-instance --zone
+            us-central1-a --format='value(metadata)'
+
+        where example-instance is the name of the virtual machine instance
+        you're querying custom metadata from. For more information about
+        querying custom instance or project metadata through the Cloud Platform
+        Console or the API, see [](https://cloud.google.com/compute/docs/storing-retrieving-metadata#querying_custom_metadata)
+
         """,
 }

@@ -13,6 +13,7 @@
 # limitations under the License.
 """Command for describing groups."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.core import properties
 
 
 class Describe(base_classes.BaseAsyncMutator):
@@ -49,7 +50,9 @@ class Describe(base_classes.BaseAsyncMutator):
     """Returns a list of requests necessary for describing groups."""
 
     group_ref = self.clouduseraccounts_resources.Parse(
-        args.name, collection='clouduseraccounts.groups')
+        args.name,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='clouduseraccounts.groups')
 
     request = self.messages.ClouduseraccountsGroupsGetRequest(
         project=self.project,

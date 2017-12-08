@@ -16,12 +16,11 @@
 from googlecloudsdk.api_lib.resource_manager import error
 from googlecloudsdk.api_lib.resource_manager import liens
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.resource_manager import liens_base
 from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(liens_base.LienCommand):
+class Create(base.CreateCommand):
   """Create a new lien.
 
   Creates a new lien to be applied to a project.

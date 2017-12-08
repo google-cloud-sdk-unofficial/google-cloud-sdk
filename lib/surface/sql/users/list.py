@@ -16,6 +16,7 @@
 Lists users in a given project in the alphabetical order of the user name.
 """
 
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
@@ -50,8 +51,9 @@ class ListBeta(base.ListCommand):
       ToolException: An error other than an http error occured while executing
           the command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     project_id = properties.VALUES.core.project.Get(required=True)
 

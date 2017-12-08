@@ -28,6 +28,15 @@ class List(orgs_base.OrganizationCommand, base.ListCommand):
   in an unspecified order.
   """
 
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat('table({fields})'.format(
+        fields=','.join([
+            'displayName:label=DISPLAY_NAME',
+            'name.segment():label=ID:align=right:sort=1',
+            'owner.directoryCustomerId:label=DIRECTORY_CUSTOMER_ID:align=right'
+        ])))
+
   def Run(self, args):
     """Run the list command."""
     messages = self.OrganizationsMessages()
@@ -43,11 +52,3 @@ class List(orgs_base.OrganizationCommand, base.ListCommand):
         batch_size_attribute='pageSize',
         batch_size=args.page_size,
         field='organizations')
-
-  def Format(self, args):
-    return 'table({fields})'.format(
-        fields=','.join([
-            'displayName:label=DISPLAY_NAME',
-            'name.segment():label=ID:align=right:sort=1',
-            'owner.directoryCustomerId:label=DIRECTORY_CUSTOMER_ID:align=right'
-        ]))

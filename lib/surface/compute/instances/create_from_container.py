@@ -34,7 +34,7 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
     metadata_utils.AddMetadataArgs(parser)
     instances_flags.AddDiskArgs(parser, True)
     instances_flags.AddCreateDiskArgs(parser)
-    instances_flags.AddLocalSsdArgs(parser)
+    instances_flags.AddLocalSsdArgsWithSize(parser)
     instances_flags.AddCanIpForwardArgs(parser)
     instances_flags.AddAddressArgs(parser, instances=True)
     instances_flags.AddMachineTypeArgs(parser)
@@ -184,6 +184,7 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
           self.messages,
           x.get('device-name'),
           x.get('interface'),
+          x.get('size'),
           instance_ref.zone)
       local_ssds.append(local_ssd)
     boot_disk = instance_utils.CreateDefaultBootAttachedDiskMessage(

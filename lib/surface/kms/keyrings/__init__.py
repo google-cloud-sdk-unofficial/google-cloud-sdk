@@ -13,6 +13,7 @@
 # limitations under the License.
 """The command group for keyrings."""
 
+from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.core import resolvers
@@ -28,6 +29,8 @@ class KeyRings(base.Group):
   @staticmethod
   def Args(parser):
     flags.AddLocationFlag(parser)
+    parser.display_info.AddUriFunc(
+        cloudkms_base.MakeGetUriFunc(flags.KEY_RING_COLLECTION))
 
   def Filter(self, context, args):
     resources.REGISTRY.SetParamDefault(

@@ -15,6 +15,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.command_lib.compute.users import utils as user_utils
 from googlecloudsdk.command_lib.util import gaia
+from googlecloudsdk.core import properties
 
 
 class Describe(base_classes.BaseAsyncMutator):
@@ -52,7 +53,9 @@ class Describe(base_classes.BaseAsyncMutator):
       user = gaia.GetDefaultAccountName(self.http)
 
     user_ref = self.clouduseraccounts_resources.Parse(
-        user, collection='clouduseraccounts.users')
+        user,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='clouduseraccounts.users')
 
     request = self.messages.ClouduseraccountsUsersGetRequest(
         project=self.project,

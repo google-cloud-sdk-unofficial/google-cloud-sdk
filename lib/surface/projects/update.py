@@ -48,20 +48,12 @@ class UpdateAlpha(base.UpdateCommand):
     $ {command} example-foo-bar-1 --name="Foo Bar & Grill" --remove-labels=dive
   """
 
-  def Collection(self):
-    return command_lib_util.PROJECTS_COLLECTION
-
-  def GetUriFunc(self):
-    return command_lib_util.ProjectsUriFunc
-
   @staticmethod
   def Args(parser):
     flags.GetProjectFlag('update').AddToParser(parser)
     labels_util.AddUpdateLabelsFlags(parser)
     parser.add_argument('--name', help='New name for the project.')
-
-  def Format(self, args):
-    return self.ListFormat(args)
+    parser.display_info.AddFormat(command_lib_util.LIST_FORMAT)
 
   def Run(self, args):
     update_labels = labels_util.GetUpdateLabelsDictFromArgs(args)

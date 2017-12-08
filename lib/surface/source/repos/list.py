@@ -32,23 +32,22 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     base.URI_FLAG.RemoveFromParser(parser)
-
-  def Format(self, args):
     # Here's some sample output (with the URL cut short)
     # REPO_NAME                     PROJECT_ID     SIZE      URL
     # ANewRepo                      kris-csr-test  0         https://...
-
+    #
     # The resource name looks like projects/<projectid>/repos/reponame
     # We extract the project name as segment 1 and the repo name as segment 3
     # This will need to be modified when we allow repo names with slashes
     # to be listed via this interface.
-    return """table(
+    parser.display_info.AddFormat("""
+          table(
             name.segment(3):label=REPO_NAME,
             name.segment(1):label=PROJECT_ID,
             size.yesno(no=0),
             firstof(mirror_config.url, url):label=URL
-            )
-        """
+          )
+        """)
 
   def Run(self, args):
     """Run the list command."""

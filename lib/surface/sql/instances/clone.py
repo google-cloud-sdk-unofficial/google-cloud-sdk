@@ -13,6 +13,7 @@
 # limitations under the License.
 """Clones a Cloud SQL instance."""
 
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -95,23 +96,21 @@ class _BaseClone(object):
               src=source_instance_ref.project,
               dest=destination_instance_ref.project))
 
-  def _GetInstanceRefsFromArgs(self, args):
+  def _GetInstanceRefsFromArgs(self, args, client):
     """Get validated refs to source and destination instances from args."""
 
-    resources = self.context['registry']
     validate.ValidateInstanceName(args.source)
     validate.ValidateInstanceName(args.destination)
-    source_instance_ref = resources.Parse(
+    source_instance_ref = client.resource_parser.Parse(
         args.source, collection='sql.instances')
-    destination_instance_ref = resources.Parse(
+    destination_instance_ref = client.resource_parser.Parse(
         args.destination, collection='sql.instances')
 
     self._CheckSourceAndDestination(source_instance_ref,
                                     destination_instance_ref)
     return source_instance_ref, destination_instance_ref
 
-  def _UpdateRequestFromArgs(self, request, args):
-    sql_messages = self.context['sql_messages']
+  def _UpdateRequestFromArgs(self, request, args, sql_messages):
     if args.bin_log_file_name and args.bin_log_position:
       clone_context = request.instancesCloneRequest.cloneContext
       clone_context.binLogCoordinates = sql_messages.BinLogCoordinates(
@@ -146,12 +145,12 @@ class Clone(_BaseClone, base.CreateCommand):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     source_instance_ref, destination_instance_ref = (
-        self._GetInstanceRefsFromArgs(args))
+        self._GetInstanceRefsFromArgs(args, client))
 
     request = sql_messages.SqlInstancesCloneRequest(
         project=source_instance_ref.project,
@@ -160,11 +159,11 @@ class Clone(_BaseClone, base.CreateCommand):
                 sourceInstanceName=source_instance_ref.instance,
                 destinationInstanceName=destination_instance_ref.instance)))
 
-    self._UpdateRequestFromArgs(request, args)
+    self._UpdateRequestFromArgs(request, args, sql_messages)
 
     result = sql_client.instances.Clone(request)
 
-    operation_ref = resources.Create(
+    operation_ref = client.resource_parser.Create(
         'sql.operations',
         operation=result.operation,
         project=destination_instance_ref.project,
@@ -216,12 +215,12 @@ class CloneBeta(_BaseClone, base.CreateCommand):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     source_instance_ref, destination_instance_ref = (
-        self._GetInstanceRefsFromArgs(args))
+        self._GetInstanceRefsFromArgs(args, client))
 
     request = sql_messages.SqlInstancesCloneRequest(
         project=source_instance_ref.project,
@@ -230,11 +229,11 @@ class CloneBeta(_BaseClone, base.CreateCommand):
             cloneContext=sql_messages.CloneContext(
                 destinationInstanceName=destination_instance_ref.instance)))
 
-    self._UpdateRequestFromArgs(request, args)
+    self._UpdateRequestFromArgs(request, args, sql_messages)
 
     result = sql_client.instances.Clone(request)
 
-    operation_ref = resources.Create(
+    operation_ref = client.resource_parser.Create(
         'sql.operations',
         operation=result.name,
         project=destination_instance_ref.project)

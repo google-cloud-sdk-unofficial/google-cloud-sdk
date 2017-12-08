@@ -51,8 +51,15 @@ class List(base.ListCommand):
         '--reference-set-id',
         help='Only return references for this reference set.')
 
-  def Collection(self):
-    return 'genomics.references'
+    parser.display_info.AddFormat("""
+          table(
+            id,
+            name,
+            length,
+            sourceUri,
+            sourceAccessions.list():label=ACCESSIONS
+          )
+        """)
 
   def Run(self, args):
     """Run 'references list'.

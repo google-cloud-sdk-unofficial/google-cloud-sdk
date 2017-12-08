@@ -22,6 +22,7 @@ from googlecloudsdk.command_lib.deployment_manager import flags
 from googlecloudsdk.command_lib.deployment_manager import type_providers
 from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
 def LogResource(request, async):
@@ -76,6 +77,7 @@ class Create(base.CreateCommand):
     messages = dm_beta_base.GetMessages()
     type_provider_ref = dm_beta_base.GetResources().Parse(
         args.provider_name,
+        params={'project': properties.VALUES.core.project.GetOrFail},
         collection='deploymentmanager.typeProviders')
     update_labels_dict = labels_util.GetUpdateLabelsDictFromArgs(args)
     labels = dm_labels.UpdateLabels([],

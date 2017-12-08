@@ -26,12 +26,15 @@ class List(base.ListCommand):
   with a copy of the source code corresponding to a deployed binary.
   """
 
-  def Collection(self):
-    return 'source.captures'
-
   @staticmethod
   def Args(parser):
     base.URI_FLAG.RemoveFromParser(parser)
+    parser.display_info.AddFormat("""
+          table(
+            project_id,
+            id:label=CAPTURE_ID
+          )
+        """)
 
   def Run(self, args):
     """Run the capture command."""

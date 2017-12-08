@@ -13,6 +13,7 @@
 # limitations under the License.
 """Patches the settings of a Cloud SQL database."""
 
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
@@ -73,12 +74,12 @@ class _BasePatch(object):
       ToolException: An error other than http error occured while executing the
           command.
     """
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
-
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
 
     original_database_resource = sql_client.databases.Get(
         sql_messages.SqlDatabasesGetRequest(
@@ -106,7 +107,7 @@ class _BasePatch(object):
             project=instance_ref.project,
             instance=instance_ref.instance))
 
-    operation_ref = resources.Create(
+    operation_ref = client.resource_parser.Create(
         'sql.operations',
         operation=result_operation.name,
         project=instance_ref.project)

@@ -17,8 +17,10 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.firewall_rules import flags
 from googlecloudsdk.core import log
 
+RESOURCE_TYPE = 'firewall rules'
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base_classes.GlobalLister):
   """List Google Compute Engine firewall rules."""
 
@@ -31,43 +33,58 @@ class List(base_classes.GlobalLister):
     return 'firewalls'
 
 
-List.detailed_help = base_classes.GetGlobalListerHelp('firewall rules')
+List.detailed_help = base_classes.GetGlobalListerHelp(RESOURCE_TYPE)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(List):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaList(List):
   """List Google Compute Engine firewall rules."""
 
   def Run(self, args):
     log.status.Print(flags.LIST_NOTICE)
 
-    return super(ListAlpha, self).Run(args)
+    return super(BetaList, self).Run(args)
 
   def Collection(self):
     return 'compute.firewalls.alpha'
 
 
-RESOURCE_TYPE = 'firewall rules'
-
-ListAlpha.detailed_help = {
+DETAILED_HELP = {
     'brief':
         'List Google Compute Engine ' + RESOURCE_TYPE,
     'DESCRIPTION':
         """\
           *{{command}}* displays all Google Compute Engine {0} in a project.
-          """.format(RESOURCE_TYPE),
-    'EXAMPLES':
-        """\
-To list all {0} in a project in table form, run:
-
-    $ {{command}}
-
-To list the URIs of all {0} in a project, run:
-
-    $ {{command}} --uri
-
-To list all fields of all {0} in a project, run:
-
-    $ {{command}} --format="{1}"
-""".format(RESOURCE_TYPE, flags.LIST_WITH_ALL_FIELDS_FORMAT)
+          """.format(RESOURCE_TYPE)
 }
+
+EXAMPLE_FORMAT = """\
+          To list all {0} in a project in table form, run:
+
+            $ {{command}}
+
+      To list the URIs of all {0} in a project, run:
+
+            $ {{command}} --uri
+
+      To list all fields of all {0} in a project, run:
+
+            $ {{command}} --format="{1}"
+    """
+
+BetaList.detailed_help = DETAILED_HELP.copy()
+BetaList.detailed_help['EXAMPLES'] = EXAMPLE_FORMAT.format(
+    RESOURCE_TYPE, flags.LIST_WITH_ALL_FIELDS_FORMAT_BETA)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaList(BetaList):
+  """List Google Compute Engine firewall rules."""
+
+  def Collection(self):
+    return 'compute.firewalls.alpha'
+
+
+AlphaList.detailed_help = DETAILED_HELP.copy()
+AlphaList.detailed_help['EXAMPLES'] = EXAMPLE_FORMAT.format(
+    RESOURCE_TYPE, flags.LIST_WITH_ALL_FIELDS_FORMAT_ALPHA)

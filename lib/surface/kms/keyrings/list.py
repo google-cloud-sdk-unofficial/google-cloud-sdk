@@ -33,11 +33,9 @@ class List(base.ListCommand):
     $ {command} --location global --limit=5
   """
 
-  def Collection(self):
-    return flags.KEY_RING_COLLECTION
-
-  def GetUriFunc(self):
-    return cloudkms_base.MakeGetUriFunc(self)
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat('table(name)')
 
   def Run(self, args):
     client = cloudkms_base.GetClientInstance()

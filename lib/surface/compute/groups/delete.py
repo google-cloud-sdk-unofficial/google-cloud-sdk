@@ -14,6 +14,7 @@
 """Command for deleting groups."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.core import properties
 
 
 class Delete(base_classes.BaseAsyncMutator):
@@ -45,7 +46,9 @@ class Delete(base_classes.BaseAsyncMutator):
 
   def CreateRequests(self, args):
     group_refs = [self.clouduseraccounts_resources.Parse(
-        group, collection='clouduseraccounts.groups') for group in args.names]
+        group,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='clouduseraccounts.groups') for group in args.names]
 
     utils.PromptForDeletion(group_refs)
 

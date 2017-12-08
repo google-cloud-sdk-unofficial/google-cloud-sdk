@@ -46,8 +46,13 @@ class List(base.ListCommand):
         help="""Only return call sets for which a substring of the
              name matches this string.""")
 
-  def Collection(self):
-    return 'genomics.callSets'
+    parser.display_info.AddFormat("""
+          table(
+            id,
+            name,
+            variantSetIds.list()
+          )
+        """)
 
   def Run(self, args):
     """Run 'callsets list'.

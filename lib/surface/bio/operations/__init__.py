@@ -14,8 +14,13 @@
 """Command group for bio operations."""
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.bio import util
 
 
 class Operations(base.Group):
   """Bio operations commands."""
-  pass
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddTransforms(util.GetTransforms())
+

@@ -25,14 +25,17 @@ from googlecloudsdk.command_lib.compute.instances import flags as instances_flag
 
 
 def _CommonArgs(parser, multiple_network_interface_cards, release_track,
-                support_alias_ip_ranges):
+                support_alias_ip_ranges, support_local_ssd_size=False):
   """Common arguments used in Alpha, Beta, and GA."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser)
   if release_track in [base.ReleaseTrack.ALPHA]:
     instances_flags.AddCreateDiskArgs(parser)
     instances_flags.AddExtendedMachineTypeArgs(parser)
-  instances_flags.AddLocalSsdArgs(parser)
+  if support_local_ssd_size:
+    instances_flags.AddLocalSsdArgsWithSize(parser)
+  else:
+    instances_flags.AddLocalSsdArgs(parser)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(
       parser, instances=False,
@@ -206,7 +209,8 @@ class Create(base_classes.BaseAsyncCreator):
           self.resources,
           self.messages,
           x.get('device-name'),
-          x.get('interface'))
+          x.get('interface'),
+          x.get('size'))
       local_ssds.append(local_ssd)
 
     disks = (
@@ -282,4 +286,5 @@ class CreateAlpha(Create):
   def Args(parser):
     _CommonArgs(parser, multiple_network_interface_cards=True,
                 release_track=base.ReleaseTrack.ALPHA,
-                support_alias_ip_ranges=True)
+                support_alias_ip_ranges=True,
+                support_local_ssd_size=True)

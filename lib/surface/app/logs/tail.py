@@ -55,6 +55,7 @@ class Tail(base.Command):
   def Run(self, args):
     printer = logs_util.LogPrinter()
     printer.RegisterFormatter(logs_util.FormatRequestLogEntry)
+    printer.RegisterFormatter(logs_util.FormatNginxLogEntry)
     printer.RegisterFormatter(logs_util.FormatAppEntry)
     project = properties.VALUES.core.project.Get(required=True)
     filters = logs_util.GetFilters(project, args.logs, args.service,

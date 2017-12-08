@@ -111,6 +111,10 @@ class Start(base.Command):
       operation = client.rollingUpdates.Insert(request)
       operation_ref = resources.REGISTRY.Parse(
           operation.name,
+          params={
+              'project': properties.VALUES.core.project.GetOrFail,
+              'zone': properties.VALUES.compute.zone.GetOrFail,
+          },
           collection='replicapoolupdater.zoneOperations')
       result = updater_util.WaitForOperation(
           client, operation_ref, 'Starting a new update')
@@ -151,9 +155,16 @@ class Start(base.Command):
       policy.maxNumFailedInstances = args.max_num_failed_instances
 
     group_ref = resources.REGISTRY.Parse(
-        args.group, collection='compute.instanceGroupManagers')
+        args.group,
+        params={
+            'project': properties.VALUES.core.project.GetOrFail,
+            'zone': properties.VALUES.compute.zone.GetOrFail,
+        },
+        collection='compute.instanceGroupManagers')
     template_ref = resources.REGISTRY.Parse(
-        args.template, collection='compute.instanceTemplates')
+        args.template,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='compute.instanceTemplates')
 
     return messages.RollingUpdate(
         instanceGroupManager=group_ref.SelfLink(),

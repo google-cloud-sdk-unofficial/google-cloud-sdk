@@ -17,13 +17,12 @@ from googlecloudsdk.api_lib.resource_manager import folders
 from googlecloudsdk.api_lib.resource_manager import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_manager import flags
-from googlecloudsdk.command_lib.resource_manager import folders_base
 from googlecloudsdk.core import log
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(folders_base.FolderCommand):
+class Create(base.CreateCommand):
   """Create a new folder.
 
   Creates a new folder in the given parent folder or organization.

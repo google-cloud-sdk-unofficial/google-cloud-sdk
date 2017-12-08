@@ -14,6 +14,7 @@
 """Creates an SSL certificate for a Cloud SQL instance."""
 
 import os
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -57,8 +58,8 @@ class _BaseAddCert(object):
     """
 
     if os.path.exists(args.cert_file):
-      raise exceptions.ToolException('file [{path}] already exists'.format(
-          path=args.cert_file))
+      raise exceptions.ToolException(
+          'file [{path}] already exists'.format(path=args.cert_file))
 
     # First check if args.out_file is writeable. If not, abort and don't create
     # the useless cert.
@@ -69,12 +70,13 @@ class _BaseAddCert(object):
       raise exceptions.ToolException('unable to write [{path}]: {error}'.format(
           path=args.cert_file, error=str(e)))
 
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = self.GetSqlClient()
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     validate.ValidateInstanceName(args.instance)
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
 
     # TODO(b/36049399): figure out how to rectify the common_name and the
     # sha1fingerprint, so that things can work with the resource parser.
@@ -92,7 +94,7 @@ class _BaseAddCert(object):
       cf.write(private_key)
       cf.write('\n')
 
-    cert_ref = resources.Create(
+    cert_ref = client.resource_parser.Create(
         collection='sql.sslCerts',
         project=instance_ref.project,
         instance=instance_ref.instance,
@@ -105,10 +107,14 @@ class _BaseAddCert(object):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class AddCert(_BaseAddCert, base.CreateCommand):
   """Creates an SSL certificate for a Cloud SQL instance."""
-  pass
+
+  def GetSqlClient(self):
+    return api_util.SqlClient(api_util.API_VERSION_FALLBACK)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class AddCertBeta(_BaseAddCert, base.CreateCommand):
   """Creates an SSL certificate for a Cloud SQL instance."""
-  pass
+
+  def GetSqlClient(self):
+    return api_util.SqlClient(api_util.API_VERSION_DEFAULT)

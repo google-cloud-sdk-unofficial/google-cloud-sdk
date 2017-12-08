@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.compute.users import client as users_client
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.compute.users import utils as user_utils
 from googlecloudsdk.command_lib.util import gaia
+from googlecloudsdk.core import properties
 
 
 class RemoveKeys(base_classes.NoOutputAsyncMutator):
@@ -62,7 +63,9 @@ class RemoveKeys(base_classes.NoOutputAsyncMutator):
       name = gaia.GetDefaultAccountName(self.http)
 
     user_ref = self.clouduseraccounts_resources.Parse(
-        name, collection='clouduseraccounts.users')
+        name,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='clouduseraccounts.users')
 
     if args.fingerprints:
       fingerprints = args.fingerprints

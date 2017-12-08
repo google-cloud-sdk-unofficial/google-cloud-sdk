@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
+from googlecloudsdk.core import properties
 
 
 class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
@@ -30,10 +31,14 @@ class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
 
   def GetResources(self, args):
     """Retrieves response with instance in the instance group."""
+    # Note: only zonal resources parsed here.
     group_ref = self.resources.Parse(
         args.name,
-        collection='compute.' + self.resource_type,
-        params={'zone': args.zone})
+        params={
+            'project': properties.VALUES.core.project.GetOrFail,
+            'zone': args.zone
+        },
+        collection='compute.' + self.resource_type)
     if args.regexp:
       filter_expr = 'instance eq {0}'.format(args.regexp)
     else:

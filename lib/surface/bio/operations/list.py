@@ -17,7 +17,6 @@
 
 from googlecloudsdk.api_lib.bio import bio
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.bio import util as command_lib_util
 from googlecloudsdk.core import properties
 
 
@@ -35,8 +34,19 @@ class List(base.ListCommand):
     $ {command} --limit=5
   """
 
-  def Collection(self):
-    return command_lib_util.OPERATIONS_COLLECTION
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""
+          table(
+            name.basename(),
+            metadata.request.'@type'.split('.').slice(-1:):label=TYPE,
+            metadata.request.workflowName,
+            metadata.createTime.date(),
+            done,
+            error.code:label=ERROR_CODE,
+            format('{0:40}', error.message):label=ERROR_MESSAGE
+          )
+        """)
 
   def Run(self, args):
     """Run the list command."""

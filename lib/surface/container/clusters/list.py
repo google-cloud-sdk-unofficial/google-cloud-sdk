@@ -48,7 +48,8 @@ class List(base.ListCommand):
     project = properties.VALUES.core.project.Get(required=True)
     zone = None
     if args.zone:
-      zone = adapter.registry.Parse(args.zone, collection='compute.zones').zone
+      zone = adapter.registry.Parse(args.zone, params={'project': project},
+                                    collection='compute.zones').zone
     def sort_key(cluster):
       return (cluster.zone, cluster.name)
     try:

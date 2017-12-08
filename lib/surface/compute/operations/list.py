@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
 
 
 def AddFlags(parser, is_ga):
@@ -157,7 +158,10 @@ class ListGA(base_classes.BaseLister):
                  project=project)))
       if args.regions is not None:
         args_region_names = [
-            self.resources.Parse(region, collection='compute.regions').Name()
+            self.resources.Parse(
+                region,
+                params={'project': properties.VALUES.core.project.GetOrFail},
+                collection='compute.regions').Name()
             for region in args.regions or []]
         # If no regions were provided by the user, fetch a list.
         region_names = (
@@ -176,7 +180,12 @@ class ListGA(base_classes.BaseLister):
                    project=self.project)))
       if args.zones is not None:
         args_zone_names = [
-            self.resources.Parse(zone, collection='compute.zones').Name()
+            self.resources.Parse(
+                zone,
+                params={
+                    'project': properties.VALUES.core.project.GetOrFail,
+                },
+                collection='compute.zones').Name()
             for zone in args.zones or []]
         # If no zones were provided by the user, fetch a list.
         zone_names = (

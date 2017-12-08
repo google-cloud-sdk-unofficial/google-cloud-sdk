@@ -20,6 +20,7 @@ Cloud SQL instance.
 
 from apitools.base.py import list_pager
 
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
@@ -44,12 +45,13 @@ class _BaseList(object):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = self.GetSqlClient()
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     validate.ValidateInstanceName(args.instance)
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
 
     return list_pager.YieldFromList(
         sql_client.operations,
@@ -68,6 +70,9 @@ class List(_BaseList, base.ListCommand):
     flags.INSTANCE_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(flags.OPERATION_FORMAT)
 
+  def GetSqlClient(self):
+    return api_util.SqlClient(api_util.API_VERSION_FALLBACK)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListBeta(_BaseList, base.ListCommand):
@@ -77,3 +82,6 @@ class ListBeta(_BaseList, base.ListCommand):
   def Args(parser):
     flags.INSTANCE_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(flags.OPERATION_FORMAT_BETA)
+
+  def GetSqlClient(self):
+    return api_util.SqlClient(api_util.API_VERSION_DEFAULT)

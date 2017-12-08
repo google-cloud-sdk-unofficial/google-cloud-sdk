@@ -19,6 +19,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
+from googlecloudsdk.core import properties
 
 
 def _AddArgs(parser):
@@ -70,8 +71,12 @@ class SetTargetPools(base_classes.BaseAsyncMutator):
     pool_refs = []
     for target_pool in args.target_pools:
       pool_refs.append(self.resources.Parse(
-          target_pool, collection='compute.targetPools',
-          params={'region': region}))
+          target_pool,
+          params={
+              'project': properties.VALUES.core.project.GetOrFail,
+              'region': region
+          },
+          collection='compute.targetPools'))
     pools = [pool_ref.SelfLink() for pool_ref in pool_refs]
 
     if group_ref.Collection() == 'compute.instanceGroupManagers':

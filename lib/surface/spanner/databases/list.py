@@ -19,7 +19,7 @@ from googlecloudsdk.command_lib.spanner import flags
 
 
 class List(base.ListCommand):
-  """Cloud Spanner databases list command."""
+  """List the Cloud Spanner databases contained within the given instance."""
 
   @staticmethod
   def Args(parser):
@@ -33,9 +33,12 @@ class List(base.ListCommand):
           allowed.
     """
     flags.Instance(positional=False).AddToParser(parser)
-
-  def Collection(self):
-    return 'spanner.projects.instances.databases'
+    parser.display_info.AddFormat("""
+          table(
+            name.basename(),
+            state
+          )
+        """)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

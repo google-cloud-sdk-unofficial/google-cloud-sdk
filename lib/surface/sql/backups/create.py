@@ -13,6 +13,7 @@
 # limitations under the License.
 """Creates a backup of a Cloud SQL instance."""
 
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -57,12 +58,13 @@ class CreateBackupBeta(base.CreateCommand):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     validate.ValidateInstanceName(args.instance)
-    instance_ref = resources.Parse(
+    instance_ref = client.resource_parser.Parse(
         args.instance, collection='sql.instances')
 
     result_operation = sql_client.backupRuns.Insert(
@@ -74,7 +76,7 @@ class CreateBackupBeta(base.CreateCommand):
                 instance=instance_ref.instance,
                 kind='sql#backupRun')))
 
-    operation_ref = resources.Create(
+    operation_ref = client.resource_parser.Create(
         'sql.operations',
         operation=result_operation.name,
         project=instance_ref.project)

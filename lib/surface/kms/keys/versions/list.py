@@ -35,11 +35,9 @@ class List(base.ListCommand):
   --key frodo
   """
 
-  def Collection(self):
-    return flags.CRYPTO_KEY_VERSION_COLLECTION
-
-  def GetUriFunc(self):
-    return cloudkms_base.MakeGetUriFunc(self)
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat('table(name, state)')
 
   def Run(self, args):
     # pylint: disable=line-too-long

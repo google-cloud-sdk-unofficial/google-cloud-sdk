@@ -15,6 +15,7 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.core import properties
 
 
 class AddMembers(base_classes.NoOutputAsyncMutator):
@@ -56,10 +57,14 @@ class AddMembers(base_classes.NoOutputAsyncMutator):
 
   def CreateRequests(self, args):
     user_refs = [self.clouduseraccounts_resources.Parse(
-        user, collection='clouduseraccounts.users') for user in args.members]
+        user,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='clouduseraccounts.users') for user in args.members]
 
     group_refs = [self.clouduseraccounts_resources.Parse(
-        group, collection='clouduseraccounts.groups') for group in args.names]
+        group,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='clouduseraccounts.groups') for group in args.names]
 
     user_selflinks = [user_ref.SelfLink() for user_ref in user_refs]
     requests = []

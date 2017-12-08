@@ -13,18 +13,15 @@
 # limitations under the License.
 """Command to undelete a folder."""
 
-import textwrap
-
 from googlecloudsdk.api_lib.resource_manager import folders
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_manager import flags
-from googlecloudsdk.command_lib.resource_manager import folders_base
 from googlecloudsdk.core import log
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Undelete(folders_base.FolderCommand):
+class Undelete(base.CreateCommand):
   """Undelete a folder.
 
   Undeletes the folder with the given folder ID.
@@ -35,15 +32,13 @@ class Undelete(folders_base.FolderCommand):
     given folder.
   * When the folder to be undeleted has the same display name as an active
     folder under this folder's parent.
-  """
-  detailed_help = {
-      'EXAMPLES': textwrap.dedent("""\
-          The following command undeletes the folder with the ID
-          `3589215982`:
 
-            $ {command} 3589215982
-    """),
-  }
+  ## EXAMPLES
+
+  The following command undeletes the folder with the ID `3589215982`:
+
+    $ {command} 3589215982
+  """
 
   @staticmethod
   def Args(parser):

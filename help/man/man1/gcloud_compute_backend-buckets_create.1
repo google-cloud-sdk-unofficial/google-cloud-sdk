@@ -11,7 +11,7 @@ gcloud compute backend\-buckets create \- create a backend bucket
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute backend\-buckets create\fR \fINAME\fR \fB\-\-gcs\-bucket\-name\fR=\fIGCS_BUCKET_NAME\fR [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-enable\-cdn\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute backend\-buckets create\fR \fIBACKEND_BUCKET_NAME\fR \fB\-\-gcs\-bucket\-name\fR=\fIGCS_BUCKET_NAME\fR [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-enable\-cdn\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -27,7 +27,7 @@ maps define which requests are sent to which backend buckets.
 
 .RS 2m
 .TP 2m
-\fINAME\fR
+\fIBACKEND_BUCKET_NAME\fR
 The name of the backend bucket.
 
 

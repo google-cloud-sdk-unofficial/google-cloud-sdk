@@ -17,5 +17,5 @@ from googlecloudsdk.calliope import base
 
 
 class Instances(base.Group):
-  """Cloud Spanner instances commands."""
+  """Manage Cloud Spanner instances."""
   pass

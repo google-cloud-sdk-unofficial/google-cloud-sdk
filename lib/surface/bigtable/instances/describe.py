@@ -16,6 +16,7 @@
 from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -39,7 +40,11 @@ class DescribeInstance(base.DescribeCommand):
     """
     cli = util.GetAdminClient()
     ref = resources.REGISTRY.Parse(
-        args.instance, collection='bigtableadmin.projects.instances')
+        args.instance,
+        params={
+            'projectsId': properties.VALUES.core.project.GetOrFail,
+        },
+        collection='bigtableadmin.projects.instances')
     msg = util.GetAdminMessages().BigtableadminProjectsInstancesGetRequest(
         name=ref.RelativeName())
     instance = cli.projects_instances.Get(msg)

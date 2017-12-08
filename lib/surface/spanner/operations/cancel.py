@@ -20,7 +20,7 @@ from googlecloudsdk.command_lib.spanner import flags
 
 
 class Cancel(base.Command):
-  """Cloud Spanner operations cancel command."""
+  """Cancel a Cloud Spanner operation."""
 
   @staticmethod
   def Args(parser):

@@ -17,5 +17,5 @@ from googlecloudsdk.calliope import base
 
 
 class Configs(base.Group):
-  """Cloud Spanner instance configs commands."""
+  """Manage Cloud Spanner instance configs."""
   pass

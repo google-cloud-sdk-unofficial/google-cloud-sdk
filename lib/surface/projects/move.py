@@ -52,19 +52,11 @@ class Move(base.Command):
     $ {command} super-awesome-project --organization=25872158
   """
 
-  def Collection(self):
-    return command_lib_util.PROJECTS_COLLECTION
-
-  def GetUriFunc(self):
-    return command_lib_util.ProjectsUriFunc
-
   @staticmethod
   def Args(parser):
     project_flags.GetProjectFlag('move').AddToParser(parser)
     folder_flags.AddParentFlagsToParser(parser)
-
-  def Format(self, args):
-    return self.ListFormat(args)
+    parser.display_info.AddFormat(command_lib_util.LIST_FORMAT)
 
   def Run(self, args):
     folder_flags.CheckParentFlags(args)

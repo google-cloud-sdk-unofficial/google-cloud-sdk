@@ -61,7 +61,10 @@ class Create(base_classes.BaseAsyncCreator):
     if args.host_type:
       host_type_ref = self.resources.Parse(
           args.host_type, collection='compute.hostTypes',
-          params={'zone': host_refs[0].zone})
+          params={
+              'project': host_refs[0].project,
+              'zone': host_refs[0].zone
+          })
       host_type_url = host_type_ref.SelfLink()
     else:
       host_type_url = None

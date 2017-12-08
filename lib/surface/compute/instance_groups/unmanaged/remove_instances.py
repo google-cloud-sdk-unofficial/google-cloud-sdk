@@ -57,7 +57,11 @@ class RemoveInstances(base_classes.NoOutputAsyncMutator):
     instance_references = []
     for instance in args.instances:
       ref = self.resources.Parse(
-          instance, params={'zone': group_ref.zone},
+          instance,
+          params={
+              'project': group_ref.project,
+              'zone': group_ref.zone
+          },
           collection='compute.instances')
       instance_references.append(ref)
 

@@ -22,7 +22,7 @@ from googlecloudsdk.core import resources
 
 
 class RemoveIamPolicyBinding(base.Command):
-  """Remove IAM policy binding from Cloud Spanner instance."""
+  """Remove an IAM policy binding from a Cloud Spanner instance."""
 
   @staticmethod
   def Args(parser):

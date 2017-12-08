@@ -262,11 +262,13 @@ class AnalyzeModel(beam.PTransform):
     return self.expand(evaluation_data)
 
   def expand(self, evaluation_data):
-    indices_to_labels = beam.pvalue.AsSingleton(
-        self._metadata | 'GetLabels' >> GetTargetIndiciesToLabels())
-    confusion_matrix = evaluation_data | ConfusionMatrix(indices_to_labels)
+    indices_to_labels = (self._metadata
+                         | 'GetLabels' >> GetTargetIndiciesToLabels())
+    confusion_matrix = evaluation_data | ConfusionMatrix(
+        beam.pvalue.AsSingleton(indices_to_labels))
     if self._calc_pr:
-      precision_recall = evaluation_data | PrecisionRecall(indices_to_labels)
+      precision_recall = evaluation_data | PrecisionRecall(
+          beam.pvalue.AsSingleton(indices_to_labels))
       if self._calc_log_loss:
         logloss = evaluation_data | LogLoss()
         return confusion_matrix, precision_recall, logloss

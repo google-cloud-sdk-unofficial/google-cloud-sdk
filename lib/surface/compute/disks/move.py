@@ -20,6 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -47,7 +48,11 @@ class Move(base.SilentCommand):
         args, holder.resources,
         scope_lister=flags.GetDefaultScopeLister(holder.client))
     destination_zone = holder.resources.Parse(
-        args.destination_zone, collection='compute.zones')
+        args.destination_zone,
+        params={
+            'project': properties.VALUES.core.project.GetOrFail,
+        },
+        collection='compute.zones')
 
     client = holder.client.apitools_client
     messages = holder.client.messages
@@ -62,7 +67,11 @@ class Move(base.SilentCommand):
 
     result = client.projects.MoveDisk(request)
     operation_ref = resources.REGISTRY.Parse(
-        result.name, collection='compute.globalOperations')
+        result.name,
+        params={
+            'project': properties.VALUES.core.project.GetOrFail,
+        },
+        collection='compute.globalOperations')
 
     if args.async:
       log.UpdatedResource(
@@ -75,8 +84,12 @@ class Move(base.SilentCommand):
       return result
 
     destination_disk_ref = holder.resources.Parse(
-        target_disk.Name(), collection='compute.disks',
-        params={'zone': destination_zone.Name()})
+        target_disk.Name(),
+        params={
+            'project': destination_zone.project,
+            'zone': destination_zone.Name()
+        },
+        collection='compute.disks')
 
     operation_poller = poller.Poller(client.disks, destination_disk_ref)
 

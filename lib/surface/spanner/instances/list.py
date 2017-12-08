@@ -18,10 +18,19 @@ from googlecloudsdk.calliope import base
 
 
 class List(base.ListCommand):
-  """Cloud Spanner instances list command."""
+  """List the Cloud Spanner instances in this project."""
 
-  def Collection(self):
-    return 'spanner.projects.instances'
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""
+          table(
+            name.basename(),
+            displayName,
+            config.basename(),
+            nodeCount,
+            state
+          )
+        """)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

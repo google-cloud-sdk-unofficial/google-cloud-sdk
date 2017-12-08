@@ -91,7 +91,7 @@ class Create(utils.ForwardingRulesTargetMutator):
     protocol = self.ConstructProtocol(args)
 
     address = self._ResolveAddress(
-        args, compute_flags.compute_scope.ScopeEnum.GLOBAL)
+        args, compute_flags.compute_scope.ScopeEnum.GLOBAL, forwarding_rule_ref)
 
     forwarding_rule = self.messages.ForwardingRule(
         description=args.description,
@@ -119,7 +119,7 @@ class Create(utils.ForwardingRulesTargetMutator):
     protocol = self.ConstructProtocol(args)
 
     address = self._ResolveAddress(
-        args, compute_flags.compute_scope.ScopeEnum.REGION)
+        args, compute_flags.compute_scope.ScopeEnum.REGION, forwarding_rule_ref)
 
     forwarding_rule = self.messages.ForwardingRule(
         description=args.description,
@@ -158,7 +158,7 @@ class Create(utils.ForwardingRulesTargetMutator):
 
     return [request]
 
-  def _ResolveAddress(self, args, scope):
+  def _ResolveAddress(self, args, scope, forwarding_rule_ref):
     # Address takes either an ip address or an address resource. If parsing as
     # an IP address fails, then we resolve as a resource.
     address = args.address
@@ -166,6 +166,12 @@ class Create(utils.ForwardingRulesTargetMutator):
       try:
         ipaddr.IPAddress(args.address)
       except ValueError:
+        # TODO(b/37086838): Make sure global/region settings are inherited by
+        # address resource.
+        if scope == compute_flags.compute_scope.ScopeEnum.REGION:
+          if not args.global_address and not args.address_region:
+            if forwarding_rule_ref.Collection() == 'compute.forwardingRules':
+              args.address_region = forwarding_rule_ref.region
         address_ref = flags.ADDRESS_ARG.ResolveAsResource(
             args, self.resources,
             default_scope=scope)
@@ -221,7 +227,7 @@ class CreateAlpha(Create):
       ip_version = None
 
     address = self._ResolveAddress(
-        args, compute_flags.compute_scope.ScopeEnum.GLOBAL)
+        args, compute_flags.compute_scope.ScopeEnum.GLOBAL, forwarding_rule_ref)
 
     forwarding_rule = self.messages.ForwardingRule(
         description=args.description,
@@ -252,7 +258,7 @@ class CreateAlpha(Create):
     network_tier = self.ConstructNetworkTier(args)
 
     address = self._ResolveAddress(
-        args, compute_flags.compute_scope.ScopeEnum.REGION)
+        args, compute_flags.compute_scope.ScopeEnum.REGION, forwarding_rule_ref)
 
     forwarding_rule = self.messages.ForwardingRule(
         description=args.description,
@@ -265,9 +271,14 @@ class CreateAlpha(Create):
           self.messages.ForwardingRule
           .LoadBalancingSchemeValueValuesEnum.INTERNAL)
 
-    if target_ref.Collection() == 'compute.regionBackendServices':
+    if (target_ref.Collection() == 'compute.regionBackendServices'
+       ) or (target_ref.Collection() == 'compute.targetInstances' and
+             args.load_balancing_scheme == 'INTERNAL'):
       forwarding_rule.portRange = args.port_range
-      forwarding_rule.backendService = target_ref.SelfLink()
+      if target_ref.Collection() == 'compute.regionBackendServices':
+        forwarding_rule.backendService = target_ref.SelfLink()
+      else:
+        forwarding_rule.target = target_ref.SelfLink()
       if args.ports:
         forwarding_rule.portRange = None
         forwarding_rule.ports = [str(p) for p in _GetPortList(args.ports)]

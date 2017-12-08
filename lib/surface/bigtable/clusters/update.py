@@ -17,6 +17,7 @@ from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -44,7 +45,10 @@ class UpdateCluster(base.UpdateCommand):
     msgs = util.GetAdminMessages()
     ref = resources.REGISTRY.Parse(
         args.cluster,
-        params={'instancesId': args.instance},
+        params={
+            'projectsId': properties.VALUES.core.project.GetOrFail,
+            'instancesId': args.instance
+        },
         collection='bigtableadmin.projects.instances.clusters')
     msg = msgs.Cluster(name=ref.RelativeName(), serveNodes=args.num_nodes)
     result = cli.projects_instances_clusters.Update(msg)

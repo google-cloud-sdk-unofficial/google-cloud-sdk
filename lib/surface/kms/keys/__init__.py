@@ -13,6 +13,7 @@
 # limitations under the License.
 """The command group for keys."""
 
+from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.core import resolvers
@@ -30,6 +31,8 @@ class Keys(base.Group):
   def Args(parser):
     flags.AddKeyRingFlag(parser)
     flags.AddLocationFlag(parser)
+    parser.display_info.AddUriFunc(
+        cloudkms_base.MakeGetUriFunc(flags.CRYPTO_KEY_COLLECTION))
 
   def Filter(self, context, args):
     resources.REGISTRY.SetParamDefault(

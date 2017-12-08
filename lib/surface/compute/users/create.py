@@ -15,6 +15,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.command_lib.compute.users import utils as user_utils
 from googlecloudsdk.command_lib.util import gaia
+from googlecloudsdk.core import properties
 
 
 class Create(base_classes.BaseAsyncCreator):
@@ -61,7 +62,9 @@ class Create(base_classes.BaseAsyncCreator):
       name = gaia.MapGaiaEmailToDefaultAccountName(owner)
 
     user_ref = self.clouduseraccounts_resources.Parse(
-        name, collection='clouduseraccounts.users')
+        name,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='clouduseraccounts.users')
 
     user = self.messages.User(
         name=user_ref.Name(),

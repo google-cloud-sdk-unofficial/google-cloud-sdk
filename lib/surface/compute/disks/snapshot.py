@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
 DETAILED_HELP = {
@@ -103,7 +104,12 @@ class SnapshotDisks(base.SilentCommand):
                         for _ in disk_refs]
 
     snapshot_refs = [
-        holder.resources.Parse(snapshot_name, collection='compute.snapshots')
+        holder.resources.Parse(
+            snapshot_name,
+            params={
+                'project': properties.VALUES.core.project.GetOrFail,
+            },
+            collection='compute.snapshots')
         for snapshot_name in snapshot_names]
 
     client = holder.client.apitools_client

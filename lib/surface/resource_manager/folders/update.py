@@ -13,18 +13,15 @@
 # limitations under the License.
 """Command to update a folder."""
 
-import textwrap
-
 from googlecloudsdk.api_lib.resource_manager import folders
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_manager import flags
-from googlecloudsdk.command_lib.resource_manager import folders_base
 from googlecloudsdk.core import log
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Update(folders_base.FolderCommand):
+class Update(base.UpdateCommand):
   """Update the display name of a folder.
 
   Updates the given folder with new folder name.
@@ -35,16 +32,14 @@ class Update(folders_base.FolderCommand):
         folder.
       * The new display name is taken by another folder under this folder's
         parent.
+
+  ## EXAMPLES
+
+  The following command updates a folder with the ID `123456789` to have
+  the name "Foo Bar and Grill":
+
+    $ {command} 123456789 --display_name="Foo Bar and Grill"
   """
-
-  detailed_help = {
-      'EXAMPLES': textwrap.dedent("""\
-          The following command updates a folder with the ID
-          `123456789` to have the name "Foo Bar and Grill":
-
-            $ {command} 123456789 --display_name="Foo Bar and Grill"
-    """),
-  }
 
   @staticmethod
   def Args(parser):

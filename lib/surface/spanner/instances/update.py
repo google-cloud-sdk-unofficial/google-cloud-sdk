@@ -20,7 +20,7 @@ from googlecloudsdk.command_lib.spanner import flags
 
 
 class Update(base.Command):
-  """Cloud Spanner instances update command."""
+  """Update a Cloud Spanner instance."""
 
   @staticmethod
   def Args(parser):

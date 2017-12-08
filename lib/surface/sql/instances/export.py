@@ -18,6 +18,7 @@ Exports data from a Cloud SQL instance to a Google Cloud Storage bucket as
 a MySQL dump file.
 """
 
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import arg_parsers
@@ -90,12 +91,13 @@ class Export(_BaseExport, base.Command):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     validate.ValidateInstanceName(args.instance)
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
 
     export_request = sql_messages.SqlInstancesExportRequest(
         instance=instance_ref.instance,
@@ -111,7 +113,7 @@ class Export(_BaseExport, base.Command):
 
     result = sql_client.instances.Export(export_request)
 
-    operation_ref = resources.Create(
+    operation_ref = client.resource_parser.Create(
         'sql.operations',
         operation=result.operation,
         project=instance_ref.project,
@@ -158,12 +160,13 @@ class ExportBeta(_BaseExport, base.Command):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     validate.ValidateInstanceName(args.instance)
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
 
     # TODO(b/36051079): add support for CSV exporting.
     export_request = sql_messages.SqlInstancesExportRequest(
@@ -184,7 +187,7 @@ class ExportBeta(_BaseExport, base.Command):
 
     result_operation = sql_client.instances.Export(export_request)
 
-    operation_ref = resources.Create(
+    operation_ref = client.resource_parser.Create(
         'sql.operations',
         operation=result_operation.name,
         project=instance_ref.project)

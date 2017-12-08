@@ -47,8 +47,13 @@ class List(base.ListCommand):
              name matches this string.""")
     base.PAGE_SIZE_FLAG.SetDefault(parser, 128)
 
-  def Collection(self):
-    return 'genomics.readGroupSets'
+    parser.display_info.AddFormat("""
+          table(
+            id,
+            name,
+            referenceSetId
+          )
+        """)
 
   def Run(self, args):
     """Run 'readgroupsets list'.

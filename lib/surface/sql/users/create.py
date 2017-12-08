@@ -16,6 +16,7 @@
 Creates a user in a given instance with specified username, host, and password.
 """
 
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
@@ -54,13 +55,14 @@ class CreateBeta(base.CreateCommand):
       ToolException: An error other than an http error occured while executing
           the command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     project_id = properties.VALUES.core.project.Get(required=True)
 
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
     operation_ref = None
     new_user = sql_messages.User(project=project_id,
                                  instance=args.instance,
@@ -68,9 +70,10 @@ class CreateBeta(base.CreateCommand):
                                  host=args.host,
                                  password=args.password)
     result_operation = sql_client.users.Insert(new_user)
-    operation_ref = resources.Create('sql.operations',
-                                     operation=result_operation.name,
-                                     project=instance_ref.project)
+    operation_ref = client.resource_parser.Create(
+        'sql.operations',
+        operation=result_operation.name,
+        project=instance_ref.project)
     if args.async:
       result = sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(

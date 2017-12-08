@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -40,7 +41,11 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     dns = apis.GetClientInstance('dns', 'v1')
     zone_ref = resources.REGISTRY.Parse(
-        args.dns_zone, collection='dns.managedZones')
+        args.dns_zone,
+        params={
+            'project': properties.VALUES.core.project.GetOrFail,
+        },
+        collection='dns.managedZones')
 
     return dns.managedZones.Get(
         dns.MESSAGES_MODULE.DnsManagedZonesGetRequest(

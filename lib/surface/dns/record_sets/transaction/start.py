@@ -54,10 +54,15 @@ class Start(base.Command):
     dns = self.context['dns_client']
     messages = self.context['dns_messages']
     resources = self.context['dns_resources']
-    project_id = properties.VALUES.core.project.Get(required=True)
 
     # Get the managed-zone.
-    zone_ref = resources.Parse(args.zone, collection='dns.managedZones')
+    zone_ref = resources.Parse(
+        args.zone,
+        params={
+            'project': properties.VALUES.core.project.GetOrFail,
+        },
+        collection='dns.managedZones')
+
     try:
       zone = dns.managedZones.Get(
           dns.MESSAGES_MODULE.DnsManagedZonesGetRequest(
@@ -74,7 +79,7 @@ class Start(base.Command):
     records = [record for record in list_pager.YieldFromList(
         dns.resourceRecordSets,
         messages.DnsResourceRecordSetsListRequest(
-            project=project_id,
+            project=zone_ref.project,
             managedZone=zone_ref.Name(),
             name=zone.dnsName,
             type='SOA'),

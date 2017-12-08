@@ -13,18 +13,15 @@
 # limitations under the License.
 """Command to delete a folder."""
 
-import textwrap
-
 from googlecloudsdk.api_lib.resource_manager import folders
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_manager import flags
-from googlecloudsdk.command_lib.resource_manager import folders_base
 from googlecloudsdk.core import log
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Delete(folders_base.FolderCommand):
+class Delete(base.DeleteCommand):
   """Delete a folder.
 
   Delete a folder, given a valid folder ID.
@@ -33,15 +30,13 @@ class Delete(folders_base.FolderCommand):
       * There is no folder with the given ID.
       * The active account does not have permission to delete the given folder.
       * The folder to be deleted is not empty.
+
+  ## EXAMPLES
+
+  The following command deletes a folder with the ID `123456789`:
+
+    $ {command} 123456789
   """
-
-  detailed_help = {
-      'EXAMPLES': textwrap.dedent("""
-        The following command deletes a folder with the ID `123456789`:
-
-        $ {command} 123456789
-        """),
-  }
 
   @staticmethod
   def Args(parser):

@@ -223,8 +223,8 @@ class SshAlpha(SshBeta):
         incorrect connection. For example, instance-1 in network-1 has the same
         internal IP as instance-2 in network-2. You want to connect to
         instance-1 but your network configuration results in opening a
-        connection to instance-2. `errors gcloud` will verify that the instance
-        it connected to reports the same id as the instance you requested
+        connection to instance-2. gcloud will verify that the instance it
+        connected to reports the same id as the instance you requested
         connection to. This only helps with catching network configuration
         mistakes and is not meant as protection against any kind of attack.
         `errors gcloud` requires the instance to have curl tool available.""")

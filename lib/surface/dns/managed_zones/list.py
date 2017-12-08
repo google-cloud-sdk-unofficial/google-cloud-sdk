@@ -44,14 +44,16 @@ class List(base.ListCommand):
   def GetUriFunc(self):
     def _GetUri(resource):
       return resources.REGISTRY.Create(
-          self.Collection(), managedZone=resource.name).SelfLink()
+          self.Collection(),
+          project=properties.VALUES.core.project.GetOrFail,
+          managedZone=resource.name).SelfLink()
     return _GetUri
 
   def Run(self, args):
     dns_client = apis.GetClientInstance('dns', 'v1')
     dns_messages = apis.GetMessagesModule('dns', 'v1')
 
-    project_id = properties.VALUES.core.project.Get(required=True)
+    project_id = properties.VALUES.core.project.GetOrFail()
 
     return list_pager.YieldFromList(
         dns_client.managedZones,

@@ -20,22 +20,24 @@ instance name.
 
 from apitools.base.py import list_pager
 
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
 def _GetUriFromResource(resource):
   """Returns the URI for resource."""
-  return resources.REGISTRY.Create(
+  client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
+  return client.resource_parser.Create(
       'sql.instances', project=resource.project,
       instance=resource.instance).SelfLink()
 
 
 def _GetUriFromResourceBeta(resource):
   """Returns the URI for resource."""
-  return resources.REGISTRY.Create(
+  client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+  return client.resource_parser.Create(
       'sql.instances', project=resource.project,
       instance=resource.name).SelfLink()
 
@@ -58,8 +60,9 @@ class _BaseList(object):
       ToolException: An error other than an http error occured while executing
           the command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
+    client = self.GetSqlClient()
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     project_id = properties.VALUES.core.project.Get(required=True)
 
@@ -83,6 +86,9 @@ class List(_BaseList, base.ListCommand):
     # TODO(b/36472296): Add a --uri flag test to kill a mutant.
     parser.display_info.AddUriFunc(_GetUriFromResource)
 
+  def GetSqlClient(self):
+    return api_util.SqlClient(api_util.API_VERSION_FALLBACK)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListBeta(_BaseList, base.ListCommand):
@@ -96,3 +102,6 @@ class ListBeta(_BaseList, base.ListCommand):
   def Args(parser):
     parser.display_info.AddFormat(flags.INSTANCES_FORMAT_BETA)
     parser.display_info.AddUriFunc(_GetUriFromResourceBeta)
+
+  def GetSqlClient(self):
+    return api_util.SqlClient(api_util.API_VERSION_DEFAULT)

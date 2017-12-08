@@ -17,5 +17,5 @@ from googlecloudsdk.calliope import base
 
 
 class Operations(base.Group):
-  """Cloud Spanner operations commands."""
+  """Manage Cloud Spanner operations."""
   pass

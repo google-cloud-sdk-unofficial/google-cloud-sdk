@@ -13,6 +13,7 @@
 # limitations under the License.
 """Sets the password of the MySQL root user."""
 
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib import deprecation_utils
@@ -73,11 +74,12 @@ class SetRootPassword(_BaseSetRootPassword, base.Command):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
 
     if args.password_file:
       with open(args.password_file) as f:
@@ -95,7 +97,7 @@ class SetRootPassword(_BaseSetRootPassword, base.Command):
                         sql_messages.SetRootPasswordContext(
                             password=password))))))
 
-    operation_ref = resources.Create(
+    operation_ref = client.resource_parser.Create(
         'sql.operations',
         operation=result.operation,
         project=instance_ref.project,
@@ -140,11 +142,12 @@ class SetRootPasswordBeta(_BaseSetRootPassword, base.Command):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
 
     if args.password_file:
       with open(args.password_file) as f:
@@ -166,11 +169,10 @@ class SetRootPasswordBeta(_BaseSetRootPassword, base.Command):
                 name='root',
                 host='%',
                 password=password)))
-    operation_ref = resources.Create(
+    operation_ref = client.resource_parser.Create(
         'sql.operations',
         operation=result_operation.name,
-        project=instance_ref.project,
-        instance=instance_ref.instance,)
+        project=instance_ref.project)
     if args.async:
       return sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(

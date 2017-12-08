@@ -20,6 +20,7 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.compute import rolling_updates_util as updater_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -61,6 +62,10 @@ class ListInstanceUpdates(base.ListCommand):
 
     ref = resources.REGISTRY.Parse(
         args.update,
+        params={
+            'project': properties.VALUES.core.project.GetOrFail,
+            'zone': properties.VALUES.compute.zone.GetOrFail,
+        },
         collection='replicapoolupdater.rollingUpdates')
     request = (
         messages.ReplicapoolupdaterRollingUpdatesListInstanceUpdatesRequest(

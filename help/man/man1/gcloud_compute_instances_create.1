@@ -154,8 +154,21 @@ this option won't apply. The default value for this is \f5\fIno\fR\fR.
 .TP 2m
 \fB\-\-image\-project\fR=\fIIMAGE_PROJECT\fR
 The project against which all image and image family references will be
-resolved. See \f5\fI\-\-image\fR\fR for more details.
+resolved. It is best practice to define image\-project.
+.RS 2m
+.IP "\(em" 2m
+If specifying one of our public images, image\-project must be provided.
+.IP "\(em" 2m
+If there are several of the same image\-family value in multiple projects,
+image\-project must be specified to clarify the image to be used.
+.IP "\(em" 2m
+If not specified and either image or image\-family is provided, the current
+default project is used.
+.RE
+.RE
+.sp
 
+.RS 2m
 .TP 2m
 \fB\-\-local\-ssd\fR=[\fIdevice\-name\fR=\fIDEVICE\-NAME\fR],[\fIinterface\fR=\fIINTERFACE\fR]
 Attaches a local SSD to the instances.

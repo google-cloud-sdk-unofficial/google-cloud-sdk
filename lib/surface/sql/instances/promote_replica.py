@@ -14,6 +14,7 @@
 
 """Promotes Cloud SQL read replica to a stand-alone instance."""
 
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -59,12 +60,13 @@ class PromoteReplica(_BasePromoteReplica, base.Command):
       ToolException: An error other than an HTTP error occured while executing
           the command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     validate.ValidateInstanceName(args.replica)
-    instance_ref = resources.Parse(args.replica, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.replica, collection='sql.instances')
 
     console_io.PromptContinue(
         message='Once the read replica has been promoted to a stand-alone '
@@ -76,7 +78,7 @@ class PromoteReplica(_BasePromoteReplica, base.Command):
         sql_messages.SqlInstancesPromoteReplicaRequest(
             project=instance_ref.project,
             instance=instance_ref.instance))
-    operation_ref = resources.Create(
+    operation_ref = client.resource_parser.Create(
         'sql.operations',
         operation=result.operation,
         project=instance_ref.project,
@@ -117,12 +119,13 @@ class PromoteReplicaBeta(_BasePromoteReplica, base.Command):
       ToolException: An error other than an HTTP error occured while executing
           the command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     validate.ValidateInstanceName(args.replica)
-    instance_ref = resources.Parse(args.replica, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.replica, collection='sql.instances')
 
     console_io.PromptContinue(
         message='Once the read replica has been promoted to a stand-alone '
@@ -134,7 +137,7 @@ class PromoteReplicaBeta(_BasePromoteReplica, base.Command):
         sql_messages.SqlInstancesPromoteReplicaRequest(
             project=instance_ref.project,
             instance=instance_ref.instance))
-    operation_ref = resources.Create(
+    operation_ref = client.resource_parser.Create(
         'sql.operations',
         operation=result.name,
         project=instance_ref.project)

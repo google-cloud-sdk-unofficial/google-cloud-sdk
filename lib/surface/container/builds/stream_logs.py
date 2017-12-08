@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.cloudbuild import logs as cb_logs
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -54,6 +55,8 @@ class StreamLogs(base.Command):
     registry = self.context['registry']
 
     build_ref = registry.Parse(
-        args.build, collection='cloudbuild.projects.builds')
+        args.build,
+        params={'projectId': properties.VALUES.core.project.GetOrFail},
+        collection='cloudbuild.projects.builds')
 
     cb_logs.CloudBuildClient(client, messages).Stream(build_ref)

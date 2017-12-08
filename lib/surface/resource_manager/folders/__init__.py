@@ -13,6 +13,7 @@
 # limitations under the License.
 """The group for the Cloud Folders CLI."""
 
+from googlecloudsdk.api_lib.resource_manager import folders
 from googlecloudsdk.calliope import base
 
 
@@ -23,3 +24,7 @@ class Folders(base.Group):
 
   Commands to query and update your Cloud Folders.
   """
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddUriFunc(folders.GetUri)

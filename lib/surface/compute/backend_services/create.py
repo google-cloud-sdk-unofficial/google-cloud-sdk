@@ -143,7 +143,8 @@ class CreateGA(base_classes.BaseAsyncMutator):
     return [request]
 
   def CreateRegionalRequests(self, args, backend_services_ref):
-    backend_service = self._CreateRegionBackendService(args)
+    backend_service = self._CreateRegionBackendService(args,
+                                                       backend_services_ref)
     if args.connection_draining_timeout is not None:
       backend_service.connectionDraining = self.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
@@ -155,14 +156,14 @@ class CreateGA(base_classes.BaseAsyncMutator):
 
     return [request]
 
-  def _CreateRegionBackendService(self, args):
+  def _CreateRegionBackendService(self, args, backend_services_ref):
     health_checks = flags.GetHealthCheckUris(args, self, self.resources)
     if not health_checks:
       raise exceptions.ToolException('At least one health check required.')
 
     return self.messages.BackendService(
         description=args.description,
-        name=args.name,
+        name=backend_services_ref.Name(),
         healthChecks=health_checks,
         loadBalancingScheme=(
             self.messages.BackendService.LoadBalancingSchemeValueValuesEnum(
@@ -179,18 +180,6 @@ class CreateGA(base_classes.BaseAsyncMutator):
       if (backend_service.iap.enabled and backend_service.protocol is not
           self.messages.BackendService.ProtocolValueValuesEnum.HTTPS):
         log.warning(backend_services_utils.IapHttpWarning())
-
-  def _ApplyCustomCacheKeysArgs(self, args, backend_service):
-    cache_key_policy = self.messages.CacheKeyPolicy()
-    backend_services_utils.ValidateCacheKeyPolicyArgs(args)
-    backend_services_utils.UpdateCacheKeyPolicy(args, cache_key_policy)
-    if (not args.cache_key_include_host or
-        not args.cache_key_include_protocol or
-        not args.cache_key_include_query_string or
-        args.cache_key_query_string_blacklist is not None or
-        args.cache_key_query_string_whitelist is not None):
-      backend_service.cdnPolicy = self.messages.BackendServiceCdnPolicy(
-          cacheKeyPolicy=cache_key_policy)
 
   def CreateRequests(self, args):
     ref = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
@@ -268,7 +257,8 @@ class CreateAlpha(CreateGA):
     if args.enable_cdn:
       backend_service.enableCDN = args.enable_cdn
 
-    self._ApplyCustomCacheKeysArgs(args, backend_service)
+    backend_services_utils.ApplyCdnPolicyArgs(
+        self, args, backend_service, is_update=False)
 
     if args.session_affinity is not None:
       backend_service.sessionAffinity = (
@@ -293,7 +283,8 @@ class CreateAlpha(CreateGA):
         args.cache_key_query_string_whitelist is not None):
       raise exceptions.ToolException(
           'Custom cache key flags cannot be used for regional requests.')
-    backend_service = self._CreateRegionBackendService(args)
+    backend_service = self._CreateRegionBackendService(args,
+                                                       backend_services_ref)
     if args.connection_draining_timeout is not None:
       backend_service.connectionDraining = self.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
@@ -305,14 +296,14 @@ class CreateAlpha(CreateGA):
 
     return [request]
 
-  def _CreateRegionBackendService(self, args):
+  def _CreateRegionBackendService(self, args, backend_services_ref):
     health_checks = flags.GetHealthCheckUris(args, self, self.resources)
     if not health_checks:
       raise exceptions.ToolException('At least one health check required.')
 
     return self.messages.BackendService(
         description=args.description,
-        name=args.name,
+        name=backend_services_ref.Name(),
         healthChecks=health_checks,
         loadBalancingScheme=(
             self.messages.BackendService.LoadBalancingSchemeValueValuesEnum(
@@ -371,7 +362,8 @@ class CreateBeta(CreateGA):
     if args.session_affinity is not None:
       backend_service.affinityCookieTtlSec = args.affinity_cookie_ttl
 
-    self._ApplyCustomCacheKeysArgs(args, backend_service)
+    backend_services_utils.ApplyCdnPolicyArgs(
+        self, args, backend_service, is_update=False)
 
     self._ApplyIapArgs(args.iap, backend_service)
 
@@ -382,7 +374,8 @@ class CreateBeta(CreateGA):
     return [request]
 
   def CreateRegionalRequests(self, args, backend_services_ref):
-    backend_service = self._CreateRegionBackendService(args)
+    backend_service = self._CreateRegionBackendService(args,
+                                                       backend_services_ref)
     if args.connection_draining_timeout is not None:
       backend_service.connectionDraining = self.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
@@ -394,14 +387,14 @@ class CreateBeta(CreateGA):
 
     return [request]
 
-  def _CreateRegionBackendService(self, args):
+  def _CreateRegionBackendService(self, args, backend_services_ref):
     health_checks = flags.GetHealthCheckUris(args, self, self.resources)
     if not health_checks:
       raise exceptions.ToolException('At least one health check required.')
 
     return self.messages.BackendService(
         description=args.description,
-        name=args.name,
+        name=backend_services_ref.Name(),
         healthChecks=health_checks,
         loadBalancingScheme=(
             self.messages.BackendService.LoadBalancingSchemeValueValuesEnum(

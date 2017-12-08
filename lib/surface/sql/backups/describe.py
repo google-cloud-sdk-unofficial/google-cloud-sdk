@@ -14,10 +14,13 @@
 """Retrieves information about a backup."""
 
 import sys
+
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
+from googlecloudsdk.core.util import times
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -38,6 +41,7 @@ class Describe(base.DescribeCommand):
     """
     parser.add_argument(
         'due_time',
+        type=arg_parsers.Datetime.Parse,
         help='The time when this run is due to start in RFC 3339 format, for '
         'example 2012-11-15T16:19:00.094Z.')
     flags.INSTANCE_FLAG.AddToParser(parser)
@@ -58,12 +62,14 @@ class Describe(base.DescribeCommand):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+
+    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     validate.ValidateInstanceName(args.instance)
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
 
     instance = sql_client.instances.Get(
         sql_messages.SqlInstancesGetRequest(
@@ -75,7 +81,7 @@ class Describe(base.DescribeCommand):
         project=instance_ref.project,
         instance=instance_ref.instance,
         backupConfiguration=backup_config,
-        dueTime=args.due_time)
+        dueTime=times.FormatDateTime(args.due_time, tzinfo=times.UTC))
     return sql_client.backupRuns.Get(request)
 
 
@@ -117,12 +123,14 @@ class DescribeBeta(base.DescribeCommand):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     validate.ValidateInstanceName(args.instance)
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
 
     request = sql_messages.SqlBackupRunsGetRequest(
         project=instance_ref.project,

@@ -38,9 +38,13 @@ class List(base.ListCommand):
     parser.add_argument(
         'dataset_id',
         help="""Restrict the query to variant sets within the given dataset.""")
-
-  def Collection(self):
-    return 'genomics.variantsets'
+    parser.display_info.AddFormat("""
+          table(
+            id,
+            name,
+            description
+          )
+        """)
 
   def Run(self, args):
     """Run 'variantsets list'.

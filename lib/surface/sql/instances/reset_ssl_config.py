@@ -13,6 +13,7 @@
 # limitations under the License.
 """Deletes all certificates and generates a new server SSL certificate."""
 
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -59,12 +60,13 @@ class ResetSslConfig(_BaseResetSslConfig, base.Command):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     validate.ValidateInstanceName(args.instance)
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
 
     console_io.PromptContinue(
         message='Resetting your SSL configuration will delete all client '
@@ -77,7 +79,7 @@ class ResetSslConfig(_BaseResetSslConfig, base.Command):
             project=instance_ref.project,
             instance=instance_ref.instance))
 
-    operation_ref = resources.Create(
+    operation_ref = client.resource_parser.Create(
         'sql.operations',
         operation=result.operation,
         project=instance_ref.project,
@@ -118,12 +120,13 @@ class ResetSslConfigBeta(_BaseResetSslConfig, base.Command):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     validate.ValidateInstanceName(args.instance)
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
 
     console_io.PromptContinue(
         message='Resetting your SSL configuration will delete all client '
@@ -136,7 +139,7 @@ class ResetSslConfigBeta(_BaseResetSslConfig, base.Command):
             project=instance_ref.project,
             instance=instance_ref.instance))
 
-    operation_ref = resources.Create(
+    operation_ref = client.resource_parser.Create(
         'sql.operations',
         operation=result_operation.name,
         project=instance_ref.project)

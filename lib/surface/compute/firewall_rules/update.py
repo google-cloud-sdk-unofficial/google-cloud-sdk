@@ -20,10 +20,11 @@ from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute.firewall_rules import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateFirewall(base_classes.BaseCommand):
   """Update a firewall rule."""
   with_egress_firewall = False
+  with_service_account = False
 
   FIREWALL_RULE_ARG = None
 
@@ -59,8 +60,11 @@ class UpdateFirewall(base_classes.BaseCommand):
     if self.with_egress_firewall:
       args_unset = args_unset and all(
           x is None
-          for x in (args.destination_ranges, args.priority, args.rules,
-                    args.source_service_accounts, args.target_service_accounts))
+          for x in (args.destination_ranges, args.priority, args.rules))
+    if self.with_service_account:
+      args_unset = args_unset and all(
+          x is None
+          for x in (args.source_service_accounts, args.target_service_accounts))
     if args_unset:
       raise calliope_exceptions.ToolException(
           'At least one property must be modified.')
@@ -160,13 +164,14 @@ UpdateFirewall.detailed_help = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaUpdateFirewall(UpdateFirewall):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaUpdateFirewall(UpdateFirewall):
   """Update a firewall rule."""
   with_egress_firewall = True
+  with_service_account = False
 
   def ValidateArgument(self, args):
-    super(AlphaUpdateFirewall, self).ValidateArgument(args)
+    super(BetaUpdateFirewall, self).ValidateArgument(args)
     if args.rules and args.allow:
       raise firewalls_utils.ArgumentValidationError(
           'Can NOT specify --rules and --allow in the same request.')
@@ -175,12 +180,15 @@ class AlphaUpdateFirewall(UpdateFirewall):
   def Args(cls, parser):
     cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument(operation_type='update')
     cls.FIREWALL_RULE_ARG.AddArgument(parser)
-    firewalls_utils.AddCommonArgs(parser, True, True)
+    firewalls_utils.AddCommonArgs(
+        parser,
+        for_update=True,
+        with_egress_support=cls.with_egress_firewall)
 
   def Modify(self, args, existing, cleared_fields):
     """Returns a modified Firewall message."""
 
-    new_firewall = super(AlphaUpdateFirewall, self).Modify(
+    new_firewall = super(BetaUpdateFirewall, self).Modify(
         args, existing, cleared_fields)
 
     if args.rules:
@@ -206,6 +214,35 @@ class AlphaUpdateFirewall(UpdateFirewall):
       new_firewall.destinationRanges = []
       cleared_fields.append('destinationRanges')
 
+    return new_firewall
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaUpdateFirewall(BetaUpdateFirewall):
+  """Update a firewall rule."""
+  with_egress_firewall = True
+  with_service_account = True
+
+  def ValidateArgument(self, args):
+    super(AlphaUpdateFirewall, self).ValidateArgument(args)
+
+  @classmethod
+  def Args(cls, parser):
+    cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument(operation_type='update')
+    cls.FIREWALL_RULE_ARG.AddArgument(parser)
+    firewalls_utils.AddCommonArgs(
+        parser,
+        for_update=True,
+        with_egress_support=cls.with_egress_firewall,
+        with_service_account=cls.with_service_account)
+    firewalls_utils.AddArgsForServiceAccount(parser, for_update=True)
+
+  def Modify(self, args, existing, cleared_fields):
+    """Returns a modified Firewall message."""
+
+    new_firewall = super(AlphaUpdateFirewall, self).Modify(
+        args, existing, cleared_fields)
+
     if args.source_service_accounts:
       new_firewall.sourceServiceAccounts = args.source_service_accounts
     elif args.source_service_accounts is None:
@@ -225,9 +262,11 @@ class AlphaUpdateFirewall(UpdateFirewall):
     return new_firewall
 
 
-AlphaUpdateFirewall.detailed_help = {
-    'brief': 'Update a firewall rule',
-    'DESCRIPTION': """\
+BetaUpdateFirewall.detailed_help = {
+    'brief':
+        'Update a firewall rule',
+    'DESCRIPTION':
+        """\
         *{command}* is used to update firewall rules that allow/deny
         incoming/outgoing traffic. Only arguments passed in will be updated on
         the firewall rule.  Other attributes will remain unaffected.

@@ -15,6 +15,7 @@
 """rolling-updates describe command."""
 from googlecloudsdk.api_lib.compute import rolling_updates_util as updater_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -54,6 +55,10 @@ class Describe(base.Command):
 
     ref = resources.REGISTRY.Parse(
         args.update,
+        params={
+            'project': properties.VALUES.core.project.GetOrFail,
+            'zone': properties.VALUES.compute.zone.GetOrFail,
+        },
         collection='replicapoolupdater.rollingUpdates')
     request = messages.ReplicapoolupdaterRollingUpdatesGetRequest(
         project=ref.project,

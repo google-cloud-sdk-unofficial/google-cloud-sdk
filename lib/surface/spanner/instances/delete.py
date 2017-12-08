@@ -20,7 +20,7 @@ from googlecloudsdk.core.console import console_io
 
 
 class Delete(base.DeleteCommand):
-  """Cloud Spanner instances delete command."""
+  """Delete a Cloud Spanner instance."""
 
   @staticmethod
   def Args(parser):

@@ -13,7 +13,7 @@
 # limitations under the License.
 """Deletes an SSL certificate for a Cloud SQL instance."""
 
-
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import cert
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
@@ -63,12 +63,13 @@ class Delete(_BaseDelete, base.Command):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     validate.ValidateInstanceName(args.instance)
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
 
     # TODO(b/36049690): figure out how to rectify the common_name and the
     # sha1fingerprint, so that things can work with the resource parser.
@@ -80,13 +81,13 @@ class Delete(_BaseDelete, base.Command):
         default=True,
         cancel_on_no=True)
 
-    cert_ref = cert.GetCertRefFromName(sql_client, sql_messages, resources,
-                                       instance_ref, args.common_name)
+    cert_ref = cert.GetCertRefFromName(sql_client, sql_messages,
+                                       client.resource_parser, instance_ref,
+                                       args.common_name)
     if not cert_ref:
       raise exceptions.ToolException(
           'no ssl cert named [{name}] for instance [{instance}]'.format(
-              name=args.common_name,
-              instance=instance_ref))
+              name=args.common_name, instance=instance_ref))
 
     result = sql_client.sslCerts.Delete(
         sql_messages.SqlSslCertsDeleteRequest(
@@ -94,12 +95,11 @@ class Delete(_BaseDelete, base.Command):
             instance=cert_ref.instance,
             sha1Fingerprint=cert_ref.sha1Fingerprint))
 
-    operation_ref = resources.Create(
+    operation_ref = client.resource_parser.Create(
         'sql.operations',
         operation=result.operation,
         project=cert_ref.project,
-        instance=cert_ref.instance,
-    )
+        instance=cert_ref.instance,)
 
     if args.async:
       return sql_client.operations.Get(
@@ -108,8 +108,8 @@ class Delete(_BaseDelete, base.Command):
               instance=operation_ref.instance,
               operation=operation_ref.operation))
 
-    operations.OperationsV1Beta3.WaitForOperation(
-        sql_client, operation_ref, 'Deleting sslCert')
+    operations.OperationsV1Beta3.WaitForOperation(sql_client, operation_ref,
+                                                  'Deleting sslCert')
 
     log.DeletedResource(cert_ref)
 
@@ -134,12 +134,13 @@ class DeleteBeta(_BaseDelete, base.Command):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     validate.ValidateInstanceName(args.instance)
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
 
     # TODO(b/36050482): figure out how to rectify the common_name and the
     # sha1fingerprint, so that things can work with the resource parser.
@@ -151,13 +152,13 @@ class DeleteBeta(_BaseDelete, base.Command):
         default=True,
         cancel_on_no=True)
 
-    cert_ref = cert.GetCertRefFromName(sql_client, sql_messages, resources,
-                                       instance_ref, args.common_name)
+    cert_ref = cert.GetCertRefFromName(sql_client, sql_messages,
+                                       client.resource_parser, instance_ref,
+                                       args.common_name)
     if not cert_ref:
       raise exceptions.ToolException(
           'no ssl cert named [{name}] for instance [{instance}]'.format(
-              name=args.common_name,
-              instance=instance_ref))
+              name=args.common_name, instance=instance_ref))
 
     result = sql_client.sslCerts.Delete(
         sql_messages.SqlSslCertsDeleteRequest(
@@ -165,10 +166,8 @@ class DeleteBeta(_BaseDelete, base.Command):
             instance=cert_ref.instance,
             sha1Fingerprint=cert_ref.sha1Fingerprint))
 
-    operation_ref = resources.Create(
-        'sql.operations',
-        operation=result.name,
-        project=cert_ref.project)
+    operation_ref = client.resource_parser.Create(
+        'sql.operations', operation=result.name, project=cert_ref.project)
 
     if args.async:
       return sql_client.operations.Get(
@@ -177,7 +176,7 @@ class DeleteBeta(_BaseDelete, base.Command):
               instance=operation_ref.instance,
               operation=operation_ref.operation))
 
-    operations.OperationsV1Beta4.WaitForOperation(
-        sql_client, operation_ref, 'Deleting sslCert')
+    operations.OperationsV1Beta4.WaitForOperation(sql_client, operation_ref,
+                                                  'Deleting sslCert')
 
     log.DeletedResource(cert_ref)

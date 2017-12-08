@@ -73,7 +73,9 @@ class List(base.ListCommand):
     for name in args.names:
       try:
         ref = holder.resources.Parse(
-            name, collection='compute.targetSslProxies')
+            name,
+            params={'project': project},
+            collection='compute.targetSslProxies')
         filter_uris.append(ref.SelfLink())
       except resources.UserError:
         filter_names.append(name)

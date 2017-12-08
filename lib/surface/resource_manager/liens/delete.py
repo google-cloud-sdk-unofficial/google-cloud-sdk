@@ -17,12 +17,11 @@ from googlecloudsdk.api_lib.resource_manager import error
 from googlecloudsdk.api_lib.resource_manager import liens
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_manager import flags
-from googlecloudsdk.command_lib.resource_manager import liens_base
 from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Delete(liens_base.LienCommand):
+class Delete(base.DeleteCommand):
   """Delete a lien.
 
   Delete a lien, given a valid lien ID.

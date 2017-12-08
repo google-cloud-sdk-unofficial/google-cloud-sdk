@@ -211,21 +211,6 @@ class UpdateGA(base_classes.ReadWriteCommand):
           self.messages.BackendService.ProtocolValueValuesEnum.HTTPS):
         log.warning(backend_services_utils.IapHttpWarning())
 
-  def _ApplyCustomCacheKeysArgs(self, args, existing, replacement):
-    cache_key_policy = self.messages.CacheKeyPolicy()
-    if (replacement.cdnPolicy is not None and
-        replacement.cdnPolicy.cacheKeyPolicy is not None):
-      cache_key_policy = replacement.cdnPolicy.cacheKeyPolicy
-    backend_services_utils.ValidateCacheKeyPolicyArgs(args)
-    backend_services_utils.UpdateCacheKeyPolicy(args, cache_key_policy)
-    if (args.cache_key_include_protocol is not None or
-        args.cache_key_include_host is not None or
-        args.cache_key_include_query_string is not None or
-        args.cache_key_query_string_whitelist is not None or
-        args.cache_key_query_string_blacklist is not None):
-      replacement.cdnPolicy = self.messages.BackendServiceCdnPolicy(
-          cacheKeyPolicy=cache_key_policy)
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateGA):
@@ -270,7 +255,8 @@ class UpdateAlpha(UpdateGA):
 
     self._ApplyIapArgs(args.iap, existing, replacement)
 
-    self._ApplyCustomCacheKeysArgs(args, existing, replacement)
+    backend_services_utils.ApplyCdnPolicyArgs(
+        self, args, replacement, is_update=True)
 
     return replacement
 
@@ -341,7 +327,8 @@ class UpdateBeta(UpdateGA):
 
     self._ApplyIapArgs(args.iap, existing, replacement)
 
-    self._ApplyCustomCacheKeysArgs(args, existing, replacement)
+    backend_services_utils.ApplyCdnPolicyArgs(
+        self, args, replacement, is_update=True)
 
     return replacement
 

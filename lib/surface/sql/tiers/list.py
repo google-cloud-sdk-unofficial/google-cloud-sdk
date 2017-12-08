@@ -15,6 +15,7 @@
 """Lists all available service tiers for Google Cloud SQL."""
 
 
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
@@ -44,8 +45,9 @@ class _BaseList(object):
       A dict object that has the list of tier resources if the command ran
       successfully.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
+    client = self.GetSqlClient()
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     result = sql_client.tiers.List(sql_messages.SqlTiersListRequest(
         project=properties.VALUES.core.project.Get(required=True)))
@@ -55,10 +57,14 @@ class _BaseList(object):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(_BaseList, base.ListCommand):
   """Lists all available service tiers for Google Cloud SQL."""
-  pass
+
+  def GetSqlClient(self):
+    return api_util.SqlClient(api_util.API_VERSION_FALLBACK)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListBeta(_BaseList, base.ListCommand):
   """Lists all available service tiers for Google Cloud SQL."""
-  pass
+
+  def GetSqlClient(self):
+    return api_util.SqlClient(api_util.API_VERSION_DEFAULT)

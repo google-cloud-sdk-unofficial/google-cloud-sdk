@@ -21,6 +21,16 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
+
+DEPRECATION_WARNING = """\
+The `init-project` command is deprecated and will be removed in the 160.0.0
+Cloud SDK release. This command is no longer necessary; Cloud ML Engine will
+work without having run it."""
+DEPRECATION_ERROR = """\
+The `init-project` command has been removed. This command is no longer
+necessary; Cloud ML Engine will work without having run it."""
+
+
 EDITOR_ROLE = 'roles/editor'
 
 
@@ -54,6 +64,9 @@ def _InitProject(version):
       cloud_ml_service_account, project))
 
 
+# TODO(b/36970124): Switch this over to an error
+@base.Deprecate(is_removed=False, warning=DEPRECATION_WARNING,
+                error=DEPRECATION_ERROR)
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class InitProjectBeta(base.Command):
   """Initialize project for Cloud ML Engine."""
@@ -62,6 +75,9 @@ class InitProjectBeta(base.Command):
     _InitProject('v1beta1')
 
 
+# TODO(b/36970124): Switch this over to an error
+@base.Deprecate(is_removed=False, warning=DEPRECATION_WARNING,
+                error=DEPRECATION_ERROR)
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class InitProjectGa(base.Command):
   """Initialize project for Cloud ML Engine."""
@@ -71,8 +87,6 @@ class InitProjectGa(base.Command):
 
 _DETAILED_HELP = {
     'DESCRIPTION': """\
-        {index}
-
         {command} initializes the current project for use with Google Cloud
         Machine Learning Engine. Specifically, it adds the required Cloud
         Machine Learning Engine service accounts to the current project as

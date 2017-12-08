@@ -17,5 +17,5 @@ from googlecloudsdk.calliope import base
 
 
 class Databases(base.Group):
-  """Cloud Spanner databases commands."""
+  """Manage Cloud Spanner databases."""
   pass

@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
+from googlecloudsdk.core import properties
 
 
 class AddInstances(base_classes.NoOutputAsyncMutator):
@@ -57,7 +58,11 @@ class AddInstances(base_classes.NoOutputAsyncMutator):
     instance_references = []
     for instance in args.instances:
       ref = self.resources.Parse(
-          instance, params={'zone': group_ref.zone},
+          instance,
+          params={
+              'project': properties.VALUES.core.project.GetOrFail,
+              'zone': group_ref.zone
+          },
           collection='compute.instances')
       instance_references.append(ref)
 

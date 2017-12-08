@@ -95,10 +95,15 @@ class Import(base.Command):
     dns = self.context['dns_client']
     messages = self.context['dns_messages']
     resources = self.context['dns_resources']
-    project_id = properties.VALUES.core.project.Get(required=True)
 
     # Get the managed-zone.
-    zone_ref = resources.Parse(args.zone, collection='dns.managedZones')
+    zone_ref = resources.Parse(
+        args.zone,
+        params={
+            'project': properties.VALUES.core.project.GetOrFail,
+        },
+        collection='dns.managedZones')
+
     try:
       zone = dns.managedZones.Get(
           dns.MESSAGES_MODULE.DnsManagedZonesGetRequest(
@@ -111,7 +116,7 @@ class Import(base.Command):
     current = {}
     for record in list_pager.YieldFromList(
         dns.resourceRecordSets,
-        messages.DnsResourceRecordSetsListRequest(project=project_id,
+        messages.DnsResourceRecordSetsListRequest(project=zone_ref.project,
                                                   managedZone=zone_ref.Name()),
         field='rrsets'):
       current[(record.name, record.type)] = record
@@ -144,9 +149,9 @@ class Import(base.Command):
     result = dns.changes.Create(
         messages.DnsChangesCreateRequest(change=change,
                                          managedZone=zone.name,
-                                         project=project_id))
+                                         project=zone_ref.project))
     change_ref = resources.Create(collection='dns.changes',
-                                  project=project_id,
+                                  project=zone_ref.project,
                                   managedZone=zone.name,
                                   changeId=result.id)
     msg = u'Imported record-sets from [{0}] into managed-zone [{1}].'.format(

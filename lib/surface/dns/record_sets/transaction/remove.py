@@ -65,16 +65,20 @@ class Remove(base.Command):
     dns = self.context['dns_client']
     messages = self.context['dns_messages']
     resources = self.context['dns_resources']
-    project_id = properties.VALUES.core.project.Get(required=True)
 
     record_to_remove = trans_util.CreateRecordSetFromArgs(args)
 
     # Ensure the record to be removed exists
-    zone_ref = resources.Parse(args.zone, collection='dns.managedZones')
+    zone_ref = resources.Parse(
+        args.zone,
+        params={
+            'project': properties.VALUES.core.project.GetOrFail,
+        },
+        collection='dns.managedZones')
     existing_records = [record for record in list_pager.YieldFromList(
         dns.resourceRecordSets,
         messages.DnsResourceRecordSetsListRequest(
-            project=project_id,
+            project=zone_ref.project,
             managedZone=zone_ref.Name(),
             name=util.AppendTrailingDot(args.name),
             type=args.type),

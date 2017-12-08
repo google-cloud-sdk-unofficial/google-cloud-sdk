@@ -13,17 +13,14 @@
 # limitations under the License.
 """Command to show metadata for a specified folder."""
 
-import textwrap
-
 from googlecloudsdk.api_lib.resource_manager import folders
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_manager import flags
-from googlecloudsdk.command_lib.resource_manager import folders_base
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(folders_base.FolderCommand, base.DescribeCommand):
+class Describe(base.DescribeCommand):
   """Show metadata for a folder.
 
   Shows metadata for a folder, given a valid folder ID.
@@ -32,15 +29,13 @@ class Describe(folders_base.FolderCommand, base.DescribeCommand):
       * The folder specified does not exist.
       * The active account does not have permission to access the given
         folder.
-  """
-  detailed_help = {
-      'EXAMPLES': textwrap.dedent("""\
-          The following command prints metadata for a folder with the
-          ID `3589215982`:
 
-            $ {command} 3589215982
-    """),
-  }
+  ## EXAMPLES
+
+  The following command prints metadata for a folder with the ID `3589215982`:
+
+    $ {command} 3589215982
+  """
 
   @staticmethod
   def Args(parser):

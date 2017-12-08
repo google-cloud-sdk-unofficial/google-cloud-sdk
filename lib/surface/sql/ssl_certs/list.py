@@ -11,10 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Lists all SSL certs for a Cloud SQL instance."""
 
-
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
@@ -44,26 +43,31 @@ class _BaseList(object):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = self.GetSqlClient()
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     validate.ValidateInstanceName(args.instance)
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
 
-    result = sql_client.sslCerts.List(sql_messages.SqlSslCertsListRequest(
-        project=instance_ref.project,
-        instance=instance_ref.instance))
+    result = sql_client.sslCerts.List(
+        sql_messages.SqlSslCertsListRequest(
+            project=instance_ref.project, instance=instance_ref.instance))
     return iter(result.items)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(_BaseList, base.ListCommand):
   """Lists all SSL certs for a Cloud SQL instance."""
-  pass
+
+  def GetSqlClient(self):
+    return api_util.SqlClient(api_util.API_VERSION_FALLBACK)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListBeta(_BaseList, base.ListCommand):
   """Lists all SSL certs for a Cloud SQL instance."""
-  pass
+
+  def GetSqlClient(self):
+    return api_util.SqlClient(api_util.API_VERSION_DEFAULT)

@@ -16,6 +16,7 @@
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
 class Cancel(base.Command):
@@ -52,7 +53,9 @@ class Cancel(base.Command):
     resources = self.context['registry']
 
     build_ref = resources.Parse(
-        args.build, collection='cloudbuild.projects.builds')
+        args.build,
+        params={'projectId': properties.VALUES.core.project.GetOrFail},
+        collection='cloudbuild.projects.builds')
     canceled_build = client.projects_builds.Cancel(
         messages.CloudbuildProjectsBuildsCancelRequest(
             projectId=build_ref.projectId,

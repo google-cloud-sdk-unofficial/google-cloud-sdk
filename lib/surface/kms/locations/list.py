@@ -26,11 +26,11 @@ class List(base.ListCommand):
   Lists all locations available for this project.
   """
 
-  def Collection(self):
-    return flags.LOCATION_COLLECTION
-
-  def GetUriFunc(self):
-    return cloudkms_base.MakeGetUriFunc(self)
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat('table(locationId)')
+    parser.display_info.AddUriFunc(
+        cloudkms_base.MakeGetUriFunc(flags.LOCATION_COLLECTION))
 
   def Run(self, args):
     client = cloudkms_base.GetClientInstance()

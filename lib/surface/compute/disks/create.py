@@ -228,11 +228,17 @@ class Create(base.Command):
         if disk_ref.Collection() == 'compute.disks':
           type_ref = compute_holder.resources.Parse(
               args.type, collection='compute.diskTypes',
-              params={'zone': disk_ref.zone})
+              params={
+                  'project': disk_ref.project,
+                  'zone': disk_ref.zone
+              })
         elif disk_ref.Collection() == 'compute.regionDisks':
           type_ref = compute_holder.resources.Parse(
               args.type, collection='compute.regionDiskTypes',
-              params={'region': disk_ref.region})
+              params={
+                  'project': disk_ref.project,
+                  'region': disk_ref.region
+              })
         type_uri = type_ref.SelfLink()
       else:
         type_uri = None
@@ -331,7 +337,18 @@ class CreateAlpha(Create):
       return create.ParseRegionDisksResources(
           compute_holder.resources, args.DISK_NAME, args.replica_zones,
           args.project, args.region)
-    return Create.disks_arg.ResolveAsResource(
+    disk_refs = Create.disks_arg.ResolveAsResource(
         args,
         compute_holder.resources,
         scope_lister=flags.GetDefaultScopeLister(compute_holder.client))
+
+    # --replica-zones is required for regional disks always - also when region
+    # is selected in prompt.
+    for disk_ref in disk_refs:
+      if disk_ref.Collection() == 'compute.regionDisks':
+        raise exceptions.RequiredArgumentException(
+            '--replica-zones',
+            '--replica-zones is required for regional disk creation [{}]'.
+            format(disk_ref.SelfLink()))
+
+    return disk_refs

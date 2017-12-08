@@ -18,6 +18,7 @@ Imports data into a Cloud SQL instance from a MySQL dump file in
 Google Cloud Storage.
 """
 
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -74,9 +75,9 @@ class Import(base.Command):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     validate.ValidateInstanceName(args.instance)
 
@@ -85,7 +86,8 @@ class Import(base.Command):
                                                                 args.instance),
         default=True,
         cancel_on_no=True)
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
 
     import_request = sql_messages.SqlInstancesImportRequest(
         instance=instance_ref.instance,
@@ -100,7 +102,7 @@ class Import(base.Command):
 
     result = sql_client.instances.Import(import_request)
 
-    operation_ref = resources.Create(
+    operation_ref = client.resource_parser.Create(
         'sql.operations',
         operation=result.operation,
         project=instance_ref.project,
@@ -179,12 +181,13 @@ class ImportBeta(base.Command):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     validate.ValidateInstanceName(args.instance)
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
 
     console_io.PromptContinue(
         message='Data from {0} will be imported to {1}.'.format(args.uri[0],
@@ -207,7 +210,7 @@ class ImportBeta(base.Command):
 
     result_operation = sql_client.instances.Import(import_request)
 
-    operation_ref = resources.Create(
+    operation_ref = client.resource_parser.Create(
         'sql.operations',
         operation=result_operation.name,
         project=instance_ref.project)

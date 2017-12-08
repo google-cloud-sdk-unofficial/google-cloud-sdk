@@ -13,6 +13,7 @@
 # limitations under the License.
 """The command group for versions."""
 
+from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.core import resolvers
@@ -29,6 +30,8 @@ class Versions(base.Group):
   @staticmethod
   def Args(parser):
     flags.AddCryptoKeyFlag(parser)
+    parser.display_info.AddUriFunc(
+        cloudkms_base.MakeGetUriFunc(flags.CRYPTO_KEY_VERSION_COLLECTION))
 
   def Filter(self, context, args):
     resources.REGISTRY.SetParamDefault(

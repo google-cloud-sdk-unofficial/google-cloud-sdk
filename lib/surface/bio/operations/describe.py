@@ -39,9 +39,6 @@ class Describe(base.DescribeCommand):
     $ {command} OP-NAMES-ARE-A-UNIQUE-HASH
   """
 
-  def GetUriFunc(self):
-    return command_lib_util.OperationsUriFunc
-
   @staticmethod
   def Args(parser):
     flags.GetOperationNameFlag('describe').AddToParser(parser)

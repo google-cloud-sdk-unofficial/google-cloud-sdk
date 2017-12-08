@@ -20,7 +20,7 @@ from googlecloudsdk.command_lib.spanner import flags
 
 
 class List(base.ListCommand):
-  """Cloud Spanner operations list command."""
+  """List the Cloud Spanner operations on the given instance or database."""
 
   @staticmethod
   def Args(parser):
@@ -40,9 +40,14 @@ class List(base.ListCommand):
     flags.Database(positional=False, required=False,
                    text='For database operations, the name of the database '
                    'the operations are executing on.').AddToParser(parser)
-
-  def Collection(self):
-    return 'spanner.operations'
+    parser.display_info.AddFormat("""
+          table(
+            name.basename():label=OPERATION_ID,
+            metadata.statements.join(sep="\n"),
+            done,
+            metadata.'@type'.split('.').slice(-1:).join()
+          )
+        """)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

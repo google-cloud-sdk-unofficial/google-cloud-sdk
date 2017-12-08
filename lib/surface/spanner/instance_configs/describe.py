@@ -18,7 +18,7 @@ from googlecloudsdk.calliope import base
 
 
 class Describe(base.DescribeCommand):
-  """Cloud Spanner instance configs describe command."""
+  """Describe a Cloud Spanner instance config."""
 
   @staticmethod
   def Args(parser):

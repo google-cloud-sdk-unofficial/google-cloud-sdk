@@ -137,6 +137,10 @@ class AddBackend(base_classes.ReadWriteCommand):
         maxConnectionsPerInstance=args.max_connections_per_instance)
 
   def Modify(self, args, existing):
+    ref = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
+        args,
+        self.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
     backend_flags.WarnOnDeprecatedFlags(args)
     replacement = copy.deepcopy(existing)
 
@@ -150,7 +154,7 @@ class AddBackend(base_classes.ReadWriteCommand):
             'Backend [{0}] in zone [{1}] already exists in backend service '
             '[{2}].'.format(group_ref.Name(),
                             group_ref.zone,
-                            args.name))
+                            ref.Name()))
 
     if args.balancing_mode:
       balancing_mode = self.messages.Backend.BalancingModeValueValuesEnum(

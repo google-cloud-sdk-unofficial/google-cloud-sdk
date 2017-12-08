@@ -33,12 +33,6 @@ class SetIamPolicy(base.Command):
     $ {command} example-project-id-1 policy.json
   """
 
-  def Collection(self):
-    return command_lib_util.PROJECTS_COLLECTION
-
-  def GetUriFunc(self):
-    return command_lib_util.ProjectsUriFunc
-
   @staticmethod
   def Args(parser):
     flags.GetProjectFlag('set IAM policy for').AddToParser(parser)

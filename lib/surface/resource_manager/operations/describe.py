@@ -13,17 +13,14 @@
 # limitations under the License.
 """Command to show metadata for a specified folder."""
 
-import textwrap
-
 from googlecloudsdk.api_lib.resource_manager import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_manager import flags
-from googlecloudsdk.command_lib.resource_manager import operations_base
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(operations_base.OperationCommand, base.DescribeCommand):
+class Describe(base.DescribeCommand):
   """Show metadata for an operation.
 
   Show metadata for an operation, given a valid operation ID.
@@ -31,15 +28,14 @@ class Describe(operations_base.OperationCommand, base.DescribeCommand):
   This command can fail for the following reasons:
       * The operation specified does not exist.
       * You do not have permission to view the operation.
-  """
-  detailed_help = {
-      'EXAMPLES': textwrap.dedent("""\
-          The following command prints metadata for an operation with the
-          ID `fc.3589215982`:
 
-            $ {command} fc.3589215982
-    """),
-  }
+  ## EXAMPLES
+
+  The following command prints metadata for an operation with the
+  ID `fc.3589215982`:
+
+    $ {command} fc.3589215982
+  """
 
   @staticmethod
   def Args(parser):

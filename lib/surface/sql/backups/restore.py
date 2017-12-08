@@ -13,6 +13,7 @@
 # limitations under the License.
 """Restores a backup of a Cloud SQL instance."""
 
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -65,12 +66,13 @@ class RestoreBackupBeta(base.RestoreCommand):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     validate.ValidateInstanceName(args.restore_instance)
-    instance_ref = resources.Parse(
+    instance_ref = client.resource_parser.Parse(
         args.restore_instance, collection='sql.instances')
     if not console_io.PromptContinue(
         'All current data on the instance will be lost when the backup is '
@@ -90,7 +92,7 @@ class RestoreBackupBeta(base.RestoreCommand):
                         backupRunId=args.backup_id,
                         instanceId=args.backup_instance,)))))
 
-    operation_ref = resources.Create(
+    operation_ref = client.resource_parser.Create(
         'sql.operations',
         operation=result_operation.name,
         project=instance_ref.project)

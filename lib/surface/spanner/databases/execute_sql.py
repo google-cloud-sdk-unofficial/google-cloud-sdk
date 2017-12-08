@@ -21,7 +21,7 @@ from googlecloudsdk.core.resource import resource_printer
 
 
 class Query(base.Command):
-  """Cloud Spanner databases query."""
+  """Execute a read-only SQL query against a Cloud Spanner database."""
 
   @staticmethod
   def Args(parser):

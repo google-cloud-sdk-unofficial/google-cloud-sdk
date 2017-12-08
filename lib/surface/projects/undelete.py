@@ -37,12 +37,6 @@ class Undelete(base.CreateCommand):
     $ {command} example-foo-bar-1
   """
 
-  def Collection(self):
-    return command_lib_util.PROJECTS_COLLECTION
-
-  def GetUriFunc(self):
-    return command_lib_util.ProjectsUriFunc
-
   @staticmethod
   def Args(parser):
     parser.add_argument('id', metavar='PROJECT_ID',

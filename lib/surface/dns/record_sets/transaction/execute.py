@@ -62,14 +62,18 @@ class Execute(base.ListCommand):
     dns = self.context['dns_client']
     messages = self.context['dns_messages']
     resources = self.context['dns_resources']
-    project_id = properties.VALUES.core.project.Get(required=True)
-    zone_ref = resources.Parse(args.zone, collection='dns.managedZones')
+    zone_ref = resources.Parse(
+        args.zone,
+        params={
+            'project': properties.VALUES.core.project.GetOrFail,
+        },
+        collection='dns.managedZones')
 
     # Send the change to the service.
     result = dns.changes.Create(messages.DnsChangesCreateRequest(
-        change=change, managedZone=zone_ref.Name(), project=project_id))
+        change=change, managedZone=zone_ref.Name(), project=zone_ref.project))
     change_ref = resources.Create(
-        collection='dns.changes', project=project_id,
+        collection='dns.changes', project=zone_ref.project,
         managedZone=zone_ref.Name(), changeId=result.id)
     msg = 'Executed transaction [{0}] for managed-zone [{1}].'.format(
         args.transaction_file, zone_ref.Name())

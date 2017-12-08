@@ -17,6 +17,7 @@ from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute.users import client as users_client
+from googlecloudsdk.core import properties
 
 
 class Delete(base_classes.BaseAsyncMutator):
@@ -79,7 +80,9 @@ class Delete(base_classes.BaseAsyncMutator):
       names = args.names
 
     user_refs = [self.clouduseraccounts_resources.Parse(
-        user, collection='clouduseraccounts.users') for user in names]
+        user,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='clouduseraccounts.users') for user in names]
 
     utils.PromptForDeletion(user_refs)
 

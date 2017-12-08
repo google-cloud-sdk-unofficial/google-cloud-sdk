@@ -20,7 +20,7 @@ from googlecloudsdk.command_lib.spanner import flags
 
 
 class Describe(base.DescribeCommand):
-  """Cloud Spanner operations describe command."""
+  """Describe a Cloud Spanner operation."""
 
   @staticmethod
   def Args(parser):

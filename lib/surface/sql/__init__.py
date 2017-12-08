@@ -62,20 +62,6 @@ def _Args(parser):
           properties.VALUES.api_endpoint_overrides.sql))
 
 
-def _DoFilter(context, api_version_default):
-  """Set up and return the context to be used by all SQL release tracks."""
-  cloud_resources.REGISTRY.SetParamDefault(
-      api='sql', collection=None, param='project',
-      resolver=resolvers.FromProperty(properties.VALUES.core.project))
-
-  context['sql_client'] = apis.GetClientInstance('sql', api_version_default)
-  context['sql_messages'] = apis.GetMessagesModule('sql', api_version_default)
-  context['registry'] = cloud_resources.REGISTRY.Clone()
-  context['registry'].RegisterApiByName('sql', api_version_default)
-
-  return context
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class SQL(base.Group):
   """Manage Cloud SQL databases."""
@@ -83,10 +69,6 @@ class SQL(base.Group):
   @staticmethod
   def Args(parser):
     _Args(parser)
-
-  @exceptions.RaiseToolExceptionInsteadOf(c_store.Error)
-  def Filter(self, context, args):
-    _DoFilter(context, 'v1beta3')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -97,7 +79,3 @@ class SQLBeta(base.Group):
   @staticmethod
   def Args(parser):
     _Args(parser)
-
-  @exceptions.RaiseToolExceptionInsteadOf(c_store.Error)
-  def Filter(self, context, args):
-    _DoFilter(context, 'v1beta4')

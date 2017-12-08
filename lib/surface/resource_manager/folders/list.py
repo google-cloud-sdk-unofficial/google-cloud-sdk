@@ -13,43 +13,43 @@
 # limitations under the License.
 """Command to list all folder IDs associated with the active user."""
 
-import textwrap
-
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.resource_manager import folders
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_manager import flags
-from googlecloudsdk.command_lib.resource_manager import folders_base
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(folders_base.FolderCommand, base.ListCommand):
+class List(base.ListCommand):
   """List folders accessible by the active account.
 
   List all folders to which the user has access under the specified
   parent (either an Organization or a Folder). Exactly one of --folder
   or --organization must be provided.
+
+  ## EXAMPLES
+
+  The following command lists folders under org with ID `123456789`:
+
+    $ {command} --organization=123456789
+
+  The following command lists folders under folder with ID `123456789`:
+
+    $ {command} --folder=123456789
   """
-
-  detailed_help = {
-      'EXAMPLES': textwrap.dedent("""\
-          The following command lists folders under org with ID
-          `123456789`:
-
-            $ {command} --organization=123456789
-
-          The following command lists folders under folder with ID
-          `123456789`:
-
-            $ {command} --folder=123456789
-    """),
-  }
 
   @staticmethod
   def Args(parser):
     flags.FolderIdFlag('to list folders under').AddToParser(parser)
     flags.OrganizationIdFlag('to list folders under').AddToParser(parser)
+    parser.display_info.AddFormat("""
+        table(
+          displayName:label=DISPLAY_NAME,
+          parent:label=PARENT_NAME,
+          name.segment():label=ID:align=right:sort=1
+        )
+    """)
 
   def Run(self, args):
     """Run the list command."""
@@ -62,9 +62,3 @@ class List(folders_base.FolderCommand, base.ListCommand):
         batch_size_attribute='pageSize',
         batch_size=args.page_size,
         field='folders')
-
-  def Format(self, args):
-    return 'table({fields})'.format(fields=','.join([
-        'displayName:label=DISPLAY_NAME', 'parent:label=PARENT_NAME',
-        'name.segment():label=ID:align=right:sort=1'
-    ]))

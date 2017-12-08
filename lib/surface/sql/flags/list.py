@@ -14,6 +14,7 @@
 
 """Lists customizable flags for Google Cloud SQL instances."""
 
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.calliope import base
 
 
@@ -53,8 +54,9 @@ class List(base.ListCommand):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
+    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     result = sql_client.flags.List(sql_messages.SqlFlagsListRequest())
     return iter(result.items)
@@ -102,8 +104,9 @@ class ListBeta(base.ListCommand):
           command.
     """
 
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     result = sql_client.flags.List(
         sql_messages.SqlFlagsListRequest(databaseVersion=args.database_version))

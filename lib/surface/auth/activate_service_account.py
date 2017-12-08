@@ -51,6 +51,8 @@ class ActivateServiceAccount(base.SilentCommand):
   credentials.
 
   If you want to delete previous credentials see `gcloud auth revoke` command.
+
+  Note: Service accounts use client quotas for tracking usage.
   """
 
   @staticmethod

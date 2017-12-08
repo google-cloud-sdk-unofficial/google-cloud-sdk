@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
+from googlecloudsdk.core import properties
 
 
 class SetInstanceTemplate(base_classes.BaseAsyncMutator):
@@ -52,7 +53,11 @@ class SetInstanceTemplate(base_classes.BaseAsyncMutator):
                    scope_lister=flags.GetDefaultScopeLister(
                        self.compute_client))
     template_ref = self.resources.Parse(
-        args.template, collection='compute.instanceTemplates')
+        args.template,
+        params={
+            'project': properties.VALUES.core.project.GetOrFail,
+        },
+        collection='compute.instanceTemplates')
 
     if igm_ref.Collection() == 'compute.instanceGroupManagers':
       service = self.compute.instanceGroupManagers

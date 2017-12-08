@@ -50,11 +50,13 @@ class List(base.ListCommand):
     """
     adapter = self.context['api_adapter']
 
-    project_id = properties.VALUES.core.project.Get(required=True)
+    project_id = properties.VALUES.core.project.GetOrFail()
     zone = None
     if args.zone:
       zone = adapter.registry.Parse(
-          args.zone, collection='compute.zones').zone
+          args.zone,
+          params={'project': project_id},
+          collection='compute.zones').zone
 
     try:
       return adapter.ListOperations(project_id, zone).operations

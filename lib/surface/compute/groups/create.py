@@ -13,6 +13,7 @@
 # limitations under the License.
 """Command for creating groups."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.core import properties
 
 
 class Create(base_classes.BaseAsyncCreator):
@@ -50,7 +51,9 @@ class Create(base_classes.BaseAsyncCreator):
     """Returns a list of requests necessary for adding users."""
 
     group_refs = [self.clouduseraccounts_resources.Parse(
-        group, collection='clouduseraccounts.groups') for group in args.names]
+        group,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='clouduseraccounts.groups') for group in args.names]
 
     requests = []
     for group_ref in group_refs:

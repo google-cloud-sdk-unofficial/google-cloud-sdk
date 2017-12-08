@@ -55,9 +55,15 @@ class List(base.ListCommand):
                               'unspecified or 0, defaults to the length of '
                               'the reference.'))
     base.PAGE_SIZE_FLAG.SetDefault(parser, 512)
-
-  def Collection(self):
-    return 'genomics.alignments'
+    parser.display_info.AddFormat("""
+          table(
+            alignment.position.referenceName,
+            alignment.position.position,
+            alignment.position.reverseStrand,
+            fragmentName,
+            alignedSequence:label=SEQUENCE
+          )
+        """)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

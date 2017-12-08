@@ -15,6 +15,7 @@
 """The command group for the projects CLI."""
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.projects import util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
@@ -36,3 +37,7 @@ class Projects(base.Group):
   here:
   https://cloud.google.com/resource-manager/docs/creating-managing-projects
   """
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddUriFunc(util.ProjectsUriFunc)

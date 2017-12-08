@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.compute.backend_buckets import (
 from googlecloudsdk.command_lib.compute.backend_services import (
     flags as backend_service_flags)
 from googlecloudsdk.command_lib.compute.url_maps import flags
+from googlecloudsdk.core import properties
 
 
 def _Args(parser):
@@ -241,13 +242,19 @@ class AddPathMatcher(base_classes.ReadWriteCommand):
           self.messages.PathRule(
               paths=sorted(paths),
               service=self.resources.Parse(
-                  service, collection='compute.backendServices').SelfLink()))
+                  service,
+                  params={
+                      'project': properties.VALUES.core.project.GetOrFail,
+                  },
+                  collection='compute.backendServices').SelfLink()))
     for bucket, paths in sorted(bucket_map.iteritems()):
       path_rules.append(
           self.messages.PathRule(
               paths=sorted(paths),
               service=self.resources.Parse(
-                  bucket, collection='compute.backendBuckets').SelfLink()))
+                  bucket,
+                  params={'project': properties.VALUES.core.project.GetOrFail},
+                  collection='compute.backendBuckets').SelfLink()))
 
     if args.default_service:
       default_backend_uri = self.BACKEND_SERVICE_ARG.ResolveAsResource(

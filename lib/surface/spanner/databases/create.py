@@ -20,7 +20,7 @@ from googlecloudsdk.command_lib.spanner import flags
 
 
 class Create(base.CreateCommand):
-  """Cloud Spanner databases create command."""
+  """Create a Cloud Spanner database."""
 
   @staticmethod
   def Args(parser):

@@ -140,7 +140,7 @@ class Update(base.UpdateCommand):
     _AddMutuallyExclusiveArgs(group)
     flags.AddClusterAutoscalingFlags(parser, group, hidden=True)
     flags.AddMasterAuthorizedNetworksFlags(parser, group, hidden=True)
-    flags.AddEnableLegacyAbacFlag(group, hidden=True)
+    flags.AddEnableLegacyAuthorizationFlag(group, hidden=True)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -194,8 +194,10 @@ class Update(base.UpdateCommand):
       enable_master_authorized_networks = args.enable_master_authorized_networks
 
       try:
-        if args.enable_legacy_abac is not None:
-          op_ref = adapter.SetLegacyAbac(cluster_ref, args.enable_legacy_abac)
+        if args.enable_legacy_authorization is not None:
+          op_ref = adapter.SetLegacyAuthorization(
+              cluster_ref,
+              args.enable_legacy_authorization)
         else:
           options = api_adapter.UpdateClusterOptions(
               monitoring_service=args.monitoring_service,
@@ -231,7 +233,7 @@ class UpdateBeta(Update):
     flags.AddClusterAutoscalingFlags(parser, group, hidden=True)
     _AddAdditionalZonesArg(group)
     flags.AddMasterAuthorizedNetworksFlags(parser, group, hidden=True)
-    flags.AddEnableLegacyAbacFlag(group)
+    flags.AddEnableLegacyAuthorizationFlag(group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -246,4 +248,4 @@ class UpdateAlpha(Update):
     flags.AddClusterAutoscalingFlags(parser, group)
     _AddAdditionalZonesArg(group)
     flags.AddMasterAuthorizedNetworksFlags(parser, group, hidden=True)
-    flags.AddEnableLegacyAbacFlag(group)
+    flags.AddEnableLegacyAuthorizationFlag(group)

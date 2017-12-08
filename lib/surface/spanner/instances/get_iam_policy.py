@@ -20,7 +20,7 @@ from googlecloudsdk.core import resources
 
 
 class GetIamPolicy(base.Command):
-  """Get IAM policy for Cloud Spanner instance."""
+  """Get the IAM policy for a Cloud Spanner instance."""
 
   @staticmethod
   def Args(parser):

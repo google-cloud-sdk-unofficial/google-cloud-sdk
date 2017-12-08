@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.deployment_manager import dm_base
 from googlecloudsdk.command_lib.deployment_manager import dm_beta_base
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -126,6 +127,7 @@ class ListALPHA(base.ListCommand):
     """
     type_provider_ref = dm_beta_base.GetResources().Parse(
         args.provider if args.provider else 'NOT_A_PROVIDER',
+        params={'project': properties.VALUES.core.project.GetOrFail},
         collection='deploymentmanager.typeProviders')
     self.page_size = args.page_size
     self.limit = args.limit

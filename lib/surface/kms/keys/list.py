@@ -33,11 +33,11 @@ class List(base.ListCommand):
     $ {command} --keyring fellowship --location global
   """
 
-  def Collection(self):
-    return flags.CRYPTO_KEY_COLLECTION
-
-  def GetUriFunc(self):
-    return cloudkms_base.MakeGetUriFunc(self)
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""
+        table(name, purpose, primary.state:label=PRIMARY_STATE)
+    """)
 
   def Run(self, args):
     client = cloudkms_base.GetClientInstance()

@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -53,7 +54,11 @@ class Create(base.CreateCommand):
     messages = apis.GetMessagesModule('dns', 'v1')
 
     zone_ref = resources.REGISTRY.Parse(
-        args.dns_zone, collection='dns.managedZones')
+        args.dns_zone,
+        params={
+            'project': properties.VALUES.core.project.GetOrFail,
+        },
+        collection='dns.managedZones')
 
     zone = messages.ManagedZone(name=zone_ref.managedZone,
                                 dnsName=util.AppendTrailingDot(args.dns_name),

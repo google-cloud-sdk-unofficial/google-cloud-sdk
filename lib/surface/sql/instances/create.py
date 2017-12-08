@@ -17,6 +17,7 @@ import argparse
 
 from apitools.base.py import exceptions as apitools_exceptions
 
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import instances
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
@@ -191,13 +192,13 @@ class Create(_BaseCreate, base.CreateCommand):
       ToolException: An error other than http error occured while executing the
           command.
     """
-
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     validate.ValidateInstanceName(args.instance)
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
     instance_resource = instances.InstancesV1Beta3.ConstructInstanceFromArgs(
         sql_messages, args, instance_ref=instance_ref)
 
@@ -211,7 +212,7 @@ class Create(_BaseCreate, base.CreateCommand):
     try:
       result = sql_client.instances.Insert(instance_resource)
 
-      operation_ref = resources.Create(
+      operation_ref = client.resource_parser.Create(
           'sql.operations',
           operation=result.operation,
           project=instance_ref.project,
@@ -342,13 +343,13 @@ class CreateBeta(_BaseCreate, base.CreateCommand):
       ToolException: An error other than http error occured while executing the
           command.
     """
-
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     validate.ValidateInstanceName(args.instance)
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
     instance_resource = instances.InstancesV1Beta4.ConstructInstanceFromArgs(
         sql_messages, args, instance_ref=instance_ref)
 
@@ -362,7 +363,7 @@ class CreateBeta(_BaseCreate, base.CreateCommand):
     try:
       result_operation = sql_client.instances.Insert(instance_resource)
 
-      operation_ref = resources.Create(
+      operation_ref = client.resource_parser.Create(
           'sql.operations',
           operation=result_operation.name,
           project=instance_ref.project)

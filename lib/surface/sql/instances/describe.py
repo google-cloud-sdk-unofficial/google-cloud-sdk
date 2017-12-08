@@ -14,6 +14,7 @@
 
 """Retrieves information about a Cloud SQL instance."""
 
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 
@@ -54,12 +55,13 @@ class _BaseGet(object):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = self.GetSqlClient()
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     validate.ValidateInstanceName(args.instance)
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
 
     return sql_client.instances.Get(
         sql_messages.SqlInstancesGetRequest(
@@ -76,7 +78,9 @@ class Get(_BaseGet, base.DescribeCommand):
   Information such as instance name, IP address, region, the CA certificate
   and configuration settings will be displayed.
   """
-  pass
+
+  def GetSqlClient(self):
+    return api_util.SqlClient(api_util.API_VERSION_FALLBACK)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -88,4 +92,6 @@ class GetBeta(_BaseGet, base.DescribeCommand):
   Information such as instance name, IP address, region, the CA certificate
   and configuration settings will be displayed.
   """
-  pass
+
+  def GetSqlClient(self):
+    return api_util.SqlClient(api_util.API_VERSION_DEFAULT)

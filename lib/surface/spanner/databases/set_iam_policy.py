@@ -20,7 +20,7 @@ from googlecloudsdk.core import resources
 
 
 class SetIamPolicy(base.Command):
-  """Set IAM policy for Cloud Spanner database."""
+  """Set the IAM policy for a Cloud Spanner database."""
 
   @staticmethod
   def Args(parser):
@@ -35,7 +35,8 @@ class SetIamPolicy(base.Command):
     """
     flags.Instance(positional=False).AddToParser(parser)
     flags.Database().AddToParser(parser)
-    parser.add_argument('policy_file', help='JSON file with the IAM policy.')
+    parser.add_argument(
+        'policy_file', help='Name of JSON or YAML file with the IAM policy.')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

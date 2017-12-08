@@ -13,6 +13,7 @@
 # limitations under the License.
 """The group for the Cloud Resource Manager Operations CLI."""
 
+from googlecloudsdk.api_lib.resource_manager import operations
 from googlecloudsdk.calliope import base
 
 
@@ -23,3 +24,7 @@ class Operations(base.Group):
 
   Commands to query long-running operations created in Cloud Resource Manager.
   """
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddUriFunc(operations.GetUri)

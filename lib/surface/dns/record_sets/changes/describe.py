@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resolvers
 
 
@@ -45,7 +46,10 @@ class Describe(base.DescribeCommand):
     resources = self.context['dns_resources']
     change_ref = resources.Parse(
         args.change_id,
-        params={'managedZone': resolvers.FromArgument('--zone', args.zone)},
+        params={
+            'project': properties.VALUES.core.project.GetOrFail,
+            'managedZone': resolvers.FromArgument('--zone', args.zone)
+        },
         collection='dns.changes')
 
     return dns.changes.Get(

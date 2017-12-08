@@ -99,7 +99,10 @@ class DetachDisk(base_classes.ReadWriteCommand):
     if args.disk:
       disk_ref = self.resources.Parse(
           args.disk, collection='compute.disks',
-          params={'zone': self.ref.zone})
+          params={
+              'project': self.ref.project,
+              'zone': self.ref.zone
+          })
       replacement.disks = [disk for disk in existing.disks
                            if disk.source != disk_ref.SelfLink()]
 

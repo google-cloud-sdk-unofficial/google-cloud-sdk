@@ -17,6 +17,7 @@ from googlecloudsdk.api_lib.bigtable import util as bigtable_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -53,7 +54,11 @@ class CreateInstance(base.CreateCommand):
     """
     cli = bigtable_util.GetAdminClient()
     ref = resources.REGISTRY.Parse(
-        args.instance, collection='bigtableadmin.projects.instances')
+        args.instance,
+        params={
+            'projectsId': properties.VALUES.core.project.GetOrFail,
+        },
+        collection='bigtableadmin.projects.instances')
     parent_ref = resources.REGISTRY.Create(
         'bigtableadmin.projects', projectId=ref.projectsId)
     msgs = bigtable_util.GetAdminMessages()

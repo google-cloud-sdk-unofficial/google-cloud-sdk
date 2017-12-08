@@ -27,8 +27,14 @@ class List(base.ListCommand):
   Prints a table with summary information on datasets in the project.
   """
 
-  def Collection(self):
-    return 'genomics.datasets'
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""
+          table(
+            id,
+            name
+          )
+        """)
 
   def Run(self, args):
     """Run 'datasets list'.

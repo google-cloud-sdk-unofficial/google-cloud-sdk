@@ -11,10 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Retrieves information about an SSL cert for a Cloud SQL instance."""
 
-
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import cert
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -54,25 +53,30 @@ class _BaseGet(object):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = self.GetSqlClient()
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     validate.ValidateInstanceName(args.instance)
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
 
     # sha1fingerprint, so that things can work with the resource parser.
-    return cert.GetCertFromName(sql_client, sql_messages,
-                                instance_ref, args.common_name)
+    return cert.GetCertFromName(sql_client, sql_messages, instance_ref,
+                                args.common_name)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Get(_BaseGet, base.DescribeCommand):
   """Retrieves information about an SSL cert for a Cloud SQL instance."""
-  pass
+
+  def GetSqlClient(self):
+    return api_util.SqlClient(api_util.API_VERSION_FALLBACK)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class GetBeta(_BaseGet, base.DescribeCommand):
   """Retrieves information about an SSL cert for a Cloud SQL instance."""
-  pass
+
+  def GetSqlClient(self):
+    return api_util.SqlClient(api_util.API_VERSION_DEFAULT)

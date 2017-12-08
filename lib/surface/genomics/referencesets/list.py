@@ -51,8 +51,13 @@ class List(base.ListCommand):
         '--assembly-id',
         help='Only return reference sets for this assembly-id.')
 
-  def Collection(self):
-    return 'genomics.referenceSets'
+    parser.display_info.AddFormat("""
+          table(
+            id,
+            assemblyId,
+            sourceAccessions.list()
+          )
+        """)
 
   def Run(self, args):
     """Run 'referencesets list'.

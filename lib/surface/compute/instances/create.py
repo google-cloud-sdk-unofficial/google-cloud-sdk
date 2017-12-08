@@ -57,7 +57,7 @@ DETAILED_HELP = {
 def _CommonArgs(parser, multiple_network_interface_cards, release_track,
                 support_alias_ip_ranges, support_public_dns,
                 support_network_tier,
-                enable_regional=False):
+                enable_regional=False, support_local_ssd_size=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional)
@@ -66,7 +66,10 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
     instances_flags.AddExtendedMachineTypeArgs(parser)
   if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
     instances_flags.AddAcceleratorArgs(parser)
-  instances_flags.AddLocalSsdArgs(parser)
+  if support_local_ssd_size:
+    instances_flags.AddLocalSsdArgsWithSize(parser)
+  else:
+    instances_flags.AddLocalSsdArgs(parser)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(
       parser, instances=True,
@@ -242,6 +245,7 @@ class Create(base.CreateCommand):
                 compute_client.messages,
                 x.get('device-name'),
                 x.get('interface'),
+                x.get('size'),
                 instance_ref.zone)
         )
 
@@ -336,7 +340,10 @@ class Create(base.CreateCommand):
       if sole_tenancy_host_arg:
         sole_tenancy_host_ref = resource_parser.Parse(
             sole_tenancy_host_arg, collection='compute.hosts',
-            params={'zone': instance_ref.zone})
+            params={
+                'project': instance_ref.project,
+                'zone': instance_ref.zone
+            })
         request.instance.host = sole_tenancy_host_ref.SelfLink()
       requests.append(
           (compute_client.apitools_client.instances, 'Insert', request))
@@ -390,7 +397,8 @@ class CreateAlpha(Create):
                 support_alias_ip_ranges=True,
                 support_public_dns=cls._support_public_dns,
                 support_network_tier=cls._support_network_tier,
-                enable_regional=True)
+                enable_regional=True,
+                support_local_ssd_size=True)
     instances_flags.AddMinCpuPlatformArgs(parser)
 
 

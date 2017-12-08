@@ -13,6 +13,7 @@
 # limitations under the License.
 """Deletes a database in a given instance."""
 
+from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
@@ -51,13 +52,14 @@ class _BaseDelete(object):
       ToolException: An error other than an http error occured while executing
           the command.
     """
-    sql_client = self.context['sql_client']
-    sql_messages = self.context['sql_messages']
-    resources = self.context['registry']
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+    sql_client = client.sql_client
+    sql_messages = client.sql_messages
 
     project_id = properties.VALUES.core.project.Get(required=True)
 
-    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+    instance_ref = client.resource_parser.Parse(
+        args.instance, collection='sql.instances')
 
     console_io.PromptContinue(
         message='The database will be deleted. Any data stored in the database '
@@ -69,7 +71,7 @@ class _BaseDelete(object):
         sql_messages.SqlDatabasesDeleteRequest(
             project=project_id, instance=args.instance, database=args.database))
 
-    operation_ref = resources.Create(
+    operation_ref = client.resource_parser.Create(
         'sql.operations',
         operation=result_operation.name,
         project=instance_ref.project)

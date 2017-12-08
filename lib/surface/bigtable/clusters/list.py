@@ -17,6 +17,7 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -29,6 +30,16 @@ class ListClusters(base.ListCommand):
     """Register flags for this command."""
     arguments.ArgAdder(parser).AddInstance(
         positional=False, required=False, multiple=True)
+    parser.display_info.AddFormat("""
+          table(
+            name.segment(3):sort=1:label=INSTANCE,
+            name.basename():sort=2:label=NAME,
+            location.basename():label=ZONE,
+            serveNodes:label=NODES,
+            defaultStorageType:label=STORAGE,
+            state
+          )
+        """)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -44,7 +55,11 @@ class ListClusters(base.ListCommand):
     instances = args.instances or ['-']
     for instance in instances:
       ref = resources.REGISTRY.Parse(
-          instance, collection='bigtableadmin.projects.instances')
+          instance,
+          params={
+              'projectsId': properties.VALUES.core.project.GetOrFail,
+          },
+          collection='bigtableadmin.projects.instances')
       msg = (util.GetAdminMessages()
              .BigtableadminProjectsInstancesClustersListRequest(
                  parent=ref.RelativeName()))
@@ -54,6 +69,3 @@ class ListClusters(base.ListCommand):
           field='clusters',
           batch_size_attribute=None):
         yield cluster
-
-  def Collection(self):
-    return 'bigtable.clusters.list'

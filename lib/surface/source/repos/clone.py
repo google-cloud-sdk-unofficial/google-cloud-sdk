@@ -135,6 +135,13 @@ class CloneAlpha(base.Command):
         help=('If provided, prints the command that would be run to standard '
               'out instead of executing it.'))
     parser.add_argument(
+        '--use-full-gcloud-path',
+        action='store_true',
+        help=
+        ('If provided, use the full gcloud path for the git credential.helper. '
+         'Using the full path means that gcloud does not need to be in '
+         'the path for future git operations on the repository.'))
+    parser.add_argument(
         'src',
         metavar='REPOSITORY_NAME',
         help=('Name of the repository. '
@@ -190,7 +197,9 @@ class CloneAlpha(base.Command):
     # do the actual clone
     git_helper = git.Git(res.projectsId, args.src, uri=repo.url)
     path = git_helper.Clone(
-        destination_path=args.dst or args.src, dry_run=args.dry_run)
+        destination_path=args.dst or args.src,
+        dry_run=args.dry_run,
+        full_path=args.use_full_gcloud_path)
     if path and not args.dry_run:
       log.status.write('Project [{prj}] repository [{repo}] was cloned '
                        'to [{path}].\n'.format(

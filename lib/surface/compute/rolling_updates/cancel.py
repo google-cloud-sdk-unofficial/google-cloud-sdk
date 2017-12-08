@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.compute import rolling_updates_util as updater_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -55,6 +56,10 @@ class Cancel(base.Command):
 
     ref = resources.REGISTRY.Parse(
         args.update,
+        params={
+            'project': properties.VALUES.core.project.GetOrFail,
+            'zone': properties.VALUES.compute.zone.GetOrFail,
+        },
         collection='replicapoolupdater.rollingUpdates')
     request = messages.ReplicapoolupdaterRollingUpdatesCancelRequest(
         project=ref.project,
@@ -65,6 +70,10 @@ class Cancel(base.Command):
       operation = client.rollingUpdates.Cancel(request)
       operation_ref = resources.REGISTRY.Parse(
           operation.name,
+          params={
+              'project': properties.VALUES.core.project.GetOrFail,
+              'zone': properties.VALUES.compute.zone.GetOrFail,
+          },
           collection='replicapoolupdater.zoneOperations')
       result = updater_util.WaitForOperation(
           client, operation_ref, 'Cancelling the update')

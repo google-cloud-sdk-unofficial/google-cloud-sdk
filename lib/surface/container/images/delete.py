@@ -126,7 +126,7 @@ class Delete(base.DeleteCommand):
       for tag in explicit_tags:
         log.error('- ' + str(tag))
       raise exceptions.Error(
-          'This operation will implicitly delete the tags  listed above. '
+          'This operation will implicitly delete the tags listed above. '
           'Please manually remove with the `untag` command or re-run with '
           '--force-delete-tags to confirm.')
 

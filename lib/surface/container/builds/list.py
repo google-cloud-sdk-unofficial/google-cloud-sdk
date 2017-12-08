@@ -46,7 +46,9 @@ class List(base.ListCommand):
 
     def _BuildToURI(build):
       build_ref = registry.Create(
-          self.Collection(), projectId=build.projectId, id=build.id)
+          self.Collection(),
+          projectId=build.projectId,
+          id=build.id)
       return build_ref.SelfLink()
     return _BuildToURI
 
@@ -72,7 +74,7 @@ class List(base.ListCommand):
         client.projects_builds,
         messages.CloudbuildProjectsBuildsListRequest(
             pageSize=args.page_size,
-            projectId=properties.VALUES.core.project.Get(),
+            projectId=properties.VALUES.core.project.GetOrFail(),
             filter=ongoing_filter),
         field='builds',
         batch_size=args.page_size,
