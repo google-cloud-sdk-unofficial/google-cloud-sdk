@@ -15,6 +15,7 @@
 from googlecloudsdk.api_lib.cloudiot import registries
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iot import flags
+from googlecloudsdk.command_lib.iot import resource_args
 from googlecloudsdk.command_lib.iot import util
 from googlecloudsdk.core import log
 
@@ -26,7 +27,7 @@ class Create(base.CreateCommand):
   def Args(parser):
     noun = 'device registry'
     flags.GetIdFlag(noun, 'to create', 'REGISTRY_ID').AddToParser(parser)
-    flags.GetRegionFlag(noun).AddToParser(parser)
+    resource_args.AddRegionResourceArg(parser, 'to create the registry in')
     flags.AddDeviceRegistrySettingsFlagsToParser(parser)
     flags.AddDeviceRegistryCredentialFlagsToParser(
         parser, credentials_surface=False)
@@ -34,7 +35,7 @@ class Create(base.CreateCommand):
   def Run(self, args):
     client = registries.RegistriesClient()
 
-    location_ref = util.ParseLocation(region=args.region)
+    location_ref = args.CONCEPTS.region.Parse()
     mqtt_state = util.ParseEnableMqttConfig(args.enable_mqtt_config,
                                             client=client)
     http_state = util.ParseEnableHttpConfig(args.enable_http_config,

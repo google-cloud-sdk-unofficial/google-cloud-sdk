@@ -14,8 +14,7 @@
 """`gcloud iot registries describe` command."""
 from googlecloudsdk.api_lib.cloudiot import registries
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.iot import flags
-from googlecloudsdk.command_lib.iot import util
+from googlecloudsdk.command_lib.iot import resource_args
 
 
 class Describe(base.DescribeCommand):
@@ -23,8 +22,8 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddRegistryResourceFlags(parser, 'to describe')
+    resource_args.AddRegistryResourceArg(parser, 'to describe')
 
   def Run(self, args):
     client = registries.RegistriesClient()
-    return client.Get(util.ParseRegistry(args.id, region=args.region))
+    return client.Get(args.CONCEPTS.registry.Parse())

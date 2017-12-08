@@ -17,7 +17,7 @@ from googlecloudsdk.api_lib.cloudiot import registries
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.iot import flags
-from googlecloudsdk.command_lib.iot import util
+from googlecloudsdk.command_lib.iot import resource_args
 from googlecloudsdk.core import log
 
 
@@ -39,7 +39,7 @@ class SetIamPolicy(base_classes.BaseIamCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddRegistryResourceFlags(parser, 'for which to set IAM policy')
+    resource_args.AddRegistryResourceArg(parser, 'for which to set IAM policy')
     flags.GetIamPolicyFileFlag().AddToParser(parser)
 
   def Run(self, args):
@@ -47,7 +47,7 @@ class SetIamPolicy(base_classes.BaseIamCommand):
     messages = client.messages
 
     policy = iam_util.ParsePolicyFile(args.policy_file, messages.Policy)
-    registry_ref = util.ParseRegistry(args.id, region=args.region)
+    registry_ref = args.CONCEPTS.registry.Parse()
 
     response = client.SetIamPolicy(
         registry_ref,

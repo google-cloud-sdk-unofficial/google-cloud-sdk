@@ -15,6 +15,7 @@
 
 from googlecloudsdk.api_lib.tasks import queues
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.tasks import constants
 from googlecloudsdk.command_lib.tasks import flags
 from googlecloudsdk.command_lib.tasks import parsers
 from googlecloudsdk.core import log
@@ -30,5 +31,6 @@ class Resume(base.Command):
   def Run(self, args):
     queues_client = queues.Queues()
     queue_ref = parsers.ParseQueue(args.queue)
+    log.status.Print(constants.QUEUE_MANAGEMENT_WARNING)
     queues_client.Resume(queue_ref)
     log.status.Print('Resumed queue [{}].'.format(queue_ref.Name()))

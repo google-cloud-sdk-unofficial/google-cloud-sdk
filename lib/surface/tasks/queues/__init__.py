@@ -19,5 +19,7 @@ from googlecloudsdk.calliope import base
 class Queues(base.Group):
   """Manage Cloud Tasks queues.
 
-  Commands for managing Google Cloud Tasks queues.
+  Commands for managing Google Cloud Tasks queues. For more information about
+  the different queue target types, see:
+  https://cloud.google.com/cloud-tasks/docs/queue-types
   """

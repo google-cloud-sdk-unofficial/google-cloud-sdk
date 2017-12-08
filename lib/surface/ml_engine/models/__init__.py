@@ -26,6 +26,6 @@ class Models(base.Group):
          $ {parent_command} versions --help.
 
      For more information, please see
-     https://cloud.google.com/ml/docs/concepts/technical-overview#models
+     https://cloud.google.com/ml/docs/concepts/technical-overview#model
   """
   pass

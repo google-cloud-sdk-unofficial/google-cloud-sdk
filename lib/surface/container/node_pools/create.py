@@ -202,7 +202,7 @@ class CreateBeta(Create):
     flags.AddServiceAccountFlag(parser)
     flags.AddNodePoolScopesFlag(parser)
     flags.AddMinCpuPlatformFlag(parser, for_node_pool=True)
-    flags.AddNodeTaintsFlag(parser, for_node_pool=True, hidden=True)
+    flags.AddNodeTaintsFlag(parser, for_node_pool=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -233,7 +233,7 @@ class CreateAlpha(Create):
     flags.AddNodePoolScopesFlag(parser)
     flags.AddMinCpuPlatformFlag(parser, for_node_pool=True)
     flags.AddWorkloadMetadataFromNodeFlag(parser, hidden=True)
-    flags.AddNodeTaintsFlag(parser, for_node_pool=True, hidden=True)
+    flags.AddNodeTaintsFlag(parser, for_node_pool=True)
 
 
 Create.detailed_help = DETAILED_HELP

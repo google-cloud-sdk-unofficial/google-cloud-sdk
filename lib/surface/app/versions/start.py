@@ -18,7 +18,6 @@ from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import operations_util
 from googlecloudsdk.api_lib.app import version_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
@@ -89,10 +88,9 @@ class Start(base.Command):
     for version in sorted(versions):
       try:
         with progress_tracker.ProgressTracker('Starting [{0}]'.format(version)):
-          api_client.StartVersion(version.service, version.id)
-      except (calliope_exceptions.HttpException,
-              operations_util.OperationError,
-              operations_util.OperationTimeoutError) as err:
+          operations_util.CallAndCollectOpErrors(
+              api_client.StartVersion, version.service, version.id)
+      except operations_util.MiscOperationError as err:
         errors[version] = str(err)
     if errors:
       printable_errors = {}

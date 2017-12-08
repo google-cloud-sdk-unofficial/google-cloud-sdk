@@ -15,18 +15,21 @@
 from googlecloudsdk.api_lib.cloudiot import devices
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iot import flags
+from googlecloudsdk.command_lib.iot import resource_args
 from googlecloudsdk.command_lib.iot import util
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import times
 
 
+# TODO(b/67506665): Add tests.
 class Update(base.DescribeCommand):
   """Update a specific device credential."""
 
   @staticmethod
   def Args(parser):
-    flags.AddDeviceResourceFlags(parser, 'for which to update credentials',
-                                 positional=False)
+    resource_args.AddDeviceResourceArg(parser,
+                                       'for which to update credentials',
+                                       positional=False)
     flags.GetIndexFlag('credential', 'to update').AddToParser(parser)
     flags.AddDeviceCredentialFlagsToParser(parser, combine_flags=False,
                                            only_modifiable=True)
@@ -34,8 +37,7 @@ class Update(base.DescribeCommand):
   def Run(self, args):
     client = devices.DevicesClient()
 
-    device_ref = util.ParseDevice(
-        args.device, registry=args.registry, region=args.region)
+    device_ref = args.CONCEPTS.device.Parse()
 
     credentials = client.Get(device_ref).credentials
     try:

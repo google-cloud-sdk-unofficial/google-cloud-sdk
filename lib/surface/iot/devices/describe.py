@@ -14,8 +14,7 @@
 """`gcloud iot devices describe` command."""
 from googlecloudsdk.api_lib.cloudiot import devices
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.iot import flags
-from googlecloudsdk.command_lib.iot import util
+from googlecloudsdk.command_lib.iot import resource_args
 
 
 class Describe(base.DescribeCommand):
@@ -23,12 +22,11 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddDeviceResourceFlags(parser, 'to describe')
+    resource_args.AddDeviceResourceArg(parser, 'to describe')
 
   def Run(self, args):
     client = devices.DevicesClient()
 
-    device_ref = util.ParseDevice(
-        args.id, registry=args.registry, region=args.region)
+    device_ref = args.CONCEPTS.device.Parse()
 
     return client.Get(device_ref)

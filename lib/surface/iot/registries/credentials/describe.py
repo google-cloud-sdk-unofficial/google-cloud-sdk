@@ -15,6 +15,7 @@
 from googlecloudsdk.api_lib.cloudiot import registries
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iot import flags
+from googlecloudsdk.command_lib.iot import resource_args
 from googlecloudsdk.command_lib.iot import util
 
 
@@ -23,14 +24,15 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddRegistryResourceFlags(parser, 'to which the credential belongs',
-                                   positional=False)
+    resource_args.AddRegistryResourceArg(parser,
+                                         'to which the credential belongs',
+                                         positional=False)
     flags.GetIndexFlag('credential', 'to describe').AddToParser(parser)
 
   def Run(self, args):
     client = registries.RegistriesClient()
 
-    registry_ref = util.ParseRegistry(args.registry, region=args.region)
+    registry_ref = args.CONCEPTS.registry.Parse()
 
     credentials = client.Get(registry_ref).credentials
     try:

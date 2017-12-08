@@ -14,7 +14,7 @@
 """`gcloud iot configs describe` command."""
 from googlecloudsdk.api_lib.cloudiot import devices
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.iot import flags
+from googlecloudsdk.command_lib.iot import resource_args
 from googlecloudsdk.command_lib.iot import util
 from googlecloudsdk.core import log
 
@@ -25,15 +25,15 @@ class GetValue(base.Command):
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat('none')
-    flags.AddDeviceResourceFlags(parser,
-                                 'for the configuration to get the value of',
-                                 positional=False)
+    resource_args.AddDeviceResourceArg(
+        parser,
+        'for the configuration to get the value of',
+        positional=False)
 
   def Run(self, args):
     client = devices.DevicesClient()
 
-    device_ref = util.ParseDevice(
-        args.device, registry=args.registry, region=args.region)
+    device_ref = args.CONCEPTS.device.Parse()
 
     device = client.Get(device_ref)
     try:

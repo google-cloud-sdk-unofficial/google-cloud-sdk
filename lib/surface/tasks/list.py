@@ -15,35 +15,9 @@
 
 from googlecloudsdk.api_lib.tasks import tasks
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.tasks import constants
 from googlecloudsdk.command_lib.tasks import flags
+from googlecloudsdk.command_lib.tasks import list_formats
 from googlecloudsdk.command_lib.tasks import parsers
-
-
-_FORMAT = '''table(
-    name.basename():label="TASK_NAME",
-    tasktype():label=TYPE,
-    createTime,
-    scheduleTime,
-    taskStatus.attemptDispatchCount.yesno(no="0"):label="DISPATCH_ATTEMPTS",
-    taskStatus.attemptResponseCount.yesno(no="0"):label="RESPONSE_ATTEMPTS",
-    taskStatus.lastAttemptStatus.responseStatus.message.yesno(no="Unknown")
-        :label="LAST_ATTEMPT_STATUS")'''
-
-
-def _IsPullTask(r):
-  return 'pullTaskTarget' in r or 'pullMessage' in r
-
-
-def _IsAppEngineTask(r):
-  return 'appEngineTaskTarget' in r or 'appEngineHttpRequest' in r
-
-
-def _TranformTaskType(r):
-  if _IsPullTask(r):
-    return constants.PULL_QUEUE
-  if _IsAppEngineTask(r):
-    return constants.APP_ENGINE_QUEUE
 
 
 class List(base.ListCommand):
@@ -51,9 +25,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddTransforms({'tasktype': _TranformTaskType})
-    parser.display_info.AddFormat(_FORMAT)
-    parser.display_info.AddUriFunc(parsers.TasksUriFunc)
+    list_formats.AddListTasksFormats(parser)
     flags.AddQueueResourceFlag(parser, plural_tasks=True)
 
   def Run(self, args):

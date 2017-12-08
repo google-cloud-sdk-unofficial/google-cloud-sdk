@@ -13,7 +13,8 @@ help_text:
 request:
   collection: language.documents
   api_version: v1beta2
-  modify_request_hook: googlecloudsdk.command_lib.ml.language.language_command_util:AddContentToRequest
+  modify_request_hooks:
+    - googlecloudsdk.command_lib.ml.language.language_command_util:AddContentToRequest
 
 args:
   content:

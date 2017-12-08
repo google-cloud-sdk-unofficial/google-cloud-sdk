@@ -55,14 +55,24 @@ class Create(base.CreateCommand):
 
   In the above invocation, the two addresses will be assigned
   random names.
+
+  To reserve an IP address from the subnet ``default'' in the ``us-central1''
+  region, run:
+
+    $ {command} SUBNET-ADDRESS-1 --region us-central1 --subnet default
+
   """
 
+  SUBNETWORK_ARG = None
   ADDRESSES_ARG = None
 
   @classmethod
   def Args(cls, parser):
     _Args(cls, parser)
     flags.AddAddressesAndIPVersions(parser, required=False)
+
+    cls.SUBNETWORK_ARG = flags.SubnetworkArgument()
+    cls.SUBNETWORK_ARG.AddArgument(parser)
 
   def GetAddress(self, messages, args, address, address_ref, resource_parser):
     if args.ip_version or (
@@ -76,11 +86,26 @@ class Create(base.CreateCommand):
       # allocated.
       ip_version = None
 
+    # TODO(b/36862747): get rid of args.subnet check
+    if args.subnet:
+      if address_ref.Collection() == 'compute.globalAddresses':
+        raise exceptions.ToolException(
+            '[--subnet] may not be specified for global addresses.')
+      if not args.subnet_region:
+        args.subnet_region = address_ref.region
+      subnetwork_url = flags.SubnetworkArgument().ResolveAsResource(
+          args, resource_parser).SelfLink()
+    else:
+      subnetwork_url = None
+
     return messages.Address(
         address=address,
         description=args.description,
         ipVersion=ip_version,
-        name=address_ref.Name())
+        name=address_ref.Name(),
+        addressType=(messages.Address.AddressTypeValueValuesEnum.INTERNAL
+                     if subnetwork_url else None),
+        subnetwork=subnetwork_url)
 
   def Run(self, args):
     """Issues requests necessary to create Addresses."""
@@ -141,8 +166,6 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
-  # TODO(b/64033867): CreateBeta should extend CreateAlpha
-  # once networktier is in beta
   """Reserve IP addresses.
 
   *{command}* is used to reserve one or more IP addresses. Once
@@ -173,50 +196,6 @@ class CreateBeta(Create):
     $ {command} SUBNET-ADDRESS-1 --region us-central1 --subnet default
 
   """
-
-  SUBNETWORK_ARG = None
-
-  @classmethod
-  def Args(cls, parser):
-    _Args(cls, parser)
-    flags.AddAddressesAndIPVersions(parser, required=False)
-
-    cls.SUBNETWORK_ARG = flags.SubnetworkArgument()
-    cls.SUBNETWORK_ARG.AddArgument(parser)
-
-  def GetAddress(self, messages, args, address, address_ref, resource_parser):
-    """Override."""
-    if args.ip_version or (
-        address is None and
-        address_ref.Collection() == 'compute.globalAddresses'):
-      ip_version = messages.Address.IpVersionValueValuesEnum(
-          args.ip_version or 'IPV4')
-    else:
-      # IP version is only specified in global requests if an address is not
-      # specified to determine whether an ipv4 or ipv6 address should be
-      # allocated.
-      ip_version = None
-
-    # TODO(b/36862747): get rid of args.subnet check
-    if args.subnet:
-      if address_ref.Collection() == 'compute.globalAddresses':
-        raise exceptions.ToolException(
-            '[--subnet] may not be specified for global addresses.')
-      if not args.subnet_region:
-        args.subnet_region = address_ref.region
-      subnetwork_url = flags.SubnetworkArgument().ResolveAsResource(
-          args, resource_parser).SelfLink()
-    else:
-      subnetwork_url = None
-
-    return messages.Address(
-        address=address,
-        description=args.description,
-        ipVersion=ip_version,
-        name=address_ref.Name(),
-        addressType=(messages.Address.AddressTypeValueValuesEnum.INTERNAL
-                     if subnetwork_url else None),
-        subnetwork=subnetwork_url)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

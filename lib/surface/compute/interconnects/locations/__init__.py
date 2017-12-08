@@ -16,7 +16,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class InterconnectLocations(base.Group):
   """Read and manipulate Google Compute Engine interconnect locations."""
   pass

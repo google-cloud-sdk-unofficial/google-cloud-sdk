@@ -93,7 +93,7 @@ class List(base.ListCommand):
     Returns:
       None on success, or a string containing the error message.
     """
-    job_ref = job_utils.ExtractJobRef(args.job)
+    job_ref = job_utils.ExtractJobRef(args)
 
     importance_enum = (
         apis.Messages.LIST_REQUEST.MinimumImportanceValueValuesEnum)
@@ -107,6 +107,7 @@ class List(base.ListCommand):
     request = apis.Messages.LIST_REQUEST(
         projectId=job_ref.projectId,
         jobId=job_ref.jobId,
+        location=job_ref.location,
         minimumImportance=(args.importance and importance_map[args.importance]),
 
         # Note: It if both are present, startTime > endTime, because we will
@@ -117,6 +118,7 @@ class List(base.ListCommand):
     return dataflow_util.YieldFromList(
         job_id=job_ref.jobId,
         project_id=job_ref.projectId,
+        region_id=job_ref.location,
         service=apis.Messages.GetService(),
         request=request,
         batch_size=args.limit,

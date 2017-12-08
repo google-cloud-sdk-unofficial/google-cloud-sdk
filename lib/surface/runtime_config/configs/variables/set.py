@@ -134,14 +134,13 @@ class Set(base.CreateCommand):
       # Either create or create-or-update
       try:
         return self._Create(args, var_resource, value)
-      except apitools_exceptions.HttpError as error:
+      except apitools_exceptions.HttpConflictError:
         # If --fail-if-present was not specified, and we got an
         # Already Exists error, try updating instead.
-        if not args.fail_if_present and util.IsAlreadyExistsError(error):
+        if not args.fail_if_present:
           return self._Update(args, var_resource, value)
 
-        # If --fail-if-present was specified, or some other error
-        # occurred, re-raise the error.
+        # If --fail-if-present was specified re-raise the error.
         raise
 
   def _Create(self, args, var_resource, value):

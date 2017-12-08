@@ -76,7 +76,10 @@ class GitHelper(base.Command):
           .format(meth=args.method, methods=', '.join(GitHelper.METHODS)))
 
     info = self._ParseInput()
-    credentialed_domains = ['source.developers.google.com']
+    credentialed_domains = [
+        'source.developers.google.com',
+        'googlesource.com',  # Requires a different username value.
+    ]
     extra = properties.VALUES.core.credentialed_hosted_repo_domains.Get()
     if extra:
       credentialed_domains.extend(extra.split(','))
@@ -100,10 +103,17 @@ class GitHelper(base.Command):
 
       self._CheckNetrc()
 
+      # For googlesource.com, any username beginning with "git-" is accepted
+      # and the identity of the user is extracted from the token server-side.
+      if info.get('host') == 'googlesource.com':
+        sent_account = 'git-account'
+      else:
+        sent_account = account
+
       sys.stdout.write(textwrap.dedent("""\
           username={username}
           password={password}
-          """).format(username=account, password=cred.access_token))
+          """).format(username=sent_account, password=cred.access_token))
     elif args.method == GitHelper.STORE:
       # On OSX, there is an additional credential helper that gets called before
       # ours does.  When we return a token, it gets cached there.  Git continues

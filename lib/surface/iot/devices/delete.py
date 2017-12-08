@@ -14,8 +14,7 @@
 """`gcloud iot devices delete` command."""
 from googlecloudsdk.api_lib.cloudiot import devices
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.iot import flags
-from googlecloudsdk.command_lib.iot import util
+from googlecloudsdk.command_lib.iot import resource_args
 from googlecloudsdk.core import log
 
 
@@ -24,13 +23,12 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddDeviceResourceFlags(parser, 'to delete')
+    resource_args.AddDeviceResourceArg(parser, 'to delete')
 
   def Run(self, args):
     client = devices.DevicesClient()
 
-    device_ref = util.ParseDevice(args.id, registry=args.registry,
-                                  region=args.region)
+    device_ref = args.CONCEPTS.device.Parse()
 
     response = client.Delete(device_ref)
     log.DeletedResource(device_ref.Name(), 'device')

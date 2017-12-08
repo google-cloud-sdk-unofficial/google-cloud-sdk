@@ -15,6 +15,7 @@
 from googlecloudsdk.api_lib.cloudiot import devices
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iot import flags
+from googlecloudsdk.command_lib.iot import resource_args
 from googlecloudsdk.command_lib.iot import util
 
 
@@ -23,15 +24,15 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddDeviceResourceFlags(parser, 'to which the credential belongs',
-                                 positional=False)
+    resource_args.AddDeviceResourceArg(parser,
+                                       'to which the credential belongs',
+                                       positional=False)
     flags.GetIndexFlag('credential', 'to describe').AddToParser(parser)
 
   def Run(self, args):
     client = devices.DevicesClient()
 
-    device_ref = util.ParseDevice(
-        args.device, registry=args.registry, region=args.region)
+    device_ref = args.CONCEPTS.device.Parse()
 
     credentials = client.Get(device_ref).credentials
     try:

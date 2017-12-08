@@ -15,6 +15,7 @@
 from googlecloudsdk.api_lib.cloudiot import devices
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iot import flags
+from googlecloudsdk.command_lib.iot import resource_args
 from googlecloudsdk.command_lib.iot import util
 from googlecloudsdk.core import log
 
@@ -24,14 +25,14 @@ class Update(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddDeviceResourceFlags(parser, 'to update')
+    resource_args.AddDeviceResourceArg(parser, 'to update')
     flags.AddDeviceFlagsToParser(parser, default_for_blocked_flags=False)
 
   def Run(self, args):
     client = devices.DevicesClient()
 
-    device_ref = util.ParseDevice(args.id, registry=args.registry,
-                                  region=args.region)
+    device_ref = args.CONCEPTS.device.Parse()
+
     blocked = util.ParseDeviceBlocked(args.blocked, args.enable_device)
     metadata = util.ParseMetadata(args.metadata, args.metadata_from_file,
                                   client.messages)

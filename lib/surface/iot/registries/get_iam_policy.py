@@ -15,8 +15,7 @@
 from googlecloudsdk.api_lib.cloudiot import registries
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import base_classes
-from googlecloudsdk.command_lib.iot import flags
-from googlecloudsdk.command_lib.iot import util
+from googlecloudsdk.command_lib.iot import resource_args
 
 
 class GetIamPolicy(base_classes.BaseIamCommand, base.ListCommand):
@@ -42,11 +41,11 @@ class GetIamPolicy(base_classes.BaseIamCommand, base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddRegistryResourceFlags(parser, 'for which to get IAM policy')
+    resource_args.AddRegistryResourceArg(parser, 'for which to get IAM policy')
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     client = registries.RegistriesClient()
-    registry_ref = util.ParseRegistry(args.id, region=args.region)
+    registry_ref = args.CONCEPTS.registry.Parse()
 
     return client.GetIamPolicy(registry_ref)

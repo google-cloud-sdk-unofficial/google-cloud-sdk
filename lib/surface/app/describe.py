@@ -14,8 +14,8 @@
 
 """The `app services describe` command."""
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.app import appengine_api_client
-from googlecloudsdk.api_lib.app import exceptions as api_lib_exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import exceptions
 from googlecloudsdk.core import log
@@ -33,7 +33,7 @@ _DETAILED_HELP = {
 def Describe(api_client):
   try:
     return api_client.GetApplication()
-  except api_lib_exceptions.NotFoundError:
+  except apitools_exceptions.HttpNotFoundError:
     log.debug('No app found:', exc_info=True)
     project = api_client.project
     raise exceptions.MissingApplicationError(project)

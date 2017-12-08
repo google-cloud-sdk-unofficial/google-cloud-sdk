@@ -96,17 +96,17 @@ class Update(base_classes.BaseIamCommand):
                 name=role_name, role=role))
         iam_util.SetRoleStageIfAlpha(res)
         return res
+      except apitools_exceptions.HttpConflictError as e:
+        raise exceptions.HttpException(
+            e, error_format=('Stale "etag": '
+                             'Please use the etag from your latest describe '
+                             'response. Or new changes have been made since '
+                             'your latest describe operation. Please retry '
+                             'the whole describe-update process. Or you can '
+                             'leave the etag blank to overwrite concurrent '
+                             'role changes.'))
       except apitools_exceptions.HttpError as e:
-        exc = exceptions.HttpException(e)
-        if exc.payload.status_code == 409:
-          exc.error_format = ('Stale "etag": '
-                              'Please use the etag from your latest describe '
-                              'response. Or new changes have been made since '
-                              'your latest describe operation. Please retry '
-                              'the whole describe-update process. Or you can '
-                              'leave the etag blank to overwrite concurrent '
-                              'role changes.')
-      raise exc
+        raise exceptions.HttpException(e)
 
     res = self.UpdateWithFlags(args, role_name, role, iam_client, messages)
     iam_util.SetRoleStageIfAlpha(res)

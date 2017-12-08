@@ -249,6 +249,7 @@ def _RunCreate(compute_api,
               disks=disks,
               canIpForward=args.can_ip_forward,
               metadata=metadata,
+              minCpuPlatform=args.min_cpu_platform,
               networkInterfaces=network_interfaces,
               serviceAccounts=service_accounts,
               scheduling=scheduling,
@@ -259,9 +260,6 @@ def _RunCreate(compute_api,
           name=instance_template_ref.Name(),
       ),
       project=instance_template_ref.project)
-
-  if getattr(args, 'min_cpu_platform', None):
-    request.instanceTemplate.properties.minCpuPlatform = args.min_cpu_platform
 
   if support_labels and args.labels:
     labels = client.messages.InstanceProperties.LabelsValue(
@@ -293,6 +291,7 @@ class Create(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     _CommonArgs(parser)
+    instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.

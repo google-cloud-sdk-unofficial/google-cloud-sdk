@@ -47,9 +47,12 @@ class ExportSteps(base.Command):
     Returns:
       An iterator over the steps in the given job.
     """
+    job_ref = job_utils.ExtractJobRef(args)
     return step_json.ExtractSteps(
         apis.Jobs.Get(
-            job_id=args.job,
+            job_ref.jobId,
+            project_id=job_ref.projectId,
+            region_id=job_ref.location,
             view=apis.Jobs.GET_REQUEST.ViewValueValuesEnum.JOB_VIEW_ALL))
 
   def Display(self, args, steps):

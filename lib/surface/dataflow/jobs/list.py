@@ -25,16 +25,22 @@ from googlecloudsdk.core import properties
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """Lists all jobs in a particular project.
+  """Lists all jobs in a particular project, optionally filtered by region.
 
   By default, 100 jobs in the current project are listed; this can be overridden
   with the gcloud --project flag, and the --limit flag.
+
+  Using the --region flag will only list jobs from the given regional endpoint.
 
   ## EXAMPLES
 
   Filter jobs with the given name:
 
     $ {command} --filter="name=my-wordcount"
+
+  Request jobs with from a given region:
+
+    $ {command} --region="europe-west1"
 
   """
 
@@ -70,13 +76,19 @@ class List(base.ListCommand):
     parser.add_argument(
         '--created-before', type=time_util.ParseTimeArg,
         help='Filter the jobs to those created before the given time')
+    parser.add_argument(
+        '--region',
+        metavar='REGION',
+        help='If provided, only resources from the given region are queried.')
+
     parser.display_info.AddFormat("""
           table(
             id:label=JOB_ID,
             name:label=NAME,
             type:label=TYPE,
             creationTime.yesno(no="-"),
-            state
+            state,
+            location:label=REGION
           )
      """)
     parser.display_info.AddUriFunc(dataflow_util.JobsUriFunc)
@@ -107,12 +119,22 @@ class List(base.ListCommand):
     Returns:
       An iterator over all the matching jobs.
     """
-    request = apis.Jobs.LIST_REQUEST(
-        projectId=project_id, filter=self._StatusArgToFilter(args.status))
+    request = None
+    service = None
+    status_filter = self._StatusArgToFilter(args.status, args.region)
+    if args.region:
+      request = apis.Jobs.LIST_REQUEST(
+          projectId=project_id, location=args.region, filter=status_filter)
+      service = apis.Jobs.GetService()
+    else:
+      request = apis.Jobs.AGGREGATED_LIST_REQUEST(
+          projectId=project_id, filter=status_filter)
+      service = apis.GetClientInstance().projects_jobs
 
     return dataflow_util.YieldFromList(
         project_id=project_id,
-        service=apis.Jobs.GetService(),
+        region_id=args.region,
+        service=service,
         request=request,
         limit=args.limit,
         batch_size=args.page_size,
@@ -120,17 +142,26 @@ class List(base.ListCommand):
         batch_size_attribute='pageSize',
         predicate=filter_predicate)
 
-  def _StatusArgToFilter(self, status):
+  def _StatusArgToFilter(self, status, region=None):
     """Return a string describing the job status.
 
     Args:
       status: The job status enum
+      region: The region argument, to select the correct wrapper message.
     Returns:
       string describing the job status
     """
-    filter_value_enum = (
-        apis.GetMessagesModule().DataflowProjectsJobsListRequest
-        .FilterValueValuesEnum)
+
+    filter_value_enum = None
+    if region:
+      filter_value_enum = (
+          apis.GetMessagesModule()
+          .DataflowProjectsLocationsJobsListRequest.FilterValueValuesEnum)
+    else:
+      filter_value_enum = (
+          apis.GetMessagesModule()
+          .DataflowProjectsJobsAggregatedRequest.FilterValueValuesEnum)
+
     value_map = {
         'all': filter_value_enum.ALL,
         'terminated': filter_value_enum.TERMINATED,

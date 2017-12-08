@@ -18,8 +18,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml.video import video_command_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA,
-                    base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DetectExplicitContent(base.Command):
   """Detect explicit content in videos.
 

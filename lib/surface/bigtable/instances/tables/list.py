@@ -34,7 +34,7 @@ except ImportError:
 
 def _GetUriFunction(resource):
   table_ref = resources.REGISTRY.ParseRelativeName(
-      resource['name'],
+      resource.name,
       collection='bigtableadmin.projects.instances.tables')
   return table_ref.SelfLink()
 

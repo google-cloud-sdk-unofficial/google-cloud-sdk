@@ -37,7 +37,7 @@ class Patch(base.UpdateCommand):
     parser.add_argument(
         '--description',
         help='An optional, textual description for the interconnect.')
-    flags.AddAdminEnabled(parser)
+    flags.AddAdminEnabledForPatch(parser)
     flags.AddNocContactEmail(parser)
     flags.AddRequestedLinkCountForPatch(parser)
 

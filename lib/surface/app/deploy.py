@@ -36,6 +36,11 @@ _DETAILED_HELP = {
         To deploy multiple services, run:
 
           $ {command} ~/my_app/app.yaml ~/my_app/another_service.yaml
+
+        To change the default --promote behavior for your current
+        environment, run:
+
+          $ gcloud config set app/promote_by_default false
         """,
 }
 

@@ -43,9 +43,12 @@ class Drain(base.Command):
     Args:
       args: all the arguments that were provided to this command invocation.
     """
-    for job_ref in job_utils.ExtractJobRefs(args.jobs):
+    for job_ref in job_utils.ExtractJobRefs(args):
       try:
-        apis.Jobs.Drain(job_ref.jobId)
+        apis.Jobs.Drain(
+            job_ref.jobId,
+            project_id=job_ref.projectId,
+            region_id=job_ref.location)
         log.status.Print('Started draining job [{0}]'.format(job_ref.jobId))
       except exceptions.HttpException as error:
         log.status.Print('Failed to drain job [{0}]: {1}'.format(

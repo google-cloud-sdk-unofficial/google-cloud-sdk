@@ -340,7 +340,7 @@ class CreateBeta(Create):
     flags.AddMasterAuthorizedNetworksFlags(parser)
     flags.AddMinCpuPlatformFlag(parser)
     flags.AddNetworkPolicyFlags(parser, hidden=True)
-    flags.AddNodeTaintsFlag(parser, hidden=True)
+    flags.AddNodeTaintsFlag(parser)
     flags.AddPreemptibleFlag(parser)
     flags.AddServiceAccountFlag(parser)
 
@@ -378,7 +378,7 @@ class CreateAlpha(Create):
     flags.AddWorkloadMetadataFromNodeFlag(parser, hidden=True)
     flags.AddNetworkPolicyFlags(parser, hidden=False)
     flags.AddNodeLocationsFlag(group)
-    flags.AddNodeTaintsFlag(parser, hidden=True)
+    flags.AddNodeTaintsFlag(parser)
     flags.AddPreemptibleFlag(parser)
     flags.AddServiceAccountFlag(parser)
 

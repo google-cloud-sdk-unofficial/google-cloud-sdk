@@ -27,22 +27,32 @@ class UpdateAppEngine(base.UpdateCommand):
   The flags available to this command represent the fields of an App Engine
   queue that are mutable. Attempting to use this command on a different type of
   queue will result in an error.
+
+  For more information about the different queue target types, see:
+  https://cloud.google.com/cloud-tasks/docs/queue-types
   """
 
   @staticmethod
   def Args(parser):
     flags.AddQueueResourceArg(parser, 'to update')
-    flags.AddAppEngineQueueFlags(parser)
+    flags.AddUpdateAppEngineQueueFlags(parser)
 
   def Run(self, args):
+    parsers.CheckUpdateArgsSpecified(args, constants.APP_ENGINE_QUEUE)
     queues_client = queues.Queues()
     queue_ref = parsers.ParseQueue(args.queue)
     queue_config = parsers.ParseCreateOrUpdateQueueArgs(
-        args, constants.APP_ENGINE_QUEUE, queues_client.api.messages)
+        args, constants.APP_ENGINE_QUEUE, queues_client.api.messages,
+        is_update=True)
+    app_engine_routing_override = (
+        queue_config.appEngineHttpTarget.appEngineRoutingOverride if
+        queue_config.appEngineHttpTarget is not None else
+        None)
+    log.status.Print(constants.QUEUE_MANAGEMENT_WARNING)
     update_response = queues_client.Patch(
         queue_ref,
         retry_config=queue_config.retryConfig,
-        throttle_config=queue_config.throttleConfig,
-        app_engine_http_target=queue_config.appEngineHttpTarget)
+        rate_limits=queue_config.rateLimits,
+        app_engine_routing_override=app_engine_routing_override)
     log.status.Print('Updated queue [{}].'.format(queue_ref.Name()))
     return update_response

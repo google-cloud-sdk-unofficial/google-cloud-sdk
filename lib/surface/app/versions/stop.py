@@ -18,7 +18,6 @@ from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import operations_util
 from googlecloudsdk.api_lib.app import version_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
@@ -90,10 +89,9 @@ class Stop(base.Command):
     for version in sorted(versions):
       try:
         with progress_tracker.ProgressTracker('Stopping [{0}]'.format(version)):
-          api_client.StopVersion(version.service, version.id, block=True)
-      except (calliope_exceptions.HttpException,
-              operations_util.OperationError,
-              operations_util.OperationTimeoutError) as err:
+          operations_util.CallAndCollectOpErrors(
+              api_client.StopVersion, version.service, version.id, block=True)
+      except operations_util.MiscOperationError as err:
         errors.append(str(err))
     if errors:
       raise VersionsStopError('\n\n'.join(errors))

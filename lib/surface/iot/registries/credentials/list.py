@@ -13,8 +13,7 @@
 """Command to list all credentials for a registry."""
 from googlecloudsdk.api_lib.cloudiot import registries
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.iot import flags
-from googlecloudsdk.command_lib.iot import util
+from googlecloudsdk.command_lib.iot import resource_args
 from googlecloudsdk.core.resource import resource_projector
 
 
@@ -34,14 +33,15 @@ class List(base.ListCommand):
 
     base.URI_FLAG.RemoveFromParser(parser)
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
-    flags.AddRegistryResourceFlags(parser, 'for which to list credentials',
-                                   positional=False)
+    resource_args.AddRegistryResourceArg(parser,
+                                         'for which to list credentials',
+                                         positional=False)
 
   def Run(self, args):
     """Run the list command."""
     client = registries.RegistriesClient()
 
-    registry_ref = util.ParseRegistry(args.registry, region=args.region)
+    registry_ref = args.CONCEPTS.registry.Parse()
 
     registry = client.Get(registry_ref)
     for idx, credential in enumerate(registry.credentials):

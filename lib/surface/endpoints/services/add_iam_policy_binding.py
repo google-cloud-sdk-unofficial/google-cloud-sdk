@@ -19,7 +19,6 @@ import httplib
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.endpoints import services_util
-from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.api_lib.util import http_retry
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.endpoints import arg_parsers
@@ -74,13 +73,9 @@ class AddIamPolicyBinding(base.Command):
 
     try:
       policy = client.services.GetIamPolicy(request)
-    except apitools_exceptions.HttpError as error:
+    except apitools_exceptions.HttpNotFoundError:
       # If the error is a 404, no IAM policy exists, so just create a blank one.
-      exc = exceptions.HttpException(error)
-      if exc.payload.status_code == 404:
-        policy = messages.Policy()
-      else:
-        raise
+      policy = messages.Policy()
 
     iam_util.AddBindingToIamPolicy(
         messages.Binding, policy, args.member, args.role)

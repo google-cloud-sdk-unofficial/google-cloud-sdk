@@ -21,19 +21,21 @@ from googlecloudsdk.command_lib.tasks import parsers
 from googlecloudsdk.core import log
 
 
-# TODO(b/64460484): Add descriptions of App Engine vs. pull queues.
 class CreateAppEngine(base.CreateCommand):
   """Create an App Engine queue.
 
   An App Engine queue is a push queue sent to an App Engine endpoint. The flags
   available to this command represent the fields of an App Engine queue that are
   mutable.
+
+  For more information about the different queue target types, see:
+  https://cloud.google.com/cloud-tasks/docs/queue-types
   """
 
   @staticmethod
   def Args(parser):
     flags.AddIdArg(parser, 'App Engine queue', 'to create')
-    flags.AddAppEngineQueueFlags(parser)
+    flags.AddCreateAppEngineQueueFlags(parser)
 
   def Run(self, args):
     queues_client = queues.Queues()
@@ -41,10 +43,11 @@ class CreateAppEngine(base.CreateCommand):
     location_ref = parsers.ExtractLocationRefFromQueueRef(queue_ref)
     queue_config = parsers.ParseCreateOrUpdateQueueArgs(
         args, constants.APP_ENGINE_QUEUE, queues_client.api.messages)
+    log.status.Print(constants.QUEUE_MANAGEMENT_WARNING)
     create_response = queues_client.Create(
         location_ref, queue_ref,
         retry_config=queue_config.retryConfig,
-        throttle_config=queue_config.throttleConfig,
+        rate_limits=queue_config.rateLimits,
         app_engine_http_target=queue_config.appEngineHttpTarget)
     log.CreatedResource(queue_ref.Name(), 'queue')
     return create_response

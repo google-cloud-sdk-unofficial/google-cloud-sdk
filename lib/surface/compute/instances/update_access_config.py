@@ -106,14 +106,12 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
             # publicDnsName is output only.
           interface.accessConfigs[0].publicDnsName = None
 
-        if self._support_public_ptr:
-          if set_ptr is not None:
-            interface.accessConfigs[0].setPublicPtr = set_ptr
+        if self._support_public_ptr and set_ptr is not None:
+          interface.accessConfigs[0].setPublicPtr = set_ptr
+          interface.accessConfigs[0].publicPtrDomainName = ''
           if args.public_ptr_domain is not None:
             interface.accessConfigs[
                 0].publicPtrDomainName = args.public_ptr_domain
-          elif args.no_public_ptr_domain is True:
-            interface.accessConfigs[0].publicPtrDomainName = None
 
         if self._support_network_tier:
           if args.network_tier is not None:

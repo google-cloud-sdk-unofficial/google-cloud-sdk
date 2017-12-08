@@ -15,7 +15,7 @@
 from googlecloudsdk.api_lib.cloudiot import devices
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.iot import flags
+from googlecloudsdk.command_lib.iot import resource_args
 from googlecloudsdk.command_lib.iot import util
 
 
@@ -27,8 +27,8 @@ class List(base.ListCommand):
     parser.display_info.AddFormat('table(id, numId, blocked)')
     parser.display_info.AddUriFunc(util.DevicesUriFunc)
 
-    flags.AddRegistryResourceFlags(parser, 'in which to show devices',
-                                   positional=False)
+    resource_args.AddRegistryResourceArg(parser, 'in which to show devices',
+                                         positional=False)
 
     base.Argument(
         '--device-ids',
@@ -47,7 +47,7 @@ class List(base.ListCommand):
     """Run the list command."""
     client = devices.DevicesClient()
 
-    registry_ref = util.ParseRegistry(args.registry, args.region)
+    registry_ref = args.CONCEPTS.registry.Parse()
 
     return client.List(
         registry_ref,

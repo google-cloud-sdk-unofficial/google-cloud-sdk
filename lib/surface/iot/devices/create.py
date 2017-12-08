@@ -15,6 +15,7 @@
 from googlecloudsdk.api_lib.cloudiot import devices
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iot import flags
+from googlecloudsdk.command_lib.iot import resource_args
 from googlecloudsdk.command_lib.iot import util
 from googlecloudsdk.core import log
 
@@ -24,8 +25,9 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddRegistryResourceFlags(parser, 'in which to create the device',
-                                   positional=False)
+    resource_args.AddRegistryResourceArg(parser,
+                                         'in which to create the device',
+                                         positional=False)
     flags.GetIdFlag('device', 'to create').AddToParser(parser)
     flags.AddDeviceFlagsToParser(parser)
     flags.AddDeviceCredentialFlagsToParser(parser)
@@ -33,7 +35,7 @@ class Create(base.CreateCommand):
   def Run(self, args):
     client = devices.DevicesClient()
 
-    registry_ref = util.ParseRegistry(args.registry, region=args.region)
+    registry_ref = args.CONCEPTS.registry.Parse()
     # Defaults are set here because right now with nested groups, help text
     # isn't being generated correctly.
     args_blocked = False if args.blocked is None else args.blocked

@@ -13,11 +13,11 @@
 """Command to list all credentials for a device."""
 from googlecloudsdk.api_lib.cloudiot import devices
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.iot import flags
-from googlecloudsdk.command_lib.iot import util
+from googlecloudsdk.command_lib.iot import resource_args
 from googlecloudsdk.core.resource import resource_projector
 
 
+# TODO(b/67506665): Add tests.
 class List(base.ListCommand):
   """List credentials for a device."""
 
@@ -28,15 +28,14 @@ class List(base.ListCommand):
 
     base.URI_FLAG.RemoveFromParser(parser)
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
-    flags.AddDeviceResourceFlags(parser, 'for which to list credentials',
-                                 positional=False)
+    resource_args.AddDeviceResourceArg(parser, 'for which to list credentials',
+                                       positional=False)
 
   def Run(self, args):
     """Run the list command."""
     client = devices.DevicesClient()
 
-    device_ref = util.ParseDevice(args.device, registry=args.registry,
-                                  region=args.region)
+    device_ref = args.CONCEPTS.device.Parse()
 
     device = client.Get(device_ref)
     for idx, credential in enumerate(device.credentials):

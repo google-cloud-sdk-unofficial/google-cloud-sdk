@@ -27,22 +27,24 @@ class UpdatePull(base.UpdateCommand):
   The flags available to this command represent the fields of a pull queue
   that are mutable. Attempting to use this command on a different type of queue
   will result in an error.
+
+  For more information about the different queue target types, see:
+  https://cloud.google.com/cloud-tasks/docs/queue-types
   """
 
   @staticmethod
   def Args(parser):
     flags.AddQueueResourceArg(parser, 'to update')
-    flags.AddPullQueueFlags(parser)
+    flags.AddUpdatePullQueueFlags(parser)
 
   def Run(self, args):
+    parsers.CheckUpdateArgsSpecified(args, constants.PULL_QUEUE)
     queues_client = queues.Queues()
     queue_ref = parsers.ParseQueue(args.queue)
     queue_config = parsers.ParseCreateOrUpdateQueueArgs(
-        args, constants.PULL_QUEUE, queues_client.api.messages)
+        args, constants.PULL_QUEUE, queues_client.api.messages, is_update=True)
+    log.status.Print(constants.QUEUE_MANAGEMENT_WARNING)
     update_response = queues_client.Patch(
-        queue_ref,
-        retry_config=queue_config.retryConfig,
-        throttle_config=queue_config.throttleConfig,
-        pull_target=queue_config.pullTarget)
+        queue_ref, retry_config=queue_config.retryConfig)
     log.status.Print('Updated queue [{}].'.format(queue_ref.Name()))
     return update_response

@@ -100,6 +100,7 @@ def _CommonArgs(parser,
     instances_flags.AddNetworkTierArgs(parser, instance=True)
 
   labels_util.AddCreateLabelsFlags(parser)
+  instances_flags.AddMinCpuPlatformArgs(parser, release_track)
 
   parser.add_argument(
       '--description',
@@ -397,6 +398,7 @@ class Create(base.CreateCommand):
           description=args.description,
           machineType=machine_type_uri,
           metadata=metadata,
+          minCpuPlatform=args.min_cpu_platform,
           name=instance_ref.Name(),
           networkInterfaces=network_interfaces,
           serviceAccounts=project_to_sa[instance_ref.project],
@@ -404,8 +406,6 @@ class Create(base.CreateCommand):
           tags=tags)
       if getattr(args, 'deletion_protection', None) is not None:
         instance.deletionProtection = args.deletion_protection
-      if getattr(args, 'min_cpu_platform', None):
-        instance.minCpuPlatform = args.min_cpu_platform
       if labels:
         instance.labels = labels
       if accelerator_args:
@@ -520,7 +520,6 @@ class CreateBeta(Create):
         support_public_dns=cls._support_public_dns,
         support_public_ptr=cls._support_public_ptr,
         support_network_tier=cls._support_network_tier)
-    instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -543,7 +542,6 @@ class CreateAlpha(Create):
         enable_regional=True,
         support_local_ssd_size=True,
         enable_kms=True)
-    instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddDeletionProtectionFlag(parser)
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())

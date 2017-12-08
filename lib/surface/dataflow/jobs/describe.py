@@ -26,6 +26,7 @@ class Describe(base.DescribeCommand):
 
   By default this will display the Summary view which includes:
     - Project ID
+    - Regional Endpoint
     - Job ID
     - Job Name
     - Job Type (Batch vs. Streaming)
@@ -63,5 +64,9 @@ class Describe(base.DescribeCommand):
     Returns:
       A Job message.
     """
-    job_ref = job_utils.ExtractJobRef(args.job)
-    return apis.Jobs.Get(job_ref.jobId, job_ref.projectId, args.full)
+    job_ref = job_utils.ExtractJobRef(args)
+    return apis.Jobs.Get(
+        job_ref.jobId,
+        project_id=job_ref.projectId,
+        region_id=job_ref.location,
+        view=args.full)

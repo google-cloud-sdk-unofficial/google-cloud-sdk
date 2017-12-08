@@ -44,6 +44,11 @@ class Run(base.Command):
         required=True)
 
     parser.add_argument(
+        '--staging-location',
+        help='The location to stage temporary files.',
+    )
+
+    parser.add_argument(
         '--zone',
         type=arg_parsers.RegexpValidator(
             r'\w+-\w+\d-\w', 'must provide a valid zone'),
@@ -67,6 +72,11 @@ class Run(base.Command):
         action=arg_parsers.UpdateAction,
         help='The parameters to pass to the job.')
 
+    parser.add_argument(
+        '--region',
+        metavar='REGION_ID',
+        help='The region ID of the job\'s regional endpoint.')
+
   def Run(self, args):
     """Runs the command.
 
@@ -80,9 +90,16 @@ class Run(base.Command):
       raise exceptions.ToolException("""\
 --gcs-location must begin with 'gs://'.  Provided value was '{value}'.
 """.format(value=args.gcs_location))
+    if args.staging_location and not args.staging_location.startswith('gs://'):
+      raise exceptions.ToolException("""\
+--staging-location must begin with 'gs://'.  Provided value was '{value}'.
+""".format(value=args.staging_location))
+
     job = apis.Templates.Create(
         project_id=properties.VALUES.core.project.Get(required=True),
+        region_id=args.region,
         gcs_location=args.gcs_location,
+        staging_location=args.staging_location,
         job_name=args.job_name,
         parameters=args.parameters,
         service_account_email=args.service_account_email,

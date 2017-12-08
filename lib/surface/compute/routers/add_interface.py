@@ -26,86 +26,7 @@ from googlecloudsdk.command_lib.compute.vpn_tunnels import (flags as
                                                             vpn_tunnel_flags)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class AddInterface(base.UpdateCommand):
-  """Add an interface to a Google Compute Engine router.
-
-  *{command}* is used to add an interface to a Google Compute Engine
-  router.
-  """
-
-  ROUTER_ARG = None
-  VPN_TUNNEL_ARG = None
-
-  @classmethod
-  def Args(cls, parser):
-    cls.ROUTER_ARG = router_flags.RouterArgument()
-    cls.ROUTER_ARG.AddArgument(parser, operation_type='update')
-    cls.VPN_TUNNEL_ARG = vpn_tunnel_flags.VpnTunnelArgumentForRouter()
-    cls.VPN_TUNNEL_ARG.AddArgument(parser)
-
-    router_flags.AddInterfaceArgs(parser)
-
-  def _GetGetRequest(self, client, router_ref):
-    return (client.apitools_client.routers, 'Get',
-            client.messages.ComputeRoutersGetRequest(
-                router=router_ref.Name(),
-                region=router_ref.region,
-                project=router_ref.project))
-
-  def _GetSetRequest(self, client, router_ref, replacement):
-    return (client.apitools_client.routers, 'Patch',
-            client.messages.ComputeRoutersPatchRequest(
-                router=router_ref.Name(),
-                routerResource=replacement,
-                region=router_ref.region,
-                project=router_ref.project))
-
-  def Modify(self, client, resources, args, existing):
-    replacement = encoding.CopyProtoMessage(existing)
-
-    mask = None
-
-    interface_name = args.interface_name
-
-    if args.ip_address is not None:
-      if args.mask_length is not None:
-        mask = '{0}/{1}'.format(args.ip_address, args.mask_length)
-      else:
-        raise parser_errors.ArgumentException(
-            '--mask-length must be set if --ip-address is set')
-
-    if not args.vpn_tunnel_region:
-      args.vpn_tunnel_region = replacement.region
-    vpn_ref = self.VPN_TUNNEL_ARG.ResolveAsResource(
-        args,
-        resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
-
-    interface = client.messages.RouterInterface(
-        name=interface_name, linkedVpnTunnel=vpn_ref.SelfLink(), ipRange=mask)
-
-    replacement.interfaces.append(interface)
-
-    return replacement
-
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    router_ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
-    get_request = self._GetGetRequest(client, router_ref)
-
-    objects = client.MakeRequests([get_request])
-
-    new_object = self.Modify(client, holder.resources, args, objects[0])
-
-    return client.MakeRequests(
-        [self._GetSetRequest(client, router_ref, new_object)])
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class BetaAddInterface(AddInterface):
   """Add an interface to a Google Compute Engine router.
 
   *{command}* is used to add an interface to a Google Compute Engine
@@ -133,6 +54,21 @@ class BetaAddInterface(AddInterface):
     cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(link_parser)
 
     router_flags.AddInterfaceArgs(parser)
+
+  def _GetGetRequest(self, client, router_ref):
+    return (client.apitools_client.routers, 'Get',
+            client.messages.ComputeRoutersGetRequest(
+                router=router_ref.Name(),
+                region=router_ref.region,
+                project=router_ref.project))
+
+  def _GetSetRequest(self, client, router_ref, replacement):
+    return (client.apitools_client.routers, 'Patch',
+            client.messages.ComputeRoutersPatchRequest(
+                router=router_ref.Name(),
+                routerResource=replacement,
+                region=router_ref.region,
+                project=router_ref.project))
 
   def Modify(self, client, resources, args, existing):
     replacement = encoding.CopyProtoMessage(existing)
@@ -177,3 +113,17 @@ class BetaAddInterface(AddInterface):
     replacement.interfaces.append(interface)
 
     return replacement
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    router_ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
+    get_request = self._GetGetRequest(client, router_ref)
+
+    objects = client.MakeRequests([get_request])
+
+    new_object = self.Modify(client, holder.resources, args, objects[0])
+
+    return client.MakeRequests(
+        [self._GetSetRequest(client, router_ref, new_object)])

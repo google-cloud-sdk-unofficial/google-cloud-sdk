@@ -15,6 +15,7 @@
 from googlecloudsdk.api_lib.cloudiot import devices
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iot import flags
+from googlecloudsdk.command_lib.iot import resource_args
 from googlecloudsdk.command_lib.iot import util
 from googlecloudsdk.core import log
 
@@ -27,15 +28,15 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddDeviceResourceFlags(parser, 'for which to create credentials',
-                                 positional=False)
+    resource_args.AddDeviceResourceArg(parser,
+                                       'for which to create credentials',
+                                       positional=False)
     flags.AddDeviceCredentialFlagsToParser(parser, combine_flags=False)
 
   def Run(self, args):
     client = devices.DevicesClient()
 
-    device_ref = util.ParseDevice(args.device, registry=args.registry,
-                                  region=args.region)
+    device_ref = args.CONCEPTS.device.Parse()
     new_credential = util.ParseCredential(
         args.path, args.type, args.expiration_time, messages=client.messages)
 

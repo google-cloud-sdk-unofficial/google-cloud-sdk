@@ -13,7 +13,6 @@
 # limitations under the License.
 """Command to create a new project."""
 
-import httplib
 import sys
 
 from apitools.base.py import exceptions as apitools_exceptions
@@ -118,14 +117,12 @@ class Create(base.CreateCommand):
           parent=projects_api.ParentNameToResourceId(
               flags.GetParentFromFlags(args)),
           update_labels=labels_util.GetUpdateLabelsDictFromArgs(args))
-    except apitools_exceptions.HttpError as error:
-      if error.status_code == httplib.CONFLICT:
-        msg = ('Project creation failed. The project ID you specified is '
-               'already in use by another project. Please try an alternative '
-               'ID.')
-        unused_type, unused_value, traceback = sys.exc_info()
-        raise exceptions.HttpException, msg, traceback
-      raise
+    except apitools_exceptions.HttpConflictError:
+      msg = ('Project creation failed. The project ID you specified is '
+             'already in use by another project. Please try an alternative '
+             'ID.')
+      unused_type, unused_value, traceback = sys.exc_info()
+      raise exceptions.HttpException, msg, traceback
     log.CreatedResource(project_ref, async=True)
     create_op = operations.WaitForOperation(create_op)
 

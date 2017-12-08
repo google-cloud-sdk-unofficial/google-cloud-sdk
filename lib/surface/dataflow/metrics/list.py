@@ -104,7 +104,7 @@ class List(base.ListCommand):
     Returns:
       List of metric values.
     """
-    job_ref = job_utils.ExtractJobRef(args.job)
+    job_ref = job_utils.ExtractJobRef(args)
 
     start_time = args.changed_after and time_util.Strftime(args.changed_after)
 
@@ -124,7 +124,11 @@ class List(base.ListCommand):
       preds.append(
           lambda m: time_util.ParseTimeArg(m.updateTime) > args.changed_after)
 
-    response = apis.Metrics.Get(job_ref.jobId, job_ref.projectId, start_time)
+    response = apis.Metrics.Get(
+        job_ref.jobId,
+        project_id=job_ref.projectId,
+        region_id=job_ref.location,
+        start_time=start_time)
 
     return [self._Format(m) for m in response.metrics
             if all([pred(m) for pred in preds])]

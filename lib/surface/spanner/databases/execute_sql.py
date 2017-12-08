@@ -72,10 +72,12 @@ class Query(base.Command):
       Some value that we want to have printed later.
     """
     session = database_sessions.Create(args.instance, args.database)
+    # Session id would be the string after the last /.
+    session_id = session.name.split('/')[-1]
     try:
       return database_sessions.ExecuteSql(session, args.sql, args.query_mode)
     finally:
-      database_sessions.Delete(session)
+      database_sessions.Delete(args.instance, args.database, session_id)
 
   def Display(self, args, result):
     """Displays the server response to a query.

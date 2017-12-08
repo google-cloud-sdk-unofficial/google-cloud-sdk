@@ -14,7 +14,7 @@
 """Command to list all registries in a project and location."""
 from googlecloudsdk.api_lib.cloudiot import registries
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.iot import flags
+from googlecloudsdk.command_lib.iot import resource_args
 from googlecloudsdk.command_lib.iot import util
 
 
@@ -32,14 +32,14 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
+    resource_args.AddRegionResourceArg(parser, 'to list registries for')
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddUriFunc(util.RegistriesUriFunc)
-    flags.GetRegionFlag('device registries').AddToParser(parser)
 
   def Run(self, args):
     """Run the list command."""
     client = registries.RegistriesClient()
 
-    location_ref = util.ParseLocation(args.region)
+    location_ref = args.CONCEPTS.region.Parse()
 
     return client.List(location_ref, args.limit, args.page_size)

@@ -14,6 +14,7 @@
 """`gcloud app versions list` command."""
 
 from googlecloudsdk.api_lib.app import appengine_api_client
+from googlecloudsdk.api_lib.app import version_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
@@ -62,6 +63,7 @@ class List(base.ListCommand):
             version.servingStatus:label=SERVING_STATUS
           )
     """)
+    parser.display_info.AddUriFunc(version_util.GetUri)
 
   def Run(self, args):
     api_client = appengine_api_client.GetApiClientForTrack(self.ReleaseTrack())

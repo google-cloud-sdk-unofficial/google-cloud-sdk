@@ -12,22 +12,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command to interactively create and run gcloud commands.
-"""
+"""`gcloud alpha interactive` implementation."""
+
+from __future__ import unicode_literals
+
+import StringIO
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.shell import application
-from googlecloudsdk.command_lib.shell import flags
+from googlecloudsdk.core.document_renderers import render_document
+
+
+_SPLASH = """
+# Welcome to the gcloud interactive shell environment.
+
+Run `gcloud feedback` to report bugs or feature requests.
+
+"""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Shell(base.Command):
-  """Start the gcloud shell.
+  """Start the gcloud interactive shell.
+
+  *{command}* has menu based auto completion and displays help snippets
+  as each part of a *gcloud* sub-command is typed. The initial *gcloud*
+  is implied, you only need to enter subcommands.
   """
 
-  @staticmethod
-  def Args(parser):
-    flags.EXPERIMENTAL_AUTOCOMPLETE.AddToParser(parser)
-
   def Run(self, args):
-    application.main()
+    if not args.quiet:
+      render_document.RenderDocument(fin=StringIO.StringIO(_SPLASH))
+    restrict = 'gcloud'
+    application.main(
+        cli=self._cli_power_users_only,
+        args=args,
+        hidden=False,
+        prompt=restrict + '> ',
+        restrict=restrict,
+    )

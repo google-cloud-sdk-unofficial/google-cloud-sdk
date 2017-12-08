@@ -28,7 +28,6 @@ from googlecloudsdk.command_lib.compute.vpn_tunnels import (flags as
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateInterface(base.UpdateCommand):
   """Update an interface on a Google Compute Engine router.
 
@@ -38,14 +37,23 @@ class UpdateInterface(base.UpdateCommand):
 
   ROUTER_ARG = None
   VPN_TUNNEL_ARG = None
+  INTERCONNECT_ATTACHMENT_ARG = None
 
   @classmethod
   def Args(cls, parser):
     cls.ROUTER_ARG = router_flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser, operation_type='update')
+
+    link_parser = parser.add_mutually_exclusive_group(required=False)
+
     cls.VPN_TUNNEL_ARG = vpn_tunnel_flags.VpnTunnelArgumentForRouter(
         required=False, operation_type='updated')
-    cls.VPN_TUNNEL_ARG.AddArgument(parser)
+    cls.VPN_TUNNEL_ARG.AddArgument(link_parser)
+
+    cls.INTERCONNECT_ATTACHMENT_ARG = (
+        attachment_flags.InterconnectAttachmentArgumentForRouter(
+            required=False, operation_type='updated'))
+    cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(link_parser)
 
     router_flags.AddInterfaceArgs(parser, for_update=True)
 
@@ -93,6 +101,20 @@ class UpdateInterface(base.UpdateCommand):
           scope_lister=compute_flags.GetDefaultScopeLister(client))
       iface.linkedVpnTunnel = vpn_ref.SelfLink()
 
+    if not args.interconnect_attachment_region:
+      args.interconnect_attachment_region = replacement.region
+
+    if args.interconnect_attachment is not None:
+      attachment_ref = self.INTERCONNECT_ATTACHMENT_ARG.ResolveAsResource(
+          args, resources)
+      iface.linkedInterconnectAttachment = attachment_ref.SelfLink()
+
+    if (iface.linkedVpnTunnel is not None and
+        iface.linkedInterconnectAttachment is not None):
+      raise parser_errors.ArgumentException(
+          'cannot have both vpn-tunnel and interconnect-attachment for the '
+          'interface.')
+
     return replacement
 
   def Run(self, args):
@@ -111,68 +133,9 @@ class UpdateInterface(base.UpdateCommand):
     # Modify() returns None, then there is no work to be done, so we
     # print the resource and return.
     if objects[0] == new_object:
-      log.status.Print(
-          'No change requested; skipping update for [{0}].'.format(
-              objects[0].name))
+      log.status.Print('No change requested; skipping update for [{0}].'.format(
+          objects[0].name))
       return objects
 
     return client.MakeRequests(
         [self.GetSetRequest(client, router_ref, new_object)])
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class BetaUpdateInterface(UpdateInterface):
-  """Update an interface on a Google Compute Engine router.
-
-  *{command}* is used to update an interface on a Google Compute Engine
-  router.
-  """
-
-  ROUTER_ARG = None
-  VPN_TUNNEL_ARG = None
-  INTERCONNECT_ATTACHMENT_ARG = None
-
-  @classmethod
-  def Args(cls, parser):
-    cls.ROUTER_ARG = router_flags.RouterArgument()
-    cls.ROUTER_ARG.AddArgument(parser, operation_type='update')
-
-    link_parser = parser.add_mutually_exclusive_group(
-        required=False)
-
-    cls.VPN_TUNNEL_ARG = vpn_tunnel_flags.VpnTunnelArgumentForRouter(
-        required=False, operation_type='updated')
-    cls.VPN_TUNNEL_ARG.AddArgument(link_parser)
-
-    cls.INTERCONNECT_ATTACHMENT_ARG = (
-        attachment_flags.InterconnectAttachmentArgumentForRouter(
-            required=False, operation_type='updated'))
-    cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(link_parser)
-
-    router_flags.AddInterfaceArgs(parser, for_update=True)
-
-  def Modify(self, client, resources, args, existing):
-    replacement = super(BetaUpdateInterface, self).Modify(
-        client, resources, args, existing)
-
-    iface = None
-    for i in replacement.interfaces:
-      if i.name == args.interface_name:
-        iface = i
-        break
-
-    if not args.interconnect_attachment_region:
-      args.interconnect_attachment_region = replacement.region
-
-    if args.interconnect_attachment is not None:
-      attachment_ref = self.INTERCONNECT_ATTACHMENT_ARG.ResolveAsResource(
-          args, resources)
-      iface.linkedInterconnectAttachment = attachment_ref.SelfLink()
-
-    if (iface.linkedVpnTunnel is not None and
-        iface.linkedInterconnectAttachment is not None):
-      raise parser_errors.ArgumentException(
-          'cannot have both vpn-tunnel and interconnect-attachment for the '
-          'interface.')
-
-    return replacement

@@ -13,8 +13,7 @@
 """Command to list configurations for a device."""
 from googlecloudsdk.api_lib.cloudiot import devices
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.iot import flags
-from googlecloudsdk.command_lib.iot import util
+from googlecloudsdk.command_lib.iot import resource_args
 
 
 class List(base.ListCommand):
@@ -32,13 +31,12 @@ class List(base.ListCommand):
 
     base.URI_FLAG.RemoveFromParser(parser)
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
-    flags.AddDeviceResourceFlags(parser, 'for which to list configs',
-                                 positional=False)
+    resource_args.AddDeviceResourceArg(parser, 'for which to list configs',
+                                       positional=False)
 
   def Run(self, args):
     """Run the list command."""
     client = devices.DeviceConfigsClient()
 
-    device_ref = util.ParseDevice(
-        args.device, registry=args.registry, region=args.region)
+    device_ref = args.CONCEPTS.device.Parse()
     return client.List(device_ref, args.limit)

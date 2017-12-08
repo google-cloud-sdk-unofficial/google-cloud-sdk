@@ -16,32 +16,8 @@
 from googlecloudsdk.api_lib.tasks import queues
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.tasks import app
-from googlecloudsdk.command_lib.tasks import constants
+from googlecloudsdk.command_lib.tasks import list_formats
 from googlecloudsdk.command_lib.tasks import parsers
-
-
-_FORMAT = '''table(
-    name.basename():label="QUEUE_NAME",
-    queuetype():label=TYPE,
-    queueState:label=STATE,
-    throttleConfig.maxOutstandingTasks.yesno(no="unlimited").format("{0}").sub("-1", "unlimited"):label="MAX_NUM_OF_TASKS",
-    throttleConfig.maxTasksDispatchedPerSecond.yesno(no="unlimited"):label="MAX_RATE (/sec)",
-    retryConfig.maxAttempts.yesno(no="unlimited"):label="MAX_ATTEMPTS")'''
-
-
-def _IsPullQueue(r):
-  return 'pullTarget' in r
-
-
-def _IsAppEngineQueue(r):
-  return 'appEngineHttpTarget' in r
-
-
-def _TranformQueueType(r):
-  if _IsPullQueue(r):
-    return constants.PULL_QUEUE
-  if _IsAppEngineQueue(r):
-    return constants.APP_ENGINE_QUEUE
 
 
 class List(base.ListCommand):
@@ -49,9 +25,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddTransforms({'queuetype': _TranformQueueType})
-    parser.display_info.AddFormat(_FORMAT)
-    parser.display_info.AddUriFunc(parsers.QueuesUriFunc)
+    list_formats.AddListQueuesFormats(parser)
 
   def Run(self, args):
     queues_client = queues.Queues()

@@ -15,6 +15,7 @@
 from googlecloudsdk.api_lib.cloudiot import registries
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iot import flags
+from googlecloudsdk.command_lib.iot import resource_args
 from googlecloudsdk.command_lib.iot import util
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
@@ -25,14 +26,15 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddRegistryResourceFlags(parser, 'from which to delete credentials',
-                                   positional=False)
+    resource_args.AddRegistryResourceArg(parser,
+                                         'from which to delete credentials',
+                                         positional=False)
     flags.GetIndexFlag('credential', 'to delete').AddToParser(parser)
 
   def Run(self, args):
     client = registries.RegistriesClient()
 
-    registry_ref = util.ParseRegistry(args.registry, region=args.region)
+    registry_ref = args.CONCEPTS.registry.Parse()
 
     credentials = client.Get(registry_ref).credentials
     try:

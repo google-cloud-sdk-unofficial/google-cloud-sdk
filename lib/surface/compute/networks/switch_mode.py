@@ -21,6 +21,21 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
+_DEPRECATION_WARNING = (
+    '`switch-mode` is deprecated. '
+    'Please use `--switch-to-custom-subnet-mode` with `gcloud compute networks '
+    'update` instead.')
+
+
+_DEPRECATION_ERROR = (
+    '`switch-mode` has been removed. '
+    'Please use `--switch-to-custom-subnet-mode` with `gcloud compute networks '
+    'update` instead.')
+
+
+# TODO(b/64980447): Clean up this command flag after 3 months of deprecation.
+@base.Deprecate(
+    is_removed=False, warning=_DEPRECATION_WARNING, error=_DEPRECATION_ERROR)
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class SwitchMode(base.SilentCommand):

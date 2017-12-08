@@ -16,7 +16,6 @@
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import operations_util
 from googlecloudsdk.api_lib.app import service_util
-from googlecloudsdk.api_lib.util import exceptions as core_api_exceptions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import exceptions
@@ -113,11 +112,10 @@ for more information.""")
     errors = {}
     for service in services:
       try:
-        api_client.SetTrafficSplit(
-            service.id, allocations, args.split_by.upper(), args.migrate)
-      except (core_api_exceptions.HttpException,
-              operations_util.OperationError,
-              operations_util.OperationTimeoutError) as err:
+        operations_util.CallAndCollectOpErrors(
+            api_client.SetTrafficSplit, service.id, allocations,
+            args.split_by.upper(), args.migrate)
+      except operations_util.MiscOperationError as err:
         errors[service.id] = str(err)
     if errors:
       printable_errors = {}

@@ -50,6 +50,7 @@ class Update(base.UpdateCommand):
   def Args(parser):
     flags.INSTANCE_ARG.AddArgument(parser, operation_type='update')
     labels_util.AddUpdateLabelsFlags(parser)
+    flags.AddMinCpuPlatformArgs(parser, Update.ReleaseTrack())
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

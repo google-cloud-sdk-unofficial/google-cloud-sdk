@@ -106,17 +106,19 @@ class Update(base.UpdateCommand):
       changed_config = False
       if args.max_age is not None:
         lifecycle_config.autoDeleteTtl = str(args.max_age) + 's'
+        changed_fields.append('config.lifecycle_config.auto_delete_ttl')
         changed_config = True
       if args.expiration_time is not None:
         lifecycle_config.autoDeleteTime = times.FormatDateTime(
             args.expiration_time)
+        changed_fields.append('config.lifecycle_config.auto_delete_time')
         changed_config = True
       if args.max_idle is not None:
         lifecycle_config.idleDeleteTtl = str(args.max_idle) + 's'
+        changed_fields.append('config.lifecycle_config.idle_delete_ttl')
         changed_config = True
       if changed_config:
         cluster_config.lifecycleConfig = lifecycle_config
-        changed_fields.append('config.lifecycle_config')
         has_changes = True
 
     # Update labels if the user requested it

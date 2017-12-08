@@ -11,15 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Commands for reading and manipulating routers."""
+"""Commands for reading and manipulating subnetworks."""
 
 from googlecloudsdk.calliope import base
 
 
-class Routers(base.Group):
+class Subnetworks(base.Group):
   """List, describe, and delete Google Compute Engine subnetworks."""
-
-
-Routers.detailed_help = {
-    'brief': 'List, describe, and delete Google Compute Engine subnetworks',
-}
