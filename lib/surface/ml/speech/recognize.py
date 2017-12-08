@@ -17,6 +17,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml.speech import speech_command_util
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Recognize(base.Command):
   """Get transcripts of short (less than 60 seconds) audio from an audio file.
 

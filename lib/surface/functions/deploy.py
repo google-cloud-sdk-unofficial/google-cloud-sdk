@@ -389,6 +389,7 @@ class Deploy(base.Command):
           base_function, args.source, args.include_ignored_files, args.name,
           args.stage_bucket)
     elif args.source_url:
+      deploy_util.CleanOldSourceInfo(base_function)
       source_path = args.source_path
       source_branch = args.source_branch or 'master'
       base_function.sourceRepository = messages.SourceRepository(
@@ -397,6 +398,7 @@ class Deploy(base.Command):
           sourcePath=source_path)
     elif is_new_function or args.local_path or args.stage_bucket:
       # Do not change source of existing function unless instructed to.
+      deploy_util.CleanOldSourceInfo(base_function)
       base_function.sourceArchiveUrl = self._PrepareSourcesOnGcs(args)
     # Set information about deplouyment tool.
     labels_to_update = args.update_labels or {}
@@ -433,16 +435,6 @@ class Deploy(base.Command):
       zip_file = deploy_util.CreateSourcesZipFile(
           tmp_dir, local_path, args.include_ignored_files)
       return deploy_util.UploadFile(zip_file, args.name, args.stage_bucket)
-
-  def _ValidateUnpackedSourceSize(self, args):
-    ignore_regex = deploy_util.GetIgnoreFilesRegex(args.include_ignored_files)
-    path = deploy_util.GetLocalPath(args)
-    size_b = file_utils.GetTreeSizeBytes(path, ignore_regex)
-    size_limit_mb = 512
-    size_limit_b = size_limit_mb * 2 ** 20
-    if size_b > size_limit_b:
-      raise exceptions.OversizedDeployment(
-          str(size_b) + 'B', str(size_limit_b) + 'B')
 
   @util.CatchHTTPErrorRaiseHTTPException
   def _CreateFunction(self, location, function):
@@ -488,7 +480,6 @@ class Deploy(base.Command):
       FunctionsError if command line parameters are not valid.
     """
     self._ValidateLabelsFlags(args)
-    self._ValidateUnpackedSourceSize(args)
     trigger_params = deploy_util.DeduceAndCheckArgs(args)
     project = properties.VALUES.core.project.Get(required=True)
     location_ref = resources.REGISTRY.Parse(

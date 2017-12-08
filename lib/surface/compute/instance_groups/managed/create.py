@@ -76,12 +76,12 @@ class CreateGA(base.CreateCommand):
   def Args(parser):
     parser.display_info.AddFormat(managed_flags.DEFAULT_LIST_FORMAT)
     _AddInstanceGroupManagerArgs(parser=parser)
-    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+    instance_groups_flags.GetInstanceGroupManagerArg().AddArgument(
         parser, operation_type='create')
 
   def CreateGroupReference(self, args, client, resources):
     group_ref = (
-        instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
+        instance_groups_flags.GetInstanceGroupManagerArg().
         ResolveAsResource)(args, resources,
                            default_scope=compute_scope.ScopeEnum.ZONE,
                            scope_lister=flags.GetDefaultScopeLister(client))
@@ -189,7 +189,7 @@ class CreateGA(base.CreateCommand):
     return augmented_migs
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class CreateBeta(CreateGA):
   """Create Google Compute Engine managed instance groups."""
 
@@ -204,46 +204,8 @@ class CreateBeta(CreateGA):
     _AddInstanceGroupManagerArgs(parser=parser)
     auto_healing_utils.AddAutohealingArgs(
         parser=parser, health_check_group=health_check_group)
-    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
-        parser, operation_type='create')
-
-  def _CreateInstanceGroupManager(
-      self, args, group_ref, template_ref, client, holder):
-    """Create parts of Instance Group Manager shared between tracks."""
-    health_check = managed_instance_groups_utils.GetHealthCheckUri(
-        holder.resources, args, self.HEALTH_CHECK_ARG)
-    return client.messages.InstanceGroupManager(
-        name=group_ref.Name(),
-        description=args.description,
-        instanceTemplate=template_ref.SelfLink(),
-        baseInstanceName=self._GetInstanceGroupManagerBaseInstanceName(
-            args.base_instance_name, group_ref),
-        targetPools=self._GetInstanceGroupManagerTargetPools(
-            args.target_pool, group_ref, holder),
-        targetSize=int(args.size),
-        autoHealingPolicies=(
-            managed_instance_groups_utils.CreateAutohealingPolicies(
-                client.messages, health_check, args.initial_delay)),
-    )
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateGA):
-  """Create Google Compute Engine managed instance groups."""
-
-  HEALTH_CHECK_ARG = health_checks_flags.HealthCheckArgument(
-      '', '--health-check', required=False)
-
-  @classmethod
-  def Args(cls, parser):
-    health_check_group = parser.add_mutually_exclusive_group()
-    cls.HEALTH_CHECK_ARG.AddArgument(health_check_group)
-    parser.display_info.AddFormat(managed_flags.DEFAULT_LIST_FORMAT)
-    _AddInstanceGroupManagerArgs(parser=parser)
-    auto_healing_utils.AddAutohealingArgs(
-        parser=parser, health_check_group=health_check_group)
-    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
-        parser, operation_type='create')
+    igm_arg = instance_groups_flags.GetInstanceGroupManagerArg(zones_flag=True)
+    igm_arg.AddArgument(parser, operation_type='create')
     instance_groups_flags.AddZonesFlag(parser)
 
   def CreateGroupReference(self, args, client, resources):
@@ -258,7 +220,7 @@ class CreateAlpha(CreateGA):
               'region': region,
               'project': properties.VALUES.core.project.GetOrFail},
           collection='compute.regionInstanceGroupManagers')
-    return (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
+    return (instance_groups_flags.GetInstanceGroupManagerArg().
             ResolveAsResource)(
                 args, resources,
                 default_scope=compute_scope.ScopeEnum.ZONE,
@@ -315,4 +277,3 @@ in the ``us-central1-a'' zone.
 }
 CreateGA.detailed_help = DETAILED_HELP
 CreateBeta.detailed_help = DETAILED_HELP
-CreateAlpha.detailed_help = DETAILED_HELP

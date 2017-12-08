@@ -20,6 +20,7 @@ from googlecloudsdk.command_lib.resource_manager import flags
 from googlecloudsdk.core import resources
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
 
   """Get description of a long-running video analysis operation.

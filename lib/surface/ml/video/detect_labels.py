@@ -18,6 +18,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml.video import video_command_util
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DetectLabels(base.Command):
   """Detect general labels for videos.
 

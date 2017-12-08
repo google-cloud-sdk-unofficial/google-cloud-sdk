@@ -21,5 +21,15 @@ from googlecloudsdk.calliope import cli_tree
 class ListGCloud(base.Command):
   """List the gcloud CLI command tree with flag, positional and help details."""
 
+  @staticmethod
+  def Args(parser):
+    parser.add_argument(
+        '--branch',
+        metavar='COMMAND_PATH',
+        help=('The branch of the CLI subtree to generate as a dotted command '
+              'path. Mainly used to generate test data. For example, for the '
+              '`gcloud compute instances` branch use "compute.instances".'))
+
   def Run(self, args):
-    cli_tree.Dump(cli=self._cli_power_users_only, path='-')
+    branch = args.branch.split('.') if args.branch else None
+    cli_tree.Dump(cli=self._cli_power_users_only, path='-', branch=branch)

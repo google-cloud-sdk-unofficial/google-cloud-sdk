@@ -1,0 +1,26 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Detect shot changes in videos.
+    DESCRIPTION: |
+      Detect when the shot changes in a video.
+
+      {auth_help}
+    auth_help: !COMMON help_text.auth_help
+
+  request:
+    _COMMON_: request
+    static_fields:
+      features: [SHOT_CHANGE_DETECTION]
+    modify_request_hook: googlecloudsdk.api_lib.ml.video.video_client:_UpdateRequestWithInput
+
+  async:
+    _COMMON_: async
+
+  arguments:
+    additional_arguments_hook: googlecloudsdk.command_lib.ml.video.video_command_util:AdditionalFlagsHook
+    params:
+      - _COMMON_args
+
+  output:
+    format: json

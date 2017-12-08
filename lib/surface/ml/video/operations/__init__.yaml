@@ -1,0 +1,5 @@
+help_text:
+  auth_help: |
+    This command requires a service account from a project that has enabled the
+    Video Intelligence API. To learn more about how to use a service account
+    with gcloud, please run `gcloud auth activate-service-account --help`.

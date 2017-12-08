@@ -27,7 +27,8 @@ class ConfigureDockerError(exceptions.Error):
   """General command error class."""
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.BETA)
 class ConfigureDocker(base.Command):
   """Registers gcloud as a Docker credential helper.
 

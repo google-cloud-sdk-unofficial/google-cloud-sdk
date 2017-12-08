@@ -24,17 +24,14 @@ from googlecloudsdk.command_lib.util import time_util
 from googlecloudsdk.core import log
 
 
-def _AddArgs(parser, multizonal):
+def _AddArgs(parser):
   """Adds args."""
   parser.add_argument('--timeout',
                       type=int,
                       help='Timeout in seconds for waiting '
                       'for group becoming stable.')
-  if multizonal:
-    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
-        parser)
-  else:
-    instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG.AddArgument(parser)
+  instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+      parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
@@ -45,7 +42,7 @@ class WaitUntilStable(base.Command):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, multizonal=True)
+    _AddArgs(parser=parser)
 
   def CreateGroupReference(self, client, resources, args):
     return (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.

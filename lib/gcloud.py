@@ -16,6 +16,7 @@
 
 """gcloud command line tool."""
 
+import imp
 import os
 import sys
 
@@ -27,7 +28,17 @@ if os.path.isdir(_THIRD_PARTY_DIR):
 
 
 def _import_gcloud_main():
+  # We reload google after sys.path is updated, so that third_party/google is
+  # imported instead. By this time 'google' should NOT be in sys.modules, but
+  # some releases of protobuf preload google package via .pth file.
   # pylint:disable=g-import-not-at-top
+  if 'google' in sys.modules:
+    import google
+    try:
+      reload(google)
+    except NameError:
+
+      imp.reload(google)
   import googlecloudsdk.gcloud_main
   return googlecloudsdk.gcloud_main
 

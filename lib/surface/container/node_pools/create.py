@@ -95,6 +95,7 @@ See https://cloud.google.com/sdk/gcloud/reference/compute/firewall-rules/create
 for examples.
 """)
   flags.AddDiskTypeFlag(parser, suppressed=True)
+  flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True)
   parser.display_info.AddFormat(util.NODEPOOLS_FORMAT)
 
 
@@ -131,7 +132,6 @@ class Create(base.CreateCommand):
     flags.AddLocalSSDFlag(parser, suppressed=True)
     flags.AddPreemptibleFlag(parser, for_node_pool=True, suppressed=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True, suppressed=True)
-    flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True, suppressed=True)
     flags.AddServiceAccountFlag(parser, suppressed=True)
     flags.AddOldNodePoolScopesFlag(parser)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True, hidden=True)
@@ -199,7 +199,6 @@ class CreateBeta(Create):
     flags.AddLocalSSDFlag(parser)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True)
-    flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True)
     flags.AddServiceAccountFlag(parser)
     flags.AddNodePoolScopesFlag(parser)
     flags.AddMinCpuPlatformFlag(parser, for_node_pool=True)
@@ -229,7 +228,6 @@ class CreateAlpha(Create):
     flags.AddLocalSSDFlag(parser)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True)
-    flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True)
     flags.AddServiceAccountFlag(parser)
     flags.AddAcceleratorArgs(parser)
     flags.AddNodePoolScopesFlag(parser)

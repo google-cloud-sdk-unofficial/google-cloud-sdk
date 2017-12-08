@@ -96,7 +96,7 @@ class Start(base.Command):
     Raises:
       HttpException: An http error response was received while executing api
           request.
-      ToolException: An error other than http error occured while executing
+      ToolException: An error other than http error occurred while executing
           the command.
     """
     client = updater_util.GetApiClientInstance()

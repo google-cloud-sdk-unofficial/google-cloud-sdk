@@ -1,0 +1,24 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Detect general attributes of an image.
+    DESCRIPTION: |
+      Detect general attributes of an image, such as dominant color.
+
+      {auth_hints}
+    auth_hints: !COMMON help_text.auth_hints
+
+  request:
+    _COMMON_: request
+    static_fields:
+      requests.features.type: IMAGE_PROPERTIES
+
+  response:
+    _COMMON_: response
+
+  arguments:
+    params:
+      - _COMMON_: args.image_field
+
+  output:
+    format: json

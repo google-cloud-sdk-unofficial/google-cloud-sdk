@@ -28,6 +28,8 @@ class Create(base.CreateCommand):
     flags.GetIdFlag(noun, 'to create', 'REGISTRY_ID').AddToParser(parser)
     flags.GetRegionFlag(noun).AddToParser(parser)
     flags.AddDeviceRegistrySettingsFlagsToParser(parser)
+    flags.AddDeviceRegistryCredentialFlagsToParser(
+        parser, credentials_surface=False)
 
   def Run(self, args):
     client = registries.RegistriesClient()
@@ -35,12 +37,21 @@ class Create(base.CreateCommand):
     location_ref = util.ParseLocation(region=args.region)
     mqtt_state = util.ParseEnableMqttConfig(args.enable_mqtt_config,
                                             client=client)
+    http_state = util.ParseEnableHttpConfig(args.enable_http_config,
+                                            client=client)
     event_pubsub_topic = args.pubsub_topic or args.event_pubsub_topic
     event_pubsub_topic_ref = util.ParsePubsubTopic(event_pubsub_topic)
+    state_pubsub_topic_ref = util.ParsePubsubTopic(args.state_pubsub_topic)
+    credentials = []
+    if args.public_key_path:
+      credentials.append(util.ParseRegistryCredential(args.public_key_path))
 
     response = client.Create(
         location_ref, args.id,
-        pubsub_topic=event_pubsub_topic_ref,
-        mqtt_config_state=mqtt_state)
+        credentials=credentials,
+        event_pubsub_topic=event_pubsub_topic_ref,
+        state_pubsub_topic=state_pubsub_topic_ref,
+        mqtt_enabled_state=mqtt_state,
+        http_enabled_state=http_state)
     log.CreatedResource(args.id, 'registry')
     return response

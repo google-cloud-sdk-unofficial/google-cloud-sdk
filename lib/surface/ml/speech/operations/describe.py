@@ -19,6 +19,7 @@ from googlecloudsdk.command_lib.ml.speech import speech_command_util
 from googlecloudsdk.core import resources
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
 
   """Get description of a long-running speech recognition operation.

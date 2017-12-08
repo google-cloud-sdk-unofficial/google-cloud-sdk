@@ -53,7 +53,7 @@ class List(base.ListCommand):
     parser.display_info.AddTransforms({'tasktype': _TranformTaskType})
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddUriFunc(parsers.TasksUriFunc)
-    parsers.AddQueueResourceFlag(parser)
+    parsers.AddQueueResourceFlag(parser, plural_tasks=True)
 
   def Run(self, args):
     tasks_client = tasks.Tasks()

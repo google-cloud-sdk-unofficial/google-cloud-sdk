@@ -69,7 +69,7 @@ class AnalyzeSyntaxGa(base.Command):
         api_version=util.LANGUAGE_GA_VERSION)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class AnalyzeSyntaxBeta(AnalyzeSyntaxGa):
   """Use Google Cloud Natural Language API to identify linguistic information.
 

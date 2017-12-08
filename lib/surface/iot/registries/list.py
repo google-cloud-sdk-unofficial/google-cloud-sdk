@@ -22,7 +22,7 @@ _FORMAT = """\
 table(
     name.scope("registries"):label=ID,
     name.scope("locations").segment(0):label=LOCATION,
-    mqttConfig.mqttConfigState:label=MQTT_ENABLED
+    mqttConfig.mqttEnabledState:label=MQTT_ENABLED
 )
 """
 

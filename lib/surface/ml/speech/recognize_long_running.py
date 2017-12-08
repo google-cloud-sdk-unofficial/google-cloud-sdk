@@ -17,6 +17,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml.speech import speech_command_util
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class RecognizeLongRunning(base.Command):
   """Get transcripts of longer audio from an audio file.
 

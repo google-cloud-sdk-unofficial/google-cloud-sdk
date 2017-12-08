@@ -74,8 +74,8 @@ class PredictionError(Exception):
   FAILED_TO_LOAD_MODEL = PredictionErrorType(
       message="Failed to load model", code=0)
   INVALID_INPUTS = PredictionErrorType("Invalid inputs", code=1)
-  FAILED_TO_RUN_GRAPH = PredictionErrorType(
-      message="Failed to run Tensorflow graph", code=2)
+  FAILED_TO_RUN_MODEL = PredictionErrorType(
+      message="Failed to run the provided model", code=2)
   INVALID_OUTPUTS = PredictionErrorType(
       message="There was a problem processing the outputs", code=3)
   INVALID_USER_CODE = PredictionErrorType(
@@ -412,7 +412,7 @@ class SessionClient(object):
                                     feed_dict=unaliased)
       except Exception as e:
         logging.error("Exception during running the graph: " + str(e))
-        raise PredictionError(PredictionError.FAILED_TO_RUN_GRAPH,
+        raise PredictionError(PredictionError.FAILED_TO_RUN_MODEL,
                               "Exception during running the graph: " + str(e))
 
     with stats.time(ALIAS_TIME):
@@ -787,6 +787,32 @@ def _encode_str_tensor(data):
   if isinstance(data, list):
     return [_encode_str_tensor(val) for val in data]
   return {"b64": base64.b64encode(data)}
+
+
+# TODO(b/65369539): Remove when cl/167164265 is submitted. We should only be
+# base64 encoding predictions for TensorFlow models.
+def maybe_encode_base64(instances, model):
+  """Base64-encodes binary data for TensorFlow models that have a signature.
+
+  Checks if a model signature is present, and base64-encodes instances if so.
+  Otherwise, returns the provided instances.
+  TODO(b/65369539): Implement base64-encoding for frameworks where the models do
+  not have a signature, such as scikit-learn and xgboost.
+
+  Args:
+    instances: the list of instances as returned from the predict() method.
+    model: the model used to serve predictions.
+
+  Returns:
+    The base64-encoded instances if a model signature is present, or the
+    original instances otherwise.
+
+  Raises:
+    ValueError: if an error occurs during base64 encoding.
+  """
+  if hasattr(model, "signature"):
+    return encode_base64(instances, model.signature.outputs)
+  return instances
 
 
 def local_predict(

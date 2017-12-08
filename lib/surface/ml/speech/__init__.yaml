@@ -1,0 +1,60 @@
+help_text:
+  auth_hints: |
+    To use the Google Cloud Speech API, use a service account belonging to a
+    project that has Google Cloud Speech enabled. Please see
+    https://cloud.google.com/speech/docs/common/auth
+    for directions on setting up an account to use with the API. After setting
+    up the account, download the key file and run:
+
+      $ gcloud auth activate-service-account --key-file=$KEY_FILE
+
+args:
+  - api_field: audio
+    arg_name: audio
+    help_text: |
+      The location of the audio file to transcribe. Must be a local path or a
+      Google Cloud Storage URL (in the format gs://bucket/object).
+    is_positional: True
+    processor: googlecloudsdk.api_lib.ml.speech.speech_api_client:GetAudio
+
+  - api_field: config.languageCode
+    arg_name: language
+    help_text: |
+      The language of the supplied audio as a BCP-47
+      (https://www.rfc-editor.org/rfc/bcp/bcp47.txt) language tag. Example:
+      "en-US". See https://cloud.google.com/speech/docs/languages for a list of
+      the currently supported language codes.
+    required: True
+
+  - api_field: config.speechContexts.phrases
+    arg_name: hints
+    default: []
+    help_text: |
+      A list of strings containing word and phrase "hints" so that the speech
+      recognition is more likely to recognize them. This can be used to
+      improve the accuracy for specific words and phrases, for example, if
+      specific commands are typically spoken by the user. This can also be
+      used to add additional words to the vocabulary of the recognizer. See
+      https://cloud.google.com/speech/limits#content.
+
+  - api_field: config.maxAlternatives
+    arg_name: max-alternatives
+    default: 1
+    help_text: |
+      Maximum number of recognition hypotheses to be returned. The server
+      may return fewer than max_alternatives. Valid values are 0-30. A value
+      of 0 or 1 will return a maximum of one.
+
+  - api_field: config.profanityFilter
+    arg_name: filter-profanity
+    help_text: |
+      If True, the server will attempt to filter out profanities, replacing
+      all but the initial character in each filtered word with asterisks,
+      e.g. "f***".
+
+  - api_field: config.encoding
+    arg_name: encoding
+    default: encoding-unspecified
+    help_text: |
+      The type of encoding of the file. Required if the file format is not
+      WAV or FLAC.

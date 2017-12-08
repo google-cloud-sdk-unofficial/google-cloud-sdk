@@ -25,16 +25,17 @@ class Update(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     flags.AddDeviceResourceFlags(parser, 'to update')
-    for flag in flags.GetDeviceFlags(defaults=False):
-      flag.AddToParser(parser)
+    flags.AddDeviceFlagsToParser(parser, default_for_blocked_flags=False)
 
   def Run(self, args):
     client = devices.DevicesClient()
 
     device_ref = util.ParseDevice(args.id, registry=args.registry,
                                   region=args.region)
-    enabled_state = util.ParseEnableDevice(args.enable_device, client=client)
+    blocked = util.ParseDeviceBlocked(args.blocked, args.enable_device)
+    metadata = util.ParseMetadata(args.metadata, args.metadata_from_file,
+                                  client.messages)
 
-    device = client.Patch(device_ref, enabled_state=enabled_state)
+    device = client.Patch(device_ref, blocked=blocked, metadata=metadata)
     log.UpdatedResource(device_ref.Name(), 'device')
     return device

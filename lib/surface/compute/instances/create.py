@@ -395,6 +395,8 @@ class Create(base.CreateCommand):
           serviceAccounts=project_to_sa[instance_ref.project],
           scheduling=scheduling,
           tags=tags)
+      if getattr(args, 'deletion_protection', None) is not None:
+        instance.deletionProtection = args.deletion_protection
       if getattr(args, 'min_cpu_platform', None):
         instance.minCpuPlatform = args.min_cpu_platform
       if labels:
@@ -531,6 +533,7 @@ class CreateAlpha(Create):
         support_local_ssd_size=True,
         enable_kms=True)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
+    instances_flags.AddDeletionProtectionFlag(parser)
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)

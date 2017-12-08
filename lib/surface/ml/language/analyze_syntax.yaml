@@ -1,0 +1,24 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Use Google Cloud Natural Language API to identify linguistic information.
+    DESCRIPTION: |
+      Syntactic Analysis extracts linguistic information, breaking up the given
+      text into a series of sentences and tokens (generally, word boundaries),
+      providing further analysis on those tokens.
+
+      {service_account_help}
+
+      {language_help}
+    language_help: !COMMON help_text.language_help
+    service_account_help: !COMMON help_text.service_account_help
+
+  request:
+    _COMMON_: request
+    method: analyzeSyntax
+
+  arguments:
+    _COMMON_: arguments
+
+  output:
+    format: json

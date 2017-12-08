@@ -1,0 +1,25 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Detect entities in an image from similar images on the web.
+    DESCRIPTION: |
+      Detect entities in an image from similar images on the web.
+
+      {auth_hints}
+    auth_hints: !COMMON help_text.auth_hints
+
+  request:
+    _COMMON_: request
+    static_fields:
+      requests.features.type: WEB_DETECTION
+
+  response:
+    _COMMON_: response
+
+  arguments:
+    params:
+      - _COMMON_: args.image_field
+      - _COMMON_: args.max_results_field
+
+  output:
+    format: json

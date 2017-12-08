@@ -71,7 +71,7 @@ class AnalyzeEntitiesGa(base.Command):
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class AnalyzeEntitiesBeta(AnalyzeEntitiesGa):
   """Use Google Cloud Natural Language API to identify entities in text.
 

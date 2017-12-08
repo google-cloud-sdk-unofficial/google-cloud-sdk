@@ -18,7 +18,7 @@ from googlecloudsdk.command_lib.iot import util
 
 
 class List(base.ListCommand):
-  """List credentials for a device.
+  """List configs for a device.
 
   This command lists all available configurations in the history of the device.
   Up to 10 are kept; you may restrict the output to fewer via the `--limit`

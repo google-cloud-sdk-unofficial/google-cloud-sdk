@@ -18,6 +18,7 @@ from googlecloudsdk.command_lib.ml.vision import flags
 from googlecloudsdk.command_lib.ml.vision import vision_command_util
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DetectDocument(base.Command):
   """Detect dense text in an image.
 

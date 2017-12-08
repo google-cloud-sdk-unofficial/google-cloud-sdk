@@ -14,7 +14,6 @@
 """Command for setting IAM policies for registries."""
 
 from googlecloudsdk.api_lib.cloudiot import registries
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.iot import flags
@@ -45,7 +44,7 @@ class SetIamPolicy(base_classes.BaseIamCommand):
 
   def Run(self, args):
     client = registries.RegistriesClient()
-    messages = apis.GetMessagesModule('cloudiot', 'v1beta1')
+    messages = client.messages
 
     policy = iam_util.ParsePolicyFile(args.policy_file, messages.Policy)
     registry_ref = util.ParseRegistry(args.id, region=args.region)

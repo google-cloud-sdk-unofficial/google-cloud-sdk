@@ -33,12 +33,17 @@ class Update(base.UpdateCommand):
     registry_ref = util.ParseRegistry(args.id, region=args.region)
     mqtt_state = util.ParseEnableMqttConfig(args.enable_mqtt_config,
                                             client=client)
+    http_state = util.ParseEnableHttpConfig(args.enable_http_config,
+                                            client=client)
     event_pubsub_topic = args.pubsub_topic or args.event_pubsub_topic
     event_pubsub_topic_ref = util.ParsePubsubTopic(event_pubsub_topic)
+    state_pubsub_topic_ref = util.ParsePubsubTopic(args.state_pubsub_topic)
 
     response = client.Patch(
         registry_ref,
-        pubsub_topic=event_pubsub_topic_ref,
-        mqtt_config_state=mqtt_state)
+        event_pubsub_topic=event_pubsub_topic_ref,
+        state_pubsub_topic=state_pubsub_topic_ref,
+        mqtt_enabled_state=mqtt_state,
+        http_enabled_state=http_state)
     log.UpdatedResource(registry_ref.Name(), 'registry')
     return response

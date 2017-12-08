@@ -22,27 +22,10 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.interconnects.attachments import (
     flags as attachment_flags)
 from googlecloudsdk.command_lib.compute.routers import flags as router_flags
+from googlecloudsdk.command_lib.compute.routers import router_utils
 from googlecloudsdk.command_lib.compute.vpn_tunnels import (flags as
                                                             vpn_tunnel_flags)
-from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
-
-
-class InterfaceNotFoundError(exceptions.Error):
-  """Raised when an interface is not found."""
-
-  def __init__(self, name):
-    self.name = name
-    msg = 'interface `{0}` not found'.format(name)
-    super(InterfaceNotFoundError, self).__init__(msg)
-
-
-class RequireMaskError(exceptions.Error):
-  """Raised when a mask is needed but not provided."""
-
-  def __init__(self):
-    super(RequireMaskError, self).__init__(
-        '--ip-address', '--mask-length must be set if --ip-address is set')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -91,13 +74,14 @@ class UpdateInterface(base.UpdateCommand):
         break
 
     if iface is None:
-      raise InterfaceNotFoundError(args.interface_name)
+      raise router_utils.InterfaceNotFoundError(args.interface_name)
 
-    if args.ip_address is not None:
-      if args.mask_length is None:
-        raise RequireMaskError()
-
+    # Flags --ip-address and --mask-length must be specified together.
+    # TODO(b/65850105): Use an argument group for these flags.
+    if (args.ip_address is not None) and (args.mask_length is not None):
       iface.ipRange = '{0}/{1}'.format(args.ip_address, args.mask_length)
+    elif (args.ip_address is not None) or (args.mask_length is not None):
+      raise router_utils.RequireIpAddressAndMaskLengthError()
 
     if not args.vpn_tunnel_region:
       args.vpn_tunnel_region = replacement.region

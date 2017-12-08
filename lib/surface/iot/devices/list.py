@@ -24,7 +24,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat('table(id, numId, enabledState)')
+    parser.display_info.AddFormat('table(id, numId, blocked)')
     parser.display_info.AddUriFunc(util.DevicesUriFunc)
 
     flags.AddRegistryResourceFlags(parser, 'in which to show devices',
@@ -54,6 +54,6 @@ class List(base.ListCommand):
         device_ids=args.device_ids,
         device_num_ids=args.device_num_ids,
         field_mask=[
-            'devices.enabled_state',
-            'devices.name'],
+            'blocked',
+            'name'],
         limit=args.limit, page_size=args.page_size)

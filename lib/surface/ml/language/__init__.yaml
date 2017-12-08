@@ -1,0 +1,40 @@
+help_text:
+  language_help: |
+    Currently English, Spanish, Japanese, Chinese (Simplified and Traditional),
+    French, German, Italian, Korean, and Portuguese are supported.
+  service_account_help: |
+    This command requires a service account from a project that has enabled the
+    Natural Language API. To learn about using service accounts with the Natural
+    Language API, please go to
+    https://cloud.google.com/natural-language/docs/getting-started. Step 2 under
+    the "Make an entity analysis request" section will give directions for using
+    service accounts in gcloud.
+
+request:
+  collection: language.documents
+  api_version: v1beta2
+  modify_request_hook: googlecloudsdk.command_lib.ml.language.language_command_util:AddContentToRequest
+
+arguments:
+  additional_arguments_hook: googlecloudsdk.command_lib.ml.language.flags:GetContentFlagsGroup
+  params:
+    - api_field: document.type
+      arg_name: content-type
+      default: plain-text
+      help_text: Specify the format of the input text.
+
+    - api_field: document.language
+      arg_name: language
+      help_text: |
+        Specify the language of the input text. If omitted, the server will
+        attempt to auto-detect. Both ISO (such as `en` or `es`) and BCP-47 (such
+        as `en-US` or `ja-JP`) language codes are accepted.
+
+    - api_field: encodingType
+      arg_name: encoding-type
+      default: utf8
+      help_text: |
+        The encoding type used by the API to calculate offsets. If NONE, those
+        offsets are not calculated. This is an optional flag only used for the
+        entity mentions in results, and does not affect how the input is read or
+        analyzed.

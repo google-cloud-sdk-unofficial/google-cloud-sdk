@@ -27,22 +27,28 @@ class Create(base.CreateCommand):
     flags.AddRegistryResourceFlags(parser, 'in which to create the device',
                                    positional=False)
     flags.GetIdFlag('device', 'to create').AddToParser(parser)
-    for flag in flags.GetDeviceFlags():
-      flag.AddToParser(parser)
+    flags.AddDeviceFlagsToParser(parser)
     flags.AddDeviceCredentialFlagsToParser(parser)
 
   def Run(self, args):
     client = devices.DevicesClient()
 
     registry_ref = util.ParseRegistry(args.registry, region=args.region)
-    enabled_state = util.ParseEnableDevice(args.enable_device, client=client)
+    # Defaults are set here because right now with nested groups, help text
+    # isn't being generated correctly.
+    args_blocked = False if args.blocked is None else args.blocked
+    args_enabled = True if args.enable_device is None else args.enable_device
+    blocked = util.ParseDeviceBlocked(args_blocked, args_enabled)
     credentials = util.ParseCredentials(args.public_keys,
                                         messages=client.messages)
+    metadata = util.ParseMetadata(args.metadata, args.metadata_from_file,
+                                  client.messages)
 
     response = client.Create(
         registry_ref, args.id,
-        enabled_state=enabled_state,
-        credentials=credentials
+        blocked=blocked,
+        credentials=credentials,
+        metadata=metadata
     )
     log.CreatedResource(args.id, 'device')
     return response

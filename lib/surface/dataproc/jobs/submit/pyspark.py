@@ -14,17 +14,13 @@
 
 """Submit a PySpark job to a cluster."""
 
-import argparse
-
-from apitools.base.py import encoding
-
-from googlecloudsdk.api_lib.dataproc import base_classes
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dataproc.jobs import pyspark
+from googlecloudsdk.command_lib.dataproc.jobs import submitter
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class PySpark(base_classes.JobSubmitter):
+class PySpark(pyspark.PySparkBase, submitter.JobSubmitter):
   """Submit a PySpark job to a cluster.
 
   Submit a PySpark job to a cluster.
@@ -41,24 +37,19 @@ class PySpark(base_classes.JobSubmitter):
 
   @staticmethod
   def Args(parser):
-    super(PySpark, PySpark).Args(parser)
-    PySparkBase.Args(parser)
+    pyspark.PySparkBase.Args(parser)
+    submitter.JobSubmitter.Args(parser)
 
   def ConfigureJob(self, messages, job, args):
-    PySparkBase.ConfigureJob(
-        messages,
-        job,
-        self.BuildLoggingConfig(messages, args.driver_log_levels),
-        self.files_by_type,
-        args)
-    super(PySpark, self).ConfigureJob(messages, job, args)
-
-  def PopulateFilesByType(self, args):
-    self.files_by_type.update(PySparkBase.GetFilesByType(args))
+    pyspark.PySparkBase.ConfigureJob(messages, job, self.files_by_type,
+                                     self.BuildLoggingConfig(
+                                         messages, args.driver_log_levels),
+                                     args)
+    submitter.JobSubmitter.ConfigureJob(messages, job, args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class PySparkBeta(base_classes.JobSubmitterBeta):
+class PySparkBeta(pyspark.PySparkBase, submitter.JobSubmitterBeta):
   """Submit a PySpark job to a cluster.
 
   Submit a PySpark job to a cluster.
@@ -75,104 +66,16 @@ class PySparkBeta(base_classes.JobSubmitterBeta):
 
   @staticmethod
   def Args(parser):
-    super(PySparkBeta, PySparkBeta).Args(parser)
-    PySparkBase.Args(parser)
+    pyspark.PySparkBase.Args(parser)
+    submitter.JobSubmitterBeta.Args(parser)
 
   def ConfigureJob(self, messages, job, args):
-    PySparkBase.ConfigureJob(
-        messages,
-        job,
-        self.BuildLoggingConfig(messages, args.driver_log_levels),
-        self.files_by_type,
-        args)
-    super(PySparkBeta, self).ConfigureJob(messages, job, args)
+    pyspark.PySparkBase.ConfigureJob(messages, job, self.files_by_type,
+                                     self.BuildLoggingConfig(
+                                         messages, args.driver_log_levels),
+                                     args)
+    submitter.JobSubmitterBeta.ConfigureJob(messages, job, args)
 
-  def PopulateFilesByType(self, args):
-    self.files_by_type.update(PySparkBase.GetFilesByType(args))
-
-
-class PySparkBase(object):
-  """Submit a PySpark job to a cluster."""
-
-  @staticmethod
-  def Args(parser):
-    """Performs command-line argument parsing specific to PySpark."""
-
-    parser.add_argument(
-        'py_file',
-        help='The main .py file to run as the driver.')
-    parser.add_argument(
-        '--py-files',
-        type=arg_parsers.ArgList(),
-        metavar='PY_FILE',
-        default=[],
-        help=('Comma separated list of Python files to be provided to the job.'
-              'Must be one of the following file formats" .py, ,.zip, or .egg'))
-    parser.add_argument(
-        '--jars',
-        type=arg_parsers.ArgList(),
-        metavar='JAR',
-        default=[],
-        help=('Comma separated list of jar files to be provided to the '
-              'executor and driver classpaths.'))
-    parser.add_argument(
-        '--files',
-        type=arg_parsers.ArgList(),
-        metavar='FILE',
-        default=[],
-        help='Comma separated list of files to be provided to the job.')
-    parser.add_argument(
-        '--archives',
-        type=arg_parsers.ArgList(),
-        metavar='ARCHIVE',
-        default=[],
-        help=('Comma separated list of archives to be provided to the job. '
-              'must be one of the following file formats: .zip, .tar, .tar.gz, '
-              'or .tgz.'))
-    parser.add_argument(
-        'job_args',
-        nargs=argparse.REMAINDER,
-        help='The arguments to pass to the driver.')
-    parser.add_argument(
-        '--properties',
-        type=arg_parsers.ArgDict(),
-        metavar='PROPERTY=VALUE',
-        help='A list of key value pairs to configure PySpark.')
-    parser.add_argument(
-        '--driver-log-levels',
-        type=arg_parsers.ArgDict(),
-        metavar='PACKAGE=LEVEL',
-        help=('A list of package to log4j log level pairs to configure driver '
-              'logging. For example: root=FATAL,com.example=INFO'))
-
-  @staticmethod
-  def GetFilesByType(args):
-    # TODO(b/36057053): Move arg manipulation elsewhere.
-    return {
-        'py_file': args.py_file,
-        'py_files': args.py_files,
-        'archives': args.archives,
-        'files': args.files,
-        'jars': args.jars}
-
-  @staticmethod
-  def ConfigureJob(messages, job, log_config, files_by_type, args):
-    """Populates the pysparkJob member of the given job."""
-
-    pyspark_job = messages.PySparkJob(
-        args=args.job_args or [],
-        archiveUris=files_by_type['archives'],
-        fileUris=files_by_type['files'],
-        jarFileUris=files_by_type['jars'],
-        pythonFileUris=files_by_type['py_files'],
-        mainPythonFileUri=files_by_type['py_file'],
-        loggingConfig=log_config)
-
-    if args.properties:
-      pyspark_job.properties = encoding.DictToMessage(
-          args.properties, messages.PySparkJob.PropertiesValue)
-
-    job.pysparkJob = pyspark_job
 
 PySpark.detailed_help = {
     'EXAMPLES': """\

@@ -14,20 +14,14 @@
 
 """Submit a Hadoop job to a cluster."""
 
-import argparse
-
-from apitools.base.py import encoding
-
-from googlecloudsdk.api_lib.dataproc import base_classes
-from googlecloudsdk.api_lib.dataproc import exceptions
 from googlecloudsdk.api_lib.dataproc import util
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import log
+from googlecloudsdk.command_lib.dataproc.jobs import hadoop
+from googlecloudsdk.command_lib.dataproc.jobs import submitter
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Hadoop(base_classes.JobSubmitter):
+class Hadoop(hadoop.HadoopBase, submitter.JobSubmitter):
   r"""Submit a Hadoop job to a cluster.
 
   Submit a Hadoop job to a cluster.
@@ -52,26 +46,20 @@ class Hadoop(base_classes.JobSubmitter):
 
   @staticmethod
   def Args(parser):
-    super(Hadoop, Hadoop).Args(parser)
-    HadoopBase.Args(parser)
+    hadoop.HadoopBase.Args(parser)
+    submitter.JobSubmitter.Args(parser)
     driver_group = parser.add_argument_group()
     util.AddJvmDriverFlags(driver_group)
 
   def ConfigureJob(self, messages, job, args):
-    HadoopBase.ConfigureJob(
-        messages,
-        job,
-        self.BuildLoggingConfig(messages, args.driver_log_levels),
-        self.files_by_type,
-        args)
-    super(Hadoop, self).ConfigureJob(messages, job, args)
-
-  def PopulateFilesByType(self, args):
-    self.files_by_type.update(HadoopBase.GetFilesByType(args))
+    hadoop.HadoopBase.ConfigureJob(messages, job, self.files_by_type,
+                                   self.BuildLoggingConfig(
+                                       messages, args.driver_log_levels), args)
+    submitter.JobSubmitter.ConfigureJob(messages, job, args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class HadoopBeta(base_classes.JobSubmitterBeta):
+class HadoopBeta(hadoop.HadoopBase, submitter.JobSubmitterBeta):
   r"""Submit a Hadoop job to a cluster.
 
   Submit a Hadoop job to a cluster.
@@ -96,104 +84,13 @@ class HadoopBeta(base_classes.JobSubmitterBeta):
 
   @staticmethod
   def Args(parser):
-    super(HadoopBeta, HadoopBeta).Args(parser)
-    HadoopBase.Args(parser)
+    hadoop.HadoopBase.Args(parser)
+    submitter.JobSubmitterBeta.Args(parser)
     driver_group = parser.add_mutually_exclusive_group(required=True)
     util.AddJvmDriverFlags(driver_group)
 
   def ConfigureJob(self, messages, job, args):
-    HadoopBase.ConfigureJob(
-        messages,
-        job,
-        self.BuildLoggingConfig(messages, args.driver_log_levels),
-        self.files_by_type,
-        args)
-    super(HadoopBeta, self).ConfigureJob(messages, job, args)
-
-  def PopulateFilesByType(self, args):
-    self.files_by_type.update(HadoopBase.GetFilesByType(args))
-
-
-class HadoopBase(object):
-  """Common functionality between release tracks."""
-
-  @staticmethod
-  def Args(parser):
-    """Parses command-line arguments specific to submitting Hadoop jobs."""
-    parser.add_argument(
-        '--jars',
-        type=arg_parsers.ArgList(),
-        metavar='JAR',
-        default=[],
-        help=('Comma separated list of jar files to be provided to the MR and '
-              'driver classpaths.'))
-    parser.add_argument(
-        '--files',
-        type=arg_parsers.ArgList(),
-        metavar='FILE',
-        default=[],
-        help='Comma separated list of files to be provided to the job.')
-    parser.add_argument(
-        '--archives',
-        type=arg_parsers.ArgList(),
-        metavar='ARCHIVE',
-        default=[],
-        help=('Comma separated list of archives to be provided to the job. '
-              'must be one of the following file formats: .zip, .tar, .tar.gz, '
-              'or .tgz.'))
-    parser.add_argument(
-        'job_args',
-        nargs=argparse.REMAINDER,
-        help='The arguments to pass to the driver.')
-    parser.add_argument(
-        '--properties',
-        type=arg_parsers.ArgDict(),
-        metavar='PROPERTY=VALUE',
-        help='A list of key value pairs to configure Hadoop.')
-    parser.add_argument(
-        '--driver-log-levels',
-        type=arg_parsers.ArgDict(),
-        metavar='PACKAGE=LEVEL',
-        help=('A list of package to log4j log level pairs to configure driver '
-              'logging. For example: root=FATAL,com.example=INFO'))
-
-  @staticmethod
-  def GetFilesByType(args):
-    """Returns a dict of files by their type (jars, archives, etc.)."""
-    # TODO(b/36050338): Move arg manipulation elsewhere.
-    # TODO(b/36051982): Remove with GA flags 2017-04-01 (b/33298024).
-    if not args.main_class and not args.main_jar:
-      raise exceptions.ArgumentError('Must either specify --class or JAR.')
-    if args.main_class and args.main_jar:
-      log.warn(
-          'You must specify exactly one of --jar and --class. '
-          'This will be strictly enforced in April 2017. '
-          "Use 'gcloud beta dataproc jobs submit hadoop' to see new behavior.")
-      log.info('Passing main jar as an additional jar.')
-      args.jars.append(args.main_jar)
-      args.main_jar = None
-
-    return {
-        'main_jar': args.main_jar,
-        'jars': args.jars,
-        'archives': args.archives,
-        'files': args.files}
-
-  @staticmethod
-  def ConfigureJob(messages, job, log_config, files_by_type, args):
-    """Populates the hadoopJob member of the given job."""
-
-    hadoop_job = messages.HadoopJob(
-        args=args.job_args or [],
-        archiveUris=files_by_type['archives'],
-        fileUris=files_by_type['files'],
-        jarFileUris=files_by_type['jars'],
-        mainClass=args.main_class,
-        mainJarFileUri=files_by_type['main_jar'],
-        loggingConfig=log_config)
-
-    if args.properties:
-      hadoop_job.properties = encoding.DictToMessage(
-          args.properties, messages.HadoopJob.PropertiesValue)
-
-    job.hadoopJob = hadoop_job
+    hadoop.HadoopBase.ConfigureJob(messages, job, self.files_by_type,
+                                   self.BuildLoggingConfig(
+                                       messages, args.driver_log_levels), args)
+    submitter.JobSubmitterBeta.ConfigureJob(messages, job, args)

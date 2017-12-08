@@ -1,10 +1,10 @@
 {
   "kind": "discovery#restDescription",
   "discoveryVersion": "v1",
-  "id": "cloudiot:v1beta1",
+  "id": "cloudiot:v1",
   "name": "cloudiot",
   "canonicalName": "Cloud Iot",
-  "version": "v1beta1",
+  "version": "v1",
   "revision": "0",
   "title": "Google Cloud IoT API",
   "description": "Registers and manages IoT (Internet of Things) devices that connect to the Google Cloud Platform.\n",
@@ -135,19 +135,48 @@
           "description": "The resource path name. For example,\n`projects\/example-project\/locations\/us-central1\/registries\/my-registry`.",
           "type": "string"
         },
-        "eventNotificationConfig": {
-          "description": "Configuration to notify events received from the device.",
-          "$ref": "NotificationConfig"
+        "eventNotificationConfigs": {
+          "description": "The configuration for notification of telemetry events received from the\ndevice. All telemetry events that were successfully published by the\ndevice and acknowledged by Cloud IoT Core are guaranteed to be\ndelivered to Cloud Pub\/Sub. Only the first configuration is used.",
+          "type": "array",
+          "items": {
+            "$ref": "EventNotificationConfig"
+          }
+        },
+        "stateNotificationConfig": {
+          "description": "The configuration for notification of new states received from the device.\nState updates are guaranteed to be stored in the state history, but\nnotifications to Cloud Pub\/Sub are not guaranteed. For example, if\npermissions are misconfigured or the specified topic doesn't exist, no\nnotification will be published but the state will still be stored in Cloud\nIoT Core.",
+          "$ref": "StateNotificationConfig"
         },
         "mqttConfig": {
-          "description": "The configuration of the MQTT broker associated with this device registry,\nincluding enablement, payload data format type, etc.",
+          "description": "The MQTT configuration for this device registry.",
           "$ref": "MqttConfig"
+        },
+        "httpConfig": {
+          "description": "The DeviceService (HTTP) configuration for this device registry.",
+          "$ref": "HttpConfig"
+        },
+        "credentials": {
+          "description": "The credentials used to verify the device credentials. No more than 10\ncredentials can be bound to a single registry at a time. The verification\nprocess occurs at the time of device creation or update. If this field is\nempty, no verification is performed. Otherwise, the credentials of a newly\ncreated device or added credentials of an updated device should be signed\nwith one of these registry credentials.\n\nNote, however, that existing devices will never be affected by\nmodifications to this list of credentials: after a device has been\nsuccessfully created in a registry, it should be able to connect even if\nits registry credentials are revoked, deleted, or modified.",
+          "type": "array",
+          "items": {
+            "$ref": "RegistryCredential"
+          }
         }
       }
     },
-    "NotificationConfig": {
-      "id": "NotificationConfig",
-      "description": "Configuration to forward messages such as telemetry events.",
+    "EventNotificationConfig": {
+      "id": "EventNotificationConfig",
+      "description": "The configuration to forward telemetry events.",
+      "type": "object",
+      "properties": {
+        "pubsubTopicName": {
+          "description": "A Cloud Pub\/Sub topic name. For example,\n`projects\/myProject\/topics\/deviceEvents`.",
+          "type": "string"
+        }
+      }
+    },
+    "StateNotificationConfig": {
+      "id": "StateNotificationConfig",
+      "description": "The configuration for notification of new states received from the device.",
       "type": "object",
       "properties": {
         "pubsubTopicName": {
@@ -161,8 +190,8 @@
       "description": "The configuration of MQTT for a device registry.",
       "type": "object",
       "properties": {
-        "mqttConfigState": {
-          "description": "If enabled, allows connections using the MQTT protocol. Otherwise any MQTT\nconnection to this registry will fail.",
+        "mqttEnabledState": {
+          "description": "If enabled, allows connections using the MQTT protocol. Otherwise, MQTT\nconnections to this registry will fail.",
           "enumDescriptions": [
             "No MQTT state specified. If not specified, MQTT will be enabled by default.",
             "Enables a MQTT connection.",
@@ -170,10 +199,102 @@
           ],
           "type": "string",
           "enum": [
-            "UNSPECIFIED_MQTT_STATE",
+            "MQTT_STATE_UNSPECIFIED",
             "MQTT_ENABLED",
             "MQTT_DISABLED"
           ]
+        }
+      }
+    },
+    "HttpConfig": {
+      "id": "HttpConfig",
+      "description": "The configuration of the HTTP bridge for a device registry.",
+      "type": "object",
+      "properties": {
+        "httpEnabledState": {
+          "description": "If enabled, allows devices to use DeviceService via the HTTP protocol.\nOtherwise, any requests to DeviceService will fail for this registry.",
+          "enumDescriptions": [
+            "No HTTP state specified. If not specified, DeviceService will be\nenabled by default.",
+            "Enables DeviceService (HTTP) service for the registry.",
+            "Disables DeviceService (HTTP) service for the registry."
+          ],
+          "type": "string",
+          "enum": [
+            "HTTP_STATE_UNSPECIFIED",
+            "HTTP_ENABLED",
+            "HTTP_DISABLED"
+          ]
+        }
+      }
+    },
+    "RegistryCredential": {
+      "id": "RegistryCredential",
+      "description": "A server-stored registry credential used to validate device credentials.",
+      "type": "object",
+      "properties": {
+        "publicKeyCertificate": {
+          "description": "A public key certificate used to verify the device credentials.",
+          "$ref": "PublicKeyCertificate"
+        }
+      }
+    },
+    "PublicKeyCertificate": {
+      "id": "PublicKeyCertificate",
+      "description": "A public key certificate format and data.",
+      "type": "object",
+      "properties": {
+        "format": {
+          "description": "The certificate format.",
+          "enumDescriptions": [
+            "The format has not been specified. This is an invalid default value and\nmust not be used.",
+            "An X.509v3 certificate ([RFC5280](https:\/\/www.ietf.org\/rfc\/rfc5280.txt)),\nencoded in base64, and wrapped by `-----BEGIN CERTIFICATE-----` and\n`-----END CERTIFICATE-----`."
+          ],
+          "type": "string",
+          "enum": [
+            "UNSPECIFIED_PUBLIC_KEY_CERTIFICATE_FORMAT",
+            "X509_CERTIFICATE_PEM"
+          ]
+        },
+        "certificate": {
+          "description": "The certificate data.",
+          "type": "string"
+        },
+        "x509Details": {
+          "description": "[Output only] The certificate details. Used only for X.509 certificates.",
+          "$ref": "X509CertificateDetails"
+        }
+      }
+    },
+    "X509CertificateDetails": {
+      "id": "X509CertificateDetails",
+      "description": "Details of an X.509 certificate. For informational purposes only.",
+      "type": "object",
+      "properties": {
+        "issuer": {
+          "description": "The entity that signed the certificate.",
+          "type": "string"
+        },
+        "subject": {
+          "description": "The entity the certificate and public key belong to.",
+          "type": "string"
+        },
+        "startTime": {
+          "description": "The time the certificate becomes valid.",
+          "type": "string",
+          "format": "google-datetime"
+        },
+        "expiryTime": {
+          "description": "The time the certificate becomes invalid.",
+          "type": "string",
+          "format": "google-datetime"
+        },
+        "signatureAlgorithm": {
+          "description": "The algorithm used to sign the certificate.",
+          "type": "string"
+        },
+        "publicKeyType": {
+          "description": "The type of public key in the certificate.",
+          "type": "string"
         }
       }
     },
@@ -221,53 +342,64 @@
           "format": "uint64"
         },
         "credentials": {
-          "description": "The credentials used to authenticate this device. To allow credential\nrotation without interruption, multiple device credentials can be bound to\nthis device. No more than 3 credentials can be bound to a single device at\na time.",
+          "description": "The credentials used to authenticate this device. To allow credential\nrotation without interruption, multiple device credentials can be bound to\nthis device. No more than 3 credentials can be bound to a single device at\na time. When new credentials are added to a device, they are verified\nagainst the registry credentials. For details, see the description of the\n`DeviceRegistry.credentials` field.",
           "type": "array",
           "items": {
             "$ref": "DeviceCredential"
           }
         },
         "lastHeartbeatTime": {
-          "description": "[Output only] The last time a heartbeat was received. Timestamps are\nperiodically collected and written to storage; they may be stale by a few\nminutes.",
+          "description": "[Output only] The last time a heartbeat was received. Timestamps are\nperiodically collected and written to storage; they may be stale by a few\nminutes. This field is only for devices connecting through MQTT.",
           "type": "string",
           "format": "google-datetime"
         },
         "lastEventTime": {
-          "description": "[Output only] The last time an event was received. Timestamps are\nperiodically collected and written to storage; they may be stale by a few\nminutes.",
+          "description": "[Output only] The last time a telemetry event was received. Timestamps are\nperiodically collected and written to storage; they may be stale by a few\nminutes.",
+          "type": "string",
+          "format": "google-datetime"
+        },
+        "lastStateTime": {
+          "description": "[Output only] The last time a state event was received. Timestamps are\nperiodically collected and written to storage; they may be stale by a few\nminutes.",
           "type": "string",
           "format": "google-datetime"
         },
         "lastConfigAckTime": {
-          "description": "[Output only] The last time a cloud-to-device config version acknowledgment\nwas received from the device.",
+          "description": "[Output only] The last time a cloud-to-device config version acknowledgment\nwas received from the device. This field is only for configurations\nsent through MQTT.",
           "type": "string",
           "format": "google-datetime"
         },
-        "enabledState": {
-          "description": "If a device is disabled, communication from it will be blocked. Can be used\nto temporarily prevent the device from connecting if, for example, the\nsensor is generating bad data and needs maintenance.",
-          "enumDescriptions": [
-            "No enabled state specified. If not specified, defaults to enabled\n(communication to Cloud IoT Core allowed).",
-            "Enables a device. By default, devices are enabled, allowing communication\nfrom the device to Cloud IoT Core. When a device is disabled, it is blocked\nfrom communicating with Cloud IoT Core.",
-            "Disables a device, blocking all communication from it to Cloud IoT Core."
-          ],
+        "lastConfigSendTime": {
+          "description": "[Output only] The last time a cloud-to-device config version was sent to\nthe device.",
           "type": "string",
-          "enum": [
-            "UNSPECIFIED_ENABLED_STATE",
-            "DEVICE_ENABLED",
-            "DEVICE_DISABLED"
-          ]
+          "format": "google-datetime"
+        },
+        "blocked": {
+          "description": "If a device is blocked, connections or requests from this device will fail.\nCan be used to temporarily prevent the device from connecting if, for\nexample, the sensor is generating bad data and needs maintenance.",
+          "type": "boolean"
         },
         "lastErrorTime": {
-          "description": "[Output only] The last time an error happened, e.g., failed to publish to\nCloud Pub\/Sub. This field is the timestamp of 'last_error_status'.",
+          "description": "[Output only] The time the most recent error occurred, such as a failure to\npublish to Cloud Pub\/Sub. This field is the timestamp of\n'last_error_status'.",
           "type": "string",
           "format": "google-datetime"
         },
         "lastErrorStatus": {
-          "description": "[Output only] The error message of the last error, e.g., failed to publish\nto Cloud Pub\/Sub. 'last_error_time' is the timestamp of this field. If no\nerrors are present, this will have an empty message (whose status code is\n0 == OK), otherwise this field is expected to have a not-OK status code.",
+          "description": "[Output only] The error message of the most recent error, such as a failure\nto publish to Cloud Pub\/Sub. 'last_error_time' is the timestamp of this\nfield. If no errors have occurred, this field has an empty message\nand the status code 0 == OK. Otherwise, this field is expected to have a\nstatus code other than OK.",
           "$ref": "Status"
         },
         "config": {
-          "description": "The most recent device configuration, which is eventually sent from the\nCloud IoT Core service to the device. If not present on creation, the\nconfiguration will be initialized with an empty payload and version value\nof `1`. To update this field after creation, use the\n`DeviceManager.ModifyCloudToDeviceConfig` method.",
+          "description": "The most recent device configuration, which is eventually sent from\nCloud IoT Core to the device. If not present on creation, the\nconfiguration will be initialized with an empty payload and version value\nof `1`. To update this field after creation, use the\n`DeviceManager.ModifyCloudToDeviceConfig` method.",
           "$ref": "DeviceConfig"
+        },
+        "state": {
+          "description": "[Output only] The state most recently received from the device. If no state\nhas been reported, this field is not present.",
+          "$ref": "DeviceState"
+        },
+        "metadata": {
+          "description": "The metadata key-value pairs assigned to the device. This metadata is not\ninterpreted or indexed by Cloud IoT Core. It can be used to add contextual\ninformation for the device.\n\nKeys must conform to the regular expression [a-zA-Z0-9-_]+ and be less than\n128 bytes in length.\n\nValues are free-form strings. Each value must be less than or equal to 32\nKB in size.\n\nThe total size of all keys and values must be less than 256 KB, and the\nmaximum number of key-value pairs is 500.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         }
       }
     },
@@ -277,7 +409,7 @@
       "type": "object",
       "properties": {
         "publicKey": {
-          "description": "A public key used to verify the signature of JSON Web Tokens (JWTs).",
+          "description": "A public key used to verify the signature of JSON Web Tokens (JWTs).\nWhen adding a new device credential, either via device creation or via\nmodifications, this public key credential may be required to be signed by\none of the registry level certificates. More specifically, if the\nregistry contains at least one certificate, any new device credential\nmust be signed by one of the registry certificates. As a result,\nwhen the registry contains certificates, only X.509 certificates are\naccepted as device credentials. However, if the registry does\nnot contain a certificate, self-signed certificates and public keys will\nbe accepted. New device credentials must be different from every\nregistry-level certificate.",
           "$ref": "PublicKeyCredential"
         },
         "expirationTime": {
@@ -296,14 +428,18 @@
           "description": "The format of the key.",
           "enumDescriptions": [
             "The format has not been specified. This is an invalid default value and\nmust not be used.",
-            "An RSA public key wrapped in a X.509v3 certificate\n[RFC5280](https:\/\/www.ietf.org\/rfc\/rfc5280.txt), encoded in base64, and\nwrapped by `-----BEGIN CERTIFICATE-----` and `-----END CERTIFICATE-----`.\nThis can be used to verify `RS256` signatures in JWT tokens\n[RFC7518](https:\/\/www.ietf.org\/rfc\/rfc7518.txt).",
-            "Public key for the ECDSA algorithm using P-256 and SHA-256, encoded in\nbase64, and wrapped by `-----BEGIN PUBLIC KEY-----` and `-----END\nPUBLIC KEY-----`. This can be used to verify JWT tokens with the `ES256`\nalgorithm [RFC7518](https:\/\/www.ietf.org\/rfc\/rfc7518.txt). This curve is\ndefined in [openssl](https:\/\/www.openssl.org\/) as the `prime256v1` curve."
+            "An RSA public key encoded in base64, and wrapped by\n`-----BEGIN PUBLIC KEY-----` and `-----END PUBLIC KEY-----`. This can be\nused to verify `RS256` signatures in JWT tokens ([RFC7518](\nhttps:\/\/www.ietf.org\/rfc\/rfc7518.txt)).",
+            "As RSA_PEM, but wrapped in an X.509v3 certificate ([RFC5280](\nhttps:\/\/www.ietf.org\/rfc\/rfc5280.txt)), encoded in base64, and wrapped by\n`-----BEGIN CERTIFICATE-----` and `-----END CERTIFICATE-----`.",
+            "Public key for the ECDSA algorithm using P-256 and SHA-256, encoded in\nbase64, and wrapped by `-----BEGIN PUBLIC KEY-----` and `-----END\nPUBLIC KEY-----`. This can be used to verify JWT tokens with the `ES256`\nalgorithm ([RFC7518](https:\/\/www.ietf.org\/rfc\/rfc7518.txt)). This curve is\ndefined in [OpenSSL](https:\/\/www.openssl.org\/) as the `prime256v1` curve.",
+            "As ES256_PEM, but wrapped in an X.509v3 certificate ([RFC5280](\nhttps:\/\/www.ietf.org\/rfc\/rfc5280.txt)), encoded in base64, and wrapped by\n`-----BEGIN CERTIFICATE-----` and `-----END CERTIFICATE-----`."
           ],
           "type": "string",
           "enum": [
             "UNSPECIFIED_PUBLIC_KEY_FORMAT",
+            "RSA_PEM",
             "RSA_X509_PEM",
-            "ES256_PEM"
+            "ES256_PEM",
+            "ES256_X509_PEM"
           ]
         },
         "key": {
@@ -341,37 +477,43 @@
     },
     "DeviceConfig": {
       "id": "DeviceConfig",
-      "description": "The device configuration and its metadata. Eventually delivered to devices.",
+      "description": "The device configuration. Eventually delivered to devices.",
       "type": "object",
       "properties": {
         "version": {
-          "description": "[Output only] The version of this update. The version number is assigned by\nthe server, and is always greater than zero after device creation. The\nversion must be zero on the `CreateDevice` request if a `config` is\nspecified; the response of `CreateDevice` will always have a value of one.",
+          "description": "[Output only] The version of this update. The version number is assigned by\nthe server, and is always greater than 0 after device creation. The\nversion must be 0 on the `CreateDevice` request if a `config` is\nspecified; the response of `CreateDevice` will always have a value of 1.",
           "type": "string",
           "format": "int64"
         },
         "cloudUpdateTime": {
-          "description": "[Output only] The time when this version state was updated in the Cloud IoT\nCore service. This timestamp is set by the server.",
+          "description": "[Output only] The time at which this configuration version was updated in\nCloud IoT Core. This timestamp is set by the server.",
           "type": "string",
           "format": "google-datetime"
         },
         "deviceAckTime": {
-          "description": "[Output only] The time when the Cloud IoT Core server received the\nacknowledgment from the device, indicating that the device has received\nthis configuration version. If this field is not present, the device has\nnot yet acknowledged that it received this version. Note that when sending\nthe config to the device, there may have been many config versions on the\nCloud IoT Core service while the device was disconnected; and on\nconnection, only the latest version is sent to the device. Some of the\nversions may never be sent to the device, and therefore are never\nacknowledged. This timestamp is set by the Cloud IoT Core service.",
+          "description": "[Output only] The time at which Cloud IoT Core received the\nacknowledgment from the device, indicating that the device has received\nthis configuration version. If this field is not present, the device has\nnot yet acknowledged that it received this version. Note that when\nthe config was sent to the device, many config versions may have been\navailable in Cloud IoT Core while the device was disconnected, and on\nconnection, only the latest version is sent to the device. Some\nversions may never be sent to the device, and therefore are never\nacknowledged. This timestamp is set by Cloud IoT Core.",
           "type": "string",
           "format": "google-datetime"
         },
-        "data": {
+        "binaryData": {
           "description": "The device configuration data.",
-          "$ref": "DeviceConfigData"
+          "type": "string",
+          "format": "byte"
         }
       }
     },
-    "DeviceConfigData": {
-      "id": "DeviceConfigData",
-      "description": "The data for a device configuration. Only binary data is currently supported.",
+    "DeviceState": {
+      "id": "DeviceState",
+      "description": "The device state, as reported by the device.",
       "type": "object",
       "properties": {
+        "updateTime": {
+          "description": "[Output only] The time at which this state version was updated in Cloud\nIoT Core.",
+          "type": "string",
+          "format": "google-datetime"
+        },
         "binaryData": {
-          "description": "The configuration sent to the device, as bytes.",
+          "description": "The device state data.",
           "type": "string",
           "format": "byte"
         }
@@ -405,9 +547,10 @@
           "type": "string",
           "format": "int64"
         },
-        "data": {
+        "binaryData": {
           "description": "The configuration data for the device.",
-          "$ref": "DeviceConfigData"
+          "type": "string",
+          "format": "byte"
         }
       }
     },
@@ -421,6 +564,20 @@
           "type": "array",
           "items": {
             "$ref": "DeviceConfig"
+          }
+        }
+      }
+    },
+    "ListDeviceStatesResponse": {
+      "id": "ListDeviceStatesResponse",
+      "description": "Response for `ListDeviceStates`.",
+      "type": "object",
+      "properties": {
+        "deviceStates": {
+          "description": "The last few device states. States are listed in descending order of server\nupdate time, starting from the most recent one.",
+          "type": "array",
+          "items": {
+            "$ref": "DeviceState"
           }
         }
       }
@@ -610,69 +767,6 @@
           }
         }
       }
-    },
-    "HttpPublishEventRequest": {
-      "id": "HttpPublishEventRequest",
-      "description": "Request for `PublishEvent`.",
-      "type": "object",
-      "properties": {
-        "binaryData": {
-          "description": "Payload data in binary format.",
-          "type": "string",
-          "format": "byte"
-        },
-        "subFolder": {
-          "description": "Optional subfolder for the telemetry event. This can be used to classify\ntypes of events, and is included in the Pub\/Sub message attributes.",
-          "type": "string"
-        }
-      }
-    },
-    "HttpPublishEventResponse": {
-      "id": "HttpPublishEventResponse",
-      "description": "Response for `PublishEvent`.",
-      "type": "object",
-      "properties": {
-      }
-    },
-    "HttpSetDeviceStateRequest": {
-      "id": "HttpSetDeviceStateRequest",
-      "description": "Request for `SetDeviceState`.",
-      "type": "object",
-      "properties": {
-        "state": {
-          "description": "The device state.",
-          "$ref": "HttpDeviceState"
-        }
-      }
-    },
-    "HttpDeviceState": {
-      "id": "HttpDeviceState",
-      "description": "The device state reported to Cloud IoT Core.",
-      "type": "object",
-      "properties": {
-        "binaryData": {
-          "description": "Data in binary format.",
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "HttpDeviceConfig": {
-      "id": "HttpDeviceConfig",
-      "description": "The device configuration obtained from Cloud IoT Core.",
-      "type": "object",
-      "properties": {
-        "binaryData": {
-          "description": "Data in binary format.",
-          "type": "string",
-          "format": "byte"
-        },
-        "version": {
-          "description": "The version of the configuration in Cloud IoT Core.",
-          "type": "string",
-          "format": "int64"
-        }
-      }
     }
   },
   "resources": {
@@ -684,8 +778,8 @@
               "methods": {
                 "create": {
                   "id": "cloudiot.projects.locations.registries.create",
-                  "path": "v1beta1/{+parent}/registries",
-                  "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/registries",
+                  "path": "v1/{+parent}/registries",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/registries",
                   "httpMethod": "POST",
                   "description": "Creates a device registry that contains devices.",
                   "parameters": {
@@ -713,8 +807,8 @@
                 },
                 "get": {
                   "id": "cloudiot.projects.locations.registries.get",
-                  "path": "v1beta1/{+name}",
-                  "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}",
+                  "path": "v1/{+name}",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}",
                   "httpMethod": "GET",
                   "description": "Gets a device registry configuration.",
                   "parameters": {
@@ -739,8 +833,8 @@
                 },
                 "patch": {
                   "id": "cloudiot.projects.locations.registries.patch",
-                  "path": "v1beta1/{+name}",
-                  "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}",
+                  "path": "v1/{+name}",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}",
                   "httpMethod": "PATCH",
                   "description": "Updates a device registry configuration.",
                   "parameters": {
@@ -752,7 +846,7 @@
                       "type": "string"
                     },
                     "updateMask": {
-                      "description": "Only updates the `device_registry` fields indicated by this mask.\nThe field mask must not be empty, and it must not contain fields that\nare immutable or only set by the server.\nMutable top-level fields: `event_notification_config` and `mqtt_config`",
+                      "description": "Only updates the `device_registry` fields indicated by this mask.\nThe field mask must not be empty, and it must not contain fields that\nare immutable or only set by the server.\nMutable top-level fields: `event_notification_config`, `mqtt_config`, and\n`state_notification_config`.",
                       "location": "query",
                       "type": "string",
                       "format": "google-fieldmask"
@@ -774,8 +868,8 @@
                 },
                 "delete": {
                   "id": "cloudiot.projects.locations.registries.delete",
-                  "path": "v1beta1/{+name}",
-                  "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}",
+                  "path": "v1/{+name}",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}",
                   "httpMethod": "DELETE",
                   "description": "Deletes a device registry configuration.",
                   "parameters": {
@@ -800,8 +894,8 @@
                 },
                 "list": {
                   "id": "cloudiot.projects.locations.registries.list",
-                  "path": "v1beta1/{+parent}/registries",
-                  "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/registries",
+                  "path": "v1/{+parent}/registries",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/registries",
                   "httpMethod": "GET",
                   "description": "Lists device registries.",
                   "parameters": {
@@ -837,8 +931,8 @@
                 },
                 "setIamPolicy": {
                   "id": "cloudiot.projects.locations.registries.setIamPolicy",
-                  "path": "v1beta1/{+resource}:setIamPolicy",
-                  "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}:setIamPolicy",
+                  "path": "v1/{+resource}:setIamPolicy",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}:setIamPolicy",
                   "httpMethod": "POST",
                   "description": "Sets the access control policy on the specified resource. Replaces any\nexisting policy.",
                   "parameters": {
@@ -866,8 +960,8 @@
                 },
                 "getIamPolicy": {
                   "id": "cloudiot.projects.locations.registries.getIamPolicy",
-                  "path": "v1beta1/{+resource}:getIamPolicy",
-                  "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}:getIamPolicy",
+                  "path": "v1/{+resource}:getIamPolicy",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}:getIamPolicy",
                   "httpMethod": "POST",
                   "description": "Gets the access control policy for a resource.\nReturns an empty policy if the resource exists and does not have a policy\nset.",
                   "parameters": {
@@ -895,8 +989,8 @@
                 },
                 "testIamPermissions": {
                   "id": "cloudiot.projects.locations.registries.testIamPermissions",
-                  "path": "v1beta1/{+resource}:testIamPermissions",
-                  "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}:testIamPermissions",
+                  "path": "v1/{+resource}:testIamPermissions",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}:testIamPermissions",
                   "httpMethod": "POST",
                   "description": "Returns permissions that a caller has on the specified resource.\nIf the resource does not exist, this will return an empty set of\npermissions, not a NOT_FOUND error.",
                   "parameters": {
@@ -929,8 +1023,8 @@
                   "methods": {
                     "create": {
                       "id": "cloudiot.projects.locations.registries.devices.create",
-                      "path": "v1beta1/{+parent}/devices",
-                      "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}/devices",
+                      "path": "v1/{+parent}/devices",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}/devices",
                       "httpMethod": "POST",
                       "description": "Creates a device in a device registry.",
                       "parameters": {
@@ -958,8 +1052,8 @@
                     },
                     "get": {
                       "id": "cloudiot.projects.locations.registries.devices.get",
-                      "path": "v1beta1/{+name}",
-                      "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}/devices/{devicesId}",
+                      "path": "v1/{+name}",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}/devices/{devicesId}",
                       "httpMethod": "GET",
                       "description": "Gets details about a device.",
                       "parameters": {
@@ -984,8 +1078,8 @@
                     },
                     "patch": {
                       "id": "cloudiot.projects.locations.registries.devices.patch",
-                      "path": "v1beta1/{+name}",
-                      "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}/devices/{devicesId}",
+                      "path": "v1/{+name}",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}/devices/{devicesId}",
                       "httpMethod": "PATCH",
                       "description": "Updates a device.",
                       "parameters": {
@@ -997,7 +1091,7 @@
                           "type": "string"
                         },
                         "updateMask": {
-                          "description": "Only updates the `device` fields indicated by this mask.\nThe field mask must not be empty, and it must not contain fields that\nare immutable or only set by the server.\nMutable top-level fields: `credentials` and `enabled_state`",
+                          "description": "Only updates the `device` fields indicated by this mask.\nThe field mask must not be empty, and it must not contain fields that\nare immutable or only set by the server.\nMutable top-level fields: `credentials`, `enabled_state`, and `metadata`",
                           "location": "query",
                           "type": "string",
                           "format": "google-fieldmask"
@@ -1019,8 +1113,8 @@
                     },
                     "delete": {
                       "id": "cloudiot.projects.locations.registries.devices.delete",
-                      "path": "v1beta1/{+name}",
-                      "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}/devices/{devicesId}",
+                      "path": "v1/{+name}",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}/devices/{devicesId}",
                       "httpMethod": "DELETE",
                       "description": "Deletes a device.",
                       "parameters": {
@@ -1045,8 +1139,8 @@
                     },
                     "list": {
                       "id": "cloudiot.projects.locations.registries.devices.list",
-                      "path": "v1beta1/{+parent}/devices",
-                      "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}/devices",
+                      "path": "v1/{+parent}/devices",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}/devices",
                       "httpMethod": "GET",
                       "description": "List devices in a device registry.",
                       "parameters": {
@@ -1101,10 +1195,10 @@
                     },
                     "modifyCloudToDeviceConfig": {
                       "id": "cloudiot.projects.locations.registries.devices.modifyCloudToDeviceConfig",
-                      "path": "v1beta1/{+name}:modifyCloudToDeviceConfig",
-                      "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}/devices/{devicesId}:modifyCloudToDeviceConfig",
+                      "path": "v1/{+name}:modifyCloudToDeviceConfig",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}/devices/{devicesId}:modifyCloudToDeviceConfig",
                       "httpMethod": "POST",
-                      "description": "Modifies the configuration for the device, which is eventually sent from\nthe Cloud IoT servers. Returns the modified configuration version and its\nmeta-data.",
+                      "description": "Modifies the configuration for the device, which is eventually sent from\nthe Cloud IoT Core servers. Returns the modified configuration version and\nits metadata.",
                       "parameters": {
                         "name": {
                           "description": "The name of the device. For example,\n`projects\/p0\/locations\/us-central1\/registries\/registry0\/devices\/device0` or\n`projects\/p0\/locations\/us-central1\/registries\/registry0\/devices\/{num_id}`.",
@@ -1127,84 +1221,6 @@
                         "https://www.googleapis.com/auth/cloud-platform",
                         "https://www.googleapis.com/auth/cloudiot"
                       ]
-                    },
-                    "publishEvent": {
-                      "id": "cloudiot.projects.locations.registries.devices.publishEvent",
-                      "path": "v1beta1/{+name}:publishEvent",
-                      "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}/devices/{devicesId}:publishEvent",
-                      "httpMethod": "POST",
-                      "description": "Publishes a telemetry event for a device.",
-                      "parameters": {
-                        "name": {
-                          "description": "The name of the device. For example,\n`projects\/p0\/locations\/us-central1\/registries\/registry0\/devices\/device0`.",
-                          "location": "path",
-                          "required": true,
-                          "pattern": "^projects\/[^\/]+\/locations\/[^\/]+\/registries\/[^\/]+\/devices\/[^\/]+$",
-                          "type": "string"
-                        }
-                      },
-                      "parameterOrder": [
-                        "name"
-                      ],
-                      "request": {
-                        "$ref": "HttpPublishEventRequest"
-                      },
-                      "response": {
-                        "$ref": "HttpPublishEventResponse"
-                      }
-                    },
-                    "setState": {
-                      "id": "cloudiot.projects.locations.registries.devices.setState",
-                      "path": "v1beta1/{+name}:setState",
-                      "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}/devices/{devicesId}:setState",
-                      "httpMethod": "POST",
-                      "description": "Sets the state of a device.",
-                      "parameters": {
-                        "name": {
-                          "description": "The name of the device. For example,\n`projects\/p0\/locations\/us-central1\/registries\/registry0\/devices\/device0`.",
-                          "location": "path",
-                          "required": true,
-                          "pattern": "^projects\/[^\/]+\/locations\/[^\/]+\/registries\/[^\/]+\/devices\/[^\/]+$",
-                          "type": "string"
-                        }
-                      },
-                      "parameterOrder": [
-                        "name"
-                      ],
-                      "request": {
-                        "$ref": "HttpSetDeviceStateRequest"
-                      },
-                      "response": {
-                        "$ref": "Empty"
-                      }
-                    },
-                    "getConfig": {
-                      "id": "cloudiot.projects.locations.registries.devices.getConfig",
-                      "path": "v1beta1/{+name}/config",
-                      "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}/devices/{devicesId}/config",
-                      "httpMethod": "GET",
-                      "description": "Gets the configuration of a device.",
-                      "parameters": {
-                        "name": {
-                          "description": "The name of the device. For example,\n`projects\/p0\/locations\/us-central1\/registries\/registry0\/devices\/device0`.",
-                          "location": "path",
-                          "required": true,
-                          "pattern": "^projects\/[^\/]+\/locations\/[^\/]+\/registries\/[^\/]+\/devices\/[^\/]+$",
-                          "type": "string"
-                        },
-                        "localVersion": {
-                          "description": "If zero, returns the current device configuration from Cloud IoT Core.\nIf nonzero, specifies the local version of the configuration on the device.\nThe server returns config data only if a higher (newer) version is\navailable from Cloud IoT Core.\nIf this value is higher than the latest version available in Cloud IoT\nCore, returns an `OUT_OF_RANGE` error.",
-                          "location": "query",
-                          "type": "string",
-                          "format": "int64"
-                        }
-                      },
-                      "parameterOrder": [
-                        "name"
-                      ],
-                      "response": {
-                        "$ref": "HttpDeviceConfig"
-                      }
                     }
                   }
                   ,
@@ -1213,8 +1229,8 @@
                       "methods": {
                         "list": {
                           "id": "cloudiot.projects.locations.registries.devices.configVersions.list",
-                          "path": "v1beta1/{+name}/configVersions",
-                          "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}/devices/{devicesId}/configVersions",
+                          "path": "v1/{+name}/configVersions",
+                          "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}/devices/{devicesId}/configVersions",
                           "httpMethod": "GET",
                           "description": "Lists the last few versions of the device configuration in descending\norder (i.e.: newest first).",
                           "parameters": {
@@ -1237,6 +1253,42 @@
                           ],
                           "response": {
                             "$ref": "ListDeviceConfigVersionsResponse"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform",
+                            "https://www.googleapis.com/auth/cloudiot"
+                          ]
+                        }
+                      }
+                    },
+                    "states": {
+                      "methods": {
+                        "list": {
+                          "id": "cloudiot.projects.locations.registries.devices.states.list",
+                          "path": "v1/{+name}/states",
+                          "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}/devices/{devicesId}/states",
+                          "httpMethod": "GET",
+                          "description": "Lists the last few versions of the device state in descending order (i.e.:\nnewest first).",
+                          "parameters": {
+                            "name": {
+                              "description": "The name of the device. For example,\n`projects\/p0\/locations\/us-central1\/registries\/registry0\/devices\/device0` or\n`projects\/p0\/locations\/us-central1\/registries\/registry0\/devices\/{num_id}`.",
+                              "location": "path",
+                              "required": true,
+                              "pattern": "^projects\/[^\/]+\/locations\/[^\/]+\/registries\/[^\/]+\/devices\/[^\/]+$",
+                              "type": "string"
+                            },
+                            "numStates": {
+                              "description": "The number of states to list. States are listed in descending order of\nupdate time. The maximum number of states retained is 10. If this\nvalue is zero, it will return all the states available.",
+                              "location": "query",
+                              "type": "integer",
+                              "format": "int32"
+                            }
+                          },
+                          "parameterOrder": [
+                            "name"
+                          ],
+                          "response": {
+                            "$ref": "ListDeviceStatesResponse"
                           },
                           "scopes": [
                             "https://www.googleapis.com/auth/cloud-platform",

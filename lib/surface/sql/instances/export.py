@@ -85,7 +85,7 @@ class Export(base.Command):
     Raises:
       HttpException: A http error response was received while executing api
           request.
-      ToolException: An error other than http error occured while executing the
+      ToolException: An error other than http error occurred while executing the
           command.
     """
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)

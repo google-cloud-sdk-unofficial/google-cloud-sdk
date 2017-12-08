@@ -161,7 +161,7 @@ class Connect(base.Command):
     Raises:
       HttpException: An http error response was received while executing api
           request.
-      ToolException: An error other than http error occured while executing the
+      ToolException: An error other than http error occurred while executing the
           command.
     """
     # TODO(b/62055495): Replace ToolExceptions with specific exceptions.

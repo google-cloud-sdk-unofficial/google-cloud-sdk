@@ -1,0 +1,54 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Get transcripts of longer audio from an audio file.
+    DESCRIPTION: |
+      Get a transcript of audio up to 80 minutes in length. If the audio is
+      under 60 seconds, you may also use `{parent_command} recognize` to
+      analyze it.
+
+      To block the command from completing until analysis is finished, run:
+
+        $ {command} AUDIO_FILE --language LANGUAGE --sample-rate SAMPLE_RATE
+
+      You can also receive an operation as the result of the command by running:
+
+        $ {command} AUDIO_FILE --language LANGUAGE --sample-rate SAMPLE_RATE --async
+
+      This will return information about an operation. To get information about the
+      operation, run:
+
+        $ {parent_command} operations describe OPERATION_ID
+
+      To poll the operation until it's complete, run:
+
+        $ {parent_command} operations wait OPERATION_ID
+
+      {auth_hints}
+    auth_hints: !COMMON help_text.auth_hints
+
+  request:
+    collection: speech.speech
+    method: longrunningrecognize
+    api_version: v1
+
+  async:
+    collection: speech.operations
+    resource_get_method_params:
+      name: operationsId
+    extract_resource_result: False
+    result_attribute: response
+
+  arguments:
+    params:
+      - _COMMON_args
+      - api_field: config.sampleRateHertz
+        arg_name: sample-rate
+        required: True
+        help_text: |
+          The sample rate in Hertz. For best results, set the sampling rate of
+          the audio source to 16000 Hz. If that's not possible, use the native
+          sample rate of'the audio source (instead of re-sampling).
+
+  output:
+    format: json

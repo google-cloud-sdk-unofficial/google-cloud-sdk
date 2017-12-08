@@ -20,29 +20,31 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.command_lib.util import labels_util
 
+DETAILED_HELP = {
+    'DESCRIPTION': """\
+        *{command}* updates labels and requested CPU Platform for a Google
+        Compute
+        Engine virtual machine.  For example:
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
-class Update(base.UpdateCommand):
-  r"""Update a Google Compute Engine virtual machine.
+          $ {command} example-instance --zone us-central1-a --update-labels=k0=value1,k1=value2 --remove-labels=k3
 
-  *{command}* updates labels and requested CPU Platform for a Google Compute
-  Engine virtual machine.  For example:
+        will add/update labels ``k0'' and ``k1'' and remove labels with key
+        ``k3''.
 
-    $ {command} example-instance --zone us-central1-a \
-      --update-labels=k0=value1,k1=value2 --remove-labels=k3
+        Labels can be used to identify the instance and to filter them as in
 
-  will add/update labels ``k0'' and ``k1'' and remove labels with key ``k3''.
+          $ {parent_command} list --filter='labels.k1:value2'
 
-  Labels can be used to identify the instance and to filter them as in
+        To list existing labels
 
-    $ {parent_command} list --filter='labels.k1:value2'
-
-  To list existing labels
-
-    $ {parent_command} describe example-instance --format='default(labels)'
-
+          $ {parent_command} describe example-instance --format='default(labels)'
   """
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class Update(base.UpdateCommand):
+  """Update a Google Compute Engine virtual machine."""
 
   @staticmethod
   def Args(parser):
@@ -66,57 +68,108 @@ class Update(base.UpdateCommand):
 
     labels_operation_ref = None
     min_cpu_platform_operation_ref = None
+    deletion_protection_operation_ref = None
 
     if update_labels or remove_labels:
       instance = client.instances.Get(
           messages.ComputeInstancesGetRequest(**instance_ref.AsDict()))
       result = instance
-
-      replacement = labels_util.UpdateLabels(
-          instance.labels,
-          messages.InstancesSetLabelsRequest.LabelsValue,
-          update_labels=update_labels,
-          remove_labels=remove_labels)
-
-      if replacement:
-        request = messages.ComputeInstancesSetLabelsRequest(
-            project=instance_ref.project,
-            instance=instance_ref.instance,
-            zone=instance_ref.zone,
-            instancesSetLabelsRequest=
-            messages.InstancesSetLabelsRequest(
-                labelFingerprint=instance.labelFingerprint,
-                labels=replacement))
-
-        operation = client.instances.SetLabels(request)
-        labels_operation_ref = holder.resources.Parse(
-            operation.selfLink, collection='compute.zoneOperations')
-
+      labels_operation_ref = self._GetLabelsOperationRef(
+          update_labels, remove_labels, instance, instance_ref, holder)
     if args.min_cpu_platform is not None:
-      embedded_request = messages.InstancesSetMinCpuPlatformRequest(
-          minCpuPlatform=args.min_cpu_platform or None)
-      request = messages.ComputeInstancesSetMinCpuPlatformRequest(
-          instance=instance_ref.instance,
-          project=instance_ref.project,
-          instancesSetMinCpuPlatformRequest=embedded_request,
-          zone=instance_ref.zone)
-
-      operation = client.instances.SetMinCpuPlatform(request)
-
-      min_cpu_platform_operation_ref = holder.resources.Parse(
-          operation.selfLink, collection='compute.zoneOperations')
+      min_cpu_platform_operation_ref = self._GetMinCpuPlatformOperationRef(
+          args.min_cpu_platform, instance_ref, holder)
+    deletion_protection = getattr(args, 'deletion_protection', None)
+    if deletion_protection is not None:
+      deletion_protection_operation_ref = (
+          self._GetDeletionProtectionOperationRef(
+              args.deletion_protection, instance_ref, holder))
 
     operation_poller = poller.Poller(client.instances)
-    if labels_operation_ref:
-      result = waiter.WaitFor(
-          operation_poller, labels_operation_ref,
-          'Updating labels of instance [{0}]'.format(
-              instance_ref.Name()))
-
-    if min_cpu_platform_operation_ref:
-      result = waiter.WaitFor(
-          operation_poller, min_cpu_platform_operation_ref,
-          'Changing minimum CPU platform of instance [{0}]'.format(
-              instance_ref.Name()))
-
+    result = self._WaitForResult(
+        operation_poller, labels_operation_ref,
+        'Updating labels of instance [{0}]', instance_ref.Name()) or result
+    result = self._WaitForResult(
+        operation_poller, min_cpu_platform_operation_ref,
+        'Changing minimum CPU platform of instance [{0}]',
+        instance_ref.Name()) or result
+    result = self._WaitForResult(
+        operation_poller, deletion_protection_operation_ref,
+        'Setting deletion protection of instance [{0}] to [{1}]',
+        instance_ref.Name(), deletion_protection) or result
     return result
+
+  def _GetLabelsOperationRef(self, update_labels, remove_labels, instance,
+                             instance_ref, holder):
+    client = holder.client.apitools_client
+    messages = holder.client.messages
+
+    replacement = labels_util.UpdateLabels(
+        instance.labels,
+        messages.InstancesSetLabelsRequest.LabelsValue,
+        update_labels=update_labels,
+        remove_labels=remove_labels)
+
+    if replacement:
+      request = messages.ComputeInstancesSetLabelsRequest(
+          project=instance_ref.project,
+          instance=instance_ref.instance,
+          zone=instance_ref.zone,
+          instancesSetLabelsRequest=
+          messages.InstancesSetLabelsRequest(
+              labelFingerprint=instance.labelFingerprint,
+              labels=replacement))
+
+      operation = client.instances.SetLabels(request)
+      return holder.resources.Parse(
+          operation.selfLink, collection='compute.zoneOperations')
+
+  def _GetMinCpuPlatformOperationRef(self, min_cpu_platform, instance_ref,
+                                     holder):
+    client = holder.client.apitools_client
+    messages = holder.client.messages
+    embedded_request = messages.InstancesSetMinCpuPlatformRequest(
+        minCpuPlatform=min_cpu_platform or None)
+    request = messages.ComputeInstancesSetMinCpuPlatformRequest(
+        instance=instance_ref.instance,
+        project=instance_ref.project,
+        instancesSetMinCpuPlatformRequest=embedded_request,
+        zone=instance_ref.zone)
+
+    operation = client.instances.SetMinCpuPlatform(request)
+    return holder.resources.Parse(
+        operation.selfLink, collection='compute.zoneOperations')
+
+  def _WaitForResult(self, operation_poller, operation_ref, message, *args):
+    if operation_ref:
+      return waiter.WaitFor(
+          operation_poller, operation_ref, message.format(*args))
+    return None
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update a Google Compute Engine virtual machine."""
+
+  @staticmethod
+  def Args(parser):
+    flags.INSTANCE_ARG.AddArgument(parser, operation_type='update')
+    labels_util.AddUpdateLabelsFlags(parser)
+    flags.AddMinCpuPlatformArgs(parser, UpdateAlpha.ReleaseTrack())
+    flags.AddDeletionProtectionFlag(parser, use_default_value=False)
+
+  def _GetDeletionProtectionOperationRef(self, deletion_protection,
+                                         instance_ref, holder):
+    client = holder.client.apitools_client
+    messages = holder.client.messages
+    request = messages.ComputeInstancesSetDeletionProtectionRequest(
+        deletionProtection=deletion_protection,
+        project=instance_ref.project,
+        resource=instance_ref.instance,
+        zone=instance_ref.zone)
+
+    operation = client.instances.SetDeletionProtection(request)
+    return holder.resources.Parse(
+        operation.selfLink, collection='compute.zoneOperations')
+
+Update.detailed_help = DETAILED_HELP

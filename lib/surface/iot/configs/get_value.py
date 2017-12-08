@@ -37,7 +37,7 @@ class GetValue(base.Command):
 
     device = client.Get(device_ref)
     try:
-      data = device.config.data.binaryData
+      data = device.config.binaryData
     except AttributeError:
       # This shouldn't happen, as the API puts in a config for each device.
       raise util.BadDeviceError(

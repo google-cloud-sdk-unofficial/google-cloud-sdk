@@ -14,15 +14,13 @@
 
 """Submit a Spark SQL job to a cluster."""
 
-from apitools.base.py import encoding
-
-from googlecloudsdk.api_lib.dataproc import base_classes
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dataproc.jobs import spark_sql
+from googlecloudsdk.command_lib.dataproc.jobs import submitter
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class SparkSql(base_classes.JobSubmitter):
+class SparkSql(spark_sql.SparkSqlBase, submitter.JobSubmitter):
   """Submit a Spark SQL job to a cluster.
 
   Submit a Spark SQL job to a cluster.
@@ -40,24 +38,19 @@ class SparkSql(base_classes.JobSubmitter):
 
   @staticmethod
   def Args(parser):
-    super(SparkSql, SparkSql).Args(parser)
-    SparkSqlBase.Args(parser)
+    spark_sql.SparkSqlBase.Args(parser)
+    submitter.JobSubmitter.Args(parser)
 
   def ConfigureJob(self, messages, job, args):
-    SparkSqlBase.ConfigureJob(
-        messages,
-        job,
-        self.BuildLoggingConfig(messages, args.driver_log_levels),
-        self.files_by_type,
-        args)
-    super(SparkSql, self).ConfigureJob(messages, job, args)
-
-  def PopulateFilesByType(self, args):
-    self.files_by_type.update(SparkSqlBase.GetFilesByType(args))
+    spark_sql.SparkSqlBase.ConfigureJob(messages, job, self.files_by_type,
+                                        self.BuildLoggingConfig(
+                                            messages, args.driver_log_levels),
+                                        args)
+    submitter.JobSubmitter.ConfigureJob(messages, job, args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class SparkSqlBeta(base_classes.JobSubmitterBeta):
+class SparkSqlBeta(spark_sql.SparkSqlBase, submitter.JobSubmitterBeta):
   """Submit a Spark SQL job to a cluster.
 
   Submit a Spark SQL job to a cluster.
@@ -75,86 +68,12 @@ class SparkSqlBeta(base_classes.JobSubmitterBeta):
 
   @staticmethod
   def Args(parser):
-    super(SparkSqlBeta, SparkSqlBeta).Args(parser)
-    SparkSqlBase.Args(parser)
+    spark_sql.SparkSqlBase.Args(parser)
+    submitter.JobSubmitterBeta.Args(parser)
 
   def ConfigureJob(self, messages, job, args):
-    SparkSqlBase.ConfigureJob(
-        messages,
-        job,
-        self.BuildLoggingConfig(messages, args.driver_log_levels),
-        self.files_by_type,
-        args)
-    super(SparkSqlBeta, self).ConfigureJob(messages, job, args)
-
-  def PopulateFilesByType(self, args):
-    self.files_by_type.update(SparkSqlBase.GetFilesByType(args))
-
-
-class SparkSqlBase(object):
-  """Submit a Spark SQL job to a cluster."""
-
-  @staticmethod
-  def Args(parser):
-    """Parses command-line arguments specific to submitting SparkSql jobs."""
-    driver = parser.add_mutually_exclusive_group(required=True)
-    driver.add_argument(
-        '--execute', '-e',
-        metavar='QUERY',
-        dest='queries',
-        action='append',
-        default=[],
-        help='A Spark SQL query to execute as part of the job.')
-    driver.add_argument(
-        '--file', '-f',
-        help=('HCFS URI of file containing Spark SQL script to execute as '
-              'the job.'))
-    parser.add_argument(
-        '--jars',
-        type=arg_parsers.ArgList(),
-        metavar='JAR',
-        default=[],
-        help=('Comma separated list of jar files to be provided to the '
-              'executor and driver classpaths. May contain UDFs.'))
-    parser.add_argument(
-        '--params',
-        type=arg_parsers.ArgDict(),
-        metavar='PARAM=VALUE',
-        help='A list of key value pairs to set variables in the Hive queries.')
-    parser.add_argument(
-        '--properties',
-        type=arg_parsers.ArgDict(),
-        metavar='PROPERTY=VALUE',
-        help='A list of key value pairs to configure Hive.')
-    parser.add_argument(
-        '--driver-log-levels',
-        type=arg_parsers.ArgDict(),
-        metavar='PACKAGE=LEVEL',
-        help=('A list of package to log4j log level pairs to configure driver '
-              'logging. For example: root=FATAL,com.example=INFO'))
-
-  @staticmethod
-  def GetFilesByType(args):
-    return {
-        'jars': args.jars,
-        'file': args.file}
-
-  @staticmethod
-  def ConfigureJob(messages, job, log_config, files_by_type, args):
-    """Populates the sparkSqlJob member of the given job."""
-
-    spark_sql_job = messages.SparkSqlJob(
-        jarFileUris=files_by_type['jars'],
-        queryFileUri=files_by_type['file'],
-        loggingConfig=log_config)
-
-    if args.queries:
-      spark_sql_job.queryList = messages.QueryList(queries=args.queries)
-    if args.params:
-      spark_sql_job.scriptVariables = encoding.DictToMessage(
-          args.params, messages.SparkSqlJob.ScriptVariablesValue)
-    if args.properties:
-      spark_sql_job.properties = encoding.DictToMessage(
-          args.properties, messages.SparkSqlJob.PropertiesValue)
-
-    job.sparkSqlJob = spark_sql_job
+    spark_sql.SparkSqlBase.ConfigureJob(messages, job, self.files_by_type,
+                                        self.BuildLoggingConfig(
+                                            messages, args.driver_log_levels),
+                                        args)
+    submitter.JobSubmitterBeta.ConfigureJob(messages, job, args)

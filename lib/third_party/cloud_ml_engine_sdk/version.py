@@ -26,8 +26,8 @@ tf_version = 'tensorflow==1.0.0'
 
 required_install_packages = [
     'oauth2client == 2.2.0',
-    'six >= 1.10.0, < 2.0',
-    'apache-beam[gcp] >= 2.0.0',  # This should be pinned before release.
+    'six == 1.10.0',
+    'apache-beam[gcp] == 2.0.0',  # This should be pinned before release.
     'google-cloud-logging >= 0.23.0, < 1.0',
     'bs4 >= 0.0.1, < 1.0',
     'numpy >= 1.10.4',  # Don't pin numpy, as it requires a recompile.

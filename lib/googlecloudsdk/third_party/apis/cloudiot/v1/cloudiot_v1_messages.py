@@ -1,4 +1,4 @@
-"""Generated message classes for cloudiot version v1beta1.
+"""Generated message classes for cloudiot version v1.
 
 Registers and manages IoT (Internet of Things) devices that connect to the
 Google Cloud Platform.
@@ -183,24 +183,6 @@ class CloudiotProjectsLocationsRegistriesDevicesDeleteRequest(_messages.Message)
   name = _messages.StringField(1, required=True)
 
 
-class CloudiotProjectsLocationsRegistriesDevicesGetConfigRequest(_messages.Message):
-  """A CloudiotProjectsLocationsRegistriesDevicesGetConfigRequest object.
-
-  Fields:
-    localVersion: If zero, returns the current device configuration from Cloud
-      IoT Core. If nonzero, specifies the local version of the configuration
-      on the device. The server returns config data only if a higher (newer)
-      version is available from Cloud IoT Core. If this value is higher than
-      the latest version available in Cloud IoT Core, returns an
-      `OUT_OF_RANGE` error.
-    name: The name of the device. For example, `projects/p0/locations/us-
-      central1/registries/registry0/devices/device0`.
-  """
-
-  localVersion = _messages.IntegerField(1)
-  name = _messages.StringField(2, required=True)
-
-
 class CloudiotProjectsLocationsRegistriesDevicesGetRequest(_messages.Message):
   """A CloudiotProjectsLocationsRegistriesDevicesGetRequest object.
 
@@ -274,7 +256,7 @@ class CloudiotProjectsLocationsRegistriesDevicesPatchRequest(_messages.Message):
     updateMask: Only updates the `device` fields indicated by this mask. The
       field mask must not be empty, and it must not contain fields that are
       immutable or only set by the server. Mutable top-level fields:
-      `credentials` and `enabled_state`
+      `credentials`, `enabled_state`, and `metadata`
   """
 
   device = _messages.MessageField('Device', 1)
@@ -282,32 +264,20 @@ class CloudiotProjectsLocationsRegistriesDevicesPatchRequest(_messages.Message):
   updateMask = _messages.StringField(3)
 
 
-class CloudiotProjectsLocationsRegistriesDevicesPublishEventRequest(_messages.Message):
-  """A CloudiotProjectsLocationsRegistriesDevicesPublishEventRequest object.
+class CloudiotProjectsLocationsRegistriesDevicesStatesListRequest(_messages.Message):
+  """A CloudiotProjectsLocationsRegistriesDevicesStatesListRequest object.
 
   Fields:
-    httpPublishEventRequest: A HttpPublishEventRequest resource to be passed
-      as the request body.
     name: The name of the device. For example, `projects/p0/locations/us-
-      central1/registries/registry0/devices/device0`.
+      central1/registries/registry0/devices/device0` or `projects/p0/locations
+      /us-central1/registries/registry0/devices/{num_id}`.
+    numStates: The number of states to list. States are listed in descending
+      order of update time. The maximum number of states retained is 10. If
+      this value is zero, it will return all the states available.
   """
 
-  httpPublishEventRequest = _messages.MessageField('HttpPublishEventRequest', 1)
-  name = _messages.StringField(2, required=True)
-
-
-class CloudiotProjectsLocationsRegistriesDevicesSetStateRequest(_messages.Message):
-  """A CloudiotProjectsLocationsRegistriesDevicesSetStateRequest object.
-
-  Fields:
-    httpSetDeviceStateRequest: A HttpSetDeviceStateRequest resource to be
-      passed as the request body.
-    name: The name of the device. For example, `projects/p0/locations/us-
-      central1/registries/registry0/devices/device0`.
-  """
-
-  httpSetDeviceStateRequest = _messages.MessageField('HttpSetDeviceStateRequest', 1)
-  name = _messages.StringField(2, required=True)
+  name = _messages.StringField(1, required=True)
+  numStates = _messages.IntegerField(2, variant=_messages.Variant.INT32)
 
 
 class CloudiotProjectsLocationsRegistriesGetIamPolicyRequest(_messages.Message):
@@ -367,7 +337,8 @@ class CloudiotProjectsLocationsRegistriesPatchRequest(_messages.Message):
     updateMask: Only updates the `device_registry` fields indicated by this
       mask. The field mask must not be empty, and it must not contain fields
       that are immutable or only set by the server. Mutable top-level fields:
-      `event_notification_config` and `mqtt_config`
+      `event_notification_config`, `mqtt_config`, and
+      `state_notification_config`.
   """
 
   deviceRegistry = _messages.MessageField('DeviceRegistry', 1)
@@ -408,44 +379,63 @@ class CloudiotProjectsLocationsRegistriesTestIamPermissionsRequest(_messages.Mes
 class Device(_messages.Message):
   """The device resource.
 
-  Enums:
-    EnabledStateValueValuesEnum: If a device is disabled, communication from
-      it will be blocked. Can be used to temporarily prevent the device from
-      connecting if, for example, the sensor is generating bad data and needs
-      maintenance.
+  Messages:
+    MetadataValue: The metadata key-value pairs assigned to the device. This
+      metadata is not interpreted or indexed by Cloud IoT Core. It can be used
+      to add contextual information for the device.  Keys must conform to the
+      regular expression [a-zA-Z0-9-_]+ and be less than 128 bytes in length.
+      Values are free-form strings. Each value must be less than or equal to
+      32 KB in size.  The total size of all keys and values must be less than
+      256 KB, and the maximum number of key-value pairs is 500.
 
   Fields:
+    blocked: If a device is blocked, connections or requests from this device
+      will fail. Can be used to temporarily prevent the device from connecting
+      if, for example, the sensor is generating bad data and needs
+      maintenance.
     config: The most recent device configuration, which is eventually sent
-      from the Cloud IoT Core service to the device. If not present on
-      creation, the configuration will be initialized with an empty payload
-      and version value of `1`. To update this field after creation, use the
+      from Cloud IoT Core to the device. If not present on creation, the
+      configuration will be initialized with an empty payload and version
+      value of `1`. To update this field after creation, use the
       `DeviceManager.ModifyCloudToDeviceConfig` method.
     credentials: The credentials used to authenticate this device. To allow
       credential rotation without interruption, multiple device credentials
       can be bound to this device. No more than 3 credentials can be bound to
-      a single device at a time.
-    enabledState: If a device is disabled, communication from it will be
-      blocked. Can be used to temporarily prevent the device from connecting
-      if, for example, the sensor is generating bad data and needs
-      maintenance.
+      a single device at a time. When new credentials are added to a device,
+      they are verified against the registry credentials. For details, see the
+      description of the `DeviceRegistry.credentials` field.
     id: The user-defined device identifier. The device ID must be unique
       within a device registry.
     lastConfigAckTime: [Output only] The last time a cloud-to-device config
-      version acknowledgment was received from the device.
-    lastErrorStatus: [Output only] The error message of the last error, e.g.,
-      failed to publish to Cloud Pub/Sub. 'last_error_time' is the timestamp
-      of this field. If no errors are present, this will have an empty message
-      (whose status code is 0 == OK), otherwise this field is expected to have
-      a not-OK status code.
-    lastErrorTime: [Output only] The last time an error happened, e.g., failed
-      to publish to Cloud Pub/Sub. This field is the timestamp of
+      version acknowledgment was received from the device. This field is only
+      for configurations sent through MQTT.
+    lastConfigSendTime: [Output only] The last time a cloud-to-device config
+      version was sent to the device.
+    lastErrorStatus: [Output only] The error message of the most recent error,
+      such as a failure to publish to Cloud Pub/Sub. 'last_error_time' is the
+      timestamp of this field. If no errors have occurred, this field has an
+      empty message and the status code 0 == OK. Otherwise, this field is
+      expected to have a status code other than OK.
+    lastErrorTime: [Output only] The time the most recent error occurred, such
+      as a failure to publish to Cloud Pub/Sub. This field is the timestamp of
       'last_error_status'.
-    lastEventTime: [Output only] The last time an event was received.
+    lastEventTime: [Output only] The last time a telemetry event was received.
       Timestamps are periodically collected and written to storage; they may
       be stale by a few minutes.
     lastHeartbeatTime: [Output only] The last time a heartbeat was received.
       Timestamps are periodically collected and written to storage; they may
+      be stale by a few minutes. This field is only for devices connecting
+      through MQTT.
+    lastStateTime: [Output only] The last time a state event was received.
+      Timestamps are periodically collected and written to storage; they may
       be stale by a few minutes.
+    metadata: The metadata key-value pairs assigned to the device. This
+      metadata is not interpreted or indexed by Cloud IoT Core. It can be used
+      to add contextual information for the device.  Keys must conform to the
+      regular expression [a-zA-Z0-9-_]+ and be less than 128 bytes in length.
+      Values are free-form strings. Each value must be less than or equal to
+      32 KB in size.  The total size of all keys and values must be less than
+      256 KB, and the maximum number of key-value pairs is 500.
     name: The resource path name. For example, `projects/p1/locations/us-
       central1/registries/registry0/devices/dev0` or `projects/p1/locations
       /us-central1/registries/registry0/devices/{num_id}`. When `name` is
@@ -454,81 +444,85 @@ class Device(_messages.Message):
     numId: [Output only] A server-defined unique numeric ID for the device.
       This is a more compact way to identify devices, and it is globally
       unique.
+    state: [Output only] The state most recently received from the device. If
+      no state has been reported, this field is not present.
   """
 
-  class EnabledStateValueValuesEnum(_messages.Enum):
-    """If a device is disabled, communication from it will be blocked. Can be
-    used to temporarily prevent the device from connecting if, for example,
-    the sensor is generating bad data and needs maintenance.
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetadataValue(_messages.Message):
+    """The metadata key-value pairs assigned to the device. This metadata is
+    not interpreted or indexed by Cloud IoT Core. It can be used to add
+    contextual information for the device.  Keys must conform to the regular
+    expression [a-zA-Z0-9-_]+ and be less than 128 bytes in length.  Values
+    are free-form strings. Each value must be less than or equal to 32 KB in
+    size.  The total size of all keys and values must be less than 256 KB, and
+    the maximum number of key-value pairs is 500.
 
-    Values:
-      UNSPECIFIED_ENABLED_STATE: No enabled state specified. If not specified,
-        defaults to enabled (communication to Cloud IoT Core allowed).
-      DEVICE_ENABLED: Enables a device. By default, devices are enabled,
-        allowing communication from the device to Cloud IoT Core. When a
-        device is disabled, it is blocked from communicating with Cloud IoT
-        Core.
-      DEVICE_DISABLED: Disables a device, blocking all communication from it
-        to Cloud IoT Core.
+    Messages:
+      AdditionalProperty: An additional property for a MetadataValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type MetadataValue
     """
-    UNSPECIFIED_ENABLED_STATE = 0
-    DEVICE_ENABLED = 1
-    DEVICE_DISABLED = 2
 
-  config = _messages.MessageField('DeviceConfig', 1)
-  credentials = _messages.MessageField('DeviceCredential', 2, repeated=True)
-  enabledState = _messages.EnumField('EnabledStateValueValuesEnum', 3)
+    class AdditionalProperty(_messages.Message):
+      """An additional property for a MetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  blocked = _messages.BooleanField(1)
+  config = _messages.MessageField('DeviceConfig', 2)
+  credentials = _messages.MessageField('DeviceCredential', 3, repeated=True)
   id = _messages.StringField(4)
   lastConfigAckTime = _messages.StringField(5)
-  lastErrorStatus = _messages.MessageField('Status', 6)
-  lastErrorTime = _messages.StringField(7)
-  lastEventTime = _messages.StringField(8)
-  lastHeartbeatTime = _messages.StringField(9)
-  name = _messages.StringField(10)
-  numId = _messages.IntegerField(11, variant=_messages.Variant.UINT64)
+  lastConfigSendTime = _messages.StringField(6)
+  lastErrorStatus = _messages.MessageField('Status', 7)
+  lastErrorTime = _messages.StringField(8)
+  lastEventTime = _messages.StringField(9)
+  lastHeartbeatTime = _messages.StringField(10)
+  lastStateTime = _messages.StringField(11)
+  metadata = _messages.MessageField('MetadataValue', 12)
+  name = _messages.StringField(13)
+  numId = _messages.IntegerField(14, variant=_messages.Variant.UINT64)
+  state = _messages.MessageField('DeviceState', 15)
 
 
 class DeviceConfig(_messages.Message):
-  """The device configuration and its metadata. Eventually delivered to
-  devices.
+  """The device configuration. Eventually delivered to devices.
 
   Fields:
-    cloudUpdateTime: [Output only] The time when this version state was
-      updated in the Cloud IoT Core service. This timestamp is set by the
+    binaryData: The device configuration data.
+    cloudUpdateTime: [Output only] The time at which this configuration
+      version was updated in Cloud IoT Core. This timestamp is set by the
       server.
-    data: The device configuration data.
-    deviceAckTime: [Output only] The time when the Cloud IoT Core server
-      received the acknowledgment from the device, indicating that the device
-      has received this configuration version. If this field is not present,
-      the device has not yet acknowledged that it received this version. Note
-      that when sending the config to the device, there may have been many
-      config versions on the Cloud IoT Core service while the device was
-      disconnected; and on connection, only the latest version is sent to the
-      device. Some of the versions may never be sent to the device, and
-      therefore are never acknowledged. This timestamp is set by the Cloud IoT
-      Core service.
+    deviceAckTime: [Output only] The time at which Cloud IoT Core received the
+      acknowledgment from the device, indicating that the device has received
+      this configuration version. If this field is not present, the device has
+      not yet acknowledged that it received this version. Note that when the
+      config was sent to the device, many config versions may have been
+      available in Cloud IoT Core while the device was disconnected, and on
+      connection, only the latest version is sent to the device. Some versions
+      may never be sent to the device, and therefore are never acknowledged.
+      This timestamp is set by Cloud IoT Core.
     version: [Output only] The version of this update. The version number is
-      assigned by the server, and is always greater than zero after device
-      creation. The version must be zero on the `CreateDevice` request if a
+      assigned by the server, and is always greater than 0 after device
+      creation. The version must be 0 on the `CreateDevice` request if a
       `config` is specified; the response of `CreateDevice` will always have a
-      value of one.
-  """
-
-  cloudUpdateTime = _messages.StringField(1)
-  data = _messages.MessageField('DeviceConfigData', 2)
-  deviceAckTime = _messages.StringField(3)
-  version = _messages.IntegerField(4)
-
-
-class DeviceConfigData(_messages.Message):
-  """The data for a device configuration. Only binary data is currently
-  supported.
-
-  Fields:
-    binaryData: The configuration sent to the device, as bytes.
+      value of 1.
   """
 
   binaryData = _messages.BytesField(1)
+  cloudUpdateTime = _messages.StringField(2)
+  deviceAckTime = _messages.StringField(3)
+  version = _messages.IntegerField(4)
 
 
 class DeviceCredential(_messages.Message):
@@ -540,7 +534,16 @@ class DeviceCredential(_messages.Message):
       requests after this timestamp; however, it will not be automatically
       deleted.
     publicKey: A public key used to verify the signature of JSON Web Tokens
-      (JWTs).
+      (JWTs). When adding a new device credential, either via device creation
+      or via modifications, this public key credential may be required to be
+      signed by one of the registry level certificates. More specifically, if
+      the registry contains at least one certificate, any new device
+      credential must be signed by one of the registry certificates. As a
+      result, when the registry contains certificates, only X.509 certificates
+      are accepted as device credentials. However, if the registry does not
+      contain a certificate, self-signed certificates and public keys will be
+      accepted. New device credentials must be different from every registry-
+      level certificate.
   """
 
   expirationTime = _messages.StringField(1)
@@ -551,19 +554,55 @@ class DeviceRegistry(_messages.Message):
   """A container for a group of devices.
 
   Fields:
-    eventNotificationConfig: Configuration to notify events received from the
-      device.
+    credentials: The credentials used to verify the device credentials. No
+      more than 10 credentials can be bound to a single registry at a time.
+      The verification process occurs at the time of device creation or
+      update. If this field is empty, no verification is performed. Otherwise,
+      the credentials of a newly created device or added credentials of an
+      updated device should be signed with one of these registry credentials.
+      Note, however, that existing devices will never be affected by
+      modifications to this list of credentials: after a device has been
+      successfully created in a registry, it should be able to connect even if
+      its registry credentials are revoked, deleted, or modified.
+    eventNotificationConfigs: The configuration for notification of telemetry
+      events received from the device. All telemetry events that were
+      successfully published by the device and acknowledged by Cloud IoT Core
+      are guaranteed to be delivered to Cloud Pub/Sub. Only the first
+      configuration is used.
+    httpConfig: The DeviceService (HTTP) configuration for this device
+      registry.
     id: The identifier of this device registry. For example, `myRegistry`.
-    mqttConfig: The configuration of the MQTT broker associated with this
-      device registry, including enablement, payload data format type, etc.
+    mqttConfig: The MQTT configuration for this device registry.
     name: The resource path name. For example, `projects/example-
       project/locations/us-central1/registries/my-registry`.
+    stateNotificationConfig: The configuration for notification of new states
+      received from the device. State updates are guaranteed to be stored in
+      the state history, but notifications to Cloud Pub/Sub are not
+      guaranteed. For example, if permissions are misconfigured or the
+      specified topic doesn't exist, no notification will be published but the
+      state will still be stored in Cloud IoT Core.
   """
 
-  eventNotificationConfig = _messages.MessageField('NotificationConfig', 1)
-  id = _messages.StringField(2)
-  mqttConfig = _messages.MessageField('MqttConfig', 3)
-  name = _messages.StringField(4)
+  credentials = _messages.MessageField('RegistryCredential', 1, repeated=True)
+  eventNotificationConfigs = _messages.MessageField('EventNotificationConfig', 2, repeated=True)
+  httpConfig = _messages.MessageField('HttpConfig', 3)
+  id = _messages.StringField(4)
+  mqttConfig = _messages.MessageField('MqttConfig', 5)
+  name = _messages.StringField(6)
+  stateNotificationConfig = _messages.MessageField('StateNotificationConfig', 7)
+
+
+class DeviceState(_messages.Message):
+  """The device state, as reported by the device.
+
+  Fields:
+    binaryData: The device state data.
+    updateTime: [Output only] The time at which this state version was updated
+      in Cloud IoT Core.
+  """
+
+  binaryData = _messages.BytesField(1)
+  updateTime = _messages.StringField(2)
 
 
 class Empty(_messages.Message):
@@ -574,6 +613,17 @@ class Empty(_messages.Message):
   JSON representation for `Empty` is empty JSON object `{}`.
   """
 
+
+
+class EventNotificationConfig(_messages.Message):
+  """The configuration to forward telemetry events.
+
+  Fields:
+    pubsubTopicName: A Cloud Pub/Sub topic name. For example,
+      `projects/myProject/topics/deviceEvents`.
+  """
+
+  pubsubTopicName = _messages.StringField(1)
 
 
 class Expr(_messages.Message):
@@ -604,54 +654,35 @@ class GetIamPolicyRequest(_messages.Message):
   """Request message for `GetIamPolicy` method."""
 
 
-class HttpDeviceConfig(_messages.Message):
-  """The device configuration obtained from Cloud IoT Core.
+class HttpConfig(_messages.Message):
+  """The configuration of the HTTP bridge for a device registry.
+
+  Enums:
+    HttpEnabledStateValueValuesEnum: If enabled, allows devices to use
+      DeviceService via the HTTP protocol. Otherwise, any requests to
+      DeviceService will fail for this registry.
 
   Fields:
-    binaryData: Data in binary format.
-    version: The version of the configuration in Cloud IoT Core.
+    httpEnabledState: If enabled, allows devices to use DeviceService via the
+      HTTP protocol. Otherwise, any requests to DeviceService will fail for
+      this registry.
   """
 
-  binaryData = _messages.BytesField(1)
-  version = _messages.IntegerField(2)
+  class HttpEnabledStateValueValuesEnum(_messages.Enum):
+    """If enabled, allows devices to use DeviceService via the HTTP protocol.
+    Otherwise, any requests to DeviceService will fail for this registry.
 
+    Values:
+      HTTP_STATE_UNSPECIFIED: No HTTP state specified. If not specified,
+        DeviceService will be enabled by default.
+      HTTP_ENABLED: Enables DeviceService (HTTP) service for the registry.
+      HTTP_DISABLED: Disables DeviceService (HTTP) service for the registry.
+    """
+    HTTP_STATE_UNSPECIFIED = 0
+    HTTP_ENABLED = 1
+    HTTP_DISABLED = 2
 
-class HttpDeviceState(_messages.Message):
-  """The device state reported to Cloud IoT Core.
-
-  Fields:
-    binaryData: Data in binary format.
-  """
-
-  binaryData = _messages.BytesField(1)
-
-
-class HttpPublishEventRequest(_messages.Message):
-  """Request for `PublishEvent`.
-
-  Fields:
-    binaryData: Payload data in binary format.
-    subFolder: Optional subfolder for the telemetry event. This can be used to
-      classify types of events, and is included in the Pub/Sub message
-      attributes.
-  """
-
-  binaryData = _messages.BytesField(1)
-  subFolder = _messages.StringField(2)
-
-
-class HttpPublishEventResponse(_messages.Message):
-  """Response for `PublishEvent`."""
-
-
-class HttpSetDeviceStateRequest(_messages.Message):
-  """Request for `SetDeviceState`.
-
-  Fields:
-    state: The device state.
-  """
-
-  state = _messages.MessageField('HttpDeviceState', 1)
+  httpEnabledState = _messages.EnumField('HttpEnabledStateValueValuesEnum', 1)
 
 
 class ListDeviceConfigVersionsResponse(_messages.Message):
@@ -680,6 +711,17 @@ class ListDeviceRegistriesResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class ListDeviceStatesResponse(_messages.Message):
+  """Response for `ListDeviceStates`.
+
+  Fields:
+    deviceStates: The last few device states. States are listed in descending
+      order of server update time, starting from the most recent one.
+  """
+
+  deviceStates = _messages.MessageField('DeviceState', 1, repeated=True)
+
+
 class ListDevicesResponse(_messages.Message):
   """Response for `ListDevices`.
 
@@ -698,7 +740,7 @@ class ModifyCloudToDeviceConfigRequest(_messages.Message):
   """Request for `ModifyCloudToDeviceConfig`.
 
   Fields:
-    data: The configuration data for the device.
+    binaryData: The configuration data for the device.
     versionToUpdate: The version number to update. If this value is zero, it
       will not check the version number of the server and will always update
       the current version; otherwise, this update will fail if the version
@@ -706,7 +748,7 @@ class ModifyCloudToDeviceConfigRequest(_messages.Message):
       used to support multiple simultaneous updates without losing data.
   """
 
-  data = _messages.MessageField('DeviceConfigData', 1)
+  binaryData = _messages.BytesField(1)
   versionToUpdate = _messages.IntegerField(2)
 
 
@@ -714,40 +756,29 @@ class MqttConfig(_messages.Message):
   """The configuration of MQTT for a device registry.
 
   Enums:
-    MqttConfigStateValueValuesEnum: If enabled, allows connections using the
-      MQTT protocol. Otherwise any MQTT connection to this registry will fail.
+    MqttEnabledStateValueValuesEnum: If enabled, allows connections using the
+      MQTT protocol. Otherwise, MQTT connections to this registry will fail.
 
   Fields:
-    mqttConfigState: If enabled, allows connections using the MQTT protocol.
-      Otherwise any MQTT connection to this registry will fail.
+    mqttEnabledState: If enabled, allows connections using the MQTT protocol.
+      Otherwise, MQTT connections to this registry will fail.
   """
 
-  class MqttConfigStateValueValuesEnum(_messages.Enum):
-    """If enabled, allows connections using the MQTT protocol. Otherwise any
-    MQTT connection to this registry will fail.
+  class MqttEnabledStateValueValuesEnum(_messages.Enum):
+    """If enabled, allows connections using the MQTT protocol. Otherwise, MQTT
+    connections to this registry will fail.
 
     Values:
-      UNSPECIFIED_MQTT_STATE: No MQTT state specified. If not specified, MQTT
+      MQTT_STATE_UNSPECIFIED: No MQTT state specified. If not specified, MQTT
         will be enabled by default.
       MQTT_ENABLED: Enables a MQTT connection.
       MQTT_DISABLED: Disables a MQTT connection.
     """
-    UNSPECIFIED_MQTT_STATE = 0
+    MQTT_STATE_UNSPECIFIED = 0
     MQTT_ENABLED = 1
     MQTT_DISABLED = 2
 
-  mqttConfigState = _messages.EnumField('MqttConfigStateValueValuesEnum', 1)
-
-
-class NotificationConfig(_messages.Message):
-  """Configuration to forward messages such as telemetry events.
-
-  Fields:
-    pubsubTopicName: A Cloud Pub/Sub topic name. For example,
-      `projects/myProject/topics/deviceEvents`.
-  """
-
-  pubsubTopicName = _messages.StringField(1)
+  mqttEnabledState = _messages.EnumField('MqttEnabledStateValueValuesEnum', 1)
 
 
 class Policy(_messages.Message):
@@ -789,6 +820,38 @@ class Policy(_messages.Message):
   version = _messages.IntegerField(5, variant=_messages.Variant.INT32)
 
 
+class PublicKeyCertificate(_messages.Message):
+  """A public key certificate format and data.
+
+  Enums:
+    FormatValueValuesEnum: The certificate format.
+
+  Fields:
+    certificate: The certificate data.
+    format: The certificate format.
+    x509Details: [Output only] The certificate details. Used only for X.509
+      certificates.
+  """
+
+  class FormatValueValuesEnum(_messages.Enum):
+    """The certificate format.
+
+    Values:
+      UNSPECIFIED_PUBLIC_KEY_CERTIFICATE_FORMAT: The format has not been
+        specified. This is an invalid default value and must not be used.
+      X509_CERTIFICATE_PEM: An X.509v3 certificate
+        ([RFC5280](https://www.ietf.org/rfc/rfc5280.txt)), encoded in base64,
+        and wrapped by `-----BEGIN CERTIFICATE-----` and `-----END
+        CERTIFICATE-----`.
+    """
+    UNSPECIFIED_PUBLIC_KEY_CERTIFICATE_FORMAT = 0
+    X509_CERTIFICATE_PEM = 1
+
+  certificate = _messages.StringField(1)
+  format = _messages.EnumField('FormatValueValuesEnum', 2)
+  x509Details = _messages.MessageField('X509CertificateDetails', 3)
+
+
 class PublicKeyCredential(_messages.Message):
   """A public key format and data.
 
@@ -806,24 +869,45 @@ class PublicKeyCredential(_messages.Message):
     Values:
       UNSPECIFIED_PUBLIC_KEY_FORMAT: The format has not been specified. This
         is an invalid default value and must not be used.
-      RSA_X509_PEM: An RSA public key wrapped in a X.509v3 certificate
-        [RFC5280](https://www.ietf.org/rfc/rfc5280.txt), encoded in base64,
+      RSA_PEM: An RSA public key encoded in base64, and wrapped by `-----BEGIN
+        PUBLIC KEY-----` and `-----END PUBLIC KEY-----`. This can be used to
+        verify `RS256` signatures in JWT tokens ([RFC7518](
+        https://www.ietf.org/rfc/rfc7518.txt)).
+      RSA_X509_PEM: As RSA_PEM, but wrapped in an X.509v3 certificate
+        ([RFC5280]( https://www.ietf.org/rfc/rfc5280.txt)), encoded in base64,
         and wrapped by `-----BEGIN CERTIFICATE-----` and `-----END
-        CERTIFICATE-----`. This can be used to verify `RS256` signatures in
-        JWT tokens [RFC7518](https://www.ietf.org/rfc/rfc7518.txt).
+        CERTIFICATE-----`.
       ES256_PEM: Public key for the ECDSA algorithm using P-256 and SHA-256,
         encoded in base64, and wrapped by `-----BEGIN PUBLIC KEY-----` and
         `-----END PUBLIC KEY-----`. This can be used to verify JWT tokens with
-        the `ES256` algorithm [RFC7518](https://www.ietf.org/rfc/rfc7518.txt).
-        This curve is defined in [openssl](https://www.openssl.org/) as the
-        `prime256v1` curve.
+        the `ES256` algorithm
+        ([RFC7518](https://www.ietf.org/rfc/rfc7518.txt)). This curve is
+        defined in [OpenSSL](https://www.openssl.org/) as the `prime256v1`
+        curve.
+      ES256_X509_PEM: As ES256_PEM, but wrapped in an X.509v3 certificate
+        ([RFC5280]( https://www.ietf.org/rfc/rfc5280.txt)), encoded in base64,
+        and wrapped by `-----BEGIN CERTIFICATE-----` and `-----END
+        CERTIFICATE-----`.
     """
     UNSPECIFIED_PUBLIC_KEY_FORMAT = 0
-    RSA_X509_PEM = 1
-    ES256_PEM = 2
+    RSA_PEM = 1
+    RSA_X509_PEM = 2
+    ES256_PEM = 3
+    ES256_X509_PEM = 4
 
   format = _messages.EnumField('FormatValueValuesEnum', 1)
   key = _messages.StringField(2)
+
+
+class RegistryCredential(_messages.Message):
+  """A server-stored registry credential used to validate device credentials.
+
+  Fields:
+    publicKeyCertificate: A public key certificate used to verify the device
+      credentials.
+  """
+
+  publicKeyCertificate = _messages.MessageField('PublicKeyCertificate', 1)
 
 
 class SetIamPolicyRequest(_messages.Message):
@@ -909,6 +993,18 @@ class StandardQueryParameters(_messages.Message):
   trace = _messages.StringField(12)
   uploadType = _messages.StringField(13)
   upload_protocol = _messages.StringField(14)
+
+
+class StateNotificationConfig(_messages.Message):
+  """The configuration for notification of new states received from the
+  device.
+
+  Fields:
+    pubsubTopicName: A Cloud Pub/Sub topic name. For example,
+      `projects/myProject/topics/deviceEvents`.
+  """
+
+  pubsubTopicName = _messages.StringField(1)
 
 
 class Status(_messages.Message):
@@ -1011,6 +1107,26 @@ class TestIamPermissionsResponse(_messages.Message):
   """
 
   permissions = _messages.StringField(1, repeated=True)
+
+
+class X509CertificateDetails(_messages.Message):
+  """Details of an X.509 certificate. For informational purposes only.
+
+  Fields:
+    expiryTime: The time the certificate becomes invalid.
+    issuer: The entity that signed the certificate.
+    publicKeyType: The type of public key in the certificate.
+    signatureAlgorithm: The algorithm used to sign the certificate.
+    startTime: The time the certificate becomes valid.
+    subject: The entity the certificate and public key belong to.
+  """
+
+  expiryTime = _messages.StringField(1)
+  issuer = _messages.StringField(2)
+  publicKeyType = _messages.StringField(3)
+  signatureAlgorithm = _messages.StringField(4)
+  startTime = _messages.StringField(5)
+  subject = _messages.StringField(6)
 
 
 encoding.AddCustomJsonFieldMapping(

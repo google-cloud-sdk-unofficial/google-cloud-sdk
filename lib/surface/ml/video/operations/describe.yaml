@@ -1,0 +1,26 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Get description of a long-running video analysis operation.
+    DESCRIPTION: |
+      Get information about a long-running video analysis operation.
+
+      {auth_help}
+    auth_help: !COMMON help_text.auth_help
+
+  request:
+    collection: videointelligence.operations
+    api_version: v1
+    resource_method_params:
+      name: operationsId
+
+  arguments:
+    resource:
+      help_text: The operation to describe.
+      params:
+        - api_field: operationsId
+          arg_name: operation_id
+          help_text: ID for the operation to describe
+
+  output:
+    format: json

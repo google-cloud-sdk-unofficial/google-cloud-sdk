@@ -1,0 +1,46 @@
+help_text:
+  auth_help: |
+    This command requires a service account from a project that has enabled the
+    Video Intelligence API. To learn more about how to use a service account
+    with gcloud, please run `gcloud auth activate-service-account --help`.
+
+request:
+  collection: videointelligence.videos
+  method: annotate
+  api_version: v1beta1
+
+async:
+  collection: videointelligence.operations
+  api_version: v1
+  extract_resource_result: False
+  result_attribute: response
+  resource_get_method_params:
+    name: operationsId
+
+args:
+  - api_field: outputUri
+    arg_name: output-uri
+    help_text: |
+      The location to which the results should be written. Must be a Google
+      Cloud Storage URI.
+    processor: googlecloudsdk.api_lib.ml.video.video_client:_ValidateOutputUri
+
+  - api_field: videoContext.segments
+    arg_name: segments
+    help_text: |
+      The segments from the video which you want to analyze (by default, the
+      entire video will be treated as one segment). Must be in the format
+      START1:END1[,START2:END2,...]. Start and end of segments are in
+      microseconds (inclusive).
+    processor: googlecloudsdk.api_lib.ml.video.video_client:_ValidateAndParseSegments
+
+  - api_field: locationId
+    arg_name: region
+    choices:
+      us-east1: us-east1
+      us-west1: us-west1
+      europe-west1: europe-west1
+      asia-east1: asia-east1
+    help_text: |
+      Optional cloud region where annotation should take place. If no region
+      is specified, a region will be determined based on video file location.

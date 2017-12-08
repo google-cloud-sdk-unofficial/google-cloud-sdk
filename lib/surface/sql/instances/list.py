@@ -56,7 +56,7 @@ class List(base.ListCommand):
     Raises:
       HttpException: An http error response was received while executing api
           request.
-      ToolException: An error other than an http error occured while executing
+      ToolException: An error other than an http error occurred while executing
           the command.
     """
     return instances.InstancesV1Beta4.GetDatabaseInstances()

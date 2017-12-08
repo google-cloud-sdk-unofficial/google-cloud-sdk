@@ -1,0 +1,24 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Use Google Cloud Natural Language API to identify entities in text.
+    DESCRIPTION: |
+      Entity Analysis inspects the given text for common names or known entities
+      (proper nouns such as public figures, landmarks, etc.), and returns
+      information about those entities.
+
+      {service_account_help}
+
+      {language_help}
+    language_help: !COMMON help_text.language_help
+    service_account_help: !COMMON help_text.service_account_help
+
+  request:
+    _COMMON_: request
+    method: analyzeEntities
+
+  arguments:
+    _COMMON_: arguments
+
+  output:
+    format: json

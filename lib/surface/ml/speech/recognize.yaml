@@ -1,0 +1,32 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Get transcripts of short (less than 60 seconds) audio from an audio file.
+    DESCRIPTION: |
+      Get a transcript of an audio file that is less than 60 seconds. You can use
+      an audio file that is on your local drive or a Google Cloud Storage URL.
+
+      If the audio is longer than 60 seconds, you will get an error. Please use
+      `{parent_command} recognize-long-running` instead.
+
+      {auth_hints}
+    auth_hints: !COMMON help_text.auth_hints
+
+  request:
+    collection: speech.speech
+    method: recognize
+    api_version: v1
+
+  arguments:
+    params:
+      - _COMMON_args
+      - api_field: config.sampleRateHertz
+        arg_name: sample-rate
+        help_text: |
+          The sample rate in Hertz. For best results, set the sampling rate of
+          the audio source to 16000 Hz. If that's not possible, use the native
+          sample rate of the audio source (instead of re-sampling).  Required if
+          the file format is not WAV or FLAC.
+
+  output:
+    format: json

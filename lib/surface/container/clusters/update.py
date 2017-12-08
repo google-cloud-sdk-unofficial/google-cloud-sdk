@@ -65,29 +65,54 @@ def _AddCommonArgs(parser):
   flags.AddAsyncFlag(parser)
 
 
-def _AddMutuallyExclusiveArgs(mutex_group):
+def _AddMutuallyExclusiveArgs(mutex_group, release_track):
   """Add all arguments that need to be mutually exclusive from each other."""
   mutex_group.add_argument(
       '--monitoring-service',
       help='The monitoring service to use for the cluster. Options '
       'are: "monitoring.googleapis.com" (the Google Cloud Monitoring '
       'service),  "none" (no metrics will be exported from the cluster)')
-  mutex_group.add_argument(
-      '--update-addons',
-      type=arg_parsers.ArgDict(spec={
-          api_adapter.INGRESS: _ParseAddonDisabled,
-          api_adapter.HPA: _ParseAddonDisabled,
-          api_adapter.DASHBOARD: _ParseAddonDisabled,
-      }),
-      dest='disable_addons',
-      metavar='ADDON=ENABLED|DISABLED',
-      help="""Cluster addons to enable or disable. Options are
+
+  # Network policy is only for alpha/beta
+  if release_track in [base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA]:
+    mutex_group.add_argument(
+        '--update-addons',
+        type=arg_parsers.ArgDict(spec={
+            api_adapter.INGRESS: _ParseAddonDisabled,
+            api_adapter.HPA: _ParseAddonDisabled,
+            api_adapter.DASHBOARD: _ParseAddonDisabled,
+            api_adapter.NETWORK_POLICY: _ParseAddonDisabled,
+        }),
+        dest='disable_addons',
+        metavar='ADDON=ENABLED|DISABLED',
+        help="""Cluster addons to enable or disable. Options are
+{hpa}=ENABLED|DISABLED
+{ingress}=ENABLED|DISABLED
+{dashboard}=ENABLED|DISABLED
+{network_policy}=ENABLED|DISABLED""".format(
+    hpa=api_adapter.HPA,
+    ingress=api_adapter.INGRESS,
+    dashboard=api_adapter.DASHBOARD,
+    network_policy=api_adapter.NETWORK_POLICY))
+
+  else:
+    mutex_group.add_argument(
+        '--update-addons',
+        type=arg_parsers.ArgDict(spec={
+            api_adapter.INGRESS: _ParseAddonDisabled,
+            api_adapter.HPA: _ParseAddonDisabled,
+            api_adapter.DASHBOARD: _ParseAddonDisabled,
+        }),
+        dest='disable_addons',
+        metavar='ADDON=ENABLED|DISABLED',
+        help="""Cluster addons to enable or disable. Options are
 {hpa}=ENABLED|DISABLED
 {ingress}=ENABLED|DISABLED
 {dashboard}=ENABLED|DISABLED""".format(
     hpa=api_adapter.HPA,
     ingress=api_adapter.INGRESS,
     dashboard=api_adapter.DASHBOARD))
+
   mutex_group.add_argument(
       '--generate-password',
       action='store_true',
@@ -146,7 +171,7 @@ class Update(base.UpdateCommand):
     """
     _AddCommonArgs(parser)
     group = parser.add_mutually_exclusive_group(required=True)
-    _AddMutuallyExclusiveArgs(group)
+    _AddMutuallyExclusiveArgs(group, base.ReleaseTrack.GA)
     flags.AddClusterAutoscalingFlags(parser, group, hidden=True)
     flags.AddMasterAuthorizedNetworksFlags(parser, group, hidden=True)
     flags.AddEnableLegacyAuthorizationFlag(group, hidden=True)
@@ -318,7 +343,7 @@ class UpdateBeta(Update):
   def Args(parser):
     _AddCommonArgs(parser)
     group = parser.add_mutually_exclusive_group(required=True)
-    _AddMutuallyExclusiveArgs(group)
+    _AddMutuallyExclusiveArgs(group, base.ReleaseTrack.BETA)
     flags.AddClusterAutoscalingFlags(parser, group)
     _AddAdditionalZonesArg(group)
     flags.AddMasterAuthorizedNetworksFlags(parser, group)
@@ -327,10 +352,10 @@ class UpdateBeta(Update):
     flags.AddCompleteIpRotationFlag(group)
     flags.AddUpdateLabelsFlag(group)
     flags.AddRemoveLabelsFlag(group)
-    flags.AddNetworkPolicyFlags(group, hidden=True)
+    flags.AddNetworkPolicyFlags(group)
     flags.AddLoggingServiceFlag(group)
     flags.AddEnableAuditLoggingFlag(group, hidden=True)
-    flags.AddMaintenanceWindowFlag(group, hidden=True, add_unset_text=True)
+    flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -341,7 +366,7 @@ class UpdateAlpha(Update):
   def Args(parser):
     _AddCommonArgs(parser)
     group = parser.add_mutually_exclusive_group(required=True)
-    _AddMutuallyExclusiveArgs(group)
+    _AddMutuallyExclusiveArgs(group, base.ReleaseTrack.ALPHA)
     flags.AddClusterAutoscalingFlags(parser, group)
     group_locations = group.add_mutually_exclusive_group()
     _AddAdditionalZonesArg(group_locations, deprecated=True)
@@ -355,4 +380,4 @@ class UpdateAlpha(Update):
     flags.AddNetworkPolicyFlags(group, hidden=False)
     flags.AddLoggingServiceFlag(group)
     flags.AddEnableAuditLoggingFlag(group, hidden=True)
-    flags.AddMaintenanceWindowFlag(group, hidden=True, add_unset_text=True)
+    flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
