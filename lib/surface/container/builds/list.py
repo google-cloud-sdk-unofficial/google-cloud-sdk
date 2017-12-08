@@ -45,13 +45,8 @@ class List(base.ListCommand):
     registry = resources.REGISTRY.Clone()
 
     def _BuildToURI(build):
-      build_ref = registry.Parse(
-          None,
-          params={
-              'project': build.projectId,
-              'id': build.id,
-          },
-          collection=self.Collection())
+      build_ref = registry.Create(
+          self.Collection(), projectId=build.projectId, id=build.id)
       return build_ref.SelfLink()
     return _BuildToURI
 

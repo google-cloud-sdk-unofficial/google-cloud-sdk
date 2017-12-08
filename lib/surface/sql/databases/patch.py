@@ -109,8 +109,7 @@ class _BasePatch(object):
     operation_ref = resources.Create(
         'sql.operations',
         operation=result_operation.name,
-        project=instance_ref.project,
-        instance=instance_ref.instance)
+        project=instance_ref.project)
 
     operations.OperationsV1Beta4.WaitForOperation(
         sql_client, operation_ref, 'Patching Cloud SQL database')

@@ -55,9 +55,6 @@ class SeekAlpha(base.Command):
               'a snapshot). If not set, it defaults to the currently selected '
               'cloud project.'))
 
-  def Collection(self):
-    return util.SUBSCRIPTIONS_SEEK_COLLECTION
-
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

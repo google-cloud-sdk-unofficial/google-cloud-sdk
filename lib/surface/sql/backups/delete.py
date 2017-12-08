@@ -85,9 +85,7 @@ class DeleteBeta(base.DeleteCommand):
     operation_ref = resources.Create(
         'sql.operations',
         operation=result.name,
-        project=instance_ref.project,
-        instance=instance_ref.instance,
-    )
+        project=instance_ref.project)
 
     operations.OperationsV1Beta4.WaitForOperation(sql_client, operation_ref,
                                                   'Deleting backup run')

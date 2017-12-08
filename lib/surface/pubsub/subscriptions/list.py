@@ -26,6 +26,18 @@ class List(base.ListCommand):
   Lists all of the Cloud Pub/Sub subscriptions that exist in a given project.
   """
 
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""
+          table[box](
+            projectId:label=PROJECT,
+            subscriptionId:label=SUBSCRIPTION,
+            topicId:label=TOPIC,
+            type,
+            ackDeadlineSeconds:label=ACK_DEADLINE
+          )
+        """)
+
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -71,9 +83,6 @@ class List(base.ListCommand):
 
     except re.error as e:
       raise sdk_ex.HttpException(str(e))
-
-  def Collection(self):
-    return util.SUBSCRIPTIONS_LIST_COLLECTION
 
 
 def SubscriptionDict(subscription):

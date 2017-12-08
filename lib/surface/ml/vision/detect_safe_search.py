@@ -23,7 +23,11 @@ class DetectSafeSearch(base.Command):
 
   Safe Search Detection detects adult content, violent content, medical content
   and spoof content in an image.
+
+  {auth_hints}
   """
+
+  detailed_help = {'auth_hints': vision_command_util.VISION_AUTH_HELP}
 
   @staticmethod
   def Args(parser):

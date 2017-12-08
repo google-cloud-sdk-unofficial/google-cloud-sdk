@@ -66,7 +66,7 @@ class Names(object):
 
     @staticmethod
     def __ToCamel(name, separator='_'):
-        # TODO(craigcitro): Consider what to do about leading or trailing
+        # TODO(user): Consider what to do about leading or trailing
         # underscores (such as `_refValue` in discovery).
         return ''.join(s[0:1].upper() + s[1:] for s in name.split(separator))
 
@@ -118,10 +118,10 @@ class Names(object):
 
     def ClassName(self, name, separator='_'):
         """Generate a valid class name from name."""
-        # TODO(craigcitro): Get rid of this case here and in MethodName.
+        # TODO(user): Get rid of this case here and in MethodName.
         if name is None:
             return name
-        # TODO(craigcitro): This is a hack to handle the case of specific
+        # TODO(user): This is a hack to handle the case of specific
         # protorpc class names; clean this up.
         if name.startswith(('protorpc.', 'message_types.',
                             'apitools.base.protorpclite.',
@@ -140,7 +140,7 @@ class Names(object):
 
     def FieldName(self, name):
         """Generate a valid field name from name."""
-        # TODO(craigcitro): We shouldn't need to strip this name, but some
+        # TODO(user): We shouldn't need to strip this name, but some
         # of the service names here are excessive. Fix the API and then
         # remove this.
         name = self.__StripName(name)

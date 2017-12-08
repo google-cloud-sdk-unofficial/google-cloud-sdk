@@ -56,9 +56,6 @@ class Create(base.CreateCommand):
               ' If not set, it defaults to the currently selected'
               ' cloud project.'))
 
-  def Collection(self):
-    return util.SNAPSHOTS_COLLECTION
-
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

@@ -23,7 +23,11 @@ class DetectLabels(base.Command):
 
   Label Detection detects categories in an image, ranging from modes of
   transportation to animals.
+
+  {auth_hints}
   """
+
+  detailed_help = {'auth_hints': vision_command_util.VISION_AUTH_HELP}
 
   @staticmethod
   def Args(parser):

@@ -14,10 +14,13 @@
 """Cloud ML batch prediction dataflow transforms.
 """
 # TODO(user): add a unittest to test logging futures.
+
+import datetime
 import json
 import logging
 import threading
 import traceback
+
 
 
 import apache_beam as beam
@@ -131,13 +134,18 @@ class PredictionDoFn(beam.DoFn):
     self._model_state = None
 
     # Metrics.
-    self._num_model_loads = beam.metrics.Metrics.counter(self.__class__,
-                                                         "num_model_loads")
+    self._model_load_seconds_distribution = beam.metrics.Metrics.distribution(
+        self.__class__, "model_load_seconds")
 
   def _create_snippet(self, input_data):
     """Truncate the input data to create a snippet."""
-    input_snippet = "\n".join(str(x) for x in input_data)
-    return unicode(input_snippet[:LOG_SIZE_LIMIT], errors="replace")
+    try:
+      input_snippet = "\n".join(str(x) for x in input_data)
+      return unicode(input_snippet[:LOG_SIZE_LIMIT], errors="replace")
+    except Exception:  # pylint: disable=broad-except
+      logging.warning("Failed to create snippet from input: [%s].",
+                      traceback.format_exc())
+      return "Input snippet is unavailable."
 
   # TODO(user): Remove the try catch after sdk update
   def process(self, element, model_dir):
@@ -150,9 +158,11 @@ class PredictionDoFn(beam.DoFn):
       if self._model_state is None:
         if (getattr(self._thread_local, "model_state", None) is None or
             self._thread_local.model_state.model_dir != model_dir):
-          self._num_model_loads.inc(1)
+          start = datetime.datetime.now()
           self._thread_local.model_state = self._ModelState(
               model_dir, self._skip_preprocessing)
+          self._model_load_seconds_distribution.update(
+              int((datetime.datetime.now() - start).total_seconds()))
         self._model_state = self._thread_local.model_state
       else:
         assert self._model_state.model_dir == model_dir

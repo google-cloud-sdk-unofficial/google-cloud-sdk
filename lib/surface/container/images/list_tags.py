@@ -27,6 +27,11 @@ _DEFAULT_KINDS = [
     'IMAGE_BASIS',
     'PACKAGE_VULNERABILITY',
 ]
+# How many images to consider.
+_DEFAULT_LIMIT = 10
+# By default return the most recent timestamps.
+# (The --sort-by flag uses syntax `~X` to mean "sort descending on field X.")
+_DEFAULT_SORT_BY = '~timestamp'
 
 
 class ListTags(base.ListCommand):
@@ -76,6 +81,9 @@ class ListTags(base.ListCommand):
     parser.add_argument(
         'image',
         help='The name of the image. Format: *.gcr.io/repository/image')
+    # Set flag defaults to return X most recent images instead of all.
+    base.LIMIT_FLAG.SetDefault(parser, _DEFAULT_LIMIT)
+    base.SORT_BY_FLAG.SetDefault(parser, _DEFAULT_SORT_BY)
 
     # Does nothing for us, included in base.ListCommand
     base.URI_FLAG.RemoveFromParser(parser)

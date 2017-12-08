@@ -52,4 +52,5 @@ class RemoveIamPolicyBinding(base.Command):
     """
     instance_ref = resources.REGISTRY.Parse(
         args.instance, collection='spanner.projects.instances')
-    return iam.RemoveIamPolicyBinding(instance_ref, args.member, args.role)
+    return iam.RemoveInstanceIamPolicyBinding(instance_ref, args.member,
+                                              args.role)

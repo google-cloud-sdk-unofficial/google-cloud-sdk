@@ -110,7 +110,7 @@ def ExpandRelativePath(method_config, params, relative_path=None):
             raise exceptions.InvalidUserInputError(
                 'Missing path parameter %s' % param)
         try:
-            # TODO(craigcitro): Do we want to support some sophisticated
+            # TODO(user): Do we want to support some sophisticated
             # mapping here?
             value = params[param]
         except KeyError:

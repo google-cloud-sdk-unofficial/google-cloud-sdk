@@ -11,17 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Sets the password of the MySQL root user."""
 
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib import deprecation_utils
 from googlecloudsdk.command_lib.sql import validate
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class SetRootPassword(base.Command):
+class _BaseSetRootPassword(object):
   """Sets the password of the MySQL root user."""
 
   @staticmethod
@@ -51,6 +51,11 @@ class SetRootPassword(base.Command):
         '--password-file',
         help='The path to the filename which has the password to be set. The '
         'first line of the file will be interpreted as the password to be set.')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class SetRootPassword(_BaseSetRootPassword, base.Command):
+  """Sets the password of the MySQL root user."""
 
   def Run(self, args):
     """Sets the password of the MySQL root user.
@@ -107,7 +112,73 @@ class SetRootPassword(base.Command):
     operations.OperationsV1Beta3.WaitForOperation(
         sql_client, operation_ref, 'Setting Cloud SQL instance password')
 
-    log.status.write('Set password for [{instance}].\n'.format(
-        instance=instance_ref))
+    log.status.write(
+        'Set password for [{instance}].\n'.format(instance=instance_ref))
+
+    return None
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@deprecation_utils.DeprecateCommandAtVersion(
+    remove_version='162.0.0', remove=False, alt_command='users set-password')
+class SetRootPasswordBeta(_BaseSetRootPassword, base.Command):
+  """Sets the password of the MySQL root user."""
+
+  def Run(self, args):
+    """Sets the password of the MySQL root user.
+
+    Args:
+      args: argparse.Namespace, The arguments that this command was invoked
+          with.
+
+    Returns:
+      A dict object representing the operations resource describing the
+      setRootPassword operation if the setRootPassword was successful.
+    Raises:
+      HttpException: A http error response was received while executing api
+          request.
+      ToolException: An error other than http error occured while executing the
+          command.
+    """
+    sql_client = self.context['sql_client']
+    sql_messages = self.context['sql_messages']
+    resources = self.context['registry']
+
+    instance_ref = resources.Parse(args.instance, collection='sql.instances')
+
+    if args.password_file:
+      with open(args.password_file) as f:
+        password = f.readline().rstrip('\n')
+    else:
+      password = args.password
+
+    project_id = properties.VALUES.core.project.Get(required=True)
+    operation_ref = None
+    result_operation = sql_client.users.Update(
+        sql_messages.SqlUsersUpdateRequest(
+            project=project_id,
+            instance=args.instance,
+            name='root',
+            host='%',
+            user=sql_messages.User(
+                project=project_id,
+                instance=args.instance,
+                name='root',
+                host='%',
+                password=password)))
+    operation_ref = resources.Create(
+        'sql.operations',
+        operation=result_operation.name,
+        project=instance_ref.project,
+        instance=instance_ref.instance,)
+    if args.async:
+      return sql_client.operations.Get(
+          sql_messages.SqlOperationsGetRequest(
+              project=operation_ref.project, operation=operation_ref.operation))
+    operations.OperationsV1Beta4.WaitForOperation(sql_client, operation_ref,
+                                                  'Updating Cloud SQL user')
+
+    log.status.write(
+        'Set password for [{instance}].\n'.format(instance=instance_ref))
 
     return None

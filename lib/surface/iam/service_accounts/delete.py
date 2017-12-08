@@ -36,10 +36,8 @@ class Delete(base_classes.BaseIamCommand, base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    # TODO(b/36052029): add tab completion.
-    parser.add_argument('name',
-                        metavar='IAM-ACCOUNT',
-                        help='The service account to delete.')
+    iam_util.AddServiceAccountNameArg(
+        parser, help_text='The service account to delete.')
 
   def Run(self, args):
     console_io.PromptContinue(

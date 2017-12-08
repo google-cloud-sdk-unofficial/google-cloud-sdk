@@ -103,7 +103,7 @@ class MessageRegistry(object):
         self.__current_path = []
         # Where to register created messages
         self.__current_env = self.__file_descriptor
-        # TODO(craigcitro): Add a `Finalize` method.
+        # TODO(user): Add a `Finalize` method.
 
     @property
     def file_descriptor(self):
@@ -185,7 +185,7 @@ class MessageRegistry(object):
 
     @contextlib.contextmanager
     def __DescriptorEnv(self, message_descriptor):
-        # TODO(craigcitro): Typecheck?
+        # TODO(user): Typecheck?
         previous_env = self.__current_env
         self.__current_path.append(message_descriptor.name)
         self.__current_env = message_descriptor
@@ -218,7 +218,7 @@ class MessageRegistry(object):
 
     def __DeclareMessageAlias(self, schema, alias_for):
         """Declare schema as an alias for alias_for."""
-        # TODO(craigcitro): This is a hack. Remove it.
+        # TODO(user): This is a hack. Remove it.
         message = extended_descriptor.ExtendedMessageDescriptor()
         message.name = self.__names.ClassName(schema['id'])
         message.alias_for = alias_for
@@ -252,7 +252,7 @@ class MessageRegistry(object):
 
     def AddDescriptorFromSchema(self, schema_name, schema):
         """Add a new MessageDescriptor named schema_name based on schema."""
-        # TODO(craigcitro): Is schema_name redundant?
+        # TODO(user): Is schema_name redundant?
         if self.__GetDescriptor(schema_name):
             return
         if schema.get('enum'):
@@ -338,7 +338,7 @@ class MessageRegistry(object):
         field.type_name = type_info.type_name
         field.variant = type_info.variant
         if 'default' in attrs:
-            # TODO(craigcitro): Correctly handle non-primitive default values.
+            # TODO(user): Correctly handle non-primitive default values.
             default = attrs['default']
             if not (field.type_name == 'string' or
                     field.variant == messages.Variant.ENUM):
@@ -448,7 +448,7 @@ class MessageRegistry(object):
                              self.__base_files_package)
             return self.PRIMITIVE_TYPE_INFO_MAP['any']
         elif type_name == 'object':
-            # TODO(craigcitro): Think of a better way to come up with names.
+            # TODO(user): Think of a better way to come up with names.
             if not name_hint:
                 raise ValueError(
                     'Cannot create subtype without some name hint')

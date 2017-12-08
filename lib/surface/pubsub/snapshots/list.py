@@ -31,6 +31,17 @@ class List(base.ListCommand):
   contact cloud-pubsub@google.com with any questions in the meantime.
   """
 
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""
+          table[box](
+            projectId:label=PROJECT,
+            snapshotId:label=SNAPSHOT,
+            topicId:label=TOPIC,
+            expirationTime:label=EXPIRATION_TIME
+            )
+        """)
+
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -76,9 +87,6 @@ class List(base.ListCommand):
 
     except re.error as e:
       raise sdk_ex.HttpException(str(e))
-
-  def Collection(self):
-    return util.SNAPSHOTS_LIST_COLLECTION
 
 
 def SnapshotDict(snapshot):

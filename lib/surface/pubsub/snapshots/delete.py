@@ -39,9 +39,6 @@ class Delete(base.DeleteCommand):
     parser.add_argument('snapshot', nargs='+',
                         help='One or more snapshot names to delete.')
 
-  def Collection(self):
-    return util.SNAPSHOTS_COLLECTION
-
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

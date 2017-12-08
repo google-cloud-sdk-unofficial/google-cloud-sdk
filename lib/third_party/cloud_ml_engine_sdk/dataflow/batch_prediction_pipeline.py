@@ -16,11 +16,16 @@ import json
 import os
 
 import apache_beam as beam
-from apache_beam.io.fileio import CompressionTypes
 from apache_beam.io.textio import ReadFromText
 from apache_beam.io.textio import WriteToText
 import batch_prediction
 from google.cloud.ml.dataflow.io.tfrecordio import ReadFromTFRecord
+
+try:
+  # TODO(user): Remove this after updating to latest Beam.
+  from apache_beam.io.filesystem import CompressionTypes  # pylint: disable=g-import-not-at-top
+except ImportError:
+  from apache_beam.io.fileio import CompressionTypes  # pylint: disable=g-import-not-at-top
 
 FILE_LIST_SEPARATOR = ","
 

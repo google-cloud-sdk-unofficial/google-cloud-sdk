@@ -105,7 +105,7 @@ def _GetCodegenFromFlags(args):
         apitools_version=args.apitools_version)
 
 
-# TODO(craigcitro): Delete this if we don't need this functionality.
+# TODO(user): Delete this if we don't need this functionality.
 def _WriteBaseFiles(codegen):
     with util.Chdir(codegen.outdir):
         _CopyLocalFile('app2.py')

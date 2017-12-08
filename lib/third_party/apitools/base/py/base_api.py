@@ -43,7 +43,7 @@ __all__ = [
     'NormalizeApiEndpoint',
 ]
 
-# TODO(craigcitro): Remove this once we quiet the spurious logging in
+# TODO(user): Remove this once we quiet the spurious logging in
 # oauth2client (or drop oauth2client).
 logging.getLogger('oauth2client.util').setLevel(logging.ERROR)
 
@@ -203,7 +203,7 @@ class _UrlBuilder(object):
 
     @property
     def query(self):
-        # TODO(craigcitro): In the case that some of the query params are
+        # TODO(user): In the case that some of the query params are
         # non-ASCII, we may silently fail to encode correctly. We should
         # figure out who is responsible for owning the object -> str
         # conversion.
@@ -261,14 +261,14 @@ class BaseApiClient(object):
         # Note that "no credentials" is totally possible.
         if self._credentials is not None:
             self._http = self._credentials.authorize(self._http)
-        # TODO(craigcitro): Remove this field when we switch to proto2.
+        # TODO(user): Remove this field when we switch to proto2.
         self.__include_fields = None
 
         self.additional_http_headers = additional_http_headers or {}
         self.check_response_func = check_response_func
         self.retry_func = retry_func
 
-        # TODO(craigcitro): Finish deprecating these fields.
+        # TODO(user): Finish deprecating these fields.
         _ = model
 
         self.__response_type_model = 'proto'
@@ -297,7 +297,7 @@ class BaseApiClient(object):
         args.update(kwds)
         # credentials_lib can be expensive to import so do it only if needed.
         from apitools.base.py import credentials_lib
-        # TODO(craigcitro): It's a bit dangerous to pass this
+        # TODO(user): It's a bit dangerous to pass this
         # still-half-initialized self into this method, but we might need
         # to set attributes on it associated with our credentials.
         # Consider another way around this (maybe a callback?) and whether
@@ -416,7 +416,7 @@ class BaseApiClient(object):
                          http_request.http_method, http_request.url)
             logging.info('Headers: %s', pprint.pformat(http_request.headers))
             if http_request.body:
-                # TODO(craigcitro): Make this safe to print in the case of
+                # TODO(user): Make this safe to print in the case of
                 # non-printable body characters.
                 logging.info('Body:\n%s',
                              http_request.loggable_body or http_request.body)
@@ -430,7 +430,7 @@ class BaseApiClient(object):
                          method_config.response_type_name, response)
         return response
 
-    # TODO(craigcitro): Decide where these two functions should live.
+    # TODO(user): Decide where these two functions should live.
     def SerializeMessage(self, message):
         return encoding.MessageToJson(
             message, include_fields=self.__include_fields)
@@ -598,7 +598,7 @@ class BaseApiService(object):
                 http_response.info, http_response.content,
                 http_response.request_url, method_config, request)
         if http_response.status_code == http_client.NO_CONTENT:
-            # TODO(craigcitro): Find out why _replace doesn't seem to work
+            # TODO(user): Find out why _replace doesn't seem to work
             # here.
             http_response = http_wrapper.Response(
                 info=http_response.info, content='{}',
@@ -613,7 +613,7 @@ class BaseApiService(object):
 
     def __SetBaseHeaders(self, http_request, client):
         """Fill in the basic headers on http_request."""
-        # TODO(craigcitro): Make the default a little better here, and
+        # TODO(user): Make the default a little better here, and
         # include the apitools version.
         user_agent = client.user_agent or 'apitools-client/1.0'
         http_request.headers['user-agent'] = user_agent
@@ -682,7 +682,7 @@ class BaseApiService(object):
                    upload=None, upload_config=None, download=None):
         """Call this method with request."""
         if upload is not None and download is not None:
-            # TODO(craigcitro): This just involves refactoring the logic
+            # TODO(user): This just involves refactoring the logic
             # below into callbacks that we can pass around; in particular,
             # the order should be that the upload gets the initial request,
             # and then passes its reply to a download if one exists, and
@@ -694,7 +694,7 @@ class BaseApiService(object):
             method_config, request, global_params, upload, upload_config,
             download)
 
-        # TODO(craigcitro): Make num_retries customizable on Transfer
+        # TODO(user): Make num_retries customizable on Transfer
         # objects, and pass in self.__client.num_retries when initializing
         # an upload or download.
         if download is not None:

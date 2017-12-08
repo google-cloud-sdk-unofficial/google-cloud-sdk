@@ -37,9 +37,14 @@ class Pull(base.ListCommand):
     parser.add_argument(
         '--auto-ack', action='store_true', default=False,
         help=('Automatically ACK every message pulled from this subscription.'))
-
-  def Collection(self):
-    return util.SUBSCRIPTIONS_PULL_COLLECTION
+    parser.display_info.AddFormat("""
+          table[box](
+            message.data.decode(base64),
+            message.messageId,
+            message.attributes.list(separator=' '),
+            ackId.if(NOT auto_ack)
+          )
+        """)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

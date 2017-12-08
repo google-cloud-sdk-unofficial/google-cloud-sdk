@@ -30,9 +30,6 @@ class Create(base.CreateCommand):
     parser.add_argument('topic', nargs='+',
                         help='One or more topic names to create.')
 
-  def Collection(self):
-    return util.TOPICS_COLLECTION
-
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

@@ -26,6 +26,7 @@ from contextlib import contextmanager
 import logging
 import timeit
 
+
 import numpy as np
 
 import tensorflow.contrib   # pylint: disable=unused-import

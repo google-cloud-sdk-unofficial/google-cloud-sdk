@@ -69,7 +69,7 @@ class HttpError(CommunicationError):
 
     @property
     def status_code(self):
-        # TODO(craigcitro): Turn this into something better than a
+        # TODO(user): Turn this into something better than a
         # KeyError if there is no status.
         return int(self.response['status'])
 

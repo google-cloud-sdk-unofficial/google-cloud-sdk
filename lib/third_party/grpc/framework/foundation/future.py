@@ -66,7 +66,7 @@ class Future(six.with_metaclass(abc.ABCMeta)):
   or may have already completed.
   """
 
-    # NOTE(user): This isn't the return type that I would want to have if it
+    # NOTE(nathaniel): This isn't the return type that I would want to have if it
     # were up to me. Were this interface being written from scratch, the return
     # type of this method would probably be a sum type like:
     #
@@ -93,7 +93,7 @@ class Future(six.with_metaclass(abc.ABCMeta)):
     """
         raise NotImplementedError()
 
-    # NOTE(user): Here too this isn't the return type that I'd want this
+    # NOTE(nathaniel): Here too this isn't the return type that I'd want this
     # method to have if it were up to me. I think I'd go with another sum type
     # like:
     #
@@ -134,7 +134,7 @@ class Future(six.with_metaclass(abc.ABCMeta)):
     """
         raise NotImplementedError()
 
-    # NOTE(user): These aren't quite the semantics I'd like here either. I
+    # NOTE(nathaniel): These aren't quite the semantics I'd like here either. I
     # would rather this only returned True in cases in which the underlying
     # computation completed successfully. A computation's having been cancelled
     # conflicts with considering that computation "done".

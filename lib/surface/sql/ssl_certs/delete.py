@@ -168,9 +168,7 @@ class DeleteBeta(_BaseDelete, base.Command):
     operation_ref = resources.Create(
         'sql.operations',
         operation=result.name,
-        project=cert_ref.project,
-        instance=cert_ref.instance,
-    )
+        project=cert_ref.project)
 
     if args.async:
       return sql_client.operations.Get(

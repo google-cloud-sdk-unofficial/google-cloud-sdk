@@ -216,7 +216,7 @@ class ExternalRuntimeConfigurator(Configurator):
       return
 
     notify = logging.info if self.params.deploy else self.env.Print
-    # TODO(mmuller): The config file need not be named app.yaml.  We need to
+    # TODO(user): The config file need not be named app.yaml.  We need to
     # pass the appinfo file name in through params. and use it here.
     filename = os.path.join(self.path, 'app.yaml')
 
@@ -458,7 +458,7 @@ class ExternalizedRuntime(object):
       result.generated_appinfo = message.get('appinfo')
     elif msg_type == 'gen_file':
       try:
-        # TODO(mmuller): deal with 'encoding'
+        # TODO(user): deal with 'encoding'
         filename = message['filename']
         contents = message['contents']
         result.files.append(GeneratedFile(filename, contents))
@@ -484,7 +484,7 @@ class ExternalizedRuntime(object):
           message = prompt + ':'
         result = self.env.PromptResponse(message)
       else:
-        # TODO(mmuller): Support the "id" field once there is a way to pass
+        # TODO(user): Support the "id" field once there is a way to pass
         # these through.
         if default is not None:
           result = default
@@ -499,7 +499,7 @@ class ExternalizedRuntime(object):
       except KeyError:
         logging.error(_MISSING_FIELD_ERROR.format('path', msg_type))
         return
-    # TODO(mmuller): implement remaining message types.
+    # TODO(user): implement remaining message types.
     else:
       logging.error('Unknown message type %s' % msg_type)
 
@@ -542,7 +542,7 @@ class ExternalizedRuntime(object):
     Raises:
       PluginInvocationFailed: The plugin terminated with a non-zero exit code.
     """
-    # TODO(mmuller): Support other script types.
+    # TODO(user): Support other script types.
     if plugin_spec.has_key('python'):
       normalized_path = _NormalizePath(self.root, plugin_spec['python'])
 

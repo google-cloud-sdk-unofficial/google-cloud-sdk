@@ -19,8 +19,14 @@ from googlecloudsdk.command_lib.ml.vision import vision_command_util
 
 
 class DetectImageProperties(base.Command):
-  """Detect general attributes of an image, such as dominant color.
+  """Detect general attributes of an image.
+
+  Detect general attributes of an image, such as dominant color.
+
+  {auth_hints}
   """
+
+  detailed_help = {'auth_hints': vision_command_util.VISION_AUTH_HELP}
 
   @staticmethod
   def Args(parser):

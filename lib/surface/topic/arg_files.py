@@ -12,26 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Gcloud test argument files supplementary help."""
+"""Gcloud firebase test argument files supplementary help."""
 
 from googlecloudsdk.calliope import base
 
 
 class TestingArgFiles(base.TopicCommand):
-  """Supplementary help for arg-files to be used with *gcloud test*."""
+  """Supplementary help for arg-files to be used with *gcloud firebase test*."""
 
   detailed_help = {
 
       'DESCRIPTION': """\
           {description}
 
-          All *gcloud test android run* arguments may be specified by flags on
-          the command line and/or via a YAML-formatted _ARG_FILE_. The optional,
-          positional ARG_SPEC argument on the command line is used to specify
-          a single _ARG_FILE_:_ARG_GROUP_NAME_ pair, where _ARG_FILE_ is the
-          path to the YAML argument file, and _ARG_GROUP_NAME_ is the name
-          of the argument group to load and parse. The _ARG_FILE_ must
-          contain valid YAML syntax or gcloud will respond with an error.
+          All *gcloud firebase test android run* arguments may be specified by
+          flags on the command line and/or via a YAML-formatted _ARG_FILE_. The
+          optional, positional ARG_SPEC argument on the command line is used to
+          specify a single _ARG_FILE_:_ARG_GROUP_NAME_ pair, where _ARG_FILE_ is
+          the path to the YAML argument file, and _ARG_GROUP_NAME_ is the name
+          of the argument group to load and parse. The _ARG_FILE_ must contain
+          valid YAML syntax or gcloud will respond with an error.
 
           The basic format of a YAML argument file is:
 
@@ -98,7 +98,7 @@ class TestingArgFiles(base.TopicCommand):
 
           To invoke this test, run:
 
-            $ gcloud beta test android run excelsior_args.yaml:quick-robo-test
+            $ gcloud firebase test android run excelsior_args.yaml:quick-robo-test
 
           To select which device(s) you wish to test against in an argument
           file, use *device:* to specify one or more devices, with each device
@@ -147,7 +147,7 @@ class TestingArgFiles(base.TopicCommand):
           Assuming the above YAML text is appended to the arg-file named
           excelsior_args.yaml, you may invoke the test by running:
 
-            $ gcloud beta test android run excelsior_args.yaml:robo-test-with-login
+            $ gcloud firebase test android run excelsior_args.yaml:robo-test-with-login
 
           Here is a slightly more complicated example which demonstrates
           composition of argument groups using the legacy device dimension
@@ -174,13 +174,13 @@ class TestingArgFiles(base.TopicCommand):
 
           To invoke this test matrix, run:
 
-            $ gcloud beta test android run excelsior_args.yaml:unit-tests
+            $ gcloud firebase test android run excelsior_args.yaml:unit-tests
 
           To run these unit tests with the same locales and os-version-ids,
           but substituting a sampling of three physical Android devices
           instead of the single virtual NexusLowRes device, run:
 
-            $ gcloud beta test android run excelsior_args.yaml:unit-tests --device-ids shamu,htc_m8,g3
+            $ gcloud firebase test android run excelsior_args.yaml:unit-tests --device-ids shamu,htc_m8,g3
 
           In the last example, the --device-ids argument on the
           command line overrides the device-ids: specification inside the

@@ -21,16 +21,19 @@ from googlecloudsdk.command_lib.ml.vision import vision_command_util
 class DetectText(base.Command):
   """Detect and extract text within an image.
 
-    Google Cloud Vision uses OCR (Optical Character Recognition) to detect
-    text within an image, with support for a broad array of languages and
-    automatic label detection.
+  Detect and extract text within an image.
 
-    {language_hints}
+  Google Cloud Vision uses OCR (Optical Character Recognition) to detect text
+  within an image, with support for a broad array of languages and automatic
+  label detection.
+
+  {language_hints}
+
+  {auth_hints}
   """
 
-  detailed_help = {
-      'language_hints': flags.LANGUAGE_HINTS.format(
-          'gcloud beta ml detect-text')}
+  detailed_help = {'language_hints': flags.LANGUAGE_HINTS,
+                   'auth_hints': vision_command_util.VISION_AUTH_HELP}
 
   @staticmethod
   def Args(parser):

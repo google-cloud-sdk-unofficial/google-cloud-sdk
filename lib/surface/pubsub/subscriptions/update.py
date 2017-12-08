@@ -97,9 +97,6 @@ class UpdateAlpha(base.UpdateCommand):
               ' "s", "m", "h", and "d" for seconds, minutes, hours, and days,'
               ' respectively.  If the unit is omitted, seconds is assumed.'))
 
-  def Collection(self):
-    return util.SUBSCRIPTIONS_COLLECTION
-
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

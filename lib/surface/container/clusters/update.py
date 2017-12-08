@@ -34,6 +34,20 @@ class InvalidAddonValueError(util.Error):
     super(InvalidAddonValueError, self).__init__(message)
 
 
+class InvalidPasswordError(util.Error):
+  """A class for invalid --set-password input."""
+
+  def __init__(self, value, error):
+    message = ('invalid --set-password value "{0}"; {1}'.format(value, error))
+    super(InvalidPasswordError, self).__init__(message)
+
+
+def _ValidatePassword(val):
+  if len(val) < 16:
+    raise InvalidPasswordError(val, 'Password must be at least length 16')
+  return
+
+
 def _ParseAddonDisabled(val):
   if val == 'ENABLED':
     return False
@@ -54,7 +68,7 @@ def _AddCommonArgs(parser):
 
 
 def _AddMutuallyExclusiveArgs(mutex_group):
-  """Add all arguments that need to be mutually eclusive from each other."""
+  """Add all arguments that need to be mutually exclusive from each other."""
   mutex_group.add_argument(
       '--monitoring-service',
       help='The monitoring service to use for the cluster. Options '
@@ -72,6 +86,17 @@ def _AddMutuallyExclusiveArgs(mutex_group):
 {hpa}=ENABLED|DISABLED
 {ingress}=ENABLED|DISABLED'''.format(
     hpa=api_adapter.HPA, ingress=api_adapter.INGRESS))
+  mutex_group.add_argument(
+      '--generate-password',
+      action='store_true',
+      default=None,
+      help='Ask the server to generate a secure password and use that as the '
+      'admin password.')
+  mutex_group.add_argument(
+      '--set-password',
+      action='store_true',
+      default=None,
+      help='Set the admin password to the user specified value.')
 
 
 def _AddAdditionalZonesArg(mutex_group):
@@ -115,6 +140,7 @@ class Update(base.UpdateCommand):
     _AddMutuallyExclusiveArgs(group)
     flags.AddClusterAutoscalingFlags(parser, group, hidden=True)
     flags.AddMasterAuthorizedNetworksFlags(parser, group, hidden=True)
+    flags.AddEnableLegacyAbacFlag(group, hidden=True)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -143,22 +169,48 @@ class Update(base.UpdateCommand):
     if hasattr(args, 'additional_zones') and args.additional_zones is not None:
       locations = sorted([cluster_ref.zone] + args.additional_zones)
 
-    enable_master_authorized_networks = args.enable_master_authorized_networks
-    options = api_adapter.UpdateClusterOptions(
-        monitoring_service=args.monitoring_service,
-        disable_addons=args.disable_addons,
-        enable_autoscaling=args.enable_autoscaling,
-        min_nodes=args.min_nodes,
-        max_nodes=args.max_nodes,
-        node_pool=args.node_pool,
-        locations=locations,
-        enable_master_authorized_networks=enable_master_authorized_networks,
-        master_authorized_networks=args.master_authorized_networks)
+    if args.generate_password or args.set_password:
+      if args.generate_password:
+        password = ''
+        options = api_adapter.SetMasterAuthOptions(
+            action=api_adapter.SetMasterAuthOptions.GENERATE_PASSWORD,
+            password=password)
+      else:
+        password = raw_input('Please enter the new password:')
+        _ValidatePassword(password)
+        options = api_adapter.SetMasterAuthOptions(
+            action=api_adapter.SetMasterAuthOptions.SET_PASSWORD,
+            password=password)
 
-    try:
-      op_ref = adapter.UpdateCluster(cluster_ref, options)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+      try:
+        op_ref = adapter.SetMasterAuth(cluster_ref, options)
+        del password
+        del options
+      except apitools_exceptions.HttpError as error:
+        del password
+        del options
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    else:
+      enable_master_authorized_networks = args.enable_master_authorized_networks
+
+      try:
+        if args.enable_legacy_abac is not None:
+          op_ref = adapter.SetLegacyAbac(cluster_ref, args.enable_legacy_abac)
+        else:
+          options = api_adapter.UpdateClusterOptions(
+              monitoring_service=args.monitoring_service,
+              disable_addons=args.disable_addons,
+              enable_autoscaling=args.enable_autoscaling,
+              min_nodes=args.min_nodes,
+              max_nodes=args.max_nodes,
+              node_pool=args.node_pool,
+              locations=locations,
+              enable_master_authorized_networks=
+              enable_master_authorized_networks,
+              master_authorized_networks=args.master_authorized_networks)
+          op_ref = adapter.UpdateCluster(cluster_ref, options)
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
 
     if not flags.GetAsyncValueFromAsyncAndWaitFlags(args.async, args.wait):
       adapter.WaitForOperation(
@@ -179,6 +231,7 @@ class UpdateBeta(Update):
     flags.AddClusterAutoscalingFlags(parser, group, hidden=True)
     _AddAdditionalZonesArg(group)
     flags.AddMasterAuthorizedNetworksFlags(parser, group, hidden=True)
+    flags.AddEnableLegacyAbacFlag(group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -193,3 +246,4 @@ class UpdateAlpha(Update):
     flags.AddClusterAutoscalingFlags(parser, group)
     _AddAdditionalZonesArg(group)
     flags.AddMasterAuthorizedNetworksFlags(parser, group, hidden=True)
+    flags.AddEnableLegacyAbacFlag(group)

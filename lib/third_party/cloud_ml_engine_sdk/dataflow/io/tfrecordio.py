@@ -9,6 +9,11 @@ from apache_beam.io import filebasedsource
 from apache_beam.io import fileio
 import crcmod
 
+try:
+  # TODO(user): Remove this after updating to latest Beam.
+  from apache_beam.io.filesystem import CompressionTypes  # pylint: disable=g-import-not-at-top
+except ImportError:
+  from apache_beam.io.fileio import CompressionTypes  # pylint: disable=g-import-not-at-top
 
 _crc32c_fn = None
 try:
@@ -151,7 +156,7 @@ class ReadFromTFRecord(beam.PTransform):
   def __init__(self,
                file_pattern,
                coder=coders.BytesCoder(),
-               compression_type=fileio.CompressionTypes.AUTO,
+               compression_type=CompressionTypes.AUTO,
                **kwargs):
     """Initialize a ReadFromTFRecord transform.
 
@@ -213,7 +218,7 @@ class WriteToTFRecord(beam.PTransform):
                file_name_suffix='',
                num_shards=0,
                shard_name_template=fileio.DEFAULT_SHARD_NAME_TEMPLATE,
-               compression_type=fileio.CompressionTypes.AUTO,
+               compression_type=CompressionTypes.AUTO,
                **kwargs):
     """Initialize WriteToTFRecord transform.
 

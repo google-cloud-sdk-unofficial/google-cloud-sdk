@@ -24,7 +24,7 @@ from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SetIamPolicy(base.UpdateCommand):
   """Sets the IAM policy for the named repository."""
 
@@ -37,7 +37,7 @@ class SetIamPolicy(base.UpdateCommand):
       'EXAMPLES':
           textwrap.dedent("""\
           To set the IAM policy, issue the following command:
-            $ gcloud alpha source repos set-iam-policy REPO_NAME POLICY_FILE
+            $ gcloud beta source repos set-iam-policy REPO_NAME POLICY_FILE
       """),
   }
 

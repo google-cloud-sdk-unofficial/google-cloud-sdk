@@ -48,9 +48,6 @@ https://cloud.google.com/pubsub/docs/publisher#publish
                               ' You can specify up to {0} attributes.'.format(
                                   MAX_ATTRIBUTES)))
 
-  def Collection(self):
-    return util.TOPICS_PUBLISH_COLLECTION
-
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

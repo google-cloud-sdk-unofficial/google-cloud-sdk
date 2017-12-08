@@ -254,7 +254,7 @@ class BaseRepo(object):
         unshallows = getattr(graph_walker, 'unshallow', frozenset())
 
         if wants == []:
-            # TODO(dborowitz): find a way to short-circuit that doesn't change
+            # TODO(user): find a way to short-circuit that doesn't change
             # this interface.
 
             if shallows or unshallows:
@@ -702,7 +702,7 @@ class Repo(BaseRepo):
         :param path: The path to the file, relative to the control dir.
         :return: An open file object, or None if the file does not exist.
         """
-        # TODO(dborowitz): sanitize filenames, since this is used directly by
+        # TODO(user): sanitize filenames, since this is used directly by
         # the dumb web serving code.
         path = path.lstrip(os.path.sep)
         try:

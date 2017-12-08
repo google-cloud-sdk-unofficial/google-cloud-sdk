@@ -334,7 +334,7 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
 
     log.CreatedResource(build_ref)
     if build.logUrl:
-      log.status.Print('Logs are permanently available at [{log_url}].'.format(
+      log.status.Print('Logs are available at [{log_url}].'.format(
           log_url=build.logUrl))
     else:
       log.status.Print('Logs are available in the Cloud Console.')

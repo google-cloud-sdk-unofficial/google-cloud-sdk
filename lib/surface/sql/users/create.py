@@ -70,8 +70,7 @@ class CreateBeta(base.CreateCommand):
     result_operation = sql_client.users.Insert(new_user)
     operation_ref = resources.Create('sql.operations',
                                      operation=result_operation.name,
-                                     project=instance_ref.project,
-                                     instance=instance_ref.instance)
+                                     project=instance_ref.project)
     if args.async:
       result = sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(

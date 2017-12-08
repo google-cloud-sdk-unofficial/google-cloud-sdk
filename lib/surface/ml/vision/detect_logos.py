@@ -19,7 +19,14 @@ from googlecloudsdk.command_lib.ml.vision import vision_command_util
 
 
 class DetectLogos(base.Command):
-  """Detect popular product logos within an image."""
+  """Detect popular product logos within an image.
+
+  Detect popular product logos within an image.
+
+  {auth_hints}
+  """
+
+  detailed_help = {'auth_hints': vision_command_util.VISION_AUTH_HELP}
 
   @staticmethod
   def Args(parser):

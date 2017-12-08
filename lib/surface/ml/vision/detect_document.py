@@ -19,7 +19,9 @@ from googlecloudsdk.command_lib.ml.vision import vision_command_util
 
 
 class DetectDocument(base.Command):
-  """Detect dense text in an image, such as books and research reports.
+  """Detect dense text in an image.
+
+  Detect dense text in an image, such as books and research reports.
 
   Google Cloud Vision uses OCR (Optical Character Recognition) to analyze text.
   This is a premium feature for dense text such as books, research
@@ -28,11 +30,12 @@ class DetectDocument(base.Command):
   Cloud Vision documentation at https://cloud.google.com/vision/docs/.
 
   {language_hints}
+
+  {auth_hints}
   """
 
-  detailed_help = {
-      'language_hints': flags.LANGUAGE_HINTS.format(
-          'gcloud beta ml detect-document')}
+  detailed_help = {'language_hints': flags.LANGUAGE_HINTS,
+                   'auth_hints': vision_command_util.VISION_AUTH_HELP}
 
   @staticmethod
   def Args(parser):

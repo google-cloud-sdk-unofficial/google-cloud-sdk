@@ -26,21 +26,23 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete project git repository in the current directory."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           This command deletes a named git repository from the currently
           active Google Cloud Platform project.
       """,
-      'EXAMPLES': textwrap.dedent("""\
+      'EXAMPLES':
+          textwrap.dedent("""\
           To delete a named repository in the current project issue the
           following commands:
 
             $ gcloud init
-            $ gcloud alpha source repos delete REPO_NAME
+            $ gcloud beta source repos delete REPO_NAME
       """),
   }
 

@@ -49,8 +49,21 @@ class SetIamPolicy(orgs_base.OrganizationCommand):
   def Run(self, args):
     messages = self.OrganizationsMessages()
     policy = iam_util.ParsePolicyFile(args.policy_file, messages.Policy)
+    update_mask = iam_util.ConstructUpdateMaskFromPolicy(args.policy_file)
+
+    # To preserve the existing set-iam-policy behavior of always overwriting
+    # bindings and etag, add bindings and etag to update_mask.
+    if 'bindings' not in update_mask:
+      update_mask += ',bindings'
+    if 'etag' not in update_mask:
+      update_mask += ',etag'
+
+    set_iam_policy_request = messages.SetIamPolicyRequest(
+        policy=policy,
+        updateMask=update_mask)
+
     policy_request = (
         messages.CloudresourcemanagerOrganizationsSetIamPolicyRequest(
             organizationsId=args.id,
-            setIamPolicyRequest=messages.SetIamPolicyRequest(policy=policy)))
+            setIamPolicyRequest=set_iam_policy_request))
     return self.OrganizationsClient().SetIamPolicy(policy_request)

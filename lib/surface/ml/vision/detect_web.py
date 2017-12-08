@@ -19,7 +19,14 @@ from googlecloudsdk.command_lib.ml.vision import vision_command_util
 
 
 class DetectWeb(base.Command):
-  """Detect entities in an image from similar images on the web."""
+  """Detect entities in an image from similar images on the web.
+
+  Detect entities in an image from similar images on the web.
+
+  {auth_hints}
+  """
+
+  detailed_help = {'auth_hints': vision_command_util.VISION_AUTH_HELP}
 
   @staticmethod
   def Args(parser):

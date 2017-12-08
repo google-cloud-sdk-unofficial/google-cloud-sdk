@@ -246,7 +246,7 @@ class DescriptorGenerator(object):
         printer('_PACKAGE = "apitools.clients.%s"' % self.__package)
         printer()
         printer('setuptools.setup(')
-        # TODO(craigcitro): Allow customization of these options.
+        # TODO(user): Allow customization of these options.
         with printer.Indent(indent='    '):
             printer('name="google-apitools-%s-%s",',
                     self.__package, self.__version)

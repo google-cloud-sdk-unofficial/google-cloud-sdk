@@ -48,4 +48,4 @@ class SetIamPolicy(base.Command):
     """
     instance_ref = resources.REGISTRY.Parse(
         args.instance, collection='spanner.projects.instances')
-    return iam.SetIamPolicy(instance_ref, args.policy_file)
+    return iam.SetInstanceIamPolicy(instance_ref, args.policy_file)

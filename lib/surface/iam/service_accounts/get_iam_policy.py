@@ -40,10 +40,8 @@ class GetIamPolicy(base_classes.BaseIamCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('name',
-                        metavar='IAM-ACCOUNT',
-                        help='The service account whose policy to '
-                        'get.')
+    iam_util.AddServiceAccountNameArg(
+        parser, help_text='The service account whose policy to get.')
 
   def Run(self, args):
     return self.iam_client.projects_serviceAccounts.GetIamPolicy(

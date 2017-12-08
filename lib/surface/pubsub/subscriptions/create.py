@@ -141,9 +141,6 @@ class CreateBeta(base.CreateCommand):
   is specified.
   """
 
-  def Collection(self):
-    return util.SUBSCRIPTIONS_COLLECTION
-
   @staticmethod
   def Args(parser):
     _ArgsBeta(parser)
@@ -191,9 +188,6 @@ class CreateAlpha(base.CreateCommand):
       # we need to convert to the string representation here.
       subscription.messageRetentionDuration = str(
           args.message_retention_duration) + 's'
-
-  def Collection(self):
-    return util.SUBSCRIPTIONS_COLLECTION
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

@@ -32,9 +32,6 @@ class ModifyPushConfig(base.Command):
               ' This will also automatically set the subscription'
               ' type to PUSH.'))
 
-  def Collection(self):
-    return util.SUBSCRIPTIONS_MOD_CONFIG_COLLECTION
-
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

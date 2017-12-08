@@ -133,7 +133,7 @@ class UnpackedObject(object):
       'crc32',          # CRC32.
       ]
 
-    # TODO(dborowitz): read_zlib_chunks and unpack_object could very well be
+    # TODO(user): read_zlib_chunks and unpack_object could very well be
     # methods of this object.
     def __init__(self, pack_type_num, delta_base, decomp_len, crc32):
         self.offset = None
@@ -1081,7 +1081,7 @@ class PackData(object):
             assert isinstance(type, int)
         type, base_chunks = self.resolve_object(base_offset, type, base_obj)
         chunks = apply_delta(base_chunks, delta)
-        # TODO(dborowitz): This can result in poor performance if large base
+        # TODO(user): This can result in poor performance if large base
         # objects are separated from deltas in the pack. We should reorganize
         # so that we apply deltas to all objects in a chain one after the other
         # to optimize cache performance.
@@ -1102,7 +1102,7 @@ class PackData(object):
             self._file.seek(-len(unused), SEEK_CUR)  # Back up over unused data.
 
     def _iter_unpacked(self):
-        # TODO(dborowitz): Merge this with iterobjects, if we can change its
+        # TODO(user): Merge this with iterobjects, if we can change its
         # return type.
         self._file.seek(self._header_size)
 

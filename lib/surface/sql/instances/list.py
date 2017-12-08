@@ -26,18 +26,18 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-def _GetUriFromResource(resource, undefined=None):
+def _GetUriFromResource(resource):
   """Returns the URI for resource."""
   return resources.REGISTRY.Create(
       'sql.instances', project=resource.project,
-      instance=resource.instance).SelfLink() or undefined
+      instance=resource.instance).SelfLink()
 
 
-def _GetUriFromResourceBeta(resource, undefined=None):
+def _GetUriFromResourceBeta(resource):
   """Returns the URI for resource."""
   return resources.REGISTRY.Create(
       'sql.instances', project=resource.project,
-      instance=resource.name).SelfLink() or undefined
+      instance=resource.name).SelfLink()
 
 
 class _BaseList(object):
@@ -81,7 +81,7 @@ class List(_BaseList, base.ListCommand):
   def Args(parser):
     parser.display_info.AddFormat(flags.INSTANCES_FORMAT)
     # TODO(b/36472296): Add a --uri flag test to kill a mutant.
-    parser.display_info.AddTransforms({'uri': _GetUriFromResource})
+    parser.display_info.AddUriFunc(_GetUriFromResource)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -95,4 +95,4 @@ class ListBeta(_BaseList, base.ListCommand):
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(flags.INSTANCES_FORMAT_BETA)
-    parser.display_info.AddTransforms({'uri': _GetUriFromResourceBeta})
+    parser.display_info.AddUriFunc(_GetUriFromResourceBeta)

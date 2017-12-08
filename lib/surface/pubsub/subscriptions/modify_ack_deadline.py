@@ -40,9 +40,6 @@ class ModifyAckDeadline(base.Command):
               ' acknowledge receiving a message before re-attempting'
               ' delivery.'))
 
-  def Collection(self):
-    return util.SUBSCRIPTIONS_MOD_ACK_COLLECTION
-
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

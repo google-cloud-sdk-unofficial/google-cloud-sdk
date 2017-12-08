@@ -23,7 +23,11 @@ class DetectLandmarks(base.Command):
 
   Google Cloud Vision will recognize landmarks in an image, such as "Palace
   of Fine Arts."
+
+  {auth_hints}
   """
+
+  detailed_help = {'auth_hints': vision_command_util.VISION_AUTH_HELP}
 
   @staticmethod
   def Args(parser):

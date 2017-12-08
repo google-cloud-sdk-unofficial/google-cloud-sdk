@@ -65,33 +65,18 @@ class Create(base.CreateCommand):
         '--log-filter', required=False,
         help=('A filter expression for the sink. If present, the filter '
               'specifies which log entries to export.'))
-    parser.add_argument(
-        '--output-version-format', required=False,
-        help=('DEPRECATED. Format of the log entries being exported. Detailed '
-              'information: '
-              'https://cloud.google.com/logging/docs/api/introduction_v2'),
-        choices=('V1', 'V2'), default='V1')
-    parser.add_argument(
-        '--unique-writer-identity', required=False, action='store_true',
-        default=True,
-        help=('DEPRECATED. Whether to create a new writer identity for this '
-              'sink. Only available for v2 sinks.'))
     util.AddNonProjectArgs(parser, 'Create a sink')
 
   def Collection(self):
     return 'logging.sinks'
 
-  def CreateSink(self, parent, sink_data, unique_writer_identity):
+  def CreateSink(self, parent, sink_data):
     """Creates a v2 sink specified by the arguments."""
     messages = util.GetMessages()
-    # Change string value to enum.
-    sink_data['outputVersionFormat'] = getattr(
-        messages.LogSink.OutputVersionFormatValueValuesEnum,
-        sink_data['outputVersionFormat'])
     return util.GetClient().projects_sinks.Create(
         messages.LoggingProjectsSinksCreateRequest(
             parent=parent, logSink=messages.LogSink(**sink_data),
-            uniqueWriterIdentity=unique_writer_identity))
+            uniqueWriterIdentity=True))
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -103,10 +88,6 @@ class Create(base.CreateCommand):
     Returns:
       The created sink with its destination.
     """
-    if not args.unique_writer_identity:
-      log.warn(
-          '--unique-writer-identity is deprecated and will soon be removed.')
-
     if not args.log_filter:
       # Attempt to create a sink with an empty filter.
       console_io.PromptContinue(
@@ -118,14 +99,11 @@ class Create(base.CreateCommand):
     sink_data = {
         'name': sink_ref.sinksId,
         'destination': args.destination,
-        'filter': args.log_filter,
-        'outputVersionFormat': args.output_version_format
+        'filter': args.log_filter
     }
 
     result = util.TypedLogSink(
-        self.CreateSink(
-            util.GetParentFromArgs(args), sink_data,
-            args.unique_writer_identity))
+        self.CreateSink(util.GetParentFromArgs(args), sink_data))
 
     log.CreatedResource(sink_ref)
     self._epilog_result_destination = result.destination

@@ -15,6 +15,7 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instance_groups import flags
 
 
@@ -34,7 +35,8 @@ class Describe(base.DescribeCommand):
     messages = holder.client.messages
 
     ref = flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
-        args, holder.resources)
+        args, holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
 
     if ref.Collection() == 'compute.instanceGroups':
       service = client.instanceGroups

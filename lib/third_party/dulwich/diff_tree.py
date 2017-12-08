@@ -462,7 +462,7 @@ class RenameDetector(object):
                 self._changes.append(TreeChange(new_type, old, new))
 
             num_extra_adds = len(sha_adds) - len(sha_deletes)
-            # TODO(dborowitz): Less arbitrary way of dealing with extra copies.
+            # TODO(user): Less arbitrary way of dealing with extra copies.
             old = sha_deletes[0][0]
             if num_extra_adds > 0:
                 for new in sha_adds[-num_extra_adds:]:

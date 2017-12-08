@@ -52,4 +52,4 @@ class AddIamPolicyBinding(base.Command):
     """
     instance_ref = resources.REGISTRY.Parse(
         args.instance, collection='spanner.projects.instances')
-    return iam.AddIamPolicyBinding(instance_ref, args.member, args.role)
+    return iam.AddInstanceIamPolicyBinding(instance_ref, args.member, args.role)

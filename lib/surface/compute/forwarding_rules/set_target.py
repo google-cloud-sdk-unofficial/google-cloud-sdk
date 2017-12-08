@@ -115,9 +115,7 @@ Set.detailed_help = {
         """.format(overview=flags.FORWARDING_RULES_OVERVIEW)),
 }
 
-SetBeta.detailed_help = Set.detailed_help
-
-SetAlpha.detailed_help = {
+SetBeta.detailed_help = {
     'brief': ('Modify a forwarding rule to direct network traffic to a new '
               'target'),
     'DESCRIPTION': ("""\
@@ -130,3 +128,5 @@ SetAlpha.detailed_help = {
         ``--target-vpn-gateway'' must be specified.""".format(
             overview=flags.FORWARDING_RULES_OVERVIEW)),
 }
+
+SetAlpha.detailed_help = SetBeta.detailed_help

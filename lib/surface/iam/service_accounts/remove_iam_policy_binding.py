@@ -32,10 +32,9 @@ class RemoveIamPolicyBinding(base_classes.BaseIamCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('name',
-                        metavar='IAM-ACCOUNT',
-                        help='The service account whose policy to '
-                        'remove the binding from.')
+    iam_util.AddServiceAccountNameArg(
+        parser,
+        help_text='The service account to remove the policy binding from.')
     iam_util.AddArgsForRemoveIamPolicyBinding(parser)
 
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)

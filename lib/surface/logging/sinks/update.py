@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
+from googlecloudsdk.core.console import console_io
 
 
 class Update(base.UpdateCommand):
@@ -57,14 +58,10 @@ class Update(base.UpdateCommand):
               'If omitted, the sink\'s existing filter (if any) is unchanged.'))
     parser.add_argument(
         '--output-version-format', required=False,
-        help=('Format of the log entries being exported. Detailed information: '
+        help=('DEPRECATED. Format of the log entries being exported. '
+              'Detailed information: '
               'https://cloud.google.com/logging/docs/api/introduction_v2'),
-        choices=('V1', 'V2'))
-    parser.add_argument(
-        '--unique-writer-identity', required=False, action='store_true',
-        default=True,
-        help=('Whether to create a new writer identity for this sink. Only '
-              'available for project sinks.'))
+        choices=('V2',))
     util.AddNonProjectArgs(parser, 'Update a sink')
 
   def Collection(self):
@@ -77,7 +74,7 @@ class Update(base.UpdateCommand):
             sinkName=util.CreateResourceName(
                 parent, 'sinks', sink_ref.sinksId)))
 
-  def UpdateSink(self, parent, sink_data, unique_writer_identity):
+  def UpdateSink(self, parent, sink_data):
     """Updates a sink specified by the arguments."""
     messages = util.GetMessages()
     # Change string value to enum.
@@ -89,7 +86,7 @@ class Update(base.UpdateCommand):
             sinkName=util.CreateResourceName(
                 parent, 'sinks', sink_data['name']),
             logSink=messages.LogSink(**sink_data),
-            uniqueWriterIdentity=unique_writer_identity))
+            uniqueWriterIdentity=True))
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -101,9 +98,9 @@ class Update(base.UpdateCommand):
     Returns:
       The updated sink with its new destination.
     """
-    if not args.unique_writer_identity:
+    if args.output_version_format:
       log.warn(
-          '--unique-writer-identity is deprecated and will soon be removed.')
+          '--output-version-format is deprecated and will soon be removed.')
 
     # One of the flags is required to update the sink.
     # log_filter can be an empty string, so check explicitly for None.
@@ -147,10 +144,18 @@ class Update(base.UpdateCommand):
         'outputVersionFormat': output_format
     }
 
+    # Check for legacy configuration, and let users decide if they still want
+    # to update the sink with new settings.
+    if 'cloud-logs@' in sink.writerIdentity:
+      console_io.PromptContinue(
+          'This update will create a new writerIdentity (service account) for '
+          'the sink. In order for the sink to continue working, grant that '
+          'service account correct permission on the destination. The service '
+          'account will be displayed after a successful update operation.',
+          cancel_on_no=True, default=False)
+
     result = util.TypedLogSink(
-        self.UpdateSink(
-            util.GetParentFromArgs(args), sink_data,
-            args.unique_writer_identity))
+        self.UpdateSink(util.GetParentFromArgs(args), sink_data))
 
     log.UpdatedResource(sink_ref, kind='sink')
     util.PrintPermissionInstructions(result.destination, result.writer_identity)

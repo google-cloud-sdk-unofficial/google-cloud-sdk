@@ -192,6 +192,7 @@ class Create(base.CreateCommand):
     flags.AddEnableAutoUpgradeFlag(parser, suppressed=True)
     flags.AddServiceAccountFlag(parser, suppressed=True)
     flags.AddMasterAuthorizedNetworksFlags(parser, hidden=True)
+    flags.AddEnableLegacyAbacFlag(parser, hidden=True)
 
   def ParseCreateOptions(self, args):
     if not args.scopes:
@@ -228,7 +229,8 @@ class Create(base.CreateCommand):
         enable_autoupgrade=args.enable_autoupgrade,
         service_account=args.service_account,
         enable_master_authorized_networks=enable_master_authorized_networks,
-        master_authorized_networks=args.master_authorized_networks)
+        master_authorized_networks=args.master_authorized_networks,
+        enable_legacy_abac=args.enable_legacy_abac)
 
   def Collection(self):
     return 'container.projects.zones.clusters'
@@ -315,6 +317,7 @@ class CreateBeta(Create):
     flags.AddEnableAutoUpgradeFlag(parser)
     flags.AddServiceAccountFlag(parser)
     flags.AddMasterAuthorizedNetworksFlags(parser, hidden=True)
+    flags.AddEnableLegacyAbacFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -333,3 +336,4 @@ class CreateAlpha(Create):
     flags.AddEnableAutoUpgradeFlag(parser)
     flags.AddServiceAccountFlag(parser)
     flags.AddMasterAuthorizedNetworksFlags(parser, hidden=True)
+    flags.AddEnableLegacyAbacFlag(parser)

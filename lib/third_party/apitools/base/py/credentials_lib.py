@@ -449,7 +449,7 @@ class GceAssertionCredentials(gce.AppAssertionCredentials):
             'Cannot serialize credentials for GCE service accounts.')
 
 
-# TODO(craigcitro): Currently, we can't even *load*
+# TODO(user): Currently, we can't even *load*
 # `oauth2client.appengine` without being on appengine, because of how
 # it handles imports. Fix that by splitting that module into
 # GAE-specific and GAE-independent bits, and guarding imports.
@@ -514,7 +514,7 @@ def _GetRunFlowFlags(args=None):
     # since they're bringing their own credentials. So we just allow this
     # to fail with an ImportError in those cases.
     #
-    # TODO(craigcitro): Move this import back to the top when we drop
+    # TODO(user): Move this import back to the top when we drop
     # python 2.6 support (eg when gsutil does).
     import argparse
 
@@ -532,7 +532,7 @@ def _GetRunFlowFlags(args=None):
     return flags
 
 
-# TODO(craigcitro): Switch this from taking a path to taking a stream.
+# TODO(user): Switch this from taking a path to taking a stream.
 def CredentialsFromFile(path, client_info, oauth2client_args=None):
     """Read credentials from a file."""
     credential_store = multistore_file.get_credential_storage(
@@ -566,7 +566,7 @@ def CredentialsFromFile(path, client_info, oauth2client_args=None):
     return credentials
 
 
-# TODO(craigcitro): Push this into oauth2client.
+# TODO(user): Push this into oauth2client.
 def GetUserinfo(credentials, http=None):  # pylint: disable=invalid-name
     """Get the userinfo associated with the given credentials.
 

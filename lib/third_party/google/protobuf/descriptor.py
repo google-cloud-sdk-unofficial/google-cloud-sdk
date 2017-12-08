@@ -256,7 +256,7 @@ class Descriptor(_NestedDescriptorBase):
       _message.Message._CheckCalledFromGeneratedFile()
       return _message.default_pool.FindMessageTypeByName(full_name)
 
-  # NOTE(user): The file argument redefining a builtin is nothing we can
+  # NOTE(tmarek): The file argument redefining a builtin is nothing we can
   # fix right now since we don't know how many clients already rely on the
   # name of the argument.
   def __init__(self, name, full_name, filename, containing_type, fields,

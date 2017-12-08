@@ -12,56 +12,54 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for describing managed instance groups."""
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.instance_groups import flags
 
 
-class Describe(base_classes.MultiScopeDescriber):
-  """Describe a managed instance group."""
-
-  SCOPES = [base_classes.ScopeType.regional_scope,
-            base_classes.ScopeType.zonal_scope]
-
-  @property
-  def global_service(self):
-    return None
-
-  @property
-  def regional_service(self):
-    return self.compute.regionInstanceGroupManagers
-
-  @property
-  def zonal_service(self):
-    return self.compute.instanceGroupManagers
-
-  @property
-  def global_resource_type(self):
-    return None
-
-  @property
-  def regional_resource_type(self):
-    return 'regionInstanceGroupManagers'
-
-  @property
-  def zonal_resource_type(self):
-    return 'instanceGroupManagers'
+class Describe(base.DescribeCommand):
+  """Display detailed information about a manged instance group."""
 
   @staticmethod
   def Args(parser):
-    base_classes.MultiScopeDescriber.AddScopeArgs(
-        parser, 'instanceGroupManagers', Describe.SCOPES)
+    flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(parser)
 
-  def ComputeDynamicProperties(self, args, items):
-    """Add Autoscaler information if Autoscaler is defined for the item."""
-    # Items are expected to be IGMs.
-    return managed_instance_groups_utils.AddAutoscalersToMigs(
-        migs_iterator=items,
-        resources=self.resources,
-        compute=self.compute,
-        http=self.http,
-        batch_url=self.batch_url,
+  def Collection(self):
+    return 'compute.instanceGroupManagers'
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+    apitools_client = client.apitools_client
+    messages = client.messages
+    resources = holder.resources
+
+    ref = flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.ResolveAsResource(
+        args, resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+
+    if ref.Collection() == 'compute.instanceGroupManagers':
+      service = apitools_client.instanceGroupManagers
+      request_type = messages.ComputeInstanceGroupManagersGetRequest
+    elif ref.Collection() == 'compute.regionInstanceGroupManagers':
+      service = apitools_client.regionInstanceGroupManagers
+      request_type = messages.ComputeRegionInstanceGroupManagersGetRequest
+
+    igm = encoding.MessageToDict(service.Get(request_type(**ref.AsDict())))
+    annoted_igm = managed_instance_groups_utils.AddAutoscalersToMigs(
+        migs_iterator=[igm],
+        resources=resources,
+        compute=apitools_client,
+        http=apitools_client.http,
+        batch_url=client.batch_url,
         fail_when_api_not_supported=False)
+
+    return list(annoted_igm)[0]
 
 
 Describe.detailed_help = base_classes.GetMultiScopeDescriberHelp(
-    'managed instance group', Describe.SCOPES)
+    'instance group', (base_classes.ScopeType.regional_scope,
+                       base_classes.ScopeType.zonal_scope))

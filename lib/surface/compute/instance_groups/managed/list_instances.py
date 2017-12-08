@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
   """List Google Compute Engine instances present in managed instance group."""
 
@@ -101,14 +101,14 @@ class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
   }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListInstancesAlpha(ListInstances):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ListInstancesBeta(ListInstances):
   """List Google Compute Engine instances present in managed instance group."""
 
   @staticmethod
   def Args(parser):
-    instance_groups_utils.InstanceGroupListInstancesBase.ListInstancesArgs(
-        parser, multizonal=True)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser)
 
   def Format(self, args):
     return """\
@@ -116,9 +116,11 @@ class ListInstancesAlpha(ListInstances):
               instance.scope().segment(0):label=ZONE,
               instanceStatus:label=STATUS,
               currentAction:label=ACTION,
-              instanceTemplate.basename():label=INSTANCE_TEMPLATE,
-              tag:label=TAG,
-              lastAttempt.errors.errors.map().format("Error {0}: {1}", code, message).list(separator=", "):label=LAST_ERROR
+              version.instanceTemplate.basename():label=INSTANCE_TEMPLATE,
+              version.name:label=VERSION_NAME,
+              lastAttempt.errors.errors.map().format(
+                "Error {0}: {1}", code, message).list(separator=", ")
+                :label=LAST_ERROR
         )"""
 
-ListInstancesAlpha.detailed_help = ListInstances.detailed_help
+ListInstancesBeta.detailed_help = ListInstances.detailed_help

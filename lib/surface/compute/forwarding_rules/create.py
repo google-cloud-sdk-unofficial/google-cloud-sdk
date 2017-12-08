@@ -303,7 +303,7 @@ Create.detailed_help = {
         """.format(overview=flags.FORWARDING_RULES_OVERVIEW)),
 }
 
-CreateAlpha.detailed_help = {
+CreateBeta.detailed_help = {
     'DESCRIPTION': ("""\
         *{{command}}* is used to create a forwarding rule. {overview}
 
@@ -313,6 +313,8 @@ CreateAlpha.detailed_help = {
         ``--target-vpn-gateway'' must be specified.""".format(
             overview=flags.FORWARDING_RULES_OVERVIEW)),
 }
+
+CreateAlpha.detailed_help = CreateBeta.detailed_help
 
 
 def _GetPortRange(ports_range_list):

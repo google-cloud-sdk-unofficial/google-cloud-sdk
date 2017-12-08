@@ -337,7 +337,7 @@ class DictRefsContainer(RefsContainer):
 
     def _update(self, refs):
         """Update multiple refs; intended only for testing."""
-        # TODO(dborowitz): replace this with a public function that uses
+        # TODO(user): replace this with a public function that uses
         # set_if_equal.
         self._refs.update(refs)
 

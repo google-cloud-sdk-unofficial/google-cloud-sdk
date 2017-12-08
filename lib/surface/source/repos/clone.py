@@ -28,7 +28,7 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.credentials import store as c_store
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class CloneGA(base.Command):
   """Clone project git repository in the current directory."""
 
@@ -101,7 +101,7 @@ class CloneGA(base.Command):
                                             repo=project_repo.GetName()))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CloneAlpha(base.Command):
   """Clone project git repository in the current directory."""
 
@@ -175,9 +175,9 @@ class CloneAlpha(base.Command):
     if not repo:
       message = ('Repository "{src}" in project "{prj}" does not '
                  'exist.\nList current repos with\n'
-                 '$ gcloud alpha source repos list\n'
+                 '$ gcloud beta source repos list\n'
                  'or create with\n'
-                 '$ gcloud alpha source repos create {src}'.format(
+                 '$ gcloud beta source repos create {src}'.format(
                      src=args.src, prj=res.projectsId))
       raise c_exc.InvalidArgumentException('REPOSITORY_NAME', message)
     if hasattr(repo, 'mirrorConfig') and repo.mirrorConfig:

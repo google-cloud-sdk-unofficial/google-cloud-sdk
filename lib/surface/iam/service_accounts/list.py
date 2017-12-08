@@ -28,11 +28,13 @@ class List(base_classes.BaseIamCommand, base.ListCommand):
   def Collection(self):
     return 'iam.service_accounts'
 
+  def GetUriFunc(self):
+    return iam_util.ServiceAccountsUriFunc
+
   @staticmethod
   def Args(parser):
     base.ASYNC_FLAG.RemoveFromParser(parser)
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
-    base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     if args.limit is not None:

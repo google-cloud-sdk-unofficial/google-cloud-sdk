@@ -37,21 +37,23 @@ _BILLING_URL = 'https://cloud.google.com/source-repositories/docs/pricing'
 _SOURCEREPO_SERVICE_NAME = 'sourcerepo.googleapis.com'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a named git repo for the project in the current directory."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           This command creates a named git repository for the currently
           active Google Cloud Platform project.
       """,
-      'EXAMPLES': textwrap.dedent("""\
+      'EXAMPLES':
+          textwrap.dedent("""\
           To create a named repository in the current project issue the
           following commands:
 
             $ gcloud init
-            $ gcloud alpha source repos create REPO_NAME
+            $ gcloud beta source repos create REPO_NAME
 
           Once you push contents to it, they can be browsed in the
           Developers Console.

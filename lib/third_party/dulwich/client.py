@@ -175,7 +175,7 @@ def read_pkt_refs(proto):
     return refs, set(server_capabilities)
 
 
-# TODO(user): this doesn't correctly degrade if the server doesn't
+# TODO(durin42): this doesn't correctly degrade if the server doesn't
 # support some capabilities. This should work properly with servers
 # that don't support multi_ack.
 class GitClient(object):

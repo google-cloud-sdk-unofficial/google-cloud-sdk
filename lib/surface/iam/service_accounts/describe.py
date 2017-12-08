@@ -42,9 +42,8 @@ class Describe(base_classes.BaseIamCommand, base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('name',
-                        metavar='IAM-ACCOUNT',
-                        help='The service account to describe.')
+    iam_util.AddServiceAccountNameArg(
+        parser, help_text='The service account to describe.')
 
   def Run(self, args):
     # TODO(b/25212870): use resource parsing.

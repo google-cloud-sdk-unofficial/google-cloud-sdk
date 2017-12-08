@@ -18,6 +18,7 @@ import collections
 import logging
 import random
 
+
 import apache_beam as beam
 
 from google.cloud.ml.features import _transforms

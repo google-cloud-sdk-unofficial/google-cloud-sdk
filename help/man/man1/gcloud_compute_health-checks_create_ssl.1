@@ -48,7 +48,7 @@ are ``s'' for seconds and ``m'' for minutes. The default value is
 
 .TP 2m
 \fB\-\-description\fR=\fIDESCRIPTION\fR
-An optional, textual description for the SSL health check.
+An optional string description for the SSL health check.
 
 .TP 2m
 \fB\-\-healthy\-threshold\fR=\fIHEALTHY_THRESHOLD\fR; default="2"
@@ -80,14 +80,23 @@ Adds the header "PROXY UNKNOWN\er\en".
 .sp
 .TP 2m
 \fB\-\-request\fR=\fIREQUEST\fR
-Application data to send once the TCP connection has been established. By
-default, this is empty. If both request and response are empty, the connection
-establishment alone will indicate health of the TCP connection.
+An optional string of up to 1024 characters to send once the health check TCP
+connection has been established. The health checker then looks for a reply of
+the string provided in the \f5\-\-response\fR field.
+
+If \f5\-\-response\fR is not configured, the health checker does not wait for a
+response and regards the probe as successful if the TCP or SSL handshake was
+successful.
 
 .TP 2m
 \fB\-\-response\fR=\fIRESPONSE\fR
-The bytes to match against the beginning of the response data. By default, this
-is empty. If empty, any response will indicate health of the TCP connection.
+An optional string of up to 1024 characters that the health checker expects to
+receive from the instance. If the response is not received exactly, the health
+check probe fails. If \f5\-\-response\fR is configured, but not
+\f5\-\-request\fR, the health checker will wait for a response anyway. Unless
+your system automatically sends out a message in response to a successful
+handshake, only configure \f5\-\-response\fR to match an explicit
+\f5\-\-request\fR.
 
 .TP 2m
 \fB\-\-timeout\fR=\fITIMEOUT\fR; default="5s"

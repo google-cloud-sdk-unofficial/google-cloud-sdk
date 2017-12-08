@@ -93,8 +93,7 @@ class RestoreBackupBeta(base.RestoreCommand):
     operation_ref = resources.Create(
         'sql.operations',
         operation=result_operation.name,
-        project=instance_ref.project,
-        instance=instance_ref.instance,)
+        project=instance_ref.project)
 
     if args.async:
       return sql_client.operations.Get(

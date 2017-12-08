@@ -34,9 +34,6 @@ class Ack(base.Command):
     parser.add_argument('ackid', nargs='+',
                         help='One or more AckId to acknowledge.')
 
-  def Collection(self):
-    return util.SUBSCRIPTIONS_ACK_COLLECTION
-
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

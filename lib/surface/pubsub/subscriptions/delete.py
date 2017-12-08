@@ -31,9 +31,6 @@ class Delete(base.DeleteCommand):
     parser.add_argument('subscription', nargs='+',
                         help='One or more subscription names to delete.')
 
-  def Collection(self):
-    return util.SUBSCRIPTIONS_COLLECTION
-
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

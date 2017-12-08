@@ -5,16 +5,16 @@
 
 .SH "NAME"
 .HP
-gcloud topic arg\-files \- supplementary help for arg\-files to be used with \fBgcloud test\fR
+gcloud topic arg\-files \- supplementary help for arg\-files to be used with \fBgcloud firebase test\fR
 
 
 
 .SH "DESCRIPTION"
 
-Supplementary help for arg\-files to be used with \fBgcloud test\fR.
+Supplementary help for arg\-files to be used with \fBgcloud firebase test\fR.
 
-All \fBgcloud test android run\fR arguments may be specified by flags on the
-command line and/or via a YAML\-formatted \fIARG_FILE\fR. The optional,
+All \fBgcloud firebase test android run\fR arguments may be specified by flags
+on the command line and/or via a YAML\-formatted \fIARG_FILE\fR. The optional,
 positional ARG_SPEC argument on the command line is used to specify a single
 \fIARG_FILE\fR:\fIARG_GROUP_NAME\fR pair, where \fIARG_FILE\fR is the path to
 the YAML argument file, and \fIARG_GROUP_NAME\fR is the name of the argument
@@ -95,7 +95,8 @@ quick\-robo\-test:
 To invoke this test, run:
 
 .RS 2m
-$ gcloud beta test android run excelsior_args.yaml:quick\-robo\-test
+$ gcloud firebase test android run \e
+    excelsior_args.yaml:quick\-robo\-test
 .RE
 
 To select which device(s) you wish to test against in an argument file, use
@@ -155,7 +156,7 @@ Assuming the above YAML text is appended to the arg\-file named
 excelsior_args.yaml, you may invoke the test by running:
 
 .RS 2m
-$ gcloud beta test android run \e
+$ gcloud firebase test android run \e
     excelsior_args.yaml:robo\-test\-with\-login
 .RE
 
@@ -190,7 +191,7 @@ supported\-locales:
 To invoke this test matrix, run:
 
 .RS 2m
-$ gcloud beta test android run excelsior_args.yaml:unit\-tests
+$ gcloud firebase test android run excelsior_args.yaml:unit\-tests
 .RE
 
 To run these unit tests with the same locales and os\-version\-ids, but
@@ -198,7 +199,7 @@ substituting a sampling of three physical Android devices instead of the single
 virtual NexusLowRes device, run:
 
 .RS 2m
-$ gcloud beta test android run excelsior_args.yaml:unit\-tests \e
+$ gcloud firebase test android run excelsior_args.yaml:unit\-tests \e
     \-\-device\-ids shamu,htc_m8,g3
 .RE
 

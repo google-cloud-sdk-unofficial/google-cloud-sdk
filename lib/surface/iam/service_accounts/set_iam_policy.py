@@ -35,10 +35,8 @@ class SetIamPolicy(base_classes.BaseIamCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('name',
-                        metavar='IAM-ACCOUNT',
-                        help='The service account whose policy to '
-                        'set.')
+    iam_util.AddServiceAccountNameArg(
+        parser, help_text='The service account whose policy to set.')
     parser.add_argument(
         'policy_file',
         metavar='POLICY-FILE',

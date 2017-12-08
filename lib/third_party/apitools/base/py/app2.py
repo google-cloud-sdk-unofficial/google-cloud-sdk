@@ -70,7 +70,7 @@ class NewCmd(appcommands.Cmd):
                 argspec = argspec._replace(  # pylint: disable=protected-access
                     args=argspec.args[1:])
             self._argspec = argspec
-            # TODO(craigcitro): Do we really want to support all this
+            # TODO(user): Do we really want to support all this
             # nonsense?
             self._star_args = self._argspec.varargs is not None
             self._star_kwds = self._argspec.keywords is not None
@@ -110,7 +110,7 @@ class NewCmd(appcommands.Cmd):
         if not self._new_style:
             return super(NewCmd, self).Run(argv)
 
-        # TODO(craigcitro): We need to save and restore flags each time so
+        # TODO(user): We need to save and restore flags each time so
         # that we can per-command flags in the REPL.
         args = argv[1:]
         fail = None
@@ -309,7 +309,7 @@ class CommandLoop(cmd.Cmd):
     def do_help(self, command_name):
         """Print the help for command_name (if present) or general help."""
 
-        # TODO(craigcitro): Add command-specific flags.
+        # TODO(user): Add command-specific flags.
         def FormatOneCmd(name, command, command_names):
             indent_size = appcommands.GetMaxCommandLength() + 3
             if len(command_names) > 1:

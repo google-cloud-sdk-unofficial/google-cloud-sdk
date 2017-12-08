@@ -237,9 +237,7 @@ class CloneBeta(_BaseClone, base.CreateCommand):
     operation_ref = resources.Create(
         'sql.operations',
         operation=result.name,
-        project=destination_instance_ref.project,
-        instance=destination_instance_ref.instance,
-    )
+        project=destination_instance_ref.project)
 
     if args.async:
       if not args.IsSpecified('format'):

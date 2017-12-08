@@ -137,9 +137,7 @@ class PromoteReplicaBeta(_BasePromoteReplica, base.Command):
     operation_ref = resources.Create(
         'sql.operations',
         operation=result.name,
-        project=instance_ref.project,
-        instance=instance_ref.instance,
-    )
+        project=instance_ref.project)
 
     if args.async:
       return sql_client.operations.Get(

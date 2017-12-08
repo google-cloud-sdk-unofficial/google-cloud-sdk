@@ -23,6 +23,12 @@ from apache_beam.io import fileio
 from google.cloud.ml.dataflow.io import tfrecordio
 from google.cloud.ml.io import coders as mlcoders
 
+try:
+  # TODO(user): Remove this after updating to latest Beam.
+  from apache_beam.io.filesystem import CompressionTypes  # pylint: disable=g-import-not-at-top
+except ImportError:
+  from apache_beam.io.fileio import CompressionTypes  # pylint: disable=g-import-not-at-top
+
 
 # TODO(user) rename these classes depending on what is said in
 # b/31405800
@@ -71,7 +77,7 @@ class SaveFeatures(beam.PTransform):
                file_path_prefix,
                file_name_suffix='.tfrecord.gz',
                shard_name_template=fileio.DEFAULT_SHARD_NAME_TEMPLATE,
-               compression_type=fileio.CompressionTypes.AUTO):
+               compression_type=CompressionTypes.AUTO):
     """Initialize SaveFeatures.
 
     SaveFeatures is a wrapper for WriteToTFRecord with defaults useful for the
@@ -117,7 +123,7 @@ class LoadFeatures(beam.PTransform):
   def __init__(
       self,
       file_pattern,
-      compression_type=fileio.CompressionTypes.AUTO):
+      compression_type=CompressionTypes.AUTO):
     """Initialize LoadFeatures.
 
     LoadFeatures is a wrapper for ReadFromTFRecord with defaults useful for the
@@ -162,13 +168,23 @@ class SaveModel(beam.PTransform):
   @staticmethod
   def from_tf_learn_hierarchy(export_name='Servo'):
     def extract_model_fn(trained_model_dir):
+      """Extract Model."""
       # gcsio.glob() will return all the files under
       # <trained_model_dir>/export/<export_name>/* for this reason we search for
       # one specific file (saved_model.pb) according to the tf.learn directory
       # hierarchy. Where the * corresponds to the model timestamp.
-      paths = fileio.ChannelFactory.glob(
-          os.path.join(trained_model_dir, 'export', export_name,
-                       '*', 'saved_model.pb'))
+      # TODO(user): Remove this gaurd after new Beam release
+      try:
+        from apache_beam.io import filesystems_util  # pylint: disable=g-import-not-at-top
+        file_system = filesystems_util.get_filesystem(trained_model_dir)
+        match_result = file_system.match(
+            [os.path.join(trained_model_dir, 'export', export_name,
+                          '*', 'saved_model.pb')])[0]
+        paths = [f.path for f in match_result.metadata_list]
+      except ImportError:
+        paths = fileio.ChannelFactory.glob(
+            os.path.join(trained_model_dir, 'export', export_name,
+                         '*', 'saved_model.pb'))
       # We still validate that there in only one model under the given path.
       if len(paths) == 1:
         return paths[0].replace('saved_model.pb', '')
@@ -203,8 +219,16 @@ class SaveModel(beam.PTransform):
     def append_trailing_slash(path):
       return path if path.endswith('/') else path + '/'
 
-    fileio.ChannelFactory.copytree(
-        append_trailing_slash(trained_model), append_trailing_slash(dest))
+    # TODO(user): Remove this gaurd after new Beam release
+    try:
+      from apache_beam.io import filesystems_util  # pylint: disable=g-import-not-at-top
+      file_system = filesystems_util.get_filesystem(
+          append_trailing_slash(trained_model))
+      file_system.copy([append_trailing_slash(trained_model)],
+                       [append_trailing_slash(dest)])
+    except ImportError:
+      fileio.ChannelFactory.copytree(
+          append_trailing_slash(trained_model), append_trailing_slash(dest))
     return dest
 
   def expand(self, model_directory):

@@ -141,8 +141,7 @@ class _BaseDeploy(object):
     self.service_name = self.service_version = config_contents = None
     config_files = []
 
-    # TODO(b/33947551): Simplify this when --validate-only goes GA
-    self.validate_only = getattr(args, 'validate_only', False)
+    self.validate_only = args.validate_only
 
     # If doing a validate-only run, restore the default formatting
     # (or whatever the user has entered as an override).

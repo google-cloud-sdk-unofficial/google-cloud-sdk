@@ -50,7 +50,7 @@ _Codec = collections.namedtuple('_Codec', ['encoder', 'decoder'])
 CodecResult = collections.namedtuple('CodecResult', ['value', 'complete'])
 
 
-# TODO(craigcitro): Make these non-global.
+# TODO(user): Make these non-global.
 _UNRECOGNIZED_FIELD_MAPPINGS = {}
 _CUSTOM_MESSAGE_CODECS = {}
 _CUSTOM_FIELD_CODECS = {}
@@ -90,7 +90,7 @@ def RegisterFieldTypeCodec(encoder, decoder):
     return Register
 
 
-# TODO(craigcitro): Delete this function with the switch to proto2.
+# TODO(user): Delete this function with the switch to proto2.
 def CopyProtoMessage(message):
     codec = protojson.ProtoJson()
     return codec.decode_message(type(message), codec.encode_message(message))
@@ -107,7 +107,7 @@ def JsonToMessage(message_type, message):
     return _ProtoJsonApiTools.Get().decode_message(message_type, message)
 
 
-# TODO(craigcitro): Do this directly, instead of via JSON.
+# TODO(user): Do this directly, instead of via JSON.
 def DictToMessage(d, message_type):
     """Convert the given dictionary to a message of type message_type."""
     return JsonToMessage(message_type, json.dumps(d))
@@ -359,7 +359,7 @@ class _ProtoJsonApiTools(protojson.ProtoJson):
         return super(_ProtoJsonApiTools, self).encode_field(field, value)
 
 
-# TODO(craigcitro): Fold this and _IncludeFields in as codecs.
+# TODO(user): Fold this and _IncludeFields in as codecs.
 def _DecodeUnknownFields(message, encoded_message):
     """Rewrite unknown fields in message into message.destination."""
     destination = _UNRECOGNIZED_FIELD_MAPPINGS.get(type(message))
@@ -371,7 +371,7 @@ def _DecodeUnknownFields(message, encoded_message):
             'Unrecognized fields must be mapped to a compound '
             'message type.')
     pair_type = pair_field.message_type
-    # TODO(craigcitro): Add more error checking around the pair
+    # TODO(user): Add more error checking around the pair
     # type being exactly what we suspect (field names, etc).
     if isinstance(pair_type.value, messages.MessageField):
         new_values = _DecodeUnknownMessages(
@@ -405,7 +405,7 @@ def _DecodeUnrecognizedFields(message, pair_type):
     """Process unrecognized fields in message."""
     new_values = []
     for unknown_field in message.all_unrecognized_fields():
-        # TODO(craigcitro): Consider validating the variant if
+        # TODO(user): Consider validating the variant if
         # the assignment below doesn't take care of it. It may
         # also be necessary to check it in the case that the
         # type has multiple encodings.
@@ -698,7 +698,7 @@ def _AsMessageList(msg):
     """Convert the provided list-as-JsonValue to a list."""
     # This really needs to live in extra_types, but extra_types needs
     # to import this file to be able to register codecs.
-    # TODO(craigcitro): Split out a codecs module and fix this ugly
+    # TODO(user): Split out a codecs module and fix this ugly
     # import.
     from apitools.base.py import extra_types
 

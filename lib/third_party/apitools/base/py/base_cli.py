@@ -39,7 +39,7 @@ __all__ = [
 ]
 
 
-# TODO(craigcitro): We should move all the flags for the
+# TODO(user): We should move all the flags for the
 # StandardQueryParameters into this file, so that they can be used
 # elsewhere easily.
 
@@ -52,7 +52,7 @@ _OUTPUT_FORMATTER_MAP = {
 
 def DeclareBaseFlags():
     """Declare base flags for all CLIs."""
-    # TODO(craigcitro): FlagValidators?
+    # TODO(user): FlagValidators?
     global _BASE_FLAGS_DECLARED  # pylint: disable=global-statement
     if _BASE_FLAGS_DECLARED:
         return

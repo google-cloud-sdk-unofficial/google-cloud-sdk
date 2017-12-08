@@ -23,10 +23,6 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
-# API allows up to 58 characters but asked us to send only 54 (unless user
-# explicitly asks us for more).
-_MAX_LEN_FOR_DEDUCED_BASE_INSTANCE_NAME = 54
-
 
 def _AddInstanceGroupManagerArgs(parser):
   """Adds args."""
@@ -83,7 +79,7 @@ class CreateGA(base_classes.BaseAsyncCreator,
   def resource_type(self):
     return 'instanceGroupManagers'
 
-  def _CreateGroupReference(self, args):
+  def CreateGroupReference(self, args):
     group_ref = (
         instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
         ResolveAsResource)(args, self.resources,
@@ -108,40 +104,12 @@ class CreateGA(base_classes.BaseAsyncCreator,
     else:
       return self.compute.regionInstanceGroupManagers
 
-  def _GetInstanceGroupManagerTargetPools(self, target_pools, group_ref):
-    if target_pools:
-      region = self.GetRegionForGroup(group_ref)
-      pool_refs = [self.resources.Parse(
-          pool, params={'region': region},
-          collection='compute.targetPools') for pool in target_pools]
-      return [pool_ref.SelfLink() for pool_ref in pool_refs]
-    return []
-
-  def _GetInstanceGroupManagerBaseInstanceName(
-      self, base_name_arg, group_ref):
-    if base_name_arg:
-      return base_name_arg
-    return group_ref.Name()[0:_MAX_LEN_FOR_DEDUCED_BASE_INSTANCE_NAME]
-
-  def _CreateInstanceGroupManager(self, args, group_ref, template_ref):
-    """Create parts of Instance Group Manager shared between tracks."""
-    return self.messages.InstanceGroupManager(
-        name=group_ref.Name(),
-        description=args.description,
-        instanceTemplate=template_ref.SelfLink(),
-        baseInstanceName=self._GetInstanceGroupManagerBaseInstanceName(
-            args.base_instance_name, group_ref),
-        targetPools=self._GetInstanceGroupManagerTargetPools(
-            args.target_pool, group_ref),
-        targetSize=int(args.size),
-    )
-
   def CreateResourceRequest(self, group_ref, instance_group_manager):
     if _IsZonalGroup(group_ref):
       instance_group_manager.zone = group_ref.zone
       return self.messages.ComputeInstanceGroupManagersInsertRequest(
           instanceGroupManager=instance_group_manager,
-          project=group_ref.project,
+          project=self.project,
           zone=group_ref.zone)
     else:
       region_link = self.resources.Parse(
@@ -149,7 +117,7 @@ class CreateGA(base_classes.BaseAsyncCreator,
       instance_group_manager.region = region_link.SelfLink()
       return self.messages.ComputeRegionInstanceGroupManagersInsertRequest(
           instanceGroupManager=instance_group_manager,
-          project=group_ref.project,
+          project=self.project,
           region=group_ref.region)
 
   def ComputeDynamicProperties(self, args, items):
@@ -166,17 +134,43 @@ class CreateGA(base_classes.BaseAsyncCreator,
       request: a singleton list containing
                ComputeManagedInstanceGroupsInsertRequest message object.
     """
-    group_ref = self._CreateGroupReference(args)
+    group_ref = self.CreateGroupReference(args)
     template_ref = self.resources.Parse(args.template,
                                         collection='compute.instanceTemplates')
-    instance_group_manager = self._CreateInstanceGroupManager(
-        args, group_ref, template_ref)
+    if args.target_pool:
+      region = self.GetRegionForGroup(group_ref)
+      pool_refs = [self.resources.Parse(
+          pool, params={'region': region},
+          collection='compute.targetPools') for pool in args.target_pool]
+      pools = [pool_ref.SelfLink() for pool_ref in pool_refs]
+    else:
+      pools = []
+
+    name = group_ref.Name()
+    if args.base_instance_name:
+      base_instance_name = args.base_instance_name
+    else:
+      base_instance_name = name[0:54]
+
+    instance_group_manager = self.messages.InstanceGroupManager(
+        name=name,
+        description=args.description,
+        instanceTemplate=template_ref.SelfLink(),
+        baseInstanceName=base_instance_name,
+        targetPools=pools,
+        targetSize=int(args.size))
+    auto_healing_policies = (
+        managed_instance_groups_utils.CreateAutohealingPolicies(
+            self.resources, self.messages, args))
+    if auto_healing_policies:
+      instance_group_manager.autoHealingPolicies = auto_healing_policies
+
     request = self.CreateResourceRequest(group_ref, instance_group_manager)
     service = self.GetServiceForGroup(group_ref)
     return [(service, self.method, request)]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CreateBeta(CreateGA):
   """Create Google Compute Engine managed instance groups."""
 
@@ -186,93 +180,6 @@ class CreateBeta(CreateGA):
     managed_instance_groups_utils.AddAutohealingArgs(parser)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
-
-  def CreateRequests(self, args):
-    """Creates and returns an instanceGroupManagers.Insert request.
-
-    Args:
-      args: the argparse arguments that this command was invoked with.
-
-    Returns:
-      request: a singleton list containing
-               ComputeManagedInstanceGroupsInsertRequest message object.
-    """
-    group_ref = self._CreateGroupReference(args)
-    template_ref = self.resources.Parse(args.template,
-                                        collection='compute.instanceTemplates')
-    instance_group_manager = self._CreateInstanceGroupManager(
-        args, group_ref, template_ref)
-    instance_group_manager.autoHealingPolicies = (
-        managed_instance_groups_utils.CreateAutohealingPolicies(
-            self.resources, self.messages, args))
-
-    request = self.CreateResourceRequest(group_ref, instance_group_manager)
-    service = self.GetServiceForGroup(group_ref)
-    return [(service, self.method, request)]
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateGA):
-  """Create Google Compute Engine managed instance groups."""
-
-  @staticmethod
-  def Args(parser):
-    _AddInstanceGroupManagerArgs(parser=parser)
-    managed_instance_groups_utils.AddAutohealingArgs(parser)
-    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
-        parser)
-    instance_groups_flags.AddZonesFlag(parser)
-
-  def _CreateGroupReference(self, args):
-    if args.zones:
-      zone_ref = self.resources.Parse(args.zones[0], collection='compute.zones')
-      region = utils.ZoneNameToRegionName(zone_ref.Name())
-      return self.resources.Parse(
-          args.name,
-          params={'region': region},
-          collection='compute.regionInstanceGroupManagers')
-    return (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
-            ResolveAsResource)(
-                args, self.resources,
-                default_scope=compute_scope.ScopeEnum.ZONE,
-                scope_lister=flags.GetDefaultScopeLister(
-                    self.compute_client))
-
-  def _CreateDistributionPolicy(self, zones):
-    if zones:
-      policy_zones = []
-      for zone in zones:
-        zone_ref = self.resources.Parse(zone, collection='compute.zones')
-        policy_zones.append(
-            self.messages.DistributionPolicyZoneConfiguration(
-                zone=zone_ref.SelfLink()))
-      return self.messages.DistributionPolicy(zones=policy_zones)
-
-  def CreateRequests(self, args):
-    """Creates and returns an instanceGroupManagers.Insert request.
-
-    Args:
-      args: the argparse arguments that this command was invoked with.
-
-    Returns:
-      request: a singleton list containing
-               ComputeManagedInstanceGroupsInsertRequest message object.
-    """
-    instance_groups_flags.ValidateManagedInstanceGroupScopeArgs(
-        args, self.resources)
-    group_ref = self._CreateGroupReference(args)
-    template_ref = self.resources.Parse(args.template,
-                                        collection='compute.instanceTemplates')
-    instance_group_manager = self._CreateInstanceGroupManager(
-        args, group_ref, template_ref)
-    instance_group_manager.autoHealingPolicies = (
-        managed_instance_groups_utils.CreateAutohealingPolicies(
-            self.resources, self.messages, args))
-    instance_group_manager.distributionPolicy = self._CreateDistributionPolicy(
-        args.zones)
-    request = self.CreateResourceRequest(group_ref, instance_group_manager)
-    service = self.GetServiceForGroup(group_ref)
-    return [(service, self.method, request)]
 
 
 DETAILED_HELP = {
@@ -290,4 +197,3 @@ in the ``us-central1-a'' zone.
 }
 CreateGA.detailed_help = DETAILED_HELP
 CreateBeta.detailed_help = DETAILED_HELP
-CreateAlpha.detailed_help = DETAILED_HELP

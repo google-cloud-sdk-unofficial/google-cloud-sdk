@@ -29,9 +29,8 @@ class Update(base_classes.BaseIamCommand):
     parser.add_argument('--display-name',
                         help='The new textual name to display for the account.')
 
-    parser.add_argument('name',
-                        metavar='IAM-ACCOUNT',
-                        help='The IAM service account to update.')
+    iam_util.AddServiceAccountNameArg(
+        parser, help_text='The IAM service account to update.')
 
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
