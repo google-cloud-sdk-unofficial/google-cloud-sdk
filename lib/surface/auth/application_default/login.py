@@ -64,7 +64,9 @@ class Login(base.Command):
     parser.add_argument(
         '--scopes',
         type=arg_parsers.ArgList(min_length=1),
-        help='The names of the scopes to authorize for.')
+        help='The names of the scopes to authorize for. A list of scopes is '
+        'located at '
+        '[](https://developers.google.com/identity/protocols/googlescopes).')
 
   def Format(self, unused_args):
     return None

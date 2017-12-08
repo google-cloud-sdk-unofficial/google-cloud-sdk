@@ -114,10 +114,12 @@ class Create(base.CreateCommand):
       result = util.TypedLogSink(self.CreateProjectSink(sink_data))
     log.CreatedResource(sink_ref)
     self._epilog_result_destination = result.destination
+    self._writer_identity = result.writer_identity
     return result
 
   def Epilog(self, unused_resources_were_displayed):
-    util.PrintPermissionInstructions(self._epilog_result_destination)
+    util.PrintPermissionInstructions(self._epilog_result_destination,
+                                     self._writer_identity)
 
 
 Create.detailed_help = {

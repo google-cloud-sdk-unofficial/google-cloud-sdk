@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for creating disks."""
 
+import textwrap
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import csek_utils
@@ -23,6 +25,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
+from googlecloudsdk.core import log
 
 DETAILED_HELP = {
     'brief': 'Create Google Compute Engine persistent disks',
@@ -220,5 +223,14 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander,
 
     return requests
 
+  def Epilog(self, resources_were_displayed=True):
+    message = """\
+
+        New disks are unformatted. You must format and mount a disk before it
+        can be used. You can find instructions on how to do this at:
+
+        https://cloud.google.com/compute/docs/disks/add-persistent-disk#formatting
+        """
+    log.status.Print(textwrap.dedent(message))
 
 Create.detailed_help = DETAILED_HELP

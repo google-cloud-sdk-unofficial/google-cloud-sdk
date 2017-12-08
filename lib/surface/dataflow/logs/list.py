@@ -14,12 +14,12 @@
 """Implementation of gcloud dataflow logs list command.
 """
 
-from googlecloudsdk.api_lib.dataflow import dataflow_util
-from googlecloudsdk.api_lib.dataflow import job_utils
-from googlecloudsdk.api_lib.dataflow import time_util
+from googlecloudsdk.api_lib.dataflow import apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dataflow import dataflow_util
+from googlecloudsdk.command_lib.dataflow import job_utils
+from googlecloudsdk.command_lib.dataflow import time_util
 from googlecloudsdk.core.resource import resource_projection_spec
-from surface import dataflow as commands
 
 
 class List(base.ListCommand):
@@ -91,13 +91,10 @@ class List(base.ListCommand):
     Returns:
       None on success, or a string containing the error message.
     """
-    apitools_client = self.context[commands.DATAFLOW_APITOOLS_CLIENT_KEY]
-    dataflow_messages = self.context[commands.DATAFLOW_MESSAGES_MODULE_KEY]
-    job_ref = job_utils.ExtractJobRef(self.context, args.job)
+    job_ref = job_utils.ExtractJobRef(args.job)
 
     importance_enum = (
-        dataflow_messages.DataflowProjectsJobsMessagesListRequest.
-        MinimumImportanceValueValuesEnum)
+        apis.Messages.LIST_REQUEST.MinimumImportanceValueValuesEnum)
     importance_map = {
         'debug': importance_enum.JOB_MESSAGE_DEBUG,
         'detailed': importance_enum.JOB_MESSAGE_DETAILED,
@@ -105,7 +102,7 @@ class List(base.ListCommand):
         'warning': importance_enum.JOB_MESSAGE_WARNING,
     }
 
-    request = dataflow_messages.DataflowProjectsJobsMessagesListRequest(
+    request = apis.Messages.LIST_REQUEST(
         projectId=job_ref.projectId,
         jobId=job_ref.jobId,
         minimumImportance=(args.importance and importance_map[args.importance]),
@@ -118,7 +115,7 @@ class List(base.ListCommand):
     return dataflow_util.YieldFromList(
         job_id=job_ref.jobId,
         project_id=job_ref.projectId,
-        service=apitools_client.projects_jobs_messages,
+        service=apis.Messages.GetService(),
         request=request,
         batch_size=args.limit,
         batch_size_attribute='pageSize',

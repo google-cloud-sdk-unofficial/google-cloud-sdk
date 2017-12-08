@@ -79,6 +79,17 @@ The formats and format specific attributes are:
 .RS 2m
 A dictionary of dictionaries in config style.
 
+The format attributes are:
+
+\fBexport\fR
+.RS 2m
+Display the dictionary as a list of system specific environment export commands.
+.RE
+\fBunset\fR
+.RS 2m
+Display the dictionary as a list of system specific environment unset commands.
+
+.RE
 .RE
 \fBcsv\fR
 .RS 2m
@@ -109,6 +120,20 @@ The string printed after each record, default "\en" (newline).
 .RS 2m
 An alias for the \fByaml\fR format.
 
+.RE
+\fBdiff\fR
+.RS 2m
+A unified diff of the first two projection columns.
+
+The format attributes are:
+
+\fBformat\fR
+.RS 2m
+The format of the diffed resources. Each resource is converted to this format
+and the diff of the converted resources is displayed. The default is
+\'flattened'.
+
+.RE
 .RE
 \fBflattened\fR
 .RS 2m

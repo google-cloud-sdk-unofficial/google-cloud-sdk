@@ -34,6 +34,10 @@ class Describe(base.DescribeCommand):
           To display information about a manifest, run:
 
             $ {command} --deployment my-deployment manifest-name
+
+          To display information about the latest manifest, run:
+
+            $ {command} --deployment my-deployment
           """,
   }
 
@@ -46,7 +50,8 @@ class Describe(base.DescribeCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    parser.add_argument('manifest', help='Manifest name.')
+    parser.add_argument('--deployment', help='Deployment name.', required=True)
+    parser.add_argument('manifest', nargs='?', help='Manifest name.')
 
   def Run(self, args):
     """Run 'manifests describe'.
@@ -65,6 +70,21 @@ class Describe(base.DescribeCommand):
     client = self.context['deploymentmanager-client']
     messages = self.context['deploymentmanager-messages']
     project = properties.VALUES.core.project.Get(required=True)
+
+    if not args.manifest:
+      try:
+        deployment = client.deployments.Get(
+            messages.DeploymentmanagerDeploymentsGetRequest(
+                project=project,
+                deployment=args.deployment
+            )
+        )
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(dm_v2_util.GetError(error))
+
+      manifest = dm_v2_util.ExtractManifestName(deployment)
+      if manifest:
+        args.manifest = manifest
 
     try:
       return client.manifests.Get(

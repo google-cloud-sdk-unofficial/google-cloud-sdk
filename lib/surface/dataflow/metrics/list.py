@@ -16,14 +16,12 @@
 
 import re
 
-from apitools.base.py import exceptions
-
-from googlecloudsdk.api_lib.dataflow import dataflow_util
-from googlecloudsdk.api_lib.dataflow import job_utils
-from googlecloudsdk.api_lib.dataflow import time_util
+from googlecloudsdk.api_lib.dataflow import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
-from surface import dataflow as commands
+from googlecloudsdk.command_lib.dataflow import dataflow_util
+from googlecloudsdk.command_lib.dataflow import job_utils
+from googlecloudsdk.command_lib.dataflow import time_util
 
 
 class List(base.ListCommand):
@@ -106,13 +104,9 @@ class List(base.ListCommand):
     Returns:
       None on success, or a string containing the error message.
     """
-    apitools_client = self.context[commands.DATAFLOW_APITOOLS_CLIENT_KEY]
-    dataflow_messages = self.context[commands.DATAFLOW_MESSAGES_MODULE_KEY]
-    job_ref = job_utils.ExtractJobRef(self.context, args.job)
+    job_ref = job_utils.ExtractJobRef(args.job)
 
     start_time = args.changed_after and time_util.Strftime(args.changed_after)
-    request = dataflow_messages.DataflowProjectsJobsGetMetricsRequest(
-        projectId=job_ref.projectId, jobId=job_ref.jobId, startTime=start_time)
 
     preds = []
     if not args.tentative and args.hide_committed:
@@ -130,11 +124,7 @@ class List(base.ListCommand):
       preds.append(
           lambda m: time_util.ParseTimeArg(m.updateTime) > args.changed_after)
 
-    try:
-      response = apitools_client.projects_jobs.GetMetrics(request)
-    except exceptions.HttpError as error:
-      raise dataflow_util.MakeErrorMessage(error, job_ref.jobId,
-                                           job_ref.projectId)
+    response = apis.Metrics.Get(job_ref.jobId, job_ref.projectId, start_time)
 
     return [self._Format(m) for m in response.metrics
             if all([pred(m) for pred in preds])]

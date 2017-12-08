@@ -428,7 +428,8 @@ https://console.developers.google.com/apis page.
 
   def _CreateConfiguration(self):
     configuration_name = console_io.PromptResponse(
-        'Enter configuration name:  ')
+        'Enter configuration name. Names start with a lower case letter and '
+        'contain only lower case letters a-z, digits 0-9, and hyphens \'-\':  ')
     named_configs.ConfigurationStore.CreateConfig(configuration_name)
     named_configs.ConfigurationStore.ActivateConfig(configuration_name)
     named_configs.ActivePropertiesFile.Invalidate()

@@ -15,12 +15,12 @@
 """Implementation of gcloud dataflow jobs list command.
 """
 
-from googlecloudsdk.api_lib.dataflow import dataflow_util
+from googlecloudsdk.api_lib.dataflow import apis
 from googlecloudsdk.api_lib.dataflow import job_display
-from googlecloudsdk.api_lib.dataflow import time_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dataflow import dataflow_util
+from googlecloudsdk.command_lib.dataflow import time_util
 from googlecloudsdk.core import properties
-from surface import dataflow as commands
 
 
 class List(base.ListCommand):
@@ -86,8 +86,7 @@ class List(base.ListCommand):
     project_id = properties.VALUES.core.project.Get(required=True)
     jobs = self._JobSummariesForProject(project_id, args, filter_pred)
 
-    dataflow_messages = self.context[commands.DATAFLOW_MESSAGES_MODULE_KEY]
-    return [job_display.DisplayInfo(job, dataflow_messages) for job in jobs]
+    return [job_display.DisplayInfo(job) for job in jobs]
 
   def _JobSummariesForProject(self, project_id, args, filter_predicate):
     """Get the list of job summaries that match the predicate.
@@ -100,16 +99,12 @@ class List(base.ListCommand):
     Returns:
       An iterator over all the matching jobs.
     """
-    apitools_client = self.context[commands.DATAFLOW_APITOOLS_CLIENT_KEY]
-    dataflow_messages = self.context[commands.DATAFLOW_MESSAGES_MODULE_KEY]
-    req_class = dataflow_messages.DataflowProjectsJobsListRequest
-    request = req_class(
-        projectId=project_id,
-        filter=self._StatusArgToFilter(args.status, dataflow_messages))
+    request = apis.Jobs.LIST_REQUEST(
+        projectId=project_id, filter=self._StatusArgToFilter(args.status))
 
     return dataflow_util.YieldFromList(
         project_id=project_id,
-        service=apitools_client.projects_jobs,
+        service=apis.Jobs.GetService(),
         request=request,
         limit=args.limit,
         batch_size=args.page_size or self.DEFAULT_PAGE_SIZE_,
@@ -117,17 +112,17 @@ class List(base.ListCommand):
         batch_size_attribute='pageSize',
         predicate=filter_predicate)
 
-  def _StatusArgToFilter(self, status, dataflow_messages):
+  def _StatusArgToFilter(self, status):
     """Return a string describing the job status.
 
     Args:
       status: The job status enum
-      dataflow_messages: dataflow_messages package
     Returns:
       string describing the job status
     """
     filter_value_enum = (
-        dataflow_messages.DataflowProjectsJobsListRequest.FilterValueValuesEnum)
+        apis.GetMessagesModule().DataflowProjectsJobsListRequest
+        .FilterValueValuesEnum)
     value_map = {
         'all': filter_value_enum.ALL,
         'terminated': filter_value_enum.TERMINATED,

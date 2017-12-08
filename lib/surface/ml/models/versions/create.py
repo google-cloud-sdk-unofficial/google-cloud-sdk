@@ -14,6 +14,7 @@
 """ml models versions create command."""
 
 from googlecloudsdk.api_lib.ml import operations
+from googlecloudsdk.api_lib.ml import versions
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
@@ -93,22 +94,14 @@ class BetaCreate(base.CreateCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    # TODO(b/31062835): remove CloneAndSwitchAPI and extract API code to api_lib
-    client = apis.GetClientInstance('ml', 'v1beta1')
-    msgs = apis.GetMessagesModule('ml', 'v1beta1')
-    reg = resources.REGISTRY.CloneAndSwitchAPIs(client)
-    res = reg.Parse(
-        args.version,
-        params={'modelsId': args.model},
-        collection='ml.projects.models.versions')
-    req = msgs.MlProjectsModelsVersionsCreateRequest(
-        projectsId=res.projectsId,
-        modelsId=res.modelsId,
-        googleCloudMlV1beta1Version=msgs.GoogleCloudMlV1beta1Version(
-            name=res.Name(), deploymentUri=args.origin))
-    op = client.projects_models_versions.Create(req)
+    op = versions.Create(args.model, args.version, args.origin)
     if args.async:
       return op
     with console_io.ProgressTracker('Creating version...'):
-      operations.WaitForOperation(client.projects_operations, op, registry=reg)
+      client = apis.GetClientInstance('ml', 'v1beta1')
+      operations.WaitForOperation(
+          client.projects_operations,
+          op,
+          # TODO(b/31062835): remove CloneAndSwitchAPI
+          registry=resources.REGISTRY.CloneAndSwitchAPIs(client))
     return op.response

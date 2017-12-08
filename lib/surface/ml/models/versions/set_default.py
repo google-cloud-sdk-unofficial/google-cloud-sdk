@@ -13,6 +13,7 @@
 # limitations under the License.
 """ml models versions set-default command."""
 
+from googlecloudsdk.api_lib.ml import versions
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
@@ -78,18 +79,4 @@ class BetaSetDefault(base.DescribeCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    # TODO(b/31062835): remove CloneAndSwitchAPI and extract API code to api_lib
-    client = apis.GetClientInstance('ml', 'v1beta1')
-    msgs = apis.GetMessagesModule('ml', 'v1beta1')
-    res = resources.REGISTRY.CloneAndSwitchAPIs(client).Parse(
-        args.version,
-        params={'modelsId': args.model},
-        collection='ml.projects.models.versions')
-    req = msgs.MlProjectsModelsVersionsSetDefaultRequest(
-        projectsId=res.projectsId,
-        modelsId=res.modelsId,
-        versionsId=res.Name(),
-        googleCloudMlV1beta1SetDefaultVersionRequest=(
-            msgs.GoogleCloudMlV1beta1SetDefaultVersionRequest()))
-    resp = client.projects_models_versions.SetDefault(req)
-    return resp
+    return versions.SetDefault(args.model, args.version)

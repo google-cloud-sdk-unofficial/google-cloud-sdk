@@ -17,7 +17,17 @@
 from googlecloudsdk.core import exceptions
 
 
-class AppNotFoundError(exceptions.Error):
-  """Raised when the requested app does not exist."""
+class NotFoundError(exceptions.Error):
+  """Raised when the requested resource does not exist."""
   pass
 
+
+class ConflictError(exceptions.Error):
+  """Raised when a new resource already exists."""
+  pass
+
+
+STATUS_CODE_TO_ERROR = {
+    404: NotFoundError,
+    409: ConflictError
+}

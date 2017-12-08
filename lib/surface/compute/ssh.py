@@ -27,9 +27,14 @@ def _Args(parser):
   """Argument parsing for ssh, including hook for remote completion."""
   ssh_utils.BaseSSHCLICommand.Args(parser)
 
-  parser.add_argument(
+  command = parser.add_argument(
       '--command',
       help='A command to run on the virtual machine.')
+  command.detailed_help = """\
+      A command to run on the virtual machine.
+
+      Runs the command on the target instance and then exits.
+      """
 
   ssh_flags = parser.add_argument(
       '--ssh-flag',

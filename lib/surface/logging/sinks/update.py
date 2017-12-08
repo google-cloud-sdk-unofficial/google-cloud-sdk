@@ -171,10 +171,12 @@ class Update(base.Command):
       result = util.TypedLogSink(self.UpdateProjectSink(sink_data))
     log.UpdatedResource(sink_ref)
     self._epilog_result_destination = result.destination
+    self._writer_identity = result.writer_identity
     return result
 
   def Epilog(self, unused_resources_were_displayed):
-    util.PrintPermissionInstructions(self._epilog_result_destination)
+    util.PrintPermissionInstructions(self._epilog_result_destination,
+                                     self._writer_identity)
 
 
 Update.detailed_help = {

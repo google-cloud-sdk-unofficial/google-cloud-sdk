@@ -31,100 +31,110 @@ from googlecloudsdk.third_party.appengine.api import appinfo
 from ruamel import yaml
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.PREVIEW)
-class GenConfig(base.Command):
-  """Generate missing configuration files for a source directory.
+# TODO(b/28509217): Move back into command class when `preview` is gone.
+def _Args(parser):
+  """Add arguments for `gcloud app gen-config`."""
+  parser.add_argument(
+      'source_dir',
+      nargs='?',
+      help='The source directory to fingerprint.',
+      default=os.getcwd())
+  parser.add_argument(
+      '--config',
+      default=None,
+      help=('The yaml file defining the service configuration.  This is '
+            'normally one of the generated files, but when generating a '
+            'custom runtime there can be an app.yaml containing parameters.'))
 
-  This command generates all relevant config files (app.yaml, Dockerfile and a
-  build Dockerfile) for your application in the current directory or emits an
-  error message if the source directory contents are not recognized.
+  # TODO(b/24843650): Enumerate the valid runtimes for vm: true/env: 2
+  rt_list = [r for r in appinfo.GetAllRuntimes() if r not in ['vm', 'custom']]
+  parser.add_argument(
+      '--runtime',
+      default=None,
+      help=('Generate config files for a given runtime. Can be used in '
+            'conjunction with --custom. Allowed runtimes are: ' +
+            ', '.join(rt_list) + '.'))
+  parser.add_argument(
+      '--custom',
+      action='store_true',
+      default=False,
+      help=('If true, generate config files for a custom runtime.  This '
+            'will produce a Dockerfile, a .dockerignore file and an app.yaml '
+            '(possibly other files as well, depending on the runtime).'))
+
+
+def _Run(args):
+  """Run the `gcloud app gen-config` command."""
+  if args.config:
+    # If the user has specified an config file, use that.
+    config_filename = args.config
+  else:
+    # Otherwise, check for an app.yaml in the source directory.
+    config_filename = os.path.join(args.source_dir, 'app.yaml')
+    if not os.path.exists(config_filename):
+      config_filename = None
+
+  # If there was an config file either specified by the user or in the source
+  # directory, load it.
+  if config_filename:
+    try:
+      myi = yaml_parsing.ServiceYamlInfo.FromFile(config_filename)
+      config = myi.parsed
+    except IOError as ex:
+      log.error('Unable to open %s: %s', config_filename, ex)
+      return
+  else:
+    config = None
+
+  fingerprinter.GenerateConfigs(
+      args.source_dir,
+      ext_runtime.Params(appinfo=config, custom=args.custom,
+                         runtime=args.runtime),
+      config_filename)
+
+  # If the user has a config file, make sure that they're using a custom
+  # runtime.
+  # TODO(user): If --config is given, should it still be modified?
+  if config and args.custom and config.GetEffectiveRuntime() != 'custom':
+    alter = console_io.PromptContinue(
+        default=False,
+        message=output_helpers.RUNTIME_MISMATCH_MSG.format(config_filename),
+        prompt_string='Would you like to update it now?')
+    if alter:
+      _AlterRuntime(config_filename, 'custom')
+      log.status.Print('[{0}] has been updated.'.format(config_filename))
+    else:
+      log.status.Print('Please update [{0}] manually by changing the runtime '
+                       'field to custom.'.format(config_filename))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.PREVIEW)
+class GenConfigPreview(base.Command):
+  """[DEPRECATED] Generate missing configuration files for a source directory.
+
+  This command is deprecated. Please use `gcloud beta app gen-config` instead.
   """
-
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To generate configs for the current directory:
-
-            $ {command}
-
-          To generate configs for ~/my_app:
-
-            $ {command} ~/my_app
-          """
-  }
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        'source_dir',
-        nargs='?',
-        help='The source directory to fingerprint.',
-        default=os.getcwd())
-    parser.add_argument(
-        '--config',
-        default=None,
-        help=('The yaml file defining the service configuration.  This is '
-              'normally one of the generated files, but when generating a '
-              'custom runtime there can be an app.yaml containing parameters.'))
-
-    # TODO(b/24843650): Enumerate the valid runtimes for vm: true/env: 2
-    rt_list = [r for r in appinfo.GetAllRuntimes() if r not in ['vm', 'custom']]
-    parser.add_argument(
-        '--runtime',
-        default=None,
-        help=('Generate config files for a given runtime. Can be used in '
-              'conjunction with --custom. Allowed runtimes are: ' +
-              ', '.join(rt_list) + '.'))
-    parser.add_argument(
-        '--custom',
-        action='store_true',
-        default=False,
-        help=('If true, generate config files for a custom runtime.  This '
-              'will produce a Dockerfile, a .dockerignore file and an app.yaml '
-              '(possibly other files as well, depending on the runtime).'))
+    _Args(parser)
 
   def Run(self, args):
-    if args.config:
-      # If the user has specified an config file, use that.
-      config_filename = args.config
-    else:
-      # Otherwise, check for an app.yaml in the source directory.
-      config_filename = os.path.join(args.source_dir, 'app.yaml')
-      if not os.path.exists(config_filename):
-        config_filename = None
+    log.warn('This command is deprecated. '
+             'Please use `gcloud beta app gen-config` instead.')
+    _Run(args)
 
-    # If there was an config file either specified by the user or in the source
-    # directory, load it.
-    if config_filename:
-      try:
-        myi = yaml_parsing.ServiceYamlInfo.FromFile(config_filename)
-        config = myi.parsed
-      except IOError as ex:
-        log.error('Unable to open %s: %s', config_filename, ex)
-        return
-    else:
-      config = None
 
-    fingerprinter.GenerateConfigs(
-        args.source_dir,
-        ext_runtime.Params(appinfo=config, custom=args.custom,
-                           runtime=args.runtime),
-        config_filename)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class GenConfig(base.Command):
+  """Generate missing configuration files for a source directory."""
 
-    # If the user has a config file, make sure that they're using a custom
-    # runtime.
-    # TODO(user): If --config is given, should it still be modified?
-    if config and args.custom and config.GetEffectiveRuntime() != 'custom':
-      alter = console_io.PromptContinue(
-          default=False,
-          message=output_helpers.RUNTIME_MISMATCH_MSG.format(config_filename),
-          prompt_string='Would you like to update it now?')
-      if alter:
-        _AlterRuntime(config_filename, 'custom')
-        log.status.Print('[{0}] has been updated.'.format(config_filename))
-      else:
-        log.status.Print('Please update [{0}] manually by changing the runtime '
-                         'field to custom.'.format(config_filename))
+  @staticmethod
+  def Args(parser):
+    _Args(parser)
+
+  def Run(self, args):
+    _Run(args)
 
 
 def _AlterRuntime(config_filename, runtime):
@@ -152,3 +162,25 @@ def _AlterRuntime(config_filename, runtime):
       yaml_file.write(raw_buf.getvalue())
   except Exception as e:
     raise fingerprinter.AlterConfigFileError(e)
+
+_DETAILED_HELP = {
+    'DESCRIPTION': """\
+    {description}
+
+    This command generates all relevant config files (app.yaml, Dockerfile and a
+    build Dockerfile) for your application in the current directory or emits an
+    error message if the source directory contents are not recognized.
+    """,
+    'EXAMPLES': """\
+    To generate configs for the current directory:
+
+      $ {command}
+
+    To generate configs for ~/my_app:
+
+      $ {command} ~/my_app
+    """
+}
+
+GenConfig.detailed_help = _DETAILED_HELP
+GenConfigPreview.detailed_help = _DETAILED_HELP

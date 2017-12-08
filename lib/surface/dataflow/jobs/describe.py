@@ -15,8 +15,9 @@
 """Implementation of gcloud dataflow jobs describe command.
 """
 
-from googlecloudsdk.api_lib.dataflow import job_utils
+from googlecloudsdk.api_lib.dataflow import apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dataflow import job_utils
 
 
 class Describe(base.DescribeCommand):
@@ -46,9 +47,10 @@ class Describe(base.DescribeCommand):
     job_utils.ArgsForJobRef(parser)
 
     parser.add_argument(
-        '--full', action='store_const',
-        const=job_utils.JOB_VIEW_ALL,
-        default=job_utils.JOB_VIEW_SUMMARY,
+        '--full',
+        action='store_const',
+        const=apis.Jobs.GET_REQUEST.ViewValueValuesEnum.JOB_VIEW_ALL,
+        default=apis.Jobs.GET_REQUEST.ViewValueValuesEnum.JOB_VIEW_SUMMARY,
         help='Retrieve the full Job rather than the summary view')
 
   def Run(self, args):
@@ -60,4 +62,6 @@ class Describe(base.DescribeCommand):
     Returns:
       A Job message.
     """
-    return job_utils.GetJobForArgs(self.context, args.job, args.full)
+    request = job_utils.ExtractJobRef(args.job).Request()
+    request.view = args.full
+    return apis.Jobs.Get(request.jobId, request.projectId, request.view)

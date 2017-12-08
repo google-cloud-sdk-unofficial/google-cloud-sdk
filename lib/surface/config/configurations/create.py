@@ -28,13 +28,17 @@ class Create(base.SilentCommand):
       'DESCRIPTION': """\
           {description}
 
+          Except for special cases (NONE), configuration names start with a
+          lower case letter and contain only lower case letters a-z, digits 0-9,
+          and hyphens '-'.
+
           See `gcloud topic configurations` for an overview of named
           configurations.
           """,
       'EXAMPLES': """\
           To create a new named configuration, run:
 
-            $ {command} my_config
+            $ {command} my-config
           """,
   }
 

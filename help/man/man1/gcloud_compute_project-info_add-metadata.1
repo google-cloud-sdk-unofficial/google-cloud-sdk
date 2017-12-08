@@ -56,8 +56,11 @@ pull the value from a file.
 Same as \f5\fIstartup\-script\fR\fR except that the script contents are pulled
 from a publicly\-accessible location on the web.
 
+
 .RE
 .RE
+At least one of [\-\-metadata] or [\-\-metadata\-from\-file] is required.
+
 \fB\-\-metadata\-from\-file\fR \fIKEY\fR=\fILOCAL_FILE_PATH\fR,[\fIKEY\fR=\fILOCAL_FILE_PATH\fR,...]
 .RS 2m
 Same as \f5\fI\-\-metadata\fR\fR except that the value for the entry will be
@@ -66,6 +69,9 @@ read from a local file. This is useful for values that are too large such as
 
 
 .RE
+At least one of [\-\-metadata] or [\-\-metadata\-from\-file] is required.
+
+
 
 .SH "GLOBAL FLAGS"
 

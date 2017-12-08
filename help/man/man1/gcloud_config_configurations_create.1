@@ -19,6 +19,9 @@ gcloud config configurations create \- creates a new named configuration
 
 Creates a new named configuration.
 
+Except for special cases (NONE), configuration names start with a lower case
+letter and contain only lower case letters a\-z, digits 0\-9, and hyphens '\-'.
+
 See \f5gcloud topic configurations\fR for an overview of named configurations.
 
 
@@ -54,5 +57,5 @@ Run \fB$ gcloud help\fR for a description of flags available to all commands.
 To create a new named configuration, run:
 
 .RS 2m
-$ gcloud config configurations create my_config
+$ gcloud config configurations create my\-config
 .RE

@@ -11,7 +11,7 @@ gcloud deployment\-manager manifests list \- list manifests in a deployment
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud deployment\-manager manifests list\fR [\fB\-\-deployment\fR\ \fIDEPLOYMENT\fR] [\fB\-\-simple\-list\fR] [\fB\-\-filter\fR\ \fIEXPRESSION\fR] [\fB\-\-flatten\fR\ [\fIKEY\fR,...]] [\fB\-\-limit\fR\ \fILIMIT\fR] [\fB\-\-page\-size\fR\ \fIPAGE_SIZE\fR] [\fB\-\-sort\-by\fR\ \fIFIELDS\fR] [\fB\-\-uri\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud deployment\-manager manifests list\fR \fB\-\-deployment\fR \fIDEPLOYMENT\fR [\fB\-\-simple\-list\fR] [\fB\-\-filter\fR\ \fIEXPRESSION\fR] [\fB\-\-flatten\fR\ [\fIKEY\fR,...]] [\fB\-\-limit\fR\ \fILIMIT\fR] [\fB\-\-page\-size\fR\ \fIPAGE_SIZE\fR] [\fB\-\-sort\-by\fR\ \fIFIELDS\fR] [\fB\-\-uri\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -21,13 +21,17 @@ Prints a table with summary information on all manifests in the deployment.
 
 
 
-.SH "FLAGS"
+.SH "REQUIRED FLAGS"
 
 \fB\-\-deployment\fR \fIDEPLOYMENT\fR
 .RS 2m
-Deployment name
+Deployment name.
+
 
 .RE
+
+.SH "FLAGS"
+
 \fB\-\-simple\-list\fR
 .RS 2m
 Changes the \-\-format flag to print the resource IDs. Otherwise either the

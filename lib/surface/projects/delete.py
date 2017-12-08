@@ -57,4 +57,11 @@ class Delete(base.DeleteCommand):
       return None
     result = projects_api.Delete(project_ref)
     log.DeletedResource(project_ref)
+    # Print this here rather than in Epilog because Epilog doesn't have access
+    # to the deleted resource.
+    # We can't be more specific than "limited period" because the API says
+    # "at an unspecified time".
+    log.status.Print(
+        '\nYou can undo this operation for a limited period by running:\n'
+        '  $ gcloud projects undelete {0}'.format(args.id))
     return result

@@ -13,6 +13,7 @@
 # limitations under the License.
 """ml models create command."""
 
+from googlecloudsdk.api_lib.ml import models
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
@@ -77,14 +78,4 @@ class CreateBeta(base.CreateCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    client = apis.GetClientInstance('ml', 'v1beta1')
-    msgs = apis.GetMessagesModule('ml', 'v1beta1')
-    # TODO(b/31062835): remove CloneAndSwitchAPI and extract API code to api_lib
-    res = resources.REGISTRY.CloneAndSwitchAPIs(client).Parse(
-        args.model, collection='ml.projects.models')
-    req = msgs.MlProjectsModelsCreateRequest(
-        projectsId=res.projectsId,
-        googleCloudMlV1beta1Model=msgs.GoogleCloudMlV1beta1Model(
-            name=res.Name()))
-    resp = client.projects_models.Create(req)
-    return resp
+    return models.Create(args.model)

@@ -59,7 +59,7 @@ def _ExtractCommonProtectedRegion(signatures):
   return p
 
 
-def _DetachSignatures(manifest):
+def DetachSignatures(manifest):
   """Detach the signatures from the signed manifest and return the two halves.
 
   Args:
@@ -104,7 +104,7 @@ def _AttachSignatures(manifest, signatures):
 
 def Digest(manifest):
   """Compute the digest of the signed manifest."""
-  unsigned_manifest, unused_signatures = _DetachSignatures(manifest)
+  unsigned_manifest, unused_signatures = DetachSignatures(manifest)
   return 'sha256:' + hashlib.sha256(unsigned_manifest).hexdigest()
 
 
@@ -112,7 +112,7 @@ def Rename(manifest, name):
   """Rename this signed manifest to the provided name, and resign it."""
   if not isinstance(name, docker_name.Tag):
     raise ValueError('Expected docker_name.Tag for "name"')
-  unsigned_manifest, unused_signatures = _DetachSignatures(manifest)
+  unsigned_manifest, unused_signatures = DetachSignatures(manifest)
 
   json_manifest = json.loads(unsigned_manifest)
   # Rewrite the name fields.

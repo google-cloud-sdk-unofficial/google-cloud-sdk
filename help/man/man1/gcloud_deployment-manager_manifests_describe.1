@@ -11,7 +11,7 @@ gcloud deployment\-manager manifests describe \- provide information about a man
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud deployment\-manager manifests describe\fR \fIMANIFEST\fR [\fB\-\-deployment\fR\ \fIDEPLOYMENT\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud deployment\-manager manifests describe\fR [\fIMANIFEST\fR] \fB\-\-deployment\fR \fIDEPLOYMENT\fR [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -23,18 +23,18 @@ This command prints out all available details about a manifest.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fIMANIFEST\fR
+[\fIMANIFEST\fR]
 .RS 2m
 Manifest name.
 
 
 .RE
 
-.SH "FLAGS"
+.SH "REQUIRED FLAGS"
 
 \fB\-\-deployment\fR \fIDEPLOYMENT\fR
 .RS 2m
-Deployment name
+Deployment name.
 
 
 .RE
@@ -52,4 +52,11 @@ To display information about a manifest, run:
 .RS 2m
 $ gcloud deployment\-manager manifests describe \e
     \-\-deployment my\-deployment manifest\-name
+.RE
+
+To display information about the latest manifest, run:
+
+.RS 2m
+$ gcloud deployment\-manager manifests describe \e
+    \-\-deployment my\-deployment
 .RE

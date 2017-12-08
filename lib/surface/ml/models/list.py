@@ -14,6 +14,7 @@
 """ml models list command."""
 
 from apitools.base.py import list_pager
+from googlecloudsdk.api_lib.ml import models
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import apis
@@ -67,13 +68,4 @@ class ListBeta(base.ListCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    # TODO(b/31062835): extract API code to api_lib
-    client = apis.GetClientInstance('ml', 'v1beta1')
-    msgs = apis.GetMessagesModule('ml', 'v1beta1')
-    req = msgs.MlProjectsModelsListRequest(
-        projectsId=properties.VALUES.core.project.Get())
-    return list_pager.YieldFromList(
-        client.projects_models,
-        req,
-        field='models',
-        batch_size_attribute='pageSize')
+    return models.List()

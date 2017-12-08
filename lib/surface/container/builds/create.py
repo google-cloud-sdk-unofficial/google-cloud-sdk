@@ -62,7 +62,7 @@ class Create(base.Command):
         '--gcs-log-dir',
         help='Directory in Google Cloud Storage to hold build logs. If the '
              'bucket does not exist, it will be created. If not set, '
-             'gs://<project id>_cloudbuild/logs is used.',
+             'gs://PROJECT_ID_cloudbuild/logs is used.',
     )
     build_config = parser.add_mutually_exclusive_group(required=True)
     build_config.add_argument(

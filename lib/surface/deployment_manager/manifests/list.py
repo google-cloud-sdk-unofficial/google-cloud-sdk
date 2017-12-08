@@ -48,6 +48,7 @@ class List(base.ListCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
+    parser.add_argument('--deployment', help='Deployment name.', required=True)
     dm_v2_util.SIMPLE_LIST_FLAG.AddToParser(parser)
 
   def Run(self, args):

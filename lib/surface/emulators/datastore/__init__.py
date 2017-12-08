@@ -42,7 +42,7 @@ class Datastore(base.Group):
         ' emulator run.')
     parser.add_argument(
         '--legacy',
-        default=True,
+        default=False,
         action='store_true',
         help='Set to use the legacy emulator which supports Cloud Datastore'
              ' API v1beta2.')

@@ -14,11 +14,12 @@
 
 """Implementation of gcloud dataflow jobs show command.
 """
+
+from googlecloudsdk.api_lib.dataflow import apis
 from googlecloudsdk.api_lib.dataflow import job_display
-from googlecloudsdk.api_lib.dataflow import job_utils
 from googlecloudsdk.api_lib.dataflow import step_json
 from googlecloudsdk.calliope import base
-from surface import dataflow as commands
+from googlecloudsdk.command_lib.dataflow import job_utils
 
 
 class Show(base.Command):
@@ -50,11 +51,14 @@ class Show(base.Command):
     Returns:
       A Job message.
     """
-    job = job_utils.GetJobForArgs(self.context, args.job)
+    request = job_utils.ExtractJobRef(args.job).Request()
+    job = apis.Jobs.Get(
+        job_id=request.jobId,
+        project_id=request.projectId,
+        view=apis.Jobs.GET_REQUEST.ViewValueValuesEnum.JOB_VIEW_ALL)
 
     # Extract the basic display information for the job
-    dataflow_messages = self.context[commands.DATAFLOW_MESSAGES_MODULE_KEY]
-    shown_job = job_display.DisplayInfo(job, dataflow_messages)
+    shown_job = job_display.DisplayInfo(job)
 
     # TODO(user): "Prettify" the environment, etc, since it includes
     # JSON as a string in some of the fields.

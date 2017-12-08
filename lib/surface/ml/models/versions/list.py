@@ -14,6 +14,7 @@
 """ml models versions list command."""
 
 from apitools.base.py import list_pager
+from googlecloudsdk.api_lib.ml import versions
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
@@ -78,14 +79,5 @@ class ListBeta(base.ListCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    # TODO(b/31062835): remove CloneAndSwitchAPI and extract API code to api_lib
-    client = apis.GetClientInstance('ml', 'v1beta1')
-    msgs = apis.GetMessagesModule('ml', 'v1beta1')
-    res = resources.REGISTRY.CloneAndSwitchAPIs(client).Parse(
-        args.model, collection='ml.projects.models')
-    req = msgs.MlProjectsModelsVersionsListRequest(
-        projectsId=res.projectsId, modelsId=res.Name())
-    return list_pager.YieldFromList(client.projects_models_versions,
-                                    req,
-                                    field='versions',
-                                    batch_size_attribute='pageSize')
+    return versions.List(args.model)
+

@@ -15,6 +15,7 @@
 
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.app import create_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
@@ -29,6 +30,10 @@ class Create(base.Command):
           {description}
           """,
       'EXAMPLES': """\
+          To create an app with region chosen interactively, run:
+
+              $ {command}
+
           To create an app in the us-central region, run:
 
               $ {command} --region=us-central
@@ -38,19 +43,24 @@ class Create(base.Command):
 
   @staticmethod
   def Args(parser):
-    # TODO(b/29635126): Optional if interactive when `app regions list` is
-    # available
     parser.add_argument(
         '--region',
         help=('The region to create the app within.  '
-              'Use `gcloud app regions list` to list available regions.'),
-        required=True)
+              'Use `gcloud app regions list` to list available regions.  '
+              'If not provided, select region interactively.'))
 
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)
     api_client = appengine_api_client.GetApiClient()
-    message = 'Creating App Engine application in project [{0}]'.format(project)
-    with console_io.ProgressTracker(message):
-      api_client.CreateApp(args.region)
+    if args.region:
+      create_util.CreateApp(api_client, project, args.region)
+    elif console_io.CanPrompt():
+      create_util.CreateAppInteractively(api_client, project)
+    else:
+      # TODO(b/30666930): Remove `beta` when regions list is GA
+      raise create_util.UnspecifiedRegionError(
+          'Prompts are disabled. Region must be specified either by the '
+          '`--region` flag or interactively. Use `gcloud beta app regions '
+          'list` to list available regions.')
     log.status.Print('Success! The app is now created. Please use '
                      '`gcloud app deploy` to deploy your first app.')

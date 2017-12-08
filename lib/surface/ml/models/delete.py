@@ -13,6 +13,7 @@
 # limitations under the License.
 """ml models delete command."""
 
+from googlecloudsdk.api_lib.ml import models
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
@@ -75,12 +76,4 @@ class DeleteBeta(base.DeleteCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    # TODO(b/31062835): remove CloneAndSwitchAPI and extract API code to api_lib
-    client = apis.GetClientInstance('ml', 'v1beta1')
-    msgs = apis.GetMessagesModule('ml', 'v1beta1')
-    res = resources.REGISTRY.CloneAndSwitchAPIs(client).Parse(
-        args.model, collection='ml.projects.models')
-    req = msgs.MlProjectsModelsDeleteRequest(
-        projectsId=res.projectsId, modelsId=res.Name())
-    resp = client.projects_models.Delete(req)
-    return resp
+    return models.Delete(args.model)

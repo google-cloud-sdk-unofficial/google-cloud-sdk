@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
 from googlecloudsdk.api_lib.util import http_error_handler
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import util as command_lib_util
 from googlecloudsdk.command_lib.util import labels_util
@@ -47,8 +48,18 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     labels_util.AddCreateLabelsFlags(parser)
-    parser.add_argument('id', metavar='PROJECT_ID',
-                        help='ID for the project you want to create.')
+    type_ = arg_parsers.RegexpValidator(
+        r'[a-z][a-z0-9-]{5,29}',
+        'Project IDs can have lowercase letters, digits or hyphens and must '
+        'start with a lowercase letter. Must be between 6 and 30 characters.')
+    project_id = parser.add_argument(
+        'id', metavar='PROJECT_ID', type=type_,
+        help='ID for the project you want to create.')
+    project_id.detailed_help = (
+        'ID for the project you want to create.\n\n'
+        'Project IDs can have lowercase letters, digits or hyphens and must '
+        'start with a lowercase letter. '
+        'Project IDs must be between 6 and 30 characters.')
     parser.add_argument('--name',
                         help='Name for the project you want to create. '
                              'If not specified, will use project id as name.')

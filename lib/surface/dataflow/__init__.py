@@ -41,20 +41,10 @@ DATAFLOW_APITOOLS_CLIENT_KEY = 'dataflow_client'
 DATAFLOW_REGISTRY_KEY = 'dataflow_registry'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Dataflow(base.Group):
   """Read and manipulate Google Dataflow resources.
   """
-
-  @staticmethod
-  def Args(parser):
-    """Add command flags that are global to the Dataflow group.
-
-    Args:
-      parser: argparse.ArgumentParser, This is a standard argparser parser with
-        which you can register arguments.  See the public argparse documentation
-        for its capabilities.
-    """
 
   def Filter(self, context, args):
     """Setup the API client within the context for this group's commands.
@@ -69,8 +59,25 @@ class Dataflow(base.Group):
         api='dataflow', collection=None, param='projectId',
         resolver=resolvers.FromProperty(properties.VALUES.core.project))
 
-    context[DATAFLOW_MESSAGES_MODULE_KEY] = apis.GetMessagesModule(
-        'dataflow', 'v1b3')
-    context[DATAFLOW_APITOOLS_CLIENT_KEY] = apis.GetClientInstance(
-        'dataflow', 'v1b3')
-    context[DATAFLOW_REGISTRY_KEY] = cloud_resources.REGISTRY
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DataflowDeprecated(base.Group):
+  """Read and manipulate Google Dataflow resources.
+  """
+
+  def __init__(self):
+    log.warn('The Dataflow Alpha CLI is now deprecated and will soon be '
+             'removed. Please use the new `gcloud beta dataflow` commands.')
+
+  def Filter(self, context, args):
+    """Setup the API client within the context for this group's commands.
+
+    Args:
+      context: {str:object}, A set of key-value pairs that can be used for
+          common initialization among commands.
+      args: argparse.Namespace: The same namespace given to the corresponding
+          .Run() invocation.
+    """
+    cloud_resources.REGISTRY.SetParamDefault(
+        api='dataflow', collection=None, param='projectId',
+        resolver=resolvers.FromProperty(properties.VALUES.core.project))

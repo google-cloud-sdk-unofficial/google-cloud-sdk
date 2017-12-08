@@ -15,13 +15,11 @@
 """Implementation of gcloud dataflow jobs drain command.
 """
 
-from apitools.base.py import exceptions
-
-from googlecloudsdk.api_lib.dataflow import dataflow_util
-from googlecloudsdk.api_lib.dataflow import job_utils
+from googlecloudsdk.api_lib.dataflow import apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.dataflow import job_utils
 from googlecloudsdk.core import log
-from surface import dataflow as commands
 
 
 class Drain(base.Command):
@@ -44,31 +42,10 @@ class Drain(base.Command):
     Args:
       args: all the arguments that were provided to this command invocation.
     """
-    output_stream = log.status.GetConsoleWriterStream()
-    for job_ref in job_utils.ExtractJobRefs(self.context, args.jobs):
-      output_stream.flush()
+    for job_ref in job_utils.ExtractJobRefs(args.jobs):
       try:
-        self._DrainJob(job_ref)
+        apis.Jobs.Drain(job_ref.jobId)
         log.status.Print('Started draining job [{0}]'.format(job_ref.jobId))
-      except exceptions.HttpError as error:
-        log.status.Print('Failed to drain job [{0}]: {1}'.format(
-            job_ref.jobId, dataflow_util.GetErrorMessage(error)))
-
-  def _DrainJob(self, job_ref):
-    """Drains a job.
-
-    Args:
-      job_ref: resources.Resource, The reference to the job to drain.
-    """
-    apitools_client = self.context[commands.DATAFLOW_APITOOLS_CLIENT_KEY]
-    dataflow_messages = self.context[commands.DATAFLOW_MESSAGES_MODULE_KEY]
-
-    request = dataflow_messages.DataflowProjectsJobsUpdateRequest(
-        projectId=job_ref.projectId,
-        jobId=job_ref.jobId,
-        # We don't need to send the full job, because only the state can be
-        # updated, and the other fields are ignored.
-        job=dataflow_messages.Job(
-            requestedState=(dataflow_messages.Job.RequestedStateValueValuesEnum
-                            .JOB_STATE_DRAINED)))
-    apitools_client.projects_jobs.Update(request)
+      except exceptions.HttpException as error:
+        log.status.Print('Failed to drain job [{0}]: {1}'.format(job_ref.jobId,
+                                                                 error.error))
