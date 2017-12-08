@@ -32,8 +32,9 @@ class CopyBundledPython(base.Command):
   installation.
   """
 
-  def DeprecatedFormat(self, unused_args):
-    return 'value(python_location)'
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat('value(python_location)')
 
   def Run(self, args):
     manager = util.GetUpdateManager(args)

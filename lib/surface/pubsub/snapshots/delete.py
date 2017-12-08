@@ -14,6 +14,7 @@
 """Cloud Pub/Sub snapshots delete command."""
 from apitools.base.py import exceptions as api_ex
 
+from googlecloudsdk.api_lib.pubsub import snapshots
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
@@ -53,26 +54,24 @@ class Delete(base.DeleteCommand):
     Raises:
       util.RequestFailedError: if any of the requests to the API failed.
     """
-    msgs = self.context['pubsub_msgs']
-    pubsub = self.context['pubsub']
+    client = snapshots.SnapshotsClient()
 
     failed = []
     for snapshot_name in args.snapshot:
-      snapshot_path = util.ParseSnapshot(snapshot_name).RelativeName()
-      delete_req = msgs.PubsubProjectsSnapshotsDeleteRequest(
-          snapshot=snapshot_path)
+      snapshot_ref = util.ParseSnapshot(snapshot_name)
 
       try:
-        pubsub.projects_snapshots.Delete(delete_req)
+        client.Delete(snapshot_ref)
       except api_ex.HttpError as error:
         exc = exceptions.HttpException(error)
-        log.CreatedResource(snapshot_path, kind='snapshot',
+        log.CreatedResource(snapshot_ref.RelativeName(), kind='snapshot',
                             failed=exc.payload.status_message)
         failed.append(snapshot_name)
         continue
 
-      result = util.SnapshotDisplayDict(msgs.Snapshot(name=snapshot_path))
-      log.DeletedResource(snapshot_path, kind='snapshot')
+      result = util.SnapshotDisplayDict(
+          client.messages.Snapshot(name=snapshot_ref.RelativeName()))
+      log.DeletedResource(snapshot_ref.RelativeName(), kind='snapshot')
       yield result
 
     if failed:

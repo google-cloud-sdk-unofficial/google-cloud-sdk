@@ -60,7 +60,8 @@ class Add(base.SilentCommand):
         snapshots.ComponentSnapshot.FromURLs(
             repo, command_path='components.repositories.add')
       except snapshots.Error:
-        raise exceptions.ToolException(
+        raise exceptions.InvalidArgumentException(
+            'url',
             'The given repository [{repo}] could not be fetched. Check your '
             'network settings and ensure that you have entered a valid '
             'repository URL.'.format(repo=repo))

@@ -20,16 +20,16 @@ from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute.firewall_rules import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateFirewall(base.UpdateCommand):
   """Update a firewall rule.
 
-  *{command}* is used to update firewall rules that allow incoming
-  traffic to a network. The firewall rule will only be updated for arguments
-  that are specifically passed.  Other attributes will remain unaffected.
+  *{command}* is used to update firewall rules that allow/deny
+  incoming/outgoing traffic. The firewall rule will only be updated for
+  arguments that are specifically passed. Other attributes will remain
+  unaffected.
   """
   with_egress_firewall = True
-  with_service_account = False
+  with_service_account = True
 
   FIREWALL_RULE_ARG = None
 
@@ -42,6 +42,7 @@ class UpdateFirewall(base.UpdateCommand):
         for_update=True,
         with_egress_support=cls.with_egress_firewall,
         with_service_account=cls.with_service_account)
+    firewalls_utils.AddArgsForServiceAccount(parser, for_update=True)
 
   def ValidateArgument(self, messages, args):
     self.new_allowed = firewalls_utils.ParseRules(
@@ -182,6 +183,22 @@ class UpdateFirewall(base.UpdateCommand):
     else:
       cleared_fields.append('destinationRanges')
 
+    source_service_accounts = []
+    if args.source_service_accounts:
+      source_service_accounts = args.source_service_accounts
+    elif args.source_service_accounts is None:
+      source_service_accounts = existing.sourceServiceAccounts
+    else:
+      cleared_fields.append('sourceServiceAccounts')
+
+    target_service_accounts = []
+    if args.target_service_accounts:
+      target_service_accounts = args.target_service_accounts
+    elif args.target_service_accounts is None:
+      target_service_accounts = existing.targetServiceAccounts
+    else:
+      cleared_fields.append('targetServiceAccounts')
+
     new_firewall = client.messages.Firewall(
         name=existing.name,
         direction=direction,
@@ -193,52 +210,7 @@ class UpdateFirewall(base.UpdateCommand):
         sourceRanges=source_ranges,
         sourceTags=source_tags,
         destinationRanges=destination_ranges,
-        targetTags=target_tags,)
-    return new_firewall
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class BetaUpdateFirewall(UpdateFirewall):
-  """Update a firewall rule.
-
-  *{command}* is used to update firewall rules that allow/deny
-  incoming/outgoing traffic. The firewall rule will only be updated for
-  arguments that are specifically passed. Other attributes will remain
-  unaffected.
-  """
-  with_egress_firewall = True
-  with_service_account = True
-
-  @classmethod
-  def Args(cls, parser):
-    cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument()
-    cls.FIREWALL_RULE_ARG.AddArgument(parser, operation_type='update')
-    firewalls_utils.AddCommonArgs(
-        parser,
-        for_update=True,
-        with_egress_support=cls.with_egress_firewall,
-        with_service_account=cls.with_service_account)
-    firewalls_utils.AddArgsForServiceAccount(parser, for_update=True)
-
-  def Modify(self, client, args, existing, cleared_fields):
-    """Returns a modified Firewall message."""
-
-    new_firewall = super(BetaUpdateFirewall, self).Modify(
-        client, args, existing, cleared_fields)
-
-    if args.source_service_accounts:
-      new_firewall.sourceServiceAccounts = args.source_service_accounts
-    elif args.source_service_accounts is None:
-      new_firewall.sourceServiceAccounts = existing.sourceServiceAccounts
-    else:
-      new_firewall.sourceServiceAccounts = []
-      cleared_fields.append('sourceServiceAccounts')
-
-    if args.target_service_accounts:
-      new_firewall.targetServiceAccounts = args.target_service_accounts
-    elif args.target_service_accounts is None:
-      new_firewall.targetServiceAccounts = existing.targetServiceAccounts
-    else:
-      new_firewall.targetServiceAccounts = []
-      cleared_fields.append('targetServiceAccounts')
+        targetTags=target_tags,
+        sourceServiceAccounts=source_service_accounts,
+        targetServiceAccounts=target_service_accounts)
     return new_firewall

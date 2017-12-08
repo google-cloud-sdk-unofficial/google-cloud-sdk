@@ -18,9 +18,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import jobs_util
 
-_TF_RECORD_URL = ('https://www.tensorflow.org/versions/r0.12/how_tos/'
-                  'reading_data/index.html#file-formats')
-
 
 def _AddSubmitPredictionArgs(parser):
   """Add arguments for `jobs submit prediction` command."""
@@ -64,16 +61,7 @@ as the `other-instances1` bucket, while
 will match any objects in the `instance-dir` "directory" (since directories
 aren't a first-class Cloud Storage concept) of `my-bucket`.
 """)
-  parser.add_argument(
-      '--data-format',
-      required=True,
-      choices={
-          'TEXT': ('Text files with instances separated by the new-line '
-                   'character.'),
-          'TF_RECORD': 'TFRecord files; see {}'.format(_TF_RECORD_URL),
-          'TF_RECORD_GZIP': 'GZIP-compressed TFRecord files.'
-      },
-      help='Data format of the input files.')
+  jobs_util.DataFormatFlagMap().choice_arg.AddToParser(parser)
   parser.add_argument(
       '--output-path', required=True,
       help='Google Cloud Storage path to which to save the output. '
@@ -108,13 +96,15 @@ class Prediction(base.Command):
     parser.display_info.AddFormat(jobs_util.JOB_FORMAT)
 
   def Run(self, args):
+    data_format = jobs_util.DataFormatFlagMap().GetEnumForChoice(
+        args.data_format)
     return jobs_util.SubmitPrediction(
         jobs.JobsClient(), args.job,
         model_dir=args.model_dir,
         model=args.model,
         version=args.version,
         input_paths=args.input_paths,
-        data_format=args.data_format,
+        data_format=data_format.name,
         output_path=args.output_path,
         region=args.region,
         runtime_version=args.runtime_version,

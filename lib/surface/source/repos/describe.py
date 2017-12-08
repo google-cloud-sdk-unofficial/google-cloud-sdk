@@ -11,11 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Describe Google Cloud Platform git repository.
-"""
-
-from googlecloudsdk.api_lib.sourcerepo import sourcerepo
+"""Describe Google Cloud Platform git repository."""
+from googlecloudsdk.api_lib.source.repos import sourcerepo
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources

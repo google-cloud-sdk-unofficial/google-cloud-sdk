@@ -93,7 +93,6 @@ class List(base.ListCommand):
     filter_dict = dict()
     if args.state_filter:
       filter_dict[STATE_MATCHER_FILTER] = STATE_MATCHER_MAP[args.state_filter]
-    # TODO(b/32669485) Get full flag test coverage.
     if args.cluster:
       filter_dict[CLUSTER_NAME_FILTER] = args.cluster
 

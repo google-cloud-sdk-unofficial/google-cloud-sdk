@@ -14,6 +14,7 @@
 """Resize cluster command."""
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container import flags
+from googlecloudsdk.command_lib.container import messages
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -118,6 +119,10 @@ class ResizeBeta(Resize):
     adapter = self.context['api_adapter']
     location_get = self.context['location_get']
     location = location_get(args)
+    if getattr(args, 'region', None):
+      message = messages.NonGAFeatureUsingV1APIWarning(self._release_track)
+      if message:
+        console_io.PromptContinue(message=message, cancel_on_no=True)
 
     cluster_ref = adapter.ParseCluster(args.name, location)
     cluster = adapter.GetCluster(cluster_ref)

@@ -122,7 +122,7 @@ class TableFormatter(object):
 
   def Print(self):
     if self:
-      # TODO(craigcitro): Make encoding a customizable attribute on
+      # TODO(user): Make encoding a customizable attribute on
       # the TableFormatter.
       encoding = sys.stdout.encoding or 'utf8'
       print unicode(self).encode(encoding, 'backslashreplace')
@@ -138,7 +138,7 @@ class TableFormatter(object):
 
   def AddField(self, field):
     """Add a field as a new column to this formatter."""
-    # TODO(craigcitro): Excise this bigquery-specific method.
+    # TODO(user): Excise this bigquery-specific method.
     align = 'l' if field.get('type', []) == 'STRING' else 'r'
     self.AddColumn(field['name'], align=align)
 

@@ -61,6 +61,10 @@ class Delete(base.DeleteCommand, dm_base.DmCommand):
           """,
   }
 
+  _delete_policy_flag_map = flags.GetDeleteFlagEnumMap(
+      (apis.GetMessagesModule('deploymentmanager', 'v2')
+       .DeploymentmanagerDeploymentsDeleteRequest.DeletePolicyValueValuesEnum))
+
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command.
@@ -71,9 +75,7 @@ class Delete(base.DeleteCommand, dm_base.DmCommand):
           allowed.
     """
     parser.add_argument('deployment_name', nargs='+', help='Deployment name.')
-    flags.AddDeletePolicyFlag(
-        parser, apis.GetMessagesModule('deploymentmanager', 'v2')
-        .DeploymentmanagerDeploymentsDeleteRequest)
+    Delete._delete_policy_flag_map.choice_arg.AddToParser(parser)
     flags.AddAsyncFlag(parser)
 
   def Run(self, args):
@@ -109,9 +111,8 @@ class Delete(base.DeleteCommand, dm_base.DmCommand):
             self.messages.DeploymentmanagerDeploymentsDeleteRequest(
                 project=dm_base.GetProject(),
                 deployment=deployment_ref.deployment,
-                deletePolicy=(self.messages
-                              .DeploymentmanagerDeploymentsDeleteRequest
-                              .DeletePolicyValueValuesEnum(args.delete_policy)),
+                deletePolicy=(Delete._delete_policy_flag_map.
+                              GetEnumForChoice(args.delete_policy)),
             )
         )
         if args.async:

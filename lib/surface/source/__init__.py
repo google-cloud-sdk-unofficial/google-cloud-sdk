@@ -15,7 +15,7 @@
 """The main command group for cloud source command group."""
 
 from googlecloudsdk.api_lib.source import source
-from googlecloudsdk.api_lib.sourcerepo import sourcerepo
+from googlecloudsdk.api_lib.source.repos import sourcerepo
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import resources
 

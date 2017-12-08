@@ -296,6 +296,7 @@ class PatchBeta(base.UpdateCommand):
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
     AddBaseArgs(parser)
+    flags.AddAvailabilityType(parser)
     flags.AddInstanceResizeLimit(parser)
     labels_util.AddUpdateLabelsFlags(parser)
     parser.add_argument(

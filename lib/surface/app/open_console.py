@@ -37,7 +37,7 @@ def _CreateDevConsoleURL(project, service='default', version=None, logs=False):
   """
   if service is None:
     service = 'default'
-  query = [('project', project), ('moduleId', service)]
+  query = [('project', project), ('serviceId', service)]
   if version:
     query.append(('versionId', version))
   query_string = urllib.urlencode(query)

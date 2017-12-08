@@ -23,14 +23,15 @@ from googlecloudsdk.core import properties
 class List(base.ListCommand):
   """List target TCP proxies."""
 
-  def DeprecatedFormat(self, args):
-    return """
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""
         table(
           name,
           proxyHeader,
           service.basename()
         )
-    """
+    """)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

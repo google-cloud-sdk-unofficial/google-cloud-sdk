@@ -16,7 +16,6 @@
 
 """gcloud command line tool."""
 
-import imp
 import os
 import sys
 
@@ -30,24 +29,17 @@ if os.path.isdir(_THIRD_PARTY_DIR):
 def _import_gcloud_main():
   """Returns reference to gcloud_main module."""
 
-  # We reload google after sys.path is updated, so that third_party/google is
-  # imported instead. By this time 'google' should NOT be in sys.modules, but
-  # some releases of protobuf preload google package via .pth file.
-  # pylint:disable=g-import-not-at-top
   if 'google' in sys.modules:
-    import google
-    google_paths = getattr(google, '__path__', [])
-    for p in google_paths:
-      if os.path.join('third_party', 'google') in p:
-        # Good, our package for google is on path.
-        break
-    else:
-      try:
-        # Reload google package assuming our version is earlier on PYTHONPATH.
-        reload(google)
-      except NameError:
-        imp.reload(google)
+    # By this time 'google' should NOT be in sys.modules, but some releases of
+    # protobuf preload google package via .pth file setting its __path__. This
+    # prevents loading of other packages in the same namespace.
+    # Below add our vendored 'google' packages to its path if this is the case.
+    google_paths = getattr(sys.modules['google'], '__path__', [])
+    vendored_google_path = os.path.join(_THIRD_PARTY_DIR, 'google')
+    if vendored_google_path not in google_paths:
+      google_paths.append(vendored_google_path)
 
+  # pylint:disable=g-import-not-at-top
   import googlecloudsdk.gcloud_main
   return googlecloudsdk.gcloud_main
 

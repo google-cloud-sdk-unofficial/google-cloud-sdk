@@ -21,7 +21,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import times
 
 
-# TODO(b/67506665): Add tests.
 class Update(base.DescribeCommand):
   """Update a specific device credential."""
 

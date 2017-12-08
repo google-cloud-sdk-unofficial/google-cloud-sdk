@@ -16,6 +16,7 @@
 Imports data into a Cloud SQL instance from a MySQL dump file in
 Google Cloud Storage.
 """
+# TODO(b/67917387): Deprecate this command when `sql import` goes to GA.
 
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations

@@ -16,6 +16,22 @@
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.util.apis import arg_utils
+
+
+def _GetFormatEnum():
+  """Get Enum for Variant File Formats."""
+  genomics_messages = genomics_util.GetGenomicsMessages()
+  return genomics_messages.ImportVariantsRequest.FormatValueValuesEnum
+
+
+_FILE_FORMAT_MAPPER = arg_utils.ChoiceEnumMapper(
+    '--file-format',
+    _GetFormatEnum(),
+    custom_mappings={
+        'FORMAT_COMPLETE_GENOMICS': 'complete-genomics', 'FORMAT_VCF': 'vcf'},
+    default='vcf',
+    help_str='Set the file format of the `--source-uris`.')
 
 
 class Import(base.Command):
@@ -54,11 +70,6 @@ class Import(base.Command):
                               'the incoming variant and persists this info '
                               'field in each of the incoming variant\'s '
                               'calls.'))
-    parser.add_argument(
-        '--file-format',
-        choices=['COMPLETE_GENOMICS', 'VCF'],
-        default='VCF',
-        help='Set the file format of the --source-uris.')
     parser.add_argument('--normalize-reference-names',
                         dest='normalize_reference_names',
                         action='store_true',
@@ -73,6 +84,7 @@ class Import(base.Command):
                               'becomes "17" and "chrX" becomes "X". All '
                               'mitochondrial chromosomes ("chrM", "chrMT", '
                               'etc) become "MT".'))
+    _FILE_FORMAT_MAPPER.choice_arg.AddToParser(parser)
     parser.set_defaults(normalize_referecne_names=False)
 
   def Run(self, args):
@@ -88,11 +100,7 @@ class Import(base.Command):
     apitools_client = genomics_util.GetGenomicsClient()
     genomics_messages = genomics_util.GetGenomicsMessages()
 
-    format_enum = genomics_messages.ImportVariantsRequest.FormatValueValuesEnum
-    file_format = format_enum.FORMAT_VCF
-    if args.file_format == 'COMPLETE_GENOMICS':
-      file_format = format_enum.FORMAT_COMPLETE_GENOMICS
-
+    file_format = _FILE_FORMAT_MAPPER.GetEnumForChoice(args.file_format)
     imc = genomics_messages.ImportVariantsRequest.InfoMergeConfigValue
     ops_enum = imc.AdditionalProperty.ValueValueValuesEnum
     info_merge_config = None

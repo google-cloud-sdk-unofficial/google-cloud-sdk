@@ -19,7 +19,6 @@ from googlecloudsdk.command_lib.iot import resource_args
 from googlecloudsdk.command_lib.iot import util
 
 
-# TODO(b/67506665): Add tests.
 class Describe(base.DescribeCommand):
   """Show details about a specific device credential."""
 

@@ -43,15 +43,14 @@ class List(base.ListCommand):
         that do not match the entire regular expression will be filtered out.
         """)
 
-  def DeprecatedFormat(self, args):
-    return """
+    parser.display_info.AddFormat("""
         table(
           name,
           proxyHeader,
           service.basename(),
           sslCertificates.map().basename().list():label=SSL_CERTIFICATES
         )
-    """
+    """)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

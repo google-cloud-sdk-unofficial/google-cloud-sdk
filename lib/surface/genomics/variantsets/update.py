@@ -29,6 +29,7 @@ class Update(base.UpdateCommand):
     parser.add_argument('--name', help='The new name of the variant set.')
     parser.add_argument('--description',
                         help='The new description of the variant set.')
+    parser.display_info.AddFormat(None)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -66,6 +67,3 @@ class Update(base.UpdateCommand):
                      .format(variantset.id, variantset.name,
                              variantset.description))
     return variantset
-
-  def DeprecatedFormat(self, args):
-    return None

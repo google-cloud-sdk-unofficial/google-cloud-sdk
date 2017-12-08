@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Cloud Pub/Sub topics list command."""
+from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
-from googlecloudsdk.core.resource import resource_printer_base
-from googlecloudsdk.core.resource import resource_projector
 
 
 class List(base.ListCommand):
@@ -56,40 +55,7 @@ class List(base.ListCommand):
     Yields:
       Topic paths that match the regular expression in args.name_filter.
     """
-    msgs = self.context['pubsub_msgs']
-    pubsub = self.context['pubsub']
+    client = topics.TopicsClient()
+    for topic in client.List(util.ParseProject(), page_size=args.page_size):
+      yield util.ListTopicDisplayDict(topic)
 
-    page_size = None
-    page_token = None
-
-    if args.page_size:
-      page_size = min(args.page_size, util.MAX_LIST_RESULTS)
-
-    if not args.filter and args.limit:
-      page_size = min(args.limit, page_size or util.MAX_LIST_RESULTS)
-
-    while True:
-      list_topics_request = msgs.PubsubProjectsTopicsListRequest(
-          project=util.ParseProject().RelativeName(),
-          pageToken=page_token,
-          pageSize=page_size)
-
-      list_topics_response = pubsub.projects_topics.List(
-          list_topics_request)
-
-      for topic in list_topics_response.topics:
-        yield TopicDict(topic)
-
-      page_token = list_topics_response.nextPageToken
-      if not page_token:
-        break
-      yield resource_printer_base.PageMarker()
-
-
-def TopicDict(topic):
-  topic_dict = resource_projector.MakeSerializable(topic)
-  topic_ref = util.ParseTopic(topic.name)
-  topic_dict['topic'] = topic.name
-  topic_dict['topicId'] = topic_ref.topicsId
-  del topic_dict['name']
-  return topic_dict

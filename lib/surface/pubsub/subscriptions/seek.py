@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Cloud Pub/Sub subscriptions seek command."""
-
+from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.projects import util as projects_util
 from googlecloudsdk.command_lib.pubsub import util
 
 
@@ -67,28 +66,21 @@ class SeekAlpha(base.Command):
       description fits the Resource described in the ResourceRegistry under
       'pubsub.subscriptions.seek'.
     """
-    msgs = self.context['pubsub_msgs']
-    pubsub = self.context['pubsub']
+    client = subscriptions.SubscriptionsClient()
 
-    subscription = util.ParseSubscription(args.subscription).RelativeName()
-    result = {'subscriptionId': subscription}
+    subscription_ref = util.ParseSubscription(args.subscription)
+    result = {'subscriptionId': subscription_ref.RelativeName()}
 
-    seek_req = msgs.SeekRequest()
+    snapshot_ref = None
+    time = None
     if args.snapshot:
-      if args.snapshot_project:
-        snapshot_project = (
-            projects_util.ParseProject(args.snapshot_project).Name())
-      else:
-        snapshot_project = ''
-      seek_req.snapshot = util.ParseSnapshot(
-          args.snapshot, snapshot_project).RelativeName()
-      result['snapshotId'] = seek_req.snapshot
+      snapshot_ref = util.ParseSnapshot(
+          args.snapshot, args.snapshot_project)
+      result['snapshotId'] = snapshot_ref.RelativeName()
     else:
-      seek_req.time = args.time.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-      result['time'] = seek_req.time
+      time = util.FormatSeekTime(args.time)
+      result['time'] = time
 
-    pubsub.projects_subscriptions.Seek(
-        msgs.PubsubProjectsSubscriptionsSeekRequest(
-            seekRequest=seek_req, subscription=subscription))
+    client.Seek(subscription_ref, time=time, snapshot_ref=snapshot_ref)
 
     return result

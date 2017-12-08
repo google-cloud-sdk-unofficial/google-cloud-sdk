@@ -15,7 +15,6 @@
 """Update job command."""
 
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
-from googlecloudsdk.api_lib.dataproc import exceptions
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.util import labels_util
@@ -48,8 +47,9 @@ class Update(base.UpdateCommand):
         'id',
         metavar='JOB_ID',
         help='The ID of the job to describe.')
+    changes = parser.add_argument_group(required=True)
     # Allow the user to specify new labels as well as update/remove existing
-    labels_util.AddUpdateLabelsFlags(parser)
+    labels_util.AddUpdateLabelsFlags(changes)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
@@ -58,12 +58,9 @@ class Update(base.UpdateCommand):
 
     changed_fields = []
 
-    has_changes = False
-
     # Update labels if the user requested it
     labels = None
     if args.update_labels or args.remove_labels:
-      has_changes = True
       changed_fields.append('labels')
 
       # We need to fetch the job first so we know what the labels look like. The
@@ -81,10 +78,6 @@ class Update(base.UpdateCommand):
           dataproc.messages.Job.LabelsValue,
           args.update_labels,
           args.remove_labels)
-
-    if not has_changes:
-      raise exceptions.ArgumentError(
-          'Must specify at least one job parameter to update.')
 
     updated_job = orig_job
     updated_job.labels = labels

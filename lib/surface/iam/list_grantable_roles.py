@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for listing grantable roles for a given resource."""
-
-import re
 import textwrap
 
 from apitools.base.py import list_pager
@@ -21,6 +19,7 @@ from apitools.base.py import list_pager
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.iam import base_classes
+from googlecloudsdk.command_lib.iam import iam_util
 
 
 class ListGrantableRoles(base_classes.BaseIamCommand):
@@ -64,17 +63,7 @@ class ListGrantableRoles(base_classes.BaseIamCommand):
     if args.resource.startswith('http'):
       # This is a full resource URL that needs to be converted to an atomic path
       resource_ref = self.resources.REGISTRY.Parse(args.resource)
-      full_name = resource_ref.SelfLink()
-      full_name = re.sub(r'\w+://', '//', full_name)  # no protocol at the start
-      full_name = re.sub(r'/v[0-9]+[0-9a-zA-Z]*/', '/', full_name)  # no version
-      if full_name.startswith('//www.'):
-        # Convert '//www.googleapis.com/compute/' to '//compute.googleapis.com/'
-        splitted_list = full_name.split('/')
-        service = full_name.split('/')[3]
-        splitted_list.pop(3)
-        full_name = '/'.join(splitted_list)
-        full_name = full_name.replace('//www.', '//{0}.'.format(service))
-      resource = full_name
+      resource = iam_util.GetResourceName(resource_ref)
 
     if not resource:
       raise exceptions.ToolException(

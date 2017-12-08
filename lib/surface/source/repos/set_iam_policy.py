@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Sets the IAM policy for the repository."""
-
-from googlecloudsdk.api_lib.sourcerepo import sourcerepo
+from googlecloudsdk.api_lib.source.repos import sourcerepo
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import properties
@@ -63,9 +62,9 @@ class SetIamPolicy(base.UpdateCommand):
         args.name,
         params={'projectsId': properties.VALUES.core.project.GetOrFail},
         collection='sourcerepo.projects.repos')
-    policy = iam_util.ParseYamlorJsonPolicyFile(args.policy_file,
-                                                sourcerepo.messages.Policy)
     source = sourcerepo.Source()
+    policy = iam_util.ParseYamlorJsonPolicyFile(args.policy_file,
+                                                source.messages.Policy)
     result = source.SetIamPolicy(res, policy)
     iam_util.LogSetIamPolicy(res.Name(), 'repo')
     return result

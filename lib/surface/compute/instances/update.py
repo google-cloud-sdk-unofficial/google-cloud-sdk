@@ -42,7 +42,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine virtual machine."""
 
@@ -51,6 +51,7 @@ class Update(base.UpdateCommand):
     flags.INSTANCE_ARG.AddArgument(parser, operation_type='update')
     labels_util.AddUpdateLabelsFlags(parser)
     flags.AddMinCpuPlatformArgs(parser, Update.ReleaseTrack())
+    flags.AddDeletionProtectionFlag(parser, use_default_value=False)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -79,8 +80,7 @@ class Update(base.UpdateCommand):
     if hasattr(args, 'min_cpu_platform') and args.min_cpu_platform is not None:
       min_cpu_platform_operation_ref = self._GetMinCpuPlatformOperationRef(
           args.min_cpu_platform, instance_ref, holder)
-    deletion_protection = getattr(args, 'deletion_protection', None)
-    if deletion_protection is not None:
+    if args.deletion_protection is not None:
       deletion_protection_operation_ref = (
           self._GetDeletionProtectionOperationRef(
               args.deletion_protection, instance_ref, holder))
@@ -96,7 +96,7 @@ class Update(base.UpdateCommand):
     result = self._WaitForResult(
         operation_poller, deletion_protection_operation_ref,
         'Setting deletion protection of instance [{0}] to [{1}]',
-        instance_ref.Name(), deletion_protection) or result
+        instance_ref.Name(), args.deletion_protection) or result
     return result
 
   def _GetLabelsOperationRef(self, update_labels, remove_labels, instance,
@@ -140,6 +140,20 @@ class Update(base.UpdateCommand):
     return holder.resources.Parse(
         operation.selfLink, collection='compute.zoneOperations')
 
+  def _GetDeletionProtectionOperationRef(self, deletion_protection,
+                                         instance_ref, holder):
+    client = holder.client.apitools_client
+    messages = holder.client.messages
+    request = messages.ComputeInstancesSetDeletionProtectionRequest(
+        deletionProtection=deletion_protection,
+        project=instance_ref.project,
+        resource=instance_ref.instance,
+        zone=instance_ref.zone)
+
+    operation = client.instances.SetDeletionProtection(request)
+    return holder.resources.Parse(
+        operation.selfLink, collection='compute.zoneOperations')
+
   def _WaitForResult(self, operation_poller, operation_ref, message, *args):
     if operation_ref:
       return waiter.WaitFor(
@@ -156,31 +170,7 @@ class UpdateBeta(Update):
     flags.INSTANCE_ARG.AddArgument(parser, operation_type='update')
     labels_util.AddUpdateLabelsFlags(parser)
     flags.AddMinCpuPlatformArgs(parser, UpdateBeta.ReleaseTrack())
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
-  """Update a Google Compute Engine virtual machine."""
-
-  @staticmethod
-  def Args(parser):
-    flags.INSTANCE_ARG.AddArgument(parser, operation_type='update')
-    labels_util.AddUpdateLabelsFlags(parser)
-    flags.AddMinCpuPlatformArgs(parser, UpdateAlpha.ReleaseTrack())
     flags.AddDeletionProtectionFlag(parser, use_default_value=False)
 
-  def _GetDeletionProtectionOperationRef(self, deletion_protection,
-                                         instance_ref, holder):
-    client = holder.client.apitools_client
-    messages = holder.client.messages
-    request = messages.ComputeInstancesSetDeletionProtectionRequest(
-        deletionProtection=deletion_protection,
-        project=instance_ref.project,
-        resource=instance_ref.instance,
-        zone=instance_ref.zone)
-
-    operation = client.instances.SetDeletionProtection(request)
-    return holder.resources.Parse(
-        operation.selfLink, collection='compute.zoneOperations')
 
 Update.detailed_help = DETAILED_HELP

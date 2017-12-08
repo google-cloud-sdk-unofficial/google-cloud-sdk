@@ -26,7 +26,12 @@ class Cancel(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddBuildArg(parser, intro='The build to cancel.')
+    parser.add_argument(
+        'builds',
+        completer=flags.BuildsCompleter,
+        nargs='+',  # Accept multiple builds.
+        help='IDs of builds to cancel')
+    parser.display_info.AddFormat(None)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -42,16 +47,16 @@ class Cancel(base.Command):
     client = cloudbuild_util.GetClientInstance()
     messages = cloudbuild_util.GetMessagesModule()
 
-    build_ref = resources.REGISTRY.Parse(
-        args.build,
-        params={'projectId': properties.VALUES.core.project.GetOrFail},
-        collection='cloudbuild.projects.builds')
-    canceled_build = client.projects_builds.Cancel(
-        messages.CloudbuildProjectsBuildsCancelRequest(
-            projectId=build_ref.projectId,
-            id=build_ref.id))
-    log.status.write('Cancelled [{r}].\n'.format(r=str(build_ref)))
-    return canceled_build
-
-  def DeprecatedFormat(self, args):
-    return None
+    cancelled = []
+    for build in args.builds:
+      build_ref = resources.REGISTRY.Parse(
+          build,
+          params={'projectId': properties.VALUES.core.project.GetOrFail},
+          collection='cloudbuild.projects.builds')
+      cancelled_build = client.projects_builds.Cancel(
+          messages.CloudbuildProjectsBuildsCancelRequest(
+              projectId=build_ref.projectId,
+              id=build_ref.id))
+      log.status.write('Cancelled [{r}].\n'.format(r=str(build_ref)))
+      cancelled.append(cancelled_build)
+    return cancelled

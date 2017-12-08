@@ -255,6 +255,8 @@ def DetailedHelp(version):
         takes care of authentication and the translation of the
         instance name into an IP address.
 
+        This command does not work for Windows VMs.
+
         This command ensures that the user's public SSH key is present
         in the project's metadata. If the user does not have a public
         SSH key, one is generated using *ssh-keygen(1)* (if the `--quiet`
@@ -281,6 +283,8 @@ def DetailedHelp(version):
         *{command}* is a thin wrapper around the *ssh(1)* command that
         takes care of authentication and the translation of the
         instance name into an IP address.
+
+        This command does not work for Windows VMs.
 
         This command uses the Compute Accounts API to ensure that the user's
         public SSH key is availibe to the VM. This form of key management

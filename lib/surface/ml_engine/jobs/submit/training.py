@@ -58,9 +58,7 @@ class Train(base.Command):
   @staticmethod
   def Args(parser):
     _AddSubmitTrainingArgs(parser)
-
-  def DeprecatedFormat(self, args):
-    return jobs_util.JOB_FORMAT
+    parser.display_info.AddFormat(jobs_util.JOB_FORMAT)
 
   def Run(self, args):
     stream_logs = jobs_util.GetStreamLogs(args.async, args.stream_logs)

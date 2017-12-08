@@ -117,7 +117,7 @@ MEDIA_MIME_TYPE_PARAMETER_DEFAULT_VALUE = {
 }
 
 # Parameters accepted by the stack, but not visible via discovery.
-# TODO(dhermes): Remove 'userip' in 'v2'.
+# TODO(user): Remove 'userip' in 'v2'.
 STACK_QUERY_PARAMETERS = frozenset(['trace', 'pp', 'userip', 'strict'])
 STACK_QUERY_PARAMETER_DEFAULT_VALUE = {'type': 'string', 'location': 'query'}
 
@@ -594,7 +594,7 @@ def _urljoin(base, url):
   return new_base + new_url
 
 
-# TODO(dhermes): Convert this class to ResourceMethod and make it callable
+# TODO(user): Convert this class to ResourceMethod and make it callable
 class ResourceMethodParameters(object):
   """Represents the parameters associated with a method.
 
@@ -635,7 +635,7 @@ class ResourceMethodParameters(object):
     self.repeated_params = []
     self.pattern_params = {}
     self.query_params = []
-    # TODO(dhermes): Change path_params to a list if the extra URITEMPLATE
+    # TODO(user): Change path_params to a list if the extra URITEMPLATE
     #                parsing is gotten rid of.
     self.path_params = set()
     self.param_types = {}
@@ -672,7 +672,7 @@ class ResourceMethodParameters(object):
         self.path_params.add(param)
       self.param_types[param] = desc.get('type', 'string')
 
-    # TODO(dhermes): Determine if this is still necessary. Discovery based APIs
+    # TODO(user): Determine if this is still necessary. Discovery based APIs
     #                should have all path parameters already marked with
     #                'location: path'.
     for match in URITEMPLATE.finditer(method_desc['path']):

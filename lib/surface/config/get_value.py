@@ -53,6 +53,7 @@ class GetValue(base.Command):
         completer=completers.PropertiesCompleter,
         help='The property to be fetched. Note that `SECTION/` is optional'
         ' while referring to properties in the core section.')
+    parser.display_info.AddFormat('value(.)')
 
   def Run(self, args):
     config_name = named_configs.ConfigurationStore.ActiveConfig().name
@@ -81,6 +82,3 @@ class GetValue(base.Command):
       value = properties.VALUES.Section(section).Property(prop).Get(
           validate=False)
     return value
-
-  def DeprecatedFormat(self, args):
-    return 'value(.)'

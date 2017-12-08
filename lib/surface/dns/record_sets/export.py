@@ -30,16 +30,22 @@ class Export(base.Command):
 
   This command exports the record-sets contained within the specified
   managed-zone into a file.
+  The formats you can export to are YAML records format (default) and
+  BIND zone file format.
 
   ## EXAMPLES
 
   To export record-sets into a yaml file, run:
 
-    $ {command} YAML_RECORDS_FILE --zone MANAGED_ZONE
+    $ {command} records.yaml --zone examplezonename
 
-  To import record-sets into a zone file, run:
+  To export record-sets into a BIND zone formatted file instead, run:
 
-    $ {command} ZONE_FILE --zone-file-format --zone MANAGED_ZONE
+    $ {command} pathto.zonefile --zone examplezonename --zone-file-format
+
+  Similarly, to import record-sets into a BIND zone formatted zone file, run:
+
+    $ {command} pathto.zonefile --zone-file-format --zone examplezonename
   """
 
   @staticmethod
@@ -51,7 +57,13 @@ class Export(base.Command):
         '--zone-file-format',
         required=False,
         action='store_true',
-        help='Indicates that records-file should be in the zone file format.')
+        help='Indicates that records-file should be in the zone file format.'
+             ' When using this flag, expect the record-set'
+             ' to be exported to a BIND zone formatted file. If you omit this '
+             'flag, the record-set is exported into a YAML formatted records '
+             'file. Note, this format flag determines the format of the '
+             'output recorded in the records-file; it is different from the '
+             'global `--format` flag which affects console output alone.')
 
   def Run(self, args):
     api_version = 'v1'

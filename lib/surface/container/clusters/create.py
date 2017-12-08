@@ -18,13 +18,13 @@ import argparse
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.container import api_adapter
-from googlecloudsdk.api_lib.container import constants
 from googlecloudsdk.api_lib.container import kubeconfig as kconfig
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.container import constants
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.command_lib.container import messages
 from googlecloudsdk.core import log
@@ -83,12 +83,13 @@ def _Args(parser):
       help='The type of machine to use for nodes. Defaults to n1-standard-1.')
   parser.add_argument(
       '--subnetwork',
-      help='The name of the Google Compute Engine subnetwork '
-      '(https://cloud.google.com/compute/docs/subnetworks) to which the '
-      'cluster is connected. If specified, the cluster\'s network must be a '
-      '"custom subnet" network.'
-      ''
-      'Can not be used with the "--create-subnetwork" option.')
+      help="""\
+The Google Compute Engine subnetwork
+(https://cloud.google.com/compute/docs/subnetworks) to which the cluster is
+connected. The subnetwork must belong to the network specified by --network.
+
+Cannot be used with the "--create-subnetwork" option.
+""")
   parser.add_argument(
       '--network',
       help='The Compute Engine Network that the cluster will connect to. '
@@ -239,12 +240,6 @@ class Create(base.CreateCommand):
   def ParseCreateOptions(self, args):
     return ParseCreateOptionsBase(args)
 
-  def Collection(self):
-    return 'container.projects.zones.clusters'
-
-  def DeprecatedFormat(self, args):
-    return self.ListFormat(args)
-
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -278,6 +273,10 @@ class Create(base.CreateCommand):
                                 cancel_on_no=True)
 
     if getattr(args, 'region', None):
+      message = messages.NonGAFeatureUsingV1APIWarning(self._release_track)
+      if message:
+        console_io.PromptContinue(message=message, cancel_on_no=True)
+
       console_io.PromptContinue(
           message=constants.KUBERNETES_REGIONAL_CHARGES_PROMPT,
           throw_if_unattended=True,
@@ -382,6 +381,7 @@ class CreateAlpha(Create):
     flags.AddMinCpuPlatformFlag(parser)
     flags.AddWorkloadMetadataFromNodeFlag(parser, hidden=True)
     flags.AddNetworkPolicyFlags(parser, hidden=False)
+    flags.AddEnableSharedNetworkFlag(parser, hidden=True)
     flags.AddNodeTaintsFlag(parser)
     flags.AddPreemptibleFlag(parser)
     flags.AddServiceAccountFlag(parser)
@@ -394,4 +394,5 @@ class CreateAlpha(Create):
     ops.enable_binauthz = args.enable_binauthz
     ops.min_cpu_platform = args.min_cpu_platform
     ops.workload_metadata_from_node = args.workload_metadata_from_node
+    ops.enable_shared_network = args.enable_shared_network
     return ops

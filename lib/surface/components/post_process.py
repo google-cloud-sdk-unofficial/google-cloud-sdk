@@ -15,7 +15,6 @@
 """The command to perform any necessary post installation steps."""
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import cli_tree
 from googlecloudsdk.core import log
 from googlecloudsdk.core.cache import exceptions as cache_exceptions
 from googlecloudsdk.core.cache import resource_cache
@@ -31,10 +30,6 @@ class PostProcess(base.SilentCommand):
     parser.add_argument('data', nargs='*', default='')
 
   def Run(self, args):
-    # Re-compile python files.
-    state = local_state.InstallationState.ForCurrent()
-    state.CompilePythonFiles()
-
     # Delete the deprecated completion cache.
     resource_cache.DeleteDeprecatedCache()
 
@@ -46,5 +41,6 @@ class PostProcess(base.SilentCommand):
     except cache_exceptions.Error as e:
       log.info('Unexpected resource cache error ignored: [%s].', e)
 
-    # Re-generate the static gcloud CLI tree.
-    cli_tree.Dump(self._cli_power_users_only, path=cli_tree.CliTreePath())
+    # Re-compile python files.
+    state = local_state.InstallationState.ForCurrent()
+    state.CompilePythonFiles()

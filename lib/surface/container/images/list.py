@@ -95,19 +95,22 @@ class List(base.ListCommand):
       return '{0}/{1}'.format(repository, c)
 
     http_obj = http.Http()
-    with docker_image.FromRegistry(basic_creds=util.CredentialProvider(),
-                                   name=repository,
-                                   transport=http_obj) as r:
-      try:
-        images = [{'name': _DisplayName(c)} for c in r.children()]
-        return images
-      except docker_http.V2DiagnosticException as err:
-        if err.status in [httplib.UNAUTHORIZED, httplib.FORBIDDEN]:
-          raise exceptions.Error('Access denied: {0}'.format(repository))
-        elif err.status == httplib.NOT_FOUND:
-          raise exceptions.Error('Not found: {0}'.format(repository))
-        else:
-          raise
+    try:
+      with docker_image.FromRegistry(basic_creds=util.CredentialProvider(),
+                                     name=repository,
+                                     transport=http_obj) as r:
+        try:
+          images = [{'name': _DisplayName(c)} for c in r.children()]
+          return images
+        except docker_http.V2DiagnosticException as err:
+          if err.status in [httplib.UNAUTHORIZED, httplib.FORBIDDEN]:
+            raise exceptions.Error('Access denied: {0}'.format(repository))
+          elif err.status == httplib.NOT_FOUND:
+            raise exceptions.Error('Not found: {0}'.format(repository))
+          else:
+            raise
+    except docker_http.BadStateException as e:
+      raise exceptions.Error(e)
 
   def Epilog(self, resources_were_displayed=True):
     super(List, self).Epilog(resources_were_displayed)

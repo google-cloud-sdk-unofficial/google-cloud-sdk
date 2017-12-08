@@ -41,9 +41,6 @@ class AddDatabase(base.Command):
     flags.AddInstance(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
-  def DeprecatedFormat(self, args):
-    return self.ListFormat(args)
-
   def Run(self, args):
     """Creates a database for a Cloud SQL instance.
 
@@ -94,11 +91,12 @@ class AddDatabase(base.Command):
         operations.OperationsV1Beta4.WaitForOperation(
             sql_client, operation_ref, 'Creating Cloud SQL database')
 
-      # TODO(b/36051979): Refactor when b/35156765 is resolved.
       except errors.OperationError:
         log.Print('Database creation failed. Check if a database named {0} '
                   'already exists.'.format(args.database))
-        return
+        # Must fail with non-zero exit code on API request failure.
+        # TODO(b/36051979): Refactor when b/35156765 is resolved.
+        raise
       result = new_database
 
     log.CreatedResource(args.database, kind='database', async=args.async)

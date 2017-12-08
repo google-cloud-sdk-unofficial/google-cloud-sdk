@@ -17,7 +17,6 @@ from googlecloudsdk.command_lib.iot import resource_args
 from googlecloudsdk.core.resource import resource_projector
 
 
-# TODO(b/67506665): Add tests.
 class List(base.ListCommand):
   """List credentials for a device."""
 

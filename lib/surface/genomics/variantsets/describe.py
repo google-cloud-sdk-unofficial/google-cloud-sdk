@@ -26,6 +26,7 @@ class Describe(base.DescribeCommand):
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument('id', help='The ID of the variant set to describe.')
+    parser.display_info.AddFormat('json')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -47,6 +48,3 @@ class Describe(base.DescribeCommand):
         variantSetId=args.id,)
 
     return apitools_client.variantsets.Get(get_request)
-
-  def DeprecatedFormat(self, unused_args):
-    return 'json'

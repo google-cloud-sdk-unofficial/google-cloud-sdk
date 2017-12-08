@@ -60,7 +60,7 @@ class Delete(base.DeleteCommand):
         type=int,
         default=1800,
         help=argparse.SUPPRESS)
-    flags.AddClustersWaitAndAsyncFlags(parser)
+    flags.AddAsyncFlag(parser)
     flags.AddNodePoolClusterFlag(
         parser,
         'The cluster from which to delete the node pool.')
@@ -95,7 +95,7 @@ class Delete(base.DeleteCommand):
       adapter.GetNodePool(pool_ref)
 
       op_ref = adapter.DeleteNodePool(pool_ref)
-      if not flags.GetAsyncValueFromAsyncAndWaitFlags(args.async, args.wait):
+      if not args.async:
         adapter.WaitForOperation(
             op_ref,
             'Deleting node pool {0}'.format(pool_ref.nodePoolId),

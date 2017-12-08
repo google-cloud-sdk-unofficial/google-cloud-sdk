@@ -136,7 +136,7 @@ _DELIMITER_MAP = {
 # These aren't relevant for user-facing docstrings:
 # pylint: disable=g-doc-return-or-yield
 # pylint: disable=g-doc-args
-# TODO(craigcitro): Write some explanation of the structure of this file.
+# TODO(user): Write some explanation of the structure of this file.
 
 ####################
 # flags processing
@@ -787,7 +787,7 @@ def _Typecheck(obj, types, message=None):  # pylint: disable=redefined-outer-nam
     raise app.UsageError(message)
 
 
-# TODO(craigcitro): This code uses more than the average amount of
+# TODO(user): This code uses more than the average amount of
 # Python magic. Explain what the heck is going on throughout.
 class NewCmd(appcommands.Cmd):
   """Featureful extension of appcommands.Cmd."""
@@ -800,7 +800,7 @@ class NewCmd(appcommands.Cmd):
       func = run_with_args.im_func
       code = func.func_code  # pylint: disable=redefined-outer-name
       self._full_arg_list = list(code.co_varnames[:code.co_argcount])
-      # TODO(craigcitro): There might be some corner case where this
+      # TODO(user): There might be some corner case where this
       # is *not* the right way to determine bound vs. unbound method.
       if isinstance(run_with_args.im_self, run_with_args.im_class):
         self._full_arg_list.pop(0)
@@ -3726,7 +3726,7 @@ class CommandLoop(cmd.Cmd):
   def do_help(self, command_name):
     """Print the help for command_name (if present) or general help."""
 
-    # TODO(craigcitro): Add command-specific flags.
+    # TODO(user): Add command-specific flags.
     def FormatOneCmd(name, command, command_names):
       indent_size = appcommands.GetMaxCommandLength() + 3
       if len(command_names) > 1:

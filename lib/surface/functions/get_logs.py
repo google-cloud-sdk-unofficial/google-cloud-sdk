@@ -38,12 +38,11 @@ class GetLogs(base.ListCommand):
   are displayed.
   """
 
-  SEVERITIES = ['DEBUG', 'INFO', 'ERROR']
-
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
     flags.AddRegionFlag(parser)
+    flags.AddMinLogLevelFlag(parser)
     base.LIMIT_FLAG.RemoveFromParser(parser)
     parser.add_argument(
         'name', nargs='?',
@@ -71,9 +70,7 @@ class GetLogs(base.ListCommand):
         default=20,
         help=('Number of log entries to be fetched; must not be greater than '
               '1000.'))
-    parser.add_argument(
-        '--min-log-level', choices=GetLogs.SEVERITIES,
-        help='Minimum level of logs to be fetched.')
+
     parser.add_argument(
         '--show-log-levels', action='store_true', default=True,
         help=('Print a log level of each log entry.'))
@@ -113,7 +110,7 @@ class GetLogs(base.ListCommand):
     if args.execution_id:
       log_filter.append('labels.execution_id="%s"' % args.execution_id)
     if args.min_log_level:
-      log_filter.append('severity>=%s' % args.min_log_level)
+      log_filter.append('severity>=%s' % args.min_log_level.upper())
     if args.start_time:
       order = 'ASC'
       log_filter.append(
@@ -138,7 +135,7 @@ class GetLogs(base.ListCommand):
       row = {'log': entry.textPayload}
       if entry.severity:
         severity = str(entry.severity)
-        if severity in GetLogs.SEVERITIES:
+        if severity in flags.SEVERITIES:
           # Use short form (first letter) for expected severities.
           row['level'] = severity[0]
         else:

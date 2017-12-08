@@ -72,9 +72,6 @@ class List(base.ListCommand):
       snapshots = [s for s in snapshots if _ShouldInclude(s, cutoff_time)]
     return snapshots
 
-  def Collection(self):
-    return 'debug.snapshots'
-
 
 def _ShouldInclude(snapshot, cutoff_time):
   """Determines if a snapshot should be included in the output.

@@ -16,11 +16,11 @@
    There are separate alpha, beta, and GA command classes in this file.
 """
 
-from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.backend_services import backend_services_utils
 from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.core import log
 
@@ -273,12 +273,20 @@ class CreateAlpha(CreateGA):
     flags.AddLoadBalancingScheme(parser)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=False, default=False)
     flags.AddSignedUrlCacheMaxAge(parser)
+    flags.AddConnectionDrainOnFailover(parser, default=None)
+    flags.AddDropTrafficIfUnhealthy(parser, default=None)
+    flags.AddFailoverRatio(parser)
     AddIapFlag(parser)
 
   def CreateGlobalRequests(self, holder, args, backend_services_ref):
     if args.load_balancing_scheme == 'INTERNAL':
       raise exceptions.ToolException(
           'Must specify --region for internal load balancer.')
+    if (args.connection_drain_on_failover is not None or
+        args.drop_traffic_if_unhealthy is not None or args.failover_ratio):
+      raise exceptions.InvalidArgumentException(
+          '--global',
+          'cannot specify failover policies for global backend services.')
     backend_service = self._CreateBackendService(holder, args,
                                                  backend_services_ref)
 
@@ -331,6 +339,8 @@ class CreateAlpha(CreateGA):
           drainingTimeoutSec=args.connection_draining_timeout)
     if args.custom_request_header is not None:
       backend_service.customRequestHeaders = args.custom_request_header
+    backend_services_utils.ApplyFailoverPolicyArgs(client.messages, args,
+                                                   backend_service)
 
     request = client.messages.ComputeRegionBackendServicesInsertRequest(
         backendService=backend_service,

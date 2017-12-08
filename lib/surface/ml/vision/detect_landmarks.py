@@ -33,6 +33,7 @@ class DetectLandmarks(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddVisionFlags(parser)
+    parser.display_info.AddFormat('json')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -54,6 +55,3 @@ class DetectLandmarks(base.Command):
         args.image_path,
         max_results=args.max_results
     )
-
-  def DeprecatedFormat(self, args):
-    return 'json'

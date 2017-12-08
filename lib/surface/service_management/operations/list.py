@@ -80,14 +80,8 @@ class List(base.ListCommand):
     parser.add_argument(
         '--filter', metavar='EXPRESSION',
         help=_FILTER_HELP)
-
-  def DeprecatedFormat(self, args):
-    return 'table({fields})'.format(
-        fields=','.join([
-            'name',
-            'done',
-            'metadata.startTime.date(tz=LOCAL)',
-        ]))
+    parser.display_info.AddFormat(
+        'table(name, done, metadata.startTime.date(tz=LOCAL))')
 
   def Run(self, args):
     """Run 'service-management operations list'.

@@ -44,18 +44,15 @@ EXAMPLE_FORMAT = """\
     """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Google Compute Engine firewall rules."""
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat(flags.DEFAULT_BETA_LIST_FORMAT)
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     lister.AddBaseListerArgs(parser)
 
   def Run(self, args):
-    if not args.IsSpecified('format'):
-      log.status.Print(flags.LIST_NOTICE)
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
@@ -66,22 +63,11 @@ class List(base.ListCommand):
 
     return lister.Invoke(request_data, list_implementation)
 
+  def Epilog(self, resources_were_displayed):
+    del resources_were_displayed
+    log.status.Print('\n' + flags.LIST_NOTICE)
+
 
 List.detailed_help = DETAILED_HELP.copy()
 List.detailed_help['EXAMPLES'] = EXAMPLE_FORMAT.format(
     RESOURCE_TYPE, flags.LIST_WITH_ALL_FIELDS_FORMAT)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class BetaList(List):
-  """List Google Compute Engine firewall rules."""
-
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat(flags.DEFAULT_BETA_LIST_FORMAT)
-    lister.AddBaseListerArgs(parser)
-
-
-BetaList.detailed_help = DETAILED_HELP.copy()
-BetaList.detailed_help['EXAMPLES'] = EXAMPLE_FORMAT.format(
-    RESOURCE_TYPE, flags.LIST_WITH_ALL_FIELDS_FORMAT_BETA)

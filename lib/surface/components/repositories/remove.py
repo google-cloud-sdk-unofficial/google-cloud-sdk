@@ -69,10 +69,12 @@ class Remove(base.SilentCommand):
     # Specifying URLs to remove explicitly.
     elif args.url:
       if not repos:
-        raise exceptions.ToolException('You have no registered repositories.')
+        raise update_manager.NoRegisteredRepositoriesError(
+            'You have no registered repositories.')
       for url in args.url:
         if url not in repos:
-          raise exceptions.ToolException(
+          raise exceptions.InvalidArgumentException(
+              'url',
               'URL [{0}] was not a known registered repository.'.format(url))
       for url in args.url:
         repos.remove(url)
@@ -81,7 +83,8 @@ class Remove(base.SilentCommand):
     # No URL specified, prompt to choose one.
     else:
       if not repos:
-        raise exceptions.ToolException('You have no registered repositories.')
+        raise update_manager.NoRegisteredRepositoriesError(
+            'You have no registered repositories.')
       result = console_io.PromptChoice(
           repos, default=None,
           message='Which repository would you like to remove?')

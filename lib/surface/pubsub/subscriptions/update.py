@@ -12,14 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Cloud Pub/Sub subscriptions update command."""
+from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core import log
-
-
-DEFAULT_MESSAGE_RETENTION_VALUE = 'default'
 
 
 def _Duration():
@@ -36,9 +34,9 @@ def _Duration():
     A function that accepts a single time duration as input to be parsed.
   """
   def ParseWithDefault(value):
-    if value == DEFAULT_MESSAGE_RETENTION_VALUE:
-      return DEFAULT_MESSAGE_RETENTION_VALUE
-    return str(arg_parsers.Duration()(value)) + 's'
+    if value == subscriptions.DEFAULT_MESSAGE_RETENTION_VALUE:
+      return subscriptions.DEFAULT_MESSAGE_RETENTION_VALUE
+    return util.FormatDuration(arg_parsers.Duration()(value))
 
   return ParseWithDefault
 
@@ -111,34 +109,15 @@ class UpdateAlpha(base.UpdateCommand):
       An HttpException if there was a problem calling the
       API subscriptions.Patch command.
     """
-    msgs = self.context['pubsub_msgs']
-    pubsub = self.context['pubsub']
-
-    name = util.ParseSubscription(args.subscription).RelativeName()
-
-    mask = []
-    subscription = msgs.Subscription(name=name)
-    if args.ack_deadline is not None:
-      mask.append('ackDeadlineSeconds')
-      subscription.ackDeadlineSeconds = args.ack_deadline
-    if args.push_endpoint is not None:
-      mask.append('pushConfig')
-      subscription.pushConfig = msgs.PushConfig(pushEndpoint=args.push_endpoint)
-    if args.retain_acked_messages is not None:
-      mask.append('retainAckedMessages')
-      subscription.retainAckedMessages = args.retain_acked_messages
-    if args.message_retention_duration is not None:
-      mask.append('messageRetentionDuration')
-      if args.message_retention_duration != DEFAULT_MESSAGE_RETENTION_VALUE:
-        subscription.messageRetentionDuration = args.message_retention_duration
-
-    patch_req = msgs.PubsubProjectsSubscriptionsPatchRequest(
-        updateSubscriptionRequest=msgs.UpdateSubscriptionRequest(
-            subscription=subscription,
-            updateMask=','.join(mask)),
-        name=name)
-    result = pubsub.projects_subscriptions.Patch(patch_req)
+    client = subscriptions.SubscriptionsClient()
+    subscription_ref = util.ParseSubscription(args.subscription)
+    result = client.Patch(
+        subscription_ref,
+        ack_deadline=args.ack_deadline,
+        push_config=util.ParsePushConfig(args.push_endpoint),
+        retain_acked_messages=args.retain_acked_messages,
+        message_retention_duration=args.message_retention_duration)
 
     result = util.SubscriptionDisplayDict(result)
-    log.UpdatedResource(name, kind='subscription')
+    log.UpdatedResource(subscription_ref.RelativeName(), kind='subscription')
     return result

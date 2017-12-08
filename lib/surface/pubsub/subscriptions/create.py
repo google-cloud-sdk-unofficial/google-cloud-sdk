@@ -14,10 +14,10 @@
 """Cloud Pub/Sub subscriptions create command."""
 from apitools.base.py import exceptions as api_ex
 
+from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.projects import util as projects_util
 from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core import log
 
@@ -78,62 +78,6 @@ def _ArgsAlpha(parser):
             ' is omitted, seconds is assumed.'))
 
 
-def _Run(cmd, args, field_adder):
-  """Common function to run the Create command.
-
-  Args:
-    cmd: a base.CreateCommand object
-    args: an argparse namespace. All the arguments that were provided to this
-      command invocation.
-    field_adder: Function that populates additional fields in a subscription.
-
-  Yields:
-    A serialized object (dict) describing the results of the operation.
-    This description fits the Resource described in the ResourceRegistry under
-    'pubsub.projects.subscriptions'.
-
-  Raises:
-    util.RequestFailedError: if any of the requests to the API failed.
-  """
-  msgs = cmd.context['pubsub_msgs']
-  pubsub = cmd.context['pubsub']
-
-  topic_project = ''
-  if args.topic_project:
-    topic_project = projects_util.ParseProject(args.topic_project).Name()
-  topic_name = args.topic
-
-  failed = []
-  for subscription_name in args.subscription:
-    subscription_path = util.ParseSubscription(subscription_name).RelativeName()
-    subscription = msgs.Subscription(
-        name=subscription_path,
-        topic=util.ParseTopic(topic_name, topic_project).RelativeName(),
-        ackDeadlineSeconds=args.ack_deadline)
-    if args.push_endpoint:
-      subscription.pushConfig = msgs.PushConfig(
-          pushEndpoint=args.push_endpoint)
-
-    field_adder(subscription, args)
-
-    try:
-      result = pubsub.projects_subscriptions.Create(subscription)
-    except api_ex.HttpError as error:
-      exc = exceptions.HttpException(error)
-      log.CreatedResource(subscription_path, kind='subscription',
-                          failed=exc.payload.status_message)
-      failed.append(subscription_name)
-      continue
-
-    result = util.SubscriptionDisplayDict(result)
-    log.CreatedResource(subscription_path, kind='subscription')
-
-    yield result
-
-  if failed:
-    raise util.RequestsFailedError(failed, 'create')
-
-
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(base.CreateCommand):
   """Creates one or more Cloud Pub/Sub subscriptions.
@@ -162,12 +106,42 @@ class CreateBeta(base.CreateCommand):
     Raises:
       util.RequestFailedError: if any of the requests to the API failed.
     """
-    for result in _Run(self, args, lambda x, y: None):
+    client = subscriptions.SubscriptionsClient()
+
+    topic_ref = util.ParseTopic(args.topic, args.topic_project)
+    push_config = util.ParsePushConfig(args.push_endpoint)
+    retain_acked_messages = getattr(args, 'retain_acked_messages', None)
+    retention_duration = getattr(args, 'message_retention_duration', None)
+    if retention_duration:
+      retention_duration = util.FormatDuration(retention_duration)
+
+    failed = []
+    for subscription_name in args.subscription:
+      subscription_ref = util.ParseSubscription(subscription_name)
+
+      try:
+        result = client.Create(subscription_ref, topic_ref, args.ack_deadline,
+                               push_config, retain_acked_messages,
+                               retention_duration)
+      except api_ex.HttpError as error:
+        exc = exceptions.HttpException(error)
+        log.CreatedResource(subscription_ref.RelativeName(),
+                            kind='subscription',
+                            failed=exc.payload.status_message)
+        failed.append(subscription_name)
+        continue
+
+      result = util.SubscriptionDisplayDict(result)
+      log.CreatedResource(subscription_ref.RelativeName(), kind='subscription')
+
       yield result
+
+    if failed:
+      raise util.RequestsFailedError(failed, 'create')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base.CreateCommand):
+class CreateAlpha(CreateBeta):
   """Creates one or more Cloud Pub/Sub subscriptions.
 
   Creates one or more Cloud Pub/Sub subscriptions for a given topic.
@@ -179,31 +153,3 @@ class CreateAlpha(base.CreateCommand):
   def Args(parser):
     _ArgsBeta(parser)
     _ArgsAlpha(parser)
-
-  @staticmethod
-  def _AddFields(subscription, args):
-    subscription.retainAckedMessages = args.retain_acked_messages
-    if args.message_retention_duration:
-      # Duration args are converted to ints in seconds while Duration proto
-      # fields are represented as strings with unit seconds and suffix 's', so
-      # we need to convert to the string representation here.
-      subscription.messageRetentionDuration = str(
-          args.message_retention_duration) + 's'
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Yields:
-      A serialized object (dict) describing the results of the operation.
-      This description fits the Resource described in the ResourceRegistry under
-      'pubsub.projects.subscriptions'.
-
-    Raises:
-      util.RequestFailedError: if any of the requests to the API failed.
-    """
-    for result in _Run(self, args, self._AddFields):
-      yield result

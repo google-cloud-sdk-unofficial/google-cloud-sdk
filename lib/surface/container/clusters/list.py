@@ -16,13 +16,15 @@
 
 from apitools.base.py import exceptions as apitools_exceptions
 
-from googlecloudsdk.api_lib.container import constants
 from googlecloudsdk.api_lib.container import transforms
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.container import constants
+from googlecloudsdk.command_lib.container import messages
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import console_io
 from surface.container.clusters.upgrade import UpgradeHelpText
 from surface.container.clusters.upgrade import VersionVerifier
 
@@ -47,7 +49,10 @@ class List(base.ListCommand):
     adapter = self.context['api_adapter']
     location_get = self.context['location_get']
     location = location_get(args, ignore_property=True, required=False)
-
+    if getattr(args, 'region', None):
+      message = messages.NonGAFeatureUsingV1APIWarning(self._release_track)
+      if message:
+        console_io.PromptContinue(message=message, cancel_on_no=True)
     project = properties.VALUES.core.project.Get(required=True)
 
     def sort_key(cluster):
@@ -109,4 +114,3 @@ class List(base.ListCommand):
       log.status.Print(self._upgrade_hint)
     if self._expire_warning:
       log.warn(self._expire_warning)
-

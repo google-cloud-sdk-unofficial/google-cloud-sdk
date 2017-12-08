@@ -23,11 +23,9 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 class GetNamedPortsBeta(base.ListCommand):
   """Implements get-named-ports command, alpha, and beta versions."""
 
-  def DeprecatedFormat(self, unused_args):
-    return 'table(name, port)'
-
   @staticmethod
   def Args(parser):
+    parser.display_info.AddFormat('table(name, port)')
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(parser)
 
   def Run(self, args):

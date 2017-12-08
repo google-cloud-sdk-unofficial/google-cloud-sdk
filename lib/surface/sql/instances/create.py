@@ -271,5 +271,6 @@ class CreateBeta(base.Command):
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
     AddBaseArgs(parser)
+    flags.AddAvailabilityType(parser)
     flags.AddInstanceResizeLimit(parser)
     labels_util.AddCreateLabelsFlags(parser)

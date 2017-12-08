@@ -16,7 +16,6 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
-from googlecloudsdk.core.resource import resource_info
 from googlecloudsdk.core.updater import snapshots
 from googlecloudsdk.core.updater import update_manager
 
@@ -53,22 +52,18 @@ class List(base.ListCommand):
     """Adds/removes args for this command."""
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
+    parser.display_info.AddFormat("""
+          table(
+            .:label=REPOSITORY,
+            last_update():label=LAST_UPDATE
+          )
+    """)
+    parser.display_info.AddTransforms(_COMPONENTS_REPOSITORIES_TRANSFORMS)
 
   def Run(self, args):
     """Runs the list command."""
     repos = update_manager.UpdateManager.GetAdditionalRepositories()
     return repos if repos else []
-
-  def ResourceInfo(self, args):
-    return resource_info.ResourceInfo(
-        list_format="""
-          table(
-            .:label=REPOSITORY,
-            last_update():label=LAST_UPDATE
-          )
-        """,
-        transforms=_COMPONENTS_REPOSITORIES_TRANSFORMS,
-    )
 
   def Epilog(self, resources_were_displayed):
     if not resources_were_displayed:

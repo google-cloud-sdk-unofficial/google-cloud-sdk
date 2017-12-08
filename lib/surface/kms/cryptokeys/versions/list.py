@@ -35,9 +35,6 @@ class List(base.ListCommand):
         --cryptokey frodo
   """
 
-  def Collection(self):
-    return flags.CRYPTO_KEY_VERSION_COLLECTION
-
   def GetUriFunc(self):
     return cloudkms_base.MakeGetUriFunc(self)
 

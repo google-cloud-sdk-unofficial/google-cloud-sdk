@@ -174,7 +174,7 @@ def RunScriptModule(module):
     break
 
   # Now look for my main python source file
-  # TODO(dborowitz): This will fail if the module was zipimported, which means
+  # TODO(user): This will fail if the module was zipimported, which means
   # no egg depending on this script runner can be zip_safe.
   main_filename = module.__file__
   assert os.path.exists(main_filename), ('Cannot exec() %r: file not found.' %

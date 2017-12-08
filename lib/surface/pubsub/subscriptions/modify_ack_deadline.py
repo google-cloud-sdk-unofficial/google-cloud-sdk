@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Cloud Pub/Sub subscription modify command."""
-
+from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
 
@@ -51,17 +51,11 @@ class ModifyAckDeadline(base.Command):
       Display dictionary with information about the new ACK deadline seconds
       for the given subscription and ackId.
     """
-    msgs = self.context['pubsub_msgs']
-    pubsub = self.context['pubsub']
+    client = subscriptions.SubscriptionsClient()
 
-    subscription = util.ParseSubscription(args.subscription).RelativeName()
-    mod_req = msgs.PubsubProjectsSubscriptionsModifyAckDeadlineRequest(
-        modifyAckDeadlineRequest=msgs.ModifyAckDeadlineRequest(
-            ackDeadlineSeconds=args.ack_deadline,
-            ackIds=args.ackid),
-        subscription=subscription)
+    subscription_ref = util.ParseSubscription(args.subscription)
+    client.ModifyAckDeadline(subscription_ref, args.ackid, args.ack_deadline)
 
-    pubsub.projects_subscriptions.ModifyAckDeadline(mod_req)
-    return {'subscriptionId': subscription,
+    return {'subscriptionId': subscription_ref.RelativeName(),
             'ackId': args.ackid,
             'ackDeadlineSeconds': args.ack_deadline}

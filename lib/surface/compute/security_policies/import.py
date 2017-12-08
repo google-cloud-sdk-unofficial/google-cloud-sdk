@@ -50,9 +50,6 @@ class Import(base.SilentCommand):
             'The format of the file to export the security policy config to. '
             'Specify either yaml or json. Defaults to json if not specified.'))
 
-  def Collection(self):
-    return 'compute.securityPolicies'
-
   def Run(self, args):
     if not os.path.exists(args.file_name):
       raise exceptions.BadFileException(

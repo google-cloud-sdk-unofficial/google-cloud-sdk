@@ -33,9 +33,6 @@ class List(base.ListCommand):
     $ {command} --keyring fellowship --location global
   """
 
-  def Collection(self):
-    return flags.CRYPTO_KEY_COLLECTION
-
   def GetUriFunc(self):
     return cloudkms_base.MakeGetUriFunc(self)
 

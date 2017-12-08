@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Cloud Pub/Sub topics publish command."""
-
+from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
 
@@ -45,16 +45,12 @@ class Ack(base.Command):
       Ack display dictionary with information about the acknowledged messages
       and related subscription.
     """
-    msgs = self.context['pubsub_msgs']
-    pubsub = self.context['pubsub']
+    client = subscriptions.SubscriptionsClient()
 
-    ack_req = msgs.PubsubProjectsSubscriptionsAcknowledgeRequest(
-        acknowledgeRequest=msgs.AcknowledgeRequest(ackIds=args.ackid),
-        subscription=util.ParseSubscription(args.subscription).RelativeName())
-
-    pubsub.projects_subscriptions.Acknowledge(ack_req)
+    subscription_ref = util.ParseSubscription(args.subscription)
+    client.Ack(args.ackid, subscription_ref)
 
     # Using this dict, instead of returning the AcknowledgeRequest directly,
     # to preserve the naming conventions for subscriptionId.
-    return {'subscriptionId': ack_req.subscription,
-            'ackIds': ack_req.acknowledgeRequest.ackIds}
+    return {'subscriptionId': subscription_ref.RelativeName(),
+            'ackIds': args.ackid}

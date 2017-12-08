@@ -20,7 +20,6 @@ from googlecloudsdk.command_lib.iot import util
 from googlecloudsdk.core import log
 
 
-# TODO(b/67506665): Add tests.
 class Create(base.CreateCommand):
   """Add a new credential to a device.
 

@@ -24,14 +24,12 @@ from googlecloudsdk.core import properties
 class GetNamedPorts(base.ListCommand):
   """Implements get-named-ports command, GA version."""
 
-  def DeprecatedFormat(self, unused_args):
-    return 'table(name, port)'
-
   @staticmethod
   def Args(parser):
     GetNamedPorts.ZonalInstanceGroupArg = (
         instance_groups_flags.MakeZonalInstanceGroupArg())
     GetNamedPorts.ZonalInstanceGroupArg.AddArgument(parser)
+    parser.display_info.AddFormat('table(name, port)')
 
   def Run(self, args):
     """Retrieves response with named ports."""
@@ -53,12 +51,10 @@ class GetNamedPorts(base.ListCommand):
 class GetNamedPortsBeta(base.ListCommand):
   """Implements get-named-ports command, alpha, and beta versions."""
 
-  def DeprecatedFormat(self, unused_args):
-    return 'table(name, port)'
-
   @staticmethod
   def Args(parser):
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(parser)
+    parser.display_info.AddFormat('table(name, port)')
 
   def Run(self, args):
     """Retrieves response with named ports."""

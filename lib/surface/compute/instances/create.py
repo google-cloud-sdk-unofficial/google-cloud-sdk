@@ -92,6 +92,7 @@ def _CommonArgs(parser,
   instances_flags.AddNetworkArgs(parser)
   instances_flags.AddPrivateNetworkIpArgs(parser)
   instances_flags.AddImageArgs(parser)
+  instances_flags.AddDeletionProtectionFlag(parser)
   if support_public_dns:
     instances_flags.AddPublicDnsArgs(parser, instance=True)
   if support_public_ptr:
@@ -542,7 +543,6 @@ class CreateAlpha(Create):
         enable_regional=True,
         support_local_ssd_size=True,
         enable_kms=True)
-    instances_flags.AddDeletionProtectionFlag(parser)
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)

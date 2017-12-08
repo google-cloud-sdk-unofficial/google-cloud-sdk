@@ -16,12 +16,12 @@
 
 from apitools.base.py import encoding
 
-from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import backend_flags
+from googlecloudsdk.command_lib.compute.backend_services import backend_services_utils
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
@@ -85,11 +85,11 @@ class AddBackend(base.UpdateCommand):
                 backendServiceResource=replacement,
                 project=backend_service_ref.project))
 
-  def _CreateBackendMessage(self, client, group_uri, balancing_mode, args):
+  def _CreateBackendMessage(self, messages, group_uri, balancing_mode, args):
     """Create a backend message.
 
     Args:
-      client: The compute client.
+      messages: The avalible API proto messages.
       group_uri: String. The backend instance group uri.
       balancing_mode: Backend.BalancingModeValueValuesEnum. The backend load
         balancing mode.
@@ -100,8 +100,8 @@ class AddBackend(base.UpdateCommand):
       arguments.
     """
 
-    backend_services_utils.ValidateBalancingModeArgs(client.messages, args)
-    return client.messages.Backend(
+    backend_services_utils.ValidateBalancingModeArgs(messages, args)
+    return messages.Backend(
         balancingMode=balancing_mode,
         capacityScaler=args.capacity_scaler,
         description=args.description,
@@ -141,8 +141,8 @@ class AddBackend(base.UpdateCommand):
     else:
       balancing_mode = None
 
-    backend = self._CreateBackendMessage(client, group_uri, balancing_mode,
-                                         args)
+    backend = self._CreateBackendMessage(client.messages, group_uri,
+                                         balancing_mode, args)
 
     replacement.backends.append(backend)
     return replacement
@@ -228,3 +228,20 @@ class AddBackendAlpha(AddBackendBeta):
     backend_flags.AddBalancingMode(parser)
     backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
+    backend_flags.AddFailover(parser, default=None)
+
+  def _CreateBackendMessage(self, messages, group_uri, balancing_mode, args):
+    """Overrides."""
+
+    backend_services_utils.ValidateBalancingModeArgs(messages, args)
+    return messages.Backend(
+        balancingMode=balancing_mode,
+        capacityScaler=args.capacity_scaler,
+        description=args.description,
+        group=group_uri,
+        maxRate=args.max_rate,
+        maxRatePerInstance=args.max_rate_per_instance,
+        maxUtilization=args.max_utilization,
+        maxConnections=args.max_connections,
+        maxConnectionsPerInstance=args.max_connections_per_instance,
+        failover=args.failover)

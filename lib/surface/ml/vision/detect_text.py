@@ -40,6 +40,7 @@ class DetectText(base.Command):
   def Args(parser):
     flags.AddVisionFlags(parser, with_max_results=False)
     flags.LANGUAGE_HINTS_FLAG.AddToParser(parser)
+    parser.display_info.AddFormat('json')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -61,6 +62,3 @@ class DetectText(base.Command):
         args.image_path,
         language_hints=args.language_hints
     )
-
-  def DeprecatedFormat(self, args):
-    return 'json'

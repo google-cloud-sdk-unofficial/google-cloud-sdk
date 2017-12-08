@@ -122,6 +122,9 @@ def _CommonArgs(parser, source_snapshot_arg):
       The default disk type is pd-standard.
       """)
 
+  parser.display_info.AddFormat(
+      'table(name, zone.basename(), sizeGb, type.basename(), status)')
+
   _SourceArgs(parser, source_snapshot_arg)
 
   csek_utils.AddCsekKeyArgs(parser)
@@ -131,13 +134,6 @@ def _CommonArgs(parser, source_snapshot_arg):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create Google Compute Engine persistent disks."""
-
-  def DeprecatedFormat(self, args):
-    return """table(name,
-                    zone.basename(),
-                    sizeGb,
-                    type.basename(),
-                    status)"""
 
   @staticmethod
   def Args(parser):

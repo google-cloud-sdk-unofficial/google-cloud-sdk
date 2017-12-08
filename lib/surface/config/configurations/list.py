@@ -41,6 +41,14 @@ class List(base.ListCommand):
   def Args(parser):
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
+    parser.display_info.AddFormat("""table(
+        name,
+        is_active,
+        properties.core.account,
+        properties.core.project,
+        properties.compute.zone:label=DEFAULT_ZONE,
+        properties.compute.region:label=DEFAULT_REGION)
+    """)
 
   def Run(self, args):
     configs = named_configs.ConfigurationStore.AllConfigs()
@@ -54,12 +62,3 @@ class List(base.ListCommand):
           'is_active': config.is_active,
           'properties': props,
       }
-
-  def DeprecatedFormat(self, args):
-    return ('table('
-            'name,'
-            'is_active,'
-            'properties.core.account,'
-            'properties.core.project,'
-            'properties.compute.zone:label=DEFAULT_ZONE,'
-            'properties.compute.region:label=DEFAULT_REGION)')

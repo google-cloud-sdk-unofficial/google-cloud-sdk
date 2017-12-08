@@ -30,21 +30,3 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Pubsub(base.Group):
   """Manage Cloud Pub/Sub topics and subscriptions."""
-
-  def Filter(self, context, args):
-    """Modify the context that will be given to this group's commands when run.
-
-    The context is a dictionary into which you can insert whatever you like.
-    The context is given to each command under this group.  You can do common
-    initialization here and insert it into the context for later use.  Of course
-    you can also do common initialization as a function that can be called in a
-    library.
-
-    Args:
-      context: {str:object}, A set of key-value pairs that can be used for
-          common initialization among commands.
-      args: argparse.Namespace: The same namespace given to the corresponding
-          .Run() invocation.
-    """
-    context['pubsub_msgs'] = apis.GetMessagesModule('pubsub', 'v1')
-    context['pubsub'] = apis.GetClientInstance('pubsub', 'v1')

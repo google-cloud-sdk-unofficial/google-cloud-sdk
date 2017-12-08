@@ -11,11 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Delete Google Cloud Platform git repository.
-"""
-
-from googlecloudsdk.api_lib.sourcerepo import sourcerepo
+"""Delete Google Cloud Platform git repository."""
+from googlecloudsdk.api_lib.source.repos import sourcerepo
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Run a workflow template."""
+import uuid
 
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import util
@@ -36,6 +37,7 @@ class Run(base.CreateCommand):
     template = util.ParseWorkflowTemplates(args.template, dataproc)
 
     instantiate_request = dataproc.messages.InstantiateWorkflowTemplateRequest()
+    instantiate_request.instanceId = uuid.uuid4().hex  # request UUID
 
     request = msgs.DataprocProjectsRegionsWorkflowTemplatesInstantiateRequest(
         instantiateWorkflowTemplateRequest=instantiate_request,

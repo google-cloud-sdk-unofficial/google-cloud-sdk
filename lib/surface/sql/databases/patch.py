@@ -53,12 +53,7 @@ class Patch(base.Command):
         '--diff',
         action='store_true',
         help='Show what changed as a result of the patch.')
-
-  def DeprecatedFormat(self, args):
-    if args.diff:
-      return 'diff(old, new)'
-    fmt = self.ListFormat(args)
-    return 'table(new:format="{fmt}")'.format(fmt=fmt)
+    parser.display_info.AddFormat('table(new:format="default")')
 
   def Run(self, args):
     """Patches settings of a Cloud SQL database using the patch api method.
@@ -76,6 +71,8 @@ class Patch(base.Command):
       ToolException: An error other than http error occured while executing the
           command.
     """
+    if args.diff:
+      args.GetDisplayInfo().AddFormat('diff(old, new)')
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client
     sql_messages = client.sql_messages

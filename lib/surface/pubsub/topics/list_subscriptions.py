@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Cloud Pub/Sub topics list_subscriptions command."""
+from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
-from googlecloudsdk.core.resource import resource_printer_base
-from googlecloudsdk.core.resource import resource_projector
 
 
 class ListSubscriptions(base.ListCommand):
@@ -62,44 +61,10 @@ class ListSubscriptions(base.ListCommand):
     Yields:
       Subscriptions paths that match the regular expression in args.name_filter.
     """
-    msgs = self.context['pubsub_msgs']
-    pubsub = self.context['pubsub']
+    client = topics.TopicsClient()
 
-    page_size = None
-    page_token = None
+    topic_ref = util.ParseTopic(args.topic)
+    for topic_sub in client.ListSubscriptions(topic_ref,
+                                              page_size=args.page_size):
+      yield util.ListTopicSubscriptionDisplayDict(topic_sub)
 
-    if args.page_size:
-      page_size = min(args.page_size, util.MAX_LIST_RESULTS)
-
-    if not args.filter and args.limit:
-      page_size = min(args.limit, page_size or util.MAX_LIST_RESULTS)
-
-    while True:
-      list_subscriptions_req = (
-          msgs.PubsubProjectsTopicsSubscriptionsListRequest(
-              topic=util.ParseTopic(args.topic).RelativeName(),
-              pageSize=page_size,
-              pageToken=page_token))
-
-      list_subscriptions_result = pubsub.projects_topics_subscriptions.List(
-          list_subscriptions_req)
-
-      for subscription in list_subscriptions_result.subscriptions:
-        yield TopicSubscriptionDict(subscription)
-
-      page_token = list_subscriptions_result.nextPageToken
-      if not page_token:
-        break
-
-      yield resource_printer_base.PageMarker()
-
-
-def TopicSubscriptionDict(topic_subscription):
-  """Returns a topic_subscription dict with additional fields."""
-  result = resource_projector.MakeSerializable(
-      {'subscription': topic_subscription})
-
-  subscription_ref = util.ParseSubscription(topic_subscription)
-  result['projectId'] = subscription_ref.projectsId
-  result['subscriptionId'] = subscription_ref.subscriptionsId
-  return result

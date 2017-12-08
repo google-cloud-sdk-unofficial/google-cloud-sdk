@@ -61,15 +61,6 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def ValidateArgs(args):
-    if args.master_boot_disk_size_gb:
-      log.warn('The --master-boot-disk-size-gb flag is deprecated. '
-               'Use equivalent --master-boot-disk-size=%sGB flag.',
-               args.master_boot_disk_size_gb)
-
-    if args.worker_boot_disk_size_gb:
-      log.warn('The --worker-boot-disk-size-gb flag is deprecated. '
-               'Use equivalent --worker-boot-disk-size=%sGB flag.',
-               args.worker_boot_disk_size_gb)
 
     if args.single_node:
       # --num-workers and --num-preemptible-workers must be None (unspecified)

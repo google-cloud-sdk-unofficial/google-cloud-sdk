@@ -32,6 +32,7 @@ class DetectImageProperties(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddVisionFlags(parser, with_max_results=False)
+    parser.display_info.AddFormat('json')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -50,6 +51,3 @@ class DetectImageProperties(base.Command):
     """
     return vision_command_util.RunVisionCommand('IMAGE_PROPERTIES',
                                                 args.image_path)
-
-  def DeprecatedFormat(self, args):
-    return 'json'

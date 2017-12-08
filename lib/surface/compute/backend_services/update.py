@@ -18,13 +18,13 @@
 
 from apitools.base.py import encoding
 
-from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.backend_services import (
     client as backend_service_client)
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.backend_services import backend_services_utils
 from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.command_lib.compute.security_policies import (
     flags as security_policy_flags)
@@ -303,6 +303,9 @@ class UpdateAlpha(UpdateGA):
     flags.AddSessionAffinity(parser, internal_lb=True)
     flags.AddAffinityCookieTtl(parser)
     flags.AddSignedUrlCacheMaxAge(parser, unspecified_help='')
+    flags.AddConnectionDrainOnFailover(parser, default=None)
+    flags.AddDropTrafficIfUnhealthy(parser, default=None)
+    flags.AddFailoverRatio(parser)
     AddIapFlag(parser)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=True, default=None)
 
@@ -325,6 +328,9 @@ class UpdateAlpha(UpdateGA):
         replacement,
         is_update=True,
         apply_signed_url_cache_max_age=True)
+
+    backend_services_utils.ApplyFailoverPolicyArgs(client.messages, args,
+                                                   replacement)
 
     return replacement
 
@@ -351,10 +357,22 @@ class UpdateAlpha(UpdateGA):
         args.security_policy is not None,
         args.session_affinity is not None,
         args.timeout is not None,
+        args.connection_drain_on_failover is not None,
+        args.drop_traffic_if_unhealthy is not None,
+        args.failover_ratio,
         getattr(args, 'health_checks', None),
         getattr(args, 'https_health_checks', None),
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
+
+  def GetSetRequest(self, client, backend_service_ref, replacement):
+    if (backend_service_ref.Collection() == 'compute.backendServices') and (
+        replacement.failoverPolicy):
+      raise exceptions.InvalidArgumentException(
+          '--global',
+          'cannot specify failover policies for global backend services.')
+    return super(UpdateAlpha, self).GetSetRequest(client, backend_service_ref,
+                                                  replacement)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

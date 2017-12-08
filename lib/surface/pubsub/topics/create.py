@@ -14,6 +14,7 @@
 """Cloud Pub/Sub topics create command."""
 from apitools.base.py import exceptions as api_ex
 
+from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
@@ -53,24 +54,23 @@ class Create(base.CreateCommand):
     Raises:
       util.RequestFailedError: if any of the requests to the API failed.
     """
-    msgs = self.context['pubsub_msgs']
-    pubsub = self.context['pubsub']
+    client = topics.TopicsClient()
 
     failed = []
     for topic_name in args.topic:
-      topic_path = util.ParseTopic(topic_name).RelativeName()
-      topic = msgs.Topic(name=topic_path)
+      topic_ref = util.ParseTopic(topic_name)
+
       try:
-        result = pubsub.projects_topics.Create(topic)
+        result = client.Create(topic_ref)
       except api_ex.HttpError as error:
         exc = exceptions.HttpException(error)
-        log.CreatedResource(topic_path, kind='topic',
+        log.CreatedResource(topic_ref.RelativeName(), kind='topic',
                             failed=exc.payload.status_message)
         failed.append(topic_name)
         continue
 
       result = util.TopicDisplayDict(result)
-      log.CreatedResource(topic_path, kind='topic')
+      log.CreatedResource(topic_ref.RelativeName(), kind='topic')
       yield result
 
     if failed:

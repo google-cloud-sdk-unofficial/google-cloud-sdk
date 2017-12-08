@@ -34,13 +34,10 @@ class ListUserVerified(base.Command):
           """,
   }
 
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat('table(id:sort=1)')
+
   def Run(self, args):
     client = api_client.GetApiClientForTrack(self.ReleaseTrack())
     return client.ListVerifiedDomains()
-
-  def DeprecatedFormat(self, args):
-    return """
-            table(
-              id:sort=1
-            )
-          """

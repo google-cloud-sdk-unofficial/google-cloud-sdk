@@ -217,14 +217,20 @@ class Connect(base.Command):
     else:
       raise exceptions.ToolException('Could not connect to SQL server.')
 
+    # Determine what SQL user to connect with.
+    sql_user = constants.DEFAULT_SQL_USER[exe_name]
+    if args.user:
+      sql_user = args.user
+
     # We have everything we need, time to party!
     flags = constants.EXE_FLAGS[exe_name]
     sql_args = [exe_name, flags['hostname'], ip_address]
-    if args.user:
-      sql_args.extend([flags['user'], args.user])
+    sql_args.extend([flags['user'], sql_user])
     sql_args.append(flags['password'])
 
     try:
+      log.status.write(
+          'Connecting to database with SQL user [{0}].'.format(sql_user))
       execution_utils.Exec(sql_args)
     except OSError:
       log.error('Failed to execute command "{0}"'.format(' '.join(sql_args)))

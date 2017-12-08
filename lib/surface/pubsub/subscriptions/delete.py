@@ -14,6 +14,7 @@
 """Cloud Pub/Sub subscription delete command."""
 from apitools.base.py import exceptions as api_ex
 
+from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
@@ -45,27 +46,26 @@ class Delete(base.DeleteCommand):
     Raises:
       util.RequestFailedError: if any of the requests to the API failed.
     """
-    msgs = self.context['pubsub_msgs']
-    pubsub = self.context['pubsub']
+    client = subscriptions.SubscriptionsClient()
 
     failed = []
     for subscription_name in args.subscription:
-      subscription_path = util.ParseSubscription(
-          subscription_name).RelativeName()
-      subscription = msgs.Subscription(name=subscription_path)
-      delete_req = msgs.PubsubProjectsSubscriptionsDeleteRequest(
-          subscription=subscription_path)
+      subscription_ref = util.ParseSubscription(subscription_name)
+
       try:
-        pubsub.projects_subscriptions.Delete(delete_req)
+        client.Delete(subscription_ref)
       except api_ex.HttpError as error:
         exc = exceptions.HttpException(error)
-        log.CreatedResource(subscription_path, kind='subscription',
+        log.CreatedResource(subscription_ref.RelativeName(),
+                            kind='subscription',
                             failed=exc.payload.status_message)
         failed.append(subscription_name)
         continue
 
+      subscription = client.messages.Subscription(
+          name=subscription_ref.RelativeName())
       result = util.SubscriptionDisplayDict(subscription)
-      log.DeletedResource(subscription_path, kind='subscription')
+      log.DeletedResource(subscription_ref.RelativeName(), kind='subscription')
       yield result
 
     if failed:

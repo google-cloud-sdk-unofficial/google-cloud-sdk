@@ -20,6 +20,7 @@ import StringIO
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.shell import application
+from googlecloudsdk.command_lib.shell import config as configuration
 from googlecloudsdk.core.document_renderers import render_document
 
 
@@ -36,18 +37,12 @@ class Shell(base.Command):
   """Start the gcloud interactive shell.
 
   *{command}* has menu based auto completion and displays help snippets
-  as each part of a *gcloud* sub-command is typed. The initial *gcloud*
-  is implied, you only need to enter subcommands.
+  as each part of a *gcloud* sub-command is typed. The initial context is
+  set to *gcloud*; you only need to enter subcommands.
   """
 
   def Run(self, args):
     if not args.quiet:
       render_document.RenderDocument(fin=StringIO.StringIO(_SPLASH))
-    restrict = 'gcloud'
-    application.main(
-        cli=self._cli_power_users_only,
-        args=args,
-        hidden=False,
-        prompt=restrict + '> ',
-        restrict=restrict,
-    )
+    config = configuration.Config(context='gcloud ')
+    application.main(cli=self._cli_power_users_only, args=args, config=config)

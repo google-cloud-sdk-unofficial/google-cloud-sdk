@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.command_lib.deployment_manager import flags
 from googlecloudsdk.command_lib.deployment_manager import importer
 from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
@@ -69,7 +70,7 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
 
           To specify different create, update, or delete policies, include any subset of the following flags;
 
-            $ {command} my-deployment --config new_config.yaml --create-policy ACQUIRE --delete-policy ABANDON
+            $ {command} my-deployment --config new_config.yaml --create-policy acquire --delete-policy abandon
 
           To perform an update without waiting for the operation to complete, run:
 
@@ -84,6 +85,17 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
           More information is available at https://cloud.google.com/deployment-manager/docs/configuration/.
           """,
   }
+
+  _delete_policy_flag_map = flags.GetDeleteFlagEnumMap(
+      (apis.GetMessagesModule('deploymentmanager', 'v2')
+       .DeploymentmanagerDeploymentsUpdateRequest.DeletePolicyValueValuesEnum))
+
+  _create_policy_flag_map = arg_utils.ChoiceEnumMapper(
+      '--create-policy',
+      (apis.GetMessagesModule('deploymentmanager', 'v2')
+       .DeploymentmanagerDeploymentsUpdateRequest.CreatePolicyValueValuesEnum),
+      help_str='Create policy for resources that have changed in the update',
+      default='create-or-acquire')
 
   @staticmethod
   def Args(parser, version=base.ReleaseTrack.GA):
@@ -126,17 +138,8 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
         default=False,
         action='store_true')
 
-    parser.add_argument(
-        '--create-policy',
-        help='Create policy for resources that have changed in the update.',
-        default='CREATE_OR_ACQUIRE',
-        choices=(sorted(apis.GetMessagesModule('deploymentmanager', 'v2')
-                        .DeploymentmanagerDeploymentsUpdateRequest
-                        .CreatePolicyValueValuesEnum.to_dict().keys())))
-
-    flags.AddDeletePolicyFlag(
-        parser, apis.GetMessagesModule('deploymentmanager', 'v2')
-        .DeploymentmanagerDeploymentsUpdateRequest)
+    Update._create_policy_flag_map.choice_arg.AddToParser(parser)
+    Update._delete_policy_flag_map.choice_arg.AddToParser(parser)
     flags.AddFingerprintFlag(parser)
 
     parser.display_info.AddFormat(flags.RESOURCES_AND_OUTPUTS_FORMAT)
@@ -239,16 +242,20 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
     if patch_request:
       args.format = flags.DEPLOYMENT_FORMAT
     try:
+      # Necessary to handle API Version abstraction below
+      parsed_delete_flag = Update._delete_policy_flag_map.GetEnumForChoice(
+          args.delete_policy).name
+      parsed_create_flag = Update._create_policy_flag_map.GetEnumForChoice(
+          args.create_policy).name
       request = self.messages.DeploymentmanagerDeploymentsUpdateRequest(
           deploymentResource=deployment,
           project=dm_base.GetProject(),
           deployment=deployment_ref.deployment,
           preview=args.preview,
           createPolicy=(self.messages.DeploymentmanagerDeploymentsUpdateRequest.
-                        CreatePolicyValueValuesEnum(args.create_policy)),
+                        CreatePolicyValueValuesEnum(parsed_create_flag)),
           deletePolicy=(self.messages.DeploymentmanagerDeploymentsUpdateRequest.
-                        DeletePolicyValueValuesEnum(args.delete_policy)),)
-
+                        DeletePolicyValueValuesEnum(parsed_delete_flag)))
       client = self.client
       client.additional_http_headers['X-Cloud-DM-Patch'] = patch_request
       operation = client.deployments.Update(request)

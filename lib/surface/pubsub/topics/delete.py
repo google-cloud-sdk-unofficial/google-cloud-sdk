@@ -14,6 +14,7 @@
 """Cloud Pub/Sub topics delete command."""
 from apitools.base.py import exceptions as api_ex
 
+from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
@@ -52,26 +53,24 @@ class Delete(base.DeleteCommand):
     Raises:
       util.RequestFailedError: if any of the requests to the API failed.
     """
-    msgs = self.context['pubsub_msgs']
-    pubsub = self.context['pubsub']
+    client = topics.TopicsClient()
 
     failed = []
     for topic_name in args.topic:
-      topic_path = util.ParseTopic(topic_name).RelativeName()
-      topic = msgs.Topic(name=topic_path)
-      delete_req = msgs.PubsubProjectsTopicsDeleteRequest(
-          topic=topic.name)
+      topic_ref = util.ParseTopic(topic_name)
+
       try:
-        pubsub.projects_topics.Delete(delete_req)
+        result = client.Delete(topic_ref)
       except api_ex.HttpError as error:
         exc = exceptions.HttpException(error)
-        log.CreatedResource(topic_path, kind='topic',
+        log.CreatedResource(topic_ref.RelativeName(), kind='topic',
                             failed=exc.payload.status_message)
         failed.append(topic_name)
         continue
 
+      topic = client.messages.Topic(name=topic_ref.RelativeName())
       result = util.TopicDisplayDict(topic)
-      log.DeletedResource(topic_path, kind='topic')
+      log.DeletedResource(topic_ref.RelativeName(), kind='topic')
       yield result
 
     if failed:

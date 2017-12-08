@@ -15,8 +15,12 @@
 """Command for stopping an instance."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute.operations import poller
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances import flags
+from googlecloudsdk.core import exceptions as core_exceptions
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
@@ -37,6 +41,8 @@ class Stop(base.SilentCommand):
         action='store_true',
         help=('If provided, local SSD data is discarded.'))
 
+    base.ASYNC_FLAG.AddToParser(parser)
+
   def _CreateStopRequest(self, client, instance_ref, unused_discard_local_ssd):
     return client.messages.ComputeInstancesStopRequest(
         instance=instance_ref.Name(),
@@ -50,10 +56,39 @@ class Stop(base.SilentCommand):
     instance_refs = flags.INSTANCES_ARG.ResolveAsResource(
         args, holder.resources,
         scope_lister=flags.GetInstanceZoneScopeLister(client))
-    return client.MakeRequests(
-        [(client.apitools_client.instances, 'Stop', self._CreateStopRequest(
-            client, instance_ref, args.discard_local_ssd))
-         for instance_ref in instance_refs])
+
+    requests = [(client.apitools_client.instances, 'Stop',
+                 self._CreateStopRequest(client, instance_ref,
+                                         args.discard_local_ssd))
+                for instance_ref in instance_refs]
+
+    errors_to_collect = []
+    responses = client.BatchRequests(requests, errors_to_collect)
+    if errors_to_collect:
+      raise core_exceptions.MultiError(errors_to_collect)
+
+    operation_refs = [holder.resources.Parse(r.selfLink) for r in responses]
+
+    if args.async:
+      for operation_ref in operation_refs:
+        log.status.Print('Stop instance in progress for [{}].'.format(
+            operation_ref.SelfLink()))
+      log.status.Print(
+          'Use [gcloud compute operations describe URI] command to check the '
+          'status of the operation(s).')
+      return responses
+
+    operation_poller = poller.BatchPoller(
+        client, client.apitools_client.instances, instance_refs)
+    waiter.WaitFor(
+        operation_poller,
+        poller.OperationBatch(operation_refs),
+        'Stopping instance(s) {0}'.format(
+            ', '.join(i.Name() for i in instance_refs)),
+        max_wait_ms=None)
+
+    for instance_ref in instance_refs:
+      log.status.Print('Updated [{0}].'.format(instance_ref))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

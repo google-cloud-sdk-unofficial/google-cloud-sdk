@@ -49,7 +49,7 @@ from oauth2client.client import Flow
 from oauth2client.client import OAuth2WebServerFlow
 from oauth2client.client import Storage
 
-# TODO(dhermes): Resolve import issue.
+# TODO(user): Resolve import issue.
 # This is a temporary fix for a Google internal issue.
 try:
   from google.appengine.ext import ndb
@@ -314,7 +314,7 @@ class CredentialsProperty(db.Property):
 
 
 if ndb is not None:
-  # TODO(dhermes): Turn this into a JsonProperty and overhaul the Credentials
+  # TODO(user): Turn this into a JsonProperty and overhaul the Credentials
   #                and subclass mechanics to use new_from_dict, to_dict,
   #                from_dict, etc.
   class CredentialsNDBProperty(ndb.BlobProperty):

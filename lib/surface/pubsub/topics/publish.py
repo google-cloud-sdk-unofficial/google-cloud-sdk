@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Cloud Pub/Sub topics publish command."""
+from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as sdk_ex
 from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core.resource import resource_projector
 
@@ -66,40 +66,17 @@ https://cloud.google.com/pubsub/docs/publisher#publish
       PublishResponse with the response of the Publish operation.
 
     Raises:
-      sdk_ex.HttpException: If attributes are malformed, or if none of
-      MESSAGE_BODY or ATTRIBUTE are given.
+      topics.EmptyMessageException: if neither message or attributes is
+        specified.
+      topics.PublishOperationException: When something went wrong with the
+        publish operation.
     """
-    msgs = self.context['pubsub_msgs']
-    pubsub = self.context['pubsub']
+    client = topics.TopicsClient()
 
-    attributes = []
-    if args.attribute:
-      for key, value in sorted(args.attribute.iteritems()):
-        attributes.append(
-            msgs.PubsubMessage.AttributesValue.AdditionalProperty(
-                key=key,
-                value=value))
+    attributes = util.ParseAttributes(args.attribute, messages=client.messages)
+    topic_ref = util.ParseTopic(args.topic)
 
-    if not args.message_body and not attributes:
-      raise sdk_ex.HttpException(('You cannot send an empty message.'
-                                  ' You must specify either a MESSAGE_BODY,'
-                                  ' one or more ATTRIBUTE, or both.'))
-
-    topic_name = args.topic
-
-    message = msgs.PubsubMessage(
-        data=args.message_body,
-        attributes=msgs.PubsubMessage.AttributesValue(
-            additionalProperties=attributes))
-
-    result = pubsub.projects_topics.Publish(
-        msgs.PubsubProjectsTopicsPublishRequest(
-            publishRequest=msgs.PublishRequest(messages=[message]),
-            topic=util.ParseTopic(topic_name).RelativeName()))
-
-    if not result.messageIds:
-      # If we got a result with empty messageIds, then we've got a problem.
-      raise sdk_ex.HttpException('Publish operation failed with Unknown error.')
+    result = client.Publish(topic_ref, args.message_body, attributes)
 
     # We only allow to publish one message at a time, so do not return a
     # list of messageId.

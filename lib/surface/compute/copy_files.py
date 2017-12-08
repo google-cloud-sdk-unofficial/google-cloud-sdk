@@ -50,7 +50,8 @@ CopyFiles.detailed_help = {
     'DESCRIPTION':
         """\
         *{command}* copies files between a virtual machine instance and your
-        local machine using the scp command.
+        local machine using the scp command. This command does not work for
+        Windows VMs.
 
         To denote a remote file, prefix the file name with the virtual machine
         instance name (e.g., _example-instance_:~/_FILE_). To denote a local

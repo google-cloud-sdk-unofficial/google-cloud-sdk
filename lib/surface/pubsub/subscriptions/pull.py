@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Cloud Pub/Sub subscription pull command."""
-
+from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
 
@@ -56,23 +56,13 @@ class Pull(base.ListCommand):
     Returns:
       A PullResponse message with the response of the Pull operation.
     """
-    msgs = self.context['pubsub_msgs']
-    pubsub = self.context['pubsub']
+    client = subscriptions.SubscriptionsClient()
 
-    subscription = util.ParseSubscription(args.subscription).RelativeName()
-    pull_req = msgs.PubsubProjectsSubscriptionsPullRequest(
-        pullRequest=msgs.PullRequest(
-            maxMessages=args.max_messages, returnImmediately=True),
-        subscription=subscription)
-
-    pull_response = pubsub.projects_subscriptions.Pull(pull_req)
+    subscription_ref = util.ParseSubscription(args.subscription)
+    pull_response = client.Pull(subscription_ref, args.max_messages)
 
     if args.auto_ack and pull_response.receivedMessages:
       ack_ids = [message.ackId for message in pull_response.receivedMessages]
-
-      ack_req = msgs.PubsubProjectsSubscriptionsAcknowledgeRequest(
-          acknowledgeRequest=msgs.AcknowledgeRequest(ackIds=ack_ids),
-          subscription=subscription)
-      pubsub.projects_subscriptions.Acknowledge(ack_req)
+      client.Ack(ack_ids, subscription_ref)
 
     return pull_response.receivedMessages

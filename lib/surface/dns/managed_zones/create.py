@@ -45,9 +45,6 @@ class Create(base.CreateCommand):
     flags.GetManagedZonesDescriptionArg(required=True).AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
 
-  def Collection(self):
-    return 'dns.managedZones'
-
   def Run(self, args):
     dns = apis.GetClientInstance('dns', 'v1')
     messages = apis.GetMessagesModule('dns', 'v1')
@@ -81,9 +78,7 @@ class CreateBeta(base.CreateCommand):
   To create a managed-zone, run:
 
     $ {command} my_zone --dns-name my.zone.com. --description "My zone!"
-  """
 
-  UNUSED_DNSSEC_EXAMPLE = """
   To create a managed-zone with DNSSEC, run:
 
     $ {command} my_zone_2 --description "Signed Zone" \
@@ -99,9 +94,6 @@ class CreateBeta(base.CreateCommand):
     flags.GetManagedZonesDescriptionArg(required=True).AddToParser(parser)
     flags.AddCommonManagedZonesDnssecArgs(parser)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
-
-  def Collection(self):
-    return 'dns.managedZones'
 
   def Run(self, args):
     dns = apis.GetClientInstance('dns', 'v2beta1')

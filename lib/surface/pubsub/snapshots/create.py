@@ -14,9 +14,9 @@
 """Cloud Pub/Sub snapshots create command."""
 from apitools.base.py import exceptions as api_ex
 
+from googlecloudsdk.api_lib.pubsub import snapshots
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.projects import util as projects_util
 from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core import log
 
@@ -70,35 +70,26 @@ class Create(base.CreateCommand):
     Raises:
       util.RequestFailedError: if any of the requests to the API failed.
     """
-    msgs = self.context['pubsub_msgs']
-    pubsub = self.context['pubsub']
+    client = snapshots.SnapshotsClient()
 
-    subscription_project = ''
-    if args.subscription_project:
-      subscription_project = projects_util.ParseProject(
-          args.subscription_project).Name()
-    subscription_name = args.subscription
+    subscription_ref = util.ParseSubscription(
+        args.subscription, args.subscription_project)
 
     failed = []
     for snapshot_name in args.snapshot:
-      snapshot_path = util.ParseSnapshot(snapshot_name).RelativeName()
-      create_req = msgs.PubsubProjectsSnapshotsCreateRequest(
-          createSnapshotRequest=msgs.CreateSnapshotRequest(
-              subscription=util.ParseSubscription(
-                  subscription_name, subscription_project).RelativeName()),
-          name=snapshot_path)
+      snapshot_ref = util.ParseSnapshot(snapshot_name)
 
       try:
-        result = pubsub.projects_snapshots.Create(create_req)
+        result = client.Create(snapshot_ref, subscription_ref)
       except api_ex.HttpError as error:
         exc = exceptions.HttpException(error)
-        log.CreatedResource(snapshot_path, kind='snapshot',
+        log.CreatedResource(snapshot_ref.RelativeName(), kind='snapshot',
                             failed=exc.payload.status_message)
         failed.append(snapshot_name)
         continue
 
       result = util.SnapshotDisplayDict(result)
-      log.CreatedResource(snapshot_path, kind='snapshot')
+      log.CreatedResource(snapshot_ref.RelativeName(), kind='snapshot')
       yield result
 
     if failed:

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Cloud Pub/Sub subscription modify-push-config command."""
-
+from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
 
@@ -42,15 +42,11 @@ class ModifyPushConfig(base.Command):
     Returns:
       None
     """
-    msgs = self.context['pubsub_msgs']
-    pubsub = self.context['pubsub']
+    client = subscriptions.SubscriptionsClient()
 
-    subscription = util.ParseSubscription(args.subscription).RelativeName()
-    mod_req = msgs.PubsubProjectsSubscriptionsModifyPushConfigRequest(
-        modifyPushConfigRequest=msgs.ModifyPushConfigRequest(
-            pushConfig=msgs.PushConfig(pushEndpoint=args.push_endpoint)),
-        subscription=subscription)
+    subscription_ref = util.ParseSubscription(args.subscription)
+    push_config = util.ParsePushConfig(args.push_endpoint)
+    client.ModifyPushConfig(subscription_ref, push_config)
 
-    pubsub.projects_subscriptions.ModifyPushConfig(mod_req)
-    return {'subscriptionId': subscription,
+    return {'subscriptionId': subscription_ref.RelativeName(),
             'pushEndpoint': args.push_endpoint}

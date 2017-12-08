@@ -16,12 +16,12 @@
 
 from apitools.base.py import encoding
 
-from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import backend_flags
+from googlecloudsdk.command_lib.compute.backend_services import backend_services_utils
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
@@ -96,8 +96,10 @@ class UpdateBackend(base.UpdateCommand):
 
     backend_to_update = None
     for backend in replacement.backends:
+      # At most one backend will match
       if group_ref.SelfLink() == backend.group:
         backend_to_update = backend
+        break
 
     if not backend_to_update:
       scope_type = None
@@ -133,8 +135,13 @@ class UpdateBackend(base.UpdateCommand):
 
     _ModifyBalancingModeArgs(client.messages, args, backend_to_update)
 
-  def Run(self, args):
-    """Issues requests necessary to update backend of the Backend Service."""
+  def _ValidateArgs(self, args):
+    """Validatest that at least one field to update is specified.
+
+    Args:
+      args: The arguments given to the update-backend command.
+    """
+
     if not any([
         args.description is not None,
         args.balancing_mode,
@@ -146,6 +153,10 @@ class UpdateBackend(base.UpdateCommand):
         args.capacity_scaler is not None,
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
+
+  def Run(self, args):
+    """Issues requests necessary to update backend of the Backend Service."""
+    self._ValidateArgs(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -230,6 +241,45 @@ class UpdateBackendAlpha(UpdateBackend):
     backend_flags.AddBalancingMode(parser)
     backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
+    backend_flags.AddFailover(parser, default=None)
+
+  def _Modify(self, client, resources, backend_service_ref, args, existing):
+    """Modify Backend."""
+    replacement = super(UpdateBackendAlpha, self)._Modify(
+        client, resources, backend_service_ref, args, existing)
+
+    group_ref = flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
+        args,
+        resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+
+    backend_to_update = None
+    for backend in replacement.backends:
+      # At most one backend will match
+      if group_ref.SelfLink() == backend.group:
+        backend_to_update = backend
+        break
+
+    if backend_to_update is not None and args.failover is not None:
+      backend_to_update.failover = args.failover
+
+    return replacement
+
+  def _ValidateArgs(self, args):
+    """Overrides."""
+
+    if not any([
+        args.description is not None,
+        args.balancing_mode,
+        args.max_utilization is not None,
+        args.max_rate is not None,
+        args.max_rate_per_instance is not None,
+        args.max_connections is not None,
+        args.max_connections_per_instance is not None,
+        args.capacity_scaler is not None,
+        args.failover is not None,
+    ]):
+      raise exceptions.ToolException('At least one property must be modified.')
 
 
 def _ClearMutualExclusiveBackendCapacityThresholds(backend):

@@ -17,7 +17,6 @@
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.components import util
 from googlecloudsdk.core import log
-from googlecloudsdk.core.resource import resource_printer_base
 
 
 class List(base.ListCommand):
@@ -69,7 +68,7 @@ class List(base.ListCommand):
         hidden=True,
     )
 
-  def DeprecatedFormat(self, args):
+  def _SetFormat(self, args):
     attributes = [
         'box',
         'title="Components"'
@@ -85,21 +84,17 @@ class List(base.ListCommand):
         'id:label=ID',
         'size.size(zero="",min=1048576):label=Size:align=right',
         ])
-    return 'table[{attributes}]({columns})'.format(
-        attributes=','.join(attributes), columns=','.join(columns))
+    args.GetDisplayInfo().AddFormat('table[{attributes}]({columns})'.format(
+        attributes=','.join(attributes), columns=','.join(columns)))
 
   def Run(self, args):
     """Runs the list command."""
+    self._SetFormat(args)
     update_manager = util.GetUpdateManager(args)
     result = update_manager.List(show_hidden=args.show_hidden,
                                  only_local_state=args.only_local_state)
     (to_print, self._current_version, self._latest_version) = result
-    if not to_print:
-      raise StopIteration
-
-    for c in to_print:
-      yield c
-    yield resource_printer_base.FinishMarker()
+    return to_print
 
   def Epilog(self, resources_were_displayed):
     if not resources_were_displayed:

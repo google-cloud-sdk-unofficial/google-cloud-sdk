@@ -19,13 +19,12 @@ from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.dataproc import constants
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
-from googlecloudsdk.api_lib.dataproc import exceptions
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-STATE_MATCHER_ENUM = ['active', 'inactive']
+STATE_MATCHER_ENUM_MAP = {'active': 'ACTIVE', 'inactive': 'NON_ACTIVE'}
 
 
 class TypedJob(util.Bunch):
@@ -82,7 +81,7 @@ class List(base.ListCommand):
 
     parser.add_argument(
         '--state-filter',
-        choices=STATE_MATCHER_ENUM,
+        choices=sorted(STATE_MATCHER_ENUM_MAP.keys()),
         help='Filter by job state.')
     parser.display_info.AddFormat("""
           table(
@@ -104,18 +103,10 @@ class List(base.ListCommand):
       request.clusterName = args.cluster
 
     if args.state_filter:
-      if args.state_filter == 'active':
-        request.jobStateMatcher = (
-            dataproc.messages.DataprocProjectsRegionsJobsListRequest
-            .JobStateMatcherValueValuesEnum.ACTIVE)
-      # TODO(b/32669485) Get full flag test coverage.
-      elif args.state_filter == 'inactive':
-        request.jobStateMatcher = (
-            dataproc.messages.DataprocProjectsRegionsJobsListRequest
-            .JobStateMatcherValueValuesEnum.NON_ACTIVE)
-      else:
-        raise exceptions.ArgumentError(
-            'Invalid state-filter; [{0}].'.format(args.state_filter))
+      state = STATE_MATCHER_ENUM_MAP.get(args.state_filter)
+      request.jobStateMatcher = (
+          dataproc.messages.DataprocProjectsRegionsJobsListRequest
+          .JobStateMatcherValueValuesEnum.lookup_by_name(state))
 
     jobs = list_pager.YieldFromList(
         dataproc.client.projects_regions_jobs,
