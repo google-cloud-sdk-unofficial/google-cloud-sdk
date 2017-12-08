@@ -19,7 +19,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Update(base.Command):
@@ -102,6 +101,7 @@ class Update(base.Command):
             projectsId=sink_ref.projectsId, sinksId=sink_data['name'],
             logSink=messages.LogSink(**sink_data)))
 
+  @util.HandleHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -123,15 +123,12 @@ class Update(base.Command):
 
     # Calling Update on a non-existing sink creates it.
     # We need to make sure it exists, otherwise we would create it.
-    try:
-      if args.log:
-        sink = self.GetLogSink()
-      elif args.service:
-        sink = self.GetLogServiceSink()
-      else:
-        sink = self.GetProjectSink()
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetError(error))
+    if args.log:
+      sink = self.GetLogSink()
+    elif args.service:
+      sink = self.GetLogServiceSink()
+    else:
+      sink = self.GetProjectSink()
 
     # Only update fields that were passed to the command.
     if args.destination:
@@ -148,23 +145,20 @@ class Update(base.Command):
     sink_data = {'name': sink_ref.sinksId, 'destination': destination,
                  'filter': log_filter}
 
-    try:
-      if args.log:
-        result = util.TypedLogSink(self.UpdateLogSink(sink_data),
-                                   log_name=args.log)
-      elif args.service:
-        result = util.TypedLogSink(self.UpdateLogServiceSink(sink_data),
-                                   service_name=args.service)
+    if args.log:
+      result = util.TypedLogSink(self.UpdateLogSink(sink_data),
+                                 log_name=args.log)
+    elif args.service:
+      result = util.TypedLogSink(self.UpdateLogServiceSink(sink_data),
+                                 service_name=args.service)
+    else:
+      if args.output_version_format:
+        sink_data['outputVersionFormat'] = args.output_version_format
       else:
-        if args.output_version_format:
-          sink_data['outputVersionFormat'] = args.output_version_format
-        else:
-          sink_data['outputVersionFormat'] = sink.outputVersionFormat.name
-        result = util.TypedLogSink(self.UpdateProjectSink(sink_data))
-      log.UpdatedResource(sink_ref)
-      return result
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetError(error))
+        sink_data['outputVersionFormat'] = sink.outputVersionFormat.name
+      result = util.TypedLogSink(self.UpdateProjectSink(sink_data))
+    log.UpdatedResource(sink_ref)
+    return result
 
   def Display(self, unused_args, result):
     """This method is called to print the result of the Run() method.

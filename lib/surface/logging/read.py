@@ -18,10 +18,7 @@ import datetime
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import properties
-from googlecloudsdk.third_party.apis.logging import v2beta1
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
@@ -36,7 +33,7 @@ class Read(base.Command):
                             'log entries to return.'),
         nargs='?')
     parser.add_argument(
-        '--limit', required=False, type=int,
+        '--limit', required=False, type=int, default=None,
         help='If greater than zero, the maximum number of results.')
     parser.add_argument(
         '--order', required=False,
@@ -49,6 +46,7 @@ class Read(base.Command):
               'Works only with DESC ordering and filters without a timestamp.'),
         default='1d')
 
+  @util.HandlePagerHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -59,15 +57,11 @@ class Read(base.Command):
     Returns:
       The list of log entries.
     """
-    client = v2beta1.LoggingV2beta1(
-        url=properties.VALUES.api_endpoint_overrides.logging.Get(),
-        http=self.Http(),
-        get_credentials=False)
-    messages = v2beta1
-
+    client = self.context['logging_client_v2beta1']
+    messages = self.context['logging_messages_v2beta1']
     project = properties.VALUES.core.project.Get(required=True)
 
-    if args.limit <= 0:
+    if args.limit is not None and args.limit < 0:
       args.limit = None
 
     if args.order == 'DESC':
@@ -108,11 +102,8 @@ class Read(base.Command):
       result: The value returned from the Run() method.
     """
     # Log entry has to many fields to use list_printer here.
-    # Use the build-in yaml/json parser to display results.
-    try:
-      self.format(result)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetError(error))
+    # Use the build-in yaml parser to display results.
+    self.format(result)
 
 
 Read.detailed_help = {

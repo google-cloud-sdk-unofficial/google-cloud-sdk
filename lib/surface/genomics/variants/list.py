@@ -65,6 +65,7 @@ class List(base.Command):
                               '--variant-set-id must be specified.'))
     parser.add_argument('--reference-name',
                         type=str,
+                        required=True,
                         help='Only return variants in this reference sequence.')
     parser.add_argument('--start',
                         type=long,
@@ -78,6 +79,13 @@ class List(base.Command):
                               'which variants should be returned. If '
                               'unspecified or 0, defaults to the length of the '
                               'reference.'))
+
+  def RewriteError(self, msg):
+    return (msg.replace('variantSetIds', '--variant-set-id')
+            .replace('callSetIds', '--call-set-ids')
+            .replace('referenceName', '--reference-name')
+            .replace('start', '--start')
+            .replace('end', '--end'))
 
   @genomics_util.ReraiseHttpException
   def Run(self, args):
@@ -102,10 +110,11 @@ class List(base.Command):
     if not args.format:
       global_params = messages.StandardQueryParameters(fields=_API_FIELDS)
 
+    variant_set_id = [args.variant_set_id] if args.variant_set_id else []
     pager = list_pager.YieldFromList(
         apitools_client.variants,
         messages.SearchVariantsRequest(
-            variantSetIds=[args.variant_set_id],
+            variantSetIds=variant_set_id,
             callSetIds=args.call_set_ids,
             referenceName=args.reference_name,
             start=args.start,
@@ -117,7 +126,7 @@ class List(base.Command):
         batch_size_attribute='pageSize',
         batch_size=args.limit,  # Use limit if any, else server default.
         field='variants')
-    return genomics_util.ReraiseHttpExceptionPager(pager)
+    return genomics_util.ReraiseHttpExceptionPager(pager, self.RewriteError)
 
   def Format(self, unused_args):
     """Returns a paginated box table layout format string."""

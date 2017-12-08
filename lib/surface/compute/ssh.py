@@ -122,7 +122,8 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
           .format(args.user_host))
 
     instance_ref = self.CreateZonalReference(instance, args.zone)
-    external_ip_address = self.GetInstanceExternalIpAddress(instance_ref)
+    instance = self.GetInstance(instance_ref)
+    external_ip_address = ssh_utils.GetExternalIPAddress(instance)
 
     ssh_args = [self.ssh_executable]
     if not args.plain:
@@ -161,7 +162,7 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
     # don't want to consider it an error. We do, however, want to propagate its
     # return code.
     return_code = self.ActuallyRun(
-        args, ssh_args, user, external_ip_address, strict_error_checking=False,
+        args, ssh_args, user, instance, strict_error_checking=False,
         use_account_service=self._use_accounts_service)
     if return_code:
       # Can't raise an exception because we don't want any "ERROR" message

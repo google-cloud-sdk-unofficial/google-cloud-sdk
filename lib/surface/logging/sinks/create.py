@@ -20,7 +20,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Create(base.Command):
@@ -79,6 +78,7 @@ class Create(base.Command):
             projectsId=sink_ref.projectsId,
             logSink=messages.LogSink(**sink_data)))
 
+  @util.HandleHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -101,20 +101,17 @@ class Create(base.Command):
     sink_data = {'name': sink_ref.sinksId, 'destination': args.destination,
                  'filter': args.log_filter}
 
-    try:
-      if args.log:
-        result = util.TypedLogSink(self.CreateLogSink(sink_data),
-                                   log_name=args.log)
-      elif args.service:
-        result = util.TypedLogSink(self.CreateLogServiceSink(sink_data),
-                                   service_name=args.service)
-      else:
-        sink_data['outputVersionFormat'] = args.output_version_format
-        result = util.TypedLogSink(self.CreateProjectSink(sink_data))
-      log.CreatedResource(sink_ref)
-      return result
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetError(error))
+    if args.log:
+      result = util.TypedLogSink(self.CreateLogSink(sink_data),
+                                 log_name=args.log)
+    elif args.service:
+      result = util.TypedLogSink(self.CreateLogServiceSink(sink_data),
+                                 service_name=args.service)
+    else:
+      sink_data['outputVersionFormat'] = args.output_version_format
+      result = util.TypedLogSink(self.CreateProjectSink(sink_data))
+    log.CreatedResource(sink_ref)
+    return result
 
   def Display(self, unused_args, result):
     """This method is called to print the result of the Run() method.

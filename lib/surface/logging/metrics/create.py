@@ -16,11 +16,9 @@
 
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Create(base.Command):
@@ -33,6 +31,7 @@ class Create(base.Command):
     parser.add_argument('description', help='The metric\'s description.')
     parser.add_argument('filter', help='The metric\'s filter expression.')
 
+  @util.HandleHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -52,14 +51,12 @@ class Create(base.Command):
     new_metric = messages.LogMetric(name=args.metric_name,
                                     description=args.description,
                                     filter=metric_filter)
-    try:
-      result = client.projects_metrics.Create(
-          messages.LoggingProjectsMetricsCreateRequest(
-              projectsId=project, logMetric=new_metric))
-      log.CreatedResource(args.metric_name)
-      return result
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetError(error))
+
+    result = client.projects_metrics.Create(
+        messages.LoggingProjectsMetricsCreateRequest(
+            projectsId=project, logMetric=new_metric))
+    log.CreatedResource(args.metric_name)
+    return result
 
   def Display(self, unused_args, result):
     """This method is called to print the result of the Run() method.

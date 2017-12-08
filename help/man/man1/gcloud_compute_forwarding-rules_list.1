@@ -20,8 +20,8 @@ gcloud compute forwarding\-rules list \- list Google Compute Engine forwarding r
 forwarding rules in a project.
 
 By default, global forwarding rules and forwarding rules from all regions are
-listed. The results can be narrowed down by providing the
-\f5\fI\-\-regions\fR\fR or \f5\fI\-\-global\fR\fR flag.
+listed. The results can be narrowed down by providing the \f5\fI\-\-global\fR\fR
+or \f5\fI\-\-regions\fR\fR flag.
 
 
 
@@ -93,24 +93,10 @@ To list the URIs of all forwarding rules in a project, run:
 $ gcloud compute forwarding\-rules list \-\-uri
 .RE
 
-To list all forwarding rules in zones \f5\fIus\-central1\-b\fR\fR and
-\f5\fIeurope\-west1\-d\fR\fR, run:
-
-.RS 2m
-$ gcloud compute forwarding\-rules list \-\-regions us\-central1 \e
-    europe\-west1
-.RE
-
 To list all global forwarding rules in a project, run:
 
 .RS 2m
 $ gcloud compute forwarding\-rules list \-\-global
-.RE
-
-To list all regional forwarding rules in a project, run:
-
-.RS 2m
-$ gcloud compute forwarding\-rules list \-\-regions
 .RE
 
 To list all forwarding rules in the \f5\fIus\-central1\fR\fR and

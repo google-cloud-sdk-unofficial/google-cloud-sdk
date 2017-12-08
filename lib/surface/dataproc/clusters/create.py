@@ -64,7 +64,7 @@ class Create(base.Command):
         '--image-version',
         metavar='VERSION',
         help='The image version to use for the cluster. Defaults to the '
-        'lastest version.')
+        'latest version.')
     parser.add_argument(
         '--bucket',
         help='The Google Cloud Storage bucket to use with the Google Cloud '
@@ -107,11 +107,28 @@ class Create(base.Command):
         metavar='TIMEOUT',
         default='10m',
         help='The maximum duration of each initialization action.')
-    parser.add_argument(
+    properties_parser = parser.add_argument(
         '--properties',
         type=arg_parsers.ArgDict(),
+        metavar='PREFIX:PROPERTY=VALUE',
         default={},
-        help=argparse.SUPPRESS)
+        help='Specifies cluster configuration properties.')
+    properties_parser.detailed_help = """\
+Specifies configuration properties for installed packages, such as Hadoop
+and Spark.
+
+Properties are mapped to configuration files by specifying a prefix, such as
+"core:io.serializations". The following are supported prefixes and their
+mappings:
+
+  core - core-site.xml
+  hdfs - hdfs-site.xml
+  mapred - mapred-site.xml
+  yarn - yarn-site.xml
+  hive - hive-site.xml
+  pig - pig.properties
+  spark - spark-defaults.conf
+"""
     scope_parser = parser.add_argument(
         '--scopes',
         type=arg_parsers.ArgList(min_length=1),

@@ -35,18 +35,13 @@ class Describe(base_classes.ZonalDescriber):
   def ComputeDynamicProperties(self, args, items):
     # This is an overridden function that modifies the output of the custom
     # machine type in instances describe.
-    # (TODO:spencertung) Possibly not the best way to deal with modifying
-    # the items output (b/25603716)
-    items_list = list(items)
+    items_dict = items.next()
     machine_type = resource_specs.FormatDescribeMachineTypeName(
-        items_list,
+        items_dict,
         args.command_path)
     if machine_type:
-      items_list[0]['machineType'] = machine_type
-    if not items_list:
-      yield items_list
-    else:
-      yield items_list[0]
+      items_dict['machineType'] = machine_type
+    yield items_dict
 
 Describe.detailed_help = {
     'brief': 'Describe a virtual machine instance',

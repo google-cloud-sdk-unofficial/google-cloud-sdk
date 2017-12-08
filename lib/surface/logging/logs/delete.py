@@ -20,7 +20,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Delete(base.Command):
@@ -31,6 +30,7 @@ class Delete(base.Command):
     """Register flags for this command."""
     parser.add_argument('log_name', help='Log name.')
 
+  @util.HandleHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -45,13 +45,11 @@ class Delete(base.Command):
     if not console_io.PromptContinue(
         'Really delete all log entries from [%s]?' % args.log_name):
       raise exceptions.ToolException('action canceled by user')
-    try:
-      client.projects_logs.Delete(
-          messages.LoggingProjectsLogsDeleteRequest(
-              projectsId=project, logsId=args.log_name))
-      log.DeletedResource(args.log_name)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetError(error))
+
+    client.projects_logs.Delete(
+        messages.LoggingProjectsLogsDeleteRequest(
+            projectsId=project, logsId=args.log_name))
+    log.DeletedResource(args.log_name)
 
 
 Delete.detailed_help = {

@@ -11,7 +11,7 @@ gcloud source repos clone \- clone project git repository in the current directo
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud source repos clone\fR \fIREPOSITORY_NAME\fR [\fIDIRECTORY_NAME\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud source repos clone\fR \fIREPOSITORY_NAME\fR [\fIDIRECTORY_NAME\fR] [\fB\-\-dry\-run\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -25,13 +25,23 @@ Platform project into the specified folder in the current directory.
 
 \fIREPOSITORY_NAME\fR
 .RS 2m
-Name of the repository. Note: GCP projects generally have (if created) a
-repository named "default"
+Name of the repository. Note: Google Cloud Platform projects generally have (if
+created) a repository named "default"
 
 .RE
 [\fIDIRECTORY_NAME\fR]
 .RS 2m
 Directory name for the cloned repo. Defaults to the repository name.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-dry\-run\fR
+.RS 2m
+If provided, prints the command that would be run to standard out instead of
+executing it.
 
 
 .RE

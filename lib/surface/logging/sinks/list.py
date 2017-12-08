@@ -16,10 +16,8 @@
 
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import properties
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
@@ -111,6 +109,7 @@ class List(base.Command):
       if not limit:
         return
 
+  @util.HandlePagerHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -123,22 +122,19 @@ class List(base.Command):
     """
     project = properties.VALUES.core.project.Get(required=True)
 
-    if args.limit is None or args.limit <= 0:
+    if args.limit is None or args.limit < 0:
       limit = float('inf')
     else:
       limit = args.limit
 
-    try:
-      if args.log:
-        return self.ListLogSinks(project, args.log, limit)
-      elif args.service:
-        return self.ListLogServiceSinks(project, args.service, limit)
-      elif args.only_project_sinks:
-        return self.ListProjectSinks(project, limit)
-      else:
-        return self.YieldAllSinks(project, limit)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetError(error))
+    if args.log:
+      return self.ListLogSinks(project, args.log, limit)
+    elif args.service:
+      return self.ListLogServiceSinks(project, args.service, limit)
+    elif args.only_project_sinks:
+      return self.ListProjectSinks(project, limit)
+    else:
+      return self.YieldAllSinks(project, limit)
 
   def Display(self, unused_args, result):
     """This method is called to print the result of the Run() method.

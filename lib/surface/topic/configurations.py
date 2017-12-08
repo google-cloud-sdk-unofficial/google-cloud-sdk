@@ -39,8 +39,8 @@ class TestingArgFiles(base.Command):
           project.
 
           Properties that are commonly stored in configurations include
-          default GCE zone, verbosity level, project ID, and active user or
-          service account. Configurations allow you to define
+          default Google Compute Engine zone, verbosity level, project ID, and
+          active user or service account. Configurations allow you to define
           and enable these and other settings together as a group.
 
           Configurations are especially useful if you:
@@ -49,8 +49,9 @@ class TestingArgFiles(base.Command):
             - Use multiple accounts, for example, a user account and a
               service account, etc.
             - Perform generally orthogonal tasks (work on an appengine app in
-              project foo, administer a GCE cluster in zone user-central-1a,
-              manage the network configurations for region asia-east-1, etc.)
+              project foo, administer a Google Compute Engine cluster in zone
+              user-central-1a, manage the network configurations for region
+              asia-east-1, etc.)
 
           Property information stored in named configurations are readable by
           all gcloud commands and may be modified by `gcloud config set`

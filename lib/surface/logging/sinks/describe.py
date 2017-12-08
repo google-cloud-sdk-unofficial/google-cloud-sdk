@@ -16,9 +16,7 @@
 
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import list_printer
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Describe(base.Command):
@@ -51,6 +49,7 @@ class Describe(base.Command):
         messages.LoggingProjectsSinksGetRequest(
             projectsId=sink_ref.projectsId, sinksId=sink_ref.sinksId))
 
+  @util.HandleHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -61,16 +60,13 @@ class Describe(base.Command):
     Returns:
       The specified sink with its destination.
     """
-    try:
-      if args.log:
-        return util.TypedLogSink(self.GetLogSink(), log_name=args.log)
-      elif args.service:
-        return util.TypedLogSink(self.GetLogServiceSink(),
-                                 service_name=args.service)
-      else:
-        return util.TypedLogSink(self.GetProjectSink())
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetError(error))
+    if args.log:
+      return util.TypedLogSink(self.GetLogSink(), log_name=args.log)
+    elif args.service:
+      return util.TypedLogSink(self.GetLogServiceSink(),
+                               service_name=args.service)
+    else:
+      return util.TypedLogSink(self.GetProjectSink())
 
   def Display(self, unused_args, result):
     """This method is called to print the result of the Run() method.

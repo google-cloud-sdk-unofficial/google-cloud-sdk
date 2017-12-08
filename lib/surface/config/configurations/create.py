@@ -19,7 +19,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import named_configs
 
 
-class Create(base.Command):
+class Create(base.SilentCommand):
   """Creates a new named configuration."""
 
   detailed_help = {
@@ -47,6 +47,8 @@ class Create(base.Command):
     named_configs.CreateNamedConfig(args.configuration_name)
 
     log.CreatedResource(args.configuration_name)
-    log.err.Print('To use this configuration, activate it using `gcloud '
-                  'config configurations activate`.')
+    log.status.Print(
+        'To use this configuration, activate it by running:\n'
+        '  $ gcloud config configurations activate {name}'.format(
+            name=args.configuration_name))
     return args.configuration_name

@@ -16,9 +16,8 @@
 
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import properties
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Describe(base.Command):
@@ -30,6 +29,7 @@ class Describe(base.Command):
     parser.add_argument(
         'metric_name', help='The name of the metric.')
 
+  @util.HandleHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -44,13 +44,9 @@ class Describe(base.Command):
     messages = self.context['logging_messages_v1beta3']
     project = properties.VALUES.core.project.Get(required=True)
 
-    try:
-      return client.projects_metrics.Get(
-          messages.LoggingProjectsMetricsGetRequest(
-              metricsId=args.metric_name,
-              projectsId=project))
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetError(error))
+    return client.projects_metrics.Get(
+        messages.LoggingProjectsMetricsGetRequest(
+            metricsId=args.metric_name, projectsId=project))
 
   def Display(self, unused_args, result):
     """This method is called to print the result of the Run() method.
@@ -59,7 +55,8 @@ class Describe(base.Command):
       unused_args: The arguments that command was run with.
       result: The value returned from the Run() method.
     """
-    self.format(result)
+    list_printer.PrintResourceList('logging.metrics', [result])
+
 
 Describe.detailed_help = {
     'DESCRIPTION': """\

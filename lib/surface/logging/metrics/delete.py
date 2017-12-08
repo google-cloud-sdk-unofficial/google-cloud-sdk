@@ -20,7 +20,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Delete(base.Command):
@@ -32,6 +31,7 @@ class Delete(base.Command):
     parser.add_argument(
         'metric_name', help='The name of the metric to delete.')
 
+  @util.HandleHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -46,14 +46,12 @@ class Delete(base.Command):
     if not console_io.PromptContinue(
         'Really delete metric [%s]?' % args.metric_name):
       raise exceptions.ToolException('action canceled by user')
-    try:
-      unused_result = client.projects_metrics.Delete(
-          messages.LoggingProjectsMetricsDeleteRequest(
-              metricsId=args.metric_name,
-              projectsId=project))
-      log.DeletedResource(args.metric_name)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetError(error))
+
+    client.projects_metrics.Delete(
+        messages.LoggingProjectsMetricsDeleteRequest(
+            metricsId=args.metric_name, projectsId=project))
+    log.DeletedResource(args.metric_name)
+
 
 Delete.detailed_help = {
     'DESCRIPTION': """\

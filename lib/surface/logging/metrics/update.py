@@ -20,7 +20,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Update(base.Command):
@@ -40,6 +39,7 @@ class Update(base.Command):
         help=('A new filter string for the metric. '
               'If omitted, the filter is not changed.'))
 
+  @util.HandleHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -58,15 +58,13 @@ class Update(base.Command):
     client = self.context['logging_client_v1beta3']
     messages = self.context['logging_messages_v1beta3']
     project = properties.VALUES.core.project.Get(required=True)
+
     # Calling the API's Update method on a non-existing metric creates it.
     # Make sure the metric exists so we don't accidentally create it.
-    try:
-      metric = client.projects_metrics.Get(
-          messages.LoggingProjectsMetricsGetRequest(
-              metricsId=args.metric_name,
-              projectsId=project))
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetError(error))
+    metric = client.projects_metrics.Get(
+        messages.LoggingProjectsMetricsGetRequest(
+            metricsId=args.metric_name,
+            projectsId=project))
 
     if args.description:
       metric_description = args.description
@@ -83,16 +81,14 @@ class Update(base.Command):
         name=args.metric_name,
         description=metric_description,
         filter=metric_filter)
-    try:
-      result = client.projects_metrics.Update(
-          messages.LoggingProjectsMetricsUpdateRequest(
-              logMetric=updated_metric,
-              metricsId=args.metric_name,
-              projectsId=project))
-      log.UpdatedResource(args.metric_name)
-      return result
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetError(error))
+
+    result = client.projects_metrics.Update(
+        messages.LoggingProjectsMetricsUpdateRequest(
+            logMetric=updated_metric,
+            metricsId=args.metric_name,
+            projectsId=project))
+    log.UpdatedResource(args.metric_name)
+    return result
 
   def Display(self, unused_args, result):
     """This method is called to print the result of the Run() method.

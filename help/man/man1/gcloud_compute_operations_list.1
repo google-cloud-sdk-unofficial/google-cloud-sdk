@@ -20,8 +20,8 @@ gcloud compute operations list \- list Google Compute Engine operations
 operations in a project.
 
 By default, global operations and operations from all regions are listed. The
-results can be narrowed down by providing the \f5\fI\-\-regions\fR\fR or
-\f5\fI\-\-global\fR\fR flag.
+results can be narrowed down by providing the \f5\fI\-\-global\fR\fR or
+\f5\fI\-\-regions\fR\fR flag.
 
 
 
@@ -99,23 +99,10 @@ To list the URIs of all operations in a project, run:
 $ gcloud compute operations list \-\-uri
 .RE
 
-To list all operations in zones \f5\fIus\-central1\-b\fR\fR and
-\f5\fIeurope\-west1\-d\fR\fR, run:
-
-.RS 2m
-$ gcloud compute operations list \-\-regions us\-central1 europe\-west1
-.RE
-
 To list all global operations in a project, run:
 
 .RS 2m
 $ gcloud compute operations list \-\-global
-.RE
-
-To list all regional operations in a project, run:
-
-.RS 2m
-$ gcloud compute operations list \-\-regions
 .RE
 
 To list all operations in the \f5\fIus\-central1\fR\fR and

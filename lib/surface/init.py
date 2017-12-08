@@ -42,8 +42,8 @@ class Init(base.Command):
           performs a variety of setup tasks, including the following:
 
             - launching an authorization flow or selecting credentials
-            - setting properties including project, default GCE zone, and
-              default GCE region
+            - setting properties including project, default Google Compute
+              Engine zone, and default Google Compute Engine region
             - suggesting cloning a source repository
 
           Most users will run {command} to get started with gcloud. Subsequent

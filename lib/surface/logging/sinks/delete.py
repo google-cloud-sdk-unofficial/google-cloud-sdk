@@ -60,6 +60,7 @@ class Delete(base.Command):
         messages.LoggingProjectsSinksDeleteRequest(
             projectsId=sink_ref.projectsId, sinksId=sink_ref.sinksId))
 
+  @util.HandleHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

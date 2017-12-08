@@ -51,4 +51,5 @@ class Call(base.Command):
     messages = self.context['functions_messages']
     return client.projects_regions_functions.Call(
         messages.CloudfunctionsProjectsRegionsFunctionsCallRequest(
-            data=args.data, name=name))
+            name=name,
+            callFunctionRequest=messages.CallFunctionRequest(data=args.data)))

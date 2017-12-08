@@ -15,21 +15,12 @@
 """Command to delete named configuration."""
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import named_configs
 from googlecloudsdk.core.console import console_io
 
 
-class DeleteCanceledException(exceptions.Error):
-  """Raise when a user aborts a deletion."""
-
-  def __init__(self, message=None):
-    super(DeleteCanceledException, self).__init__(
-        message or 'Deletion aborted by user.')
-
-
-class Delete(base.Command):
+class Delete(base.SilentCommand):
   """Deletes a named configuration."""
 
   detailed_help = {
@@ -62,13 +53,11 @@ class Delete(base.Command):
               'can not be currently active configuration.'))
 
   def Run(self, args):
-
-    # TODO(b/23621782): Move logic to a core library.
-    if not args.quiet:
-      if not console_io.PromptContinue(
-          'The following configuration will be deleted: [{0}]'.format(
-              args.configuration_name)):
-        raise DeleteCanceledException
+    console_io.PromptContinue(
+        'The following configuration will be deleted: [{0}]'.format(
+            args.configuration_name),
+        default=True,
+        cancel_on_no=True)
 
     named_configs.DeleteNamedConfig(args.configuration_name)
     log.DeletedResource(args.configuration_name)

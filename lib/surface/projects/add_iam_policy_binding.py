@@ -14,7 +14,10 @@
 
 """Command to add IAM policy binding for a resource."""
 
+import httplib
+
 from googlecloudsdk.api_lib.projects import util
+from googlecloudsdk.api_lib.util import http_retry
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core.iam import iam_util
 
@@ -28,17 +31,8 @@ class AddIamPolicyBinding(base.Command):
   given a Project ID and the binding.
   """
 
-  detailed_help = {
-      'brief': 'Add IAM policy binding for a Project.',
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          The following command will add a IAM policy binding for the role
-          of 'editor' for the user 'test-user@gmail.com' on project
-          'example-project-id-1'
-
-            $ {command} example-project-id-1 --editor='user:test-user@gmail.com'
-          """,
-  }
+  detailed_help = iam_util.GetDetailedHelpForAddIamPolicyBinding(
+      'project', 'example-project-id-1')
 
   @staticmethod
   def Args(parser):
@@ -46,6 +40,7 @@ class AddIamPolicyBinding(base.Command):
     iam_util.AddArgsForAddIamPolicyBinding(parser)
 
   @util.HandleHttpError
+  @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
     projects = self.context['projects_client']
     messages = self.context['projects_messages']

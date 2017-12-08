@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Clone GCP git repository.
+"""Clone Google Cloud Platform git repository.
 """
 
 import textwrap
@@ -52,11 +52,17 @@ class Clone(base.Command):
   @staticmethod
   def Args(parser):
     parser.add_argument(
+        '--dry-run',
+        action='store_true',
+        help=('If provided, prints the command that would be run to standard '
+              'out instead of executing it.'))
+
+    parser.add_argument(
         'src',
         metavar='REPOSITORY_NAME',
         help=('Name of the repository. '
-              'Note: GCP projects generally have (if created) a repository '
-              'named "default"'))
+              'Note: Google Cloud Platform projects generally have (if '
+              'created) a repository named "default"'))
     parser.add_argument(
         'dst',
         metavar='DIRECTORY_NAME',
@@ -82,8 +88,9 @@ class Clone(base.Command):
 
     project_id = properties.VALUES.core.project.Get(required=True)
     project_repo = git.Git(project_id, args.src)
-    path = project_repo.Clone(destination_path=args.dst or args.src)
-    if path:
+    path = project_repo.Clone(destination_path=args.dst or args.src,
+                              dry_run=args.dry_run)
+    if path and not args.dry_run:
       log.status.write('Project [{prj}] repository [{repo}] was cloned to '
                        '[{path}].\n'.format(prj=project_id, path=path,
                                             repo=project_repo.GetName()))

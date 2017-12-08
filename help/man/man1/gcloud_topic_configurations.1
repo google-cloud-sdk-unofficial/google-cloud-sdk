@@ -19,9 +19,10 @@ collections of key\-value pairs that influence the behavior of gcloud.
 Named configurations are intended to be an advanced feature, and you can
 probably ignore them entirely if you only work with one project.
 
-Properties that are commonly stored in configurations include default GCE zone,
-verbosity level, project ID, and active user or service account. Configurations
-allow you to define and enable these and other settings together as a group.
+Properties that are commonly stored in configurations include default Google
+Compute Engine zone, verbosity level, project ID, and active user or service
+account. Configurations allow you to define and enable these and other settings
+together as a group.
 
 Configurations are especially useful if you:
 .RS 2m
@@ -36,8 +37,8 @@ Use multiple accounts, for example, a user account and a service account, etc.
 .RS 2m
 .IP "\(bu" 2m
 Perform generally orthogonal tasks (work on an appengine app in project foo,
-administer a GCE cluster in zone user\-central\-1a, manage the network
-configurations for region asia\-east\-1, etc.)
+administer a Google Compute Engine cluster in zone user\-central\-1a, manage the
+network configurations for region asia\-east\-1, etc.)
 .RE
 
 Property information stored in named configurations are readable by all gcloud
@@ -173,7 +174,7 @@ using the global \f5\-\-verbosity\fR flag.
 \fBdocker_build\fR
 .RS 2m
 Set to \f5local\fR to run \f5docker build\fR using a local docker installation,
-or \f5remote\fR to do the build on a GCE VM.
+or \f5remote\fR to do the build on a Google Compute Engine VM.
 
 
 .RE

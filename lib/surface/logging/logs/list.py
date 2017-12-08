@@ -16,10 +16,8 @@
 
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
@@ -30,9 +28,10 @@ class List(base.Command):
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument(
-        '--limit', required=False, type=int, default=0,
+        '--limit', required=False, type=int, default=None,
         help='If greater than zero, the maximum number of results.')
 
+  @util.HandlePagerHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -47,7 +46,7 @@ class List(base.Command):
     messages = self.context['logging_messages_v1beta3']
     project = properties.VALUES.core.project.Get(required=True)
 
-    if args.limit <= 0:
+    if args.limit is not None and args.limit < 0:
       args.limit = None
 
     request = messages.LoggingProjectsLogsListRequest(projectsId=project)
@@ -63,12 +62,10 @@ class List(base.Command):
       unused_args: The arguments that command was run with.
       result: The value returned from the Run() method.
     """
-    try:
-      # Custom selector to return user friendly log names.
-      selector = ('NAME', lambda log: util.ExtractLogName(log.name))
-      console_io.PrintExtendedList(result, (selector,))
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetError(error))
+    # Custom selector to return user friendly log names.
+    selector = ('NAME', lambda log: util.ExtractLogName(log.name))
+    console_io.PrintExtendedList(result, (selector,))
+
 
 List.detailed_help = {
     'DESCRIPTION': """\

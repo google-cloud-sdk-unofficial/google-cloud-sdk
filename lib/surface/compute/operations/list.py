@@ -250,7 +250,7 @@ ListBeta.detailed_help = {
         To list all operations in zones us-central1-b and
         europe-west1-d, run:
 
-           $ {command} --regions us-central1 europe-west1
+           $ {command} --zones us-central1-b europe-west1-d
 
         To list all global operations in a project, run:
 

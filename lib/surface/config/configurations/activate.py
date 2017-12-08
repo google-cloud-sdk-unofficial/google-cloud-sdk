@@ -19,7 +19,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import named_configs
 
 
-class Activate(base.Command):
+class Activate(base.SilentCommand):
   """Activates an existing named configuration."""
 
   detailed_help = {

@@ -119,7 +119,8 @@ class CopyFiles(ssh_utils.BaseSSHCLICommand):
               len(instances), ', '.join(sorted(instances))))
 
     instance_ref = self.CreateZonalReference(instances.pop(), args.zone)
-    external_ip_address = self.GetInstanceExternalIpAddress(instance_ref)
+    instance = self.GetInstance(instance_ref)
+    external_ip_address = ssh_utils.GetExternalIPAddress(instance)
 
     # Builds the scp command.
     scp_args = [self.scp_executable]
@@ -136,7 +137,7 @@ class CopyFiles(ssh_utils.BaseSSHCLICommand):
             ssh_utils.UserHost(file_spec.user, external_ip_address),
             file_spec.file_path))
 
-    self.ActuallyRun(args, scp_args, user, external_ip_address)
+    self.ActuallyRun(args, scp_args, user, instance)
 
 CopyFiles.detailed_help = {
     'brief': 'Copy files to and from Google Compute Engine virtual machines',

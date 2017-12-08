@@ -389,9 +389,9 @@ ResetWindowsPassword.detailed_help = {
     'brief': 'Reset and return a password for a Windows machine instance',
     'DESCRIPTION': """\
         *{command}* allows a user to reset and retrieve a password for
-        a Windows virtual machine instance running GCE Agent 3.0.0.0
-        or later. If the Windows account does not exist, this command will
-        cause the account to be created and the password for that new
+        a Windows virtual machine instance running Google Compute Engine Agent
+        3.0.0.0 or later. If the Windows account does not exist, this command
+        will cause the account to be created and the password for that new
         account will be returned.
 
         For Windows instances that are running a domain controller, running

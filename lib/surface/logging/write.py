@@ -17,10 +17,8 @@
 import datetime
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Write(base.Command):
@@ -50,6 +48,7 @@ class Write(base.Command):
               'ALERT|EMERGENCY).'),
         choices=Write.SEVERITY_ENUM, default='DEFAULT')
 
+  @util.HandleHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -98,14 +97,12 @@ class Write(base.Command):
       entry.textPayload = args.message
 
     request = messages.WriteLogEntriesRequest(entries=[entry])
-    try:
-      unused_result = client.projects_logs_entries.Write(
-          messages.LoggingProjectsLogsEntriesWriteRequest(
-              projectsId=project, logsId=args.log_name,
-              writeLogEntriesRequest=request))
-      log.status.write('Created log entry.\n')
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetError(error))
+
+    client.projects_logs_entries.Write(
+        messages.LoggingProjectsLogsEntriesWriteRequest(
+            projectsId=project, logsId=args.log_name,
+            writeLogEntriesRequest=request))
+    log.status.write('Created log entry.\n')
 
 
 Write.detailed_help = {
