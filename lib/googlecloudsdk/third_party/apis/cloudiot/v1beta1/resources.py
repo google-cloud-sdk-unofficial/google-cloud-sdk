@@ -16,53 +16,44 @@
 import enum
 
 
-BASE_URL = 'https://ml.googleapis.com/v1beta1/'
+BASE_URL = 'https://cloudiot.googleapis.com/v1beta1/'
 
 
 class Collections(enum.Enum):
   """Collections for all supported apis."""
 
-  PROJECTS = (
-      'projects',
-      'projects/{projectsId}',
+  PROJECTS_LOCATIONS = (
+      'projects.locations',
+      'projects/{projectsId}/locations/{locationsId}',
       {},
-      [u'projectsId']
+      ['projectsId', 'locationsId']
   )
-  PROJECTS_JOBS = (
-      'projects.jobs',
+  PROJECTS_LOCATIONS_REGISTRIES = (
+      'projects.locations.registries',
       '{+name}',
       {
           '':
-              'projects/{projectsId}/jobs/{jobsId}',
+              'projects/{projectsId}/locations/{locationsId}/registries/'
+              '{registriesId}',
       },
       [u'name']
   )
-  PROJECTS_MODELS = (
-      'projects.models',
+  PROJECTS_LOCATIONS_REGISTRIES_DEVICES = (
+      'projects.locations.registries.devices',
       '{+name}',
       {
           '':
-              'projects/{projectsId}/models/{modelsId}',
+              'projects/{projectsId}/locations/{locationsId}/registries/'
+              '{registriesId}/devices/{devicesId}',
       },
       [u'name']
   )
-  PROJECTS_MODELS_VERSIONS = (
-      'projects.models.versions',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/models/{modelsId}/versions/{versionsId}',
-      },
-      [u'name']
-  )
-  PROJECTS_OPERATIONS = (
-      'projects.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/operations/{operationsId}',
-      },
-      [u'name']
+  PROJECTS_LOCATIONS_REGISTRIES_DEVICES_CONFIGVERSIONS = (
+      'projects.locations.registries.devices.configVersions',
+      'projects/{projectsId}/locations/{locationsId}/registries/'
+      '{registriesId}/devices/{devicesId}/configVersions',
+      {},
+      ['projectsId', 'locationsId', 'registriesId', 'devicesId']
   )
 
   def __init__(self, collection_name, path, flat_paths, params):

@@ -16,12 +16,13 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as exceptions
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
-class SwitchMode(base_classes.NoOutputAsyncMutator):
+class SwitchMode(base.SilentCommand):
   """Switch network mode."""
 
   @staticmethod
@@ -35,20 +36,10 @@ class SwitchMode(base_classes.NoOutputAsyncMutator):
         completion_resource='compute.networks',
         help='The name of the network for which to switch mode.')
 
-  @property
-  def service(self):
-    return self.compute.networks
-
-  @property
-  def method(self):
-    return 'SwitchToCustomMode'
-
-  @property
-  def resource_type(self):
-    return 'networks'
-
-  def CreateRequests(self, args):
-    """Returns requests necessary for switching to custom mode."""
+  def Run(self, args):
+    """Issues requests necessary for switching to custom mode."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
     if args.mode != 'custom':
       raise exceptions.InvalidArgumentException(
@@ -59,11 +50,12 @@ class SwitchMode(base_classes.NoOutputAsyncMutator):
             args.name, args.mode) + ' This operation cannot be undone.',
         default=True):
       raise exceptions.ToolException('Operation aborted by user.')
-    request = self.messages.ComputeNetworksSwitchToCustomModeRequest(
+    request = client.messages.ComputeNetworksSwitchToCustomModeRequest(
         network=args.name,
-        project=self.project)
+        project=properties.VALUES.core.project.GetOrFail())
 
-    return [request]
+    return client.MakeRequests([(client.apitools_client.networks,
+                                 'SwitchToCustomMode', request)])
 
 
 SwitchMode.detailed_help = {

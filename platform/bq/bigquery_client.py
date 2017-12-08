@@ -33,6 +33,9 @@ import httplib2
 # To configure apiclient logging.
 import gflags as flags
 
+# pylint: disable=unused-import
+import bq_flags
+
 
 # A unique non-None default, for use in kwargs that need to
 # distinguish default from None.
@@ -133,11 +136,11 @@ def ConfigurePythonLogger(apilog=None):
     logging.disable(logging.CRITICAL)
   else:
     if apilog in ('', '-', '1', 'true', 'stdout'):
-      logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+      _SetLogFile(sys.stdout)
     elif apilog == 'stderr':
-      logging.basicConfig(stream=sys.stderr, level=logging.INFO)
+      _SetLogFile(sys.stderr)
     elif apilog:
-      logging.basicConfig(filename=apilog, level=logging.INFO)
+      _SetLogFile(open(apilog, 'w'))
     else:
       logging.basicConfig(level=logging.INFO)
     # Turn on apiclient logging of http requests and responses. (Here
@@ -147,6 +150,10 @@ def ConfigurePythonLogger(apilog=None):
       flags.FLAGS.dump_request_response = True
     else:
       model.dump_request_response = True
+
+
+def _SetLogFile(logfile):
+  logging.basicConfig(stream=logfile, level=logging.INFO)
 
 
 InsertEntry = collections.namedtuple('InsertEntry',
@@ -534,7 +541,27 @@ class BigqueryClient(object):
 
   def GetHttp(self):
     """Returns the httplib2 Http to use."""
-    http = httplib2.Http()
+
+    proxy_info = httplib2.proxy_info_from_environment
+    if flags.FLAGS.proxy_address and flags.FLAGS.proxy_port:
+      try:
+        port = int(flags.FLAGS.proxy_port)
+      except ValueError:
+        raise ValueError('Invalid value for proxy_port: {}'
+                         .format(flags.FLAGS.proxy_port))
+      proxy_info = httplib2.ProxyInfo(
+          proxy_type=3,
+          proxy_host=flags.FLAGS.proxy_address,
+          proxy_port=port,
+          proxy_user=flags.FLAGS.proxy_username or None,
+          proxy_pass=flags.FLAGS.proxy_password or None)
+
+    http = httplib2.Http(
+        proxy_info=proxy_info,
+        ca_certs=flags.FLAGS.ca_certificates_file or None,
+        disable_ssl_certificate_validation=flags.FLAGS.disable_ssl_validation
+    )
+
     return http
 
   def GetDiscoveryUrl(self):
@@ -596,11 +623,16 @@ class BigqueryClient(object):
         # Wait briefly before retrying with exponentially increasing wait.
         time.sleep(2 ** iterations)
         iterations += 1
-    return discovery.build_from_document(
-        discovery_document,
-        http=http,
-        model=bigquery_model,
-        requestBuilder=bigquery_http)
+    try:
+      return discovery.build_from_document(
+          discovery_document,
+          http=http,
+          model=bigquery_model,
+          requestBuilder=bigquery_http)
+    except ValueError:
+      logging.error('Error building from discovery document: %s',
+                    discovery_document)
+      raise
 
 
   @property
@@ -1920,6 +1952,10 @@ class BigqueryClient(object):
     media_upload = ''
     if upload_file:
       resumable = True
+      # There is a bug in apiclient http lib that make uploading resumable files
+      # with 0 length broken.
+      if os.stat(upload_file).st_size == 0:
+        resumable = False
       media_upload = http_request.MediaFileUpload(
           filename=upload_file, mimetype='application/octet-stream',
           resumable=resumable)

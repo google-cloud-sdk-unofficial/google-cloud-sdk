@@ -13,28 +13,36 @@
 # limitations under the License.
 """Command for describing target instances."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.target_instances import flags
 
 
-class Describe(base_classes.ZonalDescriber):
-  """Describe a target instance."""
+class Describe(base.DescribeCommand):
+  """Describe a target instance.
+
+    *{command}* displays all data associated with a Google Compute
+  Engine target instance in a project.
+  """
+
+  TARGET_INSTANCE_ARG = None
 
   @staticmethod
   def Args(parser):
-    base_classes.ZonalDescriber.Args(parser, 'compute.targetInstances')
+    Describe.TARGET_INSTANCE_ARG = flags.TargetInstanceArgument()
+    Describe.TARGET_INSTANCE_ARG.AddArgument(parser, operation_type='describe')
 
-  @property
-  def service(self):
-    return self.compute.targetInstances
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'targetInstances'
+    target_instance_ref = self.TARGET_INSTANCE_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+    request = client.messages.ComputeTargetInstancesGetRequest(
+        **target_instance_ref.AsDict())
 
-Describe.detailed_help = {
-    'brief': 'Describe a target instance',
-    'DESCRIPTION': """\
-        *{command}* displays all data associated with a Google Compute
-        Engine target instance in a project.
-        """,
-}
+    return client.MakeRequests([(client.apitools_client.targetInstances, 'Get',
+                                 request)])[0]

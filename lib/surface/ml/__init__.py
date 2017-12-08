@@ -21,7 +21,3 @@ from googlecloudsdk.core import resources
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Ml(base.Group):
   """Use Google Cloud machine learning capabilities."""
-
-  def __init__(self):
-    # TODO(b/36565419): Remove
-    resources.REGISTRY.RegisterApiByName('ml', 'v1beta1')

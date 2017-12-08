@@ -11,51 +11,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Command to update a new project."""
-
-import textwrap
-from googlecloudsdk.api_lib.billing import utils
+from googlecloudsdk.api_lib.billing import billing_client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.billing import flags
+from googlecloudsdk.command_lib.billing import utils
 
 
 class Link(base.Command):
   """Link a project with a billing account."""
 
   detailed_help = {
-      'DESCRIPTION': textwrap.dedent(
-          """\
+      'DESCRIPTION': """\
           This command links a billing account to a project.
-          If the specified billing account is open, this has
-          the effect of enabling billing on the project.
+
+          If the specified billing account is open, this enables billing on the
+          project.
           """
-      ),
   }
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        '--account-id',
-        dest='accountId',
-        required=True,
-        **utils.ACCOUNT_ID_ARG_PARAMS
-    )
-    parser.add_argument('projectId', **utils.PROJECT_ID_ARG_PARAMS)
+    flags.GetAccountIdArgument(positional=False).AddToParser(parser)
+    flags.GetProjectIdArgument().AddToParser(parser)
 
   def Run(self, args):
-    billing = self.context['billing_client']
-    messages = self.context['billing_messages']
-
-    result = billing.projects.UpdateBillingInfo(
-        messages.CloudbillingProjectsUpdateBillingInfoRequest(
-            name='projects/{project_id}'.format(
-                project_id=args.projectId,
-            ),
-            projectBillingInfo=messages.ProjectBillingInfo(
-                billingAccountName='billingAccounts/{account_id}'.format(
-                    account_id=args.accountId,
-                )
-            )
-        )
-    )
-    return result
+    client = billing_client.ProjectsClient()
+    project_ref = utils.ParseProject(args.project_id)
+    account_ref = utils.ParseAccount(args.account_id)
+    return client.Link(project_ref, account_ref)

@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All Rights Reserved.
+# Copyright 2017 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,22 +14,15 @@
 """Dataflow pipeline for batch prediction in Cloud ML."""
 import json
 import os
-
 import apache_beam as beam
-from apache_beam.io.textio import ReadFromText
 from apache_beam.io.textio import WriteToText
 import batch_prediction
-from google.cloud.ml.dataflow.io.tfrecordio import ReadFromTFRecord
-
-try:
-  # TODO(user): Remove this after updating to latest Beam.
-  from apache_beam.io.filesystem import CompressionTypes  # pylint: disable=g-import-not-at-top
-except ImportError:
-  from apache_beam.io.fileio import CompressionTypes  # pylint: disable=g-import-not-at-top
-
-FILE_LIST_SEPARATOR = ","
+from google.cloud.ml.dataflow.io.multifiles_source import ReadFromMultiFilesText
+from google.cloud.ml.dataflow.io.multifiles_source import ReadFromMultiFilesTFRecord
+from google.cloud.ml.dataflow.io.multifiles_source import ReadFromMultiFilesTFRecordGZip
 
 OUTPUT_RESULTS_FILES_BASENAME_ = "prediction.results"
+
 
 OUTPUT_ERRORS_FILES_BASENAME_ = "prediction.errors_stats"
 
@@ -41,35 +34,19 @@ def run(p, args, aggregator_dict, cloud_logger=None):
 
   input_file_format = args.input_file_format.lower()
 
-  # Create one pcollection per input file or file pattern. And then flatten
-  # them into one pcollection. The duplicated names need to be removed as the
-  # file name is used to create unique labels for the PTransform.
-  readers = []
-  for pattern in list(set(args.input_file_patterns.split(FILE_LIST_SEPARATOR))):
-    # Setup reader.
-    #
-    # TODO(user): Perhaps simplify the batch prediction code by using
-    # CompressionTypes.AUTO.
-    if input_file_format.startswith("tfrecord"):
-      if input_file_format == "tfrecord_gzip":
-        compression_type = CompressionTypes.GZIP
-      else:
-        assert input_file_format == "tfrecord"
-        compression_type = CompressionTypes.UNCOMPRESSED
-      reader = "READ_TFRECORD_FILES_%s" % pattern >> ReadFromTFRecord(
-          pattern,
-          compression_type=compression_type)
-
-    else:
-      assert input_file_format == "text"
-      reader = "READ_TEXT_FILES_%s" % pattern >> ReadFromText(pattern)
-
-    # Put the pcollections into a list and flatten later.
-    readers.append(p | reader)
+  # Setup reader.
+  if input_file_format == "text":
+    reader = p | "READ_TEXT_FILES" >> ReadFromMultiFilesText(
+        args.input_file_patterns)
+  elif input_file_format == "tfrecord":
+    reader = p | "READ_TF_FILES" >> ReadFromMultiFilesTFRecord(
+        args.input_file_patterns)
+  elif input_file_format == "tfrecord_gzip":
+    reader = p | "READ_TFGZIP_FILES" >> ReadFromMultiFilesTFRecordGZip(
+        args.input_file_patterns)
 
   # Setup the whole pipeline.
-  results, errors = (readers
-                     | beam.Flatten()
+  results, errors = (reader
                      | "BATCH_PREDICTION" >> batch_prediction.BatchPredict(
                          beam.pvalue.AsSingleton(model_dir),
                          batch_size=args.batch_size,

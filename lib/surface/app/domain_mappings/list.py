@@ -35,10 +35,11 @@ class List(base.ListCommand):
     client = api_client.AppengineDomainsApiClient.GetApiClient()
     return client.ListDomainMappings()
 
-  def DeprecatedFormat(self, args):
-    return """
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""
             table(
               id:sort=1,
               ssl_settings.certificate_id:label=SSL_CERTIFICATE_ID
             )
-          """
+        """)

@@ -16,6 +16,8 @@
 Changes a user's password in a given instance with specified username and host.
 """
 
+import getpass
+
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.calliope import base
@@ -43,7 +45,9 @@ class SetPassword(base.CreateCommand):
     flags.INSTANCE_FLAG.AddToParser(parser)
     flags.USERNAME_FLAG.AddToParser(parser)
     flags.HOST_FLAG.AddToParser(parser)
-    flags.PASSWORD_FLAG.AddToParser(parser)
+    password_group = parser.add_mutually_exclusive_group()
+    flags.PASSWORD_FLAG.AddToParser(password_group)
+    flags.PROMPT_FOR_PASSWORD_FLAG.AddToParser(password_group)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -64,6 +68,9 @@ class SetPassword(base.CreateCommand):
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client
     sql_messages = client.sql_messages
+
+    if args.prompt_for_password:
+      args.password = getpass.getpass('Instance Password: ')
 
     instance_ref = client.resource_parser.Parse(
         args.instance,

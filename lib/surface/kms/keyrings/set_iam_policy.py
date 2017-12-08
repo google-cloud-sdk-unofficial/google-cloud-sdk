@@ -44,5 +44,9 @@ class SetIamPolicy(base.Command):
     messages = cloudkms_base.GetMessagesModule()
 
     policy = iam_util.ParseJsonPolicyFile(args.policy_file, messages.Policy)
+    update_mask = iam_util.ConstructUpdateMaskFromPolicy(args.policy_file)
 
-    return iam.SetKeyRingIamPolicy(flags.ParseKeyRingName(args), policy)
+    keyring_ref = flags.ParseKeyRingName(args)
+    result = iam.SetKeyRingIamPolicy(keyring_ref, policy, update_mask)
+    iam_util.LogSetIamPolicy(keyring_ref.Name(), 'keyring')
+    return result

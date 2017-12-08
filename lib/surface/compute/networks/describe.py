@@ -12,33 +12,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for describing networks."""
+from apitools.base.py import encoding
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import networks_utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.networks import flags
 
 
-class Describe(base_classes.GlobalDescriber):
-  """Describe a Google Compute Engine network."""
+class Describe(base.DescribeCommand):
+  """Describe a Google Compute Engine network.
+
+    *{command}* displays all data associated with Google Compute
+  Engine network in a project.
+  """
+
+  NETWORK_ARG = None
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalDescriber.Args(parser, 'compute.networks')
+    Describe.NETWORK_ARG = flags.NetworkArgument()
+    Describe.NETWORK_ARG.AddArgument(parser, operation_type='describe')
 
-  @property
-  def service(self):
-    return self.compute.networks
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'networks'
+    network_ref = self.NETWORK_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-  def ComputeDynamicProperties(self, args, items):
-    return networks_utils.AddMode(items)
+    request = client.messages.ComputeNetworksGetRequest(
+        **network_ref.AsDict())
 
+    result = client.MakeRequests([(client.apitools_client.networks, 'Get',
+                                   request)])[0]
 
-Describe.detailed_help = {
-    'brief': 'Describe a Google Compute Engine network',
-    'DESCRIPTION': """\
-        *{command}* displays all data associated with Google Compute
-        Engine network in a project.
-        """,
-}
+    return next(networks_utils.AddMode([encoding.MessageToDict(result)]))

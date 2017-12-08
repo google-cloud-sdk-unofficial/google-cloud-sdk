@@ -18,6 +18,7 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import config
+from googlecloudsdk.core import log
 from googlecloudsdk.core.updater import update_manager
 
 
@@ -41,3 +42,13 @@ class Version(base.Command):
 
   def DeprecatedFormat(self, args):
     return 'flattened[no-pad,separator=" "]'
+
+  def Epilog(self, resources_were_displayed):
+    if config.Paths().sdk_root:
+      # Components are only valid if this is a built Cloud SDK.
+      manager = update_manager.UpdateManager()
+      if manager.UpdatesAvailable():
+        log.status.write("""\
+Updates are available for some Cloud SDK components.  To install them,
+please run:
+  $ gcloud components update""")

@@ -22,8 +22,7 @@ def _AddCancelArgs(parser):
   flags.JOB_NAME.AddToParser(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class CancelBeta(base.SilentCommand):
+class Cancel(base.SilentCommand):
   """Cancel a running Cloud ML Engine job."""
 
   @staticmethod
@@ -31,19 +30,7 @@ class CancelBeta(base.SilentCommand):
     _AddCancelArgs(parser)
 
   def Run(self, args):
-    return jobs_util.Cancel(jobs.JobsClient('v1beta1'), args.job)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class CancelGa(base.SilentCommand):
-  """Cancel a running Cloud ML Engine job."""
-
-  @staticmethod
-  def Args(parser):
-    _AddCancelArgs(parser)
-
-  def Run(self, args):
-    return jobs_util.Cancel(jobs.JobsClient('v1'), args.job)
+    return jobs_util.Cancel(jobs.JobsClient(), args.job)
 
 
 _DETAILED_HELP = {
@@ -54,5 +41,4 @@ finished, the command will not perform an operation and exit successfully.
 }
 
 
-CancelGa.detailed_help = _DETAILED_HELP
-CancelBeta.detailed_help = _DETAILED_HELP
+Cancel.detailed_help = _DETAILED_HELP

@@ -17,10 +17,10 @@ from surface.ml_engine.versions import describe
 
 
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning=('This command is deprecated. '
              'Please use `gcloud beta ml-engine versions describe` instead.'),
     error=('This command has been removed. '
            'Please use `gcloud beta ml-engine versions describe` instead.'))
-class DescribeBeta(describe.DescribeBeta):
+class DescribeBeta(describe.Describe):
   pass

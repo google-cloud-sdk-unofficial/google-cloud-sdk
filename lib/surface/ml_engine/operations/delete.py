@@ -22,8 +22,7 @@ def _AddDeleteArgs(parser):
   flags.OPERATION_NAME.AddToParser(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class DeleteBeta(base.SilentCommand):
+class Delete(base.SilentCommand):
   """Delete a Cloud ML Engine operation."""
 
   @staticmethod
@@ -31,18 +30,5 @@ class DeleteBeta(base.SilentCommand):
     _AddDeleteArgs(parser)
 
   def Run(self, args):
-    return operations_util.Delete(operations.OperationsClient('v1beta1'),
-                                  args.operation)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class DeleteGa(base.SilentCommand):
-  """Delete a Cloud ML Engine operation."""
-
-  @staticmethod
-  def Args(parser):
-    _AddDeleteArgs(parser)
-
-  def Run(self, args):
-    return operations_util.Delete(operations.OperationsClient('v1'),
+    return operations_util.Delete(operations.OperationsClient(),
                                   args.operation)

@@ -13,7 +13,6 @@
 # limitations under the License.
 """Command for spanner instances add-iam-policy-binding."""
 
-from googlecloudsdk.api_lib.spanner import instances
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.spanner import flags
@@ -38,8 +37,7 @@ class AddIamPolicyBinding(base.Command):
     """
     flags.Instance().AddToParser(parser)
 
-    known_roles = instances.KNOWN_ROLES
-    iam_util.AddArgsForAddIamPolicyBinding(parser, known_roles)
+    iam_util.AddArgsForAddIamPolicyBinding(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

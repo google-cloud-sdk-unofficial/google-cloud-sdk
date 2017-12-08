@@ -17,12 +17,13 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute.users import client as users_client
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.users import utils as user_utils
 from googlecloudsdk.command_lib.util import gaia
 from googlecloudsdk.core import properties
 
 
-class RemoveKeys(base_classes.NoOutputAsyncMutator):
+class RemoveKeys(base.SilentCommand):
   """Remove a public key from a Google Compute Engine user.
 
   *{command}* removes public keys from a Google Compute Engine user.
@@ -40,29 +41,15 @@ class RemoveKeys(base_classes.NoOutputAsyncMutator):
         'If provided, the name of the user to remove public keys from. '
         'Else, the default user will be used.'))
 
-  @property
-  def service(self):
-    return self.clouduseraccounts.users
-
-  @property
-  def method(self):
-    return 'RemovePublicKey'
-
-  @property
-  def resource_type(self):
-    return 'users'
-
-  @property
-  def messages(self):
-    return self.clouduseraccounts.MESSAGES_MODULE
-
-  def CreateRequests(self, args):
-
+  def Run(self, args):
+    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    holder = base_classes.ComputeUserAccountsApiHolder(self.ReleaseTrack())
+    client = holder.client
     name = args.name
     if not name:
-      name = gaia.GetDefaultAccountName(self.http)
+      name = gaia.GetDefaultAccountName(client.http)
 
-    user_ref = self.clouduseraccounts_resources.Parse(
+    user_ref = holder.resources.Parse(
         name,
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='clouduseraccounts.users')
@@ -71,7 +58,8 @@ class RemoveKeys(base_classes.NoOutputAsyncMutator):
       fingerprints = args.fingerprints
     else:
       fetcher = users_client.UserResourceFetcher(
-          self.clouduseraccounts, self.project, self.http, self.batch_url)
+          client, user_ref.project, client.http,
+          compute_holder.client.batch_url)
 
       fingerprints = [k.fingerprint for k in
                       fetcher.LookupUser(user_ref.Name()).publicKeys]
@@ -84,13 +72,14 @@ class RemoveKeys(base_classes.NoOutputAsyncMutator):
 
     requests = []
     for fingerprint in fingerprints:
-      request = self.messages.ClouduseraccountsUsersRemovePublicKeyRequest(
-          project=self.project,
-          fingerprint=fingerprint,
-          user=user_ref.Name())
-      requests.append(request)
+      request = (
+          client.MESSAGES_MODULE.ClouduseraccountsUsersRemovePublicKeyRequest(
+              project=user_ref.project,
+              fingerprint=fingerprint,
+              user=user_ref.Name()))
+      requests.append((client.users, 'RemovePublicKey', request))
 
-    return requests
+    return compute_holder.client.MakeRequests(requests)
 
 
 RemoveKeys.detailed_help = {

@@ -901,6 +901,12 @@ class BigqueryCmd(NewCmd):
 
   def Run(self, argv):
     """Bigquery commands run `init` before themselves if needed."""
+
+    if FLAGS.debug_mode:
+      cmd_flags = [FLAGS[f].Serialize().strip()
+                   for f in FLAGS if FLAGS[f].present]
+      print ' '.join(sorted(set(f for f in cmd_flags if f)))
+
     if self._NeedsInit():
       appcommands.GetCommandByName('init').Run([])
     return super(BigqueryCmd, self).Run(argv)

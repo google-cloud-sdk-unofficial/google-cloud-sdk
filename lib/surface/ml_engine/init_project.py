@@ -66,19 +66,7 @@ def _InitProject(version):
 # TODO(b/36970124): Switch this over to an error
 @base.Deprecate(is_removed=False, warning=DEPRECATION_WARNING,
                 error=DEPRECATION_ERROR)
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class InitProjectBeta(base.Command):
-  """Initialize project for Cloud ML Engine."""
-
-  def Run(self, args):
-    _InitProject('v1beta1')
-
-
-# TODO(b/36970124): Switch this over to an error
-@base.Deprecate(is_removed=False, warning=DEPRECATION_WARNING,
-                error=DEPRECATION_ERROR)
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class InitProjectGa(base.Command):
+class InitProject(base.Command):
   """Initialize project for Cloud ML Engine."""
 
   def Run(self, args):
@@ -93,5 +81,4 @@ _DETAILED_HELP = {
   """
 }
 
-InitProjectBeta.detailed_help = _DETAILED_HELP
-InitProjectGa.detailed_help = _DETAILED_HELP
+InitProject.detailed_help = _DETAILED_HELP

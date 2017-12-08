@@ -13,26 +13,39 @@
 # limitations under the License.
 """Command for describing firewall rules."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.firewall_rules import flags
 
 
-class Describe(base_classes.GlobalDescriber):
+class Describe(base.DescribeCommand):
   """Describe a Google Compute Engine firewall rule.
 
   *{command}* displays all data associated with a Google Compute
   Engine firewall rule in a project.
   """
 
+  FIREWALL_ARG = None
+
   @staticmethod
   def Args(parser):
-    base_classes.GlobalDescriber.Args(
-        parser,
-        'compute.firewalls',
-        list_command_path='compute firewall-rules list --uri')
+    # This factory method overrides help message - operation_type is baked in
+    # at argument construction time.
+    Describe.FIREWALL_ARG = flags.FirewallRuleArgument(
+        operation_type='describe')
+    Describe.FIREWALL_ARG.AddArgument(parser, operation_type='describe')
 
-  @property
-  def service(self):
-    return self.compute.firewalls
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'firewalls'
+    firewall_ref = self.FIREWALL_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+
+    request = client.messages.ComputeFirewallsGetRequest(
+        **firewall_ref.AsDict())
+
+    return client.MakeRequests([(client.apitools_client.firewalls,
+                                 'Get', request)])[0]

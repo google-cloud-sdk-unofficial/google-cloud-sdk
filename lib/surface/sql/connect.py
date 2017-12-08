@@ -14,9 +14,6 @@
 
 """Connects to a Cloud SQL instance."""
 
-import datetime
-
-from apitools.base.protorpclite import util as protorpc_util
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.sql import api_util
@@ -29,8 +26,11 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
+from googlecloudsdk.core.util import iso_duration
 from googlecloudsdk.core.util import retry
 from googlecloudsdk.core.util import text
+
+# TODO(b/62055574): Improve test coverage in this file.
 
 
 def _WhitelistClientIP(instance_ref, sql_client, sql_messages, resources,
@@ -59,13 +59,13 @@ def _WhitelistClientIP(instance_ref, sql_client, sql_messages, resources,
         request.
     ToolException: Server did not complete the whitelisting operation in time.
   """
-  datetime_now = datetime.datetime.now(
-      protorpc_util.TimeZoneOffset(datetime.timedelta(0)))
+  time_of_connection = network.GetCurrentTime()
 
-  acl_name = 'sql connect at time {0}'.format(datetime_now)
+  acl_name = 'sql connect at time {0}'.format(time_of_connection)
   user_acl = sql_messages.AclEntry(
       name=acl_name,
-      expirationTime=datetime_now + datetime.timedelta(minutes=minutes),
+      expirationTime=iso_duration.Duration(
+          minutes=minutes).GetRelativeDateTime(time_of_connection),
       value='CLIENT_IP')
 
   try:
@@ -77,11 +77,14 @@ def _WhitelistClientIP(instance_ref, sql_client, sql_messages, resources,
     raise exceptions.HttpException(error)
 
   original.settings.ipConfiguration.authorizedNetworks.append(user_acl)
-  patch_request = sql_messages.SqlInstancesPatchRequest(
-      databaseInstance=original,
-      project=instance_ref.project,
-      instance=instance_ref.instance)
-  result = sql_client.instances.Patch(patch_request)
+  try:
+    patch_request = sql_messages.SqlInstancesPatchRequest(
+        databaseInstance=original,
+        project=instance_ref.project,
+        instance=instance_ref.instance)
+    result = sql_client.instances.Patch(patch_request)
+  except apitools_exceptions.HttpError as error:
+    raise exceptions.HttpException(error)
 
   operation_ref = resources.Create(
       'sql.operations',
@@ -111,7 +114,7 @@ def _GetClientIP(instance_ref, sql_client, acl_name):
   return instance_info, client_ip
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Connect(base.Command):
   """Connects to a Cloud SQL instance."""
 
@@ -158,6 +161,7 @@ class Connect(base.Command):
       ToolException: An error other than http error occured while executing the
           command.
     """
+    # TODO(b/62055495): Replace ToolExceptions with specific exceptions.
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client
     sql_messages = client.sql_messages

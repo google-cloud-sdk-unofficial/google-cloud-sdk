@@ -28,6 +28,13 @@ class Publish(base.Command):
   troubleshooting. Use with caution: all associated subscribers must be
   able to consume and acknowledge any message you publish, otherwise the
   system will continuously re-attempt delivery of the bad message for 7 days.
+
+  ## EXAMPLES
+
+  To publish messages in a batch to a specific Cloud Pub/Sub topic,
+  run:
+
+    $ {command} mytopic "Hello World!" --attribute KEY1=VAL1,KEY2=VAL2
   """
 
   @staticmethod

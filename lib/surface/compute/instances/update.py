@@ -26,8 +26,8 @@ from googlecloudsdk.command_lib.util import labels_util
 class Update(base.UpdateCommand):
   r"""Update a Google Compute Engine virtual machine.
 
-  *{command}* updates labels for a Google Compute Engine
-  virtual machine.  For example:
+  *{command}* updates labels and requested CPU Platform for a Google Compute
+  Engine virtual machine.  For example:
 
     $ {command} example-instance --zone us-central1-a \
       --update-labels=k0=value1,k1=value2 --remove-labels=k3
@@ -48,6 +48,7 @@ class Update(base.UpdateCommand):
   def Args(parser):
     instances_flags.INSTANCE_ARG.AddArgument(parser)
     labels_util.AddUpdateLabelsFlags(parser)
+    instances_flags.AddMinCpuPlatformArgs(parser, Update.ReleaseTrack())
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -58,35 +59,64 @@ class Update(base.UpdateCommand):
         args, holder.resources,
         scope_lister=flags.GetDefaultScopeLister(holder.client))
 
-    update_labels, remove_labels = labels_util.GetAndValidateOpsFromArgs(args)
+    update_labels = labels_util.GetUpdateLabelsDictFromArgs(args)
+    remove_labels = labels_util.GetRemoveLabelsListFromArgs(args)
 
-    instance = client.instances.Get(
-        messages.ComputeInstancesGetRequest(**instance_ref.AsDict()))
+    result = None
 
-    replacement = labels_util.UpdateLabels(
-        instance.labels,
-        messages.InstancesSetLabelsRequest.LabelsValue,
-        update_labels=update_labels,
-        remove_labels=remove_labels)
+    labels_operation_ref = None
+    min_cpu_platform_operation_ref = None
 
-    if not replacement:
-      return instance
+    if update_labels or remove_labels:
+      instance = client.instances.Get(
+          messages.ComputeInstancesGetRequest(**instance_ref.AsDict()))
+      result = instance
 
-    request = messages.ComputeInstancesSetLabelsRequest(
-        project=instance_ref.project,
-        instance=instance_ref.instance,
-        zone=instance_ref.zone,
-        instancesSetLabelsRequest=
-        messages.InstancesSetLabelsRequest(
-            labelFingerprint=instance.labelFingerprint,
-            labels=replacement))
+      replacement = labels_util.UpdateLabels(
+          instance.labels,
+          messages.InstancesSetLabelsRequest.LabelsValue,
+          update_labels=update_labels,
+          remove_labels=remove_labels)
 
-    operation = client.instances.SetLabels(request)
-    operation_ref = holder.resources.Parse(
-        operation.selfLink, collection='compute.zoneOperations')
+      if replacement:
+        request = messages.ComputeInstancesSetLabelsRequest(
+            project=instance_ref.project,
+            instance=instance_ref.instance,
+            zone=instance_ref.zone,
+            instancesSetLabelsRequest=
+            messages.InstancesSetLabelsRequest(
+                labelFingerprint=instance.labelFingerprint,
+                labels=replacement))
+
+        operation = client.instances.SetLabels(request)
+        labels_operation_ref = holder.resources.Parse(
+            operation.selfLink, collection='compute.zoneOperations')
+
+    if args.min_cpu_platform is not None:
+      embedded_request = messages.InstancesSetMinCpuPlatformRequest(
+          minCpuPlatform=args.min_cpu_platform or None)
+      request = messages.ComputeInstancesSetMinCpuPlatformRequest(
+          instance=instance_ref.instance,
+          project=instance_ref.project,
+          instancesSetMinCpuPlatformRequest=embedded_request,
+          zone=instance_ref.zone)
+
+      operation = client.instances.SetMinCpuPlatform(request)
+
+      min_cpu_platform_operation_ref = holder.resources.Parse(
+          operation.selfLink, collection='compute.zoneOperations')
 
     operation_poller = poller.Poller(client.instances)
-    return waiter.WaitFor(
-        operation_poller, operation_ref,
-        'Updating labels of instance [{0}]'.format(
-            instance_ref.Name()))
+    if labels_operation_ref:
+      result = waiter.WaitFor(
+          operation_poller, labels_operation_ref,
+          'Updating labels of instance [{0}]'.format(
+              instance_ref.Name()))
+
+    if min_cpu_platform_operation_ref:
+      result = waiter.WaitFor(
+          operation_poller, min_cpu_platform_operation_ref,
+          'Changing minimum CPU platform of instance [{0}]'.format(
+              instance_ref.Name()))
+
+    return result

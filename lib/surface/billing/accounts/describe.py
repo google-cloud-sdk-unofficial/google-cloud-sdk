@@ -14,49 +14,37 @@
 
 """Command to show metadata for a specified project."""
 
-import textwrap
-from googlecloudsdk.api_lib.billing import utils
+from googlecloudsdk.api_lib.billing import billing_client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.billing import flags
+from googlecloudsdk.command_lib.billing import utils
 
 
 class Describe(base.DescribeCommand):
   """Show metadata for a billing account."""
 
   detailed_help = {
-      'DESCRIPTION': textwrap.dedent(
-          """\
-          This command shows info for a billing account, given it's ID.
+      'DESCRIPTION': """\
+          This command shows info for a billing account, given its ID.
 
           This call can fail for the following reasons:
+
           * The account specified does not exist.
           * The active user does not have permission to access the given
-          account.
+            account.
+          """,
+      'EXAMPLES': """\
+          To see details for billing account `0X0X0X-0X0X0X-0X0X0X`, run:
+
+              $ {command} 0X0X0X-0X0X0X-0X0X0X
           """
-      ),
-      'EXAMPLES': textwrap.dedent(
-          """\
-          *{command}* 0X0X0X-0X0X0X-0X0X0X will print the info for billing
-          account 0X0X0X-0X0X0X-0X0X0X.
-          """
-      ),
   }
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('id', **utils.ACCOUNT_ID_ARG_PARAMS)
+    flags.GetAccountIdArgument().AddToParser(parser)
 
   def Run(self, args):
-    client = self.context['billing_client']
-    messages = self.context['billing_messages']
-    # TODO(b/22402915) enable caching once bug is resolved
-    # billing_ref = resources.REGISTRY.Parse(
-    # "billingAccounts/{}".format(args.id),
-    #  collection='cloudbilling.billingAccounts'
-    # )
-    return client.billingAccounts.Get(
-        messages.CloudbillingBillingAccountsGetRequest(
-            name='billingAccounts/{account_id}'.format(
-                account_id=args.id,
-            ),
-        )
-    )
+    client = billing_client.AccountsClient()
+    account_ref = utils.ParseAccount(args.id)
+    return client.Get(account_ref)

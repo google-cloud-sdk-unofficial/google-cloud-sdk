@@ -19,43 +19,39 @@ from googlecloudsdk.command_lib.compute.health_checks import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class Create(base_classes.BaseAsyncCreator):
+class Create(base.CreateCommand):
   """Create a HTTP health check to monitor load balanced instances."""
 
   HEALTH_CHECK_ARG = None
 
   @classmethod
   def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument('HTTP')
     cls.HEALTH_CHECK_ARG.AddArgument(parser)
     health_checks_utils.AddHttpRelatedCreationArgs(parser)
     health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'HTTP')
 
-  @property
-  def service(self):
-    return self.compute.healthChecks
+  def CustomizeRequest(self, args, request):
+    """Allow subclasses to customize request just before executing it."""
+    _ = args
+    return request
 
-  @property
-  def method(self):
-    return 'Insert'
-
-  @property
-  def resource_type(self):
-    return 'healthChecks'
-
-  def CreateRequests(self, args):
-    """Returns the request necessary for adding the health check."""
+  def Run(self, args):
+    """Issues the request necessary for adding the health check."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
     health_check_ref = self.HEALTH_CHECK_ARG.ResolveAsResource(
-        args, self.resources)
-    proxy_header = self.messages.HTTPHealthCheck.ProxyHeaderValueValuesEnum(
+        args, holder.resources)
+    proxy_header = client.messages.HTTPHealthCheck.ProxyHeaderValueValuesEnum(
         args.proxy_header)
-    request = self.messages.ComputeHealthChecksInsertRequest(
-        healthCheck=self.messages.HealthCheck(
+    request = client.messages.ComputeHealthChecksInsertRequest(
+        healthCheck=client.messages.HealthCheck(
             name=health_check_ref.Name(),
             description=args.description,
-            type=self.messages.HealthCheck.TypeValueValuesEnum.HTTP,
-            httpHealthCheck=self.messages.HTTPHealthCheck(
+            type=client.messages.HealthCheck.TypeValueValuesEnum.HTTP,
+            httpHealthCheck=client.messages.HTTPHealthCheck(
                 host=args.host,
                 port=args.port,
                 portName=args.port_name,
@@ -66,9 +62,10 @@ class Create(base_classes.BaseAsyncCreator):
             healthyThreshold=args.healthy_threshold,
             unhealthyThreshold=args.unhealthy_threshold,
         ),
-        project=self.project)
+        project=health_check_ref.project)
 
-    return [request]
+    return client.MakeRequests([(client.apitools_client.healthChecks, 'Insert',
+                                 self.CustomizeRequest(args, request))])
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -80,12 +77,11 @@ class CreateAlpha(Create):
     Create.Args(parser)
     health_checks_utils.AddHttpRelatedResponseArg(parser)
 
-  def CreateRequests(self, args):
-    """Returns the request necessary for adding the health check."""
+  def CustomizeRequest(self, args, request):
+    """Initialize httpHealthCheck response field."""
 
-    requests = super(CreateAlpha, self).CreateRequests(args)
-    requests[0].healthCheck.httpHealthCheck.response = args.response
-    return requests
+    request.healthCheck.httpHealthCheck.response = args.response
+    return request
 
 
 Create.detailed_help = {

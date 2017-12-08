@@ -15,6 +15,7 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
@@ -22,8 +23,13 @@ from googlecloudsdk.command_lib.compute.target_pools import flags
 from googlecloudsdk.core import log
 
 
-class AddInstances(base_classes.NoOutputAsyncMutator):
-  """Add instances to a target pool."""
+class AddInstances(base.SilentCommand):
+  """Add instances to a target pool.
+
+  *{command}* is used to add one or more instances to a target pool.
+  For more information on health checks and load balancing, see
+  [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
+  """
 
   INSTANCE_ARG = None
   TARGET_POOL_ARG = None
@@ -47,19 +53,10 @@ class AddInstances(base_classes.NoOutputAsyncMutator):
             'DEPRECATED, use --instances-zone. '
             'If not specified, you will be prompted to select a zone.'))
 
-  @property
-  def service(self):
-    return self.compute.targetPools
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'AddInstance'
-
-  @property
-  def resource_type(self):
-    return 'targetPools'
-
-  def CreateRequests(self, args):
     if args.zone and not args.instances_zone:
       args.instances_zone = args.zone
       log.warn('The --zone flag is deprecated. Use equivalent '
@@ -67,12 +64,11 @@ class AddInstances(base_classes.NoOutputAsyncMutator):
 
     instance_refs = self.INSTANCE_ARG.ResolveAsResource(
         args,
-        self.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
-                                                         self.project))
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
     instances = [
-        self.messages.InstanceReference(instance=instance_ref.SelfLink())
+        client.messages.InstanceReference(instance=instance_ref.SelfLink())
         for instance_ref in instance_refs]
 
     unique_regions = set(utils.ZoneNameToRegionName(instance_ref.zone)
@@ -93,22 +89,14 @@ class AddInstances(base_classes.NoOutputAsyncMutator):
     args.region = region
 
     target_pool_ref = self.TARGET_POOL_ARG.ResolveAsResource(args,
-                                                             self.resources)
+                                                             holder.resources)
 
-    request = self.messages.ComputeTargetPoolsAddInstanceRequest(
+    request = client.messages.ComputeTargetPoolsAddInstanceRequest(
         region=target_pool_ref.region,
-        project=self.project,
+        project=target_pool_ref.project,
         targetPool=target_pool_ref.Name(),
         targetPoolsAddInstanceRequest=(
-            self.messages.TargetPoolsAddInstanceRequest(instances=instances)))
-    return [request]
+            client.messages.TargetPoolsAddInstanceRequest(instances=instances)))
 
-
-AddInstances.detailed_help = {
-    'brief': 'Add instances to a target pool',
-    'DESCRIPTION': """\
-        *{command}* is used to add one or more instances to a target pool.
-        For more information on health checks and load balancing, see
-        [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
-        """,
-}
+    return client.MakeRequests([(client.apitools_client.targetPools,
+                                 'AddInstance', request)])

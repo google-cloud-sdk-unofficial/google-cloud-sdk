@@ -13,6 +13,8 @@
 # limitations under the License.
 """Sets the password of the MySQL root user."""
 
+import getpass
+
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.calliope import base
@@ -55,6 +57,12 @@ class SetRootPassword(base.Command):
         '--password-file',
         help='The path to the filename which has the password to be set. The '
         'first line of the file will be interpreted as the password to be set.')
+    password_group.add_argument(
+        '--prompt-for-password',
+        action='store_true',
+        help=('Prompt for the Cloud SQL user\'s password with character echo '
+              'disabled. The password is all typed characters up to but not '
+              'including the RETURN or ENTER key.'))
 
   def Run(self, args):
     """Sets the password of the MySQL root user.
@@ -81,7 +89,9 @@ class SetRootPassword(base.Command):
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='sql.instances')
 
-    if args.password_file:
+    if args.prompt_for_password:
+      password = getpass.getpass('Instance Password: ')
+    elif args.password_file:
       with open(args.password_file) as f:
         password = f.readline().rstrip('\n')
     else:

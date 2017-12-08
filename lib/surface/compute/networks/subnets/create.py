@@ -48,7 +48,7 @@ def _AddArgs(cls, parser):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Create(base_classes.BaseAsyncCreator):
+class Create(base.CreateCommand):
   """Define a subnet for a network in custom subnet mode."""
 
   NETWORK_ARG = None
@@ -56,32 +56,22 @@ class Create(base_classes.BaseAsyncCreator):
 
   @classmethod
   def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     _AddArgs(cls, parser)
 
-  @property
-  def service(self):
-    return self.compute.subnetworks
+  def Run(self, args):
+    """Issues a list of requests necessary for adding a subnetwork."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'Insert'
-
-  @property
-  def resource_type(self):
-    return 'subnetworks'
-
-  def CreateRequests(self, args):
-    """Returns a list of requests necessary for adding a subnetwork."""
-
-    network_ref = self.NETWORK_ARG.ResolveAsResource(args, self.resources)
+    network_ref = self.NETWORK_ARG.ResolveAsResource(args, holder.resources)
     subnet_ref = self.SUBNETWORK_ARG.ResolveAsResource(
         args,
-        self.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
-                                                         self.project))
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-    request = self.messages.ComputeSubnetworksInsertRequest(
-        subnetwork=self.messages.Subnetwork(
+    request = client.messages.ComputeSubnetworksInsertRequest(
+        subnetwork=client.messages.Subnetwork(
             name=subnet_ref.Name(),
             description=args.description,
             network=network_ref.SelfLink(),
@@ -89,9 +79,10 @@ class Create(base_classes.BaseAsyncCreator):
             privateIpGoogleAccess=args.enable_private_ip_google_access,
         ),
         region=subnet_ref.region,
-        project=self.project)
+        project=subnet_ref.project)
 
-    return [request]
+    return client.MakeRequests([(client.apitools_client.subnetworks,
+                                 'Insert', request)])
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
@@ -100,6 +91,7 @@ class CreateBeta(Create):
 
   @classmethod
   def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     _AddArgs(cls, parser)
     parser.add_argument(
         '--secondary-range',
@@ -116,17 +108,19 @@ class CreateBeta(Create):
         * `RANGE` - `IP range in CIDR format.`
         """)
 
-  def CreateRequests(self, args):
-    """Returns a list of requests for adding a subnetwork. Overrides."""
-    network_ref = self.NETWORK_ARG.ResolveAsResource(args, self.resources)
+  def Run(self, args):
+    """Issues a list of requests for adding a subnetwork. Overrides."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    network_ref = self.NETWORK_ARG.ResolveAsResource(args, holder.resources)
     subnet_ref = self.SUBNETWORK_ARG.ResolveAsResource(
         args,
-        self.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
-                                                         self.project))
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-    request = self.messages.ComputeSubnetworksInsertRequest(
-        subnetwork=self.messages.Subnetwork(
+    request = client.messages.ComputeSubnetworksInsertRequest(
+        subnetwork=client.messages.Subnetwork(
             name=subnet_ref.Name(),
             description=args.description,
             network=network_ref.SelfLink(),
@@ -134,16 +128,17 @@ class CreateBeta(Create):
             privateIpGoogleAccess=args.enable_private_ip_google_access,
         ),
         region=subnet_ref.region,
-        project=self.project)
+        project=subnet_ref.project)
 
     secondary_ranges = []
     if args.secondary_range:
       for secondary_range in args.secondary_range:
         for range_name, ip_cidr_range in sorted(secondary_range.iteritems()):
           secondary_ranges.append(
-              self.messages.SubnetworkSecondaryRange(
+              client.messages.SubnetworkSecondaryRange(
                   rangeName=range_name,
                   ipCidrRange=ip_cidr_range))
 
     request.subnetwork.secondaryIpRanges = secondary_ranges
-    return [request]
+    return client.MakeRequests([(client.apitools_client.subnetworks,
+                                 'Insert', request)])

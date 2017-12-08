@@ -13,44 +13,51 @@
 # limitations under the License.
 """Command for describing forwarding rules."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.forwarding_rules import flags
 
 
-class Describe(base_classes.GlobalRegionalDescriber):
-  """Display detailed information about a forwarding rule."""
+class Describe(base.DescribeCommand):
+  """Display detailed information about a forwarding rule.
+
+  *{command}* displays all data associated with a forwarding rule
+  in a project.
+
+  ## EXAMPLES
+  To get details about a global forwarding rule, run:
+
+    $ {command} FORWARDING-RULE --global
+
+  To get details about a regional forwarding rule, run:
+
+    $ {command} FORWARDING-RULE --region us-central1
+  """
+
+  FORWARDING_RULE_ARG = None
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalRegionalDescriber.Args(parser, 'forwardingRules')
+    Describe.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
+    Describe.FORWARDING_RULE_ARG.AddArgument(parser, operation_type='describe')
 
-  @property
-  def global_service(self):
-    return self.compute.globalForwardingRules
+  def Run(self, args):
+    """Issues request necessary to describe the Forwarding Rule."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def regional_service(self):
-    return self.compute.forwardingRules
+    forwarding_rule_ref = Describe.FORWARDING_RULE_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-  @property
-  def global_resource_type(self):
-    return 'globalForwardingRules'
+    if forwarding_rule_ref.Collection() == 'compute.forwardingRules':
+      service = client.apitools_client.forwardingRules
+      request = client.messages.ComputeForwardingRulesGetRequest(
+          **forwarding_rule_ref.AsDict())
+    elif forwarding_rule_ref.Collection() == 'compute.globalForwardingRules':
+      service = client.apitools_client.globalForwardingRules
+      request = client.messages.ComputeGlobalForwardingRulesGetRequest(
+          **forwarding_rule_ref.AsDict())
 
-  @property
-  def regional_resource_type(self):
-    return 'forwardingRules'
-
-Describe.detailed_help = {
-    'brief': 'Display detailed information about a forwarding rule',
-    'DESCRIPTION': """\
-        *{command}* displays all data associated with a forwarding rule
-        in a project.
-        """,
-    'EXAMPLES': """\
-        To get details about a global forwarding rule, run:
-
-          $ {command} FORWARDING-RULE --global
-
-        To get details about a regional forwarding rule, run:
-
-          $ {command} FORWARDING-RULE --region us-central1
-        """,
-}
+    return client.MakeRequests([(service, 'Get', request)])[0]

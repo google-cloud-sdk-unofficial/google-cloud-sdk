@@ -13,34 +13,39 @@
 # limitations under the License.
 """Command for describing target vpn gateways."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.target_vpn_gateways import flags
 
 
-class Describe(base_classes.RegionalDescriber):
-  """Describe a target vpn gateway."""
+class Describe(base.DescribeCommand):
+  """Describe a Google Compute Engine target vpn gateway.
 
-  # Placeholder to indicate that a detailed_help field exists and should
-  # be set outside the class definition.
-  detailed_help = None
+  *{command}* displays all data associated with a Google Compute
+  Engine target vpn gateway in a project.
+  """
+
+  TARGET_VPN_GATEWAY_ARG = None
 
   @staticmethod
   def Args(parser):
     """Adds arguments to the supplied parser."""
+    Describe.TARGET_VPN_GATEWAY_ARG = flags.TargetVpnGatewayArgument()
+    Describe.TARGET_VPN_GATEWAY_ARG.AddArgument(
+        parser, operation_type='describe')
 
-    base_classes.RegionalDescriber.Args(parser)
+  def Run(self, args):
+    """Issues the request necessary for describing a target VPN gateway."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def service(self):
-    return self.compute.targetVpnGateways
+    target_vpn_gateway_ref = self.TARGET_VPN_GATEWAY_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-  @property
-  def resource_type(self):
-    return 'targetVpnGateways'
+    request = client.messages.ComputeTargetVpnGatewaysGetRequest(
+        **target_vpn_gateway_ref.AsDict())
 
-
-Describe.detailed_help = {
-    'brief': 'Describe a Google Compute Engine target vpn gateway',
-    'DESCRIPTION': """\
-        *{command}* displays all data associated with a Google Compute
-        Engine target vpn gateway in a project.
-        """,
-}
+    return client.MakeRequests([(client.apitools_client.targetVpnGateways,
+                                 'Get', request)])[0]

@@ -17,12 +17,34 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import csek_utils
 from googlecloudsdk.api_lib.compute import image_utils
 from googlecloudsdk.api_lib.compute import utils
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.images import flags
 from googlecloudsdk.command_lib.util import labels_util
+
+
+def _Args(parser, release_track):
+  """Set Args based on Release Track."""
+  # GA Args
+  parser.display_info.AddFormat(flags.LIST_FORMAT)
+
+  sources_group = parser.add_mutually_exclusive_group(required=True)
+  flags.AddCommonArgs(parser)
+  flags.AddCommonSourcesArgs(parser, sources_group)
+
+  Create.DISK_IMAGE_ARG = flags.MakeDiskImageArg()
+  Create.DISK_IMAGE_ARG.AddArgument(parser, operation_type='create')
+  csek_utils.AddCsekKeyArgs(parser, resource_type='image')
+
+  # Beta Args
+  if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
+    labels_util.AddCreateLabelsFlags(parser)
+
+  # Alpha Args
+  if release_track == base.ReleaseTrack.ALPHA:
+    flags.MakeForceCreateArg().AddToParser(parser)
+    flags.AddCloningImagesArgs(parser, sources_group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -35,51 +57,15 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    parser.display_info.AddFormat(flags.LIST_FORMAT)
-    parser.add_argument(
-        '--description',
-        help=('An optional, textual description for the image being created.'))
-
-    parser.add_argument(
-        '--source-uri',
-        help="""\
-        The full Google Cloud Storage URI where the disk image is stored.
-        This file must be a gzip-compressed tarball whose name ends in
-        ``.tar.gz''.
-
-        This flag is mutually exclusive with ``--source-disk''.
-        """)
-
-    flags.SOURCE_DISK_ARG.AddArgument(parser)
-    parser.add_argument(
-        '--family',
-        help=('The family of the image. When creating an instance or disk, '
-              'specifying a family will cause the latest non-deprecated image '
-              'in the family to be used.')
-    )
-
-    parser.add_argument(
-        '--licenses',
-        type=arg_parsers.ArgList(),
-        help='Comma-separated list of URIs to license resources.')
-
-    if cls._GUEST_OS_FEATURES:
-      parser.add_argument(
-          '--guest-os-features',
-          metavar='GUEST_OS_FEATURE',
-          type=arg_parsers.ArgList(element_type=lambda x: x.upper(),
-                                   choices=cls._GUEST_OS_FEATURES),
-          help=('One or more features supported by the OS in the image.'))
-
-    Create.DISK_IMAGE_ARG = flags.MakeDiskImageArg()
-    Create.DISK_IMAGE_ARG.AddArgument(parser, operation_type='create')
-    csek_utils.AddCsekKeyArgs(parser, resource_type='image')
+    _Args(parser, cls.ReleaseTrack())
+    flags.AddGuestOsFeaturesArg(parser, cls._GUEST_OS_FEATURES)
 
   def Run(self, args):
     """Returns a list of requests necessary for adding images."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
     messages = client.messages
+    resource_parser = holder.resources
 
     image_ref = Create.DISK_IMAGE_ARG.ResolveAsResource(args, holder.resources)
     image = messages.Image(
@@ -102,22 +88,32 @@ class Create(base.CreateCommand):
           'You cannot specify [--source-disk-zone] unless you are specifying '
           '[--source-disk].')
 
-    if args.source_disk and args.source_uri:
-      raise exceptions.ConflictingArgumentsException(
-          '--source-uri', '--source-disk')
+    source_image_project = getattr(args, 'source_image_project', None)
+    source_image = getattr(args, 'source_image', None)
+    source_image_family = getattr(args, 'source_image_family', None)
 
-    if not (args.source_disk or args.source_uri):
-      raise exceptions.MinimumArgumentException(
-          ['--source-uri', '--source-disk'],
-          'Please specify either the source disk or the Google Cloud Storage '
-          'URI of the disk image.'
-      )
+    if source_image_project and not (source_image or source_image_family):
+      raise exceptions.ToolException(
+          'You cannot specify [--source-image-project] unless you are '
+          'specifying [--source-image] or [--source-image-family].')
+
+    if source_image or source_image_family:
+      image_expander = image_utils.ImageExpander(client, resource_parser)
+      _, source_image_ref = image_expander.ExpandImageFlag(
+          user_project=image_ref.project,
+          image=source_image,
+          image_family=source_image_family,
+          image_project=source_image_project,
+          return_image_resource=True)
+      image.sourceImage = source_image_ref.selfLink
+      image.sourceImageEncryptionKey = csek_utils.MaybeLookupKeyMessage(
+          csek_keys, source_image_ref, client.apitools_client)
 
     # TODO(b/30086260): use resources.REGISTRY.Parse() for GCS URIs.
     if args.source_uri:
       source_uri = utils.NormalizeGoogleStorageUri(args.source_uri)
       image.rawDisk = messages.Image.RawDiskValue(source=source_uri)
-    else:
+    elif args.source_disk:
       source_disk_ref = flags.SOURCE_DISK_ARG.ResolveAsResource(
           args, holder.resources,
           scope_lister=compute_flags.GetDefaultScopeLister(client))
@@ -166,21 +162,11 @@ class CreateBeta(Create):
 
   _GUEST_OS_FEATURES = image_utils.GUEST_OS_FEATURES_BETA
 
-  @classmethod
-  def Args(cls, parser):
-    super(CreateBeta, cls).Args(parser)
-    labels_util.AddCreateLabelsFlags(parser)
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
 
   _GUEST_OS_FEATURES = image_utils.GUEST_OS_FEATURES_ALPHA
-
-  @classmethod
-  def Args(cls, parser):
-    super(CreateAlpha, cls).Args(parser)
-    flags.MakeForceCreateArg().AddToParser(parser)
 
 
 Create.detailed_help = {

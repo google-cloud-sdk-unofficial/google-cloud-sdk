@@ -43,7 +43,7 @@ class InvalidReturnValueError(core_exceptions.Error):
   pass
 
 
-def _RunPredict(version, args):
+def _RunPredict(args):
   """Run ML Engine local prediction."""
   instances = predict_utilities.ReadInstancesFromArgs(args.json_instances,
                                                       args.text_instances)
@@ -65,8 +65,8 @@ def _RunPredict(version, args):
   python_executable = python_executables[0]
   # Start local prediction in a subprocess.
   proc = subprocess.Popen(
-      [python_executable, local_predict.__file__, '--model-dir', args.model_dir,
-       '--version', version],
+      [python_executable, local_predict.__file__,
+       '--model-dir', args.model_dir],
       stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
       env=env)
 
@@ -123,8 +123,7 @@ def _AddLocalPredictArgs(parser):
       """)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class PredictBeta(base.Command):
+class Predict(base.Command):
   """Run prediction locally."""
 
   @staticmethod
@@ -132,19 +131,7 @@ class PredictBeta(base.Command):
     _AddLocalPredictArgs(parser)
 
   def Run(self, args):
-    return _RunPredict('beta', args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class PredictGa(base.Command):
-  """Run prediction locally."""
-
-  @staticmethod
-  def Args(parser):
-    _AddLocalPredictArgs(parser)
-
-  def Run(self, args):
-    return _RunPredict('ga', args)
+    return _RunPredict(args)
 
 
 _DETAILED_HELP = {
@@ -155,5 +142,4 @@ the TensorFlow SDK be installed locally.
 }
 
 
-PredictBeta.detailed_help = _DETAILED_HELP
-PredictGa.detailed_help = _DETAILED_HELP
+Predict.detailed_help = _DETAILED_HELP

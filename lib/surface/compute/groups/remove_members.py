@@ -15,10 +15,11 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-class RemoveMembers(base_classes.NoOutputAsyncMutator):
+class RemoveMembers(base.SilentCommand):
   """Remove a user from a Google Compute Engine group.
 
   *{command}* removes a user from a Google Compute Engine group.
@@ -39,29 +40,17 @@ class RemoveMembers(base_classes.NoOutputAsyncMutator):
         type=arg_parsers.ArgList(min_length=1),
         help='The names or fully-qualified URLs of the users to remove.')
 
-  @property
-  def service(self):
-    return self.clouduseraccounts.groups
+  def Run(self, args):
+    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    holder = base_classes.ComputeUserAccountsApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'RemoveMember'
-
-  @property
-  def resource_type(self):
-    return 'groups'
-
-  @property
-  def messages(self):
-    return self.clouduseraccounts.MESSAGES_MODULE
-
-  def CreateRequests(self, args):
-    user_refs = [self.clouduseraccounts_resources.Parse(
+    user_refs = [holder.resources.Parse(
         user,
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='clouduseraccounts.users') for user in args.members]
 
-    group_refs = [self.clouduseraccounts_resources.Parse(
+    group_refs = [holder.resources.Parse(
         group,
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='clouduseraccounts.groups') for group in args.names]
@@ -69,16 +58,18 @@ class RemoveMembers(base_classes.NoOutputAsyncMutator):
     requests = []
     for group_ref in group_refs:
       for user_ref in user_refs:
-        remove_member = self.messages.GroupsRemoveMemberRequest(
+        remove_member = client.MESSAGES_MODULE.GroupsRemoveMemberRequest(
             users=[user_ref.SelfLink()])
 
-        request = self.messages.ClouduseraccountsGroupsRemoveMemberRequest(
-            project=self.project,
-            groupsRemoveMemberRequest=remove_member,
-            groupName=group_ref.Name())
-        requests.append(request)
+        request = (
+            client.MESSAGES_MODULE.ClouduseraccountsGroupsRemoveMemberRequest(
+                project=group_ref.project,
+                groupsRemoveMemberRequest=remove_member,
+                groupName=group_ref.Name()))
+        requests.append((client.groups, 'RemoveMember', request))
 
-    return requests
+    return compute_holder.client.MakeRequests(requests)
+
 
 RemoveMembers.detailed_help = {
     'EXAMPLES': """\

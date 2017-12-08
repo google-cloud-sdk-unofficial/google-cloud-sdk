@@ -23,8 +23,7 @@ def _AddDescribeArgs(parser):
   flags.JOB_NAME.AddToParser(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class DescribeBeta(base.DescribeCommand):
+class Describe(base.DescribeCommand):
   """Describe a Cloud ML Engine job."""
 
   @staticmethod
@@ -32,25 +31,7 @@ class DescribeBeta(base.DescribeCommand):
     _AddDescribeArgs(parser)
 
   def Run(self, args):
-    job = jobs_util.Describe(jobs.JobsClient('v1beta1'), args.job)
-    self.job = job  # Hack to make the Epilog method work
-    return job
-
-  def Epilog(self, resources_were_displayed):
-    if resources_were_displayed:
-      jobs_util.PrintDescribeFollowUp(self.job.jobId)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class DescribeGa(base.DescribeCommand):
-  """Describe a Cloud ML Engine job."""
-
-  @staticmethod
-  def Args(parser):
-    _AddDescribeArgs(parser)
-
-  def Run(self, args):
-    job = jobs_util.Describe(jobs.JobsClient('v1'), args.job)
+    job = jobs_util.Describe(jobs.JobsClient(), args.job)
     self.job = job  # Hack to make the Epilog method work
     return job
 

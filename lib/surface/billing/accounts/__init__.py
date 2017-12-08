@@ -17,4 +17,4 @@ from googlecloudsdk.calliope import base
 
 
 class Accounts(base.Group):
-  """List or describe billing accounts."""
+  """Manage billing accounts."""

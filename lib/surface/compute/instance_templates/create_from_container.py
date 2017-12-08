@@ -48,7 +48,7 @@ class CreateFromContainer(base.CreateCommand):
     instances_flags.AddExtendedMachineTypeArgs(parser)
     instances_flags.AddNetworkArgs(parser)
     instances_flags.AddDockerArgs(parser)
-    instances_flags.AddMinCpuPlatformArgs(parser)
+    instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddNetworkTierArgs(parser, instance=True)
 
     flags.AddRegionFlag(

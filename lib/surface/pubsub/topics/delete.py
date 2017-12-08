@@ -22,7 +22,16 @@ from googlecloudsdk.core import log
 
 
 class Delete(base.DeleteCommand):
-  """Deletes one or more Cloud Pub/Sub topics."""
+  """Deletes one or more Cloud Pub/Sub topics.
+
+  Deletes one or more Cloud Pub/Sub topics.
+
+  ## EXAMPLES
+
+  To delete a Cloud Pub/Sub topic, run:
+
+      $ {command} mytopic
+  """
 
   @staticmethod
   def Args(parser):

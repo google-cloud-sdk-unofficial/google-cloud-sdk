@@ -14,50 +14,15 @@
 
 """Utilities for the gcloud meta apis surface."""
 
-import re
-
-from apitools.base.protorpclite import messages
 from apitools.base.py import  exceptions as apitools_exc
+
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import apis_internal
 from googlecloudsdk.api_lib.util import resource
-from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as c_exc
-from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core.resource import resource_property
 from googlecloudsdk.third_party.apis import apis_map
-
-
-def APICompleter(**_):
-  return [a.name for a in GetAllAPIs()]
-
-
-def CollectionCompleter(**_):
-  return [c.full_name for c in GetAPICollections()]
-
-
-def MethodCompleter(prefix, parsed_args, **_):
-  del prefix
-  collection = getattr(parsed_args, 'collection', None)
-  if not collection:
-    return []
-  return [m.name for m in GetMethods(collection)]
-
-
-API_VERSION_FLAG = base.Argument(
-    '--api-version',
-    help='The version of the given API to use. If not provided, the default '
-         'version of the API will be used.')
-
-
-COLLECTION_FLAG = base.Argument(
-    '--collection',
-    required=True,
-    completer=CollectionCompleter,
-    help='The name of the collection to specify the method for.')
-
 
 NAME_SEPARATOR = '.'
 
@@ -222,8 +187,12 @@ class APIMethod(object):
 
   def Call(self, *args, **kwargs):
     """Executes this method with the given arguments."""
+    client = apis.GetClientInstance(
+        self.collection.api_name, self.collection.api_version)
+    service = _GetService(client, self.collection.name)
+    method = getattr(service, self._method_name)
     try:
-      return getattr(self._service, self._method_name)(*args, **kwargs)
+      return method(*args, **kwargs)
     except apitools_exc.InvalidUserInputError as e:
       log.debug('', exc_info=True)
       raise APICallError(e.message)
@@ -332,7 +301,7 @@ def _GetDefaultVersion(api_name):
   return api_version
 
 
-def GetMethod(full_collection_name, method, api_version=None, no_http=True):
+def GetMethod(full_collection_name, method, api_version=None):
   """Gets the specification for the given API method.
 
   Args:
@@ -340,8 +309,6 @@ def GetMethod(full_collection_name, method, api_version=None, no_http=True):
     method: str, The name of the method.
     api_version: str, The version string of the API or None to use the default
       for this API.
-    no_http: bool, True to not create an authenticated http object for this
-      API Client.
 
   Returns:
     APIMethod, The method specification.
@@ -349,241 +316,37 @@ def GetMethod(full_collection_name, method, api_version=None, no_http=True):
   Raises:
     UnknownMethodError: If the method does not exist on the collection.
   """
-  methods = GetMethods(full_collection_name, api_version=api_version,
-                       no_http=no_http)
+  methods = GetMethods(full_collection_name, api_version=api_version)
   for m in methods:
     if m.name == method:
       return m
   raise UnknownMethodError(method, full_collection_name)
 
 
-def GetMethods(full_collection_name, api_version=None, no_http=True):
+def _GetService(client, collection_name):
+  return getattr(client, collection_name.replace(NAME_SEPARATOR, '_'))
+
+
+def GetMethods(full_collection_name, api_version=None):
   """Gets all the methods available on the given collection.
 
   Args:
     full_collection_name: str, The collection including the api name.
     api_version: str, The version string of the API or None to use the default
       for this API.
-    no_http: bool, True to not create an authenticated http object for this
-      API Client.
 
   Returns:
     [APIMethod], The method specifications.
   """
   api_name, collection = _SplitFullCollectionName(full_collection_name)
   api_version = api_version or _GetDefaultVersion(api_name)
-  # pylint:disable=protected-access
-  client = apis_internal._GetClientInstance(api_name, api_version,
-                                            no_http=no_http)
+  client = apis.GetClientInstance(api_name, api_version, no_http=True)
   api_collection = GetAPICollection(full_collection_name,
                                     api_version=api_version)
-  service = getattr(client, collection.replace(NAME_SEPARATOR, '_'))
+  service = _GetService(client, collection)
 
   method_names = service.GetMethodsList()
   method_configs = [(name, service.GetMethodConfig(name))
                     for name in method_names]
   return [APIMethod(service, name, api_collection, config)
           for name, config in method_configs]
-
-
-class MethodDynamicPositionalAction(parser_extensions.DynamicPositionalAction):
-  """A DynamicPositionalAction that adds flags for a given method to the parser.
-
-  Based on the value given for method, it looks up the valid fields for that
-  method call and adds those flags to the parser.
-  """
-
-  def GenerateArgs(self, namespace, method_name):
-    # Get the collection from the existing parsed args.
-    full_collection_name = getattr(namespace, 'collection', None)
-    api_version = getattr(namespace, 'api_version', None)
-    if not full_collection_name:
-      raise c_exc.RequiredArgumentException(
-          '--collection',
-          'The collection name must be specified before the API method.')
-
-    # Look up the method and get all the args for it.
-    # TODO(b/38000796): It's possible that api_version hasn't been parsed yet
-    # so we are generating the wrong args.
-    method = GetMethod(full_collection_name, method_name,
-                       api_version=api_version)
-    arg_generator = ArgumentGenerator(method)
-    args = arg_generator.MessageFieldFlags()
-    args.update(arg_generator.ResourceFlags())
-    args.update(arg_generator.ResourceArg())
-    # Remove any args that didn't actually get generated.
-    return args
-
-  def Completions(self, prefix, parsed_args, **kwargs):
-    return MethodCompleter(prefix, parsed_args, **kwargs)
-
-
-class ArgumentGenerator(object):
-  """Class to generate argparse flags from apitools message fields."""
-
-  TYPES = {
-      messages.Variant.DOUBLE: float,
-      messages.Variant.FLOAT: float,
-
-      messages.Variant.INT64: long,
-      messages.Variant.UINT64: long,
-      messages.Variant.SINT64: long,
-
-      messages.Variant.INT32: int,
-      messages.Variant.UINT32: int,
-      messages.Variant.SINT32: int,
-
-      messages.Variant.BOOL: bool,
-      messages.Variant.STRING: str,
-
-      # TODO(b/38000796): Do something with bytes.
-      messages.Variant.BYTES: None,
-      messages.Variant.ENUM: None,
-      messages.Variant.MESSAGE: None,
-  }
-
-  def __init__(self, method):
-    """Creates a new Argument Generator.
-
-    Args:
-      method: APIMethod, The method to generate arguments for.
-    """
-    self.method = method
-
-  def ResourceArg(self):
-    """Gets the positional argument that represents the resource.
-
-    Returns:
-      {str, calliope.base.Argument}, The argument.
-    """
-    if not self.method.RequestCollection():
-      log.warning('Not generating resource arg')
-      return {}
-    return {
-        'resource': base.Argument(
-            'resource',
-            nargs='?',
-            help='The GRI for the resource being operated on.')}
-
-  def ResourceFlags(self):
-    """Get the arguments to add to the parser that appear in the method path.
-
-    Returns:
-      {str, calliope.base.Argument}, A map of field name to argument.
-    """
-    message = self.method.GetRequestType()
-    field_helps = self._FieldHelpDocs(message)
-    default_help = 'For substitution into: ' + self.method.detailed_path
-
-    args = {}
-    for param in set(self.method.ResourceFieldNames()):
-      args[param] = base.Argument(
-          # TODO(b/38000796): Consider not using camel case for flags.
-          '--' + param,
-          metavar=resource_property.ConvertToAngrySnakeCase(param),
-          category='RESOURCE',
-          type=str,
-          help=field_helps.get(param, default_help))
-    return args
-
-  def MessageFieldFlags(self):
-    """Get the arguments to add to the parser that appear in the method body.
-
-    Returns:
-      {str, calliope.base.Argument}, A map of field name to argument.
-    """
-    return self._MessageFieldFlags('', self.method.GetRequestType())
-
-  def _MessageFieldFlags(self, prefix, message):
-    """Get the arguments to add to the parser that appear in the method body.
-
-    Args:
-      prefix: str, A string to prepend to the name of the flag. This is used
-        for flags representing fields of a submessage.
-      message: The apitools message to generate the flags for.
-
-    Returns:
-      {str, calliope.base.Argument}, A map of field name to argument.
-    """
-    args = {}
-    field_helps = self._FieldHelpDocs(message)
-    for field in message.all_fields():
-      name = prefix + field.name
-      if field.variant == messages.Variant.MESSAGE:
-        if (name == self.method.request_field and
-            name.lower().endswith('request')):
-          name = 'request'
-        field_help = field_helps.get(field.name, None)
-        group = base.ArgumentGroup(
-            name, description=(name + ': ' + field_help) if field_help else '')
-        for arg in self._MessageFieldFlags(name + '.', field.type).values():
-          group.AddArgument(arg)
-        args[name] = group
-      else:
-        args[name] = self._FlagForMessageField(name, field, field_helps)
-    return {k: v for k, v in args.iteritems() if v is not None}
-
-  def _FlagForMessageField(self, name, field, field_helps):
-    """Gets a flag for a single field in a message.
-
-    Args:
-      name: The name of the field.
-      field: The apitools field object.
-      field_helps: {str: str}, A mapping of field name to help text.
-
-    Returns:
-      {str: str}, A mapping of field name to help text.
-    """
-    help_text = field_helps.get(field.name, None)
-    if self._IsOutputField(help_text):
-      return None
-    variant = field.variant
-    t = ArgumentGenerator.TYPES.get(variant, None)
-    choices = None
-    if variant == messages.Variant.ENUM:
-      choices = field.type.names()
-    return base.Argument(
-        # TODO(b/38000796): Consider not using camel case for flags.
-        '--' + name,
-        metavar=resource_property.ConvertToAngrySnakeCase(field.name),
-        category='MESSAGE',
-        action='store',
-        type=t,
-        choices=choices,
-        help=help_text,
-    )
-
-  def _FieldHelpDocs(self, message):
-    """Gets the help text for the fields in the request message.
-
-    Args:
-      message: The apitools message.
-
-    Returns:
-      {str: str}, A mapping of field name to help text.
-    """
-    field_helps = {}
-    current_field = None
-
-    match = re.search(r'^\s+Fields:.*$', message.__doc__, re.MULTILINE)
-    if not match:
-      # Couldn't find any fields at all.
-      return field_helps
-
-    for line in message.__doc__[match.end():].splitlines():
-      match = re.match(r'^\s+(\w+): (.*)$', line)
-      if match:
-        # This line is the start of a new field.
-        current_field = match.group(1)
-        field_helps[current_field] = match.group(2).strip()
-      elif current_field:
-        # Append additional text to the in progress field.
-        current_text = field_helps.get(current_field, '')
-        field_helps[current_field] = current_text + ' ' + line.strip()
-
-    return field_helps
-
-  def _IsOutputField(self, help_text):
-    """Determines if the given field is output only based on help text."""
-    return help_text and help_text.startswith('[Output Only]')
-

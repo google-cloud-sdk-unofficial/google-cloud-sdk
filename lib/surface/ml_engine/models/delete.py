@@ -23,8 +23,7 @@ def _AddDeleteArgs(parser):
   flags.GetModelName().AddToParser(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class DeleteGa(base.DeleteCommand):
+class Delete(base.DeleteCommand):
   """Delete an existing Cloud ML Engine model."""
 
   @staticmethod
@@ -32,20 +31,6 @@ class DeleteGa(base.DeleteCommand):
     _AddDeleteArgs(parser)
 
   def Run(self, args):
-    models_client = models.ModelsClient('v1')
-    operations_client = operations.OperationsClient('v1')
-    return models_util.Delete(models_client, operations_client, args.model)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class DeleteBeta(base.DeleteCommand):
-  """Delete an existing Cloud ML Engine model."""
-
-  @staticmethod
-  def Args(parser):
-    _AddDeleteArgs(parser)
-
-  def Run(self, args):
-    models_client = models.ModelsClient('v1beta1')
-    operations_client = operations.OperationsClient('v1beta1')
+    models_client = models.ModelsClient()
+    operations_client = operations.OperationsClient()
     return models_util.Delete(models_client, operations_client, args.model)

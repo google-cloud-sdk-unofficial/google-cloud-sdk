@@ -24,8 +24,7 @@ def _AddDescribeArgs(parser):
   flags.VERSION_NAME.AddToParser(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class DescribeBeta(base.DescribeCommand):
+class Describe(base.DescribeCommand):
   """Describe an existing Cloud ML Engine version."""
 
   @staticmethod
@@ -33,18 +32,5 @@ class DescribeBeta(base.DescribeCommand):
     _AddDescribeArgs(parser)
 
   def Run(self, args):
-    return versions_util.Describe(versions_api.VersionsClient('v1beta1'),
-                                  args.version, model=args.model)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class DescribeGa(base.DescribeCommand):
-  """Describe an existing Cloud ML Engine version."""
-
-  @staticmethod
-  def Args(parser):
-    _AddDescribeArgs(parser)
-
-  def Run(self, args):
-    return versions_util.Describe(versions_api.VersionsClient('v1'),
+    return versions_util.Describe(versions_api.VersionsClient(),
                                   args.version, model=args.model)

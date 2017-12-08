@@ -15,6 +15,7 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
@@ -22,8 +23,14 @@ from googlecloudsdk.command_lib.compute.target_pools import flags
 from googlecloudsdk.core import log
 
 
-class RemoveInstances(base_classes.NoOutputAsyncMutator):
-  """Remove instances from a target pool."""
+class RemoveInstances(base.SilentCommand):
+  """Remove instances from a target pool.
+
+  *{command}* is used to remove one or more instances from a
+  target pool.
+  For more information on health checks and load balancing, see
+  [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
+  """
 
   INSTANCE_ARG = None
   TARGET_POOL_ARG = None
@@ -48,19 +55,11 @@ class RemoveInstances(base_classes.NoOutputAsyncMutator):
             'DEPRECATED, use --instances-zone. '
             'If not specified, you will be prompted to select a zone.'))
 
-  @property
-  def service(self):
-    return self.compute.targetPools
+  def Run(self, args):
+    """Issues a TargetPools.RemoveInstance request."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'RemoveInstance'
-
-  @property
-  def resource_type(self):
-    return 'targetPools'
-
-  def CreateRequests(self, args):
     if args.zone and not args.instances_zone:
       args.instances_zone = args.zone
       log.warn('The --zone flag is deprecated. Use equivalent '
@@ -68,12 +67,11 @@ class RemoveInstances(base_classes.NoOutputAsyncMutator):
 
     instance_refs = self.INSTANCE_ARG.ResolveAsResource(
         args,
-        self.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
-                                                         self.project))
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
     instances = [
-        self.messages.InstanceReference(instance=instance_ref.SelfLink())
+        client.messages.InstanceReference(instance=instance_ref.SelfLink())
         for instance_ref in instance_refs]
 
     # This check to make sure the regions for the instances are the same is not
@@ -96,25 +94,15 @@ class RemoveInstances(base_classes.NoOutputAsyncMutator):
     args.region = region
 
     target_pool_ref = self.TARGET_POOL_ARG.ResolveAsResource(args,
-                                                             self.resources)
+                                                             holder.resources)
 
-    request = self.messages.ComputeTargetPoolsRemoveInstanceRequest(
+    request = client.messages.ComputeTargetPoolsRemoveInstanceRequest(
         region=target_pool_ref.region,
-        project=self.project,
+        project=target_pool_ref.project,
         targetPool=target_pool_ref.Name(),
         targetPoolsRemoveInstanceRequest=(
-            self.messages.TargetPoolsRemoveInstanceRequest(
+            client.messages.TargetPoolsRemoveInstanceRequest(
                 instances=instances)))
 
-    return [request]
-
-
-RemoveInstances.detailed_help = {
-    'brief': 'Remove instances from a target pool',
-    'DESCRIPTION': """\
-        *{command}* is used to remove one or more instances from a
-        target pool.
-        For more information on health checks and load balancing, see
-        [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
-        """,
-}
+    return client.MakeRequests([(client.apitools_client.targetPools,
+                                 'RemoveInstance', request)])

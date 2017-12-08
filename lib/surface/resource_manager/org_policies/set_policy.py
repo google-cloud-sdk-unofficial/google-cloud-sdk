@@ -40,7 +40,6 @@ class SetPolicy(base.DescribeCommand):
     flags.AddResourceFlagsToParser(parser)
     base.Argument(
         'policy_file',
-        list_command_path='resource-manager org-policies list --uri',
         help='JSON or YAML file with the OrgPolicy.').AddToParser(parser)
 
   def Run(self, args):

@@ -13,28 +13,36 @@
 # limitations under the License.
 """Command for describing routes."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.routes import flags
 
 
-class Describe(base_classes.GlobalDescriber):
-  """Describe a route."""
+class Describe(base.DescribeCommand):
+  """Describe a route.
+
+  *{command}* displays all data associated with a Google Compute
+  Engine route in a project.
+  """
+
+  ROUTE_ARG = None
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalDescriber.Args(parser, 'compute.routes')
+    Describe.ROUTE_ARG = flags.RouteArgument()
+    Describe.ROUTE_ARG.AddArgument(parser, operation_type='describe')
 
-  @property
-  def service(self):
-    return self.compute.routes
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'routes'
+    route_ref = self.ROUTE_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+    request = client.messages.ComputeRoutesGetRequest(
+        **route_ref.AsDict())
 
-Describe.detailed_help = {
-    'brief': 'Describe a route',
-    'DESCRIPTION': """\
-        *{command}* displays all data associated with a Google Compute
-        Engine route in a project.
-        """,
-}
+    return client.MakeRequests([(client.apitools_client.routes,
+                                 'Get', request)])[0]

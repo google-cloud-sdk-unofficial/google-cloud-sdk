@@ -14,25 +14,37 @@
 
 """Command for describing Google Compute Engine routers."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.routers import flags
 
 
-class Describe(base_classes.RegionalDescriber):
+class Describe(base.DescribeCommand):
   """Describe a Google Compute Engine router.
 
   *{command}* displays all data associated with a Google Compute
   Engine router.
   """
 
+  ROUTERS_ARG = None
+
   @staticmethod
   def Args(parser):
-    # TODO(b/36052473): autocomplete
-    # cli = Describe.GetCLIGenerator()
-    base_classes.RegionalDescriber.Args(parser, 'compute.routers')
+    Describe.ROUTERS_ARG = flags.RouterArgument()
+    Describe.ROUTERS_ARG.AddArgument(parser, operation_type='describe')
 
-  @property
-  def service(self):
-    return self.compute.routers
+  def Run(self, args):
+    """Issues the request necessary for describing a router."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'routers'
+    router_ref = self.ROUTERS_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+
+    request = client.messages.ComputeRoutersGetRequest(
+        **router_ref.AsDict())
+
+    return client.MakeRequests([(client.apitools_client.routers,
+                                 'Get', request)])[0]

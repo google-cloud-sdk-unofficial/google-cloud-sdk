@@ -15,10 +15,11 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-class AddMembers(base_classes.NoOutputAsyncMutator):
+class AddMembers(base.SilentCommand):
   """Add a user to a Google Compute Engine group.
 
   *{command}* adds a users to a Google Compute Engine group.
@@ -39,29 +40,17 @@ class AddMembers(base_classes.NoOutputAsyncMutator):
         type=arg_parsers.ArgList(min_length=1),
         help='The names or fully-qualified URLs of the users to add.')
 
-  @property
-  def service(self):
-    return self.clouduseraccounts.groups
+  def Run(self, args):
+    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    holder = base_classes.ComputeUserAccountsApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'AddMember'
-
-  @property
-  def resource_type(self):
-    return 'groups'
-
-  @property
-  def messages(self):
-    return self.clouduseraccounts.MESSAGES_MODULE
-
-  def CreateRequests(self, args):
-    user_refs = [self.clouduseraccounts_resources.Parse(
+    user_refs = [holder.resources.Parse(
         user,
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='clouduseraccounts.users') for user in args.members]
 
-    group_refs = [self.clouduseraccounts_resources.Parse(
+    group_refs = [holder.resources.Parse(
         group,
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='clouduseraccounts.groups') for group in args.names]
@@ -69,16 +58,16 @@ class AddMembers(base_classes.NoOutputAsyncMutator):
     user_selflinks = [user_ref.SelfLink() for user_ref in user_refs]
     requests = []
     for group_ref in group_refs:
-      new_member = self.messages.GroupsAddMemberRequest(
+      new_member = client.MESSAGES_MODULE.GroupsAddMemberRequest(
           users=user_selflinks)
 
-      request = self.messages.ClouduseraccountsGroupsAddMemberRequest(
-          project=self.project,
+      request = client.MESSAGES_MODULE.ClouduseraccountsGroupsAddMemberRequest(
+          project=group_ref.project,
           groupsAddMemberRequest=new_member,
           groupName=group_ref.Name())
-      requests.append(request)
+      requests.append((client.groups, 'AddMember', request))
 
-    return requests
+    return compute_holder.client.MakeRequests(requests)
 
 
 AddMembers.detailed_help = {

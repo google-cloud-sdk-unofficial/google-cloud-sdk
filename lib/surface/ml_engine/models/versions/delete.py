@@ -17,11 +17,11 @@ from surface.ml_engine.versions import delete
 
 
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning=('This command is deprecated. '
              'Please use `gcloud beta ml-engine versions delete` instead.'),
     error=('This command has been removed. '
            'Please use `gcloud beta ml-engine versions delete` instead.'))
-class DeleteBeta(delete.DeleteBeta):
+class DeleteBeta(delete.Delete):
   """Delete an existing Cloud ML Engine version."""
   pass

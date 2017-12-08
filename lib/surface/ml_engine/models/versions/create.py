@@ -17,11 +17,11 @@ from surface.ml_engine.versions import create
 
 
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning=('This command is deprecated. '
              'Please use `gcloud beta ml-engine versions create` instead.'),
     error=('This command has been removed. '
            'Please use `gcloud beta ml-engine versions create` instead.'))
-class CreateBeta(create.CreateBeta):
+class CreateBeta(create.Create):
   """Create a new Cloud ML Engine version."""
   pass

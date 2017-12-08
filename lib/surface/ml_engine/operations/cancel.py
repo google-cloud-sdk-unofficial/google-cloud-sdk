@@ -22,8 +22,7 @@ def _AddCancelArgs(parser):
   flags.OPERATION_NAME.AddToParser(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class CancelBeta(base.SilentCommand):
+class Cancel(base.SilentCommand):
   """Cancel a Cloud ML Engine operation."""
 
   @staticmethod
@@ -31,18 +30,5 @@ class CancelBeta(base.SilentCommand):
     _AddCancelArgs(parser)
 
   def Run(self, args):
-    return operations_util.Cancel(operations.OperationsClient('v1beta1'),
-                                  args.operation)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class CancelGa(base.SilentCommand):
-  """Cancel a Cloud ML Engine operation."""
-
-  @staticmethod
-  def Args(parser):
-    _AddCancelArgs(parser)
-
-  def Run(self, args):
-    return operations_util.Cancel(operations.OperationsClient('v1'),
+    return operations_util.Cancel(operations.OperationsClient(),
                                   args.operation)

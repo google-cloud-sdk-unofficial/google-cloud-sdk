@@ -118,7 +118,10 @@ class Login(base.Command):
     account = args.account
 
     if account and not args.force:
-      creds = c_store.LoadIfValid(account=account, scopes=scopes)
+      try:
+        creds = c_store.Load(account=account, scopes=scopes)
+      except c_store.Error:
+        creds = None
       if creds:
         # Account already has valid creds, just switch to it.
         return self.LoginAs(account, creds, args.project, args.activate,

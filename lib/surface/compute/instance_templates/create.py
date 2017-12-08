@@ -179,12 +179,26 @@ class Create(base.CreateCommand):
     create_boot_disk = not instance_utils.UseExistingBootDisk(args.disk or [])
     if create_boot_disk:
       image_expander = image_utils.ImageExpander(client, holder.resources)
-      image_uri, _ = image_expander.ExpandImageFlag(
-          user_project=instance_template_ref.project,
-          image=args.image,
-          image_family=args.image_family,
-          image_project=args.image_project,
-          return_image_resource=True)
+      try:
+        image_uri, _ = image_expander.ExpandImageFlag(
+            user_project=instance_template_ref.project,
+            image=args.image,
+            image_family=args.image_family,
+            image_project=args.image_project,
+            return_image_resource=True)
+      except utils.ImageNotFoundError as e:
+        if args.IsSpecified('image_project'):
+          raise e
+        image_uri, _ = image_expander.ExpandImageFlag(
+            user_project=instance_template_ref.project,
+            image=args.image,
+            image_family=args.image_family,
+            image_project=args.image_project,
+            return_image_resource=False)
+        raise utils.ImageNotFoundError(
+            'The resource [{}] was not found. Is the image located in another '
+            'project? Use the --image-project flag to specify the '
+            'project where the image is located.'.format(image_uri))
     else:
       image_uri = None
 
@@ -293,6 +307,7 @@ class CreateBeta(Create):
         release_track=base.ReleaseTrack.BETA,
         support_alias_ip_ranges=True,
         support_network_tier=cls._support_network_tier)
+    instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -319,4 +334,4 @@ class CreateAlpha(Create):
                 support_alias_ip_ranges=True,
                 support_network_tier=cls._support_network_tier,
                 support_local_ssd_size=True)
-    instances_flags.AddMinCpuPlatformArgs(parser)
+    instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)

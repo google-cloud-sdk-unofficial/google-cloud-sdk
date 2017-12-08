@@ -16,6 +16,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import file_utils
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.users import utils as user_utils
 from googlecloudsdk.command_lib.util import gaia
@@ -23,7 +24,7 @@ from googlecloudsdk.command_lib.util import time_util
 from googlecloudsdk.core import properties
 
 
-class AddKeys(base_classes.NoOutputAsyncMutator):
+class AddKeys(base.SilentCommand):
   """Add public keys to a Google Compute Engine user.
 
   *{command}* adds public keys to a Google Compute Engine user.
@@ -56,29 +57,16 @@ class AddKeys(base_classes.NoOutputAsyncMutator):
         for minutes, ``h'' for hours, and ''d'' for days.
         """)
 
-  @property
-  def service(self):
-    return self.clouduseraccounts.users
-
-  @property
-  def method(self):
-    return 'AddPublicKey'
-
-  @property
-  def resource_type(self):
-    return 'users'
-
-  @property
-  def messages(self):
-    return self.clouduseraccounts.MESSAGES_MODULE
-
-  def CreateRequests(self, args):
+  def Run(self, args):
+    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    holder = base_classes.ComputeUserAccountsApiHolder(self.ReleaseTrack())
+    client = holder.client
 
     name = args.name
     if not name:
-      name = gaia.GetDefaultAccountName(self.http)
+      name = gaia.GetDefaultAccountName(client.http)
 
-    user_ref = self.clouduseraccounts_resources.Parse(
+    user_ref = holder.resources.Parse(
         name,
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='clouduseraccounts.users')
@@ -102,18 +90,19 @@ class AddKeys(base_classes.NoOutputAsyncMutator):
 
     requests = []
     for key in public_keys:
-      public_key_message = self.messages.PublicKey(
+      public_key_message = client.MESSAGES_MODULE.PublicKey(
           description=args.description,
           expirationTimestamp=formatted_expiration,
           key=key)
 
-      request = self.messages.ClouduseraccountsUsersAddPublicKeyRequest(
-          project=self.project,
-          publicKey=public_key_message,
-          user=user_ref.Name())
-      requests.append(request)
+      request = (
+          client.MESSAGES_MODULE.ClouduseraccountsUsersAddPublicKeyRequest(
+              project=user_ref.project,
+              publicKey=public_key_message,
+              user=user_ref.Name()))
+      requests.append((client.users, 'AddPublicKey', request))
 
-    return requests
+    return compute_holder.client.MakeRequests(requests)
 
 AddKeys.detailed_help = {
     'EXAMPLES': """\

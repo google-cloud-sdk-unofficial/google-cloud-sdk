@@ -22,8 +22,7 @@ def _AddDescribeArgs(parser):
   flags.OPERATION_NAME.AddToParser(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class DescribeBeta(base.DescribeCommand):
+class Describe(base.DescribeCommand):
   """Describe a Cloud ML Engine operation."""
 
   @staticmethod
@@ -31,18 +30,5 @@ class DescribeBeta(base.DescribeCommand):
     _AddDescribeArgs(parser)
 
   def Run(self, args):
-    return operations_util.Describe(operations.OperationsClient('v1beta1'),
-                                    args.operation)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class DescribeGa(base.DescribeCommand):
-  """Describe a Cloud ML Engine operation."""
-
-  @staticmethod
-  def Args(parser):
-    _AddDescribeArgs(parser)
-
-  def Run(self, args):
-    return operations_util.Describe(operations.OperationsClient('v1'),
+    return operations_util.Describe(operations.OperationsClient(),
                                     args.operation)

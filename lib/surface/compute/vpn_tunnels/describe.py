@@ -13,34 +13,37 @@
 # limitations under the License.
 """Command for describing vpn tunnels."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.vpn_tunnels import flags
 
 
-class Describe(base_classes.RegionalDescriber):
-  """Describe a vpn tunnel."""
+class Describe(base.DescribeCommand):
+  """Describe a Google Compute Engine vpn tunnel.
 
-  # Placeholder to indicate that a detailed_help field exists and should
-  # be set outside the class definition.
-  detailed_help = None
+    *{command}* displays all data associated with a Google Compute
+  Engine vpn tunnel in a project.
+  """
+
+  VPN_TUNNEL_ARG = None
 
   @staticmethod
   def Args(parser):
     """Adds arguments to the supplied parser."""
+    Describe.VPN_TUNNEL_ARG = flags.VpnTunnelArgument()
+    Describe.VPN_TUNNEL_ARG.AddArgument(parser, operation_type='describe')
 
-    base_classes.RegionalDescriber.Args(parser, 'vpnTunnels')
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def service(self):
-    return self.compute.vpnTunnels
+    vpn_tunnel_ref = Describe.VPN_TUNNEL_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-  @property
-  def resource_type(self):
-    return 'vpnTunnels'
+    request = client.messages.ComputeVpnTunnelsGetRequest(
+        **vpn_tunnel_ref.AsDict())
 
-
-Describe.detailed_help = {
-    'brief': 'Describe a Google Compute Engine vpn tunnel',
-    'DESCRIPTION': """\
-        *{command}* displays all data associated with a Google Compute
-        Engine vpn tunnel in a project.
-        """,
-}
+    return client.MakeRequests([(client.apitools_client.vpnTunnels,
+                                 'Get', request)])[0]

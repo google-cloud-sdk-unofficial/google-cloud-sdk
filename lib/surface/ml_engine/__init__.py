@@ -20,9 +20,11 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class MlEngineBeta(base.Group):
-  """Manage Cloud ML Engine jobs and models.
+class MlEngine(base.Group):
+  """(REMOVED) Manage Cloud ML Engine jobs and models.
+
+  This command group has been deprecated; please use `gcloud ml-engine versions`
+  instead.
 
   The {command} command group lets you manage Google Cloud ML Engine jobs and
   training models.
@@ -37,16 +39,6 @@ class MlEngineBeta(base.Group):
   and detailed documentation can be found here:
   https://cloud.google.com/ml/docs/
   """
-
-  def __init__(self):
-    resources.REGISTRY.RegisterApiByName('ml', 'v1beta1')
-    # TODO(b/36712515) Remove this warning and cut over.
-    log.warning(flags.V1BETA1_DEPRECATION_WARNING)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class MlEngineGa(base.Group):
-  """Cloud ML Engine command groups."""
 
   def __init__(self):
     resources.REGISTRY.RegisterApiByName('ml', 'v1')

@@ -15,6 +15,7 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.target_pools import flags
@@ -26,8 +27,29 @@ class BackupPoolRequiredError(exceptions.Error):
   """One of the required bucket flags was not specified."""
 
 
-class SetBackup(base_classes.NoOutputAsyncMutator):
-  """Set a backup pool for a target pool."""
+class SetBackup(base.SilentCommand):
+  # pylint: disable=line-too-long
+  """Set a backup pool for a target pool.
+
+  *{command}* is used to set a backup target pool for a primary
+  target pool, which defines the fallback behavior of the primary
+  pool. If the ratio of the healthy instances in the primary pool
+  is at or below the specified ``--failover-ratio value'', then traffic
+  arriving at the load-balanced IP address will be directed to the
+  backup pool.
+
+  ## EXAMPLES
+  To cause `TARGET-POOL` (in region `us-central1`) to fail over
+  to `BACKUP-POOL` when more than half of the `TARGET-POOL`
+  instances are unhealthy, run:
+
+    $ {command} TARGET-POOL --backup-pool BACKUP-POOL --failover-ratio 0.5 --region us-central1
+
+  To remove `BACKUP-POOL` as a backup to `TARGET-POOL`, run:
+
+    $ {command} TARGET-POOL --backup-pool '' --region us-central1
+  """
+  # pylint: enable=line-too-long
 
   BACKUP_POOL_ARG = None
   TARGET_POOL_ARG = None
@@ -62,20 +84,11 @@ class SetBackup(base_classes.NoOutputAsyncMutator):
         help=('The new failover ratio value for the target pool. '
               'This must be a float in the range of [0, 1].'))
 
-  @property
-  def service(self):
-    return self.compute.targetPools
+  def Run(self, args):
+    """Issues a request necessary for setting a backup target pool."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'SetBackup'
-
-  @property
-  def resource_type(self):
-    return 'targetPools'
-
-  def CreateRequests(self, args):
-    """Returns a request necessary for setting a backup target pool."""
     # TODO(b/33690890): remove this check after the deprecation
     if args.backup_pool is None and not args.no_backup_pool:
       # The user gave neither flag but one of them is required. Using
@@ -86,18 +99,17 @@ class SetBackup(base_classes.NoOutputAsyncMutator):
 
     target_pool_ref = self.TARGET_POOL_ARG.ResolveAsResource(
         args,
-        self.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
-                                                         self.project))
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
     if args.backup_pool:
       args.backup_pool_region = target_pool_ref.region
       backup_pool_ref = self.BACKUP_POOL_ARG.ResolveAsResource(args,
-                                                               self.resources)
-      target_reference = self.messages.TargetReference(
+                                                               holder.resources)
+      target_reference = client.messages.TargetReference(
           target=backup_pool_ref.SelfLink())
     else:
-      target_reference = self.messages.TargetReference()
+      target_reference = client.messages.TargetReference()
 
     if args.backup_pool and args.failover_ratio is None:
       raise calliope_exceptions.ToolException(
@@ -108,35 +120,12 @@ class SetBackup(base_classes.NoOutputAsyncMutator):
       raise calliope_exceptions.ToolException(
           '[--failover-ratio] must be a number between 0 and 1, inclusive.')
 
-    request = self.messages.ComputeTargetPoolsSetBackupRequest(
+    request = client.messages.ComputeTargetPoolsSetBackupRequest(
         targetPool=target_pool_ref.Name(),
         targetReference=target_reference,
         failoverRatio=args.failover_ratio,
         region=target_pool_ref.region,
-        project=self.project)
+        project=target_pool_ref.project)
 
-    return [request]
-
-
-SetBackup.detailed_help = {
-    'brief': 'Set a backup pool for a target pool',
-    'DESCRIPTION': """\
-        *{command}* is used to set a backup target pool for a primary
-        target pool, which defines the fallback behavior of the primary
-        pool. If the ratio of the healthy instances in the primary pool
-        is at or below the specified ``--failover-ratio value'', then traffic
-        arriving at the load-balanced IP address will be directed to the
-        backup pool.
-        """,
-    'EXAMPLES': """\
-        To cause `TARGET-POOL` (in region `us-central1`) to fail over
-        to `BACKUP-POOL` when more than half of the `TARGET-POOL`
-        instances are unhealthy, run:
-
-          $ {command} TARGET-POOL --backup-pool BACKUP-POOL --failover-ratio 0.5 --region us-central1
-
-        To remove `BACKUP-POOL` as a backup to `TARGET-POOL`, run:
-
-          $ {command} TARGET-POOL --backup-pool '' --region us-central1
-        """,
-}
+    return client.MakeRequests([(client.apitools_client.targetPools,
+                                 'SetBackup', request)])

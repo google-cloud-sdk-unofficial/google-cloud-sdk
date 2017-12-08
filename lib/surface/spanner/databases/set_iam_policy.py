@@ -14,6 +14,7 @@
 """Command for spanner databases set-iam-policy."""
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import iam
 from googlecloudsdk.core import properties
@@ -56,4 +57,6 @@ class SetIamPolicy(base.Command):
             'instancesId': args.instance
         },
         collection='spanner.projects.instances.databases')
-    return iam.SetDatabaseIamPolicy(database_ref, args.policy_file)
+    result = iam.SetDatabaseIamPolicy(database_ref, args.policy_file)
+    iam_util.LogSetIamPolicy(database_ref.Name(), 'database')
+    return result

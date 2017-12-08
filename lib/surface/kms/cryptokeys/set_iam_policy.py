@@ -49,4 +49,7 @@ class SetIamPolicy(base.Command):
 
     policy = iam_util.ParseJsonPolicyFile(args.policy_file, messages.Policy)
 
-    return iam.SetCryptoKeyIamPolicy(flags.ParseCryptoKeyName(args), policy)
+    crypto_key_ref = flags.ParseCryptoKeyName(args)
+    result = iam.SetCryptoKeyIamPolicy(crypto_key_ref, policy)
+    iam_util.LogSetIamPolicy(crypto_key_ref.Name(), 'CryptoKey')
+    return result

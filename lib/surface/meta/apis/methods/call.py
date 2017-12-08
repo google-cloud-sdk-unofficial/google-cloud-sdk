@@ -15,9 +15,8 @@
 """A command that describes a registered gcloud API."""
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.meta import apis
+from googlecloudsdk.command_lib.meta.apis import flags
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
 class Call(base.Command):
@@ -27,43 +26,14 @@ class Call(base.Command):
   def Args(parser):
     # TODO(b/38000796): Add a placeholder arg for the dynamic args that get
     # added.
-    apis.API_VERSION_FLAG.AddToParser(parser)
-    apis.COLLECTION_FLAG.AddToParser(parser)
-
+    flags.API_VERSION_FLAG.AddToParser(parser)
+    flags.COLLECTION_FLAG.AddToParser(parser)
     parser.AddDynamicPositional(
         'method',
-        action=apis.MethodDynamicPositionalAction,
+        action=flags.MethodDynamicPositionalAction,
         help='The name of the API method to invoke.')
 
   def Run(self, args):
     properties.VALUES.core.enable_gri.Set(True)
-
-    method = apis.GetMethod(args.collection, args.method,
-                            api_version=args.api_version, no_http=False)
-    request_class = method.GetRequestType()
-
-    # TODO(b/38000796): Move all this into an argparse Action.
-    # Parse the resource based on the positional arg and the flags for its
-    # flat_path parameters.
-    # Start by adding in all the applicable default parameters.
-    params = method.GetDefaultParams()
-    # Add in any resource fields explicitly provided by flags.
-    resource_flags = {f: getattr(args, f) for f in method.ResourceFieldNames()}
-    params.update({f: v for f, v in resource_flags.iteritems()
-                   if v is not None})
-    # TODO(b/38000796): Make sure everything has a collection or have a mode
-    # where a collection is not required.
-    ref = resources.REGISTRY.Parse(
-        args.resource,
-        collection=method.RequestCollection().full_name,
-        params=params)
-
-    # Add all the message fields specified by flags.
-    kwargs = {f: getattr(args, f) for f in method.RequestFieldNames()}
-    # For each actual method path field, add the attribute to the request.
-    kwargs.update({f: getattr(ref, f) for f in method.params})
-
-    # TODO(b/38000796): Should have special handling for list requests to do
-    # paging automatically.
-    response = method.Call(request_class(**kwargs))
+    response = args.method.Call()
     return response

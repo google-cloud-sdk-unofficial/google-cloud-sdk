@@ -163,16 +163,19 @@ class GenerateHelpDocs(base.Command):
 
   def Run(self, args):
     if args.devsite_dir:
-      walker_util.DevSiteGenerator(self.cli, args.devsite_dir).Walk(
-          args.hidden, args.restrict)
+      walker_util.DevSiteGenerator(self._cli_power_users_only,
+                                   args.devsite_dir).Walk(
+                                       args.hidden, args.restrict)
     if args.help_text_dir:
       walker_util.HelpTextGenerator(
-          self.cli, args.help_text_dir).Walk(args.hidden, args.restrict)
+          self._cli_power_users_only, args.help_text_dir).Walk(args.hidden,
+                                                               args.restrict)
     if args.html_dir:
       walker_util.HtmlGenerator(
-          self.cli, args.html_dir).Walk(args.hidden, args.restrict)
+          self._cli_power_users_only, args.html_dir).Walk(args.hidden,
+                                                          args.restrict)
       tree = walker_util.CommandTreeGenerator(
-          self.cli).Walk(args.hidden, args.restrict)
+          self._cli_power_users_only).Walk(args.hidden, args.restrict)
       with open(os.path.join(args.html_dir, '_menu_.html'), 'w') as out:
         WriteHtmlMenu(tree, out)
       for file_name in _HELP_HTML_DATA_FILES:
@@ -182,9 +185,11 @@ class GenerateHelpDocs(base.Command):
           out.write(file_contents)
     if args.manpage_dir:
       walker_util.ManPageGenerator(
-          self.cli, args.manpage_dir).Walk(args.hidden, args.restrict)
+          self._cli_power_users_only, args.manpage_dir).Walk(args.hidden,
+                                                             args.restrict)
     if args.update_help_text_dir:
       changes = help_util.HelpTextUpdater(
-          self.cli, args.update_help_text_dir, test=args.test).Update()
+          self._cli_power_users_only, args.update_help_text_dir,
+          test=args.test).Update()
       if changes and args.test:
         raise HelpTextOutOfDateError('Help text files must be updated.')

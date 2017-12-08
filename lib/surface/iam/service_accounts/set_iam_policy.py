@@ -46,8 +46,10 @@ class SetIamPolicy(base_classes.BaseIamCommand):
   def Run(self, args):
     policy = iam_util.ParsePolicyFile(args.policy_file, self.messages.Policy)
 
-    return self.iam_client.projects_serviceAccounts.SetIamPolicy(
+    result = self.iam_client.projects_serviceAccounts.SetIamPolicy(
         self.messages.IamProjectsServiceAccountsSetIamPolicyRequest(
             resource=iam_util.EmailToAccountResourceName(args.name),
             setIamPolicyRequest=self.messages.SetIamPolicyRequest(
                 policy=policy)))
+    iam_util.LogSetIamPolicy(args.name, 'service account')
+    return result

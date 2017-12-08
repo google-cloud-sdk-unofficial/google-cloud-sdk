@@ -393,6 +393,7 @@ class CreateBeta(Create):
         support_alias_ip_ranges=True,
         support_public_dns=cls._support_public_dns,
         support_network_tier=cls._support_network_tier)
+    instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -412,7 +413,7 @@ class CreateAlpha(Create):
                 support_network_tier=cls._support_network_tier,
                 enable_regional=True,
                 support_local_ssd_size=True)
-    instances_flags.AddMinCpuPlatformArgs(parser)
+    instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
 
 
 Create.detailed_help = DETAILED_HELP

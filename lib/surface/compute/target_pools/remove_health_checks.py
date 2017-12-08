@@ -15,13 +15,14 @@
 """Command for removing health checks from target pools."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.http_health_checks import (
     flags as http_health_check_flags)
 from googlecloudsdk.command_lib.compute.target_pools import flags
 
 
-class RemoveHealthChecks(base_classes.NoOutputAsyncMutator):
+class RemoveHealthChecks(base.SilentCommand):
   """Remove an HTTP health check from a target pool.
 
   *{command}* is used to remove an HTTP health check
@@ -45,35 +46,26 @@ class RemoveHealthChecks(base_classes.NoOutputAsyncMutator):
     cls.TARGET_POOL_ARG.AddArgument(
         parser, operation_type='remove health checks from')
 
-  @property
-  def service(self):
-    return self.compute.targetPools
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'RemoveHealthCheck'
-
-  @property
-  def resource_type(self):
-    return 'targetPools'
-
-  def CreateRequests(self, args):
     http_health_check_ref = self.HEALTH_CHECK_ARG.ResolveAsResource(
-        args, self.resources)
+        args, holder.resources)
 
     target_pool_ref = self.TARGET_POOL_ARG.ResolveAsResource(
         args,
-        self.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
-                                                         self.project))
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-    request = self.messages.ComputeTargetPoolsRemoveHealthCheckRequest(
+    request = client.messages.ComputeTargetPoolsRemoveHealthCheckRequest(
         region=target_pool_ref.region,
-        project=self.project,
+        project=target_pool_ref.project,
         targetPool=target_pool_ref.Name(),
         targetPoolsRemoveHealthCheckRequest=(
-            self.messages.TargetPoolsRemoveHealthCheckRequest(
-                healthChecks=[self.messages.HealthCheckReference(
+            client.messages.TargetPoolsRemoveHealthCheckRequest(
+                healthChecks=[client.messages.HealthCheckReference(
                     healthCheck=http_health_check_ref.SelfLink())])))
 
-    return [request]
+    return client.MakeRequests([(client.apitools_client.targetPools,
+                                 'RemoveHealthCheck', request)])

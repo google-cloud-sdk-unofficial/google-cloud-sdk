@@ -11,7 +11,7 @@ gcloud compute images create \- create Google Compute Engine images
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute images create\fR \fINAME\fR [\fB\-\-csek\-key\-file\fR=\fIFILE\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-family\fR=\fIFAMILY\fR] [\fB\-\-licenses\fR=[\fILICENSES\fR,...]] [\fB\-\-no\-require\-csek\-key\-create\fR] [\fB\-\-source\-disk\fR=\fISOURCE_DISK\fR] [\fB\-\-source\-disk\-zone\fR=\fISOURCE_DISK_ZONE\fR] [\fB\-\-source\-uri\fR=\fISOURCE_URI\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
+\f5gcloud compute images create\fR \fINAME\fR (\fB\-\-source\-disk\fR=\fISOURCE_DISK\fR\ |\ \fB\-\-source\-uri\fR=\fISOURCE_URI\fR) [\fB\-\-csek\-key\-file\fR=\fIFILE\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-family\fR=\fIFAMILY\fR] [\fB\-\-licenses\fR=[\fILICENSES\fR,...]] [\fB\-\-no\-require\-csek\-key\-create\fR] [\fB\-\-source\-disk\-zone\fR=\fISOURCE_DISK_ZONE\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -43,7 +43,27 @@ The name of the disk image.
 .RE
 .sp
 
-.SH "FLAGS"
+.SH "REQUIRED FLAGS"
+
+Exactly one of these must be specified:
+
+.RS 2m
+.TP 2m
+\fB\-\-source\-disk\fR=\fISOURCE_DISK\fR
+A source disk to create the image from. The value for this option can be the
+name of a disk with the zone specified via \f5\fI\-\-source\-disk\-zone\fR\fR
+flag.
+
+.TP 2m
+\fB\-\-source\-uri\fR=\fISOURCE_URI\fR
+The full Google Cloud Storage URI where the disk image is stored. This file must
+be a gzip\-compressed tarball whose name ends in \f5\fI.tar.gz\fR\fR.
+
+
+.RE
+.sp
+
+.SH "OPTIONAL FLAGS"
 
 .RS 2m
 .TP 2m
@@ -79,14 +99,6 @@ for more details. Enabled by default, use
 \fB\-\-no\-require\-csek\-key\-create\fR to disable.
 
 .TP 2m
-\fB\-\-source\-disk\fR=\fISOURCE_DISK\fR
-A source disk to create the image from. The value for this option can be the
-name of a disk with the zone specified via \f5\fI\-\-source\-disk\-zone\fR\fR
-flag.
-
-This flag is mutually exclusive with \f5\fI\-\-source\-uri\fR\fR.
-
-.TP 2m
 \fB\-\-source\-disk\-zone\fR=\fISOURCE_DISK_ZONE\fR
 The zone of the source disk to operate on. If not specified, you will be
 prompted to select a zone.
@@ -112,13 +124,6 @@ $ gcloud config unset compute/zone
 
 Alternatively, the zone can be stored in the environment variable
 \f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
-
-.TP 2m
-\fB\-\-source\-uri\fR=\fISOURCE_URI\fR
-The full Google Cloud Storage URI where the disk image is stored. This file must
-be a gzip\-compressed tarball whose name ends in \f5\fI.tar.gz\fR\fR.
-
-This flag is mutually exclusive with \f5\fI\-\-source\-disk\fR\fR.
 
 
 .RE

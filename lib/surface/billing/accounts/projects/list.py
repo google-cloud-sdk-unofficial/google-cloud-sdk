@@ -13,10 +13,10 @@
 # limitations under the License.
 """Command to list all Project IDs linked with a billing account."""
 
-from apitools.base.py import list_pager
-
-from googlecloudsdk.api_lib.billing import utils
+from googlecloudsdk.api_lib.billing import billing_client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.billing import flags
+from googlecloudsdk.command_lib.billing import utils
 
 
 class List(base.ListCommand):
@@ -28,7 +28,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('id', **utils.ACCOUNT_ID_ARG_PARAMS)
+    flags.GetAccountIdArgument().AddToParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
     parser.display_info.AddFormat("""
           table(
@@ -45,19 +45,6 @@ class List(base.ListCommand):
 
   def Run(self, args):
     """Run the list command."""
-
-    billing_client = self.context['billing_client']
-    messages = self.context['billing_messages']
-
-    return list_pager.YieldFromList(
-        billing_client.billingAccounts_projects,
-        messages.CloudbillingBillingAccountsProjectsListRequest(
-            name='billingAccounts/{account_id}'.format(
-                account_id=args.id,
-            ),
-        ),
-        field='projectBillingInfo',
-        batch_size_attribute='pageSize',
-        limit=args.limit,
-        predicate=args.filter
-    )
+    client = billing_client.ProjectsClient()
+    account_ref = utils.ParseAccount(args.id)
+    return client.List(account_ref, limit=args.limit)

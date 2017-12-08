@@ -271,7 +271,7 @@ Available Checks:
 
   def Run(self, args):
     # pylint: disable=protected-access
-    group = self.cli._TopElement()
+    group = self._cli_power_users_only._TopElement()
     group.LoadAllSubElements(recursive=True)
     return Lint._SetupAndRun(group, args.checks)
 

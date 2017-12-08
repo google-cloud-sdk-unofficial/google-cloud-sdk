@@ -13,28 +13,37 @@
 # limitations under the License.
 """Command for describing target HTTP proxies."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.target_http_proxies import flags
 
 
-class Describe(base_classes.GlobalDescriber):
-  """Display detailed information about a target HTTP proxy."""
+class Describe(base.DescribeCommand):
+  """Display detailed information about a target HTTP proxy.
+
+  *{command}* displays all data associated with a target HTTP proxy
+  in a project.
+  """
+
+  TARGET_HTTP_PROXY_ARG = None
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalDescriber.Args(parser, 'compute.targetHttpProxies')
+    Describe.TARGET_HTTP_PROXY_ARG = flags.TargetHttpProxyArgument()
+    Describe.TARGET_HTTP_PROXY_ARG.AddArgument(
+        parser, operation_type='describe')
 
-  @property
-  def service(self):
-    return self.compute.targetHttpProxies
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'targetHttpProxies'
+    target_http_proxy_ref = self.TARGET_HTTP_PROXY_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+    request = client.messages.ComputeTargetHttpProxiesGetRequest(
+        **target_http_proxy_ref.AsDict())
 
-Describe.detailed_help = {
-    'brief': 'Display detailed information about a target HTTP proxy',
-    'DESCRIPTION': """\
-        *{command}* displays all data associated with a target HTTP proxy
-        in a project.
-        """,
-}
+    return client.MakeRequests([(client.apitools_client.targetHttpProxies,
+                                 'Get', request)])[0]

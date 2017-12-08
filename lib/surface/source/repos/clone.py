@@ -74,7 +74,6 @@ class CloneGA(base.Command):
         help=('Directory name for the cloned repo. Defaults to the repository '
               'name.'))
 
-  @c_exc.RaiseToolExceptionInsteadOf(git.Error, c_store.Error)
   def Run(self, args):
     """Clone a GCP repository to the current directory.
 
@@ -149,7 +148,6 @@ class CloneAlpha(base.Command):
         help=('Directory name for the cloned repo. Defaults to the repository '
               'name.'))
 
-  @c_exc.RaiseToolExceptionInsteadOf(git.Error, c_store.Error)
   def Run(self, args):
     """Clone a GCP repository to the current directory.
 

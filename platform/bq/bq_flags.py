@@ -47,6 +47,26 @@ flags.DEFINE_string(
 flags.DEFINE_string(
     'discovery_file', '',
     'Filename for JSON document to read for discovery.')
+
+flags.DEFINE_boolean(
+    'disable_ssl_validation', False,
+    'Disables HTTPS certificates validation. This is off by default.')
+flags.DEFINE_string(
+    'ca_certificates_file', '',
+    'Location of CA certificates file.')
+flags.DEFINE_string(
+    'proxy_address', '',
+    'The name or IP address of the proxy host to use for connecting to GCP.')
+flags.DEFINE_string(
+    'proxy_port', '',
+    'The port number to use to connect to the proxy host.')
+flags.DEFINE_string(
+    'proxy_username', '',
+    'The user name to use when authenticating with proxy host.')
+flags.DEFINE_string(
+    'proxy_password', '',
+    'The password to use when authenticating with proxy host.')
+
 flags.DEFINE_boolean(
     'synchronous_mode', True,
     'If True, wait for command completion before returning, and use the '

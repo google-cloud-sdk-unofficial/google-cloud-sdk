@@ -11,47 +11,38 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Command to show metadata for a specified project."""
-
-import textwrap
-from googlecloudsdk.api_lib.billing import utils
+from googlecloudsdk.api_lib.billing import billing_client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.billing import flags
+from googlecloudsdk.command_lib.billing import utils
 
 
 class Describe(base.DescribeCommand):
   """Show detailed billing information for a project."""
 
   detailed_help = {
-      'DESCRIPTION': textwrap.dedent(
-          """
-          This command shows billing info for a project, given it's ID.
+      'DESCRIPTION': """\
+          This command shows billing info for a project, given its ID.
 
           This call can fail for the following reasons:
+
           * The project specified does not exist.
           * The active user does not have permission to access the given
-          project.
+            project.
+          """,
+      'EXAMPLES': """\
+          To see detailed billing information for a project `my-project`, run:
+
+              $ {command} my-project
           """
-      ),
-      'EXAMPLES': textwrap.dedent(
-          """
-          *{command}* 0X0X0X-0X0X0X-0X0X0X will print the info for
-          billing account 0X0X0X-0X0X0X-0X0X0X.
-          """
-      ),
   }
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('project_id', **utils.PROJECT_ID_ARG_PARAMS)
+    flags.GetProjectIdArgument().AddToParser(parser)
 
   def Run(self, args):
-    client = self.context['billing_client']
-    messages = self.context['billing_messages']
-    return client.projects.GetBillingInfo(
-        messages.CloudbillingProjectsGetBillingInfoRequest(
-            name='projects/{project_id}'.format(
-                project_id=args.project_id,
-            ),
-        )
-    )
+    client = billing_client.ProjectsClient()
+    project_ref = utils.ParseProject(args.project_id)
+    return client.Get(project_ref)

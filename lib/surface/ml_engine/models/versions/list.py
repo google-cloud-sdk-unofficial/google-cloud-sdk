@@ -17,11 +17,11 @@ from surface.ml_engine.versions import list as list_command
 
 
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning=('This command is deprecated. '
              'Please use `gcloud beta ml-engine versions list` instead.'),
     error=('This command has been removed. '
            'Please use `gcloud beta ml-engine versions list` instead.'))
-class ListBeta(list_command.ListBeta):
+class ListBeta(list_command.List):
   """List existing Cloud ML Engine versions."""
   pass

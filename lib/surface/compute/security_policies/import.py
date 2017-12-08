@@ -43,13 +43,20 @@ class Import(base.SilentCommand):
         help=('The name of the JSON or YAML file to import the security policy '
               'config from.'))
 
+    parser.add_argument(
+        '--file-format',
+        choices=['json', 'yaml'],
+        help=(
+            'The format of the file to export the security policy config to. '
+            'Specify either yaml or json. Defaults to json if not specified.'))
+
   def Collection(self):
     return 'compute.securityPolicies'
 
   def Run(self, args):
     if not os.path.exists(args.file_name):
       raise exceptions.BadFileException(
-          'no such file [{0}]'.format(args.file_name))
+          'No such file [{0}]'.format(args.file_name))
     if os.path.isdir(args.file_name):
       raise exceptions.BadFileException(
           '[{0}] is a directory'.format(args.file_name))
@@ -60,12 +67,16 @@ class Import(base.SilentCommand):
     # Get the imported security policy config.
     try:
       with open(args.file_name) as import_file:
-        imported = security_policies_utils.SecurityPolicyFromFile(
-            import_file, holder.client.messages)
+        if args.file_format == 'yaml':
+          imported = security_policies_utils.SecurityPolicyFromFile(
+              import_file, holder.client.messages, 'yaml')
+        else:
+          imported = security_policies_utils.SecurityPolicyFromFile(
+              import_file, holder.client.messages, 'json')
     except Exception as exp:
-      msg = (u'unable to read security policy config from specified file [{0}] '
+      msg = (u'Unable to read security policy config from specified file [{0}] '
              u'because [{1}]'.format(args.file_name, exp.message))
-      raise exceptions.ToolException(msg)
+      raise exceptions.BadFileException(msg)
 
     # Send the change to the service.
     security_policy = client.SecurityPolicy(ref, compute_client=holder.client)

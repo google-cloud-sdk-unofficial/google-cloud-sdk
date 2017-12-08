@@ -40,5 +40,5 @@ class ListGCloud(base.Command):
     return 'json'
 
   def Run(self, args):
-    return walker_util.GCloudTreeGenerator(self.cli).Walk(args.hidden,
-                                                          args.restrict)
+    return walker_util.GCloudTreeGenerator(self._cli_power_users_only).Walk(
+        args.hidden, args.restrict)

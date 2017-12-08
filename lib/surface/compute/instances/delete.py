@@ -21,6 +21,15 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.core.console import console_io
 
+
+_INSTANCE_DELETE_PROMPT = 'The following instances will be deleted.'
+_INSTANCE_DELETE_PROMPT_DISK_ADDENDUM = """\
+Any attached disks configured to be auto-deleted will be deleted unless they \
+are attached to any other instances or the `--keep-disks` flag is given and \
+specifies them for keeping. \
+Deleting a disk is irreversible and any data on the disk will be lost."""
+
+
 AUTO_DELETE_OVERRIDE_CHOICES = {
     'boot': 'The first partition is reserved for the root filesystem.',
     'data': 'A non-boot disk.',
@@ -132,14 +141,10 @@ class Delete(base.DeleteCommand):
     refs = instance_flags.INSTANCES_ARG.ResolveAsResource(
         args, holder.resources, scope_lister=flags.GetDefaultScopeLister(
             client))
-    utils.PromptForDeletion(
-        refs,
-        scope_name='zone',
-        prompt_title=('The following instances will be deleted. Attached '
-                      'disks configured to be auto-deleted will be deleted '
-                      'unless they are attached to any other instances. '
-                      'Deleting a disk is irreversible and any data on the '
-                      'disk will be lost.'))
+    msg = _INSTANCE_DELETE_PROMPT
+    if args.keep_disks != 'all':
+      msg += ' ' + _INSTANCE_DELETE_PROMPT_DISK_ADDENDUM
+    utils.PromptForDeletion(refs, scope_name='zone', prompt_title=msg)
 
     if args.delete_disks or args.keep_disks:
       instance_resources = self.GetInstances(refs, client)

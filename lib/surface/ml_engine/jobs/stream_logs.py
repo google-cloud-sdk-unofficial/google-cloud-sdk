@@ -26,8 +26,7 @@ def _AddStreamLogsArgs(parser):
   flags.TASK_NAME.AddToParser(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class StreamLogsGa(base.Command):
+class StreamLogs(base.Command):
   """Show logs from a running Cloud ML Engine job."""
 
   @staticmethod
@@ -38,23 +37,6 @@ class StreamLogsGa(base.Command):
   def Run(self, args):
     """Run the stream-logs command."""
     return jobs_util.StreamLogs(
-        'v1', args.job, args.task_name,
-        properties.VALUES.ml_engine.polling_interval.GetInt(),
-        args.allow_multiline_logs)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class StreamLogsBeta(base.Command):
-  """Show logs from a running Cloud ML Engine job."""
-
-  @staticmethod
-  def Args(parser):
-    _AddStreamLogsArgs(parser)
-    parser.display_info.AddFormat(log_utils.LOG_FORMAT)
-
-  def Run(self, args):
-    """Run the stream-logs command."""
-    return jobs_util.StreamLogs(
-        'v1beta1', args.job, args.task_name,
+        args.job, args.task_name,
         properties.VALUES.ml_engine.polling_interval.GetInt(),
         args.allow_multiline_logs)

@@ -71,4 +71,6 @@ class SetIamPolicy(base.UpdateCommand):
     policy = iam_util.ParseJsonPolicyFile(args.policy_file,
                                           sourcerepo.messages.Policy)
     source = sourcerepo.Source()
-    return source.SetIamPolicy(res, policy)
+    result = source.SetIamPolicy(res, policy)
+    iam_util.LogSetIamPolicy(res.Name(), 'repo')
+    return result

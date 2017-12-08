@@ -16,7 +16,8 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.command_lib.meta import apis
+from googlecloudsdk.command_lib.meta.apis import flags
+from googlecloudsdk.command_lib.meta.apis import registry
 
 
 class List(base.ListCommand):
@@ -28,9 +29,9 @@ class List(base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
     parser.add_argument(
         '--api',
-        completer=apis.APICompleter,
+        completer=flags.APICompleter,
         help='The name of the API to get the collections for.')
-    apis.API_VERSION_FLAG.AddToParser(parser)
+    flags.API_VERSION_FLAG.AddToParser(parser)
     parser.display_info.AddFormat("""
       table(
         full_name:sort=1:label=COLLECTION_NAME,
@@ -45,5 +46,5 @@ class List(base.ListCommand):
           'The --api-version flag can only be specified when using the --api '
           'flag.')
 
-    return apis.GetAPICollections(api_name=args.api,
-                                  api_version=args.api_version)
+    return registry.GetAPICollections(api_name=args.api,
+                                      api_version=args.api_version)

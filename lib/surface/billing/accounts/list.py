@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command to list all billing accounts associated with the active user."""
-
-from apitools.base.py import list_pager
-
+from googlecloudsdk.api_lib.billing import billing_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import resources
 
@@ -22,8 +20,14 @@ from googlecloudsdk.core import resources
 class List(base.ListCommand):
   """List all active billing accounts.
 
-  *{command}* lists all billing accounts owned by the currently
+  `{command}` lists all billing accounts owned by the currently
   authenticated user.
+
+  ## EXAMPLES
+
+  To list only open billing accounts, run:
+
+      $ {command} --filter open=true
   """
 
   @staticmethod
@@ -44,13 +48,5 @@ class List(base.ListCommand):
 
   def Run(self, args):
     """Run the list command."""
-    billing_client = self.context['billing_client']
-    messages = self.context['billing_messages']
-    return list_pager.YieldFromList(
-        billing_client.billingAccounts,
-        messages.CloudbillingBillingAccountsListRequest(),
-        field='billingAccounts',
-        batch_size_attribute='pageSize',
-        limit=args.limit,
-        predicate=args.filter,
-    )
+    client = billing_client.AccountsClient()
+    return client.List(limit=args.limit)

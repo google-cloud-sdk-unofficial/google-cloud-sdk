@@ -13,12 +13,23 @@
 # limitations under the License.
 """Command for modifying backend services."""
 
+import cStringIO
+from apitools.base.protorpclite import messages
+from apitools.base.py import encoding
+
 from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import property_selector
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.core import resources
+from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util import edit
+
+import yaml
 
 
 class InvalidResourceError(exceptions.ToolException):
@@ -28,50 +39,198 @@ class InvalidResourceError(exceptions.ToolException):
   pass
 
 
-class Edit(base_classes.BaseEdit):
-  """Modify backend services."""
+class Edit(base.Command):
+  """Modify backend services.
 
+    *{command}* can be used to modify a backend service. The backend
+  service resource is fetched from the server and presented in a text
+  editor. After the file is saved and closed, this command will
+  update the resource. Only fields that can be modified are
+  displayed in the editor.
+
+  Backends are named by their associated instances groups, and one
+  of the ``--group'' or ``--instance-group'' flags is required to
+  identify the backend that you are modifying.  You cannot "change"
+  the instance group associated with a backend, but you can accomplish
+  something similar with ``backend-services remove-backend'' and
+  ``backend-services add-backend''.
+
+  The editor used to modify the resource is chosen by inspecting
+  the ``EDITOR'' environment variable.
+  """
+
+  DEFAULT_FORMAT = 'yaml'
   _BACKEND_SERVICE_ARG = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG
-
-  def __init__(self, *args, **kwargs):
-    super(Edit, self).__init__(*args, **kwargs)
-    self.ref = None
 
   @classmethod
   def Args(cls, parser):
-    base_classes.BaseEdit.Args(parser)
     cls._BACKEND_SERVICE_ARG.AddArgument(parser)
 
-  @property
-  def service(self):
-    if self.regional:
-      return self.compute.regionBackendServices
-    return self.compute.backendServices
+  def _ProcessEditedResource(self, holder, backend_service_ref, file_contents,
+                             original_object, original_record,
+                             modifiable_record, args):
+    """Returns an updated resource that was edited by the user."""
 
-  @property
-  def resource_type(self):
-    return 'backendServices'
+    # It's very important that we replace the characters of comment
+    # lines with spaces instead of removing the comment lines
+    # entirely. JSON and YAML deserialization give error messages
+    # containing line, column, and the character offset of where the
+    # error occurred. If the deserialization fails; we want to make
+    # sure those numbers map back to what the user actually had in
+    # front of him or her otherwise the errors will not be very
+    # useful.
+    non_comment_lines = '\n'.join(
+        ' ' * len(line) if line.startswith('#') else line
+        for line in file_contents.splitlines())
 
-  @property
-  def example_resource(self):
+    modified_record = base_classes.DeserializeValue(
+        non_comment_lines, args.format or Edit.DEFAULT_FORMAT)
+
+    # Normalizes all of the fields that refer to other
+    # resource. (i.e., translates short names to URIs)
+    reference_normalizer = property_selector.PropertySelector(
+        transformations=self.GetReferenceNormalizers(holder.resources))
+    modified_record = reference_normalizer.Apply(modified_record)
+
+    if modifiable_record == modified_record:
+      new_object = None
+
+    else:
+      modified_record['name'] = original_record['name']
+      fingerprint = original_record.get('fingerprint')
+      if fingerprint:
+        modified_record['fingerprint'] = fingerprint
+
+      new_object = encoding.DictToMessage(modified_record,
+                                          holder.client.messages.BackendService)
+
+    # If existing object is equal to the proposed object or if
+    # there is no new object, then there is no work to be done, so we
+    # return the original object.
+    if not new_object or original_object == new_object:
+      return [original_object]
+
+    return holder.client.MakeRequests(
+        [self.GetSetRequest(holder.client, backend_service_ref, new_object)])
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    backend_service_ref = self._BACKEND_SERVICE_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        default_scope=backend_services_utils.GetDefaultScope(),
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+    get_request = self.GetGetRequest(client, backend_service_ref)
+
+    objects = client.MakeRequests([get_request])
+
+    original_object = objects[0]
+    original_record = encoding.MessageToDict(original_object)
+
+    # Selects only the fields that can be modified.
+    field_selector = property_selector.PropertySelector(properties=[
+        'backends',
+        'description',
+        'enableCDN',
+        'healthChecks',
+        'iap.enabled',
+        'iap.oauth2ClientId',
+        'iap.oauth2ClientSecret',
+        'port',
+        'portName',
+        'protocol',
+        'timeoutSec',
+    ])
+    modifiable_record = field_selector.Apply(original_record)
+
+    file_contents = self.BuildFileContents(args, client, original_record,
+                                           modifiable_record)
+    resource_list = self.EditResource(args, backend_service_ref, file_contents,
+                                      holder, modifiable_record,
+                                      original_object, original_record)
+
+    for resource in resource_list:
+      yield resource
+
+  def BuildFileContents(self, args, client, original_record, modifiable_record):
+    buf = cStringIO.StringIO()
+    for line in base_classes.HELP.splitlines():
+      buf.write('#')
+      if line:
+        buf.write(' ')
+      buf.write(line)
+      buf.write('\n')
+    buf.write('\n')
+    buf.write(base_classes.SerializeDict(modifiable_record,
+                                         args.format or Edit.DEFAULT_FORMAT))
+    buf.write('\n')
+    example = base_classes.SerializeDict(
+        encoding.MessageToDict(self.GetExampleResource(client)),
+        args.format or Edit.DEFAULT_FORMAT)
+    base_classes.WriteResourceInCommentBlock(example, 'Example resource:', buf)
+    buf.write('#\n')
+    original = base_classes.SerializeDict(original_record,
+                                          args.format or Edit.DEFAULT_FORMAT)
+    base_classes.WriteResourceInCommentBlock(original, 'Original resource:',
+                                             buf)
+    return buf.getvalue()
+
+  def EditResource(self, args, backend_service_ref, file_contents, holder,
+                   modifiable_record, original_object, original_record):
+    while True:
+      try:
+        file_contents = edit.OnlineEdit(file_contents)
+      except edit.NoSaveException:
+        raise calliope_exceptions.ToolException('Edit aborted by user.')
+      try:
+        resource_list = self._ProcessEditedResource(holder, backend_service_ref,
+                                                    file_contents,
+                                                    original_object,
+                                                    original_record,
+                                                    modifiable_record, args)
+        break
+      except (ValueError, yaml.error.YAMLError,
+              messages.ValidationError,
+              calliope_exceptions.ToolException) as e:
+        if isinstance(e, ValueError):
+          message = e.message
+        else:
+          message = str(e)
+
+        if isinstance(e, calliope_exceptions.ToolException):
+          problem_type = 'applying'
+        else:
+          problem_type = 'parsing'
+
+        message = ('There was a problem {0} your changes: {1}'
+                   .format(problem_type, message))
+        if not console_io.PromptContinue(
+            message=message,
+            prompt_string='Would you like to edit the resource again?'):
+          raise calliope_exceptions.ToolException('Edit aborted by user.')
+    return resource_list
+
+  def GetExampleResource(self, client):
     uri_prefix = ('https://www.googleapis.com/compute/v1/projects/'
                   'my-project/')
     instance_groups_uri_prefix = (
         'https://www.googleapis.com/compute/v1/projects/'
         'my-project/zones/')
 
-    return self.messages.BackendService(
+    return client.messages.BackendService(
         backends=[
-            self.messages.Backend(
+            client.messages.Backend(
                 balancingMode=(
-                    self.messages.Backend.BalancingModeValueValuesEnum.RATE),
+                    client.messages.Backend.BalancingModeValueValuesEnum.RATE),
                 group=(
                     instance_groups_uri_prefix +
                     'us-central1-a/instanceGroups/group-1'),
                 maxRate=100),
-            self.messages.Backend(
+            client.messages.Backend(
                 balancingMode=(
-                    self.messages.Backend.BalancingModeValueValuesEnum.RATE),
+                    client.messages.Backend.BalancingModeValueValuesEnum.RATE),
                 group=(
                     instance_groups_uri_prefix +
                     'europe-west1-a/instanceGroups/group-2'),
@@ -85,31 +244,19 @@ class Edit(base_classes.BaseEdit):
         name='backend-service',
         port=80,
         portName='http',
-        protocol=self.messages.BackendService.ProtocolValueValuesEnum.HTTP,
+        protocol=client.messages.BackendService.ProtocolValueValuesEnum.HTTP,
         selfLink=uri_prefix + 'global/backendServices/backend-service',
         timeoutSec=30,
     )
 
-  def CreateReference(self, args):
-    # TODO(b/35133484): remove once base classes are refactored away
-    if not self.ref:
-      self.ref = self._BACKEND_SERVICE_ARG.ResolveAsResource(
-          args,
-          self.resources,
-          default_scope=backend_services_utils.GetDefaultScope(),
-          scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
-      self.regional = self.ref.Collection() == 'compute.regionBackendServices'
-    return self.ref
-
-  @property
-  def reference_normalizers(self):
+  def GetReferenceNormalizers(self, resource_registry):
 
     def MakeReferenceNormalizer(field_name, allowed_collections):
       """Returns a function to normalize resource references."""
       def NormalizeReference(reference):
         """Returns normalized URI for field_name."""
         try:
-          value_ref = self.resources.Parse(reference)
+          value_ref = resource_registry.Parse(reference)
         except resources.UnknownCollectionException:
           raise InvalidResourceError(
               '[{field_name}] must be referenced using URIs.'.format(
@@ -137,58 +284,22 @@ class Edit(base_classes.BaseEdit):
              ('compute.instanceGroups'))),
     ]
 
-  def GetGetRequest(self, args):
-    if self.regional:
-      return (
-          self.service,
-          'Get',
-          self.messages.ComputeRegionBackendServicesGetRequest(
-              project=self.ref.project,
-              region=self.ref.region,
-              backendService=self.ref.Name()))
-    return (
-        self.service,
-        'Get',
-        self.messages.ComputeBackendServicesGetRequest(
-            project=self.ref.project,
-            backendService=self.ref.Name()))
+  def GetGetRequest(self, client, backend_service_ref):
+    if backend_service_ref.Collection() == 'compute.regionBackendServices':
+      return (client.apitools_client.regionBackendServices, 'Get',
+              client.messages.ComputeRegionBackendServicesGetRequest(
+                  **backend_service_ref.AsDict()))
+    return (client.apitools_client.backendServices, 'Get',
+            client.messages.ComputeBackendServicesGetRequest(
+                **backend_service_ref.AsDict()))
 
-  def GetSetRequest(self, args, replacement, _):
-    if self.regional:
-      return (
-          self.service,
-          'Update',
-          self.messages.ComputeRegionBackendServicesUpdateRequest(
-              project=self.ref.project,
-              region=self.ref.region,
-              backendService=self.ref.Name(),
-              backendServiceResource=replacement))
-    return (
-        self.service,
-        'Update',
-        self.messages.ComputeBackendServicesUpdateRequest(
-            project=self.ref.project,
-            backendService=self.ref.Name(),
-            backendServiceResource=replacement))
-
-
-Edit.detailed_help = {
-    'brief': 'Modify backend services',
-    'DESCRIPTION': """\
-        *{command}* can be used to modify a backend service. The backend
-        service resource is fetched from the server and presented in a text
-        editor. After the file is saved and closed, this command will
-        update the resource. Only fields that can be modified are
-        displayed in the editor.
-
-        Backends are named by their associated instances groups, and one
-        of the ``--group'' or ``--instance-group'' flags is required to
-        identify the backend that you are modifying.  You cannot "change"
-        the instance group associated with a backend, but you can accomplish
-        something similar with ``backend-services remove-backend'' and
-        ``backend-services add-backend''.
-
-        The editor used to modify the resource is chosen by inspecting
-        the ``EDITOR'' environment variable.
-        """,
-}
+  def GetSetRequest(self, client, backend_service_ref, replacement):
+    if backend_service_ref.Collection() == 'compute.regionBackendServices':
+      return (client.apitools_client.regionBackendServices, 'Update',
+              client.messages.ComputeRegionBackendServicesUpdateRequest(
+                  backendServiceResource=replacement,
+                  **backend_service_ref.AsDict()))
+    return (client.apitools_client.backendServices, 'Update',
+            client.messages.ComputeBackendServicesUpdateRequest(
+                backendServiceResource=replacement,
+                **backend_service_ref.AsDict()))

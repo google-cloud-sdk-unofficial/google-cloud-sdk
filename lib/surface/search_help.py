@@ -35,7 +35,7 @@ class HelpSearch(base.Command):
                         help=('Term to search for.'))
 
   def Run(self, args):
-    return search.RunSearch([args.term], self.cli)
+    return search.RunSearch([args.term], self._cli_power_users_only)
 
   def DeprecatedFormat(self, unused_args):
     return ("table(path.join(sep=' '):label='COMMAND', "

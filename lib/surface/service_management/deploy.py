@@ -240,8 +240,10 @@ class _BaseDeploy(object):
 
     self.validate_only = args.validate_only
 
-    # If doing a validate-only run, restore the default formatting
-    # (or whatever the user has entered as an override).
+    # If we're not doing a validate-only run, we don't want to output the
+    # resource directly unless the user specifically requests it using the
+    # --format flag. The Epilog will show useful information after deployment
+    # is complete.
     if not self.validate_only and not args.IsSpecified('format'):
       args.format = 'none'
 
@@ -258,6 +260,12 @@ class _BaseDeploy(object):
               '[{0}].'.format(service_config_file))
 
         if 'swagger' in service_config_dict:
+          if 'host' not in service_config_dict:
+            raise calliope_exceptions.BadFileException((
+                'Malformed input. Found Swagger service config in file [{}], '
+                'but no host was specified. Add a host specification to the '
+                'config file.').format(
+                    service_config_file))
           if not self.service_name and service_config_dict.get('host'):
             self.service_name = service_config_dict.get('host')
 

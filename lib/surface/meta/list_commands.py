@@ -162,7 +162,7 @@ class ListCommands(base.Command):
       args.flag_values = True
       args.hidden = True
     return walker_util.CommandTreeGenerator(
-        self.cli, with_flags=args.flags,
+        self._cli_power_users_only, with_flags=args.flags,
         with_flag_values=args.flag_values).Walk(args.hidden, args.restrict)
 
   def Display(self, args, result):

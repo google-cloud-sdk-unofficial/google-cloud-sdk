@@ -14,46 +14,45 @@
 """Command for creating TCP health checks."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import health_checks_utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.health_checks import flags
 
 
-class Create(base_classes.BaseAsyncCreator):
-  """Create a TCP health check to monitor load balanced instances."""
+class Create(base.CreateCommand):
+  """Create a TCP health check to monitor load balanced instances.
+
+    *{command}* is used to create a TCP health check. TCP health checks
+  monitor instances in a load balancer controlled by a target pool. All
+  arguments to the command are optional except for the name of the health
+  check. For more information on load balancing, see
+  [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
+  """
 
   HEALTH_CHECK_ARG = None
 
   @classmethod
   def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument('TCP')
     cls.HEALTH_CHECK_ARG.AddArgument(parser)
     health_checks_utils.AddTcpRelatedCreationArgs(parser)
     health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'TCP')
 
-  @property
-  def service(self):
-    return self.compute.healthChecks
-
-  @property
-  def method(self):
-    return 'Insert'
-
-  @property
-  def resource_type(self):
-    return 'healthChecks'
-
-  def CreateRequests(self, args):
-    """Returns the request necessary for adding the health check."""
+  def Run(self, args):
+    """Issues the request necessary for adding the health check."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
     health_check_ref = self.HEALTH_CHECK_ARG.ResolveAsResource(
-        args, self.resources)
-    proxy_header = self.messages.TCPHealthCheck.ProxyHeaderValueValuesEnum(
+        args, holder.resources)
+    proxy_header = client.messages.TCPHealthCheck.ProxyHeaderValueValuesEnum(
         args.proxy_header)
-    request = self.messages.ComputeHealthChecksInsertRequest(
-        healthCheck=self.messages.HealthCheck(
+    request = client.messages.ComputeHealthChecksInsertRequest(
+        healthCheck=client.messages.HealthCheck(
             name=health_check_ref.Name(),
             description=args.description,
-            type=self.messages.HealthCheck.TypeValueValuesEnum.TCP,
-            tcpHealthCheck=self.messages.TCPHealthCheck(
+            type=client.messages.HealthCheck.TypeValueValuesEnum.TCP,
+            tcpHealthCheck=client.messages.TCPHealthCheck(
                 request=args.request,
                 response=args.response,
                 port=args.port,
@@ -64,18 +63,7 @@ class Create(base_classes.BaseAsyncCreator):
             healthyThreshold=args.healthy_threshold,
             unhealthyThreshold=args.unhealthy_threshold,
         ),
-        project=self.project)
+        project=health_check_ref.project)
 
-    return [request]
-
-
-Create.detailed_help = {
-    'brief': ('Create a TCP health check to monitor load balanced instances'),
-    'DESCRIPTION': """\
-        *{command}* is used to create a TCP health check. TCP health checks
-        monitor instances in a load balancer controlled by a target pool. All
-        arguments to the command are optional except for the name of the health
-        check. For more information on load balancing, see
-        [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
-        """,
-}
+    return client.MakeRequests([(client.apitools_client.healthChecks, 'Insert',
+                                 request)])

@@ -44,4 +44,6 @@ class SetIamPolicy(base.Command):
   def Run(self, args):
     messages = folders.FoldersMessages()
     policy = iam_util.ParsePolicyFile(args.policy_file, messages.Policy)
-    return folders.SetIamPolicy(args.id, policy)
+    result = folders.SetIamPolicy(args.id, policy)
+    iam_util.LogSetIamPolicy(args.id, 'folder')
+    return result

@@ -15,7 +15,6 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
-from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
@@ -24,7 +23,7 @@ from googlecloudsdk.command_lib.compute.instances import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class SetScopes(base_classes.NoOutputAsyncMutator):
+class SetScopes(base.SilentCommand):
   """Set scopes and service account for a Google Compute Engine instance."""
 
   def __init__(self, *args, **kwargs):
@@ -36,42 +35,21 @@ class SetScopes(base_classes.NoOutputAsyncMutator):
     flags.INSTANCE_ARG.AddArgument(parser)
     flags.AddServiceAccountAndScopeArgs(parser, True)
 
-  @property
-  def method(self):
-    return 'SetServiceAccount'
+  def _get_instance(self, instance_ref, client):
+    """Return cached instance if there isn't one fetch referenced one."""
+    if not self._instance:
+      request = (client.apitools_client.instances, 'Get',
+                 client.messages.ComputeInstancesGetRequest(
+                     **instance_ref.AsDict()))
+      instance = client.MakeRequests(requests=[request])
 
-  @property
-  def service(self):
-    return self.compute.instances
+      self._instance = instance[0]
 
-  @property
-  def resource_type(self):
-    return 'instances'
-
-  def _get_instance(self, instance_ref):
-    """Return cached instance if there isn't one fetch referrenced one."""
-    if self._instance:
-      return self._instance
-
-    errors = []
-    request = (self.service, 'Get', self.messages.ComputeInstancesGetRequest(
-        project=instance_ref.project,
-        zone=instance_ref.zone,
-        instance=instance_ref.instance))
-    instance = list(request_helper.MakeRequests(
-        requests=[request],
-        http=self.http,
-        batch_url=self.batch_url,
-        errors=errors))
-    if errors or not instance:
-      raise exceptions.ResourceMissingException(
-          'Instance {0} does not exist.'.format(instance_ref.SelfLink()))
-    self._instance = instance[0]
     return self._instance
 
-  def _original_email(self, instance_ref):
+  def _original_email(self, instance_ref, client):
     """Return email of service account instance is using."""
-    instance = self._get_instance(instance_ref)
+    instance = self._get_instance(instance_ref, client)
     if instance is None:
       return None
     orignal_service_accounts = instance.serviceAccounts
@@ -79,9 +57,9 @@ class SetScopes(base_classes.NoOutputAsyncMutator):
       return orignal_service_accounts[0].email
     return None
 
-  def _original_scopes(self, instance_ref):
+  def _original_scopes(self, instance_ref, client):
     """Return scopes instance is using."""
-    instance = self._get_instance(instance_ref)
+    instance = self._get_instance(instance_ref, client)
     if instance is None:
       return []
     orignal_service_accounts = instance.serviceAccounts
@@ -90,62 +68,66 @@ class SetScopes(base_classes.NoOutputAsyncMutator):
       result += accounts.scopes
     return result
 
-  def _email(self, args, instance_ref):
+  def _email(self, args, instance_ref, client):
     """Return email to set as service account for the instance."""
     if args.no_service_account:
       return None
     if args.service_account:
       return args.service_account
-    return self._original_email(instance_ref)
+    return self._original_email(instance_ref, client)
 
-  def _unprocessed_scopes(self, args, instance_ref):
+  def _unprocessed_scopes(self, args, instance_ref, client):
     """Return scopes to set for the instance."""
     if args.no_scopes:
       return []
-    if args.scopes:
+    if args.scopes is not None:  # Empty list accepted here
       return args.scopes
-    return self._original_scopes(instance_ref)
+    return self._original_scopes(instance_ref, client)
 
-  def _scopes(self, args, instance_ref):
+  def _scopes(self, args, instance_ref, client):
     """Get list of scopes to be assigned to the instance.
 
     Args:
       args: parsed command  line arguments.
       instance_ref: reference to the instance to which scopes will be assigned.
+      client: a compute_holder.client instance
 
     Returns:
       List of scope urls extracted from args, with scope aliases expanded.
     """
     result = []
-    for unprocessed_scope in self._unprocessed_scopes(args, instance_ref):
+    for unprocessed_scope in self._unprocessed_scopes(args,
+                                                      instance_ref, client):
       scope = constants.SCOPES.get(unprocessed_scope, [unprocessed_scope])
       result.extend(scope)
     return result
 
-  def CreateRequests(self, args):
-    flags.ValidateServiceAccountAndScopeArgs(args)
-    instance_ref = flags.INSTANCE_ARG.ResolveAsResource(
-        args, self.resources,
-        default_scope=compute_scope.ScopeEnum.ZONE,
-        scope_lister=compute_flags.GetDefaultScopeLister(
-            self.compute_client, self.project))
+  def Run(self, args):
+    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = compute_holder.client
 
-    email = self._email(args, instance_ref)
-    scopes = self._scopes(args, instance_ref)
+    flags.ValidateServiceAccountAndScopeArgs(args)
+
+    instance_ref = flags.INSTANCE_ARG.ResolveAsResource(
+        args, compute_holder.resources,
+        default_scope=compute_scope.ScopeEnum.ZONE,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+
+    email = self._email(args, instance_ref, client)
+    scopes = self._scopes(args, instance_ref, client)
 
     if scopes and not email:
       raise exceptions.ScopesWithoutServiceAccountException(
           'Can not set scopes when there is no service acoount.')
 
-    request = self.messages.ComputeInstancesSetServiceAccountRequest(
+    request = client.messages.ComputeInstancesSetServiceAccountRequest(
         instancesSetServiceAccountRequest=(
-            self.messages.InstancesSetServiceAccountRequest(
+            client.messages.InstancesSetServiceAccountRequest(
                 email=email,
-                scopes=scopes,
-            )
-        ),
-        project=self.project,
+                scopes=scopes)),
+        project=instance_ref.project,
         zone=instance_ref.zone,
-        instance=instance_ref.Name()
-    )
-    return [request]
+        instance=instance_ref.Name())
+
+    return client.MakeRequests([(client.apitools_client.instances,
+                                 'SetServiceAccount', request)])

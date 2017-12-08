@@ -52,8 +52,7 @@ def _AddSubmitTrainingArgs(parser):
           '    $ gcloud ml-engine jobs cancel JOB_ID'))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class TrainBeta(base.Command):
+class Train(base.Command):
   """Submits a Cloud Machine Learning training job."""
 
   @staticmethod
@@ -66,38 +65,7 @@ class TrainBeta(base.Command):
   def Run(self, args):
     stream_logs = jobs_util.GetStreamLogs(args.async, args.stream_logs)
     job = jobs_util.SubmitTraining(
-        jobs.JobsClient('v1beta1'), args.job,
-        job_dir=args.job_dir,
-        staging_bucket=args.staging_bucket,
-        packages=args.packages,
-        package_path=args.package_path,
-        scale_tier=args.scale_tier,
-        config=args.config,
-        module_name=args.module_name,
-        runtime_version=args.runtime_version,
-        stream_logs=stream_logs,
-        user_args=args.user_args)
-    # If the job itself failed, we will return a failure status.
-    if stream_logs and job.state is not job.StateValueValuesEnum.SUCCEEDED:
-      self.exit_code = 1
-    return job
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class TrainGa(base.Command):
-  """Submits a Cloud Machine Learning training job."""
-
-  @staticmethod
-  def Args(parser):
-    _AddSubmitTrainingArgs(parser)
-
-  def DeprecatedFormat(self, args):
-    return jobs_util.JOB_FORMAT
-
-  def Run(self, args):
-    stream_logs = jobs_util.GetStreamLogs(args.async, args.stream_logs)
-    job = jobs_util.SubmitTraining(
-        jobs.JobsClient('v1'), args.job,
+        jobs.JobsClient(), args.job,
         job_dir=args.job_dir,
         staging_bucket=args.staging_bucket,
         packages=args.packages,
@@ -151,5 +119,4 @@ https://cloud.google.com/ml/docs/concepts/training-overview
 """
 }
 
-TrainBeta.detailed_help = _DETAILED_HELP
-TrainGa.detailed_help = _DETAILED_HELP
+Train.detailed_help = _DETAILED_HELP

@@ -22,8 +22,7 @@ def _AddWaitArgs(parser):
   flags.OPERATION_NAME.AddToParser(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class WaitBeta(base.CreateCommand):
+class Wait(base.CreateCommand):
   """Wait for a Cloud ML Engine operation to complete."""
 
   @staticmethod
@@ -31,20 +30,7 @@ class WaitBeta(base.CreateCommand):
     _AddWaitArgs(parser)
 
   def Run(self, args):
-    return operations_util.Wait(operations.OperationsClient('v1beta1'),
-                                args.operation)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class WaitGa(base.CreateCommand):
-  """Wait for a Cloud ML Engine operation to complete."""
-
-  @staticmethod
-  def Args(parser):
-    _AddWaitArgs(parser)
-
-  def Run(self, args):
-    return operations_util.Wait(operations.OperationsClient('v1'),
+    return operations_util.Wait(operations.OperationsClient(),
                                 args.operation)
 
 
@@ -59,5 +45,4 @@ _DETAILED_HELP = {
 }
 
 
-WaitBeta.detailed_help = _DETAILED_HELP
-WaitGa.detailed_help = _DETAILED_HELP
+Wait.detailed_help = _DETAILED_HELP

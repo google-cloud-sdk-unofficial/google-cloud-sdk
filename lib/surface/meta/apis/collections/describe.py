@@ -15,7 +15,8 @@
 """A command that describes a resource collection for a given API."""
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.meta import apis
+from googlecloudsdk.command_lib.meta.apis import flags
+from googlecloudsdk.command_lib.meta.apis import registry
 
 
 class Describe(base.DescribeCommand):
@@ -23,11 +24,12 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    apis.API_VERSION_FLAG.AddToParser(parser)
+    flags.API_VERSION_FLAG.AddToParser(parser)
     parser.add_argument(
         'collection',
-        completer=apis.CollectionCompleter,
+        completer=flags.CollectionCompleter,
         help='The name of the collection to get the details of.')
 
   def Run(self, args):
-    return apis.GetAPICollection(args.collection, api_version=args.api_version)
+    return registry.GetAPICollection(args.collection,
+                                     api_version=args.api_version)

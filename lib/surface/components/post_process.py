@@ -38,7 +38,7 @@ class PostProcess(base.SilentCommand):
     remote_completion.RemoteCompletion.ResetCache()
 
     # Re-generate static completion table.
-    table.Update(self.cli)
+    table.Update(self._cli_power_users_only)
 
     # Re-generate help table.
-    help_table.Update(self.cli)
+    help_table.Update(self._cli_power_users_only)

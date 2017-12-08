@@ -27,8 +27,7 @@ _DEFAULT_FORMAT = """
     """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class ListBeta(base.ListCommand):
+class List(base.ListCommand):
   """List existing Cloud ML Engine models."""
 
   @staticmethod
@@ -36,16 +35,4 @@ class ListBeta(base.ListCommand):
     parser.display_info.AddFormat(_DEFAULT_FORMAT)
 
   def Run(self, args):
-    return models_util.List(models.ModelsClient('v1beta1'))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class ListGa(base.ListCommand):
-  """List existing Cloud ML Engine models."""
-
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat(_DEFAULT_FORMAT)
-
-  def Run(self, args):
-    return models_util.List(models.ModelsClient('v1'))
+    return models_util.List(models.ModelsClient())

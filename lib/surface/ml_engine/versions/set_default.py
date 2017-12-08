@@ -24,8 +24,7 @@ def _AddSetDefaultArgs(parser):
   flags.VERSION_NAME.AddToParser(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class SetDefaultBeta(base.DescribeCommand):
+class SetDefault(base.DescribeCommand):
   """Sets an existing Cloud ML Engine version as the default for its model."""
 
   @staticmethod
@@ -33,21 +32,7 @@ class SetDefaultBeta(base.DescribeCommand):
     _AddSetDefaultArgs(parser)
 
   def Run(self, args):
-    return versions_util.SetDefault(versions_api.VersionsClient('v1beta1'),
-                                    args.version,
-                                    model=args.model)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class SetDefaultGa(base.DescribeCommand):
-  """Sets an existing Cloud ML Engine version as the default for its model."""
-
-  @staticmethod
-  def Args(parser):
-    _AddSetDefaultArgs(parser)
-
-  def Run(self, args):
-    return versions_util.SetDefault(versions_api.VersionsClient('v1'),
+    return versions_util.SetDefault(versions_api.VersionsClient(),
                                     args.version,
                                     model=args.model)
 
@@ -62,5 +47,4 @@ model.  Only one version may be the default for a given version.
 }
 
 
-SetDefaultBeta.detailed_help = _DETAILED_HELP
-SetDefaultGa.detailed_help = _DETAILED_HELP
+SetDefault.detailed_help = _DETAILED_HELP

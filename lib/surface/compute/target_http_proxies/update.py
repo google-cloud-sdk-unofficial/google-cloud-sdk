@@ -14,12 +14,22 @@
 """Command for updating target HTTP proxies."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.target_http_proxies import flags
 from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
 
 
-class Update(base_classes.NoOutputAsyncMutator):
-  """Update a target HTTP proxy."""
+class Update(base.SilentCommand):
+  """Update a target HTTP proxy.
+
+  *{command}* is used to change the URL map of existing
+  target HTTP proxies. A target HTTP proxy is referenced
+  by one or more forwarding rules which
+  define which packets the proxy is responsible for routing. The
+  target HTTP proxy in turn points to a URL map that defines the rules
+  for routing the requests. The URL map's job is to map URLs to
+  backend services which handle the actual requests.
+  """
 
   TARGET_HTTP_PROXY_ARG = None
   URL_MAP_ARG = None
@@ -31,42 +41,20 @@ class Update(base_classes.NoOutputAsyncMutator):
     cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy()
     cls.URL_MAP_ARG.AddArgument(parser)
 
-  @property
-  def service(self):
-    return self.compute.targetHttpProxies
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'SetUrlMap'
-
-  @property
-  def resource_type(self):
-    return 'targetHttpProxies'
-
-  def CreateRequests(self, args):
-    url_map_ref = self.URL_MAP_ARG.ResolveAsResource(args, self.resources)
+    url_map_ref = self.URL_MAP_ARG.ResolveAsResource(args, holder.resources)
 
     target_http_proxy_ref = self.TARGET_HTTP_PROXY_ARG.ResolveAsResource(
-        args, self.resources)
+        args, holder.resources)
 
-    request = self.messages.ComputeTargetHttpProxiesSetUrlMapRequest(
-        project=self.project,
+    request = client.messages.ComputeTargetHttpProxiesSetUrlMapRequest(
+        project=target_http_proxy_ref.project,
         targetHttpProxy=target_http_proxy_ref.Name(),
-        urlMapReference=self.messages.UrlMapReference(
+        urlMapReference=client.messages.UrlMapReference(
             urlMap=url_map_ref.SelfLink()))
 
-    return [request]
-
-
-Update.detailed_help = {
-    'brief': 'Update a target HTTP proxy',
-    'DESCRIPTION': """\
-        *{command}* is used to change the URL map of existing
-        target HTTP proxies. A target HTTP proxy is referenced
-        by one or more forwarding rules which
-        define which packets the proxy is responsible for routing. The
-        target HTTP proxy in turn points to a URL map that defines the rules
-        for routing the requests. The URL map's job is to map URLs to
-        backend services which handle the actual requests.
-        """,
-}
+    return client.MakeRequests([(client.apitools_client.targetHttpProxies,
+                                 'SetUrlMap', request)])

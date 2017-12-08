@@ -13,28 +13,36 @@
 # limitations under the License.
 """Command for describing HTTPS health checks."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.https_health_checks import flags
 
 
-class Describe(base_classes.GlobalDescriber):
-  """Display detailed information about an HTTPS health check."""
+class Describe(base.DescribeCommand):
+  """Display detailed information about an HTTPS health check.
+
+  *{command}* displays all data associated with a Google Compute
+  Engine HTTPS health check in a project.
+  """
+
+  HTTPS_HEALTH_CHECK = None
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalDescriber.Args(parser)
+    Describe.HTTPS_HEALTH_CHECK = flags.HttpsHealthCheckArgument()
+    Describe.HTTPS_HEALTH_CHECK.AddArgument(parser, operation_type='describe')
 
-  @property
-  def service(self):
-    return self.compute.httpsHealthChecks
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'httpsHealthChecks'
+    https_health_check_ref = self.HTTPS_HEALTH_CHECK.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+    request = client.messages.ComputeHttpsHealthChecksGetRequest(
+        **https_health_check_ref.AsDict())
 
-Describe.detailed_help = {
-    'brief': 'Display detailed information about an HTTPS health check',
-    'DESCRIPTION': """\
-        *{command}* displays all data associated with a Google Compute
-        Engine HTTPS health check in a project.
-        """,
-}
+    return client.MakeRequests([(client.apitools_client.httpsHealthChecks,
+                                 'Get', request)])[0]

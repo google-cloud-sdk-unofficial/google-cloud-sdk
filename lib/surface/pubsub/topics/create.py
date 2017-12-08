@@ -22,7 +22,16 @@ from googlecloudsdk.core import log
 
 
 class Create(base.CreateCommand):
-  """Creates one or more Cloud Pub/Sub topics."""
+  """Creates one or more Cloud Pub/Sub topics.
+
+  Creates one or more Cloud Pub/Sub topics.
+
+  ## EXAMPLES
+
+  To create a Cloud Pub/Sub topic, run:
+
+    $ {command} mytopic
+  """
 
   @staticmethod
   def Args(parser):

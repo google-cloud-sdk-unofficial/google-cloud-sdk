@@ -68,8 +68,7 @@ def _AddCreateArgs(parser):
   ).AddToParser(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class CreateBeta(base.CreateCommand):
+class Create(base.CreateCommand):
   """Create a new Cloud ML Engine version."""
 
   @staticmethod
@@ -77,28 +76,8 @@ class CreateBeta(base.CreateCommand):
     _AddCreateArgs(parser)
 
   def Run(self, args):
-    return versions_util.Create(versions_api.VersionsClient('v1beta1'),
-                                operations.OperationsClient('v1beta1'),
-                                args.version,
-                                model=args.model,
-                                origin=args.origin,
-                                staging_bucket=args.staging_bucket,
-                                runtime_version=args.runtime_version,
-                                config_file=args.config,
-                                async_=args.async)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class CreateGa(base.CreateCommand):
-  """Create a new Cloud ML Engine version."""
-
-  @staticmethod
-  def Args(parser):
-    _AddCreateArgs(parser)
-
-  def Run(self, args):
-    return versions_util.Create(versions_api.VersionsClient('v1'),
-                                operations.OperationsClient('v1'),
+    return versions_util.Create(versions_api.VersionsClient(),
+                                operations.OperationsClient(),
                                 args.version,
                                 model=args.model,
                                 origin=args.origin,

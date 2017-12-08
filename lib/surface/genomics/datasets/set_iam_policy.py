@@ -52,4 +52,6 @@ class SetIamPolicy(base.Command):
         resource='datasets/{0}'.format(dataset_resource.Name()),
         setIamPolicyRequest=messages.SetIamPolicyRequest(policy=policy),
     )
-    return apitools_client.datasets.SetIamPolicy(policy_request)
+    result = apitools_client.datasets.SetIamPolicy(policy_request)
+    iam_util.LogSetIamPolicy(dataset_resource.Name(), 'dataset')
+    return result

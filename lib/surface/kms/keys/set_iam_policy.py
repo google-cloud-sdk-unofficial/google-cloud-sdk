@@ -48,5 +48,9 @@ class SetIamPolicy(base.Command):
     messages = cloudkms_base.GetMessagesModule()
 
     policy = iam_util.ParseJsonPolicyFile(args.policy_file, messages.Policy)
+    update_mask = iam_util.ConstructUpdateMaskFromPolicy(args.policy_file)
 
-    return iam.SetCryptoKeyIamPolicy(flags.ParseCryptoKeyName(args), policy)
+    crypto_key_ref = flags.ParseCryptoKeyName(args)
+    result = iam.SetCryptoKeyIamPolicy(crypto_key_ref, policy, update_mask)
+    iam_util.LogSetIamPolicy(crypto_key_ref.Name(), 'key')
+    return result

@@ -26,8 +26,7 @@ _LIST_FORMAT = """\
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class ListBeta(base.ListCommand):
+class List(base.ListCommand):
   """List existing Cloud ML Engine jobs."""
 
   @staticmethod
@@ -35,16 +34,4 @@ class ListBeta(base.ListCommand):
     parser.display_info.AddFormat(_LIST_FORMAT)
 
   def Run(self, args):
-    return operations_util.List(operations.OperationsClient('v1beta1'))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class ListGa(base.ListCommand):
-  """List existing Cloud ML Engine jobs."""
-
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat(_LIST_FORMAT)
-
-  def Run(self, args):
-    return operations_util.List(operations.OperationsClient('v1'))
+    return operations_util.List(operations.OperationsClient())

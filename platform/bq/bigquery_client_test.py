@@ -9,15 +9,25 @@ import itertools
 import json
 import tempfile
 
+import httplib2
 import mock
+import gflags as flags
+from google.apputils import flagsaver
 from google.apputils import googletest
 
 import bigquery_client
+# pylint: disable=unused-import
+import bq_flags
+# pylint: enable=unused-import
+
+
+FLAGS = flags.FLAGS
 
 
 class BigqueryClientTest(googletest.TestCase):
 
   def setUp(self):
+    self._saved_flags = flagsaver.SaveFlagValues()
     self.client = bigquery_client.BigqueryClient(api='http', api_version='')
     self.reference_tests = {
         'prj:': ('prj', '', ''),
@@ -42,6 +52,9 @@ class BigqueryClientTest(googletest.TestCase):
         'tbl': ('', '', 'tbl'),
         })
     self.field_names = ('projectId', 'datasetId', 'tableId')
+
+  def tearDown(self):
+    flagsaver.RestoreFlagValues(self._saved_flags)
 
   @staticmethod
   def _LengthToType(parts):
@@ -223,6 +236,28 @@ class BigqueryClientTest(googletest.TestCase):
         r'not a JSON object',
         bigquery_client.JsonToInsertEntry, None, '[1, 2]')
 
+  def testProxy_NoProxy(self):
+    http = self.client.GetHttp()
+    self.assertEquals(httplib2.proxy_info_from_environment, http.proxy_info)
+    self.assertIsNone(None, http.ca_certs)
+    self.assertFalse(http.disable_ssl_certificate_validation)
+
+  def testProxy(self):
+    FLAGS.proxy_address = 'localhost'
+    FLAGS.proxy_port = '8080'
+    FLAGS.proxy_username = 'john'
+    FLAGS.proxy_password = 'password'
+    FLAGS.ca_certificates_file = 'certs.txt'
+    FLAGS.disable_ssl_validation = True
+
+    http = self.client.GetHttp()
+    self.assertEquals(3, http.proxy_info.proxy_type)
+    self.assertEquals('localhost', http.proxy_info.proxy_host)
+    self.assertEquals(8080, http.proxy_info.proxy_port)
+    self.assertEquals('john', http.proxy_info.proxy_user)
+    self.assertEquals('password', http.proxy_info.proxy_pass)
+    self.assertEquals('certs.txt', http.ca_certs)
+    self.assertTrue(http.disable_ssl_certificate_validation)
 
 if __name__ == '__main__':
   googletest.main()

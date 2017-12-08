@@ -24,8 +24,7 @@ def _AddDeleteArgs(parser):
   flags.VERSION_NAME.AddToParser(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class DeleteBeta(base.DeleteCommand):
+class Delete(base.DeleteCommand):
   """Delete an existing Cloud ML Engine version."""
 
   @staticmethod
@@ -33,22 +32,7 @@ class DeleteBeta(base.DeleteCommand):
     _AddDeleteArgs(parser)
 
   def Run(self, args):
-    return versions_util.Delete(versions_api.VersionsClient('v1beta1'),
-                                operations.OperationsClient('v1beta1'),
-                                args.version,
-                                model=args.model)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class DeleteGa(base.DeleteCommand):
-  """Delete an existing Cloud ML Engine version."""
-
-  @staticmethod
-  def Args(parser):
-    _AddDeleteArgs(parser)
-
-  def Run(self, args):
-    return versions_util.Delete(versions_api.VersionsClient('v1'),
-                                operations.OperationsClient('v1'),
+    return versions_util.Delete(versions_api.VersionsClient(),
+                                operations.OperationsClient(),
                                 args.version,
                                 model=args.model)

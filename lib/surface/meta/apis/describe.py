@@ -15,7 +15,8 @@
 """A command that describes a registered gcloud API."""
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.meta import apis
+from googlecloudsdk.command_lib.meta.apis import flags
+from googlecloudsdk.command_lib.meta.apis import registry
 
 
 class Describe(base.DescribeCommand):
@@ -23,11 +24,11 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    apis.API_VERSION_FLAG.AddToParser(parser)
+    flags.API_VERSION_FLAG.AddToParser(parser)
     parser.add_argument(
         'api_name',
-        completer=apis.APICompleter,
+        completer=flags.APICompleter,
         help='The name of the API to show the details of.')
 
   def Run(self, args):
-    return apis.GetAPI(args.api_name, api_version=args.api_version)
+    return registry.GetAPI(args.api_name, api_version=args.api_version)

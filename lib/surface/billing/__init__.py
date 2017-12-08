@@ -12,15 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Commands for managing billing accounts and associate them with projects."""
-
-from googlecloudsdk.api_lib.billing import utils
 from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Billing(base.Group):
   """Manage billing accounts and associate them with projects."""
-
-  def Filter(self, context, _):
-    context['billing_client'] = utils.GetClient()
-    context['billing_messages'] = utils.GetMessages()

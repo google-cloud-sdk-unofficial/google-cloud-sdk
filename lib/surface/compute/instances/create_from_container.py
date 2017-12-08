@@ -52,7 +52,7 @@ class CreateFromContainer(base.CreateCommand):
     instances_flags.AddDockerArgs(parser)
     instances_flags.AddPublicDnsArgs(parser, instance=True)
     instances_flags.AddNetworkTierArgs(parser, instance=True)
-    instances_flags.AddMinCpuPlatformArgs(parser)
+    instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     labels_util.AddCreateLabelsFlags(parser)
 
     parser.add_argument(

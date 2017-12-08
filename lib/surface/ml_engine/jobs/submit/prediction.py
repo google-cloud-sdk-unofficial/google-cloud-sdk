@@ -91,8 +91,7 @@ aren't a first-class Cloud Storage concept) of `my-bucket`.
   flags.RUNTIME_VERSION.AddToParser(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class PredictionBeta(base.Command):
+class Prediction(base.Command):
   """Start a Cloud ML Engine batch prediction job."""
 
   @staticmethod
@@ -102,30 +101,7 @@ class PredictionBeta(base.Command):
 
   def Run(self, args):
     return jobs_util.SubmitPrediction(
-        jobs.JobsClient('v1beta1'), args.job,
-        model_dir=args.model_dir,
-        model=args.model,
-        version=args.version,
-        input_paths=args.input_paths,
-        data_format=args.data_format,
-        output_path=args.output_path,
-        region=args.region,
-        runtime_version=args.runtime_version,
-        max_worker_count=args.max_worker_count)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class PredictionGa(base.Command):
-  """Start a Cloud ML Engine batch prediction job."""
-
-  @staticmethod
-  def Args(parser):
-    _AddSubmitPredictionArgs(parser)
-    parser.display_info.AddFormat(jobs_util.JOB_FORMAT)
-
-  def Run(self, args):
-    return jobs_util.SubmitPrediction(
-        jobs.JobsClient('v1'), args.job,
+        jobs.JobsClient(), args.job,
         model_dir=args.model_dir,
         model=args.model,
         version=args.version,

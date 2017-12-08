@@ -75,5 +75,6 @@ class Revoke(base.Command):
   def Epilog(self, unused_results_were_displayed):
     log_out = log.out
     log.out = log.status
-    self.ExecuteCommand(['auth', 'list'])
+    # TODO(b/38445131): Remove usage of ExecuteCommandDoNotUse
+    self.ExecuteCommandDoNotUse(['auth', 'list'])
     log.out = log_out

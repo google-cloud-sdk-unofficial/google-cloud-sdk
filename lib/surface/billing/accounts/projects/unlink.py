@@ -12,39 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command to disable billing."""
-
-import textwrap
-from googlecloudsdk.api_lib.billing import utils
+from googlecloudsdk.api_lib.billing import billing_client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.billing import flags
+from googlecloudsdk.command_lib.billing import utils
 
 
 class Unlink(base.Command):
   """Unlink the account (if any) linked with a project."""
   detailed_help = {
-      'DESCRIPTION': textwrap.dedent(
-          """
-          This command unlinks a project from it's linked billing
+      'DESCRIPTION': """\
+          This command unlinks a project from its linked billing
           account. This disables billing on the project.
           """
-      )
   }
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('project_id', **utils.PROJECT_ID_ARG_PARAMS)
+    flags.GetProjectIdArgument().AddToParser(parser)
 
   def Run(self, args):
-    billing = self.context['billing_client']
-    messages = self.context['billing_messages']
+    client = billing_client.ProjectsClient()
+    project_ref = utils.ParseProject(args.project_id)
+    return client.Link(project_ref, None)
 
-    result = billing.projects.UpdateBillingInfo(
-        messages.CloudbillingProjectsUpdateBillingInfoRequest(
-            name='projects/{project_id}'.format(
-                project_id=args.project_id,
-            ),
-            projectBillingInfo=messages.ProjectBillingInfo(
-                billingAccountName='',
-            ),
-        )
-    )
-    return result

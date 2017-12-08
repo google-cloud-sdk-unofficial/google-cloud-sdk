@@ -37,5 +37,5 @@ class Help(base.Command):
   def Run(self, args):
     # --document=style=help to signal the metrics.Help() 'help' label in
     # actions.RenderDocumentAction().Action().
-    self.cli.Execute(args.command + ['--document=style=help'])
+    self.ExecuteCommandDoNotUse(args.command + ['--document=style=help'])
     return None

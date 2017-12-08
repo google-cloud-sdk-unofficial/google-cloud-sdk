@@ -444,7 +444,7 @@ information about configuring Google Cloud Storage.
     named_configs.ActivePropertiesFile.Invalidate()
 
   def _RunCmd(self, cmd, params=None, disable_user_output=True):
-    if not self.cli.IsValidCommand(cmd):
+    if not self._cli_power_users_only.IsValidCommand(cmd):
       log.info('Command %s does not exist.', cmd)
       return None
     if params is None:
@@ -465,7 +465,9 @@ information about configuring Google Cloud Storage.
       if properties.VALUES.core.log_http.GetBool():
         args.append('--log-http')
 
-      return resource_projector.MakeSerializable(self.cli.Execute(args))
+      # TODO(b/38338044): Remove usage of ExecuteCommandDoNotUse
+      return resource_projector.MakeSerializable(
+          self.ExecuteCommandDoNotUse(args))
 
     except SystemExit as exc:
       log.info('[%s] has failed\n', ' '.join(cmd + params))

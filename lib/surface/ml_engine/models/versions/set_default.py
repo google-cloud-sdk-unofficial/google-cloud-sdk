@@ -17,13 +17,13 @@ from surface.ml_engine.versions import set_default
 
 
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning=(
         'This command is deprecated. '
         'Please use `gcloud beta ml-engine versions set-default` instead.'),
     error=('This command has been removed. '
            'Please use `gcloud beta ml-engine versions set-default` instead.'))
-class SetDefaultBeta(set_default.SetDefaultBeta):
+class SetDefaultBeta(set_default.SetDefault):
   """Sets an existing Cloud ML Engine version as the default for its model."""
   pass
 

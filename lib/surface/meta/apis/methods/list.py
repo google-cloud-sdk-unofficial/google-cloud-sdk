@@ -15,7 +15,8 @@
 """A command that lists the resource collections for a given API."""
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.meta import apis
+from googlecloudsdk.command_lib.meta.apis import flags
+from googlecloudsdk.command_lib.meta.apis import registry
 
 
 class List(base.ListCommand):
@@ -26,8 +27,8 @@ class List(base.ListCommand):
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
 
-    apis.API_VERSION_FLAG.AddToParser(parser)
-    apis.COLLECTION_FLAG.AddToParser(parser)
+    flags.API_VERSION_FLAG.AddToParser(parser)
+    flags.COLLECTION_FLAG.AddToParser(parser)
     parser.display_info.AddFormat("""
       table(
         name:sort=1,
@@ -40,4 +41,4 @@ class List(base.ListCommand):
     """)
 
   def Run(self, args):
-    return apis.GetMethods(args.collection, api_version=args.api_version)
+    return registry.GetMethods(args.collection, api_version=args.api_version)

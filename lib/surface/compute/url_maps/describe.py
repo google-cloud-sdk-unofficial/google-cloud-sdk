@@ -13,31 +13,36 @@
 # limitations under the License.
 """Command for describing url maps."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.url_maps import flags
 
 
-class Describe(base_classes.GlobalDescriber):
-  """Describe a URL map."""
+class Describe(base.DescribeCommand):
+  """Describe a URL map.
+
+  *{command}* displays all data associated with a URL map in a
+  project.
+  """
+
+  URL_MAP_ARG = None
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalDescriber.Args(
-        parser,
-        'compute.urlMaps',
-        list_command_path='compute url-maps list --uri')
+    Describe.URL_MAP_ARG = flags.UrlMapArgument()
+    Describe.URL_MAP_ARG.AddArgument(parser, operation_type='describe')
 
-  @property
-  def service(self):
-    return self.compute.urlMaps
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'urlMaps'
+    url_map_ref = self.URL_MAP_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+    request = client.messages.ComputeUrlMapsGetRequest(
+        **url_map_ref.AsDict())
 
-Describe.detailed_help = {
-    'brief': 'Describe a URL map',
-    'DESCRIPTION': """\
-        *{command}* displays all data associated with a URL map in a
-        project.
-        """,
-}
+    return client.MakeRequests([(client.apitools_client.urlMaps,
+                                 'Get', request)])[0]

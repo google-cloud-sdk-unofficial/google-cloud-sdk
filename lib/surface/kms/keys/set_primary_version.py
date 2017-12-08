@@ -35,11 +35,7 @@ class SetPrimaryVersion(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddCryptoKeyArgument(parser, 'to modify')
-    parser.add_argument(
-        '--version',
-        required=True,
-        completion_resource=flags.CRYPTO_KEY_VERSION_COLLECTION,
-        help='The version to make primary.')
+    flags.AddCryptoKeyVersionFlag(parser, 'to make primary', required=True)
 
   def Run(self, args):
     # pylint: disable=line-too-long

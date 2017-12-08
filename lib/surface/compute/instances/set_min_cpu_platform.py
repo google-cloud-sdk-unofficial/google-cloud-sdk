@@ -22,19 +22,22 @@ from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.core import log
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning='This command is deprecated. Use '
+    '$ gcloud alpha compute instances update --set-min-cpu-platform instead.')
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetMinCpuPlatform(base.UpdateCommand):
   # pylint: disable=line-too-long
   """Set minimum CPU platform for Google Compute Engine virtual machine instance."""
+  # pylint: enable=line-too-long
 
   @staticmethod
   def Args(parser):
     instance_flags.INSTANCE_ARG.AddArgument(parser)
-    instance_flags.AddMinCpuPlatformArgs(parser, required=True)
+    instance_flags.AddMinCpuPlatformArgs(
+        parser, base.ReleaseTrack.ALPHA, required=True)
     base.ASYNC_FLAG.AddToParser(parser)
-
-  def Collection(self):
-    return 'compute.instances'
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

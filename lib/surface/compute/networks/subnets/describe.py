@@ -14,23 +14,36 @@
 
 """Command for describing subnetworks."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.networks.subnets import flags
 
 
-class Describe(base_classes.RegionalDescriber):
+class Describe(base.DescribeCommand):
   """Describe a Google Compute Engine subnetwork.
 
   *{command}* displays all data associated with a Google Compute
   Engine subnetwork.
   """
 
+  SUBNETWORK_ARG = None
+
   @staticmethod
   def Args(parser):
-    base_classes.RegionalDescriber.Args(parser, 'compute.subnetworks')
+    Describe.SUBNETWORK_ARG = flags.SubnetworkArgument()
+    Describe.SUBNETWORK_ARG.AddArgument(parser, operation_type='describe')
 
-  @property
-  def service(self):
-    return self.compute.subnetworks
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'subnetworks'
+    subnetwork_ref = Describe.SUBNETWORK_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+
+    request = client.messages.ComputeSubnetworksGetRequest(
+        **subnetwork_ref.AsDict())
+
+    return client.MakeRequests([(client.apitools_client.subnetworks,
+                                 'Get', request)])[0]

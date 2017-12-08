@@ -13,28 +13,33 @@
 # limitations under the License.
 """Command for describing backend buckets."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.backend_buckets import flags
 
 
-class Describe(base_classes.GlobalDescriber):
-  """Describe a backend bucket."""
+class Describe(base.DescribeCommand):
+  """Describe a backend bucket.
+
+  *{command}* displays all data associated with a backend bucket in a
+  project.
+  """
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalDescriber.Args(parser, 'compute.backendBuckets')
+    flags.BACKEND_BUCKET_ARG.AddArgument(parser, operation_type='describe')
 
-  @property
-  def service(self):
-    return self.compute.backendBuckets
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'backendBuckets'
+    backend_bucket_ref = flags.BACKEND_BUCKET_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+    request = client.messages.ComputeBackendBucketsGetRequest(
+        **backend_bucket_ref.AsDict())
 
-Describe.detailed_help = {
-    'brief': 'Describe a backend bucket',
-    'DESCRIPTION': """\
-        *{command}* displays all data associated with a backend bucket in a
-        project.
-        """,
-}
+    return client.MakeRequests([(client.apitools_client.backendBuckets,
+                                 'Get', request)])[0]

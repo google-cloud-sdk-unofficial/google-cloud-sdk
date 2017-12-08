@@ -41,11 +41,12 @@ class List(base.ListCommand):
     client = api_client.AppengineSslApiClient.GetApiClient()
     return client.ListSslCertificates()
 
-  def DeprecatedFormat(self, args):
-    return """
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""
             table(
               id:sort=1,
               display_name,
               domain_names.list()
             )
-          """
+        """)

@@ -15,51 +15,42 @@
 
 from googlecloudsdk.api_lib.compute import backend_buckets_utils
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_buckets_flags
 
 
-class Create(base_classes.BaseAsyncCreator):
-  """Create a backend bucket."""
+class Create(base.CreateCommand):
+  """Create a backend bucket.
+
+  *{command}* is used to create backend buckets. Backend buckets
+  define a Google Cloud Storage bucket that can serve content. URL
+  maps define which requests are sent to which backend buckets.
+  """
 
   @staticmethod
   def Args(parser):
+    parser.display_info.AddFormat(backend_buckets_flags.DEFAULT_LIST_FORMAT)
     backend_buckets_utils.AddUpdatableArgs(parser)
     backend_buckets_flags.REQUIRED_GCS_BUCKET_ARG.AddArgument(parser)
 
-  @property
-  def service(self):
-    return self.compute.backendBuckets
+  def Run(self, args):
+    """Issues the request necessary for creating a backend bucket."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'Insert'
-
-  @property
-  def resource_type(self):
-    return 'backendBuckets'
-
-  def CreateRequests(self, args):
     backend_buckets_ref = (
         backend_buckets_flags.BACKEND_BUCKET_ARG.ResolveAsResource(
-            args, self.resources))
+            args, holder.resources))
 
     enable_cdn = args.enable_cdn or False
 
-    request = self.messages.ComputeBackendBucketsInsertRequest(
-        backendBucket=self.messages.BackendBucket(
+    request = client.messages.ComputeBackendBucketsInsertRequest(
+        backendBucket=client.messages.BackendBucket(
             description=args.description,
             name=backend_buckets_ref.Name(),
             bucketName=args.gcs_bucket_name,
             enableCdn=enable_cdn),
-        project=self.project)
+        project=backend_buckets_ref.project)
 
-    return [request]
-
-Create.detailed_help = {
-    'brief': 'Create a backend bucket',
-    'DESCRIPTION': """
-        *{command}* is used to create backend buckets. Backend buckets
-        define a Google Cloud Storage bucket that can serve content. URL
-        maps define which requests are sent to which backend buckets.
-    """,
-}
+    return client.MakeRequests([(client.apitools_client.backendBuckets,
+                                 'Insert', request)])

@@ -17,6 +17,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
+from googlecloudsdk.core import log
 
 
 def _AddCreateArgs(parser):
@@ -38,8 +39,7 @@ Will soon be required, but defaults to 'us-central1' for now.
       help=('If set, enables StackDriver Logging for online prediction.'))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class CreateBeta(base.CreateCommand):
+class Create(base.CreateCommand):
   """Create a new Cloud ML Engine model."""
 
   @staticmethod
@@ -47,18 +47,7 @@ class CreateBeta(base.CreateCommand):
     _AddCreateArgs(parser)
 
   def Run(self, args):
-    models_util.Create(models.ModelsClient('v1beta1'), args.model,
-                       regions=args.regions, enable_logging=args.enable_logging)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class CreateGa(base.CreateCommand):
-  """Create a new Cloud ML Engine model."""
-
-  @staticmethod
-  def Args(parser):
-    _AddCreateArgs(parser)
-
-  def Run(self, args):
-    models_util.Create(models.ModelsClient('v1'), args.model,
-                       regions=args.regions, enable_logging=args.enable_logging)
+    model = models_util.Create(models.ModelsClient(), args.model,
+                               regions=args.regions,
+                               enable_logging=args.enable_logging)
+    log.CreatedResource(model.name, kind='ml engine model')

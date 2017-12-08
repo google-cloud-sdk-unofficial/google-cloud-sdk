@@ -66,4 +66,6 @@ class SetIamPolicy(orgs_base.OrganizationCommand):
         messages.CloudresourcemanagerOrganizationsSetIamPolicyRequest(
             organizationsId=args.id,
             setIamPolicyRequest=set_iam_policy_request))
-    return self.OrganizationsClient().SetIamPolicy(policy_request)
+    result = self.OrganizationsClient().SetIamPolicy(policy_request)
+    iam_util.LogSetIamPolicy(args.id, 'organization')
+    return result

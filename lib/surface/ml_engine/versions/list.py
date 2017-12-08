@@ -23,8 +23,7 @@ def _AddListArgs(parser):
   flags.GetModelName(positional=False, required=True).AddToParser(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class ListGa(base.ListCommand):
+class List(base.ListCommand):
   """List existing Cloud ML Engine versions."""
 
   @staticmethod
@@ -33,19 +32,5 @@ class ListGa(base.ListCommand):
     parser.display_info.AddFormat('table(name.basename(), deploymentUri)')
 
   def Run(self, args):
-    return versions_util.List(versions_api.VersionsClient('v1'),
-                              model=args.model)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class ListBeta(base.ListCommand):
-  """List existing Cloud ML Engine versions."""
-
-  @staticmethod
-  def Args(parser):
-    _AddListArgs(parser)
-    parser.display_info.AddFormat('table(name.basename(), deploymentUri)')
-
-  def Run(self, args):
-    return versions_util.List(versions_api.VersionsClient('v1beta1'),
+    return versions_util.List(versions_api.VersionsClient(),
                               model=args.model)

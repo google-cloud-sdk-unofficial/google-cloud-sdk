@@ -214,7 +214,6 @@ class Run(base.SilentCommand):
         '--zones',
         metavar='ZONE',
         type=arg_parsers.ArgList(),
-        list_command_path='compute zones list --uri',
         help='''List of Compute Engine zones the pipeline can run in.
 
 If no zones are specified with the zones flag, then zones in the

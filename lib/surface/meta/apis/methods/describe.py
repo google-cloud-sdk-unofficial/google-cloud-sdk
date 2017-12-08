@@ -15,7 +15,8 @@
 """A command that describes a resource collection for a given API."""
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.meta import apis
+from googlecloudsdk.command_lib.meta.apis import flags
+from googlecloudsdk.command_lib.meta.apis import registry
 
 
 class Describe(base.DescribeCommand):
@@ -23,13 +24,13 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    apis.API_VERSION_FLAG.AddToParser(parser)
-    apis.COLLECTION_FLAG.AddToParser(parser)
+    flags.API_VERSION_FLAG.AddToParser(parser)
+    flags.COLLECTION_FLAG.AddToParser(parser)
     parser.add_argument(
         'method',
-        completer=apis.MethodCompleter,
+        completer=flags.MethodCompleter,
         help='The name of the method to get the details of.')
 
   def Run(self, args):
-    return apis.GetMethod(args.collection, args.method,
-                          api_version=args.api_version)
+    return registry.GetMethod(args.collection, args.method,
+                              api_version=args.api_version)
