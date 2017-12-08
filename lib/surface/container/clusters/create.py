@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.api_lib.container import constants
 from googlecloudsdk.api_lib.container import kubeconfig as kconfig
 from googlecloudsdk.api_lib.container import util
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -29,6 +30,33 @@ from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.command_lib.container import messages
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
+
+
+def _AddAdditionalZonesFlag(parser, deprecated=False):
+  action = None
+  if deprecated:
+    action = actions.DeprecationAction(
+        'additional-zones',
+        warn='This flag is deprecated. '
+        'Use --node-locations=PRIMARY_ZONE,[ZONE,...] instead.')
+  parser.add_argument(
+      '--additional-zones',
+      type=arg_parsers.ArgList(min_length=1),
+      action=action,
+      metavar='ZONE',
+      help="""\
+The set of additional zones in which the specified node footprint should be
+replicated. All zones must be in the same region as the cluster's primary zone.
+If additional-zones is not specified, all nodes will be in the cluster's primary
+zone.
+
+Note that `NUM_NODES` nodes will be created in each zone, such that if you
+specify `--num-nodes=4` and choose one additional zone, 8 nodes will be created.
+
+Multiple locations can be specified, separated by commas. For example:
+
+  $ {command} example-cluster --zone us-central1-a --additional-zones us-central1-b,us-central1-c
+""")
 
 
 def _Args(parser):
@@ -51,23 +79,6 @@ def _Args(parser):
       type=arg_parsers.BoundedInt(1),
       help='The number of nodes to be created in each of the cluster\'s zones.',
       default=3)
-  parser.add_argument(
-      '--additional-zones',
-      type=arg_parsers.ArgList(min_length=1),
-      metavar='ZONE',
-      help="""\
-The set of additional zones in which the specified node footprint should be
-replicated. All zones must be in the same region as the cluster's primary zone.
-If additional-zones is not specified, all nodes will be in the cluster's primary
-zone.
-
-Note that `NUM_NODES` nodes will be created in each zone, such that if you
-specify `--num-nodes=4` and choose one additional zone, 8 nodes will be created.
-
-Multiple locations can be specified, separated by commas. For example:
-
-  $ {command} example-cluster --zone us-central1-a --additional-zones us-central1-b,us-central1-c
-""")
   parser.add_argument(
       '--machine-type', '-m',
       help='The type of machine to use for nodes. Defaults to n1-standard-1.')
@@ -239,6 +250,7 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _Args(parser)
+    _AddAdditionalZonesFlag(parser)
     flags.AddClusterAutoscalingFlags(parser, hidden=True)
     flags.AddLocalSSDFlag(parser, suppressed=True)
     flags.AddEnableKubernetesAlphaFlag(parser, suppressed=True)
@@ -342,6 +354,7 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     _Args(parser)
+    _AddAdditionalZonesFlag(parser)
     flags.AddClusterAutoscalingFlags(parser, hidden=True)
     flags.AddLocalSSDFlag(parser)
     flags.AddEnableKubernetesAlphaFlag(parser)
@@ -363,6 +376,9 @@ class CreateAlpha(Create):
   @staticmethod
   def Args(parser):
     _Args(parser)
+    group = parser.add_mutually_exclusive_group()
+    _AddAdditionalZonesFlag(group, deprecated=True)
+    flags.AddNodeLocationsFlag(group)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDFlag(parser)
     flags.AddEnableKubernetesAlphaFlag(parser)
@@ -381,5 +397,6 @@ class CreateAlpha(Create):
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
     ops.accelerators = args.accelerator
+    ops.node_locations = args.node_locations
     ops.enable_audit_logging = args.enable_audit_logging
     return ops

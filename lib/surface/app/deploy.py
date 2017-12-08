@@ -72,10 +72,7 @@ class DeployBeta(base.SilentCommand):
     deploy_util.ArgsDeploy(parser)
 
   def Run(self, args):
-    # TODO(b/62950391): `app deploy' should use the API client which
-    # corresponds to the release track. For now, this isn't supported by the
-    # mocked API client unit tests.
-    api_client = appengine_api_client.AppengineApiClient.GetApiClient('v1')
+    api_client = appengine_api_client.GetApiClientForTrack(self.ReleaseTrack())
     runtime_builder_strategy = deploy_util.GetRuntimeBuilderStrategy(
         base.ReleaseTrack.BETA)
     return deploy_util.RunDeploy(

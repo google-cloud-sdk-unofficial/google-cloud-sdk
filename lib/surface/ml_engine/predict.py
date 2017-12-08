@@ -77,28 +77,6 @@ versions run
         This flag accepts "-" for stdin.
         """)
 
-  def _DefaultFormat(self, predictions):
-    if predictions is None or not isinstance(predictions, list):
-      # This usually indicates some kind of error case, so surface the full API
-      # response
-      return 'json'
-    elif not predictions:
-      return None
-
-    # predictions is guaranteed by API contract to be a list of similarly shaped
-    # objects, but we don't know ahead of time what those objects look like.
-    elif isinstance(predictions[0], dict):
-      keys = ', '.join(sorted(predictions[0].keys()))
-      return """
-          table(
-              predictions:format="table(
-                  {}
-              )"
-          )""".format(keys)
-
-    else:
-      return 'table[no-heading](predictions)'
-
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -119,6 +97,7 @@ versions run
 
     if not args.IsSpecified('format'):
       # default format is based on the response.
-      args.format = self._DefaultFormat(results.get('predictions'))
+      args.format = predict_utilities.GetDefaultFormat(
+          results.get('predictions'))
 
     return results

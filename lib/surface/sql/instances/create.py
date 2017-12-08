@@ -159,14 +159,45 @@ def RunBaseCreateCommand(args):
       args.instance,
       params={'project': properties.VALUES.core.project.GetOrFail},
       collection='sql.instances')
+
+  # Get the region, tier, and database version from the master if these fields
+  # are not specified.
+  # TODO(b/64266672): Remove once API does not require these fields.
+  if args.IsSpecified('master_instance_name'):
+    master_instance_ref = client.resource_parser.Parse(
+        args.master_instance_name,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
+    try:
+      master_instance_resource = sql_client.instances.Get(
+          sql_messages.SqlInstancesGetRequest(
+              project=instance_ref.project,
+              instance=master_instance_ref.instance))
+    except apitools_exceptions.HttpError as error:
+      # TODO(b/64292220): Remove once API gives helpful error message.
+      log.debug('operation : %s', str(master_instance_ref))
+      exc = exceptions.HttpException(error)
+      if resource_property.Get(exc.payload.content,
+                               resource_lex.ParseKey('error.errors[0].reason'),
+                               None) == 'notAuthorized':
+        msg = ('You are either not authorized to access the master instance or '
+               'it does not exist.')
+        raise exceptions.HttpException(msg)
+      raise
+    if not args.IsSpecified('region'):
+      args.region = master_instance_resource.region
+    if not args.IsSpecified('database_version'):
+      args.database_version = master_instance_resource.databaseVersion
+    if not args.IsSpecified('tier'):
+      args.tier = master_instance_resource.settings.tier
+
   instance_resource = instances.InstancesV1Beta4.ConstructInstanceFromArgs(
       sql_messages, args, instance_ref=instance_ref)
 
   if args.pricing_plan == 'PACKAGE':
-    if not console_io.PromptContinue(
+    console_io.PromptContinue(
         'Charges will begin accruing immediately. Really create Cloud '
-        'SQL instance?'):
-      raise exceptions.ToolException('canceled by the user.')
+        'SQL instance?', cancel_on_no=True)
 
   operation_ref = None
   try:

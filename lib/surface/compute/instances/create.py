@@ -60,10 +60,13 @@ DETAILED_HELP = {
 }
 
 
-def _CommonArgs(parser, multiple_network_interface_cards, release_track,
-                support_alias_ip_ranges, support_public_dns,
+def _CommonArgs(parser,
+                release_track,
+                support_alias_ip_ranges,
+                support_public_dns,
                 support_network_tier,
-                enable_regional=False, support_local_ssd_size=False):
+                enable_regional=False,
+                support_local_ssd_size=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional)
@@ -76,7 +79,6 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(
       parser, instances=True,
-      multiple_network_interface_cards=multiple_network_interface_cards,
       support_alias_ip_ranges=support_alias_ip_ranges,
       support_network_tier=support_network_tier)
   instances_flags.AddAcceleratorArgs(parser)
@@ -120,11 +122,12 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    _CommonArgs(parser, multiple_network_interface_cards=False,
-                release_track=base.ReleaseTrack.GA,
-                support_alias_ip_ranges=False,
-                support_public_dns=cls._support_public_dns,
-                support_network_tier=cls._support_network_tier)
+    _CommonArgs(
+        parser,
+        release_track=base.ReleaseTrack.GA,
+        support_alias_ip_ranges=False,
+        support_public_dns=cls._support_public_dns,
+        support_network_tier=cls._support_network_tier)
 
   def Collection(self):
     return 'compute.instances'
@@ -434,6 +437,7 @@ class Create(base.CreateCommand):
     instances_flags.ValidateNicFlags(args)
     instances_flags.ValidateServiceAccountAndScopeArgs(args)
     instances_flags.ValidateAcceleratorArgs(args)
+    instances_flags.ValidateNetworkTierArgs(args, self._support_network_tier)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     compute_client = holder.client
@@ -498,7 +502,6 @@ class CreateBeta(Create):
   def Args(cls, parser):
     _CommonArgs(
         parser,
-        multiple_network_interface_cards=True,
         release_track=base.ReleaseTrack.BETA,
         support_alias_ip_ranges=True,
         support_public_dns=cls._support_public_dns,
@@ -516,13 +519,14 @@ class CreateAlpha(Create):
   @classmethod
   def Args(cls, parser):
     parser.add_argument('--sole-tenancy-host', help=argparse.SUPPRESS)
-    _CommonArgs(parser, multiple_network_interface_cards=True,
-                release_track=base.ReleaseTrack.ALPHA,
-                support_alias_ip_ranges=True,
-                support_public_dns=cls._support_public_dns,
-                support_network_tier=cls._support_network_tier,
-                enable_regional=True,
-                support_local_ssd_size=True)
+    _CommonArgs(
+        parser,
+        release_track=base.ReleaseTrack.ALPHA,
+        support_alias_ip_ranges=True,
+        support_public_dns=cls._support_public_dns,
+        support_network_tier=cls._support_network_tier,
+        enable_regional=True,
+        support_local_ssd_size=True)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())

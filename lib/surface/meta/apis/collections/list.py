@@ -17,7 +17,7 @@
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.meta.apis import flags
-from googlecloudsdk.command_lib.meta.apis import registry
+from googlecloudsdk.command_lib.util.apis import registry
 
 
 class List(base.ListCommand):

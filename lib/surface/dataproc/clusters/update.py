@@ -212,5 +212,4 @@ class UpdateBeta(Update):
             finish before forcefully removing nodes (and potentially
             interrupting jobs). Timeout defaults to 0 if not set (for forceful
             decommission), and the maximum allowed timeout is 1 day.
-            """,
-        hidden=True)
+            """)

@@ -62,16 +62,19 @@ class AddAccessConfigInstances(base.SilentCommand):
   """Create a Google Compute Engine virtual machine access configuration."""
 
   _support_public_dns = False
+  _support_network_tier = False
 
   @classmethod
   def Args(cls, parser):
     _Args(
         parser,
         support_public_dns=cls._support_public_dns,
-        support_network_tier=False)
+        support_network_tier=cls._support_network_tier)
 
   def Run(self, args):
     """Invokes request necessary for adding an access config."""
+    flags.ValidateNetworkTierArgs(args, self._support_network_tier)
+
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
@@ -123,12 +126,6 @@ class AddAccessConfigInstancesAlpha(AddAccessConfigInstances):
   """Create a Google Compute Engine virtual machine access configuration."""
 
   _support_public_dns = True
-
-  @classmethod
-  def Args(cls, parser):
-    _Args(
-        parser,
-        support_public_dns=cls._support_public_dns,
-        support_network_tier=True)
+  _support_network_tier = True
 
 AddAccessConfigInstances.detailed_help = DETAILED_HELP

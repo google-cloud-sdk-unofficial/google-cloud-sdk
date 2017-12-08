@@ -48,8 +48,8 @@ class AddBgpPeer(base.UpdateCommand):
                 project=router_ref.project))
 
   def GetSetRequest(self, client, router_ref, replacement):
-    return (client.apitools_client.routers, 'Update',
-            client.messages.ComputeRoutersUpdateRequest(
+    return (client.apitools_client.routers, 'Patch',
+            client.messages.ComputeRoutersPatchRequest(
                 router=router_ref.Name(),
                 routerResource=replacement,
                 region=router_ref.region,

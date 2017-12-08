@@ -49,8 +49,8 @@ class UpdateBgpPeer(base.UpdateCommand):
 
     _UpdateBgpPeer(replacement, args)
 
-    request_type = messages.ComputeRoutersUpdateRequest
-    resource = service.Update(
+    request_type = messages.ComputeRoutersPatchRequest
+    resource = service.Patch(
         request_type(
             project=ref.project,
             region=ref.region,

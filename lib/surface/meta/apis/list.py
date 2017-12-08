@@ -15,7 +15,7 @@
 """A command that lists the registered APIs in gcloud.."""
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.meta.apis import registry
+from googlecloudsdk.command_lib.util.apis import registry
 
 
 class List(base.ListCommand):

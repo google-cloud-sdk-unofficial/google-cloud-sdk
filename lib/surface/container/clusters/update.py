@@ -18,6 +18,7 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.api_lib.container import kubeconfig as kconfig
 from googlecloudsdk.api_lib.container import util
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -100,10 +101,17 @@ def _AddMutuallyExclusiveArgs(mutex_group):
       help='Set the admin password to the user specified value.')
 
 
-def _AddAdditionalZonesArg(mutex_group):
+def _AddAdditionalZonesArg(mutex_group, deprecated=False):
+  action = None
+  if deprecated:
+    action = actions.DeprecationAction(
+        'additional-zones',
+        warn='This flag is deprecated. '
+        'Use --node-locations=PRIMARY_ZONE,[ZONE,...] instead.')
   mutex_group.add_argument(
       '--additional-zones',
       type=arg_parsers.ArgList(),
+      action=action,
       metavar='ZONE',
       help="""\
 The set of additional zones in which the cluster's node footprint should be
@@ -175,7 +183,8 @@ class Update(base.UpdateCommand):
     locations = None
     if hasattr(args, 'additional_zones') and args.additional_zones is not None:
       locations = sorted([cluster_ref.zone] + args.additional_zones)
-
+    if hasattr(args, 'node_locations') and args.node_locations is not None:
+      locations = sorted(args.node_locations)
     if args.generate_password or args.set_password:
       if args.generate_password:
         password = ''
@@ -316,7 +325,9 @@ class UpdateAlpha(Update):
     group = parser.add_mutually_exclusive_group(required=True)
     _AddMutuallyExclusiveArgs(group)
     flags.AddClusterAutoscalingFlags(parser, group)
-    _AddAdditionalZonesArg(group)
+    group_locations = group.add_mutually_exclusive_group()
+    _AddAdditionalZonesArg(group_locations, deprecated=True)
+    flags.AddNodeLocationsFlag(group_locations)
     flags.AddMasterAuthorizedNetworksFlags(parser, group)
     flags.AddEnableLegacyAuthorizationFlag(group)
     flags.AddStartIpRotationFlag(group)

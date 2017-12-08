@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.compute.instances import flags as instances_flag
 
 
 def _CommonArgs(parser,
-                multiple_network_interface_cards,
                 release_track,
                 support_alias_ip_ranges,
                 support_network_tier,
@@ -43,7 +42,6 @@ def _CommonArgs(parser,
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(
       parser, instances=False,
-      multiple_network_interface_cards=multiple_network_interface_cards,
       support_alias_ip_ranges=support_alias_ip_ranges,
       support_network_tier=support_network_tier)
   instances_flags.AddAcceleratorArgs(parser)
@@ -92,10 +90,11 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    _CommonArgs(parser, multiple_network_interface_cards=False,
-                release_track=base.ReleaseTrack.GA,
-                support_alias_ip_ranges=False,
-                support_network_tier=cls._support_network_tier)
+    _CommonArgs(
+        parser,
+        release_track=base.ReleaseTrack.GA,
+        support_alias_ip_ranges=False,
+        support_network_tier=cls._support_network_tier)
 
   def ValidateDiskFlags(self, args):
     """Validates the values of all disk-related flags."""
@@ -121,6 +120,7 @@ class Create(base.CreateCommand):
     instances_flags.ValidateNicFlags(args)
     instances_flags.ValidateServiceAccountAndScopeArgs(args)
     instances_flags.ValidateAcceleratorArgs(args)
+    instances_flags.ValidateNetworkTierArgs(args, self._support_network_tier)
 
     boot_disk_size_gb = utils.BytesToGb(args.boot_disk_size)
     utils.WarnIfDiskSizeIsTooSmall(boot_disk_size_gb, args.boot_disk_type)
@@ -296,7 +296,6 @@ class CreateBeta(Create):
   def Args(cls, parser):
     _CommonArgs(
         parser,
-        multiple_network_interface_cards=True,
         release_track=base.ReleaseTrack.BETA,
         support_alias_ip_ranges=True,
         support_network_tier=cls._support_network_tier)
@@ -322,9 +321,10 @@ class CreateAlpha(Create):
 
   @classmethod
   def Args(cls, parser):
-    _CommonArgs(parser, multiple_network_interface_cards=True,
-                release_track=base.ReleaseTrack.ALPHA,
-                support_alias_ip_ranges=True,
-                support_network_tier=cls._support_network_tier,
-                support_local_ssd_size=True)
+    _CommonArgs(
+        parser,
+        release_track=base.ReleaseTrack.ALPHA,
+        support_alias_ip_ranges=True,
+        support_network_tier=cls._support_network_tier,
+        support_local_ssd_size=True)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)

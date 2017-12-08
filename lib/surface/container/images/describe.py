@@ -22,8 +22,7 @@ from googlecloudsdk.command_lib.container import flags
 _DEFAULT_KINDS = ['BUILD_DETAILS', 'PACKAGE_VULNERABILITY', 'IMAGE_BASIS']
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Lists container analysis data for a given image.
 

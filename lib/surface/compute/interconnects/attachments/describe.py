@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.interconnects.attachments import client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.interconnects.attachments import flags
 
 
@@ -38,7 +39,9 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.INTERCONNECT_ATTACHMENT_ARG.ResolveAsResource(
-        args, holder.resources)
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
 
     interconnect_attachment = client.InterconnectAttachment(
         ref, compute_client=holder.client)

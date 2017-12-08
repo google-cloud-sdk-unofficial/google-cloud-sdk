@@ -17,7 +17,9 @@
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.search_help import table as help_table
 from googlecloudsdk.command_lib.static_completion import table
-from googlecloudsdk.core import remote_completion
+from googlecloudsdk.core import log
+from googlecloudsdk.core.cache import exceptions as cache_exceptions
+from googlecloudsdk.core.cache import resource_cache
 from googlecloudsdk.core.updater import local_state
 
 
@@ -34,8 +36,16 @@ class PostProcess(base.SilentCommand):
     state = local_state.InstallationState.ForCurrent()
     state.CompilePythonFiles()
 
-    # Re-set remote completion cache.
-    remote_completion.RemoteCompletion.ResetCache()
+    # Delete the deprecated completion cache.
+    resource_cache.DeleteDeprecatedCache()
+
+    # Delete the completion cache.
+    try:
+      resource_cache.ResourceCache(create=False).Delete()
+    except cache_exceptions.CacheNotFound:
+      pass
+    except cache_exceptions.Error as e:
+      log.info('Unexpected resource cache error ignored: [%s].', e)
 
     # Re-generate static completion table.
     table.Update(self._cli_power_users_only)

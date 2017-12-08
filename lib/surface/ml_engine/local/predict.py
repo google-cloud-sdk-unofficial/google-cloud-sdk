@@ -12,81 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """ml-engine local predict command."""
-import json
-import subprocess
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.ml_engine import local_predict
+from googlecloudsdk.command_lib.ml_engine import local_utils
 from googlecloudsdk.command_lib.ml_engine import predict_utilities
-from googlecloudsdk.core import config
-from googlecloudsdk.core import exceptions as core_exceptions
-from googlecloudsdk.core import log
-from googlecloudsdk.core.util import files
-
-
-class InvalidInstancesFileError(core_exceptions.Error):
-  pass
-
-
-class LocalPredictRuntimeError(core_exceptions.Error):
-  """Indicates that some error happened within local_predict."""
-  pass
-
-
-class LocalPredictEnvironmentError(core_exceptions.Error):
-  """Indicates that some error happened within local_predict."""
-  pass
-
-
-class InvalidReturnValueError(core_exceptions.Error):
-  """Indicates that the return value from local_predict has some error."""
-  pass
-
-
-def _RunPredict(args):
-  """Run ML Engine local prediction."""
-  instances = predict_utilities.ReadInstancesFromArgs(args.json_instances,
-                                                      args.text_instances)
-  sdk_root = config.Paths().sdk_root
-  if not sdk_root:
-    raise LocalPredictEnvironmentError(
-        'You must be running an installed Cloud SDK to perform local '
-        'prediction.')
-  env = {'CLOUDSDK_ROOT': sdk_root}
-  # We want to use whatever the user's Python was, before the Cloud SDK started
-  # changing the PATH. That's where Tensorflow is installed.
-  python_executables = files.SearchForExecutableOnPath('python')
-  if not python_executables:
-    # This doesn't have to be actionable because things are probably beyond help
-    # at this point.
-    raise LocalPredictEnvironmentError(
-        'Something has gone really wrong; we can\'t find a valid Python '
-        'executable on your PATH.')
-  python_executable = python_executables[0]
-  # Start local prediction in a subprocess.
-  proc = subprocess.Popen(
-      [python_executable, local_predict.__file__,
-       '--model-dir', args.model_dir],
-      stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-      env=env)
-
-  # Pass the instances to the process that actually runs local prediction.
-  for instance in instances:
-    proc.stdin.write(json.dumps(instance) + '\n')
-  proc.stdin.flush()
-
-  # Get the results for the local prediction.
-  output, err = proc.communicate()
-  if proc.returncode != 0:
-    raise LocalPredictRuntimeError(err)
-  if err:
-    log.warn(err)
-
-  try:
-    return json.loads(output)
-  except ValueError:
-    raise InvalidReturnValueError('The output for prediction is not '
-                                  'in JSON format: ' + output)
 
 
 def _AddLocalPredictArgs(parser):
@@ -131,13 +60,26 @@ class Predict(base.Command):
     _AddLocalPredictArgs(parser)
 
   def Run(self, args):
-    return _RunPredict(args)
+    results = local_utils.RunPredict(args.model_dir,
+                                     args.json_instances,
+                                     args.text_instances)
+    if not args.IsSpecified('format'):
+      # default format is based on the response.
+      if isinstance(results, list):
+        predictions = results
+      else:
+        predictions = results.get('predictions')
+
+      args.format = predict_utilities.GetDefaultFormat(predictions)
+
+    return results
 
 
 _DETAILED_HELP = {
     'DESCRIPTION': """\
 *{command}* performs prediction locally with the given instances. It requires
-the TensorFlow SDK be installed locally.
+the TensorFlow SDK be installed locally. The output format mirrors
+`gcloud ml-engine predict` (online prediction)
 """
 }
 

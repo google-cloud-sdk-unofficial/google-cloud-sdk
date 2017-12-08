@@ -14,6 +14,7 @@
 """Command for creating forwarding rules."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import forwarding_rules_utils as utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -239,8 +240,14 @@ class CreateAlpha(Create):
 
   def ConstructNetworkTier(self, messages, args):
     if args.network_tier:
-      return messages.ForwardingRule.NetworkTierValueValuesEnum(
-          args.network_tier)
+      network_tier = args.network_tier.upper()
+      if network_tier in constants.NETWORK_TIER_CHOICES_FOR_INSTANCE:
+        return messages.ForwardingRule.NetworkTierValueValuesEnum(
+            args.network_tier)
+      else:
+        raise exceptions.InvalidArgumentException(
+            '--network-tier',
+            'Invalid network tier [{tier}]'.format(tier=network_tier))
     else:
       return
 

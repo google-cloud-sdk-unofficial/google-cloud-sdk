@@ -72,6 +72,5 @@ UpdateAlpha.detailed_help = {
     'DESCRIPTION':
         """\
 
-        *{command}* is used to update virtual networks. TODO: list which fields
-        are allowed to be updated."""
+        *{command}* is used to update Google Compute Engine networks."""
 }

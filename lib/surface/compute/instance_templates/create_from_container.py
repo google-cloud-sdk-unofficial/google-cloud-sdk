@@ -37,7 +37,8 @@ class CreateFromContainer(base.CreateCommand):
     instances_flags.AddCreateDiskArgs(parser)
     instances_flags.AddLocalSsdArgsWithSize(parser)
     instances_flags.AddCanIpForwardArgs(parser)
-    instances_flags.AddAddressArgs(parser, instances=False)
+    instances_flags.AddAddressArgs(
+        parser, multiple_network_interface_cards=False, instances=False)
     instances_flags.AddMachineTypeArgs(parser)
     instances_flags.AddMaintenancePolicyArgs(parser)
     instances_flags.AddNoRestartOnFailureArgs(parser)
@@ -80,6 +81,7 @@ class CreateFromContainer(base.CreateCommand):
     instances_flags.ValidateDiskCommonFlags(args)
     instances_flags.ValidateLocalSsdFlags(args)
     instances_flags.ValidateServiceAccountAndScopeArgs(args)
+    instances_flags.ValidateNetworkTierArgs(args, support_network_tier=True)
     if instance_utils.UseExistingBootDisk(args.disk or []):
       raise exceptions.InvalidArgumentException(
           '--disk',

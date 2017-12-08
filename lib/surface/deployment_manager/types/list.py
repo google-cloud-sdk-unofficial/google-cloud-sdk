@@ -214,6 +214,7 @@ class ListALPHA(base.ListCommand, dm_base.DmCommand):
             yield {'types': types,
                    'provider': project + '/' + type_provider}
         except api_exceptions.HttpException as error:
+          self.exit_code = 1
           yield {'types': [],
                  'provider': project + '/' + type_provider,
                  'error': error.message}

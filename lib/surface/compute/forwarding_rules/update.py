@@ -14,6 +14,7 @@
 """Command to update forwarding-rules."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
@@ -168,7 +169,13 @@ class UpdateAlpha(Update):
 
   def ConstructNetworkTier(self, messages, network_tier):
     if network_tier:
-      return messages.ForwardingRule.NetworkTierValueValuesEnum(network_tier)
+      network_tier = network_tier.upper()
+      if network_tier in constants.NETWORK_TIER_CHOICES_FOR_INSTANCE:
+        return messages.ForwardingRule.NetworkTierValueValuesEnum(network_tier)
+      else:
+        raise calliope_exceptions.InvalidArgumentException(
+            '--network-tier',
+            'Invalid network tier [{tier}]'.format(tier=network_tier))
     else:
       return
 

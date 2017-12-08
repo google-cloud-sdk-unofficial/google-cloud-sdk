@@ -107,6 +107,7 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
             args.network_interface))
 
   def Run(self, args):
+    flags.ValidateNetworkTierArgs(args, support_network_tier=True)
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 

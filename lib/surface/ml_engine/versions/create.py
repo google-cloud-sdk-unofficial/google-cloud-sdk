@@ -57,9 +57,14 @@ def _AddCreateArgs(parser):
               runtimeVersion: '1.0'
               manualScaling:
                 nodes: 10  # The number of nodes to allocate for this model.
+              autoScaling:
+                minNodes: 0  # The minimum number of nodes to allocate for this model.
 
           The name of the version must always be specified via the required
           VERSION argument.
+
+          Only one of manualScaling or autoScaling must be specified. If both
+          are specified in same yaml file an error will be returned.
 
           If an option is specified both in the configuration file and via
           command line arguments, the command line arguments override the

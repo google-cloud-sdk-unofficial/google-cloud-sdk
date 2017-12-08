@@ -23,22 +23,31 @@ from googlecloudsdk.api_lib.util import apis_internal
 from googlecloudsdk.api_lib.util import resource
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 from googlecloudsdk.third_party.apis import apis_map
 
 NAME_SEPARATOR = '.'
 
 
-# TODO(b/38000796): Use the same defaults as the normal resource parser.
-DEFAULT_PARAMS = {
-    'project': properties.VALUES.core.project.Get,
-    'projectId': properties.VALUES.core.project.Get,
-    'projectsId': properties.VALUES.core.project.Get,
-}
-
-
 class Error(exceptions.Error):
   pass
+
+
+class UnknownAPIError(Error):
+
+  def __init__(self, api_name):
+    super(UnknownAPIError, self).__init__(
+        'API [{api}] does not exist or is not registered.'
+        .format(api=api_name)
+    )
+
+
+class UnknownAPIVersionError(Error):
+
+  def __init__(self, api_name, version):
+    super(UnknownAPIVersionError, self).__init__(
+        'Version [{version}] does not exist for API [{api}].'
+        .format(version=version, api=api_name)
+    )
 
 
 class NoDefaultVersionError(Error):
@@ -142,14 +151,14 @@ class APIMethod(object):
   def IsPageableList(self):
     """Determines whether this is a List method that supports paging."""
     if (self.IsList() and
-        'pageToken' in self.RequestFieldNames() and
-        'nextPageToken' in self.ResponseFieldNames()):
+        'pageToken' in self._RequestFieldNames() and
+        'nextPageToken' in self._ResponseFieldNames()):
       return True
     return False
 
   def BatchPageSizeField(self):
     """Gets the name of the page size field in the request if it exists."""
-    request_fields = self.RequestFieldNames()
+    request_fields = self._RequestFieldNames()
     if 'maxResults' in request_fields:
       return 'maxResults'
     if 'pageSize' in request_fields:
@@ -208,7 +217,7 @@ class APIMethod(object):
       return request_collection.detailed_params
     return []
 
-  def RequestFieldNames(self):
+  def _RequestFieldNames(self):
     """Gets the fields that are actually a part of the request message.
 
     For APIs that use atomic names, this will only be the single name parameter
@@ -219,23 +228,13 @@ class APIMethod(object):
     """
     return [f.name for f in self.GetRequestType().all_fields()]
 
-  def ResponseFieldNames(self):
+  def _ResponseFieldNames(self):
     """Gets the fields that are actually a part of the response message.
 
     Returns:
       [str], The field names.
     """
     return [f.name for f in self.GetResponseType().all_fields()]
-
-  def GetDefaultParams(self):
-    """Gets default values for parameters in the request method.
-
-    Returns:
-      {str, value}, A mapping of field name to value.
-    """
-    default_params = {k: v() for k, v in DEFAULT_PARAMS.iteritems()
-                      if k in self.ResourceFieldNames()}
-    return default_params
 
   def Call(self, request, global_params=None, raw=False,
            limit=None, page_size=None):
@@ -354,6 +353,27 @@ def _RemoveVersionPrefix(api_version, path):
   return path
 
 
+def _ValidateAndGetDefaultVersion(api_name, api_version):
+  """Validates the API exists and gets the default version if not given."""
+  # pylint:disable=protected-access
+  api_name, _ = apis_internal._GetApiNameAndAlias(api_name)
+  api_vers = apis_map.MAP.get(api_name, {})
+  if not api_vers:
+    # No versions, this API is not registered.
+    raise UnknownAPIError(api_name)
+  if api_version:
+    if api_version not in api_vers:
+      raise UnknownAPIVersionError(api_name, api_version)
+    return api_version
+
+  for version, api_def in api_vers.iteritems():
+    if api_def.default_version:
+      log.warning('Using default version [{}] for api [{}].'
+                  .format(version, api_name))
+      return version
+  raise NoDefaultVersionError(api_name)
+
+
 def GetAPI(api_name, api_version=None):
   """Get a specific API definition.
 
@@ -364,7 +384,7 @@ def GetAPI(api_name, api_version=None):
   Returns:
     API, The API definition.
   """
-  api_version = api_version or _GetDefaultVersion(api_name)
+  api_version = _ValidateAndGetDefaultVersion(api_name, api_version)
   # pylint: disable=protected-access
   api_def = apis_internal._GetApiDef(api_name, api_version)
   api_client = apis_internal._GetClientClassFromDef(api_def)
@@ -401,7 +421,7 @@ def GetAPICollections(api_name=None, api_version=None):
     [APICollection], A list of the registered collections.
   """
   if api_name:
-    all_apis = {api_name: api_version or _GetDefaultVersion(api_name)}
+    all_apis = {api_name: _ValidateAndGetDefaultVersion(api_name, api_version)}
   else:
     all_apis = {x.name: x.version for x in GetAllAPIs() if x.is_default}
 
@@ -429,23 +449,12 @@ def GetAPICollection(full_collection_name, api_version=None):
     and version.
   """
   api_name, collection = _SplitFullCollectionName(full_collection_name)
-  api_version = api_version or _GetDefaultVersion(api_name)
+  api_version = _ValidateAndGetDefaultVersion(api_name, api_version)
   collections = GetAPICollections(api_name, api_version)
   for c in collections:
     if c.name == collection:
       return c
   raise UnknownCollectionError(api_name, api_version, collection)
-
-
-def _GetDefaultVersion(api_name):
-  """Gets the default version for the given api."""
-  # pylint:disable=protected-access
-  api_version = apis_internal._GetDefaultVersion(api_name)
-  if not api_version:
-    raise NoDefaultVersionError(api_name)
-  log.warning('Using default version [{}] for api [{}].'
-              .format(api_version, api_name))
-  return api_version
 
 
 def GetMethod(full_collection_name, method, api_version=None):
@@ -486,7 +495,7 @@ def GetMethods(full_collection_name, api_version=None):
     [APIMethod], The method specifications.
   """
   api_name, collection = _SplitFullCollectionName(full_collection_name)
-  api_version = api_version or _GetDefaultVersion(api_name)
+  api_version = _ValidateAndGetDefaultVersion(api_name, api_version)
   client = apis.GetClientInstance(api_name, api_version, no_http=True)
   api_collection = GetAPICollection(full_collection_name,
                                     api_version=api_version)

@@ -19,6 +19,7 @@ from apitools.base.py import exceptions
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.functions import util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as base_exceptions
 from googlecloudsdk.command_lib.functions import flags
@@ -31,25 +32,44 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddRegionFlag(parser)
+    regions_group = parser.add_mutually_exclusive_group()
+    flags.AddDeprecatedRegionFlag(regions_group)
+    regions_group.add_argument(
+        '--regions',
+        metavar='REGION',
+        help=('Regions containing functions to list. By default functions from '
+              'the region configured in functions/region property are listed. '
+              'You can check value of the property with '
+              '`gcloud config get-value functions/region` command.'),
+        type=arg_parsers.ArgList(min_length=1),
+        default=[])
     parser.display_info.AddFormat(
         'table(name.basename(), status, trigger():label=TRIGGER)')
 
   def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Yields:
-      Objects representing user functions.
-    """
     client = util.GetApiClientInstance()
+    messages = util.GetApiMessagesModule()
+    locations = args.regions or [properties.VALUES.functions.region.GetOrFail()]
+    project = properties.VALUES.core.project.GetOrFail()
+    limit = args.limit
+
+    return self._YieldFromLocations(locations, project, limit, messages, client)
+
+  def _YieldFromLocations(self, locations, project, limit, messages, client):
+    for location in locations:
+      location_ref = resources.REGISTRY.Parse(
+          location,
+          params={'projectsId': project},
+          collection='cloudfunctions.projects.locations')
+      for function in self._YieldFromLocation(
+          location_ref, limit, messages, client):
+        yield function
+
+  def _YieldFromLocation(self, location_ref, limit, messages, client):
     list_generator = list_pager.YieldFromList(
         service=client.projects_locations_functions,
-        request=self.BuildRequest(args),
-        limit=args.limit, field='functions',
+        request=self.BuildRequest(location_ref, messages),
+        limit=limit, field='functions',
         batch_size_attribute='pageSize')
     # Decorators (e.g. util.CatchHTTPErrorRaiseHTTPException) don't work
     # for generators. We have to catch the exception above the iteration loop,
@@ -62,21 +82,6 @@ class List(base.ListCommand):
       unused_type, unused_value, traceback = sys.exc_info()
       raise base_exceptions.HttpException, msg, traceback
 
-  def BuildRequest(self, args):
-    """This method creates a ListRequest message to be send to GCF.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      A ListRequest message.
-    """
-    messages = util.GetApiMessagesModule()
-    project = properties.VALUES.core.project.GetOrFail()
-    location_ref = resources.REGISTRY.Parse(
-        properties.VALUES.functions.region.Get(),
-        params={'projectsId': project},
-        collection='cloudfunctions.projects.locations')
+  def BuildRequest(self, location_ref, messages):
     return messages.CloudfunctionsProjectsLocationsFunctionsListRequest(
         location=location_ref.RelativeName())

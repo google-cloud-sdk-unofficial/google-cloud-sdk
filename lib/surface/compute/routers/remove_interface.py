@@ -59,8 +59,8 @@ class RemoveBgpPeer(base.UpdateCommand):
 
   def GetSetRequest(self, client, router_ref, replacement):
     return (client.apitools_client.routers,
-            'Update',
-            client.messages.ComputeRoutersUpdateRequest(
+            'Patch',
+            client.messages.ComputeRoutersPatchRequest(
                 router=router_ref.Name(),
                 routerResource=replacement,
                 region=router_ref.region,

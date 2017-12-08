@@ -89,10 +89,10 @@ class Update(base.UpdateCommand):
         networkInterface=args.network_interface,
         networkInterfaceResource=interface)
 
-    included_fields = []
-    if interface.aliasIpRanges is not None:
-      included_fields.append('aliasIpRanges')
-    with client.IncludeFields(included_fields):
+    cleared_fields = []
+    if not interface.aliasIpRanges:
+      cleared_fields.append('aliasIpRanges')
+    with client.IncludeFields(cleared_fields):
       operation = client.instances.UpdateNetworkInterface(request)
     operation_ref = holder.resources.Parse(
         operation.selfLink, collection='compute.zoneOperations')

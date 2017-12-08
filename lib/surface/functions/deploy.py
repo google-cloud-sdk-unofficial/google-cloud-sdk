@@ -20,6 +20,7 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.functions import operations
 from googlecloudsdk.api_lib.functions import util
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
@@ -56,16 +57,29 @@ def _FunctionArgs(parser):
 def _SourceCodeArgs(parser):
   """Add arguments specyfying functions source code to the parser."""
   path_group = parser.add_mutually_exclusive_group()
+
   path_group.add_argument(
       '--local-path',
       help=('Path to local directory with source code. Required with '
             '--stage-bucket flag. Size of uncompressed files to deploy must be '
-            'no more than 512MB.'))
+            'no more than 512MB.'),
+      action=actions.DeprecationAction(
+          '--local-path',
+          warn='The {flag_name} flag is deprecated; use --source instead.',
+          removed=False,
+      ),
+  )
   path_group.add_argument(
       '--source-path',
       help=('Path to directory with source code in Cloud Source '
             'Repositories, when you specify this parameter --source-url flag '
-            'is required.'))
+            'is required.'),
+      action=actions.DeprecationAction(
+          '--source-path',
+          warn='The {flag_name} flag is deprecated; use --source instead.',
+          removed=False,
+      ),
+  )
   path_group.add_argument(
       '--source',
       help="""\
@@ -115,25 +129,49 @@ def _SourceCodeArgs(parser):
             'repository. If none of them are provided, the last revision '
             'from the master branch is used. If this parameter is given, '
             'the parameter --source is required and describes the path '
-            'inside the repository.'))
+            'inside the repository.'),
+      action=actions.DeprecationAction(
+          '--source-url',
+          warn='The {flag_name} flag is deprecated; use --source instead.',
+          removed=False,
+      ),
+  )
   source_version_group = parser.add_mutually_exclusive_group()
   source_version_group.add_argument(
       '--source-revision',
       help=('The revision ID (for instance, git commit hash) that will be '
             'used to get the source code of the function. Can be specified '
-            'only together with --source-url parameter.'))
+            'only together with --source-url parameter.'),
+      action=actions.DeprecationAction(
+          '--source-revision',
+          warn='The {flag_name} flag is deprecated; use --source instead.',
+          removed=False,
+      ),
+  )
   source_version_group.add_argument(
       '--source-branch',
       help=('The branch that will be used to get the source code of the '
             'function.  The most recent revision on this branch will be '
             'used. Can be specified only together with --source-url '
-            'parameter. If not specified defaults to `master`.'))
+            'parameter. If not specified defaults to `master`.'),
+      action=actions.DeprecationAction(
+          '--source-branch',
+          warn='The {flag_name} flag is deprecated; use --source instead.',
+          removed=False,
+      ),
+  )
   source_version_group.add_argument(
       '--source-tag',
       help="""\
       The revision tag for the source that will be used as the source
       code of the function. Can be specified only together with
-      --source-url parameter.""")
+      --source-url parameter.""",
+      action=actions.DeprecationAction(
+          '--source-tag',
+          warn='The {flag_name} flag is deprecated; use --source instead.',
+          removed=False,
+      ),
+  )
   parser.add_argument(
       '--entry-point',
       type=util.ValidateEntryPointNameOrRaise,

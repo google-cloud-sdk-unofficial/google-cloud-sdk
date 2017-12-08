@@ -73,14 +73,17 @@ class List(base.ListCommand):
     Raises:
       exceptions.Error: If the repository could not be found, or access was
       denied.
-      docker_http.V2DiagnosticException: Any other error occured while
+      docker_http.V2DiagnosticException: Any other error occurred while
       accessing GCR.
     """
     repository_arg = args.repository
     self._epilog = None
     if not repository_arg:
+      project_id = properties.VALUES.core.project.Get(required=True)
+      # Handle domain-scoped projects...
+      project_id = project_id.replace(':', '/', 1)
       repository_arg = 'gcr.io/{0}'.format(
-          properties.VALUES.core.project.Get(required=True))
+          project_id)
       self._epilog = 'Only listing images in {0}. '.format(repository_arg)
       self._epilog += 'Use --repository to list images in other repositories.'
 

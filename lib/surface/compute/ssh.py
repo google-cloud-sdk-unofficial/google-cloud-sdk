@@ -280,8 +280,8 @@ def DetailedHelp(version):
 
           $ {command} example-instance --zone us-central1-a --command "ps -ejH"
 
-        If you are using the Google container virtual machine image, you
-        can SSH into one of your containers with:
+        If you are using the Google Container-Optimized virtual machine image,
+        you can SSH into one of your containers with:
 
           $ {command} example-instance --zone us-central1-a --container CONTAINER
         """,
