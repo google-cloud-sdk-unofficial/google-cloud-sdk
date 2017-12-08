@@ -11,7 +11,7 @@ gcloud dns record\-sets transaction add \- append a record\-set addition to the 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud dns record\-sets transaction add\fR \fIDATA\fR [\fIDATA\fR\ ...] \fB\-\-name\fR \fINAME\fR [\fB\-\-transaction\-file\fR\ \fITRANSACTION_FILE\fR;\ default="transaction.yaml"] \fB\-\-ttl\fR \fITTL\fR \fB\-\-type\fR \fITYPE\fR [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud dns record\-sets transaction add\fR \fIDATA\fR [\fIDATA\fR\ ...] \fB\-\-name\fR \fINAME\fR \fB\-\-ttl\fR \fITTL\fR \fB\-\-type\fR \fITYPE\fR \fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR [\fB\-\-transaction\-file\fR\ \fITRANSACTION_FILE\fR;\ default="transaction.yaml"] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -29,7 +29,7 @@ DNS name of the record\-set to be added.
 
 .RE
 
-.SH "FLAGS"
+.SH "REQUIRED FLAGS"
 
 \fB\-\-name\fR \fINAME\fR
 .RS 2m
@@ -45,19 +45,19 @@ TTL for the record\-set to be added.
 .RS 2m
 Type of the record\-set to be added.
 
-
-.RE
-
-.SH "GROUP FLAGS"
-
-\fB\-\-transaction\-file\fR \fITRANSACTION_FILE\fR; default="transaction.yaml"
-.RS 2m
-Path of the file which contains the transaction.
-
 .RE
 \fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR
 .RS 2m
 Name of the managed\-zone whose record\-sets you want to manage.
+
+
+.RE
+
+.SH "OPTIONAL FLAGS"
+
+\fB\-\-transaction\-file\fR \fITRANSACTION_FILE\fR; default="transaction.yaml"
+.RS 2m
+Path of the file which contains the transaction.
 
 
 .RE

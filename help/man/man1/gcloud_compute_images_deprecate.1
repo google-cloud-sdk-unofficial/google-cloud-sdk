@@ -11,7 +11,7 @@ gcloud compute images deprecate \- manage deprecation status of Google Compute E
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute images deprecate\fR \fINAME\fR [\fB\-\-delete\-in\fR\ \fIDELETE_IN\fR\ |\ \fB\-\-delete\-on\fR\ \fIDELETE_ON\fR] [\fB\-\-obsolete\-in\fR\ \fIOBSOLETE_IN\fR\ |\ \fB\-\-obsolete\-on\fR\ \fIOBSOLETE_ON\fR] [\fB\-\-replacement\fR\ \fIREPLACEMENT\fR] \fB\-\-state\fR \fISTATE\fR [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute images deprecate\fR \fINAME\fR \fB\-\-state\fR \fISTATE\fR [\fB\-\-delete\-in\fR\ \fIDELETE_IN\fR\ |\ \fB\-\-delete\-on\fR\ \fIDELETE_ON\fR] [\fB\-\-obsolete\-in\fR\ \fIOBSOLETE_IN\fR\ |\ \fB\-\-obsolete\-on\fR\ \fIOBSOLETE_ON\fR] [\fB\-\-replacement\fR\ \fIREPLACEMENT\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -29,7 +29,23 @@ The name of the image to set deprecation status of.
 
 .RE
 
-.SH "FLAGS"
+.SH "REQUIRED FLAGS"
+
+\fB\-\-state\fR \fISTATE\fR
+.RS 2m
+The deprecation state to set on the image. An image's default state is
+\f5\fIACTIVE\fR\fR, suggesting that the image is currently supported. Operations
+which create a new resource using a \f5\fIDEPRECATED\fR\fR image return
+successfully, but with a warning indicating that the image is deprecated and
+recommending its replacement. New uses of \f5\fIOBSOLETE\fR\fR or
+\f5\fIDELETED\fR\fR images result in an error. Note that setting the deprecation
+state to \f5\fIDELETED\fR\fR will not automatically delete the image. You must
+still make a request to delete the image to remove it from the image list.
+
+
+.RE
+
+.SH "OPTIONAL FLAGS"
 
 \fB\-\-delete\-in\fR \fIDELETE_IN\fR
 .RS 2m
@@ -78,18 +94,6 @@ replacement. For example, \f5\fI\-\-replacement example\-image\fR\fR or
 flag is required when setting the image state to anything other than
 \f5\fIACTIVE\fR\fR or when \-\-delete\-in, \-\-delete\-on, \-\-obsolete\-in, or
 \-\-obsolete\-on is provided.
-
-.RE
-\fB\-\-state\fR \fISTATE\fR
-.RS 2m
-The deprecation state to set on the image. An image's default state is
-\f5\fIACTIVE\fR\fR, suggesting that the image is currently supported. Operations
-which create a new resource using a \f5\fIDEPRECATED\fR\fR image return
-successfully, but with a warning indicating that the image is deprecated and
-recommending its replacement. New uses of \f5\fIOBSOLETE\fR\fR or
-\f5\fIDELETED\fR\fR images result in an error. Note that setting the deprecation
-state to \f5\fIDELETED\fR\fR will not automatically delete the image. You must
-still make a request to delete the image to remove it from the image list.
 
 
 .RE

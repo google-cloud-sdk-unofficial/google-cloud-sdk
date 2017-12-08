@@ -695,11 +695,12 @@ class NewCmd(appcommands.Cmd):
     """Run this command in debug mode."""
     try:
       return_value = self.RunWithArgs(*args, **kwds)
-    except BaseException as e:
+    except (BaseException, apiclient.errors.ResumableUploadError) as e:
       # Don't break into the debugger for expected exceptions.
-      if isinstance(e, app.UsageError) or (
+      if (isinstance(e, app.UsageError) or (
           isinstance(e, bigquery_client.BigqueryError) and
-          not isinstance(e, bigquery_client.BigqueryInterfaceError)):
+          not isinstance(e, bigquery_client.BigqueryInterfaceError)) or
+          isinstance(e, apiclient.errors.ResumableUploadError)):
         return self._HandleError(e)
       print
       print '****************************************************'
@@ -991,7 +992,9 @@ class _Load(BigqueryCmd):
     if self.ignore_unknown_values is not None:
       opts['ignore_unknown_values'] = self.ignore_unknown_values
     job = client.Load(table_reference, source, schema=schema, **opts)
-    if not FLAGS.sync:
+    if FLAGS.sync:
+      _PrintJobMessages(client.FormatJobInfo(job))
+    else:
       self.PrintJobStartInfo(job)
 
 
@@ -1223,8 +1226,10 @@ class _Query(BigqueryCmd):
         raise app.UsageError(
             'flatten_results cannot be specified in rpc mode.')
       kwds['max_results'] = self.max_rows
-      fields, rows = client.RunQueryRpc(query, **kwds)
+      fields, rows, execution = client.RunQueryRpc(query, **kwds)
       Factory.ClientTablePrinter.GetTablePrinter().PrintTable(fields, rows)
+      # If we are here, the job succeeded, but print warnings if any.
+      _PrintJobMessages(execution)
     else:
       if self.destination_table and self.append_table:
         kwds['write_disposition'] = 'WRITE_APPEND'
@@ -1249,6 +1254,8 @@ class _Query(BigqueryCmd):
                                                    start_row=self.start_row,
                                                    max_rows=self.max_rows)
         Factory.ClientTablePrinter.GetTablePrinter().PrintTable(fields, rows)
+        # If we are here, the job succeeded, but print warnings if any.
+        _PrintJobMessages(client.FormatJobInfo(job))
 
 
 def _GetExternalDataConfig(file_path_or_simple_spec):
@@ -1358,7 +1365,10 @@ class _Extract(BigqueryCmd):
         field_delimiter=_NormalizeFieldDelimiter(self.field_delimiter),
         destination_format=self.destination_format,
         compression=self.compression, **kwds)
-    if not FLAGS.sync:
+    if FLAGS.sync:
+      # If we are here, the job succeeded, but print warnings if any.
+      _PrintJobMessages(client.FormatJobInfo(job))
+    else:
       self.PrintJobStartInfo(job)
 
 
@@ -1616,6 +1626,8 @@ class _Copy(BigqueryCmd):
     else:
       print "Tables '%s' successfully copied to '%s'" % (
           source_references_str, dest_reference)
+      # If we are here, the job succeeded, but print warnings if any.
+      _PrintJobMessages(client.FormatJobInfo(job))
 
 
 
@@ -2013,6 +2025,48 @@ class _Show(BigqueryCmd):
     _PrintObjectInfo(object_info, reference, custom_format=custom_format)
 
 
+def _PrintJobMessages(printable_job_info):
+  """Prints errors or warnings from a job formatted for printing.
+
+  If the job had a fatal error, non-fatal warnings are not shown.
+
+  If any error/warning does not have a 'message' key, printable_job_info must
+  have 'jobReference' identifying the job.
+  """
+
+  job_ref = '(unknown)'  # Should never be seen, but beats a weird crash.
+  if 'jobReference' in printable_job_info:
+    job_ref = printable_job_info['jobReference']
+
+  # For failing jobs, display the error but not any warnings, because those
+  # may be more distracting than helpful.
+  if printable_job_info['State'] == 'FAILURE':
+    error_result = printable_job_info['status']['errorResult']
+    error_ls = printable_job_info['status'].get('errors', [])
+    error = bigquery_client.BigqueryError.Create(
+        error_result, error_result, error_ls)
+    print 'Error encountered during job execution:\n%s\n' % (error,)
+  elif 'errors' in printable_job_info['status']:
+    warnings = printable_job_info['status']['errors']
+    print ('Warning%s encountered during job execution:\n'
+           % ('' if len(warnings) == 1 else 's'))
+    recommend_show = False
+    for w in warnings:
+      # Some warnings include detailed error messages, and some just
+      # include programmatic error codes.  Some have a 'location'
+      # separately, and some put it in the 'message' text.
+      if 'message' not in w:
+        recommend_show = True
+      else:
+        if 'location' in w:
+          message = '[%s] %s' % (w['location'], w['message'])
+        else:
+          message = w['message']
+        print '%s\n' % message
+    if recommend_show:
+      print 'Use "bq show -j %s" to view job warnings.' % job_ref
+
+
 def _PrintObjectInfo(object_info, reference, custom_format):
   # The JSON formats are handled separately so that they don't print
   # the record as a list of one record.
@@ -2028,13 +2082,8 @@ def _PrintObjectInfo(object_info, reference, custom_format):
     print '%s %s\n' % (reference.typename.capitalize(), reference)
     formatter.Print()
     print
-    if (isinstance(reference, JobReference) and
-        object_info['State'] == 'FAILURE'):
-      error_result = object_info['status']['errorResult']
-      error_ls = object_info['status'].get('errors', [])
-      error = bigquery_client.BigqueryError.Create(
-          error_result, error_result, error_ls)
-      print 'Errors encountered during job execution. %s\n' % (error,)
+    if isinstance(reference, JobReference):
+      _PrintJobMessages(object_info)
   else:
     formatter = _GetFormatterFromFlags()
     formatter.AddColumns(object_info.keys())
@@ -2155,7 +2204,10 @@ class _Insert(BigqueryCmd):
         short_name='i', flag_values=fv)
     flags.DEFINE_string(
         'template_suffix', None,
-        'TODO(chengz): copy/paste the better comment from api jsont file.',
+        'If specified, treats the destination table as a base template, and '
+        'inserts the rows into an instance table named '
+        '"{destination}{templateSuffix}". BigQuery will manage creation of the '
+        'instance table, using the schema of the base template table.',
         short_name='x', flag_values=fv)
 
   def RunWithArgs(self, identifier='', filename=None):
@@ -2169,10 +2221,10 @@ class _Insert(BigqueryCmd):
       bq insert dataset.table /tmp/mydata.json
       echo '{"a":1, "b":2}' | bq insert dataset.table
 
-    Template table examples: (only works in vnext)
+    Template table examples:
     Insert to dataset.template_suffix table using dataset.template table as
     its template.
-      bq --api_version=vnext insert -x=suffix dataset.table /tmp/mydata.json
+      bq insert -x=_suffix dataset.table /tmp/mydata.json
     """
     if filename:
       with open(filename, 'r') as json_file:

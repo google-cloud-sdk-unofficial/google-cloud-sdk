@@ -100,3 +100,175 @@ active.
 You can activate a configuration for a single gcloud invocation using flag,
 \f5\-\-configuration my\-config\fR, or environment variable
 \f5CLOUDSDK_ACTIVE_CONFIG_NAME=my\-config\fR.
+
+
+
+.SH "AVAILABLE PROPERTIES"
+
+\fIcore\fR
+.RS 2m
+
+\fBaccount\fR
+.RS 2m
+The account gcloud should use for authentication. You can run \f5gcloud auth
+list\fR to see the accounts you currently have available.
+
+
+.RE
+\fBdisable_color\fR
+.RS 2m
+If True, color will not be used when printing messages in the terminal.
+
+
+.RE
+\fBdisable_prompts\fR
+.RS 2m
+If True, the default answer will be assumed for all user prompts. For any
+prompts that require user input, an error will be raised. This is the equivalent
+of using the global \f5\-\-quiet\fR flag.
+
+
+.RE
+\fBdisable_usage_reporting\fR
+.RS 2m
+If True, anonymous statistics on SDK usage will not be collected. This is value
+is set based on your choices during installation, but can be changed at any
+time. For more information, see: https://cloud.google.com/sdk/usage\-statistics
+
+
+.RE
+\fBlog_http\fR
+.RS 2m
+If True, log http requests and responses to the logs. You may need to adjust
+your \f5verbosity\fR setting if you want to see in the terminal, otherwise it is
+available in the log files.
+
+
+.RE
+\fBproject\fR
+.RS 2m
+The project id of the Cloud Platform project to operate on by default. This can
+be overridden by using the global \f5\-\-project\fR flag.
+
+
+.RE
+\fBuser_output_enabled\fR
+.RS 2m
+If False, messages to the user and command output on both standard out and
+standard error will be suppressed.
+
+
+.RE
+\fBverbosity\fR
+.RS 2m
+The default logging verbosity for gcloud commands. This is the equivalent of
+using the global \f5\-\-verbosity\fR flag.
+
+
+.RE
+.RE
+\fIapp\fR
+.RS 2m
+
+\fBdocker_build\fR
+.RS 2m
+Set to \f5local\fR to run \f5docker build\fR using a local docker installation,
+or \f5remote\fR to do the build on a GCE VM.
+
+
+.RE
+\fBstop_previous_version\fR
+.RS 2m
+If True, when deploying a new version of a service, the previously deployed
+version is stopped. If False, older versions must be stopped manually.
+
+
+.RE
+\fBuse_cloud_build\fR
+.RS 2m
+If True, use the Container Builder API to perform docker builds.
+
+
+.RE
+.RE
+\fIcomponent_manager\fR
+.RS 2m
+
+\fBadditional_repositories\fR
+.RS 2m
+A comma separated list of additional repositories to check for components. This
+property is automatically managed by the \f5gcloud components repositories\fR
+commands.
+
+
+.RE
+\fBdisable_update_check\fR
+.RS 2m
+If True, the Cloud SDK will not automatically check for updates.
+
+
+.RE
+.RE
+\fIcompute\fR
+.RS 2m
+
+\fBregion\fR
+.RS 2m
+The default region to use when working with regional Compute Engine resources.
+When a \f5\-\-region\fR flag is required but not provided, the command will fall
+back to this value, if set.
+
+
+.RE
+\fBzone\fR
+.RS 2m
+The default zone to use when working with zonal Compute Engine resources. When a
+\f5\-\-zone\fR flag is required but not provided, the command will fall back to
+this value, if set.
+
+
+.RE
+.RE
+\fIcontainer\fR
+.RS 2m
+
+\fBcluster\fR
+.RS 2m
+The name of the cluster to use by default when working with Container Engine.
+
+
+.RE
+.RE
+\fIproxy\fR
+.RS 2m
+
+\fBaddress\fR
+.RS 2m
+The hostname or IP address of your proxy server.
+
+
+.RE
+\fBpassword\fR
+.RS 2m
+If your proxy requires authentication, the password to use when connecting.
+
+
+.RE
+\fBport\fR
+.RS 2m
+The port to use when connected to your proxy server.
+
+
+.RE
+\fBtype\fR
+.RS 2m
+The type of proxy you are using. Supported proxy types are: [http,
+http_no_tunnel, socks4, socks5].
+
+
+.RE
+\fBusername\fR
+.RS 2m
+If your proxy requires authentication, the username to use when connecting.
+.RE
+.RE

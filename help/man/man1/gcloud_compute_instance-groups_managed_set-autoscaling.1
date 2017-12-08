@@ -11,7 +11,7 @@ gcloud compute instance\-groups managed set\-autoscaling \- set autoscaling para
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instance\-groups managed set\-autoscaling\fR \fINAME\fR [\fB\-\-cool\-down\-period\fR\ \fICOOL_DOWN_PERIOD\fR] [\fB\-\-custom\-metric\-utilization\fR\ [\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] \fB\-\-max\-num\-replicas\fR \fIMAX_NUM_REPLICAS\fR [\fB\-\-min\-num\-replicas\fR\ \fIMIN_NUM_REPLICAS\fR] [\fB\-\-scale\-based\-on\-cpu\fR] [\fB\-\-scale\-based\-on\-load\-balancing\fR] [\fB\-\-target\-cpu\-utilization\fR\ \fITARGET_CPU_UTILIZATION\fR] [\fB\-\-target\-load\-balancing\-utilization\fR\ \fITARGET_LOAD_BALANCING_UTILIZATION\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instance\-groups managed set\-autoscaling\fR \fINAME\fR \fB\-\-max\-num\-replicas\fR \fIMAX_NUM_REPLICAS\fR [\fB\-\-cool\-down\-period\fR\ \fICOOL_DOWN_PERIOD\fR] [\fB\-\-custom\-metric\-utilization\fR\ [\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-min\-num\-replicas\fR\ \fIMIN_NUM_REPLICAS\fR] [\fB\-\-scale\-based\-on\-cpu\fR] [\fB\-\-scale\-based\-on\-load\-balancing\fR] [\fB\-\-target\-cpu\-utilization\fR\ \fITARGET_CPU_UTILIZATION\fR] [\fB\-\-target\-load\-balancing\-utilization\fR\ \fITARGET_LOAD_BALANCING_UTILIZATION\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -30,7 +30,16 @@ Managed instance group which autoscaling parameters will be set.
 
 .RE
 
-.SH "FLAGS"
+.SH "REQUIRED FLAGS"
+
+\fB\-\-max\-num\-replicas\fR \fIMAX_NUM_REPLICAS\fR
+.RS 2m
+Maximum number of replicas Autoscaler will set.
+
+
+.RE
+
+.SH "OPTIONAL FLAGS"
 
 \fB\-\-cool\-down\-period\fR \fICOOL_DOWN_PERIOD\fR
 .RS 2m
@@ -60,11 +69,6 @@ GAUGE.
 \fB\-\-description\fR \fIDESCRIPTION\fR
 .RS 2m
 Notes about Autoscaler.
-
-.RE
-\fB\-\-max\-num\-replicas\fR \fIMAX_NUM_REPLICAS\fR
-.RS 2m
-Maximum number of replicas Autoscaler will set.
 
 .RE
 \fB\-\-min\-num\-replicas\fR \fIMIN_NUM_REPLICAS\fR

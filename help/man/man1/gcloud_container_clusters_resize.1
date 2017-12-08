@@ -1,0 +1,72 @@
+
+.TH "GCLOUD_CONTAINER_CLUSTERS_RESIZE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud container clusters resize \- resizes an existing cluster for running containers
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud container clusters resize\fR \fINAME\fR \fB\-\-size\fR \fISIZE\fR [\fB\-\-wait\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud container clusters resize\fR resize an existing cluster to a provided
+size.
+
+When increasing the size of a container cluster, the new instances are created
+with the same configuration as the existing instances. Existing pods are not
+moved onto the new instances, but new pods (such as those created by resizing a
+replication controller) will be scheduled onto the new instances.
+
+When decreasing a cluster, the pods that are scheduled on the instances being
+removed will be killed. If your pods are being managed by a replication
+controller, the controller will attempt to reschedule them onto the remaining
+instances. If your pods are not managed by a replication controller, they will
+not be restarted. Note that when resizing down, instances running pods and
+instances without pods are not differentiated. Resize will pick instances to
+remove at random.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR
+.RS 2m
+The name of this cluster.
+
+
+.RE
+
+.SH "REQUIRED FLAGS"
+
+\fB\-\-size\fR \fISIZE\fR
+.RS 2m
+Target number of nodes in the cluster.
+
+
+.RE
+
+.SH "OPTIONAL FLAGS"
+
+\fB\-\-wait\fR
+.RS 2m
+Poll the operation for completion after issuing an resize request. Enabled by
+default, use \fB\-\-no\-wait\fR to disable.
+
+.RE
+\fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR
+.RS 2m
+The compute zone (e.g. us\-central1\-a) for the cluster
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

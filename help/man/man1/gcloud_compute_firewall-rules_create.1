@@ -30,7 +30,7 @@ The name of the firewall rule to create.
 
 .RE
 
-.SH "FLAGS"
+.SH "REQUIRED FLAGS"
 
 \fB\-\-allow\fR \fIPROTOCOL\fR[:\fIPORT\fR[\-\fIPORT\fR]],[\fIPROTOCOL\fR[:\fIPORT\fR[\-\fIPORT\fR]],...]
 .RS 2m
@@ -52,7 +52,11 @@ $ gcloud compute firewall\-rules create MY\-RULE \-\-allow tcp:80 icmp
 
 TCP and UDP rules must include a port or port range.
 
+
 .RE
+
+.SH "OPTIONAL FLAGS"
+
 \fB\-\-description\fR \fIDESCRIPTION\fR
 .RS 2m
 A textual description for the firewall rule.

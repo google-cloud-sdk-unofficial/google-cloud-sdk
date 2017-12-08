@@ -36,7 +36,7 @@ Managed instance group name.
 
 .RE
 
-.SH "FLAGS"
+.SH "REQUIRED FLAGS"
 
 \fB\-\-target\-pools\fR [\fITARGET_POOL\fR,...]
 .RS 2m
@@ -44,7 +44,11 @@ Compute Engine Target Pools to add the instances to. Target Pools must be
 specified by name or by URL. Example: \-\-target\-pool
 target\-pool\-1,target\-pool\-2.
 
+
 .RE
+
+.SH "OPTIONAL FLAGS"
+
 \fB\-\-zone\fR \fIZONE\fR
 .RS 2m
 The zone of the instance group manager to set target pools. If not specified,

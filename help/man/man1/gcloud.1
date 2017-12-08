@@ -11,7 +11,7 @@ gcloud \- manage Google Cloud Platform resources and developer workflow
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud\fR \fIGROUP\fR | \fICOMMAND\fR [\fB\-\-account\fR\ \fIACCOUNT\fR] [\fB\-\-format\fR\ \fIFORMAT\fR] [\fB\-\-help\fR] [\fB\-\-log\-http\fR] [\fB\-\-project\fR\ \fIPROJECT_ID\fR] [\fB\-\-quiet\fR,\ \fB\-q\fR] [\fB\-\-trace\-token\fR\ \fITRACE_TOKEN\fR] [\fB\-\-user\-output\-enabled\fR] [\fB\-\-verbosity\fR\ \fIVERBOSITY\fR] [\fB\-h\fR] [\fB\-v\fR,\ \fB\-\-version\fR]
+\f5gcloud\fR \fIGROUP\fR | \fICOMMAND\fR [\fB\-\-account\fR\ \fIACCOUNT\fR] [\fB\-\-format\fR\ \fIFORMAT\fR] [\fB\-\-help\fR] [\fB\-\-project\fR\ \fIPROJECT_ID\fR] [\fB\-\-quiet\fR,\ \fB\-q\fR] [\fB\-\-verbosity\fR\ \fIVERBOSITY\fR] [\fB\-h\fR] [\fB\-v\fR,\ \fB\-\-version\fR] [\fB\-\-log\-http\fR] [\fB\-\-trace\-token\fR\ \fITRACE_TOKEN\fR] [\fB\-\-user\-output\-enabled\fR]
 
 
 .SH "DESCRIPTION"
@@ -21,7 +21,7 @@ workflow, and interactions with the Google Cloud Platform APIs.
 
 
 
-.SH "FLAGS"
+.SH "COMMONLY USED FLAGS"
 
 \fB\-\-account\fR \fIACCOUNT\fR
 .RS 2m
@@ -32,21 +32,14 @@ Google Cloud Platform user account to use for invocation.
 .RS 2m
 Sets the format for printing command output resources. The default is a
 command\-specific human\-friendly output format. The supported formats are:
-\f5csv\fR, \f5default\fR, \f5flattened\fR, \f5json\fR, \f5list\fR, \f5none\fR,
-\f5table\fR, \f5text\fR, \f5value\fR, \f5yaml\fR. For more details run $ gcloud
-topic formats.
+\f5csv\fR, \f5default\fR, \f5flattened\fR, \f5json\fR, \f5list\fR, \f5multi\fR,
+\f5none\fR, \f5table\fR, \f5text\fR, \f5value\fR, \f5yaml\fR. For more details
+run $ gcloud topic formats.
 
 .RE
 \fB\-\-help\fR
 .RS 2m
 Display detailed help.
-
-.RE
-\fB\-\-log\-http\fR
-.RS 2m
-Log all HTTP server requests and responses to stderr. Overrides the default
-\fBlog_http\fR property value for this command invocation. Use
-\fB\-\-no\-log\-http\fR to disable.
 
 .RE
 \fB\-\-project\fR \fIPROJECT_ID\fR
@@ -61,18 +54,6 @@ Disable all interactive prompts when running gcloud commands. If input is
 required, defaults will be used, or an error will be raised.
 
 .RE
-\fB\-\-trace\-token\fR \fITRACE_TOKEN\fR
-.RS 2m
-Token used to route traces of service requests for investigation of issues.
-
-.RE
-\fB\-\-user\-output\-enabled\fR
-.RS 2m
-Print user intended output to the console. Overrides the default
-\fBuser_output_enabled\fR property value for this command invocation. Use
-\fB\-\-no\-user\-output\-enabled\fR to disable.
-
-.RE
 \fB\-\-verbosity\fR \fIVERBOSITY\fR
 .RS 2m
 Override the default verbosity for this command. This must be a standard logging
@@ -84,14 +65,34 @@ verbosity level: [debug, info, warning, error, critical, none] (Default:
 .RS 2m
 Print a summary help and exit.
 
+.RE
+\fB\-v\fR, \fB\-\-version\fR
+.RS 2m
+Print version information and exit. This flag is only available at the global
+level.
+
 
 .RE
 
-.SH "GROUP FLAGS"
+.SH "OTHER FLAGS"
 
-\fB\-v\fR, \fB\-\-version\fR
+\fB\-\-log\-http\fR
 .RS 2m
-Print version information.
+Log all HTTP server requests and responses to stderr. Overrides the default
+\fBlog_http\fR property value for this command invocation. Use
+\fB\-\-no\-log\-http\fR to disable.
+
+.RE
+\fB\-\-trace\-token\fR \fITRACE_TOKEN\fR
+.RS 2m
+Token used to route traces of service requests for investigation of issues.
+
+.RE
+\fB\-\-user\-output\-enabled\fR
+.RS 2m
+Print user intended output to the console. Overrides the default
+\fBuser_output_enabled\fR property value for this command invocation. Use
+\fB\-\-no\-user\-output\-enabled\fR to disable.
 
 
 .RE

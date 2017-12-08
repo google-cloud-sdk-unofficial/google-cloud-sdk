@@ -11,7 +11,7 @@ gcloud compute networks create \- create a Google Compute Engine network
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute networks create\fR \fINAME\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] \fB\-\-range\fR \fIRANGE\fR [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute networks create\fR \fINAME\fR \fB\-\-range\fR \fIRANGE\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -33,17 +33,21 @@ The name of the network.
 
 .RE
 
-.SH "FLAGS"
+.SH "REQUIRED FLAGS"
 
-\fB\-\-description\fR \fIDESCRIPTION\fR
-.RS 2m
-An optional, textual description for the network.
-
-.RE
 \fB\-\-range\fR \fIRANGE\fR
 .RS 2m
 Specifies the IPv4 address range of this network. The range must be specified in
 CIDR format: http://en.wikipedia.org/wiki/Classless_Inter\-Domain_Routing.
+
+
+.RE
+
+.SH "OPTIONAL FLAGS"
+
+\fB\-\-description\fR \fIDESCRIPTION\fR
+.RS 2m
+An optional, textual description for the network.
 
 
 .RE

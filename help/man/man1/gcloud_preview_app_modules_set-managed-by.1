@@ -11,7 +11,7 @@ gcloud preview app modules set\-managed\-by \- \fB(BETA)\fR sets the policy for 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud preview app modules set\-managed\-by\fR \fIMODULES\fR [\fIMODULES\fR\ ...] [\fB\-\-google\fR\ |\ \fB\-\-self\fR] [\fB\-\-instance\fR\ \fIINSTANCE\fR] [\fB\-\-server\fR\ \fISERVER\fR] \fB\-\-version\fR \fIVERSION\fR [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud preview app modules set\-managed\-by\fR \fIMODULES\fR [\fIMODULES\fR\ ...] \fB\-\-version\fR \fIVERSION\fR [\fB\-\-google\fR\ |\ \fB\-\-self\fR] [\fB\-\-instance\fR\ \fIINSTANCE\fR] [\fB\-\-server\fR\ \fISERVER\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -36,7 +36,16 @@ for your app, use "default".
 
 .RE
 
-.SH "FLAGS"
+.SH "REQUIRED FLAGS"
+
+\fB\-\-version\fR \fIVERSION\fR
+.RS 2m
+The version of the app that you want to operate on.
+
+
+.RE
+
+.SH "OPTIONAL FLAGS"
 
 \fB\-\-google\fR
 .RS 2m
@@ -60,11 +69,6 @@ your app on these machines.
 .RS 2m
 The App Engine server to connect to. You will not typically need to change this
 value.
-
-.RE
-\fB\-\-version\fR \fIVERSION\fR
-.RS 2m
-The version of the app that you want to operate on.
 
 
 .RE

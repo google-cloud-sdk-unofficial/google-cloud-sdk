@@ -11,7 +11,7 @@ gcloud compute ssl\-certificates create \- create a Google Compute Engine SSL ce
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute ssl\-certificates create\fR \fINAME\fR \fB\-\-certificate\fR \fILOCAL_FILE_PATH\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] \fB\-\-private\-key\fR \fILOCAL_FILE_PATH\fR [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute ssl\-certificates create\fR \fINAME\fR \fB\-\-certificate\fR \fILOCAL_FILE_PATH\fR \fB\-\-private\-key\fR \fILOCAL_FILE_PATH\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -32,7 +32,7 @@ The name of the SSL certificate.
 
 .RE
 
-.SH "FLAGS"
+.SH "REQUIRED FLAGS"
 
 \fB\-\-certificate\fR \fILOCAL_FILE_PATH\fR
 .RS 2m
@@ -41,15 +41,19 @@ certificate chain must be no greater than 5 certs long. The chain must include
 at least one intermediate cert.
 
 .RE
-\fB\-\-description\fR \fIDESCRIPTION\fR
-.RS 2m
-An optional, textual description for the SSL certificate.
-
-.RE
 \fB\-\-private\-key\fR \fILOCAL_FILE_PATH\fR
 .RS 2m
 The path to a local private key file. The private key must be in PEM format and
 must use RSA or ECDSA encryption.
+
+
+.RE
+
+.SH "OPTIONAL FLAGS"
+
+\fB\-\-description\fR \fIDESCRIPTION\fR
+.RS 2m
+An optional, textual description for the SSL certificate.
 
 
 .RE

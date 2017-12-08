@@ -11,7 +11,7 @@ gcloud preview app deploy \- \fB(BETA)\fR deploy the local code and/or configura
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud preview app deploy\fR \fIDEPLOYABLES\fR [\fIDEPLOYABLES\fR\ ...] [\fB\-\-docker\-build\fR\ \fIDOCKER_BUILD\fR] [\fB\-\-force\fR] [\fB\-\-image\-url\fR\ \fIIMAGE_URL\fR] [\fB\-\-promote\fR\ |\ \fB\-\-set\-default\fR] [\fB\-\-server\fR\ \fISERVER\fR] [\fB\-\-version\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud preview app deploy\fR [\fIDEPLOYABLES\fR\ ...] [\fB\-\-bucket\fR\ \fIBUCKET\fR] [\fB\-\-docker\-build\fR\ \fIDOCKER_BUILD\fR] [\fB\-\-force\fR] [\fB\-\-image\-url\fR\ \fIIMAGE_URL\fR] [\fB\-\-promote\fR] [\fB\-\-server\fR\ \fISERVER\fR] [\fB\-\-version\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -25,15 +25,25 @@ configuration's .yaml file.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fIDEPLOYABLES\fR [\fIDEPLOYABLES\fR ...]
+[\fIDEPLOYABLES\fR ...]
 .RS 2m
-The yaml files for the modules or configurations you want to deploy.
+The yaml files for the modules or configurations you want to deploy. If not
+given, defaults to \f5app.yaml\fR in the current directory. If that is not
+found, attempts to automatically generate necessary configuration files (such as
+app.yaml) in the current directory.
 
 
 .RE
 
 .SH "FLAGS"
 
+\fB\-\-bucket\fR \fIBUCKET\fR
+.RS 2m
+The Google Cloud Storage bucket used to stage files associated with the
+deployment. If this argument is not specified, the application's default code
+bucket is used.
+
+.RE
 \fB\-\-docker\-build\fR \fIDOCKER_BUILD\fR
 .RS 2m
 Perform a hosted ('remote') or local ('local') Docker build. To perform a local
@@ -55,20 +65,22 @@ gcr hostnames.
 .RE
 \fB\-\-promote\fR
 .RS 2m
-Promote the deployed version to receive all traffic. Use \fB\-\-no\-promote\fR
-to disable.
+Promote the deployed version to receive all traffic.
+
+True by default. To change the default behavior for your current environment,
+run:
+
+.RS 2m
+$ gcloud config set app/promote_by_default false. Overrides the \e
+  default *promote_by_default* property value for this command \e
+  invocation. Use *\-\-no\-promote* to disable.
+.RE
 
 .RE
 \fB\-\-server\fR \fISERVER\fR
 .RS 2m
 The App Engine server to connect to. You will not typically need to change this
 value.
-
-.RE
-\fB\-\-set\-default\fR
-.RS 2m
-Set the deployed version to be the default serving version (deprecated; use
-\-\-promote instead). Use \fB\-\-no\-set\-default\fR to disable.
 
 .RE
 \fB\-\-version\fR \fIVERSION\fR

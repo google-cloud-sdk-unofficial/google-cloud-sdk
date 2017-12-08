@@ -74,8 +74,8 @@ The formats and format specific attributes are:
 
 \fBcsv\fR
 .RS 2m
-Comma Separated Values with no keys. This format requires a projection to define
-the values to be printed.
+Comma Separated Values (http://www.ietf.org/rfc/rfc4180.txt) with no keys. This
+format requires a projection to define the values to be printed.
 
 The format attributes are:
 
@@ -106,7 +106,7 @@ outputs.
 .RE
 \fBjson\fR
 .RS 2m
-JSON, JavaScript Object Notation.
+JSON (http://www.json.org), JavaScript Object Notation.
 
 .RE
 \fBlist\fR
@@ -133,6 +133,14 @@ may be: \fBout\fR (the default), \fBstatus\fR (standard error), \fBdebug\fR,
 \fBinfo\fR, \fBwarn\fR, or \fBerror\fR.
 
 .RE
+.RE
+\fBmulti\fR
+.RS 2m
+Each projection key must have a subformat defined by the :format=FORMAT\-STRING
+attribute. For example, \fI\-\-format='multi(data:format=json,
+info:format="table[box](a, b, c)")'\fR formats the \fBdata\fR field as JSON and
+the \fBinfo\fR field as a boxed table.
+
 .RE
 \fBnone\fR
 .RS 2m
@@ -222,12 +230,16 @@ at least one item.
 Prints the legend to the \fITYPE\fR logger instead of the default. \fITYPE\fR
 may be: \fBout\fR (the default), \fBstatus\fR (standard error), \fBdebug\fR,
 \fBinfo\fR, \fBwarn\fR, or \fBerror\fR.
+.RE
+\fBno\-quote\fR
+.RS 2m
+Prints NEWLINE terminated TAB delimited values with no quoting.
 
 .RE
 .RE
 \fByaml\fR
 .RS 2m
-YAML, YAML ain't markup language.
+YAML (http://www.yaml.org), YAML ain't markup language.
 
 .RE
 All formats have these attributes:

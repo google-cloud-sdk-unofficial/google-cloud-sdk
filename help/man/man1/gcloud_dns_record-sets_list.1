@@ -11,7 +11,7 @@ gcloud dns record\-sets list \- view the list of record\-sets in a managed\-zone
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud dns record\-sets list\fR [\fB\-\-limit\fR\ \fILIMIT\fR] [\fB\-\-name\fR\ \fINAME\fR] [\fB\-\-type\fR\ \fITYPE\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud dns record\-sets list\fR \fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR [\fB\-\-limit\fR\ \fILIMIT\fR] [\fB\-\-name\fR\ \fINAME\fR] [\fB\-\-type\fR\ \fITYPE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -21,7 +21,16 @@ managed\-zone.
 
 
 
-.SH "FLAGS"
+.SH "REQUIRED FLAGS"
+
+\fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR
+.RS 2m
+Name of the managed\-zone whose record\-sets you want to manage.
+
+
+.RE
+
+.SH "OPTIONAL FLAGS"
 
 \fB\-\-limit\fR \fILIMIT\fR
 .RS 2m
@@ -37,15 +46,6 @@ Only list record\-sets with this exact domain name.
 .RS 2m
 Only list records of this type. If present, the \-\-name parameter must also be
 present.
-
-
-.RE
-
-.SH "GROUP FLAGS"
-
-\fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR
-.RS 2m
-Name of the managed\-zone whose record\-sets you want to manage.
 
 
 .RE

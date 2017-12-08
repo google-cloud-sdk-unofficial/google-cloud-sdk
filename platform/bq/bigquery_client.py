@@ -76,6 +76,33 @@ def _ApplyParameters(config, **kwds):
                 if v is not None)
 
 
+def _OverwriteCurrentLine(s, previous_token=None):
+  """Print string over the current terminal line, and stay on that line.
+
+  The full width of any previous output (by the token) will be wiped clean.
+  If multiple callers call this at the same time, it would be bad.
+
+  Args:
+    s: string to print.  May not contain newlines.
+    previous_token: token returned from previous call, or None on first call.
+
+  Returns:
+    a token to pass into your next call to this function.
+  """
+  # Tricks in use:
+  # carriage return \r brings the printhead back to the start of the line.
+  # sys.stdout.write() does not add a newline.
+
+  # Erase any previous, in case new string is shorter.
+  if previous_token is not None:
+    sys.stdout.write('\r' + (' ' * previous_token))
+  # Put new string.
+  sys.stdout.write('\r' + s)
+  # Display.
+  sys.stdout.flush()
+  return len(s)
+
+
 
 
 def ConfigurePythonLogger(apilog=None):
@@ -332,6 +359,26 @@ class BigqueryHttp(http_request.HttpRequest):
       return BigqueryHttp(captured_model, *args, **kwds)
     return _Construct
 
+  @staticmethod
+  def RaiseErrorFromHttpError(e):
+    """Raises a BigQueryError given an HttpError."""
+    # have a json payload. We know how to handle those.
+    if e.resp.get('content-type', '').startswith('application/json'):
+      BigqueryClient.RaiseError(json.loads(e.content))
+    else:
+      # If the HttpError is not a json object, it is a communication error.
+      raise BigqueryCommunicationError(
+          ('Could not connect with BigQuery server.\n'
+           'Http response status: %s\n'
+           'Http response content:\n%s') % (
+               e.resp.get('status', '(unexpected)'), e.content))
+
+  @staticmethod
+  def RaiseErrorFromNonHttpError(e):
+    """Raises a BigQueryError given a non-HttpError."""
+    raise BigqueryCommunicationError(
+        'Could not connect with BigQuery server due to: %r' % (e,))
+
   def execute(self, **kwds):  # pylint: disable=g-bad-name
     try:
       return super(BigqueryHttp, self).execute(**kwds)
@@ -339,17 +386,9 @@ class BigqueryHttp(http_request.HttpRequest):
       # TODO(user): Remove this when apiclient supports logging
       # of error responses.
       self._model._log_response(e.resp, e.content)  # pylint: disable=protected-access
-      if e.resp.get('content-type', '').startswith('application/json'):
-        BigqueryClient.RaiseError(json.loads(e.content))
-      else:
-        raise BigqueryCommunicationError(
-            ('Could not connect with BigQuery server.\n'
-             'Http response status: %s\n'
-             'Http response content:\n%s') % (
-                 e.resp.get('status', '(unexpected)'), e.content))
+      BigqueryHttp.RaiseErrorFromHttpError(e)
     except (httplib2.HttpLib2Error, IOError), e:
-      raise BigqueryCommunicationError(
-          'Could not connect with BigQuery server due to: %r' % (e,))
+      BigqueryHttp.RaiseErrorFromNonHttpError(e)
 
 
 class JobIdGenerator(object):
@@ -894,9 +933,9 @@ class BigqueryClient(object):
     if reference_type == ApiClientHelper.JobReference:
       if print_format == 'list':
         formatter.AddColumns(('jobId',))
-      formatter.AddColumns(
-          ('Job Type', 'State', 'Start Time', 'Duration',))
+      formatter.AddColumns(('Job Type', 'State', 'Start Time', 'Duration',))
       if print_format == 'show':
+        formatter.AddColumns(('User Email',))
         formatter.AddColumns(('Bytes Processed',))
         formatter.AddColumns(('Bytes Billed',))
         formatter.AddColumns(('Billing Tier',))
@@ -1095,20 +1134,26 @@ class BigqueryClient(object):
     reference = BigqueryClient.ConstructObjectReference(result)
     result.update(dict(reference))
     stats = result.get('statistics', {})
-    if 'startTime' in stats:
-      start = int(stats['startTime']) / 1000
-      if 'endTime' in stats:
-        duration_seconds = int(stats['endTime']) / 1000 - start
-        result['Duration'] = str(datetime.timedelta(seconds=duration_seconds))
-      result['Start Time'] = BigqueryClient.FormatTime(start)
+
     result['Job Type'] = BigqueryClient.GetJobTypeName(result)
+
     result['State'] = result['status']['state']
+    if 'user_email' in result:
+      result['User Email'] = result['user_email']
     if result['State'] == 'DONE':
       try:
         BigqueryClient.RaiseIfJobError(result)
         result['State'] = 'SUCCESS'
       except BigqueryError:
         result['State'] = 'FAILURE'
+
+    if 'startTime' in stats:
+      start = int(stats['startTime']) / 1000
+      if 'endTime' in stats:
+        duration_seconds = int(stats['endTime']) / 1000 - start
+        result['Duration'] = str(datetime.timedelta(seconds=duration_seconds))
+      result['Start Time'] = BigqueryClient.FormatTime(start)
+
     query_stats = stats.get('query', {})
     if 'totalBytesProcessed' in query_stats:
       result['Bytes Processed'] = query_stats['totalBytesProcessed']
@@ -1623,6 +1668,47 @@ class BigqueryClient(object):
   ## Job control
   #################################
 
+  @staticmethod
+  def _ExecuteInChunksWithProgress(request):
+    """Run an apiclient request with a resumable upload, showing progress.
+
+    Args:
+      request: an apiclient request having a media_body that is a
+        MediaFileUpload(resumable=True).
+
+    Returns:
+      The result of executing the request, if it succeeds.
+
+    Raises:
+      BigQueryError: on a non-retriable error or too many retriable errors.
+    """
+    result = None
+    retriable_errors = 0
+    output_token = None
+    while result is None:
+      try:
+        status, result = request.next_chunk()
+      except apiclient.errors.HttpError, e:
+        if e.resp.status in [500, 502, 503, 504]:
+          sleep_sec = 2 ** retriable_errors
+          retriable_errors += 1
+          if retriable_errors > 3:
+            raise
+          print 'Error %d, retry #%d' % (e.resp.status, retriable_errors)
+          time.sleep(sleep_sec)
+          # Go around and try again.
+        else:
+          BigqueryHttp.RaiseErrorFromHttpError(e)
+      except (httplib2.HttpLib2Error, IOError), e:
+        BigqueryHttp.RaiseErrorFromNonHttpError(e)
+      if status:
+        output_token = _OverwriteCurrentLine(
+            'Uploaded %d%%... ' % int(status.progress() * 100),
+            output_token)
+    _OverwriteCurrentLine('Upload complete.', output_token)
+    print
+    return result
+
   def StartJob(self, configuration,
                project_id=None, upload_file=None, job_id=None):
     """Start a job with the given configuration.
@@ -1671,9 +1757,13 @@ class BigqueryClient(object):
       media_upload = http_request.MediaFileUpload(
           filename=upload_file, mimetype='application/octet-stream',
           resumable=resumable)
-    result = self.apiclient.jobs().insert(
+    request = self.apiclient.jobs().insert(
         body=job_request, media_body=media_upload,
-        projectId=project_id).execute()
+        projectId=project_id)
+    if upload_file and resumable:
+      result = BigqueryClient._ExecuteInChunksWithProgress(request)
+    else:
+      result = request.execute()
     return result
 
   def _StartQueryRpc(self,
@@ -1716,6 +1806,7 @@ class BigqueryClient(object):
     Raises:
       BigqueryClientConfigurationError: if project_id and
         self.project_id are None.
+      BigqueryError: if query execution fails.
     """
     project_id = project_id or self.project_id
     if not project_id:
@@ -1862,11 +1953,15 @@ class BigqueryClient(object):
   class VerboseWaitPrinter(WaitPrinterHelper):
     """A WaitPrinter that prints every update."""
 
+    def __init__(self):
+      self.output_token = None
+
     def Print(self, job_id, wait_time, status):
       self.print_on_done = True
-      print '\rWaiting on %s ... (%ds) Current status: %-7s' % (
-          job_id, wait_time, status),
-      sys.stdout.flush()
+      self.output_token = _OverwriteCurrentLine(
+          'Waiting on %s ... (%ds) Current status: %-7s' % (
+              job_id, wait_time, status),
+          self.output_token)
 
   class TransitionWaitPrinter(VerboseWaitPrinter):
     """A WaitPrinter that only prints status change updates."""
@@ -2031,9 +2126,12 @@ class BigqueryClient(object):
     Raises:
       BigqueryClientError: if no query is provided.
       StopIteration: if the query does not complete within wait seconds.
+      BigqueryError: if query fails.
 
     Returns:
-      The a tuple containing the schema fields and list of results of the query.
+      A tuple (schema fields, row results, execution metadata).
+        The execution metadata dict contains the 'State' and 'status' elements
+        that would be in a job result after FormatJobInfo().
     """
     if not self.sync:
       raise BigqueryClientError('Running RPC-style query asynchronously is '
@@ -2087,9 +2185,18 @@ class BigqueryClient(object):
               max_results=0,
               timeout_ms=current_wait_ms)
         if result['jobComplete']:
-          return self.ReadSchemaAndJobRows(dict(job_reference),
-                                           start_row=0,
-                                           max_rows=max_results)
+          (schema, rows) = self.ReadSchemaAndJobRows(dict(job_reference),
+                                                     start_row=0,
+                                                     max_rows=max_results)
+          # If we get here, we must have succeeded.  We could still have
+          # non-fatal errors though.
+          status = {}
+          if 'errors' in result:
+            status['errors'] = result['errors']
+          execution = {'State': 'SUCCESS',
+                       'status': status,
+                       'jobReference': job_reference}
+          return (schema, rows, execution)
       except BigqueryCommunicationError, e:
         # Communication errors while waiting on a job are okay.
         logging.warning('Transient error during query: %s', e)

@@ -11,7 +11,7 @@ gcloud compute instance\-groups managed create \- create a Compute Engine manage
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instance\-groups managed create\fR \fINAME\fR \fB\-\-base\-instance\-name\fR \fIBASE_INSTANCE_NAME\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] \fB\-\-size\fR \fISIZE\fR [\fB\-\-target\-pool\fR\ [\fITARGET_POOL\fR,...]] \fB\-\-template\fR \fITEMPLATE\fR [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instance\-groups managed create\fR \fINAME\fR \fB\-\-base\-instance\-name\fR \fIBASE_INSTANCE_NAME\fR \fB\-\-size\fR \fISIZE\fR \fB\-\-template\fR \fITEMPLATE\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-target\-pool\fR\ [\fITARGET_POOL\fR,...]] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -40,7 +40,7 @@ Managed instance group name.
 
 .RE
 
-.SH "FLAGS"
+.SH "REQUIRED FLAGS"
 
 \fB\-\-base\-instance\-name\fR \fIBASE_INSTANCE_NAME\fR
 .RS 2m
@@ -48,25 +48,29 @@ The base name to use for the Compute Engine instances that will be created with
 the managed instance group.
 
 .RE
-\fB\-\-description\fR \fIDESCRIPTION\fR
-.RS 2m
-An optional description for this group.
-
-.RE
 \fB\-\-size\fR \fISIZE\fR
 .RS 2m
 The initial number of instances you want in this group.
+
+.RE
+\fB\-\-template\fR \fITEMPLATE\fR
+.RS 2m
+Specifies the instance template to use when creating new instances.
+
+
+.RE
+
+.SH "OPTIONAL FLAGS"
+
+\fB\-\-description\fR \fIDESCRIPTION\fR
+.RS 2m
+An optional description for this group.
 
 .RE
 \fB\-\-target\-pool\fR [\fITARGET_POOL\fR,...]
 .RS 2m
 Specifies any target pools you want the instances of this managed instance group
 to be part of.
-
-.RE
-\fB\-\-template\fR \fITEMPLATE\fR
-.RS 2m
-Specifies the instance template to use when creating new instances.
 
 .RE
 \fB\-\-zone\fR \fIZONE\fR

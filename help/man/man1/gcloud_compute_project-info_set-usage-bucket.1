@@ -36,7 +36,7 @@ $ gcloud compute project\-info set\-usage\-bucket \-\-bucket
 
 
 
-.SH "FLAGS"
+.SH "REQUIRED FLAGS"
 
 \fB\-\-bucket\fR \fIBUCKET\fR
 .RS 2m
@@ -51,7 +51,11 @@ To clear the usage bucket, specify this flag without an argument:
 $ gcloud compute project\-info set\-usage\-bucket \-\-bucket
 .RE
 
+
 .RE
+
+.SH "OPTIONAL FLAGS"
+
 \fB\-\-prefix\fR \fIPREFIX\fR
 .RS 2m
 An optional prefix for the name of the usage report object stored in the bucket.

@@ -37,14 +37,18 @@ The name of the unmanaged instance group.
 
 .RE
 
-.SH "FLAGS"
+.SH "REQUIRED FLAGS"
 
 \fB\-\-instances\fR \fIINSTANCE\fR,[\fIINSTANCE\fR,...]
 .RS 2m
 A list of names of instances to add to the instance group. These must exist
 beforehand and must live in the same zone as the instance group.
 
+
 .RE
+
+.SH "OPTIONAL FLAGS"
+
 \fB\-\-zone\fR \fIZONE\fR
 .RS 2m
 The zone of the unmanaged instance group to add instances to. If not specified,
