@@ -66,64 +66,59 @@ def _CommonArgs(parser):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class AttachDisk(base_classes.NoOutputAsyncMutator):
+class AttachDisk(base.SilentCommand):
   """Attach a disk to an instance."""
 
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
 
-  @property
-  def service(self):
-    return self.compute.instances
-
-  @property
-  def method(self):
-    return 'AttachDisk'
-
-  @property
-  def resource_type(self):
-    return 'instances'
-
-  def ParseDiskRef(self, args, instance_ref):
-    return instance_utils.ParseDiskResource(self.resources, args.disk,
+  # This function should be overridden by subclasses to customize disk resource
+  # creation as necessary for alpha release track.
+  def ParseDiskRef(self, resources, args, instance_ref):
+    return instance_utils.ParseDiskResource(resources, args.disk,
+                                            instance_ref.project,
                                             instance_ref.zone,
                                             compute_scopes.ScopeEnum.ZONE)
 
-  def CreateRequests(self, args):
-    """Returns a request for attaching a disk to an instance."""
-    instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
-        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client))
+  def Run(self, args):
+    """Invokes a request for attaching a disk to an instance."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-    disk_ref = self.ParseDiskRef(args, instance_ref)
+    instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
+        args, holder.resources, scope_lister=flags.GetDefaultScopeLister(
+            client))
+
+    disk_ref = self.ParseDiskRef(holder.resources, args, instance_ref)
 
     if args.mode == 'rw':
-      mode = self.messages.AttachedDisk.ModeValueValuesEnum.READ_WRITE
+      mode = client.messages.AttachedDisk.ModeValueValuesEnum.READ_WRITE
     else:
-      mode = self.messages.AttachedDisk.ModeValueValuesEnum.READ_ONLY
+      mode = client.messages.AttachedDisk.ModeValueValuesEnum.READ_ONLY
 
     allow_rsa_encrypted = self.ReleaseTrack() in [base.ReleaseTrack.ALPHA,
                                                   base.ReleaseTrack.BETA]
     csek_keys = csek_utils.CsekKeyStore.FromArgs(args, allow_rsa_encrypted)
     disk_key_or_none = csek_utils.MaybeLookupKeyMessage(csek_keys, disk_ref,
-                                                        self.compute)
+                                                        client.apitools_client)
 
-    request = self.messages.ComputeInstancesAttachDiskRequest(
+    request = client.messages.ComputeInstancesAttachDiskRequest(
         instance=instance_ref.Name(),
         project=instance_ref.project,
-        attachedDisk=self.messages.AttachedDisk(
+        attachedDisk=client.messages.AttachedDisk(
             deviceName=args.device_name,
             mode=mode,
             source=disk_ref.SelfLink(),
-            type=self.messages.AttachedDisk.TypeValueValuesEnum.PERSISTENT,
+            type=client.messages.AttachedDisk.TypeValueValuesEnum.PERSISTENT,
             diskEncryptionKey=disk_key_or_none),
         zone=instance_ref.zone)
 
     if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
       request.forceAttach = args.force_attach
 
-    return [request]
+    return client.MakeRequests([(client.apitools_client.instances, 'AttachDisk',
+                                 request)])
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -146,13 +141,15 @@ possible and will continue to try to detach from the previous instance in the
 background.""")
     _CommonArgs(parser)
 
-  def ParseDiskRef(self, args, instance_ref):
+  def ParseDiskRef(self, resources, args, instance_ref):
     if args.disk_scope == 'regional':
-      return instance_utils.ParseDiskResource(self.resources, args.disk,
-                                              instance_ref.zone,
-                                              compute_scopes.ScopeEnum.REGION)
+      scope = compute_scopes.ScopeEnum.REGION
     else:
-      return super(AttachDiskAlpha, self).ParseDiskRef(args, instance_ref)
+      scope = compute_scopes.ScopeEnum.ZONE
+    return instance_utils.ParseDiskResource(resources, args.disk,
+                                            instance_ref.project,
+                                            instance_ref.zone,
+                                            scope)
 
 
 AttachDisk.detailed_help = DETAILED_HELP

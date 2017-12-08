@@ -23,12 +23,10 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
+    apis.API_VERSION_FLAG.AddToParser(parser)
     parser.add_argument(
         'api_name',
         help='The name of the API to show the details of.')
-    parser.add_argument(
-        'api_version',
-        help='The version of the API to show the details of.')
 
   def Run(self, args):
-    return apis.GetAPI(args.api_name, args.api_version)
+    return apis.GetAPI(args.api_name, api_version=args.api_version)

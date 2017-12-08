@@ -23,8 +23,8 @@ from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class SetPasswordBeta(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class SetPassword(base.CreateCommand):
   """Changes a user's password in a given instance.
 
   Changes a user's password in a given instance with specified username and

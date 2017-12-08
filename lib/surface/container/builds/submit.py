@@ -227,10 +227,10 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
       gcs_source_staging_dir = resources.REGISTRY.Parse(
           args.gcs_source_staging_dir, collection='storage.objects')
 
-      # We first try to create the bucket, before doing all the checks, in order
-      # to avoid a race condition. If we do the check first, an attacker could
-      # be lucky enough to create the bucket after the check and before this
-      # bucket creation.
+      # We create the bucket (if it does not exist) first. If we do an existence
+      # check and then create the bucket ourselves, it would be possible for an
+      # attacker to get lucky and beat us to creating the bucket. Block on this
+      # creation to avoid this race condition.
       gcs_client.CreateBucketIfNotExists(gcs_source_staging_dir.bucket)
 
       # If no bucket is specified (for the source `default_gcs_source` or for

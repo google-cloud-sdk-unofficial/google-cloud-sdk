@@ -17,44 +17,36 @@ It's an alias for the instance-groups set-named-ports command.
 """
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags
 
 
-class SetNamedPorts(base_classes.NoOutputAsyncMutator):
+class SetNamedPorts(base.SilentCommand):
   """Sets named ports for instance groups."""
-
-  @property
-  def service(self):
-    return self.compute.instanceGroups
-
-  @property
-  def method(self):
-    return 'SetNamedPorts'
-
-  @property
-  def resource_type(self):
-    return 'instanceGroups'
 
   @staticmethod
   def Args(parser):
     flags.AddNamedPortsArgs(parser)
-    SetNamedPorts.ZonalInstanceGroupArg = flags.MakeZonalInstanceGroupArg()
-    SetNamedPorts.ZonalInstanceGroupArg.AddArgument(parser)
+    SetNamedPorts.ZONAL_INSTANCE_GROUP_ARG = flags.MakeZonalInstanceGroupArg()
+    SetNamedPorts.ZONAL_INSTANCE_GROUP_ARG.AddArgument(parser)
 
-  def CreateRequests(self, args):
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
     group_ref = (
-        SetNamedPorts.ZonalInstanceGroupArg.ResolveAsResource(
-            args, self.resources,
+        SetNamedPorts.ZONAL_INSTANCE_GROUP_ARG.ResolveAsResource(
+            args, holder.resources,
             default_scope=compute_scope.ScopeEnum.ZONE,
-            scope_lister=compute_flags.GetDefaultScopeLister(
-                self.compute_client)))
+            scope_lister=compute_flags.GetDefaultScopeLister(client)))
     ports = instance_groups_utils.ValidateAndParseNamedPortsArgs(
-        self.messages, args.named_ports)
+        client.messages, args.named_ports)
     # service should be always zonal
     request, _ = instance_groups_utils.GetSetNamedPortsRequestForGroup(
-        self.compute_client, group_ref, ports)
-    return [(self.service, self.method, request)]
+        client, group_ref, ports)
+    return client.MakeRequests([(client.apitools_client.instanceGroups,
+                                 'SetNamedPorts', request)])
 
   detailed_help = instance_groups_utils.SET_NAMED_PORTS_HELP

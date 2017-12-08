@@ -44,7 +44,6 @@ describe
 detach-disk
 devshell
 docker
-dogfood
 download
 edit
 execute

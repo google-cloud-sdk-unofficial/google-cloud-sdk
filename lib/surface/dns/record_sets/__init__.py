@@ -18,28 +18,31 @@ from googlecloudsdk.calliope import base
 
 
 class RecordSets(base.Group):
-  """Manage the record-sets within your managed-zones."""
+  """Manage the record-sets within your managed-zones.
 
-  detailed_help = {
-      'EXAMPLES': """\
-          To import record-sets from a BIND zone file, run:
+  Manage the record-sets within your managed-zones.
 
-            $ {command} import -z MANAGED_ZONE  --zone-file-format ZONE_FILE
+  ## EXAMPLES
 
-          To export record-sets in yaml format, run:
+  To import record-sets from a BIND zone file, run:
 
-            $ {command} export -z MANAGED_ZONE
+    $ {command} import --zone MANAGED_ZONE --zone-file-format ZONE_FILE
 
-          To see how to make scriptable changes to your record-sets through transactions, run:
+  To export record-sets in yaml format, run:
 
-            $ {command} transaction -z MANAGED_ZONE
+    $ {command} export --zone MANAGED_ZONE
 
-          To see change details or list of all changes, run:
+  To see how to make scriptable changes to your record-sets through
+  transactions, run:
 
-            $ {command} changes -z MANAGED_ZONE
+    $ {command} transaction --zone MANAGED_ZONE
 
-          To see the list of all record-sets, run:
+  To see change details or list of all changes, run:
 
-            $ {command} list -z MANAGED_ZONE
-          """,
-  }
+    $ {command} changes --zone MANAGED_ZONE
+
+  To see the list of all record-sets, run:
+
+    $ {command} list --zone MANAGED_ZONE
+  """
+  pass

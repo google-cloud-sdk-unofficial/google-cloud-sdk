@@ -14,16 +14,24 @@
 
 """Command for setting whether to auto-delete a disk."""
 
-import copy
+from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.core import log
 
 
-class SetDiskAutoDelete(base_classes.ReadWriteCommand):
-  """Set auto-delete behavior for disks."""
+class SetDiskAutoDelete(base.UpdateCommand):
+  """Set auto-delete behavior for disks.
+
+    *${command}* is used to configure the auto-delete behavior for disks
+  attached to Google Compute Engine virtual machines. When
+  auto-delete is on, the persistent disk is deleted when the
+  instance it is attached to is deleted.
+  """
 
   @staticmethod
   def Args(parser):
@@ -57,28 +65,16 @@ class SetDiskAutoDelete(base_classes.ReadWriteCommand):
         name must not be specified using the ``--disk'' flag.
         """)
 
-  @property
-  def service(self):
-    return self.compute.instances
-
-  @property
-  def resource_type(self):
-    return 'instances'
-
-  def CreateReference(self, args):
+  def CreateReference(self, client, resources, args):
     return instance_flags.INSTANCE_ARG.ResolveAsResource(
-        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client))
+        args, resources, scope_lister=flags.GetDefaultScopeLister(client))
 
-  def GetGetRequest(self, args):
-    return (self.service,
+  def GetGetRequest(self, client, instance_ref):
+    return (client.apitools_client.instances,
             'Get',
-            self.messages.ComputeInstancesGetRequest(
-                instance=self.ref.Name(),
-                project=self.ref.project,
-                zone=self.ref.zone))
+            client.messages.ComputeInstancesGetRequest(**instance_ref.AsDict()))
 
-  def GetSetRequest(self, args, replacement, existing):
+  def GetSetRequest(self, client, instance_ref, replacement, existing):
     # Our protocol buffers are mutable, so they cannot be
     # hashed. Because of this, we cannot do a set subraction on the
     # lists of disks. Instead, the task of finding the changed disk is
@@ -88,25 +84,25 @@ class SetDiskAutoDelete(base_classes.ReadWriteCommand):
       if existing_disk != replacement_disk:
         changed_disk = replacement_disk
 
-    return (self.service,
+    return (client.apitools_client.instances,
             'SetDiskAutoDelete',
-            self.messages.ComputeInstancesSetDiskAutoDeleteRequest(
+            client.messages.ComputeInstancesSetDiskAutoDeleteRequest(
                 deviceName=changed_disk.deviceName,
-                instance=self.ref.Name(),
-                project=self.ref.project,
-                zone=self.ref.zone,
+                instance=instance_ref.instance,
+                project=instance_ref.project,
+                zone=instance_ref.zone,
                 autoDelete=changed_disk.autoDelete))
 
-  def Modify(self, args, existing):
-    replacement = copy.deepcopy(existing)
+  def Modify(self, resources, args, instance_ref, existing):
+    replacement = encoding.CopyProtoMessage(existing)
     disk_found = False
 
     if args.disk:
-      disk_ref = self.resources.Parse(
+      disk_ref = resources.Parse(
           args.disk, collection='compute.disks',
           params={
-              'project': self.ref.project,
-              'zone': self.ref.zone
+              'project': instance_ref.project,
+              'zone': instance_ref.zone
           })
 
       for disk in replacement.disks:
@@ -117,7 +113,7 @@ class SetDiskAutoDelete(base_classes.ReadWriteCommand):
       if not disk_found:
         raise exceptions.ToolException(
             'Disk [{0}] is not attached to instance [{1}] in zone [{2}].'
-            .format(disk_ref.Name(), self.ref.Name(), self.ref.zone))
+            .format(disk_ref.Name(), instance_ref.instance, instance_ref.zone))
 
     else:
       for disk in replacement.disks:
@@ -129,17 +125,29 @@ class SetDiskAutoDelete(base_classes.ReadWriteCommand):
         raise exceptions.ToolException(
             'No disk with device name [{0}] is attached to instance [{1}] '
             'in zone [{2}].'
-            .format(args.device_name, self.ref.Name(), self.ref.zone))
+            .format(args.device_name, instance_ref.instance, instance_ref.zone))
 
     return replacement
 
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-SetDiskAutoDelete.detailed_help = {
-    'brief': 'Set auto-delete behavior for disks',
-    'DESCRIPTION': """\
-        *${command}* is used to configure the auto-delete behavior for disks
-        attached to Google Compute Engine virtual machines. When
-        auto-delete is on, the persistent disk is deleted when the
-        instance it is attached to is deleted.
-        """,
-}
+    instance_ref = self.CreateReference(client, holder.resources, args)
+    get_request = self.GetGetRequest(client, instance_ref)
+
+    objects = client.MakeRequests([get_request])
+
+    new_object = self.Modify(holder.resources, args, instance_ref, objects[0])
+
+    # If existing object is equal to the proposed object or if
+    # Modify() returns None, then there is no work to be done, so we
+    # print the resource and return.
+    if objects[0] == new_object:
+      log.status.Print(
+          'No change requested; skipping update for [{0}].'.format(
+              objects[0].name))
+      return objects
+
+    return client.MakeRequests(
+        [self.GetSetRequest(client, instance_ref, new_object, objects[0])])

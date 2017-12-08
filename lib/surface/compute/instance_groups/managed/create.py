@@ -14,6 +14,7 @@
 """Command for creating managed instance group."""
 
 import sys
+from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
@@ -24,6 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
+from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as managed_flags
 from googlecloudsdk.core import properties
 
 
@@ -61,38 +63,24 @@ def _IsZonalGroup(ref):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class CreateGA(base_classes.BaseAsyncCreator,
-               base_classes.InstanceGroupManagerDynamicProperiesMixin):
+class CreateGA(base.CreateCommand):
   """Create Google Compute Engine managed instance groups."""
 
   @staticmethod
   def Args(parser):
+    parser.display_info.AddFormat(managed_flags.DEFAULT_LIST_FORMAT)
     _AddInstanceGroupManagerArgs(parser=parser)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 
-  @property
-  def service(self):
-    return self.compute.instanceGroupManagers
-
-  @property
-  def method(self):
-    return 'Insert'
-
-  @property
-  def resource_type(self):
-    return 'instanceGroupManagers'
-
-  def CreateGroupReference(self, args):
+  def CreateGroupReference(self, args, client, resources):
     group_ref = (
         instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
-        ResolveAsResource)(args, self.resources,
+        ResolveAsResource)(args, resources,
                            default_scope=compute_scope.ScopeEnum.ZONE,
-                           scope_lister=flags.GetDefaultScopeLister(
-                               self.compute_client))
+                           scope_lister=flags.GetDefaultScopeLister(client))
     if _IsZonalGroup(group_ref):
-      zonal_resource_fetcher = zone_utils.ZoneResourceFetcher(
-          self.compute_client)
+      zonal_resource_fetcher = zone_utils.ZoneResourceFetcher(client)
       zonal_resource_fetcher.WarnForZonalCreation([group_ref])
     return group_ref
 
@@ -102,52 +90,52 @@ class CreateGA(base_classes.BaseAsyncCreator,
     else:
       return group_ref.region
 
-  def GetServiceForGroup(self, group_ref):
+  def GetServiceForGroup(self, group_ref, compute):
     if _IsZonalGroup(group_ref):
-      return self.compute.instanceGroupManagers
+      return compute.instanceGroupManagers
     else:
-      return self.compute.regionInstanceGroupManagers
+      return compute.regionInstanceGroupManagers
 
-  def CreateResourceRequest(self, group_ref, instance_group_manager):
+  def CreateResourceRequest(self, group_ref, instance_group_manager, client,
+                            resources):
     if _IsZonalGroup(group_ref):
       instance_group_manager.zone = group_ref.zone
-      return self.messages.ComputeInstanceGroupManagersInsertRequest(
+      return client.messages.ComputeInstanceGroupManagersInsertRequest(
           instanceGroupManager=instance_group_manager,
-          project=self.project,
+          project=group_ref.project,
           zone=group_ref.zone)
     else:
-      region_link = self.resources.Parse(
+      region_link = resources.Parse(
           group_ref.region,
           params={'project': properties.VALUES.core.project.GetOrFail},
           collection='compute.regions')
       instance_group_manager.region = region_link.SelfLink()
-      return self.messages.ComputeRegionInstanceGroupManagersInsertRequest(
+      return client.messages.ComputeRegionInstanceGroupManagersInsertRequest(
           instanceGroupManager=instance_group_manager,
-          project=self.project,
+          project=group_ref.project,
           region=group_ref.region)
 
-  def ComputeDynamicProperties(self, args, items):
-    return (base_classes.InstanceGroupManagerDynamicProperiesMixin
-            .ComputeDynamicProperties(self, args, items))
-
-  def CreateRequests(self, args):
-    """Creates and returns an instanceGroupManagers.Insert request.
+  def Run(self, args):
+    """Creates and issues an instanceGroupManagers.Insert request.
 
     Args:
       args: the argparse arguments that this command was invoked with.
 
     Returns:
-      request: a singleton list containing
-               ComputeManagedInstanceGroupsInsertRequest message object.
+      List containing one dictionary: resource augmented with 'autoscaled'
+      property
     """
-    group_ref = self.CreateGroupReference(args)
-    template_ref = self.resources.Parse(
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    group_ref = self.CreateGroupReference(args, client, holder.resources)
+    template_ref = holder.resources.Parse(
         args.template,
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='compute.instanceTemplates')
     if args.target_pool:
       region = self.GetRegionForGroup(group_ref)
-      pool_refs = [self.resources.Parse(
+      pool_refs = [holder.resources.Parse(
           pool,
           params={
               'project': properties.VALUES.core.project.GetOrFail,
@@ -164,7 +152,7 @@ class CreateGA(base_classes.BaseAsyncCreator,
     else:
       base_instance_name = name[0:54]
 
-    instance_group_manager = self.messages.InstanceGroupManager(
+    instance_group_manager = client.messages.InstanceGroupManager(
         name=name,
         description=args.description,
         instanceTemplate=template_ref.SelfLink(),
@@ -173,13 +161,20 @@ class CreateGA(base_classes.BaseAsyncCreator,
         targetSize=int(args.size))
     auto_healing_policies = (
         managed_instance_groups_utils.CreateAutohealingPolicies(
-            self.resources, self.messages, args))
+            holder.resources, client.messages, args))
     if auto_healing_policies:
       instance_group_manager.autoHealingPolicies = auto_healing_policies
 
-    request = self.CreateResourceRequest(group_ref, instance_group_manager)
-    service = self.GetServiceForGroup(group_ref)
-    return [(service, self.method, request)]
+    request = self.CreateResourceRequest(group_ref, instance_group_manager,
+                                         client, holder.resources)
+    service = self.GetServiceForGroup(group_ref, client.apitools_client)
+    migs = client.MakeRequests([(service, 'Insert', request)])
+
+    migs_as_dicts = [encoding.MessageToDict(m) for m in migs]
+    _, augmented_migs = (
+        managed_instance_groups_utils.AddAutoscaledPropertyToMigs(
+            migs_as_dicts, client, holder.resources))
+    return augmented_migs
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
@@ -188,6 +183,7 @@ class CreateBeta(CreateGA):
 
   @staticmethod
   def Args(parser):
+    parser.display_info.AddFormat(managed_flags.DEFAULT_LIST_FORMAT)
     _AddInstanceGroupManagerArgs(parser=parser)
     managed_instance_groups_utils.AddAutohealingArgs(parser)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(

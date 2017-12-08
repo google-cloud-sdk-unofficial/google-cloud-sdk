@@ -40,7 +40,7 @@ class Describe(base.DescribeCommand):
           To describe a repository named example-repo in the current project
           issue the following command:
 
-            $ {command} describe REPOSITORY_NAME
+            $ {command} REPOSITORY_NAME
       """),
   }
 

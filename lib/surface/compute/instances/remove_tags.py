@@ -12,18 +12,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for removing tags from instances."""
-import copy
+from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.core import log
 
 
-class RemoveTags(base_classes.InstanceTagsMutatorMixin,
-                 base_classes.ReadWriteCommand):
-  """Remove tags from Google Compute Engine virtual machine instances."""
+class RemoveTags(base.UpdateCommand):
+  """Remove tags from Google Compute Engine virtual machine instances.
+
+    *{command}* is used to remove tags to Google Compute Engine virtual
+  machine instances.  For example:
+
+    $ {command} example-instance --tags tag-1,tag-2
+
+  will remove tags ``tag-1'' and ``tag-2'' from the existing tags of
+  'example-instance'.
+
+  Tags can be used to identify instances when adding network
+  firewall rules. Tags can also be used to get firewall rules that already
+  exist to be applied to the instance. See
+  gcloud_compute_firewall-rules_create(1) for more details.
+  """
 
   @staticmethod
   def Args(parser):
+    instance_flags.INSTANCE_ARG.AddArgument(
+        parser, operation_type='set tags on')
+
     tags_group = parser.add_mutually_exclusive_group(required=True)
     tags_group.add_argument(
         '--tags',
@@ -39,10 +59,24 @@ class RemoveTags(base_classes.InstanceTagsMutatorMixin,
         default=False,
         help='Remove all tags from the instance.')
 
-    base_classes.InstanceTagsMutatorMixin.Args(parser)
+  def CreateReference(self, client, resources, args):
+    return instance_flags.INSTANCE_ARG.ResolveAsResource(
+        args, resources, scope_lister=flags.GetDefaultScopeLister(client))
+
+  def GetGetRequest(self, client, instance_ref):
+    return (client.apitools_client.instances,
+            'Get',
+            client.messages.ComputeInstancesGetRequest(**instance_ref.AsDict()))
+
+  def GetSetRequest(self, client, instance_ref, replacement):
+    return (client.apitools_client.instances,
+            'SetTags',
+            client.messages.ComputeInstancesSetTagsRequest(
+                tags=replacement.tags,
+                **instance_ref.AsDict()))
 
   def Modify(self, args, existing):
-    new_object = copy.deepcopy(existing)
+    new_object = encoding.CopyProtoMessage(existing)
     if args.all:
       new_object.tags.items = []
     else:
@@ -50,21 +84,25 @@ class RemoveTags(base_classes.InstanceTagsMutatorMixin,
           set(new_object.tags.items) - set(args.tags))
     return new_object
 
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-RemoveTags.detailed_help = {
-    'brief': 'Remove tags from Google Compute Engine virtual machine instances',
-    'DESCRIPTION': """\
-        *{command}* is used to remove tags to Google Compute Engine virtual
-        machine instances.  For example:
+    instance_ref = self.CreateReference(client, holder.resources, args)
+    get_request = self.GetGetRequest(client, instance_ref)
 
-          $ {command} example-instance --tags tag-1,tag-2
+    objects = client.MakeRequests([get_request])
 
-        will remove tags ``tag-1'' and ``tag-2'' from the existing tags of
-        'example-instance'.
+    new_object = self.Modify(args, objects[0])
 
-        Tags can be used to identify instances when adding network
-        firewall rules. Tags can also be used to get firewall rules that already
-        exist to be applied to the instance. See
-        gcloud_compute_firewall-rules_create(1) for more details.
-        """,
-}
+    # If existing object is equal to the proposed object or if
+    # Modify() returns None, then there is no work to be done, so we
+    # print the resource and return.
+    if not new_object or objects[0] == new_object:
+      log.status.Print(
+          'No change requested; skipping update for [{0}].'.format(
+              objects[0].name))
+      return objects
+
+    return client.MakeRequests(
+        [self.GetSetRequest(client, instance_ref, new_object)])

@@ -59,7 +59,7 @@ class _ExtractValues(beam.DoFn):
       ]
     except Exception as ex:  # pylint: disable=broad-except
       try:
-        yield beam.pvalue.OutputValue('errors', (ex, element))
+        yield beam.pvalue.TaggedOutput('errors', (ex, element))
       except AttributeError:
         yield beam.pvalue.SideOutputValue('errors', (ex, element))
 

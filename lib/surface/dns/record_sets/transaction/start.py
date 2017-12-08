@@ -21,13 +21,13 @@ from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.dns import import_util
 from googlecloudsdk.api_lib.dns import transaction_util
+from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
 class Start(base.Command):
@@ -39,7 +39,7 @@ class Start(base.Command):
 
   To start a transaction, run:
 
-    $ {command} -z MANAGED_ZONE
+    $ {command} --zone MANAGED_ZONE
   """
 
   @staticmethod
@@ -47,15 +47,20 @@ class Start(base.Command):
     flags.GetZoneArg().AddToParser(parser)
 
   def Run(self, args):
+    api_version = 'v1'
+    # If in the future there are differences between API version, do NOT use
+    # this patter of checking ReleaseTrack. Break this into multiple classes.
+    if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+      api_version = 'v2beta1'
+
     if os.path.isfile(args.transaction_file):
       raise exceptions.ToolException(
           'transaction already exists at [{0}]'.format(args.transaction_file))
 
-    dns = apis.GetClientInstance('dns', 'v1')
-    messages = apis.GetMessagesModule('dns', 'v1')
+    dns = apis.GetClientInstance('dns', api_version)
 
     # Get the managed-zone.
-    zone_ref = resources.REGISTRY.Parse(
+    zone_ref = util.GetRegistry(api_version).Parse(
         args.zone,
         params={
             'project': properties.VALUES.core.project.GetOrFail,
@@ -71,20 +76,21 @@ class Start(base.Command):
       raise exceptions.HttpException(error)
 
     # Initialize an empty change
-    change = messages.Change()
+    change = dns.MESSAGES_MODULE.Change()
 
     # Get the SOA record, there will be one and only one.
     # Add addition and deletion for SOA incrementing to change.
     records = [record for record in list_pager.YieldFromList(
         dns.resourceRecordSets,
-        messages.DnsResourceRecordSetsListRequest(
+        dns.MESSAGES_MODULE.DnsResourceRecordSetsListRequest(
             project=zone_ref.project,
             managedZone=zone_ref.Name(),
             name=zone.dnsName,
             type='SOA'),
         field='rrsets')]
     change.deletions.append(records[0])
-    change.additions.append(import_util.NextSOARecordSet(records[0]))
+    change.additions.append(
+        import_util.NextSOARecordSet(records[0], api_version=api_version))
 
     # Write change to transaction file
     try:

@@ -16,8 +16,10 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import exceptions
+from googlecloudsdk.core import properties
 
 
 # TODO(b/33690890): remove after deprecation
@@ -25,8 +27,21 @@ class BucketRequiredError(exceptions.Error):
   """One of the required bucket flags was not specified."""
 
 
-class SetUsageBucket(base_classes.NoOutputAsyncMutator):
-  """Set the usage reporting bucket for a project."""
+class SetUsageBucket(base.SilentCommand):
+  """Set the usage reporting bucket for a project.
+
+    *{command}* is used to configure usage reporting for projects.
+
+  Setting usage reporting will cause a log of usage per resource to be
+  written to a specified Google Cloud Storage bucket daily. For example,
+
+    $ gcloud compute project-info set-usage-bucket --bucket gs://my-bucket
+
+  will cause logs of the form usage_gce_YYYYMMDD.csv to be written daily
+  to the bucket `my-bucket`. To disable this feature, issue the command:
+
+    $ gcloud compute project-info set-usage-bucket --no-bucket
+  """
 
   @staticmethod
   def Args(parser):
@@ -63,19 +78,10 @@ class SetUsageBucket(base_classes.NoOutputAsyncMutator):
         This flag must not be provided when clearing the usage bucket.
         """)
 
-  @property
-  def service(self):
-    return self.compute.projects
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'SetUsageExportBucket'
-
-  @property
-  def resource_type(self):
-    return 'projects'
-
-  def CreateRequests(self, args):
     # TODO(b/33690890): remove this check after the deprecation
     if args.bucket is None and not args.no_bucket:
       # The user gave neither flag but one of them is required. Using
@@ -90,30 +96,13 @@ class SetUsageBucket(base_classes.NoOutputAsyncMutator):
 
     bucket_uri = utils.NormalizeGoogleStorageUri(args.bucket or None)
 
-    request = self.messages.ComputeProjectsSetUsageExportBucketRequest(
-        project=self.project,
-        usageExportLocation=self.messages.UsageExportLocation(
+    request = client.messages.ComputeProjectsSetUsageExportBucketRequest(
+        project=properties.VALUES.core.project.GetOrFail(),
+        usageExportLocation=client.messages.UsageExportLocation(
             bucketName=bucket_uri,
             reportNamePrefix=args.prefix,
         )
     )
 
-    return [request]
-
-
-SetUsageBucket.detailed_help = {
-    'brief': 'Set the usage reporting bucket for a project',
-    'DESCRIPTION': """\
-        *{command}* is used to configure usage reporting for projects.
-
-        Setting usage reporting will cause a log of usage per resource to be
-        written to a specified Google Cloud Storage bucket daily. For example,
-
-          $ gcloud compute project-info set-usage-bucket --bucket gs://my-bucket
-
-        will cause logs of the form usage_gce_YYYYMMDD.csv to be written daily
-        to the bucket `my-bucket`. To disable this feature, issue the command:
-
-          $ gcloud compute project-info set-usage-bucket --no-bucket
-        """,
-}
+    return client.MakeRequests([(client.apitools_client.projects,
+                                 'SetUsageExportBucket', request)])

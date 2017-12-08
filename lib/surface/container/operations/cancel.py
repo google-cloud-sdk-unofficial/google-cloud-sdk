@@ -18,10 +18,16 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
+CANCEL_OPERATION_MESSAGE = (
+    'Cancelation of operation {0} has been requested. '
+    'Please use gcloud container operations describe {1} to '
+    'check if the operation has been canceled successfully.')
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Cancel(base.Command):
   """Cancel an operation."""
 
@@ -61,6 +67,9 @@ class Cancel(base.Command):
 
     try:
       adapter.CancelOperation(op_ref)
+      log.status.Print(
+          CANCEL_OPERATION_MESSAGE
+          .format(args.operation_id, args.operation_id))
       return adapter.GetOperation(op_ref)
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error)

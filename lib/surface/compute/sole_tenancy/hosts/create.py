@@ -14,16 +14,18 @@
 """Command for creating sole-tenancy hosts."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope
 from googlecloudsdk.command_lib.compute.sole_tenancy.hosts import flags as hosts_flags
 
 
-class Create(base_classes.BaseAsyncCreator):
+class Create(base.CreateCommand):
   """Create Google Compute Engine sole-tenancy hosts."""
 
   @staticmethod
   def Args(parser):
+    parser.display_info.AddFormat(hosts_flags.DEFAULT_LIST_FORMAT)
     Create.HOST_ARG = hosts_flags.MakeHostArg(plural=True)
     Create.HOST_ARG.AddArgument(parser, operation_type='create')
     parser.add_argument(
@@ -34,33 +36,26 @@ class Create(base_classes.BaseAsyncCreator):
         help=('Specifies a type of the hosts. Type of a host determines '
               'resources available to instances running on it.'))
 
-  @property
-  def service(self):
-    return self.compute.hosts
-
-  @property
-  def method(self):
-    return 'Insert'
-
-  def _CreateRequest(self, host_ref, description, host_type):
-    return self.messages.ComputeHostsInsertRequest(
-        host=self.messages.Host(
+  def _CreateRequest(self, messages, host_ref, description, host_type):
+    return messages.ComputeHostsInsertRequest(
+        host=messages.Host(
             name=host_ref.Name(),
             description=description,
             hostType=host_type),
         project=host_ref.project,
         zone=host_ref.zone)
 
-  def CreateRequests(self, args):
+  def Run(self, args):
     """Returns a list of requests necessary for adding hosts."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
     host_refs = Create.HOST_ARG.ResolveAsResource(
-        args, self.resources,
+        args, holder.resources,
         default_scope=scope.ScopeEnum.ZONE,
-        scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client, self.project))
+        scope_lister=flags.GetDefaultScopeLister(client))
     if args.host_type:
-      host_type_ref = self.resources.Parse(
+      host_type_ref = holder.resources.Parse(
           args.host_type, collection='compute.hostTypes',
           params={
               'project': host_refs[0].project,
@@ -73,4 +68,7 @@ class Create(base_classes.BaseAsyncCreator):
         'description': args.description,
         'host_type': host_type_url,
     }
-    return [self._CreateRequest(ref, **host_properties) for ref in host_refs]
+    return client.MakeRequests([(client.apitools_client.hosts,
+                                 'Insert', self._CreateRequest(
+                                     client.messages, ref, **host_properties))
+                                for ref in host_refs])

@@ -131,6 +131,7 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
                                args.strict_host_key_checking)
 
     extra_flags = []
+    remainder = []
 
     if args.ssh_flag:
       for flag in args.ssh_flag:
@@ -141,14 +142,15 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
           extra_flags.append(dereferenced_flag)
 
     if args.ssh_args:
-      extra_flags.extend(args.ssh_args)
+      remainder.extend(args.ssh_args)
 
     tty = ssh_utils.GetTty(args.container, args.command)
     remote_command = ssh_utils.GetRemoteCommand(args.container, args.command)
 
     cmd = ssh.SSHCommand(remote, identity_file=identity_file,
                          options=options, extra_flags=extra_flags,
-                         remote_command=remote_command, tty=tty)
+                         remote_command=remote_command, tty=tty,
+                         remainder=remainder)
     if args.dry_run:
       log.out.Print(' '.join(cmd.Build(self.env)))
       return

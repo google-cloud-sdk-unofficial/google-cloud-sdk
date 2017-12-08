@@ -25,15 +25,16 @@ class List(base.ListCommand):
   """List the repositories the currently active project.
 
   By default, repos in the current project are listed; this can be overridden
-  with the gcloud --project flag.
+  with the gcloud --project flag.  The repository size is not returned, but
+  can be retrieved for a particular repository with the describe command.
   """
 
   @staticmethod
   def Args(parser):
     base.URI_FLAG.RemoveFromParser(parser)
     # Here's some sample output (with the URL cut short)
-    # REPO_NAME                     PROJECT_ID     SIZE      URL
-    # ANewRepo                      kris-csr-test  0         https://...
+    # REPO_NAME                     PROJECT_ID     URL
+    # ANewRepo                      kris-csr-test  https://...
     #
     # The resource name looks like projects/<projectid>/repos/reponame
     # We extract the project name as segment 1 and the repo name as segment 3

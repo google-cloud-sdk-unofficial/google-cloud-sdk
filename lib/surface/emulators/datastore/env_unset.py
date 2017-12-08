@@ -31,8 +31,9 @@ class EnvUnset(base.Command):
           """,
   }
 
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat('config[unset]')
+
   def Run(self, args):
     return util.ReadEnvYaml(args.data_dir)
-
-  def Format(self, args):
-    return 'config[unset]'

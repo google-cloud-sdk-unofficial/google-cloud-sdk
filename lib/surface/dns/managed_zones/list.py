@@ -15,20 +15,22 @@
 """gcloud dns managed-zones list command."""
 
 from apitools.base.py import list_pager
-
+from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
-def _GetUri(resource):
-  return resources.REGISTRY.Create(
-      'dns.managedZones',
-      project=properties.VALUES.core.project.GetOrFail,
-      managedZone=resource.name).SelfLink()
+def _GetUriFunction(api_version):
+  def _GetUri(resource):
+    return util.GetRegistry(api_version).Create(
+        'dns.managedZones',
+        project=properties.VALUES.core.project.GetOrFail,
+        managedZone=resource.name).SelfLink()
+  return _GetUri
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """View the list of all your managed-zones.
 
@@ -48,15 +50,49 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat('table(name, dnsName, description)')
-    parser.display_info.AddUriFunc(_GetUri)
+    parser.display_info.AddUriFunc(_GetUriFunction('v1'))
 
   def Run(self, args):
     dns_client = apis.GetClientInstance('dns', 'v1')
-    dns_messages = apis.GetMessagesModule('dns', 'v1')
 
     project_id = properties.VALUES.core.project.GetOrFail()
 
     return list_pager.YieldFromList(
         dns_client.managedZones,
-        dns_messages.DnsManagedZonesListRequest(project=project_id),
+        dns_client.MESSAGES_MODULE.DnsManagedZonesListRequest(
+            project=project_id),
+        limit=args.limit, field='managedZones')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(base.ListCommand):
+  """View the list of all your managed-zones.
+
+  This command displays the list of your managed-zones.
+
+  ## EXAMPLES
+
+  To see the list of all managed-zones, run:
+
+    $ {command}
+
+  To see the list of first 10 managed-zones, run:
+
+    $ {command} --limit=10
+  """
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat('table(name, dnsName, description)')
+    parser.display_info.AddUriFunc(_GetUriFunction('v2beta1'))
+
+  def Run(self, args):
+    dns_client = apis.GetClientInstance('dns', 'v2beta1')
+
+    project_id = properties.VALUES.core.project.GetOrFail()
+
+    return list_pager.YieldFromList(
+        dns_client.managedZones,
+        dns_client.MESSAGES_MODULE.DnsManagedZonesListRequest(
+            project=project_id),
         limit=args.limit, field='managedZones')

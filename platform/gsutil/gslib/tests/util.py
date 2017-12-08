@@ -46,9 +46,10 @@ if not hasattr(unittest.TestCase, 'assertIsNone'):
 if not IS_WINDOWS:
   import grp
   import pwd
+
   USER_ID = os.getuid()
-  USER_NAME = pwd.getpwuid(USER_ID).pw_name
-  PRIMARY_GID = pwd.getpwuid(USER_ID).pw_gid
+  USER_NAME = LazyWrapper(lambda: (pwd.getpwuid(USER_ID).pw_name))
+  PRIMARY_GID = LazyWrapper(lambda: (pwd.getpwuid(USER_ID).pw_gid))
 
   # Get a list of all groups on the system where the current username is listed
   # as a member of the group in the gr_mem group attribute. Make this a list of
@@ -195,11 +196,12 @@ USING_JSON_API = _UsingJSONApi()
 
 def _ArgcompleteAvailable():
   argcomplete = None
-  try:
-    # pylint: disable=g-import-not-at-top
-    import argcomplete
-  except ImportError:
-    pass
+  if not IS_WINDOWS:
+    try:
+      # pylint: disable=g-import-not-at-top
+      import argcomplete
+    except ImportError:
+      pass
   return argcomplete is not None
 
 ARGCOMPLETE_AVAILABLE = _ArgcompleteAvailable()

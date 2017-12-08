@@ -15,6 +15,7 @@
 """A command that lists the resource collections for a given API."""
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.meta import apis
 
 
@@ -27,19 +28,21 @@ class List(base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
     parser.add_argument(
         '--api',
-        required=True,
         help='The name of the API to get the collections for.')
-    parser.add_argument(
-        '--api-version',
-        required=True,
-        help='The version of the API to get the collections for.')
+    apis.API_VERSION_FLAG.AddToParser(parser)
     parser.display_info.AddFormat("""
       table(
-        name:sort=1:label=COLLECTION_NAME,
-        path,
-        params.join(', ')
+        full_name:sort=1:label=COLLECTION_NAME,
+        detailed_path
       )
     """)
 
   def Run(self, args):
-    return apis.GetAPICollections(args.api, args.api_version)
+    if args.api_version and not args.api:
+      raise exceptions.RequiredArgumentException(
+          '--api',
+          'The --api-version flag can only be specified when using the --api '
+          'flag.')
+
+    return apis.GetAPICollections(api_name=args.api,
+                                  api_version=args.api_version)

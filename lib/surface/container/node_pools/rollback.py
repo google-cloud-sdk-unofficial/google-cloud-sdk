@@ -26,7 +26,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Rollback(base.Command):
   """Rollback a node-pool upgrade."""
 
@@ -39,7 +39,7 @@ class Rollback(base.Command):
           to capture some information, but behaves like an ArgumentParser.
     """
 
-    flags.AddClustersWaitAndAsyncFlags(parser)
+    flags.AddAsyncFlag(parser)
     flags.AddNodePoolNameArg(parser, 'The name of the node pool to rollback.')
     flags.AddNodePoolClusterFlag(
         parser,
@@ -84,7 +84,7 @@ class Rollback(base.Command):
 
       op_ref = adapter.RollbackUpgrade(pool_ref)
 
-      if not flags.GetAsyncValueFromAsyncAndWaitFlags(args.async, args.wait):
+      if not args.async:
         adapter.WaitForOperation(
             op_ref, 'Rolling back {0}'.format(pool_ref.nodePoolId),
             timeout_s=args.timeout)

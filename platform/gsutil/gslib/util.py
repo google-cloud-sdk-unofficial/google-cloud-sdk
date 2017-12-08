@@ -304,6 +304,34 @@ class LazyWrapper(object):
     """
     self._func = func
 
+  def __int__(self):
+    try:
+      return int(self._value)
+    except AttributeError:
+      self._value = self._func()
+      return int(self._value)
+
+  def __eq__(self, other):
+    try:
+      return self._value == other
+    except AttributeError:
+      self._value = self._func()
+      return self._value == other
+
+  def __repr__(self):
+    try:
+      return str(self._value)
+    except AttributeError:
+      self._value = self._func()
+      return str(self._value)
+
+  def __str__(self):
+    try:
+      return str(self._value)
+    except AttributeError:
+      self._value = self._func()
+      return str(self._value)
+
   def __call__(self):
     """The call method for a LazyWrapper object."""
     try:
@@ -1358,11 +1386,11 @@ def GetFileSize(fp, position_to_eof=False):
   return cur_file_size
 
 
-def GetStreamFromFileUrl(storage_url):
+def GetStreamFromFileUrl(storage_url, mode='rb'):
   if storage_url.IsStream():
     return sys.stdin
   else:
-    return open(storage_url.object_name, 'rb')
+    return open(storage_url.object_name, mode)
 
 
 def UrlsAreForSingleProvider(url_args):

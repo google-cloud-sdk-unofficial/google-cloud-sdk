@@ -36,7 +36,7 @@ class Resize(base.Command):
         type=int,
         help=('Target number of nodes in the cluster.'))
     parser.add_argument('--node-pool', help='The node pool to resize.')
-    flags.AddClustersWaitAndAsyncFlags(parser)
+    flags.AddAsyncFlag(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -64,7 +64,7 @@ class Resize(base.Command):
                                      igm.instanceGroupManager, args.size)
       ops.append(op_ref)
 
-    if not flags.GetAsyncValueFromAsyncAndWaitFlags(args.async, args.wait):
+    if not args.async:
       adapter.WaitForComputeOperations(
           cluster_ref.projectId, cluster.zone, [op.name for op in ops],
           'Resizing {0}'.format(cluster_ref.clusterId))

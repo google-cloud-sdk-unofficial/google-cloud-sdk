@@ -14,6 +14,7 @@
 """Command for stopping autoscaling of a managed instance group."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
@@ -24,39 +25,32 @@ def _IsZonalGroup(ref):
   return ref.Collection() == 'compute.instanceGroupManagers'
 
 
-class StopAutoscaling(base_classes.BaseAsyncMutator):
-  """Stop autoscaling a managed instance group."""
+class StopAutoscaling(base.Command):
+  """Stop autoscaling a managed instance group.
 
-  @property
-  def service(self):
-    return self.compute.autoscalers
-
-  @property
-  def resource_type(self):
-    return 'autoscalers'
-
-  @property
-  def method(self):
-    return 'Delete'
+    *{command}* stops autoscaling a managed instance group. If autoscaling
+  is not enabled for the managed instance group, this command does nothing and
+  will report an error.
+  """
 
   @staticmethod
   def Args(parser):
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 
-  def CreateGroupReference(self, args):
+  def CreateGroupReference(self, client, resources, args):
     resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
     default_scope = compute_scope.ScopeEnum.ZONE
-    scope_lister = flags.GetDefaultScopeLister(self.compute_client)
+    scope_lister = flags.GetDefaultScopeLister(client)
     return resource_arg.ResolveAsResource(
-        args, self.resources, default_scope=default_scope,
+        args, resources, default_scope=default_scope,
         scope_lister=scope_lister)
 
-  def GetAutoscalerServiceForGroup(self, group_ref):
+  def GetAutoscalerServiceForGroup(self, client, group_ref):
     if _IsZonalGroup(group_ref):
-      return self.compute.autoscalers
+      return client.apitools_client.autoscalers
     else:
-      return self.compute.regionAutoscalers
+      return client.apitools_client.regionAutoscalers
 
   def ScopeRequest(self, request, igm_ref):
     if _IsZonalGroup(igm_ref):
@@ -64,16 +58,16 @@ class StopAutoscaling(base_classes.BaseAsyncMutator):
     else:
       request.region = igm_ref.region
 
-  def GetAutoscalerResource(self, igm_ref, args):
+  def GetAutoscalerResource(self, client, resources, igm_ref, args):
     if _IsZonalGroup(igm_ref):
       scope_type = 'zone'
       location = managed_instance_groups_utils.CreateZoneRef(
-          self.resources, igm_ref)
+          resources, igm_ref)
       zones, regions = [location], None
     else:
       scope_type = 'region'
       location = managed_instance_groups_utils.CreateRegionRef(
-          self.resources, igm_ref)
+          resources, igm_ref)
       zones, regions = None, [location]
 
     autoscaler = managed_instance_groups_utils.AutoscalerForMig(
@@ -81,9 +75,7 @@ class StopAutoscaling(base_classes.BaseAsyncMutator):
         autoscalers=managed_instance_groups_utils.AutoscalersForLocations(
             regions=regions,
             zones=zones,
-            compute=self.compute,
-            http=self.http,
-            batch_url=self.batch_url),
+            client=client),
         location=location,
         scope_type=scope_type)
     if autoscaler is None:
@@ -91,27 +83,21 @@ class StopAutoscaling(base_classes.BaseAsyncMutator):
           'The managed instance group is not autoscaled.')
     return autoscaler
 
-  def CreateRequests(self, args):
-    igm_ref = self.CreateGroupReference(args)
-    service = self.GetAutoscalerServiceForGroup(igm_ref)
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    igm_ref = self.CreateGroupReference(client, holder.resources, args)
+    service = self.GetAutoscalerServiceForGroup(client, igm_ref)
 
     # Assert that Instance Group Manager exists.
     managed_instance_groups_utils.GetInstanceGroupManagerOrThrow(
-        igm_ref, self.compute_client)
+        igm_ref, client)
 
-    autoscaler = self.GetAutoscalerResource(igm_ref, args)
-    request = service.GetRequestType(self.method)(
+    autoscaler = self.GetAutoscalerResource(client, holder.resources, igm_ref,
+                                            args)
+    request = service.GetRequestType('Delete')(
         project=igm_ref.project,
         autoscaler=autoscaler.name)
     self.ScopeRequest(request, igm_ref)
-    return [(service, self.method, request,)]
-
-
-StopAutoscaling.detailed_help = {
-    'brief': 'Stop autoscaling a managed instance group',
-    'DESCRIPTION': """\
-        *{command}* stops autoscaling a managed instance group. If autoscaling
-is not enabled for the managed instance group, this command does nothing and
-will report an error.
-""",
-}
+    return client.MakeRequests([(service, 'Delete', request)])

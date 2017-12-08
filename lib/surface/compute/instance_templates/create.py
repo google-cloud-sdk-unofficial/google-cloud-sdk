@@ -24,8 +24,12 @@ from googlecloudsdk.command_lib.compute.instance_templates import flags as insta
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 
 
-def _CommonArgs(parser, multiple_network_interface_cards, release_track,
-                support_alias_ip_ranges, support_local_ssd_size=False):
+def _CommonArgs(parser,
+                multiple_network_interface_cards,
+                release_track,
+                support_alias_ip_ranges,
+                support_network_tier,
+                support_local_ssd_size=False):
   """Common arguments used in Alpha, Beta, and GA."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
@@ -43,7 +47,8 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
   instances_flags.AddAddressArgs(
       parser, instances=False,
       multiple_network_interface_cards=multiple_network_interface_cards,
-      support_alias_ip_ranges=support_alias_ip_ranges)
+      support_alias_ip_ranges=support_alias_ip_ranges,
+      support_network_tier=support_network_tier)
   instances_flags.AddMachineTypeArgs(parser)
   instances_flags.AddMaintenancePolicyArgs(parser)
   instances_flags.AddNoRestartOnFailureArgs(parser)
@@ -53,6 +58,9 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
   instances_flags.AddCustomMachineTypeArgs(parser)
   instances_flags.AddImageArgs(parser)
   instances_flags.AddNetworkArgs(parser)
+
+  if support_network_tier:
+    instances_flags.AddNetworkTierArgs(parser, instance=True)
 
   flags.AddRegionFlag(
       parser,
@@ -82,12 +90,14 @@ class Create(base.CreateCommand):
   Instance templates are global resources, and can be used to create
   instances in any zone.
   """
+  _support_network_tier = False
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     _CommonArgs(parser, multiple_network_interface_cards=False,
                 release_track=base.ReleaseTrack.GA,
-                support_alias_ip_ranges=False)
+                support_alias_ip_ranges=False,
+                support_network_tier=cls._support_network_tier)
 
   def ValidateDiskFlags(self, args):
     """Validates the values of all disk-related flags."""
@@ -133,8 +143,10 @@ class Create(base.CreateCommand):
               scope_lister=flags.GetDefaultScopeLister(client),
               messages=client.messages,
               network_interface_arg=args.network_interface,
-              region=args.region)
+              region=args.region,
+              support_network_tier=self._support_network_tier)
     else:
+      network_tier = getattr(args, 'network_tier', None)
       network_interfaces = [
           instance_template_utils.CreateNetworkInterfaceMessage(
               resources=holder.resources,
@@ -145,7 +157,8 @@ class Create(base.CreateCommand):
               subnet=args.subnet,
               address=(instance_template_utils.EPHEMERAL_ADDRESS
                        if not args.no_address and not args.address
-                       else args.address))
+                       else args.address),
+              network_tier=network_tier)
       ]
 
     scheduling = instance_utils.CreateSchedulingMessage(
@@ -270,13 +283,16 @@ class CreateBeta(Create):
   instances in any zone.
   """
 
+  _support_network_tier = False
+
   @classmethod
   def Args(cls, parser):
     _CommonArgs(
         parser,
         multiple_network_interface_cards=True,
         release_track=base.ReleaseTrack.BETA,
-        support_alias_ip_ranges=True)
+        support_alias_ip_ranges=True,
+        support_network_tier=cls._support_network_tier)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -294,10 +310,13 @@ class CreateAlpha(Create):
   instances in any zone.
   """
 
-  @staticmethod
-  def Args(parser):
+  _support_network_tier = True
+
+  @classmethod
+  def Args(cls, parser):
     _CommonArgs(parser, multiple_network_interface_cards=True,
                 release_track=base.ReleaseTrack.ALPHA,
                 support_alias_ip_ranges=True,
+                support_network_tier=cls._support_network_tier,
                 support_local_ssd_size=True)
     instances_flags.AddMinCpuPlatformArgs(parser)

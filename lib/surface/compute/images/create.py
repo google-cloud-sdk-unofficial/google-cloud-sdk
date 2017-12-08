@@ -150,6 +150,9 @@ class Create(base.CreateCommand):
           for key, value in sorted(args_labels.iteritems())])
       request.image.labels = labels
 
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA and args.force_create:
+      request.forceCreate = True
+
     return client.MakeRequests([(client.apitools_client.images, 'Insert',
                                  request)])
 
@@ -173,6 +176,11 @@ class CreateBeta(Create):
 class CreateAlpha(CreateBeta):
 
   _GUEST_OS_FEATURES = image_utils.GUEST_OS_FEATURES_ALPHA
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateAlpha, cls).Args(parser)
+    flags.MakeForceCreateArg().AddToParser(parser)
 
 
 Create.detailed_help = {

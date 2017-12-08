@@ -24,8 +24,8 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class Create(base.CreateCommand):
   """Creates a user in a given instance.
 
   Creates a user in a given instance with specified username, host, and

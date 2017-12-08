@@ -35,11 +35,14 @@ management tasks, including:
 """
 
 requires = [
-    'boto==2.42.0',
+    'argcomplete>=1.8.2',
+    'boto==2.46.1',
     'crcmod>=1.7',
     'gcs-oauth2-boto-plugin>=1.14',
     'google-apitools==0.5.3',
     'httplib2>=0.8',
+    # TODO: Sync submodule with tag referenced here once #339 is fixed in mock.
+    'mock==2.0.0',
     'oauth2client==2.2.0',
     'pyOpenSSL>=0.13',
     'python-gflags>=2.0',
@@ -48,15 +51,13 @@ requires = [
     # Not using 1.02 because of:
     #   https://code.google.com/p/socksipy-branch/issues/detail?id=3
     'SocksiPy-branch==1.01',
-    # TODO: Sync submodule with tag referenced here once #339 is fixed in mock.
-    'mock==2.0.0',
 ]
 
 dependency_links = [
     # Note: this commit ID should be kept in sync with the 'third_party/boto'
     # entry in 'git submodule status'.
     # pylint: disable=line-too-long
-    'https://github.com/boto/boto/archive/62fa79abea1f281bb15cd27ff8081fd6c5492c31.tar.gz#egg=boto-2.42.0',
+    'https://github.com/boto/boto/archive/de61c302917cfa4f30baf22699fcf6eacf65faf3.tar.gz#egg=boto-2.46.1',
     # pylint: enable=line-too-long
 ]
 

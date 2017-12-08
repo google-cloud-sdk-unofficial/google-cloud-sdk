@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class Stop(base_classes.NoOutputAsyncMutator):
+class Stop(base.SilentCommand):
   """Stop a virtual machine instance."""
 
   @staticmethod
@@ -32,38 +32,31 @@ class Stop(base_classes.NoOutputAsyncMutator):
         action='store_true',
         help=('If provided, local SSD data is discarded.'))
 
-  @property
-  def service(self):
-    return self.compute.instances
-
-  @property
-  def method(self):
-    return 'Stop'
-
-  @property
-  def resource_type(self):
-    return 'instances'
-
-  def _CreateStopRequest(self, instance_ref, unused_discard_local_ssd):
-    return self.messages.ComputeInstancesStopRequest(
+  def _CreateStopRequest(self, client, instance_ref, unused_discard_local_ssd):
+    return client.messages.ComputeInstancesStopRequest(
         instance=instance_ref.Name(),
         project=instance_ref.project,
         zone=instance_ref.zone)
 
-  def CreateRequests(self, args):
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
     instance_refs = instance_flags.INSTANCES_ARG.ResolveAsResource(
-        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client))
-    return [self._CreateStopRequest(instance_ref, args.discard_local_ssd)
-            for instance_ref in instance_refs]
+        args, holder.resources, scope_lister=flags.GetDefaultScopeLister(
+            client))
+    return client.MakeRequests(
+        [(client.apitools_client.instances, 'Stop', self._CreateStopRequest(
+            client, instance_ref, args.discard_local_ssd))
+         for instance_ref in instance_refs])
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class StopAlpha(Stop, base_classes.BaseCommand):
 
-  def _CreateStopRequest(self, instance_ref, discard_local_ssd):
+  def _CreateStopRequest(self, client, instance_ref, discard_local_ssd):
     """Adds the discardLocalSsd var into the message."""
-    return self.messages.ComputeInstancesStopRequest(
+    return client.messages.ComputeInstancesStopRequest(
         discardLocalSsd=discard_local_ssd,
         instance=instance_ref.Name(),
         project=instance_ref.project,

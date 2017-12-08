@@ -16,11 +16,35 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SetDefaultServiceAccount(base_classes.NoOutputAsyncMutator):
-  """Set the default service account on the project."""
+class SetDefaultServiceAccount(base.SilentCommand):
+  r"""Set the default service account on the project.
+
+    *{command}* is used to configure the default service account on project.
+
+  The project's default service account is used when a new instance is
+  created unless a custom service account is set via --scopes or
+  --no-scopes. Existing existances are not effected.
+
+  For example,
+
+    $ {command} --email=example@developers.gserviceaccount.com
+    $ gcloud compute instances create instance-name
+
+  will set the project's default service account as
+  example@developers.gserviceaccount.com. The instance created will have
+  example@developers.gserviceaccount.com as the service account associated
+  with because no service account email was specified in the
+  "instances create" command.
+
+  To remove the default service account from the project, issue the command:
+
+    $ gcloud compute project-info set-default-service-account \
+        --no-service-account
+  """
 
   @staticmethod
   def Args(parser):
@@ -50,63 +74,31 @@ class SetDefaultServiceAccount(base_classes.NoOutputAsyncMutator):
           $ {command} --no-service-account
         """)
 
-  @property
-  def service(self):
-    return self.compute.projects
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'SetDefaultServiceAccount'
-
-  @property
-  def resource_type(self):
-    return 'projects'
-
-  def CreateRequests(self, args):
     self.validateFlags(args)
 
     if args.no_service_account:
-      return [self.messages.ComputeProjectsSetDefaultServiceAccountRequest(
-          project=self.project,
+      request = client.messages.ComputeProjectsSetDefaultServiceAccountRequest(
+          project=properties.VALUES.core.project.GetOrFail(),
           projectsSetDefaultServiceAccountRequest=
-          self.messages.ProjectsSetDefaultServiceAccountRequest())]
+          client.messages.ProjectsSetDefaultServiceAccountRequest())
     else:
-      return [self.messages.ComputeProjectsSetDefaultServiceAccountRequest(
-          project=self.project,
+      request = client.messages.ComputeProjectsSetDefaultServiceAccountRequest(
+          project=properties.VALUES.core.project.GetOrFail(),
           projectsSetDefaultServiceAccountRequest=
-          self.messages.ProjectsSetDefaultServiceAccountRequest(
+          client.messages.ProjectsSetDefaultServiceAccountRequest(
               email=args.service_account
           )
-      )]
+      )
+
+    return client.MakeRequests([(client.apitools_client.projects,
+                                 'SetDefaultServiceAccount', request)])
 
   def validateFlags(self, args):
     if not args.no_service_account and not args.service_account:
       raise exceptions.RequiredArgumentException(
           '--service-account', 'must be specified with a service account. To '
           'clear the default service account use [--no-service-account].')
-
-
-SetDefaultServiceAccount.detailed_help = {
-    'DESCRIPTION': """\
-        *{command}* is used to configure the default service account on project.
-
-        The project's default service account is used when a new instance is
-        created unless a custom service account is set via --scopes or
-        --no-scopes. Existing existances are not effected.
-
-        For example,
-
-          $ {command} --email=example@developers.gserviceaccount.com
-          $ gcloud compute instances create instance-name
-
-        will set the project's default service account as
-        example@developers.gserviceaccount.com. The instance created will have
-        example@developers.gserviceaccount.com as the service account associated
-        with because no service account email was specified in the
-        "instances create" command.
-
-        To remove the default service account from the project, issue the command:
-
-          $ gcloud compute project-info set-default-service-account --no-service-account
-        """,
-}

@@ -47,7 +47,7 @@ class Delete(base.DeleteCommand):
         type=int,
         default=1800,
         help=argparse.SUPPRESS)
-    flags.AddClustersWaitAndAsyncFlags(parser)
+    flags.AddAsyncFlag(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -89,7 +89,7 @@ class Delete(base.DeleteCommand):
             str(exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)))
       except util.Error as error:
         errors.append(error)
-    if not flags.GetAsyncValueFromAsyncAndWaitFlags(args.async, args.wait):
+    if not args.async:
       # Poll each operation for completion
       for operation_ref, cluster_ref in operations:
         try:

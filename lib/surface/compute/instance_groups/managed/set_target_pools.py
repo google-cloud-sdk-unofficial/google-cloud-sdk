@@ -16,10 +16,10 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
-from googlecloudsdk.core import properties
 
 
 def _AddArgs(parser):
@@ -34,8 +34,18 @@ def _AddArgs(parser):
             '--target-pool target-pool-1,target-pool-2.'))
 
 
-class SetTargetPools(base_classes.BaseAsyncMutator):
-  """Set target pools of managed instance group."""
+class SetTargetPools(base.Command):
+  """Set target pools of managed instance group.
+
+    *{command}* sets the target pools for an existing managed instance group.
+  Instances that are part of the managed instance group will be added to the
+  target pool automatically.
+
+  Setting a new target pool won't apply to existing instances in the group
+  unless they are recreated using the recreate-instances command. But any new
+  instances created in the managed instance group will be added to all of the
+  provided target pools for load balancing purposes.
+  """
 
   @staticmethod
   def Args(parser):
@@ -43,24 +53,15 @@ class SetTargetPools(base_classes.BaseAsyncMutator):
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 
-  @property
-  def method(self):
-    return 'SetTargetPools'
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def service(self):
-    return self.compute.instanceGroupManagers
-
-  @property
-  def resource_type(self):
-    return 'instanceGroupManagers'
-
-  def CreateRequests(self, args):
     resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
     default_scope = compute_scope.ScopeEnum.ZONE
-    scope_lister = flags.GetDefaultScopeLister(self.compute_client)
+    scope_lister = flags.GetDefaultScopeLister(client)
     group_ref = resource_arg.ResolveAsResource(
-        args, self.resources, default_scope=default_scope,
+        args, holder.resources, default_scope=default_scope,
         scope_lister=scope_lister)
 
     if group_ref.Collection() == 'compute.instanceGroupManagers':
@@ -70,55 +71,34 @@ class SetTargetPools(base_classes.BaseAsyncMutator):
 
     pool_refs = []
     for target_pool in args.target_pools:
-      pool_refs.append(self.resources.Parse(
+      pool_refs.append(holder.resources.Parse(
           target_pool,
           params={
-              'project': properties.VALUES.core.project.GetOrFail,
+              'project': group_ref.project,
               'region': region
           },
           collection='compute.targetPools'))
     pools = [pool_ref.SelfLink() for pool_ref in pool_refs]
 
     if group_ref.Collection() == 'compute.instanceGroupManagers':
-      service = self.compute.instanceGroupManagers
+      service = client.apitools_client.instanceGroupManagers
       request = (
-          self.messages.ComputeInstanceGroupManagersSetTargetPoolsRequest(
+          client.messages.ComputeInstanceGroupManagersSetTargetPoolsRequest(
               instanceGroupManager=group_ref.Name(),
               instanceGroupManagersSetTargetPoolsRequest=(
-                  self.messages.InstanceGroupManagersSetTargetPoolsRequest(
-                      targetPools=pools,
-                  )
-              ),
+                  client.messages.InstanceGroupManagersSetTargetPoolsRequest(
+                      targetPools=pools)),
               project=group_ref.project,
-              zone=group_ref.zone,)
-      )
+              zone=group_ref.zone))
     else:
-      service = self.compute.regionInstanceGroupManagers
-      request = (
-          self.messages.ComputeRegionInstanceGroupManagersSetTargetPoolsRequest(
-              instanceGroupManager=group_ref.Name(),
-              regionInstanceGroupManagersSetTargetPoolsRequest=(
-                  self.messages.
-                  RegionInstanceGroupManagersSetTargetPoolsRequest(
-                      targetPools=pools,
-                  )
-              ),
-              project=group_ref.project,
-              region=group_ref.region,)
-      )
-    return [(service, self.method, request)]
-
-
-SetTargetPools.detailed_help = {
-    'brief': 'Set target pools of managed instance group.',
-    'DESCRIPTION': """
-        *{command}* sets the target pools for an existing managed instance group.
-Instances that are part of the managed instance group will be added to the
-target pool automatically.
-
-Setting a new target pool won't apply to existing instances in the group unless
-they are recreated using the recreate-instances command. But any new instances
-created in the managed instance group will be added to all of the provided
-target pools for load balancing purposes.
-""",
-}
+      service = client.apitools_client.regionInstanceGroupManagers
+      request = (client.messages.
+                 ComputeRegionInstanceGroupManagersSetTargetPoolsRequest(
+                     instanceGroupManager=group_ref.Name(),
+                     regionInstanceGroupManagersSetTargetPoolsRequest=(
+                         client.messages.
+                         RegionInstanceGroupManagersSetTargetPoolsRequest(
+                             targetPools=pools)),
+                     project=group_ref.project,
+                     region=group_ref.region))
+    return client.MakeRequests([(service, 'SetTargetPools', request)])

@@ -15,48 +15,35 @@
 """Command for resetting an instance."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 
 
-class Reset(base_classes.NoOutputAsyncMutator):
-  """Reset a virtual machine instance."""
+class Reset(base.SilentCommand):
+  """Reset a virtual machine instance.
+
+    *{command}* is used to perform a hard reset on a Google
+  Compute Engine virtual machine.
+  """
 
   @staticmethod
   def Args(parser):
     instance_flags.INSTANCES_ARG.AddArgument(parser)
 
-  @property
-  def service(self):
-    return self.compute.instances
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'Reset'
-
-  @property
-  def resource_type(self):
-    return 'instances'
-
-  def CreateRequests(self, args):
     instance_refs = instance_flags.INSTANCES_ARG.ResolveAsResource(
-        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client))
+        args, holder.resources, scope_lister=flags.GetDefaultScopeLister(
+            client))
     request_list = []
     for instance_ref in instance_refs:
-      request = self.messages.ComputeInstancesResetRequest(
+      request = client.messages.ComputeInstancesResetRequest(
           instance=instance_ref.Name(),
           project=instance_ref.project,
           zone=instance_ref.zone)
 
-      request_list.append(request)
-    return request_list
-
-
-Reset.detailed_help = {
-    'brief': 'Reset a virtual machine instance',
-    'DESCRIPTION': """\
-        *{command}* is used to perform a hard reset on a Google
-        Compute Engine virtual machine.
-        """,
-}
+      request_list.append((client.apitools_client.instances, 'Reset', request))
+    return client.MakeRequests(request_list)

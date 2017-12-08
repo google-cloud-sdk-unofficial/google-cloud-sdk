@@ -24,7 +24,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
 class Remove(base.Command):
@@ -36,12 +35,12 @@ class Remove(base.Command):
 
   To remove an A record, run:
 
-    $ {command} -z MANAGED_ZONE --name my.domain. --ttl 1234 \
+    $ {command} --zone MANAGED_ZONE --name my.domain. --ttl 1234 \
         --type A "1.2.3.4"
 
   To remove a TXT record with multiple data values, run:
 
-    $ {command} -z MANAGED_ZONE --name my.domain. --ttl 2345 \
+    $ {command} --zone MANAGED_ZONE --name my.domain. --ttl 2345 \
         --type TXT "Hello world" "Bye world"
   """
 
@@ -62,16 +61,23 @@ class Remove(base.Command):
         help='DNS name of the record-set to be removed.')
 
   def Run(self, args):
+    api_version = 'v1'
+    # If in the future there are differences between API version, do NOT use
+    # this patter of checking ReleaseTrack. Break this into multiple classes.
+    if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+      api_version = 'v2beta1'
+
     with trans_util.TransactionFile(args.transaction_file) as trans_file:
-      change = trans_util.ChangeFromYamlFile(trans_file)
+      change = trans_util.ChangeFromYamlFile(
+          trans_file, api_version=api_version)
 
-    dns = apis.GetClientInstance('dns', 'v1')
-    messages = apis.GetMessagesModule('dns', 'v1')
+    dns = apis.GetClientInstance('dns', api_version)
 
-    record_to_remove = trans_util.CreateRecordSetFromArgs(args)
+    record_to_remove = trans_util.CreateRecordSetFromArgs(
+        args, api_version=api_version)
 
     # Ensure the record to be removed exists
-    zone_ref = resources.REGISTRY.Parse(
+    zone_ref = util.GetRegistry(api_version).Parse(
         args.zone,
         params={
             'project': properties.VALUES.core.project.GetOrFail,
@@ -79,7 +85,7 @@ class Remove(base.Command):
         collection='dns.managedZones')
     existing_records = [record for record in list_pager.YieldFromList(
         dns.resourceRecordSets,
-        messages.DnsResourceRecordSetsListRequest(
+        dns.MESSAGES_MODULE.DnsResourceRecordSetsListRequest(
             project=zone_ref.project,
             managedZone=zone_ref.Name(),
             name=util.AppendTrailingDot(args.name),

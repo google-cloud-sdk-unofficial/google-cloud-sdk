@@ -24,10 +24,15 @@ import base64
 import collections
 from contextlib import contextmanager
 import logging
+import os
+import pydoc  # used for importing python classes from their FQN
 import timeit
 
 
 import numpy as np
+
+from google.cloud.ml.prediction import Model
+from google.cloud.ml.prediction import Servable
 
 import tensorflow.contrib   # pylint: disable=unused-import
 from tensorflow.python.client import session as tf_session
@@ -111,10 +116,10 @@ class Timer(object):
     print(timer.duration_secs)
   """
 
-  def __init__(self, timer_fn=timeit.default_timer):
+  def __init__(self, timer_fn=None):
     self.start = None
     self.end = None
-    self._get_time = timer_fn
+    self._get_time = timer_fn or timeit.default_timer
 
   def __enter__(self):
     self.end = None
@@ -160,8 +165,8 @@ class Stats(dict):
   """
 
   @contextmanager
-  def time(self, name):
-    with Timer() as timer:
+  def time(self, name, timer_fn=None):
+    with Timer(timer_fn) as timer:
       yield timer
     self[name] = timer.microseconds
 
@@ -385,7 +390,43 @@ class SessionClient(object):
       return dict(zip(self._signature.outputs.iterkeys(), outputs))
 
 
-class DefaultModel(object):
+def create_model(client, model_path, **unused_kwargs):
+  """Creates and returns the appropriate model.
+
+  Creates and returns the DefaultModel if no user specified model is
+  provided. Otherwise, the user specified model is imported, created, and
+  returned.
+
+  Args:
+    client: An instance of ModelServerClient for performing prediction.
+    model_path: the path to either session_bundle or SavedModel
+
+  Returns:
+    An instance of the appropriate model class.
+
+  Raises:
+    ImportError: if the user provided python model class cannot be found
+    AttributeError: if the user provided python model class does not implement
+      both the from_client method and the predict method
+  """
+  model_class = DefaultModel
+  python_class = os.environ.get("python_class")
+  if python_class:
+    user_class = pydoc.locate(python_class)
+    # TODO(b/37749453): right place to generate errors?
+    if not user_class:
+      raise ImportError(python_class + " cannot be found")
+    if not hasattr(user_class, "from_client"):
+      raise AttributeError("User provided model class " + python_class
+                           + " must implement the from_client method")
+    if not hasattr(user_class, "predict"):
+      raise AttributeError("User provided model class " + python_class
+                           + " must implement the predict method")
+    model_class = user_class
+  return model_class.from_client(client, model_path, **unused_kwargs)
+
+
+class DefaultModel(Model, Servable):
   """The default implementation of the Model interface.
 
   This implementation optionally performs preprocessing and postprocessing
@@ -652,7 +693,7 @@ def local_predict(model_dir=None, instances=None):
   instances = decode_base64(instances)
 
   client = SessionClient(*load_model(model_dir))
-  model = DefaultModel.from_client(client, model_dir)
+  model = create_model(client, model_dir)
   _, predictions = model.predict(instances)
   predictions = list(predictions)
   predictions = encode_base64(predictions, model.outputs_type_map())

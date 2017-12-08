@@ -28,7 +28,7 @@ CONTINUE_WITH_RESIZE_PROMPT = textwrap.dedent("""
 
 
 def _CommonArgs(parser):
-  Resize.disks_arg.AddArgument(parser)
+  Resize.DISKS_ARG.AddArgument(parser)
   parser.add_argument(
       '--size',
       required=True,
@@ -44,32 +44,22 @@ def _CommonArgs(parser):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
-class Resize(base_classes.BaseAsyncMutator):
+class Resize(base.Command):
   """Set size of a persistent disk."""
-
-  @property
-  def service(self):
-    return self.compute.disks
-
-  @property
-  def resource_type(self):
-    return 'projects'
-
-  @property
-  def method(self):
-    return 'Resize'
 
   @classmethod
   def Args(cls, parser):
-    Resize.disks_arg = disks_flags.MakeDiskArg(plural=True)
+    Resize.DISKS_ARG = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(parser)
 
-  def CreateRequests(self, args):
-    """Returns a request for resizing a disk."""
+  def Run(self, args):
+    """Issues request for resizing a disk."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
     size_gb = utils.BytesToGb(args.size)
-    disk_refs = Resize.disks_arg.ResolveAsResource(
-        args, self.resources)
+    disk_refs = Resize.DISKS_ARG.ResolveAsResource(
+        args, holder.resources)
 
     console_io.PromptContinue(
         message=CONTINUE_WITH_RESIZE_PROMPT,
@@ -79,22 +69,23 @@ class Resize(base_classes.BaseAsyncMutator):
 
     for disk_ref in disk_refs:
       if disk_ref.Collection() == 'compute.disks':
-        request = self.messages.ComputeDisksResizeRequest(
+        request = client.messages.ComputeDisksResizeRequest(
             disk=disk_ref.Name(),
             project=disk_ref.project,
             zone=disk_ref.zone,
-            disksResizeRequest=self.messages.DisksResizeRequest(sizeGb=size_gb))
+            disksResizeRequest=client.messages.DisksResizeRequest(
+                sizeGb=size_gb))
+        requests.append((client.apitools_client.disks, 'Resize', request))
       elif disk_ref.Collection() == 'compute.regionDisks':
-        request = self.messages.ComputeRegionDisksResizeRequest(
+        request = client.messages.ComputeRegionDisksResizeRequest(
             disk=disk_ref.Name(),
             project=disk_ref.project,
             region=disk_ref.region,
-            regionDisksResizeRequest=self.messages.RegionDisksResizeRequest(
+            regionDisksResizeRequest=client.messages.RegionDisksResizeRequest(
                 sizeGb=size_gb))
-        request = (self.compute.regionDisks, self.method, request)
-      requests.append(request)
+        requests.append((client.apitools_client.regionDisks, 'Resize', request))
 
-    return requests
+    return client.MakeRequests(requests)
 
 Resize.detailed_help = {
     'brief': 'Resize a disk or disks',
@@ -124,7 +115,7 @@ class ResizeAlpha(Resize):
 
   @classmethod
   def Args(cls, parser):
-    Resize.disks_arg = disks_flags.MakeDiskArgZonalOrRegional(plural=True)
+    Resize.DISKS_ARG = disks_flags.MakeDiskArgZonalOrRegional(plural=True)
     _CommonArgs(parser)
 
 

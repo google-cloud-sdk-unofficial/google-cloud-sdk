@@ -11,7 +11,7 @@ gcloud container node\-pools delete \- delete an existing node pool in a running
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud container node\-pools delete\fR \fINAME\fR [\fB\-\-cluster\fR=\fICLUSTER\fR] [\fB\-\-no\-wait\fR] [\fB\-\-zone\fR=\fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud container node\-pools delete\fR \fINAME\fR [\fB\-\-async\fR] [\fB\-\-cluster\fR=\fICLUSTER\fR] [\fB\-\-wait\fR] [\fB\-\-zone\fR=\fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -37,14 +37,18 @@ The name of the node pool to delete.
 
 .RS 2m
 .TP 2m
+\fB\-\-async\fR
+Don't wait for the operation to complete.
+
+.TP 2m
 \fB\-\-cluster\fR=\fICLUSTER\fR
 The cluster from which to delete the node pool. Overrides the default
 \fBcontainer/cluster\fR property value for this command invocation.
 
 .TP 2m
 \fB\-\-wait\fR
-Poll the operation for completion after issuing a delete request. Enabled by
-default, use \fB\-\-no\-wait\fR to disable.
+DEPRECATED, use \-\-no\-async. Poll the operation for completion after issuing a
+create request.
 
 .TP 2m
 \fB\-\-zone\fR=\fIZONE\fR, \fB\-z\fR \fIZONE\fR

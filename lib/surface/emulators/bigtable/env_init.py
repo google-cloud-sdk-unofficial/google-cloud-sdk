@@ -30,9 +30,10 @@ class EnvInit(base.Command):
           """,
   }
 
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat('config[export]')
+
   def Run(self, args):
     data_dir = bigtable_util.GetDataDir()
     return util.ReadEnvYaml(data_dir)
-
-  def Format(self, args):
-    return 'config[export]'

@@ -16,19 +16,27 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
-class RemoveInstances(base_classes.NoOutputAsyncMutator):
-  """Removes instances from unmanaged instance group."""
+class RemoveInstances(base.SilentCommand):
+  """Removes resources from an unmanaged instance group by instance name.
+
+    *{command}* removes instances from an unmanaged instance group using
+  the instance name.
+
+  This does not delete the actual instance resources but removes
+  it from the instance group.
+  """
 
   @staticmethod
   def Args(parser):
-    RemoveInstances.ZonalInstanceGroupArg = (
+    RemoveInstances.ZONAL_INSTANCE_GROUP_ARG = (
         instance_groups_flags.MakeZonalInstanceGroupArg())
-    RemoveInstances.ZonalInstanceGroupArg.AddArgument(parser)
+    RemoveInstances.ZONAL_INSTANCE_GROUP_ARG.AddArgument(parser)
 
     parser.add_argument(
         '--instances',
@@ -37,28 +45,19 @@ class RemoveInstances(base_classes.NoOutputAsyncMutator):
         metavar='INSTANCE',
         help='The names of the instances to remove from the instance group.')
 
-  @property
-  def service(self):
-    return self.compute.instanceGroups
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'RemoveInstances'
-
-  @property
-  def resource_type(self):
-    return 'instanceGroups'
-
-  def CreateRequests(self, args):
     group_ref = (
-        RemoveInstances.ZonalInstanceGroupArg.ResolveAsResource(
-            args, self.resources,
+        RemoveInstances.ZONAL_INSTANCE_GROUP_ARG.ResolveAsResource(
+            args, holder.resources,
             default_scope=compute_scope.ScopeEnum.ZONE,
-            scope_lister=flags.GetDefaultScopeLister(self.compute_client)))
+            scope_lister=flags.GetDefaultScopeLister(client)))
 
     instance_references = []
     for instance in args.instances:
-      ref = self.resources.Parse(
+      ref = holder.resources.Parse(
           instance,
           params={
               'project': group_ref.project,
@@ -71,28 +70,17 @@ class RemoveInstances(base_classes.NoOutputAsyncMutator):
                                                  group_ref.zone)
 
     instance_references = [
-        self.messages.InstanceReference(instance=inst.SelfLink())
+        client.messages.InstanceReference(instance=inst.SelfLink())
         for inst in instance_references]
-    request_payload = self.messages.InstanceGroupsRemoveInstancesRequest(
+    request_payload = client.messages.InstanceGroupsRemoveInstancesRequest(
         instances=instance_references)
 
-    request = self.messages.ComputeInstanceGroupsRemoveInstancesRequest(
+    request = client.messages.ComputeInstanceGroupsRemoveInstancesRequest(
         instanceGroup=group_ref.Name(),
         instanceGroupsRemoveInstancesRequest=request_payload,
         zone=group_ref.zone,
         project=group_ref.project
     )
 
-    return [request]
-
-  detailed_help = {
-      'brief': ('Removes resources from an unmanaged instance group '
-                'by instance name'),
-      'DESCRIPTION': """\
-          *{command}* removes instances from an unmanaged instance group using
-          the instance name.
-
-          This does not delete the actual instance resources but removes
-          it from the instance group.
-          """,
-  }
+    return client.MakeRequests([(client.apitools_client.instanceGroups,
+                                 'RemoveInstances', request)])

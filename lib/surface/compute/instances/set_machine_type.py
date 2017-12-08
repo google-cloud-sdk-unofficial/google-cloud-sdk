@@ -36,24 +36,12 @@ def _CommonArgs(parser, release_track):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class SetMachineType(base_classes.NoOutputAsyncMutator):
+class SetMachineType(base.SilentCommand):
   """Set machine type for Google Compute Engine virtual machine instances."""
 
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, release_track=base.ReleaseTrack.GA)
-
-  @property
-  def service(self):
-    return self.compute.instances
-
-  @property
-  def method(self):
-    return 'SetMachineType'
-
-  @property
-  def resource_type(self):
-    return 'instances'
 
   def _ValidateMachineTypePresence(self, args):
     if (not args.IsSpecified('custom_cpu') and
@@ -63,13 +51,16 @@ class SetMachineType(base_classes.NoOutputAsyncMutator):
           'One of --custom-cpu, --custom-memory, --machine-type must be '
           'specified.')
 
-  def CreateRequests(self, args):
-    """Returns a list of request necessary for setting scheduling options."""
+  def Run(self, args):
+    """Invokes request necessary for setting scheduling options."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
     self._ValidateMachineTypePresence(args)
 
     instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
-        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client))
+        args, holder.resources, scope_lister=flags.GetDefaultScopeLister(
+            client))
 
     machine_type = instance_utils.InterpretMachineType(
         machine_type=args.machine_type,
@@ -77,26 +68,27 @@ class SetMachineType(base_classes.NoOutputAsyncMutator):
         custom_memory=args.custom_memory,
         ext=getattr(args, 'custom_extensions', None))
 
-    instance_utils.CheckCustomCpuRamRatio(self.compute_client,
+    instance_utils.CheckCustomCpuRamRatio(client,
                                           instance_ref.project,
                                           instance_ref.zone, machine_type)
 
-    machine_type_uri = self.resources.Parse(
+    machine_type_uri = holder.resources.Parse(
         machine_type, collection='compute.machineTypes',
         params={
             'project': instance_ref.project,
             'zone': instance_ref.zone
         }).SelfLink()
 
-    set_machine_type_request = self.messages.InstancesSetMachineTypeRequest(
+    set_machine_type_request = client.messages.InstancesSetMachineTypeRequest(
         machineType=machine_type_uri)
-    request = self.messages.ComputeInstancesSetMachineTypeRequest(
+    request = client.messages.ComputeInstancesSetMachineTypeRequest(
         instance=instance_ref.Name(),
         project=instance_ref.project,
         instancesSetMachineTypeRequest=set_machine_type_request,
         zone=instance_ref.zone)
 
-    return (request,)
+    return client.MakeRequests([(client.apitools_client.instances,
+                                 'SetMachineType', request)])
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

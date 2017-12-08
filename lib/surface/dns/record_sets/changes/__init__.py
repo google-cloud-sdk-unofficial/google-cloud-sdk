@@ -26,11 +26,11 @@ class Changes(base.Group):
 
   To view the details of a particular change, run:
 
-    $ {command} describe CHANGE_ID -z MANAGED_ZONE
+    $ {command} describe CHANGE_ID --zone MANAGED_ZONE
 
   To view the list of all changes, run:
 
-    $ {command} list -z MANAGED_ZONE
+    $ {command} list --zone MANAGED_ZONE
 
   """
   pass

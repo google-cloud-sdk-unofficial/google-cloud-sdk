@@ -14,6 +14,7 @@
 
 """gcloud dns managed-zone describe command."""
 
+from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
@@ -21,6 +22,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """View the details of a Cloud DNS managed-zone.
 
@@ -41,6 +43,39 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     dns = apis.GetClientInstance('dns', 'v1')
     zone_ref = resources.REGISTRY.Parse(
+        args.dns_zone,
+        params={
+            'project': properties.VALUES.core.project.GetOrFail,
+        },
+        collection='dns.managedZones')
+
+    return dns.managedZones.Get(
+        dns.MESSAGES_MODULE.DnsManagedZonesGetRequest(
+            project=zone_ref.project,
+            managedZone=zone_ref.managedZone))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(base.DescribeCommand):
+  """View the details of a Cloud DNS managed-zone.
+
+  This command displays the details of the specified managed-zone.
+
+  ## EXAMPLES
+
+  To display the details of your managed-zone, run:
+
+    $ {command} my_zone
+  """
+
+  @staticmethod
+  def Args(parser):
+    flags.GetDnsZoneArg(
+        'The name of the managed-zone to be described.').AddToParser(parser)
+
+  def Run(self, args):
+    dns = apis.GetClientInstance('dns', 'v2beta1')
+    zone_ref = util.GetRegistry('v2beta1').Parse(
         args.dns_zone,
         params={
             'project': properties.VALUES.core.project.GetOrFail,

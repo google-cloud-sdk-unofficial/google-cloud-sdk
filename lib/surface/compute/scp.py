@@ -54,9 +54,7 @@ class Scp(scp_utils.BaseScpCommand):
     """See scp_utils.BaseScpCommand.Run."""
     extra_flags = []
     # TODO(b/33467618): Add -C to SCPCommand
-    if args.compress:
-      extra_flags.append('-C')
     if args.scp_flag:
       extra_flags.extend(args.scp_flag)
     return super(Scp, self).Run(args, port=args.port, recursive=args.recurse,
-                                extra_flags=extra_flags)
+                                compress=args.compress, extra_flags=extra_flags)

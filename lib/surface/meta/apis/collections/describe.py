@@ -23,17 +23,10 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        '--api',
-        required=True,
-        help='The name of the API to get the collections for.')
-    parser.add_argument(
-        '--api-version',
-        required=True,
-        help='The version of the API to get the collections for.')
+    apis.API_VERSION_FLAG.AddToParser(parser)
     parser.add_argument(
         'collection',
         help='The name of the collection to get the details of.')
 
   def Run(self, args):
-    return apis.GetAPICollection(args.api, args.api_version, args.collection)
+    return apis.GetAPICollection(args.collection, api_version=args.api_version)

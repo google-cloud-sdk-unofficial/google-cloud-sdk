@@ -102,7 +102,7 @@ You can find the list of allowed versions for upgrades by running:
       ' supported on Container Engine. Nodes cannot be upgraded at the same'
       ' time as the master.',
       action='store_true')
-  flags.AddClustersWaitAndAsyncFlags(parser)
+  flags.AddAsyncFlag(parser)
   flags.AddImageTypeFlag(parser, 'cluster/node pool')
 
 
@@ -154,7 +154,7 @@ class Upgrade(base.Command):
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
 
-    if not flags.GetAsyncValueFromAsyncAndWaitFlags(args.async, args.wait):
+    if not args.async:
       adapter.WaitForOperation(
           op_ref, 'Upgrading {0}'.format(cluster_ref.clusterId))
 

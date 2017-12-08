@@ -29,7 +29,7 @@ class SetIamPolicy(base.Command):
   the policy file format and contents.
 
   ## EXAMPLES
-  The following command will read am IAM policy defined in a JSON file
+  The following command will read an IAM policy defined in a JSON file
   'policy.json' and set it for the CryptoKey `frodo` with the KeyRing
   `fellowship` and Location `global`:
 

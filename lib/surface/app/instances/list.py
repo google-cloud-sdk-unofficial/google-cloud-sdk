@@ -18,7 +18,7 @@ from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.calliope import base
 
 APPENGINE_PATH_START = 'https://appengine.googleapis.com/{0}/'.format(
-    appengine_api_client.API_VERSION)
+    appengine_api_client.AppengineApiClient.ApiVersion())
 
 
 def _GetUri(resource):

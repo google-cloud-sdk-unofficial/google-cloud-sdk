@@ -18,6 +18,7 @@
 
 import abc
 import cStringIO
+import gzip
 import hashlib
 import httplib
 import json
@@ -75,6 +76,12 @@ class DockerImage(object):
       The raw blob string of the layer.
     """
   # pytype: enable=bad-return-type
+
+  def uncompressed_blob(self, digest):
+    """Same as blob() but uncompressed."""
+    buf = cStringIO.StringIO(self.blob(digest))
+    f = gzip.GzipFile(mode='rb', fileobj=buf)
+    return f.read()
 
   # __enter__ and __exit__ allow use as a context manager.
   @abc.abstractmethod
@@ -146,7 +153,7 @@ class FromRegistry(DockerImage):
       self.manifest(validate=False)
       return True
     except docker_http.V2DiagnosticException as err:
-      if err.http_status_code == 404:
+      if err.status == httplib.NOT_FOUND:
         return False
       raise
 

@@ -96,13 +96,14 @@ class StartUpdate(base.Command):
 
     versions = []
     versions.append(
-        update_instances_utils.ParseVersion('--version', args.version,
-                                            resources, client.messages))
+        update_instances_utils.ParseVersion(igm_ref.project, '--version',
+                                            args.version, resources,
+                                            client.messages))
     if args.canary_version:
       versions.append(
-          update_instances_utils.ParseVersion('--canary-version',
-                                              args.canary_version, resources,
-                                              client.messages))
+          update_instances_utils.ParseVersion(
+              igm_ref.project, '--canary-version', args.canary_version,
+              resources, client.messages))
     managed_instance_groups_utils.ValidateVersions(igm_info, versions,
                                                    args.force)
 

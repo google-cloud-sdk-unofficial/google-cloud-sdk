@@ -49,11 +49,12 @@ View the list of changes that have been made to your record\-sets.
 To view the details of a particular change, run:
 
 .RS 2m
-$ gcloud dns record\-sets changes describe CHANGE_ID \-z MANAGED_ZONE
+$ gcloud dns record\-sets changes describe CHANGE_ID \e
+    \-\-zone MANAGED_ZONE
 .RE
 
 To view the list of all changes, run:
 
 .RS 2m
-$ gcloud dns record\-sets changes list \-z MANAGED_ZONE
+$ gcloud dns record\-sets changes list \-\-zone MANAGED_ZONE
 .RE

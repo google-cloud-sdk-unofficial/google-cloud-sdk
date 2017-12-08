@@ -141,7 +141,10 @@ class Update(base.UpdateCommand):
         'name': sink_ref.sinksId,
         'destination': destination,
         'filter': log_filter,
-        'outputVersionFormat': output_format
+        'outputVersionFormat': output_format,
+        'includeChildren': sink.includeChildren,
+        'startTime': sink.startTime,
+        'endTime': sink.endTime
     }
 
     # Check for legacy configuration, and let users decide if they still want

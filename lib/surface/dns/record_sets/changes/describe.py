@@ -14,11 +14,11 @@
 
 """gcloud dns record-sets changes describe command."""
 
+from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
 class Describe(base.DescribeCommand):
@@ -41,8 +41,14 @@ class Describe(base.DescribeCommand):
         help='The ID of the change you want details for.')
 
   def Run(self, args):
-    dns_client = apis.GetClientInstance('dns', 'v1')
-    change_ref = resources.REGISTRY.Parse(
+    api_version = 'v1'
+    # If in the future there are differences between API version, do NOT use
+    # this patter of checking ReleaseTrack. Break this into multiple classes.
+    if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+      api_version = 'v2beta1'
+
+    dns_client = apis.GetClientInstance('dns', api_version)
+    change_ref = util.GetRegistry(api_version).Parse(
         args.change_id,
         params={
             'project': properties.VALUES.core.project.GetOrFail,

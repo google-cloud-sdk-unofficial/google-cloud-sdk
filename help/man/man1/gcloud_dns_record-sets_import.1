@@ -81,19 +81,19 @@ Run \fB$ gcloud help\fR for a description of flags available to all commands.
 To import record\-sets from a yaml record\-sets file, run:
 
 .RS 2m
-$ gcloud dns record\-sets import YAML_RECORDS_FILE \-z MANAGED_ZONE
+$ gcloud dns record\-sets import YAML_RECORDS_FILE \-\-zone MANAGED_ZONE
 .RE
 
 To import record\-sets from a zone file, run:
 
 .RS 2m
 $ gcloud dns record\-sets import ZONE_FILE \-\-zone\-file\-format \e
-    \-z MANAGED_ZONE
+    \-\-zone MANAGED_ZONE
 .RE
 
 To replace all the record\-sets in your zone with records from a yaml file, run:
 
 .RS 2m
 $ gcloud dns record\-sets import YAML_RECORDS_FILE \e
-    \-\-delete\-all\-existing \-z MANAGED_ZONE
+    \-\-delete\-all\-existing \-\-zone MANAGED_ZONE
 .RE

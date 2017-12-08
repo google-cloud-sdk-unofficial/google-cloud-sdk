@@ -24,6 +24,8 @@ import traceback
 
 
 import apache_beam as beam
+from apache_beam.transforms import window
+from apache_beam.utils.windowed_value import WindowedValue
 
 from google.cloud.ml import prediction as mlprediction
 from google.cloud.ml.dataflow import _aggregators as aggregators
@@ -73,7 +75,7 @@ class EmitAsBatchDoFn(beam.DoFn):
 
   def finish_bundle(self, context=None):
     if self._batch:
-      yield self._flush_batch()
+      yield WindowedValue(self._flush_batch(), -1, [window.GlobalWindow()])
 
 
 class PredictionDoFn(beam.DoFn):
@@ -99,7 +101,7 @@ class PredictionDoFn(beam.DoFn):
 
       session, signature = mlprediction.load_model(model_dir)
       client = mlprediction.SessionClient(session, signature)
-      self.model = mlprediction.DefaultModel.from_client(
+      self.model = mlprediction.create_model(
           client, model_dir, skip_preprocessing=skip_preprocessing)
 
   # TODO(b/33746781): Get rid of this and instead use self._model_state for
@@ -201,8 +203,8 @@ class PredictionDoFn(beam.DoFn):
       if e.error_code == mlprediction.PredictionError.FAILED_TO_LOAD_MODEL:
         raise beam.utils.retry.PermanentException(e.error_message)
       try:
-        yield beam.pvalue.OutputValue("errors",
-                                      (e.error_message, element))
+        yield beam.pvalue.TaggedOutput(
+            "errors", (e.error_message, element))
       except AttributeError:
         yield beam.pvalue.SideOutputValue("errors",
                                           (e.error_message, element))
@@ -212,7 +214,7 @@ class PredictionDoFn(beam.DoFn):
       if self._cloud_logger:
         self._cloud_logger.write_error_message(
             str(e), self._create_snippet(element))
-      yield beam.pvalue.OutputValue("errors", (str(e), element))
+      yield beam.pvalue.TaggedOutput("errors", (str(e), element))
 
 
 class BatchPredict(beam.PTransform):

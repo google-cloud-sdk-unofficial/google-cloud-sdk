@@ -100,24 +100,24 @@ Run \fB$ gcloud help\fR for a description of flags available to all commands.
 To see the list of all record\-sets in my_zone, run:
 
 .RS 2m
-$ gcloud dns record\-sets list \-z my_zone
+$ gcloud dns record\-sets list \-\-zone my_zone
 .RE
 
 To see the list of first 10 record\-sets in my_zone, run:
 
 .RS 2m
-$ gcloud dns record\-sets list \-z my_zone \-\-limit=10
+$ gcloud dns record\-sets list \-\-zone my_zone \-\-limit=10
 .RE
 
 To see the list of 'my.zone.com.' record\-sets in my_zone, run:
 
 .RS 2m
-$ gcloud dns record\-sets list \-z my_zone \-\-name="my.zone.com."
+$ gcloud dns record\-sets list \-\-zone my_zone \-\-name="my.zone.com."
 .RE
 
 To see the list of 'my.zone.com.' CNAME record\-sets in my_zone, run:
 
 .RS 2m
-$ gcloud dns record\-sets list \-z my_zone \-\-name="my.zone.com." \e
+$ gcloud dns record\-sets list \-\-zone my_zone \-\-name="my.zone.com." \e
     \-\-type="CNAME"
 .RE

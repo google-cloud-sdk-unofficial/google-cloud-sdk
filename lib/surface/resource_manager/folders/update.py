@@ -52,6 +52,6 @@ class Update(base.UpdateCommand):
   def Run(self, args):
     folder = folders.GetFolder(args.id)
     folder.displayName = args.display_name
-    update = folders.FoldersMessages().CloudresourcemanagerFoldersUpdateRequest(
-        folder=folder, foldersId=args.id)
-    log.UpdatedResource(folders.FoldersService().Update(update))
+    request = folders.FoldersMessages().CloudresourcemanagerFoldersPatchRequest(
+        folder=folder, foldersId=args.id, updateMask='display_name')
+    log.UpdatedResource(folders.FoldersService().Patch(request))

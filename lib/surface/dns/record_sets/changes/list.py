@@ -15,6 +15,7 @@
 """gcloud dns record-sets changes list command."""
 
 from apitools.base.py import list_pager
+from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
@@ -48,15 +49,25 @@ class List(base.ListCommand):
     parser.display_info.AddFormat(flags.CHANGES_FORMAT)
 
   def Run(self, args):
-    dns_client = apis.GetClientInstance('dns', 'v1')
-    dns_messages = apis.GetMessagesModule('dns', 'v1')
+    api_version = 'v1'
+    # If in the future there are differences between API version, do NOT use
+    # this patter of checking ReleaseTrack. Break this into multiple classes.
+    if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+      api_version = 'v2beta1'
 
-    project_id = properties.VALUES.core.project.Get(required=True)
+    dns_client = apis.GetClientInstance('dns', api_version)
+
+    zone_ref = util.GetRegistry(api_version).Parse(
+        args.zone,
+        params={
+            'project': properties.VALUES.core.project.GetOrFail,
+        },
+        collection='dns.managedZones')
 
     return list_pager.YieldFromList(
         dns_client.changes,
-        dns_messages.DnsChangesListRequest(
-            project=project_id,
-            managedZone=args.zone,
+        dns_client.MESSAGES_MODULE.DnsChangesListRequest(
+            project=zone_ref.project,
+            managedZone=zone_ref.Name(),
             sortOrder=args.sort_order),
         limit=args.limit, field='changes')

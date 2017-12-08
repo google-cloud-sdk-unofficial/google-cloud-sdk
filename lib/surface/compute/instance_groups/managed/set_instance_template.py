@@ -15,14 +15,22 @@
 """Command for setting instance template of managed instance group."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
-from googlecloudsdk.core import properties
 
 
-class SetInstanceTemplate(base_classes.BaseAsyncMutator):
-  """Set an instances template of managed instance group."""
+class SetInstanceTemplate(base.Command):
+  r"""Set instance template for managed instance group.
+
+    *{command}* updates the instance template for an existing managed instance
+  group.
+
+  The new template won't apply to existing instances in the group unless they
+  are recreated using the recreate-instances command. But the new template does
+  apply to all new instances added to the managed instance group.
+  """
 
   @staticmethod
   def Args(parser):
@@ -33,70 +41,43 @@ class SetInstanceTemplate(base_classes.BaseAsyncMutator):
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 
-  @property
-  def method(self):
-    return 'SetInstanceTemplate'
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def service(self):
-    return self.compute.instanceGroupManagers
-
-  @property
-  def resource_type(self):
-    return 'instanceGroupManagers'
-
-  def CreateRequests(self, args):
     igm_ref = (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
                ResolveAsResource)(
-                   args, self.resources,
+                   args, holder.resources,
                    default_scope=compute_scope.ScopeEnum.ZONE,
-                   scope_lister=flags.GetDefaultScopeLister(
-                       self.compute_client))
-    template_ref = self.resources.Parse(
+                   scope_lister=flags.GetDefaultScopeLister(client))
+    template_ref = holder.resources.Parse(
         args.template,
         params={
-            'project': properties.VALUES.core.project.GetOrFail,
+            'project': igm_ref.project,
         },
         collection='compute.instanceTemplates')
 
     if igm_ref.Collection() == 'compute.instanceGroupManagers':
-      service = self.compute.instanceGroupManagers
-      request = (
-          self.messages.ComputeInstanceGroupManagersSetInstanceTemplateRequest(
-              instanceGroupManager=igm_ref.Name(),
-              instanceGroupManagersSetInstanceTemplateRequest=(
-                  self.messages.InstanceGroupManagersSetInstanceTemplateRequest(
-                      instanceTemplate=template_ref.SelfLink(),
-                  )
-              ),
-              project=igm_ref.project,
-              zone=igm_ref.zone,)
-      )
+      service = client.apitools_client.instanceGroupManagers
+      request = (client.messages.
+                 ComputeInstanceGroupManagersSetInstanceTemplateRequest(
+                     instanceGroupManager=igm_ref.Name(),
+                     instanceGroupManagersSetInstanceTemplateRequest=(
+                         client.messages.
+                         InstanceGroupManagersSetInstanceTemplateRequest(
+                             instanceTemplate=template_ref.SelfLink())),
+                     project=igm_ref.project,
+                     zone=igm_ref.zone))
     else:
-      service = self.compute.regionInstanceGroupManagers
+      service = client.apitools_client.regionInstanceGroupManagers
       request = (
-          self.messages.
+          client.messages.
           ComputeRegionInstanceGroupManagersSetInstanceTemplateRequest(
               instanceGroupManager=igm_ref.Name(),
               regionInstanceGroupManagersSetTemplateRequest=(
-                  self.messages.RegionInstanceGroupManagersSetTemplateRequest(
-                      instanceTemplate=template_ref.SelfLink(),
-                  )
-              ),
+                  client.messages.RegionInstanceGroupManagersSetTemplateRequest(
+                      instanceTemplate=template_ref.SelfLink())),
               project=igm_ref.project,
-              region=igm_ref.region,)
-      )
+              region=igm_ref.region))
 
-    return [(service, self.method, request)]
-
-
-SetInstanceTemplate.detailed_help = {
-    'brief': 'Set instance template for managed instance group.',
-    'DESCRIPTION': """
-        *{command}* updates the instance template for an existing managed instance group.
-
-The new template won't apply to existing instances in the group unless they are
-recreated using the recreate-instances command. But the new template does apply
-to all new instances added to the managed instance group.
-""",
-}
+    return client.MakeRequests([(service, 'SetInstanceTemplate', request)])

@@ -77,7 +77,7 @@ Run \fB$ gcloud help\fR for a description of flags available to all commands.
 To add an A record, run:
 
 .RS 2m
-$ gcloud dns record\-sets transaction add \-z MANAGED_ZONE \e
+$ gcloud dns record\-sets transaction add \-\-zone MANAGED_ZONE \e
     \-\-name my.domain. \-\-ttl 1234 \e
     \-\-type A "1.2.3.4"
 .RE
@@ -85,7 +85,7 @@ $ gcloud dns record\-sets transaction add \-z MANAGED_ZONE \e
 To add a TXT record with multiple data values, run:
 
 .RS 2m
-$ gcloud dns record\-sets transaction add \-z MANAGED_ZONE \e
+$ gcloud dns record\-sets transaction add \-\-zone MANAGED_ZONE \e
     \-\-name my.domain. \-\-ttl 2345 \e
     \-\-type TXT "Hello world" "Bye world"
 .RE

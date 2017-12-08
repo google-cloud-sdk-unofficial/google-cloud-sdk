@@ -11,7 +11,7 @@ gcloud container clusters delete \- delete an existing cluster for running conta
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud container clusters delete\fR \fINAME\fR [\fINAME\fR\ ...] [\fB\-\-async\fR] [\fB\-\-wait\fR] [\fB\-\-zone\fR=\fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud container clusters delete\fR \fINAME\fR [\fINAME\fR\ ...] [\fB\-\-async\fR] [\fB\-\-zone\fR=\fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -38,11 +38,6 @@ The names of the clusters to delete.
 .TP 2m
 \fB\-\-async\fR
 Don't wait for the operation to complete.
-
-.TP 2m
-\fB\-\-wait\fR
-DEPRECATED, use \-\-no\-async. Poll the operation for completion after issuing a
-create request.
 
 .TP 2m
 \fB\-\-zone\fR=\fIZONE\fR, \fB\-z\fR \fIZONE\fR

@@ -77,3 +77,30 @@ class PredictionClient(object):
   def signature(self):
     """Returns the SignatureDef for the model this client uses."""
     raise NotImplementedError()
+
+
+class Servable(object):
+
+  """A Model factory.
+
+  Can be used to create a model that implements the predict method, or a class
+  that implements the preprocess and/or the postprocess methods.
+  """
+
+  @classmethod
+  def from_client(cls, client, path):
+    """Creates a model using the given client and path.
+
+    Path is useful, e.g., to load files from the exported directory containing
+    the model.
+
+    Args:
+      client: An instance of Client for performing prediction.
+      path: The path to the stored model.
+
+    Returns:
+      An instance of an implementation of Servable, which may be a class
+      implementing the predict method, or a class implementing the pre and post
+      process methods.
+    """
+    raise NotImplementedError()

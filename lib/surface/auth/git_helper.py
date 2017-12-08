@@ -42,7 +42,7 @@ from googlecloudsdk.core.util import platforms
 from oauth2client import client
 
 
-_KEYVAL_RE = re.compile(r'(.+)=(.+)')
+_KEYVAL_RE = re.compile(r'(.+)=(.*)')
 _BLANK_LINE_RE = re.compile(r'^ *$')
 
 

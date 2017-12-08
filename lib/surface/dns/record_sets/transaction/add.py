@@ -29,12 +29,12 @@ class Add(base.Command):
 
   To add an A record, run:
 
-    $ {command} -z MANAGED_ZONE --name my.domain. --ttl 1234 \
+    $ {command} --zone MANAGED_ZONE --name my.domain. --ttl 1234 \
         --type A "1.2.3.4"
 
   To add a TXT record with multiple data values, run:
 
-    $ {command} -z MANAGED_ZONE --name my.domain. --ttl 2345 \
+    $ {command} --zone MANAGED_ZONE --name my.domain. --ttl 2345 \
         --type TXT "Hello world" "Bye world"
   """
 
@@ -55,10 +55,18 @@ class Add(base.Command):
         help='DNS data (Address/CNAME/MX info, etc.) of the record-set to add.')
 
   def Run(self, args):
-    with trans_util.TransactionFile(args.transaction_file) as trans_file:
-      change = trans_util.ChangeFromYamlFile(trans_file)
+    api_version = 'v1'
+    # If in the future there are differences between API version, do NOT use
+    # this patter of checking ReleaseTrack. Break this into multiple classes.
+    if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+      api_version = 'v2beta1'
 
-    change.additions.append(trans_util.CreateRecordSetFromArgs(args))
+    with trans_util.TransactionFile(args.transaction_file) as trans_file:
+      change = trans_util.ChangeFromYamlFile(
+          trans_file, api_version=api_version)
+
+    change.additions.append(
+        trans_util.CreateRecordSetFromArgs(args, api_version=api_version))
 
     with trans_util.TransactionFile(args.transaction_file, 'w') as trans_file:
       trans_util.WriteToYamlFile(trans_file, change)

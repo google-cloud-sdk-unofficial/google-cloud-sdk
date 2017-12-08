@@ -15,12 +15,16 @@
 """Command for setting scheduling for virtual machine instances."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 
 
-class SetSchedulingInstances(base_classes.NoOutputAsyncMutator):
-  """Set scheduling options for Google Compute Engine virtual machine instances.
+class SetSchedulingInstances(base.SilentCommand):
+  """Set scheduling options for Google Compute Engine virtual machines.
+
+    *${command}* is used to configure scheduling options for Google Compute
+  Engine virtual machines.
   """
 
   @staticmethod
@@ -37,47 +41,29 @@ class SetSchedulingInstances(base_classes.NoOutputAsyncMutator):
     instance_flags.AddMaintenancePolicyArgs(parser)
     instance_flags.INSTANCE_ARG.AddArgument(parser)
 
-  @property
-  def service(self):
-    return self.compute.instances
+  def Run(self, args):
+    """Issues request necessary for setting scheduling options."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'SetScheduling'
-
-  @property
-  def resource_type(self):
-    return 'instances'
-
-  def CreateRequests(self, args):
-    """Returns a list of request necessary for setting scheduling options."""
     instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
-        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client))
+        args, holder.resources, scope_lister=flags.GetDefaultScopeLister(
+            client))
 
-    scheduling_options = self.messages.Scheduling()
+    scheduling_options = client.messages.Scheduling()
 
     scheduling_options.automaticRestart = args.restart_on_failure
 
     if args.maintenance_policy:
       scheduling_options.onHostMaintenance = (
-          self.messages.Scheduling.OnHostMaintenanceValueValuesEnum(
+          client.messages.Scheduling.OnHostMaintenanceValueValuesEnum(
               args.maintenance_policy))
 
-    request = self.messages.ComputeInstancesSetSchedulingRequest(
+    request = client.messages.ComputeInstancesSetSchedulingRequest(
         instance=instance_ref.Name(),
         project=instance_ref.project,
         scheduling=scheduling_options,
         zone=instance_ref.zone)
 
-    return [request]
-
-
-SetSchedulingInstances.detailed_help = {
-    'brief': ('Set scheduling options for Google Compute Engine virtual '
-              'machines'),
-    'DESCRIPTION': """\
-        *${command}* is used to configure scheduling options for Google Compute
-        Engine virtual machines.
-        """,
-}
+    return client.MakeRequests([(client.apitools_client.instances,
+                                 'SetScheduling', request)])

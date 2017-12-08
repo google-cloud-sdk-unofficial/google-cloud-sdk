@@ -59,7 +59,7 @@ def _Args(parser, support_public_dns, support_network_tier):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class AddAccessConfigInstances(base_classes.NoOutputAsyncMutator):
+class AddAccessConfigInstances(base.SilentCommand):
   """Create a Google Compute Engine virtual machine access configuration."""
 
   _support_public_dns = False
@@ -71,28 +71,20 @@ class AddAccessConfigInstances(base_classes.NoOutputAsyncMutator):
         support_public_dns=cls._support_public_dns,
         support_network_tier=False)
 
-  @property
-  def service(self):
-    return self.compute.instances
+  def Run(self, args):
+    """Invokes request necessary for adding an access config."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'AddAccessConfig'
-
-  @property
-  def resource_type(self):
-    return 'instances'
-
-  def CreateRequests(self, args):
-    """Returns a list of request necessary for adding an access config."""
     instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
-        args, self.resources, scope_lister=compute_flags.GetDefaultScopeLister(
-            self.compute_client))
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-    access_config = self.messages.AccessConfig(
+    access_config = client.messages.AccessConfig(
         name=args.access_config_name,
         natIP=args.address,
-        type=self.messages.AccessConfig.TypeValueValuesEnum.ONE_TO_ONE_NAT)
+        type=client.messages.AccessConfig.TypeValueValuesEnum.ONE_TO_ONE_NAT)
 
     if self._support_public_dns:
       instance_flags.ValidatePublicDnsFlags(args)
@@ -113,17 +105,18 @@ class AddAccessConfigInstances(base_classes.NoOutputAsyncMutator):
 
     network_tier = getattr(args, 'network_tier', None)
     if network_tier is not None:
-      access_config.networkTier = (self.messages.AccessConfig.
+      access_config.networkTier = (client.messages.AccessConfig.
                                    NetworkTierValueValuesEnum(network_tier))
 
-    request = self.messages.ComputeInstancesAddAccessConfigRequest(
+    request = client.messages.ComputeInstancesAddAccessConfigRequest(
         accessConfig=access_config,
         instance=instance_ref.Name(),
         networkInterface=args.network_interface,
         project=instance_ref.project,
         zone=instance_ref.zone)
 
-    return [request]
+    return client.MakeRequests([(client.apitools_client.instances,
+                                 'AddAccessConfig', request)])
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -17,13 +17,13 @@ import os
 from apitools.base.py import exceptions as apitools_exceptions
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.dns import import_util
+from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
 @base.UnicodeIsSupported
@@ -43,16 +43,16 @@ class Import(base.Command):
 
   To import record-sets from a yaml record-sets file, run:
 
-    $ {command} YAML_RECORDS_FILE -z MANAGED_ZONE
+    $ {command} YAML_RECORDS_FILE --zone MANAGED_ZONE
 
   To import record-sets from a zone file, run:
 
-    $ {command} ZONE_FILE --zone-file-format -z MANAGED_ZONE
+    $ {command} ZONE_FILE --zone-file-format --zone MANAGED_ZONE
 
   To replace all the record-sets in your zone with records from a yaml
   file, run:
 
-    $ {command} YAML_RECORDS_FILE --delete-all-existing -z MANAGED_ZONE
+    $ {command} YAML_RECORDS_FILE --delete-all-existing --zone MANAGED_ZONE
   """
 
   @staticmethod
@@ -80,6 +80,12 @@ class Import(base.Command):
     parser.display_info.AddFormat(flags.CHANGES_FORMAT)
 
   def Run(self, args):
+    api_version = 'v1'
+    # If in the future there are differences between API version, do NOT use
+    # this patter of checking ReleaseTrack. Break this into multiple classes.
+    if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+      api_version = 'v2beta1'
+
     if not os.path.exists(args.records_file):
       raise exceptions.ToolException(
           'no such file [{0}]'.format(args.records_file))
@@ -87,11 +93,10 @@ class Import(base.Command):
       raise exceptions.ToolException(
           '[{0}] is a directory'.format(args.records_file))
 
-    dns = apis.GetClientInstance('dns', 'v1')
-    messages = apis.GetMessagesModule('dns', 'v1')
+    dns = apis.GetClientInstance('dns', api_version)
 
     # Get the managed-zone.
-    zone_ref = resources.REGISTRY.Parse(
+    zone_ref = util.GetRegistry(api_version).Parse(
         args.zone,
         params={
             'project': properties.VALUES.core.project.GetOrFail,
@@ -110,8 +115,9 @@ class Import(base.Command):
     current = {}
     for record in list_pager.YieldFromList(
         dns.resourceRecordSets,
-        messages.DnsResourceRecordSetsListRequest(project=zone_ref.project,
-                                                  managedZone=zone_ref.Name()),
+        dns.MESSAGES_MODULE.DnsResourceRecordSetsListRequest(
+            project=zone_ref.project,
+            managedZone=zone_ref.Name()),
         field='rrsets'):
       current[(record.name, record.type)] = record
 
@@ -119,10 +125,11 @@ class Import(base.Command):
     try:
       with open(args.records_file) as import_file:
         if args.zone_file_format:
-          imported = import_util.RecordSetsFromZoneFile(import_file,
-                                                        zone.dnsName)
+          imported = import_util.RecordSetsFromZoneFile(
+              import_file, zone.dnsName, api_version=api_version)
         else:
-          imported = import_util.RecordSetsFromYamlFile(import_file)
+          imported = import_util.RecordSetsFromYamlFile(
+              import_file, api_version=api_version)
     except Exception as exp:
       msg = (u'unable to read record-sets from specified records-file [{0}] '
              u'because [{1}]')
@@ -132,7 +139,8 @@ class Import(base.Command):
     # Get the change resulting from the imported record-sets.
     change = import_util.ComputeChange(current, imported,
                                        args.delete_all_existing,
-                                       zone.dnsName, args.replace_origin_ns)
+                                       zone.dnsName, args.replace_origin_ns,
+                                       api_version=api_version)
     if not change:
       msg = u'Nothing to do, all the records in [{0}] already exist.'.format(
           args.records_file)
@@ -141,10 +149,11 @@ class Import(base.Command):
 
     # Send the change to the service.
     result = dns.changes.Create(
-        messages.DnsChangesCreateRequest(change=change,
-                                         managedZone=zone.name,
-                                         project=zone_ref.project))
-    change_ref = resources.REGISTRY.Create(
+        dns.MESSAGES_MODULE.DnsChangesCreateRequest(
+            change=change,
+            managedZone=zone.name,
+            project=zone_ref.project))
+    change_ref = util.GetRegistry(api_version).Create(
         collection='dns.changes',
         project=zone_ref.project,
         managedZone=zone.name,

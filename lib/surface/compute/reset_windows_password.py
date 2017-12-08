@@ -12,16 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Implements the command for resetting a password in a Windows instance."""
-import copy
 import json
 import textwrap
+
+from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.api_lib.compute import openssl_encryption_utils
-from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.command_lib.util import gaia
@@ -97,12 +98,35 @@ RESET_PASSWORD_WARNING = textwrap.dedent("""
     https://cloud.google.com/compute/docs/operating-systems/windows#reset""")
 
 
-class ResetWindowsPassword(base_classes.ReadWriteCommand):
-  """Reset and return a password for a Windows machine instance."""
+class ResetWindowsPassword(base.UpdateCommand):
+  """Reset and return a password for a Windows machine instance.
+
+    *{command}* allows a user to reset and retrieve a password for
+  a Windows virtual machine instance. If the Windows account does not
+  exist, this command will cause the account to be created and the
+  password for that new account will be returned.
+
+  For Windows instances that are running a domain controller, running
+  this command creates a new domain user if the user does not exist,
+  or resets the password if the user does exist. It is not possible to
+  use this command to create a local user on a domain-controller
+  instance.
+
+  For all other instances, including domain-joined instances, running
+  this command creates a local user or resets the password for a local
+  user.
+
+  WARNING: Resetting a password for an existing user can cause the
+  loss of data encrypted with the current Windows password, such as
+  encrypted files or stored passwords.
+
+  The user running this command must have write permission for the
+  Google Compute Engine project containing the Windows instance.
+  """
 
   @staticmethod
   def Args(parser):
-    base_classes.ReadWriteCommand.Args(parser)
+    parser.display_info.AddFormat('[private]text')
 
     parser.add_argument(
         '--user',
@@ -113,43 +137,29 @@ class ResetWindowsPassword(base_classes.ReadWriteCommand):
         """)
     instance_flags.INSTANCE_ARG.AddArgument(parser)
 
-  @property
-  def service(self):
-    return self.compute.instances
-
-  @property
-  def resource_type(self):
-    return 'instances'
-
-  def GetGetRequest(self, args):
-    return (self.service,
+  def GetGetRequest(self, client, instance_ref):
+    return (client.apitools_client.instances,
             'Get',
-            self.messages.ComputeInstancesGetRequest(
-                instance=self.ref.Name(),
-                project=self.ref.project,
-                zone=self.ref.zone))
+            client.messages.ComputeInstancesGetRequest(**instance_ref.AsDict()))
 
-  def GetSetRequest(self, args, replacement, existing):
-    return (self.service,
+  def GetSetRequest(self, client, instance_ref, replacement):
+    return (client.apitools_client.instances,
             'SetMetadata',
-            self.messages.ComputeInstancesSetMetadataRequest(
-                instance=self.ref.Name(),
+            client.messages.ComputeInstancesSetMetadataRequest(
                 metadata=replacement.metadata,
-                project=self.ref.project,
-                zone=self.ref.zone))
+                **instance_ref.AsDict()))
 
-  def CreateReference(self, args):
+  def CreateReference(self, client, resources, args):
     return instance_flags.INSTANCE_ARG.ResolveAsResource(
-        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client))
+        args, resources, scope_lister=flags.GetDefaultScopeLister(client))
 
-  def Modify(self, args, existing):
-    new_object = copy.deepcopy(existing)
+  def Modify(self, client, existing):
+    new_object = encoding.CopyProtoMessage(existing)
 
     existing_metadata = getattr(existing, 'metadata', None)
 
     new_metadata = metadata_utils.ConstructMetadataMessage(
-        message_classes=self.messages,
+        message_classes=client.messages,
         metadata={
             METADATA_KEY:
             self._UpdateWindowsKeysValue(existing_metadata)},
@@ -230,28 +240,18 @@ class ResetWindowsPassword(base_classes.ReadWriteCommand):
     keys.reverse()
     return '\n'.join(keys)
 
-  def _GetSerialPortOutput(self, port=4):
+  def _GetSerialPortOutput(self, client, instance_ref, port=4):
     """Returns the serial port output for self.instance_ref."""
-    request = (self.compute.instances,
+    request = (client.apitools_client.instances,
                'GetSerialPortOutput',
-               self.messages.ComputeInstancesGetSerialPortOutputRequest(
-                   instance=self.ref.Name(),
-                   project=self.ref.project,
+               client.messages.ComputeInstancesGetSerialPortOutputRequest(
                    port=port,
-                   zone=self.ref.zone))
-    errors = []
-    objects = list(request_helper.MakeRequests(
-        requests=[request],
-        http=self.http,
-        batch_url=self.batch_url,
-        errors=errors))
-    if errors:
-      utils.RaiseToolException(
-          errors,
-          error_message='Could not fetch serial port output:')
+                   **instance_ref.AsDict()))
+    objects = client.MakeRequests([request])
     return objects[0].contents
 
-  def _GetEncryptedPasswordFromSerialPort(self, search_modulus):
+  def _GetEncryptedPasswordFromSerialPort(self, client, instance_ref,
+                                          search_modulus):
     """Returns the decrypted password from the data in the serial port."""
     encrypted_password_data = {}
     start_time = time_util.CurrentTimeSec()
@@ -263,7 +263,8 @@ class ResetWindowsPassword(base_classes.ReadWriteCommand):
           > (start_time + WINDOWS_PASSWORD_TIMEOUT_SEC)):
         raise utils.TimeoutError(
             TIMEOUT_ERROR.format(time_util.CurrentDatetimeUtc()))
-      serial_port_output = self._GetSerialPortOutput(port=4).split('\n')
+      serial_port_output = self._GetSerialPortOutput(
+          client, instance_ref, port=4).split('\n')
       for line in reversed(serial_port_output):
         try:
           encrypted_password_dict = json.loads(line)
@@ -284,8 +285,8 @@ class ResetWindowsPassword(base_classes.ReadWriteCommand):
           break
       if not agent_ready:
         if self.old_metadata_keys:
-          message = OLD_WINDOWS_BUILD_ERROR.format(self.ref.Name(),
-                                                   self.ref.zone)
+          message = OLD_WINDOWS_BUILD_ERROR.format(instance_ref.instance,
+                                                   instance_ref.zone)
           raise utils.WrongInstanceTypeError(message)
         else:
           message = NOT_READY_ERROR
@@ -296,6 +297,8 @@ class ResetWindowsPassword(base_classes.ReadWriteCommand):
     return encrypted_password
 
   def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
     start = time_util.CurrentTimeSec()
 
     # Set up Encryption utilities.
@@ -309,7 +312,7 @@ class ResetWindowsPassword(base_classes.ReadWriteCommand):
           'Your platform does not support OpenSSL.')
 
     # Get Authenticated email address and default username.
-    email = gaia.GetAuthenticatedGaiaEmail(self.http)
+    email = gaia.GetAuthenticatedGaiaEmail(client.apitools_client.http)
     if args.user:
       user = args.user
     else:
@@ -342,25 +345,43 @@ class ResetWindowsPassword(base_classes.ReadWriteCommand):
 
     # Call ReadWriteCommad.Run() which will fetch the instance and update
     # the metadata (using the data in self.windows_key_entry).
-    objects = super(ResetWindowsPassword, self).Run(args)
-    updated_instance = list(objects)[0]
+    instance_ref = self.CreateReference(client, holder.resources, args)
+    get_request = self.GetGetRequest(client, instance_ref)
+
+    objects = client.MakeRequests([get_request])
+
+    new_object = self.Modify(client, objects[0])
+
+    # If existing object is equal to the proposed object or if
+    # Modify() returns None, then there is no work to be done, so we
+    # print the resource and return.
+    if objects[0] == new_object:
+      log.status.Print(
+          'No change requested; skipping update for [{0}].'.format(
+              objects[0].name))
+      return objects
+
+    updated_instance = client.MakeRequests(
+        [self.GetSetRequest(client, instance_ref, new_object)])[0]
 
     # Retrieve and Decrypt the password from the serial console.
-    enc_password = self._GetEncryptedPasswordFromSerialPort(modulus)
+    enc_password = self._GetEncryptedPasswordFromSerialPort(
+        client, instance_ref, modulus)
     password = crypt.DecryptMessage(key, enc_password)
 
     # Get External IP address.
     try:
-      access_configs = updated_instance['networkInterfaces'][0]['accessConfigs']
-      external_ip_address = access_configs[0]['natIP']
-    except KeyError:
-      log.warn(NO_IP_WARNING.format(updated_instance['name']))
+      access_configs = updated_instance.networkInterfaces[0].accessConfigs
+      external_ip_address = access_configs[0].natIP
+    except (KeyError, IndexError) as _:
+      log.warn(NO_IP_WARNING.format(updated_instance.name))
       external_ip_address = None
 
     # Check for old Windows credentials.
     if self.old_metadata_keys:
-      log.warn(OLD_KEYS_WARNING.format(self.ref.Name(), self.ref.Name(),
-                                       self.ref.zone,
+      log.warn(OLD_KEYS_WARNING.format(instance_ref.instance,
+                                       instance_ref.instance,
+                                       instance_ref.zone,
                                        ','.join(self.old_metadata_keys)))
 
     log.info('Total Elapsed Time: {0}'
@@ -371,35 +392,3 @@ class ResetWindowsPassword(base_classes.ReadWriteCommand):
                        'password': password,
                        'ip_address': external_ip_address}
     return connection_info
-
-  def Format(self, unused_args):
-    # The private attribute prevents this information from being logged.
-    return '[private]text'
-
-
-ResetWindowsPassword.detailed_help = {
-    'brief': 'Reset and return a password for a Windows machine instance',
-    'DESCRIPTION': """\
-        *{command}* allows a user to reset and retrieve a password for
-        a Windows virtual machine instance. If the Windows account does not
-        exist, this command will cause the account to be created and the
-        password for that new account will be returned.
-
-        For Windows instances that are running a domain controller, running
-        this command creates a new domain user if the user does not exist,
-        or resets the password if the user does exist. It is not possible to
-        use this command to create a local user on a domain-controller
-        instance.
-
-        For all other instances, including domain-joined instances, running
-        this command creates a local user or resets the password for a local
-        user.
-
-        WARNING: Resetting a password for an existing user can cause the
-        loss of data encrypted with the current Windows password, such as
-        encrypted files or stored passwords.
-
-        The user running this command must have write permission for the
-        Google Compute Engine project containing the Windows instance.
-        """,
-}

@@ -28,7 +28,7 @@ class Describe(base.DescribeCommand):
 
   To look at the contents of the transaction, run:
 
-    $ {command} -z MANAGED_ZONE
+    $ {command} --zone MANAGED_ZONE
   """
 
   @staticmethod
@@ -36,5 +36,12 @@ class Describe(base.DescribeCommand):
     flags.GetZoneArg().AddToParser(parser)
 
   def Run(self, args):
+    api_version = 'v1'
+    # If in the future there are differences between API version, do NOT use
+    # this patter of checking ReleaseTrack. Break this into multiple classes.
+    if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+      api_version = 'v2beta1'
+
     with transaction_util.TransactionFile(args.transaction_file) as trans_file:
-      return transaction_util.ChangeFromYamlFile(trans_file)
+      return transaction_util.ChangeFromYamlFile(
+          trans_file, api_version=api_version)

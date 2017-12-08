@@ -13,10 +13,13 @@
 # limitations under the License.
 """Add tag command."""
 
+import httplib
+
 from containerregistry.client import docker_name
+from containerregistry.client.v2 import docker_http as v2_docker_http
 from containerregistry.client.v2 import docker_image as v2_image
 from containerregistry.client.v2 import docker_session as v2_session
-from containerregistry.client.v2_2 import docker_http
+from containerregistry.client.v2_2 import docker_http as v2_2_docker_http
 from containerregistry.client.v2_2 import docker_image as v2_2_image
 from containerregistry.client.v2_2 import docker_session as v2_2_session
 from googlecloudsdk.api_lib.container.images import util
@@ -82,14 +85,10 @@ class Create(base.CreateCommand):
   def Run(self, args):
     # pylint: disable=missing-docstring
     def Push(image, dest_name, creds, http_obj, src_name, session_push_type):
-      try:
-        with session_push_type(dest_name, creds, http_obj) as push:
-          push.upload(image)
-          log.CreatedResource(dest_name)
-        log.UpdatedResource(src_name)
-      except docker_http.V2DiagnosticException as err:
-        raise util.GcloudifyRecoverableV2Errors(
-            err, {403: 'Tagging failed, access denied: {0}'.format(dest_name)})
+      with session_push_type(dest_name, creds, http_obj) as push:
+        push.upload(image)
+        log.CreatedResource(dest_name)
+      log.UpdatedResource(src_name)
 
     http_obj = http.Http()
 
@@ -101,11 +100,19 @@ class Create(base.CreateCommand):
         default=True,
         cancel_on_no=True)
     creds = util.CredentialProvider()
+    try:
+      with v2_2_image.FromRegistry(src_name, creds, http_obj) as v2_2_img:
+        if v2_2_img.exists():
+          Push(v2_2_img, dest_name, creds, http_obj, src_name,
+               v2_2_session.Push)
+          return
 
-    with v2_2_image.FromRegistry(src_name, creds, http_obj) as v2_2_img:
-      if v2_2_img.exists():
-        Push(v2_2_img, dest_name, creds, http_obj, src_name, v2_2_session.Push)
-        return
+      with v2_image.FromRegistry(src_name, creds, http_obj) as v2_img:
+        Push(v2_img, dest_name, creds, http_obj, src_name, v2_session.Push)
 
-    with v2_image.FromRegistry(src_name, creds, http_obj) as v2_img:
-      Push(v2_img, dest_name, creds, http_obj, src_name, v2_session.Push)
+    except (v2_docker_http.V2DiagnosticException,
+            v2_2_docker_http.V2DiagnosticException) as err:
+      raise util.GcloudifyRecoverableV2Errors(err, {
+          httplib.FORBIDDEN: 'Add-tag failed, access denied.',
+          httplib.NOT_FOUND: 'Add-tag failed, not found: {0}'.format(src_name)
+      })

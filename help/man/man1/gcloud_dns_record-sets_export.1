@@ -66,12 +66,12 @@ Run \fB$ gcloud help\fR for a description of flags available to all commands.
 To export record\-sets into a yaml file, run:
 
 .RS 2m
-$ gcloud dns record\-sets export YAML_RECORDS_FILE \-z MANAGED_ZONE
+$ gcloud dns record\-sets export YAML_RECORDS_FILE \-\-zone MANAGED_ZONE
 .RE
 
 To import record\-sets into a zone file, run:
 
 .RS 2m
 $ gcloud dns record\-sets export ZONE_FILE \-\-zone\-file\-format \e
-    \-z MANAGED_ZONE
+    \-\-zone MANAGED_ZONE
 .RE

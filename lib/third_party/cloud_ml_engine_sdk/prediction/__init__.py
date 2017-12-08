@@ -17,12 +17,14 @@
 import os
 from _interfaces import Model
 from _interfaces import PredictionClient
+from _interfaces import Servable
 
 _version = os.getenv("CLOUDML_ENDPOINT_VERSION")
 
 if _version == "v1beta1":
   from _prediction_lib_beta import columnarize
   from _prediction_lib_beta import COLUMNARIZE_TIME
+  from _prediction_lib_beta import create_model
   from _prediction_lib_beta import decode_base64
   from _prediction_lib_beta import DefaultModel
   from _prediction_lib_beta import encode_base64
@@ -42,6 +44,7 @@ if _version == "v1beta1":
 else:
   from prediction_lib import columnarize
   from prediction_lib import COLUMNARIZE_TIME
+  from prediction_lib import create_model
   from prediction_lib import decode_base64
   from prediction_lib import DefaultModel
   from prediction_lib import encode_base64

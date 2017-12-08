@@ -13,28 +13,33 @@
 # limitations under the License.
 """Command for describing regions."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.regions import flags
 
 
-class Describe(base_classes.GlobalDescriber):
-  """Describe a Google Compute Engine region."""
+class Describe(base.DescribeCommand):
+  """Describe a Google Compute Engine region.
+
+    *{command}* displays all data associated with a Google Compute
+  Engine region.
+  """
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalDescriber.Args(parser, 'compute.regions')
+    Describe.REGION_ARG = flags.MakeRegionArg()
+    Describe.REGION_ARG.AddArgument(parser, operation_type='describe')
 
-  @property
-  def service(self):
-    return self.compute.regions
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'regions'
+    region_ref = Describe.REGION_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+    request = client.messages.ComputeRegionsGetRequest(**region_ref.AsDict())
 
-Describe.detailed_help = {
-    'brief': 'Describe a Google Compute Engine region',
-    'DESCRIPTION': """\
-        *{command}* displays all data associated with a Google Compute
-        Engine region.
-        """,
-}
+    return client.MakeRequests([(client.apitools_client.regions, 'Get',
+                                 request)])[0]

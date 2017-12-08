@@ -126,10 +126,10 @@ class Timer(object):
     print(timer.duration_secs)
   """
 
-  def __init__(self, timer_fn=timeit.default_timer):
+  def __init__(self, timer_fn=None):
     self.start = None
     self.end = None
-    self._get_time = timer_fn
+    self._get_time = timer_fn or timeit.default_timer
 
   def __enter__(self):
     self.end = None
@@ -175,8 +175,8 @@ class Stats(dict):
   """
 
   @contextmanager
-  def time(self, name):
-    with Timer() as timer:
+  def time(self, name, timer_fn=None):
+    with Timer(timer_fn) as timer:
       yield timer
     self[name] = timer.microseconds
 
@@ -463,6 +463,21 @@ class SessionClient(PredictionClient):
 
     with stats.time(ALIAS_TIME):
       return dict(zip(self._signature.outputs.iterkeys(), outputs))
+
+
+def create_model(client, model_path, **unused_kwargs):
+  """Alias for the DefaultModel.from_client method.
+
+  Used to mirror the create_model method in v1 prediction_lib.py.
+
+  Args:
+    client: An instance of ModelServerClient for performing prediction.
+    model_path: the path to either session_bundle or SavedModel
+
+  Returns:
+    An instance of the appropriate model class.
+  """
+  return DefaultModel.from_client(client, model_path, **unused_kwargs)
 
 
 class DefaultModel(Model):

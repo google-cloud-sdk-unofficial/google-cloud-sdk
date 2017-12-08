@@ -16,13 +16,13 @@
 from apitools.base.py import exceptions as apitools_exceptions
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.dns import export_util
+from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
 class Export(base.Command):
@@ -35,11 +35,11 @@ class Export(base.Command):
 
   To export record-sets into a yaml file, run:
 
-    $ {command} YAML_RECORDS_FILE -z MANAGED_ZONE
+    $ {command} YAML_RECORDS_FILE --zone MANAGED_ZONE
 
   To import record-sets into a zone file, run:
 
-    $ {command} ZONE_FILE --zone-file-format -z MANAGED_ZONE
+    $ {command} ZONE_FILE --zone-file-format --zone MANAGED_ZONE
   """
 
   @staticmethod
@@ -54,11 +54,16 @@ class Export(base.Command):
         help='Indicates that records-file should be in the zone file format.')
 
   def Run(self, args):
-    dns = apis.GetClientInstance('dns', 'v1')
-    messages = apis.GetMessagesModule('dns', 'v1')
+    api_version = 'v1'
+    # If in the future there are differences between API version, do NOT use
+    # this patter of checking ReleaseTrack. Break this into multiple classes.
+    if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+      api_version = 'v2beta1'
+
+    dns = apis.GetClientInstance('dns', api_version)
 
     # Get the managed-zone.
-    zone_ref = resources.REGISTRY.Parse(
+    zone_ref = util.GetRegistry(api_version).Parse(
         args.zone,
         params={
             'project': properties.VALUES.core.project.GetOrFail,
@@ -76,8 +81,9 @@ class Export(base.Command):
     record_sets = []
     for record_set in list_pager.YieldFromList(
         dns.resourceRecordSets,
-        messages.DnsResourceRecordSetsListRequest(project=zone_ref.project,
-                                                  managedZone=zone_ref.Name()),
+        dns.MESSAGES_MODULE.DnsResourceRecordSetsListRequest(
+            project=zone_ref.project,
+            managedZone=zone_ref.Name()),
         field='rrsets'):
       record_sets.append(record_set)
 
@@ -89,7 +95,7 @@ class Export(base.Command):
         else:
           export_util.WriteToYamlFile(export_file, record_sets)
     except Exception as exp:
-      msg = 'unable to export record-sets to file [{0}]: {1}'.format(
+      msg = 'Unable to export record-sets to file [{0}]: {1}'.format(
           args.records_file, exp)
       raise exceptions.ToolException(msg)
 

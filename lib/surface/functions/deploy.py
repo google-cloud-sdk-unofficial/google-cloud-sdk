@@ -32,9 +32,10 @@ from googlecloudsdk.command_lib.functions.deploy import util as deploy_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
-from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.util import archive
 from googlecloudsdk.core.util import files as file_utils
+
+_DEPLOY_WAIT_NOTICE = 'Deploying function (may take a while - up to 2 minutes)'
 
 
 def _FunctionArgs(parser):
@@ -327,9 +328,7 @@ class Deploy(base.Command):
     op = client.projects_locations_functions.Create(
         messages.CloudfunctionsProjectsLocationsFunctionsCreateRequest(
             location=location, cloudFunction=function))
-    with progress_tracker.ProgressTracker(
-        'Deploying function (may take a while - up to 2 minutes)'):
-      operations.Wait(op, messages, client)
+    operations.Wait(op, messages, client, _DEPLOY_WAIT_NOTICE)
     return self._GetExistingFunction(function.name)
 
   @util.CatchHTTPErrorRaiseHTTPException
@@ -337,9 +336,7 @@ class Deploy(base.Command):
     client = util.GetApiClientInstance()
     messages = client.MESSAGES_MODULE
     op = client.projects_locations_functions.Update(function)
-    with progress_tracker.ProgressTracker(
-        'Deploying function (may take a while - up to 2 minutes)'):
-      operations.Wait(op, messages, client)
+    operations.Wait(op, messages, client, _DEPLOY_WAIT_NOTICE)
     return self._GetExistingFunction(function.name)
 
   def Run(self, args):

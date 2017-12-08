@@ -31,7 +31,7 @@ class Abort(base.Command):
 
   To abort the transaction, run:
 
-    $ {command} -z MANAGED_ZONE
+    $ {command} --zone MANAGED_ZONE
   """
 
   @staticmethod

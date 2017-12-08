@@ -22,8 +22,8 @@ from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class List(base.ListCommand):
   """Lists Cloud SQL users in a given instance.
 
   Lists Cloud SQL users in a given instance in the alphabetical

@@ -70,31 +70,31 @@ View the list of record\-sets in a managed\-zone.
 To import record\-sets from a BIND zone file, run:
 
 .RS 2m
-$ gcloud dns record\-sets import \-z MANAGED_ZONE  \e
+$ gcloud dns record\-sets import \-\-zone MANAGED_ZONE \e
     \-\-zone\-file\-format ZONE_FILE
 .RE
 
 To export record\-sets in yaml format, run:
 
 .RS 2m
-$ gcloud dns record\-sets export \-z MANAGED_ZONE
+$ gcloud dns record\-sets export \-\-zone MANAGED_ZONE
 .RE
 
 To see how to make scriptable changes to your record\-sets through transactions,
 run:
 
 .RS 2m
-$ gcloud dns record\-sets transaction \-z MANAGED_ZONE
+$ gcloud dns record\-sets transaction \-\-zone MANAGED_ZONE
 .RE
 
 To see change details or list of all changes, run:
 
 .RS 2m
-$ gcloud dns record\-sets changes \-z MANAGED_ZONE
+$ gcloud dns record\-sets changes \-\-zone MANAGED_ZONE
 .RE
 
 To see the list of all record\-sets, run:
 
 .RS 2m
-$ gcloud dns record\-sets list \-z MANAGED_ZONE
+$ gcloud dns record\-sets list \-\-zone MANAGED_ZONE
 .RE

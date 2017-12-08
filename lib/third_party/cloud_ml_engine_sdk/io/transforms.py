@@ -175,9 +175,8 @@ class SaveModel(beam.PTransform):
       # hierarchy. Where the * corresponds to the model timestamp.
       # TODO(user): Remove this gaurd after new Beam release
       try:
-        from apache_beam.io import filesystems_util  # pylint: disable=g-import-not-at-top
-        file_system = filesystems_util.get_filesystem(trained_model_dir)
-        match_result = file_system.match(
+        from apache_beam.io import filesystems  # pylint: disable=g-import-not-at-top
+        match_result = filesystems.FileSystems.match(
             [os.path.join(trained_model_dir, 'export', export_name,
                           '*', 'saved_model.pb')])[0]
         paths = [f.path for f in match_result.metadata_list]
@@ -221,11 +220,9 @@ class SaveModel(beam.PTransform):
 
     # TODO(user): Remove this gaurd after new Beam release
     try:
-      from apache_beam.io import filesystems_util  # pylint: disable=g-import-not-at-top
-      file_system = filesystems_util.get_filesystem(
-          append_trailing_slash(trained_model))
-      file_system.copy([append_trailing_slash(trained_model)],
-                       [append_trailing_slash(dest)])
+      from apache_beam.io import filesystems  # pylint: disable=g-import-not-at-top
+      filesystems.FileSystems.copy([append_trailing_slash(trained_model)],
+                                   [append_trailing_slash(dest)])
     except ImportError:
       fileio.ChannelFactory.copytree(
           append_trailing_slash(trained_model), append_trailing_slash(dest))

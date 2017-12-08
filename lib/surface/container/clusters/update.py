@@ -17,12 +17,14 @@
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.container import api_adapter
+from googlecloudsdk.api_lib.container import kubeconfig as kconfig
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 
 
 class InvalidAddonValueError(util.Error):
@@ -64,7 +66,7 @@ def _AddCommonArgs(parser):
   parser.add_argument(
       '--node-pool',
       help='Node pool to be updated.')
-  flags.AddClustersWaitAndAsyncFlags(parser)
+  flags.AddAsyncFlag(parser)
 
 
 def _AddMutuallyExclusiveArgs(mutex_group):
@@ -143,6 +145,8 @@ class Update(base.UpdateCommand):
     flags.AddEnableLegacyAuthorizationFlag(group, hidden=True)
     flags.AddStartIpRotationFlag(group, hidden=True)
     flags.AddCompleteIpRotationFlag(group, hidden=True)
+    flags.AddUpdateLabelsFlag(group, suppressed=True)
+    flags.AddRemoveLabelsFlag(group, suppressed=True)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -158,7 +162,7 @@ class Update(base.UpdateCommand):
 
     cluster_ref = adapter.ParseCluster(args.name)
     # Make sure it exists (will raise appropriate error if not)
-    adapter.GetCluster(cluster_ref)
+    cluster = adapter.GetCluster(cluster_ref)
 
     # locations will be None if additional-zones was specified, an empty list
     # if it was specified with no argument, or a populated list if zones were
@@ -193,44 +197,79 @@ class Update(base.UpdateCommand):
         del options
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif args.start_ip_rotation:
+      console_io.PromptContinue(
+          message='This will start an IP Rotation on cluster [{name}]. The '
+          'master will be updated to serve on a new IP address in addition to '
+          'the current IP address. Container Engine will then recreate all '
+          'nodes ({num_nodes} nodes) to point to the new IP address. This '
+          'operation is long-running and will block other operations on the '
+          'cluster (including delete) until it has run to completion.'
+          .format(name=cluster.name, num_nodes=cluster.currentNodeCount),
+          cancel_on_no=True)
       try:
         op_ref = adapter.StartIpRotation(cluster_ref)
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif args.complete_ip_rotation:
+      console_io.PromptContinue(
+          message='This will complete the in-progress IP Rotation on cluster '
+          '[{name}]. The master will be updated to stop serving on the old IP '
+          'address and only serve on the new IP address. Make sure all API '
+          'clients have been updated to communicate with the new IP address '
+          '(e.g. by running `gcloud container clusters get-credentials '
+          '--project {project} --zone {zone} {name}`). This operation is long-'
+          'running and will block other operations on the cluster (including '
+          'delete) until it has run to completion.'
+          .format(name=cluster.name, project=cluster_ref.projectId,
+                  zone=cluster.zone),
+          cancel_on_no=True)
       try:
         op_ref = adapter.CompleteIpRotation(cluster_ref)
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif args.update_labels is not None:
+      try:
+        op_ref = adapter.UpdateLabels(cluster_ref, args.update_labels)
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif args.remove_labels is not None:
+      try:
+        op_ref = adapter.RemoveLabels(cluster_ref, args.remove_labels)
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     else:
       enable_master_authorized_networks = args.enable_master_authorized_networks
 
-      try:
-        if args.enable_legacy_authorization is not None:
-          op_ref = adapter.SetLegacyAuthorization(
-              cluster_ref,
-              args.enable_legacy_authorization)
-        else:
-          options = api_adapter.UpdateClusterOptions(
-              monitoring_service=args.monitoring_service,
-              disable_addons=args.disable_addons,
-              enable_autoscaling=args.enable_autoscaling,
-              min_nodes=args.min_nodes,
-              max_nodes=args.max_nodes,
-              node_pool=args.node_pool,
-              locations=locations,
-              enable_master_authorized_networks=
-              enable_master_authorized_networks,
-              master_authorized_networks=args.master_authorized_networks)
-          op_ref = adapter.UpdateCluster(cluster_ref, options)
-      except apitools_exceptions.HttpError as error:
-        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+      if args.enable_legacy_authorization is not None:
+        op_ref = adapter.SetLegacyAuthorization(
+            cluster_ref,
+            args.enable_legacy_authorization)
+      else:
+        options = api_adapter.UpdateClusterOptions(
+            monitoring_service=args.monitoring_service,
+            disable_addons=args.disable_addons,
+            enable_autoscaling=args.enable_autoscaling,
+            min_nodes=args.min_nodes,
+            max_nodes=args.max_nodes,
+            node_pool=args.node_pool,
+            locations=locations,
+            enable_master_authorized_networks=
+            enable_master_authorized_networks,
+            master_authorized_networks=args.master_authorized_networks)
+        op_ref = adapter.UpdateCluster(cluster_ref, options)
 
-    if not flags.GetAsyncValueFromAsyncAndWaitFlags(args.async, args.wait):
+    if not args.async:
       adapter.WaitForOperation(
           op_ref, 'Updating {0}'.format(cluster_ref.clusterId))
 
       log.UpdatedResource(cluster_ref)
+
+      if args.start_ip_rotation or args.complete_ip_rotation:
+        cluster = adapter.GetCluster(cluster_ref)
+        try:
+          util.ClusterConfig.Persist(cluster, cluster_ref.projectId)
+        except kconfig.MissingEnvVarError as error:
+          log.warning(error.message)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -248,6 +287,8 @@ class UpdateBeta(Update):
     flags.AddEnableLegacyAuthorizationFlag(group)
     flags.AddStartIpRotationFlag(group)
     flags.AddCompleteIpRotationFlag(group)
+    flags.AddUpdateLabelsFlag(group)
+    flags.AddRemoveLabelsFlag(group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -265,3 +306,5 @@ class UpdateAlpha(Update):
     flags.AddEnableLegacyAuthorizationFlag(group)
     flags.AddStartIpRotationFlag(group)
     flags.AddCompleteIpRotationFlag(group)
+    flags.AddUpdateLabelsFlag(group)
+    flags.AddRemoveLabelsFlag(group)

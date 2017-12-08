@@ -80,9 +80,7 @@ class Delete(base.DeleteCommand):
         autoscalers=managed_instance_groups_utils.AutoscalersForLocations(
             zones=zones,
             regions=regions,
-            compute=client,
-            http=client.http,
-            batch_url=holder.client.batch_url))
+            client=holder.client))
     requests = []
     for autoscaler in autoscalers_to_delete:
       if autoscaler.zone:

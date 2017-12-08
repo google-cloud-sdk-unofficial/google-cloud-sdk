@@ -16,6 +16,7 @@ import datetime
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute.images import flags
 
@@ -37,7 +38,7 @@ def _ResolveTime(absolute, relative_sec, current_time):
     return None
 
 
-class DeprecateImages(base_classes.NoOutputAsyncMutator):
+class DeprecateImages(base.SilentCommand):
   """Manage deprecation status of Google Compute Engine images.
 
   *{command}* is used to deprecate images.
@@ -45,8 +46,8 @@ class DeprecateImages(base_classes.NoOutputAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    DeprecateImages.DiskImageArg = flags.MakeDiskImageArg()
-    DeprecateImages.DiskImageArg.AddArgument(parser)
+    DeprecateImages.DISK_IMAGE_ARG = flags.MakeDiskImageArg()
+    DeprecateImages.DISK_IMAGE_ARG.AddArgument(parser)
     flags.REPLACEMENT_DISK_IMAGE_ARG.AddArgument(parser)
 
     deprecation_statuses = {
@@ -123,25 +124,16 @@ class DeprecateImages(base_classes.NoOutputAsyncMutator):
        This flag is mutually exclusive with *--obsolete-on*.
        """)
 
-  @property
-  def service(self):
-    return self.compute.images
-
-  @property
-  def method(self):
-    return 'Deprecate'
-
-  @property
-  def resource_type(self):
-    return 'images'
-
-  def CreateRequests(self, args):
-    """Returns a list of requests necessary for deprecating images."""
+  def Run(self, args):
+    """Invokes requests necessary for deprecating images."""
     # TODO(b/13695932): Note that currently there is a bug in the backend
     # whereby any request other than a completely empty request or a request
     # with state set to something other than ACTIVE will fail.
     # GCloud will be able to be made more permissive w.r.t. the checks
     # below when the API changes.
+
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
     if (any([args.delete_on, args.delete_in, args.obsolete_on, args.obsolete_in,
              args.replacement]) and args.state == 'ACTIVE'):
@@ -160,20 +152,20 @@ class DeprecateImages(base_classes.NoOutputAsyncMutator):
     if args.state == 'ACTIVE':
       state = None
     else:
-      state = self.messages.DeprecationStatus.StateValueValuesEnum(args.state)
+      state = client.messages.DeprecationStatus.StateValueValuesEnum(args.state)
 
     replacement_ref = flags.REPLACEMENT_DISK_IMAGE_ARG.ResolveAsResource(
-        args, self.resources)
+        args, holder.resources)
     if replacement_ref:
       replacement_uri = replacement_ref.SelfLink()
     else:
       replacement_uri = None
 
-    image_ref = DeprecateImages.DiskImageArg.ResolveAsResource(
-        args, self.resources)
+    image_ref = DeprecateImages.DISK_IMAGE_ARG.ResolveAsResource(
+        args, holder.resources)
 
-    request = self.messages.ComputeImagesDeprecateRequest(
-        deprecationStatus=self.messages.DeprecationStatus(
+    request = client.messages.ComputeImagesDeprecateRequest(
+        deprecationStatus=client.messages.DeprecationStatus(
             state=state,
             deleted=delete_time,
             obsolete=obsolete_time,
@@ -181,7 +173,8 @@ class DeprecateImages(base_classes.NoOutputAsyncMutator):
         image=image_ref.Name(),
         project=image_ref.project)
 
-    return [request]
+    return client.MakeRequests([(client.apitools_client.images,
+                                 'Deprecate', request)])
 
 
 DeprecateImages.detailed_help = {

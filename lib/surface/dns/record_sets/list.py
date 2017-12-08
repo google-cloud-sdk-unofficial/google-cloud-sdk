@@ -34,19 +34,19 @@ class List(base.ListCommand):
 
   To see the list of all record-sets in my_zone, run:
 
-    $ {command} -z my_zone
+    $ {command} --zone my_zone
 
   To see the list of first 10 record-sets in my_zone, run:
 
-    $ {command} -z my_zone --limit=10
+    $ {command} --zone my_zone --limit=10
 
   To see the list of 'my.zone.com.' record-sets in my_zone, run:
 
-    $ {command} -z my_zone --name="my.zone.com."
+    $ {command} --zone my_zone --name="my.zone.com."
 
   To see the list of 'my.zone.com.' CNAME record-sets in my_zone, run:
 
-    $ {command} -z my_zone --name="my.zone.com." --type="CNAME"
+    $ {command} --zone my_zone --name="my.zone.com." --type="CNAME"
   """
 
   @staticmethod
@@ -69,10 +69,20 @@ class List(base.ListCommand):
         """)
 
   def Run(self, args):
-    dns_client = apis.GetClientInstance('dns', 'v1')
-    dns_messages = apis.GetMessagesModule('dns', 'v1')
+    api_version = 'v1'
+    # If in the future there are differences between API version, do NOT use
+    # this patter of checking ReleaseTrack. Break this into multiple classes.
+    if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+      api_version = 'v2beta1'
 
-    project_id = properties.VALUES.core.project.Get(required=True)
+    dns_client = apis.GetClientInstance('dns', api_version)
+
+    zone_ref = util.GetRegistry(api_version).Parse(
+        args.zone,
+        params={
+            'project': properties.VALUES.core.project.GetOrFail,
+        },
+        collection='dns.managedZones')
 
     if args.type and not args.name:
       raise exceptions.ToolException(
@@ -80,9 +90,9 @@ class List(base.ListCommand):
 
     return list_pager.YieldFromList(
         dns_client.resourceRecordSets,
-        dns_messages.DnsResourceRecordSetsListRequest(
-            project=project_id,
-            managedZone=args.zone,
+        dns_client.MESSAGES_MODULE.DnsResourceRecordSetsListRequest(
+            project=zone_ref.project,
+            managedZone=zone_ref.Name(),
             name=util.AppendTrailingDot(args.name),
             type=args.type),
         limit=args.limit, field='rrsets')

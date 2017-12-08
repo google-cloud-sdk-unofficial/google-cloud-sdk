@@ -45,7 +45,7 @@ def _Args(parser):
       type=int,
       default=1800,
       help=argparse.SUPPRESS)
-  flags.AddClustersWaitAndAsyncFlags(parser)
+  flags.AddAsyncFlag(parser)
   parser.add_argument(
       '--num-nodes',
       type=arg_parsers.BoundedInt(1),
@@ -156,7 +156,7 @@ Alias,URI
       '--max-nodes-per-pool',
       type=arg_parsers.BoundedInt(100, api_adapter.MAX_NODES_PER_POOL),
       help='The maximum number of nodes to allocate per default initial node '
-      'pool. Container engine will automatically create enough nodes pools '
+      'pool. Container Engine will automatically create enough nodes pools '
       'such that each node pool contains less than '
       '--max-nodes-per-pool nodes. Defaults to {nodes} nodes, but can be set '
       'as low as 100 nodes per pool on initial create.'.format(
@@ -193,6 +193,7 @@ class Create(base.CreateCommand):
     flags.AddServiceAccountFlag(parser, suppressed=True)
     flags.AddMasterAuthorizedNetworksFlags(parser, hidden=True)
     flags.AddEnableLegacyAuthorizationFlag(parser, hidden=True)
+    flags.AddLabelsFlag(parser, suppressed=True)
 
   def ParseCreateOptions(self, args):
     if not args.scopes:
@@ -230,7 +231,8 @@ class Create(base.CreateCommand):
         service_account=args.service_account,
         enable_master_authorized_networks=enable_master_authorized_networks,
         master_authorized_networks=args.master_authorized_networks,
-        enable_legacy_authorization=args.enable_legacy_authorization)
+        enable_legacy_authorization=args.enable_legacy_authorization,
+        labels=args.labels)
 
   def Collection(self):
     return 'container.projects.zones.clusters'
@@ -276,7 +278,7 @@ class Create(base.CreateCommand):
     operation = None
     try:
       operation_ref = adapter.CreateCluster(cluster_ref, options)
-      if flags.GetAsyncValueFromAsyncAndWaitFlags(args.async, args.wait):
+      if args.async:
         return adapter.GetCluster(cluster_ref)
 
       operation = adapter.WaitForOperation(
@@ -317,6 +319,7 @@ class CreateBeta(Create):
     flags.AddServiceAccountFlag(parser)
     flags.AddMasterAuthorizedNetworksFlags(parser, hidden=True)
     flags.AddEnableLegacyAuthorizationFlag(parser)
+    flags.AddLabelsFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -335,3 +338,4 @@ class CreateAlpha(Create):
     flags.AddServiceAccountFlag(parser)
     flags.AddMasterAuthorizedNetworksFlags(parser, hidden=True)
     flags.AddEnableLegacyAuthorizationFlag(parser)
+    flags.AddLabelsFlag(parser)

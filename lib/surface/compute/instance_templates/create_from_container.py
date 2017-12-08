@@ -48,6 +48,7 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
     instances_flags.AddNetworkArgs(parser)
     instances_flags.AddDockerArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser)
+    instances_flags.AddNetworkTierArgs(parser, instance=True)
 
     flags.AddRegionFlag(
         parser,
@@ -114,7 +115,8 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
         subnet=args.subnet,
         address=(instance_template_utils.EPHEMERAL_ADDRESS
                  if not args.no_address and not args.address
-                 else args.address))
+                 else args.address),
+        network_tier=args.network_tier)
 
     scheduling = instance_utils.CreateSchedulingMessage(
         messages=self.messages,

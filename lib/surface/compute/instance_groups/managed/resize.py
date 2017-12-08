@@ -39,7 +39,7 @@ def _AddArgs(parser, creation_retries):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Resize(base_classes.BaseAsyncMutator):
+class Resize(base.Command):
   """Set managed instance group size."""
 
   @staticmethod
@@ -48,43 +48,34 @@ class Resize(base_classes.BaseAsyncMutator):
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 
-  @property
-  def method(self):
-    return 'Resize'
-
-  @property
-  def service(self):
-    return self.compute.instanceGroupManagers
-
-  @property
-  def resource_type(self):
-    return 'instanceGroupManagers'
-
-  def CreateGroupReference(self, args):
+  def CreateGroupReference(self, client, resources, args):
     return (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
             ResolveAsResource(
-                args, self.resources,
+                args, resources,
                 default_scope=compute_scope.ScopeEnum.ZONE,
-                scope_lister=flags.GetDefaultScopeLister(self.compute_client)))
+                scope_lister=flags.GetDefaultScopeLister(client)))
 
-  def CreateRequests(self, args):
-    group_ref = self.CreateGroupReference(args)
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    group_ref = self.CreateGroupReference(client, holder.resources, args)
     if group_ref.Collection() == 'compute.instanceGroupManagers':
-      service = self.compute.instanceGroupManagers
-      request = self.messages.ComputeInstanceGroupManagersResizeRequest(
+      service = client.apitools_client.instanceGroupManagers
+      request = client.messages.ComputeInstanceGroupManagersResizeRequest(
           instanceGroupManager=group_ref.Name(),
           size=args.size,
           project=group_ref.project,
-          zone=group_ref.zone,)
+          zone=group_ref.zone)
     else:
-      service = self.compute.regionInstanceGroupManagers
-      request = self.messages.ComputeRegionInstanceGroupManagersResizeRequest(
+      service = client.apitools_client.regionInstanceGroupManagers
+      request = client.messages.ComputeRegionInstanceGroupManagersResizeRequest(
           instanceGroupManager=group_ref.Name(),
           size=args.size,
           project=group_ref.project,
-          region=group_ref.region,)
+          region=group_ref.region)
 
-    return [(service, self.method, request)]
+    return client.MakeRequests([(service, 'Resize', request)])
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
@@ -97,34 +88,36 @@ class ResizeBeta(Resize):
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 
-  def CreateRequests(self, args):
-    group_ref = self.CreateGroupReference(args)
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    group_ref = self.CreateGroupReference(client, holder.resources, args)
     if group_ref.Collection() == 'compute.instanceGroupManagers':
-      service = self.compute.instanceGroupManagers
+      service = client.apitools_client.instanceGroupManagers
       method = 'ResizeAdvanced'
-      request = self.messages.ComputeInstanceGroupManagersResizeAdvancedRequest(
-          instanceGroupManager=group_ref.Name(),
-          instanceGroupManagersResizeAdvancedRequest=(
-              self.messages.InstanceGroupManagersResizeAdvancedRequest(
-                  targetSize=args.size,
-                  noCreationRetries=not args.creation_retries,
-              )
-          ),
-          project=group_ref.project,
-          zone=group_ref.zone,)
+      request = (
+          client.messages.ComputeInstanceGroupManagersResizeAdvancedRequest(
+              instanceGroupManager=group_ref.Name(),
+              instanceGroupManagersResizeAdvancedRequest=(
+                  client.messages.InstanceGroupManagersResizeAdvancedRequest(
+                      targetSize=args.size,
+                      noCreationRetries=not args.creation_retries,)),
+              project=group_ref.project,
+              zone=group_ref.zone))
     else:
       if not args.creation_retries:
         raise exceptions.ConflictingArgumentsException(
             '--no-creation-retries', '--region')
-      service = self.compute.regionInstanceGroupManagers
+      service = client.apitools_client.regionInstanceGroupManagers
       method = 'Resize'
-      request = self.messages.ComputeRegionInstanceGroupManagersResizeRequest(
+      request = client.messages.ComputeRegionInstanceGroupManagersResizeRequest(
           instanceGroupManager=group_ref.Name(),
           size=args.size,
           project=group_ref.project,
-          region=group_ref.region,)
+          region=group_ref.region)
 
-    return [(service, method, request)]
+    return client.MakeRequests([(service, method, request)])
 
 
 Resize.detailed_help = {

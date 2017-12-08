@@ -51,10 +51,8 @@ class Describe(base.DescribeCommand):
     igm = encoding.MessageToDict(service.Get(request_type(**ref.AsDict())))
     annoted_igm = managed_instance_groups_utils.AddAutoscalersToMigs(
         migs_iterator=[igm],
+        client=client,
         resources=resources,
-        compute=apitools_client,
-        http=apitools_client.http,
-        batch_url=client.batch_url,
         fail_when_api_not_supported=False)
 
     return list(annoted_igm)[0]
