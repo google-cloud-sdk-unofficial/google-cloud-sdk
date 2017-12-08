@@ -28,7 +28,7 @@ class Projects(base.Group):
 
   def Filter(self, context, _):
     context['projects_resources'] = resources
-    context['projects_client'] = util.GetClient(self.Http())
+    context['projects_client'] = util.GetClient()
     context['projects_messages'] = util.GetMessages()
 
 
@@ -42,5 +42,5 @@ class ProjectsAlpha(base.Group):
 
   def Filter(self, context, _):
     context['projects_resources'] = resources
-    context['projects_client'] = util.GetClient(self.Http())
+    context['projects_client'] = util.GetClient()
     context['projects_messages'] = util.GetMessages()

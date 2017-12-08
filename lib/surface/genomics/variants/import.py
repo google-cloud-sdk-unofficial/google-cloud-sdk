@@ -38,6 +38,23 @@ class Import(base.Command):
                         help=('A comma-delimited list of URI patterns '
                               'referencing existing VCF or MasterVar files in '
                               'Google Cloud Storage.'))
+    parser.add_argument('--info-merge-config',
+                        type=arg_parsers.ArgDict(min_length=1),
+                        required=False,
+                        help=('A mapping between VCF INFO field keys and the '
+                              'operations to be performed on them. '
+                              'Valid operations include: '
+                              'IGNORE_NEW - By default, variant info fields '
+                              'are persisted if the variant does not '
+                              'yet exist in the variant set.  If the variant '
+                              'is equivalent to a variant already in the '
+                              'variant set, the incoming variant\'s info field '
+                              'is ignored in favor of that of the already '
+                              'persisted variant. '
+                              'MOVE_TO_CALLS - Removes an info field from '
+                              'the incoming variant and persists this info '
+                              'field in each of the incoming variant\'s '
+                              'calls.'))
     parser.add_argument(
         '--file-format',
         choices=['COMPLETE_GENOMICS', 'VCF'],
@@ -79,11 +96,27 @@ class Import(base.Command):
     if args.file_format == 'COMPLETE_GENOMICS':
       file_format = format_enum.FORMAT_COMPLETE_GENOMICS
 
+    imc = genomics_messages.ImportVariantsRequest.InfoMergeConfigValue
+    ops_enum = imc.AdditionalProperty.ValueValueValuesEnum
+    info_merge_config = None
+    if args.info_merge_config is not None:
+      additional_properties = []
+      for k, v in sorted(args.info_merge_config.items()):
+        op = ops_enum.INFO_MERGE_OPERATION_UNSPECIFIED
+        if v == 'IGNORE_NEW':
+          op = ops_enum.IGNORE_NEW
+        elif v == 'MOVE_TO_CALLS':
+          op = ops_enum.MOVE_TO_CALLS
+        additional_properties.append(imc.AdditionalProperty(key=k, value=op))
+      info_merge_config = imc(additionalProperties=additional_properties)
+
     request = genomics_messages.ImportVariantsRequest(
         variantSetId=args.variantset_id,
         sourceUris=args.source_uris,
         format=file_format,
-        normalizeReferenceNames=args.normalize_reference_names)
+        normalizeReferenceNames=args.normalize_reference_names,
+        infoMergeConfig=info_merge_config)
+
     return apitools_client.variants.Import(request)
 
   def Display(self, args_unused, resp):

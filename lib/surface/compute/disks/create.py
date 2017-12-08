@@ -50,30 +50,8 @@ DETAILED_HELP = {
 }
 
 
-def _CommonArgs(parser):
-  """Add arguments used for parsing in all command tracks."""
-  parser.add_argument(
-      '--description',
-      help=(
-          'An optional, textual description for the disks being created.'))
-
-  size = parser.add_argument(
-      '--size',
-      type=arg_parsers.BinarySize(lower_bound='1GB'),
-      help='Indicates the size of the disks.')
-  size.detailed_help = """\
-      Indicates the size of the disks. The value must be a whole
-      number followed by a size unit of ``KB'' for kilobyte, ``MB''
-      for megabyte, ``GB'' for gigabyte, or ``TB'' for terabyte. For
-      example, ``10GB'' will produce 10 gigabyte disks.  Disk size
-      must be a multiple of 10 GB.
-      """
-
-  parser.add_argument(
-      'names',
-      metavar='NAME',
-      nargs='+',
-      help='The names of the disks to create.')
+def _SourceArgs(parser, image_family=False):
+  """Add mutually exclusive source args."""
 
   source_group = parser.add_mutually_exclusive_group()
 
@@ -99,6 +77,14 @@ def _CommonArgs(parser):
 
   image_utils.AddImageProjectFlag(parser)
 
+  if image_family:
+    source_group.add_argument(
+        '--image-family',
+        help=('The family of the image that the boot disk will be initialized '
+              'with. When a family is used instead of an image, the latest '
+              'non-deprecated image associated with that family is used.')
+    )
+
   source_snapshot = source_group.add_argument(
       '--source-snapshot',
       help='A source snapshot used to create the disks.')
@@ -116,6 +102,32 @@ def _CommonArgs(parser):
       as large as the snapshot size. Use ``--size'' to adjust the
       size of the disks.
       """
+
+
+def _CommonArgs(parser):
+  """Add arguments used for parsing in all command tracks."""
+  parser.add_argument(
+      '--description',
+      help=(
+          'An optional, textual description for the disks being created.'))
+
+  size = parser.add_argument(
+      '--size',
+      type=arg_parsers.BinarySize(lower_bound='1GB'),
+      help='Indicates the size of the disks.')
+  size.detailed_help = """\
+      Indicates the size of the disks. The value must be a whole
+      number followed by a size unit of ``KB'' for kilobyte, ``MB''
+      for megabyte, ``GB'' for gigabyte, or ``TB'' for terabyte. For
+      example, ``10GB'' will produce 10 gigabyte disks.  Disk size
+      must be a multiple of 10 GB.
+      """
+
+  parser.add_argument(
+      'names',
+      metavar='NAME',
+      nargs='+',
+      help='The names of the disks to create.')
 
   disk_type = parser.add_argument(
       '--type',
@@ -140,6 +152,7 @@ class CreateGA(base_classes.BaseAsyncCreator, image_utils.ImageExpander,
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
+    _SourceArgs(parser)
 
   @property
   def service(self):
@@ -157,7 +170,9 @@ class CreateGA(base_classes.BaseAsyncCreator, image_utils.ImageExpander,
     """Returns a list of requests necessary for adding disks."""
     size_gb = utils.BytesToGb(args.size)
 
-    if not size_gb and not args.source_snapshot and not args.image:
+    # TODO(user): remove getattr on image family GA
+    from_image = args.image or getattr(args, 'image_family', None)
+    if not size_gb and not args.source_snapshot and not from_image:
       if args.type and 'pd-ssd' in args.type:
         size_gb = constants.DEFAULT_SSD_DISK_SIZE_GB
       else:
@@ -172,7 +187,7 @@ class CreateGA(base_classes.BaseAsyncCreator, image_utils.ImageExpander,
     # Check if the zone is deprecated or has maintenance coming.
     self.WarnForZonalCreation(disk_refs)
 
-    if args.image:
+    if from_image:
       source_image_uri, _ = self.ExpandImageFlag(
           args, return_image_resource=False)
     else:
@@ -239,6 +254,7 @@ class CreateAlphaBeta(CreateGA):
   def Args(parser):
     _CommonArgs(parser)
     csek_utils.AddCsekKeyArgs(parser)
+    _SourceArgs(parser, image_family=True)
 
 
 CreateGA.detailed_help = DETAILED_HELP

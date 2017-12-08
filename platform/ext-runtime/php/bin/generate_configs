@@ -66,7 +66,7 @@ def main(args):
     path = os.path.join(template_dir, 'Dockerfile.template')
     with open(path, 'r') as f:
         data = f.read()
-        docroot = params['appinfo']['runtime_config']['document_root']
+        docroot = params['appinfo']['env_variables']['DOCUMENT_ROOT']
 
         send_file('Dockerfile', data.format(document_root=docroot))
 

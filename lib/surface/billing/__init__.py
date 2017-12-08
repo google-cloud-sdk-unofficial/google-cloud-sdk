@@ -22,5 +22,5 @@ class Billing(base.Group):
   """Manage billing accounts and associate them with projects."""
 
   def Filter(self, context, _):
-    context['billing_client'] = utils.GetClient(self.Http())
+    context['billing_client'] = utils.GetClient()
     context['billing_messages'] = utils.GetMessages()

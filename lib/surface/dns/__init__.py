@@ -65,8 +65,7 @@ class DNS(base.Group):
     resolver = resolvers.FromProperty(project)
     resources.SetParamDefault('dns', None, 'project', resolver)
 
-    context['dns_client'] = apis.GetClientInstance('dns', 'v1',
-                                                   http=self.Http())
+    context['dns_client'] = apis.GetClientInstance('dns', 'v1')
     context['dns_messages'] = apis.GetMessagesModule('dns', 'v1')
     context['dns_resources'] = resources
 

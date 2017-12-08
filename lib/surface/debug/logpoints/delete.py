@@ -20,14 +20,10 @@ from googlecloudsdk.core import properties
 
 
 class Delete(base.DeleteCommand):
-  """Delete debug logpoints."""
+  """Delete debug logpoints.
 
-  detailed_help = {
-      'DESCRIPTION': """\
-          This command deletes logpoints from a Cloud Debugger debug
-          target.
-      """
-  }
+  This command deletes logpoints from a Cloud Debugger debug target.
+  """
 
   @staticmethod
   def Args(parser):
@@ -68,7 +64,7 @@ class Delete(base.DeleteCommand):
       debuggee.DeleteBreakpoint(s.id)
     return logpoints
 
-  def Collection(self, unused_arg):
+  def Collection(self):
     return 'debug.logpoints'
 
   def Format(self, args):
@@ -82,11 +78,12 @@ class Delete(base.DeleteCommand):
     fields = ['id']
     if args.all_users:
       fields.append('userEmail:label=USER')
-    fields.append('location.format("{0}:{1}", path, line):label=LOCATION')
-    fields.append('short_status():label=STATUS BEFORE DELETION')
+    fields.append('location')
+    fields.append('logLevel:label=LEVEL')
+    fields.append('short_status():label="STATUS BEFORE DELETION"')
     return """
       [log=status,
        empty-legend="No logpoints matched the requested values",
        legend="Deleted Logpoints"]
-      list({0})
+      table({0})
     """.format(','.join(fields))

@@ -49,7 +49,7 @@ class SetDefault(base.Command):
     flags.MODULES_ARG.AddToParser(parser)
 
   def Run(self, args):
-    client = appengine_api_client.GetApiClient(self.Http(timeout=None))
+    client = appengine_api_client.GetApiClient()
 
     message = ('You are about to set the default serving version to [{version}]'
                ' for the following modules:\n\t'.format(version=args.version))

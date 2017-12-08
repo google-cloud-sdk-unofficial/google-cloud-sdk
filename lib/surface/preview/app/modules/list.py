@@ -17,10 +17,9 @@
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import flags
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """List your existing deployed modules and versions.
 
   This command lists all the modules and their versions that are currently
@@ -46,8 +45,11 @@ class List(base.Command):
     flags.SERVER_FLAG.AddToParser(parser)
     flags.MODULES_OPTIONAL_ARG.AddToParser(parser)
 
+  def Collection(self):
+    return 'app.module_versions'
+
   def Run(self, args):
-    api_client = appengine_api_client.GetApiClient(self.Http(timeout=None))
+    api_client = appengine_api_client.GetApiClient()
     services = api_client.ListServices()
     versions = api_client.ListVersions(services)
     service_versions = []
@@ -60,7 +62,3 @@ class List(base.Command):
 
     # Sort so the order is deterministic for testing.
     return sorted(service_versions)
-
-  def Display(self, unused_args, result):
-    list_printer.PrintResourceList('app.module_versions', result)
-

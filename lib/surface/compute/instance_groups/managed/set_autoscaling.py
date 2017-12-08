@@ -14,39 +14,10 @@
 """Command for configuring autoscaling of a managed instance group."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
-from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-
-
-def _AddArgs(parser, multizonal):
-  """Adds args."""
-  managed_instance_groups_utils.AddAutoscalerArgs(parser)
-  parser.add_argument(
-      'name',
-      metavar='NAME',
-      completion_resource='compute.instanceGroupManagers',
-      help='Managed instance group which autoscaling parameters will be set.')
-  if multizonal:
-    scope_parser = parser.add_mutually_exclusive_group()
-    utils.AddRegionFlag(
-        scope_parser,
-        resource_type='resources',
-        operation_type='update',
-        explanation=constants.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
-    utils.AddZoneFlag(
-        scope_parser,
-        resource_type='resources',
-        operation_type='update',
-        explanation=constants.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
-  else:
-    utils.AddZoneFlag(
-        parser,
-        resource_type='resources',
-        operation_type='update')
 
 
 def _IsZonalGroup(ref):
@@ -74,7 +45,8 @@ class SetAutoscaling(base_classes.BaseAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, multizonal=False)
+    managed_instance_groups_utils.AddAutoscalerArgs(
+        parser=parser, multizonal_enabled=False, queue_scaling_enabled=False)
 
   def CreateGroupReference(self, args):
     return self.CreateZonalReference(
@@ -139,7 +111,8 @@ class SetAutoscalingAlpha(SetAutoscaling,
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, multizonal=True)
+    managed_instance_groups_utils.AddAutoscalerArgs(
+        parser=parser, multizonal_enabled=True, queue_scaling_enabled=True)
 
   def CreateGroupReference(self, args):
     return self.CreateInstanceGroupReference(

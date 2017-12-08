@@ -73,7 +73,7 @@ class Delete(base.Command):
                               'given service.'))
 
   def Run(self, args):
-    client = appengine_api_client.GetApiClient(self.Http(timeout=None))
+    client = appengine_api_client.GetApiClient()
     services = client.ListServices()
     all_versions = client.ListVersions(services)
     versions = version_util.GetMatchingVersions(all_versions,

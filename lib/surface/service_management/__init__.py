@@ -37,12 +37,11 @@ class ServiceManagement(base.Group):
     """
 
     context['servicemanagement-v1'] = apis.GetClientInstance(
-        'servicemanagement', 'v1', self.Http())
+        'servicemanagement', 'v1')
     context['servicemanagement-v1-messages'] = apis.GetMessagesModule(
         'servicemanagement', 'v1')
 
-    context['apikeys-v1'] = apis.GetClientInstance(
-        'apikeys', 'v1', self.Http())
+    context['apikeys-v1'] = apis.GetClientInstance('apikeys', 'v1')
     context['apikeys-v1-messages'] = apis.GetMessagesModule(
         'apikeys', 'v1')
 

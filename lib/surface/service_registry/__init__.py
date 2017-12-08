@@ -51,7 +51,7 @@ class ServiceRegistry(base.Group):
     """
 
     context['serviceregistry_client'] = apis.GetClientInstance(
-        'serviceregistry', 'beta', self.Http())
+        'serviceregistry', 'beta')
     context['serviceregistry_messages'] = apis.GetMessagesModule(
         'serviceregistry', 'beta')
     return context

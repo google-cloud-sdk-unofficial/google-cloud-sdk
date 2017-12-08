@@ -32,7 +32,5 @@ class Bigtable(base.Group):
       args: argparse.Namespace: The same namespace given to the corresponding
           .Run() invocation.
     """
-    context['clusteradmin'] = apis.GetClientInstance(
-        'bigtable', 'v1', self.Http())
+    context['clusteradmin'] = apis.GetClientInstance('bigtable', 'v1')
     context['clusteradmin-msgs'] = apis.GetMessagesModule('bigtable', 'v1')
-

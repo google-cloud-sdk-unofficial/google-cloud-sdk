@@ -17,7 +17,6 @@
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import cli
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
@@ -57,7 +56,7 @@ class Updater(base.Group):
     properties.VALUES.compute.zone.Get(required=True)
     context['updater_api'] = updater_v1beta1.ReplicapoolupdaterV1beta1(
         get_credentials=False,
-        http=cli.Http())
+        http=self.Http())
     context['updater_messages'] = replicapoolupdater_v1beta1_messages
     resources.SetParamDefault(
         api='compute', collection=None, param='project',

@@ -48,7 +48,7 @@ class Delete(base.Command):
     flags.MODULES_ARG.AddToParser(parser)
 
   def Run(self, args):
-    api_client = appengine_api_client.GetApiClient(self.Http(timeout=None))
+    api_client = appengine_api_client.GetApiClient()
 
     message = 'You are about to delete the following module versions:\n\t'
     message += '\n\t'.join(

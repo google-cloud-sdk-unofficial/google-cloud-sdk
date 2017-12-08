@@ -56,7 +56,7 @@ class Container(base.Group):
     Returns:
       The refined command context.
     """
-    context['api_adapter'] = api_adapter.NewAPIAdapter(self.Http())
+    context['api_adapter'] = api_adapter.NewAPIAdapter()
     return context
 
 

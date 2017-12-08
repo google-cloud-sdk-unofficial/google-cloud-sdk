@@ -17,13 +17,11 @@ import textwrap
 from googlecloudsdk.api_lib.projects import projects_api
 from googlecloudsdk.api_lib.projects import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
-from googlecloudsdk.core import remote_completion
 from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class List(base.Command):
+class List(base.ListCommand):
   """List projects accessible by the active account.
 
   Lists all active projects, where the active account has Owner, Editor or
@@ -49,10 +47,15 @@ class List(base.Command):
                                    collection='cloudresourcemanager.projects')
     return instance_ref.SelfLink()
 
-  @staticmethod
-  def Args(parser):
-    parser.add_argument('--limit', default=None, type=int,
-                        help='Maximum number of results.')
+  def Collection(self):
+    return 'cloudresourcemanager.projects'
+
+  def GetUriFunc(self):
+    def _GetUri(resource):
+      ref = resources.Parse(resource.projectId,
+                            collection=self.Collection())
+      return ref.SelfLink()
+    return _GetUri
 
   @util.HandleHttpError
   def Run(self, args):
@@ -60,14 +63,5 @@ class List(base.Command):
 
     projects_client = self.context['projects_client']
     messages = self.context['projects_messages']
-    remote_completion.SetGetInstanceFun(self.ProjectIdToLink)
     return projects_api.List(client=projects_client, messages=messages,
                              limit=args.limit)
-
-  def Display(self, args, result):
-    instance_refs = []
-    items = remote_completion.Iterate(result, instance_refs,
-                                      self.ProjectIdToLink)
-    list_printer.PrintResourceList('cloudresourcemanager.projects', items)
-    cache = remote_completion.RemoteCompletion()
-    cache.StoreInCache(instance_refs)

@@ -15,7 +15,6 @@
 
 from googlecloudsdk.api_lib.billing import utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
@@ -29,6 +28,15 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     parser.add_argument('id', **utils.ACCOUNT_ID_ARG_PARAMS)
+    base.URI_FLAG.RemoveFromParser(parser)
+
+  def Collection(self):
+    return 'cloudbilling.projectBillingInfo'
+
+  @staticmethod
+  def GetUriCacheUpdateOp():
+    """No resource URIs."""
+    return None
 
   def Run(self, args):
     """Run the list command."""
@@ -47,10 +55,4 @@ class List(base.ListCommand):
         batch_size_attribute='pageSize',
         limit=args.limit,
         predicate=args.filter
-    )
-
-  def Display(self, _, result):
-    list_printer.PrintResourceList(
-        'cloudbilling.projectBillingInfo',
-        result,
     )

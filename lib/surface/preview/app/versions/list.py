@@ -16,7 +16,6 @@
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import exceptions
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 
 
@@ -24,7 +23,7 @@ class ServiceNotFoundError(exceptions.Error):
   pass
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """List your existing versions.
 
   This command lists all the versions of all services that are currently
@@ -55,8 +54,11 @@ class List(base.Command):
     parser.add_argument('--hide-no-traffic', action='store_true',
                         help='Only show versions that are receiving traffic.')
 
+  def Collection(self):
+    return 'app.versions'
+
   def Run(self, args):
-    api_client = appengine_api_client.GetApiClient(self.Http(timeout=None))
+    api_client = appengine_api_client.GetApiClient()
     services = api_client.ListServices()
     service_ids = [s.id for s in services]
     log.debug('All services: {0}'.format(service_ids))
@@ -78,6 +80,3 @@ class List(base.Command):
     if args.hide_no_traffic:
       versions = [v for v in versions if v.traffic_split]
     return sorted(versions)
-
-  def Display(self, unused_args, result):
-    list_printer.PrintResourceList('app.versions', result)

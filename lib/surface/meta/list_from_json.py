@@ -34,6 +34,7 @@ class ListFromJson(base.ListCommand):
 
   @staticmethod
   def Args(parser):
+    base.URI_FLAG.RemoveFromParser(parser)
     parser.add_argument(
         'json_file',
         metavar='JSON-FILE',
@@ -42,6 +43,11 @@ class ListFromJson(base.ListCommand):
         help=('A file containing JSON data for a single resource or a list of'
               ' resources of the same type. If omitted then the standard input'
               ' is read.'))
+
+  @staticmethod
+  def GetUriCacheUpdateOp():
+    """No resource URIs."""
+    return None
 
   def Run(self, args):
     if args.json_file:

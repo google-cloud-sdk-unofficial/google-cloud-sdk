@@ -186,11 +186,8 @@ class Run(base.ListCommand):
         tr_messages.Outcome.SummaryValueValuesEnum)
     return summary_fetcher.CreateMatrixOutcomeSummary()
 
-  def Collection(self, unused_args):
+  def Collection(self):
     """Choose the default resource collection key used to format test outcomes.
-
-    Args:
-      unused_args: The arguments that command was run with.
 
     Returns:
       A collection string used as a key to select the default ResourceInfo

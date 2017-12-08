@@ -59,7 +59,7 @@ def main(args):
                     'appinfo': {
                         'runtime': runtime,
                         'vm': True,
-                        'runtime_config': {'document_root': os.path.normpath(
+                        'env_variables': {'DOCUMENT_ROOT': os.path.normpath(
                             os.path.join('app', root)),
                         }}}, sys.stdout)
                 sys.stdout.write('\n')

@@ -34,9 +34,14 @@ class Login(base.Command):
   """Authorize gcloud to access Google Cloud Platform.
 
   Obtains access credentials for your user account via a web-based authorization
-  flow. If valid credentials for an account are already available from a prior
-  authorization, the account is set to active without rerunning the flow. Use
-  `gcloud auth list` to view credentialed accounts.
+  flow. When this command completes successfully, it sets the active account
+  in the current configuration to the account specified. If no configuration
+  exists, it creates a configuration named default.
+
+  If valid credentials for an account are already available from a prior
+  authorization, the account is set to active without rerunning the flow.
+
+  Use `gcloud auth list` to view credentialed accounts.
 
   Deprecated behavior: This command also saves the credentials for
   Application Default Credentials. This behavior has been taken over by

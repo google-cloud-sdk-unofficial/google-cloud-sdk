@@ -46,7 +46,7 @@ class List(base.ListCommand):
     catalog = util.GetAndroidCatalog(self.context)
     return catalog.runtimeConfiguration.locales
 
-  def Collection(self, unused_args):
+  def Collection(self):
     """Choose the default resource collection key used to list Android locales.
 
     Returns:

@@ -48,7 +48,7 @@ class RuntimeTestCase(testutil.TestBase):
         app_yaml = self.file_contents('app.yaml')
         self.assertIn('runtime: php\n', app_yaml)
         self.assertIn('vm: true\n', app_yaml)
-        self.assertIn('runtime_config:\n  document_root: app\n', app_yaml)
+        self.assertIn('env_variables:\n  DOCUMENT_ROOT: app\n', app_yaml)
 
         self.assertFalse(os.path.exists(self.full_path('Dockerfile')))
         self.assertFalse(os.path.exists(self.full_path('.dockerignore')))
@@ -57,15 +57,15 @@ class RuntimeTestCase(testutil.TestBase):
     def test_generate_custom_runtime(self):
         self.write_file('index.php', 'index')
         config = testutil.AppInfoFake(runtime='php',
-                runtime_config={'document_root': 'app'})
+                env_variables={'DOCUMENT_ROOT': 'app'})
         cleaner = self.generate_configs(custom=True, appinfo=config)
 
         dockerfile = self.file_contents('Dockerfile')
         self.assertEqual(dockerfile, textwrap.dedent('''\
             # Dockerfile extending the generic PHP image with application files for a
             # single application.
-            FROM gcr.io/google_appengine/php
-            
+            FROM gcr.io/php-mvm-a/php-nginx:latest
+
             # The Docker image will configure the document root according to this
             # environment variable.
             ENV DOCUMENT_ROOT app
@@ -83,15 +83,15 @@ class RuntimeTestCase(testutil.TestBase):
     def test_generate_with_deploy(self):
         self.write_file('index.php', 'index')
         config = testutil.AppInfoFake(runtime='custom',
-                runtime_config={'document_root': 'app'})
+                env_variables={'DOCUMENT_ROOT': 'app'})
         cleaner = self.generate_configs(deploy=True, appinfo=config)
 
         dockerfile = self.file_contents('Dockerfile')
         self.assertEqual(dockerfile, textwrap.dedent('''\
             # Dockerfile extending the generic PHP image with application files for a
             # single application.
-            FROM gcr.io/google_appengine/php
-            
+            FROM gcr.io/php-mvm-a/php-nginx:latest
+
             # The Docker image will configure the document root according to this
             # environment variable.
             ENV DOCUMENT_ROOT app

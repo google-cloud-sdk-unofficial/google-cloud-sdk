@@ -72,7 +72,7 @@ class List(base.ListCommand):
         client.endpoints, request, field='endpoints', limit=args.limit,
         batch_size=500)
 
-  def Collection(self, unused_args):
+  def Collection(self):
     """Choose the default resource collection key used to list Endpoints.
 
     Returns:

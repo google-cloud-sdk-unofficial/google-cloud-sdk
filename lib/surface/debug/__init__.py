@@ -53,4 +53,4 @@ class Debug(base.Group):
         api='debug', collection=None, param='projectId',
         resolver=resolvers.FromProperty(properties.VALUES.core.project))
 
-    debug.DebugObject.InitializeApiClients(self.Http())
+    debug.DebugObject.InitializeApiClients()

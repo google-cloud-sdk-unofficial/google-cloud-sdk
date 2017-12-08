@@ -27,6 +27,6 @@ from googlecloudsdk.core import resources
 class Iam(base.Group):
 
   def Filter(self, context, args):
-    context['iam-client'] = apis.GetClientInstance('iam', 'v1', self.Http())
+    context['iam-client'] = apis.GetClientInstance('iam', 'v1')
     context['iam-messages'] = apis.GetMessagesModule('iam', 'v1')
     context['iam-resources'] = resources

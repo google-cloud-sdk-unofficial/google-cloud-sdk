@@ -78,7 +78,7 @@ class Dataflow(base.Group):
     context[DATAFLOW_MESSAGES_MODULE_KEY] = apis.GetMessagesModule(
         'dataflow', 'v1b3')
     context[DATAFLOW_APITOOLS_CLIENT_KEY] = apis.GetClientInstance(
-        'dataflow', 'v1b3', self.Http())
+        'dataflow', 'v1b3')
     context[DATAFLOW_REGISTRY_KEY] = cloud_resources.REGISTRY
 
     if args.endpoint:

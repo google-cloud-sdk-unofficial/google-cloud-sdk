@@ -93,7 +93,7 @@ class SetTraffic(base.Command):
       raise TrafficSplitError('The migrate flag can only be used with splits '
                               'to a single version.')
 
-    api_client = appengine_api_client.GetApiClient(self.Http(timeout=None))
+    api_client = appengine_api_client.GetApiClient()
 
     all_services = api_client.ListServices()
     services = service_util.GetMatchingServices(all_services, args.services)

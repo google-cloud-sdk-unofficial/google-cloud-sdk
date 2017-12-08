@@ -47,14 +47,13 @@ def _Args(parser):
           properties.VALUES.api_endpoint_overrides.sql))
 
 
-def _DoFilter(context, http, api_version_default):
+def _DoFilter(context, api_version_default):
   """Set up and return the context to be used by all SQL release tracks."""
   cloud_resources.SetParamDefault(
       api='sql', collection=None, param='project',
       resolver=resolvers.FromProperty(properties.VALUES.core.project))
 
-  context['sql_client'] = apis.GetClientInstance(
-      'sql', api_version_default, http)
+  context['sql_client'] = apis.GetClientInstance('sql', api_version_default)
   context['sql_messages'] = apis.GetMessagesModule('sql', api_version_default)
   context['registry'] = cloud_resources.REGISTRY.CloneAndSwitchAPIs(
       context['sql_client'])
@@ -72,7 +71,7 @@ class SQL(base.Group):
 
   @exceptions.RaiseToolExceptionInsteadOf(c_store.Error)
   def Filter(self, context, args):
-    _DoFilter(context, self.Http(), 'v1beta3')
+    _DoFilter(context, 'v1beta3')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -85,4 +84,4 @@ class SQLBeta(base.Group):
 
   @exceptions.RaiseToolExceptionInsteadOf(c_store.Error)
   def Filter(self, context, args):
-    _DoFilter(context, self.Http(), 'v1beta4')
+    _DoFilter(context, 'v1beta4')

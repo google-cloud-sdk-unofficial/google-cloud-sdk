@@ -17,7 +17,7 @@ from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.calliope import base
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """List your existing services.
 
   This command lists all services that are currently deployed to the App Engine
@@ -34,12 +34,11 @@ class List(base.Command):
           """,
   }
 
-  @staticmethod
-  def Collection(unused_args):
+  def Collection(self):
     return 'app.services'
 
   def Run(self, args):
-    api_client = appengine_api_client.GetApiClient(self.Http(timeout=None))
+    api_client = appengine_api_client.GetApiClient()
     services = api_client.ListServices()
     versions = api_client.ListVersions(services)
 

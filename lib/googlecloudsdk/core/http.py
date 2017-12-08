@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A module to make it easy to set up and run CLIs in the Cloud SDK."""
+"""A module to get an unauthenticated http object."""
+
 
 import platform
 import time
@@ -21,33 +22,56 @@ import urlparse
 import uuid
 
 from googlecloudsdk.core import config
-from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
-from googlecloudsdk.core.credentials import store as c_store
 from googlecloudsdk.core.util import platforms
 import httplib2
-from oauth2client import client
-
-__all__ = ['Http']
 
 
-class Error(exceptions.Error):
-  """Exceptions for the cli module."""
+def Http(timeout='unset'):
+  """Get an httplib2.Http client that is properly configured for use by gcloud.
+
+  This method does not add credentials to the client.  For an Http client that
+  has been authenticated, use core.credentials.http.Http().
+
+  Args:
+    timeout: double, The timeout in seconds to pass to httplib2.  This is the
+        socket level timeout.  If timeout is None, timeout is infinite.  If
+        default argument 'unset' is given, a sensible default is selected.
+
+  Returns:
+    An httplib2.Http client object configured with all the required settings
+    for gcloud.
+  """
+  # Compared with setting the default timeout in the function signature (i.e.
+  # timeout=300), this lets you test with short default timeouts by mocking
+  # GetDefaultTimeout.
+  effective_timeout = timeout if timeout != 'unset' else GetDefaultTimeout()
+  no_validate = properties.VALUES.auth.disable_ssl_validation.GetBool()
+
+  http_client = httplib2.Http(timeout=effective_timeout,
+                              proxy_info=_GetHttpProxyInfo(),
+                              disable_ssl_certificate_validation=no_validate)
+
+  # Wrap first to dump any data added by other wrappers.
+  if properties.VALUES.core.log_http.GetBool():
+    http_client = _WrapRequestForLogging(http_client)
+
+  # Wrap the request method to put in our own user-agent, and trace reporting.
+  gcloud_ua = MakeUserAgentString(properties.VALUES.metrics.command_name.Get())
+
+  http_client = _WrapRequestForUserAgentAndTracing(
+      http_client,
+      properties.VALUES.core.trace_token.Get(),
+      properties.VALUES.core.trace_email.Get(),
+      properties.VALUES.core.trace_log.GetBool(),
+      gcloud_ua)
+
+  return http_client
 
 
-class CannotRefreshAuthTokenError(Error, client.AccessTokenRefreshError):
-  """An exception raised when the auth tokens fail to refresh."""
-
-  def __init__(self, msg):
-    auth_command = '$ gcloud auth login'
-    message = ('There was a problem refreshing your current auth tokens: '
-               '{0}.  Please run\n  {1}.'.format(msg, auth_command))
-    super(CannotRefreshAuthTokenError, self).__init__(message)
-
-
-def MakeUserAgentString(cmd_path):
+def MakeUserAgentString(cmd_path=None):
   """Return a user-agent string for this request.
 
   Contains 'gcloud' in addition to several other product IDs used for tracing in
@@ -67,7 +91,7 @@ def MakeUserAgentString(cmd_path):
           ' python/{5}'
           ' {6}').format(
               config.CLOUD_SDK_VERSION,
-              cmd_path,
+              cmd_path or properties.VALUES.metrics.command_name.Get(),
               uuid.uuid4().hex,
               properties.GetMetricsEnvironment(),
               console_io.IsInteractive(error=True, heuristic=True),
@@ -77,67 +101,6 @@ def MakeUserAgentString(cmd_path):
 
 def GetDefaultTimeout():
   return properties.VALUES.core.http_timeout.GetInt() or 300
-
-
-def Http(auth=True, creds=None, timeout='unset'):
-  """Get an httplib2.Http object for working with the Google API.
-
-  Args:
-    auth: bool, True if the http object returned should be authorized.
-    creds: oauth2client.client.Credentials, If auth is True and creds is not
-        None, use those credentials to authorize the httplib2.Http object.
-    timeout: double, The timeout in seconds to pass to httplib2.  This is the
-        socket level timeout.  If timeout is None, timeout is infinite.  If
-        default argument 'unset' is given, a sensible default is selected.
-
-  Returns:
-    An authorized httplib2.Http object, or a regular httplib2.Http object if no
-    credentials are available.
-
-  Raises:
-    c_store.Error: If an error loading the credentials occurs.
-  """
-
-  # Compared with setting the default timeout in the function signature (i.e.
-  # timeout=300), this lets you test with short default timeouts by mocking
-  # GetDefaultTimeout.
-  effective_timeout = timeout if timeout != 'unset' else GetDefaultTimeout()
-
-  # TODO(user): Have retry-once-if-denied logic, to allow client tools to not
-  # worry about refreshing credentials.
-
-  http = c_store._Http(  # pylint:disable=protected-access
-      timeout=effective_timeout, proxy_info=_GetHttpProxyInfo())
-
-  # Wrap first to dump any data added by other wrappers.
-  if properties.VALUES.core.log_http.GetBool():
-    http = _WrapRequestForLogging(http)
-
-  # Wrap the request method to put in our own user-agent, and trace reporting.
-  gcloud_ua = MakeUserAgentString(properties.VALUES.metrics.command_name.Get())
-
-  http = _WrapRequestForUserAgentAndTracing(
-      http,
-      properties.VALUES.core.trace_token.Get(),
-      properties.VALUES.core.trace_email.Get(),
-      properties.VALUES.core.trace_log.GetBool(),
-      gcloud_ua)
-
-  authority_selector = properties.VALUES.auth.authority_selector.Get()
-  authorization_token_file = (
-      properties.VALUES.auth.authorization_token_file.Get())
-  if authority_selector or authorization_token_file:
-    http = _WrapRequestForIAMAuth(
-        http, authority_selector, authorization_token_file)
-
-  if auth:
-    if not creds:
-      creds = c_store.Load()
-    http = creds.authorize(http)
-    # Wrap the request method to put in our own error handling.
-    http = _WrapRequestForAuthErrHandling(http)
-
-  return http
 
 
 def _GetHttpProxyInfo():
@@ -162,7 +125,7 @@ def _GetHttpProxyInfo():
   return proxy_info
 
 
-def _RequestArgsGetHeader(args, kwargs, header, default=None):
+def RequestArgsGetHeader(args, kwargs, header, default=None):
   """Get a specific header given the args and kwargs of an Http Request call."""
   if 'headers' in kwargs:
     return kwargs['headers'].get(header, default)
@@ -172,7 +135,7 @@ def _RequestArgsGetHeader(args, kwargs, header, default=None):
     return default
 
 
-def _RequestArgsSetHeader(args, kwargs, header, value):
+def RequestArgsSetHeader(args, kwargs, header, value):
   """Set a specific header given the args and kwargs of an Http Request call."""
   if 'headers' in kwargs:
     kwargs['headers'][header] = value
@@ -183,68 +146,14 @@ def _RequestArgsSetHeader(args, kwargs, header, value):
 
 
 # TODO(b/25115137): Refactor the wrapper functions to be more clear.
-def _WrapRequestForIAMAuth(http, authority_selector, authorization_token_file):
-  """Wrap request with IAM authority seelctor.
-
-  Args:
-    http: The original http object.
-    authority_selector: str, The authority selector string we want to use for
-        the request.
-    authorization_token_file: str, The file that contains the authorization
-        token we want to use for the request.
-
-  Returns:
-    http: The same http object but with the request method wrapped.
-  """
-  orig_request = http.request
-
-  authorization_token = None
-  if authorization_token_file:
-    try:
-      authorization_token = open(authorization_token_file, 'r').read()
-    except IOError as e:
-      raise Error(e)
-
-  def RequestWithIAMAuthoritySelector(*args, **kwargs):
-    """Wrap request with IAM authority selector.
-
-    Args:
-      *args: Positional arguments.
-      **kwargs: Keyword arguments.
-
-    Returns:
-      Wrapped request with IAM authority selector.
-    """
-    modified_args = list(args)
-    if authority_selector:
-      _RequestArgsSetHeader(
-          modified_args, kwargs,
-          'x-goog-iam-authority-selector', authority_selector)
-    if authorization_token:
-      _RequestArgsSetHeader(
-          modified_args, kwargs,
-          'x-goog-iam-authorization-token', authorization_token)
-    return orig_request(*modified_args, **kwargs)
-
-  http.request = RequestWithIAMAuthoritySelector
-
-  # apitools needs this attribute to do credential refreshes during batch API
-  # requests.
-  if hasattr(orig_request, 'credentials'):
-    setattr(http.request, 'credentials', orig_request.credentials)
-
-  return http
-
-
-# TODO(b/25115137): Refactor the wrapper functions to be more clear.
-def _WrapRequestForUserAgentAndTracing(http, trace_token,
+def _WrapRequestForUserAgentAndTracing(http_client, trace_token,
                                        trace_email,
                                        trace_log,
                                        gcloud_ua):
   """Wrap request with user-agent, and trace reporting.
 
   Args:
-    http: The original http object.
+    http_client: The original http object.
     trace_token: str, Token to be used to route service request traces.
     trace_email: str, username to which service request traces should be sent.
     trace_log: bool, Enable/diable server side logging of service requests.
@@ -253,7 +162,7 @@ def _WrapRequestForUserAgentAndTracing(http, trace_token,
   Returns:
     http, The same http object but with the request method wrapped.
   """
-  orig_request = http.request
+  orig_request = http_client.request
 
   def RequestWithUserAgentAndTracing(*args, **kwargs):
     """Wrap request with user-agent, and trace reporting.
@@ -272,9 +181,9 @@ def _WrapRequestForUserAgentAndTracing(http, trace_token,
     def UserAgent(current=''):
       user_agent = '{0} {1}'.format(current, gcloud_ua)
       return user_agent.strip()
-    cur_ua = _RequestArgsGetHeader(modified_args, kwargs, 'user-agent', '')
-    _RequestArgsSetHeader(modified_args, kwargs,
-                          'user-agent', UserAgent(cur_ua))
+    cur_ua = RequestArgsGetHeader(modified_args, kwargs, 'user-agent', '')
+    RequestArgsSetHeader(modified_args, kwargs,
+                         'user-agent', UserAgent(cur_ua))
 
     # Modify request url to enable requested tracing.
     url_parts = urlparse.urlsplit(args[0])
@@ -293,64 +202,28 @@ def _WrapRequestForUserAgentAndTracing(http, trace_token,
 
     return orig_request(*modified_args, **kwargs)
 
-  http.request = RequestWithUserAgentAndTracing
+  http_client.request = RequestWithUserAgentAndTracing
 
   # apitools needs this attribute to do credential refreshes during batch API
   # requests.
   if hasattr(orig_request, 'credentials'):
-    setattr(http.request, 'credentials', orig_request.credentials)
+    setattr(http_client.request, 'credentials', orig_request.credentials)
 
-  return http
-
-
-# TODO(b/25115137): Refactor the wrapper functions to be more clear.
-def _WrapRequestForAuthErrHandling(http):
-  """Wrap request with exception handling for auth.
-
-  We need to wrap exception handling because oauth2client does similar wrapping
-  when you authorize the http object.  Because of this, a credential refresh
-  error can get raised wherever someone makes an http request.  With no common
-  place to handle this exception, we do more wrapping here so we can convert it
-  to one of our typed exceptions.
-
-  Args:
-    http: The original http object.
-
-  Returns:
-    http, The same http object but with the request method wrapped.
-  """
-  orig_request = http.request
-
-  def RequestWithErrHandling(*args, **kwargs):
-    try:
-      return orig_request(*args, **kwargs)
-    except client.AccessTokenRefreshError as e:
-      log.debug('Exception caught during HTTP request: %s', e.message,
-                exc_info=True)
-      raise CannotRefreshAuthTokenError(e.message)
-
-  http.request = RequestWithErrHandling
-
-  # apitools needs this attribute to do credential refreshes during batch API
-  # requests.
-  if hasattr(orig_request, 'credentials'):
-    setattr(http.request, 'credentials', orig_request.credentials)
-
-  return http
+  return http_client
 
 
 # TODO(b/25115137): Refactor the wrapper functions to be more clear.
-def _WrapRequestForLogging(http):
+def _WrapRequestForLogging(http_client):
   """Wrap request for capturing and logging of http request/response data.
 
   Args:
-    http: httplib2.Http, The original http object.
+    http_client: httplib2.Http, The original http object.
 
   Returns:
     http, The same http object but with the request method wrapped.
   """
 
-  orig_request = http.request
+  orig_request = http_client.request
 
   def RequestWithLogging(*args, **kwargs):
     """Wrap request for request/response logging.
@@ -368,14 +241,14 @@ def _WrapRequestForLogging(http):
     _LogResponse(response, time.time() - time_start)
     return response
 
-  http.request = RequestWithLogging
+  http_client.request = RequestWithLogging
 
   # apitools needs this attribute to do credential refreshes during batch API
   # requests.
   if hasattr(orig_request, 'credentials'):
-    setattr(http.request, 'credentials', orig_request.credentials)
+    setattr(http_client.request, 'credentials', orig_request.credentials)
 
-  return http
+  return http_client
 
 
 def _LogRequest(*args, **kwargs):

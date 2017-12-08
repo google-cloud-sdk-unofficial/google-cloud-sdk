@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.compute import image_utils
 from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.third_party.py27 import py27_collections as collections
 
@@ -33,7 +34,6 @@ def _CommonArgs(parser):
   metadata_utils.AddMetadataArgs(parser)
   instance_utils.AddDiskArgs(parser)
   instance_utils.AddLocalSsdArgs(parser)
-  instance_utils.AddImageArgs(parser)
   instance_utils.AddCanIpForwardArgs(parser)
   instance_utils.AddAddressArgs(parser, instances=False)
   instance_utils.AddMachineTypeArgs(parser)
@@ -60,6 +60,7 @@ def _CommonArgs(parser):
       help='The name of the instance template to create.')
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
   """Create a Compute Engine virtual machine instance template.
 
@@ -77,6 +78,7 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
+    instance_utils.AddImageArgs(parser)
 
   @property
   def service(self):
@@ -413,3 +415,24 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
         project=self.context['project'])
 
     return [request]
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class CreateBeta(Create):
+  """Create a Compute Engine virtual machine instance template.
+
+  *{command}* facilitates the creation of Google Compute Engine
+  virtual machine instance templates. For example, running:
+
+      $ {command} INSTANCE-TEMPLATE
+
+  will create one instance templates called 'INSTANCE-TEMPLATE'.
+
+  Instance templates are global resources, and can be used to create
+  instances in any zone.
+  """
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser)
+    instance_utils.AddImageArgsBeta(parser)

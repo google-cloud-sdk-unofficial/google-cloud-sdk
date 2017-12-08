@@ -62,7 +62,6 @@ def _CommonArgs(parser):
   metadata_utils.AddMetadataArgs(parser)
   instance_utils.AddDiskArgs(parser)
   instance_utils.AddLocalSsdArgs(parser)
-  instance_utils.AddImageArgs(parser)
   instance_utils.AddCanIpForwardArgs(parser)
   instance_utils.AddAddressArgs(parser, instances=True)
   instance_utils.AddMachineTypeArgs(parser)
@@ -179,6 +178,7 @@ class CreateGA(base_classes.BaseAsyncCreator,
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
+    instance_utils.AddImageArgs(parser)
 
   @property
   def service(self):
@@ -510,6 +510,7 @@ class CreateBeta(CreateGA):
   def Args(parser):
     _CommonArgs(parser)
     csek_utils.AddCsekKeyArgs(parser)
+    instance_utils.AddImageArgsBeta(parser)
 
 
 CreateBeta.detailed_help = DETAILED_HELP

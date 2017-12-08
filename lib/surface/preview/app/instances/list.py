@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 AppEngineInstance = instances_util.AppEngineInstance
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """List the instances affiliated with the current App Engine project."""
 
   detailed_help = {
@@ -42,7 +42,7 @@ class List(base.Command):
           """,
   }
 
-  def Collection(self, unused_args):
+  def Collection(self):
     return 'app.instances'
 
   @staticmethod

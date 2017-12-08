@@ -102,5 +102,8 @@ class Create(base.CreateCommand):
     final_logpoint = debuggee.WaitForBreakpoint(logpoint.id, args.wait)
     return final_logpoint or logpoint
 
-  def Collection(self, unused_arg):
+  def Collection(self):
     return 'debug.logpoints'
+
+  def Format(self, args):
+    return self.ListFormat(args)

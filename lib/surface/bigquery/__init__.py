@@ -19,7 +19,6 @@ import urlparse
 from googlecloudsdk.api_lib.bigquery import bigquery
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import apis
-from googlecloudsdk.core import cli
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
@@ -54,8 +53,7 @@ class Bigquery(base.Group):
     # TODO(user): remove command dependence on these.
     context[BIGQUERY_MESSAGES_MODULE_KEY] = apis.GetMessagesModule(
         'bigquery', 'v2')
-    context[APITOOLS_CLIENT_KEY] = apis.GetClientInstance(
-        'bigquery', 'v2', http=self.Http())
+    context[APITOOLS_CLIENT_KEY] = apis.GetClientInstance('bigquery', 'v2')
     context[BIGQUERY_REGISTRY_KEY] = resources.REGISTRY
 
     # Inject bigquery backend params.

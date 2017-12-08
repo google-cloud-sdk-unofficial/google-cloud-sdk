@@ -20,14 +20,10 @@ from googlecloudsdk.core import properties
 
 
 class Delete(base.DeleteCommand):
-  """Delete debug snapshots."""
+  """Delete debug snapshots.
 
-  detailed_help = {
-      'DESCRIPTION': """\
-          This command deletes snapshots from a Cloud Debugger debug
-          target.
-      """
-  }
+  This command deletes snapshots from a Cloud Debugger debug target.
+  """
 
   @staticmethod
   def Args(parser):
@@ -66,7 +62,7 @@ class Delete(base.DeleteCommand):
       debuggee.DeleteBreakpoint(s.id)
     return snapshots
 
-  def Collection(self, unused_arg):
+  def Collection(self):
     return 'debug.snapshots'
 
   def Format(self, args):
@@ -81,7 +77,7 @@ class Delete(base.DeleteCommand):
     if args.all_users:
       fields.append('userEmail:label=USER')
     fields.append('location.format("{0}:{1}", path, line):label=LOCATION')
-    fields.append('short_status():label=STATUS BEFORE DELETION')
+    fields.append('short_status():label="STATUS BEFORE DELETION"')
     return """
       [log=status,
        empty-legend="No matching snapshots were found",

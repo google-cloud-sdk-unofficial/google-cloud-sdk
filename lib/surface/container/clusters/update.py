@@ -15,10 +15,28 @@
 """Update cluster command."""
 from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.api_lib.container import util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
+
+
+class InvalidAddonValueError(util.Error):
+  """A class for invalid --update-addons input."""
+
+  def __init__(self, value):
+    message = ('invalid --update-addons value {0}; '
+               'must be ENABLED or DISABLED.'.format(value))
+    super(InvalidAddonValueError, self).__init__(message)
+
+
+def _ParseAddonDisabled(val):
+  if val == 'ENABLED':
+    return False
+  if val == 'DISABLED':
+    return True
+  raise InvalidAddonValueError(val)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -37,13 +55,25 @@ class Update(base.Command):
         'name',
         metavar='NAME',
         help='The name of the cluster to update.')
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
         '--monitoring-service',
-        dest='monitoring_service',
-        required=True,
         help='The monitoring service to use for the cluster. Options '
         'are: "monitoring.googleapis.com" (the Google Cloud Monitoring '
         'service),  "none" (no metrics will be exported from the cluster)')
+    group.add_argument(
+        '--update-addons',
+        type=arg_parsers.ArgDict(spec={
+            api_adapter.INGRESS: _ParseAddonDisabled,
+            api_adapter.HPA: _ParseAddonDisabled,
+        }),
+        dest='disable_addons',
+        action=arg_parsers.FloatingListValuesCatcher(),
+        metavar='ADDON=ENABLED|DISABLED',
+        help='''Cluster addons to enable or disable. Options are
+  {hpa}=ENABLED|DISABLED
+  {ingress}=ENABLED|DISABLED'''.format(
+      hpa=api_adapter.HPA, ingress=api_adapter.INGRESS))
     parser.add_argument(
         '--wait',
         action='store_true',
@@ -64,13 +94,12 @@ class Update(base.Command):
     adapter = self.context['api_adapter']
 
     cluster_ref = adapter.ParseCluster(args.name)
-
     # Make sure it exists (will raise appropriate error if not)
     adapter.GetCluster(cluster_ref)
 
     options = api_adapter.UpdateClusterOptions(
-        update_cluster=True,
-        monitoring_service=args.monitoring_service)
+        monitoring_service=args.monitoring_service,
+        disable_addons=args.disable_addons)
 
     try:
       op_ref = adapter.UpdateCluster(cluster_ref, options)

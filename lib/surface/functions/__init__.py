@@ -52,12 +52,10 @@ class Functions(base.Group):
     Returns:
       The updated context.
     """
-    context['functions_client'] = apis.GetClientInstance(
-        'functions', 'v1beta1', self.Http())
+    context['functions_client'] = apis.GetClientInstance('functions', 'v1beta1')
     context['functions_messages'] = apis.GetMessagesModule(
         'functions', 'v1beta1')
-    context['logging_client'] = apis.GetClientInstance(
-        'logging', 'v2beta1', http=self.Http())
+    context['logging_client'] = apis.GetClientInstance('logging', 'v2beta1')
     context['logging_messages'] = apis.GetMessagesModule(
         'logging', 'v2beta1')
     return context

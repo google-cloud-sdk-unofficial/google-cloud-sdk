@@ -16,14 +16,12 @@
 
 from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import remote_completion
 from googlecloudsdk.core import resources
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """View the list of all your managed-zones.
 
   This command displays the list of your managed-zones.
@@ -42,34 +40,23 @@ class List(base.Command):
           """,
   }
 
-  @staticmethod
-  def Args(parser):
-    parser.add_argument(
-        '--limit', default=None, required=False, type=int,
-        help='Maximum number of managed-zones to list.')
+  def Collection(self):
+    return 'dns.managedZones'
 
-  @staticmethod
-  def GetRef(item):
-    instance_ref = resources.Create('dns.managedZones',
-                                    managedZone=item.name)
-    return instance_ref.SelfLink()
+  def GetUriFunc(self):
+    def _GetUri(resource):
+      return resources.Create(self.Collection(),
+                              managedZone=resource.name).SelfLink()
+    return _GetUri
 
+  @util.HandleHttpError
   def Run(self, args):
     dns_client = self.context['dns_client']
     dns_messages = self.context['dns_messages']
 
     project_id = properties.VALUES.core.project.Get(required=True)
-    remote_completion.SetGetInstanceFun(self.GetRef)
 
     return list_pager.YieldFromList(
         dns_client.managedZones,
         dns_messages.DnsManagedZonesListRequest(project=project_id),
         limit=args.limit, field='managedZones')
-
-  @util.HandleHttpError
-  def Display(self, args, result):
-    instance_refs = []
-    items = remote_completion.Iterate(result, instance_refs, self.GetRef)
-    list_printer.PrintResourceList('dns.managedZones', items)
-    cache = remote_completion.RemoteCompletion()
-    cache.StoreInCache(instance_refs)

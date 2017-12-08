@@ -48,4 +48,4 @@ class Pubsub(base.Group):
           .Run() invocation.
     """
     context['pubsub_msgs'] = apis.GetMessagesModule('pubsub', 'v1')
-    context['pubsub'] = apis.GetClientInstance('pubsub', 'v1', self.Http())
+    context['pubsub'] = apis.GetClientInstance('pubsub', 'v1')

@@ -47,4 +47,4 @@ class PubSub(base.Group):
     util.EnsureComponentIsInstalled('pubsub-emulator', pubsub_util.PUBSUB_TITLE)
 
     if not args.data_dir:
-      args.data_dir = pubsub_util.GetDefaultDataDir()
+      args.data_dir = pubsub_util.GetDataDir()

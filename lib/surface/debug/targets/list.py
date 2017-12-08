@@ -19,15 +19,12 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-class List(base.Command):
-  """List debug targets."""
+class List(base.ListCommand):
+  """List debug targets.
 
-  detailed_help = {
-      'DESCRIPTION': """\
-          This command displays a list of the active debug targets registered
-          with the Cloud Debugger.
-      """
-  }
+  This command displays a list of the active debug targets registered
+  with the Cloud Debugger.
+  """
 
   def Run(self, args):
     """Run the list command."""
@@ -35,5 +32,5 @@ class List(base.Command):
     debugger = debug.Debugger(project_id)
     return debugger.ListDebuggees()
 
-  def Collection(self, unused_args):
+  def Collection(self):
     return 'debug.targets'

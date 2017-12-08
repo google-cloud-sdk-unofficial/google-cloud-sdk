@@ -40,4 +40,4 @@ class Source(base.Group):
         resolver=resolvers.FromProperty(properties.VALUES.core.project))
 
     source.Source.SetResourceParser(resources.REGISTRY)
-    source.Source.SetApiEndpoint(self.Http())
+    source.Source.SetApiEndpoint()

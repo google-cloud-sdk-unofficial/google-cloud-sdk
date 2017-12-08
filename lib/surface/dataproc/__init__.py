@@ -52,8 +52,7 @@ class Dataproc(base.Group):
     # convert into a property when there are multiple regions.
     context['dataproc_region'] = self.REGION
 
-    context['dataproc_client'] = apis.GetClientInstance(
-        'dataproc', 'v1', context['http'])
+    context['dataproc_client'] = apis.GetClientInstance('dataproc', 'v1')
 
     resources.SetParamDefault(
         api='dataproc',

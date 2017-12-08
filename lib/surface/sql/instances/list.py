@@ -20,30 +20,13 @@ Lists instances in a given project in the alphabetical order of the
 
 from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import remote_completion
 from googlecloudsdk.core import resources
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
 class _BaseList(object):
   """Lists Cloud SQL instances in a given project."""
-
-  @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
-    parser.add_argument(
-        '--limit',
-        default=None,
-        type=int,
-        help='Maximum number of instances to list.')
 
   @errors.ReraiseHttpException
   def Run(self, args):
@@ -66,7 +49,6 @@ class _BaseList(object):
 
     project_id = properties.VALUES.core.project.Get(required=True)
 
-    remote_completion.SetGetInstanceFun(self.GetRef)
     return list_pager.YieldFromList(
         sql_client.instances,
         sql_messages.SqlInstancesListRequest(project=project_id),
@@ -74,44 +56,36 @@ class _BaseList(object):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class List(_BaseList, base.Command):
+class List(_BaseList, base.ListCommand):
   """Lists Cloud SQL instances in a given project.
 
   Lists Cloud SQL instances in a given project in the alphabetical
   order of the instance name.
   """
 
-  @staticmethod
-  def GetRef(item):
-    instance_ref = resources.Create('sql.instances', project=item.project,
-                                    instance=item.instance)
-    return instance_ref.SelfLink()
+  def Collection(self):
+    return 'sql.instances'
 
-  def Display(self, unused_args, result):
-    instance_refs = []
-    items = remote_completion.Iterate(result, instance_refs, self.GetRef)
-    list_printer.PrintResourceList('sql.instances', items)
-    cache = remote_completion.RemoteCompletion()
-    cache.StoreInCache(instance_refs)
+  def GetUriFunc(self):
+    def _GetUri(resource):
+      return resources.Create(self.Collection(), project=resource.project,
+                              instance=resource.instance).SelfLink()
+    return _GetUri
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(_BaseList, base.Command):
+class ListBeta(_BaseList, base.ListCommand):
   """Lists Cloud SQL instances in a given project.
 
   Lists Cloud SQL instances in a given project in the alphabetical
   order of the instance name.
   """
 
-  @staticmethod
-  def GetRef(item):
-    instance_ref = resources.Create('sql.instances', project=item.project,
-                                    instance=item.name)
-    return instance_ref.SelfLink()
+  def Collection(self):
+    return 'sql.instances.v1beta4'
 
-  def Display(self, unused_args, result):
-    instance_refs = []
-    items = remote_completion.Iterate(result, instance_refs, self.GetRef)
-    list_printer.PrintResourceList('sql.instances.v1beta4', items)
-    cache = remote_completion.RemoteCompletion()
-    cache.StoreInCache(instance_refs)
+  def GetUriFunc(self):
+    def _GetUri(resource):
+      return resources.Create('sql.instances', project=resource.project,
+                              instance=resource.name).SelfLink()
+    return _GetUri

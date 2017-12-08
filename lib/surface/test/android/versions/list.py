@@ -44,7 +44,7 @@ class List(base.ListCommand):
     catalog = util.GetAndroidCatalog(self.context)
     return catalog.versions
 
-  def Collection(self, unused_args):
+  def Collection(self):
     """Choose the default resource collection key used to list OS versions.
 
     Returns:

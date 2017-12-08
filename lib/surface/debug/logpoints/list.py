@@ -93,7 +93,7 @@ class List(base.ListCommand):
             restrict_to_type=debugger.LOGPOINT_TYPE)
         if self._ShouldInclude(args, l)]
 
-  def Collection(self, unused_arg):
+  def Collection(self):
     return 'debug.logpoints'
 
   def Format(self, args):
@@ -107,11 +107,11 @@ class List(base.ListCommand):
     fields = ['id']
     if args.all_users:
       fields.append('userEmail:label=USER')
-    fields.append('short_status():label=STATUS')
-    fields.append('location.format("{0}:{1}", path, line)')
+    fields.append('location')
     fields.append('logLevel:label=LEVEL')
     if args.include_inactive:
       fields.append('createTime')
+    fields.append('short_status():label=STATUS')
     fields.append('condition')
-    fields.append('log_message_format()')
-    return 'list({0})'.format(','.join(fields))
+    fields.append('log_message_format')
+    return 'table({0})'.format(','.join(fields))

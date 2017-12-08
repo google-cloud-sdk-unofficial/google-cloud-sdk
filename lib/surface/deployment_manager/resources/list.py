@@ -14,11 +14,23 @@
 
 """resources list command."""
 
+from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.third_party.apitools.base.py import list_pager
+
+
+def YieldWithHttpExceptions(generator):
+  """Wraps generators to translate HttpErrors into HttpExceptions."""
+  try:
+    for y in generator:
+      yield y
+  except apitools_exceptions.HttpError as error:
+    raise exceptions.HttpException(dm_v2_util.GetError(error))
 
 
 class List(base.Command):
@@ -80,9 +92,12 @@ class List(base.Command):
         project=project,
         deployment=args.deployment,
     )
-    return list_pager.YieldFromList(
-        client.resources, request, field='resources', limit=args.limit,
-        batch_size=500)
+    return YieldWithHttpExceptions(
+        list_pager.YieldFromList(client.resources,
+                                 request,
+                                 field='resources',
+                                 limit=args.limit,
+                                 batch_size=500))
 
   def Display(self, args, result):
     """Display prints information about what just happened to stdout.

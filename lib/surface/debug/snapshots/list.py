@@ -91,7 +91,7 @@ class List(base.ListCommand):
             restrict_to_type=debugger.SNAPSHOT_TYPE)
         if self._ShouldInclude(args, l)]
 
-  def Collection(self, unused_arg):
+  def Collection(self):
     return 'debug.snapshots'
 
   def Format(self, args):
@@ -105,9 +105,9 @@ class List(base.ListCommand):
     fields = ['id']
     if args.all_users:
       fields.append('userEmail:label=USER')
+    fields.append('location')
     fields.append('short_status():label=STATUS')
-    fields.append('location.format("{0}:{1}", path, line)')
     if args.include_expired:
       fields.append('createTime')
-    fields.append('console_view_url:label=VIEW')
-    return 'list({0})'.format(','.join(fields))
+    fields.append('consoleViewUrl:label=VIEW')
+    return 'table({0})'.format(','.join(fields))

@@ -46,7 +46,7 @@ class Delete(base.Command):
         '--version', help='Delete a specific version of the given service(s).')
 
   def Run(self, args):
-    api_client = appengine_api_client.GetApiClient(self.Http(timeout=None))
+    api_client = appengine_api_client.GetApiClient()
     # Why do this? It lets us know if we're missing services up front (fail
     # fast), and we get to control the error messages
     all_services = api_client.ListServices()

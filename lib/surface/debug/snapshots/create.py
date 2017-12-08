@@ -24,7 +24,7 @@ class Create(base.CreateCommand):
 
   detailed_help = {
       'DESCRIPTION': """\
-          This command create a debug snapshot on a Cloud Debugger debug
+          This command creates a debug snapshot on a Cloud Debugger debug
           target. Snapshots allow you to capture stack traces and local
           variables from your running service without interfering with normal
           operations.
@@ -88,5 +88,8 @@ class Create(base.CreateCommand):
     final_snapshot = debuggee.WaitForBreakpoint(snapshot.id, args.wait)
     return final_snapshot or snapshot
 
-  def Collection(self, unused_arg):
+  def Collection(self):
     return 'debug.snapshots'
+
+  def Format(self, args):
+    return self.ListFormat(args)

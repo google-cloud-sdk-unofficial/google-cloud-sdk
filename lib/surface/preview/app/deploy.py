@@ -390,8 +390,6 @@ class Deploy(base.Command):
     project = properties.VALUES.core.project.Get(required=True)
     version = args.version or util.GenerateVersionId()
     use_cloud_build = properties.VALUES.app.use_cloud_build.GetBool()
-    if use_cloud_build is None:
-      use_cloud_build = True
 
     config_cleanup = None
     if args.deployables:
@@ -429,7 +427,7 @@ class Deploy(base.Command):
           cloud_endpoints.PushServiceConfig(
               bs.get('endpoints_swagger_spec_file'),
               project,
-              apis.GetClientInstance('servicemanagement', 'v1', self.Http()),
+              apis.GetClientInstance('servicemanagement', 'v1'),
               apis.GetMessagesModule('servicemanagement', 'v1'))
 
     remote_build = True
@@ -442,12 +440,12 @@ class Deploy(base.Command):
     clients = _AppEngineClients(
         appengine_client.AppengineClient(args.server,
                                          args.ignore_bad_certs),
-        appengine_api_client.GetApiClient(self.Http(timeout=None)))
+        appengine_api_client.GetApiClient())
     log.debug('API endpoint: [{endpoint}], API version: [{version}]'.format(
         endpoint=clients.api.client.url,
         version=clients.api.api_version))
-    cloudbuild_client = apis.GetClientInstance('cloudbuild', 'v1', self.Http())
-    storage_client = apis.GetClientInstance('storage', 'v1', self.Http())
+    cloudbuild_client = apis.GetClientInstance('cloudbuild', 'v1')
+    storage_client = apis.GetClientInstance('storage', 'v1')
     promote = properties.VALUES.app.promote_by_default.GetBool()
     deployed_urls = _DisplayProposedDeployment(project, app_config, version,
                                                promote)
@@ -502,7 +500,6 @@ class Deploy(base.Command):
                                                             version,
                                                             cloudbuild_client,
                                                             storage_client,
-                                                            self.Http(),
                                                             code_bucket_ref,
                                                             self.cli,
                                                             remote_build,

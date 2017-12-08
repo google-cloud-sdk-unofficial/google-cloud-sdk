@@ -20,13 +20,13 @@ import sys
 import types
 
 from googlecloudsdk.api_lib.projects import projects_api
-from googlecloudsdk.api_lib.source import source
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
+from googlecloudsdk.core import config
+from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
-from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import platforms
 
 
@@ -49,7 +49,6 @@ class Init(base.Command):
               `gcloud auth login`.
             - Sets properties in a gcloud configuration, including the current
               project and the default Google Compute Engine region and zone.
-            - Clones a Cloud source repository (optional).
 
           Most users run {command} to get started with gcloud. You can use
           subsequent {command} invocations to create new gcloud configurations
@@ -98,33 +97,24 @@ class Init(base.Command):
           'disable_prompts/--quiet',
           'gcloud init command cannot run with disabled prompts.')
 
-    configuration_name = None
-    try:
-      configuration_name = self._PickConfiguration()
-      if not configuration_name:
-        return
-      log.status.write('Your current configuration has been set to: [{0}]\n\n'
-                       .format(configuration_name))
+    configuration_name = self._PickConfiguration()
+    if not configuration_name:
+      return
+    log.status.write('Your current configuration has been set to: [{0}]\n\n'
+                     .format(configuration_name))
 
-      if not self._PickAccount(args.console_only):
-        return
+    if not self._PickAccount(args.console_only):
+      return
 
-      project_id = self._PickProject()
-      if not project_id:
-        return
+    project_id = self._PickProject()
+    if not project_id:
+      return
 
-      self._PickDefaultRegionAndZone()
+    self._PickDefaultRegionAndZone()
 
-      self._PickRepo(project_id)
+    self._CreateBotoConfig()
 
-      log.status.write('\ngcloud has now been configured!\n')
-    finally:
-      log.status.write('You can use [gcloud config] to '
-                       'change more gcloud settings.\n\n')
-      log.status.flush()
-
-      # Not using self._RunCmd to get command actual output.
-      self.cli.Execute(['config', 'list'])
+    self._Summarize()
 
   def _PickAccount(self, console_only):
     """Checks if current credentials are valid, if not runs auth login.
@@ -226,7 +216,7 @@ class Init(base.Command):
       str, project_id or None if was not selected.
     """
     try:
-      projects = list(projects_api.List(http=self.Http()))
+      projects = list(projects_api.List())
     except Exception:  # pylint: disable=broad-except
       log.debug('Failed to execute projects list: %s, %s, %s', *sys.exc_info())
       projects = None
@@ -325,81 +315,49 @@ https://console.developers.google.com/apis page.
                                     [default_region])
     SetProperty('region', default_region, ['compute', 'regions', 'list'])
 
-  def _PickRepo(self, project_id):
-    """Allows user to clone one of the projects repositories."""
-    answer = console_io.PromptContinue(
-        prompt_string='Do you want to use Google\'s source hosting (see '
-        '"https://cloud.google.com/source-repositories/docs/")')
-    if not answer:
-      return
+  def _Summarize(self):
+    log.status.Print('Your Google Cloud SDK is configured and ready to use!\n')
 
-    try:
-      source.Source.SetApiEndpoint(self.Http())
-      project = source.Project(project_id)
-      repos = project.ListRepos()
-    except Exception:  # pylint: disable=broad-except
-      # This command is experimental right now; its failures shouldn't affect
-      # operation.
-      repos = None
+    log.status.Print(
+        '* Commands that require authentication will use {0} by default'
+        .format(properties.VALUES.core.account.Get()))
+    project = properties.VALUES.core.project.Get()
+    if project:
+      log.status.Print(
+          '* Commands will reference project `{0}` by default'
+          .format(project))
+    region = properties.VALUES.compute.region.Get()
+    if region:
+      log.status.Print(
+          '* Compute Engine commands will use region `{0}` by default'
+          .format(region))
+    zone = properties.VALUES.compute.zone.Get()
+    if zone:
+      log.status.Print(
+          '* Compute Engine commands will use zone `{0}` by default\n'
+          .format(zone))
 
-    if repos:
-      repos = sorted(repo.name or 'default' for repo in repos)
-      log.status.write(
-          'This project has one or more associated Git repositories.\n')
-      idx = console_io.PromptChoice(
-          ['[{0}]'.format(repo) for repo in repos] + ['Do not clone'],
-          message='Pick Git repository to clone to your local machine:',
-          prompt_string=None)
-      if idx >= 0 and idx < len(repos):
-        repo_name = repos[idx]
-      else:
-        return
-    elif repos is None:
-      answer = console_io.PromptContinue(
-          prompt_string='Generally projects have a Git repository named '
-          '[default]. Would you like to try clone it')
-      if not answer:
-        return
-      repo_name = 'default'
-    else:
-      return
+    log.status.Print(
+        'Run `gcloud help config` to learn how to change individual settings\n')
 
-    self._CloneRepo(repo_name)
+    log.status.Print(
+        'This gcloud configuration is called [default]. You can create '
+        'additional configurations if you work with multiple accounts and/or '
+        'projects.')
+    log.status.Print('Run `gcloud topic configurations` to learn more.\n')
 
-  def _CloneRepo(self, repo_name):
-    """Queries user for output path and clones selected repo to it."""
-    default_clone_path = os.path.join(os.getcwd(), repo_name)
-    while True:
-      clone_path = console_io.PromptResponse(
-          'Where would you like to clone [{0}] repository to [{1}]:'
-          .format(repo_name, default_clone_path))
-      if not clone_path:
-        clone_path = default_clone_path
-      if os.path.exists(clone_path):
-        log.status.write('Directory [{0}] already exists\n'.format(clone_path))
-        continue
-      clone_path = os.path.abspath(platforms.ExpandHomePath(clone_path))
-      parent_dir = os.path.dirname(clone_path)
-      if not os.path.isdir(parent_dir):
-        log.status.write('No such directory [{0}]\n'.format(parent_dir))
-        answer = console_io.PromptContinue(
-            prompt_string='Would you like to create it')
-        if answer:
-          files.MakeDir(parent_dir)
-          break
-      else:
-        break
+    log.status.Print('Some things to try next:\n')
 
-    # Show output from this command in case there are errors.
-    try:
-      self._RunCmd(['source', 'repos', 'clone'], [repo_name, clone_path],
-                   disable_user_output=False)
-    except c_exc.FailedSubCommand:
-      log.warning(
-          'Was not able to run\n  '
-          '[gcloud source repos clone {0} {1}]\n'
-          'at this time. You can try running this command any time later.\n'
-          .format(repo_name, clone_path))
+    log.status.Print(
+        '* Run `gcloud --help` to see the Cloud Platform services you can '
+        'interact with. And run `gcloud help COMMAND` to get help on any '
+        'gcloud command.')
+    log.status.Print(
+        '* Run `gcloud topic -h` to learn about advanced features of the SDK '
+        'like arg files and output formatting')
+    log.status.Print(
+        '* Clone your Google Source Repository to a local directory by running '
+        'the command `gcloud source repos clone default /local/path`')
 
   def _CreateConfiguration(self):
     configuration_name = console_io.PromptResponse(
@@ -411,6 +369,43 @@ https://console.developers.google.com/apis page.
                    [configuration_name])
       properties.PropertiesFile.Invalidate()
     return new_config_name
+
+  def _CreateBotoConfig(self):
+    gsutil_path = _FindGsutil()
+    if not gsutil_path:
+      log.debug('Unable to find [gsutil]. Not configuring default .boto '
+                'file')
+      return
+
+    boto_path = platforms.ExpandHomePath(os.path.join('~', '.boto'))
+    if os.path.exists(boto_path):
+      log.debug('Not configuring default .boto file. File already '
+                'exists at [{boto_path}].'.format(boto_path=boto_path))
+      return
+
+    # 'gsutil config -n' creates a default .boto file that the user can read and
+    # modify.
+    command_args = ['config', '-n', '-o', boto_path]
+    if platforms.OperatingSystem.Current() == platforms.OperatingSystem.WINDOWS:
+      gsutil_args = execution_utils.ArgsForCMDTool(gsutil_path,
+                                                   *command_args)
+    else:
+      gsutil_args = execution_utils.ArgsForShellTool(gsutil_path, *command_args)
+
+    return_code = execution_utils.Exec(gsutil_args, no_exit=True,
+                                       pipe_output_through_logger=True,
+                                       file_only_logger=True)
+    if return_code == 0:
+      log.status.write("""\
+Created a default .boto configuration file at [{boto_path}]. See this file and
+[https://cloud.google.com/storage/docs/gsutil/commands/config] for more
+information about configuring Google Cloud Storage.
+""".format(boto_path=boto_path))
+
+    else:
+      log.status.write('Error creating a default .boto configuration file. '
+                       'Please run [gsutil config -n] if you would like to '
+                       'create this file.\n')
 
   def _CleanCurrentConfiguration(self):
     self._RunCmd(['config', 'unset'], ['account'])
@@ -451,3 +446,20 @@ https://console.developers.google.com/apis page.
     except BaseException:
       log.info('Failed to run [%s]\n', ' '.join(cmd + params))
       raise
+
+
+def _FindGsutil():
+  """Finds the bundled gsutil wrapper.
+
+  Returns:
+    The path to gsutil.
+  """
+  sdk_bin_path = config.Paths().sdk_bin_path
+  if not sdk_bin_path:
+    return
+
+  if platforms.OperatingSystem.Current() == platforms.OperatingSystem.WINDOWS:
+    gsutil = 'gsutil.cmd'
+  else:
+    gsutil = 'gsutil'
+  return os.path.join(sdk_bin_path, gsutil)

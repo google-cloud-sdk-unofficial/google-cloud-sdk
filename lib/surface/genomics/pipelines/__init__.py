@@ -38,9 +38,9 @@ class Pipelines(base.Group):
     """
 
     context[lib.GENOMICS_APITOOLS_V1A2_CLIENT_KEY] = apis.GetClientInstance(
-        'genomics', 'v1alpha2', self.Http())
+        'genomics', 'v1alpha2')
     context[lib.GENOMICS_MESSAGES_V1A2_MODULE_KEY] = apis.GetMessagesModule(
         'genomics', 'v1alpha2')
     context[lib.STORAGE_V1_CLIENT_KEY] = apis.GetClientInstance(
-        'storage', 'v1', self.Http())
+        'storage', 'v1')
     return context

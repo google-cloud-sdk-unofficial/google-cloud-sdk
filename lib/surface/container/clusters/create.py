@@ -65,6 +65,12 @@ def _Args(parser):
       'alpha feature, and requires that the '
       'Google Compute Engine alpha API be enabled.')
   parser.add_argument(
+      '--disable-addons',
+      type=arg_parsers.ArgList(
+          choices=[api_adapter.INGRESS, api_adapter.HPA]),
+      help='List of cluster addons to disable. Options are {0}'.format(
+          ', '.join([api_adapter.INGRESS, api_adapter.HPA])))
+  parser.add_argument(
       '--network',
       help='The Compute Engine Network that the cluster will connect to. '
       'Google Container Engine will use this network when creating routes '
@@ -172,7 +178,8 @@ class Create(base.Command):
         cluster_ipv4_cidr=cluster_ipv4_cidr,
         node_disk_size_gb=args.disk_size,
         enable_cloud_logging=args.enable_cloud_logging,
-        enable_cloud_monitoring=args.enable_cloud_monitoring)
+        enable_cloud_monitoring=args.enable_cloud_monitoring,
+        disable_addons=args.disable_addons)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

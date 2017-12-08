@@ -15,15 +15,13 @@
 
 from googlecloudsdk.api_lib.billing import utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
-from googlecloudsdk.core import remote_completion
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
 class List(base.ListCommand):
   """List all active billing accounts.
 
-  *{command}* -- lists all billing accounts owned by the currently
+  *{command}* lists all billing accounts owned by the currently
   authenticated user.
   """
 
@@ -33,6 +31,12 @@ class List(base.ListCommand):
         account,
         'cloudbilling.billingAccounts',
     ).SelfLink()
+
+  def GetUriFunc(self):
+    return self.ToSelfLink
+
+  def Collection(self):
+    return 'cloudbilling.billingAccounts'
 
   def Run(self, args):
     """Run the list command."""
@@ -46,15 +50,3 @@ class List(base.ListCommand):
         limit=args.limit,
         predicate=args.filter,
     )
-
-  def Display(self, _, result):
-    instance_refs = []
-    items = remote_completion.Iterate(result, instance_refs, self.ToSelfLink)
-    list_printer.PrintResourceList(
-        'cloudbilling.billingAccount',
-        items,
-    )
-    # TODO(b/22402915) uncomment once completion for OP resources is supported
-    #
-    # cache = remote_completion.RemoteCompletion()
-    # cache.StoreInCache(instance_refs)

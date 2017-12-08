@@ -52,7 +52,7 @@ class DmV2(base.Group):
 
     # v2
     context['deploymentmanager-client'] = apis.GetClientInstance(
-        'deploymentmanager', 'v2', self.Http())
+        'deploymentmanager', 'v2')
     context['deploymentmanager-messages'] = apis.GetMessagesModule(
         'deploymentmanager', 'v2')
     return context

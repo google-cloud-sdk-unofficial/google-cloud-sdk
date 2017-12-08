@@ -57,20 +57,18 @@ class Test(base.Group):
           'Service endpoints [{0}] and [{1}] are not compatible.'
           .format(testing_url, toolresults_url))
 
-    http = self.Http()
-
     # Create the client for the Testing service.
-    context['testing_client'] = apis.GetClientInstance('testing', 'v1', http)
+    context['testing_client'] = apis.GetClientInstance('testing', 'v1')
     context['testing_messages'] = apis.GetMessagesModule('testing', 'v1')
 
     # Create the client for the Tool Results service.
     context['toolresults_client'] = apis.GetClientInstance(
-        'toolresults', 'v1beta3', http)
+        'toolresults', 'v1beta3')
     context['toolresults_messages'] = apis.GetMessagesModule(
         'toolresults', 'v1beta3')
 
     # Create the client for the Storage service.
-    context['storage_client'] = apis.GetClientInstance('storage', 'v1', http)
+    context['storage_client'] = apis.GetClientInstance('storage', 'v1')
 
     # TODO(user): remove this message for general release.
     log.status.Print(

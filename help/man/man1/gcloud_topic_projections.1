@@ -418,7 +418,7 @@ Returns this value if the resource or segment index is empty.
 
 .RE
 .RE
-\fBsize\fR(zero="0", units_in, units_out, min=0)
+\fBsize\fR(zero="0", precision=1, units_in, units_out, min=0)
 .RS 2m
 Formats a human readable size in bytes.
 
@@ -427,7 +427,11 @@ The arguments are:
 
 \fB\f5zero\fR\fR
 .RS 2m
-Returns this value if size==0. Ignored if not specified.
+Returns this if size==0. Ignored if None.
+.RE
+\fB\f5precision\fR\fR
+.RS 2m
+The number of digits displayed after the decimal point.
 .RE
 \fB\f5units_in\fR\fR
 .RS 2m

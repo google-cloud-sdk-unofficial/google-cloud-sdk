@@ -45,7 +45,7 @@ class List(base.ListCommand):
     catalog = util.GetAndroidCatalog(self.context)
     return catalog.models
 
-  def Collection(self, unused_args):
+  def Collection(self):
     """Choose the resource collection key used to list devices by default.
 
     Returns:

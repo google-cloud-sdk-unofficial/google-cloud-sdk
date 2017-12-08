@@ -45,6 +45,7 @@ class Create(base_classes.BaseAsyncCreator):
     return 'networks'
 
   def ComputeDynamicProperties(self, args, items):
+    self._network_name = args.name
     return networks_utils.AddMode(items)
 
   @staticmethod
@@ -116,7 +117,7 @@ class Create(base_classes.BaseAsyncCreator):
 
     return [request]
 
-  def Epilog(self, unused_args):
+  def Epilog(self):
     message = """\
 
         Instances on this network will not be reachable until firewall rules
@@ -125,5 +126,5 @@ class Create(base_classes.BaseAsyncCreator):
 
         $ gcloud compute firewall-rules create <FIREWALL_NAME> --network {0} --allow tcp,udp,icmp --source-ranges <IP_RANGE>
         $ gcloud compute firewall-rules create <FIREWALL_NAME> --network {0} --allow tcp:22,tcp:3389,icmp
-        """.format(unused_args.name)
+        """.format(self._network_name)
     log.status.Print(textwrap.dedent(message))
