@@ -18,8 +18,7 @@ from googlecloudsdk.api_lib.projects import util
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class GetIamPolicy(base.Command):
   """Get IAM policy for a Project.
 

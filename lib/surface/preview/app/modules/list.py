@@ -55,7 +55,7 @@ class List(base.Command):
       if args.modules and version.service not in args.modules:
         continue
       service_versions.append({'module': version.service,
-                               'version': version.version,
+                               'version': version.id,
                                'traffic_split': version.traffic_split})
 
     # Sort so the order is deterministic for testing.

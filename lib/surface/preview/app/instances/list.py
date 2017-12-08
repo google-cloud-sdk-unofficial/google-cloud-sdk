@@ -42,8 +42,7 @@ class List(base.Command):
           """,
   }
 
-  @staticmethod
-  def Collection(args):
+  def Collection(self, unused_args):
     return 'app.instances'
 
   @staticmethod

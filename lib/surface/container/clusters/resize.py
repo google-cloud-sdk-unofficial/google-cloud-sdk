@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Describe cluster command."""
+"""Resize cluster command."""
 from os import path
 
 from googlecloudsdk.calliope import base

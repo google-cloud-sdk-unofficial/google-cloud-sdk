@@ -97,13 +97,13 @@ class Start(base.Command):
     for version in versions:
       try:
         with console_io.ProgressTracker('Starting [{0}]'.format(version)):
-          client.StartModule(module=version.service, version=version.version)
+          client.StartModule(module=version.service, version=version.id)
       except util.RPCError as err:
         errors[version] = str(err)
     if errors:
       printable_errors = {}
       for version, error_msg in errors.items():
-        short_name = '[{0}/{1}]'.format(version.service, version.version)
+        short_name = '[{0}/{1}]'.format(version.service, version.id)
         printable_errors[short_name] = '{0}: {1}'.format(short_name, error_msg)
       raise VersionsStartError(
           'Issues starting version(s): {0}\n\n'.format(

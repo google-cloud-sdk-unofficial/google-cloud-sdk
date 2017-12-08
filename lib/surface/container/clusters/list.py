@@ -17,7 +17,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from surface.container import UPGRADE_TEXT
+from surface.container.clusters.upgrade import UpgradeHelpText
+from surface.container.clusters.upgrade import VersionVerifier
 from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.third_party.py27 import py27_collections as collections
 
@@ -56,15 +57,31 @@ class List(base.Command):
       clusters = adapter.ListClusters(project, zone)
 
       upgrade_available = False
-      text = None
+      support_ending = False
+      unsupported = False
+      text = ''
       list_info = collections.namedtuple('list_info', ['clusters', 'text'])
-
+      vv = VersionVerifier()
       for c in clusters.clusters:
-        if c.currentNodeVersion != c.currentMasterVersion:
+        ver_status = vv.Compare(c.currentMasterVersion, c.currentNodeVersion)
+        if ver_status == VersionVerifier.UPGRADE_AVAILABLE:
           c.currentNodeVersion += ' *'
           upgrade_available = True
+        elif ver_status == VersionVerifier.SUPPORT_ENDING:
+          c.currentNodeVersion += ' **'
+          support_ending = True
+        elif ver_status == VersionVerifier.UNSUPPORTED:
+          c.currentNodeVersion += ' ***'
+          unsupported = True
+
       if upgrade_available:
-        text = UPGRADE_TEXT.format(name='NAME')
+        text += UpgradeHelpText.UPGRADE_AVAILABLE
+      if support_ending:
+        text += UpgradeHelpText.SUPPORT_ENDING
+      if unsupported:
+        text += UpgradeHelpText.UNSUPPORTED
+      if text:
+        text += UpgradeHelpText.UPGRADE_COMMAND.format(name='NAME')
       return list_info(clusters, text)
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(util.GetError(error))

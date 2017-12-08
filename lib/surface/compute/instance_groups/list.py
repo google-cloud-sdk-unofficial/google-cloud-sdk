@@ -34,6 +34,10 @@ class List(base_classes.ZonalLister,
         help=('If provided, a list of unmanaged instance groups '
               'will be returned.'))
 
+  def GetResources(self, args, errors):
+    resources = super(List, self).GetResources(args, errors)
+    return (resource for resource in resources if resource.zone)
+
   def ComputeDynamicProperties(self, args, items):
     mode = base_classes.InstanceGroupFilteringMode.all_groups
     if args.only_managed:

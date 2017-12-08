@@ -20,7 +20,50 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util.semver import SemVer
 from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
+
+
+class UpgradeHelpText(object):
+  """Upgrade available help text messages."""
+  UPGRADE_AVAILABLE = '''
+* - There is an upgrade available for your cluster(s).
+'''
+
+  SUPPORT_ENDING = '''
+** - The current version of your cluster(s) will soon be out of support, please upgrade.
+'''
+
+  UNSUPPORTED = '''
+*** - The current version of your cluster(s) is unsupported, please upgrade.
+'''
+
+  UPGRADE_COMMAND = '''
+To upgrade nodes to the latest available version, run
+  $ gcloud container clusters upgrade {name}'''
+
+
+class VersionVerifier(object):
+  """Compares the cluster and master versions for upgrade availablity."""
+  UP_TO_DATE = 0
+  UPGRADE_AVAILABLE = 1
+  SUPPORT_ENDING = 2
+  UNSUPPORTED = 3
+
+  def Compare(self, current_master_version, current_cluster_version):
+    """Compares the cluster and master versions and returns an enum."""
+    # TODO(user):update the if condition when we roll the master version
+    if current_master_version == current_cluster_version:
+      return self.UP_TO_DATE
+    master_version = SemVer(current_master_version)
+    cluster_version = SemVer(current_cluster_version)
+    major, minor, _ = master_version.Distance(cluster_version)
+    if major != 0 or minor > 2:
+      return self.UNSUPPORTED
+    elif minor != 0:
+      return self.SUPPORT_ENDING
+    else:
+      return self.UPGRADE_AVAILABLE
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

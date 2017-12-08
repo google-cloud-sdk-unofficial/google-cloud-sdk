@@ -198,18 +198,18 @@ class Run(base.ListCommand):
         tr_messages.Outcome.SummaryValueValuesEnum)
     return summary_fetcher.CreateMatrixOutcomeSummary()
 
-  def Collection(self, args):
+  def Collection(self, unused_args):
     """Choose the default resource collection key used to format test outcomes.
 
     Args:
-      args: The arguments that command was run with.
+      unused_args: The arguments that command was run with.
 
     Returns:
       A collection string used as a key to select the default ResourceInfo
       from core.resources.resource_registry.RESOURCE_REGISTRY.
     """
     log.debug('gcloud test command exit_code is: {0}'.format(self.exit_code))
-    return 'test.android.run.url' if args.async else 'test.android.run.outcomes'
+    return 'test.android.run.outcomes'
 
 
 def _EnsureUserAcceptsTermsOfService():

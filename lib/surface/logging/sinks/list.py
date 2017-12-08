@@ -84,8 +84,8 @@ class List(base.Command):
         field='logs', batch_size=None, batch_size_attribute='pageSize')
     for log in response:
       # We need only the base log name, not the full resource uri.
-      log_name = util.ExtractLogName(log.name)
-      for typed_sink in self.ListLogSinks(project, log_name, limit):
+      log_id = util.ExtractLogId(log.name)
+      for typed_sink in self.ListLogSinks(project, log_id, limit):
         yield typed_sink
         limit -= 1
         if not limit:

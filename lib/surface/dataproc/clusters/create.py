@@ -16,6 +16,7 @@
 
 import argparse
 
+from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.api_lib.dataproc import compute_helpers
 from googlecloudsdk.api_lib.dataproc import constants
 from googlecloudsdk.api_lib.dataproc import util
@@ -41,6 +42,15 @@ class Create(base.Command):
 
   @staticmethod
   def Args(parser):
+    instance_utils.AddTagsArgs(parser)
+    parser.add_argument(
+        '--metadata',
+        type=arg_parsers.ArgDict(min_length=1),
+        action=arg_parsers.FloatingListValuesCatcher(),
+        default=None,
+        help=('Metadata to be made available to the guest operating system '
+              'running on the instances'),
+        metavar='KEY=VALUE')
     parser.add_argument('name', help='The name of this cluster.')
     parser.add_argument(
         '--num-workers',
@@ -207,13 +217,21 @@ Alias,URI
       software_config.properties = encoding.DictToMessage(
           args.properties, messages.SoftwareConfiguration.PropertiesValue)
 
+    gce_cluster_config = messages.GceClusterConfiguration(
+        networkUri=compute_uris['network'],
+        serviceAccountScopes=expanded_scopes,
+        zoneUri=compute_uris['zone'])
+
+    if args.tags:
+      gce_cluster_config.tags = args.tags
+
+    if args.metadata:
+      gce_cluster_config.metadata = encoding.DictToMessage(
+          args.metadata, messages.GceClusterConfiguration.MetadataValue)
+
     cluster_config = messages.ClusterConfiguration(
         configurationBucket=args.bucket,
-        gceClusterConfiguration=messages.GceClusterConfiguration(
-            networkUri=compute_uris['network'],
-            serviceAccountScopes=expanded_scopes,
-            zoneUri=compute_uris['zone'],
-        ),
+        gceClusterConfiguration=gce_cluster_config,
         masterConfiguration=messages.InstanceGroupConfiguration(
             imageUri=compute_uris['image'],
             machineTypeUri=compute_uris['master_machine_type'],

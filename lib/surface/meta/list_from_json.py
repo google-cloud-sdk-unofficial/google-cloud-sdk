@@ -18,9 +18,7 @@ import json
 import sys
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core.resource import resource_filter
 from googlecloudsdk.core.resource import resource_lex
-from googlecloudsdk.core.resource import resource_printer
 from googlecloudsdk.core.resource import resource_property
 
 
@@ -92,7 +90,7 @@ class Aggregator(object):
     return item
 
 
-class ListFromJson(base.Command):
+class ListFromJson(base.ListCommand):
   """Read JSON data and list it on the standard output.
 
   *{command}* is a test harness for the output resource *--aggregate*,
@@ -113,13 +111,6 @@ class ListFromJson(base.Command):
         default=None,
         help=('Aggregate the lists named by KEY into a single list'
               ' that can be controlled by *--filter* and *--format*.'))
-    # TODO(user): Drop --filter when the --filter global flag lands.
-    parser.add_argument(
-        '--filter',
-        default=None,
-        help=('A resource filter expression. Only resource items matching'
-              ' the filter expression are printed. For example,'
-              ' --filter="foo.bar=OK AND x.y<10".'))
     parser.add_argument(
         'json_file',
         metavar='JSON-FILE',
@@ -139,22 +130,7 @@ class ListFromJson(base.Command):
     if args.aggregate:
       key = resource_lex.Lexer(args.aggregate).Key()
       resources = Aggregator(resources, key)
-    # TODO(user): Return resources here when the --filter global flag lands.
-    if not args.format:
-      args.format = 'json'
-    if not args.filter:
-      return resources
-    select = resource_filter.Compile(args.filter).Evaluate
-    filtered_resources = []
-    if resource_property.IsListLike(resources):
-      for resource in resources:
-        if select(resource):
-          filtered_resources.append(resource)
-    elif select(resources):
-      # treat non-iterable resources as a list of length 1
-      filtered_resources.append(resources)
-    return filtered_resources
+    return resources
 
-  # TODO(user): Drop Display() when the --filter global flag lands.
-  def Display(self, args, resources):
-    resource_printer.Print(resources, 'json')
+  def Format(self, args):
+    return 'json'

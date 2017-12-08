@@ -21,11 +21,6 @@ from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
-UPGRADE_TEXT = '''
-* - There is an upgrade available for your cluster(s).
-To upgrade nodes to the latest available version, run
-  $ gcloud container clusters upgrade {name}'''
-
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Container(base.Group):

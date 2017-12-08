@@ -11,7 +11,7 @@ gcloud preview app gen\-config \- \fB(BETA)\fR generate missing configuration fi
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud preview app gen\-config\fR [\fISOURCE_DIR\fR] [\fB\-\-config\fR\ \fICONFIG\fR] [\fB\-\-custom\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud preview app gen\-config\fR [\fISOURCE_DIR\fR] [\fB\-\-config\fR\ \fICONFIG\fR] [\fB\-\-custom\fR] [\fB\-\-runtime\fR\ \fIRUNTIME\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -45,6 +45,13 @@ containing parameters.
 If true, generate config files for a custom runtime. This will produce a
 Dockerfile, a .dockerignore file and an app.yaml (possibly other files as well,
 depending on the runtime).
+
+.RE
+\fB\-\-runtime\fR \fIRUNTIME\fR
+.RS 2m
+Generate config files for a given runtime. Can be used in conjunction with
+\-\-custom. Allowed runtimes are: contrib\-dart, dart, go, php, php55, python,
+python27, python\-compat, java, java7, nodejs, ruby.
 
 
 .RE

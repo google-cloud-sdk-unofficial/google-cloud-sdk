@@ -19,6 +19,10 @@ class List(base_classes.ZonalLister,
            base_classes.InstanceGroupDynamicProperiesMixin):
   """List Google Compute Engine unmanaged instance groups."""
 
+  def GetResources(self, args, errors):
+    resources = super(List, self).GetResources(args, errors)
+    return (resource for resource in resources if resource.zone)
+
   def ComputeDynamicProperties(self, args, items):
     mode = base_classes.InstanceGroupFilteringMode.only_unmanaged_groups
     return self.ComputeInstanceGroupManagerMembership(

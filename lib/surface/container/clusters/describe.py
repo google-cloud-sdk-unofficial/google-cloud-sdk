@@ -14,7 +14,8 @@
 """Describe cluster command."""
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
-from surface.container import UPGRADE_TEXT
+from surface.container.clusters.upgrade import UpgradeHelpText
+from surface.container.clusters.upgrade import VersionVerifier
 from googlecloudsdk.third_party.py27 import py27_collections as collections
 
 
@@ -44,10 +45,18 @@ class Describe(base.Command):
     adapter = self.context['api_adapter']
     describe_info = collections.namedtuple('describe_info', ['cluster', 'text'])
     text = None
-    cluster = adapter.GetCluster(adapter.ParseCluster(args.name))
-    if cluster.currentMasterVersion != cluster.currentNodeVersion:
-      text = UPGRADE_TEXT.format(name=cluster.name)
-    return describe_info(cluster, text)
+    vv = VersionVerifier()
+    c = adapter.GetCluster(adapter.ParseCluster(args.name))
+    ver_status = vv.Compare(c.currentMasterVersion, c.currentNodeVersion)
+    if ver_status == VersionVerifier.UPGRADE_AVAILABLE:
+      text = UpgradeHelpText.UPGRADE_AVAILABLE
+    elif ver_status == VersionVerifier.SUPPORT_ENDING:
+      text = UpgradeHelpText.SUPPORT_ENDING
+    elif ver_status == VersionVerifier.UNSUPPORTED:
+      text = UpgradeHelpText.UNSUPPORTED
+    if ver_status != VersionVerifier.UP_TO_DATE:
+      text += UpgradeHelpText.UPGRADE_COMMAND.format(name=c.name)
+    return describe_info(c, text)
 
   def Display(self, args, result):
     """This method is called to print the result of the Run() method.

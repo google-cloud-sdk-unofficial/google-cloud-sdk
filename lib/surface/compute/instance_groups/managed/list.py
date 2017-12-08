@@ -34,7 +34,7 @@ class List(base_classes.ZonalLister,
 
   def GetResources(self, args, errors):
     resources = super(List, self).GetResources(args, errors)
-    return [resource for resource in resources if resource.zone]
+    return (resource for resource in resources if resource.zone)
 
   def Display(self, args, resources):
     """Prints the given resources."""

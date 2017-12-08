@@ -14,7 +14,6 @@
 
 """'logging write' command."""
 
-import datetime
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
@@ -56,52 +55,36 @@ class Write(base.Command):
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
     """
-    client = self.context['logging_client_v1beta3']
-    messages = self.context['logging_messages_v1beta3']
+    client = self.context['logging_client_v2beta1']
+    messages = self.context['logging_messages_v2beta1']
     project = properties.VALUES.core.project.Get(required=True)
 
-    severity_value = getattr(messages.LogEntryMetadata.SeverityValueValuesEnum,
+    severity_value = getattr(messages.LogEntry.SeverityValueValuesEnum,
                              args.severity.upper())
 
-    labels = messages.LogEntryMetadata.LabelsValue()
-    labels.additionalProperties = [
-        messages.LogEntryMetadata.LabelsValue.AdditionalProperty(
-            key='compute.googleapis.com/resource_type',
-            value='instance'),
-        messages.LogEntryMetadata.LabelsValue.AdditionalProperty(
-            key='compute.googleapis.com/resource_id',
-            value='sent with gcloud'),
-    ]
-
-    meta = messages.LogEntryMetadata(
-        timestamp=util.FormatTimestamp(datetime.datetime.utcnow()),
-        severity=severity_value,
-        serviceName='compute.googleapis.com',
-        labels=labels)
-    entry = messages.LogEntry(metadata=meta)
+    entry = messages.LogEntry(
+        logName=util.CreateLogResourceName(project, args.log_name),
+        resource=messages.MonitoredResource(type='global'),
+        severity=severity_value)
 
     if args.payload_type == 'struct':
       json_object = util.ConvertToJsonObject(args.message)
-      struct = messages.LogEntry.StructPayloadValue()
+      struct = messages.LogEntry.JsonPayloadValue()
       # Protobufs in Python do strict type-checking. We have to change the
-      # type from JsonObject.Property to StructPayloadValue.AdditionalProperty
+      # type from JsonObject.Property to JsonPayloadValue.AdditionalProperty
       # even though both types have the same fields (key, value).
       struct.additionalProperties = [
-          messages.LogEntry.StructPayloadValue.AdditionalProperty(
+          messages.LogEntry.JsonPayloadValue.AdditionalProperty(
               key=json_property.key,
               value=json_property.value)
           for json_property in json_object.properties
       ]
-      entry.structPayload = struct
+      entry.jsonPayload = struct
     else:
       entry.textPayload = args.message
 
-    request = messages.WriteLogEntriesRequest(entries=[entry])
-
-    client.projects_logs_entries.Write(
-        messages.LoggingProjectsLogsEntriesWriteRequest(
-            projectsId=project, logsId=args.log_name,
-            writeLogEntriesRequest=request))
+    client.entries.Write(
+        messages.WriteLogEntriesRequest(entries=[entry]))
     log.status.write('Created log entry.\n')
 
 
@@ -110,8 +93,12 @@ Write.detailed_help = {
         {index}
         If the destination log does not exist, it will be created.
         All log entries written with this command are considered to be from
-        the "compute.googleapis.com" log service (Google Compute Engine).
+        the "custom.googleapis.com" service.
         The log entries will be listed in the Logs Viewer under that service.
+
+        {command} should be used for simple testing purposes.
+        Check Cloud Logging agent for a proper way to send log entries.
+        https://cloud.google.com/logging/docs/agent/
     """,
     'EXAMPLES': """\
         To create a log entry in a given log, run:

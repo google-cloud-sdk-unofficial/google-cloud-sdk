@@ -85,9 +85,9 @@ class Delete(base.Command):
         raise VersionsDeleteError(
             'Version [{version}] is currently serving {allocation:.2f}% of '
             'traffic for service [{service}].\n\n'
-            'Please move all traffic away by using the by deploying a new '
-            'version with the `--promote` argument.'.format(
-                version=version.version,
+            'Please move all traffic away by deploying a new version with the'
+            '`--promote` argument.'.format(
+                version=version.id,
                 allocation=version.traffic_split * 100,
                 service=version.service))
     if versions:
@@ -101,14 +101,14 @@ class Delete(base.Command):
     for version in sorted(versions):
       try:
         with console_io.ProgressTracker('Deleting [{0}]'.format(version)):
-          client.DeleteVersion(version.service, version.version)
+          client.DeleteVersion(version.service, version.id)
       except (calliope_exceptions.HttpException, operations.OperationError,
               operations.OperationTimeoutError) as err:
         errors[version] = str(err)
     if errors:
       printable_errors = {}
       for version, error_msg in errors.items():
-        short_name = '[{0}/{1}]'.format(version.service, version.version)
+        short_name = '[{0}/{1}]'.format(version.service, version.id)
         printable_errors[short_name] = '{0}: {1}'.format(short_name, error_msg)
       raise VersionsDeleteError(
           'Issues deleting version(s): {0}\n\n'.format(

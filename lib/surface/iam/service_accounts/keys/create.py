@@ -1,0 +1,56 @@
+# Copyright 2015 Google Inc. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""Command for creating service accounts keys."""
+
+
+from googlecloudsdk.api_lib.iam import base_classes
+from googlecloudsdk.api_lib.iam import utils
+from googlecloudsdk.core import log
+
+
+class Create(base_classes.BaseIamCommand):
+  """Create Service Account Key."""
+
+  @staticmethod
+  def Args(parser):
+    parser.add_argument('--key-file-type',
+                        choices=['json', 'p12'],
+                        default='json',
+                        help='The type of key to create. Can be either "json" '
+                        'or "p12". When unspecified, defaults to "json".')
+
+    parser.add_argument('--iam-account',
+                        required=True,
+                        help='The IAM service account address to create a key '
+                        'for.')
+
+    parser.add_argument('output',
+                        metavar='OUTPUT-FILE',
+                        help='The path where the resulting private key should '
+                        'be written.')
+
+  def Run(self, args):
+    result = self.iam_client.projects_serviceAccounts_keys.Create(
+        self.messages.IamProjectsServiceAccountsKeysCreateRequest(
+            name=utils.EmailToAccountResourceName(args.iam_account),
+            privateKeyType=utils.KeyTypeToCreateKeyType(utils.KeyTypeFromString(
+                args.key_file_type))))
+
+    self.WriteFile(args.output, result.privateKeyData)
+    log.status.Print(
+        'created key [{0}] of type [{1}] as [{2}] for [{3}]'.format(
+            utils.GetKeyIdFromResourceName(result.name),
+            utils.KeyTypeToString(result.privateKeyType),
+            args.output,
+            args.iam_account))

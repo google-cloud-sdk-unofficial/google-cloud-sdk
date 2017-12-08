@@ -38,8 +38,8 @@ class Delete(base.Command):
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
     """
-    client = self.context['logging_client_v1beta3']
-    messages = self.context['logging_messages_v1beta3']
+    client = self.context['logging_client_v2beta1']
+    messages = self.context['logging_messages_v2beta1']
     project = properties.VALUES.core.project.Get(required=True)
 
     if not console_io.PromptContinue(

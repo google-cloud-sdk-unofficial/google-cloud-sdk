@@ -63,7 +63,7 @@ class List(base.Command):
       result: The value returned from the Run() method.
     """
     # Custom selector to return user friendly log names.
-    selector = ('NAME', lambda log: util.ExtractLogName(log.name))
+    selector = ('ID', lambda log: util.ExtractLogId(log.name))
     console_io.PrintExtendedList(result, (selector,))
 
 

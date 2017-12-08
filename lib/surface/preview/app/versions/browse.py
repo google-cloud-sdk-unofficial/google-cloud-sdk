@@ -95,7 +95,7 @@ class Browse(base.Command):
       # results of ListVersions, but HTTPS is always more secure (though HTTP
       # will work in all cases, since it will redirect to HTTPS).
       url = deploy_command_util.GetAppHostname(version.project, version.service,
-                                               version.version,
+                                               version.id,
                                                use_ssl=appinfo.SECURE_HTTPS)
       log.status.Print(
           'Opening [{0}] in a new tab in your default browser.'.format(url))

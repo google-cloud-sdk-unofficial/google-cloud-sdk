@@ -21,6 +21,7 @@ from googlecloudsdk.api_lib.app.ext_runtimes import fingerprinting
 from googlecloudsdk.api_lib.app.runtimes import fingerprinter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
+from googlecloudsdk.third_party.appengine.api import appinfo
 
 
 RUNTIME_MISMATCH_MSG = ("You've generated a Dockerfile that may be customized "
@@ -63,6 +64,15 @@ class GenConfig(base.Command):
         help=('The yaml file defining the module configuration.  This is '
               'normally one of the generated files, but when generating a '
               'custom runtime there can be an app.yaml containing parameters.'))
+
+    # TODO(b/24843650): Enumerate the valid runtimes for vm: true/env: 2
+    rt_list = [r for r in appinfo.GetAllRuntimes() if r not in ['vm', 'custom']]
+    parser.add_argument(
+        '--runtime',
+        default=None,
+        help=('Generate config files for a given runtime. Can be used in '
+              'conjunction with --custom. Allowed runtimes are: ' +
+              ', '.join(rt_list) + '.'))
     parser.add_argument(
         '--custom',
         action='store_true',
@@ -95,9 +105,9 @@ class GenConfig(base.Command):
 
     fingerprinter.GenerateConfigs(
         args.source_dir,
-        fingerprinting.Params(appinfo=config, custom=args.custom))
+        fingerprinting.Params(appinfo=config, custom=args.custom,
+                              runtime=args.runtime),
+        config_filename)
 
-    # If the user has a config file, make sure that they're using a custom
-    # runtime.
     if config and args.custom and config.GetEffectiveRuntime() != 'custom':
       log.status.Print(RUNTIME_MISMATCH_MSG % config_filename)
