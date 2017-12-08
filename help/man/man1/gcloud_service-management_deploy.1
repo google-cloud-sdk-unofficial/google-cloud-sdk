@@ -11,7 +11,7 @@ gcloud service\-management deploy \- deploys a service configuration for the giv
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud service\-management deploy\fR \fISERVICE_CONFIG_FILE\fR [\fISERVICE_CONFIG_FILE\fR\ ...] [\fB\-\-async\fR] [\fB\-\-validate\-only\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud service\-management deploy\fR \fISERVICE_CONFIG_FILE\fR [\fISERVICE_CONFIG_FILE\fR\ ...] [\fB\-\-async\fR] [\fB\-\-force\fR,\ \fB\-f\fR] [\fB\-\-validate\-only\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -52,6 +52,11 @@ Configuration files in JSON and YAML formats are acceptable.
 \fB\-\-async\fR
 Display information about the operation in progress, without waiting for the
 operation to complete.
+
+.TP 2m
+\fB\-\-force\fR, \fB\-f\fR
+Force the deployment even if any hazardous changes to the service configuration
+are detected.
 
 .TP 2m
 \fB\-\-validate\-only\fR

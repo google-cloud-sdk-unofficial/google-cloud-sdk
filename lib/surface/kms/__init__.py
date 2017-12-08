@@ -14,17 +14,8 @@
 """The command group for all of the Cloud KMS API."""
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.kms import flags
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resolvers
-from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class CloudKms(base.Group):
   """Manage cryptographic keys in the cloud."""
-
-  def Filter(self, context, args):
-    project = properties.VALUES.core.project
-    resources.REGISTRY.SetParamDefault('cloudkms', None, 'projectsId',
-                                       resolvers.FromProperty(project))

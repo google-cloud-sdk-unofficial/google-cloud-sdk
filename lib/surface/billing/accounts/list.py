@@ -15,8 +15,8 @@
 
 from apitools.base.py import list_pager
 
-from googlecloudsdk.api_lib.billing import utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import resources
 
 
 class List(base.ListCommand):
@@ -28,16 +28,19 @@ class List(base.ListCommand):
 
   @staticmethod
   def ToSelfLink(account):
-    return utils.MessageToResource(
-        account,
-        'cloudbilling.billingAccounts',
-    ).SelfLink()
+    return resources.REGISTRY.Parse(
+        account.name, collection='cloudbilling.billingAccounts').SelfLink()
 
-  def GetUriFunc(self):
-    return self.ToSelfLink
-
-  def Collection(self):
-    return 'cloudbilling.billingAccounts'
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""
+          table(
+            name.basename():label=ID,
+            displayName:label=NAME,
+            open
+          )
+    """)
+    parser.display_info.AddUriFunc(List.ToSelfLink)
 
   def Run(self, args):
     """Run the list command."""

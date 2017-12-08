@@ -22,7 +22,8 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
-class _BaseDelete(object):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class Delete(base.DeleteCommand):
   """Deletes a Cloud SQL database."""
 
   @staticmethod
@@ -81,9 +82,3 @@ class _BaseDelete(object):
     operations.OperationsV1Beta4.WaitForOperation(sql_client, operation_ref,
                                                   'Deleting Cloud SQL database')
     log.DeletedResource(args.database, 'database')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DeleteBeta(_BaseDelete, base.DeleteCommand):
-  """Deletes a Cloud SQL database."""
-  pass

@@ -200,15 +200,19 @@ class PredictionDoFn(beam.DoFn):
       # reraise failure to load model as permanent exception to end dataflow job
       if e.error_code == mlprediction.PredictionError.FAILED_TO_LOAD_MODEL:
         raise beam.utils.retry.PermanentException(e.error_message)
-      yield beam.pvalue.SideOutputValue("errors",
-                                        (e.error_message, element))
+      try:
+        yield beam.pvalue.OutputValue("errors",
+                                      (e.error_message, element))
+      except AttributeError:
+        yield beam.pvalue.SideOutputValue("errors",
+                                          (e.error_message, element))
 
     except Exception as e:  # pylint: disable=broad-except
       logging.error("Got an unknown exception: [%s].", traceback.format_exc())
       if self._cloud_logger:
         self._cloud_logger.write_error_message(
             str(e), self._create_snippet(element))
-      yield beam.pvalue.SideOutputValue("errors", (str(e), element))
+      yield beam.pvalue.OutputValue("errors", (str(e), element))
 
 
 class BatchPredict(beam.PTransform):

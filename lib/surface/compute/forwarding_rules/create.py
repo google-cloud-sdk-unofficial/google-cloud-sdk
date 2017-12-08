@@ -188,8 +188,45 @@ class CreateBeta(Create):
   def Args(cls, parser):
     cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
     _Args(parser, include_beta=True, include_alpha=False)
-    flags.ADDRESS_ARG.AddArgument(parser)
+    flags.AddAddressesAndIPVersions(parser, required=False)
     cls.FORWARDING_RULE_ARG.AddArgument(parser)
+
+  def _CreateGlobalRequests(self, args, forwarding_rule_ref):
+    """Create a globally scoped request."""
+    port_range = _ResolvePortRange(args.port_range, args.ports)
+    if not port_range:
+      raise exceptions.ToolException(
+          '[--ports] is required for global forwarding rules.')
+    target_ref = self.GetGlobalTarget(args)
+    protocol = self.ConstructProtocol(args)
+
+    if args.address is None or args.ip_version:
+      ip_version = self.messages.ForwardingRule.IpVersionValueValuesEnum(
+          args.ip_version or 'IPV4')
+    else:
+      ip_version = None
+
+    address = self._ResolveAddress(
+        args, compute_flags.compute_scope.ScopeEnum.GLOBAL, forwarding_rule_ref)
+
+    forwarding_rule = self.messages.ForwardingRule(
+        description=args.description,
+        name=forwarding_rule_ref.Name(),
+        IPAddress=address,
+        IPProtocol=protocol,
+        portRange=port_range,
+        target=target_ref.SelfLink(),
+        ipVersion=ip_version)
+    if args.load_balancing_scheme == 'INTERNAL':
+      forwarding_rule.loadBalancingScheme = (
+          self.messages.ForwardingRule
+          .LoadBalancingSchemeValueValuesEnum.INTERNAL)
+
+    request = self.messages.ComputeGlobalForwardingRulesInsertRequest(
+        forwardingRule=forwarding_rule,
+        project=self.project)
+
+    return [request]
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

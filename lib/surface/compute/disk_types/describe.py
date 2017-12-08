@@ -12,24 +12,51 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for describing disk types."""
+
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.disk_types import flags
+from googlecloudsdk.command_lib.compute.flags import GetDefaultScopeLister
+from googlecloudsdk.command_lib.compute.scope import ScopeEnum
 
 
-class Describe(base_classes.ZonalDescriber):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
   """Describe a Google Compute Engine disk type."""
 
   @staticmethod
   def Args(parser):
-    base_classes.ZonalDescriber.Args(parser, 'compute.diskTypes')
+    Describe.DiskTypeArg = flags.MakeDiskTypeArg(regional=False)
+    Describe.DiskTypeArg.AddArgument(parser, operation_type='describe')
 
-  @property
-  def service(self):
-    return self.compute.diskTypes
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'diskTypes'
+    disk_type = Describe.DiskTypeArg.ResolveAsResource(
+        args,
+        holder.resources,
+        default_scope=ScopeEnum.ZONE,
+        scope_lister=GetDefaultScopeLister(client))
 
+    if disk_type.Collection() == 'compute.diskTypes':
+      service = client.apitools_client.diskTypes
+      message_type = client.messages.ComputeDiskTypesGetRequest
+    elif disk_type.Collection() == 'compute.regionDiskTypes':
+      service = client.apitools_client.regionDiskTypes
+      message_type = client.messages.ComputeRegionDiskTypesGetRequest
+
+    return client.MakeRequests([(service, 'Get', message_type(
+        **disk_type.AsDict()))])[0]
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(Describe):
+
+  @staticmethod
+  def Args(parser):
+    Describe.DiskTypeArg = flags.MakeDiskTypeArg(regional=True)
+    Describe.DiskTypeArg.AddArgument(parser, operation_type='describe')
 
 Describe.detailed_help = {
     'brief': 'Describe a Google Compute Engine disk type',
@@ -38,3 +65,4 @@ Describe.detailed_help = {
         Engine disk type.
         """,
 }
+DescribeAlpha.detailed_help = Describe.detailed_help

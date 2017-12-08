@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
+from googlecloudsdk.command_lib.util import labels_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -51,6 +52,8 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
     instances_flags.AddPublicDnsArgs(parser, instance=True)
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddMinCpuPlatformArgs(parser)
+    labels_util.AddCreateLabelsFlags(parser)
+
     parser.add_argument(
         '--description',
         help='Specifies a textual description of the instances.')
@@ -141,13 +144,23 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
         instance_refs=instance_refs)
 
     image_uri = containers_utils.ExpandCosImageFlag(self.compute_client)
+
+    args_labels = getattr(args, 'labels', None)
+    labels = None
+    if args_labels:
+      labels = self.messages.Instance.LabelsValue(
+          additionalProperties=[
+              self.messages.Instance.LabelsValue.AdditionalProperty(
+                  key=key, value=value)
+              for key, value in sorted(args.labels.iteritems())])
+
     requests = []
     for instance_ref, machine_type_uri in zip(instance_refs, machine_type_uris):
       metadata = containers_utils.CreateMetadataMessage(
           self.messages, args.run_as_privileged, args.container_manifest,
           args.docker_image, args.port_mappings, args.run_command,
           user_metadata, instance_ref.Name())
-      requests.append(self.messages.ComputeInstancesInsertRequest(
+      request = self.messages.ComputeInstancesInsertRequest(
           instance=self.messages.Instance(
               canIpForward=args.can_ip_forward,
               disks=(self._CreateDiskMessages(args, boot_disk_size_gb,
@@ -163,7 +176,11 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
               tags=containers_utils.CreateTagsMessage(self.messages, args.tags),
           ),
           project=self.project,
-          zone=instance_ref.zone))
+          zone=instance_ref.zone)
+      if labels:
+        request.instance.labels = labels
+      requests.append(request)
+
     return requests
 
   def _CreateDiskMessages(

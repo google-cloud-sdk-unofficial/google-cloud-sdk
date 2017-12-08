@@ -71,7 +71,7 @@ class _BaseAddCert(object):
       raise exceptions.ToolException('unable to write [{path}]: {error}'.format(
           path=args.cert_file, error=str(e)))
 
-    client = self.GetSqlClient()
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client
     sql_messages = client.sql_messages
 
@@ -107,17 +107,7 @@ class _BaseAddCert(object):
     return result.clientCert.certInfo
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class AddCert(_BaseAddCert, base.CreateCommand):
   """Creates an SSL certificate for a Cloud SQL instance."""
-
-  def GetSqlClient(self):
-    return api_util.SqlClient(api_util.API_VERSION_FALLBACK)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class AddCertBeta(_BaseAddCert, base.CreateCommand):
-  """Creates an SSL certificate for a Cloud SQL instance."""
-
-  def GetSqlClient(self):
-    return api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+  pass

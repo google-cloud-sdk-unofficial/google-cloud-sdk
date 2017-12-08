@@ -37,6 +37,15 @@ class List(base.ListCommand):
     """
     parser.add_argument('--group',
                         help='Managed instance group name.')
+    parser.display_info.AddFormat("""
+          table(
+            id,
+            instanceGroupManager.basename():label=GROUP_NAME,
+            instanceTemplate.basename():label=TEMPLATE_NAME,
+            status,
+            statusMessage
+          )
+    """)
 
   def Run(self, args):
     """Run 'rolling-updates list'.
@@ -73,6 +82,3 @@ class List(base.ListCommand):
         yield item
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error)
-
-  def Collection(self):
-    return 'replicapoolupdater.rollingUpdates'

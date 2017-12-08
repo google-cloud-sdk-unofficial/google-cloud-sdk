@@ -15,8 +15,8 @@
 import os
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.ml import flags
-from googlecloudsdk.command_lib.ml import local_train
+from googlecloudsdk.command_lib.ml_engine import flags
+from googlecloudsdk.command_lib.ml_engine import local_train
 from googlecloudsdk.core import log
 
 _BAD_FLAGS_WARNING_MESSAGE = """\

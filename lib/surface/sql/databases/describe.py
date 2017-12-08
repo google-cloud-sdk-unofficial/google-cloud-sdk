@@ -20,8 +20,12 @@ from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
 
 
-class _BaseGet(object):
-  """Displays configuration and metadata about a Cloud SQL database."""
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class Get(base.DescribeCommand):
+  """Displays configuration and metadata about a Cloud SQL database.
+
+  Information such as database name, charset, and collation will be displayed.
+  """
 
   @staticmethod
   def Args(parser):
@@ -69,12 +73,3 @@ class _BaseGet(object):
         instance=instance_ref.instance,
         database=args.database)
     return sql_client.databases.Get(database_request)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class GetBeta(_BaseGet, base.DescribeCommand):
-  """Displays configuration and metadata about a Cloud SQL database.
-
-  Information such as database name, charset, and collation will be displayed.
-  """
-  pass

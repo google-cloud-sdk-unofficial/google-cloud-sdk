@@ -17,8 +17,10 @@
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.dns import util
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import properties
 
 
@@ -27,31 +29,29 @@ class List(base.ListCommand):
 
   This command displays the list of record-sets contained within the specified
   managed-zone.
+
+  ## EXAMPLES
+
+  To see the list of all record-sets in my_zone, run:
+
+    $ {command} -z my_zone
+
+  To see the list of first 10 record-sets in my_zone, run:
+
+    $ {command} -z my_zone --limit=10
+
+  To see the list of 'my.zone.com.' record-sets in my_zone, run:
+
+    $ {command} -z my_zone --name="my.zone.com."
+
+  To see the list of 'my.zone.com.' CNAME record-sets in my_zone, run:
+
+    $ {command} -z my_zone --name="my.zone.com." --type="CNAME"
   """
-
-  detailed_help = {
-      'EXAMPLES': """\
-          To see the list of all record-sets in my_zone, run:
-
-            $ {command} -z my_zone
-
-          To see the list of first 10 record-sets in my_zone, run:
-
-            $ {command} -z my_zone --limit=10
-
-          To see the list of 'my.zone.com.' record-sets in my_zone, run:
-
-            $ {command} -z my_zone --name="my.zone.com."
-
-          To see the list of 'my.zone.com.' CNAME record-sets in my_zone, run:
-
-            $ {command} -z my_zone --name="my.zone.com." --type="CNAME"
-          """,
-  }
 
   @staticmethod
   def Args(parser):
-    util.ZONE_FLAG.AddToParser(parser)
+    flags.GetZoneArg().AddToParser(parser)
     parser.add_argument(
         '--name', required=False,
         help='Only list record-sets with this exact domain name.')
@@ -69,8 +69,8 @@ class List(base.ListCommand):
         """)
 
   def Run(self, args):
-    dns_client = self.context['dns_client']
-    dns_messages = self.context['dns_messages']
+    dns_client = apis.GetClientInstance('dns', 'v1')
+    dns_messages = apis.GetMessagesModule('dns', 'v1')
 
     project_id = properties.VALUES.core.project.Get(required=True)
 

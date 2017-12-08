@@ -20,8 +20,9 @@ from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
 
 
-class _BaseList(object):
-  """Base class for sql databases list."""
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class List(base.ListCommand):
+  """Lists databases for a Cloud SQL instance."""
 
   @staticmethod
   def Args(parser):
@@ -71,9 +72,3 @@ class _BaseList(object):
         sql_messages.SqlDatabasesListRequest(
             project=instance_ref.project, instance=instance_ref.instance))
     return iter(result.items)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(_BaseList, base.ListCommand):
-  """Lists databases for a Cloud SQL instance."""
-  pass

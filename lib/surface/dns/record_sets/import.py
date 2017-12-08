@@ -17,11 +17,13 @@ import os
 from apitools.base.py import exceptions as apitools_exceptions
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.dns import import_util
-from googlecloudsdk.api_lib.dns import util
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 @base.UnicodeIsSupported
@@ -36,28 +38,26 @@ class Import(base.Command):
   type as a record-set that is being imported. In contrast, if the
   --delete-all-existing flag is used, the imported record-sets will replace all
   the records-sets currently in the managed-zone.
+
+  ## EXAMPLES
+
+  To import record-sets from a yaml record-sets file, run:
+
+    $ {command} YAML_RECORDS_FILE -z MANAGED_ZONE
+
+  To import record-sets from a zone file, run:
+
+    $ {command} ZONE_FILE --zone-file-format -z MANAGED_ZONE
+
+  To replace all the record-sets in your zone with records from a yaml
+  file, run:
+
+    $ {command} YAML_RECORDS_FILE --delete-all-existing -z MANAGED_ZONE
   """
-
-  detailed_help = {
-      'EXAMPLES': """\
-          To import record-sets from a yaml record-sets file, run:
-
-            $ {command} YAML_RECORDS_FILE -z MANAGED_ZONE
-
-          To import record-sets from a zone file, run:
-
-            $ {command} ZONE_FILE --zone-file-format -z MANAGED_ZONE
-
-          To replace all the record-sets in your zone with records from a yaml
-          file, run:
-
-            $ {command} YAML_RECORDS_FILE --delete-all-existing -z MANAGED_ZONE
-          """,
-  }
 
   @staticmethod
   def Args(parser):
-    util.ZONE_FLAG.AddToParser(parser)
+    flags.GetZoneArg().AddToParser(parser)
     parser.add_argument('records_file',
                         help='File from which record-sets should be imported.')
     parser.add_argument(
@@ -77,7 +77,7 @@ class Import(base.Command):
         action='store_true',
         help='Indicates that NS records for the origin of a zone should be'
         ' imported if defined')
-    parser.display_info.AddFormat(util.CHANGES_FORMAT)
+    parser.display_info.AddFormat(flags.CHANGES_FORMAT)
 
   def Run(self, args):
     if not os.path.exists(args.records_file):
@@ -87,12 +87,11 @@ class Import(base.Command):
       raise exceptions.ToolException(
           '[{0}] is a directory'.format(args.records_file))
 
-    dns = self.context['dns_client']
-    messages = self.context['dns_messages']
-    resources = self.context['dns_resources']
+    dns = apis.GetClientInstance('dns', 'v1')
+    messages = apis.GetMessagesModule('dns', 'v1')
 
     # Get the managed-zone.
-    zone_ref = resources.Parse(
+    zone_ref = resources.REGISTRY.Parse(
         args.zone,
         params={
             'project': properties.VALUES.core.project.GetOrFail,
@@ -145,10 +144,11 @@ class Import(base.Command):
         messages.DnsChangesCreateRequest(change=change,
                                          managedZone=zone.name,
                                          project=zone_ref.project))
-    change_ref = resources.Create(collection='dns.changes',
-                                  project=zone_ref.project,
-                                  managedZone=zone.name,
-                                  changeId=result.id)
+    change_ref = resources.REGISTRY.Create(
+        collection='dns.changes',
+        project=zone_ref.project,
+        managedZone=zone.name,
+        changeId=result.id)
     msg = u'Imported record-sets from [{0}] into managed-zone [{1}].'.format(
         args.records_file, zone_ref.Name())
     log.status.Print(msg)

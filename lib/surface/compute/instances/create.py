@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.compute import zone_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
+from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
@@ -91,6 +92,9 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
   if support_network_tier:
     instances_flags.AddNetworkTierArgs(parser, instance=True)
 
+  if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
+    labels_util.AddCreateLabelsFlags(parser)
+
   parser.add_argument(
       '--description',
       help='Specifies a textual description of the instances.')
@@ -137,6 +141,15 @@ class Create(base.CreateCommand):
       tags = compute_client.messages.Tags(items=args.tags)
     else:
       tags = None
+
+    labels = None
+    args_labels = getattr(args, 'labels', None)
+    if args_labels:
+      labels = compute_client.messages.Instance.LabelsValue(
+          additionalProperties=[
+              compute_client.messages.Instance.LabelsValue.AdditionalProperty(
+                  key=key, value=value)
+              for key, value in sorted(args.labels.iteritems())])
 
     metadata = metadata_utils.ConstructMetadataMessage(
         compute_client.messages,
@@ -316,6 +329,8 @@ class Create(base.CreateCommand):
           tags=tags)
       if getattr(args, 'min_cpu_platform', None):
         instance.minCpuPlatform = args.min_cpu_platform
+      if labels:
+        instance.labels = labels
       if accelerator_args:
         accelerator_type_name = accelerator_args['type']
         accelerator_type_ref = resource_parser.Parse(

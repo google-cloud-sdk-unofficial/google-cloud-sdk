@@ -38,7 +38,7 @@ class List(base.ListCommand):
             projectId:label=PROJECT,
             snapshotId:label=SNAPSHOT,
             topicId:label=TOPIC,
-            expirationTime:label=EXPIRATION_TIME
+            expireTime:label=EXPIRE_TIME
             )
         """)
 
@@ -97,5 +97,5 @@ def SnapshotDict(snapshot):
   result['snapshotId'] = snapshot_info.resource_name
   topic_info = util.TopicIdentifier(snapshot.topic)
   result['topicId'] = topic_info.resource_name
-  result['expirationTime'] = snapshot.expirationTime
+  result['expireTime'] = snapshot.expireTime
   return result

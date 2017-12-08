@@ -43,7 +43,6 @@ class List(base.ListCommand):
           table(
             name.segment(3):label=REPO_NAME,
             name.segment(1):label=PROJECT_ID,
-            size.yesno(no=0),
             firstof(mirror_config.url, url):label=URL
           )
         """)

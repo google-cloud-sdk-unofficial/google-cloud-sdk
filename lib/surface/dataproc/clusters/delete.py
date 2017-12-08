@@ -35,6 +35,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     parser.add_argument('name', help='The name of the cluster to delete.')
     base.ASYNC_FLAG.AddToParser(parser)
+    util.AddTimeoutFlag(parser)
 
   def Run(self, args):
     client = self.context['dataproc_client']
@@ -62,7 +63,10 @@ class Delete(base.DeleteCommand):
       return operation
 
     operation = util.WaitForOperation(
-        operation, self.context, 'Waiting for cluster deletion operation')
+        operation,
+        self.context,
+        message='Waiting for cluster deletion operation',
+        timeout_s=args.timeout)
     log.DeletedResource(cluster_ref)
 
     return operation

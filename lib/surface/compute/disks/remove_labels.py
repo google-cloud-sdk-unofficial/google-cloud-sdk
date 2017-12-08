@@ -14,8 +14,11 @@
 """Command for removing labels from disks."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute.operations import poller
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import labels_doc_helper
 from googlecloudsdk.command_lib.compute import labels_flags
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.command_lib.util import labels_util
@@ -23,17 +26,7 @@ from googlecloudsdk.command_lib.util import labels_util
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RemoveLabels(base.UpdateCommand):
-  """Remove labels from Google Compute Engine persistent disk.
-
-  *{command}* removes labels from a Google Compute Engine
-  persistent disk.  For example:
-
-    $ {command} example-disk --zone us-central1-a --labels=k0,k1
-
-  will remove existing labels with key ``k0'' and ``k1'' from 'example-disk'.
-
-  Labels can be used to identify the disk.
-  """
+  """remove-labels command for disks."""
 
   DISK_ARG = None
 
@@ -78,6 +71,7 @@ class RemoveLabels(base.UpdateCommand):
           remove_labels[label.key] = label.value
 
     if disk_ref.Collection() == 'compute.disks':
+      operation_collection = 'compute.zoneOperations'
       replacement = labels_util.UpdateLabels(
           disk.labels,
           messages.ZoneSetLabelsRequest.LabelsValue,
@@ -90,6 +84,7 @@ class RemoveLabels(base.UpdateCommand):
               labelFingerprint=disk.labelFingerprint,
               labels=replacement))
     else:
+      operation_collection = 'compute.regionOperations'
       replacement = labels_util.UpdateLabels(
           disk.labels,
           messages.RegionSetLabelsRequest.LabelsValue,
@@ -105,4 +100,16 @@ class RemoveLabels(base.UpdateCommand):
     if not replacement:
       return disk
 
-    return service.SetLabels(request)
+    operation = service.SetLabels(request)
+    operation_ref = holder.resources.Parse(
+        operation.selfLink, collection=operation_collection)
+
+    operation_poller = poller.Poller(service)
+    return waiter.WaitFor(
+        operation_poller, operation_ref,
+        'Updating labels of disk [{0}]'.format(
+            disk_ref.Name()))
+
+
+RemoveLabels.detailed_help = (
+    labels_doc_helper.GenerateDetailedHelpForRemoveLabels('disk'))

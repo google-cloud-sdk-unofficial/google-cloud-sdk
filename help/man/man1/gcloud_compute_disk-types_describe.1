@@ -11,7 +11,7 @@ gcloud compute disk\-types describe \- describe a Google Compute Engine disk typ
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute disk\-types describe\fR \fINAME\fR [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute disk\-types describe\fR \fIDISK_TYPE\fR [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -26,8 +26,8 @@ Google Compute Engine disk type.
 
 .RS 2m
 .TP 2m
-\fINAME\fR
-The name of the resource to fetch.
+\fIDISK_TYPE\fR
+The name of the disk type.
 
 
 .RE
@@ -38,30 +38,8 @@ The name of the resource to fetch.
 .RS 2m
 .TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
-The zone of the resource to fetch. If not specified, you will be prompted to
-select a zone.
-
-To avoid prompting when this flag is omitted, you can set the
-\f5\fIcompute/zone\fR\fR property:
-
-.RS 2m
-$ gcloud config set compute/zone ZONE
-.RE
-
-A list of zones can be fetched by running:
-
-.RS 2m
-$ gcloud compute zones list
-.RE
-
-To unset the property, run:
-
-.RS 2m
-$ gcloud config unset compute/zone
-.RE
-
-Alternatively, the zone can be stored in the environment variable
-\f5\fICLOUDSDK_COMPUTE_ZONE\fR\fR.
+The zone of the disk type to describe. Overrides the default \fBcompute/zone\fR
+property value for this command invocation.
 
 
 .RE

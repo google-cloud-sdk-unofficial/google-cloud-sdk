@@ -76,8 +76,7 @@ class List(base.ListCommand):
               'is specified. The equivalent term in a --filter expression is: '
               '`status.state = ACTIVE`'))
 
-  def Collection(self):
-    return 'dataproc.operations'
+    parser.display_info.AddFormat('table(name:label=OPERATION_NAME, done)')
 
   def Run(self, args):
     client = self.context['dataproc_client']

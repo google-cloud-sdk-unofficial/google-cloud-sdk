@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -45,7 +46,8 @@ class Describe(base.Command):
 
   def Run(self, args):
     api_client = appengine_api_client.GetApiClient()
-    params = {'servicesId': args.service,
+    params = {'appsId': properties.VALUES.core.project.GetOrFail,
+              'servicesId': args.service,
               'versionsId': args.version}
     res = resources.REGISTRY.Parse(args.instance,
                                    params=params,

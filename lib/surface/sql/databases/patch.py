@@ -29,7 +29,8 @@ class _Result(object):
     self.old = old
 
 
-class _BasePatch(object):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class Patch(base.Command):
   """Patches the settings of a Cloud SQL database."""
 
   @staticmethod
@@ -126,8 +127,3 @@ class _BasePatch(object):
             project=instance_ref.project,
             instance=instance_ref.instance))
     return _Result(changed_database_resource, original_database_resource)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class PatchBeta(_BasePatch, base.Command):
-  """Patches the settings of a Cloud SQL database."""

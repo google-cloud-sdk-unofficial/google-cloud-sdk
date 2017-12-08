@@ -16,8 +16,8 @@ import json
 import subprocess
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.ml import local_predict
-from googlecloudsdk.command_lib.ml import predict_utilities
+from googlecloudsdk.command_lib.ml_engine import local_predict
+from googlecloudsdk.command_lib.ml_engine import predict_utilities
 from googlecloudsdk.core import config
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
@@ -150,8 +150,7 @@ class PredictGa(base.Command):
 _DETAILED_HELP = {
     'DESCRIPTION': """\
 *{command}* performs prediction locally with the given instances. It requires
-the TensorFlow SDK be installed locally. Only Debian based systems are
-supported at this time.
+the TensorFlow SDK be installed locally.
 """
 }
 

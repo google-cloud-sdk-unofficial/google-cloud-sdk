@@ -55,6 +55,8 @@ class Update(base.UpdateCommand):
     base.ASYNC_FLAG.AddToParser(parser)
     # Allow the user to specify new labels as well as update/remove existing
     labels_util.AddUpdateLabelsFlags(parser)
+    # Updates can take hours if a lot of data needs to be moved on HDFS
+    util.AddTimeoutFlag(parser, default='3h')
     parser.add_argument(
         'name',
         help='The name of the cluster to update.')
@@ -145,7 +147,7 @@ class Update(base.UpdateCommand):
         operation,
         self.context,
         message='Waiting for cluster update operation',
-        timeout_s=3600 * 3)
+        timeout_s=args.timeout)
 
     request = client.MESSAGES_MODULE.DataprocProjectsRegionsClustersGetRequest(
         projectId=cluster_ref.projectId,

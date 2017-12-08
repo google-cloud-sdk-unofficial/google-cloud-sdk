@@ -13,9 +13,9 @@
 # limitations under the License.
 """ml-engine models list command."""
 
-from googlecloudsdk.api_lib.ml import models
+from googlecloudsdk.api_lib.ml_engine import models
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.ml import models_util
+from googlecloudsdk.command_lib.ml_engine import models_util
 
 
 _COLLECTION = 'ml.models'

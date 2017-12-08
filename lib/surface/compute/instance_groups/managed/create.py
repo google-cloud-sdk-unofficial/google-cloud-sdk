@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for creating managed instance group."""
 
+import sys
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
 from googlecloudsdk.api_lib.compute import utils
@@ -40,6 +42,7 @@ def _AddInstanceGroupManagerArgs(parser):
   parser.add_argument(
       '--size',
       required=True,
+      type=arg_parsers.BoundedInt(0, sys.maxint, unlimited=True),
       help=('The initial number of instances you want in this group.'))
   parser.add_argument(
       '--description',

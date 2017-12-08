@@ -14,6 +14,8 @@
 
 """types list command."""
 
+import collections
+
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
@@ -25,20 +27,21 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
+GCP_TYPES_PROJECT = 'gcp-types'
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List types in a project.
 
   Prints a list of the available resource types.
+
+  ## EXAMPLES
+
+  To print out a list of all available type names, run:
+
+    $ {command}
   """
-
-  detailed_help = {
-      'EXAMPLES': """\
-          To print out a list of all available type names, run:
-
-            $ {command}
-          """,
-  }
 
   @staticmethod
   def Args(parser):
@@ -92,24 +95,34 @@ def TypeProviderClient():
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ListALPHA(base.ListCommand):
-  """Describe a type provider type."""
+  """Describe a type provider type.
 
-  detailed_help = {
-      'EXAMPLES': """\
-          To print out a list of all available type names, run:
+  By default, you will see types from your project and gcp-types. To see types
+  from any single project, you can use the --provider-project flag.
 
-            $ {command}
+  ## EXAMPLES
 
-          If you only want the types for a specific provider, you can specify
-          which one using --provider
+  To print out a list of all available type names, run:
 
-            $ {command} --provider=PROVIDER
-          """,
-  }
+    $ {command}
+
+  If you only want the types for a specific provider, you can specify
+  which one using --provider
+
+    $ {command} --provider=PROVIDER
+
+  By default, we'll show you types from your project and gcp-types,
+  which contains the default Google Cloud Platform types.
+  If you want types for only one project, use the 'provider-project'
+  flag. Specifying the provider without a provider-project will search
+  both your project and gcp-types for that provider's types.
+  """
 
   @staticmethod
   def Args(parser):
     parser.add_argument('--provider', help='Type provider name.')
+    parser.add_argument('--provider-project',
+                        help='Project id with types you want to see.')
 
   def Run(self, args):
     """Run 'types list'.
@@ -131,60 +144,72 @@ class ListALPHA(base.ListCommand):
         collection='deploymentmanager.typeProviders')
     self.page_size = args.page_size
     self.limit = args.limit
-    self.project = type_provider_ref.project
 
-    if not args.provider:
-      type_providers = self._GetTypeProviders()
+    if args.provider_project:
+      projects = [args.provider_project]
     else:
-      type_providers = [type_provider_ref.typeProvider]
+      # Most users will be interested in the default gcp-types project types,
+      # so by default we want to display those
+      projects = [type_provider_ref.project, GCP_TYPES_PROJECT]
+
+    type_providers = collections.OrderedDict()
+    if not args.provider:
+      self._GetTypeProviders(projects, type_providers)
+    else:
+      for project in projects:
+        type_providers[project] = [type_provider_ref.typeProvider]
 
     return dm_v2_util.YieldWithHttpExceptions(
         self._YieldPrintableTypesOrErrors(type_providers))
 
-  def _GetTypeProviders(self):
-    request = (dm_beta_base.GetMessages().
-               DeploymentmanagerTypeProvidersListRequest(
-                   project=self.project))
-    providers = dm_v2_util.YieldWithHttpExceptions(
-        list_pager.YieldFromList(TypeProviderClient(),
-                                 request,
-                                 field='typeProviders',
-                                 batch_size=self.page_size,
-                                 limit=self.limit))
+  def _GetTypeProviders(self, projects, type_providers):
+    for project in projects:
+      request = (dm_beta_base.GetMessages().
+                 DeploymentmanagerTypeProvidersListRequest(
+                     project=project))
+      project_providers = dm_v2_util.YieldWithHttpExceptions(
+          list_pager.YieldFromList(TypeProviderClient(),
+                                   request,
+                                   field='typeProviders',
+                                   batch_size=self.page_size,
+                                   limit=self.limit))
 
-    return [provider.name for provider in providers]
+      type_providers[project] = [provider.name for provider in
+                                 project_providers]
 
   def _YieldPrintableTypesOrErrors(self, type_providers):
     """Yield dicts of types list, provider, and (optionally) an error message.
 
     Args:
-      type_providers: A list of Type Provider names to grab Type Info
-        messages for.
+      type_providers: A dict of project to Type Provider names to grab Type
+        Info messages for.
 
     Yields:
-      A dict object with a list of types, a type provider, and (optionally)
-      an error message for display.
+      A dict object with a list of types, a type provider reference (includes
+      project) like you would use in Deployment Manager, and (optionally) an
+      error message for display.
 
     """
-    for type_provider in type_providers:
-      request = (dm_beta_base.GetMessages().
-                 DeploymentmanagerTypeProvidersListTypesRequest(
-                     project=self.project,
-                     typeProvider=type_provider))
-      try:
-        paginated_types = dm_v2_util.YieldWithHttpExceptions(
-            list_pager.YieldFromList(TypeProviderClient(),
-                                     request,
-                                     method='ListTypes',
-                                     field='types',
-                                     batch_size=self.page_size,
-                                     limit=self.limit))
-        yield {'types': list(paginated_types),
-               'provider': type_provider}
-      except api_exceptions.HttpException as error:
-        yield {'types': [],
-               'provider': type_provider,
-               'error': error.message}
+    for project in type_providers.keys():
+      for type_provider in type_providers[project]:
+        request = (dm_beta_base.GetMessages().
+                   DeploymentmanagerTypeProvidersListTypesRequest(
+                       project=project,
+                       typeProvider=type_provider))
+        try:
+          paginated_types = dm_v2_util.YieldWithHttpExceptions(
+              list_pager.YieldFromList(TypeProviderClient(),
+                                       request,
+                                       method='ListTypes',
+                                       field='types',
+                                       batch_size=self.page_size,
+                                       limit=self.limit))
+          yield {'types': list(paginated_types),
+                 'provider': project + '/' + type_provider}
+        except api_exceptions.HttpException as error:
+          yield {'types': [],
+                 'provider': project + '/' + type_provider,
+                 'error': error.message}
 
   def Format(self, args):
-    return 'yaml(provider, error, types.map().format("{0}", name))'
+    return 'yaml(provider:sort=1, error, types.map().format("{0}", name))'

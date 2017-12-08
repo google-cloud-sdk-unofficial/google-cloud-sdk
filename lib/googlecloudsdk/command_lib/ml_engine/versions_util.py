@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Utilities for ml versions commands."""
-from googlecloudsdk.command_lib.ml import models_util
-from googlecloudsdk.command_lib.ml import uploads
+from googlecloudsdk.command_lib.ml_engine import models_util
+from googlecloudsdk.command_lib.ml_engine import uploads
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -39,8 +39,8 @@ def WaitForOpMaybe(operations_client, op, async_=False, message=None):
   """Waits for an operation if async_ flag is on.
 
   Args:
-    operations_client: api_lib.ml.operations.OperationsClient, the client via
-      which to poll
+    operations_client: api_lib.ml_engine.operations.OperationsClient, the client
+      via which to poll
     op: Cloud ML Engine operation, the operation to poll
     async_: bool, whether to wait for the operation or return immediately
     message: str, the message to display while waiting for the operation

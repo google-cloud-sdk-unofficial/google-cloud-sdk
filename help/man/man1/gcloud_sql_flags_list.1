@@ -11,7 +11,7 @@ gcloud sql flags list \- list customizable flags for Google Cloud SQL instances
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud sql flags list\fR [\fB\-\-filter\fR=\fIEXPRESSION\fR] [\fB\-\-limit\fR=\fILIMIT\fR] [\fB\-\-page\-size\fR=\fIPAGE_SIZE\fR] [\fB\-\-sort\-by\fR=[\fIFIELD\fR,...]] [\fB\-\-uri\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud sql flags list\fR [\fB\-\-database\-version\fR=\fIDATABASE_VERSION\fR] [\fB\-\-filter\fR=\fIEXPRESSION\fR] [\fB\-\-limit\fR=\fILIMIT\fR] [\fB\-\-page\-size\fR=\fIPAGE_SIZE\fR] [\fB\-\-sort\-by\fR=[\fIFIELD\fR,...]] [\fB\-\-uri\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -20,6 +20,19 @@ gcloud sql flags list \- list customizable flags for Google Cloud SQL instances
 List customizable flags for Google Cloud SQL instances.
 
 
+
+.SH "FLAGS"
+
+.RS 2m
+.TP 2m
+\fB\-\-database\-version\fR=\fIDATABASE_VERSION\fR
+Only list flags that apply to the specified database version.
+\fIDATABASE_VERSION\fR must be one of: \fBMYSQL_5_5\fR, \fBMYSQL_5_6\fR,
+\fBMYSQL_5_7\fR, \fBPOSTGRES_9_6\fR.
+
+
+.RE
+.sp
 
 .SH "LIST COMMAND FLAGS"
 

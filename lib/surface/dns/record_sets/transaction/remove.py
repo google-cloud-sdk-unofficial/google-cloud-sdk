@@ -18,33 +18,36 @@ from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.dns import transaction_util as trans_util
 from googlecloudsdk.api_lib.dns import util
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 class Remove(base.Command):
-  """Append a record-set deletion to the transaction.
+  r"""Append a record-set deletion to the transaction.
 
   This command appends a record-set deletion to the transaction.
+
+  ## EXAMPLES
+
+  To remove an A record, run:
+
+    $ {command} -z MANAGED_ZONE --name my.domain. --ttl 1234 \
+        --type A "1.2.3.4"
+
+  To remove a TXT record with multiple data values, run:
+
+    $ {command} -z MANAGED_ZONE --name my.domain. --ttl 2345 \
+        --type TXT "Hello world" "Bye world"
   """
-
-  detailed_help = {
-      'EXAMPLES': """\
-          To remove an A record, run:
-
-            $ {command} -z MANAGED_ZONE --name my.domain. --ttl 1234 --type A "1.2.3.4"
-
-          To remove a TXT record with multiple data values, run:
-
-            $ {command} -z MANAGED_ZONE --name my.domain. --ttl 2345 --type TXT "Hello world" "Bye world"
-          """,
-  }
 
   @staticmethod
   def Args(parser):
-    util.ZONE_FLAG.AddToParser(parser)
+    flags.GetZoneArg().AddToParser(parser)
     parser.add_argument(
         '--name', required=True,
         help='DNS name of the record-set to be removed.')
@@ -62,14 +65,13 @@ class Remove(base.Command):
     with trans_util.TransactionFile(args.transaction_file) as trans_file:
       change = trans_util.ChangeFromYamlFile(trans_file)
 
-    dns = self.context['dns_client']
-    messages = self.context['dns_messages']
-    resources = self.context['dns_resources']
+    dns = apis.GetClientInstance('dns', 'v1')
+    messages = apis.GetMessagesModule('dns', 'v1')
 
     record_to_remove = trans_util.CreateRecordSetFromArgs(args)
 
     # Ensure the record to be removed exists
-    zone_ref = resources.Parse(
+    zone_ref = resources.REGISTRY.Parse(
         args.zone,
         params={
             'project': properties.VALUES.core.project.GetOrFail,

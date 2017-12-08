@@ -47,6 +47,9 @@ class List(base.ListCommand):
 
     crypto_key_ref = resources.REGISTRY.Create(
         flags.CRYPTO_KEY_COLLECTION,
+        cryptoKeysId=args.MakeGetOrRaise('--key'),
+        keyRingsId=args.MakeGetOrRaise('--keyring'),
+        locationsId=args.MakeGetOrRaise('--location'),
         projectsId=properties.VALUES.core.project.GetOrFail())
 
     request = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsListRequest(

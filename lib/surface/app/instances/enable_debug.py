@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import instances_util
 from googlecloudsdk.api_lib.app import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
@@ -89,11 +90,14 @@ class EnableDebug(base.Command):
         'About to enable debug mode for instance [{0}].'.format(instance),
         cancel_on_no=True)
     message = 'Enabling debug mode for instance [{0}]'.format(instance)
-    res = resources.REGISTRY.Parse(instance.id,
-                                   params={'versionsId': instance.version,
-                                           'instancesId': instance.id,
-                                           'servicesId': instance.service},
-                                   collection='appengine.apps.services.'
-                                              'versions.instances')
+    res = resources.REGISTRY.Parse(
+        instance.id,
+        params={
+            'appsId': properties.VALUES.core.project.GetOrFail,
+            'versionsId': instance.version,
+            'instancesId': instance.id,
+            'servicesId': instance.service,
+        },
+        collection='appengine.apps.services.versions.instances')
     with progress_tracker.ProgressTracker(message):
       api_client.DebugInstance(res)

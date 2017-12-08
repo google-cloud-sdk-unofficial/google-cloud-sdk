@@ -30,6 +30,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.configurations import named_configs
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.diagnostics import network_diagnostics
+from googlecloudsdk.core.resource import resource_projector
 from googlecloudsdk.core.util import platforms
 
 
@@ -332,6 +333,7 @@ https://console.developers.google.com/apis page.
     default_zone = None
     default_region = None
     if project_info is not None:
+      project_info = resource_projector.MakeSerializable(project_info)
       metadata = project_info.get('commonInstanceMetadata', {})
       for item in metadata.get('items', []):
         if item['key'] == 'google-compute-default-zone':

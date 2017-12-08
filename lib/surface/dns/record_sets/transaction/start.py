@@ -21,42 +21,41 @@ from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.dns import import_util
 from googlecloudsdk.api_lib.dns import transaction_util
-from googlecloudsdk.api_lib.dns import util
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 class Start(base.Command):
   """Start a transaction.
 
   This command starts a transaction.
+
+  ## EXAMPLES
+
+  To start a transaction, run:
+
+    $ {command} -z MANAGED_ZONE
   """
-
-  detailed_help = {
-      'EXAMPLES': """\
-          To start a transaction, run:
-
-            $ {command} -z MANAGED_ZONE
-          """,
-  }
 
   @staticmethod
   def Args(parser):
-    util.ZONE_FLAG.AddToParser(parser)
+    flags.GetZoneArg().AddToParser(parser)
 
   def Run(self, args):
     if os.path.isfile(args.transaction_file):
       raise exceptions.ToolException(
           'transaction already exists at [{0}]'.format(args.transaction_file))
 
-    dns = self.context['dns_client']
-    messages = self.context['dns_messages']
-    resources = self.context['dns_resources']
+    dns = apis.GetClientInstance('dns', 'v1')
+    messages = apis.GetMessagesModule('dns', 'v1')
 
     # Get the managed-zone.
-    zone_ref = resources.Parse(
+    zone_ref = resources.REGISTRY.Parse(
         args.zone,
         params={
             'project': properties.VALUES.core.project.GetOrFail,

@@ -18,7 +18,6 @@ from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.service_management import arg_parsers
 from googlecloudsdk.command_lib.service_management import completion_callbacks
-from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
 
 
@@ -67,10 +66,13 @@ class Describe(base.DescribeCommand):
       The response from the Get API call.
     """
 
-    service = arg_parsers.GetServiceNameFromArg(args.service)
+    def _GetServiceName():
+      return arg_parsers.GetServiceNameFromArg(
+          args.MakeGetOrRaise('--service')())
+
     config_ref = resources.REGISTRY.Parse(
         args.config_id,
-        params={'serviceName': resolvers.FromArgument('--service', service)},
+        params={'serviceName': _GetServiceName},
         collection='servicemanagement.services.configs')
 
     # Check if the user wants the active config or a specific config.

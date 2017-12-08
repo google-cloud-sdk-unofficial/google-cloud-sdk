@@ -27,6 +27,7 @@ from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import execution_utils
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import retry
 from googlecloudsdk.core.util import text
@@ -163,7 +164,9 @@ class Connect(base.Command):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = client.resource_parser.Parse(
-        args.instance, collection='sql.instances')
+        args.instance,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances')
 
     acl_name = _WhitelistClientIP(instance_ref, sql_client, sql_messages,
                                   client.resource_parser)

@@ -18,16 +18,19 @@ from googlecloudsdk.calliope import base
 
 
 class Changes(base.Group):
-  """View details about changes to your Cloud DNS record-sets."""
+  """View details about changes to your Cloud DNS record-sets.
 
-  detailed_help = {
-      'EXAMPLES': """\
-          To view the details of a particular change, run:
+  View details about changes to your Cloud DNS record-sets.
 
-            $ {command} describe CHANGE_ID -z MANAGED_ZONE
+  ## EXAMPLES
 
-          To view the list of all changes, run:
+  To view the details of a particular change, run:
 
-            $ {command} list -z MANAGED_ZONE
-          """,
-  }
+    $ {command} describe CHANGE_ID -z MANAGED_ZONE
+
+  To view the list of all changes, run:
+
+    $ {command} list -z MANAGED_ZONE
+
+  """
+  pass

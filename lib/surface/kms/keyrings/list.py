@@ -44,6 +44,7 @@ class List(base.ListCommand):
 
     location_ref = resources.REGISTRY.Create(
         flags.LOCATION_COLLECTION,
+        locationsId=args.MakeGetOrRaise('--location'),
         projectsId=properties.VALUES.core.project.GetOrFail)
 
     request = messages.CloudkmsProjectsLocationsKeyRingsListRequest(

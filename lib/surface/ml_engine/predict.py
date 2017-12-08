@@ -13,9 +13,9 @@
 # limitations under the License.
 """ml-engine predict command."""
 
-from googlecloudsdk.api_lib.ml import predict
+from googlecloudsdk.api_lib.ml_engine import predict
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.ml import predict_utilities
+from googlecloudsdk.command_lib.ml_engine import predict_utilities
 
 
 INPUT_INSTANCES_LIMIT = 100

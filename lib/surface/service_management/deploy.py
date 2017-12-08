@@ -16,6 +16,7 @@
 
 import os
 
+from googlecloudsdk.api_lib.service_management import config_reporter
 from googlecloudsdk.api_lib.service_management import enable_api
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
@@ -55,6 +56,57 @@ _DETAILED_HELP = {
         """,
 }
 
+_BETA_DETAILED_HELP = {
+    'DESCRIPTION': """\
+        This command is used to deploy a service configuration for a service
+        to Google Service Management. As input, it takes one or more paths
+        to service configurations that should be uploaded. These configuration
+        files can be Proto Descriptors, Open API (Swagger) specifications,
+        or Google Service Configuration files in JSON or YAML formats.
+
+        If a service name is present in multiple configuration files (given
+        in the `host` field in OpenAPI specifications or the `name` field in
+        Google Service Configuration files), the first one will take precedence.
+
+        When deploying a new service configuration to an already-existing
+        service, some safety checks will be made comparing the new configuration
+        to the active configuration. If any actionable advice is provided, it
+        will be printed out to the log, and the deployment will be halted. It is
+        recommended that these warnings be addressed before proceeding, but they
+        can be overridden with the --force flag.
+
+        This command will block until deployment is complete unless the
+        `--async` flag is passed.
+        """,
+    'EXAMPLES': """\
+        To deploy a single Open API service configuration, run:
+
+          $ {command} ~/my_app/openapi.json
+
+        To run the deployment asynchronously (non-blocking), run:
+
+          $ {command} ~/my_app/openapi.json --async
+
+        To deploy a service config with a Proto, run:
+
+          $ {command} ~/my_app/service-config.yaml ~/my_app/service-protos.pb
+        """,
+}
+
+ADVICE_STRING = ('Advice found for changes in the new service config. If this '
+                 'is a --validate-only run, the config push would have failed. '
+                 'See the outputted report for failure reason(s). If this is '
+                 'not a --validate-only run and you would like to ignore these '
+                 'warnings, rerun the command with --force. NOTE: setting this '
+                 'flag will ignore all change advice. For production systems, '
+                 'best practice is to set this for a single execution only '
+                 'after manually reviewing all changes with advice.')
+
+FORCE_ADVICE_STRING = ('Advice found for changes in the new service config, '
+                       'but proceeding anyway because --force is set...')
+
+NUM_ADVICE_TO_PRINT = 3
+
 
 def _CommonArgs(parser):
   parser.add_argument(
@@ -92,6 +144,14 @@ class _BaseDeploy(object):
         help='If included, the command will only validate the service '
              'configuration(s). No configuration(s) will be persisted.')
 
+    parser.add_argument(
+        '--force',
+        '-f',
+        action='store_true',
+        default=False,
+        help='Force the deployment even if any hazardous changes to the '
+             'service configuration are detected.')
+
   def MakeConfigFileMessage(self, file_contents, filename, file_type):
     """Constructs a ConfigFile message from a config file.
 
@@ -109,6 +169,59 @@ class _BaseDeploy(object):
         fileContents=file_contents,
         filePath=os.path.basename(filename),
         fileType=file_type,)
+
+  def ShowConfigReport(self, service, service_config_id, log_func=log.warn):
+    """Run and display results (if any) from the Push Advisor.
+
+    Args:
+      service: The name of the service for which to compare configs.
+      service_config_id: The new config ID to compare against the active config.
+      log_func: The function to which to pass advisory messages
+        (default: log.warn).
+
+    Returns:
+      The number of advisory messages returned by the Push Advisor.
+    """
+    num_changes_with_advice = 0
+
+    reporter = config_reporter.ConfigReporter(service)
+
+    # Set the new config as the recently generated service config ID
+    reporter.new_config.SetConfigId(service_config_id)
+
+    # We always want to compare agaisnt the active config, so use default here
+    reporter.old_config.SetConfigUseDefaultId()
+
+    change_report = reporter.RunReport()
+    if not change_report or not change_report.configChanges:
+      return 0
+
+    changes = change_report.configChanges
+
+    for change in changes:
+      if change.advices:
+        if num_changes_with_advice < NUM_ADVICE_TO_PRINT:
+          log_func(services_util.PushAdvisorConfigChangeToString(change))
+        num_changes_with_advice += 1
+
+    if num_changes_with_advice > NUM_ADVICE_TO_PRINT:
+      log_func('%s total changes with advice found, check config report file '
+               'for full list.', num_changes_with_advice)
+
+    return num_changes_with_advice
+
+  def CheckPushAdvisor(self, unused_force=False):
+    """Run the Push Advisor and return whether the command should abort.
+
+    Args:
+      unused_force: bool, unused in the default implementation.
+
+    Returns:
+      True if the deployment should be aborted due to warnings, otherwise
+      False if it's safe to continue.
+    """
+    # Child classes must override this; otherwise, we'll always return False
+    return False
 
   def Run(self, args):
     """Run 'service-management deploy'.
@@ -235,6 +348,11 @@ class _BaseDeploy(object):
       raise calliope_exceptions.ToolException(
           'Failed to retrieve Service Configuration Id.')
 
+    # Run the Push Advisor to see if we need to warn the user of any
+    # potentially hazardous changes to the service configuration.
+    if self.CheckPushAdvisor(args.force):
+      return None
+
     # Create a Rollout for the new service configuration
     if not self.validate_only:
       percentages = messages.TrafficPercentStrategy.PercentagesValue()
@@ -257,10 +375,10 @@ class _BaseDeploy(object):
 
     return push_config_result
 
-  def Epilog(self, unused_resources_were_displayed):
+  def Epilog(self, resources_were_displayed):
     # Print this to screen not to the log because the output is needed by the
     # human user. Only print this when not doing a validate-only run.
-    if not self.validate_only:
+    if resources_were_displayed and not self.validate_only:
       log.status.Print(
           ('\nService Configuration [{0}] uploaded for '
            'service [{1}]\n').format(self.service_config_id, self.service_name))
@@ -279,10 +397,58 @@ class Deploy(_BaseDeploy, base.Command):
 class DeployBeta(_BaseDeploy, base.Command):
   """Deploys a service configuration for the given service name."""
 
+  def CheckPushAdvisor(self, force=False):
+    """Run the Push Advisor and return whether the command should abort.
+
+    Args:
+      force: bool, if True, this method will return False even if warnings are
+        generated.
+
+    Returns:
+      True if the deployment should be aborted due to warnings, otherwise
+      False if it's safe to continue.
+    """
+    log_func = log.warn if force else log.error
+    num_advices = self.ShowConfigReport(
+        self.service_name, self.service_config_id, log_func)
+    if num_advices > 0:
+      if force:
+        log_func(FORCE_ADVICE_STRING)
+      else:
+        log_func(ADVICE_STRING)
+        return True
+
+    return False
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DeployAlpha(_BaseDeploy, base.Command):
   """Deploys a service configuration for the given service name."""
 
+  def CheckPushAdvisor(self, force=False):
+    """Run the Push Advisor and return whether the command should abort.
 
-_BaseDeploy.detailed_help = _DETAILED_HELP
+    Args:
+      force: bool, if True, this method will return False even if warnings are
+        generated.
+
+    Returns:
+      True if the deployment should be aborted due to warnings, otherwise
+      False if it's safe to continue.
+    """
+    log_func = log.warn if force else log.error
+    num_advices = self.ShowConfigReport(
+        self.service_name, self.service_config_id, log_func)
+    if num_advices > 0:
+      if force:
+        log_func(FORCE_ADVICE_STRING)
+      else:
+        log_func(ADVICE_STRING)
+        return True
+
+    return False
+
+
+Deploy.detailed_help = _DETAILED_HELP
+DeployBeta.detailed_help = _BETA_DETAILED_HELP
+DeployAlpha.detailed_help = _BETA_DETAILED_HELP

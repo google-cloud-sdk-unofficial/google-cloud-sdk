@@ -13,11 +13,11 @@
 # limitations under the License.
 """ml-engine versions create command."""
 
-from googlecloudsdk.api_lib.ml import operations
-from googlecloudsdk.api_lib.ml import versions_api
+from googlecloudsdk.api_lib.ml_engine import operations
+from googlecloudsdk.api_lib.ml_engine import versions_api
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.ml import flags
-from googlecloudsdk.command_lib.ml import versions_util
+from googlecloudsdk.command_lib.ml_engine import flags
+from googlecloudsdk.command_lib.ml_engine import versions_util
 
 
 def _AddCreateArgs(parser):

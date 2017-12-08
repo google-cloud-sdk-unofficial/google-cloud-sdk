@@ -14,7 +14,7 @@
 """Command group for ml-engine."""
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.ml import flags
+from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources

@@ -524,7 +524,7 @@ class BigqueryClient(object):
         'wait_printer_factory': BigqueryClient.TransitionWaitPrinter,
         'job_id_generator': JobIdGeneratorIncrementing(JobIdGeneratorRandom()),
         'max_rows_per_request': None,
-        }
+    }
     for flagname, default in default_flag_values.iteritems():
       if not hasattr(self, flagname):
         setattr(self, flagname, default)
@@ -552,7 +552,7 @@ class BigqueryClient(object):
     bigquery_http = BigqueryHttp.Factory(
         bigquery_model,
     )
-    discovery_document = self.discovery_document
+    discovery_document = None
     if discovery_document == _DEFAULT:
       # Use the api description packed with this client, if one exists.
       try:
@@ -614,6 +614,7 @@ class BigqueryClient(object):
     """Return the apiclient that supports insert operation."""
     insert_client = self.apiclient
     return insert_client
+
 
 
 
@@ -907,6 +908,7 @@ class BigqueryClient(object):
     return op.execute()
 
 
+
   def ReadSchemaAndRows(self, table_dict, start_row=None, max_rows=None,
                         selected_fields=None):
     """Convenience method to get the schema and rows from a table.
@@ -1158,19 +1160,18 @@ class BigqueryClient(object):
     return kind.partition('#')[2]
 
   @staticmethod
-  def FormatInfoByKind(object_info):
+  def FormatInfoByType(object_info, object_type):
     """Format a single object_info (based on its 'kind' attribute)."""
-    kind = BigqueryClient._KindToName(object_info.get('kind'))
-    if kind == 'job':
+    if object_type == ApiClientHelper.JobReference:
       return BigqueryClient.FormatJobInfo(object_info)
-    elif kind == 'project':
+    elif object_type == ApiClientHelper.ProjectReference:
       return BigqueryClient.FormatProjectInfo(object_info)
-    elif kind == 'dataset':
+    elif object_type == ApiClientHelper.DatasetReference:
       return BigqueryClient.FormatDatasetInfo(object_info)
-    elif kind == 'table':
+    elif object_type == ApiClientHelper.TableReference:
       return BigqueryClient.FormatTableInfo(object_info)
     else:
-      raise ValueError('Unknown object type: %s' % (kind,))
+      raise ValueError('Unknown object type: %s' % (object_type,))
 
   @staticmethod
   def FormatJobInfo(job_info):
@@ -1291,6 +1292,7 @@ class BigqueryClient(object):
           result['Total URIs'] = len(
               result['externalDataConfiguration']['sourceUris'])
     return result
+
 
   @staticmethod
   def ConstructObjectReference(object_info):
@@ -2298,8 +2300,12 @@ class BigqueryClient(object):
 
     Returns:
       A tuple (schema fields, row results, execution metadata).
-        The execution metadata dict contains the 'State' and 'status' elements
-        that would be in a job result after FormatJobInfo().
+        For regular queries, the execution metadata dict contains
+        the 'State' and 'status' elements that would be in a job result
+        after FormatJobInfo().
+        For dry run queries schema and rows are empty, the execution metadata
+        dict contains statistics
+
     """
     if not self.sync:
       raise BigqueryClientError('Running RPC-style query asynchronously is '
@@ -2342,6 +2348,11 @@ class BigqueryClient(object):
               external_table_definitions_json=external_table_definitions_json,
               udf_resources=udf_resources,
               **kwds)
+          if dry_run:
+            execution = dict(statistics=dict(query=dict(
+                totalBytesProcessed=result['totalBytesProcessed'],
+                cacheHit=['cacheHit'])))
+            return ([], [], execution)
           job_reference = ApiClientHelper.JobReference.Create(
               **result['jobReference'])
         else:
@@ -2903,3 +2914,4 @@ class ApiClientHelper(object):
     def GetProjectReference(self):
       return ApiClientHelper.ProjectReference.Create(
           projectId=self.projectId)
+

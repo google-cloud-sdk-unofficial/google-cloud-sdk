@@ -15,32 +15,32 @@
 """gcloud dns record-sets transaction add command."""
 
 from googlecloudsdk.api_lib.dns import transaction_util as trans_util
-from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
 
 
 class Add(base.Command):
-  """Append a record-set addition to the transaction.
+  r"""Append a record-set addition to the transaction.
 
   This command appends a record-set addition to the transaction.
+
+  ## EXAMPLES
+
+  To add an A record, run:
+
+    $ {command} -z MANAGED_ZONE --name my.domain. --ttl 1234 \
+        --type A "1.2.3.4"
+
+  To add a TXT record with multiple data values, run:
+
+    $ {command} -z MANAGED_ZONE --name my.domain. --ttl 2345 \
+        --type TXT "Hello world" "Bye world"
   """
-
-  detailed_help = {
-      'EXAMPLES': """\
-          To add an A record, run:
-
-            $ {command} -z MANAGED_ZONE --name my.domain. --ttl 1234 --type A "1.2.3.4"
-
-          To add a TXT record with multiple data values, run:
-
-            $ {command} -z MANAGED_ZONE --name my.domain. --ttl 2345 --type TXT "Hello world" "Bye world"
-          """,
-  }
 
   @staticmethod
   def Args(parser):
-    util.ZONE_FLAG.AddToParser(parser)
+    flags.GetZoneArg().AddToParser(parser)
     parser.add_argument(
         '--name', required=True,
         help='DNS name of the record-set to add.')

@@ -14,33 +14,10 @@
 
 """The super-group for the logging CLI."""
 
-import argparse
-from googlecloudsdk.api_lib.logging import util
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resolvers
-from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Logging(base.Group):
   """Manage Stackdriver Logging."""
 
-  def Filter(self, context, args):
-    """Modify the context that will be given to this group's commands when run.
-
-    Args:
-      context: The current context.
-      args: The argparse namespace given to the corresponding .Run() invocation.
-
-    Returns:
-      The updated context.
-    """
-    # All logging collections use projectId, so we can set a default value.
-    resources.REGISTRY.SetParamDefault(
-        api='logging', collection=None, param='projectsId',
-        resolver=resolvers.FromProperty(properties.VALUES.core.project))
-
-    context['logging_resources'] = resources.REGISTRY
-    return context

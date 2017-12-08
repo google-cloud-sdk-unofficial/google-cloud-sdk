@@ -11,12 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Helper functions for the ml client to use command_lib.logs.stream."""
+"""Helper functions for the ml-engine  client to use command_lib.logs.stream."""
 import copy
 
 from apitools.base.py import encoding
 
-from googlecloudsdk.api_lib.ml import jobs
+from googlecloudsdk.api_lib.ml_engine import jobs
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 

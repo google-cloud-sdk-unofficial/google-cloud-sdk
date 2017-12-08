@@ -30,40 +30,8 @@ def _AddCommonFlags(parser):
     """)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
-  """List customizable flags for Google Cloud SQL instances."""
-
-  @staticmethod
-  def Args(parser):
-    _AddCommonFlags(parser)
-
-  def Run(self, unused_args):
-    """Lists customizable MySQL flags for Google Cloud SQL instances.
-
-    Args:
-      unused_args: argparse.Namespace, The arguments that this command was
-          invoked with.
-
-    Returns:
-      A dict object that has the list of flag resources if the command ran
-      successfully.
-    Raises:
-      HttpException: A http error response was received while executing api
-          request.
-      ToolException: An error other than http error occured while executing the
-          command.
-    """
-    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
-    sql_client = client.sql_client
-    sql_messages = client.sql_messages
-
-    result = sql_client.flags.List(sql_messages.SqlFlagsListRequest())
-    return iter(result.items)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(base.ListCommand):
   """List customizable flags for Google Cloud SQL instances."""
 
   @staticmethod
@@ -83,8 +51,7 @@ class ListBeta(base.ListCommand):
         '--database-version',
         required=False,
         choices=['MYSQL_5_5', 'MYSQL_5_6', 'MYSQL_5_7', 'POSTGRES_9_6'],
-        help='Only list flags that apply to the specified database version.',
-        hidden='True'  # TODO(b/36057350): unhide the week of GCP Next 2017
+        help='Only list flags that apply to the specified database version.'
     )
 
   def Run(self, args):

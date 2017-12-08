@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """ml-engine jobs cancel command."""
-from googlecloudsdk.api_lib.ml import jobs
+from googlecloudsdk.api_lib.ml_engine import jobs
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.ml import flags
-from googlecloudsdk.command_lib.ml import jobs_util
+from googlecloudsdk.command_lib.ml_engine import flags
+from googlecloudsdk.command_lib.ml_engine import jobs_util
 
 
 def _AddCancelArgs(parser):

@@ -29,6 +29,7 @@ class Diagnose(base.Command):
 
   @staticmethod
   def Args(parser):
+    util.AddTimeoutFlag(parser)
     parser.add_argument(
         'name',
         help='The name of the cluster to diagnose.')
@@ -47,8 +48,10 @@ class Diagnose(base.Command):
     operation = client.projects_regions_clusters.Diagnose(request)
     # TODO(b/36052522): Stream output during polling.
     operation = util.WaitForOperation(
-        operation, self.context,
-        message='Waiting for cluster diagnose operation')
+        operation,
+        self.context,
+        message='Waiting for cluster diagnose operation',
+        timeout_s=args.timeout)
 
     if not operation.response:
       raise exceptions.OperationError('Operation is missing response')

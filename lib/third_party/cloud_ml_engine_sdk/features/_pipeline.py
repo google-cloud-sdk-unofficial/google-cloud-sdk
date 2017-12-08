@@ -177,6 +177,9 @@ class TransformDataFn(beam.DoFn):
       self._error_counter.inc()
       if self._allow_errors:
         traceback.print_exc()
-        yield beam.pvalue.SideOutputValue('errors', (exn, element))
+        try:
+          yield beam.pvalue.OutputValue('errors', (exn, element))
+        except AttributeError:
+          yield beam.pvalue.SideOutputValue('errors', (exn, element))
       else:
         raise

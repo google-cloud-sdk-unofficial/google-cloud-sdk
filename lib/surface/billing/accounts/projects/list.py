@@ -30,9 +30,13 @@ class List(base.ListCommand):
   def Args(parser):
     parser.add_argument('id', **utils.ACCOUNT_ID_ARG_PARAMS)
     base.URI_FLAG.RemoveFromParser(parser)
-
-  def Collection(self):
-    return 'cloudbilling.projectBillingInfo'
+    parser.display_info.AddFormat("""
+          table(
+            projectId,
+            billingAccountName.basename():label=BILLING_ACCOUNT_ID,
+            billingEnabled
+          )
+    """)
 
   @staticmethod
   def GetUriCacheUpdateOp():

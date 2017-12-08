@@ -22,8 +22,9 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-class _BaseAddDatabase(object):
-  """Base class for sql databases create."""
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class AddDatabase(base.Command):
+  """Creates a database for a Cloud SQL instance."""
 
   @staticmethod
   def Args(parser):
@@ -104,9 +105,3 @@ class _BaseAddDatabase(object):
     log.CreatedResource(args.database, kind='database', async=args.async)
 
     return result
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class AddDatabaseBeta(_BaseAddDatabase, base.Command):
-  """Creates a database for a Cloud SQL instance."""
-  pass

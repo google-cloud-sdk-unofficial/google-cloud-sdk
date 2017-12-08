@@ -58,7 +58,10 @@ class _ExtractValues(beam.DoFn):
           for column_index, extract_value in enumerate(self._extractors)
       ]
     except Exception as ex:  # pylint: disable=broad-except
-      yield beam.pvalue.SideOutputValue('errors', (ex, element))
+      try:
+        yield beam.pvalue.OutputValue('errors', (ex, element))
+      except AttributeError:
+        yield beam.pvalue.SideOutputValue('errors', (ex, element))
 
 
 class AnalyzeData(beam.PTransform):

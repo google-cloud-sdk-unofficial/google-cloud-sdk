@@ -18,12 +18,14 @@ from googlecloudsdk.calliope import base
 
 
 class ProjectInfo(base.Group):
-  """View Cloud DNS related information for a project."""
+  """View Cloud DNS related information for a project.
 
-  detailed_help = {
-      'EXAMPLES': """\
-          To display Cloud DNS related information for your project, run:
+  View Cloud DNS related information for a project.
 
-            $ {command} describe
-          """,
-  }
+  ## EXAMPLES
+
+  To display Cloud DNS related information for your project, run:
+
+    $ {command} describe
+  """
+  pass

@@ -15,9 +15,9 @@
 from apitools.base.py import exceptions
 
 from googlecloudsdk.command_lib.logs import stream
-from googlecloudsdk.command_lib.ml import flags
-from googlecloudsdk.command_lib.ml import jobs_prep
-from googlecloudsdk.command_lib.ml import log_utils
+from googlecloudsdk.command_lib.ml_engine import flags
+from googlecloudsdk.command_lib.ml_engine import jobs_prep
+from googlecloudsdk.command_lib.ml_engine import log_utils
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties

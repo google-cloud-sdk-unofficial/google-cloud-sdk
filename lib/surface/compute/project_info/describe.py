@@ -15,29 +15,23 @@
 """Command for describing the project."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import util
+from googlecloudsdk.core import properties
 
 
-class Describe(base_classes.BaseDescriber):
+class Describe(base.DescribeCommand):
   """Describe the Google Compute Engine project resource."""
 
-  @staticmethod
-  def Args(parser):
-    pass
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def service(self):
-    return self.compute.projects
+    project_ref = util.ParseProject(properties.VALUES.core.project.GetOrFail())
 
-  @property
-  def resource_type(self):
-    return 'projects'
-
-  def CreateReference(self, args):
-    return util.ParseProject(self.project)
-
-  def SetNameField(self, args, request):
-    pass
+    return client.MakeRequests([(client.apitools_client.projects, 'Get',
+                                 client.messages.ComputeProjectsGetRequest(
+                                     project=project_ref.projectId))])[0]
 
 
 Describe.detailed_help = {

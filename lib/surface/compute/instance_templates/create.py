@@ -32,6 +32,8 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
   if release_track in [base.ReleaseTrack.ALPHA]:
     instances_flags.AddCreateDiskArgs(parser)
     instances_flags.AddExtendedMachineTypeArgs(parser)
+  if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
+    instances_flags.AddAcceleratorArgs(parser)
   if support_local_ssd_size:
     instances_flags.AddLocalSsdArgsWithSize(parser)
   else:
@@ -115,6 +117,7 @@ class Create(base_classes.BaseAsyncCreator):
     instances_flags.ValidateLocalSsdFlags(args)
     instances_flags.ValidateNicFlags(args)
     instances_flags.ValidateServiceAccountAndScopeArgs(args)
+    instances_flags.ValidateAcceleratorArgs(args)
 
     boot_disk_size_gb = utils.BytesToGb(args.boot_disk_size)
     utils.WarnIfDiskSizeIsTooSmall(boot_disk_size_gb, args.boot_disk_type)
@@ -223,22 +226,35 @@ class Create(base_classes.BaseAsyncCreator):
         custom_memory=args.custom_memory,
         ext=getattr(args, 'custom_extensions', None))
 
+    guest_accelerators = (
+        instance_template_utils.CreateAcceleratorConfigMessages(
+            self.compute_client.messages, getattr(args, 'accelerator', None)))
+
+    instance_properties = self.messages.InstanceProperties(
+        machineType=machine_type,
+        disks=disks,
+        canIpForward=args.can_ip_forward,
+        metadata=metadata,
+        networkInterfaces=network_interfaces,
+        serviceAccounts=service_accounts,
+        scheduling=scheduling,
+        tags=tags,
+    )
+
+    # TODO(b/36890961): Pass this directly into guestAccelerators once GA.
+    if guest_accelerators:
+      instance_properties.guestAccelerators = guest_accelerators
+
     request = self.messages.ComputeInstanceTemplatesInsertRequest(
         instanceTemplate=self.messages.InstanceTemplate(
-            properties=self.messages.InstanceProperties(
-                machineType=machine_type,
-                disks=disks,
-                canIpForward=args.can_ip_forward,
-                metadata=metadata,
-                networkInterfaces=network_interfaces,
-                serviceAccounts=service_accounts,
-                scheduling=scheduling,
-                tags=tags,
-            ),
+            properties=instance_properties,
             description=args.description,
             name=instance_template_ref.Name(),
         ),
         project=instance_template_ref.project)
+
+    if getattr(args, 'min_cpu_platform', None):
+      request.instanceTemplate.properties.minCpuPlatform = args.min_cpu_platform
 
     return [request]
 
@@ -288,3 +304,4 @@ class CreateAlpha(Create):
                 release_track=base.ReleaseTrack.ALPHA,
                 support_alias_ip_ranges=True,
                 support_local_ssd_size=True)
+    instances_flags.AddMinCpuPlatformArgs(parser)

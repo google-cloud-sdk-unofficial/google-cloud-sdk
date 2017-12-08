@@ -14,8 +14,9 @@
 """Command for labels update to disks."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute.operations import poller
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.command_lib.util import labels_util
@@ -64,13 +65,7 @@ class Update(base.UpdateCommand):
         args, holder.resources,
         scope_lister=flags.GetDefaultScopeLister(holder.client))
 
-    update_labels = labels_util.GetUpdateLabelsDictFromArgs(args)
-    remove_labels = labels_util.GetRemoveLabelsListFromArgs(args)
-    if update_labels is None and remove_labels is None:
-      raise calliope_exceptions.RequiredArgumentException(
-          'LABELS',
-          'At least one of --update-labels or '
-          '--remove-labels must be specified.')
+    update_labels, remove_labels = labels_util.GetAndValidateOpsFromArgs(args)
 
     if disk_ref.Collection() == 'compute.disks':
       service = client.disks
@@ -85,6 +80,7 @@ class Update(base.UpdateCommand):
     disk = service.Get(request_type(**disk_ref.AsDict()))
 
     if disk_ref.Collection() == 'compute.disks':
+      operation_collection = 'compute.zoneOperations'
       replacement = labels_util.UpdateLabels(
           disk.labels,
           messages.ZoneSetLabelsRequest.LabelsValue,
@@ -98,6 +94,7 @@ class Update(base.UpdateCommand):
               labelFingerprint=disk.labelFingerprint,
               labels=replacement))
     else:
+      operation_collection = 'compute.regionOperations'
       replacement = labels_util.UpdateLabels(
           disk.labels,
           messages.RegionSetLabelsRequest.LabelsValue,
@@ -114,4 +111,12 @@ class Update(base.UpdateCommand):
     if not replacement:
       return disk
 
-    return service.SetLabels(request)
+    operation = service.SetLabels(request)
+    operation_ref = holder.resources.Parse(
+        operation.selfLink, collection=operation_collection)
+
+    operation_poller = poller.Poller(service)
+    return waiter.WaitFor(
+        operation_poller, operation_ref,
+        'Updating labels of disk [{0}]'.format(
+            disk_ref.Name()))

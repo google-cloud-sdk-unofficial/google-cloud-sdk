@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """ml-engine jobs submit batch prediction command."""
-from googlecloudsdk.api_lib.ml import jobs
+from googlecloudsdk.api_lib.ml_engine import jobs
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.ml import flags
-from googlecloudsdk.command_lib.ml import jobs_util
+from googlecloudsdk.command_lib.ml_engine import flags
+from googlecloudsdk.command_lib.ml_engine import jobs_util
 
 _TF_RECORD_URL = ('https://www.tensorflow.org/versions/r0.12/how_tos/'
                   'reading_data/index.html#file-formats')

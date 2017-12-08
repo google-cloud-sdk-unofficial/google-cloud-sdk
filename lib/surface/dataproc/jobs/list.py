@@ -83,9 +83,13 @@ class List(base.ListCommand):
         '--state-filter',
         choices=STATE_MATCHER_ENUM,
         help='Filter by job state.')
-
-  def Collection(self):
-    return 'dataproc.jobs'
+    parser.display_info.AddFormat("""
+          table(
+            reference.jobId,
+            type.yesno(no="-"),
+            status.state:label=STATUS
+          )
+    """)
 
   def Run(self, args):
     client = self.context['dataproc_client']

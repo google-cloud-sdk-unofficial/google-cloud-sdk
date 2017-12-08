@@ -54,7 +54,7 @@ class _BaseGet(object):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    client = self.GetSqlClient()
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client
     sql_messages = client.sql_messages
 
@@ -69,17 +69,7 @@ class _BaseGet(object):
                                 args.common_name)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Get(_BaseGet, base.DescribeCommand):
   """Retrieves information about an SSL cert for a Cloud SQL instance."""
-
-  def GetSqlClient(self):
-    return api_util.SqlClient(api_util.API_VERSION_FALLBACK)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class GetBeta(_BaseGet, base.DescribeCommand):
-  """Retrieves information about an SSL cert for a Cloud SQL instance."""
-
-  def GetSqlClient(self):
-    return api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+  pass

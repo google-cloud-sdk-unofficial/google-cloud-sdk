@@ -14,9 +14,7 @@
 
 """The gcloud dns command group."""
 
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -49,10 +47,3 @@ class DNS(base.Group):
 
     $ {command} project-info describe --help
   """
-
-  def Filter(self, context, args):
-    context['dns_client'] = apis.GetClientInstance('dns', 'v1')
-    context['dns_messages'] = apis.GetMessagesModule('dns', 'v1')
-    context['dns_resources'] = resources.REGISTRY
-
-    return context

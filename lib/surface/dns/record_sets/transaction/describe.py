@@ -15,27 +15,25 @@
 """gcloud dns record-sets transaction describe command."""
 
 from googlecloudsdk.api_lib.dns import transaction_util
-from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dns import flags
 
 
 class Describe(base.DescribeCommand):
   """Describe the transaction.
 
   This command displays the contents of the transaction.
+
+  ## EXAMPLES
+
+  To look at the contents of the transaction, run:
+
+    $ {command} -z MANAGED_ZONE
   """
-
-  detailed_help = {
-      'EXAMPLES': """\
-          To look at the contents of the transaction, run:
-
-            $ {command} -z MANAGED_ZONE
-          """,
-  }
 
   @staticmethod
   def Args(parser):
-    util.ZONE_FLAG.AddToParser(parser)
+    flags.GetZoneArg().AddToParser(parser)
 
   def Run(self, args):
     with transaction_util.TransactionFile(args.transaction_file) as trans_file:

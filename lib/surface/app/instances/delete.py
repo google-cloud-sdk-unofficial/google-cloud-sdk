@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import instances_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
@@ -50,10 +51,13 @@ class Delete(base.DeleteCommand):
 
     log.status.Print('Deleting the instance [{0}].'.format(instance))
     console_io.PromptContinue(cancel_on_no=True)
-    res = resources.REGISTRY.Parse(args.instance,
-                                   params={'servicesId': args.service,
-                                           'versionsId': args.version,
-                                           'instancesId': args.instance},
-                                   collection='appengine.apps.services.'
-                                              'versions.instances')
+    res = resources.REGISTRY.Parse(
+        args.instance,
+        params={
+            'appsId': properties.VALUES.core.project.GetOrFail,
+            'servicesId': args.service,
+            'versionsId': args.version,
+            'instancesId': args.instance,
+        },
+        collection='appengine.apps.services.versions.instances')
     client.DeleteInstance(res)

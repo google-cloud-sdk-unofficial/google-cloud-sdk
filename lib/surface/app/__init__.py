@@ -17,11 +17,6 @@
 import sys
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import exceptions
-from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
-from googlecloudsdk.core.util import platforms
 
 
 DETAILED_HELP = {
@@ -62,10 +57,6 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class AppengineGA(base.Group):
-
-  def Filter(self, unused_context, unused_args):
-    resources.REGISTRY.SetParamDefault(
-        'appengine', None, 'appsId',
-        properties.VALUES.core.project.Get(required=True))
+  pass
 
 AppengineGA.detailed_help = DETAILED_HELP

@@ -26,7 +26,7 @@ def _Args(cls, parser):
   flags.AddDescription(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(utils.AddressesMutator):
   """Reserve IP addresses."""
 
@@ -36,6 +36,33 @@ class Create(utils.AddressesMutator):
   def Args(cls, parser):
     _Args(cls, parser)
     flags.AddAddresses(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Reserve IP addresses."""
+
+  @classmethod
+  def Args(cls, parser):
+    _Args(cls, parser)
+    flags.AddAddressesAndIPVersions(parser, required=False)
+
+  def GetAddress(self, args, address, address_ref):
+    """Override."""
+    if args.ip_version or (address is None and self.global_request):
+      ip_version = self.messages.Address.IpVersionValueValuesEnum(
+          args.ip_version or 'IPV4')
+    else:
+      # IP version is only specified in global requests if an address is not
+      # specified to determine whether an ipv4 or ipv6 address should be
+      # allocated.
+      ip_version = None
+
+    return self.messages.Address(
+        address=address,
+        description=args.description,
+        ipVersion=ip_version,
+        name=address_ref.Name())
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

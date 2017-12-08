@@ -37,9 +37,8 @@ class ListInstanceUpdates(base.ListCommand):
           allowed.
     """
     parser.add_argument('update', help='Update id.')
-
-  def Collection(self):
-    return 'replicapoolupdater.rollingUpdates.instanceUpdates'
+    parser.display_info.AddFormat(
+        'table(instance.basename():label=INSTANCE_NAME, status)')
 
   def Run(self, args):
     """Run 'rolling-updates list-instance-updates'.

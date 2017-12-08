@@ -14,7 +14,9 @@
 
 """gcloud dns project-info describe command."""
 
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import resources
 
 
 class Describe(base.DescribeCommand):
@@ -22,15 +24,13 @@ class Describe(base.DescribeCommand):
 
   This command displays Cloud DNS related information for your project including
   quotas for various resources and operations.
+
+  ## EXAMPLES
+
+  To display Cloud DNS related information for your project, run:
+
+    $ {command} my_project_id
   """
-
-  detailed_help = {
-      'EXAMPLES': """\
-          To display Cloud DNS related information for your project, run:
-
-            $ {command} my_project_id
-          """,
-  }
 
   @staticmethod
   def Args(parser):
@@ -39,9 +39,9 @@ class Describe(base.DescribeCommand):
         help='The identifier for the project you want DNS related info for.')
 
   def Run(self, args):
-    dns = self.context['dns_client']
-    resources = self.context['dns_resources']
-    project_ref = resources.Parse(args.dns_project, collection='dns.projects')
+    dns = apis.GetClientInstance('dns', 'v1')
+    project_ref = resources.REGISTRY.Parse(
+        args.dns_project, collection='dns.projects')
 
     return dns.projects.Get(
         dns.MESSAGES_MODULE.DnsProjectsGetRequest(

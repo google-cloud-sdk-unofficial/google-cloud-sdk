@@ -205,6 +205,7 @@ class ApiBeta(ApiBase):
                                   version_name=None,
                                   data_format='TEXT',
                                   region=None,
+                                  # already deprecated, so pylint: disable=unused-argument
                                   runtime_version=None):
     """Call the API to submit a batch prediction job.
 
@@ -230,9 +231,6 @@ class ApiBeta(ApiBase):
         'data_format': data_format,
         'region': region
     }
-    runtime_version = runtime_version or self.default_runtime_version
-    if runtime_version:
-      prediction_input['runtime_version'] = runtime_version
     if version_name:
       prediction_input['version_name'] = (
           'projects/{0}/models/{1}/versions/{2}'.format(self._project_id,

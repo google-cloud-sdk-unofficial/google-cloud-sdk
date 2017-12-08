@@ -16,7 +16,6 @@
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import flags
-from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
 
 
@@ -31,8 +30,3 @@ class KeyRings(base.Group):
     flags.AddLocationFlag(parser)
     parser.display_info.AddUriFunc(
         cloudkms_base.MakeGetUriFunc(flags.KEY_RING_COLLECTION))
-
-  def Filter(self, context, args):
-    resources.REGISTRY.SetParamDefault(
-        'cloudkms', None, 'locationsId',
-        resolvers.FromArgument('--location', args.location))

@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import exceptions as command_exceptions
 from googlecloudsdk.command_lib.util import ssh
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
@@ -121,9 +122,12 @@ class Ssh(base.Command):
       raise command_exceptions.InvalidInstanceTypeError(environment, msg)
     res = resources.REGISTRY.Parse(
         args.instance,
-        params={'versionsId': args.version,
-                'instancesId': args.instance,
-                'servicesId': args.service},
+        params={
+            'appsId': properties.VALUES.core.project.GetOrFail,
+            'versionsId': args.version,
+            'instancesId': args.instance,
+            'servicesId': args.service,
+        },
         collection='appengine.apps.services.versions.instances')
     rel_name = res.RelativeName()
     try:

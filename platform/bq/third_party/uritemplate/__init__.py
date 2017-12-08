@@ -1,14 +1,27 @@
 #!/usr/bin/env python
-#
-# Copyright 2010 Google Inc. All Rights Reserved.
-
-"""Module definition for uritemplate.
-
-   This differs from the upstream version (which is an empty file),
-   in order to expose the 'expand' method from the module
-   the same way that it is exposed by the upstream version.
 """
 
+uritemplate
+===========
 
+The URI templating library for humans.
 
-from uritemplate import expand
+See http://uritemplate.rtfd.org/ for documentation
+
+:copyright: (c) 2013-2015 Ian Cordasco
+:license: Modified BSD, see LICENSE for more details
+
+"""
+
+__title__ = 'uritemplate'
+
+__license__ = 'Modified BSD or Apache License, Version 2.0'
+__copyright__ = 'Copyright 2013 Ian Cordasco'
+__version__ = '3.0.0'
+__version_info__ = tuple(int(i) for i in __version__.split('.') if i.isdigit())
+
+from uritemplate.api import (
+    URITemplate, expand, partial, variables  # noqa: E402
+)
+
+__all__ = ('URITemplate', 'expand', 'partial', 'variables')

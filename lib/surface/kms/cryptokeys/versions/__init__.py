@@ -15,8 +15,6 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import flags
-from googlecloudsdk.core import resolvers
-from googlecloudsdk.core import resources
 
 
 class Versions(base.Group):
@@ -29,8 +27,3 @@ class Versions(base.Group):
   @staticmethod
   def Args(parser):
     flags.AddCryptoKeyFlag(parser)
-
-  def Filter(self, context, args):
-    resources.REGISTRY.SetParamDefault(
-        'cloudkms', None, 'cryptoKeysId',
-        resolvers.FromArgument('--cryptokey', args.cryptokey))

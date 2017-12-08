@@ -17,10 +17,12 @@
 import os
 from googlecloudsdk.api_lib.dns import import_util
 from googlecloudsdk.api_lib.dns import transaction_util
-from googlecloudsdk.api_lib.dns import util
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 class Execute(base.ListCommand):
@@ -28,20 +30,18 @@ class Execute(base.ListCommand):
 
   This command executes the transaction on Cloud DNS. This will result in
   record-sets being changed as specified in the transaction.
+
+  ## EXAMPLES
+
+  To execute the transaction, run:
+
+    $ {command} -z MANAGED_ZONE
   """
-
-  detailed_help = {
-      'EXAMPLES': """\
-          To execute the transaction, run:
-
-            $ {command} -z MANAGED_ZONE
-          """,
-  }
 
   @staticmethod
   def Args(parser):
-    util.ZONE_FLAG.AddToParser(parser)
-    parser.display_info.AddFormat(util.CHANGES_FORMAT)
+    flags.GetZoneArg().AddToParser(parser)
+    parser.display_info.AddFormat(flags.CHANGES_FORMAT)
 
   def Run(self, args):
     with transaction_util.TransactionFile(args.transaction_file) as trans_file:
@@ -54,10 +54,9 @@ class Execute(base.ListCommand):
       os.remove(args.transaction_file)
       return None
 
-    dns = self.context['dns_client']
-    messages = self.context['dns_messages']
-    resources = self.context['dns_resources']
-    zone_ref = resources.Parse(
+    dns = apis.GetClientInstance('dns', 'v1')
+    messages = apis.GetMessagesModule('dns', 'v1')
+    zone_ref = resources.REGISTRY.Parse(
         args.zone,
         params={
             'project': properties.VALUES.core.project.GetOrFail,
@@ -67,7 +66,7 @@ class Execute(base.ListCommand):
     # Send the change to the service.
     result = dns.changes.Create(messages.DnsChangesCreateRequest(
         change=change, managedZone=zone_ref.Name(), project=zone_ref.project))
-    change_ref = resources.Create(
+    change_ref = resources.REGISTRY.Create(
         collection='dns.changes', project=zone_ref.project,
         managedZone=zone_ref.Name(), changeId=result.id)
     msg = 'Executed transaction [{0}] for managed-zone [{1}].'.format(

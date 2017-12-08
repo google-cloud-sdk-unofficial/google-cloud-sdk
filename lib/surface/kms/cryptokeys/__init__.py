@@ -15,7 +15,6 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import flags
-from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
 
 
@@ -34,11 +33,3 @@ class CryptoKeys(base.Group):
   def Args(parser):
     flags.AddKeyRingFlag(parser)
     flags.AddLocationFlag(parser)
-
-  def Filter(self, context, args):
-    resources.REGISTRY.SetParamDefault(
-        'cloudkms', None, 'locationsId',
-        resolvers.FromArgument('--location', args.location))
-    resources.REGISTRY.SetParamDefault(
-        'cloudkms', None, 'keyRingsId',
-        resolvers.FromArgument('--keyring', args.keyring))

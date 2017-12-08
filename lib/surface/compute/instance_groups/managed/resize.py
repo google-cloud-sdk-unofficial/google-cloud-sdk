@@ -14,7 +14,10 @@
 
 """Command for setting size of managed instance group."""
 
+import sys
+
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
@@ -27,7 +30,7 @@ def _AddArgs(parser, creation_retries):
   parser.add_argument(
       '--size',
       required=True,
-      type=int,
+      type=arg_parsers.BoundedInt(0, sys.maxint, unlimited=True),
       help=('Target number of instances in managed instance group.'))
 
   if creation_retries:

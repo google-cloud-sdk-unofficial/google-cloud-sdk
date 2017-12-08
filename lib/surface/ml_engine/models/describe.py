@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """ml-engine models describe command."""
-from googlecloudsdk.api_lib.ml import models
+from googlecloudsdk.api_lib.ml_engine import models
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.ml import flags
+from googlecloudsdk.command_lib.ml_engine import flags
 
 
 _COLLECTION = 'ml.models'

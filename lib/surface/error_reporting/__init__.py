@@ -19,7 +19,6 @@ from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
 
 
@@ -37,11 +36,6 @@ class ErrorReporting(base.Group):
     Returns:
       The updated context.
     """
-    # All error reporting collections use projectId, so we can set a default.
-    resources.REGISTRY.SetParamDefault(
-        api='clouderrorreporting', collection=None, param='projectsId',
-        resolver=resolvers.FromProperty(properties.VALUES.core.project))
-
     context['clouderrorreporting_client_v1beta1'] = apis.GetClientInstance(
         'clouderrorreporting', 'v1beta1')
     context['clouderrorreporting_messages_v1beta1'] = apis.GetMessagesModule(

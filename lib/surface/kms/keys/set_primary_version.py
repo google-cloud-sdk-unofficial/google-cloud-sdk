@@ -16,8 +16,6 @@
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import flags
-from googlecloudsdk.core import resolvers
-from googlecloudsdk.core import resources
 
 
 class SetPrimaryVersion(base.Command):
@@ -47,10 +45,6 @@ class SetPrimaryVersion(base.Command):
     # pylint: disable=line-too-long
     client = cloudkms_base.GetClientInstance()
     messages = cloudkms_base.GetMessagesModule()
-
-    resources.REGISTRY.SetParamDefault(
-        'cloudkms', None, 'cryptoKeysId',
-        resolvers.FromArgument('--key', args.key))
 
     version_ref = flags.ParseCryptoKeyVersionName(args)
 

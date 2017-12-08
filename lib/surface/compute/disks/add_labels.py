@@ -14,8 +14,11 @@
 """Command for adding labels to disks."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute.operations import poller
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import labels_doc_helper
 from googlecloudsdk.command_lib.compute import labels_flags
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.command_lib.util import labels_util
@@ -23,17 +26,7 @@ from googlecloudsdk.command_lib.util import labels_util
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AddLabels(base.UpdateCommand):
-  """Add labels to Google Compute Engine persistent disks.
-
-  *{command}* adds labels to a Google Compute Engine
-  persistent disks. For example, running:
-
-    $ {command} example-disk --labels=k0=v0,k1=v1
-
-  will add key-value pairs ``k0''=``v0'' and ``k1''=``v1'' to 'example-disk'.
-
-  Labels can be used to identify the disk.
-  """
+  """add-labels command for disks."""
 
   DISK_ARG = None
 
@@ -71,6 +64,7 @@ class AddLabels(base.UpdateCommand):
     disk = service.Get(request_type(**disk_ref.AsDict()))
 
     if disk_ref.Collection() == 'compute.disks':
+      operation_collection = 'compute.zoneOperations'
       replacement = labels_util.UpdateLabels(
           disk.labels,
           messages.ZoneSetLabelsRequest.LabelsValue,
@@ -83,6 +77,7 @@ class AddLabels(base.UpdateCommand):
               labelFingerprint=disk.labelFingerprint,
               labels=replacement))
     else:
+      operation_collection = 'compute.regionOperations'
       replacement = labels_util.UpdateLabels(
           disk.labels,
           messages.RegionSetLabelsRequest.LabelsValue,
@@ -98,4 +93,16 @@ class AddLabels(base.UpdateCommand):
     if not replacement:
       return disk
 
-    return service.SetLabels(request)
+    operation = service.SetLabels(request)
+    operation_ref = holder.resources.Parse(
+        operation.selfLink, collection=operation_collection)
+
+    operation_poller = poller.Poller(service)
+    return waiter.WaitFor(
+        operation_poller, operation_ref,
+        'Updating labels of disk [{0}]'.format(
+            disk_ref.Name()))
+
+
+AddLabels.detailed_help = (
+    labels_doc_helper.GenerateDetailedHelpForAddLabels('disk'))

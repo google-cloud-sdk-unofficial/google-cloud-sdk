@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.images import flags
+from googlecloudsdk.command_lib.util import labels_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -148,6 +149,14 @@ class Create(base_classes.BaseAsyncCreator):
         image=image,
         project=image_ref.project)
 
+    args_labels = getattr(args, 'labels', None)
+    if args_labels:
+      labels = self.messages.Image.LabelsValue(additionalProperties=[
+          self.messages.Image.LabelsValue.AdditionalProperty(
+              key=key, value=value)
+          for key, value in sorted(args_labels.iteritems())])
+      request.image.labels = labels
+
     return [request]
 
 
@@ -159,6 +168,11 @@ class CreateBeta(Create):
   _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = True
 
   _GUEST_OS_FEATURES = image_utils.GUEST_OS_FEATURES_BETA
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateBeta, cls).Args(parser)
+    labels_util.AddCreateLabelsFlags(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

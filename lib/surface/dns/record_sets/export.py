@@ -16,11 +16,13 @@
 from apitools.base.py import exceptions as apitools_exceptions
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.dns import export_util
-from googlecloudsdk.api_lib.dns import util
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 class Export(base.Command):
@@ -28,23 +30,21 @@ class Export(base.Command):
 
   This command exports the record-sets contained within the specified
   managed-zone into a file.
+
+  ## EXAMPLES
+
+  To export record-sets into a yaml file, run:
+
+    $ {command} YAML_RECORDS_FILE -z MANAGED_ZONE
+
+  To import record-sets into a zone file, run:
+
+    $ {command} ZONE_FILE --zone-file-format -z MANAGED_ZONE
   """
-
-  detailed_help = {
-      'EXAMPLES': """\
-          To export record-sets into a yaml file, run:
-
-            $ {command} YAML_RECORDS_FILE -z MANAGED_ZONE
-
-          To import record-sets into a zone file, run:
-
-            $ {command} ZONE_FILE --zone-file-format -z MANAGED_ZONE
-          """,
-  }
 
   @staticmethod
   def Args(parser):
-    util.ZONE_FLAG.AddToParser(parser)
+    flags.GetZoneArg().AddToParser(parser)
     parser.add_argument('records_file',
                         help='File to which record-sets should be exported.')
     parser.add_argument(
@@ -54,12 +54,11 @@ class Export(base.Command):
         help='Indicates that records-file should be in the zone file format.')
 
   def Run(self, args):
-    dns = self.context['dns_client']
-    messages = self.context['dns_messages']
-    resources = self.context['dns_resources']
+    dns = apis.GetClientInstance('dns', 'v1')
+    messages = apis.GetMessagesModule('dns', 'v1')
 
     # Get the managed-zone.
-    zone_ref = resources.Parse(
+    zone_ref = resources.REGISTRY.Parse(
         args.zone,
         params={
             'project': properties.VALUES.core.project.GetOrFail,

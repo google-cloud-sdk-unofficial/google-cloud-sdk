@@ -170,7 +170,7 @@ class _JobsClientBase(object):
     Returns:
         A constructed Job object.
     """
-    project_id = properties.VALUES.core.project.Get()
+    project_id = properties.VALUES.core.project.GetOrFail()
 
     prediction_input = self.prediction_input_class(
         inputPaths=input_paths,

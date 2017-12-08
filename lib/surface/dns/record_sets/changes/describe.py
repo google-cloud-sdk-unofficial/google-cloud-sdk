@@ -14,46 +14,44 @@
 
 """gcloud dns record-sets changes describe command."""
 
-from googlecloudsdk.api_lib.dns import util
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resolvers
+from googlecloudsdk.core import resources
 
 
 class Describe(base.DescribeCommand):
   """View the details of a change.
 
   This command displays the details of the specified change.
+
+  ## EXAMPLES
+
+  To display the details of a change, run:
+
+    $ {command} change_id
   """
-
-  detailed_help = {
-      'EXAMPLES': """\
-          To display the details of a change, run:
-
-            $ {command} change_id
-          """,
-  }
 
   @staticmethod
   def Args(parser):
-    util.ZONE_FLAG.AddToParser(parser)
+    flags.GetZoneArg().AddToParser(parser)
     parser.add_argument(
         'change_id', metavar='CHANGE_ID',
         help='The ID of the change you want details for.')
 
   def Run(self, args):
-    dns = self.context['dns_client']
-    resources = self.context['dns_resources']
-    change_ref = resources.Parse(
+    dns_client = apis.GetClientInstance('dns', 'v1')
+    change_ref = resources.REGISTRY.Parse(
         args.change_id,
         params={
             'project': properties.VALUES.core.project.GetOrFail,
-            'managedZone': resolvers.FromArgument('--zone', args.zone)
+            'managedZone': args.MakeGetOrRaise('--zone'),
         },
         collection='dns.changes')
 
-    return dns.changes.Get(
-        dns.MESSAGES_MODULE.DnsChangesGetRequest(
+    return dns_client.changes.Get(
+        dns_client.MESSAGES_MODULE.DnsChangesGetRequest(
             project=change_ref.project,
             managedZone=change_ref.managedZone,
             changeId=change_ref.changeId))

@@ -15,9 +15,6 @@
 """The main command group for the gcloud debug command group."""
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resolvers
-from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
@@ -65,18 +62,3 @@ class Debug(base.Group):
     would match only "default-test" (by name), while "9876" would match
     "default-test" by description.
   """
-
-  def Filter(self, context, args):
-    """Initialize context for Cloud Debugger commands.
-
-    Args:
-      context: The current context.
-      args: The argparse namespace that was specified on the CLI or API.
-
-    Returns:
-      The updated context.
-    """
-    resources.REGISTRY.SetParamDefault(
-        api='debug', collection=None, param='projectId',
-        resolver=resolvers.FromProperty(properties.VALUES.core.project))
-    return context

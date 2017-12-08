@@ -18,8 +18,6 @@ from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resolvers
-from googlecloudsdk.core import resources
 from googlecloudsdk.core.credentials import store
 
 
@@ -51,17 +49,5 @@ class Updater(base.Group):
     Returns:
       The updated context.
     """
-    properties.VALUES.compute.zone.Get(required=True)
-    resources.REGISTRY.SetParamDefault(
-        api='compute', collection=None, param='project',
-        resolver=resolvers.FromProperty(properties.VALUES.core.project))
-    resources.REGISTRY.SetParamDefault(
-        api='compute', collection=None, param='zone',
-        resolver=resolvers.FromProperty(properties.VALUES.compute.zone))
-    resources.REGISTRY.SetParamDefault(
-        api='replicapoolupdater', collection=None, param='project',
-        resolver=resolvers.FromProperty(properties.VALUES.core.project))
-    resources.REGISTRY.SetParamDefault(
-        api='replicapoolupdater', collection=None, param='zone',
-        resolver=resolvers.FromProperty(properties.VALUES.compute.zone))
+    properties.VALUES.compute.zone.GetOrFail()
     return context

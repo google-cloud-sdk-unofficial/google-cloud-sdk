@@ -26,8 +26,8 @@ import sys
 import textwrap
 
 from googlecloudsdk.api_lib.storage import storage_util
-from googlecloudsdk.command_lib.ml import flags
-from googlecloudsdk.command_lib.ml import uploads
+from googlecloudsdk.command_lib.ml_engine import flags
+from googlecloudsdk.command_lib.ml_engine import uploads
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log

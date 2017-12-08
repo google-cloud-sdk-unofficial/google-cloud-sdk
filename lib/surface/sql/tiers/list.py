@@ -45,7 +45,7 @@ class _BaseList(object):
       A dict object that has the list of tier resources if the command ran
       successfully.
     """
-    client = self.GetSqlClient()
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client
     sql_messages = client.sql_messages
 
@@ -54,17 +54,6 @@ class _BaseList(object):
     return iter(result.items)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class List(_BaseList, base.ListCommand):
   """Lists all available service tiers for Google Cloud SQL."""
-
-  def GetSqlClient(self):
-    return api_util.SqlClient(api_util.API_VERSION_FALLBACK)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(_BaseList, base.ListCommand):
-  """Lists all available service tiers for Google Cloud SQL."""
-
-  def GetSqlClient(self):
-    return api_util.SqlClient(api_util.API_VERSION_DEFAULT)

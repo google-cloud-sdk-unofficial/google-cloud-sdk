@@ -207,10 +207,8 @@ def _UseServiceAccount():
 
 
 def _GetServiceAccountCredentialsFromFlags(storage):  # pylint: disable=unused-argument
-  client_scope = _GetClientScopeFromFlags()
-
   if FLAGS.use_gce_service_account:
-    return AppAssertionCredentials(client_scope)
+    return AppAssertionCredentials()
 
   if not oauth2client.client.HAS_OPENSSL:
     raise app.UsageError(
@@ -232,7 +230,7 @@ def _GetServiceAccountCredentialsFromFlags(storage):  # pylint: disable=unused-a
         'service_account_private_key_file flag to be set.')
 
   return oauth2client.client.SignedJwtAssertionCredentials(
-      FLAGS.service_account, key, client_scope,
+      FLAGS.service_account, key, _GetClientScopeFromFlags(),
       private_key_password=FLAGS.service_account_private_key_password,
       user_agent=_CLIENT_USER_AGENT)
 
@@ -793,13 +791,15 @@ class NewCmd(appcommands.Cmd):
     if not self._new_style:
       return super(NewCmd, self).Run(argv)
 
-    original_values = self._command_flags.FlagValuesDict()
+    original_values = {name: self._command_flags[name].value
+                       for name in self._command_flags}
     try:
       args = self._command_flags(argv)[1:]
-      for flag, value in self._command_flags.FlagValuesDict().iteritems():
-        setattr(self, flag, value)
-        if value == original_values[flag]:
-          original_values.pop(flag)
+      for flag_name in self._command_flags:
+        value = self._command_flags[flag_name].value
+        setattr(self, flag_name, value)
+        if value == original_values[flag_name]:
+          original_values.pop(flag_name)
       new_args = []
       for argname in self._full_arg_list[:self._min_args]:
         flag = self._GetFlag(argname)
@@ -844,7 +844,7 @@ class NewCmd(appcommands.Cmd):
     return self.Run([self._command_name] + args)
 
   def _HandleError(self, e):
-    message = e
+    message = bigquery_client.EncodeForPrinting(e)
     if isinstance(e, bigquery_client.BigqueryClientConfigurationError):
       message += ' Try running "bq init".'
     print 'Exception raised in %s operation: %s' % (self._command_name, message)
@@ -1376,7 +1376,7 @@ class _Query(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_boolean(
         'allow_large_results', None,
-        'Enables larger destination table sizes.',
+        'Enables larger destination table sizes for legacy SQL queries.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'dry_run', None,
@@ -1399,7 +1399,8 @@ class _Query(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_boolean(
         'flatten_results', None,
-        'Whether to flatten nested and repeated fields in the result schema. '
+        'Whether to flatten nested and repeated fields in the result schema '
+        'for legacy SQL queries. '
         'If not set, the default behavior is to flatten.',
         flag_values=fv)
     flags.DEFINE_multistring(
@@ -1523,9 +1524,12 @@ class _Query(BigqueryCmd):
             'flatten_results cannot be specified in rpc mode.')
       kwds['max_results'] = self.max_rows
       fields, rows, execution = client.RunQueryRpc(query, **kwds)
-      Factory.ClientTablePrinter.GetTablePrinter().PrintTable(fields, rows)
-      # If we are here, the job succeeded, but print warnings if any.
-      _PrintJobMessages(execution)
+      if self.dry_run:
+        _PrintDryRunInfo(execution)
+      else:
+        Factory.ClientTablePrinter.GetTablePrinter().PrintTable(fields, rows)
+        # If we are here, the job succeeded, but print warnings if any.
+        _PrintJobMessages(execution)
     else:
       if self.destination_table and self.append_table:
         kwds['write_disposition'] = 'WRITE_APPEND'
@@ -2618,6 +2622,7 @@ class _Show(BigqueryCmd):
     # pylint: disable=g-doc-exception
     client = Client.Get()
     custom_format = 'show'
+    object_info = None
     if self.j:
       reference = client.GetJobReference(identifier)
     elif self.d:
@@ -2630,7 +2635,8 @@ class _Show(BigqueryCmd):
     if reference is None:
       raise app.UsageError('Must provide an identifier for show.')
 
-    object_info = client.GetObjectInfo(reference)
+    if object_info is None:
+      object_info = client.GetObjectInfo(reference)
     _PrintObjectInfo(object_info, reference, custom_format=custom_format)
 
 
@@ -2686,8 +2692,9 @@ def _PrintObjectInfo(object_info, reference, custom_format):
     BigqueryClient.ConfigureFormatter(formatter, type(reference),
                                       print_format=custom_format,
                                       object_info=object_info)
-    object_info = BigqueryClient.FormatInfoByKind(object_info)
-    formatter.AddDict(object_info)
+    object_info = BigqueryClient.FormatInfoByType(object_info, type(reference))
+    if object_info:
+      formatter.AddDict(object_info)
     print '%s %s\n' % (reference.typename.capitalize(), reference)
     formatter.Print()
     print
@@ -3523,9 +3530,9 @@ def run_main():
 
   # Put the flags for this module somewhere the flags module will look
   # for them.
-  # pylint: disable=protected-access
   new_name = sys.argv[0]
   sys.modules[new_name] = sys.modules['__main__']
+  # pylint: disable=protected-access
   for flag in FLAGS.FlagsByModuleDict().get(__name__, []):
     FLAGS._RegisterFlagByModule(new_name, flag)
     for key_flag in FLAGS.KeyFlagsByModuleDict().get(__name__, []):

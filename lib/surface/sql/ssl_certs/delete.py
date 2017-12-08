@@ -44,81 +44,8 @@ class _BaseDelete(object):
     flags.INSTANCE_FLAG.AddToParser(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Delete(_BaseDelete, base.Command):
-  """Deletes an SSL certificate for a Cloud SQL instance."""
-
-  def Run(self, args):
-    """Deletes an SSL certificate for a Cloud SQL instance.
-
-    Args:
-      args: argparse.Namespace, The arguments that this command was invoked
-          with.
-
-    Returns:
-      A dict object representing the operations resource describing the delete
-      operation if the api request was successful.
-    Raises:
-      HttpException: A http error response was received while executing api
-          request.
-      ToolException: An error other than http error occured while executing the
-          command.
-    """
-    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
-    sql_client = client.sql_client
-    sql_messages = client.sql_messages
-
-    validate.ValidateInstanceName(args.instance)
-    instance_ref = client.resource_parser.Parse(
-        args.instance,
-        params={'project': properties.VALUES.core.project.GetOrFail},
-        collection='sql.instances')
-
-    # TODO(b/36049690): figure out how to rectify the common_name and the
-    # sha1fingerprint, so that things can work with the resource parser.
-
-    console_io.PromptContinue(
-        message='{0} will be deleted. New connections can no longer be made '
-        'using this certificate. Existing connections are not affected.'.format(
-            args.common_name),
-        default=True,
-        cancel_on_no=True)
-
-    cert_ref = cert.GetCertRefFromName(sql_client, sql_messages,
-                                       client.resource_parser, instance_ref,
-                                       args.common_name)
-    if not cert_ref:
-      raise exceptions.ToolException(
-          'no ssl cert named [{name}] for instance [{instance}]'.format(
-              name=args.common_name, instance=instance_ref))
-
-    result = sql_client.sslCerts.Delete(
-        sql_messages.SqlSslCertsDeleteRequest(
-            project=cert_ref.project,
-            instance=cert_ref.instance,
-            sha1Fingerprint=cert_ref.sha1Fingerprint))
-
-    operation_ref = client.resource_parser.Create(
-        'sql.operations',
-        operation=result.operation,
-        project=cert_ref.project,
-        instance=cert_ref.instance,)
-
-    if args.async:
-      return sql_client.operations.Get(
-          sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project,
-              instance=operation_ref.instance,
-              operation=operation_ref.operation))
-
-    operations.OperationsV1Beta3.WaitForOperation(sql_client, operation_ref,
-                                                  'Deleting sslCert')
-
-    log.DeletedResource(cert_ref)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DeleteBeta(_BaseDelete, base.Command):
   """Deletes an SSL certificate for a Cloud SQL instance."""
 
   def Run(self, args):

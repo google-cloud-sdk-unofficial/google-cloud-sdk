@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """ml-engine models delete command."""
-from googlecloudsdk.api_lib.ml import models
-from googlecloudsdk.api_lib.ml import operations
+from googlecloudsdk.api_lib.ml_engine import models
+from googlecloudsdk.api_lib.ml_engine import operations
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.ml import flags
-from googlecloudsdk.command_lib.ml import models_util
+from googlecloudsdk.command_lib.ml_engine import flags
+from googlecloudsdk.command_lib.ml_engine import models_util
 
 
 def _AddDeleteArgs(parser):

@@ -47,6 +47,7 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
     instances_flags.AddExtendedMachineTypeArgs(parser)
     instances_flags.AddNetworkArgs(parser)
     instances_flags.AddDockerArgs(parser)
+    instances_flags.AddMinCpuPlatformArgs(parser)
 
     flags.AddRegionFlag(
         parser,
@@ -149,6 +150,7 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
                                                image_uri),
                 canIpForward=args.can_ip_forward,
                 metadata=metadata,
+                minCpuPlatform=args.min_cpu_platform,
                 networkInterfaces=[network_interface],
                 serviceAccounts=service_accounts,
                 scheduling=scheduling,

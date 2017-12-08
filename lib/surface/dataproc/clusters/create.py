@@ -35,6 +35,8 @@ def _CommonArgs(parser):
   instances_flags.AddTagsArgs(parser)
   base.ASYNC_FLAG.AddToParser(parser)
   labels_util.AddCreateLabelsFlags(parser)
+  # 30m is backend timeout + 5m for safety buffer.
+  util.AddTimeoutFlag(parser, default='35m')
   parser.add_argument(
       '--metadata',
       type=arg_parsers.ArgDict(min_length=1),
@@ -241,6 +243,7 @@ class Create(base.CreateCommand):
     _CommonArgs(parser)
     parser.add_argument('--num-masters', type=int, hidden=True)
     parser.add_argument('--single-node', action='store_true', hidden=True)
+    parser.add_argument('--no-address', action='store_true', hidden=True)
 
   @staticmethod
   def ValidateArgs(args):
@@ -345,12 +348,14 @@ class Create(base.CreateCommand):
             },
             collection='compute.acceleratorTypes'))
 
-    init_actions = []
     timeout_str = str(args.initialization_action_timeout) + 's'
-    if args.initialization_actions:
-      init_actions = [messages.NodeInitializationAction(
-          executableFile=exe, executionTimeout=timeout_str)
-                      for exe in args.initialization_actions]
+    init_actions = [
+        messages.NodeInitializationAction(
+            executableFile=exe, executionTimeout=timeout_str)
+        for exe in (args.initialization_actions or [])]
+    # Increase the client timeout for each initialization action.
+    args.timeout += args.initialization_action_timeout * len(init_actions)
+
     expanded_scopes = compute_helpers.ExpandScopeAliases(args.scopes)
 
     software_config = messages.SoftwareConfig(
@@ -379,6 +384,7 @@ class Create(base.CreateCommand):
     gce_cluster_config = messages.GceClusterConfig(
         networkUri=network_ref and network_ref.SelfLink(),
         subnetworkUri=subnetwork_ref and subnetwork_ref.SelfLink(),
+        internalIpOnly=args.no_address,
         serviceAccount=args.service_account,
         serviceAccountScopes=expanded_scopes,
         zoneUri=zone_ref and zone_ref.SelfLink())
@@ -465,7 +471,10 @@ class Create(base.CreateCommand):
       return
 
     operation = util.WaitForOperation(
-        operation, self.context, 'Waiting for cluster creation operation')
+        operation,
+        self.context,
+        message='Waiting for cluster creation operation',
+        timeout_s=args.timeout)
 
     get_request = messages.DataprocProjectsRegionsClustersGetRequest(
         projectId=cluster_ref.projectId,
@@ -552,6 +561,17 @@ class CreateBeta(Create):
           }),
           metavar='type=TYPE,[count=COUNT]',
           help=help_msg)
+    parser.add_argument(
+        '--no-address',
+        action='store_true',
+        help="""\
+        If provided, the instances in the cluster will not be assigned external
+        IP addresses.
+
+        Note: Dataproc VMs need access to the Dataproc API. This can be achieved
+        without external IP addresses using Private Google Access
+        (https://cloud.google.com/compute/docs/private-google-access).
+        """)
 
   @staticmethod
   def ValidateArgs(args):

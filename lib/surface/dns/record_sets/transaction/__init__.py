@@ -19,35 +19,36 @@ from googlecloudsdk.calliope import base
 
 
 class Transaction(base.Group):
-  """Make scriptable and transactional changes to your record-sets."""
+  """Make scriptable and transactional changes to your record-sets.
 
-  detailed_help = {
-      'EXAMPLES': """\
-          To start a transaction, run:
+  Make scriptable and transactional changes to your record-sets.
 
-            $ {command} start
+  ## EXAMPLES
 
-          To append a record-set addition to the transaction, run:
+  To start a transaction, run:
 
-            $ {command} add --name RECORD_SET_NAME --ttl TTL --type TYPE DATA
+    $ {command} start
 
-          To append a record-set removal to the transaction, run:
+  To append a record-set addition to the transaction, run:
 
-            $ {command} remove --name RECORD_SET_NAME --ttl TTL --type TYPE DATA
+    $ {command} add --name RECORD_SET_NAME --ttl TTL --type TYPE DATA
 
-          To look at the details of the transaction, run:
+  To append a record-set removal to the transaction, run:
 
-            $ {command} describe
+    $ {command} remove --name RECORD_SET_NAME --ttl TTL --type TYPE DATA
 
-          To delete the transaction, run:
+  To look at the details of the transaction, run:
 
-            $ {command} abort
+    $ {command} describe
 
-          To execute the transaction, run:
+  To delete the transaction, run:
 
-            $ {command} execute
-          """,
-  }
+    $ {command} abort
+
+  To execute the transaction, run:
+
+    $ {command} execute
+  """
 
   @staticmethod
   def Args(parser):

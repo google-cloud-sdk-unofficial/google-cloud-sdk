@@ -17,10 +17,7 @@
 from googlecloudsdk.api_lib.source import source
 from googlecloudsdk.api_lib.sourcerepo import sourcerepo
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
-from googlecloudsdk.core.credentials import store as c_store
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
@@ -42,13 +39,6 @@ class Source(base.Group):
     Returns:
       The updated context.
     """
-    resources.REGISTRY.SetParamDefault(
-        api='source', collection=None, param='projectId',
-        resolver=resolvers.FromProperty(properties.VALUES.core.project))
-    resources.REGISTRY.SetParamDefault(
-        api='sourcerepo', collection=None, param='projectId',
-        resolver=resolvers.FromProperty(properties.VALUES.core.project))
-
     source.Source.SetResourceParser(resources.REGISTRY)
     source.Source.SetApiEndpoint()
     sourcerepo.Source.SetResourceParser(resources.REGISTRY)

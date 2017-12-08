@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Utilities for ml operations commands."""
+"""Utilities for ml-engine operations commands."""
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 

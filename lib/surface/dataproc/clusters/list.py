@@ -62,9 +62,14 @@ class List(base.ListCommand):
   def Args(parser):
     base.URI_FLAG.RemoveFromParser(parser)
     base.PAGE_SIZE_FLAG.SetDefault(parser, constants.DEFAULT_PAGE_SIZE)
-
-  def Collection(self):
-    return 'dataproc.clusters'
+    parser.display_info.AddFormat("""
+          table(
+            clusterName:label=NAME,
+            config.workerConfig.numInstances:label=WORKER_COUNT,
+            status.state:label=STATUS,
+            config.gceClusterConfig.zoneUri.scope(zone):label=ZONE
+          )
+    """)
 
   def Run(self, args):
     client = self.context['dataproc_client']
