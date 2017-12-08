@@ -23,12 +23,7 @@ class Update(base_classes.NoOutputAsyncMutator):
   @staticmethod
   def Args(parser):
 
-    # TODO(user) This probably shouldn't be a mutualy exclusive
-    # group the service falls over when two update requests come in
-    # as part of the same batch request.  See b/18760514.
-    group = parser.add_mutually_exclusive_group()
-
-    ssl_certificate = group.add_argument(
+    ssl_certificate = parser.add_argument(
         '--ssl-certificate',
         help=('A reference to an SSL certificate resource that is used for '
               'server-side authentication.'))

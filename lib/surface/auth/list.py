@@ -14,38 +14,45 @@
 
 """Command to list the available accounts."""
 
-import textwrap
-
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.auth import auth_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.credentials import store as c_store
-from googlecloudsdk.core.resource import resource_printer
 
 
-class _AuthInfo(object):
-
-  def __init__(self, active_account, accounts):
-    self.active_account = active_account
-    self.accounts = accounts
-
-
-class List(base.Command):
+class List(base.ListCommand):
+  # pylint: disable=g-docstring-has-escape
   """Lists credentialed accounts.
 
   Lists accounts whose credentials have been obtained using `gcloud init`,
   `gcloud auth login` and `gcloud auth activate-service-account`, and shows
   which account is active. The active account is used by gcloud and other Cloud
   SDK tools to access Google Cloud Platform.
+
+  ## EXAMPLES
+
+  To list the active account name:
+
+    $ gcloud auth list --filter=status:ACTIVE --format="value(account)"
+
+  To list the inactive account names with prefix `test`:
+
+    $ gcloud auth list --filter="-status:ACTIVE account:test*" \
+--format="value(account)"
   """
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('--filter-account',
-                        help='List only the specified account.')
+    base.FLATTEN_FLAG.RemoveFromParser(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
+    filter_account = parser.add_argument(
+        '--filter-account', help='List only credentials for one account.')
+    filter_account.detailed_help = (
+        'List only credentials for one account. Use '
+        '--filter="account~_PATTERN_" to select accounts that match _PATTERN_.')
 
   def Run(self, args):
-    """List the account for known credentials."""
     accounts = c_store.AvailableAccounts()
 
     active_account = properties.VALUES.core.account.Get()
@@ -56,23 +63,22 @@ class List(base.Command):
       else:
         accounts = []
 
-    return _AuthInfo(active_account, accounts)
+    return auth_util.AuthResults(accounts, active_account)
 
-  def Display(self, unused_args, result):
-    if result.accounts:
-      items = [account +
-               (' (active)' if account == result.active_account else '')
-               for account in result.accounts]
-      fmt = 'list[title="Credentialed accounts:"]'
-      resource_printer.Print(items, fmt)
-      log.err.Print(textwrap.dedent("""
-          To set the active account, run:
-            $ gcloud config set account `ACCOUNT`
-          """))
+  def Format(self, unused_args):
+    title = 'Credentialed Accounts:'
+    return 'list[compact,title="{title}"](account, status)'.format(title=title)
+
+  def Epilog(self, resources_were_displayed):
+    if resources_were_displayed:
+      log.status.Print("""\
+To set the active account, run:
+    $ gcloud config set account `ACCOUNT`
+""")
     else:
-      log.err.Print(textwrap.dedent("""\
-          No credentialed accounts.
+      log.status.Print("""\
+No credentialed accounts.
 
-          To login, run:
-            $ gcloud auth login `ACCOUNT`
-          """))
+To login, run:
+  $ gcloud auth login `ACCOUNT`
+""")

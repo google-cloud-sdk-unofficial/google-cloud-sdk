@@ -1,5 +1,3 @@
-#!/usr/bin/python2.4
-#
 # Copyright 2014 Google Inc. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,56 +12,64 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Oauth2client tests
-
-Unit tests for oauth2client.
-"""
+"""Unit tests for JWT related methods in oauth2client."""
 
 import os
 import tempfile
 import time
-import unittest
+
+import mock
+import unittest2
 
 from .http_mock import HttpMockSequence
 from oauth2client.client import Credentials
-from oauth2client.client import SignedJwtAssertionCredentials
 from oauth2client.client import VerifyJwtTokenError
 from oauth2client.client import verify_id_token
 from oauth2client.client import HAS_OPENSSL
 from oauth2client.client import HAS_CRYPTO
 from oauth2client import crypt
 from oauth2client.file import Storage
+from oauth2client.service_account import _PASSWORD_DEFAULT
+from oauth2client.service_account import ServiceAccountCredentials
 
 
 __author__ = 'jcgregorio@google.com (Joe Gregorio)'
 
 
+_FORMATS_TO_CONSTRUCTOR_ARGS = {
+    'p12': 'private_key_pkcs12',
+    'pem': 'private_key_pkcs8_pem',
+}
+
+
+def data_filename(filename):
+    return os.path.join(os.path.dirname(__file__), 'data', filename)
+
+
 def datafile(filename):
-    f = open(os.path.join(os.path.dirname(__file__), 'data', filename), 'rb')
-    data = f.read()
-    f.close()
-    return data
+    with open(data_filename(filename), 'rb') as file_obj:
+        return file_obj.read()
 
 
-class CryptTests(unittest.TestCase):
+class CryptTests(unittest2.TestCase):
 
     def setUp(self):
-        self.format = 'p12'
+        self.format_ = 'p12'
         self.signer = crypt.OpenSSLSigner
         self.verifier = crypt.OpenSSLVerifier
 
     def test_sign_and_verify(self):
-        self._check_sign_and_verify('privatekey.%s' % self.format)
+        self._check_sign_and_verify('privatekey.' + self.format_)
 
     def test_sign_and_verify_from_converted_pkcs12(self):
         # Tests that following instructions to convert from PKCS12 to
         # PEM works.
-        if self.format == 'pem':
+        if self.format_ == 'pem':
             self._check_sign_and_verify('pem_from_pkcs12.pem')
 
     def _check_sign_and_verify(self, private_key_file):
         private_key = datafile(private_key_file)
-        public_key = datafile('publickey.pem')
+        public_key = datafile('public_cert.pem')
 
         # We pass in a non-bytes password to make sure all branches
         # are traversed in tests.
@@ -79,18 +85,18 @@ class CryptTests(unittest.TestCase):
         self.assertFalse(verifier.verify(b'foo', u'bad signagure'))
 
     def _check_jwt_failure(self, jwt, expected_error):
-        public_key = datafile('publickey.pem')
+        public_key = datafile('public_cert.pem')
         certs = {'foo': public_key}
         audience = ('https://www.googleapis.com/auth/id?client_id='
                     'external_public_key@testing.gserviceaccount.com')
-        try:
+
+        with self.assertRaises(crypt.AppIdentityError) as exc_manager:
             crypt.verify_signed_jwt_with_certs(jwt, certs, audience)
-            self.fail()
-        except crypt.AppIdentityError as e:
-            self.assertTrue(expected_error in str(e))
+
+        self.assertTrue(expected_error in str(exc_manager.exception))
 
     def _create_signed_jwt(self):
-        private_key = datafile('privatekey.%s' % self.format)
+        private_key = datafile('privatekey.' + self.format_)
         signer = self.signer.from_string(private_key)
         audience = 'some_audience_address@testing.gserviceaccount.com'
         now = int(time.time())
@@ -105,7 +111,7 @@ class CryptTests(unittest.TestCase):
 
     def test_verify_id_token(self):
         jwt = self._create_signed_jwt()
-        public_key = datafile('publickey.pem')
+        public_key = datafile('public_cert.pem')
         certs = {'foo': public_key}
         audience = 'some_audience_address@testing.gserviceaccount.com'
         contents = crypt.verify_signed_jwt_with_certs(jwt, certs, audience)
@@ -125,6 +131,20 @@ class CryptTests(unittest.TestCase):
         self.assertEqual('billy bob', contents['user'])
         self.assertEqual('data', contents['metadata']['meta'])
 
+    def test_verify_id_token_with_certs_uri_default_http(self):
+        jwt = self._create_signed_jwt()
+
+        http = HttpMockSequence([
+            ({'status': '200'}, datafile('certs.json')),
+        ])
+
+        with mock.patch('oauth2client.client._cached_http', new=http):
+            contents = verify_id_token(
+                jwt, 'some_audience_address@testing.gserviceaccount.com')
+
+        self.assertEqual('billy bob', contents['user'])
+        self.assertEqual('data', contents['metadata']['meta'])
+
     def test_verify_id_token_with_certs_uri_fails(self):
         jwt = self._create_signed_jwt()
 
@@ -137,7 +157,7 @@ class CryptTests(unittest.TestCase):
                           http=http)
 
     def test_verify_id_token_bad_tokens(self):
-        private_key = datafile('privatekey.%s' % self.format)
+        private_key = datafile('privatekey.' + self.format_)
 
         # Wrong number of segments
         self._check_jwt_failure('foo', 'Wrong number of segments')
@@ -203,7 +223,7 @@ class CryptTests(unittest.TestCase):
 class PEMCryptTestsPyCrypto(CryptTests):
 
     def setUp(self):
-        self.format = 'pem'
+        self.format_ = 'pem'
         self.signer = crypt.PyCryptoSigner
         self.verifier = crypt.PyCryptoVerifier
 
@@ -211,24 +231,35 @@ class PEMCryptTestsPyCrypto(CryptTests):
 class PEMCryptTestsOpenSSL(CryptTests):
 
     def setUp(self):
-        self.format = 'pem'
+        self.format_ = 'pem'
         self.signer = crypt.OpenSSLSigner
         self.verifier = crypt.OpenSSLVerifier
 
 
-class SignedJwtAssertionCredentialsTests(unittest.TestCase):
+class SignedJwtAssertionCredentialsTests(unittest2.TestCase):
 
     def setUp(self):
-        self.format = 'p12'
+        self.format_ = 'p12'
         crypt.Signer = crypt.OpenSSLSigner
 
-    def test_credentials_good(self):
-        private_key = datafile('privatekey.%s' % self.format)
-        credentials = SignedJwtAssertionCredentials(
-            'some_account@example.com',
-            private_key,
-            scope='read+write',
+    def _make_credentials(self):
+        private_key = datafile('privatekey.' + self.format_)
+        signer = crypt.Signer.from_string(private_key)
+        credentials = ServiceAccountCredentials(
+            'some_account@example.com', signer,
+            scopes='read+write',
             sub='joe@example.org')
+        if self.format_ == 'pem':
+            credentials._private_key_pkcs8_pem = private_key
+        elif self.format_ == 'p12':
+            credentials._private_key_pkcs12 = private_key
+            credentials._private_key_password = _PASSWORD_DEFAULT
+        else:  # pragma: NO COVER
+            raise ValueError('Unexpected format.')
+        return credentials
+
+    def test_credentials_good(self):
+        credentials = self._make_credentials()
         http = HttpMockSequence([
             ({'status': '200'}, b'{"access_token":"1/3w","expires_in":3600}'),
             ({'status': '200'}, 'echo_request_headers'),
@@ -238,18 +269,14 @@ class SignedJwtAssertionCredentialsTests(unittest.TestCase):
         self.assertEqual(b'Bearer 1/3w', content[b'Authorization'])
 
     def test_credentials_to_from_json(self):
-        private_key = datafile('privatekey.%s' % self.format)
-        credentials = SignedJwtAssertionCredentials(
-            'some_account@example.com',
-            private_key,
-            scope='read+write',
-            sub='joe@example.org')
+        credentials = self._make_credentials()
         json = credentials.to_json()
         restored = Credentials.new_from_json(json)
-        self.assertEqual(credentials.private_key, restored.private_key)
-        self.assertEqual(credentials.private_key_password,
-                         restored.private_key_password)
-        self.assertEqual(credentials.kwargs, restored.kwargs)
+        self.assertEqual(credentials._private_key_pkcs12,
+                         restored._private_key_pkcs12)
+        self.assertEqual(credentials._private_key_password,
+                         restored._private_key_password)
+        self.assertEqual(credentials._kwargs, restored._kwargs)
 
     def _credentials_refresh(self, credentials):
         http = HttpMockSequence([
@@ -263,24 +290,12 @@ class SignedJwtAssertionCredentialsTests(unittest.TestCase):
         return content
 
     def test_credentials_refresh_without_storage(self):
-        private_key = datafile('privatekey.%s' % self.format)
-        credentials = SignedJwtAssertionCredentials(
-            'some_account@example.com',
-            private_key,
-            scope='read+write',
-            sub='joe@example.org')
-
+        credentials = self._make_credentials()
         content = self._credentials_refresh(credentials)
-
         self.assertEqual(b'Bearer 3/3w', content[b'Authorization'])
 
     def test_credentials_refresh_with_storage(self):
-        private_key = datafile('privatekey.%s' % self.format)
-        credentials = SignedJwtAssertionCredentials(
-            'some_account@example.com',
-            private_key,
-            scope='read+write',
-            sub='joe@example.org')
+        credentials = self._make_credentials()
 
         filehandle, filename = tempfile.mkstemp()
         os.close(filehandle)
@@ -298,7 +313,7 @@ class PEMSignedJwtAssertionCredentialsOpenSSLTests(
         SignedJwtAssertionCredentialsTests):
 
     def setUp(self):
-        self.format = 'pem'
+        self.format_ = 'pem'
         crypt.Signer = crypt.OpenSSLSigner
 
 
@@ -306,28 +321,11 @@ class PEMSignedJwtAssertionCredentialsPyCryptoTests(
         SignedJwtAssertionCredentialsTests):
 
     def setUp(self):
-        self.format = 'pem'
+        self.format_ = 'pem'
         crypt.Signer = crypt.PyCryptoSigner
 
 
-class PKCSSignedJwtAssertionCredentialsPyCryptoTests(unittest.TestCase):
-
-    def test_for_failure(self):
-        crypt.Signer = crypt.PyCryptoSigner
-        private_key = datafile('privatekey.p12')
-        credentials = SignedJwtAssertionCredentials(
-            'some_account@example.com',
-            private_key,
-            scope='read+write',
-            sub='joe@example.org')
-        try:
-            credentials._generate_assertion()
-            self.fail()
-        except NotImplementedError:
-            pass
-
-
-class TestHasOpenSSLFlag(unittest.TestCase):
+class TestHasOpenSSLFlag(unittest2.TestCase):
 
     def test_true(self):
         self.assertEqual(True, HAS_OPENSSL)
@@ -335,4 +333,4 @@ class TestHasOpenSSLFlag(unittest.TestCase):
 
 
 if __name__ == '__main__':  # pragma: NO COVER
-    unittest.main()
+    unittest2.main()

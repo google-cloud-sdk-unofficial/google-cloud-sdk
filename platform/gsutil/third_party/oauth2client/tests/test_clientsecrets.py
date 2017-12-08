@@ -14,10 +14,11 @@
 
 """Unit tests for oauth2client.clientsecrets."""
 
+import errno
 from io import StringIO
 import os
 import tempfile
-import unittest
+import unittest2
 
 from oauth2client._helpers import _from_bytes
 from oauth2client import GOOGLE_AUTH_URI
@@ -32,10 +33,11 @@ __author__ = 'jcgregorio@google.com (Joe Gregorio)'
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 VALID_FILE = os.path.join(DATA_DIR, 'client_secrets.json')
 INVALID_FILE = os.path.join(DATA_DIR, 'unfilled_client_secrets.json')
-NONEXISTENT_FILE = os.path.join(__file__, '..', 'afilethatisntthere.json')
+NONEXISTENT_FILE = os.path.join(
+    os.path.dirname(__file__), 'afilethatisntthere.json')
 
 
-class Test__validate_clientsecrets(unittest.TestCase):
+class Test__validate_clientsecrets(unittest2.TestCase):
 
     def test_with_none(self):
         self.assertRaises(clientsecrets.InvalidClientSecretsError,
@@ -155,7 +157,7 @@ class Test__validate_clientsecrets(unittest.TestCase):
         self.assertEqual(result, (clientsecrets.TYPE_INSTALLED, client_info))
 
 
-class Test__loadfile(unittest.TestCase):
+class Test__loadfile(unittest2.TestCase):
 
     def test_success(self):
         client_type, client_info = clientsecrets._loadfile(VALID_FILE)
@@ -184,7 +186,7 @@ class Test__loadfile(unittest.TestCase):
                           clientsecrets._loadfile, filename)
 
 
-class OAuth2CredentialsTests(unittest.TestCase):
+class OAuth2CredentialsTests(unittest2.TestCase):
 
     def test_validate_error(self):
         payload = (
@@ -208,29 +210,30 @@ class OAuth2CredentialsTests(unittest.TestCase):
             # Ensure that it is unicode
             src = _from_bytes(src)
             # Test load(s)
-            try:
+            with self.assertRaises(
+                    clientsecrets.InvalidClientSecretsError) as exc_manager:
                 clientsecrets.loads(src)
-                self.fail(src + ' should not be a valid client_secrets file.')
-            except clientsecrets.InvalidClientSecretsError as e:
-                self.assertTrue(str(e).startswith(match))
+
+            self.assertTrue(str(exc_manager.exception).startswith(match))
 
             # Test loads(fp)
-            try:
+            with self.assertRaises(
+                    clientsecrets.InvalidClientSecretsError) as exc_manager:
                 fp = StringIO(src)
                 clientsecrets.load(fp)
-                self.fail(src + ' should not be a valid client_secrets file.')
-            except clientsecrets.InvalidClientSecretsError as e:
-                self.assertTrue(str(e).startswith(match))
 
-    def test_load_by_filename(self):
-        try:
+            self.assertTrue(str(exc_manager.exception).startswith(match))
+
+    def test_load_by_filename_missing_file(self):
+        with self.assertRaises(
+                clientsecrets.InvalidClientSecretsError) as exc_manager:
             clientsecrets._loadfile(NONEXISTENT_FILE)
-            self.fail('should fail to load a missing client_secrets file.')
-        except clientsecrets.InvalidClientSecretsError as e:
-            self.assertTrue(str(e).startswith('File'))
+
+        self.assertEquals(exc_manager.exception.args[1], NONEXISTENT_FILE)
+        self.assertEquals(exc_manager.exception.args[3], errno.ENOENT)
 
 
-class CachedClientsecretsTests(unittest.TestCase):
+class CachedClientsecretsTests(unittest2.TestCase):
 
     class CacheMock(object):
         def __init__(self):
@@ -277,12 +280,8 @@ class CachedClientsecretsTests(unittest.TestCase):
         self.assertEqual(None, self.cache_mock.last_set_ns)
 
     def test_validation(self):
-        try:
+        with self.assertRaises(clientsecrets.InvalidClientSecretsError):
             clientsecrets.loadfile(INVALID_FILE, cache=self.cache_mock)
-            self.fail('Expected InvalidClientSecretsError to be raised '
-                      'while loading %s' % INVALID_FILE)
-        except clientsecrets.InvalidClientSecretsError:
-            pass
 
     def test_without_cache(self):
         # this also ensures loadfile() is backward compatible
@@ -292,4 +291,4 @@ class CachedClientsecretsTests(unittest.TestCase):
 
 
 if __name__ == '__main__':  # pragma: NO COVER
-    unittest.main()
+    unittest2.main()

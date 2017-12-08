@@ -16,9 +16,9 @@
 
 from googlecloudsdk.api_lib.organizations import errors
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.organizations import flags
 from googlecloudsdk.command_lib.organizations import orgs_base
-from googlecloudsdk.core.iam import iam_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)

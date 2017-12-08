@@ -25,9 +25,10 @@ from googlecloudsdk.core import properties
 class _Results(object):
   """Encapsulate results into a single object to fit the Run() model."""
 
-  def __init__(self, deployment, resources):
+  def __init__(self, deployment, resources, outputs):
     self.deployment = deployment
     self.resources = resources
+    self.outputs = outputs
 
 
 class Describe(base.DescribeCommand):
@@ -57,18 +58,11 @@ class Describe(base.DescribeCommand):
     parser.add_argument('deployment_name', help='Deployment name.')
 
   def Collection(self):
-    return 'deploymentmanager.deployments'
+    return 'deploymentmanager.deployments_and_resources_and_outputs'
 
-  def Format(self, unused_args):
+  def Format(self, args):
     """No need to list the id fields by default."""
-    return ('default(deployment.name, deployment.id, deployment.fingerprint, '
-            'deployment.insertTime, deployment.manifest.basename(), '
-            'deployment.operation.operationType, deployment.operation.name, '
-            'deployment.operation.progress, deployment.operation.status, '
-            'deployment.operation.user, deployment.operation.endTime, '
-            'deployment.operation.startTime, deployment.operation.error, '
-            'resources[].name, resources[].type, '
-            'resources[].update.state.yesno(no="COMPLETED"))')
+    return self.ListFormat(args)
 
   def Run(self, args):
     """Run 'deployments describe'.
@@ -107,4 +101,18 @@ class Describe(base.DescribeCommand):
       # TODO(user): Why not raise HTTP exception here?
       resources = None
 
-    return _Results(deployment, resources)
+    outputs = []
+
+    manifest = dm_v2_util.ExtractManifestName(deployment)
+
+    if manifest:
+      manifest_response = client.manifests.Get(
+          messages.DeploymentmanagerManifestsGetRequest(
+              project=project,
+              deployment=args.deployment_name,
+              manifest=manifest,
+          )
+      )
+      outputs = dm_v2_util.FlattenLayoutOutputs(manifest_response.layout)
+
+    return _Results(deployment, resources, outputs)

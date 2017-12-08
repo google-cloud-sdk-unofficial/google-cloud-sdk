@@ -19,6 +19,7 @@ from __future__ import absolute_import
 import gslib.tests.testcase as testcase
 from gslib.tests.testcase.integration_testcase import SkipForS3
 from gslib.tests.util import ObjectToURI as suri
+from gslib.tests.util import SetBotoConfigForTest
 from gslib.util import Retry
 from gslib.util import UTF8
 
@@ -109,6 +110,14 @@ class TestSetMeta(testcase.GsUtilIntegrationTestCase):
          'gs://foo/bar'], expected_status=1, return_stderr=True)
     self.assertIn('Each header must appear at most once', stderr)
 
+  def test_setmeta_seek_ahead(self):
+    object_uri = self.CreateObject(contents='foo')
+    with SetBotoConfigForTest([('GSUtil', 'task_estimation_threshold', '1'),
+                               ('GSUtil', 'task_estimation_force', 'True')]):
+      stderr = self.RunGsUtil(['-m', 'setmeta', '-h', 'content-type:footype',
+                               suri(object_uri)], return_stderr=True)
+      self.assertIn('Estimated work for this command: objects: 1\n', stderr)
+
   def test_recursion_works(self):
     bucket_uri = self.CreateBucket()
     object1_uri = self.CreateObject(bucket_uri=bucket_uri, contents='foo')
@@ -120,11 +129,21 @@ class TestSetMeta(testcase.GsUtilIntegrationTestCase):
       stdout = self.RunGsUtil(['stat', suri(obj_uri)], return_stdout=True)
       self.assertIn('footype', stdout)
 
+  def test_metadata_parallelism(self):
+    """Ensure that custom metadata works in the multi-thread/process case."""
+    # If this test hangs, it can indicate a pickling error.
+    bucket_uri = self.CreateBucket(test_objects=2)
+    self.AssertNObjectsInBucket(bucket_uri, 2)
+    self.RunGsUtil(
+        ['setmeta', '-h', 'x-%s-meta-abc:123' % self.provider_custom_meta,
+         suri(bucket_uri, '**')])
+
   def test_invalid_non_ascii_custom_header(self):
     unicode_header = u'x-%s-meta-soufflé:5' % self.provider_custom_meta
     unicode_header_bytes = unicode_header.encode(UTF8)
     stderr = self.RunGsUtil(
-        ['setmeta', '-h', unicode_header_bytes, 'gs://foo/bar'],
+        ['setmeta', '-h', unicode_header_bytes,
+         '%s://foo/bar' % self.default_provider],
         expected_status=1, return_stderr=True)
     self.assertIn('Invalid non-ASCII header', stderr)
 

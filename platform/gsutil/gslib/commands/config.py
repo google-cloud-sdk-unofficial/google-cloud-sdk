@@ -32,11 +32,10 @@ import webbrowser
 
 import boto
 from boto.provider import Provider
-from httplib2 import ServerNotFoundError
-from oauth2client.client import HAS_CRYPTO
 
 import gslib
 from gslib.command import Command
+from gslib.command import DEFAULT_TASK_ESTIMATION_THRESHOLD
 from gslib.commands.compose import MAX_COMPONENT_COUNT
 from gslib.cred_types import CredTypes
 from gslib.exception import AbortException
@@ -46,8 +45,11 @@ from gslib.hashing_helper import CHECK_HASH_IF_FAST_ELSE_FAIL
 from gslib.hashing_helper import CHECK_HASH_IF_FAST_ELSE_SKIP
 from gslib.hashing_helper import CHECK_HASH_NEVER
 from gslib.sig_handling import RegisterSignalHandler
-from gslib.util import EIGHT_MIB
 from gslib.util import IS_WINDOWS
+from gslib.util import RESUMABLE_THRESHOLD_B
+
+from httplib2 import ServerNotFoundError
+from oauth2client.client import HAS_CRYPTO
 
 
 _SYNOPSIS = """
@@ -102,7 +104,7 @@ _DETAILED_HELP_TEXT = ("""
   When you run gsutil config -e, you will be prompted for your service account
   email address and the path to your private key file. To get this data,
   follow the instructions on
-  `Service Accounts <https://developers.google.com/console/help/new/#serviceaccounts>`_.
+  `Service Accounts <https://cloud.google.com/storage/docs/authentication#generating-a-private-key>`_.
 
   Note that your service account will NOT be considered an Owner for the
   purposes of API access (see "gsutil help creds" for more information about
@@ -180,6 +182,9 @@ _DETAILED_HELP_TEXT = ("""
       max_retry_delay
       num_retries
 
+    [GoogleCompute]
+      service_account
+
     [GSUtil]
       check_hashes
       content_language
@@ -203,6 +208,7 @@ _DETAILED_HELP_TEXT = ("""
       state_dir
       tab_completion_time_logs
       tab_completion_timeout
+      task_estimation_threshold
       use_magicfile
 
     [OAuth2]
@@ -352,6 +358,16 @@ https_validate_certificates = True
 #max_retry_delay = <integer value>
 """
 
+CONFIG_GOOGLECOMPUTE_SECTION_CONTENT = """
+[GoogleCompute]
+
+# 'service_account' specifies the a Google Compute Engine service account to
+# use for credentials. This value is intended for use only on Google Compute
+# Engine virtual machines and usually lives in /etc/boto.cfg. Most users
+# shouldn't need to edit this part of the config.
+#service_account = default
+"""
+
 CONFIG_INPUTLESS_GSUTIL_SECTION_CONTENT = """
 [GSUtil]
 
@@ -455,6 +471,14 @@ CONFIG_INPUTLESS_GSUTIL_SECTION_CONTENT = """
 #sliced_object_download_component_size = %(sliced_object_download_component_size)s
 #sliced_object_download_max_components = %(sliced_object_download_max_components)s
 
+# 'task_estimation_threshold' controls how many files or objects gsutil
+# processes before it attempts to estimate the total work that will be
+# performed by the command. Estimation makes extra directory listing or API
+# list calls and is performed only if multiple processes and/or threads are
+# used. Estimation can slightly increase cost due to extra
+# listing calls; to disable it entirely, set this value to 0.
+#task_estimation_threshold=%(task_estimation_threshold)s
+
 # 'use_magicfile' specifies if the 'file --mime-type <filename>' command should
 # be used to guess content types instead of the default filename extension-based
 # mechanism. Available on UNIX and MacOS (and possibly on Windows, if you're
@@ -522,7 +546,7 @@ content_language = en
        'hash_fast_else_skip': CHECK_HASH_IF_FAST_ELSE_SKIP,
        'hash_always': CHECK_HASH_ALWAYS,
        'hash_never': CHECK_HASH_NEVER,
-       'resumable_threshold': EIGHT_MIB,
+       'resumable_threshold': RESUMABLE_THRESHOLD_B,
        'parallel_process_count': DEFAULT_PARALLEL_PROCESS_COUNT,
        'parallel_thread_count': DEFAULT_PARALLEL_THREAD_COUNT,
        'parallel_composite_upload_threshold': (
@@ -535,7 +559,8 @@ content_language = en
            DEFAULT_PARALLEL_COMPOSITE_UPLOAD_COMPONENT_SIZE),
        'sliced_object_download_max_components': (
            DEFAULT_SLICED_OBJECT_DOWNLOAD_MAX_COMPONENTS),
-       'max_component_count': MAX_COMPONENT_COUNT}
+       'max_component_count': MAX_COMPONENT_COUNT,
+       'task_estimation_threshold': DEFAULT_TASK_ESTIMATION_THRESHOLD}
 
 CONFIG_OAUTH2_CONFIG_CONTENT = """
 [OAuth2]
@@ -962,6 +987,9 @@ class ConfigCommand(Command):
     # Write the config file Boto section.
     config_file.write('%s\n' % CONFIG_BOTO_SECTION_CONTENT)
     self._WriteProxyConfigFileSection(config_file)
+
+    # Write the Google Compute Engine section.
+    config_file.write(CONFIG_GOOGLECOMPUTE_SECTION_CONTENT)
 
     # Write the config file GSUtil section that doesn't depend on user input.
     config_file.write(CONFIG_INPUTLESS_GSUTIL_SECTION_CONTENT)

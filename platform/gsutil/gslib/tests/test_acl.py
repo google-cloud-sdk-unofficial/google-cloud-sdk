@@ -21,12 +21,13 @@ import re
 from gslib import aclhelpers
 from gslib.command import CreateGsutilLogger
 from gslib.cs_api_map import ApiSelector
-from gslib.project_id import PopulateProjectId
 from gslib.storage_url import StorageUrlFromString
 import gslib.tests.testcase as testcase
 from gslib.tests.testcase.integration_testcase import SkipForGS
 from gslib.tests.testcase.integration_testcase import SkipForS3
 from gslib.tests.util import ObjectToURI as suri
+from gslib.tests.util import SetBotoConfigForTest
+from gslib.tests.util import unittest
 from gslib.translation_helper import AclTranslation
 from gslib.util import Retry
 
@@ -42,7 +43,6 @@ class TestAclBase(testcase.GsUtilIntegrationTestCase):
   _ch_acl_prefix = ['acl', 'ch']
 
   _project_team = 'viewers'
-  _project_test_acl = '%s-%s' % (_project_team, PopulateProjectId())
 
 
 @SkipForS3('Tests use GS ACL model.')
@@ -54,6 +54,12 @@ class TestAcl(TestAclBase):
     self.sample_uri = self.CreateBucket()
     self.sample_url = StorageUrlFromString(str(self.sample_uri))
     self.logger = CreateGsutilLogger('acl')
+    # Argument to acl ch -p must be the project number, not a name; create a
+    # bucket to perform translation.
+    self._project_number = self.json_api.GetBucket(
+        self.CreateBucket().bucket_name, fields=['projectNumber']).projectNumber
+    self._project_test_acl = '%s-%s' % (self._project_team,
+                                        self._project_number)
 
   def test_set_invalid_acl_object(self):
     """Ensures that invalid content returns a bad request error."""
@@ -118,6 +124,9 @@ class TestAcl(TestAclBase):
 
   def test_set_valid_acl_bucket(self):
     """Ensures that valid canned and XML ACLs work with get/set."""
+    if self._ServiceAccountCredentialsPresent():
+      # See comments in _ServiceAccountCredentialsPresent
+      unittest.skip('Canned ACLs orphan service account permissions.')
     bucket_uri = suri(self.CreateBucket())
     acl_string = self.RunGsUtil(self._get_acl_prefix + [bucket_uri],
                                 return_stdout=True)
@@ -357,11 +366,11 @@ class TestAcl(TestAclBase):
                       (entity_type, email_address, role))
     return re.compile(template_regex, flags=re.DOTALL)
 
-  def _MakeProjectScopeRegex(self, role, project_team):
-    template_regex = (r'\{.*"entity":\s*"project-%s-\d+",\s*"projectTeam":\s*'
-                      r'\{\s*"projectNumber":\s*"(\d+)",\s*"team":\s*"%s"\s*\},'
-                      r'\s*"role":\s*"%s".*\}') % (project_team, project_team,
-                                                   role)
+  def _MakeProjectScopeRegex(self, role, project_team, project_number):
+    template_regex = (
+        r'\{.*"entity":\s*"project-%s-%s",\s*"projectTeam":\s*\{\s*"'
+        r'projectNumber":\s*"%s",\s*"team":\s*"%s"\s*\},\s*"role":\s*"%s".*\}'
+        % (project_team, project_number, project_number, project_team, role))
 
     return re.compile(template_regex, flags=re.DOTALL)
 
@@ -406,7 +415,7 @@ class TestAcl(TestAclBase):
                      ' scopes, cannot translate ACL.'), stderr)
     else:
       test_regex = self._MakeProjectScopeRegex(
-          'WRITER', self._project_team)
+          'WRITER', self._project_team, self._project_number)
       self.RunGsUtil(self._ch_acl_prefix +
                      ['-p', self._project_test_acl +':w',
                       suri(self.sample_uri)])
@@ -415,13 +424,8 @@ class TestAcl(TestAclBase):
 
       self.assertRegexpMatches(json_text, test_regex)
 
-      # The api will accept string project ids, but stores the numeric project
-      # ids internally, this extracts the numeric id from the returned acls.
-      proj_num_id = test_regex.search(json_text).group(1)
-      acl_to_remove = '%s-%s' % (self._project_team, proj_num_id)
-
       self.RunGsUtil(self._ch_acl_prefix +
-                     ['-d', acl_to_remove, suri(self.sample_uri)])
+                     ['-d', self._project_test_acl, suri(self.sample_uri)])
 
       json_text2 = self.RunGsUtil(
           self._get_acl_prefix + [suri(self.sample_uri)], return_stdout=True)
@@ -483,6 +487,30 @@ class TestAcl(TestAclBase):
     json_text = self.RunGsUtil(self._get_acl_prefix + [suri(obj)],
                                return_stdout=True)
     self.assertRegexpMatches(json_text, all_users_regex)
+
+  def testSeekAheadAcl(self):
+    """Tests seek-ahead iterator with ACL sub-commands."""
+    object_uri = self.CreateObject(contents='foo')
+    # Get the object's current ACL for application via set.
+    current_acl = self.RunGsUtil(['acl', 'get', suri(object_uri)],
+                                 return_stdout=True)
+    current_acl_file = self.CreateTempFile(contents=current_acl)
+
+    with SetBotoConfigForTest([('GSUtil', 'task_estimation_threshold', '1'),
+                               ('GSUtil', 'task_estimation_force', 'True')]):
+      stderr = self.RunGsUtil(['-m', 'acl', 'ch', '-u', 'AllUsers:R',
+                               suri(object_uri)], return_stderr=True)
+      self.assertIn('Estimated work for this command: objects: 1\n', stderr)
+
+      stderr = self.RunGsUtil(['-m', 'acl', 'set', current_acl_file,
+                               suri(object_uri)], return_stderr=True)
+      self.assertIn('Estimated work for this command: objects: 1\n', stderr)
+
+    with SetBotoConfigForTest([('GSUtil', 'task_estimation_threshold', '0'),
+                               ('GSUtil', 'task_estimation_force', 'True')]):
+      stderr = self.RunGsUtil(['-m', 'acl', 'ch', '-u', 'AllUsers:R',
+                               suri(object_uri)], return_stderr=True)
+      self.assertNotIn('Estimated work', stderr)
 
   def testMultithreadedAclChange(self, count=10):
     """Tests multi-threaded acl changing on several objects."""

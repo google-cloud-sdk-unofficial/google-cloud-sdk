@@ -16,7 +16,10 @@
 
 from __future__ import absolute_import
 
+from calendar import timegm
 import collections
+from datetime import timedelta
+from datetime import tzinfo
 import errno
 import locale
 import logging
@@ -30,8 +33,11 @@ import sys
 import tempfile
 import textwrap
 import threading
+import time
 import traceback
 import xml.etree.ElementTree as ElementTree
+
+from apitools.base.py import http_wrapper
 
 import boto
 from boto import config
@@ -44,6 +50,7 @@ from boto.pyami.config import BotoConfigLocations
 import gslib
 from gslib.exception import CommandException
 from gslib.storage_url import StorageUrlFromString
+from gslib.third_party.storage_apitools import storage_v1_messages as apitools_messages
 from gslib.translation_helper import AclTranslation
 from gslib.translation_helper import GenerationFromUrlAndString
 from gslib.translation_helper import S3_ACL_MARKER_GUID
@@ -96,6 +103,8 @@ EIGHT_MIB = 8 * ONE_MIB
 TEN_MIB = 10 * ONE_MIB
 DEFAULT_FILE_BUFFER_SIZE = 8 * ONE_KIB
 _DEFAULT_LINES = 25
+RESUMABLE_THRESHOLD_MIB = 8
+RESUMABLE_THRESHOLD_B = RESUMABLE_THRESHOLD_MIB * ONE_MIB
 
 # By default, the timeout for SSL read errors is infinite. This could
 # cause gsutil to hang on network disconnect, so pick a more reasonable
@@ -113,6 +122,9 @@ TRANSFER_BUFFER_SIZE = 1024*8
 
 # Default number of progress callbacks during transfer (XML API).
 XML_PROGRESS_CALLBACKS = 10
+
+# Number of objects to request in listing calls.
+NUM_OBJECTS_PER_LIST_PAGE = 1000
 
 # For files >= this size, output a message indicating that we're running an
 # operation on the file (like hashing or gzipping) so it does not appear to the
@@ -135,6 +147,14 @@ _EXP_STRINGS = [
     (50, 'PiB', 'Pibit', 'P'),
     (60, 'EiB', 'Eibit', 'E'),
 ]
+
+# Number of seconds to wait before printing a long retry warning message.
+LONG_RETRY_WARN_SEC = 10
+
+# Metadata attribute name for file modification time.
+MTIME_ATTR = 'goog-reserved-file-mtime'
+# NA_TIME is a long value that takes the place of any invalid mtime.
+NA_TIME = -1
 
 
 global manager  # pylint: disable=global-at-module-level
@@ -174,6 +194,59 @@ Retry = retry_decorator.retry  # pylint: disable=invalid-name
 cached_multiprocessing_is_available = None
 cached_multiprocessing_is_available_stack_trace = None
 cached_multiprocessing_is_available_message = None
+
+
+# This class is necessary to convert timestamps to UTC. By default Python
+# datetime objects are timezone unaware. This created problems when interacting
+# with cloud object timestamps which are timezone aware. This issue appeared
+# when handling the timeCreated metadata attribute. The values returned by the
+# service were placed in RFC 3339 format in the storage_v1_messages module. RFC
+# 3339 requires a timezone in any timestamp. This caused problems as the
+# datetime object elsewhere in the code was timezone unaware and was different
+# by exactly one hour. The main problem is because the local system uses
+# daylight savings time which consequently adjusted the timestamp ahead by one
+# hour.
+class UTC(tzinfo):
+  """Timezone information class used to convert datetime timestamps to UTC."""
+
+  def utcoffset(self, _):
+    """An offset of the number of minutes away from UTC this tzinfo object is.
+
+    Returns:
+      A time duration of zero. UTC is zero minutes away from UTC.
+    """
+    return timedelta(0)
+
+  def tzname(self, _):
+    """A method to retrieve the name of this timezone object.
+
+    Returns:
+      The name of the timezone (i.e. 'UTC').
+    """
+    return 'UTC'
+
+  def dst(self, _):
+    """A fixed offset to handle daylight savings time (DST).
+
+    Returns:
+      A time duration of zero as UTC does not use DST.
+    """
+    return timedelta(0)
+
+
+def ConvertDatetimeToPOSIX(dt):
+  """Converts a datetime object to UTC and formats as POSIX.
+
+  Sanitize the timestamp returned in dt, and put it in UTC format. For more
+  information see the UTC class.
+
+  Args:
+    dt: A Python datetime object.
+
+  Returns:
+    A POSIX timestamp according to UTC.
+  """
+  return long(timegm(dt.replace(tzinfo=UTC()).timetuple()))
 
 
 # Enum class for specifying listing style.
@@ -304,6 +377,27 @@ def GetGsutilStateDir():
       os.path.expanduser(os.path.join('~', '.gsutil')))
   CreateDirIfNeeded(config_file_dir)
   return config_file_dir
+
+
+def GetGsutilClientIdAndSecret():
+  """Returns a tuple of the gsutil OAuth2 client ID and secret.
+
+  Google OAuth2 clients always have a secret, even if the client is an installed
+  application/utility such as gsutil.  Of course, in such cases the "secret" is
+  actually publicly known; security depends entirely on the secrecy of refresh
+  tokens, which effectively become bearer tokens.
+
+  Returns:
+    Tuple of strings (client ID, secret).
+  """
+
+  if os.environ.get('CLOUDSDK_WRAPPER') == '1':
+    # Cloud SDK installs have a separate client ID / secret.
+    return ('32555940559.apps.googleusercontent.com',  # Cloud SDK client ID
+            'ZmssLNjJy2998hD4CTg2ejr2')                # Cloud SDK secret
+
+  return ('909320924072.apps.googleusercontent.com',   # gsutil client ID
+          'p3RlpR10xMFh9ZXBS/ZNLYUu')                  # gsutil secret
 
 
 def GetCredentialStoreFilename():
@@ -654,7 +748,7 @@ def Percentile(values, percent, key=lambda x: x):
 
 
 def RemoveCRLFFromString(input_str):
-  """Returns the input string with all \\n and \\r removed."""
+  r"""Returns the input string with all \n and \r removed."""
   return re.sub(r'[\r\n]', '', input_str)
 
 
@@ -708,6 +802,13 @@ def LookUpGsutilVersion(gsutil_api, url_str):
           return prop.value
 
 
+class DiscardMessagesQueue(object):
+  """Emulates a Cloud API status queue but drops all messages."""
+
+  def put(self):  # pylint: disable=invalid-name
+    pass
+
+
 def GetGsutilVersionModifiedTime():
   """Returns unix timestamp of when the VERSION file was last modified."""
   if not gslib.VERSION_FILE:
@@ -734,6 +835,88 @@ BOTO_IS_SECURE = _BotoIsSecure()
 
 def ResumableThreshold():
   return config.getint('GSUtil', 'resumable_threshold', EIGHT_MIB)
+
+
+def CreateCustomMetadata(entries=None, custom_metadata=None):
+  """Creates a custom metadata (apitools Object.MetadataValue) object.
+
+  Inserts the key/value pairs in entries.
+
+  Args:
+    entries: The dictionary containing key/value pairs to insert into metadata.
+    custom_metadata: A pre-existing custom metadata object to add to.
+
+  Returns:
+    An apitools Object.MetadataVlue.
+  """
+  if custom_metadata is None:
+    custom_metadata = apitools_messages.Object.MetadataValue(
+        additionalProperties=[])
+  if entries is None:
+    entries = {}
+  for key, value in entries.iteritems():
+    custom_metadata.additionalProperties.append(
+        apitools_messages.Object.MetadataValue.AdditionalProperty(
+            key=str(key), value=str(value)))
+  return custom_metadata
+
+
+def GetValueFromObjectCustomMetadata(obj_metadata, search_key,
+                                     default_value=None):
+  """Filters a specific element out of an object's custom metadata.
+
+  Args:
+    obj_metadata: The metadata for an object.
+    search_key: The custom metadata key to search for.
+    default_value: The default value to use for the key if it cannot be found.
+
+  Returns:
+    A tuple indicating if the value could be found in metadata and a value
+    corresponding to search_key. The value at the specified key in custom
+    metadata or the default value, if the specified key does not exist in the
+    customer metadata.
+  """
+  try:
+    value = next((attr.value for attr in
+                  obj_metadata.metadata.additionalProperties
+                  if attr.key == search_key), None)
+    if value is None:
+      return False, default_value
+    return True, value
+  except AttributeError:
+    return False, default_value
+
+
+def ParseAndSetMtime(path, obj_metadata):
+  """Parses mtime from obj_metadata and sets the mtime of the file at path.
+
+  Also sets the atime of the file to be the same as the mtime. If mtime is not
+  in obj_metadata or if mtime is NA_TIME, neither atime nor mtime is set.
+
+  Args:
+    path: The local filesystem path for the file.
+    obj_metadata: The metadata for an object.
+
+  Returns:
+    None
+  """
+  try:
+    # GetValueFromObjectCustomMetadata returns a tuple, and we only need the
+    # second attribute.
+    found, mtime = GetValueFromObjectCustomMetadata(obj_metadata, MTIME_ATTR,
+                                                    NA_TIME)
+    if found:
+      mtime = long(mtime)
+      if mtime > NA_TIME:
+        os.utime(path, (mtime, mtime))
+    else:
+      mtime = long(time.mktime(obj_metadata.timeCreated.timetuple()))
+      os.utime(path, (mtime, mtime))
+  except (AttributeError, ValueError):
+    # It's possible that either obj_metadata or obj_metadata.metadata is None.
+    # If it does exist, the value with key MTIME_ATTR can have non-numeric
+    # characters.
+    pass
 
 
 # pylint: disable=too-many-statements
@@ -766,8 +949,11 @@ def PrintFullInfoAboutObject(bucket_listing_ref, incl_acl=True):
     num_objs = 1
 
   print '%s:' % url_str.encode(UTF8)
+  if obj.timeCreated:
+    print '\tCreation time:\t\t%s' % obj.timeCreated.strftime(
+        '%a, %d %b %Y %H:%M:%S GMT')
   if obj.updated:
-    print '\tCreation time:\t\t%s' % obj.updated.strftime(
+    print '\tUpdate time:\t\t%s' % obj.updated.strftime(
         '%a, %d %b %Y %H:%M:%S GMT')
   if obj.cacheControl:
     print '\tCache-Control:\t\t%s' % obj.cacheControl
@@ -781,6 +967,9 @@ def PrintFullInfoAboutObject(bucket_listing_ref, incl_acl=True):
   print '\tContent-Type:\t\t%s' % obj.contentType
   if obj.componentCount:
     print '\tComponent-Count:\t%d' % obj.componentCount
+  if obj.timeDeleted:
+    print '\tArchived time:\t\t%s' % obj.timeDeleted.strftime(
+        '%a, %d %b %Y %H:%M:%S GMT')
   marker_props = {}
   if obj.metadata and obj.metadata.additionalProperties:
     non_marker_props = []
@@ -1223,6 +1412,22 @@ def FixWindowsEncodingIfNeeded(input_str):
     return input_str.decode(WINDOWS_1252).encode(UTF8)
   else:
     return input_str
+
+
+def WarnAfterManyRetriesHandler(retry_args):
+  """Exception handler for http failures in Apitools.
+
+  If the user has had to wait several seconds since their first request,
+  print a progress message to the terminal to let them know we're still
+  retrying, then perform the default retry logic.
+
+  Args:
+    retry_args: An apitools ExceptionRetryArgs tuple.
+  """
+  if retry_args.total_wait_sec >= LONG_RETRY_WARN_SEC:
+    logging.info(
+        'Retrying request, attempt #%d...', retry_args.num_retries)
+  http_wrapper.HandleExceptionsAndRebuildHttpConnections(retry_args)
 
 
 class GsutilStreamHandler(logging.StreamHandler):

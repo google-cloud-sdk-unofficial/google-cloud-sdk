@@ -136,28 +136,31 @@ class Init(base.Command):
 
     new_credentials = False
     auth_info = self._RunCmd(['auth', 'list'])
-    if auth_info and auth_info.accounts:
+    if auth_info:
+      accounts = [a.account for a in auth_info]
+    else:
+      accounts = None
+    if accounts:
       # There is at least one credentialed account.
       if preselected:
         # Try to use the preselected account. Fail if its not credentialed.
         account = preselected
-        if account not in auth_info.accounts:
+        if account not in accounts:
           log.status.write('\n[{0}] is not one of your credentialed accounts '
-                           '[{1}].\n'.format(account,
-                                             ','.join(auth_info.accounts)))
+                           '[{1}].\n'.format(account, ','.join(accounts)))
           return False
         # Fall through to the set the account property.
       else:
         # Prompt for the account to use.
         idx = console_io.PromptChoice(
-            auth_info.accounts + ['Log in with a new account'],
+            accounts + ['Log in with a new account'],
             message='Choose the account you would like use to perform '
                     'operations for this configuration:',
             prompt_string=None)
         if idx is None:
           return False
-        if idx < len(auth_info.accounts):
-          account = auth_info.accounts[idx]
+        if idx < len(accounts):
+          account = accounts[idx]
         else:
           new_credentials = True
     elif preselected:

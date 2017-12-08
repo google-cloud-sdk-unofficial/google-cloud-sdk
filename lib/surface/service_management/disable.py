@@ -33,9 +33,7 @@ class Disable(base.Command, base_classes.BaseServiceManagementCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    consumers_flags.CONSUMER_PROJECT_FLAG.AddToParser(parser)
     consumers_flags.SERVICE_FLAG.AddToParser(parser)
-
     base.ASYNC_FLAG.AddToParser(parser)
 
   @http_error_handler.HandleHttpErrors
@@ -49,11 +47,6 @@ class Disable(base.Command, base_classes.BaseServiceManagementCommand):
     Returns:
       The response from the consumer settings API call.
     """
-    # Validates the consumer_project argument, or returns the current active
-    # project if none is provided.
-    consumer_project_id = services_util.GetValidatedProject(
-        args.consumer_project)
-
     # Shorten the patch request name for better readability
     patch_request = (self.services_messages
                      .ServicemanagementServicesProjectSettingsPatchRequest)
@@ -67,10 +60,9 @@ class Disable(base.Command, base_classes.BaseServiceManagementCommand):
 
     request = patch_request(
         serviceName=args.service,
-        consumerProjectId=consumer_project_id,
+        consumerProjectId=self.project,
         projectSettings=project_settings,
         updateMask='usage_settings.consumer_enable_status')
 
     operation = self.services_client.services_projectSettings.Patch(request)
-
-    return services_util.ProcessOperationResult(operation, args.async)
+    services_util.ProcessOperationResult(operation, args.async)

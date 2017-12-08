@@ -74,6 +74,7 @@ TEST_ENCRYPTION_CONTENT5_CRC32C = 'le1zXQ=='
 RUN_INTEGRATION_TESTS = True
 RUN_UNIT_TESTS = True
 RUN_S3_TESTS = False
+USE_MULTIREGIONAL_BUCKETS = False
 
 PARALLEL_COMPOSITE_UPLOAD_TEST_CONFIG = '/tmp/.boto.parallel_upload_test_config'
 
@@ -333,6 +334,15 @@ def _WriteSectionDictToFile(section_dict, tmp_filename):
       tmp_file.write('[%s]\n' % section)
       for key, value in key_value_pairs.iteritems():
         tmp_file.write('%s = %s\n' % (key, value))
+
+
+@contextmanager
+def SetDummyProjectForUnitTest():
+  """Sets a dummy project in boto config for the duration of a 'with' clause."""
+  # Listing buckets requires a project ID, but unit tests should run
+  # regardless of whether one is specified in config.
+  with SetBotoConfigForTest([('GSUtil', 'default_project_id', 'dummy_proj')]):
+    yield
 
 
 @contextmanager

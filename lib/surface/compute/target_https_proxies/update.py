@@ -23,12 +23,7 @@ class Update(base_classes.NoOutputAsyncMutator):
   @staticmethod
   def Args(parser):
 
-    # TODO(b/18760514) This probably shouldn't be a mutualy exclusive
-    # group the service falls over when two update requests come in
-    # as part of the same batch request
-    group = parser.add_mutually_exclusive_group()
-
-    ssl_certificate = group.add_argument(
+    ssl_certificate = parser.add_argument(
         '--ssl-certificate',
         help=('A reference to an SSL certificate resource that is used for '
               'server-side authentication.'))
@@ -38,7 +33,7 @@ class Update(base_classes.NoOutputAsyncMutator):
         be deleted while referenced by a target HTTPS proxy.
         """
 
-    url_map = group.add_argument(
+    url_map = parser.add_argument(
         '--url-map',
         completion_resource='compute.urlMap',
         help=('A reference to a URL map resource that defines the mapping of '

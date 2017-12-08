@@ -62,7 +62,7 @@ class FromRegistry(DockerImage):
     self._original_transport = transport
     self._response = {}
 
-  def _content(self, suffix, accepted_mimes=None):
+  def _content(self, suffix):
     """Fetches content of the resources from registry by http calls."""
     if suffix not in self._response:
       _, self._response[suffix] = self._transport.Request(
@@ -71,8 +71,7 @@ class FromRegistry(DockerImage):
               registry=self._name.registry,
               repository=self._name.repository,
               suffix=suffix),
-          accepted_codes=[httplib.OK],
-          accepted_mimes=accepted_mimes)
+          accepted_codes=[httplib.OK])
     return self._response[suffix]
 
   def _tags(self):
@@ -109,12 +108,10 @@ class FromRegistry(DockerImage):
     """Override."""
     # GET server1/v2/<name>/manifests/<tag_or_digest>
     if isinstance(self._name, docker_name.Tag):
-      return self._content('manifests/' + self._name.tag,
-                           docker_http.SUPPORTED_MANIFEST_MIMES)
+      return self._content('manifests/' + self._name.tag)
     else:
       assert isinstance(self._name, docker_name.Digest)
-      return self._content('manifests/' + self._name.digest,
-                           docker_http.SUPPORTED_MANIFEST_MIMES)
+      return self._content('manifests/' + self._name.digest)
 
   # Large, do not memoize.
   def blob(self, digest):

@@ -39,6 +39,7 @@ from gslib.tests.util import TEST_ENCRYPTION_KEY4
 from gslib.tests.util import unittest
 from gslib.tracker_file import DeleteTrackerFile
 from gslib.tracker_file import GetRewriteTrackerFilePath
+from gslib.util import DiscardMessagesQueue
 from gslib.util import ONE_MIB
 
 
@@ -185,6 +186,22 @@ class TestRewrite(testcase.GsUtilIntegrationTestCase):
                            suri(object_uri3), suri(object_uri4)):
       self.AssertObjectUnencrypted(object_uri_str)
 
+  def test_rewrite_seek_ahead(self):
+    if self.test_api == ApiSelector.XML:
+      return unittest.skip('Rewrite API is only supported in JSON.')
+    object_uri = self.CreateObject(contents='bar',
+                                   encryption_key=TEST_ENCRYPTION_KEY1)
+    # Remove encryption
+    boto_config_for_test = [
+        ('GSUtil', 'decryption_key1', TEST_ENCRYPTION_KEY1),
+        ('GSUtil', 'task_estimation_threshold', '1'),
+        ('GSUtil', 'task_estimation_force', 'True')]
+    with SetBotoConfigForTest(boto_config_for_test):
+      stderr = self.RunGsUtil(['-m', 'rewrite', '-k', suri(object_uri)],
+                              return_stderr=True)
+      self.assertIn(
+          'Estimated work for this command: objects: 1, total size: 3', stderr)
+
   def test_rewrite_key_rotation_single_object(self):
     if self.test_api == ApiSelector.XML:
       return unittest.skip('Rewrite API is only supported in JSON.')
@@ -327,7 +344,7 @@ class TestRewrite(testcase.GsUtilIntegrationTestCase):
                                    prefer_json_api=True,
                                    encryption_key=initial_dec_key)
     gsutil_api = GcsJsonApi(BucketStorageUri, logging.getLogger(),
-                            self.default_provider)
+                            DiscardMessagesQueue(), self.default_provider)
     with SetBotoConfigForTest(
         [('GSUtil', 'decryption_key1', initial_dec_key)]):
       src_obj_metadata = gsutil_api.GetObjectMetadata(

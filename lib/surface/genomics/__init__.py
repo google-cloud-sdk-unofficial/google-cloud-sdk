@@ -34,7 +34,7 @@ from googlecloudsdk.core.credentials import store
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Genomics(base.Group):
-  """Manage Genomics resources using version 1 beta 2 of the API."""
+  """Manage Genomics resources using version 1 of the API."""
 
   @staticmethod
   def Args(parser):

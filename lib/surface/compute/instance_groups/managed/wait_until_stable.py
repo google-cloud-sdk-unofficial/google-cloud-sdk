@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.compute import time_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instance_groups.managed import wait_info
 from googlecloudsdk.core import log
 
 
@@ -55,9 +56,6 @@ class WaitUntilStable(base_classes.BaseCommand):
   """Waits until state of managed instance group is stable."""
 
   _TIME_BETWEEN_POLLS_SEC = 10
-  _OPERATION_TYPES = ['abandoning', 'creating', 'creatingWithoutRetries',
-                      'deleting', 'rebooting', 'restarting', 'recreating',
-                      'refreshing']
 
   @staticmethod
   def Args(parser):
@@ -82,31 +80,15 @@ class WaitUntilStable(base_classes.BaseCommand):
       responses, errors = self._GetResources(group_ref)
       if errors:
         utils.RaiseToolException(errors)
-      if WaitUntilStable._IsGroupStable(responses[0]):
+      if wait_info.IsGroupStable(responses[0]):
         break
-      log.out.Print(WaitUntilStable._MakeWaitText(responses[0]))
+      log.out.Print(wait_info.CreateWaitText(responses[0]))
       time_utils.Sleep(WaitUntilStable._TIME_BETWEEN_POLLS_SEC)
 
       if args.timeout and time_utils.CurrentTimeSec() - start > args.timeout:
         raise utils.TimeoutError('Timeout while waiting for group to become '
                                  'stable.')
     log.out.Print('Group is stable')
-
-  @staticmethod
-  def _IsGroupStable(group):
-    return not any(getattr(group.currentActions, action, 0)
-                   for action in WaitUntilStable._OPERATION_TYPES)
-
-  @staticmethod
-  def _MakeWaitText(group):
-    """Creates text presented at each wait operation."""
-    text = 'Waiting for group to become stable, current operations: '
-    actions = []
-    for action in WaitUntilStable._OPERATION_TYPES:
-      action_count = getattr(group.currentActions, action, 0)
-      if action_count > 0:
-        actions.append('{0}: {1}'.format(action, action_count))
-    return text + ','.join(actions)
 
   def GetRequestForGroup(self, group_ref):
     service = self.compute.instanceGroupManagers
@@ -130,8 +112,8 @@ class WaitUntilStable(base_classes.BaseCommand):
     return results, errors
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class WaitUntilStableAlpha(WaitUntilStable):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class WaitUntilStableBeta(WaitUntilStable):
   """Waits until state of managed instance group is stable."""
 
   @staticmethod
@@ -157,3 +139,26 @@ class WaitUntilStableAlpha(WaitUntilStable):
           zone=group_ref.zone,
           project=self.project)
     return (service, request)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class WaitUntilStableAlpha(WaitUntilStableBeta):
+  """Waits until state of managed instance group is stable."""
+
+  def Run(self, args):
+    start = time_utils.CurrentTimeSec()
+    group_ref = self.CreateGroupReference(args)
+
+    while True:
+      responses, errors = self._GetResources(group_ref)
+      if errors:
+        utils.RaiseToolException(errors)
+      if wait_info.IsGroupStableAlpha(responses[0]):
+        break
+      log.out.Print(wait_info.CreateWaitTextAlpha(responses[0]))
+      time_utils.Sleep(WaitUntilStableAlpha._TIME_BETWEEN_POLLS_SEC)
+
+      if args.timeout and time_utils.CurrentTimeSec() - start > args.timeout:
+        raise utils.TimeoutError('Timeout while waiting for group to become '
+                                 'stable.')
+    log.out.Print('Group is stable')

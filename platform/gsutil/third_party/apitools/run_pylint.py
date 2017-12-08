@@ -32,7 +32,9 @@ import sys
 
 
 IGNORED_DIRECTORIES = [
+    'apitools/gen/testdata',
     'samples/storage_sample/storage',
+    'venv',
 ]
 IGNORED_FILES = [
     'ez_setup.py',

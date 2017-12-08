@@ -158,8 +158,8 @@ class BotoTranslation(CloudApi):
   TODO: Implement support.
   """
 
-  def __init__(self, bucket_storage_uri_class, logger, provider=None,
-               credentials=None, debug=0, trace_token=None,
+  def __init__(self, bucket_storage_uri_class, logger, status_queue,
+               provider=None, credentials=None, debug=0, trace_token=None,
                perf_trace_token=None):
     """Performs necessary setup for interacting with the cloud storage provider.
 
@@ -167,6 +167,7 @@ class BotoTranslation(CloudApi):
       bucket_storage_uri_class: boto storage_uri class, used by APIs that
                                 provide boto translation or mocking.
       logger: logging.logger for outputting log messages.
+      status_queue: Queue for relaying status to UI.
       provider: Provider prefix describing cloud storage provider to connect to.
                 'gs' and 's3' are supported. Function implementations ignore
                 the provider argument and use this one instead.
@@ -176,10 +177,9 @@ class BotoTranslation(CloudApi):
       perf_trace_token: Performance trace token to use when making API calls
           ('gs' provider only).
     """
-    super(BotoTranslation, self).__init__(bucket_storage_uri_class, logger,
-                                          provider=provider, debug=debug,
-                                          trace_token=trace_token,
-                                          perf_trace_token=perf_trace_token)
+    super(BotoTranslation, self).__init__(
+        bucket_storage_uri_class, logger, status_queue, provider=provider,
+        debug=debug, trace_token=trace_token, perf_trace_token=perf_trace_token)
     _ = credentials
     # pylint: disable=global-variable-undefined, global-variable-not-assigned
     global boto_auth_initialized, boto_auth_initialized_lock
@@ -265,8 +265,6 @@ class BotoTranslation(CloudApi):
             metadata.lifecycle)
         bucket_uri.configure_lifecycle(boto_lifecycle, False, headers=headers)
       if metadata.logging:
-        if self.provider == 'gs':
-          headers[GOOG_PROJ_ID_HDR] = PopulateProjectId(None)
         if metadata.logging.logBucket and metadata.logging.logObjectPrefix:
           bucket_uri.enable_logging(metadata.logging.logBucket,
                                     metadata.logging.logObjectPrefix,
@@ -1218,7 +1216,8 @@ class BotoTranslation(CloudApi):
       apitools Object corresponding to key.
     """
     custom_metadata = None
-    if not fields or 'metadata' in fields:
+    if not fields or 'metadata' in fields or len(
+        [field for field in fields if field.startswith('metadata/')]) >= 1:
       custom_metadata = self._TranslateBotoKeyCustomMetadata(key)
     cache_control = None
     if not fields or 'cacheControl' in fields:
@@ -1235,10 +1234,10 @@ class BotoTranslation(CloudApi):
     metageneration = None
     if not fields or 'metageneration' in fields:
       metageneration = self._TranslateBotoKeyMetageneration(key)
-    updated = None
-    # Translation code to avoid a dependency on dateutil.
-    if not fields or 'updated' in fields:
-      updated = self._TranslateBotoKeyTimestamp(key)
+    time_created = None
+    if not fields or 'timeCreated' in fields:
+      # Translation code to avoid a dependency on dateutil.
+      time_created = self._TranslateBotoKeyTimestamp(key)
     etag = None
     if not fields or 'etag' in fields:
       etag = getattr(key, 'etag', None)
@@ -1295,7 +1294,7 @@ class BotoTranslation(CloudApi):
         generation=generation,
         metageneration=metageneration,
         componentCount=component_count,
-        updated=updated,
+        timeCreated=time_created,
         metadata=custom_metadata,
         mediaLink=media_link,
         storageClass=storage_class)

@@ -17,7 +17,7 @@
 
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core.iam import iam_util
+from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import resources
 
 

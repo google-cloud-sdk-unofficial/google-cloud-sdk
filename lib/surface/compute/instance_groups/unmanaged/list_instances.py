@@ -16,7 +16,13 @@
 It's an alias for the instance-groups list-instances command.
 """
 from googlecloudsdk.api_lib.compute import instance_groups_utils
+from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
 class ListInstances(instance_groups_utils.InstanceGroupListInstances):
-  pass
+
+  @staticmethod
+  def Args(parser):
+    instance_groups_flags.ZONAL_INSTANCE_GROUP_ARG.AddArgument(parser)
+    flags.AddRegexArg(parser)

@@ -20,6 +20,7 @@ import posixpath
 import re
 import subprocess
 import sys
+import time
 
 import gslib
 from gslib.cs_api_map import ApiSelector
@@ -79,14 +80,40 @@ class TestLs(testcase.GsUtilIntegrationTestCase):
   def test_bucket_with_Lb(self):
     """Tests ls -Lb."""
     bucket_uri = self.CreateBucket()
-    # Use @Retry as hedge against bucket listing eventual consistency.
-    @Retry(AssertionError, tries=3, timeout_secs=1)
-    def _Check1():
-      stdout = self.RunGsUtil(['ls', '-Lb', suri(bucket_uri)],
-                              return_stdout=True)
-      self.assertIn(suri(bucket_uri), stdout)
-      self.assertNotIn('TOTAL:', stdout)
-    _Check1()
+    stdout = self.RunGsUtil(['ls', '-Lb', suri(bucket_uri)],
+                            return_stdout=True)
+    # Check that the bucket URI is displayed.
+    self.assertIn(suri(bucket_uri), stdout)
+    # Check that we don't see output corresponding to listing objects rather
+    # than buckets.
+    self.assertNotIn('TOTAL:', stdout)
+
+    # Toggle versioning on the bucket so that the modification time will be
+    # greater than the creation time.
+    self.RunGsUtil(['versioning', 'set', 'on', suri(bucket_uri)])
+    self.RunGsUtil(['versioning', 'set', 'off', suri(bucket_uri)])
+    stdout = self.RunGsUtil(['ls', '-Lb', suri(bucket_uri)],
+                            return_stdout=True)
+    find_time_created_re = re.compile(
+        r'^\s*Time created:\s+(?P<time_created_val>.+)$', re.MULTILINE)
+    find_time_updated_re = re.compile(
+        r'^\s*Time updated:\s+(?P<time_updated_val>.+)$', re.MULTILINE)
+    time_created_match = re.search(find_time_created_re, stdout)
+    time_updated_match = re.search(find_time_updated_re, stdout)
+    if self.test_api == ApiSelector.XML:
+      # Check that time created/updated lines are not displayed.
+      self.assertIsNone(time_created_match)
+      self.assertIsNone(time_updated_match)
+    elif self.test_api == ApiSelector.JSON:
+      # Check that time created/updated lines are displayed.
+      self.assertIsNotNone(time_created_match)
+      self.assertIsNotNone(time_updated_match)
+      # Check that updated time > created time.
+      time_created = time_created_match.group('time_created_val')
+      time_created = time.strptime(time_created, '%a, %d %b %Y %H:%M:%S %Z')
+      time_updated = time_updated_match.group('time_updated_val')
+      time_updated = time.strptime(time_updated, '%a, %d %b %Y %H:%M:%S %Z')
+      self.assertGreater(time_updated, time_created)
 
   def test_bucket_with_lb(self):
     """Tests ls -lb."""
@@ -160,6 +187,42 @@ class TestLs(testcase.GsUtilIntegrationTestCase):
       stdout = self.RunGsUtil(['ls', suri(bucket_uri)], return_stdout=True)
       self.assertEqual('%s\n' % obj_uri, stdout)
     _Check1()
+
+  def test_one_object_with_l(self):
+    """Tests listing one object with -l."""
+    obj_uri = self.CreateObject(contents='foo')
+    stdout = self.RunGsUtil(['ls', '-l', suri(obj_uri)], return_stdout=True)
+    output_items = stdout.split()
+    self.assertTrue(output_items[0].isdigit())
+    # Throws exception if time string is not formatted correctly.
+    time_created = time.strptime(stdout.split()[1], '%Y-%m-%dT%H:%M:%SZ')
+    self.assertEqual(output_items[2], suri(obj_uri))
+
+  def test_one_object_with_L(self):
+    """Tests listing one object with -L."""
+    obj_uri = self.CreateObject(contents='foo')
+    # Ensure that creation and update don't take place in the same second.
+    time.sleep(2)
+    # Check that the creation time, rather than the updated time, is displayed.
+    self.RunGsUtil(['setmeta', '-h', 'x-goog-meta-foo:bar', suri(obj_uri)])
+    find_time_created_re = re.compile(
+        r'^\s*Creation time:\s+(?P<time_created_val>.+)$', re.MULTILINE)
+    find_time_updated_re = re.compile(
+        r'^\s*Update time:\s+(?P<time_updated_val>.+)$', re.MULTILINE)
+    stdout = self.RunGsUtil(['ls', '-L', suri(obj_uri)], return_stdout=True)
+    time_created_match = re.search(find_time_created_re, stdout)
+    time_updated_match = re.search(find_time_updated_re, stdout)
+    time_created = time_created_match.group('time_created_val')
+    self.assertIsNotNone(time_created)
+    time_created = time.strptime(time_created, '%a, %d %b %Y %H:%M:%S %Z')
+    if self.test_api == ApiSelector.XML:
+      # XML API has no concept of updated time.
+      self.assertIsNone(time_updated_match)
+    elif self.test_api == ApiSelector.JSON:
+      time_updated = time_updated_match.group('time_updated_val')
+      self.assertIsNotNone(time_updated)
+      time_updated = time.strptime(time_updated, '%a, %d %b %Y %H:%M:%S %Z')
+      self.assertGreater(time_updated, time_created)
 
   def test_subdir(self):
     """Tests listing a bucket subdirectory."""

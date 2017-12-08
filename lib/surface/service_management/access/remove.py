@@ -20,7 +20,7 @@ from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.api_lib.util import http_retry
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core.iam import iam_util
+from googlecloudsdk.command_lib.iam import iam_util
 
 
 class Remove(base.Command, base_classes.BaseServiceManagementCommand):

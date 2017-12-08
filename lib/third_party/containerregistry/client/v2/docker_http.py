@@ -14,15 +14,6 @@ PUSH = 'push,pull'
 DELETE = PUSH
 ACTIONS = [PULL, PUSH, DELETE]
 
-MANIFEST_SCHEMA1_MIME = 'application/vnd.docker.distribution.manifest.v1+json'
-MANIFEST_SCHEMA1_SIGNED_MIME = (
-    'application/vnd.docker.distribution.manifest.v1+prettyjws')
-MANIFEST_SCHEMA2_MIME = 'application/vnd.docker.distribution.manifest.v2+json'
-MANIFEST_LIST_MIME = 'application/vnd.docker.distribution.manifest.list.v2+json'
-LAYER_MIME = 'application/vnd.docker.image.rootfs.diff.tar.gzip'
-CONFIG_JSON_MIME = 'application/vnd.docker.container.image.v1+json'
-SUPPORTED_MANIFEST_MIMES = [MANIFEST_SCHEMA1_MIME, MANIFEST_SCHEMA1_SIGNED_MIME]
-
 
 class Diagnostic(object):
   """Diagnostic encapsulates a Registry v2 diagnostic message.
@@ -230,8 +221,7 @@ class Transport(object):
               accepted_codes=None,
               method=None,
               body=None,
-              content_type=None,
-              accepted_mimes=None):
+              content_type=None):
     """Wrapper containing much of the boilerplate REST logic for Registry calls.
 
     Args:
@@ -241,7 +231,6 @@ class Transport(object):
               whether body is provided)
       body: str, the body to pass into the PUT request (or None for GET)
       content_type: str, the mime-type of the request (or None for JSON)
-      accepted_mimes: the list of acceptable mime-types
 
     Raises:
       BadStateException: an unexpected internal state has been encountered.
@@ -263,9 +252,6 @@ class Transport(object):
           'Authorization': self._bearer_creds.Get(),
           'User-Agent': USER_AGENT,
       }
-
-      if accepted_mimes is not None:
-        headers['Accept'] = ','.join(accepted_mimes)
 
       # POST/PUT require a content-length, when no body is supplied.
       if method in ('POST', 'PUT') and not body:

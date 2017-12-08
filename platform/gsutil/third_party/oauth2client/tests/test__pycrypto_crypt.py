@@ -14,21 +14,21 @@
 """Unit tests for oauth2client._pycrypto_crypt."""
 
 import os
-import unittest
+import unittest2
 
 from oauth2client.crypt import PyCryptoSigner
 from oauth2client.crypt import PyCryptoVerifier
 
 
-class TestPyCryptoVerifier(unittest.TestCase):
+class TestPyCryptoVerifier(unittest2.TestCase):
 
-    PUBLIC_KEY_FILENAME = os.path.join(os.path.dirname(__file__),
-                                       'data', 'publickey.pem')
+    PUBLIC_CERT_FILENAME = os.path.join(os.path.dirname(__file__),
+                                        'data', 'public_cert.pem')
     PRIVATE_KEY_FILENAME = os.path.join(os.path.dirname(__file__),
                                         'data', 'privatekey.pem')
 
-    def _load_public_key_bytes(self):
-        with open(self.PUBLIC_KEY_FILENAME, 'rb') as fh:
+    def _load_public_cert_bytes(self):
+        with open(self.PUBLIC_CERT_FILENAME, 'rb') as fh:
             return fh.read()
 
     def _load_private_key_bytes(self):
@@ -40,28 +40,36 @@ class TestPyCryptoVerifier(unittest.TestCase):
         signer = PyCryptoSigner.from_string(self._load_private_key_bytes())
         actual_signature = signer.sign(to_sign)
 
-        verifier = PyCryptoVerifier.from_string(self._load_public_key_bytes(),
+        verifier = PyCryptoVerifier.from_string(self._load_public_cert_bytes(),
                                                 is_x509_cert=True)
         self.assertTrue(verifier.verify(to_sign, actual_signature))
 
     def test_verify_failure(self):
-        verifier = PyCryptoVerifier.from_string(self._load_public_key_bytes(),
+        verifier = PyCryptoVerifier.from_string(self._load_public_cert_bytes(),
                                                 is_x509_cert=True)
         bad_signature = b''
         self.assertFalse(verifier.verify(b'foo', bad_signature))
 
     def test_verify_bad_key(self):
-        verifier = PyCryptoVerifier.from_string(self._load_public_key_bytes(),
+        verifier = PyCryptoVerifier.from_string(self._load_public_cert_bytes(),
                                                 is_x509_cert=True)
         bad_signature = b''
         self.assertFalse(verifier.verify(b'foo', bad_signature))
 
     def test_from_string_unicode_key(self):
-        public_key = self._load_public_key_bytes()
+        public_key = self._load_public_cert_bytes()
         public_key = public_key.decode('utf-8')
         verifier = PyCryptoVerifier.from_string(public_key, is_x509_cert=True)
         self.assertTrue(isinstance(verifier, PyCryptoVerifier))
 
 
+class TestPyCryptoSigner(unittest2.TestCase):
+
+    def test_from_string_bad_key(self):
+        key_bytes = 'definitely-not-pem-format'
+        with self.assertRaises(NotImplementedError):
+            PyCryptoSigner.from_string(key_bytes)
+
+
 if __name__ == '__main__':  # pragma: NO COVER
-    unittest.main()
+    unittest2.main()

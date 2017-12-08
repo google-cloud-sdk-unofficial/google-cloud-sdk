@@ -1,5 +1,112 @@
 # CHANGELOG
 
+
+## v2.2.0
+
+* Added support to override `token_uri` and `revoke_uri` in `oauth2client.service_account.ServiceAccountCredentials`. (#510)
+* `oauth2client.contrib.multistore_file` now handles `OSError` in addition to `IOError` because Windows may raise `OSError` where other platforms will raise `IOError`.
+* `oauth2client.contrib.django_util` and `oauth2client.contrib.django_orm` have been updated to support Django 1.8 - 1.10. Versions of Django below 1.8 will not work with these modules.
+
+## v2.1.0
+
+* Add basic support for JWT access credentials. (#503)
+* Fix `oauth2client.client.DeviceFlowInfo` to use UTC instead of the system timezone when calculating code expiration.
+
+## v2.0.2
+
+* Fix issue where `flask_util.UserOAuth2.required` would accept expired credentials (#452).
+* Fix issue where `flask_util` would fill the session with `Flow` objects (#498).
+* Fix issue with Python 3 binary strings in `Flow.step2_exchange` (#446).
+* Improve test coverage to 100%.
+
+## v2.0.1
+
+* Making scopes optional on Google Compute Engine `AppAssertionCredentials`
+  and adding a warning that GCE won't honor scopes (#419)
+* Adding common `sign_blob()` to service account types and a
+  `service_account_email` property. (#421)
+* Improving error message in P12 factory
+  `ServiceAccountCredentials.from_p12_keyfile` when pyOpenSSL is
+  missing. (#424)
+* Allowing default flags in `oauth2client.tools.run_flow()`
+  rather than forcing users to create a dummy argparser (#426)
+* Removing `oauth2client.util.dict_to_tuple_key()` from public
+  interface (#429)
+* Adding `oauth2client.contrib._appengine_ndb` helper module
+  for `oauth2client.contrib.appengine` and moving most code that
+  uses the `ndb` library into the helper (#434)
+* Fix error in `django_util` sample code (#438)
+
+## v2.0.0-post1
+
+* Fix Google Compute Engine breakage (#411, breakage introduced in #387) that
+  made it impossible to obtain access tokens
+* Implement `ServiceAccountCredentials.from_p12_keyfile_buffer()`
+  to allow passing a file-like object in addition to the factory
+  constructor that uses a filename directly (#413)
+* Implement `ServiceAccountCredentials.create_delegated()`
+  to allow upgrading a credential to one that acts on behalf
+  of a given subject (#420)
+
+## v2.0.0
+
+* Add django_util (#332)
+* Avoid OAuth2Credentials `id_token` going out of sync after a token
+  refresh (#337)
+* Move to a `contrib` sub-package code not considered a core part of
+  the library (#346, #353, #370, #375, #376, #382)
+* Add `token_expiry` to `devshell` credentials (#372)
+* Move `Storage` locking into a base class (#379)
+* Added dictionary storage (#380)
+* Added `to_json` and `from_json` methods to all `Credentials`
+  classes (#385)
+* Fall back to read-only credentials on EACCES errors (#389)
+* Coalesced the two `ServiceAccountCredentials`
+  classes (#395, #396, #397, #398, #400)
+
+### Special Note About `ServiceAccountCredentials`:
+-------------------------------------------------
+
+For JSON keys, you can create a credential via
+
+```py
+from oauth2client.service_account import ServiceAccountCredentials
+credentials = ServiceAccountCredentials.from_json_keyfile_name(
+    key_file_name, scopes=[...])
+```
+
+You can still rely on
+
+```py
+from oauth2client.client import GoogleCredentials
+credentials = GoogleCredentials.get_application_default()
+```
+
+returning these credentials when you set the `GOOGLE_APPLICATION_CREDENTIALS`
+environment variable.
+
+For `.p12` keys, construct via
+
+```py
+credentials = ServiceAccountCredentials.from_p12_keyfile(
+    service_account_email, key_file_name, scopes=[...])
+```
+
+though we urge you to use JSON keys (rather than `.p12` keys) if you can.
+
+This is equivalent to the previous method
+
+```py
+# PRE-oauth2client 2.0.0 EXAMPLE CODE!
+from oauth2client.client import SignedJwtAssertionCredentials
+
+with open(key_file_name, 'rb') as key_file:
+    private_key = key_file.read()
+
+credentials = SignedJwtAssertionCredentials(
+    service_account_email, private_key, scope=[...])
+```
+
 ## v1.5.2
 
 * Add access token refresh error class that includes HTTP status (#310)

@@ -18,6 +18,8 @@ It's an alias for the instance-groups list-instances command.
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -26,8 +28,7 @@ class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
 
   @staticmethod
   def Args(parser):
-    instance_groups_utils.InstanceGroupListInstancesBase.ListInstancesArgs(
-        parser, multizonal=False)
+    instance_groups_flags.ZONAL_INSTANCE_GROUP_ARG.AddArgument(parser)
 
   @property
   def service(self):
@@ -46,11 +47,23 @@ class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
     return 'managedInstances'
 
   def CreateGroupReference(self, args):
-    return self.CreateZonalReference(args.name, args.zone)
+    return (
+        instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG
+        .ResolveAsResource(
+            args, self.resources,
+            default_scope=flags.ScopeEnum.ZONE,
+            scope_lister=flags.GetDefaultScopeLister(
+                self.compute_client, self.project)))
 
   def GetResources(self, args):
     """Retrieves response with instance in the instance group."""
-    group_ref = self.CreateZonalReference(args.name, args.zone)
+    group_ref = group_ref = (
+        instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG
+        .ResolveAsResource(
+            args, self.resources,
+            default_scope=flags.ScopeEnum.ZONE,
+            scope_lister=flags.GetDefaultScopeLister(
+                self.compute_client, self.project)))
 
     request = self.service.GetRequestType(self.method)(
         instanceGroupManager=group_ref.Name(),
@@ -91,13 +104,17 @@ class ListInstancesBeta(ListInstances):
 
   @staticmethod
   def Args(parser):
-    instance_groups_utils.InstanceGroupListInstancesBase.ListInstancesArgs(
-        parser, multizonal=True)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser)
 
   def CreateGroupReference(self, args):
-    return instance_groups_utils.CreateInstanceGroupReference(
-        scope_prompter=self, compute=self.compute, resources=self.resources,
-        name=args.name, region=args.region, zone=args.zone)
+    return (
+        instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
+        .ResolveAsResource(
+            args, self.resources,
+            default_scope=flags.ScopeEnum.ZONE,
+            scope_lister=flags.GetDefaultScopeLister(
+                self.compute_client, self.project)))
 
   def GetResources(self, args):
     """Retrieves response with instance in the instance group."""

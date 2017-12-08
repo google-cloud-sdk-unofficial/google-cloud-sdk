@@ -27,20 +27,22 @@ class StorageV1(base_api.BaseApiClient):
   """Generated client library for service storage version v1."""
 
   MESSAGES_MODULE = messages
+  BASE_URL = u'https://www.googleapis.com/storage/v1/'
 
   _PACKAGE = u'storage'
-  _SCOPES = [u'https://www.googleapis.com/auth/devstorage.full_control', u'https://www.googleapis.com/auth/devstorage.read_only', u'https://www.googleapis.com/auth/devstorage.read_write']
+  _SCOPES = [u'https://www.googleapis.com/auth/cloud-platform', u'https://www.googleapis.com/auth/cloud-platform.read-only', u'https://www.googleapis.com/auth/devstorage.full_control', u'https://www.googleapis.com/auth/devstorage.read_only', u'https://www.googleapis.com/auth/devstorage.read_write']
   _VERSION = u'v1'
   _CLIENT_ID = 'nomatter'
   _CLIENT_SECRET = 'nomatter'
   _USER_AGENT = 'apitools gsutil/%s Python/%s (%s)' % (
       gslib.VERSION, platform.python_version(), sys.platform)
   if os.environ.get('CLOUDSDK_WRAPPER') == '1':
-    _USER_AGENT += ' Cloud SDK Command Line Tool'
+    _USER_AGENT += ' google-cloud-sdk'
     if os.environ.get('CLOUDSDK_VERSION'):
-      _USER_AGENT += ' %s' % os.environ.get('CLOUDSDK_VERSION')
+      _USER_AGENT += '/%s' % os.environ.get('CLOUDSDK_VERSION')
   _CLIENT_CLASS_NAME = u'StorageV1'
   _URL_VERSION = u'v1'
+  _API_KEY = None
 
   def __init__(self, url='', credentials=None,
                get_credentials=True, http=None, model=None,
@@ -48,7 +50,7 @@ class StorageV1(base_api.BaseApiClient):
                credentials_args=None, default_global_params=None,
                version=_VERSION, additional_http_headers=None):
     """Create a new storage handle."""
-    url = url or u'https://www.googleapis.com/storage/v1/'
+    url = url or self.BASE_URL
     super(StorageV1, self).__init__(
         url, credentials=credentials,
         get_credentials=get_credentials, http=http, model=model,
@@ -913,7 +915,7 @@ class StorageV1(base_api.BaseApiClient):
           download=download)
 
     def Copy(self, request, global_params=None, download=None):
-      """Copies an object to a specified location. Optionally overrides metadata.
+      """Copies a source object to a destination object. Optionally overrides metadata.
 
       Args:
         request: (StorageObjectsCopyRequest) input message

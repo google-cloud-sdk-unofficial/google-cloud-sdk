@@ -21,12 +21,14 @@ import os
 import time
 import traceback
 
+from apitools.base.py import encoding
 from gslib import copy_helper
 from gslib.cat_helper import CatHelper
 from gslib.command import Command
 from gslib.command_argument import CommandArgument
 from gslib.commands.compose import MAX_COMPONENT_COUNT
 from gslib.copy_helper import CreateCopyHelperOpts
+from gslib.copy_helper import GetSourceFieldsNeededForCopy
 from gslib.copy_helper import GZIP_ALL_FILES
 from gslib.copy_helper import ItemExistsError
 from gslib.copy_helper import Manifest
@@ -35,7 +37,9 @@ from gslib.copy_helper import SkipUnsupportedObjectError
 from gslib.cs_api_map import ApiSelector
 from gslib.exception import CommandException
 from gslib.name_expansion import NameExpansionIterator
+from gslib.name_expansion import SeekAheadNameExpansionIterator
 from gslib.storage_url import ContainsWildcard
+from gslib.third_party.storage_apitools import storage_v1_messages as apitools_messages
 from gslib.util import CreateLock
 from gslib.util import DEBUGLEVEL_DUMP_REQUESTS
 from gslib.util import GetCloudApiInstance
@@ -616,7 +620,7 @@ _OPTIONS_TEXT = """
                  You can avoid the additional performance and cost of using
                  cp -p if you want all objects in the destination bucket to end
                  up with the same ACL by setting a default object ACL on that
-                 bucket instead of using cp -p. See "help gsutil defacl".
+                 bucket instead of using cp -p. See "gsutil help defacl".
 
                  Note that it's not valid to specify both the -a and -p options
                  together.
@@ -846,6 +850,12 @@ class CpCommand(Command):
                              'the destination for gsutil cp - abort.'
                              % (cmd_name, dst_url))
 
+    if name_expansion_result.expanded_result:
+      src_obj_metadata = encoding.JsonToMessage(
+          apitools_messages.Object, name_expansion_result.expanded_result)
+    else:
+      src_obj_metadata = None
+
     elapsed_time = bytes_transferred = 0
     try:
       if copy_helper_opts.use_manifest:
@@ -854,9 +864,9 @@ class CpCommand(Command):
       (elapsed_time, bytes_transferred, result_url, md5) = (
           copy_helper.PerformCopy(
               self.logger, exp_src_url, dst_url, gsutil_api,
-              self, _CopyExceptionHandler, allow_splitting=True,
-              headers=self.headers, manifest=self.manifest,
-              gzip_exts=self.gzip_exts))
+              self, _CopyExceptionHandler, src_obj_metadata=src_obj_metadata,
+              allow_splitting=True, headers=self.headers,
+              manifest=self.manifest, gzip_exts=self.gzip_exts))
       if copy_helper_opts.use_manifest:
         if md5:
           self.manifest.Set(exp_src_url.url_string, 'md5', md5)
@@ -944,7 +954,20 @@ class CpCommand(Command):
         self.logger, self.gsutil_api, url_strs,
         self.recursion_requested or copy_helper_opts.perform_mv,
         project_id=self.project_id, all_versions=self.all_versions,
-        continue_on_error=self.continue_on_error or self.parallel_operations)
+        continue_on_error=self.continue_on_error or self.parallel_operations,
+        bucket_listing_fields=GetSourceFieldsNeededForCopy(
+            self.exp_dst_url.IsCloudUrl(),
+            copy_helper_opts.skip_unsupported_objects,
+            copy_helper_opts.preserve_acl))
+
+    seek_ahead_iterator = None
+    # Cannot seek ahead with stdin args, since we can only iterate them
+    # once without buffering in memory.
+    if not copy_helper_opts.read_args_from_stdin:
+      seek_ahead_iterator = SeekAheadNameExpansionIterator(
+          self.command_name, self.debug, self.GetSeekAheadGsutilApi(),
+          url_strs, self.recursion_requested or copy_helper_opts.perform_mv,
+          all_versions=self.all_versions, project_id=self.project_id)
 
     # Use a lock to ensure accurate statistics in the face of
     # multi-threading/multi-processing.
@@ -965,7 +988,8 @@ class CpCommand(Command):
     # perform requests with sequential function calls in current process.
     self.Apply(_CopyFuncWrapper, name_expansion_iterator,
                _CopyExceptionHandler, shared_attrs,
-               fail_on_error=(not self.continue_on_error))
+               fail_on_error=(not self.continue_on_error),
+               seek_ahead_iterator=seek_ahead_iterator)
     self.logger.debug(
         'total_bytes_transferred: %d', self.total_bytes_transferred)
 

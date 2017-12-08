@@ -74,6 +74,7 @@ from gslib.third_party.storage_apitools import storage_v1_messages as apitools_m
 from gslib.tracker_file import DeleteTrackerFile
 from gslib.tracker_file import GetRewriteTrackerFilePath
 from gslib.tracker_file import GetSlicedDownloadTrackerFilePaths
+from gslib.util import DiscardMessagesQueue
 from gslib.util import EIGHT_MIB
 from gslib.util import HumanReadableToBytes
 from gslib.util import IS_WINDOWS
@@ -712,7 +713,9 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     dst_uri = storage_uri(fpath1)
     stderr = self.RunGsUtil(['cp', '-v', suri(k1_uri), suri(dst_uri)],
                             return_stderr=True)
-    self.assertIn('Created: %s' % dst_uri.uri, stderr.split('\n')[-2])
+    # TODO: Add ordering assertion (should be in stderr.split('\n)[-2]) back
+    # once both the creation and status messages are handled by the UI thread.
+    self.assertIn('Created: %s\n' % dst_uri.uri, stderr)
 
     # Case 5: Daisy-chain from object to object.
     self._run_cp_minus_v_test('-Dv', k1_uri.uri, k2_uri.uri)
@@ -861,10 +864,59 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
       stderr = self.RunGsUtil(['cp', '--testcallbackfile', test_callback_file,
                                '-D', suri(key_uri), suri(bucket2_uri)],
                               expected_status=1, return_stderr=True)
-      # Should have two exception traces; one from the download thread and
-      # one from the upload thread.
+      # Should have three exception traces; one from the download thread and
+      # two from the upload thread (expection message is repeated in main's
+      # _OutputAndExit).
       self.assertEqual(stderr.count(
-          'ResumableDownloadException: Artifically halting download'), 2)
+          'ResumableDownloadException: Artifically halting download'), 3)
+
+  def test_streaming_gzip_upload(self):
+    """Tests error when compression flag is requested on a streaming source."""
+    bucket_uri = self.CreateBucket()
+    stderr = self.RunGsUtil(['cp', '-Z', '-', suri(bucket_uri, 'foo')],
+                            return_stderr=True, expected_status=1,
+                            stdin='streaming data')
+    self.assertIn(
+        'gzip compression is not currently supported on streaming uploads',
+        stderr)
+
+  def test_seek_ahead_upload_cp(self):
+    """Tests that the seek-ahead iterator estimates total upload work."""
+    tmpdir = self.CreateTempDir(test_files=3)
+    bucket_uri = self.CreateBucket()
+
+    with SetBotoConfigForTest([('GSUtil', 'task_estimation_threshold', '1'),
+                               ('GSUtil', 'task_estimation_force', 'True')]):
+      stderr = self.RunGsUtil(['-m', 'cp', '-r', tmpdir, suri(bucket_uri)],
+                              return_stderr=True)
+      self.assertIn(
+          'Estimated work for this command: objects: 3, total size: 18',
+          stderr)
+
+    with SetBotoConfigForTest([('GSUtil', 'task_estimation_threshold', '0'),
+                               ('GSUtil', 'task_estimation_force', 'True')]):
+      stderr = self.RunGsUtil(['-m', 'cp', '-r', tmpdir, suri(bucket_uri)],
+                              return_stderr=True)
+      self.assertNotIn('Estimated work', stderr)
+
+  def test_seek_ahead_download_cp(self):
+    tmpdir = self.CreateTempDir()
+    bucket_uri = self.CreateBucket(test_objects=3)
+    self.AssertNObjectsInBucket(bucket_uri, 3)
+
+    with SetBotoConfigForTest([('GSUtil', 'task_estimation_threshold', '1'),
+                               ('GSUtil', 'task_estimation_force', 'True')]):
+      stderr = self.RunGsUtil(['-m', 'cp', '-r', suri(bucket_uri), tmpdir],
+                              return_stderr=True)
+      self.assertIn(
+          'Estimated work for this command: objects: 3, total size: 18',
+          stderr)
+
+    with SetBotoConfigForTest([('GSUtil', 'task_estimation_threshold', '0'),
+                               ('GSUtil', 'task_estimation_force', 'True')]):
+      stderr = self.RunGsUtil(['-m', 'cp', '-r', suri(bucket_uri), tmpdir],
+                              return_stderr=True)
+      self.assertNotIn('Estimated work', stderr)
 
   def test_canned_acl_cp(self):
     """Tests copying with a canned ACL."""
@@ -1145,15 +1197,24 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
 
   @SequentialAndParallelTransfer
   def test_copy_unicode_non_ascii_filename(self):
-    key_uri = self.CreateObject(contents='foo')
-    # Make file large enough to cause a resumable upload (which hashes filename
-    # to construct tracker filename).
+    key_uri = self.CreateObject()
+    # Try with and without resumable upload threshold, to ensure that each
+    # scenario works. In particular, resumable uploads have tracker filename
+    # logic.
+    file_contents = 'x' * START_CALLBACK_PER_BYTES * 2
     fpath = self.CreateTempFile(file_name=u'Аудиоархив',
-                                contents='x' * 3 * 1024 * 1024)
-    fpath_bytes = fpath.encode(UTF8)
-    stderr = self.RunGsUtil(['cp', fpath_bytes, suri(key_uri)],
-                            return_stderr=True)
-    self.assertIn('Copying file:', stderr)
+                                contents=file_contents)
+    with SetBotoConfigForTest([('GSUtil', 'resumable_threshold', '1')]):
+      fpath_bytes = fpath.encode(UTF8)
+      self.RunGsUtil(['cp', fpath_bytes, suri(key_uri)], return_stderr=True)
+      stdout = self.RunGsUtil(['cat', suri(key_uri)], return_stdout=True)
+      self.assertEquals(stdout, file_contents)
+    with SetBotoConfigForTest([('GSUtil', 'resumable_threshold',
+                                str(START_CALLBACK_PER_BYTES * 3))]):
+      fpath_bytes = fpath.encode(UTF8)
+      self.RunGsUtil(['cp', fpath_bytes, suri(key_uri)], return_stderr=True)
+      stdout = self.RunGsUtil(['cat', suri(key_uri)], return_stdout=True)
+      self.assertEquals(stdout, file_contents)
 
   # Note: We originally one time implemented a test
   # (test_copy_invalid_unicode_filename) that invalid unicode filenames were
@@ -2650,7 +2711,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     object_uri = self.CreateObject(bucket_uri=bucket_uri, object_name='foo',
                                    contents='bar')
     gsutil_api = GcsJsonApi(BucketStorageUri, logging.getLogger(),
-                            self.default_provider)
+                            DiscardMessagesQueue(), self.default_provider)
     key = object_uri.get_key()
     src_obj_metadata = apitools_messages.Object(
         name=key.name, bucket=key.bucket.name, contentType=key.content_type)
@@ -2686,7 +2747,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
                                    contents=('12'*ONE_MIB) + 'bar',
                                    prefer_json_api=True)
     gsutil_api = GcsJsonApi(BucketStorageUri, logging.getLogger(),
-                            self.default_provider)
+                            DiscardMessagesQueue(), self.default_provider)
     key = object_uri.get_key()
     src_obj_metadata = apitools_messages.Object(
         name=key.name, bucket=key.bucket.name, contentType=key.content_type,
@@ -2751,7 +2812,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
                                    contents=('12'*ONE_MIB) + 'bar',
                                    prefer_json_api=True)
     gsutil_api = GcsJsonApi(BucketStorageUri, logging.getLogger(),
-                            self.default_provider)
+                            DiscardMessagesQueue(), self.default_provider)
     key = object_uri.get_key()
     src_obj_metadata = apitools_messages.Object(
         name=key.name, bucket=key.bucket.name, contentType=key.content_type,
@@ -2821,7 +2882,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
                                    contents=('12'*ONE_MIB) + 'bar',
                                    prefer_json_api=True)
     gsutil_api = GcsJsonApi(BucketStorageUri, logging.getLogger(),
-                            self.default_provider)
+                            DiscardMessagesQueue(), self.default_provider)
     key = object_uri.get_key()
     src_obj_metadata = apitools_messages.Object(
         name=key.name, bucket=key.bucket.name, contentType=key.content_type,

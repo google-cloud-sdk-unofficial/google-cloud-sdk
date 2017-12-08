@@ -20,9 +20,9 @@ from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.api_lib.util import http_retry
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.projects import flags
 from googlecloudsdk.command_lib.projects import util as command_lib_util
-from googlecloudsdk.core.iam import iam_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
