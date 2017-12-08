@@ -14,7 +14,6 @@
 """Creates an SSL certificate for a Cloud SQL instance."""
 
 import os
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -51,7 +50,6 @@ class _BaseAddCert(object):
   def Format(self, args):
     return self.ListFormat(args)
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Creates an SSL certificate for a Cloud SQL instance.
 

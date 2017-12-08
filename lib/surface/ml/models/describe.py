@@ -14,7 +14,6 @@
 """ml models describe command."""
 
 from googlecloudsdk.api_lib.ml import models
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
 from googlecloudsdk.core import apis
@@ -33,7 +32,6 @@ class Describe(base.DescribeCommand):
     """Register flags for this command."""
     flags.GetModelName().AddToParser(parser)
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -63,7 +61,6 @@ class DescribeBeta(base.DescribeCommand):
     """Register flags for this command."""
     flags.GetModelName().AddToParser(parser)
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

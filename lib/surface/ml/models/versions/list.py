@@ -15,7 +15,6 @@
 
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.ml import versions
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
 from googlecloudsdk.core import apis
@@ -34,7 +33,6 @@ class List(base.ListCommand):
     """Register flags for this command."""
     flags.GetModelName(positional=False, required=True).AddToParser(parser)
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -68,7 +66,6 @@ class ListBeta(base.ListCommand):
     """Register flags for this command."""
     flags.GetModelName(positional=False, required=True).AddToParser(parser)
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

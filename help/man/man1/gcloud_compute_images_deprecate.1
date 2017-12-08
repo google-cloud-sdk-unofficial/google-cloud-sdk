@@ -34,16 +34,30 @@ The name of the disk image.
 
 \fB\-\-state\fR \fISTATE\fR
 .RS 2m
-The deprecation state to set on the image. An image's default state is
-\f5\fIACTIVE\fR\fR, suggesting that the image is currently supported. Operations
-which create a new resource using a \f5\fIDEPRECATED\fR\fR image return
-successfully, but with a warning indicating that the image is deprecated and
-recommending its replacement. New uses of \f5\fIOBSOLETE\fR\fR or
-\f5\fIDELETED\fR\fR images result in an error. Note that setting the deprecation
-state to \f5\fIDELETED\fR\fR will not automatically delete the image. You must
-still make a request to delete the image to remove it from the image list.
+The deprecation state to set on the image. \fISTATE\fR must be one of:
+
+\fBACTIVE\fR
+.RS 2m
+The image is currently supported.
+.RE
+\fBDELETED\fR
+.RS 2m
+New uses result in an error. Setting this state will not automatically delete
+the image. You must still make a request to delete the image to remove it from
+the image list.
+.RE
+\fBDEPRECATED\fR
+.RS 2m
+Operations which create a new \fBDEPRECATED\fR resource return successfully, but
+with a warning indicating that the image is deprecated and recommending its
+replacement.
+.RE
+\fBOBSOLETE\fR
+.RS 2m
+New uses result in an error.
 
 
+.RE
 .RE
 
 .SH "OPTIONAL FLAGS"
@@ -59,42 +73,43 @@ specified, seconds is assumed.
 Note that the image will not be deleted automatically. The image will only be
 marked as deleted. An explicit request to delete the image must be made in order
 to remove it from the image list. This flag is mutually exclusive with
-\-\-delete\-on.
+\fB\-\-delete\-on\fR.
 
 .RE
 \fB\-\-delete\-on\fR \fIDELETE_ON\fR
 .RS 2m
-Similar to \-\-delete\-in, but specifies an absolute time when the status should
-be set to DELETED. The date and time specified must be a valid RFC 3339
+Similar to \fB\-\-delete\-in\fR, but specifies an absolute time when the status
+should be set to DELETED. The date and time specified must be a valid RFC 3339
 full\-date or date\-time. For times in UTC, this looks like
 \f5\fIYYYY\-MM\-DDTHH:MM:SSZ\fR\fR. For example: 2020\-01\-02T00:00:00Z for
 midnight on January 2, 2020 in UTC. This flag is mutually exclusive with
-\-\-delete\-in.
+\fB\-\-delete\-in\fR.
 
 .RE
 \fB\-\-obsolete\-in\fR \fIOBSOLETE_IN\fR
 .RS 2m
-Specifies time (in the same format as \-\-delete\-in) until this image's status
-should become OBSOLETE. Obsolete images will cause an error whenever an attempt
-is made to apply the image to a new disk. This flag is mutually exclusive with
-\-\-obsolete\-on.
+Specifies time (in the same format as \fB\-\-delete\-in\fR) until this image's
+status should become OBSOLETE. Obsolete images will cause an error whenever an
+attempt is made to apply the image to a new disk. This flag is mutually
+exclusive with \fB\-\-obsolete\-on\fR.
 
 .RE
 \fB\-\-obsolete\-on\fR \fIOBSOLETE_ON\fR
 .RS 2m
-Specifies time (in the same format as \-\-delete\-on) when this image's status
-should become OBSOLETE. This flag is mutually exclusive with \-\-obsolete\-in.
+Specifies time (in the same format as \fB\-\-delete\-on\fR) when this image's
+status should become OBSOLETE. This flag is mutually exclusive with
+\fB\-\-obsolete\-in\fR.
 
 .RE
 \fB\-\-replacement\fR \fIREPLACEMENT\fR
 .RS 2m
 Specifies a Compute Engine image as a replacement for the image being phased
 out. Users of the deprecated image will be advised to switch to this
-replacement. For example, \f5\fI\-\-replacement example\-image\fR\fR or
-\f5\fI\-\-replacement projects/google/global/images/example\-image\fR\fR. This
-flag is required when setting the image state to anything other than
-\f5\fIACTIVE\fR\fR or when \-\-delete\-in, \-\-delete\-on, \-\-obsolete\-in, or
-\-\-obsolete\-on is provided.
+replacement. For example, \fB\-\-replacement example\-image\fR or
+\fB\-\-replacement projects/google/global/images/example\-image\fR. This flag is
+required when setting the image state to anything other than \f5\fIACTIVE\fR\fR
+or when \fB\-\-delete\-in\fR, \fB\-\-delete\-on\fR, \fB\-\-obsolete\-in\fR, or
+\fB\-\-obsolete\-on\fR is provided.
 
 
 .RE

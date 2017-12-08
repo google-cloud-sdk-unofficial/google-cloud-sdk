@@ -20,7 +20,7 @@ from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import common_flags
-from googlecloudsdk.api_lib.util import http_error_handler
+from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.api_lib.util import http_retry
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
@@ -50,7 +50,6 @@ class AddIamPolicyBinding(
         '--member', required=True,
         help='The member to add to the binding.')
 
-  @http_error_handler.HandleHttpErrors
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
     """Run 'service-management add-iam-policy-binding'.
@@ -75,7 +74,8 @@ class AddIamPolicyBinding(
       policy = self.services_client.services.GetIamPolicy(request)
     except apitools_exceptions.HttpError as error:
       # If the error is a 404, no IAM policy exists, so just create a blank one.
-      if http_error_handler.GetHttpErrorStatusCode(error) == 404:
+      exc = exceptions.HttpException(error)
+      if exc.status_code == 404:
         policy = self.services_messages.Policy()
       else:
         raise

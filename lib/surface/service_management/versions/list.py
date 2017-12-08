@@ -17,7 +17,6 @@
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.service_management import base_classes
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
@@ -38,7 +37,6 @@ class List(base.ListCommand, base_classes.BaseServiceManagementCommand):
                         required=True,
                         help='The service to describe.')
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management versions list'.
 

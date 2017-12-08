@@ -17,8 +17,9 @@
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.logging import util
+from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import log
 
 
@@ -105,7 +106,6 @@ class Update(base.Command):
             projectsId=sink_ref.projectsId, sinksId=sink_data['name'],
             logSink=messages.LogSink(**sink_data)))
 
-  @util.HandleHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -122,7 +122,7 @@ class Update(base.Command):
     # log_filter can be an empty string, so check explicitly for None.
     if not (args.destination or args.log_filter is not None or
             args.output_version_format):
-      raise exceptions.ToolException(
+      raise calliope_exceptions.ToolException(
           '[destination], --log-filter or --output-version-format is required')
 
     # Calling Update on a non-existing sink creates it.
@@ -137,7 +137,8 @@ class Update(base.Command):
     except apitools_exceptions.HttpError as error:
       project_sink = not args.log and not args.service
       # Suggest the user to add --log or --log-service flag.
-      if project_sink and error.response.status == 404:
+      if project_sink and exceptions.HttpException(
+          error).payload.status_code == 404:
         log.status.Print(('Project sink was not found. '
                           'Did you forget to add --log or --log-service flag?'))
       raise error

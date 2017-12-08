@@ -21,7 +21,11 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.core.console import console_io
 
-AUTO_DELETE_OVERRIDE_CHOICES = ['boot', 'data', 'all']
+AUTO_DELETE_OVERRIDE_CHOICES = {
+    'boot': 'The first partition is reserved for the root filesystem.',
+    'data': 'A non-boot disk.',
+    'all': 'All disk types.',
+}
 
 
 class Delete(base_classes.ZonalDeleter):
@@ -29,14 +33,12 @@ class Delete(base_classes.ZonalDeleter):
 
   @staticmethod
   def Args(parser):
-    auto_delete_metavar = '{' + ','.join(AUTO_DELETE_OVERRIDE_CHOICES) + '}'
-
     auto_delete_override = parser.add_mutually_exclusive_group()
 
     delete_disks = auto_delete_override.add_argument(
         '--delete-disks',
         choices=AUTO_DELETE_OVERRIDE_CHOICES,
-        metavar=auto_delete_metavar,
+        metavar='DISK-TYPE',
         help=('The types of disks to delete with instance deletion '
               "regardless of the disks' auto-delete configuration."))
     delete_disks.detailed_help = """\
@@ -51,7 +53,7 @@ class Delete(base_classes.ZonalDeleter):
     keep_disks = auto_delete_override.add_argument(
         '--keep-disks',
         choices=AUTO_DELETE_OVERRIDE_CHOICES,
-        metavar=auto_delete_metavar,
+        metavar='DISK-TYPE',
         help=('The types of disks to not delete with instance deletion '
               "regardless of the disks' auto-delete configuration."))
     keep_disks.detailed_help = """\
@@ -96,22 +98,24 @@ class Delete(base_classes.ZonalDeleter):
           error_message='Failed to fetch some instances:')
     return instances
 
-  def PromptIfDisksWithoutAutoDeleteWillBeDeleted(
-      self, args, disks_to_warn_for):
-    """Prompts if disks with False autoDelete will be deleted."""
+  def PromptIfDisksWithoutAutoDeleteWillBeDeleted(self, disks_to_warn_for):
+    """Prompts if disks with False autoDelete will be deleted.
+
+    Args:
+      disks_to_warn_for: list of references to disk resources.
+    """
     if not disks_to_warn_for:
       return
 
     prompt_list = []
-    disk_refs = self.CreateZonalReferences(
-        disks_to_warn_for, args.zone, resource_type='disks')
-    for ref in disk_refs:
+    for ref in disks_to_warn_for:
       prompt_list.append('[{0}] in [{1}]'.format(ref.Name(), ref.zone))
-      prompt_message = utils.ConstructList(
-          'The following disks are not configured to be automatically deleted '
-          'with instance deletion, but they will be deleted as a result of '
-          'this operation if they are not attached to any other instances:',
-          prompt_list)
+
+    prompt_message = utils.ConstructList(
+        'The following disks are not configured to be automatically deleted '
+        'with instance deletion, but they will be deleted as a result of '
+        'this operation if they are not attached to any other instances:',
+        prompt_list)
     if not console_io.PromptContinue(message=prompt_message):
       raise exceptions.ToolException('Deletion aborted by user.')
 
@@ -165,7 +169,9 @@ class Delete(base_classes.ZonalDeleter):
           # Yay, computer science! :) :) :)
           new_auto_delete = not disk.autoDelete
           if new_auto_delete:
-            disks_to_warn_for.append(disk.source)
+            disks_to_warn_for.append(self.resources.Parse(
+                disk.source, collection='compute.disks',
+                params={'zone': ref.zone}))
 
           set_auto_delete_requests.append((
               self.service,
@@ -178,8 +184,7 @@ class Delete(base_classes.ZonalDeleter):
                   zone=ref.zone)))
 
       if set_auto_delete_requests:
-        self.PromptIfDisksWithoutAutoDeleteWillBeDeleted(
-            args, disks_to_warn_for)
+        self.PromptIfDisksWithoutAutoDeleteWillBeDeleted(disks_to_warn_for)
         errors = []
         list(request_helper.MakeRequests(
             requests=set_auto_delete_requests,

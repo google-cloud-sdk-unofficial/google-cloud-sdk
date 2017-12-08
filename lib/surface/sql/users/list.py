@@ -16,7 +16,6 @@
 Lists users in a given project in the alphabetical order of the user name.
 """
 
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
@@ -44,7 +43,6 @@ class ListBeta(base.ListCommand):
     """
     flags.INSTANCE_FLAG.AddToParser(parser)
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Lists Cloud SQL users in a given instance.
 

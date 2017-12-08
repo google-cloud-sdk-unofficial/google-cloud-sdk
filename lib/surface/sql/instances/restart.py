@@ -13,7 +13,6 @@
 # limitations under the License.
 """Restarts a Cloud SQL instance."""
 
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -43,7 +42,6 @@ class _BaseRestart(object):
 class Restart(_BaseRestart, base.Command):
   """Restarts a Cloud SQL instance."""
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Restarts a Cloud SQL instance.
 
@@ -93,7 +91,6 @@ class Restart(_BaseRestart, base.Command):
 class RestartBeta(_BaseRestart, base.Command):
   """Restarts a Cloud SQL instance."""
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Restarts a Cloud SQL instance.
 

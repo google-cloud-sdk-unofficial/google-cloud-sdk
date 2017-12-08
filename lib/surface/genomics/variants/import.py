@@ -58,8 +58,7 @@ class Import(base.Command):
         '--file-format',
         choices=['COMPLETE_GENOMICS', 'VCF'],
         default='VCF',
-        help=('One of "COMPLETE_GENOMICS" or "VCF". This indicates the file '
-              'format of the --source-uris.'))
+        help='Set the file format of the --source-uris.')
     parser.add_argument('--normalize-reference-names',
                         dest='normalize_reference_names',
                         action='store_true',
@@ -76,7 +75,6 @@ class Import(base.Command):
                               'etc) become "MT".'))
     parser.set_defaults(normalize_referecne_names=False)
 
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

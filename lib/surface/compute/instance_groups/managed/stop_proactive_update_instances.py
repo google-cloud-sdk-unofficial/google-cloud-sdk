@@ -38,7 +38,6 @@ def _AddArgs(parser, multizonal):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class StopUpdateInstancesAlpha(base_classes.BaseAsyncMutator):
   """Stop current proactive update instances of managed instance group."""
 

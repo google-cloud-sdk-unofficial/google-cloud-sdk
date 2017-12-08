@@ -18,6 +18,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.command_lib.config import completers
 from googlecloudsdk.command_lib.config import flags
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
@@ -67,3 +68,8 @@ class Unset(base.Command):
       raise c_exc.InvalidArgumentException(
           'property', 'Must be in the form: [SECTION/]PROPERTY')
     properties.PersistProperty(prop, None, scope=scope)
+
+    scope_msg = ''
+    if args.installation:
+      scope_msg = 'installation '
+    log.status.Print('Unset {0}property [{1}].'.format(scope_msg, prop))

@@ -32,7 +32,6 @@ class DatasetsRestore(base.Command):
     parser.add_argument('id',
                         help='The ID of the deleted dataset to be restored.')
 
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

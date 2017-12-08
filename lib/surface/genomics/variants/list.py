@@ -17,9 +17,11 @@
 
 import sys
 
+from apitools.base.py import exceptions as apitools_exceptions
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.genomics import genomics_util
+from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 
@@ -76,7 +78,6 @@ class List(base.ListCommand):
             .replace('start', '--start')
             .replace('end', '--end'))
 
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -84,7 +85,7 @@ class List(base.ListCommand):
       args: an argparse namespace, All the arguments that were provided to this
         command invocation.
 
-    Returns:
+    Yields:
       A list of variants that meet the search criteria.
     """
     apitools_client = genomics_util.GetGenomicsClient()
@@ -98,19 +99,28 @@ class List(base.ListCommand):
       global_params = None
 
     variant_set_id = [args.variant_set_id] if args.variant_set_id else []
-    pager = list_pager.YieldFromList(
-        apitools_client.variants,
-        genomics_messages.SearchVariantsRequest(
-            variantSetIds=variant_set_id,
-            callSetIds=args.call_set_ids,
-            referenceName=args.reference_name,
-            start=args.start,
-            end=args.end,
-            maxCalls=args.limit_calls),
-        global_params=global_params,
-        limit=args.limit,
-        method='Search',
-        batch_size_attribute='pageSize',
-        batch_size=args.page_size,
-        field='variants')
-    return genomics_util.ReraiseHttpExceptionPager(pager, self.RewriteError)
+    try:
+      for resource in list_pager.YieldFromList(
+          apitools_client.variants,
+          genomics_messages.SearchVariantsRequest(
+              variantSetIds=variant_set_id,
+              callSetIds=args.call_set_ids,
+              referenceName=args.reference_name,
+              start=args.start,
+              end=args.end,
+              maxCalls=args.limit_calls),
+          global_params=global_params,
+          limit=args.limit,
+          method='Search',
+          batch_size_attribute='pageSize',
+          batch_size=args.page_size,
+          field='variants'):
+        yield resource
+    except apitools_exceptions.HttpError as error:
+      msg = (exceptions.HttpException(error).payload.status_message
+             .replace('variantSetIds', '--variant-set-id')
+             .replace('callSetIds', '--call-set-ids')
+             .replace('referenceName', '--reference-name')
+             .replace('start', '--start')
+             .replace('end', '--end'))
+      raise exceptions.HttpException(msg)

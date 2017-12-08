@@ -33,7 +33,6 @@ class Update(base.Command):
                         help='The new name of the dataset.',
                         required=True)
 
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

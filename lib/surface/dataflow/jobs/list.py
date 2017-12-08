@@ -49,17 +49,20 @@ class List(base.ListCommand):
     # Flags for filtering jobs.
     parser.add_argument(
         '--status',
-        choices=['all', 'terminated', 'active'],
-        help="""Filter the jobs to those with the selected status.
-
-        `all`: Returns running jobs first, ordered on creation timestamp, then
-            returns all terminated jobs ordered on the termination timestamp.
-        `terminated`: Filters the jobs that have a terminated state, ordered on
-            the termination timestamp. Example terminated states: Done, Updated,
-            Cancelled, etc.
-        `active`: Filters the jobs that are running ordered on the creation
-            timestamp.
-        """)
+        choices={
+            'all': (
+                'Returns running jobs first, ordered on creation timestamp, '
+                'then, returns all terminated jobs ordered on the termination '
+                'timestamp.'),
+            'terminated': (
+                'Filters the jobs that have a terminated state, ordered on '
+                'the termination timestamp. Example terminated states: Done, '
+                'Updated, Cancelled, etc.'),
+            'active': (
+                'Filters the jobs that are running ordered on the creation '
+                'timestamp.'),
+        },
+        help='Filter the jobs to those with the selected status.')
     parser.add_argument(
         '--created-after', type=time_util.ParseTimeArg,
         help='Filter the jobs to those created after the given time')

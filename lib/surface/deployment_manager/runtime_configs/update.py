@@ -15,7 +15,6 @@
 """The runtime-configs update command."""
 
 from googlecloudsdk.api_lib.deployment_manager.runtime_configs import util
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
@@ -64,7 +63,6 @@ class Update(base.Command):
     """
     return 'runtimeconfig.configurations'
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'runtime-configs update'.
 

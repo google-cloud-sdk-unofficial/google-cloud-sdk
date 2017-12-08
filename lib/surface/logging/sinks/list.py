@@ -94,7 +94,6 @@ class List(base.ListCommand):
     for typed_sink in self.ListProjectSinks(project):
       yield typed_sink
 
-  @util.HandlePagerHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

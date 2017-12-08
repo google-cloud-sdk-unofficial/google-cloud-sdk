@@ -74,15 +74,11 @@ class _BaseCreate(object):
         '--description',
         help='An optional, textual description for the target VPN tunnel.')
 
-    ike_version = parser.add_argument(
+    parser.add_argument(
         '--ike-version',
         choices=[1, 2],
         type=int,
-        help='Internet Key Exchange protocol version number.')
-    ike_version.detailed_help = """\
-        Internet Key Exchange protocol version number.
-        Valid options are 1 and 2.  Default is 2.
-        """
+        help='Internet Key Exchange protocol version number. Default is 2.')
 
     parser.add_argument(
         '--peer-address',

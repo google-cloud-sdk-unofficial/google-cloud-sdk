@@ -26,7 +26,6 @@ class List(base.ListCommand):
   Lists all of the Cloud Pub/Sub subscriptions that exist in a given project.
   """
 
-  @util.MapHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

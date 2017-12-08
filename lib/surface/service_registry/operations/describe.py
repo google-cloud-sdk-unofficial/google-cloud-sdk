@@ -15,7 +15,6 @@
 """'operations describe' command."""
 
 from googlecloudsdk.api_lib.service_registry import constants
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 
 
@@ -43,7 +42,6 @@ class Describe(base.DescribeCommand):
     """
     parser.add_argument('operation', help='Operation name.')
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Runs 'operations desrcribe'.
 

@@ -16,7 +16,6 @@
 
 from apitools.base.py import encoding
 
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import instances
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
@@ -25,7 +24,14 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
-from googlecloudsdk.core.resource import resource_diff
+
+
+class _Result(object):
+  """Run() method result object."""
+
+  def __init__(self, new, old):
+    self.new = new
+    self.old = old
 
 
 class _BasePatch(object):
@@ -139,14 +145,12 @@ class _BasePatch(object):
         '-p',
         required=False,
         choices=['PER_USE', 'PACKAGE'],
-        help='The pricing plan for this instance. '
-             'Valid options are PER_USE or PACKAGE.')
+        help='The pricing plan for this instance. ')
     parser.add_argument(
         '--replication',
         required=False,
         choices=['SYNCHRONOUS', 'ASYNCHRONOUS'],
-        help='The type of replication this instance uses.'
-             'Valid options are SYNCHRONOUS or ASYNCHRONOUS.')
+        help='The type of replication this instance uses.')
     parser.add_argument(
         '--require-ssl',
         action='store_true',
@@ -174,16 +178,13 @@ class _BasePatch(object):
         action='store_true',
         help='Show what changed as a result of the update.')
 
-  def Display(self, args, result):
-    """Display prints information about what just happened to stdout.
-
-    Args:
-      args: The same as the args in Run.
-      result: A dict object representing the operations resource describing the
-      patch operation if the patch was successful.
-    """
+  def Format(self, args):
     if args.diff:
-      result.Print('text')
+      return 'diff(old, new)'
+    fmt = self.ListFormat(args)
+    if args.async:
+      return fmt
+    return 'table(new:format="{fmt}")'.format(fmt=fmt)
 
   def _PrintAndConfirmWarningMessage(self, args):
     """Print and confirm warning indicating the effect of applying the patch."""
@@ -230,7 +231,6 @@ class _BasePatch(object):
 class Patch(_BasePatch, base.Command):
   """Updates the settings of a Cloud SQL instance."""
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Updates settings of a Cloud SQL instance using the patch api method.
 
@@ -283,13 +283,8 @@ class Patch(_BasePatch, base.Command):
 
     log.UpdatedResource(instance_ref)
 
-    if args.diff:
-      changed_instance_resource = sql_client.instances.Get(
-          instance_ref.Request())
-      return resource_diff.ResourceDiff(
-          original_instance_resource, changed_instance_resource)
-
-    return sql_client.instances.Get(instance_ref.Request())
+    changed_instance_resource = sql_client.instances.Get(instance_ref.Request())
+    return _Result(changed_instance_resource, original_instance_resource)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -314,7 +309,6 @@ class PatchBeta(_BasePatch, base.Command):
         'the instance going offline, dropping existing connections.'
     ).AddToParser(parser)
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Updates settings of a Cloud SQL instance using the patch api method.
 
@@ -371,10 +365,5 @@ class PatchBeta(_BasePatch, base.Command):
 
     log.UpdatedResource(instance_ref)
 
-    if args.diff:
-      changed_instance_resource = sql_client.instances.Get(
-          instance_ref.Request())
-      return resource_diff.ResourceDiff(
-          original_instance_resource, changed_instance_resource)
-
-    return sql_client.instances.Get(instance_ref.Request())
+    changed_instance_resource = sql_client.instances.Get(instance_ref.Request())
+    return _Result(changed_instance_resource, original_instance_resource)

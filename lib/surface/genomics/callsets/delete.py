@@ -32,7 +32,6 @@ class Delete(base.Command):
     parser.add_argument('id',
                         help='The ID of the call set to be deleted.')
 
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

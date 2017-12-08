@@ -154,7 +154,7 @@ class Update(base.Command):
     try:
       op_ref = adapter.UpdateCluster(cluster_ref, options)
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetError(error))
+      raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
 
     if not flags.GetAsyncValueFromAsyncAndWaitFlags(args.async, args.wait):
       adapter.WaitForOperation(

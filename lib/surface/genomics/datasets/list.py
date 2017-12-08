@@ -15,12 +15,10 @@
 """Implementation of gcloud genomics datasets list.
 """
 
-from apitools.base.py import exceptions as apitools_exceptions
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 
 
 class List(base.ListCommand):
@@ -39,24 +37,16 @@ class List(base.ListCommand):
       args: argparse.Namespace, The arguments that this command was invoked
           with.
 
-    Yields:
+    Returns:
       The list of datasets for this project.
-
-    Raises:
-      HttpException: An http error response was received while executing api
-          request.
     """
     apitools_client = genomics_util.GetGenomicsClient()
     request = genomics_util.GetGenomicsMessages().GenomicsDatasetsListRequest(
         projectId=genomics_util.GetProjectId())
-    try:
-      for resource in list_pager.YieldFromList(
-          apitools_client.datasets,
-          request,
-          limit=args.limit,
-          batch_size_attribute='pageSize',
-          batch_size=args.limit,  # Use limit if any, else server default.
-          field='datasets'):
-        yield resource
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(genomics_util.GetErrorMessage(error))
+    return list_pager.YieldFromList(
+        apitools_client.datasets,
+        request,
+        limit=args.limit,
+        batch_size_attribute='pageSize',
+        batch_size=args.limit,  # Use limit if any, else server default.
+        field='datasets')

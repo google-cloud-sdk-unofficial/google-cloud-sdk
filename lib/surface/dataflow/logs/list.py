@@ -65,9 +65,8 @@ class List(base.ListCommand):
     parser.add_argument(
         '--importance',
         choices=['debug', 'detailed', 'warning', 'error'],
-        help='Minimum importance a message must have to be displayed. Options'
-        ' are "debug, "detailed", "warning", or "error".',
-        default='warning')
+        default='warning',
+        help='Minimum importance a message must have to be displayed.')
 
   def Collection(self):
     return 'dataflow.logs'

@@ -15,7 +15,6 @@
 """Implementation of the service-management api-keys list command."""
 
 from googlecloudsdk.api_lib.service_management import base_classes
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 
 
@@ -35,7 +34,6 @@ class List(base.ListCommand, base_classes.BaseServiceManagementCommand):
     base.URI_FLAG.RemoveFromParser(parser)
     base.FLATTEN_FLAG.RemoveFromParser(parser)
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management api-keys create'.
 

@@ -59,17 +59,20 @@ class Create(base_classes.BaseAsyncCreator):
         'name',
         help='The name of the network.')
 
-    mode_arg = parser.add_argument(
+    parser.add_argument(
         '--mode',
-        choices=['auto', 'custom', 'legacy'],
+        metavar='NETWORK_TYPE',
+        choices={
+            'auto': (
+                'Subnets are created automatically. This is the recommended '
+                'selection.'),
+            'custom': 'Create subnets manually.',
+            'legacy': (
+                'Create an old style network that has a range and cannot have '
+                'subnets.'),
+        },
         required=False,
-        help='The type of network: auto, custom, or legacy.')
-    mode_arg.detailed_help = """\
-        Mode may be auto, custom, or legacy. It is recommended that you
-        select "auto" where subnets are created for you automatically.
-        Custom can be used to create subnets manually. Legacy will create an
-        old style network that has a range and cannot have subnets.
-        """
+        help='The network type.')
     range_arg = parser.add_argument(
         '--range',
         help='Specifies the IPv4 address range of this network.')

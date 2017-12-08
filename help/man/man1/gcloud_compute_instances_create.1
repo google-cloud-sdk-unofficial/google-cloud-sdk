@@ -226,12 +226,18 @@ default type is n1\-standard\-1.
 \fB\-\-maintenance\-policy\fR \fIMAINTENANCE_POLICY\fR
 .RS 2m
 Specifies the behavior of the instances when their host machines undergo
-maintenance. \f5\fITERMINATE\fR\fR indicates that the instances should be
-terminated. \f5\fIMIGRATE\fR\fR indicates that the instances should be migrated
-to a new host. Choosing \f5\fIMIGRATE\fR\fR will temporarily impact the
-performance of instances during a migration event. If omitted,
-\f5\fIMIGRATE\fR\fR is assumed.
+maintenance. The default is MIGRATE. \fIMAINTENANCE_POLICY\fR must be one of:
 
+\fBMIGRATE\fR
+.RS 2m
+The instances should be migrated to a new host. This will temporarily impact the
+performance of instances during a migration event.
+.RE
+\fBTERMINATE\fR
+.RS 2m
+The instances should be terminated.
+
+.RE
 .RE
 \fB\-\-metadata\fR \fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]
 .RS 2m
@@ -242,8 +248,8 @@ less than or equal to 32,768 bytes in length. Multiple arguments can be passed
 to this flag, e.g., \f5\fI\-\-metadata
 key\-1=value\-1,key\-2=value\-2,key\-3=value\-3\fR\fR.
 
-In images that have Compute Engine tools installed
-(https://cloud.google.com/compute/docs/images) on them, the following metadata
+In images that have Compute Engine tools installed on them, such as the official
+images (https://cloud.google.com/compute/docs/images), the following metadata
 keys have special meanings:
 
 \fBstartup\-script\fR

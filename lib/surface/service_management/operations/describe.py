@@ -19,7 +19,6 @@ import sys
 from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import common_flags
 from googlecloudsdk.api_lib.service_management import services_util
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
@@ -49,7 +48,6 @@ class Describe(base.DescribeCommand, base_classes.BaseServiceManagementCommand):
         help=('Print the entire Operation resource, which could be large. '
               'By default, a summary will be printed instead.'))
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management operations describe'.
 

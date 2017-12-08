@@ -14,7 +14,6 @@
 
 """Retrieves information about a Cloud SQL instance."""
 
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 
@@ -36,7 +35,6 @@ class _BaseGet(object):
         completion_resource='sql.instances',
         help='Cloud SQL instance ID.')
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Retrieves information about a Cloud SQL instance.
 

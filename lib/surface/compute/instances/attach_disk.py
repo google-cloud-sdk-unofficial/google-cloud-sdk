@@ -19,7 +19,12 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 
-MODE_OPTIONS = ['ro', 'rw']
+MODE_OPTIONS = {
+    'ro': 'Read-only.',
+    'rw': (
+        'Read-write. It is an error to attach a disk in read-write mode to '
+        'more than one instance.'),
+}
 
 DETAILED_HELP = {
     'DESCRIPTION': """\
@@ -49,17 +54,11 @@ def _CommonArgs(parser):
       help='The name of the disk to attach to the instance.',
       required=True)
 
-  mode = parser.add_argument(
+  parser.add_argument(
       '--mode',
       choices=MODE_OPTIONS,
       default='rw',
       help='Specifies the mode of the disk.')
-  mode.detailed_help = """\
-      Specifies the mode of the disk. Supported options are ``ro'' for
-      read-only and ``rw'' for read-write. If omitted, ``rw'' is used as
-      a default. It is an error to attach a disk in read-write mode to
-      more than one instance.
-      """
 
   csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
 

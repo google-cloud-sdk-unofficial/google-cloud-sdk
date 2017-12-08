@@ -32,5 +32,5 @@ class EnvInit(base.Command):
   def Run(self, args):
     return util.ReadEnvYaml(args.data_dir)
 
-  def Display(self, args, result):
-    util.PrintEnvExport(result)
+  def Format(self, args):
+    return 'config[export]'

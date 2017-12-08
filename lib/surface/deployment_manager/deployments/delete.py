@@ -111,7 +111,7 @@ class Delete(base.Command):
             )
         )
       except apitools_exceptions.HttpError as error:
-        raise exceptions.HttpException(dm_v2_util.GetError(error))
+        raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
       if args.async:
         operations.append(operation)
       else:
@@ -126,7 +126,7 @@ class Delete(base.Command):
                     + ' has errors or failed to complete within in '
                     + str(OPERATION_TIMEOUT) + ' seconds.')
         except apitools_exceptions.HttpError as error:
-          raise exceptions.HttpException(dm_v2_util.GetError(error))
+          raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
         try:
           completed_operation = client.operations.Get(
               messages.DeploymentmanagerOperationsGetRequest(
@@ -135,7 +135,7 @@ class Delete(base.Command):
               )
           )
         except apitools_exceptions.HttpError as error:
-          raise exceptions.HttpException(dm_v2_util.GetError(error))
+          raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
         operations.append(completed_operation)
 
     return operations

@@ -11,7 +11,7 @@ gcloud compute backend\-services create \- create a backend service
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute backend\-services create\fR \fINAME\fR [\fB\-\-affinity\-cookie\-ttl\fR\ \fIAFFINITY_COOKIE_TTL\fR] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-enable\-cdn\fR] [\fB\-\-http\-health\-checks\fR\ \fIHTTP_HEALTH_CHECK\fR,[\fIHTTP_HEALTH_CHECK\fR,...]] [\fB\-\-https\-health\-checks\fR\ \fIHTTPS_HEALTH_CHECK\fR,[\fIHTTPS_HEALTH_CHECK\fR,...]] [\fB\-\-port\fR\ \fIPORT\fR] [\fB\-\-port\-name\fR\ \fIPORT_NAME\fR] [\fB\-\-protocol\fR\ \fIPROTOCOL\fR;\ default="HTTP"] [\fB\-\-session\-affinity\fR\ \fISESSION_AFFINITY\fR] [\fB\-\-timeout\fR\ \fITIMEOUT\fR;\ default="30s"] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute backend\-services create\fR \fINAME\fR [\fB\-\-affinity\-cookie\-ttl\fR\ \fIAFFINITY_COOKIE_TTL\fR] [\fB\-\-connection\-draining\-timeout\fR\ \fICONNECTION_DRAINING_TIMEOUT\fR] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-enable\-cdn\fR] [\fB\-\-health\-checks\fR\ \fIHEALTH_CHECK\fR,[\fIHEALTH_CHECK\fR,...]] [\fB\-\-http\-health\-checks\fR\ \fIHTTP_HEALTH_CHECK\fR,[\fIHTTP_HEALTH_CHECK\fR,...]] [\fB\-\-https\-health\-checks\fR\ \fIHTTPS_HEALTH_CHECK\fR,[\fIHTTPS_HEALTH_CHECK\fR,...]] [\fB\-\-port\fR\ \fIPORT\fR] [\fB\-\-port\-name\fR\ \fIPORT_NAME\fR] [\fB\-\-protocol\fR\ \fIPROTOCOL\fR;\ default="HTTP"] [\fB\-\-session\-affinity\fR\ \fISESSION_AFFINITY\fR] [\fB\-\-timeout\fR\ \fITIMEOUT\fR;\ default="30s"] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -47,6 +47,17 @@ seconds, of the resulting cookie. A setting of 0 indicates that the cookie
 should be transient.
 
 .RE
+\fB\-\-connection\-draining\-timeout\fR \fICONNECTION_DRAINING_TIMEOUT\fR
+.RS 2m
+Connection draining timeout to be used during removal of VMs from instance
+groups. This guarantees that for the specified time all existing connections to
+a VM will remain untouched, but no new connections will be accepted. Set timeout
+to zero to disable connection draining. Enable feature by specifying a timeout
+of up to one hour. If the flag is omitted API default value (0s) will be used.
+Valid units for this flag are \f5s\fR for seconds, \f5m\fR for minutes, and
+\f5h\fR for hours.
+
+.RE
 \fB\-\-description\fR \fIDESCRIPTION\fR
 .RS 2m
 An optional, textual description for the backend service.
@@ -57,6 +68,13 @@ An optional, textual description for the backend service.
 Enable Cloud CDN for the backend service. Cloud CDN can cache HTTP responses
 from a backend service at the edge of the network, close to users. Cloud CDN is
 disabled by default.
+
+.RE
+\fB\-\-health\-checks\fR \fIHEALTH_CHECK\fR,[\fIHEALTH_CHECK\fR,...]
+.RS 2m
+Specifies a list of health check objects for checking the health of the backend
+service. Health checks need not be for the same protocol as that of the backend
+service.
 
 .RE
 \fB\-\-http\-health\-checks\fR \fIHTTP_HEALTH_CHECK\fR,[\fIHTTP_HEALTH_CHECK\fR,...]
@@ -91,30 +109,30 @@ compute instance\-groups set\-named\-ports \-\-help\fR.
 .RE
 \fB\-\-protocol\fR \fIPROTOCOL\fR; default="HTTP"
 .RS 2m
-The protocol for incoming requests.
+The protocol for incoming requests. \fIPROTOCOL\fR must be one of: \fBHTTP\fR,
+\fBHTTPS\fR, \fBSSL\fR, \fBTCP\fR, \fBUDP\fR.
 
 .RE
 \fB\-\-session\-affinity\fR \fISESSION_AFFINITY\fR
 .RS 2m
-The type of session affinity to use for this backend service. Possible values
-are:
+The type of session affinity to use for this backend service.
+\fISESSION_AFFINITY\fR must be one of:
 
+\fBCLIENT_IP\fR
 .RS 2m
-.IP "\(em" 2m
-none: Session affinity is disabled.
+Route requests to instances based on the hash of the client's IP address.
 .RE
+\fBGENERATED_COOKIE\fR
 .RS 2m
-.IP "\(em" 2m
-client_ip: Route requests to instances based on the hash of the client's IP
-address.
+Route requests to instances based on the contents of the "GCLB" cookie set by
+the load balancer.
 .RE
+\fBNONE\fR
 .RS 2m
-.IP "\(em" 2m
-generated_cookie: Route requests to instances based on the contents of the
-"GCLB" cookie set by the load balancer.
-.RE
-.RE
+Session affinity is disabled.
 
+.RE
+.RE
 \fB\-\-timeout\fR \fITIMEOUT\fR; default="30s"
 .RS 2m
 The amount of time to wait for a backend to respond to a request before

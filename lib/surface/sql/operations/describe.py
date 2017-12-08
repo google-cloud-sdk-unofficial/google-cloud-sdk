@@ -14,7 +14,6 @@
 
 """Retrieves information about a Cloud SQL instance operation."""
 
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
@@ -42,7 +41,6 @@ class Get(_BaseGet, base.DescribeCommand):
         help='Name that uniquely identifies the operation.')
     flags.INSTANCE_FLAG.AddToParser(parser)
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Retrieves information about a Cloud SQL instance operation.
 
@@ -91,7 +89,6 @@ class GetBeta(_BaseGet, base.DescribeCommand):
         'operation',
         help='Name that uniquely identifies the operation.')
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Retrieves information about a Cloud SQL instance operation.
 

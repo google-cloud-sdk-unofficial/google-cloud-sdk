@@ -17,7 +17,6 @@
 from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import common_flags
 from googlecloudsdk.api_lib.service_management import services_util
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 
 
@@ -35,7 +34,6 @@ class Wait(base.Command, base_classes.BaseServiceManagementCommand):
     """
     common_flags.operation_flag(suffix='on which to wait').AddToParser(parser)
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management operations wait'.
 

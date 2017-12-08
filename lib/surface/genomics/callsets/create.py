@@ -44,7 +44,6 @@ class Create(base.Command):
         help='Variant set that this call set belongs to.')
     # TODO(user): Add the info command.
 
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

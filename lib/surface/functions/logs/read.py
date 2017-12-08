@@ -64,8 +64,7 @@ class GetLogs(base.ListCommand):
               '1000.'))
     parser.add_argument(
         '--min-log-level', choices=GetLogs.SEVERITIES,
-        help=('Minimum level of logs to be fetched; can be one of DEBUG, INFO, '
-              'ERROR.'))
+        help='Minimum level of logs to be fetched.')
     parser.add_argument(
         '--show-log-levels', action='store_true', default=True,
         help=('Print a log level of each log entry.'))

@@ -30,7 +30,6 @@ class Update(base.Command):
     parser.add_argument('--description',
                         help='The new description of the variant set.')
 
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

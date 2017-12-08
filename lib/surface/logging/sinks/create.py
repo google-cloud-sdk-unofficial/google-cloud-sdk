@@ -80,7 +80,6 @@ class Create(base.CreateCommand):
             projectsId=sink_ref.projectsId,
             logSink=messages.LogSink(**sink_data)))
 
-  @util.HandleHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

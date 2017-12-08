@@ -14,7 +14,6 @@
 
 """Promotes Cloud SQL read replica to a stand-alone instance."""
 
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -43,7 +42,6 @@ class _BasePromoteReplica(object):
 class PromoteReplica(_BasePromoteReplica, base.Command):
   """Promotes Cloud SQL read replica to a stand-alone instance."""
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Promotes Cloud SQL read replica to a stand-alone instance.
 
@@ -92,7 +90,6 @@ class PromoteReplica(_BasePromoteReplica, base.Command):
 class PromoteReplicaBeta(_BasePromoteReplica, base.Command):
   """Promotes Cloud SQL read replica to a stand-alone instance."""
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Promotes Cloud SQL read replica to a stand-alone instance.
 

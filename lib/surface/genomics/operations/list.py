@@ -14,12 +14,10 @@
 """Implementation of the gcloud genomics operations list command.
 """
 
-from apitools.base.py import exceptions as apitools_exceptions
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 
 
 class List(base.Command):
@@ -78,12 +76,8 @@ class List(base.Command):
       args: argparse.Namespace, The arguments that this command was invoked
           with.
 
-    Yields:
+    Returns:
       The list of operations for this project.
-
-    Raises:
-      HttpException: An http error response was received while executing api
-          request.
     """
     apitools_client = genomics_util.GetGenomicsClient()
     genomics_messages = genomics_util.GetGenomicsMessages()
@@ -97,13 +91,9 @@ class List(base.Command):
         name='operations',
         filter=args.where)
 
-    try:
-      for resource in list_pager.YieldFromList(
-          apitools_client.operations, request,
-          limit=args.limit,
-          batch_size_attribute='pageSize',
-          batch_size=args.limit,  # Use limit if any, else server default.
-          field='operations'):
-        yield resource
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(genomics_util.GetErrorMessage(error))
+    return list_pager.YieldFromList(
+        apitools_client.operations, request,
+        limit=args.limit,
+        batch_size_attribute='pageSize',
+        batch_size=args.limit,  # Use limit if any, else server default.
+        field='operations')

@@ -14,7 +14,6 @@
 
 """Retrieves information about a Cloud SQL instance operation."""
 
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -50,7 +49,6 @@ class Wait(_BaseWait, base.Command):
   def Collection(self):
     return 'sql.operations'
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Wait for a Cloud SQL instance operation.
 
@@ -105,7 +103,6 @@ class WaitBeta(_BaseWait, base.Command):
   def Collection(self):
     return 'sql.operations.v1beta4'
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Wait for a Cloud SQL instance operation.
 

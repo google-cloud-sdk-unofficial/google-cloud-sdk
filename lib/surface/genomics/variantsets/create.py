@@ -46,7 +46,6 @@ class Create(base.Command):
         'with. When variants are later added to this variant set, the API '
         'enforces consistency with this reference set.')
 
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

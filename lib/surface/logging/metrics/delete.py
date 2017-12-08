@@ -14,7 +14,6 @@
 
 """'logging metrics delete' command."""
 
-from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
@@ -31,7 +30,6 @@ class Delete(base.Command):
     parser.add_argument(
         'metric_name', help='The name of the metric to delete.')
 
-  @util.HandleHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

@@ -31,7 +31,6 @@ class GetIamPolicy(base.Command):
     parser.add_argument('id', type=str,
                         help='The ID of the dataset.')
 
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     apitools_client = genomics_util.GetGenomicsClient()
     messages = genomics_util.GetGenomicsMessages()

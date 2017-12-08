@@ -15,10 +15,11 @@
 """Delete cluster command."""
 import argparse
 
-from apitools.base.py import exceptions
+from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -83,8 +84,9 @@ class Delete(base.Command):
 
         op_ref = adapter.DeleteCluster(cluster_ref)
         operations.append((op_ref, cluster_ref))
-      except exceptions.HttpError as error:
-        errors.append(util.GetError(error))
+      except apitools_exceptions.HttpError as error:
+        errors.append(
+            str(exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)))
       except util.Error as error:
         errors.append(error)
     if not flags.GetAsyncValueFromAsyncAndWaitFlags(args.async, args.wait):
@@ -103,8 +105,8 @@ class Delete(base.Command):
             properties.PersistProperty(
                 properties.VALUES.container.cluster, None)
           log.DeletedResource(cluster_ref)
-        except exceptions.HttpError as error:
-          errors.append(util.GetError(error))
+        except apitools_exceptions.HttpError as error:
+          errors.append(exceptions.HttpException(error, util.HTTP_ERROR_FORMAT))
         except util.Error as error:
           errors.append(error)
 

@@ -41,7 +41,6 @@ class List(base.ListCommand):
           """,
   }
 
-  @util.MapHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

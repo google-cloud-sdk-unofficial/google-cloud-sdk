@@ -14,10 +14,15 @@
 
 """Revoke credentials being used by Application Default Credentials."""
 
+import os
+
 from googlecloudsdk.api_lib.auth import util as auth_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
+from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.credentials import store as c_store
+from oauth2client import client
 
 
 class Revoke(base.SilentCommand):
@@ -36,14 +41,28 @@ class Revoke(base.SilentCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        '--brief', action='store_true',
-        help='Minimal user output.')
+    pass
 
-  @c_exc.RaiseToolExceptionInsteadOf(c_store.Error)
   def Run(self, args):
     """Revoke Application Default Credentials."""
 
-    auth_util.RevokeCredsInWellKnownFile(args.brief)
+    cred_file = auth_util.ADCFilePath()
+    if not os.path.isfile(cred_file):
+      raise c_exc.BadFileException(
+          'Application Default Credentials have not been set up, nothing was '
+          'revoked.')
 
-    return ''
+    creds = client.GoogleCredentials.from_stream(cred_file)
+    if creds.serialization_data['type'] != 'authorized_user':
+      raise c_exc.BadFileException(
+          'The given credential file is a service account credential, and '
+          'cannot be revoked.')
+
+    console_io.PromptContinue(
+        'You are about to revoke the credentials stored in: [{file}]'
+        .format(file=cred_file),
+        throw_if_unattended=True, cancel_on_no=True)
+
+    c_store.RevokeCredentials(creds)
+    os.remove(cred_file)
+    log.status.Print('Credentials revoked.')

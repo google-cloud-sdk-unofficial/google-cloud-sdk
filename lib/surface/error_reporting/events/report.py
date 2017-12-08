@@ -15,7 +15,6 @@
 """The gcloud error-reporting events report command."""
 
 from googlecloudsdk.api_lib.error_reporting import util
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
@@ -97,7 +96,6 @@ class Report(base.Command):
     """Get project name."""
     return properties.VALUES.core.project.Get(required=True)
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Send an error report based on the given args."""
 

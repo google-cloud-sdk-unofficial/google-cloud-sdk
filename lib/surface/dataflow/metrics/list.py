@@ -83,12 +83,13 @@ class List(base.ListCommand):
         help='Filters only the metrics that prefix match the given regex.')
     parser.add_argument(
         '--source',
-        choices=['all', 'user', 'service'],
+        choices={
+            'all': 'Retrieves all metrics.',
+            'service': 'Retrieves only dataflow service metrics.',
+            'user': 'Retrieves only custom user metrics.',
+        },
         default='all',
-        help=('Can be either "all", "user", or "service". By default, source '
-              'is "all" and retrieves all metrics. If set to user, displays '
-              'only custom user metrics. If set to service, displays only '
-              'dataflow service metrics.'))
+        help='Set the metrics source.')
     parser.add_argument(
         '--tentative',
         default=False,

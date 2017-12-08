@@ -49,7 +49,6 @@ class Publish(base.Command):
   def Collection(self):
     return util.TOPICS_PUBLISH_COLLECTION
 
-  @util.MapHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

@@ -17,7 +17,6 @@
 import httplib
 
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.api_lib.util import http_retry
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
@@ -48,7 +47,6 @@ class AddIamPolicyBinding(base.Command):
     iam_util.AddArgsForAddIamPolicyBinding(
         parser, 'id', 'cloudresourcemanager.projects')
 
-  @http_error_handler.HandleHttpErrors
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
     project_ref = command_lib_util.ParseProject(args.id)

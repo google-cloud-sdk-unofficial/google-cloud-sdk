@@ -23,7 +23,6 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.resource import resource_printer
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
   """Delete existing images.
 

@@ -14,7 +14,6 @@
 
 """'logging sinks delete' command."""
 
-from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
@@ -30,7 +29,6 @@ class Delete(base.Command):
     """Register flags for this command."""
     parser.add_argument('log_name', help='Log name.')
 
-  @util.HandleHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

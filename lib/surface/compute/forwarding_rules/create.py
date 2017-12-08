@@ -47,15 +47,11 @@ def _Args(parser, include_alpha_targets, include_beta_targets):
       ephemeral IP address is assigned.
       """
   v1_messages = core_apis.GetMessagesModule('compute', 'v1')
-  ip_protocol = parser.add_argument(
+  parser.add_argument(
       '--ip-protocol',
       choices=_SupportedProtocols(v1_messages),
       type=lambda x: x.upper(),
-      help='The IP protocol that the rule will serve.')
-  ip_protocol.detailed_help = """\
-      The IP protocol that the rule will serve. If left empty, TCP
-      is used. Supported protocols are: {0}.
-      """.format(', '.join(_SupportedProtocols(v1_messages)))
+      help='The IP protocol that the rule will serve. The default is TCP.')
 
   parser.add_argument(
       '--description',
@@ -97,7 +93,7 @@ def _Args(parser, include_alpha_targets, include_beta_targets):
       """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(utils.ForwardingRulesTargetMutator):
   """Create a forwarding rule to direct network traffic to a load balancer."""
 
@@ -162,23 +158,8 @@ class Create(utils.ForwardingRulesTargetMutator):
     return [request]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(Create):
-  """Create a forwarding rule to direct network traffic to a load balancer."""
-
-  @staticmethod
-  def Args(parser):
-    _Args(parser, include_alpha_targets=False, include_beta_targets=True)
-
-  def GetGlobalTarget(self, args):
-    if args.target_ssl_proxy:
-      return self.CreateGlobalReference(
-          args.target_ssl_proxy, resource_type='targetSslProxies')
-    return super(CreateBeta, self).GetGlobalTarget(args)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
+class CreateAlpha(Create):
   """Create a forwarding rule to direct network traffic to a load balancer."""
 
   @staticmethod
@@ -230,21 +211,11 @@ Create.detailed_help = {
 
         When creating a forwarding rule, exactly one of  ``--target-instance'',
         ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
-        or ``--target-vpn-gateway'' must be specified.
-        """.format(overview=flags.FORWARDING_RULES_OVERVIEW)),
-}
-
-CreateBeta.detailed_help = {
-    'DESCRIPTION': ("""\
-        *{{command}}* is used to create a forwarding rule. {overview}
-
-        When creating a forwarding rule, exactly one of  ``--target-instance'',
-        ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
         ``--target-ssl-proxy'', or ``--target-vpn-gateway'' must be specified.
         """.format(overview=flags.FORWARDING_RULES_OVERVIEW)),
 }
 
-CreateAlpha.detailed_help = CreateBeta.detailed_help
+CreateAlpha.detailed_help = Create.detailed_help
 
 
 def _GetPortRange(ports_range_list):

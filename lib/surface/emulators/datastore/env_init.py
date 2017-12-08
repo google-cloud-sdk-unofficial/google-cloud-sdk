@@ -18,20 +18,24 @@ from googlecloudsdk.calliope import base
 
 
 class EnvInit(base.Command):
-  """Print the commands required to export a datastore emulators env variables.
+  """Print the commands required to export env variables of a datastore.
+
+  Prints the commands but does not execute them. It will output
+  in shell syntax or on Windows it will be in cmd.exe syntax.
+
+  ## EXAMPLES
+
+  To print the env variables exports for a datastore emulator, run:
+
+    $ {command} --data-dir DATA-DIR
   """
 
   detailed_help = {
       'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To print the env variables exports for a datastore emulator, run:
-
-            $ {command} --data-dir DATA-DIR
-          """,
   }
 
   def Run(self, args):
     return util.ReadEnvYaml(args.data_dir)
 
-  def Display(self, args, result):
-    util.PrintEnvExport(result)
+  def Format(self, args):
+    return 'config[export]'

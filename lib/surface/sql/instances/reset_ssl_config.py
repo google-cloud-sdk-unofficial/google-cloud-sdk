@@ -13,7 +13,6 @@
 # limitations under the License.
 """Deletes all certificates and generates a new server SSL certificate."""
 
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -43,7 +42,6 @@ class _BaseResetSslConfig(object):
 class ResetSslConfig(_BaseResetSslConfig, base.Command):
   """Deletes all client certificates and generates a new server certificate."""
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Deletes all certificates and generates a new server SSL certificate.
 
@@ -93,7 +91,6 @@ class ResetSslConfig(_BaseResetSslConfig, base.Command):
 class ResetSslConfigBeta(_BaseResetSslConfig, base.Command):
   """Deletes all client certificates and generates a new server certificate."""
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Deletes all certificates and generates a new server SSL certificate.
 

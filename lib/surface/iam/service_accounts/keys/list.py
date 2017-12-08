@@ -45,8 +45,7 @@ class List(base_classes.BaseIamCommand, base.ListCommand):
     parser.add_argument('--managed-by',
                         choices=['user', 'system', 'any'],
                         default='any',
-                        help='The types of keys to list. Can be "any", "user" '
-                        'or "system". When not specified, defaults to "any".')
+                        help='The types of keys to list.')
 
     parser.add_argument(
         '--created-before',

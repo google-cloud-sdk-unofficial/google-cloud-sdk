@@ -27,7 +27,6 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.credentials import devshell as c_devshell
 from googlecloudsdk.core.credentials import gce as c_gce
 from googlecloudsdk.core.credentials import store as c_store
-from oauth2client import client
 
 
 class Login(base.Command):
@@ -131,7 +130,7 @@ class Login(base.Command):
 
     # No valid creds, do the web flow.
     launch_browser = auth_util.ShouldLaunchBrowser(args.launch_browser)
-    creds = self.DoInstalledAppBrowserFlow(launch_browser, scopes)
+    creds = auth_util.DoInstalledAppBrowserFlow(launch_browser, scopes)
     web_flow_account = creds.id_token['email']
     if account and account.lower() != web_flow_account.lower():
       raise c_exc.ToolException(
@@ -155,16 +154,7 @@ class Login(base.Command):
     if project:
       properties.PersistProperty(properties.VALUES.core.project, project)
 
-    google_creds = client.GoogleCredentials(
-        creds.access_token, creds.client_id, creds.client_secret,
-        creds.refresh_token, creds.token_expiry, creds.token_uri,
-        creds.user_agent, creds.revoke_uri)
-    try:
-      auth_util.CreateWellKnownFileDir()
-      client.save_to_well_known_file(google_creds)
-    except IOError as e:
-      raise c_exc.ToolException(
-          'error saving Application Default Credentials: ' + str(e))
+    auth_util.SaveCredentialsAsADC(creds)
     if not brief:
       log.status.write('Saved Application Default Credentials.\n')
       log.warning(
@@ -181,15 +171,3 @@ class Login(base.Command):
           'by running:\n  $ gcloud config set project PROJECT_ID\n'.format(
               account=account, project=properties.VALUES.core.project.Get()))
     return creds
-
-  def DoInstalledAppBrowserFlow(self, launch_browser, scopes):
-    """Launches a browser to get credentials."""
-    try:
-      return c_store.AcquireFromWebFlow(launch_browser=launch_browser,
-                                        scopes=scopes)
-    except c_store.FlowError:
-      msg = 'There was a problem with web authentication.'
-      if launch_browser:
-        msg += ' Try running again with --no-launch-browser.'
-      log.error(msg)
-      raise

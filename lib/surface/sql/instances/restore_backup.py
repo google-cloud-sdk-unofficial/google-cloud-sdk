@@ -14,7 +14,6 @@
 
 """Restores a backup of a Cloud SQL instance."""
 
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -46,7 +45,6 @@ class RestoreBackup(base.Command):
         help='The time when this run was due to start in RFC 3339 format, for '
         'example 2012-11-15T16:19:00.094Z.')
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Restores a backup of a Cloud SQL instance.
 
@@ -136,7 +134,6 @@ class RestoreBackupBeta(base.Command):
         action='store_true',
         help='Do not wait for the operation to complete.')
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Restores a backup of a Cloud SQL instance.
 

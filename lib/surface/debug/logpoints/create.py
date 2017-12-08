@@ -72,10 +72,7 @@ class Create(base.CreateCommand):
     parser.add_argument(
         '--log-level', choices=['info', 'warning', 'error'],
         default='info',
-        help="""\
-            The logging level to use when producing the log message. The level
-            can be "info", "warning", or "error".
-        """)
+        help='The logging level to use when producing the log message.')
     parser.add_argument(
         '--wait', default=10,
         help="""\

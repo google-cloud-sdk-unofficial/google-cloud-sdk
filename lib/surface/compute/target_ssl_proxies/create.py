@@ -14,6 +14,7 @@
 """Command for creating target SSL proxies."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import health_checks_utils
 
 
 class Create(base_classes.BaseAsyncCreator):
@@ -21,6 +22,8 @@ class Create(base_classes.BaseAsyncCreator):
 
   @staticmethod
   def Args(parser):
+    health_checks_utils.AddProxyHeaderRelatedCreateArgs(parser)
+
     parser.add_argument(
         '--description',
         help='An optional, textual description for the target SSL proxy.')
@@ -43,17 +46,6 @@ class Create(base_classes.BaseAsyncCreator):
     backend_service.detailed_help = """\
         A backend service that will be used for connections to the target SSL
         proxy.
-        """
-
-    proxy_header_options = ['NONE', 'PROXY_V1']
-
-    proxy_header = parser.add_argument(
-        '--proxy-header',
-        choices=proxy_header_options,
-        help=('.'))
-    proxy_header.detailed_help = """\
-        Format of the proxy header that the balancer will send when creating new
-        backend connections.  Valid options are: NONE and PROXY_V1.
         """
 
     parser.add_argument(

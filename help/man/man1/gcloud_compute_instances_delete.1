@@ -11,7 +11,7 @@ gcloud compute instances delete \- delete Google Compute Engine virtual machine 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances delete\fR \fINAMES\fR [\fINAMES\fR\ ...] [\fB\-\-delete\-disks\fR\ {\fIboot\fR,\fIdata\fR,\fIall\fR}\ |\ \fB\-\-keep\-disks\fR\ {\fIboot\fR,\fIdata\fR,\fIall\fR}] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instances delete\fR \fINAMES\fR [\fINAMES\fR\ ...] [\fB\-\-delete\-disks\fR\ \fIDISK\-TYPE\fR\ |\ \fB\-\-keep\-disks\fR\ \fIDISK\-TYPE\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -33,23 +33,51 @@ The names of the instances.
 
 .SH "FLAGS"
 
-\fB\-\-delete\-disks\fR {\fIboot\fR,\fIdata\fR,\fIall\fR}
+\fB\-\-delete\-disks\fR \fIDISK\-TYPE\fR
 .RS 2m
 The types of disks to delete with instance deletion regardless of the disks'
 auto\-delete configuration. When this flag is provided, the auto\-delete bits on
 the attached disks are modified accordingly before the instance deletion
 requests are issued. For more information on disk auto\-deletion, see
-https://cloud.google.com/compute/docs/disks/persistent\-disks#updateautodelete
+https://cloud.google.com/compute/docs/disks/persistent\-disks#updateautodelete.
+\fIDISK\-TYPE\fR must be one of:
+
+\fBall\fR
+.RS 2m
+All disk types.
+.RE
+\fBboot\fR
+.RS 2m
+The first partition is reserved for the root filesystem.
+.RE
+\fBdata\fR
+.RS 2m
+A non\-boot disk.
 
 .RE
-\fB\-\-keep\-disks\fR {\fIboot\fR,\fIdata\fR,\fIall\fR}
+.RE
+\fB\-\-keep\-disks\fR \fIDISK\-TYPE\fR
 .RS 2m
 The types of disks to not delete with instance deletion regardless of the disks'
 auto\-delete configuration. When this flag is provided, the auto\-delete bits on
 the attached disks are modified accordingly before the instance deletion
 requests are issued. For more information on disk auto\-deletion, see
-https://cloud.google.com/compute/docs/disks/persistent\-disks#updateautodelete
+https://cloud.google.com/compute/docs/disks/persistent\-disks#updateautodelete.
+\fIDISK\-TYPE\fR must be one of:
 
+\fBall\fR
+.RS 2m
+All disk types.
+.RE
+\fBboot\fR
+.RS 2m
+The first partition is reserved for the root filesystem.
+.RE
+\fBdata\fR
+.RS 2m
+A non\-boot disk.
+
+.RE
 .RE
 \fB\-\-zone\fR \fIZONE\fR
 .RS 2m

@@ -19,7 +19,6 @@ import socket
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.deployment_manager.runtime_configs import util
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as base_exceptions
@@ -96,7 +95,6 @@ class Watch(base.Command):
     """
     return 'runtimeconfig.variables'
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run a command that watches a variable.
 

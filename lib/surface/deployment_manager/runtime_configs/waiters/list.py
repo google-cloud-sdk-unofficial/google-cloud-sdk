@@ -17,7 +17,6 @@
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.deployment_manager.runtime_configs import util
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.deployment_manager.runtime_configs import flags
 
@@ -64,7 +63,6 @@ class List(base.ListCommand):
     """
     return 'runtimeconfig.waiters'
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'runtime-configs waiters list'.
 

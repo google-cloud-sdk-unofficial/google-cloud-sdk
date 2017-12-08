@@ -178,7 +178,7 @@ class Create(base.CreateCommand):
           timeout_s=args.timeout)
       pool = adapter.GetNodePool(pool_ref)
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetError(error))
+      raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
 
     log.CreatedResource(pool_ref)
     return pool

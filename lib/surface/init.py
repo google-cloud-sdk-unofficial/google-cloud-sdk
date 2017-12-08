@@ -360,9 +360,10 @@ https://console.developers.google.com/apis page.
             'with Compute Engine resources, the default is assumed.').format(
                 name)
         idx = console_io.PromptChoice(
-            ['[{0}]'.format(value['name']) for value in values]
+            [value['name'] for value in values]
             + ['Do not set default {0}'.format(name)],
-            message=message, prompt_string=None)
+            message=message, prompt_string=None, allow_freeform=True,
+            freeform_suggester=usage_text.TextChoiceSuggester())
         if idx is None or idx == len(values):
           return
         default_value = values[idx]

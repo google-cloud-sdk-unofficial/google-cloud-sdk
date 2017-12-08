@@ -17,6 +17,7 @@
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.logging import util
+from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
@@ -54,7 +55,6 @@ class Describe(base.DescribeCommand):
         messages.LoggingProjectsSinksGetRequest(
             projectsId=sink_ref.projectsId, sinksId=sink_ref.sinksId))
 
-  @util.HandleHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -76,7 +76,8 @@ class Describe(base.DescribeCommand):
     except apitools_exceptions.HttpError as error:
       project_sink = not args.log and not args.service
       # Suggest the user to add --log or --log-service flag.
-      if project_sink and error.response.status == 404:
+      if project_sink and exceptions.HttpException(
+          error).payload.status_code == 404:
         log.status.Print(('Project sink was not found. '
                           'Did you forget to add --log or --log-service flag?'))
       raise error

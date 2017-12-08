@@ -109,15 +109,30 @@ Alternatively, the region can be stored in the environment variable
 .RE
 \fB\-\-session\-affinity\fR \fISESSION_AFFINITY\fR; default="NONE"
 .RS 2m
-Specifies the session affinity option for the connection. If \f5\fINONE\fR\fR is
-selected, then connections from the same client IP address may go to any
-instance in the target pool. If \f5\fICLIENT_IP\fR\fR is selected, then
-connections from the same client IP address will go to the same instance in the
-target pool. If \f5\fICLIENT_IP_PROTO\fR\fR is selected, then connections from
-the same client IP with the same IP protocol will go to the same client pool. If
-not specified, then \f5\fINONE\fR\fR is used as a default.
+The type of session affinity to use for this backend service.
+\fISESSION_AFFINITY\fR must be one of:
+
+\fBCLIENT_IP\fR
+.RS 2m
+Route requests to instances based on the hash of the client's IP address.
+.RE
+\fBCLIENT_IP_PROTO\fR
+.RS 2m
+Connections from the same client IP with the same IP protocol willgo to the same
+VM in the pool while that VM remains healthy. This option cannot be used for
+HTTP(s) load balancing.
+.RE
+\fBGENERATED_COOKIE\fR
+.RS 2m
+Route requests to instances based on the contents of the "GCLB" cookie set by
+the load balancer.
+.RE
+\fBNONE\fR
+.RS 2m
+Session affinity is disabled.
 
 
+.RE
 .RE
 
 .SH "GLOBAL FLAGS"

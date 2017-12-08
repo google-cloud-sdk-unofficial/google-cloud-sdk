@@ -16,6 +16,8 @@
 
 from apitools.base.py import exceptions as apitools_exceptions
 
+from googlecloudsdk.api_lib.container import constants
+from googlecloudsdk.api_lib.container import transforms
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -72,12 +74,22 @@ class List(base.ListCommand):
       upgrade_available = False
       support_ending = False
       unsupported = False
+      expiring = False
       self._upgrade_hint = ''
+      self._expire_warning = ''
       vv = VersionVerifier()
       for c in clusters.clusters:
+        time_left = transforms.ParseExpireTime(c.expireTime)
+        if time_left and time_left.days < constants.EXPIRE_WARNING_DAYS:
+          expiring = True
+        if c.enableKubernetesAlpha:
+          # Don't print upgrade hints for alpha clusters, they aren't
+          # upgradeable.
+          continue
         ver_status = vv.Compare(c.currentMasterVersion, c.currentNodeVersion)
         if ver_status == VersionVerifier.UPGRADE_AVAILABLE:
           c.currentNodeVersion += ' *'
+
           upgrade_available = True
         elif ver_status == VersionVerifier.SUPPORT_ENDING:
           c.currentNodeVersion += ' **'
@@ -95,10 +107,16 @@ class List(base.ListCommand):
       if self._upgrade_hint:
         self._upgrade_hint += UpgradeHelpText.UPGRADE_COMMAND.format(
             name='NAME')
+      if expiring:
+        self._expire_warning = constants.EXPIRE_WARNING
+
       return clusters.clusters
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetError(error))
+      raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
 
   def Epilog(self, resources_were_displayed):
     if self._upgrade_hint:
       log.status.Print(self._upgrade_hint)
+    if self._expire_warning:
+      log.warn(self._expire_warning)
+

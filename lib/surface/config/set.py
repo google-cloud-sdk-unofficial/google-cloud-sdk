@@ -18,6 +18,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.command_lib.config import completers
 from googlecloudsdk.command_lib.config import flags
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import remote_completion
 
@@ -94,6 +95,11 @@ class Set(base.Command):
       raise c_exc.InvalidArgumentException(
           'property', 'Must be in the form: [SECTION/]PROPERTY')
     properties.PersistProperty(prop, args.value, scope=scope)
+
+    scope_msg = ''
+    if args.installation:
+      scope_msg = 'installation '
+    log.status.Print('Updated {0}property [{1}].'.format(scope_msg, prop))
 
 
 

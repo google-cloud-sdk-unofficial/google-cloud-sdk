@@ -16,7 +16,6 @@
 from googlecloudsdk.api_lib.ml import jobs
 from googlecloudsdk.api_lib.ml import jobs_v1beta1
 from googlecloudsdk.api_lib.ml import operations
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
 from googlecloudsdk.core import apis
@@ -35,7 +34,6 @@ class Train(base.Command):
     flags.CONFIG.AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -71,7 +69,6 @@ class BetaTrain(base.Command):
     flags.REGION.AddToParser(parser)
     flags.CONFIG.AddToParser(parser)
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

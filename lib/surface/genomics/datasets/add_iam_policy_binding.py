@@ -39,7 +39,6 @@ class AddIamPolicyBinding(base.Command):
     iam_util.AddArgsForAddIamPolicyBinding(
         parser, 'id', 'genomics.datasets')
 
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     apitools_client = genomics_util.GetGenomicsClient()
     messages = genomics_util.GetGenomicsMessages()

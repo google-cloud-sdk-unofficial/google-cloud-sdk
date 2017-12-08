@@ -16,7 +16,6 @@
 
 from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import common_flags
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 
 
@@ -37,12 +36,6 @@ class CheckIamPolicy(base.Command, base_classes.BaseServiceManagementCommand):
         suffix='for which to check the IAM policy')
     service_flag.AddToParser(parser)
 
-    parser.add_argument(
-        '--member',
-        required=True,
-        help='The member for which to check permissions.')
-
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management check-access'.
 

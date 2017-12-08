@@ -17,7 +17,6 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
-from googlecloudsdk.core import apis as core_apis
 
 
 class SetSchedulingInstances(base_classes.NoOutputAsyncMutator):
@@ -36,25 +35,7 @@ class SetSchedulingInstances(base_classes.NoOutputAsyncMutator):
         Engine.  This does not affect terminations performed by the user.'
         """
 
-    messages = core_apis.GetMessagesModule('compute', 'v1')
-    migration_options = sorted(messages.Scheduling
-                               .OnHostMaintenanceValueValuesEnum
-                               .to_dict().keys())
-
-    maintenance_policy = parser.add_argument(
-        '--maintenance-policy',
-        choices=migration_options,
-        type=lambda x: x.upper(),
-        help=('Specifies the behavior of the instances when their host '
-              'machines undergo maintenance.'))
-    maintenance_policy.detailed_help = """\
-        Specifies the behavior of the instances when their host machines undergo
-        maintenance. TERMINATE indicates that the instances should be
-        terminated. MIGRATE indicates that the instances should be migrated to a
-        new host. Choosing MIGRATE will temporarily impact the performance of
-        instances during a migration event.
-        """
-
+    instance_flags.AddMaintenancePolicyArgs(parser)
     instance_flags.INSTANCE_ARG.AddArgument(parser)
 
   @property

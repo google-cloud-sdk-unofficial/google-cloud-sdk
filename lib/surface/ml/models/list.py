@@ -15,7 +15,6 @@
 
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.ml import models
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import apis
 from googlecloudsdk.core import properties
@@ -28,7 +27,6 @@ class List(base.ListCommand):
   def Collection(self):
     return 'ml.models'
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -57,7 +55,6 @@ class ListBeta(base.ListCommand):
   def Collection(self):
     return 'ml.models'
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

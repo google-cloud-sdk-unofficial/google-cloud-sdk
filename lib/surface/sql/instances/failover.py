@@ -13,7 +13,6 @@
 # limitations under the License.
 """Causes a high-availability Cloud SQL instance to failover to its replica."""
 
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -35,7 +34,6 @@ class Failover(base.Command):
         action='store_true',
         help='Do not wait for the operation to complete.')
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Calls the failover api method.
 

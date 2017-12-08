@@ -34,5 +34,5 @@ class EnvInit(base.Command):
     data_dir = bigtable_util.GetDataDir()
     return util.ReadEnvYaml(data_dir)
 
-  def Display(self, args, result):
-    util.PrintEnvExport(result)
+  def Format(self, args):
+    return 'config[export]'

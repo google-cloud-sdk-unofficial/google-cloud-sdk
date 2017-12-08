@@ -16,7 +16,6 @@
 
 from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import common_flags
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 
 
@@ -40,7 +39,6 @@ class Describe(base.DescribeCommand, base_classes.BaseServiceManagementCommand):
                              'the configuration. Defaults to the active '
                              'version.')
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management versions describe'.
 

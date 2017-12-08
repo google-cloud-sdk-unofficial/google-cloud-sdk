@@ -106,7 +106,7 @@ class Delete(base.DeleteCommand):
             'Deleting node pool {0}'.format(pool_ref.nodePoolId),
             timeout_s=args.timeout)
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetError(error))
+      raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
 
     log.DeletedResource(pool_ref)
     return op_ref

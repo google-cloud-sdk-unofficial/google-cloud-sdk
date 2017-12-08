@@ -13,6 +13,7 @@ import base64
 import httplib
 import logging
 import socket
+import sys
 from urllib import splitpasswd
 from urllib import splittype
 from urllib import splituser
@@ -203,11 +204,39 @@ def create_fancy_connection(tunnel_host=None, key_file=None,
       # the function, but doesn't require a dynamic import, which doesn't
       # play nicely with dev_appserver.
       if can_validate_certs():
-        self.sock = ssl.wrap_socket(self.sock,
-                                    keyfile=self.key_file,
-                                    certfile=self.cert_file,
-                                    ca_certs=self.ca_certs,
-                                    cert_reqs=self.cert_reqs)
+        # SNI(Server Name Indication) is required by many websites when talking
+        # HTTPS, SSLContext is introduced in python 2.7.9, its wrap_socket()
+        # supports SNI while ssl.wrap_socket does not.
+        try:
+          # PROTOCOL_SSLv23 is currently recommended for max interoperability.
+          context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+        except AttributeError:
+          context = None
+          if sys.version_info[2] < 9:
+            logging.warning("Unable to create SSLContext because your python27 "
+                          "version is below 2.7.9, using ssl.wrap_socket.")
+          else:
+            logging.warning("Unable to create SSLContext, using "
+                            "ssl.wrap_socket.")
+
+        if context:
+          context.verify_mode = self.cert_reqs
+          if self.ca_certs:
+            try:
+              context.load_verify_locations(ca_certs)
+            except Exception, e:
+              raise SSLError(e)
+          if self.cert_file:
+            context.load_cert_chain(self.cert_file, self.key_file)
+          # Since python 2.7.9, server_hostname is always allowed to be passed
+          # even if OpenSSL does not have SNI.
+          self.sock = context.wrap_socket(self.sock, server_hostname=self.host)
+        else:
+          self.sock = ssl.wrap_socket(self.sock,
+                                      keyfile=self.key_file,
+                                      certfile=self.cert_file,
+                                      ca_certs=self.ca_certs,
+                                      cert_reqs=self.cert_reqs)
 
         if self.cert_reqs & ssl.CERT_REQUIRED:
           cert = self.sock.getpeercert()

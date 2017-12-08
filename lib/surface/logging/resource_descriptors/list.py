@@ -16,7 +16,6 @@
 
 from apitools.base.py import list_pager
 
-from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 
 
@@ -32,7 +31,6 @@ class List(base.ListCommand):
   def Collection(self):
     return 'logging.resourceDescriptors'
 
-  @util.HandlePagerHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

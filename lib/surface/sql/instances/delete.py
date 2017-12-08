@@ -15,7 +15,6 @@
 
 from apitools.base.py import exceptions
 
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -42,7 +41,6 @@ class Delete(base.Command):
         completion_resource='sql.instances',
         help='Cloud SQL instance ID.')
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Deletes a Cloud SQL instance.
 
@@ -111,7 +109,6 @@ class DeleteBeta(base.Command):
         completion_resource='sql.instances',
         help='Cloud SQL instance ID.')
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Deletes a Cloud SQL instance.
 

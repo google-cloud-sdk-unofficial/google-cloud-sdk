@@ -15,6 +15,7 @@
 """Command for describing the project."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.command_lib.projects import util
 
 
 class Describe(base_classes.BaseDescriber):
@@ -33,7 +34,7 @@ class Describe(base_classes.BaseDescriber):
     return 'projects'
 
   def CreateReference(self, args):
-    return self.CreateGlobalReference(self.project)
+    return util.ParseProject(self.project)
 
   def SetNameField(self, args, request):
     pass

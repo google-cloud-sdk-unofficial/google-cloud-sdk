@@ -16,9 +16,9 @@
 
 from apitools.base.py import exceptions as apitools_exceptions
 
-from googlecloudsdk.api_lib.logging import util
+from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -61,7 +61,6 @@ class Delete(base.Command):
         messages.LoggingProjectsSinksDeleteRequest(
             projectsId=sink_ref.projectsId, sinksId=sink_ref.sinksId))
 
-  @util.HandleHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -81,7 +80,7 @@ class Delete(base.Command):
       sink_description = 'project sink [%s]' % sink_ref.sinksId
 
     if not console_io.PromptContinue('Really delete %s?' % sink_description):
-      raise exceptions.ToolException('action canceled by user')
+      raise calliope_exceptions.ToolException('action canceled by user')
 
     try:
       if args.log:
@@ -94,7 +93,8 @@ class Delete(base.Command):
     except apitools_exceptions.HttpError as error:
       project_sink = not args.log and not args.service
       # Suggest the user to add --log or --log-service flag.
-      if project_sink and error.response.status == 404:
+      if project_sink and exceptions.HttpException(
+          error).payload.status_code == 404:
         log.status.Print(('Project sink was not found. '
                           'Did you forget to add --log or --log-service flag?'))
       raise error

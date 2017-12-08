@@ -58,4 +58,4 @@ class Describe(base.DescribeCommand):
     try:
       return adapter.GetNodePool(adapter.ParseNodePool(args.name))
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetError(error))
+      raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)

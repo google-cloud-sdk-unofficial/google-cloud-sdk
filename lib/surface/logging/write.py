@@ -38,16 +38,14 @@ class Write(base.SilentCommand):
         'message', help=('The message to put in the log entry. It can be '
                          'JSON if you include --payload-type=struct.'))
     parser.add_argument(
-        '--payload-type', help='Type of the log entry message: (text|struct).',
-        choices=Write.PAYLOAD_TYPE, default='text')
+        '--payload-type',
+        choices=Write.PAYLOAD_TYPE, default='text',
+        help='Type of the log entry message.')
     parser.add_argument(
         '--severity', required=False,
-        help=('Severity level of the log entry: '
-              '(DEFAULT|DEBUG|INFO|NOTICE|WARNING|ERROR|CRITICAL|'
-              'ALERT|EMERGENCY).'),
-        choices=Write.SEVERITY_ENUM, default='DEFAULT')
+        choices=Write.SEVERITY_ENUM, default='DEFAULT',
+        help='Severity level of the log entry.')
 
-  @util.HandleHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

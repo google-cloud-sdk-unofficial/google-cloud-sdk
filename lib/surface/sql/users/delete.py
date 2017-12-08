@@ -16,7 +16,6 @@
 Deletes a user in a given instance specified by username and host.
 """
 
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
@@ -47,7 +46,6 @@ class DeleteBeta(base.DeleteCommand):
     flags.HOST_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Lists Cloud SQL users in a given instance.
 

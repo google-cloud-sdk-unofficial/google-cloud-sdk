@@ -59,6 +59,7 @@ class CreateGA(backend_services_utils.BackendServiceMutator):
   def Args(parser):
     flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddDescription(parser)
+    flags.AddHealthChecks(parser)
     flags.AddHttpHealthChecks(parser)
     flags.AddHttpsHealthChecks(parser)
     flags.AddTimeout(parser)
@@ -67,6 +68,7 @@ class CreateGA(backend_services_utils.BackendServiceMutator):
     flags.AddEnableCdn(parser, default=False)
     flags.AddSessionAffinity(parser, internal_lb=False)
     flags.AddAffinityCookieTtl(parser)
+    flags.AddConnectionDrainingTimeout(parser)
 
   @property
   def method(self):
@@ -95,6 +97,10 @@ class CreateGA(backend_services_utils.BackendServiceMutator):
   def CreateGlobalRequests(self, args):
     backend_service = self._CreateBackendService(args)
 
+    if args.connection_draining_timeout is not None:
+      backend_service.connectionDraining = self.messages.ConnectionDraining(
+          drainingTimeoutSec=args.connection_draining_timeout)
+
     if args.session_affinity is not None:
       backend_service.sessionAffinity = (
           self.messages.BackendService.SessionAffinityValueValuesEnum(
@@ -117,6 +123,7 @@ class CreateAlpha(CreateGA):
   def Args(parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddDescription(parser)
+    flags.AddHealthChecks(parser)
     flags.AddHttpHealthChecks(parser)
     flags.AddHttpsHealthChecks(parser)
     flags.AddTimeout(parser)
@@ -125,10 +132,9 @@ class CreateAlpha(CreateGA):
     flags.AddEnableCdn(parser, default=False)
     flags.AddSessionAffinity(parser, internal_lb=True)
     flags.AddAffinityCookieTtl(parser)
+    flags.AddConnectionDrainingTimeout(parser)
 
     # These are in beta
-    flags.AddConnectionDrainingTimeout(parser)
-    flags.AddHealthChecks(parser)
 
     # These are added for alpha
     flags.AddLoadBalancingScheme(parser)
@@ -197,6 +203,7 @@ class CreateBeta(CreateGA):
   def Args(parser):
     flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddDescription(parser)
+    flags.AddHealthChecks(parser)
     flags.AddHttpHealthChecks(parser)
     flags.AddHttpsHealthChecks(parser)
     flags.AddTimeout(parser)
@@ -205,10 +212,9 @@ class CreateBeta(CreateGA):
     flags.AddEnableCdn(parser, default=False)
     flags.AddSessionAffinity(parser)
     flags.AddAffinityCookieTtl(parser)
+    flags.AddConnectionDrainingTimeout(parser)
 
     # These are added for beta
-    flags.AddConnectionDrainingTimeout(parser)
-    flags.AddHealthChecks(parser)
 
   def CreateGlobalRequests(self, args):
     backend_service = self._CreateBackendService(args)

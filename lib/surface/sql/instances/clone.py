@@ -13,7 +13,6 @@
 # limitations under the License.
 """Clones a Cloud SQL instance."""
 
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -130,7 +129,6 @@ OR
 class Clone(_BaseClone, base.Command):
   """Clones a Cloud SQL instance."""
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Clones a Cloud SQL instance.
 
@@ -195,7 +193,6 @@ class Clone(_BaseClone, base.Command):
 class CloneBeta(_BaseClone, base.Command):
   """Clones a Cloud SQL instance."""
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Clones a Cloud SQL instance.
 

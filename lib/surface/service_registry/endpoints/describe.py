@@ -16,7 +16,6 @@
 
 from googlecloudsdk.api_lib.service_registry import arg_support
 from googlecloudsdk.api_lib.service_registry import constants
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 
 
@@ -41,7 +40,6 @@ class Describe(base.DescribeCommand):
     """
     arg_support.AddEndpointNameArg(parser)
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Runs 'endpoints describe'.
 

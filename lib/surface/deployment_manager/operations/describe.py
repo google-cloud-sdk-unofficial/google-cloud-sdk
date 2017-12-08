@@ -73,4 +73,4 @@ class Describe(base.DescribeCommand):
           )
       )
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(dm_v2_util.GetError(error))
+      raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)

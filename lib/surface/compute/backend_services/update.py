@@ -33,6 +33,7 @@ class UpdateGA(base_classes.ReadWriteCommand):
   def Args(parser):
     flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddDescription(parser)
+    flags.AddHealthChecks(parser)
     flags.AddHttpHealthChecks(parser)
     flags.AddHttpsHealthChecks(parser)
     flags.AddTimeout(parser, default=None)
@@ -41,6 +42,7 @@ class UpdateGA(base_classes.ReadWriteCommand):
     flags.AddEnableCdn(parser, default=None)
     flags.AddSessionAffinity(parser, internal_lb=False)
     flags.AddAffinityCookieTtl(parser)
+    flags.AddConnectionDrainingTimeout(parser)
 
   @property
   def service(self):
@@ -101,6 +103,10 @@ class UpdateGA(base_classes.ReadWriteCommand):
   def Modify(self, args, existing):
     replacement = copy.deepcopy(existing)
 
+    if args.connection_draining_timeout is not None:
+      replacement.connectionDraining = self.messages.ConnectionDraining(
+          drainingTimeoutSec=args.connection_draining_timeout)
+
     if args.description:
       replacement.description = args.description
     elif args.description is not None:
@@ -141,6 +147,7 @@ class UpdateGA(base_classes.ReadWriteCommand):
         args.affinity_cookie_ttl is not None,
         args.description is not None,
         args.enable_cdn is not None,
+        args.health_checks,
         args.http_health_checks,
         args.https_health_checks,
         args.port,
@@ -171,6 +178,7 @@ class UpdateAlpha(UpdateGA):
   def Args(parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddDescription(parser)
+    flags.AddHealthChecks(parser)
     flags.AddHttpHealthChecks(parser)
     flags.AddHttpsHealthChecks(parser)
     flags.AddTimeout(parser, default=None)
@@ -179,7 +187,6 @@ class UpdateAlpha(UpdateGA):
 
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddEnableCdn(parser, default=None)
-    flags.AddHealthChecks(parser)
     flags.AddSessionAffinity(parser, internal_lb=True)
     flags.AddAffinityCookieTtl(parser)
 
@@ -218,6 +225,7 @@ class UpdateBeta(UpdateGA):
   def Args(parser):
     flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddDescription(parser)
+    flags.AddHealthChecks(parser)
     flags.AddHttpHealthChecks(parser)
     flags.AddHttpsHealthChecks(parser)
     flags.AddTimeout(parser, default=None)
@@ -226,7 +234,6 @@ class UpdateBeta(UpdateGA):
 
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddEnableCdn(parser, default=None)
-    flags.AddHealthChecks(parser)
     flags.AddSessionAffinity(parser)
     flags.AddAffinityCookieTtl(parser)
 

@@ -27,7 +27,6 @@ class Describe(base.DescribeCommand):
     """Register flags for this command."""
     parser.add_argument('id', help='The ID of the variant set to describe.')
 
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -49,11 +48,5 @@ class Describe(base.DescribeCommand):
 
     return apitools_client.variantsets.Get(get_request)
 
-  def Display(self, args_unused, variantset):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args_unused: The arguments that command was run with.
-      variantset: The value returned from the Run() method.
-    """
-    genomics_util.PrettyPrint(variantset)
+  def Format(self, unused_args):
+    return 'json'

@@ -50,7 +50,6 @@ class ListSubscriptions(base.ListCommand):
         'topic',
         help=('The name of the topic to list subscriptions for.'))
 
-  @util.MapHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

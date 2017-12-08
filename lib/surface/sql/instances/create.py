@@ -17,7 +17,6 @@ import argparse
 
 from apitools.base.py import exceptions as apitools_exceptions
 
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import instances
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
@@ -127,22 +126,19 @@ class _BaseCreate(object):
         required=False,
         choices=['PER_USE', 'PACKAGE'],
         default='PER_USE',
-        help='The pricing plan for this instance. '
-             'Valid options are PER_USE or PACKAGE.')
+        help='The pricing plan for this instance.')
     parser.add_argument(
         '--region',
         required=False,
         choices=['asia-east1', 'europe-west1', 'us-central', 'us-east1'],
         default='us-central',
-        help='The geographical region. Can be asia-east1, europe-west1, '
-        'or us-central.')
+        help='The geographical region.')
     parser.add_argument(
         '--replication',
         required=False,
         choices=['SYNCHRONOUS', 'ASYNCHRONOUS'],
         default=None,
-        help='The type of replication this instance uses.'
-             'Valid options are SYNCHRONOUS or ASYNCHRONOUS.')
+        help='The type of replication this instance uses.')
     parser.add_argument(
         '--require-ssl',
         required=False,
@@ -179,7 +175,6 @@ class Create(_BaseCreate, base.Command):
   def Collection(self):
     return 'sql.instances'
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Creates a new Cloud SQL instance.
 
@@ -253,8 +248,7 @@ class CreateBeta(_BaseCreate, base.Command):
         required=False,
         choices=['SSD', 'HDD'],
         default=None,
-        help='The storage type for the instance.'
-             'Valid options are SSD or HDD.')
+        help='The storage type for the instance.')
     parser.add_argument(
         '--failover-replica-name',
         required=False,
@@ -275,12 +269,11 @@ class CreateBeta(_BaseCreate, base.Command):
     parser.add_argument(
         '--replica-type',
         choices=['READ', 'FAILOVER'],
-        help='What type of replica to create: READ or FAILOVER')
+        help='The type of replica to create.')
 
   def Collection(self):
     return 'sql.instances.v1beta4'
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Creates a new Cloud SQL instance.
 

@@ -36,6 +36,8 @@ Cloud SQL instance ID.
 .RS 2m
 The activation policy for this instance. This specifies when the instance should
 be activated and is applicable only when the instance state is RUNNABLE.
+\fIACTIVATION_POLICY\fR must be one of: \fBALWAYS\fR, \fBNEVER\fR,
+\fBON_DEMAND\fR.
 
 .RE
 \fB\-\-assign\-ip\fR
@@ -114,18 +116,20 @@ newly created instance will be a read replica of the specified master instance.
 .RE
 \fB\-\-pricing\-plan\fR \fIPRICING_PLAN\fR, \fB\-p\fR \fIPRICING_PLAN\fR; default="PER_USE"
 .RS 2m
-The pricing plan for this instance. Valid options are PER_USE or PACKAGE.
+The pricing plan for this instance. \fIPRICING_PLAN\fR must be one of:
+\fBPER_USE\fR, \fBPACKAGE\fR.
 
 .RE
 \fB\-\-region\fR \fIREGION\fR; default="us\-central"
 .RS 2m
-The geographical region. Can be asia\-east1, europe\-west1, or us\-central.
+The geographical region. \fIREGION\fR must be one of: \fBasia\-east1\fR,
+\fBeurope\-west1\fR, \fBus\-central\fR, \fBus\-east1\fR.
 
 .RE
 \fB\-\-replication\fR \fIREPLICATION\fR
 .RS 2m
-The type of replication this instance uses.Valid options are SYNCHRONOUS or
-ASYNCHRONOUS.
+The type of replication this instance uses. \fIREPLICATION\fR must be one of:
+\fBSYNCHRONOUS\fR, \fBASYNCHRONOUS\fR.
 
 .RE
 \fB\-\-require\-ssl\fR

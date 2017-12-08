@@ -22,7 +22,6 @@ from googlecloudsdk.api_lib.cloudbuild import logs as cb_logs
 from googlecloudsdk.api_lib.cloudbuild import snapshot
 from googlecloudsdk.api_lib.storage import storage_api
 from googlecloudsdk.api_lib.storage import storage_util
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.core import apis as core_apis
@@ -75,9 +74,6 @@ class Create(base.Command):
     )
     base.ASYNC_FLAG.AddToParser(parser)
 
-  # TODO(user,b/29048700): Until resolution of this bug, the error message
-  # printed by gcloud (for 404s, eg) will not be as useful as it could be.
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

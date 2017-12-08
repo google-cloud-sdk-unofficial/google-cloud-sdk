@@ -35,7 +35,6 @@ class Update(base.Command):
     parser.add_argument('--reference-set-id',
                         help='The new reference set ID of the readgroupset.')
 
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

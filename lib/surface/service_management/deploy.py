@@ -19,7 +19,6 @@ import os
 from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import enable_api
 from googlecloudsdk.api_lib.service_management import services_util
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import exceptions
@@ -52,7 +51,6 @@ class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
 
     base.ASYNC_FLAG.AddToParser(parser)
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management deploy'.
 

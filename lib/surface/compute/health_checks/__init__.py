@@ -15,7 +15,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class HealthChecks(base.Group):
   """Read and manipulate health checks for load balanced instances."""
 

@@ -44,8 +44,7 @@ class Create(base_classes.BaseIamCommand):
     parser.add_argument('--key-file-type',
                         choices=['json', 'p12'],
                         default='json',
-                        help='The type of key to create. Can be either "json" '
-                        'or "p12". When unspecified, defaults to "json".')
+                        help='The type of key to create.')
 
     parser.add_argument('--iam-account',
                         required=True,

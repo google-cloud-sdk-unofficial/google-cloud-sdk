@@ -16,11 +16,9 @@
 """
 
 from googlecloudsdk.api_lib.auth import util as auth_util
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core import log
-from googlecloudsdk.core.credentials import store as c_store
 from oauth2client import client
 
 
@@ -36,24 +34,22 @@ class PrintAccessToken(base.Command):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        '--scopes',
-        type=arg_parsers.ArgList(min_length=1),
-        help='The names of the scopes to print an access token for.')
+    pass
 
-  @c_exc.RaiseToolExceptionInsteadOf(c_store.Error)
+  def Format(self, unused_args):
+    return 'value(access_token)'
+
   def Run(self, args):
     """Run the helper command."""
 
-    creds = client.GoogleCredentials.get_application_default()
+    try:
+      creds = client.GoogleCredentials.get_application_default()
+    except client.ApplicationDefaultCredentialsError as e:
+      log.debug(e, exc_info=True)
+      raise c_exc.ToolException(str(e))
 
     if creds.create_scoped_required():
-      scopes = args.scopes
-      if not scopes:
-        scopes = [auth_util.CLOUD_PLATFORM_SCOPE]
-
-      creds = creds.create_scoped(scopes)
-      log.status.Print('creds = ' + str(creds))
+      creds = creds.create_scoped([auth_util.CLOUD_PLATFORM_SCOPE])
 
     access_token_info = creds.get_access_token()
     if not access_token_info:
@@ -61,6 +57,3 @@ class PrintAccessToken(base.Command):
           'No access token could be obtained from the current credentials.')
 
     return access_token_info
-
-  def Format(self, unused_args):
-    return 'value(access_token)'

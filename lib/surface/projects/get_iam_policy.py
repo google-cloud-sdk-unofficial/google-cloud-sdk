@@ -14,7 +14,6 @@
 """Command to get IAM policy for a resource."""
 
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import flags
 from googlecloudsdk.command_lib.projects import util as command_lib_util
@@ -44,7 +43,6 @@ class GetIamPolicy(base.Command):
   def Args(parser):
     flags.GetProjectFlag('get IAM policy for').AddToParser(parser)
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     project_ref = command_lib_util.ParseProject(args.id)
     return projects_api.GetIamPolicy(project_ref)

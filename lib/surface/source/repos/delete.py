@@ -21,7 +21,6 @@ from apitools.base.py import exceptions
 
 from googlecloudsdk.api_lib.source import git
 from googlecloudsdk.api_lib.source import source
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core import log
@@ -55,7 +54,6 @@ class Delete(base.Command):
         help=('Name of the repository.'))
 
   @c_exc.RaiseToolExceptionInsteadOf(git.Error)
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Delete a named GCP repository in the current project.
 

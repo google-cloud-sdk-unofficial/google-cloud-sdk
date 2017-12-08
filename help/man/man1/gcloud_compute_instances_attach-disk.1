@@ -67,11 +67,18 @@ see. (Note: Device name does not correspond to mounted volume name)
 .RE
 \fB\-\-mode\fR \fIMODE\fR; default="rw"
 .RS 2m
-Specifies the mode of the disk. Supported options are \f5\fIro\fR\fR for
-read\-only and \f5\fIrw\fR\fR for read\-write. If omitted, \f5\fIrw\fR\fR is
-used as a default. It is an error to attach a disk in read\-write mode to more
-than one instance.
+Specifies the mode of the disk. \fIMODE\fR must be one of:
 
+\fBro\fR
+.RS 2m
+Read\-only.
+.RE
+\fBrw\fR
+.RS 2m
+Read\-write. It is an error to attach a disk in read\-write mode to more than
+one instance.
+
+.RE
 .RE
 \fB\-\-zone\fR \fIZONE\fR
 .RS 2m

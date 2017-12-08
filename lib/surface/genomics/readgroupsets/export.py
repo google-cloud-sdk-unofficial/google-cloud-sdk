@@ -80,7 +80,7 @@ class Export(base.Command):
           ))
     except apitools_exceptions.HttpError as error:
       # Map our error messages (JSON API camelCased) back into flag names.
-      msg = (genomics_util.GetErrorMessage(error)
+      msg = (exceptions.HttpException(error).payload.status_message
              .replace('exportUri', '--export-uri')
              .replace('referenceNames', '--reference-names'))
       unused_type, unused_value, traceback = sys.exc_info()

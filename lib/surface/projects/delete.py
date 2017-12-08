@@ -15,7 +15,6 @@
 """Command to delete a project."""
 
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import flags
 from googlecloudsdk.command_lib.projects import util as command_lib_util
@@ -50,7 +49,6 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     flags.GetProjectFlag('delete').AddToParser(parser)
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     project_ref = command_lib_util.ParseProject(args.id)
     if not console_io.PromptContinue('Your project will be deleted.'):

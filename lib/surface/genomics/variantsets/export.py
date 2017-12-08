@@ -58,7 +58,6 @@ class Export(base.Command):
               'must already exist.  Note that this is distinct from the '
               'Genomics concept of "dataset."'))
 
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

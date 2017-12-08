@@ -15,7 +15,6 @@
 """Command to update a new project."""
 
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import flags
 from googlecloudsdk.command_lib.projects import util as command_lib_util
@@ -64,9 +63,6 @@ class UpdateAlpha(base.Command):
   def Format(self, args):
     return self.ListFormat(args)
 
-  # HandleKnownHttpErrors needs to be the first one to handle errors.
-  # It needs to be placed after http_error_handler.HandleHttpErrors.
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     update_labels = labels_util.GetUpdateLabelsDictFromArgs(args)
     remove_labels = labels_util.GetRemoveLabelsListFromArgs(args)
@@ -115,7 +111,6 @@ class Update(base.Command):
   def Format(self, args):
     return self.ListFormat(args)
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     if args.name is None:
       raise ArgumentError('--name must be specified.')

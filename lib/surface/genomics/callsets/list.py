@@ -14,12 +14,10 @@
 
 """call sets list command."""
 
-from apitools.base.py import exceptions as apitools_exceptions
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 
 
 class List(base.ListCommand):
@@ -51,7 +49,6 @@ class List(base.ListCommand):
   def Collection(self):
     return 'genomics.callSets'
 
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     """Run 'callsets list'.
 
@@ -59,27 +56,19 @@ class List(base.ListCommand):
       args: argparse.Namespace, The arguments that this command was invoked
           with.
 
-    Yields:
+    Returns:
       The list of callsets matching the given variant set ids.
-
-    Raises:
-      HttpException: An http error response was received while executing api
-          request.
     """
     apitools_client = genomics_util.GetGenomicsClient()
     req_class = genomics_util.GetGenomicsMessages().SearchCallSetsRequest
     request = req_class(
         name=args.name,
         variantSetIds=args.variant_set_ids)
-    try:
-      for resource in list_pager.YieldFromList(
-          apitools_client.callsets,
-          request,
-          method='Search',
-          limit=args.limit,
-          batch_size_attribute='pageSize',
-          batch_size=args.limit,  # Use limit if any, else server default.
-          field='callSets'):
-        yield resource
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(genomics_util.GetErrorMessage(error))
+    return list_pager.YieldFromList(
+        apitools_client.callsets,
+        request,
+        method='Search',
+        limit=args.limit,
+        batch_size_attribute='pageSize',
+        batch_size=args.limit,  # Use limit if any, else server default.
+        field='callSets')

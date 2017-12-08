@@ -15,7 +15,6 @@
 
 from googlecloudsdk.api_lib.ml import jobs
 from googlecloudsdk.api_lib.ml import jobs_v1beta1
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 
 
@@ -26,7 +25,6 @@ class List(base.ListCommand):
   def Collection(self):
     return 'ml.jobs'
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -47,7 +45,6 @@ class ListBeta(base.ListCommand):
   def Collection(self):
     return 'ml.beta.jobs'
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

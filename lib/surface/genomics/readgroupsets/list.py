@@ -50,7 +50,6 @@ class List(base.ListCommand):
   def Collection(self):
     return 'genomics.readGroupSets'
 
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     """Run 'readgroupsets list'.
 
@@ -79,13 +78,12 @@ class List(base.ListCommand):
     if args.limit and args.limit < page_size:
       page_size = args.limit
 
-    pager = list_pager.YieldFromList(apitools_client.readgroupsets,
-                                     req_class(name=args.name,
-                                               datasetIds=args.dataset_ids),
-                                     method='Search',
-                                     global_params=global_params,
-                                     limit=args.limit,
-                                     batch_size_attribute='pageSize',
-                                     batch_size=page_size,
-                                     field='readGroupSets')
-    return genomics_util.ReraiseHttpExceptionPager(pager)
+    return list_pager.YieldFromList(apitools_client.readgroupsets,
+                                    req_class(name=args.name,
+                                              datasetIds=args.dataset_ids),
+                                    method='Search',
+                                    global_params=global_params,
+                                    limit=args.limit,
+                                    batch_size_attribute='pageSize',
+                                    batch_size=page_size,
+                                    field='readGroupSets')

@@ -46,7 +46,7 @@ class List(base.ListCommand):
     parser.add_argument(
         '--sort-order', default=None, required=False,
         choices=['ascending', 'descending'],
-        help='Sort order for listing (ascending|descending).')
+        help='Sort order for listing.')
 
   def Collection(self):
     return 'dns.changes'

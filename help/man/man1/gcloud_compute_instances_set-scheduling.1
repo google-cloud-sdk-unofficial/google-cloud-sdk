@@ -36,11 +36,18 @@ The name of the instance.
 \fB\-\-maintenance\-policy\fR \fIMAINTENANCE_POLICY\fR
 .RS 2m
 Specifies the behavior of the instances when their host machines undergo
-maintenance. TERMINATE indicates that the instances should be terminated.
-MIGRATE indicates that the instances should be migrated to a new host. Choosing
-MIGRATE will temporarily impact the performance of instances during a migration
-event.
+maintenance. The default is MIGRATE. \fIMAINTENANCE_POLICY\fR must be one of:
 
+\fBMIGRATE\fR
+.RS 2m
+The instances should be migrated to a new host. This will temporarily impact the
+performance of instances during a migration event.
+.RE
+\fBTERMINATE\fR
+.RS 2m
+The instances should be terminated.
+
+.RE
 .RE
 \fB\-\-restart\-on\-failure\fR
 .RS 2m

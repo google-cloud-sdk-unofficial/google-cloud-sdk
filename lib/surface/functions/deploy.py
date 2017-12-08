@@ -141,8 +141,9 @@ class Deploy(base.Command):
     try:
       # TODO(user): Use resources.py here after b/21908671 is fixed.
       # We got response for a get request so a function exists.
-      return client.projects_regions_functions.Get(
-          messages.CloudfunctionsProjectsRegionsFunctionsGetRequest(name=name))
+      return client.projects_locations_functions.Get(
+          messages.CloudfunctionsProjectsLocationsFunctionsGetRequest(
+              name=name))
     except apitools_exceptions.HttpError as error:
       if error.status_code == httplib.NOT_FOUND:
         # The function has not been found.
@@ -179,25 +180,21 @@ class Deploy(base.Command):
       The specified function with its description and configured filter.
     """
     messages = self.context['functions_messages']
-    trigger = messages.FunctionTrigger()
+    function = messages.CloudFunction()
     if args.trigger_topic:
       project = properties.VALUES.core.project.Get(required=True)
-      trigger.pubsubTopic = 'projects/{0}/topics/{1}'.format(
+      function.pubsubTrigger = 'projects/{0}/topics/{1}'.format(
           project, args.trigger_topic)
     trigger_bucket = args.trigger_bucket or args.trigger_gs_uri
     if trigger_bucket is not None:
-      trigger.gsUri = trigger_bucket
+      function.gcsTrigger = trigger_bucket
     if args.trigger_http:
-      web_trigger = messages.WebTrigger()
-      web_trigger.protocol = messages.WebTrigger.ProtocolValueValuesEnum.HTTP
-      trigger.webTrigger = web_trigger
-    function = messages.HostedFunction()
+      function.httpsTrigger = messages.HTTPSTrigger()
     function.name = name
     if args.entry_point:
       function.entryPoint = args.entry_point
     if args.timeout:
       function.timeout = str(args.timeout) + 's'
-    function.triggers = [trigger]
     return function
 
   def _DeployFunction(self, name, location, args, deploy_method):
@@ -230,9 +227,9 @@ class Deploy(base.Command):
     client = self.context['functions_client']
     messages = self.context['functions_messages']
     # TODO(user): Use resources.py here after b/21908671 is fixed.
-    op = client.projects_regions_functions.Create(
-        messages.CloudfunctionsProjectsRegionsFunctionsCreateRequest(
-            location=location, hostedFunction=function))
+    op = client.projects_locations_functions.Create(
+        messages.CloudfunctionsProjectsLocationsFunctionsCreateRequest(
+            location=location, cloudFunction=function))
     operations.Wait(op, messages, client)
     return self._GetExistingFunction(function.name)
 
@@ -241,7 +238,7 @@ class Deploy(base.Command):
     client = self.context['functions_client']
     messages = self.context['functions_messages']
     # TODO(user): Use resources.py here after b/21908671 is fixed.
-    op = client.projects_regions_functions.Update(function)
+    op = client.projects_locations_functions.Update(function)
     operations.Wait(op, messages, client)
     return self._GetExistingFunction(function.name)
 
@@ -307,8 +304,8 @@ class Deploy(base.Command):
     self._CheckArgs(args)
 
     project = properties.VALUES.core.project.Get(required=True)
-    location = 'projects/{0}/regions/{1}'.format(project, args.region)
-    name = 'projects/{0}/regions/{1}/functions/{2}'.format(
+    location = 'projects/{0}/locations/{1}'.format(project, args.region)
+    name = 'projects/{0}/locations/{1}/functions/{2}'.format(
         project, args.region, args.name)
 
     function = self._GetExistingFunction(name)

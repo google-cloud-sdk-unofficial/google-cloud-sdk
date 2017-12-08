@@ -14,7 +14,6 @@
 """ml models versions delete command."""
 
 from googlecloudsdk.api_lib.ml import versions
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
 from googlecloudsdk.core import apis
@@ -34,7 +33,6 @@ class Delete(base.DeleteCommand):
     flags.GetModelName(positional=False).AddToParser(parser)
     flags.VERSION_NAME.AddToParser(parser)
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -70,7 +68,6 @@ class BetaDelete(base.DeleteCommand):
     flags.GetModelName(positional=False).AddToParser(parser)
     flags.VERSION_NAME.AddToParser(parser)
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

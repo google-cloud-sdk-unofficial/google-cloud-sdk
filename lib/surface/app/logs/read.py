@@ -36,8 +36,7 @@ class Read(base.Command):
     parser.add_argument('--level', required=False, default='any',
                         choices=LOG_LEVELS,
                         help='Filter entries with severity equal to or higher '
-                             'than a given level. Must be one of `({0})`.'
-                        .format(', '.join(LOG_LEVELS)))
+                        'than a given level.')
 
     parser.add_argument('--logs',
                         required=False,

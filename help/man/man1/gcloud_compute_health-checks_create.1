@@ -1,0 +1,52 @@
+
+.TH "GCLOUD_COMPUTE_HEALTH\-CHECKS_CREATE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute health\-checks create \- create health checks for load balanced instances
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute health\-checks create\fR \fICOMMAND\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+
+.SH "DESCRIPTION"
+
+Create health checks for load balanced instances.
+
+
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "COMMANDS"
+
+\f5\fICOMMAND\fR\fR is one of the following:
+
+\fBhttp\fR
+.RS 2m
+Create a HTTP health check to monitor load balanced instances.
+
+.RE
+\fBhttps\fR
+.RS 2m
+Create a HTTPS health check to monitor load balanced instances.
+
+.RE
+\fBssl\fR
+.RS 2m
+Create a SSL health check to monitor load balanced instances.
+
+.RE
+\fBtcp\fR
+.RS 2m
+Create a TCP health check to monitor load balanced instances.
+.RE

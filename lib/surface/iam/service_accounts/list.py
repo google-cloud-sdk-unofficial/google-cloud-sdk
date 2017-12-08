@@ -16,7 +16,6 @@
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.iam import utils
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.iam import base_classes
@@ -35,7 +34,6 @@ class List(base_classes.BaseIamCommand, base.ListCommand):
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     if args.limit is not None:
       if args.limit < 1:

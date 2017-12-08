@@ -15,7 +15,6 @@
 """The runtime-configs variables get-value command."""
 
 from googlecloudsdk.command_lib.deployment_manager.runtime_configs import base_commands
-from googlecloudsdk.core import log
 
 
 class GetValue(base_commands.VariableRetrieverCommand):
@@ -37,12 +36,5 @@ class GetValue(base_commands.VariableRetrieverCommand):
           """,
   }
 
-  def Display(self, args, variable):
-    """Print the value of a variable without additional newline characters.
-
-    Args:
-      args: argparse.Namespace, The arguments that this command was invoked
-          with.
-      variable: The variable resource to display.
-    """
-    log.out.write(variable.value)
+  def Format(self, args):
+    return 'value[terminator=""](value.decode(base64))'

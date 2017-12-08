@@ -18,7 +18,6 @@ Exports data from a Cloud SQL instance to a Google Cloud Storage bucket as
 a MySQL dump file.
 """
 
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import arg_parsers
@@ -75,7 +74,6 @@ class Export(_BaseExport, base.Command):
   bucket as a MySQL dump file.
   """
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Exports data from a Cloud SQL instance.
 
@@ -140,7 +138,6 @@ class ExportBeta(_BaseExport, base.Command):
   bucket as a MySQL dump file.
   """
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Exports data from a Cloud SQL instance.
 

@@ -17,7 +17,6 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
-from googlecloudsdk.core import log
 from googlecloudsdk.core.credentials import store as c_store
 from oauth2client import client
 
@@ -43,7 +42,7 @@ class AccessToken(base.Command):
     if not cred.access_token:
       raise c_exc.ToolException(
           'No access token could be obtained from the current credentials.')
-    return cred.access_token
+    return cred
 
-  def Display(self, args, token):
-    log.Print(token)
+  def Format(self, args):
+    return 'value(access_token)'

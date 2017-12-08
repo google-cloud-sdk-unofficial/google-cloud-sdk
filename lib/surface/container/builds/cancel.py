@@ -13,7 +13,6 @@
 # limitations under the License.
 """Cancel build command."""
 
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import apis as core_apis
 from googlecloudsdk.core import log
@@ -35,9 +34,6 @@ class Cancel(base.Command):
         help='The build to cancel.',
     )
 
-  # TODO(user,b/29048700): Until resolution of this bug, the error message
-  # printed by gcloud (for 404s, eg) will not be as useful as it could be.
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

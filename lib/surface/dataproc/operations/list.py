@@ -53,8 +53,7 @@ class List(base.ListCommand):
     parser.add_argument(
         '--state-filter',
         choices=sorted(STATE_MATCHER_MAP.keys()),
-        help='Filter by cluster state. Choices are {0}.'.format(
-            sorted(STATE_MATCHER_MAP.keys())))
+        help='Filter by cluster state.')
 
   def Collection(self):
     return 'dataproc.operations'

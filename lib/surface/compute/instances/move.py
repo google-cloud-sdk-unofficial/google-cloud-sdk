@@ -16,6 +16,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.command_lib.projects import util
 
 
 class Move(base_classes.NoOutputAsyncMutator):
@@ -67,7 +68,9 @@ class Move(base_classes.NoOutputAsyncMutator):
         target_instance.Name(), collection='compute.instances',
         params={'zone': destination_zone.Name()})
 
-    project_ref = self.CreateGlobalReference(self.project)
+    project_ref = self.resources.Parse(
+        self.project, collection='compute.projects')
+    util.ParseProject(args.name)
 
     self._target_to_get_request = {}
     self._target_to_get_request[project_ref.SelfLink()] = (

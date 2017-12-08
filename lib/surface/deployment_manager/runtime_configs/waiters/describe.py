@@ -15,7 +15,6 @@
 """The runtime-configs waiters describe command."""
 
 from googlecloudsdk.api_lib.deployment_manager.runtime_configs import util
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.deployment_manager.runtime_configs import flags
 
@@ -57,7 +56,6 @@ class Describe(base.DescribeCommand):
     """
     return 'runtimeconfig.waiters'
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'runtime-configs waiters describe'.
 

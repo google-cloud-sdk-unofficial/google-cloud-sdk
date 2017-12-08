@@ -14,7 +14,6 @@
 
 """Lists customizable MySQL flags for Google Cloud SQL instances."""
 
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.calliope import base
 
 
@@ -24,7 +23,6 @@ class _BaseList(object):
   def Collection(self):
     return 'sql.flags'
 
-  @errors.ReraiseHttpException
   def Run(self, unused_args):
     """Lists customizable MySQL flags for Google Cloud SQL instances.
 

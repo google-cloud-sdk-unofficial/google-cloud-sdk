@@ -28,7 +28,7 @@ class List(base.ListCommand):
   """Lists all the functions in a given region."""
 
   def Collection(self):
-    return 'functions.projects.regions.functions'
+    return 'functions.projects.locations.functions'
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -42,7 +42,7 @@ class List(base.ListCommand):
     """
     client = self.context['functions_client']
     list_generator = list_pager.YieldFromList(
-        service=client.projects_regions_functions,
+        service=client.projects_locations_functions,
         request=self.BuildRequest(args),
         limit=args.limit, field='functions',
         batch_size_attribute='pageSize')
@@ -69,7 +69,7 @@ class List(base.ListCommand):
     """
     messages = self.context['functions_messages']
     project = properties.VALUES.core.project.Get(required=True)
-    location = 'projects/{0}/regions/{1}'.format(
+    location = 'projects/{0}/locations/{1}'.format(
         project, args.region)
-    return messages.CloudfunctionsProjectsRegionsFunctionsListRequest(
+    return messages.CloudfunctionsProjectsLocationsFunctionsListRequest(
         location=location)

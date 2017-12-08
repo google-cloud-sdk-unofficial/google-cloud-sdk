@@ -45,11 +45,11 @@ class Call(base.Command):
     """
     project = properties.VALUES.core.project.Get(required=True)
     # TODO(b/25364251): Use resource parser.
-    name = 'projects/{0}/regions/{1}/functions/{2}'.format(
+    name = 'projects/{0}/locations/{1}/functions/{2}'.format(
         project, args.region, args.name)
     client = self.context['functions_client']
     messages = self.context['functions_messages']
-    return client.projects_regions_functions.Call(
-        messages.CloudfunctionsProjectsRegionsFunctionsCallRequest(
+    return client.projects_locations_functions.Call(
+        messages.CloudfunctionsProjectsLocationsFunctionsCallRequest(
             name=name,
             callFunctionRequest=messages.CallFunctionRequest(data=args.data)))

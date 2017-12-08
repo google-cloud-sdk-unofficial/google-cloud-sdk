@@ -33,7 +33,7 @@ class CreateCluster(base.Command):
         choices=['HDD', 'SSD'],
         default='SSD',
         type=str.upper,
-        help='Storage class for the cluster. Valid options are HDD or SSD.')
+        help='Storage class for the cluster.')
 
   @util.MapHttpError
   def Run(self, args):

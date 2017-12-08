@@ -67,7 +67,8 @@ The IP address range for the pods in this cluster in CIDR notation (e.g.
 \fB\-\-disable\-addons\fR [\fIDISABLE_ADDONS\fR,...]
 .RS 2m
 List of cluster addons to disable. Options are HttpLoadBalancing,
-HorizontalPodAutoscaling
+HorizontalPodAutoscaling. \fIDISABLE_ADDONS\fR must be one of:
+\fBHttpLoadBalancing\fR, \fBHorizontalPodAutoscaling\fR.
 
 .RE
 \fB\-\-disk\-size\fR \fIDISK_SIZE\fR

@@ -19,8 +19,9 @@ import string
 
 from apitools.base.py import exceptions as apitools_exceptions
 
-from googlecloudsdk.api_lib.compute import constants
+from googlecloudsdk.api_lib.compute import constants as compute_constants
 from googlecloudsdk.api_lib.container import api_adapter
+from googlecloudsdk.api_lib.container import constants
 from googlecloudsdk.api_lib.container import kubeconfig as kconfig
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import arg_parsers
@@ -28,6 +29,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 
 
 def _Args(parser):
@@ -126,7 +128,7 @@ Alias,URI
 """.format(
     aliases='\n'.join(
         ','.join(value) for value in
-        sorted(constants.SCOPES.iteritems()))))
+        sorted(compute_constants.SCOPES.iteritems()))))
   parser.add_argument(
       '--enable-cloud-endpoints',
       action='store_true',
@@ -176,13 +178,6 @@ Alias,URI
   flags.AddImageTypeFlag(parser, 'cluster')
 
 
-NO_CERTS_ERROR_FMT = '''\
-Failed to get certificate data for cluster; the kubernetes
-api may not be accessible. You can retry later by running
-
-{command}'''
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a cluster for running containers."""
@@ -192,6 +187,7 @@ class Create(base.Command):
     _Args(parser)
     flags.AddClusterAutoscalingFlags(parser, suppressed=True)
     flags.AddLocalSSDFlag(parser, suppressed=True)
+    flags.AddEnableKubernetesAlphaFlag(parser, suppressed=True)
 
   def ParseCreateOptions(self, args):
     if not args.scopes:
@@ -212,6 +208,7 @@ class Create(base.Command):
         node_disk_size_gb=args.disk_size,
         enable_cloud_logging=args.enable_cloud_logging,
         enable_cloud_monitoring=args.enable_cloud_monitoring,
+        enable_kubernetes_alpha=args.enable_kubernetes_alpha,
         disable_addons=args.disable_addons,
         local_ssd_count=args.local_ssd_count,
         tags=args.tags,
@@ -252,6 +249,11 @@ class Create(base.Command):
     cluster_ref = adapter.ParseCluster(args.name)
     options = self.ParseCreateOptions(args)
 
+    if options.enable_kubernetes_alpha:
+      console_io.PromptContinue(message=constants.KUBERNETES_ALPHA_PROMPT,
+                                throw_if_unattended=True,
+                                cancel_on_no=True)
+
     operation = None
     try:
       operation_ref = adapter.CreateCluster(cluster_ref, options)
@@ -264,7 +266,7 @@ class Create(base.Command):
           timeout_s=args.timeout)
       cluster = adapter.GetCluster(cluster_ref)
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetError(error))
+      raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
 
     log.CreatedResource(cluster_ref)
     if operation.detail:
@@ -289,6 +291,7 @@ class CreateBeta(Create):
     _Args(parser)
     flags.AddClusterAutoscalingFlags(parser, suppressed=True)
     flags.AddLocalSSDFlag(parser)
+    flags.AddEnableKubernetesAlphaFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -300,3 +303,4 @@ class CreateAlpha(Create):
     _Args(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDFlag(parser)
+    flags.AddEnableKubernetesAlphaFlag(parser)

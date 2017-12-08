@@ -52,7 +52,8 @@ class Functions(base.Group):
     Returns:
       The updated context.
     """
-    context['functions_client'] = apis.GetClientInstance('functions', 'v1beta1')
+    context['functions_client'] = apis.GetClientInstance(
+        'cloudfunctions', 'v1beta2')
     context['functions_messages'] = apis.GetMessagesModule(
-        'functions', 'v1beta1')
+        'cloudfunctions', 'v1beta2')
     return context

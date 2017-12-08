@@ -138,36 +138,7 @@ class UpdateBackend(base_classes.ReadWriteCommand):
       backend_to_update: The backend message to modify.
     """
 
-    if args.balancing_mode:
-      backend_to_update.balancingMode = (
-          self.messages.Backend.BalancingModeValueValuesEnum(
-              args.balancing_mode))
-
-      # If the balancing mode is being changed to RATE, we must clear
-      # the max utilization field, otherwise the server will reject
-      # the request.
-      if (backend_to_update.balancingMode ==
-          self.messages.Backend.BalancingModeValueValuesEnum.RATE):
-        backend_to_update.maxUtilization = None
-
-    # Now, we set the parameters that control load balancing. The user
-    # can still provide a control parameter that is incompatible with
-    # the balancing mode; like the add-backend subcommand, we leave it
-    # to the server to perform validation on this.
-    # We changed alpha to do client-side validations.
-    if args.max_utilization is not None:
-      backend_to_update.maxUtilization = args.max_utilization
-
-    if args.max_rate is not None:
-      backend_to_update.maxRate = args.max_rate
-      backend_to_update.maxRatePerInstance = None
-
-    if args.max_rate_per_instance is not None:
-      backend_to_update.maxRate = None
-      backend_to_update.maxRatePerInstance = args.max_rate_per_instance
-
-    if args.capacity_scaler is not None:
-      backend_to_update.capacityScaler = args.capacity_scaler
+    _ModifyBalancingModeArgs(self.messages, args, backend_to_update)
 
   def Run(self, args):
     if not any([
@@ -176,6 +147,8 @@ class UpdateBackend(base_classes.ReadWriteCommand):
         args.max_utilization is not None,
         args.max_rate is not None,
         args.max_rate_per_instance is not None,
+        args.max_connections is not None,
+        args.max_connections_per_instance is not None,
         args.capacity_scaler is not None,
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
@@ -196,8 +169,8 @@ class UpdateBackendBeta(UpdateBackend):
     backend_flags.AddInstanceGroup(
         parser, operation_type='update', multizonal=True,
         with_deprecated_zone=True)
-    backend_flags.AddBalancingMode(parser, with_connection=True)
-    backend_flags.AddCapacityLimits(parser, with_connection=True)
+    backend_flags.AddBalancingMode(parser)
+    backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
 
   def CreateGroupReference(self, args):
@@ -212,27 +185,6 @@ class UpdateBackendBeta(UpdateBackend):
         zonal_resource_type='instanceGroups',
         regional_resource_type='regionInstanceGroups')
 
-  def ModifyBalancingModeArgs(self, args, backend_to_update):
-    """Override. See base class, UpdateBackend."""
-    _ModifyBalancingModeArgs(self.messages, args, backend_to_update)
-
-  def Run(self, args):
-    if not any([
-        args.description is not None,
-        args.balancing_mode,
-        args.max_utilization is not None,
-        args.max_rate is not None,
-        args.max_rate_per_instance is not None,
-        args.max_connections is not None,
-        args.max_connections_per_instance is not None,
-        args.capacity_scaler is not None,
-    ]):
-      raise exceptions.ToolException('At least one property must be modified.')
-
-    self.regional = backend_services_utils.IsRegionalRequest(self, args)
-
-    return super(UpdateBackend, self).Run(args)
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateBackendAlpha(UpdateBackend):
@@ -244,8 +196,8 @@ class UpdateBackendAlpha(UpdateBackend):
     backend_flags.AddDescription(parser)
     backend_flags.AddInstanceGroup(
         parser, operation_type='update', multizonal=True)
-    backend_flags.AddBalancingMode(parser, with_connection=True)
-    backend_flags.AddCapacityLimits(parser, with_connection=True)
+    backend_flags.AddBalancingMode(parser)
+    backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
 
   def CreateGroupReference(self, args):
@@ -258,26 +210,6 @@ class UpdateBackendAlpha(UpdateBackend):
         zone=args.instance_group_zone,
         zonal_resource_type='instanceGroups',
         regional_resource_type='regionInstanceGroups')
-
-  def ModifyBalancingModeArgs(self, args, backend_to_update):
-    """Override. See base class, UpdateBackend."""
-    _ModifyBalancingModeArgs(self.messages, args, backend_to_update)
-
-  def Run(self, args):
-    if not any([
-        args.description is not None,
-        args.balancing_mode,
-        args.max_utilization is not None,
-        args.max_rate is not None,
-        args.max_rate_per_instance is not None,
-        args.max_connections is not None,
-        args.max_connections_per_instance is not None,
-        args.capacity_scaler is not None,
-    ]):
-      raise exceptions.ToolException('At least one property must be modified.')
-
-    self.regional = backend_services_utils.IsRegionalRequest(self, args)
-    return super(UpdateBackend, self).Run(args)
 
 
 def _ClearMutualExclusiveBackendCapacityThresholds(backend):

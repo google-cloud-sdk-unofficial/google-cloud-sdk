@@ -217,7 +217,6 @@ If you have no default zone, then the pipeline may run in any zone.
 For more information on default zones, see
 https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_region_in_your_local_client''')
 
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

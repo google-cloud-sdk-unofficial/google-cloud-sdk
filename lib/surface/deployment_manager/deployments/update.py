@@ -118,21 +118,17 @@ class Update(base.Command):
     v2_messages = core_apis.GetMessagesModule('deploymentmanager', 'v2')
     parser.add_argument(
         '--create-policy',
-        help='Create policy for resources that have changed in the update. '
-        'Can be CREATE_OR_ACQUIRE (default) or ACQUIRE.',
-        dest='create_policy',
+        help='Create policy for resources that have changed in the update.',
         default='CREATE_OR_ACQUIRE',
-        choices=(v2_messages.DeploymentmanagerDeploymentsUpdateRequest
-                 .CreatePolicyValueValuesEnum.to_dict().keys()))
+        choices=(sorted(v2_messages.DeploymentmanagerDeploymentsUpdateRequest
+                        .CreatePolicyValueValuesEnum.to_dict().keys())))
 
     parser.add_argument(
         '--delete-policy',
-        help='Delete policy for resources that have changed in the update. '
-        'Can be DELETE (default) or ABANDON.',
-        dest='delete_policy',
+        help='Delete policy for resources that have changed in the update.',
         default='DELETE',
-        choices=(v2_messages.DeploymentmanagerDeploymentsUpdateRequest
-                 .DeletePolicyValueValuesEnum.to_dict().keys()))
+        choices=(sorted(v2_messages.DeploymentmanagerDeploymentsUpdateRequest
+                        .DeletePolicyValueValuesEnum.to_dict().keys())))
 
   def Collection(self):
     return 'deploymentmanager.resources_and_outputs'
@@ -197,7 +193,7 @@ class Update(base.Command):
       # fully implemented and all deployments have fingerprints.
       deployment.fingerprint = current_deployment.fingerprint or ''
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(dm_v2_util.GetError(error))
+      raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
 
     try:
       operation = client.deployments.Update(
@@ -213,7 +209,7 @@ class Update(base.Command):
           )
       )
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(dm_v2_util.GetError(error))
+      raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
     if args.async:
       return operation
     else:
@@ -230,7 +226,7 @@ class Update(base.Command):
                   + ' has errors or failed to complete within '
                   + str(OPERATION_TIMEOUT) + ' seconds.')
       except apitools_exceptions.HttpError as error:
-        raise exceptions.HttpException(dm_v2_util.GetError(error))
+        raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
 
       return dm_v2_util.FetchResourcesAndOutputs(client, messages, project,
                                                  args.deployment_name)

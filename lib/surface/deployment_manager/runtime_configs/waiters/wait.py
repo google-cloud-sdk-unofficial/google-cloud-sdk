@@ -15,7 +15,6 @@
 """The runtime-configs waiters wait command."""
 
 from googlecloudsdk.api_lib.deployment_manager.runtime_configs import util
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.deployment_manager.runtime_configs import flags
@@ -71,7 +70,6 @@ class Wait(base.Command):
     """
     return 'runtimeconfig.waiters'
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'runtime-configs waiters wait'.
 

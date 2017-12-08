@@ -131,7 +131,6 @@ class Connect(base.Command):
         required=False,
         help='Cloud SQL instance user to connect as.')
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Connects to a Cloud SQL instance.
 

@@ -55,4 +55,4 @@ class Wait(base.Command):
           operation_ref,
           'Waiting for {0} to complete'.format(operation_ref.operationId))
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetError(error))
+      raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)

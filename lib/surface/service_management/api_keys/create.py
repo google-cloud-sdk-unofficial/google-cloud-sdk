@@ -16,7 +16,6 @@
 
 from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import services_util
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 
@@ -40,11 +39,9 @@ class Create(base.Command, base_classes.BaseServiceManagementCommand):
     parser.add_argument('--type',
                         '-t',
                         type=lambda x: str(x).lower(),
-                        choices=API_KEY_TYPES,
+                        choices=sorted(API_KEY_TYPES),
                         default='server',
-                        help=('The type of API key to create. '
-                              'Choose from {0}. Default is server.'.format(
-                                  ', '.join(sorted(API_KEY_TYPES)))))
+                        help='The type of API key to create.')
 
     parser.add_argument('--name',
                         '-n',
@@ -68,7 +65,6 @@ class Create(base.Command, base_classes.BaseServiceManagementCommand):
                               'comma separating the package name and '
                               'fingerprint.'))
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management api-keys create'.
 

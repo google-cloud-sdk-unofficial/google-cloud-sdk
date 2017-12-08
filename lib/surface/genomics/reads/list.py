@@ -59,7 +59,6 @@ class List(base.ListCommand):
   def Collection(self):
     return 'genomics.alignments'
 
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -79,7 +78,7 @@ class List(base.ListCommand):
     else:
       global_params = None
 
-    pager = list_pager.YieldFromList(
+    return list_pager.YieldFromList(
         apitools_client.reads,
         messages.SearchReadsRequest(
             readGroupSetIds=[args.read_group_set_id],
@@ -92,4 +91,3 @@ class List(base.ListCommand):
         batch_size_attribute='pageSize',
         batch_size=args.page_size,
         field='alignments')
-    return genomics_util.ReraiseHttpExceptionPager(pager)

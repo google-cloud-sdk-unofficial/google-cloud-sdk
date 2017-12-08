@@ -14,7 +14,6 @@
 """Retrieves information about a backup."""
 
 import sys
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -43,7 +42,6 @@ class Describe(base.DescribeCommand):
         'example 2012-11-15T16:19:00.094Z.')
     flags.INSTANCE_FLAG.AddToParser(parser)
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Retrieves information about a backup.
 
@@ -100,7 +98,6 @@ class DescribeBeta(base.DescribeCommand):
         help='The ID of the Backup Run.')
     flags.INSTANCE_FLAG.AddToParser(parser)
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Retrieves information about a backup.
 

@@ -50,15 +50,15 @@ class Delete(base.Command):
     client = self.context['functions_client']
     messages = self.context['functions_messages']
     project = properties.VALUES.core.project.Get(required=True)
-    name = 'projects/{0}/regions/{1}/functions/{2}'.format(
+    name = 'projects/{0}/locations/{1}/functions/{2}'.format(
         project, args.region, args.name)
 
     prompt_message = 'Resource [{0}] will be deleted.'.format(name)
     if not console_io.PromptContinue(message=prompt_message):
       raise exceptions.FunctionsError('Deletion aborted by user.')
     # TODO(user): Use resources.py here after b/21908671 is fixed.
-    op = client.projects_regions_functions.Delete(
-        messages.CloudfunctionsProjectsRegionsFunctionsDeleteRequest(
+    op = client.projects_locations_functions.Delete(
+        messages.CloudfunctionsProjectsLocationsFunctionsDeleteRequest(
             name=name))
     operations.Wait(op, messages, client)
     log.DeletedResource(name)

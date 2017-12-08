@@ -151,7 +151,7 @@ class Create(base.Command):
           )
       )
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(dm_v2_util.GetError(error))
+      raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
     if args.async:
       return operation
     else:
@@ -168,7 +168,7 @@ class Create(base.Command):
                   + ' has errors or failed to complete within '
                   + str(OPERATION_TIMEOUT) + ' seconds.')
       except apitools_exceptions.HttpError as error:
-        raise exceptions.HttpException(dm_v2_util.GetError(error))
+        raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
 
       return dm_v2_util.FetchResourcesAndOutputs(client, messages, project,
                                                  args.deployment_name)

@@ -34,7 +34,6 @@ class Update(base.Command):
         help='Comma-delimited list of new variant names.')
     names.detailed_help = 'The new variant names replace existing names.'
 
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

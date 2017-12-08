@@ -59,4 +59,4 @@ class List(base.ListCommand):
     try:
       return adapter.ListOperations(project_id, zone).operations
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetError(error))
+      raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)

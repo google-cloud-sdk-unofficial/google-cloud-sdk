@@ -16,7 +16,6 @@
 Changes a user's password in a given instance with specified username and host.
 """
 
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
@@ -49,7 +48,6 @@ class SetPasswordBeta(base.CreateCommand):
     flags.PASSWORD_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Changes a user's password in a given instance.
 

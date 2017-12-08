@@ -32,7 +32,6 @@ class Delete(base.Command):
     parser.add_argument('variant_set_id',
                         help='The ID of the variant set to be deleted.')
 
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

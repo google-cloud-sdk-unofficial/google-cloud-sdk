@@ -14,7 +14,6 @@
 
 """'logging metrics create' command."""
 
-from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -33,7 +32,6 @@ class Create(base.CreateCommand):
   def Collection(self):
     return 'logging.metrics'
 
-  @util.HandleHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

@@ -43,9 +43,9 @@ class Describe(base.DescribeCommand):
     client = self.context['functions_client']
     messages = self.context['functions_messages']
     project = properties.VALUES.core.project.Get(required=True)
-    name = 'projects/{0}/regions/{1}/functions/{2}'.format(
+    name = 'projects/{0}/locations/{1}/functions/{2}'.format(
         project, args.region, args.name)
 
     # TODO(user): Use resources.py here after b/21908671 is fixed.
-    return client.projects_regions_functions.Get(
-        messages.CloudfunctionsProjectsRegionsFunctionsGetRequest(name=name))
+    return client.projects_locations_functions.Get(
+        messages.CloudfunctionsProjectsLocationsFunctionsGetRequest(name=name))

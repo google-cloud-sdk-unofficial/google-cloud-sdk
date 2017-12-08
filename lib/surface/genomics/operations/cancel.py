@@ -40,7 +40,6 @@ class Cancel(base.Command):
                         '"{0}" prefix for the name is optional.'
                         .format(_OPERATIONS_PREFIX))
 
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

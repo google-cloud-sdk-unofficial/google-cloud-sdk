@@ -15,7 +15,6 @@
 
 from googlecloudsdk.api_lib.ml import jobs
 from googlecloudsdk.api_lib.ml import jobs_v1beta1
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
 
@@ -29,7 +28,6 @@ class Describe(base.DescribeCommand):
     """Register flags for this command."""
     flags.JOB_NAME.AddToParser(parser)
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

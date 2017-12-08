@@ -70,7 +70,7 @@ class List(base.ListCommand):
     parser.add_argument(
         '--state-filter',
         choices=STATE_MATCHER_ENUM,
-        help='Filter by job state. Choices are {0}.'.format(STATE_MATCHER_ENUM))
+        help='Filter by job state.')
 
   def Collection(self):
     return 'dataproc.jobs'

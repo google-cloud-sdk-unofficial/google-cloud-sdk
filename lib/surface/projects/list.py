@@ -14,7 +14,6 @@
 """Command to list all project IDs associated with the active user."""
 
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import util as command_lib_util
 
@@ -44,7 +43,6 @@ class List(base.ListCommand):
   def GetUriFunc(self):
     return command_lib_util.ProjectsUriFunc
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run the list command."""
 

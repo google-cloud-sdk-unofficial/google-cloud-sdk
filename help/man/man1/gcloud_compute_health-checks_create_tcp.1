@@ -1,0 +1,116 @@
+
+.TH "GCLOUD_COMPUTE_HEALTH\-CHECKS_CREATE_TCP" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute health\-checks create tcp \- create a TCP health check to monitor load balanced instances
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute health\-checks create tcp\fR \fINAME\fR [\fB\-\-check\-interval\fR\ \fICHECK_INTERVAL\fR;\ default="5s"] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-healthy\-threshold\fR\ \fIHEALTHY_THRESHOLD\fR;\ default="2"] [\fB\-\-port\fR\ \fIPORT\fR;\ default="80"] [\fB\-\-port\-name\fR\ \fIPORT_NAME\fR] [\fB\-\-proxy\-header\fR\ \fIPROXY_HEADER\fR;\ default="NONE"] [\fB\-\-request\fR\ \fIREQUEST\fR] [\fB\-\-response\fR\ \fIRESPONSE\fR] [\fB\-\-timeout\fR\ \fITIMEOUT\fR;\ default="5s"] [\fB\-\-unhealthy\-threshold\fR\ \fIUNHEALTHY_THRESHOLD\fR;\ default="2"] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+
+.SH "DESCRIPTION"
+
+\fBgcloud compute health\-checks create tcp\fR is used to create a TCP health
+check. TCP health checks monitor instances in a load balancer controlled by a
+target pool. All arguments to the command are optional except for the name of
+the health check. For more information on load balancing, see
+https://cloud.google.com/compute/docs/load\-balancing\-and\-autoscaling/
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fINAME\fR
+.RS 2m
+The name of the TCP health check.
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-check\-interval\fR \fICHECK_INTERVAL\fR; default="5s"
+.RS 2m
+How often to perform a health check for an instance. For example, specifying
+\f5\fI10s\fR\fR will run the check every 10 seconds. Valid units for this flag
+are ``s'' for seconds and ``m'' for minutes. The default value is
+\f5\fI5s\fR\fR.
+
+.RE
+\fB\-\-description\fR \fIDESCRIPTION\fR
+.RS 2m
+An optional, textual description for the TCP health check.
+
+.RE
+\fB\-\-healthy\-threshold\fR \fIHEALTHY_THRESHOLD\fR; default="2"
+.RS 2m
+The number of consecutive successful health checks before an unhealthy instance
+is marked as healthy. The default is 2.
+
+.RE
+\fB\-\-port\fR \fIPORT\fR; default="80"
+.RS 2m
+The TCP port number that this health check monitors. The default value is 80.
+
+.RE
+\fB\-\-port\-name\fR \fIPORT_NAME\fR
+.RS 2m
+The port name that this health check monitors. By default, this is empty.
+
+.RE
+\fB\-\-proxy\-header\fR \fIPROXY_HEADER\fR; default="NONE"
+.RS 2m
+The type of proxy protocol header to be sent to the backend. \fIPROXY_HEADER\fR
+must be one of:
+
+\fBNONE\fR
+.RS 2m
+No proxy header is added.
+.RE
+\fBPROXY_V1\fR
+.RS 2m
+Adds the header "PROXY UNKNOWN\er\en".
+
+.RE
+.RE
+\fB\-\-request\fR \fIREQUEST\fR
+.RS 2m
+Application data to send once the TCP connection has been established. By
+default, this is empty. If both request and response are empty, the connection
+establishment alone will indicate health of the TCP connection.
+
+.RE
+\fB\-\-response\fR \fIRESPONSE\fR
+.RS 2m
+The bytes to match against the beginning of the response data. By default, this
+is empty. If empty, any response will indicate health of the TCP connection.
+
+.RE
+\fB\-\-timeout\fR \fITIMEOUT\fR; default="5s"
+.RS 2m
+If Google Compute Engine doesn't receive a healthy response from the instance by
+the time specified by the value of this flag, the health check request is
+considered a failure. For example, specifying \f5\fI10s\fR\fR will cause the
+check to wait for 10 seconds before considering the request a failure. Valid
+units for this flag are ``s'' for seconds and ``m'' for minutes. The default
+value is \f5\fI5s\fR\fR.
+
+.RE
+\fB\-\-unhealthy\-threshold\fR \fIUNHEALTHY_THRESHOLD\fR; default="2"
+.RS 2m
+The number of consecutive health check failures before a healthy instance is
+marked as unhealthy. The default is 2.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.

@@ -18,7 +18,6 @@ Imports data into a Cloud SQL instance from a MySQL dump file in
 Google Cloud Storage.
 """
 
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -58,7 +57,6 @@ class Import(base.Command):
         ' made. If not set, it is assumed that the database is specified in'
         ' the file to be imported.')
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Imports data into a Cloud SQL instance from Google Cloud Storage.
 
@@ -154,7 +152,6 @@ class ImportBeta(base.Command):
         action='store_true',
         help='Do not wait for the operation to complete.')
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Imports data into a Cloud SQL instance from Google Cloud Storage.
 

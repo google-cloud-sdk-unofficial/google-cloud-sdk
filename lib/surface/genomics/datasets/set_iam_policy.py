@@ -39,7 +39,6 @@ class SetIamPolicy(base.Command):
                         help='The ID of the dataset.')
     parser.add_argument('policy_file', help='JSON file with the IAM policy')
 
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     apitools_client = genomics_util.GetGenomicsClient()
     messages = genomics_util.GetGenomicsMessages()

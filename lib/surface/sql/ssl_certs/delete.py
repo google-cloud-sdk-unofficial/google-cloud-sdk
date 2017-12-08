@@ -15,7 +15,6 @@
 
 
 from googlecloudsdk.api_lib.sql import cert
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -47,7 +46,6 @@ class _BaseDelete(object):
 class Delete(_BaseDelete, base.Command):
   """Deletes an SSL certificate for a Cloud SQL instance."""
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Deletes an SSL certificate for a Cloud SQL instance.
 
@@ -108,7 +106,6 @@ class Delete(_BaseDelete, base.Command):
 class DeleteBeta(_BaseDelete, base.Command):
   """Deletes an SSL certificate for a Cloud SQL instance."""
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Deletes an SSL certificate for a Cloud SQL instance.
 

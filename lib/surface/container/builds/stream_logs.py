@@ -15,7 +15,6 @@
 
 
 from googlecloudsdk.api_lib.cloudbuild import logs as cb_logs
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import apis as core_apis
 
@@ -36,9 +35,6 @@ class StreamLogs(base.Command):
         help='The build whose logs shall be streamed.',
     )
 
-  # TODO(user,b/29048700): Until resolution of this bug, the error message
-  # printed by gcloud (for 404s, eg) will not be as useful as it could be.
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

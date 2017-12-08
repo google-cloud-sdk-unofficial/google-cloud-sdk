@@ -111,7 +111,7 @@ class Import(base.Command):
           ))
     except apitools_exceptions.HttpError as error:
       # Map our error messages (JSON API camelCased) back into flag names.
-      msg = (genomics_util.GetErrorMessage(error)
+      msg = (exceptions.HttpException(error).payload.status_message
              .replace('datasetId', '--dataset-id')
              .replace('partitionStrategy', '--partition-strategy')
              .replace('sourceUris', '--source-uris')

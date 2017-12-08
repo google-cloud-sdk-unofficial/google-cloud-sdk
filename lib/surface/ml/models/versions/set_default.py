@@ -14,7 +14,6 @@
 """ml models versions set-default command."""
 
 from googlecloudsdk.api_lib.ml import versions
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
 from googlecloudsdk.core import apis
@@ -31,7 +30,6 @@ class SetDefault(base.DescribeCommand):
     flags.GetModelName(positional=False).AddToParser(parser)
     flags.VERSION_NAME.AddToParser(parser)
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -68,7 +66,6 @@ class BetaSetDefault(base.DescribeCommand):
     flags.GetModelName(positional=False).AddToParser(parser)
     flags.VERSION_NAME.AddToParser(parser)
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

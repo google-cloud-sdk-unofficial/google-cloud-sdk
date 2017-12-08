@@ -14,7 +14,6 @@
 """Command to move a project into an organization."""
 
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import flags
 from googlecloudsdk.command_lib.projects import util as command_lib_util
@@ -66,7 +65,6 @@ class Move(base.Command):
   def Format(self, args):
     return self.ListFormat(args)
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     project_ref = command_lib_util.ParseProject(args.id)
     result = projects_api.Update(project_ref, organization=args.organization)

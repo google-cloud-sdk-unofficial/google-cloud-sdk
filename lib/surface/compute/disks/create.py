@@ -110,6 +110,7 @@ def _CommonArgs(parser, source_snapshot_arg):
 
   disk_type = parser.add_argument(
       '--type',
+      completion_resource='compute.diskTypes',
       help='Specifies the type of disk to create.')
   disk_type.detailed_help = """\
       Specifies the type of disk to create. To get a

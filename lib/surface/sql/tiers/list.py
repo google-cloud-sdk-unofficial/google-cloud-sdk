@@ -15,7 +15,6 @@
 """Lists all available service tiers for Google Cloud SQL."""
 
 
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
@@ -29,7 +28,6 @@ class _BaseList(object):
   def Format(self, args):
     return self.ListFormat(args)
 
-  @errors.ReraiseHttpException
   def Run(self, unused_args):
     """Lists all available service tiers for Google Cloud SQL.
 

@@ -44,7 +44,6 @@ class ModifyAckDeadline(base.Command):
   def Collection(self):
     return util.SUBSCRIPTIONS_MOD_ACK_COLLECTION
 
-  @util.MapHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

@@ -20,7 +20,6 @@ Lists instances in a given project in the alphabetical order of the
 
 from apitools.base.py import list_pager
 
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -29,7 +28,6 @@ from googlecloudsdk.core import resources
 class _BaseList(object):
   """Lists Cloud SQL instances in a given project."""
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Lists Cloud SQL instances in a given project.
 

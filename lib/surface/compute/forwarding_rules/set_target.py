@@ -18,7 +18,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.forwarding_rules import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Set(utils.ForwardingRulesTargetMutator):
   """Modify a forwarding rule to direct network traffic to a new target."""
 
@@ -69,26 +69,8 @@ class Set(utils.ForwardingRulesTargetMutator):
     return [request]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class SetBeta(Set):
-  """Modify a forwarding rule to direct network traffic to a new target."""
-
-  @staticmethod
-  def Args(parser):
-    flags.AddCommonFlags(parser)
-    flags.AddUpdateArgs(parser,
-                        include_alpha_targets=False,
-                        include_beta_targets=True)
-
-  def GetGlobalTarget(self, args):
-    if args.target_ssl_proxy:
-      return self.CreateGlobalReference(
-          args.target_ssl_proxy, resource_type='targetSslProxies')
-    return super(SetBeta, self).GetGlobalTarget(args)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SetAlpha(SetBeta):
+class SetAlpha(Set):
   """Modify a forwarding rule to direct network traffic to a new target."""
 
   @staticmethod
@@ -108,21 +90,8 @@ Set.detailed_help = {
 
         When creating a forwarding rule, exactly one of  ``--target-instance'',
         ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
-        or ``--target-vpn-gateway'' must be specified.
-        """.format(overview=flags.FORWARDING_RULES_OVERVIEW)),
-}
-
-SetBeta.detailed_help = {
-    'brief': ('Modify a forwarding rule to direct network traffic to a new '
-              'target'),
-    'DESCRIPTION': ("""\
-        *{{command}}* is used to set a new target for a forwarding
-        rule. {overview}
-
-        When creating a forwarding rule, exactly one of  ``--target-instance'',
-        ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
         ``--target-ssl-proxy'', or ``--target-vpn-gateway'' must be specified.
         """.format(overview=flags.FORWARDING_RULES_OVERVIEW)),
 }
 
-SetAlpha.detailed_help = SetBeta.detailed_help
+SetAlpha.detailed_help = Set.detailed_help

@@ -54,7 +54,6 @@ class List(base.ListCommand):
   def Collection(self):
     return 'genomics.references'
 
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     """Run 'references list'.
 

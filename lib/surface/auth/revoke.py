@@ -70,8 +70,11 @@ class Revoke(base.Command):
       c_store.Revoke(account)
     return accounts
 
-  def Display(self, unused_args, result):
-    if result:
-      log.Print('Revoked credentials for {account}.'.format(
-          account=', '.join(result)))
-      self.ExecuteCommand(['auth', 'list'])
+  def Format(self, unused_args):
+    return 'list[title="Revoked credentials:"]'
+
+  def Epilog(self, unused_results_were_displayed):
+    log_out = log.out
+    log.out = log.status
+    self.ExecuteCommand(['auth', 'list'])
+    log.out = log_out

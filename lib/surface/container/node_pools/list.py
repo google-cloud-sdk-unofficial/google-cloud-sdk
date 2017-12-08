@@ -70,7 +70,7 @@ class List(base.ListCommand):
       res = adapter.ListNodePools(project, zone, cluster)
       return res.nodePools
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetError(error))
+      raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
 
   def Collection(self):
     return 'container.projects.zones.clusters.nodePools'

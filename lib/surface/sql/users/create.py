@@ -16,7 +16,6 @@
 Creates a user in a given instance with specified username, host, and password.
 """
 
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
@@ -49,7 +48,6 @@ class CreateBeta(base.CreateCommand):
     flags.PASSWORD_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Creates a user in a given instance.
 

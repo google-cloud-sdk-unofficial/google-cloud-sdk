@@ -15,7 +15,6 @@
 
 from googlecloudsdk.api_lib.ml import operations
 from googlecloudsdk.api_lib.ml import versions
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
 from googlecloudsdk.core import apis
@@ -38,7 +37,6 @@ class Create(base.CreateCommand):
     flags.VERSION_DATA.AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -83,7 +81,6 @@ class BetaCreate(base.CreateCommand):
     flags.VERSION_DATA.AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -97,7 +94,8 @@ class BetaCreate(base.CreateCommand):
     op = versions.Create(args.model, args.version, args.origin)
     if args.async:
       return op
-    with console_io.ProgressTracker('Creating version...'):
+    with console_io.ProgressTracker(
+        'Creating version (this might take a few minutes)...'):
       client = apis.GetClientInstance('ml', 'v1beta1')
       operations.WaitForOperation(
           client.projects_operations,

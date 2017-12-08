@@ -101,7 +101,7 @@ class CancelPreview(base.Command):
       # fully implemented and all deployments have fingerprints.
       fingerprint = current_deployment.fingerprint or ''
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(dm_v2_util.GetError(error))
+      raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
 
     try:
       operation = client.deployments.CancelPreview(
@@ -115,7 +115,7 @@ class CancelPreview(base.Command):
           )
       )
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(dm_v2_util.GetError(error))
+      raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
     if args.async:
       return operation
     else:
@@ -132,7 +132,7 @@ class CancelPreview(base.Command):
                   + ' has errors or failed to complete within '
                   + str(OPERATION_TIMEOUT) + ' seconds.')
       except apitools_exceptions.HttpError as error:
-        raise exceptions.HttpException(dm_v2_util.GetError(error))
+        raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
       try:
         # Fetch a list of the canceled resources.
         response = client.resources.List(
@@ -144,4 +144,4 @@ class CancelPreview(base.Command):
         # TODO(user): Pagination
         return response.resources if response.resources else []
       except apitools_exceptions.HttpError as error:
-        raise exceptions.HttpException(dm_v2_util.GetError(error))
+        raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)

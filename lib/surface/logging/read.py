@@ -34,9 +34,8 @@ class Read(base.Command):
         nargs='?')
     parser.add_argument(
         '--order', required=False,
-        help=('Ordering of returned log entries based on timestamp field: '
-              '(DESC|ASC).'),
-        choices=('DESC', 'ASC'), default='DESC')
+        choices=('DESC', 'ASC'), default='DESC',
+        help='Ordering of returned log entries based on timestamp field.')
     parser.add_argument(
         '--freshness', required=False, type=arg_parsers.Duration(),
         help=('Return entries that are not older than this value. '
@@ -48,7 +47,6 @@ class Read(base.Command):
         list_command_path='organizations',
         help='Read log entries associated with this organization')
 
-  @util.HandlePagerHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

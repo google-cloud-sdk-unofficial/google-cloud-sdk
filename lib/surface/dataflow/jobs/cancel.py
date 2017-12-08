@@ -16,8 +16,8 @@
 """
 
 from googlecloudsdk.api_lib.dataflow import apis
+from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dataflow import job_utils
 from googlecloudsdk.core import log
 
@@ -43,4 +43,4 @@ class Cancel(base.Command):
         log.status.Print('Cancelled job [{0}]'.format(job_ref.jobId))
       except exceptions.HttpException as error:
         log.status.Print('Failed to cancel job [{0}]: {1}'.format(
-            job_ref.jobId, error.error))
+            job_ref.jobId, error.payload.status_message))

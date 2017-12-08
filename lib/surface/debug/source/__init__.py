@@ -17,7 +17,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 class Source(base.Group):
   """Commands to manage source information for Stackdriver tools.
 

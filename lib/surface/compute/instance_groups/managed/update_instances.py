@@ -27,19 +27,21 @@ def _AddArgs(parser, multizonal):
   """Adds args."""
   parser.add_argument('name', help='Managed instance group name.')
   parser.add_argument('--type',
-                      choices=['opportunistic', 'proactive'],
+                      choices={
+                          'opportunistic': 'Replace instances when needed.',
+                          'proactive': 'Replace instances proactively.',
+                      },
                       default='proactive',
                       category=base.COMMONLY_USED_FLAGS,
-                      help=('Desired update type: replace instances '
-                            'proactively or only when needed. '
-                            'Choices: opportunistic, proactive.'))
+                      help='Desired update type.')
   parser.add_argument('--action',
-                      choices=['replace', 'restart'],
+                      choices={
+                          'replace': 'Replace instances by new ones',
+                          'restart': 'Restart existing instances.',
+                      },
                       default='replace',
                       category=base.COMMONLY_USED_FLAGS,
-                      help=('Desired action: replace instances by new ones '
-                            'or restart existing. '
-                            'Choices: replace, restart.'))
+                      help='Desired action.')
   parser.add_argument('--max-surge',
                       type=str,
                       default='1',
@@ -102,7 +104,6 @@ def _AddArgs(parser, multizonal):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class UpdateInstancesAlpha(base_classes.BaseAsyncMutator):
   """Update instances of managed instance group."""
 

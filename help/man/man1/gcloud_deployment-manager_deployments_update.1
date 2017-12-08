@@ -47,14 +47,14 @@ launching an already\-previewed update to this deployment.
 .RE
 \fB\-\-create\-policy\fR \fICREATE_POLICY\fR; default="CREATE_OR_ACQUIRE"
 .RS 2m
-Create policy for resources that have changed in the update. Can be
-CREATE_OR_ACQUIRE (default) or ACQUIRE.
+Create policy for resources that have changed in the update. \fICREATE_POLICY\fR
+must be one of: \fBACQUIRE\fR, \fBCREATE_OR_ACQUIRE\fR.
 
 .RE
 \fB\-\-delete\-policy\fR \fIDELETE_POLICY\fR; default="DELETE"
 .RS 2m
-Delete policy for resources that have changed in the update. Can be DELETE
-(default) or ABANDON.
+Delete policy for resources that have changed in the update. \fIDELETE_POLICY\fR
+must be one of: \fBABANDON\fR, \fBDELETE\fR.
 
 .RE
 \fB\-\-preview\fR

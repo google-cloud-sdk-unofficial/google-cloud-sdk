@@ -53,12 +53,12 @@ class SetIamPolicy(base_classes.BaseAsyncMutator):
 
     errors = []
     request = (self.service, 'Get', instance_ref.Request())
-    instance = request_helper.MakeRequests(
+    instance = list(request_helper.MakeRequests(
         requests=[request],
         http=self.http,
         batch_url=self.batch_url,
         errors=errors,
-        custom_get_requests=None)
+        custom_get_requests=None))
     if errors or not instance:
       raise exceptions.ResourceMissingException(
           'Instance {0} does not exist.'.format(instance_ref.SelfLink()))
@@ -126,5 +126,6 @@ class SetIamPolicy(base_classes.BaseAsyncMutator):
         ),
         project=self.project,
         zone=instance_ref.zone,
+        instance=instance_ref.Name()
     )
     return [request]

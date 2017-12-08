@@ -14,7 +14,6 @@
 
 """Sets the password of the MySQL root user."""
 
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -52,7 +51,6 @@ class SetRootPassword(base.Command):
         help='The path to the filename which has the password to be set. The '
         'first line of the file will be interpreted as the password to be set.')
 
-  @errors.ReraiseHttpException
   def Run(self, args):
     """Sets the password of the MySQL root user.
 

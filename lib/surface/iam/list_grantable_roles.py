@@ -16,7 +16,6 @@
 import re
 import textwrap
 
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.iam import base_classes
 
@@ -48,7 +47,6 @@ class ListGrantableRoles(base_classes.BaseIamCommand):
         'resource',
         help=('The full resource name to get the list of roles for.'))
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     resource = None
     if args.resource.startswith('//'):

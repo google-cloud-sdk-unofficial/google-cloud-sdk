@@ -18,7 +18,6 @@ import httplib
 
 from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import common_flags
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.api_lib.util import http_retry
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
@@ -48,7 +47,6 @@ class RemoveIamPolicyBinding(
         '--member', required=True,
         help='The member to remove from the binding.')
 
-  @http_error_handler.HandleHttpErrors
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
     """Run 'service-management remove-iam-policy-binding'.

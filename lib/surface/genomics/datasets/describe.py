@@ -30,7 +30,6 @@ class Describe(base.DescribeCommand):
                         type=str,
                         help='The ID of the dataset to be described.')
 
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

@@ -14,7 +14,6 @@
 
 """'error-reporting events delete' command."""
 
-from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
@@ -25,7 +24,6 @@ from googlecloudsdk.core.console import console_io
 class Delete(base.Command):
   """Deletes all error events of the project."""
 
-  @util.HandleHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

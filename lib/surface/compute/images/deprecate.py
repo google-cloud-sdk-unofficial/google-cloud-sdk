@@ -18,7 +18,6 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute.images import flags
-from googlecloudsdk.core import apis as core_apis
 
 
 def _ResolveTime(absolute, relative_sec, current_time):
@@ -47,42 +46,28 @@ class DeprecateImages(base_classes.NoOutputAsyncMutator):
   @staticmethod
   def Args(parser):
     flags.DISK_IMAGE_ARG.AddArgument(parser)
+    flags.REPLACEMENT_DISK_IMAGE_ARG.AddArgument(parser)
 
-    messages = core_apis.GetMessagesModule('compute', 'v1')
-    deprecation_statuses = sorted(['ACTIVE'] + messages.DeprecationStatus
-                                  .StateValueValuesEnum.to_dict().keys())
+    deprecation_statuses = {
+        'ACTIVE': 'The image is currently supported.',
+        'DELETED': (
+            'New uses result in an error. Setting this state will not '
+            'automatically delete the image. You must still make a request to '
+            'delete the image to remove it from the image list.'),
+        'DEPRECATED': (
+            'Operations which create a new *DEPRECATED* resource return '
+            'successfully, but with a warning indicating that the image is '
+            'deprecated and recommending its replacement.'),
+        'OBSOLETE': 'New uses result in an error.',
+    }
 
-    state = parser.add_argument(
+    parser.add_argument(
         '--state',
         choices=deprecation_statuses,
+        default='ACTIVE',
         type=lambda x: x.upper(),
         required=True,
         help='The deprecation state to set on the image.')
-    state.detailed_help = """\
-       The deprecation state to set on the image.
-       An image's default state is ``ACTIVE'', suggesting that the image is
-       currently supported. Operations which create a new
-       resource using a ``DEPRECATED'' image
-       return successfully, but with a warning indicating that the image
-       is deprecated and recommending its replacement. New uses of ``OBSOLETE'' or
-       ``DELETED'' images result in an error. Note that setting the
-       deprecation state to ``DELETED'' will not automatically delete the
-       image. You must still make a request to delete the image to remove it
-       from the image list.
-       """
-
-    replacement = parser.add_argument(
-        '--replacement',
-        help='Specifies a Compute Engine image as a replacement.')
-    replacement.detailed_help = """\
-       Specifies a Compute Engine image as a replacement for the image
-       being phased out. Users of the deprecated image will be advised to switch
-       to this replacement. For example, ``--replacement example-image'' or
-       ``--replacement projects/google/global/images/example-image''. This
-       flag is required when setting the image state to anything other than
-       ``ACTIVE'' or when --delete-in, --delete-on, --obsolete-in, or
-       --obsolete-on is provided.
-       """
 
     delete_group = parser.add_mutually_exclusive_group()
 
@@ -91,12 +76,12 @@ class DeprecateImages(base_classes.NoOutputAsyncMutator):
         help=('Specifies the date and time when the state of this image '
               'will become DELETED.'))
     delete_on.detailed_help = """\
-       Similar to --delete-in, but specifies an absolute time when the status
+       Similar to *--delete-in*, but specifies an absolute time when the status
        should be set to DELETED. The date and time
        specified must be a valid RFC 3339 full-date or date-time.
        For times in UTC, this looks like ``YYYY-MM-DDTHH:MM:SSZ''. For example:
        2020-01-02T00:00:00Z for midnight on January 2, 2020 in UTC.
-       This flag is mutually exclusive with --delete-in.
+       This flag is mutually exclusive with *--delete-in*.
        """
 
     delete_in = delete_group.add_argument(
@@ -114,7 +99,7 @@ class DeprecateImages(base_classes.NoOutputAsyncMutator):
        Note that the image will not be deleted automatically. The image will
        only be marked as deleted. An explicit request to delete the image must
        be made in order to remove it from the image list.
-       This flag is mutually exclusive with --delete-on.
+       This flag is mutually exclusive with *--delete-on*.
        """
 
     obsolete_group = parser.add_mutually_exclusive_group()
@@ -124,9 +109,9 @@ class DeprecateImages(base_classes.NoOutputAsyncMutator):
         help=('Specifies the date and time when the state of this image '
               'will become OBSOLETE.'))
     obsolete_on.detailed_help = """\
-       Specifies time (in the same format as --delete-on) when this image's
+       Specifies time (in the same format as *--delete-on*) when this image's
        status should become OBSOLETE.
-       This flag is mutually exclusive with --obsolete-in.
+       This flag is mutually exclusive with *--obsolete-in*.
        """
 
     obsolete_in = obsolete_group.add_argument(
@@ -135,10 +120,10 @@ class DeprecateImages(base_classes.NoOutputAsyncMutator):
               'OBSOLETE.'),
         type=arg_parsers.Duration())
     obsolete_in.detailed_help = """\
-       Specifies time (in the same format as --delete-in) until this image's
+       Specifies time (in the same format as *--delete-in*) until this image's
        status should become OBSOLETE. Obsolete images will cause an error
        whenever an attempt is made to apply the image to a new disk.
-       This flag is mutually exclusive with --obsolete-on.
+       This flag is mutually exclusive with *--obsolete-on*.
        """
 
   @property
@@ -184,8 +169,10 @@ class DeprecateImages(base_classes.NoOutputAsyncMutator):
     else:
       state = self.messages.DeprecationStatus.StateValueValuesEnum(args.state)
 
-    if args.replacement:
-      replacement_uri = self.CreateGlobalReference(args.replacement).SelfLink()
+    replacement_ref = flags.REPLACEMENT_DISK_IMAGE_ARG.ResolveAsResource(
+        args, self.resources)
+    if replacement_ref:
+      replacement_uri = replacement_ref.SelfLink()
     else:
       replacement_uri = None
 

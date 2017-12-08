@@ -106,6 +106,7 @@ class AddBackend(base_classes.ReadWriteCommand):
       arguments.
     """
 
+    backend_services_utils.ValidateBalancingModeArgs(self.messages, args)
     return self.messages.Backend(
         balancingMode=balancing_mode,
         capacityScaler=args.capacity_scaler,
@@ -113,7 +114,9 @@ class AddBackend(base_classes.ReadWriteCommand):
         group=group_uri,
         maxRate=args.max_rate,
         maxRatePerInstance=args.max_rate_per_instance,
-        maxUtilization=args.max_utilization)
+        maxUtilization=args.max_utilization,
+        maxConnections=args.max_connections,
+        maxConnectionsPerInstance=args.max_connections_per_instance)
 
   def Modify(self, args, existing):
     backend_flags.WarnOnDeprecatedFlags(args)
@@ -158,8 +161,8 @@ class AddBackendBeta(AddBackend):
     backend_flags.AddInstanceGroup(
         parser, operation_type='add to',
         multizonal=True, with_deprecated_zone=True)
-    backend_flags.AddBalancingMode(parser, with_connection=True)
-    backend_flags.AddCapacityLimits(parser, with_connection=True)
+    backend_flags.AddBalancingMode(parser)
+    backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
 
   def CreateGroupReference(self, args):
@@ -174,18 +177,6 @@ class AddBackendBeta(AddBackend):
         zonal_resource_type='instanceGroups',
         regional_resource_type='regionInstanceGroups')
 
-  def CreateBackendMessage(self, group_uri, balancing_mode, args):
-    """Override. See base class, AddBackend."""
-
-    backend_services_utils.ValidateBalancingModeArgs(self.messages, args)
-    backend = super(AddBackendBeta, self).CreateBackendMessage(
-        group_uri=group_uri,
-        balancing_mode=balancing_mode,
-        args=args)
-    backend.maxConnections = args.max_connections
-    backend.maxConnectionsPerInstance = args.max_connections_per_instance
-    return backend
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AddBackendAlpha(AddBackendBeta):
@@ -197,8 +188,8 @@ class AddBackendAlpha(AddBackendBeta):
     backend_flags.AddDescription(parser)
     backend_flags.AddInstanceGroup(
         parser, operation_type='add to', multizonal=True)
-    backend_flags.AddBalancingMode(parser, with_connection=True)
-    backend_flags.AddCapacityLimits(parser, with_connection=True)
+    backend_flags.AddBalancingMode(parser)
+    backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
 
   def CreateReference(self, args):
@@ -236,6 +227,5 @@ AddBackend.detailed_help = {
         `gcloud compute backend-services edit`.
         """,
 }
-AddBackendBeta.detailed_help = AddBackend.detailed_help
 AddBackendAlpha.detailed_help = AddBackend.detailed_help
 AddBackendBeta.detailed_help = AddBackend.detailed_help

@@ -16,7 +16,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.core import apis as core_apis
+from googlecloudsdk.command_lib.compute.backend_services import flags as backend_services_flags
 
 
 class Create(base_classes.BaseAsyncCreator):
@@ -93,28 +93,7 @@ class Create(base_classes.BaseAsyncCreator):
         resource_type='target pool',
         operation_type='create')
 
-    messages = core_apis.GetMessagesModule('compute', 'v1')
-    session_affinities = sorted(messages.TargetPool
-                                .SessionAffinityValueValuesEnum
-                                .to_dict().keys())
-
-    session_affinity = parser.add_argument(
-        '--session-affinity',
-        choices=session_affinities,
-        type=lambda x: x.upper(),
-        default='NONE',
-        help='The session affinity option for the target pool.')
-    session_affinity.detailed_help = """\
-        Specifies the session affinity option for the connection.
-        If ``NONE'' is selected, then connections from the same client
-        IP address may go to any instance in the target pool.
-        If ``CLIENT_IP'' is selected, then connections
-        from the same client IP address will go to the same instance
-        in the target pool.
-        If ``CLIENT_IP_PROTO'' is selected, then connections from the same
-        client IP with the same IP protocol will go to the same client pool.
-        If not specified, then ``NONE'' is used as a default.
-        """
+    backend_services_flags.AddSessionAffinity(parser, target_pools=True)
 
     parser.add_argument(
         'name',

@@ -33,7 +33,6 @@ class Create(base.Command):
                         help='The name of the dataset being created.',
                         required=True)
 
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

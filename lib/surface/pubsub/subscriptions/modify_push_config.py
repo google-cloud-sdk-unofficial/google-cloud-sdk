@@ -36,7 +36,6 @@ class ModifyPushConfig(base.Command):
   def Collection(self):
     return util.SUBSCRIPTIONS_MOD_CONFIG_COLLECTION
 
-  @util.MapHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
 

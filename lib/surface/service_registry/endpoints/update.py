@@ -17,7 +17,6 @@
 from googlecloudsdk.api_lib.service_registry import arg_support
 from googlecloudsdk.api_lib.service_registry import constants
 from googlecloudsdk.api_lib.service_registry import write_support
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -59,7 +58,6 @@ class Update(base.Command):
     arg_support.AddDescriptionArg(parser)
     arg_support.AddEnableExternalArg(parser)
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Runs 'endpoints update'.
 

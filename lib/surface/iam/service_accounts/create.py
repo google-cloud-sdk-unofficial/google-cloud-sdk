@@ -17,7 +17,6 @@
 import textwrap
 
 from googlecloudsdk.api_lib.iam import utils
-from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope.exceptions import InvalidArgumentException
 from googlecloudsdk.command_lib.iam import base_classes
@@ -57,7 +56,6 @@ class Create(base_classes.BaseIamCommand, base.CreateCommand):
                         'account), which must be passed to subsequent '
                         'commands.')
 
-  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     if not utils.ValidateAccountId(args.name):
       raise InvalidArgumentException(args.name, 'invalid name')

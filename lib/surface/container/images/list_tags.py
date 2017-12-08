@@ -21,7 +21,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import http
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List tags and digests for the specified image."""
 

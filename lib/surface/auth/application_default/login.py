@@ -19,11 +19,9 @@ import textwrap
 from googlecloudsdk.api_lib.auth import util as auth_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.credentials import gce as c_gce
-from googlecloudsdk.core.credentials import store as c_store
 from oauth2client import client
 
 
@@ -52,15 +50,13 @@ class Login(base.Command):
 
     parser.add_argument(
         '--launch-browser',
-        action='store_true', default=True, dest='launch_browser',
+        action='store_true',
+        default=True,
         help='Launch a browser for authorization. If not enabled or DISPLAY '
         'variable is not set, prints a URL to standard output to be copied.')
     parser.add_argument(
-        '--brief', action='store_true',
-        help='Minimal user output.')
-    parser.add_argument(
         '--client-id-file',
-        help='A file containing a client id.')
+        help='A file containing your own client id to use to login.')
     parser.add_argument(
         '--scopes',
         type=arg_parsers.ArgList(min_length=1),
@@ -71,7 +67,6 @@ class Login(base.Command):
   def Format(self, unused_args):
     return None
 
-  @c_exc.RaiseToolExceptionInsteadOf(c_store.Error)
   def Run(self, args):
     """Run the authentication command."""
 
@@ -86,49 +81,42 @@ class Login(base.Command):
           to others with access to this virtual machine. Are you sure you want
           to authenticate with your personal account?
           """)
-      answer = console_io.PromptContinue(message=message)
-      if not answer:
-        return None
+      console_io.PromptContinue(
+          message=message, throw_if_unattended=True, cancel_on_no=True)
 
-    if auth_util.AdcEnvVariableIsSet():
+    override_file = auth_util.AdcEnvVariable()
+    if override_file:
       message = textwrap.dedent("""
-          The environment variable GOOGLE_APPLICATION_CREDENTIALS is set,
-          which means that the file pointed to by that variable will be used
-          instead of any credentials set up with this command. Do you want to
-          continue anyway?
-          """)
-      answer = console_io.PromptContinue(message=message)
-      if not answer:
-        return None
+          The environment variable [{envvar}] is set to:
+            [{override_file}]
+          Credentials will still be generated to the default location:
+            [{default_file}]
+          To use these credentials, unset this environment variable before
+          running your application.
+          """.format(envvar=client.GOOGLE_APPLICATION_CREDENTIALS,
+                     override_file=override_file,
+                     default_file=auth_util.ADCFilePath()))
+      console_io.PromptContinue(
+          message=message, throw_if_unattended=True, cancel_on_no=True)
 
-    scopes = args.scopes
-    if not scopes:
-      scopes = [auth_util.CLOUD_PLATFORM_SCOPE]
-
+    scopes = args.scopes or [auth_util.CLOUD_PLATFORM_SCOPE]
     launch_browser = auth_util.ShouldLaunchBrowser(args.launch_browser)
-    creds = auth_util.DoInstalledAppBrowserFlow(
-        client_id_file=args.client_id_file,
-        scopes=scopes,
-        launch_browser=launch_browser)
-    return self.SaveCredentials(creds, args.brief)
+    if args.client_id_file:
+      creds = auth_util.DoInstalledAppBrowserFlow(
+          launch_browser=launch_browser,
+          scopes=scopes,
+          client_id_file=args.client_id_file)
+    else:
+      creds = auth_util.DoInstalledAppBrowserFlow(
+          launch_browser=launch_browser,
+          scopes=scopes,
+          client_id=auth_util.DEFAULT_CREDENTIALS_DEFAULT_CLIENT_ID,
+          client_secret=auth_util.DEFAULT_CREDENTIALS_DEFAULT_CLIENT_SECRET)
 
-  def SaveCredentials(self, creds, brief):
-    """Saves the credentials in the well-known file for ADC."""
-    google_creds = client.GoogleCredentials(
-        creds.access_token, creds.client_id, creds.client_secret,
-        creds.refresh_token, creds.token_expiry, creds.token_uri,
-        creds.user_agent, creds.revoke_uri)
-    try:
-      auth_util.CreateWellKnownFileDir()
-      client.save_to_well_known_file(google_creds)
-    except IOError as e:
-      raise c_exc.ToolException(
-          'error saving Application Default Credentials: ' + str(e))
-    if not brief:
-      log.status.write(
-          '\nApplication Default Credentials are now saved, and will\n'
-          'use the provided account.\n')
-      log.status.write(
-          '\nThis does not affect any credentials that you may have\n'
-          'set up for the Google Cloud SDK.\n')
+    full_path = auth_util.SaveCredentialsAsADC(creds)
+    log.status.Print('\nCredentials saved to file: [{f}]'.format(f=full_path))
+    log.status.Print(
+        '\n'
+        'These credentials will be used by any library that requests\n'
+        'Application Default Credentials.')
     return creds
