@@ -37,14 +37,15 @@ def _Args(parser, release_track):
   Create.DISK_IMAGE_ARG.AddArgument(parser, operation_type='create')
   csek_utils.AddCsekKeyArgs(parser, resource_type='image')
 
+  labels_util.AddCreateLabelsFlags(parser)
+
   # Beta Args
-  if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-    labels_util.AddCreateLabelsFlags(parser)
+  if release_track in (base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA):
+    flags.AddCloningImagesArgs(parser, sources_group)
 
   # Alpha Args
   if release_track == base.ReleaseTrack.ALPHA:
     flags.MakeForceCreateArg().AddToParser(parser)
-    flags.AddCloningImagesArgs(parser, sources_group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

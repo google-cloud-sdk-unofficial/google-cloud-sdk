@@ -32,7 +32,7 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(backend_buckets_flags.DEFAULT_LIST_FORMAT)
-    backend_buckets_utils.AddUpdatableArgs(Create, parser)
+    backend_buckets_utils.AddUpdatableArgs(Create, parser, 'create')
     backend_buckets_flags.REQUIRED_GCS_BUCKET_ARG.AddArgument(parser)
 
   def Run(self, args):

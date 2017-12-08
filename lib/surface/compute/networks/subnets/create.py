@@ -27,7 +27,7 @@ def _AddArgs(cls, parser):
   cls.SUBNETWORK_ARG = flags.SubnetworkArgument()
   cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
       'The network to which the subnetwork belongs.')
-  cls.SUBNETWORK_ARG.AddArgument(parser)
+  cls.SUBNETWORK_ARG.AddArgument(parser, operation_type='create')
   cls.NETWORK_ARG.AddArgument(parser)
 
   parser.add_argument(

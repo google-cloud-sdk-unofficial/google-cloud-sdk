@@ -32,7 +32,7 @@ class Patch(base.UpdateCommand):
   def Args(cls, parser):
 
     cls.INTERCONNECT_ARG = flags.InterconnectArgument()
-    cls.INTERCONNECT_ARG.AddArgument(parser)
+    cls.INTERCONNECT_ARG.AddArgument(parser, operation_type='patch')
 
     parser.add_argument(
         '--description',

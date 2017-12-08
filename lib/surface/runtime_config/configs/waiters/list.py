@@ -53,14 +53,8 @@ class List(base.ListCommand):
           allowed.
     """
     flags.AddRequiredConfigFlag(parser)
-
-  def Collection(self):
-    """Returns the default collection path string.
-
-    Returns:
-      The default collection path string.
-    """
-    return 'runtimeconfig.waiters'
+    parser.display_info.AddFormat(
+        'table(name, createTime.date(), waiter_status(), error.message)')
 
   def Run(self, args):
     """Run 'runtime-configs waiters list'.

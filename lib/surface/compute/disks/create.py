@@ -93,7 +93,7 @@ def _SourceArgs(parser, source_snapshot_arg):
 
 def _CommonArgs(parser, source_snapshot_arg):
   """Add arguments used for parsing in all command tracks."""
-  Create.disks_arg.AddArgument(parser)
+  Create.disks_arg.AddArgument(parser, operation_type='create')
   parser.add_argument(
       '--description',
       help='An optional, textual description for the disks being created.')
@@ -123,6 +123,7 @@ def _CommonArgs(parser, source_snapshot_arg):
   _SourceArgs(parser, source_snapshot_arg)
 
   csek_utils.AddCsekKeyArgs(parser)
+  labels_util.AddCreateLabelsFlags(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -329,7 +330,6 @@ class CreateBeta(Create):
   def Args(parser):
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
-    labels_util.AddCreateLabelsFlags(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -348,7 +348,6 @@ class CreateAlpha(Create):
         hidden=True)
 
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
-    labels_util.AddCreateLabelsFlags(parser)
 
   def ValidateAndParse(self, args, compute_holder):
     if args.replica_zones is None and args.region is not None:

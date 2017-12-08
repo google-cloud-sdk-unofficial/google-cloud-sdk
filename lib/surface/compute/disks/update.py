@@ -22,7 +22,8 @@ from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.command_lib.util import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update a Google Compute Engine persistent disk.
 
@@ -53,7 +54,7 @@ class Update(base.UpdateCommand):
       cls.DISK_ARG = disks_flags.MakeDiskArgZonalOrRegional(plural=False)
     else:
       cls.DISK_ARG = disks_flags.MakeDiskArg(plural=False)
-    cls.DISK_ARG.AddArgument(parser)
+    cls.DISK_ARG.AddArgument(parser, operation_type='update')
     labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):

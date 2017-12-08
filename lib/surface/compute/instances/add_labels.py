@@ -23,7 +23,8 @@ from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.command_lib.util import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class InstancesAddLabels(base.UpdateCommand):
   """add-labels command for instances."""
 

@@ -31,7 +31,7 @@ class Describe(base.DescribeCommand):
   @classmethod
   def Args(cls, parser):
     cls.SECURITY_POLICY_ARG = flags.SecurityPolicyArgument()
-    cls.SECURITY_POLICY_ARG.AddArgument(parser)
+    cls.SECURITY_POLICY_ARG.AddArgument(parser, operation_type='describe')
 
   def Collection(self):
     return 'compute.securityPolicies'

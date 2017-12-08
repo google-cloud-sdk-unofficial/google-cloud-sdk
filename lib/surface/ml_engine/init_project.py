@@ -63,8 +63,8 @@ def _InitProject(version):
       cloud_ml_service_account, project))
 
 
-# TODO(b/36970124): Switch this over to an error
-@base.Deprecate(is_removed=False, warning=DEPRECATION_WARNING,
+# TODO(b/36970124): Remove completely
+@base.Deprecate(is_removed=True, warning=DEPRECATION_WARNING,
                 error=DEPRECATION_ERROR)
 class InitProject(base.Command):
   """Initialize project for Cloud ML Engine."""

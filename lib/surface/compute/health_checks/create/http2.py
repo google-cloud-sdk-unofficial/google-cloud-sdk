@@ -35,7 +35,7 @@ class Create(base.CreateCommand):
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument('HTTP2')
-    cls.HEALTH_CHECK_ARG.AddArgument(parser)
+    cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='create')
     health_checks_utils.AddHttpRelatedCreationArgs(parser)
     health_checks_utils.AddHttpRelatedResponseArg(parser)
     health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'HTTP2')

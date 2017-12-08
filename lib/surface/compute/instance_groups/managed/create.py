@@ -28,6 +28,10 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as managed_flags
 from googlecloudsdk.core import properties
 
+# API allows up to 58 characters but asked us to send only 54 (unless user
+# explicitly asks us for more).
+_MAX_LEN_FOR_DEDUCED_BASE_INSTANCE_NAME = 54
+
 
 def _AddInstanceGroupManagerArgs(parser):
   """Adds args."""
@@ -71,7 +75,7 @@ class CreateGA(base.CreateCommand):
     parser.display_info.AddFormat(managed_flags.DEFAULT_LIST_FORMAT)
     _AddInstanceGroupManagerArgs(parser=parser)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
-        parser)
+        parser, operation_type='create')
 
   def CreateGroupReference(self, args, client, resources):
     group_ref = (
@@ -115,6 +119,41 @@ class CreateGA(base.CreateCommand):
           project=group_ref.project,
           region=group_ref.region)
 
+  def _GetInstanceGroupManagerTargetPools(
+      self, target_pools, group_ref, holder):
+    pool_refs = []
+    if target_pools:
+      region = self.GetRegionForGroup(group_ref)
+      for pool in target_pools:
+        pool_refs.append(holder.resources.Parse(
+            pool,
+            params={
+                'project': properties.VALUES.core.project.GetOrFail,
+                'region': region
+            },
+            collection='compute.targetPools'))
+    return [pool_ref.SelfLink() for pool_ref in pool_refs]
+
+  def _GetInstanceGroupManagerBaseInstanceName(
+      self, base_name_arg, group_ref):
+    if base_name_arg:
+      return base_name_arg
+    return group_ref.Name()[0:_MAX_LEN_FOR_DEDUCED_BASE_INSTANCE_NAME]
+
+  def _CreateInstanceGroupManager(
+      self, args, group_ref, template_ref, client, holder):
+    """Create parts of Instance Group Manager shared between tracks."""
+    return client.messages.InstanceGroupManager(
+        name=group_ref.Name(),
+        description=args.description,
+        instanceTemplate=template_ref.SelfLink(),
+        baseInstanceName=self._GetInstanceGroupManagerBaseInstanceName(
+            args.base_instance_name, group_ref),
+        targetPools=self._GetInstanceGroupManagerTargetPools(
+            args.target_pool, group_ref, holder),
+        targetSize=int(args.size),
+    )
+
   def Run(self, args):
     """Creates and issues an instanceGroupManagers.Insert request.
 
@@ -133,38 +172,9 @@ class CreateGA(base.CreateCommand):
         args.template,
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='compute.instanceTemplates')
-    if args.target_pool:
-      region = self.GetRegionForGroup(group_ref)
-      pool_refs = [holder.resources.Parse(
-          pool,
-          params={
-              'project': properties.VALUES.core.project.GetOrFail,
-              'region': region
-          },
-          collection='compute.targetPools') for pool in args.target_pool]
-      pools = [pool_ref.SelfLink() for pool_ref in pool_refs]
-    else:
-      pools = []
 
-    name = group_ref.Name()
-    if args.base_instance_name:
-      base_instance_name = args.base_instance_name
-    else:
-      base_instance_name = name[0:54]
-
-    instance_group_manager = client.messages.InstanceGroupManager(
-        name=name,
-        description=args.description,
-        instanceTemplate=template_ref.SelfLink(),
-        baseInstanceName=base_instance_name,
-        targetPools=pools,
-        targetSize=int(args.size))
-    auto_healing_policies = (
-        managed_instance_groups_utils.CreateAutohealingPolicies(
-            holder.resources, client.messages, args))
-    if auto_healing_policies:
-      instance_group_manager.autoHealingPolicies = auto_healing_policies
-
+    instance_group_manager = self._CreateInstanceGroupManager(
+        args, group_ref, template_ref, client, holder)
     request = self.CreateResourceRequest(group_ref, instance_group_manager,
                                          client, holder.resources)
     service = self.GetServiceForGroup(group_ref, client.apitools_client)
@@ -187,7 +197,24 @@ class CreateBeta(CreateGA):
     _AddInstanceGroupManagerArgs(parser=parser)
     managed_instance_groups_utils.AddAutohealingArgs(parser)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
-        parser)
+        parser, operation_type='create')
+
+  def _CreateInstanceGroupManager(
+      self, args, group_ref, template_ref, client, holder):
+    """Create parts of Instance Group Manager shared between tracks."""
+    return client.messages.InstanceGroupManager(
+        name=group_ref.Name(),
+        description=args.description,
+        instanceTemplate=template_ref.SelfLink(),
+        baseInstanceName=self._GetInstanceGroupManagerBaseInstanceName(
+            args.base_instance_name, group_ref),
+        targetPools=self._GetInstanceGroupManagerTargetPools(
+            args.target_pool, group_ref, holder),
+        targetSize=int(args.size),
+        autoHealingPolicies=(
+            managed_instance_groups_utils.CreateAutohealingPolicies(
+                holder.resources, client.messages, args)),
+    )
 
 
 DETAILED_HELP = {

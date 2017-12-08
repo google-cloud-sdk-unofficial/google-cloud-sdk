@@ -33,7 +33,7 @@ class Update(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    backend_buckets_utils.AddUpdatableArgs(Update, parser)
+    backend_buckets_utils.AddUpdatableArgs(Update, parser, 'update')
     backend_buckets_flags.GCS_BUCKET_ARG.AddArgument(parser)
 
   def GetGetRequest(self, client, backend_bucket_ref):

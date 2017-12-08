@@ -73,7 +73,7 @@ class Delete(base.DeleteCommand):
         [](https://cloud.google.com/compute/docs/disks/persistent-disks#updateautodelete)
         """)
 
-    flags.INSTANCES_ARG.AddArgument(parser)
+    flags.INSTANCES_ARG.AddArgument(parser, operation_type='delete')
 
   def GetInstances(self, refs, client):
     """Fetches instance objects corresponding to the given references."""

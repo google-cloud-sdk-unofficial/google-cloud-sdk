@@ -93,14 +93,14 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
   if support_network_tier:
     instances_flags.AddNetworkTierArgs(parser, instance=True)
 
-  if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-    labels_util.AddCreateLabelsFlags(parser)
+  labels_util.AddCreateLabelsFlags(parser)
 
   parser.add_argument(
       '--description',
       help='Specifies a textual description of the instances.')
 
-  instances_flags.INSTANCES_ARG_FOR_CREATE.AddArgument(parser)
+  instances_flags.INSTANCES_ARG_FOR_CREATE.AddArgument(
+      parser, operation_type='create')
 
   csek_utils.AddCsekKeyArgs(parser)
 

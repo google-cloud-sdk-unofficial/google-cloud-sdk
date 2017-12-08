@@ -23,7 +23,8 @@ from googlecloudsdk.command_lib.compute.snapshots import flags as snapshots_flag
 from googlecloudsdk.command_lib.util import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class SnapshotsRemoveLabels(base.UpdateCommand):
 
   @staticmethod

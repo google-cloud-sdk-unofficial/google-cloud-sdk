@@ -42,13 +42,9 @@ class List(base.ListCommand):
           """,
   }
 
-  def Collection(self):
-    """Returns the default collection path string.
-
-    Returns:
-      The default collection path string.
-    """
-    return 'runtimeconfig.configurations'
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat('table(name, description)')
 
   def Run(self, args):
     """Run 'runtime-configs list'.

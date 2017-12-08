@@ -91,8 +91,9 @@ Multiple locations can be specified, separated by commas. For example:
   parser.add_argument(
       '--cluster-ipv4-cidr',
       help='The IP address range for the pods in this cluster in CIDR '
-      'notation (e.g. 10.0.0.0/14). Due to kube-proxy limitations, this range '
-      'must be a subset of the 10.0.0.0/8 space. Defaults to server-specified.')
+      'notation (e.g. 10.0.0.0/14).  Prior to Kubernetes version 1.7.0 '
+      'this must be a subset of 10.0.0.0/8; however, starting with version '
+      '1.7.0 can be any RFC 1918 IP range.')
   parser.add_argument(
       '--password',
       help='The password to use for cluster auth. Defaults to a '

@@ -14,6 +14,7 @@
 """Submit build command."""
 
 import os.path
+import uuid
 
 from apitools.base.py import encoding
 
@@ -230,8 +231,9 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
         _, suffix = os.path.splitext(args.source)
 
       # Next, stage the source to Cloud Storage.
-      staged_object = '{stamp}{suffix}'.format(
+      staged_object = '{stamp}-{uuid}{suffix}'.format(
           stamp=times.GetTimeStampFromDateTime(times.Now()),
+          uuid=uuid.uuid4().hex,
           suffix=suffix,
       )
       gcs_source_staging_dir = resources.REGISTRY.Parse(

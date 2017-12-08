@@ -59,7 +59,7 @@ class CreateFromContainer(base.CreateCommand):
         '--description',
         help='Specifies a textual description of the instances.')
 
-    instances_flags.INSTANCES_ARG.AddArgument(parser)
+    instances_flags.INSTANCES_ARG.AddArgument(parser, operation_type='create')
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

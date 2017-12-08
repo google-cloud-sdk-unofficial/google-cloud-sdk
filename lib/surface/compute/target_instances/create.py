@@ -41,8 +41,7 @@ class Create(base.CreateCommand):
     cls.INSTANCE_ARG = instance_flags.InstanceArgumentForTargetInstance()
     cls.INSTANCE_ARG.AddArgument(parser)
     cls.TARGET_INSTANCE_ARG = flags.TargetInstanceArgument()
-    cls.TARGET_INSTANCE_ARG.AddArgument(
-        parser, operation_type='create the target instance in')
+    cls.TARGET_INSTANCE_ARG.AddArgument(parser)
 
     parser.add_argument(
         '--description',

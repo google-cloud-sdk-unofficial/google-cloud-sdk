@@ -11,7 +11,7 @@ gcloud compute images create \- create Google Compute Engine images
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute images create\fR \fINAME\fR (\fB\-\-source\-disk\fR=\fISOURCE_DISK\fR\ |\ \fB\-\-source\-uri\fR=\fISOURCE_URI\fR) [\fB\-\-csek\-key\-file\fR=\fIFILE\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-family\fR=\fIFAMILY\fR] [\fB\-\-licenses\fR=[\fILICENSES\fR,...]] [\fB\-\-no\-require\-csek\-key\-create\fR] [\fB\-\-source\-disk\-zone\fR=\fISOURCE_DISK_ZONE\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
+\f5gcloud compute images create\fR \fIIMAGE_NAME\fR (\fB\-\-source\-disk\fR=\fISOURCE_DISK\fR\ |\ \fB\-\-source\-uri\fR=\fISOURCE_URI\fR) [\fB\-\-csek\-key\-file\fR=\fIFILE\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-family\fR=\fIFAMILY\fR] [\fB\-\-labels\fR=[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-licenses\fR=[\fILICENSES\fR,...]] [\fB\-\-no\-require\-csek\-key\-create\fR] [\fB\-\-source\-disk\-zone\fR=\fISOURCE_DISK_ZONE\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -36,8 +36,8 @@ https://cloud.google.com/compute/docs/creating\-custom\-image
 
 .RS 2m
 .TP 2m
-\fINAME\fR
-The name of the disk image.
+\fIIMAGE_NAME\fR
+The name of the disk image to create.
 
 
 .RE
@@ -82,6 +82,10 @@ An optional, textual description for the image being created.
 \fB\-\-family\fR=\fIFAMILY\fR
 The family of the image. When creating an instance or disk, specifying a family
 will cause the latest non\-deprecated image in the family to be used.
+
+.TP 2m
+\fB\-\-labels\fR=[\fIKEY\fR=\fIVALUE\fR,...]
+A list of label KEY=VALUE pairs to add.
 
 .TP 2m
 \fB\-\-licenses\fR=[\fILICENSES\fR,...]

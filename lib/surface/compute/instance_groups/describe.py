@@ -24,7 +24,8 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(parser)
+    flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(
+        parser, operation_type='describe')
 
   def Collection(self):
     return 'compute.instanceGroups'

@@ -36,7 +36,7 @@ class Create(base.CreateCommand):
         backend_service_flags.BackendServiceArgumentForTargetTcpProxy())
     cls.BACKEND_SERVICE_ARG.AddArgument(parser)
     cls.TARGET_TCP_PROXY_ARG = flags.TargetTcpProxyArgument()
-    cls.TARGET_TCP_PROXY_ARG.AddArgument(parser)
+    cls.TARGET_TCP_PROXY_ARG.AddArgument(parser, operation_type='create')
 
     parser.add_argument(
         '--description',

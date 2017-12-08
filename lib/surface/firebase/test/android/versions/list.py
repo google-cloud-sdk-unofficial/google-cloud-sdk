@@ -29,7 +29,16 @@ class List(base.ListCommand):
       parser: An argparse parser used to add arguments that follow this
           command in the CLI. Positional arguments are allowed.
     """
-    pass
+    parser.display_info.AddFormat("""
+          table[box](
+            id:label=OS_VERSION_ID:align=center,
+            versionString:label=VERSION:align=center,
+            codeName,
+            apiLevel:align=center,
+            releaseDate.date(format='%Y-%m-%d'):align=center,
+            tags.list().color(green=default,red=deprecated,yellow=preview)
+          )
+    """)
 
   def Run(self, args):
     """Run the 'gcloud firebase test android versions list' command.
@@ -43,12 +52,3 @@ class List(base.ListCommand):
     """
     catalog = util.GetAndroidCatalog(self.context)
     return catalog.versions
-
-  def Collection(self):
-    """Choose the default resource collection key used to list OS versions.
-
-    Returns:
-      A collection string used as a key to select the default ResourceInfo
-      from core.resources.resource_registry.RESOURCE_REGISTRY.
-    """
-    return 'firebase.test.android.versions'

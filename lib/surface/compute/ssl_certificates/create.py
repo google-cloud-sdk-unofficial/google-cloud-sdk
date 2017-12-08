@@ -34,7 +34,7 @@ class Create(base.CreateCommand):
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument()
-    cls.SSL_CERTIFICATE_ARG.AddArgument(parser)
+    cls.SSL_CERTIFICATE_ARG.AddArgument(parser, operation_type='create')
 
     parser.add_argument(
         '--description',

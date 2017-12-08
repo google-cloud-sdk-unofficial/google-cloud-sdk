@@ -34,7 +34,7 @@ class Update(base.UpdateCommand):
   @classmethod
   def Args(cls, parser):
     cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument('SSL')
-    cls.HEALTH_CHECK_ARG.AddArgument(parser)
+    cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='update')
     health_checks_utils.AddTcpRelatedUpdateArgs(parser)
     health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'SSL')
 

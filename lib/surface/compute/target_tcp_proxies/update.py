@@ -38,7 +38,7 @@ class Update(base.SilentCommand):
             required=False))
     cls.BACKEND_SERVICE_ARG.AddArgument(parser)
     cls.TARGET_TCP_PROXY_ARG = flags.TargetTcpProxyArgument()
-    cls.TARGET_TCP_PROXY_ARG.AddArgument(parser)
+    cls.TARGET_TCP_PROXY_ARG.AddArgument(parser, operation_type='update')
 
   def Run(self, args):
     if not (args.proxy_header or args.backend_service):

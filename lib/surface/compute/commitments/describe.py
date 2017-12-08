@@ -24,7 +24,8 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.MakeCommitmentArg(False).AddArgument(parser)
+    flags.MakeCommitmentArg(False).AddArgument(
+        parser, operation_type='describe')
 
   def Collection(self):
     return 'compute.commitments'

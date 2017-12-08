@@ -21,7 +21,8 @@ from googlecloudsdk.command_lib.compute.snapshots import flags as snapshots_flag
 from googlecloudsdk.command_lib.util import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update a Google Compute Engine snapshot.
 
@@ -46,7 +47,7 @@ class Update(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     Update.SnapshotArg = snapshots_flags.MakeSnapshotArg()
-    Update.SnapshotArg.AddArgument(parser)
+    Update.SnapshotArg.AddArgument(parser, operation_type='update')
     labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):

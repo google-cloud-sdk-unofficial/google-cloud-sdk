@@ -31,8 +31,7 @@ class Describe(base.DescribeCommand):
   def Args(parser):
     # This factory method overrides help message - operation_type is baked in
     # at argument construction time.
-    Describe.FIREWALL_ARG = flags.FirewallRuleArgument(
-        operation_type='describe')
+    Describe.FIREWALL_ARG = flags.FirewallRuleArgument()
     Describe.FIREWALL_ARG.AddArgument(parser, operation_type='describe')
 
   def Run(self, args):

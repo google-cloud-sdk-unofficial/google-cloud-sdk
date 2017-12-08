@@ -37,7 +37,7 @@ class Update(base.SilentCommand):
   @classmethod
   def Args(cls, parser):
     cls.TARGET_HTTP_PROXY_ARG = flags.TargetHttpProxyArgument()
-    cls.TARGET_HTTP_PROXY_ARG.AddArgument(parser)
+    cls.TARGET_HTTP_PROXY_ARG.AddArgument(parser, operation_type='update')
     cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy()
     cls.URL_MAP_ARG.AddArgument(parser)
 

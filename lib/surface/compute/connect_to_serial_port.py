@@ -146,6 +146,7 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCommand):
         scope_lister=instance_flags.GetInstanceZoneScopeLister(
             self.compute_client))[0]
     instance = self.GetInstance(instance_ref)
+    project = self.GetProject(instance_ref.project)
 
     # Determine the serial user, host tuple (remote)
     port = 'port={0}'.format(args.port)
@@ -167,7 +168,7 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCommand):
       log.out.Print(' '.join(cmd.Build(self.env)))
       return
     self.EnsureSSHKeyExists(
-        remote.user, instance, instance_ref.project)
+        remote.user, instance, project)
 
     # Don't wait for the instance to become SSHable. We are not connecting to
     # the instance itself through SSH, so the instance doesn't need to have

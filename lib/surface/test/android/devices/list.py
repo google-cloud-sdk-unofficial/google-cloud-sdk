@@ -36,7 +36,17 @@ class List(base.ListCommand):
       parser: An argparse parser used to add arguments that follow this
           command in the CLI. Positional arguments are allowed.
     """
-    pass
+    parser.display_info.AddFormat("""
+          table[box](
+            id:label=DEVICE_ID,
+            manufacturer:label=MAKE,
+            name:label=MODEL_NAME,
+            form.color(blue=VIRTUAL,yellow=PHYSICAL):label=FORM,
+            format("{0:4} x {1}", screenY, screenX):label=RESOLUTION,
+            supportedVersionIds.list(undefined="none"):label=OS_VERSION_IDS,
+            tags.list().color(green=default,red=deprecated,yellow=preview)
+          )
+    """)
 
   def Run(self, args):
     """Run the 'gcloud test android devices list' command.

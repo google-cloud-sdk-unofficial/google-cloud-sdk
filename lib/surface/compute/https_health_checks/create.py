@@ -35,7 +35,7 @@ class CreateHttpsHealthCheck(base.CreateCommand):
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.HTTPS_HEALTH_CHECKS_ARG = flags.HttpsHealthCheckArgument()
-    cls.HTTPS_HEALTH_CHECKS_ARG.AddArgument(parser)
+    cls.HTTPS_HEALTH_CHECKS_ARG.AddArgument(parser, operation_type='create')
 
     parser.add_argument(
         '--host',

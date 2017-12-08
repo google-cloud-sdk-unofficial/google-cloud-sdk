@@ -33,7 +33,7 @@ class Create(base.Command):
 
   @classmethod
   def Args(cls, parser):
-    flags.MakeCommitmentArg(False).AddArgument(parser)
+    flags.MakeCommitmentArg(False).AddArgument(parser, operation_type='create')
     parser.add_argument('--plan',
                         required=True,
                         choices=flags.VALID_PLANS,

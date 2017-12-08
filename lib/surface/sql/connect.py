@@ -23,7 +23,9 @@ from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib import info_holder
 from googlecloudsdk.core import execution_utils
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import iso_duration
@@ -221,4 +223,8 @@ class Connect(base.Command):
       sql_args.extend([flags['user'], args.user])
     sql_args.append(flags['password'])
 
-    execution_utils.Exec(sql_args)
+    try:
+      execution_utils.Exec(sql_args)
+    except OSError:
+      log.error('Failed to execute command "{0}"'.format(' '.join(sql_args)))
+      log.Print(info_holder.InfoHolder())

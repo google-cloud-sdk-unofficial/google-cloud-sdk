@@ -31,7 +31,7 @@ class Update(base_classes.BaseAsyncMutator):
       parser: An argparse.ArgumentParser instance.
     """
     cls.SUBNETWORK_ARG = flags.SubnetworkArgument()
-    cls.SUBNETWORK_ARG.AddArgument(parser)
+    cls.SUBNETWORK_ARG.AddArgument(parser, operation_type='update')
 
     parser.add_argument(
         '--enable-private-ip-google-access',

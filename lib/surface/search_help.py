@@ -20,23 +20,20 @@ from googlecloudsdk.command_lib.search_help import search
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class HelpSearch(base.Command):
-  """Search the help text of gcloud commands."""
+  """Search the help text of gcloud commands.
 
-  detailed_help = {
-      'DESCRIPTION': """\
-          Search the help text of gcloud commands for a term
-          of interest. Prints the command name and a summary
-          of the help text for any general release command whose
-          help text contains the searched term."""}
+  Search the help text of gcloud commands for a term of interest. Prints the
+  command name and a summary of the help text for any general release command
+  whose help text contains the searched term.
+  """
 
   @staticmethod
   def Args(parser):
+    parser.display_info.AddFormat(
+        "table(path.join(sep=' '):label='COMMAND', summary:wrap:label='HELP')")
     parser.add_argument('term',
                         help=('Term to search for.'))
 
   def Run(self, args):
     return search.RunSearch([args.term], self._cli_power_users_only)
 
-  def DeprecatedFormat(self, unused_args):
-    return ("table(path.join(sep=' '):label='COMMAND', "
-            "summary:wrap:label='HELP')")

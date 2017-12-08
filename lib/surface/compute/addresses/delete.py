@@ -32,7 +32,7 @@ class Delete(base.DeleteCommand):
   @classmethod
   def Args(cls, parser):
     cls.ADDRESSES_ARG = flags.AddressArgument(required=True)
-    cls.ADDRESSES_ARG.AddArgument(parser)
+    cls.ADDRESSES_ARG.AddArgument(parser, operation_type='delete')
 
   def Run(self, args):
     """Issues requests necessary to delete Addresses."""
@@ -44,8 +44,6 @@ class Delete(base.DeleteCommand):
         default_scope=compute_scope.ScopeEnum.REGION,
         scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-    # TODO(b/36056502): In the future we should support concurrently deleting
-    # both region and global addresses
     utils.PromptForDeletion(address_refs)
     requests = []
     for address_ref in address_refs:

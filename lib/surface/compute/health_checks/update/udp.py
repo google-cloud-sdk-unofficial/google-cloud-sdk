@@ -35,7 +35,7 @@ class Update(base.UpdateCommand):
   @classmethod
   def Args(cls, parser):
     cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument('UDP')
-    cls.HEALTH_CHECK_ARG.AddArgument(parser)
+    cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='update')
     health_checks_utils.AddUdpRelatedArgs(parser,
                                           request_and_response_required=False)
     health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'UDP')

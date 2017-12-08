@@ -20,7 +20,7 @@ from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 
 
 def _CommonArgs(parser):
-  Describe.disk_arg.AddArgument(parser)
+  Describe.disk_arg.AddArgument(parser, operation_type='describe')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)

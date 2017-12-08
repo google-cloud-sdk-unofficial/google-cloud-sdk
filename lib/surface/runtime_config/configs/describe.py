@@ -44,14 +44,6 @@ class Describe(base.DescribeCommand):
     """
     parser.add_argument('name', help='The runtime-config resource name.')
 
-  def Collection(self):
-    """Returns the default collection path string.
-
-    Returns:
-      The default collection path string.
-    """
-    return 'runtimeconfig.configurations'
-
   def Run(self, args):
     """Run 'runtime-configs describe'.
 

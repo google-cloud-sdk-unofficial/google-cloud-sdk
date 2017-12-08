@@ -41,7 +41,7 @@ class Update(base.UpdateCommand):
   @classmethod
   def Args(cls, parser):
     cls.HTTPS_HEALTH_CHECKS_ARG = flags.HttpsHealthCheckArgument()
-    cls.HTTPS_HEALTH_CHECKS_ARG.AddArgument(parser)
+    cls.HTTPS_HEALTH_CHECKS_ARG.AddArgument(parser, operation_type='update')
 
     parser.add_argument(
         '--host',

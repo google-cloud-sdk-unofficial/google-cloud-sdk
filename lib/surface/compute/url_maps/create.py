@@ -76,7 +76,7 @@ class Create(base.CreateCommand):
     cls.BACKEND_SERVICE_ARG = (
         backend_service_flags.BackendServiceArgumentForUrlMap(required=False))
     cls.URL_MAP_ARG = flags.UrlMapArgument()
-    cls.URL_MAP_ARG.AddArgument(parser)
+    cls.URL_MAP_ARG.AddArgument(parser, operation_type='create')
 
     _Args(parser)
 

@@ -22,7 +22,8 @@ from googlecloudsdk.command_lib.compute.images import flags as images_flags
 from googlecloudsdk.command_lib.util import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update a Google Compute Engine image.
 
@@ -49,7 +50,7 @@ class Update(base.UpdateCommand):
   @classmethod
   def Args(cls, parser):
     cls.DISK_IMAGE_ARG = images_flags.MakeDiskImageArg(plural=False)
-    cls.DISK_IMAGE_ARG.AddArgument(parser)
+    cls.DISK_IMAGE_ARG.AddArgument(parser, operation_type='update')
     labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):

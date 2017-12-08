@@ -27,7 +27,7 @@ virtual machine instances.
 .RS 2m
 .TP 2m
 \fIINSTANCE_NAMES\fR [\fIINSTANCE_NAMES\fR ...]
-The names of the instances.
+The names of the instances to delete.
 
 
 .RE
@@ -38,10 +38,10 @@ The names of the instances.
 .RS 2m
 .TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
-The zone of the instances to operate on. If not specified, you may be prompted
-to select a zone. \f5gcloud\fR will attempt to identify the zone by searching
-for resources in your project. If the zone cannot be determined, you will then
-be prompted with all Google Cloud Platform zones.
+The zone of the instances to delete. If not specified, you may be prompted to
+select a zone. \f5gcloud\fR will attempt to identify the zone by searching for
+resources in your project. If the zone cannot be determined, you will then be
+prompted with all Google Cloud Platform zones.
 
 To avoid prompting when this flag is omitted, you can set the
 \f5\fIcompute/zone\fR\fR property:

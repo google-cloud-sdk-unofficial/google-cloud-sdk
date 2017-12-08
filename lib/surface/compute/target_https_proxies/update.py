@@ -47,7 +47,7 @@ class Update(base.SilentCommand):
             'target HTTPS proxy', required=False))
     cls.SSL_CERTIFICATE_ARG.AddArgument(parser)
     cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument()
-    cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser)
+    cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser, operation_type='update')
     cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy(
         required=False, proxy_type='HTTPS')
     cls.URL_MAP_ARG.AddArgument(parser)

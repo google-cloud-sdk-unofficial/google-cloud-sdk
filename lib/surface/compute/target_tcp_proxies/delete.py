@@ -26,7 +26,7 @@ class Delete(base.DeleteCommand):
   @staticmethod
   def Args(parser):
     Delete.TARGET_TCP_PROXY_ARG = flags.TargetTcpProxyArgument(plural=True)
-    Delete.TARGET_TCP_PROXY_ARG.AddArgument(parser)
+    Delete.TARGET_TCP_PROXY_ARG.AddArgument(parser, operation_type='delete')
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

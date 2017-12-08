@@ -54,7 +54,7 @@ class Create(base.CreateCommand):
     cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
     _Args(parser, include_beta=False, include_alpha=False)
     flags.ADDRESS_ARG.AddArgument(parser)
-    cls.FORWARDING_RULE_ARG.AddArgument(parser)
+    cls.FORWARDING_RULE_ARG.AddArgument(parser, operation_type='create')
 
   def ConstructProtocol(self, messages, args):
     if args.ip_protocol:
@@ -194,7 +194,7 @@ class CreateBeta(Create):
     cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
     _Args(parser, include_beta=True, include_alpha=False)
     flags.AddAddressesAndIPVersions(parser, required=False)
-    cls.FORWARDING_RULE_ARG.AddArgument(parser)
+    cls.FORWARDING_RULE_ARG.AddArgument(parser, operation_type='create')
 
   def _CreateGlobalRequests(self, client, resources, args, forwarding_rule_ref):
     """Create a globally scoped request."""
@@ -244,7 +244,7 @@ class CreateAlpha(Create):
     cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
     _Args(parser, include_beta=True, include_alpha=True)
     flags.AddAddressesAndIPVersions(parser, required=False)
-    cls.FORWARDING_RULE_ARG.AddArgument(parser)
+    cls.FORWARDING_RULE_ARG.AddArgument(parser, operation_type='create')
 
   def ConstructNetworkTier(self, messages, args):
     if args.network_tier:

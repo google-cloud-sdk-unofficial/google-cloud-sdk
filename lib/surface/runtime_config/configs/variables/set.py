@@ -106,14 +106,6 @@ class Set(base.CreateCommand):
                               'is transmitted on the wire and requires less '
                               'quota on the backend.'))
 
-  def Collection(self):
-    """Returns the default collection path string.
-
-    Returns:
-      The default collection path string.
-    """
-    return 'runtimeconfig.variables'
-
   def Run(self, args):
     """Run 'runtime-configs variables set'.
 

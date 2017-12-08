@@ -37,7 +37,7 @@ class Create(base.CreateCommand):
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.TARGET_HTTP_PROXY_ARG = flags.TargetHttpProxyArgument()
-    cls.TARGET_HTTP_PROXY_ARG.AddArgument(parser)
+    cls.TARGET_HTTP_PROXY_ARG.AddArgument(parser, operation_type='create')
     cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy()
     cls.URL_MAP_ARG.AddArgument(parser)
 

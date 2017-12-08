@@ -60,14 +60,6 @@ class Wait(base.Command):
 
     parser.add_argument('name', help='The waiter name.')
 
-  def Collection(self):
-    """Returns the default collection path string.
-
-    Returns:
-      The default collection path string.
-    """
-    return 'runtimeconfig.waiters'
-
   def Run(self, args):
     """Run 'runtime-configs waiters wait'.
 

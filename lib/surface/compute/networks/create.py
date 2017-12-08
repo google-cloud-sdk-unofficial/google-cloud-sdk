@@ -22,9 +22,12 @@ from googlecloudsdk.api_lib.compute import networks_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.networks import flags
+from googlecloudsdk.command_lib.compute.networks import network_utils
 from googlecloudsdk.core import log
+from googlecloudsdk.core.resource import resource_projector
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Google Compute Engine network.
 
@@ -42,35 +45,9 @@ class Create(base.CreateCommand):
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.NETWORK_ARG = flags.NetworkArgument()
-    cls.NETWORK_ARG.AddArgument(parser)
+    cls.NETWORK_ARG.AddArgument(parser, operation_type='create')
 
-    parser.add_argument(
-        '--description',
-        help='An optional, textual description for the network.')
-
-    parser.add_argument(
-        '--mode',
-        metavar='NETWORK_TYPE',
-        choices={
-            'auto': (
-                'Subnets are created automatically. This is the recommended '
-                'selection.'),
-            'custom': 'Create subnets manually.',
-            'legacy': (
-                'Create an old style network that has a range and cannot have '
-                'subnets.'),
-        },
-        required=False,
-        help='The network type.')
-    parser.add_argument(
-        '--range',
-        help="""\
-        Specifies the IPv4 address range of legacy mode networks. The range
-        must be specified in CIDR format:
-        [](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
-
-        This flag only works if mode is legacy.
-        """)
+    network_utils.AddCreateArgs(parser)
 
   def Run(self, args):
     """Issues the request necessary for adding the network."""
@@ -124,5 +101,70 @@ class Create(base.CreateCommand):
 
         $ gcloud compute firewall-rules create <FIREWALL_NAME> --network {0} --allow tcp,udp,icmp --source-ranges <IP_RANGE>
         $ gcloud compute firewall-rules create <FIREWALL_NAME> --network {0} --allow tcp:22,tcp:3389,icmp
+        """.format(self._network_name)
+    log.status.Print(textwrap.dedent(message))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(base.CreateCommand):
+  """Create a Google Compute Engine network.
+
+  *{command}* is used to create virtual networks. A network
+  performs the same function that a router does in a home
+  network: it describes the network range and gateway IP
+  address, handles communication between instances, and serves
+  as a gateway between instances and callers outside the
+  network.
+  """
+
+  NETWORK_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    parser.display_info.AddFormat(flags.ALPHA_LIST_FORMAT)
+    cls.NETWORK_ARG = flags.NetworkArgument()
+    cls.NETWORK_ARG.AddArgument(parser)
+    network_utils.AddCreateAlphaArgs(parser)
+
+  def Run(self, args):
+    """Issues the request necessary for adding the network."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+    messages = client.messages
+
+    network_utils.CheckRangeLegacyModeOrRaise(args)
+
+    network_ref = self.NETWORK_ARG.ResolveAsResource(args, holder.resources)
+    self._network_name = network_ref.Name()
+    network_resource = networks_utils.CreateNetworkResourceFromArgs(
+        messages=messages,
+        network_ref=network_ref,
+        network_args=args)
+
+    request = (
+        client.apitools_client.networks,
+        'Insert',
+        client.messages.ComputeNetworksInsertRequest(
+            network=network_resource, project=network_ref.project)
+    )
+    response = client.MakeRequests([request])[0]
+
+    resource = resource_projector.MakeSerializable(response)
+    resource['x_gcloud_subnet_mode'] = networks_utils.GetSubnetMode(response)
+    resource['x_gcloud_bgp_routing_mode'] = networks_utils.GetBgpRoutingMode(
+        response)
+    return resource
+
+  def Epilog(self, resources_were_displayed=True):
+    message = """\
+
+Instances on this network will not be reachable until firewall rules are
+created. As an example, you can allow all internal traffic between instances as
+well as SSH, RDP, and ICMP by running:
+
+$ gcloud compute firewall-rules create <FIREWALL_NAME> --network {0} --allow \
+tcp,udp,icmp --source-ranges <IP_RANGE>
+$ gcloud compute firewall-rules create <FIREWALL_NAME> --network {0} --allow \
+tcp:22,tcp:3389,icmp
         """.format(self._network_name)
     log.status.Print(textwrap.dedent(message))

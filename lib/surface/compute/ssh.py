@@ -121,6 +121,12 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
         scope_lister=instance_flags.GetInstanceZoneScopeLister(
             self.compute_client))[0]
     instance = self.GetInstance(instance_ref)
+    project = self.GetProject(instance_ref.project)
+    if args.plain:
+      use_oslogin = False
+    else:
+      user, use_oslogin = self.CheckForOsloginAndGetUser(
+          instance, project, user)
     if self._use_internal_ip:
       ip_address = ssh_utils.GetInternalIPAddress(instance)
     else:
@@ -162,11 +168,11 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
       log.out.Print(' '.join(cmd.Build(self.env)))
       return
 
-    if args.plain:
+    if args.plain or use_oslogin:
       keys_newly_added = False
     else:
       keys_newly_added = self.EnsureSSHKeyExists(
-          remote.user, instance, instance_ref.project,
+          remote.user, instance, project,
           use_account_service=self._use_account_service)
 
     if keys_newly_added:

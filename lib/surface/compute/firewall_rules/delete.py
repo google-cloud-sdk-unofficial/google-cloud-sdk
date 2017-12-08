@@ -30,8 +30,7 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    Delete.FIREWALL_ARG = flags.FirewallRuleArgument(
-        plural=True, operation_type='delete')
+    Delete.FIREWALL_ARG = flags.FirewallRuleArgument(plural=True)
     Delete.FIREWALL_ARG.AddArgument(parser, operation_type='delete')
 
   def Run(self, args):

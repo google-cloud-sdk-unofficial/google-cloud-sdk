@@ -31,6 +31,10 @@ class ListGrantableRoles(base_classes.BaseIamCommand):
 
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""\
+          List grantable roles for a project:
+
+            $ {command} //cloudresourcemanager.googleapis.com/projects/PROJECT_ID
+
           List grantable roles for a resource identified via full resource name:
 
             $ {command} //compute.googleapis.com/projects/example-project/zones/us-central1-f/instances/example-instance

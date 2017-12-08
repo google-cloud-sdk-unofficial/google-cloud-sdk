@@ -71,9 +71,9 @@ class EnableDebug(base.Command):
 
   def Run(self, args):
     api_client = appengine_api_client.GetApiClient()
-    all_instances = api_client.GetAllInstances(
+    all_instances = list(api_client.GetAllInstances(
         args.service, args.version,
-        version_filter=lambda v: util.Environment.IsFlexible(v.environment))
+        version_filter=lambda v: util.Environment.IsFlexible(v.environment)))
     try:
       res = resources.REGISTRY.Parse(args.instance)
     except Exception:  # pylint:disable=broad-except

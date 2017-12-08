@@ -22,7 +22,7 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.ACCELERATOR_TYPES_ARG.AddArgument(parser)
+    flags.ACCELERATOR_TYPES_ARG.AddArgument(parser, operation_type='describe')
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

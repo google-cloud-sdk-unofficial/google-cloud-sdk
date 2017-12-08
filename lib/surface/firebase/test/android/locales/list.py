@@ -42,7 +42,14 @@ class List(base.ListCommand):
       parser: An argparse parser used to add arguments that follow this
           command in the CLI. Positional arguments are allowed.
     """
-    pass
+    parser.display_info.AddFormat("""
+          table[box](
+            id:label=LOCALE,
+            name,
+            region,
+            tags.list().color(green=default,red=deprecated,yellow=preview)
+          )
+    """)
 
   def Run(self, args):
     """Run the 'gcloud firebase test android locales list' command.
@@ -56,12 +63,3 @@ class List(base.ListCommand):
     """
     catalog = util.GetAndroidCatalog(self.context)
     return catalog.runtimeConfiguration.locales
-
-  def Collection(self):
-    """Choose the default resource collection key used to list Android locales.
-
-    Returns:
-      A collection string used as a key to select the default ResourceInfo
-      from core.resources.resource_registry.RESOURCE_REGISTRY.
-    """
-    return 'firebase.test.android.locales'

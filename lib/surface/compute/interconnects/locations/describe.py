@@ -35,7 +35,7 @@ class Describe(base.DescribeCommand):
   @classmethod
   def Args(cls, parser):
     cls.INTERCONNECT_LOCATION_ARG = flags.InterconnectLocationArgument()
-    cls.INTERCONNECT_LOCATION_ARG.AddArgument(parser)
+    cls.INTERCONNECT_LOCATION_ARG.AddArgument(parser, operation_type='describe')
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

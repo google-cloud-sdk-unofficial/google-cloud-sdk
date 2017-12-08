@@ -43,7 +43,7 @@ class Create(base.CreateCommand):
             'target SSL proxy'))
     cls.SSL_CERTIFICATE_ARG.AddArgument(parser)
     cls.TARGET_SSL_PROXY_ARG = flags.TargetSslProxyArgument()
-    cls.TARGET_SSL_PROXY_ARG.AddArgument(parser)
+    cls.TARGET_SSL_PROXY_ARG.AddArgument(parser, operation_type='create')
 
     parser.add_argument(
         '--description',

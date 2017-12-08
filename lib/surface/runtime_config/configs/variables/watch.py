@@ -87,14 +87,6 @@ class Watch(base.Command):
 
     parser.add_argument('name', help='Variable name.')
 
-  def Collection(self):
-    """Returns the default collection path string.
-
-    Returns:
-      The default collection path string.
-    """
-    return 'runtimeconfig.variables'
-
   def Run(self, args):
     """Run a command that watches a variable.
 

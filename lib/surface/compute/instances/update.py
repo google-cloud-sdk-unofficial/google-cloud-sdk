@@ -21,7 +21,8 @@ from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.command_lib.util import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update a Google Compute Engine virtual machine.
 
@@ -45,7 +46,7 @@ class Update(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.INSTANCE_ARG.AddArgument(parser)
+    flags.INSTANCE_ARG.AddArgument(parser, operation_type='update')
     labels_util.AddUpdateLabelsFlags(parser)
     flags.AddMinCpuPlatformArgs(parser, Update.ReleaseTrack())
 

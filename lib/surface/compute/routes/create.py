@@ -153,7 +153,7 @@ class Create(base.CreateCommand):
     cls.INSTANCE_ARG = instance_flags.InstanceArgumentForRoute(required=False)
     cls.VPN_TUNNEL_ARG = vpn_flags.VpnTunnelArgumentForRoute(required=False)
     cls.ROUTE_ARG = flags.RouteArgument()
-    cls.ROUTE_ARG.AddArgument(parser)
+    cls.ROUTE_ARG.AddArgument(parser, operation_type='create')
     _Args(parser)
 
   def Run(self, args):

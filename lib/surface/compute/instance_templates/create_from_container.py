@@ -62,7 +62,8 @@ class CreateFromContainer(base.CreateCommand):
 
     CreateFromContainer.InstanceTemplateArg = (
         instance_templates_flags.MakeInstanceTemplateArg())
-    CreateFromContainer.InstanceTemplateArg.AddArgument(parser)
+    CreateFromContainer.InstanceTemplateArg.AddArgument(
+        parser, operation_type='create')
 
   def Run(self, args):
     """Issues an InstanceTemplates.Insert request.

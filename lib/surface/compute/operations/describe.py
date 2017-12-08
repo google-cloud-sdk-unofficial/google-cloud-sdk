@@ -24,7 +24,7 @@ from googlecloudsdk.core import resources
 
 def AddFlags(parser, is_ga):
   """Helper function for adding flags dependant on the release track."""
-  flags.COMPUTE_OPERATION_ARG.AddArgument(parser)
+  flags.COMPUTE_OPERATION_ARG.AddArgument(parser, operation_type='describe')
 
   if not is_ga:
     parser.add_argument(

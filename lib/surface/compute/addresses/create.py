@@ -25,7 +25,7 @@ def _Args(cls, parser):
   """Argument parsing."""
 
   cls.ADDRESSES_ARG = flags.AddressArgument(required=False)
-  cls.ADDRESSES_ARG.AddArgument(parser)
+  cls.ADDRESSES_ARG.AddArgument(parser, operation_type='create')
   flags.AddDescription(parser)
 
 

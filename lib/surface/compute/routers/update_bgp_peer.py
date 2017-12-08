@@ -17,6 +17,7 @@
 import copy
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import routers_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.command_lib.compute.routers import router_utils
@@ -85,13 +86,14 @@ class UpdateBgpPeerAlpha(base.UpdateCommand):
     router_utils.CheckIncompatibleFlagsOrRaise(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    messages = holder.client.messages
-    service = holder.client.apitools_client.routers
+    client = holder.client
+    messages = client.messages
 
     ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
 
-    request_type = messages.ComputeRoutersGetRequest
-    existing = service.Get(request_type(**ref.AsDict()))
+    existing = client.MakeRequests([routers_utils.GetGetRequest(client,
+                                                                ref)])[0]
+    # TODO(b/38240188): Clean up test resources and remove this copy step.
     replacement = copy.deepcopy(existing)
 
     # Retrieve specified peer and update base fields.
@@ -153,15 +155,10 @@ class UpdateBgpPeerAlpha(base.UpdateCommand):
             resource=peer,
             ip_ranges=args.remove_advertisement_ranges)
 
-    request_type = messages.ComputeRoutersPatchRequest
-    resource = service.Patch(
-        request_type(
-            project=ref.project,
-            region=ref.region,
-            router=ref.Name(),
-            routerResource=replacement))
-
-    return resource
+    # TODO(b/62667314): Replace MakeRequests with proper poll + mock testing.
+    resource_list = client.MakeRequests(
+        [routers_utils.GetPatchRequest(client, ref, replacement)])
+    return resource_list
 
 
 def _UpdateBgpPeer(resource, args):

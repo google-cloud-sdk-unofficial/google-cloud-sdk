@@ -26,7 +26,7 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     Describe.TARGET_SSL_PROXY_ARG = flags.TargetSslProxyArgument()
-    Describe.TARGET_SSL_PROXY_ARG.AddArgument(parser)
+    Describe.TARGET_SSL_PROXY_ARG.AddArgument(parser, operation_type='describe')
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

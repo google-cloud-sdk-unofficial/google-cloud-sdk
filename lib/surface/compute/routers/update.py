@@ -11,12 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Command for updating Google Compute Engine routers."""
 
 import copy
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import routers_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.command_lib.compute.routers import router_utils
@@ -31,7 +31,7 @@ class UpdateAlpha(base.UpdateCommand):
   @classmethod
   def Args(cls, parser):
     cls.ROUTER_ARG = flags.RouterArgument()
-    cls.ROUTER_ARG.AddArgument(parser)
+    cls.ROUTER_ARG.AddArgument(parser, operation_type='update')
     router_utils.AddCustomAdvertisementArgs(parser, 'router')
 
   def Run(self, args):
@@ -39,13 +39,13 @@ class UpdateAlpha(base.UpdateCommand):
     router_utils.CheckIncompatibleFlagsOrRaise(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    messages = holder.client.messages
-    service = holder.client.apitools_client.routers
+    client = holder.client
+    messages = client.messages
 
     ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
 
-    request_type = messages.ComputeRoutersGetRequest
-    existing = service.Get(request_type(**ref.AsDict()))
+    existing = client.MakeRequests([routers_utils.GetGetRequest(client,
+                                                                ref)])[0]
     replacement = copy.deepcopy(existing)
 
     if router_utils.HasReplaceAdvertisementFlags(args):
@@ -104,24 +104,22 @@ class UpdateAlpha(base.UpdateCommand):
             resource=replacement.bgp,
             ip_ranges=args.remove_advertisement_ranges)
 
-    request_type = messages.ComputeRoutersPatchRequest
-    include_fields = [
-        'bgp.advertisedGroups',
-        'bgp.advertisedPrefixs',
-    ]
-    with holder.client.apitools_client.IncludeFields(include_fields):
-      resource = service.Patch(
-          request_type(
-              project=ref.project,
-              region=ref.region,
-              router=ref.Name(),
-              routerResource=replacement))
+    # Cleared list fields need to be explicitly identified for Patch API.
+    cleared_fields = []
+    if not replacement.bgp.advertisedGroups:
+      cleared_fields.append('bgp.advertisedGroups')
+    if not replacement.bgp.advertisedPrefixs:
+      cleared_fields.append('bgp.advertisedPrefixs')
 
-    return resource
+    with client.apitools_client.IncludeFields(cleared_fields):
+      resource_list = client.MakeRequests(
+          [routers_utils.GetPatchRequest(client, ref, replacement)])
+    return resource_list
 
 
 UpdateAlpha.detailed_help = {
-    'DESCRIPTION': """
+    'DESCRIPTION':
+        """
         *{command}* is used to update a Google Compute Engine router.
         """,
 }

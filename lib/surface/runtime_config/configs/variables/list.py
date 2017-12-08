@@ -59,6 +59,7 @@ class List(base.ListCommand):
         action='store_true',
         help=('List the variables for which you have Get '
               'IAM permission along with their values.'))
+    parser.display_info.AddFormat('table(name, updateTime, value:optional)')
 
   def Run(self, args):
     """Run 'runtime-configs variables list'.
@@ -95,9 +96,6 @@ class List(base.ListCommand):
 
     for result in results:
       yield util.FormatVariable(result, self._display_values)
-
-  def DeprecatedFormat(self, args):
-    return 'table(name, updateTime, value:optional)'
 
   def Epilog(self, resources_were_displayed):
     if resources_were_displayed and self._display_values:

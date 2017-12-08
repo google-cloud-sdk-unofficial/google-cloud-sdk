@@ -11,7 +11,7 @@ gcloud compute disks create \- create Google Compute Engine persistent disks
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute disks create\fR \fIDISK_NAME\fR [\fIDISK_NAME\fR\ ...] [\fB\-\-csek\-key\-file\fR=\fIFILE\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-image\-project\fR=\fIIMAGE_PROJECT\fR] [\fB\-\-no\-require\-csek\-key\-create\fR] [\fB\-\-size\fR=\fISIZE\fR] [\fB\-\-type\fR=\fITYPE\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fB\-\-image\fR=\fIIMAGE\fR\ |\ \fB\-\-image\-family\fR=\fIIMAGE_FAMILY\fR\ |\ \fB\-\-source\-snapshot\fR=\fISOURCE_SNAPSHOT\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
+\f5gcloud compute disks create\fR \fIDISK_NAME\fR [\fIDISK_NAME\fR\ ...] [\fB\-\-csek\-key\-file\fR=\fIFILE\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-image\-project\fR=\fIIMAGE_PROJECT\fR] [\fB\-\-labels\fR=[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-no\-require\-csek\-key\-create\fR] [\fB\-\-size\fR=\fISIZE\fR] [\fB\-\-type\fR=\fITYPE\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fB\-\-image\fR=\fIIMAGE\fR\ |\ \fB\-\-image\-family\fR=\fIIMAGE_FAMILY\fR\ |\ \fB\-\-source\-snapshot\fR=\fISOURCE_SNAPSHOT\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -44,7 +44,7 @@ $ gcloud compute disks create my\-disk\-1 my\-disk\-2 \-\-zone us\-east1\-a
 .RS 2m
 .TP 2m
 \fIDISK_NAME\fR [\fIDISK_NAME\fR ...]
-The names of the disks.
+The names of the disks to create.
 
 
 .RE
@@ -84,6 +84,10 @@ default project is used.
 
 .RS 2m
 .TP 2m
+\fB\-\-labels\fR=[\fIKEY\fR=\fIVALUE\fR,...]
+A list of label KEY=VALUE pairs to add.
+
+.TP 2m
 \fB\-\-require\-csek\-key\-create\fR
 Refuse to create resources not protected by a user managed key in the key file
 when \-\-csek\-key\-file is given. This behavior is enabled by default to
@@ -110,8 +114,8 @@ Specifies the type of disk to create. To get a list of available disk types, run
 
 .TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
-The zone of the disks to operate on. If not specified, you may be prompted to
-select a zone.
+The zone of the disks to create. If not specified, you may be prompted to select
+a zone.
 
 To avoid prompting when this flag is omitted, you can set the
 \f5\fIcompute/zone\fR\fR property:

@@ -58,7 +58,8 @@ class UpdateGA(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
+        parser, operation_type='update')
     flags.AddDescription(parser)
     cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument()
     cls.HEALTH_CHECK_ARG.AddArgument(parser, cust_metavar='HEALTH_CHECK')
@@ -246,7 +247,8 @@ class UpdateAlpha(UpdateGA):
 
   @classmethod
   def Args(cls, parser):
-    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
+        parser, operation_type='update')
     flags.AddDescription(parser)
     cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument()
     cls.HEALTH_CHECK_ARG.AddArgument(parser, cust_metavar='HEALTH_CHECK')
@@ -319,7 +321,8 @@ class UpdateBeta(UpdateGA):
 
   @classmethod
   def Args(cls, parser):
-    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
+        parser, operation_type='update')
     flags.AddDescription(parser)
     cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument()
     cls.HEALTH_CHECK_ARG.AddArgument(parser, cust_metavar='HEALTH_CHECK')

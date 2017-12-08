@@ -18,7 +18,9 @@ import signal
 import time
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.core import exceptions
+from googlecloudsdk.core import execution_utils
 
 
 class Test(base.Command):
@@ -29,7 +31,19 @@ class Test(base.Command):
 
   @staticmethod
   def Args(parser):
+    parser.add_argument(
+        'name',
+        nargs='*',
+        completer=completers.TestCompleter,
+        help='command_lib.compute.TestCompleter instance name test.')
     scenarios = parser.add_mutually_exclusive_group()
+    scenarios.add_argument(
+        '--core-exception',
+        action='store_true',
+        help='Trigger a core exception.')
+    scenarios.add_argument(
+        '--exec-file',
+        help='Will run \'bash <given file>\'')
     scenarios.add_argument(
         '--interrupt',
         action='store_true',
@@ -40,20 +54,43 @@ class Test(base.Command):
         type=float,
         default=0.0,
         help='Sleep for SECONDS seconds and exit.')
+    scenarios.add_argument(
+        '--uncaught-exception',
+        action='store_true',
+        help='Trigger an exception that is not caught.')
+
+  def _RunCoreException(self, args):
+    raise exceptions.Error('Some core exception.')
+
+  def _RunInterrupt(self, args):
+    try:
+      # Windows hackery to simulate ^C and wait for it to register.
+      # NOTICE: This only works if this command is run from the console.
+      os.kill(os.getpid(), signal.CTRL_C_EVENT)
+      time.sleep(1)
+    except AttributeError:
+      # Back to normal where ^C is SIGINT and it works immediately.
+      os.kill(os.getpid(), signal.SIGINT)
+    raise exceptions.Error('SIGINT delivery failed.')
+
+  def _RunSleep(self, args):
+    time.sleep(args.sleep)
+
+  def _RunCommand(self, args):
+    # We may want to add a timeout, though that will complicate the logic a bit
+    execution_utils.Exec(['bash', args.exec_file])
+
+  def _RunUncaughtException(self, args):
+    raise ValueError('Catch me if you can.')
 
   def Run(self, args):
-    if args.interrupt:
-      try:
-        # Windows hackery to simulate ^C and wait for it to register.
-        # NOTICE: This only works if this command is run from the console.
-        os.kill(os.getpid(), signal.CTRL_C_EVENT)
-        time.sleep(1)
-      except AttributeError:
-        # Back to normal where ^C is SIGINT and it works immediately.
-        os.kill(os.getpid(), signal.SIGINT)
-      raise exceptions.Error('SIGINT delivery failed.')
+    if args.core_exception:
+      self._RunCoreException(args)
+    elif args.exec_file:
+      self._RunCommand(args)
+    elif args.interrupt:
+      self._RunInterrupt(args)
     elif args.sleep:
-      time.sleep(args.sleep)
-    else:
-      raise exceptions.Error(
-          'Exactly one test scenario flag must be specified.')
+      self._RunSleep(args)
+    elif args.uncaught_exception:
+      self._RunUncaughtException(args)

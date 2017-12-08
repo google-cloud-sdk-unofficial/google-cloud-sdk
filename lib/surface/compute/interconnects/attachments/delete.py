@@ -33,7 +33,7 @@ class Delete(base.DeleteCommand):
   def Args(cls, parser):
     cls.INTERCONNECT_ATTACHMENT_ARG = flags.InterconnectAttachmentArgument(
         plural=True)
-    cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(parser)
+    cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(parser, operation_type='delete')
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

@@ -46,7 +46,7 @@ class Create(base.CreateCommand):
             'target HTTPS proxy'))
     cls.SSL_CERTIFICATE_ARG.AddArgument(parser)
     cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument()
-    cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser)
+    cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser, operation_type='create')
     cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy(
         proxy_type='HTTPS')
     cls.URL_MAP_ARG.AddArgument(parser)

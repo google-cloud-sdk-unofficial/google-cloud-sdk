@@ -45,7 +45,7 @@ class Update(base.SilentCommand):
             'target SSL proxy', required=False))
     cls.SSL_CERTIFICATE_ARG.AddArgument(parser)
     cls.TARGET_SSL_PROXY_ARG = flags.TargetSslProxyArgument()
-    cls.TARGET_SSL_PROXY_ARG.AddArgument(parser)
+    cls.TARGET_SSL_PROXY_ARG.AddArgument(parser, operation_type='update')
 
   def Run(self, args):
     if not (args.ssl_certificate or args.proxy_header or args.backend_service):

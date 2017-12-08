@@ -31,7 +31,7 @@ class Describe(base.DescribeCommand):
   @classmethod
   def Args(cls, parser):
     cls.INTERCONNECT_ARG = flags.InterconnectArgument()
-    cls.INTERCONNECT_ARG.AddArgument(parser)
+    cls.INTERCONNECT_ARG.AddArgument(parser, operation_type='describe')
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

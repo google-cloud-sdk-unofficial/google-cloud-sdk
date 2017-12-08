@@ -73,7 +73,7 @@ def _CommonArgs(parser,
 
   Create.InstanceTemplateArg = (
       instance_templates_flags.MakeInstanceTemplateArg())
-  Create.InstanceTemplateArg.AddArgument(parser)
+  Create.InstanceTemplateArg.AddArgument(parser, operation_type='create')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

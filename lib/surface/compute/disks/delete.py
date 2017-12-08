@@ -14,28 +14,11 @@
 """Command for deleting disks."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
-
-
-def _RaiseIfMixZoneRegion(disk_refs):
-  zones_num = 0
-  regions_num = 0
-  for disk in disk_refs:
-    if disk.Collection() == 'compute.disks':
-      zones_num += 1
-    if disk.Collection() == 'compute.regionDisks':
-      regions_num += 1
-  if zones_num > 0 and regions_num > 0:
-    raise exceptions.InvalidArgumentException(
-        'Not Supported: You can not mix delete of zonal and regional '
-        'Disks')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
@@ -101,11 +84,6 @@ class Delete(base.DeleteCommand):
 
     utils.PromptForDeletion(
         disk_refs, scope_name=scope_name, prompt_title=None)
-
-    # Disable ability to mix zonal and regional delete in one command.
-    # This is temporary workaround of missing functionality
-    # TODO(b/32276307)
-    _RaiseIfMixZoneRegion(disk_refs)
 
     requests = list(self._CreateDeleteRequests(
         holder.client.apitools_client, disk_refs))

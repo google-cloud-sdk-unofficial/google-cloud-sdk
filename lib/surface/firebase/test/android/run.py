@@ -156,6 +156,13 @@ class _BaseRun(object):
         - a list of TestOutcome tuples (if ToolResults are available).
         - a URL string pointing to the user's results in ToolResults or GCS.
     """
+    if args.async and not args.IsSpecified('format'):
+      args.format = """
+          value(format(
+            'Final test results will be available at [{0}].', [])
+          )
+      """
+
     arg_manager.AndroidArgsManager().Prepare(args)
 
     project = util.GetProject()
@@ -209,16 +216,6 @@ class _BaseRun(object):
         tr_messages.Outcome.SummaryValueValuesEnum)
     return summary_fetcher.CreateMatrixOutcomeSummary()
 
-  def Collection(self):
-    """Choose the default resource collection key used to format test outcomes.
-
-    Returns:
-      A collection string used as a key to select the default ResourceInfo
-      from core.resources.resource_registry.RESOURCE_REGISTRY.
-    """
-    log.debug('gcloud test command exit_code is: {0}'.format(self.exit_code))
-    return 'firebase.test.android.run.outcomes'
-
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class RunGA(_BaseRun, base.ListCommand):
@@ -230,6 +227,7 @@ class RunGA(_BaseRun, base.ListCommand):
     arg_util.AddMatrixArgs(parser)
     arg_util.AddAndroidTestArgs(parser)
     arg_util.AddGaArgs(parser)
+    parser.display_info.AddFormat(util.OUTCOMES_FORMAT)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -242,6 +240,7 @@ class RunBeta(_BaseRun, base.ListCommand):
     arg_util.AddMatrixArgs(parser)
     arg_util.AddAndroidTestArgs(parser)
     arg_util.AddBetaArgs(parser)
+    parser.display_info.AddFormat(util.OUTCOMES_FORMAT)
 
 
 def PickHistoryName(args):

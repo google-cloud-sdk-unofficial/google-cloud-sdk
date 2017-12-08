@@ -93,7 +93,8 @@ class CreateGA(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
+        parser, operation_type='create')
     flags.AddDescription(parser)
     cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument()
     cls.HEALTH_CHECK_ARG.AddArgument(parser, cust_metavar='HEALTH_CHECK')
@@ -247,7 +248,8 @@ class CreateAlpha(CreateGA):
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
+        parser, operation_type='create')
     flags.AddDescription(parser)
     cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument()
     cls.HEALTH_CHECK_ARG.AddArgument(parser, cust_metavar='HEALTH_CHECK')
@@ -369,7 +371,8 @@ class CreateBeta(CreateGA):
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
+        parser, operation_type='create')
     flags.AddDescription(parser)
     cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument()
     cls.HEALTH_CHECK_ARG.AddArgument(parser, cust_metavar='HEALTH_CHECK')

@@ -21,8 +21,13 @@ from googlecloudsdk.command_lib.compute.firewall_rules import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class UpdateFirewall(base_classes.BaseCommand):
-  """Update a firewall rule."""
+class UpdateFirewall(base.UpdateCommand):
+  """Update a firewall rule.
+
+  *{command}* is used to update firewall rules that allow incoming
+  traffic to a network. The firewall rule will only be updated for arguments
+  that are specifically passed.  Other attributes will remain unaffected.
+  """
   with_egress_firewall = False
   with_service_account = False
 
@@ -30,28 +35,13 @@ class UpdateFirewall(base_classes.BaseCommand):
 
   @classmethod
   def Args(cls, parser):
-    cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument(operation_type='update')
-    cls.FIREWALL_RULE_ARG.AddArgument(parser)
+    cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument()
+    cls.FIREWALL_RULE_ARG.AddArgument(parser, operation_type='update')
     firewalls_utils.AddCommonArgs(parser, for_update=True)
 
-  @property
-  def service(self):
-    return self.compute.firewalls
-
-  @property
-  def resource_type(self):
-    return 'firewalls'
-
-  def DeprecatedFormat(self, unused_args):
-    # Do not print the modifed the firewall in the output.
-    return 'none'
-
-  def _CreateReference(self, args):
-    return self.FIREWALL_RULE_ARG.ResolveAsResource(args, self.resources)
-
-  def ValidateArgument(self, args):
+  def ValidateArgument(self, messages, args):
     self.new_allowed = firewalls_utils.ParseRules(
-        args.allow, self.messages, firewalls_utils.ActionType.ALLOW)
+        args.allow, messages, firewalls_utils.ActionType.ALLOW)
 
     args_unset = all(
         x is None
@@ -70,40 +60,48 @@ class UpdateFirewall(base_classes.BaseCommand):
           'At least one property must be modified.')
 
   def Run(self, args):
-    self.ValidateArgument(args)
-    # Set the resource reference which used in composing resource-get request.
-    resource_reference = self._CreateReference(args)
-    get_request = self._GetGetRequest(resource_reference, args)
-    cleared_fields = []
-    objects = self.compute_client.MakeRequests([get_request])
+    """Issues requests necessary to update the Firewall rules."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-    new_object = self.Modify(args, objects[0], cleared_fields)
+    self.ValidateArgument(client.messages, args)
+    # Set the resource reference which is used in composing resource-get
+    # request.
+    resource_reference = self.FIREWALL_RULE_ARG.ResolveAsResource(
+        args, holder.resources)
+    get_request = self._GetGetRequest(client, resource_reference)
+    cleared_fields = []
+    objects = client.MakeRequests([get_request])
+
+    new_object = self.Modify(client, args, objects[0], cleared_fields)
 
     # If existing object is equal to the proposed object or if
     # Modify() returns None, then there is no work to be done, so we
-    # print the resource and return.
+    # print the resource and exit.
     if not new_object or objects[0] == new_object:
       return objects[0]
 
-    with self.compute.IncludeFields(cleared_fields):
-      resource_list = self.compute_client.MakeRequests(
-          [self._GetSetRequest(args, new_object, objects[0])])
+    with client.apitools_client.IncludeFields(cleared_fields):
+      resource_list = client.MakeRequests(
+          [self._GetSetRequest(client, resource_reference, new_object)])
 
     return resource_list
 
-  def _GetGetRequest(self, resource_reference, args):
+  def _GetGetRequest(self, client, resource_reference):
     """Returns the request for the existing Firewall resource."""
-    return (self.service, 'Get', self.messages.ComputeFirewallsGetRequest(
-        firewall=resource_reference.Name(), project=self.project))
+    return (client.apitools_client.firewalls, 'Get',
+            client.messages.ComputeFirewallsGetRequest(
+                firewall=resource_reference.Name(),
+                project=resource_reference.project))
 
-  def _GetSetRequest(self, args, replacement, existing):
-    request = (self.messages.ComputeFirewallsPatchRequest(
+  def _GetSetRequest(self, client, resource_reference, replacement):
+    request = client.messages.ComputeFirewallsPatchRequest(
         firewall=replacement.name,
         firewallResource=replacement,
-        project=self.project))
-    return (self.service, 'Patch', request)
+        project=resource_reference.project)
+    return (client.apitools_client.firewalls, 'Patch', request)
 
-  def Modify(self, args, existing, cleared_fields):
+  def Modify(self, client, args, existing, cleared_fields):
     """Returns a modified Firewall message and included fields."""
     if args.allow is None:
       allowed = existing.allowed
@@ -142,7 +140,7 @@ class UpdateFirewall(base_classes.BaseCommand):
       cleared_fields.append('targetTags')
       target_tags = []
 
-    new_firewall = self.messages.Firewall(
+    new_firewall = client.messages.Firewall(
         name=existing.name,
         allowed=allowed,
         description=description,
@@ -154,50 +152,46 @@ class UpdateFirewall(base_classes.BaseCommand):
     return new_firewall
 
 
-UpdateFirewall.detailed_help = {
-    'brief': 'Update a firewall rule',
-    'DESCRIPTION': """\
-        *{command}* is used to update firewall rules that allow incoming
-        traffic to a network. Only arguments passed in will be updated on the
-        firewall rule.  Other attributes will remain unaffected.
-        """,
-}
-
-
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class BetaUpdateFirewall(UpdateFirewall):
-  """Update a firewall rule."""
+  """Update a firewall rule.
+
+  *{command}* is used to update firewall rules that allow/deny
+  incoming/outgoing traffic. The firewall rule will only be updated for
+  arguments that are specifically passed.  Other attributes will remain
+  unaffected.
+  """
   with_egress_firewall = True
   with_service_account = False
 
-  def ValidateArgument(self, args):
-    super(BetaUpdateFirewall, self).ValidateArgument(args)
+  def ValidateArgument(self, messages, args):
+    super(BetaUpdateFirewall, self).ValidateArgument(messages, args)
     if args.rules and args.allow:
       raise firewalls_utils.ArgumentValidationError(
           'Can NOT specify --rules and --allow in the same request.')
 
   @classmethod
   def Args(cls, parser):
-    cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument(operation_type='update')
-    cls.FIREWALL_RULE_ARG.AddArgument(parser)
+    cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument()
+    cls.FIREWALL_RULE_ARG.AddArgument(parser, operation_type='update')
     firewalls_utils.AddCommonArgs(
         parser,
         for_update=True,
         with_egress_support=cls.with_egress_firewall)
 
-  def Modify(self, args, existing, cleared_fields):
+  def Modify(self, client, args, existing, cleared_fields):
     """Returns a modified Firewall message."""
 
     new_firewall = super(BetaUpdateFirewall, self).Modify(
-        args, existing, cleared_fields)
+        client, args, existing, cleared_fields)
 
     if args.rules:
       if existing.allowed:
         new_firewall.allowed = firewalls_utils.ParseRules(
-            args.rules, self.messages, firewalls_utils.ActionType.ALLOW)
+            args.rules, client.messages, firewalls_utils.ActionType.ALLOW)
       else:
         new_firewall.denied = firewalls_utils.ParseRules(
-            args.rules, self.messages, firewalls_utils.ActionType.DENY)
+            args.rules, client.messages, firewalls_utils.ActionType.DENY)
 
     new_firewall.direction = existing.direction
 
@@ -219,17 +213,23 @@ class BetaUpdateFirewall(UpdateFirewall):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaUpdateFirewall(BetaUpdateFirewall):
-  """Update a firewall rule."""
+  """Update a firewall rule.
+
+  *{command}* is used to update firewall rules that allow/deny
+  incoming/outgoing traffic. The firewall rule will only be updated for
+  arguments that are specifically passed. Other attributes will remain
+  unaffected.
+  """
   with_egress_firewall = True
   with_service_account = True
 
-  def ValidateArgument(self, args):
-    super(AlphaUpdateFirewall, self).ValidateArgument(args)
+  def ValidateArgument(self, messages, args):
+    super(AlphaUpdateFirewall, self).ValidateArgument(messages, args)
 
   @classmethod
   def Args(cls, parser):
-    cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument(operation_type='update')
-    cls.FIREWALL_RULE_ARG.AddArgument(parser)
+    cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument()
+    cls.FIREWALL_RULE_ARG.AddArgument(parser, operation_type='update')
     firewalls_utils.AddCommonArgs(
         parser,
         for_update=True,
@@ -237,11 +237,11 @@ class AlphaUpdateFirewall(BetaUpdateFirewall):
         with_service_account=cls.with_service_account)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=True)
 
-  def Modify(self, args, existing, cleared_fields):
+  def Modify(self, client, args, existing, cleared_fields):
     """Returns a modified Firewall message."""
 
     new_firewall = super(AlphaUpdateFirewall, self).Modify(
-        args, existing, cleared_fields)
+        client, args, existing, cleared_fields)
 
     if args.source_service_accounts:
       new_firewall.sourceServiceAccounts = args.source_service_accounts
@@ -260,15 +260,3 @@ class AlphaUpdateFirewall(BetaUpdateFirewall):
       cleared_fields.append('targetServiceAccounts')
 
     return new_firewall
-
-
-BetaUpdateFirewall.detailed_help = {
-    'brief':
-        'Update a firewall rule',
-    'DESCRIPTION':
-        """\
-        *{command}* is used to update firewall rules that allow/deny
-        incoming/outgoing traffic. Only arguments passed in will be updated on
-        the firewall rule.  Other attributes will remain unaffected.
-        """,
-}
