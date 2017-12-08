@@ -15,6 +15,7 @@
 from googlecloudsdk.api_lib.ml import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 class List(base.ListCommand):
@@ -34,5 +35,7 @@ class List(base.ListCommand):
     """
 
   def Run(self, args):
-    return operations.OperationsClient().List(
-        properties.VALUES.core.project.Get())
+    project_ref = resources.REGISTRY.Parse(
+        properties.VALUES.core.project.Get(required=True),
+        collection='ml.projects')
+    return operations.OperationsClient().List(project_ref)

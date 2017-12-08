@@ -26,9 +26,7 @@ class List(base.Command):
   Prints the table with list of all ways to deploy an event trigger. When using
   `gcloud functions deploy` Event Providers are specified as
   --trigger-provider and Event Types are specified as --trigger-event.
-  The table includes the type of resource expected in
-  --trigger-resource and whether the --trigger-path parameter is optional,
-  required, or disallowed.
+  The table includes the type of resource expected in --trigger-resource.
 
   * For an event type, EVENT_TYPE_DEFAULT marks whether the given event type is
     the default for its provider (in which case the --event-type flag may be
@@ -44,8 +42,7 @@ class List(base.Command):
               label:label="EVENT_TYPE":sort=2,
               event_is_optional.yesno('Yes'):label="EVENT_TYPE_DEFAULT",
               resource_type.value.name:label="RESOURCE_TYPE",
-              resource_is_optional.yesno('Yes'):label="RESOURCE_OPTIONAL",
-              path_obligatoriness.name:label="PATH_PARAMETER"
+              resource_is_optional.yesno('Yes'):label="RESOURCE_OPTIONAL"
         )'''
 
   def Run(self, args):

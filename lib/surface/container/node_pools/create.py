@@ -134,11 +134,12 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddClusterAutoscalingFlags(parser, suppressed=True)
+    flags.AddClusterAutoscalingFlags(parser, hidden=True)
     flags.AddLocalSSDFlag(parser, suppressed=True)
     flags.AddPreemptibleFlag(parser, for_node_pool=True, suppressed=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True, suppressed=True)
     flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True, suppressed=True)
+    flags.AddServiceAccountFlag(parser, suppressed=True)
 
   def ParseCreateNodePoolOptions(self, args):
     return api_adapter.CreateNodePoolOptions(
@@ -156,7 +157,8 @@ class Create(base.CreateCommand):
         image_type=args.image_type,
         preemptible=args.preemptible,
         enable_autorepair=args.enable_autorepair,
-        enable_autoupgrade=args.enable_autoupgrade)
+        enable_autoupgrade=args.enable_autoupgrade,
+        service_account=args.service_account)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -217,11 +219,12 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddClusterAutoscalingFlags(parser, suppressed=True)
+    flags.AddClusterAutoscalingFlags(parser, hidden=True)
     flags.AddLocalSSDFlag(parser)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True, suppressed=True)
     flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True)
+    flags.AddServiceAccountFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -236,6 +239,7 @@ class CreateAlpha(Create):
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True, suppressed=True)
     flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True)
+    flags.AddServiceAccountFlag(parser)
 
 
 Create.detailed_help = DETAILED_HELP

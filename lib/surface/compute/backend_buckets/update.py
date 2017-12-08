@@ -22,8 +22,8 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_buckets_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(base_classes.ReadWriteCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class Update(base_classes.ReadWriteCommand):
   """Update a backend bucket."""
 
   @staticmethod
@@ -84,10 +84,10 @@ class UpdateAlpha(base_classes.ReadWriteCommand):
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
 
-    return super(UpdateAlpha, self).Run(args)
+    return super(Update, self).Run(args)
 
 
-UpdateAlpha.detailed_help = {
+Update.detailed_help = {
     'brief': 'Update a backend bucket',
     'DESCRIPTION': """
         *{command}* is used to update backend buckets.

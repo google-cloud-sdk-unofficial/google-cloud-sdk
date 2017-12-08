@@ -25,8 +25,7 @@ from googlecloudsdk.command_lib.compute.instances import flags as instances_flag
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateFromContainer(base_classes.BaseAsyncCreator,
-                          zone_utils.ZoneResourceFetcher):
+class CreateFromContainer(base_classes.BaseAsyncCreator):
   """Command for creating VM instances running Docker images."""
 
   @staticmethod
@@ -49,6 +48,7 @@ class CreateFromContainer(base_classes.BaseAsyncCreator,
     instances_flags.AddNetworkArgs(parser)
     instances_flags.AddPrivateNetworkIpArgs(parser)
     instances_flags.AddDockerArgs(parser)
+    instances_flags.AddPublicDnsArgs(parser, instance=True)
     parser.add_argument(
         '--description',
         help='Specifies a textual description of the instances.')
@@ -106,7 +106,10 @@ class CreateFromContainer(base_classes.BaseAsyncCreator,
             self.compute_client, self.project))
 
     # Check if the zone is deprecated or has maintenance coming.
-    self.WarnForZonalCreation(instance_refs)
+    zone_resource_fetcher = zone_utils.ZoneResourceFetcher(self.compute_client)
+    zone_resource_fetcher.WarnForZonalCreation(instance_refs)
+
+    instances_flags.ValidatePublicDnsFlags(args)
 
     network_interface = instance_utils.CreateNetworkInterfaceMessage(
         resources=self.resources,
@@ -116,7 +119,13 @@ class CreateFromContainer(base_classes.BaseAsyncCreator,
         private_network_ip=args.private_network_ip,
         no_address=args.no_address,
         address=args.address,
-        instance_refs=instance_refs)
+        instance_refs=instance_refs,
+        no_public_dns=getattr(args, 'no_public_dns', None),
+        public_dns=getattr(args, 'public_dns', None),
+        no_public_ptr=getattr(args, 'no_public_ptr', None),
+        public_ptr=getattr(args, 'public_ptr', None),
+        no_public_ptr_domain=getattr(args, 'no_public_ptr_domain', None),
+        public_ptr_domain=getattr(args, 'public_ptr_domain', None))
 
     machine_type_uris = instance_utils.CreateMachineTypeUris(
         resources=self.resources,

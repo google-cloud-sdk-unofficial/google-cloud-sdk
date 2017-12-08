@@ -16,6 +16,7 @@
 from googlecloudsdk.api_lib.ml import versions_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
+from googlecloudsdk.command_lib.ml import models_util
 from googlecloudsdk.command_lib.ml import uploads
 from googlecloudsdk.command_lib.ml import versions_util
 from googlecloudsdk.core import exceptions
@@ -39,6 +40,7 @@ class BetaCreate(base.CreateCommand):
     flags.GetModelName(positional=False, required=True).AddToParser(parser)
     flags.VERSION_NAME.AddToParser(parser)
     flags.VERSION_DATA.AddToParser(parser)
+    flags.RUNTIME_VERSION.AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     flags.GetStagingBucket(required=False).AddToParser(parser)
 
@@ -61,8 +63,9 @@ class BetaCreate(base.CreateCommand):
           'given as well.')
 
     versions_client = versions_api.VersionsClient()
+    model_ref = models_util.ParseModel(args.model)
     op = versions_client.Create(
-        versions_util.ParseVersion(args.model, args.version), origin)
+        model_ref, args.version, origin, args.runtime_version)
     return versions_util.WaitForOpMaybe(
         op, async_=args.async,
         message='Creating version (this might take a few minutes)...')

@@ -61,9 +61,8 @@ class Move(folders_base.FolderCommand):
   def Run(self, args):
     flags.CheckParentFlags(args)
     messages = folders.FoldersMessages()
-    folder = folders.GetFolder(args.id)
     move_request = messages.CloudresourcemanagerFoldersMoveRequest(
-        foldersId=folders.FolderNameToId(folder.name),
+        foldersId=args.id,
         moveFolderRequest=messages.MoveFolderRequest(
             destinationParent=flags.GetParentFromFlags(args)))
     operation = folders.FoldersService().Move(move_request)

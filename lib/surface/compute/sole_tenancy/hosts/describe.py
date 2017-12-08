@@ -11,12 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for describing private hosts."""
+"""Command for describing sole-tenancy hosts."""
 from googlecloudsdk.api_lib.compute import base_classes
 
 
 class Describe(base_classes.ZonalDescriber):
-  """Display detailed information about a host."""
+  """Display detailed information about a sole-tenancy host."""
 
   @staticmethod
   def Args(parser):

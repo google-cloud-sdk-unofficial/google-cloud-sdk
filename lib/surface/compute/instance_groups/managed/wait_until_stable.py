@@ -105,8 +105,7 @@ class WaitUntilStable(base_classes.BaseCommand):
         requests=[(service, 'Get', request)],
         http=self.http,
         batch_url=self.batch_url,
-        errors=errors,
-        custom_get_requests=None))
+        errors=errors))
 
     return results, errors
 

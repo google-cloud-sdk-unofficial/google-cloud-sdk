@@ -16,8 +16,8 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(base_classes.GlobalDeleter):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class Delete(base_classes.GlobalDeleter):
   """Delete backend buckets.
 
     *{command}* deletes one or more backend buckets.

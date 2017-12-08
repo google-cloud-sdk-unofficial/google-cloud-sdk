@@ -11,7 +11,7 @@ gcloud compute disks snapshot \- create snapshots of Google Compute Engine persi
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute disks snapshot\fR \fIDISK_NAME\fR [\fIDISK_NAME\fR\ ...] [\fB\-\-csek\-key\-file\fR=\fIFILE\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-snapshot\-names\fR=\fISNAPSHOT_NAME\fR,[\fISNAPSHOT_NAME\fR,...]] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute disks snapshot\fR \fIDISK_NAME\fR [\fIDISK_NAME\fR\ ...] [\fB\-\-async\fR] [\fB\-\-csek\-key\-file\fR=\fIFILE\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-snapshot\-names\fR=\fISNAPSHOT_NAME\fR,[\fISNAPSHOT_NAME\fR,...]] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -40,6 +40,11 @@ The names of the disks.
 .SH "FLAGS"
 
 .RS 2m
+.TP 2m
+\fB\-\-async\fR
+Display information about the operation in progress and don't wait for the
+operation to complete.
+
 .TP 2m
 \fB\-\-csek\-key\-file\fR=\fIFILE\fR
 Path to a Customer\-Supplied Encryption Key (CSEK) key file, mapping Google

@@ -15,14 +15,10 @@
 
 from googlecloudsdk.api_lib.app import logs_util
 from googlecloudsdk.api_lib.logging import common
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.app import flags
 from googlecloudsdk.core import log
-
-
-LOG_LEVELS = ['critical', 'error', 'warning', 'info', 'debug', 'any']
-FLEX_REQUESTS_LOG = 'nginx.requests'
-STANDARD_REQUESTS_LOG = 'request_log'
+from googlecloudsdk.core import properties
 
 
 class Read(base.Command):
@@ -31,27 +27,12 @@ class Read(base.Command):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    parser.add_argument('--service', '-s', help='Limit to specific service.')
-    parser.add_argument('--version', '-v', help='Limit to specific version.')
+    flags.SERVICE.AddToParser(parser)
+    flags.VERSION.AddToParser(parser)
+    flags.LEVEL.AddToParser(parser)
+    flags.LOGS.AddToParser(parser)
     parser.add_argument('--limit', required=False, type=int,
                         default=200, help='Number of log entries to show.')
-    parser.add_argument('--level', required=False, default='any',
-                        choices=LOG_LEVELS,
-                        help='Filter entries with severity equal to or higher '
-                        'than a given level.')
-
-    parser.add_argument('--logs',
-                        required=False,
-                        default=['stderr',
-                                 'stdout',
-                                 'crash.log',
-                                 FLEX_REQUESTS_LOG,
-                                 STANDARD_REQUESTS_LOG],
-                        metavar='APP_LOG',
-                        type=arg_parsers.ArgList(min_length=1),
-                        help=('Filter entries from a particular set of logs. '
-                              'Must be a comma-separated list of log names '
-                              '(request_log, stdout, stderr, etc).'))
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -63,27 +44,16 @@ class Read(base.Command):
     Returns:
       The list of log entries.
     """
-    # Logging API filters later to be AND-joined
-    filters = ['resource.type="gae_app"']
-
-    # Argument handling
-    if args.service:
-      filters.append('resource.labels.module_id="{0}"'.format(args.service))
-    if args.version:
-      filters.append('resource.labels.version_id="{0}"'.format(args.version))
-    if args.level != 'any':
-      filters.append('severity>={0}'.format(args.level.upper()))
-
     printer = logs_util.LogPrinter()
     printer.RegisterFormatter(logs_util.FormatRequestLogEntry)
     printer.RegisterFormatter(logs_util.FormatAppEntry)
+    project = properties.VALUES.core.project.Get(required=True)
+    filters = logs_util.GetFilters(project, args.logs, args.service,
+                                   args.version, args.level)
 
     lines = []
-    log_id = lambda log_short: 'appengine.googleapis.com/%s' % log_short
-    log_ids = sorted([log_id(log_short) for log_short in args.logs])
     # pylint: disable=g-builtin-op, For the .keys() method
     for entry in common.FetchLogs(log_filter=' AND '.join(filters),
-                                  log_ids=sorted(log_ids),
                                   order_by='DESC',
                                   limit=args.limit):
       lines.append(printer.Format(entry))

@@ -69,8 +69,7 @@ which have completed.
         requests=[get_request],
         http=self.http,
         batch_url=self.batch_url,
-        errors=new_errors,
-        custom_get_requests=None))
+        errors=new_errors))
     errors.extend(new_errors)
     if new_errors:
       utils.RaiseToolException(
@@ -92,8 +91,7 @@ which have completed.
     return request_helper.MakeRequests(requests=requests,
                                        http=self.http,
                                        batch_url=self.batch_url,
-                                       errors=errors,
-                                       custom_get_requests=None)
+                                       errors=errors)
 
   def Run(self, args):
     args.names = []

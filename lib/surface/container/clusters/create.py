@@ -184,13 +184,14 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddClusterAutoscalingFlags(parser, suppressed=True)
+    flags.AddClusterAutoscalingFlags(parser, hidden=True)
     flags.AddLocalSSDFlag(parser, suppressed=True)
     flags.AddEnableKubernetesAlphaFlag(parser, suppressed=True)
     flags.AddClusterVersionFlag(parser, 'master and nodes', True)
     flags.AddPreemptibleFlag(parser, suppressed=True)
     flags.AddEnableAutoRepairFlag(parser, suppressed=True)
     flags.AddEnableAutoUpgradeFlag(parser, suppressed=True)
+    flags.AddServiceAccountFlag(parser, suppressed=True)
 
   def ParseCreateOptions(self, args):
     if not args.scopes:
@@ -223,7 +224,8 @@ class Create(base.CreateCommand):
         max_nodes_per_pool=args.max_nodes_per_pool,
         preemptible=args.preemptible,
         enable_autorepair=args.enable_autorepair,
-        enable_autoupgrade=args.enable_autoupgrade)
+        enable_autoupgrade=args.enable_autoupgrade,
+        service_account=args.service_account)
 
   def Collection(self):
     return 'container.projects.zones.clusters'
@@ -301,13 +303,14 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddClusterAutoscalingFlags(parser, suppressed=True)
+    flags.AddClusterAutoscalingFlags(parser, hidden=True)
     flags.AddLocalSSDFlag(parser)
     flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddClusterVersionFlag(parser, 'master and nodes')
     flags.AddPreemptibleFlag(parser)
     flags.AddEnableAutoRepairFlag(parser, suppressed=True)
     flags.AddEnableAutoUpgradeFlag(parser)
+    flags.AddServiceAccountFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -324,3 +327,4 @@ class CreateAlpha(Create):
     flags.AddPreemptibleFlag(parser)
     flags.AddEnableAutoRepairFlag(parser, suppressed=True)
     flags.AddEnableAutoUpgradeFlag(parser)
+    flags.AddServiceAccountFlag(parser)

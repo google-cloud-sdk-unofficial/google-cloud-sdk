@@ -2191,7 +2191,7 @@ class _Make(BigqueryCmd):
         'time_partitioning_type',
         None,
         'Enables time based partitioning on the table and set the type. The '
-        'only type accepted is DAY, which will generate one partition per day',
+        'only type accepted is DAY, which will generate one partition per day.',
         flag_values=fv)
     flags.DEFINE_integer(
         'time_partitioning_expiration',
@@ -2383,7 +2383,7 @@ class _Update(BigqueryCmd):
         'time_partitioning_type',
         None,
         'Enables time based partitioning on the table and set the type. The '
-        'only type accepted is DAY, which will generate one partition per day',
+        'only type accepted is DAY, which will generate one partition per day.',
         flag_values=fv)
     flags.DEFINE_integer(
         'time_partitioning_expiration',
@@ -2673,6 +2673,8 @@ def _PrintObjectInfo(object_info, reference, custom_format):
     formatter.Print()
 
 
+
+
 class _Cancel(BigqueryCmd):
   """Attempt to cancel the specified job if it is runnning."""
   usage = """cancel [--nosync] [<job_id>]"""
@@ -2759,6 +2761,7 @@ class _Head(BigqueryCmd):
     else:
       reference = client.GetTableReference(identifier)
 
+
     if isinstance(reference, JobReference):
       fields, rows = client.ReadSchemaAndJobRows(dict(reference),
                                                  start_row=self.s,
@@ -2766,7 +2769,8 @@ class _Head(BigqueryCmd):
     elif isinstance(reference, TableReference):
       fields, rows = client.ReadSchemaAndRows(dict(reference),
                                               start_row=self.s,
-                                              max_rows=self.n)
+                                              max_rows=self.n
+                                             )
     else:
       raise app.UsageError("Invalid identifier '%s' for head." % (identifier,))
 

@@ -79,8 +79,7 @@ class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
         requests=[(service, self.method, request)],
         http=self.http,
         batch_url=self.batch_url,
-        errors=errors,
-        custom_get_requests=None))
+        errors=errors))
 
     return results, errors
 

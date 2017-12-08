@@ -158,9 +158,9 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
             self.compute_client, self.project))[0]
     instance = self.GetInstance(instance_ref)
 
-    ssh_args = [self.ssh_executable]
+    ssh_args = [self.env.ssh]
 
-    ssh_args.extend(self.GetDefaultFlags())
+    ssh_args.extend(ssh.GetDefaultFlags(self.keys.key_file))
     if args.serial_port_gateway == SERIAL_PORT_GATEWAY:
       ssh_args.extend(['-o', 'StrictHostKeyChecking=yes'])
 

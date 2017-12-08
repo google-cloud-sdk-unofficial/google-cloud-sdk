@@ -138,7 +138,8 @@ class AttachDiskAlpha(AttachDisk):
         default=False,
         action='store_true',
         help='Attach the disk to the instance even if there is another '
-             'instance currently attached to it.')
+             'instance currently attached to it.',
+        hidden=True)
     force_attach.detailed_help = """\
     Attach the disk to the instance even if there is another instance currently
     attached to it. The server will attempt to detach the disk cleanly from the existing

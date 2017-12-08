@@ -19,6 +19,7 @@ import argparse
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import apis
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -56,4 +57,5 @@ class Functions(base.Group):
         'cloudfunctions', 'v1beta2')
     context['functions_messages'] = apis.GetMessagesModule(
         'cloudfunctions', 'v1beta2')
+    context['registry'] = resources.REGISTRY
     return context

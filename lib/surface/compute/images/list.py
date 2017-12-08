@@ -98,8 +98,7 @@ class List(base_classes.BaseLister):
         requests=requests,
         http=self.http,
         batch_url=self.batch_url,
-        errors=errors,
-        custom_get_requests=None)
+        errors=errors)
 
     for image in images:
       if not image.deprecated or args.show_deprecated:

@@ -72,7 +72,7 @@ def _Args(parser):
             'of failing.'))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class AddPathMatcherGA(base_classes.ReadWriteCommand):
   """Add a path matcher to a URL map."""
 
@@ -225,8 +225,8 @@ class AddPathMatcherGA(base_classes.ReadWriteCommand):
     return replacement
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AddPathMatcherAlpha(AddPathMatcherGA):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class AddPathMatcherBeta(AddPathMatcherGA):
   """Add a path matcher to a URL map."""
 
   BACKEND_BUCKET_ARG = None
@@ -335,7 +335,7 @@ AddPathMatcherGA.detailed_help = {
         for which there is no mapping.
         """,
 }
-AddPathMatcherAlpha.detailed_help = {
+AddPathMatcherBeta.detailed_help = {
     'brief': 'Add a path matcher to a URL map',
     'DESCRIPTION': """\
         *{command}* is used to add a path matcher to a URL map. A path

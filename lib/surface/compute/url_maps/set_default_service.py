@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.backend_services import (
 from googlecloudsdk.command_lib.compute.url_maps import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class SetDefaultServiceGA(base_classes.ReadWriteCommand):
   """Change the default service of a URL map."""
 
@@ -77,8 +77,8 @@ class SetDefaultServiceGA(base_classes.ReadWriteCommand):
     return replacement
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SetDefaultServiceAlpha(SetDefaultServiceGA):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class SetDefaultServiceBeta(SetDefaultServiceGA):
   """Change the default service of a URL map."""
 
   BACKEND_BUCKET_ARG = None
@@ -126,7 +126,7 @@ SetDefaultServiceGA.detailed_help = {
         there is no mapping in the URL map.
         """,
 }
-SetDefaultServiceAlpha.detailed_help = {
+SetDefaultServiceBeta.detailed_help = {
     'brief': 'Change the default service or default bucket of a URL map',
     'DESCRIPTION': """\
         *{command}* is used to change the default service or default

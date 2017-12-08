@@ -11,12 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for listing private hosts."""
+"""Command for listing sole-tenancy hosts."""
 from googlecloudsdk.api_lib.compute import base_classes
 
 
 class List(base_classes.ZonalLister):
-  """List Google Compute Engine private hosts."""
+  """List Google Compute Engine sole-tenancy hosts."""
 
   @property
   def service(self):

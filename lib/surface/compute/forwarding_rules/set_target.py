@@ -98,7 +98,7 @@ class SetAlpha(Set):
   @classmethod
   def Args(cls, parser):
     cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
-    flags.AddUpdateArgs(parser, include_beta=True)
+    flags.AddUpdateArgs(parser, include_beta=True, include_alpha=True)
     cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
 
@@ -116,3 +116,17 @@ Set.detailed_help = {
 }
 
 SetBeta.detailed_help = Set.detailed_help
+
+SetAlpha.detailed_help = {
+    'brief': ('Modify a forwarding rule to direct network traffic to a new '
+              'target'),
+    'DESCRIPTION': ("""\
+        *{{command}}* is used to set a new target for a forwarding
+        rule. {overview}
+
+        When creating a forwarding rule, exactly one of  ``--target-instance'',
+        ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
+        ``--target-ssl-proxy'', ``--target-tcp-proxy'' or
+        ``--target-vpn-gateway'' must be specified.""".format(
+            overview=flags.FORWARDING_RULES_OVERVIEW)),
+}

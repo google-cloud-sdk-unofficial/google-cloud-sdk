@@ -131,9 +131,9 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
     instance = self.GetInstance(instance_ref)
     external_ip_address = ssh_utils.GetExternalIPAddress(instance)
 
-    ssh_args = [self.ssh_executable]
+    ssh_args = [self.env.ssh]
     if not args.plain:
-      ssh_args.extend(self.GetDefaultFlags())
+      ssh_args.extend(ssh.GetDefaultFlags(self.keys.key_file))
       # Allocates a tty if no command was provided and a container was provided.
       if args.container and not args.command:
         ssh_args.append('-t')
@@ -147,7 +147,8 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
           ssh_args.append(dereferenced_flag)
 
     host_key_alias = self.HostKeyAlias(instance)
-    ssh_args.extend(self.GetHostKeyArgs(args, host_key_alias))
+    ssh_args.extend(ssh.GetHostKeyArgs(host_key_alias, args.plain,
+                                       args.strict_host_key_checking))
 
     ssh_args.append(ssh.UserHost(user, external_ip_address))
 

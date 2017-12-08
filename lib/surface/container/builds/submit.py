@@ -26,6 +26,7 @@ from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
+from googlecloudsdk.command_lib.cloudbuild import execution
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
@@ -170,7 +171,8 @@ class Submit(base.CreateCommand):
     elif args.config:
       build_config = config.LoadCloudbuildConfig(args.config, messages)
 
-    if build_config.timeout is None:
+    # If timeout was set by flag, overwrite the config file.
+    if timeout_str:
       build_config.timeout = timeout_str
 
     suffix = '.tgz'
@@ -316,16 +318,11 @@ class Submit(base.CreateCommand):
     if args.async:
       return build
 
-    def _CancelBuildHandler(unused_signal_number, unused_stack_frame):
-      log.status.Print('Cancelling...')
-      client.projects_builds.Cancel(
-          messages.CloudbuildProjectsBuildsCancelRequest(
-              projectId=build_ref.projectId,
-              id=build_ref.id))
-      log.status.Print('Cancelled [{r}].'.format(r=str(build_ref)))
+    mash_handler = execution.MashHandler(
+        execution.GetCancelBuildHandler(client, messages, build_ref))
 
     # Otherwise, logs are streamed from GCS.
-    with execution_utils.CtrlCSection(_CancelBuildHandler):
+    with execution_utils.CtrlCSection(mash_handler):
       build = cb_logs.CloudBuildClient(client, messages).Stream(build_ref)
 
     if build.status == messages.Build.StatusValueValuesEnum.TIMEOUT:

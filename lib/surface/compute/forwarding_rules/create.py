@@ -25,7 +25,8 @@ import ipaddr
 
 def _Args(parser, include_beta, include_alpha=False):
   """Argument parsing."""
-  flags.AddUpdateArgs(parser, include_beta=include_beta)
+  flags.AddUpdateArgs(parser, include_beta=include_beta,
+                      include_alpha=include_alpha)
   flags.ADDRESS_ARG.AddArgument(parser)
   flags.AddIPProtocols(parser)
   flags.AddDescription(parser)
@@ -204,6 +205,17 @@ Create.detailed_help = {
         ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
         ``--target-ssl-proxy'', or ``--target-vpn-gateway'' must be specified.
         """.format(overview=flags.FORWARDING_RULES_OVERVIEW)),
+}
+
+CreateAlpha.detailed_help = {
+    'DESCRIPTION': ("""\
+        *{{command}}* is used to create a forwarding rule. {overview}
+
+        When creating a forwarding rule, exactly one of  ``--target-instance'',
+        ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
+        ``--target-ssl-proxy'', ``--target-tcp-proxy'', or
+        ``--target-vpn-gateway'' must be specified.""".format(
+            overview=flags.FORWARDING_RULES_OVERVIEW)),
 }
 
 

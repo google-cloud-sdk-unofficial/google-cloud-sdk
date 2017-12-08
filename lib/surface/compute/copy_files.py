@@ -120,11 +120,12 @@ class CopyFiles(ssh_utils.BaseSSHCLICommand):
     external_ip_address = ssh_utils.GetExternalIPAddress(source_instance)
 
     # Builds the scp command.
-    scp_args = [self.scp_executable]
+    scp_args = [self.env.scp]
     if not args.plain:
-      scp_args.extend(self.GetDefaultFlags())
+      scp_args.extend(ssh.GetDefaultFlags(self.keys.key_file))
       host_key_alias = self.HostKeyAlias(source_instance)
-      scp_args.extend(self.GetHostKeyArgs(args, host_key_alias))
+      scp_args.extend(ssh.GetHostKeyArgs(host_key_alias, args.plain,
+                                         args.strict_host_key_checking))
       scp_args.append('-r')
 
     for file_spec in file_specs:

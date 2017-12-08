@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -67,6 +68,12 @@ class RestoreBackup(base.Command):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = resources.Parse(args.instance, collection='sql.instances')
+
+    if not console_io.PromptContinue(
+        'All current data on the instance will be lost when the backup is '
+        'restored'
+    ):
+      return None
 
     instance_resource = sql_client.instances.Get(
         sql_messages.SqlInstancesGetRequest(
@@ -163,6 +170,12 @@ class RestoreBackupBeta(base.Command):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = resources.Parse(args.instance, collection='sql.instances')
+
+    if not console_io.PromptContinue(
+        'All current data on the instance will be lost when the backup is '
+        'restored'
+    ):
+      return None
 
     if not args.backup_instance:
       args.backup_instance = args.instance

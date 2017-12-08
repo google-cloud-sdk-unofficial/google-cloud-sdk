@@ -82,12 +82,13 @@ class BetaTrain(base.Command):
                                 'submit')
     flags.CONFIG.AddToParser(parser)
     flags.GetStagingBucket(required=True).AddToParser(parser)
-    flags.USER_ARGS.AddToParser(parser)
+    flags.GetUserArgs(local=False).AddToParser(parser)
     flags.SCALE_TIER.AddToParser(parser)
+    flags.RUNTIME_VERSION.AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Format(self, args):
-    return None
+    return 'yaml(jobId,state,startTime.date(tz=LOCAL),endTime.date(tz=LOCAL))'
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -99,9 +100,6 @@ class BetaTrain(base.Command):
     Returns:
       Some value that we want to have printed later.
     """
-    # TODO(b/33234717): remove this after deprecation period
-    flags.ProcessPackages(args)
-
     region = properties.VALUES.compute.region.Get(required=True)
     uris = jobs_prep.UploadPythonPackages(
         packages=args.packages, package_path=args.package_path,
@@ -118,12 +116,16 @@ class BetaTrain(base.Command):
         trainer_uri=uris,
         region=region,
         scale_tier=scale_tier,
-        user_args=args.user_args)
+        user_args=args.user_args,
+        runtime_version=args.runtime_version)
 
     jobs_client = jobs.JobsClient()
-    job = jobs_client.Create(job)
+    project_ref = resources.REGISTRY.Parse(
+        properties.VALUES.core.project.Get(required=True),
+        collection='ml.projects')
+    job = jobs_client.Create(project_ref, job)
+    log.status.Print('Job [{}] submitted successfully.'.format(job.jobId))
     if args.async:
-      log.status.Print('Job [{}] submitted successfully.'.format(job.jobId))
       log.status.Print(_FOLLOW_UP_MESSAGE.format(job_id=job.jobId))
       return job
 

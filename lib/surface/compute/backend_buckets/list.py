@@ -16,8 +16,8 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base_classes.GlobalLister):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class List(base_classes.GlobalLister):
   """List backend buckets."""
 
   @property
@@ -29,4 +29,4 @@ class ListAlpha(base_classes.GlobalLister):
     return 'backendBuckets'
 
 
-ListAlpha.detailed_help = base_classes.GetGlobalListerHelp('backend buckets')
+List.detailed_help = base_classes.GetGlobalListerHelp('backend buckets')

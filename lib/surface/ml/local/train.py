@@ -60,7 +60,7 @@ class RunLocal(base.Command):
     flags.PARAM_SERVERS.AddToParser(parser)
     flags.WORKERS.AddToParser(parser)
     flags.START_PORT.AddToParser(parser)
-    flags.USER_ARGS.AddToParser(parser)
+    flags.GetUserArgs(local=True).AddToParser(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

@@ -30,8 +30,9 @@ class List(base.ListCommand):
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
     parser.add_argument(
-        '--only-project-sinks', required=False, action='store_true',
-        help='Display only project sinks.')
+        '--only-v2-sinks', required=False, action='store_true',
+        help='Display only v2 sinks.')
+    util.AddNonProjectArgs(parser, 'List sinks')
 
   def Collection(self):
     return 'logging.sinks'
@@ -52,12 +53,12 @@ class List(base.ListCommand):
     for sink in result.sinks:
       yield util.TypedLogSink(sink, service_name=service_name)
 
-  def ListProjectSinks(self, project):
-    """List project sinks from the specified project."""
-    # Use V2 logging API for project sinks.
+  def ListSinks(self, parent):
+    """List sinks."""
+    # Use V2 logging API.
     result = util.GetClient().projects_sinks.List(
         util.GetMessages().LoggingProjectsSinksListRequest(
-            parent='projects/{0}'.format(project)))
+            parent=parent))
     for sink in result.sinks:
       yield util.TypedLogSink(sink)
 
@@ -84,8 +85,8 @@ class List(base.ListCommand):
       # In contrast, service.name correctly contains only the name.
       for typed_sink in self.ListLogServiceSinks(project, service.name):
         yield typed_sink
-    # Lastly, get all project sinks.
-    for typed_sink in self.ListProjectSinks(project):
+    # Lastly, get all v2 sinks.
+    for typed_sink in self.ListSinks(util.GetCurrentProjectParent()):
       yield typed_sink
 
   def Run(self, args):
@@ -98,16 +99,17 @@ class List(base.ListCommand):
     Returns:
       The list of sinks.
     """
-    util.WarnOnUsingLogOrServiceArguments(args)
 
+    util.CheckLegacySinksCommandArguments(args)
     project = properties.VALUES.core.project.Get(required=True)
 
     if args.log:
       return self.ListLogSinks(project, args.log)
     elif args.service:
       return self.ListLogServiceSinks(project, args.service)
-    elif args.only_project_sinks:
-      return self.ListProjectSinks(project)
+    elif (args.organization or args.folder or args.billing_account or
+          args.only_v2_sinks):
+      return self.ListSinks(util.GetParentFromArgs(args))
     else:
       return self.YieldAllSinks(project)
 
@@ -116,7 +118,7 @@ List.detailed_help = {
         {index}
         If either the *--log* or *--log-service* flags are included, then
         the only sinks listed are for that log or that service.
-        If *--only-project-sinks* flag is included, then only project sinks
+        If *--only-v2-sinks* flag is included, then only v2 sinks
         are listed.
         If none of the flags are included, then all sinks in use are listed.
     """,

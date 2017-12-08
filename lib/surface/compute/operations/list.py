@@ -206,8 +206,7 @@ class ListGA(base_classes.BaseLister):
         requests=requests,
         http=self.http,
         batch_url=self.batch_url,
-        errors=errors,
-        custom_get_requests=None)
+        errors=errors)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)

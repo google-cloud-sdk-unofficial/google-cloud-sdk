@@ -16,9 +16,9 @@
 import base64
 import sys
 
-import baseauthenticator
 from pyu2f import errors
 from pyu2f import u2f
+from pyu2f.convenience import baseauthenticator
 
 
 class LocalAuthenticator(baseauthenticator.BaseAuthenticator):

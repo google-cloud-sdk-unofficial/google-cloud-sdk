@@ -27,7 +27,7 @@ class InvalidResourceError(exceptions.ToolException):
   pass
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class EditGA(base_classes.BaseEdit):
   """Modify URL maps."""
 
@@ -135,18 +135,20 @@ class EditGA(base_classes.BaseEdit):
             urlMapResource=replacement))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class EditAlpha(EditGA):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class EditBeta(EditGA):
   """Modify URL maps."""
+
+  TRACK = 'beta'
 
   @property
   def example_resource(self):
     backend_service_uri_prefix = (
-        'https://www.googleapis.com/compute/alpha/projects/'
-        'my-project/global/backendServices/')
+        'https://www.googleapis.com/compute/%(track)s/projects/'
+        'my-project/global/backendServices/' % {'track': self.TRACK})
     backend_bucket_uri_prefix = (
-        'https://www.googleapis.com/compute/alpha/projects/'
-        'my-project/global/backendBuckets/')
+        'https://www.googleapis.com/compute/%(track)s/projects/'
+        'my-project/global/backendBuckets/' % {'track': self.TRACK})
     return self.messages.UrlMap(
         name='site-map',
         defaultService=backend_service_uri_prefix + 'default-service',
@@ -233,6 +235,13 @@ class EditAlpha(EditGA):
     ]
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class EditAlpha(EditBeta):
+  """Modify URL maps."""
+
+  TRACK = 'alpha'
+
+
 EditGA.detailed_help = {
     'brief': 'Modify URL maps',
     'DESCRIPTION': """\
@@ -246,4 +255,5 @@ EditGA.detailed_help = {
         the ``EDITOR'' environment variable.
         """,
 }
-EditAlpha.detailed_help = EditGA.detailed_help
+EditBeta.detailed_help = EditGA.detailed_help
+EditAlpha.detailed_help = EditBeta.detailed_help

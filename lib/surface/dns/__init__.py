@@ -32,24 +32,22 @@ class DNS(base.Group):
 
   This set of commands allows you to create and maintain managed-zones and their
   record-sets.
+
+  ## EXAMPLES
+
+  To see how to create and maintain managed-zones, run:
+
+    $ {command} managed-zones --help
+
+  To see how to maintain the record-sets within a managed-zone, run:
+
+    $ {command} record-sets --help
+
+  To display Cloud DNS related information for your project, run:
+
+    $ {command} project-info describe --help
+
   """
-
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To see how to create and maintain managed-zones, run:
-
-            $ {command} managed-zones
-
-          To see how to maintain the record-sets within a managed-zone, run:
-
-            $ {command} record-sets
-
-          To display Cloud DNS related information for your project, run:
-
-            $ {command} project-info describe
-          """,
-  }
 
   @staticmethod
   def Args(parser):

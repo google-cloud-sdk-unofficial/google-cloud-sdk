@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for creating sole tenant hosts."""
+"""Command for creating sole-tenancy hosts."""
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.command_lib.compute import flags
@@ -20,7 +20,7 @@ from googlecloudsdk.command_lib.compute.sole_tenant_hosts import flags as hosts_
 
 
 class Create(base_classes.BaseAsyncCreator):
-  """Create Google Compute Engine sole tenant hosts."""
+  """Create Google Compute Engine sole-tenancy hosts."""
 
   @staticmethod
   def Args(parser):
@@ -28,6 +28,8 @@ class Create(base_classes.BaseAsyncCreator):
     parser.add_argument(
         '--description',
         help='Specifies a textual description of the hosts.')
+    # TODO(user): If host type becomes required in API this flag should
+    # become reqiured too.
     parser.add_argument(
         '--host-type',
         help=('Specifies a type of the hosts. Type of a host determines '
@@ -58,11 +60,15 @@ class Create(base_classes.BaseAsyncCreator):
         default_scope=scope.ScopeEnum.ZONE,
         scope_lister=flags.GetDefaultScopeLister(
             self.compute_client, self.project))
+    if args.host_type:
+      host_type_ref = self.resources.Parse(
+          args.host_type, collection='compute.hostTypes',
+          params={'zone': host_refs[0].zone})
+      host_type_url = host_type_ref.SelfLink()
+    else:
+      host_type_url = None
     host_properties = {
         'description': args.description,
-        # TODO(user): Parse resource and pass full URL of host type once
-        # the host type resource can be made visible (adding host type resource
-        # is tracked in b/30067150).
-        'host_type': args.host_type
+        'host_type': host_type_url,
     }
     return [self._CreateRequest(ref, **host_properties) for ref in host_refs]

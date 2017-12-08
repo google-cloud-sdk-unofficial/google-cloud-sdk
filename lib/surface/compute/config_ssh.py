@@ -1,4 +1,4 @@
-# Copyright 2014 Google Inc. All Rights Reserved.
+# Copyright 2017 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -157,6 +157,7 @@ class ConfigSSH(ssh_utils.BaseSSHCommand):
 
   def Run(self, args):
     super(ConfigSSH, self).Run(args)
+    self.keys.EnsureKeysExist(self.env.keygen, args.force_key_file_overwrite)
 
     ssh_config_file = os.path.expanduser(
         args.ssh_config_file or ssh.PER_USER_SSH_CONFIG_FILE)
@@ -168,7 +169,7 @@ class ConfigSSH(ssh_utils.BaseSSHCommand):
       self.EnsureSSHKeyIsInProject(getpass.getuser())
       instances = list(self.GetInstances())
       if instances:
-        compute_section = _BuildComputeSection(instances, self.ssh_key_file,
+        compute_section = _BuildComputeSection(instances, self.keys.key_file,
                                                ssh.KnownHosts.DEFAULT_PATH)
       else:
         compute_section = ''

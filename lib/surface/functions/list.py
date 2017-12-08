@@ -68,8 +68,10 @@ class List(base.ListCommand):
       A ListRequest message.
     """
     messages = self.context['functions_messages']
+    registry = self.context['registry']
     project = properties.VALUES.core.project.Get(required=True)
-    location = 'projects/{0}/locations/{1}'.format(
-        project, args.region)
+    location_ref = registry.Parse(
+        args.region, params={'projectsId': project},
+        collection='cloudfunctions.projects.locations')
     return messages.CloudfunctionsProjectsLocationsFunctionsListRequest(
-        location=location)
+        location=location_ref.RelativeName())

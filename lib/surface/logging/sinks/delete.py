@@ -31,6 +31,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument('sink_name', help='The name of the sink to delete.')
+    util.AddNonProjectArgs(parser, 'Delete a sink')
 
   def DeleteLogSink(self):
     """Deletes a log sink specified by the arguments."""
@@ -50,17 +51,15 @@ class Delete(base.DeleteCommand):
             projectsId=sink_ref.projectsId,
             logServicesId=sink_ref.logServicesId, sinksId=sink_ref.sinksId))
 
-  def DeleteProjectSink(self):
-    """Deletes a project sink specified by the arguments."""
-    # Use V2 logging API for project sinks.
+  def DeleteSink(self, parent):
+    """Deletes a sink specified by the arguments."""
+    # Use V2 logging API.
     messages = util.GetMessages()
     sink_ref = self.context['sink_reference']
-    # TODO(b/32504514): Use resource parser
     return util.GetClient().projects_sinks.Delete(
         messages.LoggingProjectsSinksDeleteRequest(
             sinkName=util.CreateResourceName(
-                'projects/{0}'.format(sink_ref.projectsId), 'sinks',
-                sink_ref.sinksId)))
+                parent, 'sinks', sink_ref.sinksId)))
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -69,8 +68,7 @@ class Delete(base.DeleteCommand):
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
     """
-    util.WarnOnUsingLogOrServiceArguments(args)
-
+    util.CheckLegacySinksCommandArguments(args)
     sink_ref = self.context['sink_reference']
 
     if args.log:
@@ -80,7 +78,7 @@ class Delete(base.DeleteCommand):
       sink_description = 'log-service sink [%s] from [%s]' % (
           sink_ref.sinksId, sink_ref.logServicesId)
     else:
-      sink_description = 'project sink [%s]' % sink_ref.sinksId
+      sink_description = 'sink [%s]' % sink_ref.sinksId
 
     if not console_io.PromptContinue('Really delete %s?' % sink_description):
       raise calliope_exceptions.ToolException('action canceled by user')
@@ -91,14 +89,14 @@ class Delete(base.DeleteCommand):
       elif args.service:
         self.DeleteLogServiceSink()
       else:
-        self.DeleteProjectSink()
+        self.DeleteSink(util.GetParentFromArgs(args))
       log.DeletedResource(sink_ref)
     except apitools_exceptions.HttpError as error:
-      project_sink = not args.log and not args.service
+      v2_sink = not args.log and not args.service
       # Suggest the user to add --log or --log-service flag.
-      if project_sink and exceptions.HttpException(
+      if v2_sink and exceptions.HttpException(
           error).payload.status_code == 404:
-        log.status.Print(('Project sink was not found. '
+        log.status.Print(('Sink was not found. '
                           'Did you forget to add --log or --log-service flag?'))
       raise error
 
@@ -108,7 +106,7 @@ Delete.detailed_help = {
         Deletes a sink and halts the export of log entries associated
         with that sink.
         If you don't include one of the *--log* or *--log-service* flags,
-        this command deletes a project sink.
+        this command deletes a v2 sink.
         Deleting a sink does not affect log entries already exported
         through the deleted sink, and will not affect other sinks that are
         exporting the same log(s).

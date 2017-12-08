@@ -73,8 +73,7 @@ class TailSerialPortOutput(base_classes.BaseCommand):
           requests=[request],
           http=self.http,
           batch_url=self.batch_url,
-          errors=errors,
-          custom_get_requests=None))
+          errors=errors))
       if errors:
         raise TailSerialPortOutputException(
             'Could not fetch serial port output: ' +

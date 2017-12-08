@@ -16,7 +16,6 @@
 
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -45,7 +44,8 @@ class Create(base.CreateCommand):
         '--unique-writer-identity', required=False, action='store_true',
         default=True,
         help=('DEPRECATED. Whether to create a new writer identity for this '
-              'sink. Only available for project sinks.'))
+              'sink. Only available for v2 sinks.'))
+    util.AddNonProjectArgs(parser, 'Create a sink')
 
   def Collection(self):
     return 'logging.sinks'
@@ -69,20 +69,16 @@ class Create(base.CreateCommand):
             logServicesId=sink_ref.logServicesId,
             logSink=messages.LogSink(**sink_data)))
 
-  def CreateProjectSink(self, sink_data, unique_writer_identity):
-    """Creates a project sink specified by the arguments."""
-    # Use V2 logging API for project sinks.
+  def CreateSink(self, parent, sink_data, unique_writer_identity):
+    """Creates a v2 sink specified by the arguments."""
     messages = util.GetMessages()
-    sink_ref = self.context['sink_reference']
     # Change string value to enum.
     sink_data['outputVersionFormat'] = getattr(
         messages.LogSink.OutputVersionFormatValueValuesEnum,
         sink_data['outputVersionFormat'])
-    # TODO(b/32504514): Use resource parser
     return util.GetClient().projects_sinks.Create(
         messages.LoggingProjectsSinksCreateRequest(
-            parent='projects/{0}'.format(sink_ref.projectsId),
-            logSink=messages.LogSink(**sink_data),
+            parent=parent, logSink=messages.LogSink(**sink_data),
             uniqueWriterIdentity=unique_writer_identity))
 
   def Run(self, args):
@@ -102,10 +98,9 @@ class Create(base.CreateCommand):
           '--unique-writer-identity is deprecated and will soon be removed.')
 
     if not (args.log or args.service or args.log_filter):
-      # Attempt to create a project sink with an empty filter.
-      if not console_io.PromptContinue(
-          'Sink with empty filter matches all entries in the project.'):
-        raise exceptions.ToolException('action canceled by user')
+      # Attempt to create a sink with an empty filter.
+      console_io.PromptContinue(
+          'Sink with empty filter matches all entries.', cancel_on_no=True)
 
     sink_ref = self.context['sink_reference']
     sink_data = {'name': sink_ref.sinksId, 'destination': args.destination,
@@ -120,7 +115,8 @@ class Create(base.CreateCommand):
     else:
       sink_data['outputVersionFormat'] = args.output_version_format
       result = util.TypedLogSink(
-          self.CreateProjectSink(sink_data, args.unique_writer_identity))
+          self.CreateSink(util.GetParentFromArgs(args), sink_data,
+                          args.unique_writer_identity))
     log.CreatedResource(sink_ref)
     self._epilog_result_destination = result.destination
     self._writer_identity = result.writer_identity
@@ -139,14 +135,15 @@ Create.detailed_help = {
         A "log service" sink exports all logs from a log service,
         specified by the *--log-service* flag.
         If you don't include one of the *--log* or *--log-service* flags,
-        this command creates a project sink.
-        A "project" sink exports all logs that matches *--log-filter* flag.
-        An empty filter will match all logs.
+        this command creates a "v2" sink.
+        A "v2" sink exports all logs that matches *--log-filter* flag.
+        An empty filter matches all logs.
         The sink's destination can be a Cloud Storage bucket,
         a BigQuery dataset, or a Cloud Pub/Sub topic.
         The destination must already exist and Stackdriver Logging must have
         permission to write to it.
         Log entries are exported as soon as the sink is created.
+        See https://cloud.google.com/logging/docs/export/configure_export_v2#destination_authorization
     """,
     'EXAMPLES': """\
         To export all Google App Engine logs to BigQuery, run:
@@ -159,7 +156,7 @@ Create.detailed_help = {
 
         To export Google App Engine logs with ERROR severity, run:
 
-          $ {command} my-error-logs bigquery.googleapis.com/projects/my-project/datasets/my_dataset --log-filter='metadata.serviceName="appengine.googleapis.com" AND metadata.severity=ERROR'
+          $ {command} my-error-logs bigquery.googleapis.com/projects/my-project/datasets/my_dataset --log-filter='resource.type="gae_app" AND severity=ERROR'
 
         Detailed information about filters can be found at:
         [](https://cloud.google.com/logging/docs/view/advanced_filters)

@@ -18,4 +18,4 @@ from googlecloudsdk.calliope import base
 
 
 class SoleTenancyHosts(base.Group):
-  pass
+  """Read and manage Google Compute Engine sole-tenancy hosts."""

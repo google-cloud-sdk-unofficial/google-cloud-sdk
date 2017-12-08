@@ -62,8 +62,7 @@ class SetScopes(base_classes.NoOutputAsyncMutator):
         requests=[request],
         http=self.http,
         batch_url=self.batch_url,
-        errors=errors,
-        custom_get_requests=None))
+        errors=errors))
     if errors or not instance:
       raise exceptions.ResourceMissingException(
           'Instance {0} does not exist.'.format(instance_ref.SelfLink()))

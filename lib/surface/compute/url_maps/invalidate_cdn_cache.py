@@ -124,8 +124,7 @@ class InvalidateCdnCacheGA(base_classes.NoOutputMutator):
           requests=requests,
           http=self.http,
           batch_url=self.batch_url,
-          errors=errors,
-          custom_get_requests=None))
+          errors=errors))
 
     resources = lister.ProcessResults(
         resources=resources,

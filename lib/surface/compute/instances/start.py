@@ -79,8 +79,7 @@ class Start(base_classes.NoOutputAsyncMutator):
         requests=instance_get_requests,
         http=self.http,
         batch_url=self.batch_url,
-        errors=errors,
-        custom_get_requests=None))
+        errors=errors))
     if errors:
       utils.RaiseException(
           errors,

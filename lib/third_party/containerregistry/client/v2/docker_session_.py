@@ -73,7 +73,7 @@ class Push(object):
             digest=digest),
         method='HEAD', accepted_codes=[httplib.OK, httplib.NOT_FOUND])
 
-    return resp.status == httplib.OK
+    return resp.status == httplib.OK  # pytype: disable=attribute-error
 
   def _manifest_exists(self, image):
     """Check the remote for the given manifest by digest."""
@@ -86,7 +86,7 @@ class Push(object):
             digest=manifest_digest),
         method='GET', accepted_codes=[httplib.OK, httplib.NOT_FOUND])
 
-    return resp.status == httplib.OK
+    return resp.status == httplib.OK  # pytype: disable=attribute-error
 
   def _monolithic_upload(self, image,
                          digest):
@@ -182,7 +182,7 @@ class Push(object):
             tag=self._name.tag),
         method='GET', accepted_codes=[httplib.OK, httplib.NOT_FOUND])
 
-    if resp.status == httplib.NOT_FOUND:
+    if resp.status == httplib.NOT_FOUND:  # pytype: disable=attribute-error
       return None
 
     return resp['docker-content-digest']
@@ -219,7 +219,7 @@ class Push(object):
     resp, unused_content = self._transport.Request(
         url, method='POST', body=None,
         accepted_codes=accepted_codes)
-    return (resp.status == httplib.CREATED, resp.get('location'))
+    return resp.status == httplib.CREATED, resp.get('location')  # type: ignore
 
   def _upload_one(
       self,

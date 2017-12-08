@@ -61,7 +61,7 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
+class Create(base_classes.BaseAsyncCreator):
   """Create a Compute Engine virtual machine instance template.
 
   *{command}* facilitates the creation of Google Compute Engine
@@ -166,7 +166,9 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
 
     create_boot_disk = not instance_utils.UseExistingBootDisk(args.disk or [])
     if create_boot_disk:
-      image_uri, _ = self.ExpandImageFlag(
+      image_expander = image_utils.ImageExpander(self.compute_client,
+                                                 self.resources)
+      image_uri, _ = image_expander.ExpandImageFlag(
           user_project=self.project,
           image=args.image,
           image_family=args.image_family,

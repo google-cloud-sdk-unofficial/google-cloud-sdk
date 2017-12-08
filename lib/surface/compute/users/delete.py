@@ -64,8 +64,7 @@ class Delete(base_classes.BaseAsyncMutator):
         requests=requests,
         http=self.http,
         batch_url=self.batch_url,
-        errors=errors,
-        custom_get_requests=None)
+        errors=errors)
 
     if errors:
       utils.RaiseException(errors, users_client.UserException, error_message=(

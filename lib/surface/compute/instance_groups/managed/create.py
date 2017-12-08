@@ -58,7 +58,6 @@ def _IsZonalGroup(ref):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateGA(base_classes.BaseAsyncCreator,
-               zone_utils.ZoneResourceFetcher,
                base_classes.InstanceGroupManagerDynamicProperiesMixin):
   """Create Google Compute Engine managed instance groups."""
 
@@ -81,14 +80,16 @@ class CreateGA(base_classes.BaseAsyncCreator,
     return 'instanceGroupManagers'
 
   def CreateGroupReference(self, args):
-    group_ref = group_ref = (
+    group_ref = (
         instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
         ResolveAsResource)(args, self.resources,
                            default_scope=compute_scope.ScopeEnum.ZONE,
                            scope_lister=flags.GetDefaultScopeLister(
                                self.compute_client, self.project))
     if _IsZonalGroup(group_ref):
-      self.WarnForZonalCreation([group_ref])
+      zonal_resource_fetcher = zone_utils.ZoneResourceFetcher(
+          self.compute_client)
+      zonal_resource_fetcher.WarnForZonalCreation([group_ref])
     return group_ref
 
   def GetRegionForGroup(self, group_ref):

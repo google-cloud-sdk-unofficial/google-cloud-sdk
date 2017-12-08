@@ -90,8 +90,7 @@ class Delete(base_classes.ZonalDeleter):
         requests=instance_get_requests,
         http=self.http,
         batch_url=self.batch_url,
-        errors=errors,
-        custom_get_requests=None))
+        errors=errors))
     if errors:
       utils.RaiseToolException(
           errors,
@@ -190,8 +189,7 @@ class Delete(base_classes.ZonalDeleter):
             requests=set_auto_delete_requests,
             http=self.http,
             batch_url=self.batch_url,
-            errors=errors,
-            custom_get_requests=None))
+            errors=errors))
         if errors:
           utils.RaiseToolException(
               errors,

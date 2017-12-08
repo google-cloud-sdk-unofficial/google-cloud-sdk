@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Package for the sole tenancy CLI commands."""
+"""Package for the sole-tenancy CLI commands."""
 
 from googlecloudsdk.calliope import base
 
@@ -20,4 +20,4 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SoleTenancy(base.Group):
-  pass
+  """Read and manage Google Compute Engine sole-tenancy resources."""

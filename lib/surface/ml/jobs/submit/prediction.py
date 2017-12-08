@@ -16,6 +16,9 @@
 from googlecloudsdk.api_lib.ml import jobs
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.ml import flags
+from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 _TF_RECORD_URL = ('https://www.tensorflow.org/versions/r0.12/how_tos/'
@@ -82,6 +85,7 @@ aren't a first-class Cloud Storage concept) of `my-bucket`.
         '--region',
         required=True,
         help='The Google Compute Engine region to run the job in.')
+    flags.RUNTIME_VERSION.AddToParser(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -93,6 +97,9 @@ aren't a first-class Cloud Storage concept) of `my-bucket`.
     Returns:
       Some value that we want to have printed later.
     """
+    project_ref = resources.REGISTRY.Parse(
+        properties.VALUES.core.project.Get(required=True),
+        collection='ml.projects')
     job = jobs.BuildBatchPredictionJob(
         job_name=args.job,
         model_name=args.model,
@@ -100,5 +107,6 @@ aren't a first-class Cloud Storage concept) of `my-bucket`.
         input_paths=args.input_paths,
         data_format=args.data_format,
         output_path=args.output_path,
-        region=args.region)
-    return jobs.JobsClient().Create(job)
+        region=args.region,
+        runtime_version=args.runtime_version)
+    return jobs.JobsClient().Create(project_ref, job)

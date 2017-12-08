@@ -52,8 +52,7 @@ class GetHealth(base_classes.BaseCommand):
                        targetPool=self.target_pool_ref.Name()))],
         http=self.http,
         batch_url=self.batch_url,
-        errors=errors,
-        custom_get_requests=None))
+        errors=errors))
     if errors:
       utils.RaiseToolException(
           errors,
@@ -90,8 +89,7 @@ class GetHealth(base_classes.BaseCommand):
         requests=requests,
         http=self.http,
         batch_url=self.batch_url,
-        errors=errors,
-        custom_get_requests=None)
+        errors=errors)
 
     for resource in resources:
       yield resource

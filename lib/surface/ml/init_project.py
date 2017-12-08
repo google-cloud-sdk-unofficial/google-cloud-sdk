@@ -49,21 +49,24 @@ class InitProject(base.Command):
 
     project = properties.VALUES.core.project.Get(required=True)
     project_ref = resources.REGISTRY.Parse(
-        project, collection='cloudresourcemanager.projects')
+        project, collection='ml.projects')
     console_io.PromptContinue(
         message='\nCloud ML needs to add its service accounts to your project '
         '[{0}] as Editors. This will enable Cloud Machine Learning to access '
         'resources in your project when running your training and '
-        'prediction jobs.'.format(project),
+        'prediction jobs. This operation requires OWNER permissions.'.format(
+            project),
         cancel_on_no=True)
 
     # Get service account information from cloud ml service.
-    req = msgs.MlProjectsGetConfigRequest(projectsId=project)
+    req = msgs.MlProjectsGetConfigRequest(name=project_ref.RelativeName())
     resp = client.projects.GetConfig(req)
 
     # Add cloud ml service account.
     cloud_ml_service_account = 'serviceAccount:' + resp.serviceAccount
-    projects_api.AddIamPolicyBinding(project_ref, cloud_ml_service_account,
-                                     EDITOR_ROLE)
+    cloudresourcemanager_project_ref = resources.REGISTRY.Parse(
+        project, collection='cloudresourcemanager.projects')
+    projects_api.AddIamPolicyBinding(
+        cloudresourcemanager_project_ref, cloud_ml_service_account, EDITOR_ROLE)
     log.status.Print('Added {0} as an Editor to project \'{1}\'.'.format(
         cloud_ml_service_account, project))

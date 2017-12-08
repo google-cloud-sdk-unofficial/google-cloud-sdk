@@ -113,7 +113,7 @@ class Update(base.UpdateCommand):
     _AddCommonArgs(parser)
     group = parser.add_mutually_exclusive_group(required=True)
     _AddMutuallyExclusiveArgs(group)
-    flags.AddClusterAutoscalingFlags(parser, group, suppressed=True)
+    flags.AddClusterAutoscalingFlags(parser, group, hidden=True)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -172,7 +172,7 @@ class UpdateBeta(Update):
     _AddCommonArgs(parser)
     group = parser.add_mutually_exclusive_group(required=True)
     _AddMutuallyExclusiveArgs(group)
-    flags.AddClusterAutoscalingFlags(parser, group, suppressed=True)
+    flags.AddClusterAutoscalingFlags(parser, group, hidden=True)
     _AddAdditionalZonesArg(group)
 
 

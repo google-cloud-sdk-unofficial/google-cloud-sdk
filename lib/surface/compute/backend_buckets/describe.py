@@ -16,8 +16,8 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(base_classes.GlobalDescriber):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class Describe(base_classes.GlobalDescriber):
   """Describe a backend bucket."""
 
   @staticmethod
@@ -33,7 +33,7 @@ class DescribeAlpha(base_classes.GlobalDescriber):
     return 'backendBuckets'
 
 
-DescribeAlpha.detailed_help = {
+Describe.detailed_help = {
     'brief': 'Describe a backend bucket',
     'DESCRIPTION': """\
         *{command}* displays all data associated with a backend bucket in a

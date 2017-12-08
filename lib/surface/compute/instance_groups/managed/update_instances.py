@@ -112,8 +112,7 @@ class UpdateInstancesAlpha(base_classes.BaseCommand):
           requests=[(service, method, request)],
           http=self.http,
           batch_url=self.batch_url,
-          errors=errors,
-          custom_get_requests=None))
+          errors=errors))
     resources = lister.ProcessResults(
         resources=resources,
         field_selector=property_selector.PropertySelector(

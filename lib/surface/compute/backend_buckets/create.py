@@ -19,8 +19,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_buckets_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base_classes.BaseAsyncCreator):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class Create(base_classes.BaseAsyncCreator):
   """Create a backend bucket."""
 
   @staticmethod
@@ -57,7 +57,7 @@ class CreateAlpha(base_classes.BaseAsyncCreator):
 
     return [request]
 
-CreateAlpha.detailed_help = {
+Create.detailed_help = {
     'brief': 'Create a backend bucket',
     'DESCRIPTION': """
         *{command}* is used to create backend buckets. Backend buckets

@@ -41,7 +41,7 @@ class DeleteAccessConfig(base_classes.NoOutputAsyncMutator):
         """.format(constants.DEFAULT_ACCESS_CONFIG_NAME)
     network_interface = parser.add_argument(
         '--network-interface',
-        default='nic0',
+        default=constants.DEFAULT_NETWORK_INTERFACE,
         action=arg_parsers.StoreOnceAction,
         help=('Specifies the name of the network interface from which to '
               'delete the access configuration.'))

@@ -110,8 +110,10 @@ versions run
     instances = predict_utilities.ReadInstancesFromArgs(
         args.json_instances, args.text_instances, limit=INPUT_INSTANCES_LIMIT)
 
-    results = predict.Predict(
-        model_name=args.model, version_name=args.version, instances=instances)
+    model_or_version_ref = predict_utilities.ParseModelOrVersionRef(
+        args.model, args.version)
+
+    results = predict.Predict(model_or_version_ref, instances)
     # Hack to make the results available to Format() method
     self.predictions = results['predictions']
     return results

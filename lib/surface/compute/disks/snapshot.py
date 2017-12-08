@@ -16,11 +16,16 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import csek_utils
 from googlecloudsdk.api_lib.compute import name_generator
+from googlecloudsdk.api_lib.compute.operations import poller
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
+from googlecloudsdk.core import exceptions as core_exceptions
+from googlecloudsdk.core import log
+
 
 DETAILED_HELP = {
     'DESCRIPTION': """\
@@ -71,9 +76,11 @@ def _CommonArgs(parser):
       """
   csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
 
+  base.ASYNC_FLAG.AddToParser(parser)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class SnapshotDisks(base_classes.NoOutputAsyncMutator):
+class SnapshotDisks(base.SilentCommand):
   """Create snapshots of Google Compute Engine persistent disks."""
 
   @staticmethod
@@ -81,29 +88,13 @@ class SnapshotDisks(base_classes.NoOutputAsyncMutator):
     SnapshotDisks.disks_arg = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(parser)
 
-  @property
-  def service(self):
-    return self.compute.disks
-
-  @property
-  def custom_get_requests(self):
-    return self._target_to_get_request
-
-  @property
-  def method(self):
-    return 'CreateSnapshot'
-
-  @property
-  def resource_type(self):
-    return 'snapshots'
-
-  def CreateRequests(self, args):
+  def Run(self, args):
     """Returns a list of requests necessary for snapshotting disks."""
-    disk_refs = SnapshotDisks.disks_arg.ResolveAsResource(
-        args, self.resources,
-        scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client, self.project))
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
 
+    disk_refs = SnapshotDisks.disks_arg.ResolveAsResource(
+        args, holder.resources,
+        scope_lister=flags.GetDefaultScopeLister(holder.client))
     if args.snapshot_names:
       if len(disk_refs) != len(args.snapshot_names):
         raise exceptions.ToolException(
@@ -116,9 +107,11 @@ class SnapshotDisks(base_classes.NoOutputAsyncMutator):
                         for _ in disk_refs]
 
     snapshot_refs = [
-        self.resources.Parse(snapshot_name, collection='compute.snapshots')
+        holder.resources.Parse(snapshot_name, collection='compute.snapshots')
         for snapshot_name in snapshot_names]
-    self._target_to_get_request = {}
+
+    client = holder.client.apitools_client
+    messages = holder.client.messages
 
     requests = []
 
@@ -127,8 +120,8 @@ class SnapshotDisks(base_classes.NoOutputAsyncMutator):
       allow_rsa_encrypted = self.ReleaseTrack() in [base.ReleaseTrack.ALPHA,
                                                     base.ReleaseTrack.BETA]
       csek_keys = csek_utils.CsekKeyStore.FromArgs(args, allow_rsa_encrypted)
-      disk_key_or_none = csek_utils.MaybeLookupKeyMessage(csek_keys, disk_ref,
-                                                          self.compute)
+      disk_key_or_none = csek_utils.MaybeLookupKeyMessage(
+          csek_keys, disk_ref, client)
 
       # TODO(user) drop test after 'guestFlush' goes GA
       if hasattr(args, 'guest_flush') and args.guest_flush:
@@ -137,9 +130,9 @@ class SnapshotDisks(base_classes.NoOutputAsyncMutator):
         request_kwargs = {}
 
       if disk_ref.Collection() == 'compute.disks':
-        request = self.messages.ComputeDisksCreateSnapshotRequest(
+        request = messages.ComputeDisksCreateSnapshotRequest(
             disk=disk_ref.Name(),
-            snapshot=self.messages.Snapshot(
+            snapshot=messages.Snapshot(
                 name=snapshot_ref.Name(),
                 description=args.description,
                 sourceDiskEncryptionKey=disk_key_or_none
@@ -147,10 +140,11 @@ class SnapshotDisks(base_classes.NoOutputAsyncMutator):
             project=disk_ref.project,
             zone=disk_ref.zone,
             **request_kwargs)
+        requests.append((client.disks, 'CreateSnapshot', request))
       elif disk_ref.Collection() == 'compute.regionDisks':
-        request = self.messages.ComputeRegionDisksCreateSnapshotRequest(
+        request = messages.ComputeRegionDisksCreateSnapshotRequest(
             disk=disk_ref.Name(),
-            snapshot=self.messages.Snapshot(
+            snapshot=messages.Snapshot(
                 name=snapshot_ref.Name(),
                 description=args.description,
                 sourceDiskEncryptionKey=disk_key_or_none
@@ -158,17 +152,29 @@ class SnapshotDisks(base_classes.NoOutputAsyncMutator):
             project=disk_ref.project,
             region=disk_ref.region,
             **request_kwargs)
-        request = (self.compute.regionDisks, self.method, request)
-      requests.append(request)
+        requests.append((client.regionDisks, 'CreateSnapshot', request))
 
-      self._target_to_get_request[disk_ref.SelfLink()] = (
-          snapshot_ref.SelfLink(),
-          self.compute.snapshots,
-          self.messages.ComputeSnapshotsGetRequest(
-              snapshot=snapshot_ref.Name(),
-              project=self.project))
+    errors_to_collect = []
+    responses = holder.client.BatchRequests(requests, errors_to_collect)
+    if errors_to_collect:
+      raise core_exceptions.MultiError(errors_to_collect)
 
-    return requests
+    operation_refs = [holder.resources.Parse(r.selfLink) for r in responses]
+
+    if args.async:
+      for operation_ref in operation_refs:
+        log.status.Print('Disk snapshot in progress for [{}].'
+                         .format(operation_ref.SelfLink()))
+      log.status.Print('Use [gcloud compute operations describe URI] command '
+                       'to check the status of the operation(s).')
+      return responses
+
+    operation_poller = poller.BatchPoller(
+        holder.client, client.snapshots, snapshot_refs)
+    return waiter.WaitFor(
+        operation_poller, poller.OperationBatch(operation_refs),
+        'Creating snapshot(s) {0}'
+        .format(', '.join(s.Name() for s in snapshot_refs)))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

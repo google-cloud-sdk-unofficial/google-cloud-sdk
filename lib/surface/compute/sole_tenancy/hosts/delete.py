@@ -11,15 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for deleting private hosts."""
+"""Command for deleting sole-tenancy hosts."""
 from googlecloudsdk.api_lib.compute import base_classes
 
 
 class Delete(base_classes.ZonalDeleter):
-  """Delete Google Compute Engine private hosts.
+  """Delete Google Compute Engine sole-tenancy hosts.
 
   *{command}* deletes one or more Google Compute Engine
-  private hosts. Hosts can be deleted only if they are not
+  sole-tenancy hosts. Hosts can be deleted only if they are not
   being used by any virtual machine instances.
   """
 

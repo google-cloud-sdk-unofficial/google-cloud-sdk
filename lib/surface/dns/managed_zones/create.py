@@ -30,7 +30,7 @@ class Create(base.CreateCommand):
 
   To create a managed-zone, run:
 
-    $ {command} my_zone --dns_name my.zone.com. --description "My zone!"
+    $ {command} my_zone --dns-name my.zone.com. --description "My zone!"
   """
 
   @staticmethod

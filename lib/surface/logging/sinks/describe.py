@@ -29,6 +29,7 @@ class Describe(base.DescribeCommand):
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument('sink_name', help='The name of the sink to describe.')
+    util.AddNonProjectArgs(parser, 'Describe a sink')
 
   def Collection(self):
     return 'logging.sinks'
@@ -53,16 +54,14 @@ class Describe(base.DescribeCommand):
             logServicesId=ref.logServicesId,
             sinksId=ref.sinksId))
 
-  def GetProjectSink(self):
-    """Returns a project sink specified by the arguments."""
-    # Use V2 logging API for project sinks.
+  def GetSink(self, parent):
+    """Returns a sink specified by the arguments."""
+    # Use V2 logging API.
     sink_ref = self.context['sink_reference']
-    # TODO(b/32504514): Use resource parser
     return util.GetClient().projects_sinks.Get(
         util.GetMessages().LoggingProjectsSinksGetRequest(
             sinkName=util.CreateResourceName(
-                'projects/{0}'.format(sink_ref.projectsId), 'sinks',
-                sink_ref.sinksId)))
+                parent, 'sinks', sink_ref.sinksId)))
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -74,7 +73,7 @@ class Describe(base.DescribeCommand):
     Returns:
       The specified sink with its destination.
     """
-    util.WarnOnUsingLogOrServiceArguments(args)
+    util.CheckLegacySinksCommandArguments(args)
 
     try:
       if args.log:
@@ -83,13 +82,13 @@ class Describe(base.DescribeCommand):
         return util.TypedLogSink(self.GetLogServiceSink(),
                                  service_name=args.service)
       else:
-        return util.TypedLogSink(self.GetProjectSink())
+        return util.TypedLogSink(self.GetSink(util.GetParentFromArgs(args)))
     except apitools_exceptions.HttpError as error:
-      project_sink = not args.log and not args.service
+      v2_sink = not args.log and not args.service
       # Suggest the user to add --log or --log-service flag.
-      if project_sink and exceptions.HttpException(
+      if v2_sink and exceptions.HttpException(
           error).payload.status_code == 404:
-        log.status.Print(('Project sink was not found. '
+        log.status.Print(('Sink was not found. '
                           'Did you forget to add --log or --log-service flag?'))
       raise error
 
@@ -98,6 +97,6 @@ Describe.detailed_help = {
     'DESCRIPTION': """\
         Displays information about a sink.
         If you don't include one of the *--log* or *--log-service* flags,
-        this command displays information about a project sink.
+        this command displays information about a v2 sink.
      """,
 }

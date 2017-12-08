@@ -29,7 +29,7 @@ def _Args(parser):
       help='An optional, textual description for the URL map.')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateGA(base_classes.BaseAsyncCreator):
   """Create a URL map."""
 
@@ -73,8 +73,8 @@ class CreateGA(base_classes.BaseAsyncCreator):
     return [request]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateGA):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class CreateBeta(CreateGA):
   """Create a URL map."""
 
   BACKEND_BUCKET_ARG = None
@@ -141,7 +141,7 @@ CreateGA.detailed_help = {
         and `gcloud compute url-maps add-host-rule`.
         """,
 }
-CreateAlpha.detailed_help = {
+CreateBeta.detailed_help = {
     'brief': 'Create a URL map',
     'DESCRIPTION': """
         *{command}* is used to create URL maps which map HTTP and
