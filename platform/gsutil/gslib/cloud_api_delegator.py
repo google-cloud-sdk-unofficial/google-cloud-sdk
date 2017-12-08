@@ -184,10 +184,11 @@ class CloudApiDelegator(CloudApi):
     # every HTTP call.
     elif using_gs_hmac:
       api = ApiSelector.XML
-    # Customer-supplied encryption keys are only supported in the JSON API.
-    # We can't stop XML API users from interacting with encrypted objects,
-    # since we don't know the object is encrypted until after the API call is
-    # made, but if they specify configuration values we will use JSON.
+    # Customer-supplied encryption keys are currently only supported in the
+    # JSON API implementation (GcsJsonApi). We can't stop XML API users from
+    # interacting with encrypted objects, since we don't know the object is
+    # encrypted until after the API call is made, but if they specify
+    # configuration values we will use JSON.
     elif configured_encryption:
       api = ApiSelector.JSON
     # Try to force the user's preference to a supported API.
@@ -200,8 +201,8 @@ class CloudApiDelegator(CloudApi):
   def GetBucket(self, bucket_name, provider=None, fields=None):
     return self._GetApi(provider).GetBucket(bucket_name, fields=fields)
 
-  def GetBucketIamPolicy(self, bucket_name, provider=None):
-    return self._GetApi(provider).GetBucketIamPolicy(bucket_name)
+  def GetBucketIamPolicy(self, bucket_name, provider=None, fields=None):
+    return self._GetApi(provider).GetBucketIamPolicy(bucket_name, fields=fields)
 
   def SetBucketIamPolicy(self, bucket_name, policy, provider=None):
     return self._GetApi(provider).SetBucketIamPolicy(bucket_name, policy)
@@ -228,9 +229,9 @@ class CloudApiDelegator(CloudApi):
                                                preconditions=preconditions)
 
   def GetObjectIamPolicy(self, bucket_name, object_name,
-                         generation=None, provider=None):
+                         generation=None, provider=None, fields=None):
     return self._GetApi(provider).GetObjectIamPolicy(
-        bucket_name, object_name, generation)
+        bucket_name, object_name, generation, fields=fields)
 
   def SetObjectIamPolicy(self, bucket_name, object_name, policy,
                          generation=None, provider=None):

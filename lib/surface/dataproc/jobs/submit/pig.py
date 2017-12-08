@@ -18,27 +18,60 @@ from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.dataproc import base_classes
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Pig(base_classes.JobSubmitter):
   """Submit a Pig job to a cluster."""
-
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To submit a Pig job with a local script, run:
-
-            $ {command} --cluster my_cluster --file my_queries.pig
-
-          To submit a Pig job with inline queries, run:
-
-            $ {command} --cluster my_cluster -e "LNS = LOAD 'gs://my_bucket/my_file.txt' AS (line)" -e "WORDS = FOREACH LNS GENERATE FLATTEN(TOKENIZE(line)) AS word" -e "GROUPS = GROUP WORDS BY word" -e "WORD_COUNTS = FOREACH GROUPS GENERATE group, COUNT(WORDS)" -e "DUMP WORD_COUNTS"
-          """,
-  }
 
   @staticmethod
   def Args(parser):
     super(Pig, Pig).Args(parser)
+    PigBase.Args(parser)
+
+  def ConfigureJob(self, job, args):
+    PigBase.ConfigureJob(
+        self.context['dataproc_messages'],
+        job,
+        self.BuildLoggingConfig(args.driver_log_levels),
+        self.files_by_type,
+        args)
+
+  def PopulateFilesByType(self, args):
+    self.files_by_type.update(PigBase.GetFilesByType(args))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class PigBeta(base_classes.JobSubmitterBeta):
+  """Submit a Pig job to a cluster with gcloud dataproc beta features."""
+
+  @staticmethod
+  def Args(parser):
+    super(PigBeta, PigBeta).Args(parser)
+    PigBase.Args(parser)
+
+  def ConfigureJob(self, job, args):
+    PigBase.ConfigureJob(
+        self.context['dataproc_messages'],
+        job,
+        self.BuildLoggingConfig(args.driver_log_levels),
+        self.files_by_type,
+        args)
+    # Apply labels
+    super(PigBeta, self).ConfigureJob(job, args)
+
+  def PopulateFilesByType(self, args):
+    self.files_by_type.update(PigBase.GetFilesByType(args))
+
+
+class PigBase(object):
+  """Submit a Pig job to a cluster."""
+
+  @staticmethod
+  def Args(parser):
+    """Performs command-line argument parsing specific to Pig."""
+
     parser.add_argument(
         '--execute', '-e',
         metavar='QUERY',
@@ -77,25 +110,26 @@ class Pig(base_classes.JobSubmitter):
         help=('A list of package to log4j log level pairs to configure driver '
               'logging. For example: root=FATAL,com.example=INFO'))
 
-  def PopulateFilesByType(self, args):
+  @staticmethod
+  def GetFilesByType(args):
     # TODO(user): Replace with argument group.
     if not args.queries and not args.file:
       raise ValueError('Must either specify --execute or --file.')
     if args.queries and args.file:
       raise ValueError('Cannot specify both --execute and --file.')
 
-    self.files_by_type.update({
+    return {
         'jars': args.jars,
-        'file': args.file})
+        'file': args.file}
 
-  def ConfigureJob(self, job, args):
-    messages = self.context['dataproc_messages']
+  @staticmethod
+  def ConfigureJob(messages, job, log_config, files_by_type, args):
+    """Populates the pigJob member of the given job."""
 
-    log_config = self.BuildLoggingConfig(args.driver_log_levels)
     pig_job = messages.PigJob(
         continueOnFailure=args.continue_on_failure,
-        jarFileUris=self.files_by_type['jars'],
-        queryFileUri=self.files_by_type['file'],
+        jarFileUris=files_by_type['jars'],
+        queryFileUri=files_by_type['file'],
         loggingConfig=log_config)
 
     if args.queries:
@@ -108,3 +142,17 @@ class Pig(base_classes.JobSubmitter):
           args.properties, messages.PigJob.PropertiesValue)
 
     job.pigJob = pig_job
+
+Pig.detailed_help = {
+    'DESCRIPTION': '{description}',
+    'EXAMPLES': """\
+        To submit a Pig job with a local script, run:
+
+          $ {command} --cluster my_cluster --file my_queries.pig
+
+        To submit a Pig job with inline queries, run:
+
+          $ {command} --cluster my_cluster -e "LNS = LOAD 'gs://my_bucket/my_file.txt' AS (line)" -e "WORDS = FOREACH LNS GENERATE FLATTEN(TOKENIZE(line)) AS word" -e "GROUPS = GROUP WORDS BY word" -e "WORD_COUNTS = FOREACH GROUPS GENERATE group, COUNT(WORDS)" -e "DUMP WORD_COUNTS"
+        """,
+}
+PigBeta.detailed_help = Pig.detailed_help

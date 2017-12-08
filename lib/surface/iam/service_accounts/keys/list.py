@@ -13,7 +13,6 @@
 # limitations under the License.
 """Command for listing service account keys."""
 
-from datetime import datetime
 import textwrap
 
 from apitools.base.py import exceptions
@@ -22,9 +21,7 @@ from googlecloudsdk.api_lib.iam import utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import base_classes
-
-
-ZULU_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
+from googlecloudsdk.core.util import times
 
 
 class List(base_classes.BaseIamCommand, base.ListCommand):
@@ -51,7 +48,8 @@ class List(base_classes.BaseIamCommand, base.ListCommand):
         '--created-before',
         type=arg_parsers.Datetime.Parse,
         help=('Return only keys created before the specified time. '
-              'The timestamp must be in RFC3339 UTC "Zulu" format.'))
+              'Common time formats are accepted. This is equivalent to '
+              '--filter="validAfterTime<DATE_TIME".'))
 
     parser.add_argument('--iam-account',
                         required=True,
@@ -72,7 +70,7 @@ class List(base_classes.BaseIamCommand, base.ListCommand):
         ts = args.created_before
         keys = [key
                 for key in keys
-                if datetime.strptime(key.validAfterTime, ZULU_FORMAT) < ts]
+                if times.ParseDateTime(key.validAfterTime) < ts]
 
       return keys
     except exceptions.HttpError as error:

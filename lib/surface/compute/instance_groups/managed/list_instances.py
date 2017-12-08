@@ -169,6 +169,7 @@ class ListInstancesAlpha(ListInstancesBeta):
               extract(instanceStatus, standbyMode).join('-'):label=STATUS,
               currentAction:label=ACTION,
               instanceTemplate.basename():label=INSTANCE_TEMPLATE,
+              tag:label=TAG,
               lastAttempt.errors.errors.map().format("Error {0}: {1}", code, message).list(separator=", "):label=LAST_ERROR
         )"""
 

@@ -22,10 +22,13 @@ import os
 
 from googlecloudsdk.api_lib.source import capture
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
+from googlecloudsdk.core.util import files
+from googlecloudsdk.third_party.appengine.tools import context_util
 
 
-class Upload(base.SilentCommand):
+class Upload(base.CreateCommand):
   """Upload a source capture from given input files."""
 
   detailed_help = {
@@ -68,14 +71,21 @@ class Upload(base.SilentCommand):
             The directory tree under source-location will be uploaded under
             target-path in the capture's directory tree.
         """)
+    parser.add_argument('--context-file', metavar='json-file-name', hidden=True)
     parser.add_argument(
-        '--context-file', metavar='json-file-name',
+        '--output-directory',
+        default='.',
         help="""\
-            The name of the source context json file to produce. Defaults to
-            source-contexts.json in the current directory. If context-file names
-            a directory, the output file will be source-contexts.json in that
-            directory.
+            The directory in which to create the source context files. Two
+            files (source-context.json and source-contexts.json) will be
+            created in that directory.
         """)
+
+  def Collection(self):
+    return 'source.captures.upload'
+
+  def Format(self, args):
+    return self.ListFormat(args)
 
   def Run(self, args):
     """Run the capture upload command."""
@@ -84,20 +94,31 @@ class Upload(base.SilentCommand):
     result = mgr.UploadCapture(args.capture_id, args.source_location,
                                args.target_path)
     if args.context_file:
-      if os.path.isdir(args.context_file):
-        json_filename = os.path.join(args.context_file, 'source-contexts.json')
-      else:
-        json_filename = args.context_file
+      raise exceptions.ToolException(
+          'The [--context-file] argument has been deprecated. Use '
+          '[--output-directory] instead.')
     else:
-      json_filename = 'source-contexts.json'
-    with open(json_filename, 'w') as source_context_file:
-      json.dump(result['source_contexts'], source_context_file)
+      output_dir = args.output_directory
+      files.MakeDir(output_dir)
+    output_dir = os.path.realpath(output_dir)
+    extended_contexts = result['source_contexts']
+
     result = dict(result)
-    result['context_file'] = json_filename
-    log.status.write('Created context file {0}.\n'.format(
-        json_filename))
-    log.status.write('Created source capture {0}.\n'.format(
-        unicode(result['capture']).split('/')[-1]))
-    log.status.write('Wrote {0} files, {1} bytes.\n'.format(
+    result['extended_context_file'] = os.path.join(output_dir,
+                                                   'source-contexts.json')
+    with open(result['extended_context_file'], 'w') as f:
+      json.dump(extended_contexts, f)
+
+    result['context_file'] = os.path.join(output_dir, 'source-context.json')
+    best_context = context_util.BestSourceContext(extended_contexts)
+    result['best_context'] = context_util.BestSourceContext(extended_contexts)
+    with open(result['context_file'], 'w') as f:
+      json.dump(best_context, f)
+
+    log.status.write('Wrote {0} file(s), {1} bytes.\n'.format(
         result['files_written'], result['size_written']))
-    return result
+    files_skipped = result['files_skipped']
+    if files_skipped:
+      log.status.write('Skipped {0} file(s) due to size limitations.\n'.format(
+          files_skipped))
+    return [result]

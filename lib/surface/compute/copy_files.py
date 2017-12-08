@@ -13,13 +13,14 @@
 # limitations under the License.
 
 """Implements the command for copying files from and to virtual machines."""
+import collections
+
 from googlecloudsdk.api_lib.compute import ssh_utils
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.third_party.py27 import py27_collections as collections
 
 
 RemoteFile = collections.namedtuple(

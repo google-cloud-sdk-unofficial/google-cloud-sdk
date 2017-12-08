@@ -49,4 +49,6 @@ class Describe(base.DescribeCommand):
 
     build_ref = resources.Parse(
         args.build, collection='cloudbuild.projects.builds')
-    return client.projects_builds.Get(build_ref.Request())
+    return client.projects_builds.Get(
+        client.MESSAGES_MODULE.CloudbuildProjectsBuildsGetRequest(
+            projectId=build_ref.projectId, id=build_ref.id))

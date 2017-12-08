@@ -18,17 +18,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """View a list of all clusters in a project."""
-
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To see the list of all clusters, run:
-
-            $ {command}
-          """,
-  }
 
   @staticmethod
   def Args(parser):
@@ -46,6 +38,32 @@ class List(base.ListCommand):
 
     request = messages.DataprocProjectsRegionsClustersListRequest(
         projectId=project, region=region)
-
     response = client.projects_regions_clusters.List(request)
     return response.clusters
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ListBeta(List):
+  """View a list of all clusters in a project."""
+
+  def Run(self, args):
+    client = self.context['dataproc_client']
+    messages = self.context['dataproc_messages']
+
+    project = properties.VALUES.core.project.Get(required=True)
+    region = self.context['dataproc_region']
+
+    request = messages.DataprocProjectsRegionsClustersListRequest(
+        projectId=project, region=region, filter=args.filter)
+    response = client.projects_regions_clusters.List(request)
+    return response.clusters
+
+List.detailed_help = {
+    'DESCRIPTION': '{description}',
+    'EXAMPLES': """\
+      To see the list of all clusters, run:
+
+        $ {command}
+      """,
+}
+ListBeta.detailed_help = List.detailed_help

@@ -16,6 +16,8 @@
    There are separate alpha, beta, and GA command classes in this file.
 """
 
+import copy
+
 from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
@@ -23,7 +25,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.core import log
-from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -189,6 +190,10 @@ class UpdateAlpha(UpdateGA):
 
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddEnableCdn(parser, default=None)
+    flags.AddCacheKeyIncludeProtocol(parser, default=None)
+    flags.AddCacheKeyIncludeHost(parser, default=None)
+    flags.AddCacheKeyIncludeQueryString(parser, default=None)
+    flags.AddCacheKeyQueryStringList(parser)
     flags.AddSessionAffinity(parser, internal_lb=True)
     flags.AddAffinityCookieTtl(parser)
     flags.AddIap(parser)
@@ -210,6 +215,20 @@ class UpdateAlpha(UpdateGA):
                     'not use HTTPS. Data sent from the Load Balancer to your '
                     'VM will not be encrypted.')
 
+    cache_key_policy = self.messages.CacheKeyPolicy()
+    if (replacement.cdnPolicy is not None and
+        replacement.cdnPolicy.cacheKeyPolicy is not None):
+      cache_key_policy = replacement.cdnPolicy.cacheKeyPolicy
+    backend_services_utils.ValidateCacheKeyPolicyArgs(args)
+    backend_services_utils.UpdateCacheKeyPolicy(args, cache_key_policy)
+    if (args.cache_key_include_protocol is not None or
+        args.cache_key_include_host is not None or
+        args.cache_key_include_query_string is not None or
+        args.cache_key_query_string_whitelist is not None or
+        args.cache_key_query_string_blacklist is not None):
+      replacement.cdnPolicy = self.messages.BackendServiceCdnPolicy(
+          cacheKeyPolicy=cache_key_policy)
+
     return replacement
 
   def ValidateArgs(self, args):
@@ -218,6 +237,11 @@ class UpdateAlpha(UpdateGA):
         args.connection_draining_timeout is not None,
         args.description is not None,
         args.enable_cdn is not None,
+        args.cache_key_include_protocol is not None,
+        args.cache_key_include_host is not None,
+        args.cache_key_include_query_string is not None,
+        args.cache_key_query_string_whitelist is not None,
+        args.cache_key_query_string_blacklist is not None,
         args.http_health_checks,
         args.port,
         args.port_name,

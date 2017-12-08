@@ -13,12 +13,13 @@
 # limitations under the License.
 """Commands for updating backend buckets."""
 
+import copy
+
 from googlecloudsdk.api_lib.compute import backend_buckets_utils
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_buckets_flags
-from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

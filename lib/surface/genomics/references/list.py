@@ -39,17 +39,17 @@ class List(base.ListCommand):
     parser.add_argument('--md5checksums',
                         default=[],
                         type=arg_parsers.ArgList(),
-                        help='Only return reference sets with this checksum.')
+                        help='Only return references with these checksums.')
 
     parser.add_argument(
         '--accessions',
         default=[],
         type=arg_parsers.ArgList(),
-        help='Only return reference sets from these accessions.')
+        help='Only return references from these accessions.')
 
     parser.add_argument(
         '--reference-set-id',
-        help='Only return reference sets for this referenceset.')
+        help='Only return references for this reference set.')
 
   def Collection(self):
     return 'genomics.references'

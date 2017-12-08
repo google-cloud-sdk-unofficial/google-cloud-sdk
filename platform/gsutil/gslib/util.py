@@ -420,6 +420,63 @@ def CreateDirIfNeeded(dir_path, mode=0777):
         raise
 
 
+def GetDiskCounters():
+  """Retrieves disk I/O statistics for all disks.
+
+  Adapted from the psutil module's psutil._pslinux.disk_io_counters:
+    http://code.google.com/p/psutil/source/browse/trunk/psutil/_pslinux.py
+
+  Originally distributed under under a BSD license.
+  Original Copyright (c) 2009, Jay Loden, Dave Daeschler, Giampaolo Rodola.
+
+  Returns:
+    A dictionary containing disk names mapped to the disk counters from
+    /disk/diskstats.
+  """
+  # iostat documentation states that sectors are equivalent with blocks and
+  # have a size of 512 bytes since 2.4 kernels. This value is needed to
+  # calculate the amount of disk I/O in bytes.
+  sector_size = 512
+
+  partitions = []
+  with open('/proc/partitions', 'r') as f:
+    lines = f.readlines()[2:]
+    for line in lines:
+      _, _, _, name = line.split()
+      if name[-1].isdigit():
+        partitions.append(name)
+
+  retdict = {}
+  with open('/proc/diskstats', 'r') as f:
+    for line in f:
+      values = line.split()[:11]
+      _, _, name, reads, _, rbytes, rtime, writes, _, wbytes, wtime = values
+      if name in partitions:
+        rbytes = int(rbytes) * sector_size
+        wbytes = int(wbytes) * sector_size
+        reads = int(reads)
+        writes = int(writes)
+        rtime = int(rtime)
+        wtime = int(wtime)
+        retdict[name] = (reads, writes, rbytes, wbytes, rtime, wtime)
+  return retdict
+
+
+def CalculateThroughput(total_bytes_transferred, total_elapsed_time):
+  """Calculates throughput and checks for a small total_elapsed_time.
+
+  Args:
+    total_bytes_transferred: Total bytes transferred in a period of time.
+    total_elapsed_time: The amount of time elapsed in seconds.
+
+  Returns:
+    The throughput as a float.
+  """
+  if total_elapsed_time < 0.01:
+    total_elapsed_time = 0.01
+  return float(total_bytes_transferred) / float(total_elapsed_time)
+
+
 def DivideAndCeil(dividend, divisor):
   """Returns ceil(dividend / divisor).
 
@@ -1076,6 +1133,8 @@ def PrintFullInfoAboutObject(bucket_listing_ref, incl_acl=True):
   if obj.updated:
     print MakeMetadataLine(
         'Update time', obj.updated.strftime('%a, %d %b %Y %H:%M:%S GMT'))
+  if obj.storageClass:
+    print MakeMetadataLine('Storage class', obj.storageClass)
   if obj.cacheControl:
     print MakeMetadataLine('Cache-Control', obj.cacheControl)
   if obj.contentDisposition:
@@ -1136,7 +1195,6 @@ def PrintFullInfoAboutObject(bucket_listing_ref, incl_acl=True):
       print MakeMetadataLine('ACL', 'ACCESS DENIED')
       print MakeMetadataLine(
           'Note', 'You need OWNER permission on the object to read its ACL', 2)
-
   return (num_objs, num_bytes)
 
 
@@ -1384,7 +1442,7 @@ def CheckMultiprocessingAvailableAndInit(logger=None):
   if IS_WINDOWS:
     message = """
 Multiple processes are not supported on Windows. Operations requesting
-parallelism will be executed with multiple threads in a single process only.    
+parallelism will be executed with multiple threads in a single process only.
 """
     if logger:
       logger.warn(message)
@@ -1646,6 +1704,31 @@ def ConvertRecursiveToFlatWildcard(url_strs):
     yield '%s**' % url_str
 
 
+def NormalizeStorageClass(sc):
+  """Returns a normalized form of the given storage class name.
+
+  Converts the given string to lowercase and expands valid abbreviations to
+  full storage class names (e.g 'std' would return 'standard'). Note that this
+  method does not check if the given storage class is valid.
+
+  Args:
+    sc: String representing the storage class's full name or abbreviation.
+
+  Returns:
+    A string representing the full name of the given storage class.
+  """
+  shorthand_to_full_name = {
+      'cl': 'coldline',
+      'dra': 'durable_reduced_availability',
+      'nl': 'nearline',
+      's': 'standard',
+      'std': 'standard'}
+  sc = sc.lower()
+  if sc in shorthand_to_full_name:
+    sc = shorthand_to_full_name[sc]
+  return sc
+
+
 class RsyncDiffToApply(object):
   """Class that encapsulates info needed to apply diff for one object."""
 
@@ -1665,5 +1748,3 @@ class RsyncDiffToApply(object):
     self.src_posix_attrs = src_posix_attrs
     self.diff_action = diff_action
     self.copy_size = copy_size
-
-

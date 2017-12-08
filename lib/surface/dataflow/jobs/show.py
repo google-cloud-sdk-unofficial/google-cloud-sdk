@@ -51,10 +51,10 @@ class Show(base.Command):
     Returns:
       A Job message.
     """
-    request = job_utils.ExtractJobRef(args.job).Request()
+    job_ref = job_utils.ExtractJobRef(args.job)
     job = apis.Jobs.Get(
-        job_id=request.jobId,
-        project_id=request.projectId,
+        job_id=job_ref.jobId,
+        project_id=job_ref.projectId,
         view=apis.Jobs.GET_REQUEST.ViewValueValuesEnum.JOB_VIEW_ALL)
 
     # Extract the basic display information for the job

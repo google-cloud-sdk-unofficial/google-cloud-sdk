@@ -132,7 +132,20 @@ class Edit(base_classes.BaseEdit):
     ]
 
   def GetGetRequest(self, args):
-    return (self.service, 'Get', self.ref.Request())
+    if self.regional:
+      return (
+          self.service,
+          'Get',
+          self.messages.ComputeRegionBackendServicesGetRequest(
+              project=self.ref.project,
+              region=self.ref.region,
+              backendService=self.ref.Name()))
+    return (
+        self.service,
+        'Get',
+        self.messages.ComputeBackendServicesGetRequest(
+            project=self.ref.project,
+            backendService=self.ref.Name()))
 
   def GetSetRequest(self, args, replacement, _):
     if self.regional:

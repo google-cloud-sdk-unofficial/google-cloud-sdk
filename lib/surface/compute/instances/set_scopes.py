@@ -53,7 +53,10 @@ class SetScopes(base_classes.NoOutputAsyncMutator):
       return self._instance
 
     errors = []
-    request = (self.service, 'Get', instance_ref.Request())
+    request = (self.service, 'Get', self.messages.ComputeInstancesGetRequest(
+        project=instance_ref.project,
+        zone=instance_ref.zone,
+        instance=instance_ref.instance))
     instance = list(request_helper.MakeRequests(
         requests=[request],
         http=self.http,
@@ -113,7 +116,7 @@ class SetScopes(base_classes.NoOutputAsyncMutator):
         args, self.resources,
         default_scope=compute_flags.ScopeEnum.ZONE,
         scope_lister=compute_flags.GetDefaultScopeLister(
-            self.compute, self.project))
+            self.compute_client, self.project))
 
     email = self._email(args, instance_ref)
     scopes = self._scopes(args, instance_ref)

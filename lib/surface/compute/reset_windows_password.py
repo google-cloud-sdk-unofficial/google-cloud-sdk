@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Implements the command for resetting a password in a Windows instance."""
+import copy
 import json
 import textwrap
 
@@ -27,7 +28,6 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
-from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 # This will only succeed on Windows machines.
 try:

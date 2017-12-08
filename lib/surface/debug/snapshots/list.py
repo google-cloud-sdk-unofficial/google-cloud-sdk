@@ -91,5 +91,5 @@ def _ShouldInclude(snapshot, cutoff_time):
   """
   if not snapshot.isFinalState or not snapshot.finalTime:
     return True
-  final_time = times.ParseDateTime(snapshot.finalTime, times.UTC)
+  final_time = times.ParseDateTime(snapshot.finalTime, tzinfo=times.UTC)
   return final_time >= cutoff_time

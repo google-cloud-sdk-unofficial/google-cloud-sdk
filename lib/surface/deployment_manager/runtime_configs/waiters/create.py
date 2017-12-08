@@ -166,7 +166,12 @@ class Create(base.CreateCommand):
       # operation resource returned from CreateWaiter only tracks the
       # waiting process.
       self._async_resource = waiter_resource
-      result = waiter_client.Get(waiter_resource.Request())
+      request = (waiter_client.client.MESSAGES_MODULE
+                 .RuntimeconfigProjectsConfigsWaitersGetRequest(
+                     projectsId=waiter_resource.projectsId,
+                     configsId=waiter_resource.configsId,
+                     waitersId=waiter_resource.waitersId))
+      result = waiter_client.Get(request)
     else:
       self._async_resource = None
       result = util.WaitForWaiter(waiter_resource)

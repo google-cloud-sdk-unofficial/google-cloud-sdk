@@ -14,6 +14,8 @@
 
 """Command for adding a backend to a backend service."""
 
+import copy
+
 from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
@@ -22,7 +24,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import backend_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
-from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

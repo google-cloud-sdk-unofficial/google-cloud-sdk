@@ -150,11 +150,12 @@ class Create(base_classes.BaseAsyncCreator,
     # Check if the zone is deprecated or has maintenance coming.
     self.WarnForZonalCreation(instance_refs)
 
-    if hasattr(args, 'network_interface') and args.network_interface:
+    network_interface_arg = getattr(args, 'network_interface', None)
+    if network_interface_arg:
       network_interfaces = instance_utils.CreateNetworkInterfaceMessages(
           resources=self.resources,
           compute_client=self.compute_client,
-          network_interface_arg=args.network_interface,
+          network_interface_arg=network_interface_arg,
           instance_refs=instance_refs)
     else:
       network_interfaces = [

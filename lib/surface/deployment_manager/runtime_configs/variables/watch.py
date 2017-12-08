@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as base_exceptions
 from googlecloudsdk.command_lib.deployment_manager.runtime_configs import flags
 from googlecloudsdk.core.console import progress_tracker
+from googlecloudsdk.core.util import times
 
 
 TIMEOUT_MESSAGE = 'The read operation timed out'
@@ -119,8 +120,7 @@ class Watch(base.Command):
     name = var_resource.Name()
 
     if args.newer_than:
-      # TODO(user): better way to handle UTC suffix?
-      newer_than = args.newer_than.isoformat() + 'Z'
+      newer_than = times.FormatDateTime(args.newer_than)
     else:
       newer_than = None
 

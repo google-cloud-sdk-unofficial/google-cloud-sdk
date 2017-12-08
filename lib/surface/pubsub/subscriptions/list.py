@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Cloud Pub/Sub subscription list command."""
+"""Cloud Pub/Sub subscriptions list command."""
 import re
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as sdk_ex

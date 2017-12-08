@@ -60,5 +60,7 @@ class Describe(base.DescribeCommand):
     resources = self.context[constants.RESOURCES]
     operation_ref = resources.Parse(args.operation,
                                     collection=constants.OPERATIONS_COLLECTION)
+    request = client.MESSAGES_MODULE.ServiceregistryOperationsGetRequest(
+        project=operation_ref.project, operation=operation_ref.operation)
 
-    return client.operations.Get(operation_ref.Request())
+    return client.operations.Get(request)

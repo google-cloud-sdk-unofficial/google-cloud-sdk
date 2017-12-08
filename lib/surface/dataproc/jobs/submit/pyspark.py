@@ -20,28 +20,60 @@ from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.dataproc import base_classes
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class PySpark(base_classes.JobSubmitter):
   """Submit a PySpark job to a cluster."""
-
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To submit a PySpark job with a local script, run:
-
-            $ {command} --cluster my_cluster my_script.py
-
-          To submit a Spark job that runs a script that is already on the \
-cluster, run:
-
-            $ {command} --cluster my_cluster file:///usr/lib/spark/examples/src/main/python/pi.py 100
-          """,
-  }
 
   @staticmethod
   def Args(parser):
     super(PySpark, PySpark).Args(parser)
+    PySparkBase.Args(parser)
+
+  def ConfigureJob(self, job, args):
+    PySparkBase.ConfigureJob(
+        self.context['dataproc_messages'],
+        job,
+        self.BuildLoggingConfig(args.driver_log_levels),
+        self.files_by_type,
+        args)
+
+  def PopulateFilesByType(self, args):
+    self.files_by_type.update(PySparkBase.GetFilesByType(args))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class PySparkBeta(base_classes.JobSubmitterBeta):
+  """Submit a PySpark job to a cluster with gcloud dataproc beta features."""
+
+  @staticmethod
+  def Args(parser):
+    super(PySparkBeta, PySparkBeta).Args(parser)
+    PySparkBase.Args(parser)
+
+  def ConfigureJob(self, job, args):
+    PySparkBase.ConfigureJob(
+        self.context['dataproc_messages'],
+        job,
+        self.BuildLoggingConfig(args.driver_log_levels),
+        self.files_by_type,
+        args)
+    # Apply labels
+    super(PySparkBeta, self).ConfigureJob(job, args)
+
+  def PopulateFilesByType(self, args):
+    self.files_by_type.update(PySparkBase.GetFilesByType(args))
+
+
+class PySparkBase(object):
+  """Submit a PySpark job to a cluster."""
+
+  @staticmethod
+  def Args(parser):
+    """Performs command-line argument parsing specific to PySpark."""
+
     parser.add_argument(
         'py_file',
         help='The main .py file to run as the driver.')
@@ -82,24 +114,25 @@ cluster, run:
         help=('A list of package to log4j log level pairs to configure driver '
               'logging. For example: root=FATAL,com.example=INFO'))
 
-  def PopulateFilesByType(self, args):
+  @staticmethod
+  def GetFilesByType(args):
     # TODO(user): Move arg manipulation elsewhere.
-    self.files_by_type.update({
+    return {
         'py_file': args.py_file,
         'py_files': args.py_files,
         'archives': args.archives,
-        'files': args.files})
+        'files': args.files}
 
-  def ConfigureJob(self, job, args):
-    messages = self.context['dataproc_messages']
+  @staticmethod
+  def ConfigureJob(messages, job, log_config, files_by_type, args):
+    """Populates the pysparkJob member of the given job."""
 
-    log_config = self.BuildLoggingConfig(args.driver_log_levels)
     pyspark_job = messages.PySparkJob(
         args=args.job_args,
-        archiveUris=self.files_by_type['archives'],
-        fileUris=self.files_by_type['files'],
-        pythonFileUris=self.files_by_type['py_files'],
-        mainPythonFileUri=self.files_by_type['py_file'],
+        archiveUris=files_by_type['archives'],
+        fileUris=files_by_type['files'],
+        pythonFileUris=files_by_type['py_files'],
+        mainPythonFileUri=files_by_type['py_file'],
         loggingConfig=log_config)
 
     if args.properties:
@@ -107,3 +140,18 @@ cluster, run:
           args.properties, messages.PySparkJob.PropertiesValue)
 
     job.pysparkJob = pyspark_job
+
+PySpark.detailed_help = {
+    'DESCRIPTION': '{description}',
+    'EXAMPLES': """\
+      To submit a PySpark job with a local script, run:
+
+        $ {command} --cluster my_cluster my_script.py
+
+      To submit a Spark job that runs a script that is already on the \
+  cluster, run:
+
+        $ {command} --cluster my_cluster file:///usr/lib/spark/examples/src/main/python/pi.py 100
+      """,
+}
+PySparkBeta.detailed_help = PySpark.detailed_help

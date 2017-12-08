@@ -18,27 +18,60 @@ from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.dataproc import base_classes
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class SparkSql(base_classes.JobSubmitter):
-  """Submit a Spark SQL job to a cluster."""
-
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To submit a Spark SQL job with a local script, run:
-
-            $ {command} --cluster my_cluster --file my_queries.ql
-
-          To submit a Spark SQL job with inline queries, run:
-
-            $ {command} --cluster my_cluster -e "CREATE EXTERNAL TABLE foo(bar int) LOCATION 'gs://my_bucket/'" -e "SELECT * FROM foo WHERE bar > 2"
-          """,
-  }
+  """Submit a SparkSql job to a cluster."""
 
   @staticmethod
   def Args(parser):
     super(SparkSql, SparkSql).Args(parser)
+    SparkSqlBase.Args(parser)
+
+  def ConfigureJob(self, job, args):
+    SparkSqlBase.ConfigureJob(
+        self.context['dataproc_messages'],
+        job,
+        self.BuildLoggingConfig(args.driver_log_levels),
+        self.files_by_type,
+        args)
+
+  def PopulateFilesByType(self, args):
+    self.files_by_type.update(SparkSqlBase.GetFilesByType(args))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class SparkSqlBeta(base_classes.JobSubmitterBeta):
+  """Submit a SparkSql job to a cluster using Beta features."""
+
+  @staticmethod
+  def Args(parser):
+    super(SparkSqlBeta, SparkSqlBeta).Args(parser)
+    SparkSqlBase.Args(parser)
+
+  def ConfigureJob(self, job, args):
+    SparkSqlBase.ConfigureJob(
+        self.context['dataproc_messages'],
+        job,
+        self.BuildLoggingConfig(args.driver_log_levels),
+        self.files_by_type,
+        args)
+    # Apply labels
+    super(SparkSqlBeta, self).ConfigureJob(job, args)
+
+  def PopulateFilesByType(self, args):
+    self.files_by_type.update(SparkSqlBase.GetFilesByType(args))
+
+
+class SparkSqlBase(object):
+  """Submit a Spark SQL job to a cluster."""
+
+  @staticmethod
+  def Args(parser):
+    """Parses command-line arguments specific to submitting SparkSql jobs."""
+
     parser.add_argument(
         '--execute', '-e',
         metavar='QUERY',
@@ -74,24 +107,25 @@ class SparkSql(base_classes.JobSubmitter):
         help=('A list of package to log4j log level pairs to configure driver '
               'logging. For example: root=FATAL,com.example=INFO'))
 
-  def PopulateFilesByType(self, args):
+  @staticmethod
+  def GetFilesByType(args):
     # TODO(user): Replace with argument group.
     if not args.queries and not args.file:
       raise ValueError('Must either specify --execute or --file.')
     if args.queries and args.file:
       raise ValueError('Cannot specify both --execute and --file.')
 
-    self.files_by_type.update({
+    return {
         'jars': args.jars,
-        'file': args.file})
+        'file': args.file}
 
-  def ConfigureJob(self, job, args):
-    messages = self.context['dataproc_messages']
+  @staticmethod
+  def ConfigureJob(messages, job, log_config, files_by_type, args):
+    """Populates the sparkSqlJob member of the given job."""
 
-    log_config = self.BuildLoggingConfig(args.driver_log_levels)
     spark_sql_job = messages.SparkSqlJob(
-        jarFileUris=self.files_by_type['jars'],
-        queryFileUri=self.files_by_type['file'],
+        jarFileUris=files_by_type['jars'],
+        queryFileUri=files_by_type['file'],
         loggingConfig=log_config)
 
     if args.queries:
@@ -104,3 +138,17 @@ class SparkSql(base_classes.JobSubmitter):
           args.properties, messages.SparkSqlJob.PropertiesValue)
 
     job.sparkSqlJob = spark_sql_job
+
+SparkSql.detailed_help = {
+    'DESCRIPTION': '{description}',
+    'EXAMPLES': """\
+      To submit a Spark SQL job with a local script, run:
+
+        $ {command} --cluster my_cluster --file my_queries.ql
+
+      To submit a Spark SQL job with inline queries, run:
+
+        $ {command} --cluster my_cluster -e "CREATE EXTERNAL TABLE foo(bar int) LOCATION 'gs://my_bucket/'" -e "SELECT * FROM foo WHERE bar > 2"
+      """,
+}
+SparkSqlBeta.detailed_help = SparkSql.detailed_help

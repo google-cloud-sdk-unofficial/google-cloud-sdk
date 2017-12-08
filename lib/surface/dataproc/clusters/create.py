@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
+from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
@@ -361,6 +362,8 @@ class Create(base.CreateCommand):
         clusterName=cluster_ref.clusterName,
         projectId=cluster_ref.projectId)
 
+    self.ConfigureCluster(messages, args, cluster)
+
     operation = client.projects_regions_clusters.Create(
         messages.DataprocProjectsRegionsClustersCreateRequest(
             projectId=cluster_ref.projectId,
@@ -376,7 +379,11 @@ class Create(base.CreateCommand):
     operation = util.WaitForOperation(
         operation, self.context, 'Waiting for cluster creation operation')
 
-    cluster = client.projects_regions_clusters.Get(cluster_ref.Request())
+    get_request = messages.DataprocProjectsRegionsClustersGetRequest(
+        projectId=cluster_ref.projectId,
+        region=cluster_ref.region,
+        clusterName=cluster_ref.clusterName)
+    cluster = client.projects_regions_clusters.Get(get_request)
     if cluster.status.state == (
         messages.ClusterStatus.StateValueValuesEnum.RUNNING):
       log.CreatedResource(cluster_ref)
@@ -386,6 +393,11 @@ class Create(base.CreateCommand):
         log.error('Details:\n' + operation.details)
     return cluster
 
+  @staticmethod
+  def ConfigureCluster(messages, args, cluster):
+    """Performs any additional configuration of the cluster."""
+    pass
+
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
@@ -394,6 +406,7 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
+    labels_util.AddCreateLabelsFlags(parser)
     num_masters = parser.add_argument(
         '--num-masters',
         type=int,
@@ -408,3 +421,13 @@ class CreateBeta(Create):
       3,High Availability
       |========
       """
+
+  @staticmethod
+  def ConfigureCluster(messages, args, cluster):
+    labels = labels_util.UpdateLabels(
+        None,
+        messages.Cluster.LabelsValue,
+        labels_util.GetUpdateLabelsDictFromArgs(args),
+        None)
+
+    cluster.labels = labels

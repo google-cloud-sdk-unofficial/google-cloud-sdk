@@ -25,6 +25,7 @@ from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.core import apis as core_apis
+from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_transform
@@ -32,6 +33,14 @@ from googlecloudsdk.core.util import times
 
 
 _ALLOWED_SOURCE_EXT = ['.zip', '.tgz', '.gz']
+
+
+class FailedBuildException(core_exceptions.Error):
+  """Exception for builds that did not succeed."""
+
+  def __init__(self, status):
+    super(FailedBuildException, self).__init__(
+        'build completed with status "{status}"'.format(status=status))
 
 
 class Create(base.CreateCommand):
@@ -86,6 +95,9 @@ class Create(base.CreateCommand):
 
     Returns:
       Some value that we want to have printed later.
+
+    Raises:
+      FailedBuildException: If the build is completed and not 'SUCCESS'.
     """
 
     if args.gcs_source_staging_dir is None:
@@ -120,7 +132,7 @@ class Create(base.CreateCommand):
           steps=[
               messages.BuildStep(
                   name='gcr.io/cloud-builders/docker',
-                  args=['build', '-t', args.tag, '.'],
+                  args=['build', '--no-cache', '-t', args.tag, '.'],
               ),
           ],
           timeout=timeout_str,
@@ -241,7 +253,12 @@ class Create(base.CreateCommand):
       return build
 
     # Otherwise, logs are streamed from GCS.
-    return cb_logs.CloudBuildClient(client, messages).Stream(build_ref)
+    build = cb_logs.CloudBuildClient(client, messages).Stream(build_ref)
+
+    if build.status != messages.Build.StatusValueValuesEnum.SUCCESS:
+      raise FailedBuildException(build.status)
+
+    return build
 
   def Collection(self):
     return 'cloudbuild.projects.builds'

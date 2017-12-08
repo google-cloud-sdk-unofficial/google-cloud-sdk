@@ -38,7 +38,10 @@ class Describe(base.DescribeCommand):
     client = self.context['dataproc_client']
 
     cluster_ref = util.ParseCluster(args.name, self.context)
-    request = cluster_ref.Request()
+    request = client.MESSAGES_MODULE.DataprocProjectsRegionsClustersGetRequest(
+        projectId=cluster_ref.projectId,
+        region=cluster_ref.region,
+        clusterName=cluster_ref.clusterName)
 
     cluster = client.projects_regions_clusters.Get(request)
     return cluster

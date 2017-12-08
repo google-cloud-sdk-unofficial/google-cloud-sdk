@@ -43,9 +43,13 @@ class Wait(base.Command):
     messages = self.context['dataproc_messages']
 
     job_ref = util.ParseJob(args.id, self.context)
-    request = job_ref.Request()
 
-    job = client.projects_regions_jobs.Get(request)
+    job = client.projects_regions_jobs.Get(
+        messages.DataprocProjectsRegionsJobsGetRequest(
+            projectId=job_ref.projectId,
+            region=job_ref.region,
+            jobId=job_ref.jobId))
+
     # TODO(user) Check if Job is still running and fail or handle 401.
 
     job = util.WaitForJobTermination(

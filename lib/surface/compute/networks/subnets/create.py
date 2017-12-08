@@ -15,11 +15,13 @@
 """Command for creating subnetworks."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.networks import flags as network_flags
 from googlecloudsdk.command_lib.compute.networks.subnets import flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base_classes.BaseAsyncCreator):
   """Define a subnet for a network in custom subnet mode."""
 
@@ -70,7 +72,43 @@ class Create(base_classes.BaseAsyncCreator):
             name=subnet_ref.Name(),
             description=args.description,
             network=network_ref.SelfLink(),
-            ipCidrRange=args.range
+            ipCidrRange=args.range,
+        ),
+        region=subnet_ref.region,
+        project=self.project)
+
+    return [request]
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Define a subnet for a network in custom subnet mode."""
+
+  @staticmethod
+  def Args(parser):
+    Create.Args(parser)
+
+    parser.add_argument(
+        '--enable-private-ip-google-access',
+        action='store_true',
+        default=False,
+        help=('Enable/disable access to Google Cloud APIs from this subnet for '
+              'instances without a public ip address.'))
+
+  def CreateRequests(self, args):
+    """Returns a list of requests necessary for adding a subnetwork."""
+
+    network_ref = self.CreateGlobalReference(
+        args.network, resource_type='networks')
+    subnet_ref = self.CreateRegionalReference(args.name, args.region)
+
+    request = self.messages.ComputeSubnetworksInsertRequest(
+        subnetwork=self.messages.Subnetwork(
+            name=subnet_ref.Name(),
+            description=args.description,
+            network=network_ref.SelfLink(),
+            ipCidrRange=args.range,
+            privateIpGoogleAccess=args.enable_private_ip_google_access,
         ),
         region=subnet_ref.region,
         project=self.project)

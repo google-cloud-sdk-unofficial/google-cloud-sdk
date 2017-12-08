@@ -55,6 +55,7 @@ from gslib.tests.util import USING_JSON_API
 import gslib.third_party.storage_apitools.storage_v1_messages as apitools_messages
 from gslib.util import CreateCustomMetadata
 from gslib.util import DiscardMessagesQueue
+from gslib.util import GetValueFromObjectCustomMetadata
 from gslib.util import IS_WINDOWS
 from gslib.util import Retry
 from gslib.util import UTF8
@@ -399,27 +400,29 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
 
   def CreateObject(self, bucket_uri=None, object_name=None, contents=None,
                    prefer_json_api=False, encryption_key=None, mode=None,
-                   mtime=None, uid=None, gid=None):
+                   mtime=None, uid=None, gid=None, storage_class=None):
     """Creates a test object.
 
     Args:
       bucket_uri: The URI of the bucket to place the object in. If not
-                  specified, a new temporary bucket is created.
+          specified, a new temporary bucket is created.
       object_name: The name to use for the object. If not specified, a temporary
-                   test object name is constructed.
+          test object name is constructed.
       contents: The contents to write to the object. If not specified, the key
-                is not written to, which means that it isn't actually created
-                yet on the server.
+          is not written to, which means that it isn't actually created
+          yet on the server.
       prefer_json_api: If true, use the JSON creation functions where possible.
       encryption_key: AES256 encryption key to use when creating the object,
           if any.
       mode: The POSIX mode for the object. Must be a base-8 3-digit integer
-            represented as a string.
+          represented as a string.
       mtime: The modification time of the file in POSIX time (seconds since
-             UTC 1970-01-01). If not specified, this defaults to the current
-             system time.
+          UTC 1970-01-01). If not specified, this defaults to the current
+          system time.
       uid: A POSIX user ID.
       gid: A POSIX group ID.
+      storage_class: String representing the storage class to use for the
+          object.
 
     Returns:
       A StorageUri for the created object.
@@ -433,7 +436,8 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
                                           bucket_name=bucket_uri.bucket_name,
                                           object_name=object_name,
                                           encryption_key=encryption_key,
-                                          mtime=mtime)
+                                          mtime=mtime,
+                                          storage_class=storage_class)
       object_uri = bucket_uri.clone_replace_name(object_name)
       # pylint: disable=protected-access
       # Need to update the StorageUri with the correct values while
@@ -500,20 +504,22 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
     return bucket
 
   def CreateObjectJson(self, contents, bucket_name=None, object_name=None,
-                       encryption_key=None, mtime=None):
+                       encryption_key=None, mtime=None, storage_class=None):
     """Creates a test object (GCS provider only) using the JSON API.
 
     Args:
       contents: The contents to write to the object.
-      bucket_name: Name of bucket to place the object in. If not
-                   specified, a new temporary bucket is created.
+      bucket_name: Name of bucket to place the object in. If not specified,
+          a new temporary bucket is created.
       object_name: The name to use for the object. If not specified, a temporary
-                   test object name is constructed.
+          test object name is constructed.
       encryption_key: AES256 encryption key to use when creating the object,
           if any.
       mtime: The modification time of the file in POSIX time (seconds since
-             UTC 1970-01-01). If not specified, this defaults to the current
-             system time.
+          UTC 1970-01-01). If not specified, this defaults to the current
+          system time.
+      storage_class: String representing the storage class to use for the
+          object.
 
     Returns:
       An apitools Object for the created object.
@@ -528,13 +534,39 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
         name=object_name,
         metadata=custom_metadata,
         bucket=bucket_name,
-        contentType='application/octet-stream')
+        contentType='application/octet-stream',
+        storageClass=storage_class)
     encryption_tuple = None
     if encryption_key:
       encryption_tuple = CryptoTuple(encryption_key)
     return self.json_api.UploadObject(cStringIO.StringIO(contents),
                                       object_metadata, provider='gs',
                                       encryption_tuple=encryption_tuple)
+
+  def VerifyObjectCustomAttribute(self, bucket_name, object_name, attr_name,
+                                  expected_value, expected_present=True):
+    """Retrieves and verifies an object's custom metadata attribute.
+
+    Args:
+      bucket_name: The name of the bucket the object is in.
+      object_name: The name of the object itself.
+      attr_name: The name of the custom metadata attribute.
+      expected_value: The expected retrieved value for the attribute.
+      expected_present: True if the attribute must be present in the
+          object metadata, False if it must not be present.
+
+    Returns:
+      None
+    """
+    gsutil_api = (self.json_api if self.default_provider == 'gs'
+                  else self.xml_api)
+    metadata = gsutil_api.GetObjectMetadata(bucket_name, object_name,
+                                            provider=self.default_provider,
+                                            fields=['metadata/%s' % attr_name])
+    attr_present, value = GetValueFromObjectCustomMetadata(
+        metadata, attr_name, default_value=expected_value)
+    self.assertEqual(expected_present, attr_present)
+    self.assertEqual(expected_value, value)
 
   def RunGsUtil(self, cmd, return_status=False,
                 return_stdout=False, return_stderr=False,
@@ -554,8 +586,11 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
                 with.
 
     Returns:
-      A tuple containing the desired return values specified by the return_*
-      arguments.
+      If multiple return_* values were specified, this method returns a tuple
+      containing the desired return values specified by the return_* arguments
+      (in the order those parameters are specified in the method definition).
+      If only one return_* value was specified, that value is returned directly
+      rather than being returned within a 1-tuple.
     """
     cmd = ([gslib.GSUTIL_PATH] + ['--testexceptiontraces'] +
            ['-o', 'GSUtil:default_project_id=' + PopulateProjectId()] +

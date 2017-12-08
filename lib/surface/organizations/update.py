@@ -53,10 +53,13 @@ class Update(orgs_base.OrganizationCommand):
     return self.ListFormat(args)
 
   def Run(self, args):
-    client = self.OrganizationsClient()
+    service = self.OrganizationsClient()
     org_ref = self.GetOrganizationRef(args.id)
-    org = client.Get(org_ref.Request())
+    request = (service.client.MESSAGES_MODULE
+               .CloudresourcemanagerOrganizationsGetRequest(
+                   organizationsId=org_ref.organizationsId))
+    org = service.Get(request)
     org.displayName = args.display_name
-    result = client.Update(org)
+    result = service.Update(org)
     log.UpdatedResource(org_ref)
     return result

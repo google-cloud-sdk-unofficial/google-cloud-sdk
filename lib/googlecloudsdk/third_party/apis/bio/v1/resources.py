@@ -11,8 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Resource definitions for cloud platform apis."""
 
-"""Python 2.7 collections module compatibility for 2.6."""
+import enum
 
-# pylint: disable=wildcard-import
-from googlecloudsdk.third_party.py27.mirror.collections import *
+
+BASE_URL = 'https://bio.googleapis.com/v1/'
+
+
+class Collections(enum.Enum):
+  """Collections for all supported apis."""
+
+  PROJECTS_OPERATIONS = (
+      'projects.operations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/operations/{operationsId}',
+      },
+      [u'name']
+  )
+
+  def __init__(self, collection_name, path, flat_paths, params):
+    self.collection_name = collection_name
+    self.path = path
+    self.flat_paths = flat_paths
+    self.params = params

@@ -22,7 +22,11 @@ from googlecloudsdk.core import log
 
 
 class List(base.ListCommand, base_classes.BaseServiceManagementCommand):
-  """Lists the configurations for a given service."""
+  """Lists the configurations for a given service.
+
+  DEPRECATED: This command is deprecated and will be removed.
+  Use 'gcloud beta service-management configs list' instead.
+  """
 
   @staticmethod
   def Args(parser):

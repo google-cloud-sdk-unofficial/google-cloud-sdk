@@ -11,7 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Command for adding a path matcher to a URL map."""
+
+import collections
+import copy
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -21,8 +26,6 @@ from googlecloudsdk.command_lib.compute.backend_buckets import (
 from googlecloudsdk.command_lib.compute.backend_services import (
     flags as backend_service_flags)
 from googlecloudsdk.command_lib.compute.url_maps import flags
-from googlecloudsdk.third_party.py27 import py27_collections as collections
-from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
 def _Args(parser):

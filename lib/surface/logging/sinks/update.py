@@ -51,14 +51,22 @@ class Update(base.UpdateCommand):
   def GetLogSink(self):
     """Returns a log sink specified by the arguments."""
     client = self.context['logging_client_v1beta3']
+    ref = self.context['sink_reference']
     return client.projects_logs_sinks.Get(
-        self.context['sink_reference'].Request())
+        client.MESSAGES_MODULE.LoggingProjectsLogsSinksGetRequest(
+            projectsId=ref.projectsId,
+            logsId=ref.logsId,
+            sinksId=ref.sinksId))
 
   def GetLogServiceSink(self):
     """Returns a log service sink specified by the arguments."""
     client = self.context['logging_client_v1beta3']
+    ref = self.context['sink_reference']
     return client.projects_logServices_sinks.Get(
-        self.context['sink_reference'].Request())
+        client.MESSAGES_MODULE.LoggingProjectsLogServicesSinksGetRequest(
+            projectsId=ref.projectsId,
+            logServicesId=ref.logServicesId,
+            sinksId=ref.sinksId))
 
   def GetProjectSink(self):
     """Returns a project sink specified by the arguments."""

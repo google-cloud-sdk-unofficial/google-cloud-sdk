@@ -46,10 +46,9 @@ class List(base.ListCommand):
             logpoints matching one or more of these values will be displayed.
         """)
     parser.add_argument(
-        '--all-users', action='store_true', default=False,
+        '--all-users', action='store_true', default=True,
         help="""\
-            If set, display logpoints from all users, rather than only the
-            current user.
+            If false, display only logpoints created by the current user.
         """)
     parser.add_argument(
         '--include-expired', action='store_true', default=False,
@@ -104,5 +103,5 @@ def _ShouldInclude(logpoint, cutoff_time):
   """
   if not logpoint.isFinalState or not logpoint.finalTime:
     return True
-  final_time = times.ParseDateTime(logpoint.finalTime, times.UTC)
+  final_time = times.ParseDateTime(logpoint.finalTime, tzinfo=times.UTC)
   return final_time >= cutoff_time

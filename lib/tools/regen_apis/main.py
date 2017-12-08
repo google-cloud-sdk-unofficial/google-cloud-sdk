@@ -23,6 +23,14 @@ from tools.regen_apis import regen
 import yaml
 
 
+class Error(Exception):
+  """Errors raised by this module."""
+
+
+class UnknownApi(Error):
+  """Raised when api is not found."""
+
+
 def main(argv=None):
   if argv is None:
     argv = sys.argv
@@ -39,8 +47,10 @@ def main(argv=None):
                       help='Regeneration config filename.')
 
   parser.add_argument('--api',
-                      help='api_name/api_version which to regenerate.'
-                      'If ommited all will be regenerated.')
+                      help='api_name or api_name/api_version to regenerate. '
+                           'If api_version is ommitted then all versions are '
+                           'regenerated. If this argument is ommitted all apis '
+                           'and their versions will be regenerated.')
 
   parser.add_argument('-l',
                       '--log-level',
@@ -62,19 +72,50 @@ def main(argv=None):
 
   root_dir = config['root_dir']
   logging.debug('Based dir %s', args.base_dir)
+
   if args.api is not None:
-    api_name, api_version = args.api.split('/')
-    api_config = config['apis'][api_name][api_version]
+    if '/' in args.api:
+      api_name, api_version = args.api.split('/')
+    else:
+      api_name, api_version = args.api, None
+    api_section = config['apis'].get(api_name)
+    if api_section is None:
+      raise UnknownApi('api [{api_name}] not found in "apis" section of '
+                       '{config_file}'
+                       .format(api_name=api_name, config_file=args.config))
+    if api_version:
+      api_config = api_section.get(api_version)
+      if api_config is None:
+        raise UnknownApi('api version [{api_version}] is not one of the '
+                         'defined versions [{defined_versions}] of '
+                         '[{api_name}] found in "apis" section of {config_file}'
+                         .format(api_version=api_version,
+                                 api_name=api_name,
+                                 defined_versions=','.join(
+                                     sorted(api_section.keys())),
+                                 config_file=args.config))
+      regenerate_list = [(api_name, api_version, api_config)]
+    else:
+      regenerate_list = [(api_name, api_version, api_config)
+                         for api_version, api_config in api_section.iteritems()]
+  else:
+    regenerate_list = [
+        (api_name, api_version, api_config)
+        for api_name, api_version_config in config['apis'].iteritems()
+        for api_version, api_config in api_version_config.iteritems()
+    ]
+
+  for api_name, api_version, api_config in sorted(regenerate_list):
+    logging.info('Generating %s %s', api_name, api_version)
     regen.GenerateApi(args.base_dir, root_dir,
                       api_name, api_version, api_config)
-  else:
-    for api_name, api_version_config in config['apis'].iteritems():
-      for api_version, api_config in api_version_config.iteritems():
-        logging.info('Generating %s %s', api_name, api_version)
-        regen.GenerateApi(args.base_dir, root_dir,
-                          api_name, api_version, api_config)
+    regen.GenerateResourceModule(args.base_dir, root_dir,
+                                 api_name, api_version,
+                                 api_config['discovery_doc'],
+                                 api_config.get('resources', {}))
+
   regen.GenerateApiMap(args.base_dir, root_dir, config['apis'])
-  regen.GenerateResourceModule(args.base_dir, root_dir, config['apis'])
+
 
 if __name__ == '__main__':
   main()

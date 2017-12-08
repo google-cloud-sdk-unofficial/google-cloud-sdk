@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for removing tags from instances."""
+import copy
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
-from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
 class RemoveTags(base_classes.InstanceTagsMutatorMixin,

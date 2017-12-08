@@ -41,7 +41,9 @@ class Describe(base.DescribeCommand):
     client = self.context['dataproc_client']
 
     job_ref = util.ParseJob(args.id, self.context)
-    request = job_ref.Request()
 
-    job = client.projects_regions_jobs.Get(request)
-    return job
+    return client.projects_regions_jobs.Get(
+        client.MESSAGES_MODULE.DataprocProjectsRegionsJobsGetRequest(
+            projectId=job_ref.projectId,
+            region=job_ref.region,
+            jobId=job_ref.jobId))

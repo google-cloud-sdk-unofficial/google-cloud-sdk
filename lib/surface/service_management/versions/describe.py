@@ -20,7 +20,11 @@ from googlecloudsdk.calliope import base
 
 
 class Describe(base.DescribeCommand, base_classes.BaseServiceManagementCommand):
-  """Describes the configuration for a given version of a service."""
+  """Describes the configuration for a given version of a service.
+
+  DEPRECATED: This command is deprecated and will be removed.
+  Use 'gcloud beta service-management configs describe' instead.
+  """
 
   @staticmethod
   def Args(parser):

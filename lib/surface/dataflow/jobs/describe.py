@@ -62,6 +62,5 @@ class Describe(base.DescribeCommand):
     Returns:
       A Job message.
     """
-    request = job_utils.ExtractJobRef(args.job).Request()
-    request.view = args.full
-    return apis.Jobs.Get(request.jobId, request.projectId, request.view)
+    job_ref = job_utils.ExtractJobRef(args.job)
+    return apis.Jobs.Get(job_ref.jobId, job_ref.projectId, args.full)

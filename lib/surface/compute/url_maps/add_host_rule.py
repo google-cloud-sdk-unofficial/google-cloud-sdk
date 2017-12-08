@@ -11,11 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Command for adding a host rule to a URL map."""
+
+import copy
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.compute.url_maps import flags
-from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
 class AddHostRule(base_classes.ReadWriteCommand):

@@ -43,4 +43,7 @@ class Describe(base.DescribeCommand):
     apitools_client = genomics_util.GetGenomicsClient()
     dataset_resource = resources.REGISTRY.Parse(
         args.id, collection='genomics.datasets')
-    return apitools_client.datasets.Get(dataset_resource.Request())
+
+    return apitools_client.datasets.Get(
+        apitools_client.MESSAGES_MODULE.GenomicsDatasetsGetRequest(
+            datasetId=dataset_resource.datasetId))

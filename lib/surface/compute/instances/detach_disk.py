@@ -14,11 +14,12 @@
 
 """Command for detaching a disk from an instance."""
 
+import copy
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
-from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
 class DetachDisk(base_classes.ReadWriteCommand):

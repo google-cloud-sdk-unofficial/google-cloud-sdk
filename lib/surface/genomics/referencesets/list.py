@@ -39,7 +39,7 @@ class List(base.ListCommand):
     parser.add_argument('--md5checksums',
                         type=arg_parsers.ArgList(),
                         default=[],
-                        help='Only return reference sets with this checksum.')
+                        help='Only return reference sets with these checksums.')
 
     parser.add_argument(
         '--accessions',

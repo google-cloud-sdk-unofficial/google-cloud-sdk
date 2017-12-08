@@ -122,6 +122,10 @@ class Update(base.UpdateCommand):
         message='Waiting for cluster update operation',
         timeout_s=3600 * 3)
 
-    cluster = client.projects_regions_clusters.Get(cluster_ref.Request())
+    request = client.MESSAGES_MODULE.DataprocProjectsRegionsClustersGetRequest(
+        projectId=cluster_ref.projectId,
+        region=cluster_ref.region,
+        clusterName=cluster_ref.clusterName)
+    cluster = client.projects_regions_clusters.Get(request)
     log.UpdatedResource(cluster_ref)
     return cluster

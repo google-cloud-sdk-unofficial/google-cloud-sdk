@@ -150,8 +150,9 @@ class UpdateInstancesAlpha(base_classes.BaseAsyncMutator):
       versions = (igm_info.versions
                   or [self.messages.InstanceGroupManagerVersion(
                       instanceTemplate=igm_info.instanceTemplate)])
+      current_time_str = str(times.Now(times.UTC))
       for version in versions:
-        version.tag = str(times.Now(times.UTC))
+        version.tag = current_time_str
       minimal_action = (self.messages.InstanceGroupManagerUpdatePolicy
                         .MinimalActionValueValuesEnum.RESTART)
     else:

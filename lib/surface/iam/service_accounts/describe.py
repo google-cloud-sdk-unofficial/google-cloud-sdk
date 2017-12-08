@@ -50,11 +50,7 @@ class Describe(base_classes.BaseIamCommand, base.DescribeCommand):
 
   def Run(self, args):
     try:
-      # TODO(user): b/25212870
-      # gcloud's resource support doesn't yet work for atomic names. When it
-      # does this needs to be rewritten to use it.
-      # ref = self.ParseServiceAccount(args.account)
-      # return self.iam_client.projects_serviceAccounts.Get(ref.Request())
+      # TODO(b/25212870): use resource parsing.
       return self.iam_client.projects_serviceAccounts.Get(
           self.messages.IamProjectsServiceAccountsGetRequest(
               name=utils.EmailToAccountResourceName(args.account)))

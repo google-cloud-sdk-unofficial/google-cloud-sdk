@@ -14,9 +14,10 @@
 
 """Command for adding a BGP peer to a router."""
 
+import copy
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.command_lib.compute.routers import flags
-from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
 class AddBgpPeer(base_classes.ReadWriteCommand):

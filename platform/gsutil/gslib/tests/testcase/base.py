@@ -19,13 +19,17 @@ from __future__ import absolute_import
 from functools import wraps
 import os.path
 import random
+import re
 import shutil
 import tempfile
 
 import boto
+from gslib.posix_util import NA_ID
+from gslib.posix_util import NA_MODE
 import gslib.tests.util as util
 from gslib.tests.util import unittest
 from gslib.util import UTF8
+from six import string_types
 
 MAX_BUCKET_LENGTH = 63
 
@@ -121,8 +125,12 @@ class GsUtilTestCase(unittest.TestCase):
     return tmpdir
 
   def CreateTempFile(self, tmpdir=None, contents=None, file_name=None,
-                     mtime=None):
+                     mtime=None, mode=NA_MODE, uid=NA_ID, gid=NA_ID):
     """Creates a temporary file on disk.
+
+    Note: if mode, uid, or gid are present, they must be validated by
+    ValidateFilePermissionAccess and ValidatePOSIXMode before calling this
+    function.
 
     Args:
       tmpdir: The temporary directory to place the file in. If not specified, a
@@ -136,6 +144,10 @@ class GsUtilTestCase(unittest.TestCase):
       mtime: The modification time of the file in POSIX time (seconds since
              UTC 1970-01-01). If not specified, this defaults to the current
              system time.
+      mode: The POSIX mode for the file. Must be a base-8 3-digit integer
+            represented as a string.
+      uid: A POSIX user ID.
+      gid: A POSIX group ID.
 
     Returns:
       The path to the new temporary file.
@@ -156,4 +168,31 @@ class GsUtilTestCase(unittest.TestCase):
     if mtime is not None:
       # Set the atime and mtime to be the same.
       os.utime(fpath, (mtime, mtime))
+    if uid != NA_ID or gid != NA_ID:
+      os.chown(fpath, uid, gid)
+    if mode != NA_MODE:
+      os.chmod(fpath, int(mode, 8))
     return fpath
+
+  def assertRegexpMatchesWithFlags(self, text, pattern, msg=None, flags=0):
+    """Like assertRegexpMatches, but allows specifying additional re flags.
+
+    Args:
+      text: The text in which to search for pattern.
+      pattern: The pattern to search for; should be either a string or compiled
+          regex returned from re.compile().
+      msg: The message to be displayed if pattern is not found in text. The
+          values for pattern and text will be included after this message.
+      flags: Additional flags from the re module to be included when compiling
+          pattern. If pattern is a regex that was compiled with existing flags,
+          these, flags will be added via a bitwise-or.
+    """
+    if isinstance(pattern, string_types):
+      pattern = re.compile(pattern, flags=flags)
+    else:  # It's most likely an already-compiled pattern.
+      pattern = re.compile(pattern.pattern, flags=pattern.flags | flags)
+    if not pattern.search(text):
+      failure_msg = msg or 'Regex didn\'t match'
+      failure_msg = '%s: %r not found in %r' % (
+          failure_msg, text, pattern.pattern)
+      raise self.failureException(failure_msg)

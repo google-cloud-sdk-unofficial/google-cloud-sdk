@@ -55,8 +55,16 @@ class Delete(base.DeleteCommand):
       raise exceptions.ToolException('Deletion aborted by user.')
 
     client.projects_regions_jobs.Delete(request)
+
+    def _GetJob(job_ref):
+      return client.projects_regions_jobs.Get(
+          messages.DataprocProjectsRegionsJobsGetRequest(
+              projectId=job_ref.projectId,
+              region=job_ref.region,
+              jobId=job_ref.jobId))
+
     util.WaitForResourceDeletion(
-        client.projects_regions_jobs.Get, job_ref,
+        _GetJob, job_ref,
         message='Waiting for job deletion')
 
     log.DeletedResource(job_ref)

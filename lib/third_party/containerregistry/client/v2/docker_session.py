@@ -12,13 +12,14 @@ from containerregistry.client.v2 import util
 class Push(object):
   """Push encapsulates a Registry v2 Docker push session."""
 
-  def __init__(self, name, creds, transport):
+  def __init__(self, name, creds, transport, mount=None):
     """Constructor.
 
     Args:
       name: docker_name.Tag, the fully-qualified name of the tag to push
       creds: docker_creds._CredentialProvider, provider for authorizing requests
       transport: httplib2.Http, the http transport to use for sending requests
+      mount: list of docker_name.Repository, repos from which to mount blobs.
 
     Raises:
       ValueError: an incorrectly typed argument was supplied.
@@ -26,9 +27,12 @@ class Push(object):
     # TODO(user): Add support for pushing by manifest
     if not isinstance(name, docker_name.Tag):
       raise ValueError('Expected docker_name.Tag for "name"')
+    if mount and not isinstance(mount, list):
+      raise ValueError('Expected list of docker_name.Repository for "mount"')
     self._name = name
     self._transport = docker_http.Transport(
         name, creds, transport, docker_http.PUSH)
+    self._mount = mount
 
   def _base_url(self):
     return '{scheme}://{registry}/v2/{repository}'.format(
@@ -60,12 +64,12 @@ class Push(object):
 
     return resp.status == httplib.OK
 
-  def _monolithic_upload(self, digest, blob):
+  def _monolithic_upload(self, image, digest):
     self._transport.Request(
         '{base_url}/blobs/uploads/?digest={digest}'.format(
             base_url=self._base_url(),
             digest=digest),
-        method='POST', body=blob,
+        method='POST', body=image.blob(digest),
         accepted_codes=[httplib.CREATED])
 
   def _add_digest(self, url, digest):
@@ -76,26 +80,27 @@ class Push(object):
     return urlparse.urlunsplit(
         (scheme, netloc, path, query_string, fragment))
 
-  def _put_upload(self, digest, blob):
-    resp, unused_content = self._transport.Request(
-        '{base_url}/blobs/uploads/'.format(base_url=self._base_url()),
-        method='POST', body=None,
-        accepted_codes=[httplib.ACCEPTED])
+  def _put_upload(self, image, digest):
+    mounted, location = self._start_upload(digest, self._mount)
 
-    location = self._add_digest(resp['location'], digest)
+    if mounted:
+      logging.info('Layer %s mounted.', digest)
+      return
+
+    location = self._add_digest(location, digest)
     self._transport.Request(
-        location, method='PUT', body=blob,
+        location, method='PUT', body=image.blob(digest),
         accepted_codes=[httplib.CREATED])
 
-  def _patch_upload(self, digest, blob):
-    resp, unused_content = self._transport.Request(
-        '{base_url}/blobs/uploads/'.format(base_url=self._base_url()),
-        method='POST', body=None,
-        accepted_codes=[httplib.ACCEPTED])
+  def _patch_upload(self, image, digest):
+    mounted, location = self._start_upload(digest, self._mount)
 
-    location = resp['location']
+    if mounted:
+      logging.info('Layer %s mounted.', digest)
+      return
+
     resp, unused_content = self._transport.Request(
-        location, method='PATCH', body=blob,
+        location, method='PATCH', body=image.blob(digest),
         content_type='application/octet-stream',
         accepted_codes=[httplib.NO_CONTENT, httplib.ACCEPTED])
 
@@ -107,18 +112,24 @@ class Push(object):
   def _put_blob(self, image, digest):
     """Upload the aufs .tgz for a single layer."""
     # We have a few choices for unchunked uploading:
-    #   POST to /v2/<name>/blobs/uploads/?digest=<digest>
-    # TODO(user): Not supported by DockerHub
-    self._monolithic_upload(digest, image.blob(digest))
+    if not self._mount:
+      #   POST to /v2/<name>/blobs/uploads/?digest=<digest>
+      # TODO(user): Not supported by DockerHub
+      self._monolithic_upload(image, digest)
+    else:
+      # or:
+      #   POST /v2/<name>/blobs/uploads/        (no body*)
+      #   PUT  /v2/<name>/blobs/uploads/<uuid>  (full body)
+      self._put_upload(image, digest)
     # or:
-    #   POST /v2/<name>/blobs/uploads/        (no body)
-    #   PUT  /v2/<name>/blobs/uploads/<uuid>  (full body)
-    # self._put_upload(digest, image.blob(digest))
-    # or:
-    #   POST   /v2/<name>/blobs/uploads/        (no body)
+    #   POST   /v2/<name>/blobs/uploads/        (no body*)
     #   PATCH  /v2/<name>/blobs/uploads/<uuid>  (full body)
     #   PUT    /v2/<name>/blobs/uploads/<uuid>  (no body)
-    # self._patch_upload(digest, image.blob(digest))
+    # self._patch_upload(image, digest)
+    #
+    # * We attempt to perform a cross-repo mount if any repositories are
+    # specified in the "mount" parameter. This does a fast copy from a
+    # repository that is known to contain this blob and skips the upload.
 
   def _remote_tag_digest(self):
     """Check the remote for the given manifest by digest."""
@@ -150,6 +161,27 @@ class Push(object):
         # this.
         body=image.manifest(),
         accepted_codes=[httplib.OK, httplib.ACCEPTED])
+
+  def _start_upload(self, digest, mount=None):
+    """POST to begin the upload process with optional cross-repo mount param."""
+    if not mount:
+      # Do a normal POST to initiate an upload if mount is missing.
+      url = '{base_url}/blobs/uploads/'.format(base_url=self._base_url())
+      accepted_codes = [httplib.ACCEPTED]
+    else:
+      # If we have a mount parameter, try to mount the blob from another repo.
+      mount_from = '&'.join(
+          ['from=' + urllib.quote(repo.repository, '') for repo in self._mount])
+      url = '{base_url}/blobs/uploads/?mount={digest}&{mount_from}'.format(
+          base_url=self._base_url(),
+          digest=digest,
+          mount_from=mount_from)
+      accepted_codes = [httplib.CREATED, httplib.ACCEPTED]
+
+    resp, unused_content = self._transport.Request(
+        url, method='POST', body=None,
+        accepted_codes=accepted_codes)
+    return (resp.status == httplib.CREATED, resp.get('location'))
 
   def _upload_one(self, image, digest):
     """Upload a single layer, after checking whether it exists already."""

@@ -14,10 +14,11 @@
 
 """Command for updating a BGP peer to a router."""
 
+import copy
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.core import exceptions
-from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
 class PeerNotFoundError(exceptions.Error):

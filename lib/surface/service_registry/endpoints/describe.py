@@ -60,4 +60,6 @@ class Describe(base.DescribeCommand):
     endpoint_ref = resources.Parse(args.endpoint_name,
                                    collection=constants.ENDPOINTS_COLLECTION)
 
-    return client.endpoints.Get(endpoint_ref.Request())
+    request = client.MESSAGES_MODULE.ServiceregistryEndpointsGetRequest(
+        project=endpoint_ref.project, endpoint=endpoint_ref.endpoint)
+    return client.endpoints.Get(request)

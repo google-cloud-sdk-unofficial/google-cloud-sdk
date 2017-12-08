@@ -43,21 +43,9 @@ class TypedJob(util.Bunch):
     raise AttributeError('Job has no job type')
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List all jobs in a project."""
-
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To see the list of all jobs, run:
-
-            $ {command}
-
-          To see the list of all active jobs in a cluster, run:
-
-            $ {command} --state-filter active --cluster my_cluster
-          """,
-  }
 
   @staticmethod
   def Args(parser):
@@ -81,8 +69,7 @@ class List(base.ListCommand):
 
     project = properties.VALUES.core.project.Get(required=True)
     region = self.context['dataproc_region']
-    request = messages.DataprocProjectsRegionsJobsListRequest(
-        projectId=project, region=region)
+    request = self.GetRequest(messages, project, region, args)
 
     if args.cluster:
       request.clusterName = args.cluster
@@ -102,3 +89,32 @@ class List(base.ListCommand):
 
     response = client.projects_regions_jobs.List(request)
     return [TypedJob(job) for job in response.jobs]
+
+  @staticmethod
+  def GetRequest(messages, project, region, args):
+    return messages.DataprocProjectsRegionsJobsListRequest(
+        projectId=project, region=region)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ListBeta(List):
+  """List all jobs in a project."""
+
+  @staticmethod
+  def GetRequest(messages, project, region, args):
+    return messages.DataprocProjectsRegionsJobsListRequest(
+        projectId=project, region=region, filter=args.filter)
+
+List.detailed_help = {
+    'DESCRIPTION': '{description}',
+    'EXAMPLES': """\
+        To see the list of all jobs, run:
+
+          $ {command}
+
+        To see the list of all active jobs in a cluster, run:
+
+          $ {command} --state-filter active --cluster my_cluster
+        """,
+}
+ListBeta.detailed_help = List.detailed_help

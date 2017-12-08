@@ -22,6 +22,14 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.credentials import store as c_store
 
 
+def SetApiDefaults():
+  """Initialize default project for Cloud Debugger commands."""
+  resources.REGISTRY.SetParamDefault(
+      api='debug', collection=None, param='projectId',
+      resolver=resolvers.FromProperty(properties.VALUES.core.project))
+  debug.DebugObject.InitializeApiClients()
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Debug(base.Group):
   """Commands for interacting with the Cloud Debugger.
@@ -60,19 +68,3 @@ class Debug(base.Group):
           match "default-test" by description.
        """
   }
-
-  def Filter(self, context, args):
-    """Initialize context for Cloud Debugger commands.
-
-    Args:
-      context: The current context.
-      args: The argparse namespace that was specified on the CLI or API.
-
-    Returns:
-      The updated context.
-    """
-    resources.REGISTRY.SetParamDefault(
-        api='debug', collection=None, param='projectId',
-        resolver=resolvers.FromProperty(properties.VALUES.core.project))
-
-    debug.DebugObject.InitializeApiClients()

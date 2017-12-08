@@ -128,5 +128,5 @@ class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
     # Print this to screen not to the log because the output is needed by the
     # human user.
     log.status.Print(
-        ('\nService Configuration with version [{0}] uploaded for '
+        ('\nService Configuration [{0}] uploaded for '
          'service [{1}]\n').format(self.service_version, self.service_name))

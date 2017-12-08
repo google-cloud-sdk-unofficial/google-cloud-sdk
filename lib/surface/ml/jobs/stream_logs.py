@@ -13,9 +13,6 @@
 # limitations under the License.
 """ml jobs showlogs command."""
 
-import datetime
-
-from dateutil import tz
 from googlecloudsdk.api_lib.ml import jobs
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
@@ -34,7 +31,11 @@ class StreamLogs(base.Command):
 
   def Run(self, args):
     """Run the stream-logs command."""
-    return jobs.StreamLogs(args)
+    log_fetcher = jobs.LogFetcher(job_id=args.job,
+                                  polling_interval=args.polling_interval,
+                                  allow_multiline_logs=
+                                  args.allow_multiline_logs)
+    return log_fetcher.YieldLogs()
 
   def Format(self, args):
     """Returns the default formatting for the command.
@@ -48,10 +49,8 @@ class StreamLogs(base.Command):
     Returns:
       Some value that we want to have printed later.
     """
-    tz_name = datetime.datetime.now(tz.tzlocal()).tzname()
     return 'value({fields})'.format(fields=','.join(
         ['severity:label=SEVERITY',
-         'timestamp.date("%m-%d %H:%M:%S%Z",tz={}):label=TIMESTAMP'.
-         format(tz_name),
+         'timestamp.date("%Y-%m-%d %H:%M:%S %z",tz="LOCAL"):label=TIMESTAMP',
          'task_name:label=TASK_NAME', 'trial_id:label=TRIAL_ID',
          'message:label=MESSAGE']))

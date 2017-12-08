@@ -74,8 +74,7 @@ class GenRepoInfoFile(base.Command):
           'state of your source code.\n'
           'For best results, commit all changes and re-run this command.\n'
           .format(args.source_directory))
-    best_context = context_util.BestSourceContext(contexts,
-                                                  args.source_directory)
+    best_context = context_util.BestSourceContext(contexts)
     files.MakeDir(output_directory)
     with open(output_file, 'w') as f:
       json.dump(best_context, f, indent=2, sort_keys=True)

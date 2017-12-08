@@ -45,5 +45,9 @@ class Describe(orgs_base.OrganizationCommand, base.DescribeCommand):
     flags.IdArg('you want to describe.').AddToParser(parser)
 
   def Run(self, args):
-    request = self.GetOrganizationRef(args.id).Request()
-    return self.OrganizationsClient().Get(request)
+    service = self.OrganizationsClient()
+    ref = self.GetOrganizationRef(args.id)
+    request = (service.client.MESSAGES_MODULE
+               .CloudresourcemanagerOrganizationsGetRequest(
+                   organizationsId=ref.organizationsId))
+    return service.Get(request)

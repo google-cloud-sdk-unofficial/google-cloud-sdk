@@ -131,6 +131,10 @@ class CreateAlpha(CreateGA):
     flags.AddPortName(parser)
     flags.AddProtocol(parser, default=None)
     flags.AddEnableCdn(parser, default=False)
+    flags.AddCacheKeyIncludeProtocol(parser, default=True)
+    flags.AddCacheKeyIncludeHost(parser, default=True)
+    flags.AddCacheKeyIncludeQueryString(parser, default=True)
+    flags.AddCacheKeyQueryStringList(parser)
     flags.AddSessionAffinity(parser, internal_lb=True)
     flags.AddAffinityCookieTtl(parser)
     flags.AddConnectionDrainingTimeout(parser)
@@ -150,6 +154,17 @@ class CreateAlpha(CreateGA):
 
     if args.enable_cdn:
       backend_service.enableCDN = args.enable_cdn
+
+    cache_key_policy = self.messages.CacheKeyPolicy()
+    backend_services_utils.ValidateCacheKeyPolicyArgs(args)
+    backend_services_utils.UpdateCacheKeyPolicy(args, cache_key_policy)
+    if (not args.cache_key_include_host or
+        not args.cache_key_include_protocol or
+        not args.cache_key_include_query_string or
+        args.cache_key_query_string_blacklist is not None or
+        args.cache_key_query_string_whitelist is not None):
+      backend_service.cdnPolicy = self.messages.BackendServiceCdnPolicy(
+          cacheKeyPolicy=cache_key_policy)
 
     if args.session_affinity is not None:
       backend_service.sessionAffinity = (
@@ -173,6 +188,13 @@ class CreateAlpha(CreateGA):
     return [request]
 
   def CreateRegionalRequests(self, args):
+    if (not args.cache_key_include_host or
+        not args.cache_key_include_protocol or
+        not args.cache_key_include_query_string or
+        args.cache_key_query_string_blacklist is not None or
+        args.cache_key_query_string_whitelist is not None):
+      raise exceptions.ToolException(
+          'Custom cache key flags cannot be used for regional requests.')
     backend_services_ref = self.CreateRegionalReference(
         args.name, args.region, resource_type='regionBackendServices')
     backend_service = self._CreateRegionBackendService(args)
