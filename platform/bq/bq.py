@@ -81,7 +81,7 @@ JobIdGeneratorFingerprint = bigquery_client.JobIdGeneratorFingerprint
 
 
 _VERSION_NUMBER = '2.0.24'
-_CLIENT_USER_AGENT = 'Cloud SDK Command Line Tool' + _VERSION_NUMBER
+_CLIENT_USER_AGENT = 'google-cloud-sdk' + _VERSION_NUMBER
 _GDRIVE_SCOPE = 'https://www.googleapis.com/auth/drive'
 _CLIENT_SCOPE = 'https://www.googleapis.com/auth/bigquery'
 _CLIENT_ID = '32555940559.apps.googleusercontent.com'

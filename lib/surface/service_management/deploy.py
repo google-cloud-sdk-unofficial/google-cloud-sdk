@@ -14,6 +14,8 @@
 
 """service-management deploy command."""
 
+import os
+
 from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
@@ -40,6 +42,8 @@ class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
         help=('The service configuration file containing the API '
               'specification to upload. Either a Swagger or Google Service '
               'Config JSON file is expected.'))
+
+    base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
     """Run 'service-management deploy'.
@@ -70,7 +74,7 @@ class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
     if 'swagger' in service_config_dict:
       swagger_file = self.services_messages.File(
           contents=config_contents,
-          path=args.service_config_file
+          path=os.path.basename(args.service_config_file)
       )
       # TODO(user): Add support for swagger file references later
       # This requires the API to support multiple files first. b/23353397
@@ -145,4 +149,4 @@ class Deploy(base.Command, base_classes.BaseServiceManagementCommand):
     # it can be extremely large.
     result.response = None
 
-    return services_util.ProcessOperationResult(result)
+    return services_util.ProcessOperationResult(result, args.async)

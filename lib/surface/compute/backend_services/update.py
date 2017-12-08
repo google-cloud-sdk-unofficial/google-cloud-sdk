@@ -24,24 +24,19 @@ from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
-def _ArgsGA(parser):
-  """Common arguments to create commands for each release track."""
-  flags.AddBackendServiceName(parser)
-  flags.AddDescription(parser)
-  flags.AddHttpHealthChecks(parser)
-  flags.AddHttpsHealthChecks(parser)
-  flags.AddTimeout(parser, default=None)
-  flags.AddPortName(parser)
-  flags.AddProtocol(parser, default=None)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateGA(base_classes.ReadWriteCommand):
   """Update a backend service."""
 
   @staticmethod
   def Args(parser):
-    _ArgsGA(parser)
+    flags.AddBackendServiceName(parser)
+    flags.AddDescription(parser)
+    flags.AddHttpHealthChecks(parser)
+    flags.AddHttpsHealthChecks(parser)
+    flags.AddTimeout(parser, default=None)
+    flags.AddPortName(parser)
+    flags.AddProtocol(parser, default=None)
 
   @property
   def service(self):
@@ -119,7 +114,13 @@ class UpdateAlpha(UpdateGA):
 
   @staticmethod
   def Args(parser):
-    _ArgsGA(parser)
+    flags.AddBackendServiceName(parser)
+    flags.AddDescription(parser)
+    flags.AddHttpHealthChecks(parser)
+    flags.AddHttpsHealthChecks(parser)
+    flags.AddTimeout(parser, default=None)
+    flags.AddPortName(parser)
+    flags.AddProtocol(parser, default=None)
 
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddEnableCdn(parser)
@@ -173,7 +174,13 @@ class UpdateBeta(UpdateGA):
 
   @staticmethod
   def Args(parser):
-    _ArgsGA(parser)
+    flags.AddBackendServiceName(parser)
+    flags.AddDescription(parser)
+    flags.AddHttpHealthChecks(parser)
+    flags.AddHttpsHealthChecks(parser)
+    flags.AddTimeout(parser, default=None)
+    flags.AddPortName(parser)
+    flags.AddProtocol(parser, default=None)
 
     flags.AddEnableCdn(parser)
 

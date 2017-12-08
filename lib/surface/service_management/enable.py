@@ -38,6 +38,8 @@ class Enable(base.Command, base_classes.BaseServiceManagementCommand):
     consumers_flags.CONSUMER_PROJECT_FLAG.AddToParser(parser)
     consumers_flags.SERVICE_FLAG.AddToParser(parser)
 
+    base.ASYNC_FLAG.AddToParser(parser)
+
   @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management enable'.
@@ -59,4 +61,4 @@ class Enable(base.Command, base_classes.BaseServiceManagementCommand):
         self.services_client, self.services_messages,
         args.consumer_project, args.service)
 
-    return services_util.ProcessOperationResult(result)
+    return services_util.ProcessOperationResult(result, args.async)

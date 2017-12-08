@@ -122,8 +122,10 @@ class RuntimeTestCase(testutil.TestBase):
             # Copy the application files.
             COPY . /app/
 
-            # Install required gems.
-            RUN bundle install --deployment && rbenv rehash
+            # Install required gems if Gemfile.lock is present.
+            RUN if test -f Gemfile.lock; then \\
+                bundle install --deployment && rbenv rehash; \\
+                fi
 
             # Temporary. Will be moved to base image later.
             ENV RACK_ENV=production \\
@@ -187,8 +189,10 @@ class RuntimeTestCase(testutil.TestBase):
             # Copy the application files.
             COPY . /app/
 
-            # Install required gems.
-            RUN bundle install --deployment && rbenv rehash
+            # Install required gems if Gemfile.lock is present.
+            RUN if test -f Gemfile.lock; then \\
+                bundle install --deployment && rbenv rehash; \\
+                fi
 
             # Temporary. Will be moved to base image later.
             ENV RACK_ENV=production \\
@@ -250,8 +254,10 @@ class RuntimeTestCase(testutil.TestBase):
             # Copy the application files.
             COPY . /app/
 
-            # Install required gems.
-            RUN bundle install --deployment && rbenv rehash
+            # Install required gems if Gemfile.lock is present.
+            RUN if test -f Gemfile.lock; then \\
+                bundle install --deployment && rbenv rehash; \\
+                fi
 
             # Temporary. Will be moved to base image later.
             ENV RACK_ENV=production \\
@@ -314,8 +320,10 @@ class RuntimeTestCase(testutil.TestBase):
             # Copy the application files.
             COPY . /app/
 
-            # Install required gems.
-            RUN bundle install --deployment && rbenv rehash
+            # Install required gems if Gemfile.lock is present.
+            RUN if test -f Gemfile.lock; then \\
+                bundle install --deployment && rbenv rehash; \\
+                fi
 
             # Temporary. Will be moved to base image later.
             ENV RACK_ENV=production \\
@@ -373,8 +381,10 @@ class RuntimeTestCase(testutil.TestBase):
             # Copy the application files.
             COPY . /app/
 
-            # Install required gems.
-            RUN bundle install --deployment && rbenv rehash
+            # Install required gems if Gemfile.lock is present.
+            RUN if test -f Gemfile.lock; then \\
+                bundle install --deployment && rbenv rehash; \\
+                fi
 
             # Temporary. Will be moved to base image later.
             ENV RACK_ENV=production \\

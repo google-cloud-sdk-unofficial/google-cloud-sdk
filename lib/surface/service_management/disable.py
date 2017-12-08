@@ -15,7 +15,6 @@
 """service-management disable command."""
 
 from googlecloudsdk.api_lib.service_management import base_classes
-from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import consumers_flags
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
@@ -37,6 +36,8 @@ class Disable(base.Command, base_classes.BaseServiceManagementCommand):
     """
     consumers_flags.CONSUMER_PROJECT_FLAG.AddToParser(parser)
     consumers_flags.SERVICE_FLAG.AddToParser(parser)
+
+    base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
     """Run 'service-management disable'.
@@ -75,4 +76,4 @@ class Disable(base.Command, base_classes.BaseServiceManagementCommand):
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(services_util.GetError(error))
 
-    return services_util.ProcessOperationResult(result)
+    return services_util.ProcessOperationResult(result, args.async)

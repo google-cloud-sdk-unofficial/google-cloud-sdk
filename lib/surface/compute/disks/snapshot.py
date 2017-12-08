@@ -14,56 +14,70 @@
 """Command for snapshotting disks."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import csek_utils
 from googlecloudsdk.api_lib.compute import name_generator
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 
+DETAILED_HELP = {
+    'DESCRIPTION': """\
+        Create snapshots of Google Compute Engine persistent disks.
 
-class SnapshotDisks(base_classes.NoOutputAsyncMutator):
-  """Create snapshots of Google Compute Engine persistent disks.
+        *{command}* creates snapshots of persistent disks. Snapshots are useful
+        for backing up data or copying a persistent disk. Once created,
+        snapshots may be managed (listed, deleted, etc.) via
+        ``gcloud compute snapshots''.
+        """
+}
 
-  *{command}* creates snapshots of persistent disks. Snapshots are useful for
-  backing up data or copying a persistent disk. Once created snapshots may be
-  managed (listed, deleted, etc.) via ``gcloud compute snapshots''.
-  """
+
+def _CommonArgs(parser):
+  """Add parser arguments common to all tracks."""
+  parser.add_argument(
+      '--description',
+      help=('An optional, textual description for the snapshots being '
+            'created.'))
+
+  snapshot_names = parser.add_argument(
+      '--snapshot-names',
+      type=arg_parsers.ArgList(min_length=1),
+      action=arg_parsers.FloatingListValuesCatcher(),
+      metavar='SNAPSHOT_NAME',
+      help='Names to assign to the snapshots.')
+  snapshot_names.detailed_help = """\
+      Names to assign to the snapshots. Without this option, the
+      name of each snapshot will be a random, 16-character
+      hexadecimal number that starts with a letter. The values of
+      this option run parallel to the disks specified. For example,
+
+        $ {command} my-disk-1 my-disk-2 my-disk-3 --snapshot-names snapshot-1,snapshot-2,snapshot-3
+
+      will result in ``my-disk-1'' being snapshotted as
+      ``snapshot-1'', ``my-disk-2'' as ``snapshot-2'', and so on.
+      """
+
+  parser.add_argument(
+      'disk_names',
+      metavar='DISK_NAME',
+      nargs='+',
+      completion_resource='compute.disks',
+      help='The names of the disks to snapshot.')
+
+  flags.AddZoneFlag(
+      parser,
+      resource_type='disks',
+      operation_type='snapshot')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class SnapshotDisksGA(base_classes.NoOutputAsyncMutator):
+  """Create snapshots of Google Compute Engine persistent disks."""
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        '--description',
-        help=('An optional, textual description for the snapshots being '
-              'created.'))
-
-    snapshot_names = parser.add_argument(
-        '--snapshot-names',
-        type=arg_parsers.ArgList(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
-        metavar='SNAPSHOT_NAME',
-        help='Names to assign to the snapshots.')
-    snapshot_names.detailed_help = """\
-        Names to assign to the snapshots. Without this option, the
-        name of each snapshot will be a random, 16-character
-        hexadecimal number that starts with a letter. The values of
-        this option run parallel to the disks specified. For example,
-
-          $ {command} my-disk-1 my-disk-2 my-disk-3 --snapshot-names snapshot-1,snapshot-2,snapshot-3
-
-        will result in ``my-disk-1'' being snapshotted as
-        ``snapshot-1'', ``my-disk-2'' as ``snapshot-2'', and so on.
-        """
-
-    parser.add_argument(
-        'disk_names',
-        metavar='DISK_NAME',
-        nargs='+',
-        completion_resource='compute.disks',
-        help='The names of the disks to snapshot.')
-
-    flags.AddZoneFlag(
-        parser,
-        resource_type='disks',
-        operation_type='snapshot')
+    _CommonArgs(parser)
 
   @property
   def service(self):
@@ -105,11 +119,20 @@ class SnapshotDisks(base_classes.NoOutputAsyncMutator):
         args.disk_names, args.zone, resource_type='disks')
 
     for disk_ref, snapshot_ref in zip(disk_refs, snapshot_refs):
+      # TODO(user) drop test after CSEK goes GA
+      if hasattr(args, 'csek_key_file'):
+        csek_keys = csek_utils.CsekKeyStore.FromArgs(args)
+        disk_key_or_none = csek_utils.MaybeLookupKeyMessage(csek_keys, disk_ref,
+                                                            self.compute)
+        kwargs = {'sourceDiskEncryptionKey': disk_key_or_none}
+      else:
+        kwargs = {}
       request = self.messages.ComputeDisksCreateSnapshotRequest(
           disk=disk_ref.Name(),
           snapshot=self.messages.Snapshot(
               name=snapshot_ref.Name(),
               description=args.description,
+              **kwargs
           ),
           project=self.project,
           zone=disk_ref.zone)
@@ -123,3 +146,17 @@ class SnapshotDisks(base_classes.NoOutputAsyncMutator):
               project=self.project))
 
     return requests
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class SnapshotDisksAlphaBeta(SnapshotDisksGA):
+  """Create snapshots of Google Compute Engine persistent disks."""
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser)
+    csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
+
+
+SnapshotDisksGA.detailed_help = DETAILED_HELP
+SnapshotDisksAlphaBeta.detailed_help = DETAILED_HELP

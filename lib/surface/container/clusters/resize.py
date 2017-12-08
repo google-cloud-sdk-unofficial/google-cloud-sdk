@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Resize cluster command."""
-from os import path
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
@@ -64,9 +63,9 @@ class Resize(base.Command):
         cancel_on_no=True)
     ops = []
     for ig in pool.instanceGroupUrls:
-      group = path.basename(ig)
-      op_ref = adapter.ResizeCluster(cluster_ref.projectId, cluster.zone, group,
-                                     args.size)
+      igm = adapter.ParseIGM(ig)
+      op_ref = adapter.ResizeCluster(igm.project, igm.zone,
+                                     igm.instanceGroupManager, args.size)
       ops.append(op_ref)
 
     if args.wait:

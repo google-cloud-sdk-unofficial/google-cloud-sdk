@@ -11,7 +11,7 @@ gcloud preview app deploy \- \fB(BETA)\fR deploy the local code and/or configura
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud preview app deploy\fR [\fIDEPLOYABLES\fR\ ...] [\fB\-\-bucket\fR\ \fIBUCKET\fR] [\fB\-\-docker\-build\fR\ \fIDOCKER_BUILD\fR] [\fB\-\-force\fR] [\fB\-\-image\-url\fR\ \fIIMAGE_URL\fR] [\fB\-\-promote\fR] [\fB\-\-server\fR\ \fISERVER\fR] [\fB\-\-stop\-previous\-version\fR] [\fB\-\-version\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud preview app deploy\fR [\fIDEPLOYABLES\fR\ ...] [\fB\-\-bucket\fR\ \fIBUCKET\fR] [\fB\-\-docker\-build\fR\ \fIDOCKER_BUILD\fR] [\fB\-\-force\fR] [\fB\-\-image\-url\fR\ \fIIMAGE_URL\fR] [\fB\-\-promote\fR] [\fB\-\-stop\-previous\-version\fR] [\fB\-\-version\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -85,12 +85,6 @@ $ gcloud config set app/promote_by_default false
 
 Overrides the default \fBpromote_by_default\fR property value for this command
 invocation. Use \fB\-\-no\-promote\fR to disable.
-
-.RE
-\fB\-\-server\fR \fISERVER\fR
-.RS 2m
-The App Engine server to connect to. You will not typically need to change this
-value.
 
 .RE
 \fB\-\-stop\-previous\-version\fR

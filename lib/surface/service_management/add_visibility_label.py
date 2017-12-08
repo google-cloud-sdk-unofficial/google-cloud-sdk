@@ -40,6 +40,8 @@ class AddVisibilityLabel(base.Command,
 
     parser.add_argument('label', help='The label to add.')
 
+    base.ASYNC_FLAG.AddToParser(parser)
+
   def Run(self, args):
     """Run 'service-management add-visibility-label'.
 
@@ -102,4 +104,4 @@ class AddVisibilityLabel(base.Command,
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(services_util.GetError(error))
 
-    return services_util.ProcessOperationResult(result)
+    return services_util.ProcessOperationResult(result, args.async)

@@ -77,4 +77,6 @@ class Describe(base.Command, base_classes.BaseServiceManagementCommand):
                'Use --full to see the whole Operation.\n')
       result.response = None
 
-    return services_util.ProcessOperationResult(result)
+    # Set async to True because we don't need to wait for the operation
+    # to complete to check the status of it.
+    return services_util.ProcessOperationResult(result, async=True)

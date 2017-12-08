@@ -33,6 +33,47 @@ class List(base_classes.BaseLister):
         default, health checks for all protocols are listed.
         """
 
+  def _ConvertProtocolArgToValue(self, args):
+    # Get the dictionary that maps strings to numbers, e.g. "HTTP" to 0.
+    protocol_dict = self.messages.HealthCheck.TypeValueValuesEnum.to_dict()
+    return protocol_dict.get(args.protocol.upper())
+
+  def Format(self, args):
+    # Start with the columns that apply to all protocols.
+    columns = ['name:label=NAME', 'type:label=PROTOCOL']
+
+    # Add protocol-specific columns. Note that we only need to worry about
+    # protocols that were whitelisted in our GetResources method below.
+    if args.protocol is not None:
+      protocol_value = self._ConvertProtocolArgToValue(args)
+      if (protocol_value ==
+          self.messages.HealthCheck.TypeValueValuesEnum.HTTP.number):
+        columns.extend(['httpHealthCheck.host:label=HOST'])
+        columns.extend(['httpHealthCheck.port:label=PORT'])
+        columns.extend(['httpHealthCheck.requestPath:label=REQUEST_PATH'])
+      elif (protocol_value ==
+            self.messages.HealthCheck.TypeValueValuesEnum.HTTPS.number):
+        columns.extend(['httpsHealthCheck.host:label=HOST'])
+        columns.extend(['httpsHealthCheck.port:label=PORT'])
+        columns.extend(['httpsHealthCheck.requestPath:label=REQUEST_PATH'])
+      elif (protocol_value ==
+            self.messages.HealthCheck.TypeValueValuesEnum.HTTP2.number):
+        columns.extend(['http2HealthCheck.host:label=HOST'])
+        columns.extend(['http2HealthCheck.port:label=PORT'])
+        columns.extend(['http2HealthCheck.requestPath:label=REQUEST_PATH'])
+      elif (protocol_value ==
+            self.messages.HealthCheck.TypeValueValuesEnum.TCP.number):
+        columns.extend(['tcpHealthCheck.port:label=PORT'])
+        columns.extend(['tcpHealthCheck.request:label=REQUEST'])
+        columns.extend(['tcpHealthCheck.response:label=RESPONSE'])
+      elif (protocol_value ==
+            self.messages.HealthCheck.TypeValueValuesEnum.SSL.number):
+        columns.extend(['sslHealthCheck.port:label=PORT'])
+        columns.extend(['sslHealthCheck.request:label=REQUEST'])
+        columns.extend(['sslHealthCheck.response:label=RESPONSE'])
+
+    return 'table[]({columns})'.format(columns=','.join(columns))
+
   @property
   def service(self):
     return self.compute.healthChecks
@@ -50,19 +91,6 @@ class List(base_classes.BaseLister):
         batch_url=self.batch_url,
         errors=errors)
 
-    # TODO(user): Need to add protocol-specific columns. For example, if
-    # --protocol http is used, we need to add columns like HOST, REQUEST_PATH,
-    # etc. Need to wait for some work to be done by gsfowler@, then (according
-    # to his comments in CL/97712492) we should do something like this:
-    # Display() method:
-    # def Format(self, args, unused_resource):
-    #   if args.filter_on_http:
-    #     return 'table(foo, bar, baz.http_special_field:label=HTTP_SPECIAL, ..)
-    #   elif ...:
-    #      ...
-    #   else:
-    #     return 'table(generic.field, bla, bla.bla, ...)'
-
     # If a protocol is specified, check that it is one we support, and convert
     # it to a number.
     protocol_value = None
@@ -74,9 +102,7 @@ class List(base_classes.BaseLister):
           self.messages.HealthCheck.TypeValueValuesEnum.TCP.number,
           self.messages.HealthCheck.TypeValueValuesEnum.SSL.number
           ]
-      # Get the dictionary that maps strings to numbers, e.g. "HTTP" to 0.
-      protocol_dict = self.messages.HealthCheck.TypeValueValuesEnum.to_dict()
-      protocol_value = protocol_dict.get(args.protocol.upper())
+      protocol_value = self._ConvertProtocolArgToValue(args)
       if protocol_value not in protocol_whitelist:
         raise exceptions.ToolException(
             'Invalid health check protocol ' + args.protocol + '.')

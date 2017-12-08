@@ -11,7 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """The super-group for the compute CLI."""
+
 import argparse
 import sys
 
@@ -27,27 +29,8 @@ DETAILED_HELP = {
 }
 
 
-def _Args(parser):
-  """Set up argument parsing."""
-  parser.add_argument(
-      '--endpoint',
-      help=argparse.SUPPRESS,
-      action=actions.StoreProperty(
-          properties.VALUES.api_endpoint_overrides.compute))
-
-
-def _DoFilter(context, http, api_client_default, args):
-  """Set up paramter defaults and endpoints."""
-  if args.endpoint:
-    log.warn('The --endpoint flag is deprecated and will be removed.  '
-             'Set the api_endpoint_overrides/compute property instead.  '
-             '\n\n'
-             'You can do this persistently with, e.g., '
-             '`gcloud config set api_endpoint_overrides/compute '
-             'https://www.googleapis.com/compute/staging_v1`.'
-             '\n\n'
-             'Or you can do this on a one-off basis by setting the '
-             'CLOUDSDK_API_CLIENT_OVERRIDES_COMPUTE environment variable.')
+def _DoFilter(context, http, api_client_default):
+  """Set up paramter defaults."""
   utils.SetResourceParamDefaults()
   utils.UpdateContextEndpointEntries(context, http, api_client_default)
 
@@ -59,10 +42,10 @@ class Compute(base.Group):
 
   @staticmethod
   def Args(parser):
-    _Args(parser)
+    pass
 
-  def Filter(self, context, args):
-    _DoFilter(context, self.Http(), 'v1', args)
+  def Filter(self, context, unused_args):
+    _DoFilter(context, self.Http(), 'v1')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -72,10 +55,10 @@ class ComputeBeta(base.Group):
 
   @staticmethod
   def Args(parser):
-    _Args(parser)
+    pass
 
-  def Filter(self, context, args):
-    _DoFilter(context, self.Http(), 'beta', args)
+  def Filter(self, context, unused_args):
+    _DoFilter(context, self.Http(), 'beta')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -85,7 +68,7 @@ class ComputeAlpha(base.Group):
 
   @staticmethod
   def Args(parser):
-    _Args(parser)
+    pass
 
-  def Filter(self, context, args):
-    _DoFilter(context, self.Http(), 'alpha', args)
+  def Filter(self, context, unused_args):
+    _DoFilter(context, self.Http(), 'alpha')

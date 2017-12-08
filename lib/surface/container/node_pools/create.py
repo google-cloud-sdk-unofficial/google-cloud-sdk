@@ -96,6 +96,12 @@ Alias,URI
       help=argparse.SUPPRESS,
       type=int,
       default=0)
+  parser.add_argument(
+      '--tags',
+      help=argparse.SUPPRESS,
+      type=arg_parsers.ArgList(min_length=1),
+      metavar='TAGS',
+      action=arg_parsers.FloatingListValuesCatcher())
   flags.AddImageFamilyFlag(parser)
 
 
@@ -114,6 +120,7 @@ class Create(base.Command):
         scopes=args.scopes,
         num_nodes=args.num_nodes,
         local_ssd_count=args.local_ssd_count,
+        tags=args.tags,
         image_family=args.image_family)
 
   def Run(self, args):

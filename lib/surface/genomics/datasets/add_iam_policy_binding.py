@@ -36,7 +36,8 @@ class AddIamPolicyBinding(base.Command):
   def Args(parser):
     parser.add_argument('id', type=str,
                         help='The ID of the dataset.')
-    iam_util.AddArgsForAddIamPolicyBinding(parser)
+    iam_util.AddArgsForAddIamPolicyBinding(
+        parser, 'id', 'genomics.datasets')
 
   @genomics_util.ReraiseHttpException
   def Run(self, args):

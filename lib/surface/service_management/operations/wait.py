@@ -51,4 +51,7 @@ class Wait(base.Command, base_classes.BaseServiceManagementCommand):
     """
     result = services_util.WaitForOperation(
         args.operation, self.services_client)
-    return services_util.ProcessOperationResult(result)
+
+    # Set async to True because we already waited for the operation to
+    # complete above.
+    return services_util.ProcessOperationResult(result, async=True)

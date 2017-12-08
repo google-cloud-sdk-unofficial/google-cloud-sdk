@@ -15,6 +15,7 @@
 """The `app instances disable-debug` command."""
 
 from googlecloudsdk.api_lib.app import appengine_client
+from googlecloudsdk.api_lib.app import flags
 from googlecloudsdk.api_lib.app import instances_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
@@ -51,6 +52,8 @@ class DisableDebug(base.Command):
 
   @staticmethod
   def Args(parser):
+    flags.SERVER_FLAG.AddToParser(parser)
+    flags.IGNORE_CERTS_FLAG.AddToParser(parser)
     instance = parser.add_argument(
         'instance', nargs='?',
         help=('The instance to disable debug mode on.'))
@@ -75,7 +78,8 @@ class DisableDebug(base.Command):
         'This affects both interactive and non-interactive selection.')
 
   def Run(self, args):
-    client = appengine_client.AppengineClient()
+    client = appengine_client.AppengineClient(args.server,
+                                              args.ignore_bad_certs)
     # --user-output-enabled=false prevents this from printing, as well as from
     # consuming the generator from the other command
     # The command being called here uses a cli.Execute call under-the-hood, so

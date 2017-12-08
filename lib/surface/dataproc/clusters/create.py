@@ -111,6 +111,10 @@ class Create(base.CreateCommand):
         type=int,
         help='The number of local SSDs to attach to the master in a cluster.')
     parser.add_argument(
+        '--preemptible-worker-boot-disk-size-gb',
+        type=int,
+        help=argparse.SUPPRESS)
+    parser.add_argument(
         '--worker-boot-disk-size-gb',
         type=int,
         help='The size in GB of the boot disk of each worker in a cluster.')
@@ -277,7 +281,10 @@ Alias,URI
     if args.num_preemptible_workers is not None:
       cluster_config.secondaryWorkerConfig = (
           messages.InstanceGroupConfig(
-              numInstances=args.num_preemptible_workers))
+              numInstances=args.num_preemptible_workers,
+              diskConfig=messages.DiskConfig(
+                  bootDiskSizeGb=args.preemptible_worker_boot_disk_size_gb,
+              )))
 
     cluster = messages.Cluster(
         config=cluster_config,

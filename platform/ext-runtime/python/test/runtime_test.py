@@ -194,9 +194,8 @@ class RuntimeTests(testutil.TestBase):
         self.assertMultiLineEqual(
             app_yaml_contents,
             textwrap.dedent("""\
-                api_version: 1
                 entrypoint: my_entrypoint
-                env: flex
+                vm: true
                 runtime: custom
                 """))
         self.assertEqual(sorted(cleaner.GetFiles()),

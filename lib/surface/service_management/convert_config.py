@@ -14,6 +14,8 @@
 
 """service-management convert-config command."""
 
+import os
+
 from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
@@ -61,7 +63,7 @@ class ConvertConfig(base.Command, base_classes.BaseServiceManagementCommand):
       with open(args.swagger_file) as f:
         swagger = self.services_messages.File(
             contents=f.read(),
-            path=args.swagger_file,
+            path=os.path.basename(args.swagger_file),
         )
     except IOError:
       raise exceptions.ToolException.FromCurrent(

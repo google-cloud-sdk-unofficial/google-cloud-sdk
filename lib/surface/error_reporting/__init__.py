@@ -1,4 +1,4 @@
-# Copyright 2015 Google Inc. All Rights Reserved.
+# Copyright 2016 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,35 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The main command group for Google Cloud Functions."""
+"""The super-group for the Error Reporting CLI."""
 
 import argparse
-
+from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import apis
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resolvers
+from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Functions(base.Group):
-  """Manages Google Cloud Functions."""
-
-  @staticmethod
-  def Args(parser):
-    """Add command flags that are global to this group.
-
-    Per command flags should be added in the Args() method of that specific
-    command.
-
-    Args:
-      parser: argparse.ArgumentParser, This is a standard argparser parser with
-        which you can register arguments.  See the public argparse documentation
-        for its capabilities.
-    """
-    parser.add_argument(
-        '--region',
-        default='us-central1',
-        help='The compute region (e.g. us-central1) to use')
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ErrorReporting(base.Group):
+  """Manage Stackdriver Error Reporting."""
 
   def Filter(self, context, args):
     """Modify the context that will be given to this group's commands when run.
@@ -52,7 +37,15 @@ class Functions(base.Group):
     Returns:
       The updated context.
     """
-    context['functions_client'] = apis.GetClientInstance('functions', 'v1beta1')
-    context['functions_messages'] = apis.GetMessagesModule(
-        'functions', 'v1beta1')
+    # All error reporting collections use projectId, so we can set a default.
+    resources.SetParamDefault(
+        api='clouderrorreporting', collection=None, param='projectsId',
+        resolver=resolvers.FromProperty(properties.VALUES.core.project))
+
+    context['clouderrorreporting_client_v1beta1'] = apis.GetClientInstance(
+        'clouderrorreporting', 'v1beta1')
+    context['clouderrorreporting_messages_v1beta1'] = apis.GetMessagesModule(
+        'clouderrorreporting', 'v1beta1')
+
+    context['clouderrorreporting_resources'] = resources
     return context

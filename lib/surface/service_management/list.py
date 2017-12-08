@@ -15,16 +15,13 @@
 """service-management list command."""
 
 from googlecloudsdk.api_lib.service_management import base_classes
-from googlecloudsdk.api_lib.service_management import services_util
+from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import list_printer
-from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
+from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
-class List(base.Command, base_classes.BaseServiceManagementCommand):
+class List(base.ListCommand, base_classes.BaseServiceManagementCommand):
   """List service-management for the consumer project."""
 
   @staticmethod
@@ -36,9 +33,6 @@ class List(base.Command, base_classes.BaseServiceManagementCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    parser.add_argument('--limit',
-                        type=int,
-                        help='The maximum number of results to list.')
 
     parser.add_argument('--simple-list',
                         action='store_true',
@@ -75,6 +69,11 @@ class List(base.Command, base_classes.BaseServiceManagementCommand):
                         help=('The project ID to retrieve information about. '
                               'The default is the currently active project.'))
 
+    # Remove unneeded list-related flags from parser
+    base.URI_FLAG.RemoveFromParser(parser)
+    base.FLATTEN_FLAG.RemoveFromParser(parser)
+
+  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management list'.
 
@@ -89,6 +88,9 @@ class List(base.Command, base_classes.BaseServiceManagementCommand):
       HttpException: An http error response was received while executing api
           request.
     """
+    if args.simple_list:
+      args.format = 'value(serviceName)'
+
     # Default mode is --enabled, so if no flags were specified,
     # turn on the args.enabled flag.
     if not (args.enabled or args.available or args.produced):
@@ -103,35 +105,16 @@ class List(base.Command, base_classes.BaseServiceManagementCommand):
     elif args.produced:
       request = self._GetProducedListRequest(validated_project)
 
-    # TODO(user): Implement pagination and --limit
-    try:
-      response = self.services_client.services.List(request)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(services_util.GetError(error))
+    return list_pager.YieldFromList(
+        self.services_client.services,
+        request,
+        limit=args.limit,
+        batch_size_attribute='pageSize',
+        batch_size=args.page_size,
+        field='services')
 
-    return response.services or []
-
-  def Display(self, args, result):
-    """Display prints information about what just happened to stdout.
-
-    Args:
-      args: The same as the args in Run.
-
-      result: a list of ManagedService objects.
-
-    Raises:
-      ValueError: if result is None or not a list
-    """
-    if not result:
-      log.status.write(
-          ('No managed services were found in your project: {0}\n').format(
-              self._GetValidatedProject(args.project)))
-      return
-    if args.simple_list:
-      for service in result:
-        log.Print(service.serviceName)
-    else:
-      list_printer.PrintResourceList('servicemanagement-v1.services', result)
+  def Collection(self):
+    return 'servicemanagement-v1.services'
 
   def _GetEnabledListRequest(self, project_id):
     return self.services_messages.ServicemanagementServicesListRequest(

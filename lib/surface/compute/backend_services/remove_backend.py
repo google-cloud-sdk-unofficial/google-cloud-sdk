@@ -18,37 +18,16 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.command_lib.compute.backend_services import flags as bs_flags
-from googlecloudsdk.core import log
+from googlecloudsdk.command_lib.compute.backend_services import backend_flags
+from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
 def _AddArgs(parser, multizonal=False):
   """Adds args."""
-  g = parser.add_mutually_exclusive_group(required=True)
-  g.add_argument(
-      '--group',
-      help=('The name of the legacy instance group '
-            '(deprecated resourceViews API) to remove. '
-            'Use --instance-group flag instead.'))
-  g.add_argument(
-      '--instance-group',
-      help='The name or URI of the instance group to remove.')
-
-  scope_parser = parser
-  if multizonal:
-    scope_parser = parser.add_mutually_exclusive_group()
-    flags.AddRegionFlag(
-        scope_parser,
-        resource_type='instance group',
-        operation_type='remove from the backend service')
-  flags.AddZoneFlag(
-      parser,
-      resource_type='instance group',
-      operation_type='remove from the backend service')
-
-  bs_flags.AddBackendServiceName(parser)
+  backend_flags.AddInstanceGroup(
+      parser, operation_type='remove from', multizonal=multizonal)
+  flags.AddBackendServiceName(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
@@ -101,14 +80,7 @@ class RemoveBackend(base_classes.ReadWriteCommand):
   def Modify(self, args, existing):
     replacement = copy.deepcopy(existing)
 
-    group_ref = None
-    if args.group is not None:
-      log.warn('The --group flag is deprecated and will be removed. '
-               'Please use --instance-group instead.')
-      group_ref = self.CreateZonalReference(
-          args.group, args.zone, resource_type='zoneViews')
-    else:
-      group_ref = self.CreateGroupReference(args)
+    group_ref = self.CreateGroupReference(args)
 
     group_uri = group_ref.SelfLink()
 
@@ -120,7 +92,7 @@ class RemoveBackend(base_classes.ReadWriteCommand):
     if backend_idx is None:
       raise exceptions.ToolException(
           'Backend [{0}] in zone [{1}] is not a backend of backend service '
-          '[{2}].'.format(args.group, args.zone, args.name))
+          '[{2}].'.format(args.instance_group, args.zone, args.name))
     else:
       replacement.backends.pop(backend_idx)
 

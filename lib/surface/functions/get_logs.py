@@ -15,10 +15,11 @@
 """'functions get-logs' command."""
 
 from googlecloudsdk.api_lib.functions import util
+from googlecloudsdk.api_lib.logging import common as logging_common
+from googlecloudsdk.api_lib.logging import util as logging_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 
 class GetLogs(base.ListCommand):
@@ -94,45 +95,37 @@ class GetLogs(base.ListCommand):
     """
     log.warn('This command is deprecated. '
              'Please use `gcloud preview app logs read` instead.')
-    logging_client = self.context['logging_client']
-    logging = self.context['logging_messages']
+    log_filter = ['resource.type="cloud_function"',
+                  'resource.labels.region="%s"' % args.region]
 
-    project = properties.VALUES.core.project.Get(required=True)
-
-    log_filter = (
-        'resource.type="cloud_function" '
-        'labels."cloudfunctions.googleapis.com/region"="{0}" '
-        .format(args.region))
     if args.name:
-      log_filter += (
-          'labels."cloudfunctions.googleapis.com/function_name"="{0}" '
-          .format(args.name))
+      log_filter.append('resource.labels.function_name="%s"' % args.name)
     if args.execution_id:
-      log_filter += 'labels."execution_id"="{0}" '.format(args.execution_id)
+      log_filter.append('labels.execution_id="%s"' % args.execution_id)
     if args.min_log_level:
-      log_filter += 'severity>={0} '.format(args.min_log_level)
+      log_filter.append('severity>=%s' % args.min_log_level)
     if args.start_time:
-      order = 'asc'
-      start_time = args.start_time.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-      log_filter += 'timestamp>="{0}" '.format(start_time)
+      order = 'ASC'
+      log_filter.append(
+          'timestamp>="%s"' % logging_util.FormatTimestamp(args.start_time))
     else:
-      order = 'desc'
+      order = 'DESC'
     if args.end_time:
-      end_time = args.end_time.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-      log_filter += 'timestamp<="{0}" '.format(end_time)
+      log_filter.append(
+          'timestamp<="%s"' % logging_util.FormatTimestamp(args.end_time))
+    log_filter = ' '.join(log_filter)
     # TODO(user): Consider using paging for listing more than 1000 log entries.
     # However, reversing the order of received latest N entries before a
     # specified timestamp would be problematic with paging.
-    request = logging.ListLogEntriesRequest(
-        projectIds=[project], filter=log_filter,
-        orderBy='timestamp {0}'.format(order), pageSize=args.limit)
-    response = logging_client.entries.List(request=request)
 
-    entries = response.entries if order == 'asc' else reversed(response.entries)
+    entries = logging_common.FetchLogs(
+        log_filter, order_by=order, limit=args.limit)
+
+    if order == 'DESC':
+      entries = reversed(list(entries))  # Force generator expansion with list.
+
     for entry in entries:
-      row = dict(
-          log=entry.textPayload
-      )
+      row = {'log': entry.textPayload}
       if entry.severity:
         severity = str(entry.severity)
         if severity in GetLogs.SEVERITIES:
@@ -141,9 +134,11 @@ class GetLogs(base.ListCommand):
         else:
           # Print full form of unexpected severities.
           row['level'] = severity
+      if entry.resource:
+        for label in entry.resource.labels.additionalProperties:
+          if label.key == 'function_name':
+            row['name'] = label.value
       for label in entry.labels.additionalProperties:
-        if label.key == 'cloudfunctions.googleapis.com/function_name':
-          row['name'] = label.value
         if label.key == 'execution_id':
           row['execution_id'] = label.value
       if entry.timestamp:

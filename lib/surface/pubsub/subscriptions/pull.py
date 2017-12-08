@@ -15,10 +15,9 @@
 
 from googlecloudsdk.api_lib.pubsub import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core.console import console_io as io
 
 
-class Pull(base.Command):
+class Pull(base.ListCommand):
   """Pulls one or more Cloud Pub/Sub messages from a subscription.
 
   Returns one or more messages from the specified Cloud Pub/Sub subscription,
@@ -38,6 +37,9 @@ class Pull(base.Command):
     parser.add_argument(
         '--auto-ack', action='store_true', default=False,
         help=('Automatically ACK every message pulled from this subscription.'))
+
+  def Collection(self):
+    return 'pubsub.pull'
 
   @util.MapHttpError
   def Run(self, args):
@@ -68,42 +70,4 @@ class Pull(base.Command):
           subscription=util.SubscriptionFormat(args.subscription))
       pubsub.projects_subscriptions.Acknowledge(ack_req)
 
-    return pull_response
-
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-
-    tbl_header = ['DATA', 'MESSAGE_ID', 'ATTRIBUTES']
-    if not args.auto_ack:
-      tbl_header.append('ACK_ID')
-
-    tbl = io.TablePrinter(
-        tbl_header,
-        justification=tuple(
-            [io.TablePrinter.JUSTIFY_LEFT] * len(tbl_header)))
-
-    tbl.Print(
-        [TableValues(msg, args.auto_ack) for msg in result.receivedMessages])
-
-
-def TableValues(result, hide_ack=False):
-  """Converts a receivedMessage into a tuple of column values."""
-
-  attributes = []
-  if result.message.attributes:
-    for attr in result.message.attributes.additionalProperties:
-      attributes.append('='.join((attr.key, attr.value)))
-
-  return_val = [result.message.data,
-                result.message.messageId,
-                ' '.join(attributes)]
-
-  if not hide_ack:
-    return_val.append(result.ackId)
-
-  return return_val
+    return pull_response.receivedMessages

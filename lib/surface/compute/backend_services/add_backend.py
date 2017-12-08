@@ -20,7 +20,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.backend_services import backend_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
-from googlecloudsdk.core import log
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
@@ -32,7 +31,8 @@ class AddBackend(base_classes.ReadWriteCommand):
   def Args(parser):
     flags.AddBackendServiceName(parser)
     backend_flags.AddDescription(parser)
-    backend_flags.AddInstanceGroup(parser, multizonal=False)
+    backend_flags.AddInstanceGroup(
+        parser, operation_type='add to', multizonal=False)
     backend_flags.AddBalancingMode(parser)
     backend_flags.AddMaxUtilization(parser)
     backend_flags.AddRate(parser)
@@ -71,14 +71,7 @@ class AddBackend(base_classes.ReadWriteCommand):
   def Modify(self, args, existing):
     replacement = copy.deepcopy(existing)
 
-    group_ref = None
-    if args.group is not None:
-      log.warn('The --group flag is deprecated and will be removed. '
-               'Please use --instance-group instead.')
-      group_ref = self.CreateZonalReference(
-          args.group, args.zone, resource_type='zoneViews')
-    else:
-      group_ref = self.CreateGroupReference(args)
+    group_ref = self.CreateGroupReference(args)
 
     group_uri = group_ref.SelfLink()
 
@@ -86,7 +79,7 @@ class AddBackend(base_classes.ReadWriteCommand):
       if group_uri == backend.group:
         raise exceptions.ToolException(
             'Backend [{0}] in zone [{1}] already exists in backend service '
-            '[{2}].'.format(args.group, args.zone, args.name))
+            '[{2}].'.format(args.instance_group, args.zone, args.name))
 
     if args.balancing_mode:
       balancing_mode = self.messages.Backend.BalancingModeValueValuesEnum(
@@ -116,7 +109,8 @@ class AddBackendAlpha(AddBackend,
   def Args(parser):
     flags.AddBackendServiceName(parser)
     backend_flags.AddDescription(parser)
-    backend_flags.AddInstanceGroup(parser, multizonal=True)
+    backend_flags.AddInstanceGroup(
+        parser, operation_type='add to', multizonal=True)
     backend_flags.AddBalancingMode(parser)
     backend_flags.AddMaxUtilization(parser)
     backend_flags.AddRate(parser)

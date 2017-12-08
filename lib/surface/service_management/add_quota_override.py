@@ -73,6 +73,8 @@ class AddQuotaOverride(base.Command, base_classes.BaseServiceManagementCommand):
         'quota_limit_key',
         help='The quota limit key in this format GroupName/LimitName.')
 
+    base.ASYNC_FLAG.AddToParser(parser)
+
   def Run(self, args):
     """Run 'service-management add-quota-override'.
 
@@ -142,4 +144,4 @@ class AddQuotaOverride(base.Command, base_classes.BaseServiceManagementCommand):
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(services_util.GetError(error))
 
-    return services_util.ProcessOperationResult(result)
+    return services_util.ProcessOperationResult(result, args.async)

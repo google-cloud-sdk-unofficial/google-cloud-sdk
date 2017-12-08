@@ -42,7 +42,7 @@ def _MatchesIdOrRegexp(snapshot, ids, patterns):
 
 
 class Wait(base.Command):
-  """Wait debug snapshots."""
+  """Wait for debug snapshots to complete."""
 
   detailed_help = {
       'DESCRIPTION': """\

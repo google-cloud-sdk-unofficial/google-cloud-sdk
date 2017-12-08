@@ -17,11 +17,10 @@
 
 from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import log
-from googlecloudsdk.core.console import console_io as io
+from googlecloudsdk.core.resource import resource_projector
 
 
-class ListClusters(base.Command):
+class ListClusters(base.ListCommand):
   """List existing Bigtable clusters."""
 
   @staticmethod
@@ -44,31 +43,17 @@ class ListClusters(base.Command):
     msg = (self.context['clusteradmin-msgs'].
            BigtableclusteradminProjectsAggregatedClustersListRequest(
                name=util.ProjectUrl()))
-    return cli.projects_aggregated_clusters.List(msg)
+    clusters = cli.projects_aggregated_clusters.List(msg).clusters
+    return [ClusterDict(cluster) for cluster in clusters]
 
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    tbl = io.TablePrinter(
-        ['Name', 'ID', 'Zone', 'Nodes'],
-        justification=tuple(
-            [io.TablePrinter.JUSTIFY_LEFT] * 3 +
-            [io.TablePrinter.JUSTIFY_RIGHT]))
-    values = [TableValues(cluster) for cluster in result.clusters]
-    tbl.Print(values)
-    if not values:
-      log.err.Print('0 clusters')
+  def Collection(self):
+    return 'bigtable.clusters.list'
 
 
-def TableValues(cluster):
-  """Converts a cluster dict into a tuple of column values."""
+def ClusterDict(cluster):
+  """Returns a cluster dict zone_id and cluster_id fields added."""
+  result = resource_projector.MakeSerializable(cluster)
   zone_id, cluster_id = util.ExtractZoneAndCluster(cluster.name)
-  return (cluster.displayName,
-          cluster_id,
-          zone_id,
-          str(cluster.serveNodes))
-
+  result['zoneId'] = zone_id
+  result['clusterId'] = cluster_id
+  return result

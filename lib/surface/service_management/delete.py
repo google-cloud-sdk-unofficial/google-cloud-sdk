@@ -44,6 +44,8 @@ class Delete(base.Command, base_classes.BaseServiceManagementCommand):
         default=False,
         help='Force the deletion of the service without warning prompt.')
 
+    base.ASYNC_FLAG.AddToParser(parser)
+
   def Run(self, args):
     """Run 'service-management delete'.
 
@@ -80,4 +82,4 @@ class Delete(base.Command, base_classes.BaseServiceManagementCommand):
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(services_util.GetError(error))
 
-    return services_util.ProcessOperationResult(result)
+    return services_util.ProcessOperationResult(result, args.async)
