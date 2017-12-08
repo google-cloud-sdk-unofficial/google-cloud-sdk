@@ -296,7 +296,11 @@ class _BaseDeploy(object):
       rollout = messages.Rollout(
           serviceName=self.service_name,
           trafficPercentStrategy=traffic_percent_strategy,)
-      rollout_operation = client.services_rollouts.Create(rollout)
+      rollout_create = messages.ServicemanagementServicesRolloutsCreateRequest(
+          rollout=rollout,
+          serviceName=self.service_name,
+      )
+      rollout_operation = client.services_rollouts.Create(rollout_create)
       services_util.ProcessOperationResult(rollout_operation, args.async)
 
       # Check to see if the service is already enabled
