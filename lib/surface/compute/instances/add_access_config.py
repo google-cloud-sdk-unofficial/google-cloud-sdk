@@ -14,7 +14,8 @@
 """Command for adding access configs to virtual machine instances."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
-from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 
 
 class AddAccessConfigInstances(base_classes.NoOutputAsyncMutator):
@@ -58,15 +59,7 @@ class AddAccessConfigInstances(base_classes.NoOutputAsyncMutator):
         as the default.
         """
 
-    parser.add_argument(
-        'name',
-        completion_resource='compute.instances',
-        help='The name of the instance to add the access configuration to.')
-
-    flags.AddZoneFlag(
-        parser,
-        resource_type='instance',
-        operation_type='add an access config to')
+    instance_flags.INSTANCE_ARG.AddArgument(parser)
 
   @property
   def service(self):
@@ -82,7 +75,10 @@ class AddAccessConfigInstances(base_classes.NoOutputAsyncMutator):
 
   def CreateRequests(self, args):
     """Returns a list of request necessary for adding an access config."""
-    instance_ref = self.CreateZonalReference(args.name, args.zone)
+    instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
+        args, self.resources, default_scope=compute_flags.ScopeEnum.ZONE,
+        scope_lister=compute_flags.GetDefaultScopeLister(
+            self.compute_client, self.project))
 
     request = self.messages.ComputeInstancesAddAccessConfigRequest(
         accessConfig=self.messages.AccessConfig(

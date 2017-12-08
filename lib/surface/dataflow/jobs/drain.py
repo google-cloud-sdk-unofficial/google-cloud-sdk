@@ -24,7 +24,6 @@ from googlecloudsdk.core import log
 from surface import dataflow as commands
 
 
-@base.Hidden
 class Drain(base.Command):
   """Drains all jobs that match the command line arguments.
 

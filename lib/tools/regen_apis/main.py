@@ -74,7 +74,7 @@ def main(argv=None):
         regen.GenerateApi(args.base_dir, root_dir,
                           api_name, api_version, api_config)
   regen.GenerateApiMap(args.base_dir, root_dir, config['apis'])
-
+  regen.GenerateResourceModule(args.base_dir, root_dir, config['apis'])
 
 if __name__ == '__main__':
   main()

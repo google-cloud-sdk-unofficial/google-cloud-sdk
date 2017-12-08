@@ -11,7 +11,7 @@ gcloud compute backend\-services create \- create a backend service
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute backend\-services create\fR \fINAME\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-enable\-cdn\fR] [\fB\-\-http\-health\-checks\fR\ \fIHTTP_HEALTH_CHECK\fR,[\fIHTTP_HEALTH_CHECK\fR,...]] [\fB\-\-https\-health\-checks\fR\ \fIHTTPS_HEALTH_CHECK\fR,[\fIHTTPS_HEALTH_CHECK\fR,...]] [\fB\-\-port\fR\ \fIPORT\fR] [\fB\-\-port\-name\fR\ \fIPORT_NAME\fR] [\fB\-\-protocol\fR\ \fIPROTOCOL\fR;\ default="HTTP"] [\fB\-\-timeout\fR\ \fITIMEOUT\fR;\ default="30s"] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute backend\-services create\fR \fINAME\fR [\fB\-\-affinity\-cookie\-ttl\fR\ \fIAFFINITY_COOKIE_TTL\fR] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-enable\-cdn\fR] [\fB\-\-http\-health\-checks\fR\ \fIHTTP_HEALTH_CHECK\fR,[\fIHTTP_HEALTH_CHECK\fR,...]] [\fB\-\-https\-health\-checks\fR\ \fIHTTPS_HEALTH_CHECK\fR,[\fIHTTPS_HEALTH_CHECK\fR,...]] [\fB\-\-port\fR\ \fIPORT\fR] [\fB\-\-port\-name\fR\ \fIPORT_NAME\fR] [\fB\-\-protocol\fR\ \fIPROTOCOL\fR;\ default="HTTP"] [\fB\-\-session\-affinity\fR\ \fISESSION_AFFINITY\fR] [\fB\-\-timeout\fR\ \fITIMEOUT\fR;\ default="30s"] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -40,6 +40,13 @@ The name of the backend service.
 
 .SH "FLAGS"
 
+\fB\-\-affinity\-cookie\-ttl\fR \fIAFFINITY_COOKIE_TTL\fR
+.RS 2m
+If session\-affinity is set to "generated_cookie", this flag sets the TTL, in
+seconds, of the resulting cookie. A setting of 0 indicates that the cookie
+should be transient.
+
+.RE
 \fB\-\-description\fR \fIDESCRIPTION\fR
 .RS 2m
 An optional, textual description for the backend service.
@@ -87,6 +94,27 @@ compute instance\-groups set\-named\-ports \-\-help\fR.
 The protocol for incoming requests.
 
 .RE
+\fB\-\-session\-affinity\fR \fISESSION_AFFINITY\fR
+.RS 2m
+The type of session affinity to use for this backend service. Possible values
+are:
+
+.RS 2m
+.IP "\(em" 2m
+none: Session affinity is disabled.
+.RE
+.RS 2m
+.IP "\(em" 2m
+client_ip: Route requests to instances based on the hash of the client's IP
+address.
+.RE
+.RS 2m
+.IP "\(em" 2m
+generated_cookie: Route requests to instances based on the contents of the
+"GCLB" cookie set by the load balancer.
+.RE
+.RE
+
 \fB\-\-timeout\fR \fITIMEOUT\fR; default="30s"
 .RS 2m
 The amount of time to wait for a backend to respond to a request before

@@ -18,11 +18,10 @@ from googlecloudsdk.calliope import base
 ORGS_COLLECTION = 'cloudresourcemanager.organizations'
 
 
-def IdArg(description, nargs=None):
+def IdArg(description):
   return base.Argument(
       'id',
       metavar='ORGANIZATION_ID',
       completion_resource=ORGS_COLLECTION,
       list_command_path='organizations',
-      nargs=nargs,
       help='ID for the organization {0}'.format(description))

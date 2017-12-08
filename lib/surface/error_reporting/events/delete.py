@@ -20,7 +20,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
-import googlecloudsdk.third_party.apis.clouderrorreporting.v1beta1 as cer_api
 
 
 class Delete(base.Command):
@@ -36,13 +35,14 @@ class Delete(base.Command):
     """
     client = self.context['clouderrorreporting_client_v1beta1']
     project = properties.VALUES.core.project.Get(required=True)
+    messages = client.MESSAGES_MODULE
 
     if not console_io.PromptContinue(
         'Really delete all events for project \'%s\'?' % project):
       raise exceptions.ToolException('action canceled by user')
 
     client.projects.DeleteEvents(
-        cer_api.ClouderrorreportingProjectsDeleteEventsRequest(
+        messages.ClouderrorreportingProjectsDeleteEventsRequest(
             projectName='projects/' + project))
 
     log.status.Print('All error events in the project were deleted.')

@@ -188,14 +188,15 @@ Alias,URI
   master_boot_disk = parser.add_mutually_exclusive_group()
   worker_boot_disk = parser.add_mutually_exclusive_group()
 
+  # Deprecated, to be removed at a future date.
   master_boot_disk.add_argument(
       '--master-boot-disk-size-gb',
       type=int,
-      help='DEPRECATED, use --master-boot-disk-size')
+      help=argparse.SUPPRESS)
   worker_boot_disk.add_argument(
       '--worker-boot-disk-size-gb',
       type=int,
-      help='DEPRECATED, use --worker-boot-disk-size')
+      help=argparse.SUPPRESS)
 
   boot_disk_size_detailed_help = """\
       The size of the boot disk. The value must be a
@@ -215,6 +216,19 @@ Alias,URI
       help='The size of the boot disk of each worker in a cluster.')
   worker_boot_disk_size.detailed_help = boot_disk_size_detailed_help
 
+  preemptible_worker_boot_disk_size = parser.add_argument(
+      '--preemptible-worker-boot-disk-size',
+      type=arg_parsers.BinarySize(lower_bound='10GB'),
+      help='The size of the boot disk of each premptible worker in a '
+           'cluster.')
+  preemptible_worker_boot_disk_size.detailed_help = """\
+      The size of the boot disk. The value must be a
+      whole number followed by a size unit of ``KB'' for kilobyte, ``MB''
+      for megabyte, ``GB'' for gigabyte, or ``TB'' for terabyte. For example,
+      ``10GB'' will produce a 10 gigabyte disk. The minimum size a boot disk
+      can have is 10 GB. Disk size must be a multiple of 1 GB.
+      """
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
@@ -232,12 +246,6 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
-
-    # Available but hidden in GA track.
-    parser.add_argument(
-        '--preemptible-worker-boot-disk-size',
-        type=arg_parsers.BinarySize(lower_bound='10GB'),
-        help=argparse.SUPPRESS)
 
   @staticmethod
   def ValidateArgs(args):
@@ -383,17 +391,3 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
-
-    # Available and visible in Beta track.
-    preemptible_worker_boot_disk_size = parser.add_argument(
-        '--preemptible-worker-boot-disk-size',
-        type=arg_parsers.BinarySize(lower_bound='10GB'),
-        help='The size of the boot disk of each premptible worker in a '
-             'cluster.')
-    preemptible_worker_boot_disk_size.detailed_help = """\
-        The size of the boot disk. The value must be a
-        whole number followed by a size unit of ``KB'' for kilobyte, ``MB''
-        for megabyte, ``GB'' for gigabyte, or ``TB'' for terabyte. For example,
-        ``10GB'' will produce a 10 gigabyte disk. The minimum size a boot disk
-        can have is 10 GB. Disk size must be a multiple of 1 GB.
-        """

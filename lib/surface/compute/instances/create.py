@@ -73,16 +73,7 @@ def _CommonArgs(parser):
       '--description',
       help='Specifies a textual description of the instances.')
 
-  parser.add_argument(
-      'names',
-      metavar='NAME',
-      nargs='+',
-      help='The names of the instances to create.')
-
-  flags.AddZoneFlag(
-      parser,
-      resource_type='instances',
-      operation_type='create')
+  instances_flags.INSTANCES_ARG.AddArgument(parser)
 
   csek_utils.AddCsekKeyArgs(parser)
 
@@ -144,7 +135,10 @@ class Create(base_classes.BaseAsyncCreator,
     boot_disk_size_gb = utils.BytesToGb(args.boot_disk_size)
     utils.WarnIfDiskSizeIsTooSmall(boot_disk_size_gb, args.boot_disk_type)
 
-    instance_refs = self.CreateZonalReferences(args.names, args.zone)
+    instance_refs = instances_flags.INSTANCES_ARG.ResolveAsResource(
+        args, self.resources, default_scope=flags.ScopeEnum.ZONE,
+        scope_lister=flags.GetDefaultScopeLister(
+            self.compute_client, self.project))
 
     # Check if the zone is deprecated or has maintenance coming.
     self.WarnForZonalCreation(instance_refs)

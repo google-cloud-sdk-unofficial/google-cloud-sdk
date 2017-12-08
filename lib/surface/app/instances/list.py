@@ -40,6 +40,10 @@ class List(base.ListCommand):
           """,
   }
 
+  def GetUriCacheUpdateOp(self):
+    # TODO((b/29539463) Resources of this API are not parsible.
+    return None
+
   def Collection(self):
     return 'appengine.instances'
 

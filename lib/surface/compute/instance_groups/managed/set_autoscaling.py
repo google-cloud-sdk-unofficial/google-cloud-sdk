@@ -83,7 +83,8 @@ class SetAutoscaling(base_classes.BaseAsyncMutator):
     igm_ref = self.CreateGroupReference(args)
     service = self.GetAutoscalerServiceForGroup(igm_ref)
 
-    managed_instance_groups_utils.AssertInstanceGroupManagerExists(
+    # Assert that Instance Group Manager exists.
+    managed_instance_groups_utils.GetInstanceGroupManagerOrThrow(
         igm_ref, self.project, self.compute, self.http, self.batch_url)
 
     autoscaler_resource, is_new = self.CreateAutoscalerResource(igm_ref, args)

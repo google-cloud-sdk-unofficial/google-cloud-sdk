@@ -17,11 +17,9 @@
 import operator
 
 from googlecloudsdk.api_lib.app import appengine_api_client
-from googlecloudsdk.api_lib.app import appengine_client
 from googlecloudsdk.api_lib.app import instances_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import flags
-from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
@@ -31,8 +29,9 @@ class DisableDebug(base.Command):
   When not in debug mode, SSH will be disabled on the VMs. They will be included
   in the health checking pools.
 
-  Note that any local changes to an instance will be **lost** and the instance
-  restarted if debug mode is disabled on the instance.
+  Note that any local changes to an instance will be **lost** if debug mode is
+  disabled on the instance. New instance(s) may spawn depending on the app's
+  scaling settings.
   """
 
   detailed_help = {
@@ -76,9 +75,6 @@ class DisableDebug(base.Command):
 
   def Run(self, args):
     api_client = appengine_api_client.GetApiClient()
-    client = appengine_client.AppengineClient(args.server,
-                                              args.ignore_bad_certs)
-
     all_instances = api_client.GetAllInstances(args.service, args.version)
     # Only VM instances can be placed in debug mode for now.
     all_instances = filter(operator.attrgetter('instance.vmName'),
@@ -88,13 +84,11 @@ class DisableDebug(base.Command):
         instance=args.instance)
 
     console_io.PromptContinue(
-        'Disabling debug mode for instance [{0}].\n\n'
-        'Any local changes will be LOST and the instance '
-        'restarted.'.format(instance),
-        cancel_on_no=True)
-    # TODO(b/29059251): When switching to Zeus, stop using vm_name and use id
-    # directly.
-    client.SetManagedByGoogle(service=instance.service,
-                              version=instance.version,
-                              vm_name=instance.instance.vmName)
-    log.status.Print('Disabled debug mode for instance [{0}].'.format(instance))
+        'About to disable debug mode for instance [{0}].\n\n'
+        'Any local changes will be LOST. New instance(s) may spawn depending '
+        'on the app\'s scaling settings.'.format(instance), cancel_on_no=True)
+    message = 'Disabling debug mode for instance [{0}]'.format(instance)
+    with console_io.ProgressTracker(message):
+      api_client.DeleteInstance(service=instance.service,
+                                version=instance.version,
+                                instance=instance.id)

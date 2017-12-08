@@ -78,7 +78,7 @@ class Remove(base.Command):
         messages.DnsResourceRecordSetsListRequest(
             project=project_id,
             managedZone=zone_ref.Name(),
-            name=args.name,
+            name=util.AppendTrailingDot(args.name),
             type=args.type),
         field='rrsets')]
     if not existing_records or existing_records[0] != record_to_remove:

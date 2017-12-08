@@ -30,22 +30,13 @@ class ListHostProjects(base.ListCommand):
             NAME       CREATION_TIMESTAMP            XPN_PROJECT_STATUS
             xpn-host1  2000-01-01T12:00:00.00-00:00  HOST
             xpn-host2  2000-01-02T12:00:00.00-00:00  HOST
-
-          To list the XPN host projects in the organization for the current
-          project, run:
-
-            $ {command}
-            NAME       CREATION_TIMESTAMP            XPN_PROJECT_STATUS
-            xpn-host1  2000-01-01T12:00:00.00-00:00  HOST
-            xpn-host2  2000-01-02T12:00:00.00-00:00  HOST
       """
   }
 
   @staticmethod
   def Args(parser):
     organizations_flags.IdArg(
-        'whose XPN host projects to list. If omitted, the organization is '
-        'inferred from the current project.', nargs='?').AddToParser(parser)
+        'whose XPN host projects to list.').AddToParser(parser)
 
   def Collection(self):
     return command_lib_util.PROJECTS_COLLECTION

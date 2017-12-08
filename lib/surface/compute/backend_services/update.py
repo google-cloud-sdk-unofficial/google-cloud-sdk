@@ -39,6 +39,8 @@ class UpdateGA(base_classes.ReadWriteCommand):
     flags.AddPortName(parser)
     flags.AddProtocol(parser, default=None)
     flags.AddEnableCdn(parser, default=None)
+    flags.AddSessionAffinity(parser, internal_lb=False)
+    flags.AddAffinityCookieTtl(parser)
 
   @property
   def service(self):
@@ -125,10 +127,19 @@ class UpdateGA(base_classes.ReadWriteCommand):
     if args.enable_cdn is not None:
       replacement.enableCDN = args.enable_cdn
 
+    if args.session_affinity is not None:
+      replacement.sessionAffinity = (
+          self.messages.BackendService.SessionAffinityValueValuesEnum(
+              args.session_affinity))
+
+    if args.affinity_cookie_ttl is not None:
+      replacement.affinityCookieTtlSec = args.affinity_cookie_ttl
+
     return replacement
 
   def ValidateArgs(self, args):
     if not any([
+        args.affinity_cookie_ttl is not None,
         args.description is not None,
         args.enable_cdn is not None,
         args.http_health_checks,
@@ -136,6 +147,7 @@ class UpdateGA(base_classes.ReadWriteCommand):
         args.port,
         args.port_name,
         args.protocol,
+        args.session_affinity is not None,
         args.timeout is not None,
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
@@ -175,14 +187,6 @@ class UpdateAlpha(UpdateGA):
     if args.connection_draining_timeout is not None:
       replacement.connectionDraining = self.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
-
-    if args.session_affinity is not None:
-      replacement.sessionAffinity = (
-          self.messages.BackendService.SessionAffinityValueValuesEnum(
-              args.session_affinity))
-
-    if args.affinity_cookie_ttl is not None:
-      replacement.affinityCookieTtlSec = args.affinity_cookie_ttl
 
     return replacement
 
@@ -229,14 +233,6 @@ class UpdateBeta(UpdateGA):
     if args.connection_draining_timeout is not None:
       replacement.connectionDraining = self.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
-
-    if args.session_affinity is not None:
-      replacement.sessionAffinity = (
-          self.messages.BackendService.SessionAffinityValueValuesEnum(
-              args.session_affinity))
-
-    if args.affinity_cookie_ttl is not None:
-      replacement.affinityCookieTtlSec = args.affinity_cookie_ttl
 
     return replacement
 

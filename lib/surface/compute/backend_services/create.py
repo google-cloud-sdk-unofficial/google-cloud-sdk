@@ -66,6 +66,8 @@ class CreateGA(backend_services_utils.BackendServiceMutator):
     flags.AddPortName(parser)
     flags.AddProtocol(parser)
     flags.AddEnableCdn(parser, default=False)
+    flags.AddSessionAffinity(parser, internal_lb=False)
+    flags.AddAffinityCookieTtl(parser)
 
   @property
   def method(self):
@@ -93,8 +95,17 @@ class CreateGA(backend_services_utils.BackendServiceMutator):
         enableCDN=enable_cdn)
 
   def CreateGlobalRequests(self, args):
+    backend_service = self._CreateBackendService(args)
+
+    if args.session_affinity is not None:
+      backend_service.sessionAffinity = (
+          self.messages.BackendService.SessionAffinityValueValuesEnum(
+              args.session_affinity))
+    if args.session_affinity is not None:
+      backend_service.affinityCookieTtlSec = args.affinity_cookie_ttl
+
     request = self.messages.ComputeBackendServicesInsertRequest(
-        backendService=self._CreateBackendService(args),
+        backendService=backend_service,
         project=self.project)
 
     return [request]
@@ -113,12 +124,12 @@ class CreateAlpha(CreateGA):
     flags.AddTimeout(parser)
     flags.AddPortName(parser)
     flags.AddProtocol(parser, default=None)
-
-    # These are in beta
-    flags.AddConnectionDrainingTimeout(parser)
     flags.AddEnableCdn(parser, default=False)
     flags.AddSessionAffinity(parser, internal_lb=True)
     flags.AddAffinityCookieTtl(parser)
+
+    # These are in beta
+    flags.AddConnectionDrainingTimeout(parser)
 
     # These are added for alpha
     flags.AddHealthChecks(parser)
@@ -194,12 +205,12 @@ class CreateBeta(CreateGA):
     flags.AddTimeout(parser)
     flags.AddPortName(parser)
     flags.AddProtocol(parser)
-
-    # These are added for beta
-    flags.AddConnectionDrainingTimeout(parser)
     flags.AddEnableCdn(parser, default=False)
     flags.AddSessionAffinity(parser)
     flags.AddAffinityCookieTtl(parser)
+
+    # These are added for beta
+    flags.AddConnectionDrainingTimeout(parser)
 
   def CreateGlobalRequests(self, args):
     backend_service = self._CreateBackendService(args)

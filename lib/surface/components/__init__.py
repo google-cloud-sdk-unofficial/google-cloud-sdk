@@ -64,6 +64,10 @@ class Components(base.Group):
           To update all components you have to their latest version:
 
             $ {command} update
+
+          To update all installed components to version 1.2.3:
+
+            $ {command} update --version 1.2.3
       """,
   }
 

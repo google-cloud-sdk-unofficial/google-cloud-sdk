@@ -67,9 +67,16 @@ class GetValue(base.Command):
         raise c_exc.InvalidArgumentException('property', err_msg)
       raise c_exc.InvalidArgumentException(
           'property', 'Must be in the form: [SECTION/]PROPERTY')
-    value = properties.VALUES.Section(section).Property(prop).Get()
-    if not value:
-      # Writing message to stderr but returning any potentially empty
-      # value to caller as is
-      log.err.write('(unset)')
+    try:
+      value = properties.VALUES.Section(section).Property(prop).Get(
+          validate=True)
+      if not value:
+        # Writing message to stderr but returning any potentially empty
+        # value to caller as is
+        log.err.write('(unset)')
+    except properties.InvalidValueError as e:
+      # Writing warning to stderr but returning invalid value as is
+      log.warn(str(e))
+      value = properties.VALUES.Section(section).Property(prop).Get(
+          validate=False)
     return value
