@@ -63,7 +63,7 @@ def _Args(parser):
       parser, operation_type='create')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateWithContainer(base.CreateCommand):
   """Command for creating VM instance templates hosting Docker images."""
 
@@ -71,44 +71,36 @@ class CreateWithContainer(base.CreateCommand):
   def Args(parser):
     _Args(parser)
 
-    instances_flags.AddNetworkTierArgs(parser, instance=True)
-
-  def Run(self, args):
-    """Issues an InstanceTemplates.Insert request.
-
-    Args:
-      args: the argparse arguments that this command was invoked with.
-
-    Returns:
-      an InstanceTemplate message object
-    """
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
+  def _ValidateBetaArgs(self, args):
     instances_flags.ValidateKonletArgs(args)
     instances_flags.ValidateDiskCommonFlags(args)
     instances_flags.ValidateLocalSsdFlags(args)
     instances_flags.ValidateServiceAccountAndScopeArgs(args)
-    instances_flags.ValidateNetworkTierArgs(args, support_network_tier=True)
     if instance_utils.UseExistingBootDisk(args.disk or []):
       raise exceptions.InvalidArgumentException(
           '--disk',
           'Boot disk specified for containerized VM.')
 
+  def _GetBootDiskSize(self, args):
     boot_disk_size_gb = utils.BytesToGb(args.boot_disk_size)
     utils.WarnIfDiskSizeIsTooSmall(boot_disk_size_gb, args.boot_disk_type)
+    return boot_disk_size_gb
 
-    instance_template_ref = (
-        CreateWithContainer.InstanceTemplateArg.ResolveAsResource(
-            args, holder.resources))
+  def _GetInstanceTemplateRef(self, args, holder):
+    return CreateWithContainer.InstanceTemplateArg.ResolveAsResource(
+        args, holder.resources)
 
+  def _GetUserMetadata(self, args, client, instance_template_ref):
     user_metadata = metadata_utils.ConstructMetadataMessage(
         client.messages,
         metadata=args.metadata,
         metadata_from_file=args.metadata_from_file)
     containers_utils.ValidateUserMetadata(user_metadata)
+    return containers_utils.CreateKonletMetadataMessage(
+        client.messages, args, instance_template_ref.Name(), user_metadata)
 
-    network_interface = instance_template_utils.CreateNetworkInterfaceMessage(
+  def _GetNetworkInterface(self, args, client, holder):
+    return instance_template_utils.CreateNetworkInterfaceMessage(
         resources=holder.resources,
         scope_lister=flags.GetDefaultScopeLister(client),
         messages=client.messages,
@@ -118,23 +110,26 @@ class CreateWithContainer(base.CreateCommand):
         address=(instance_template_utils.EPHEMERAL_ADDRESS
                  if not args.no_address and not args.address
                  else args.address),
-        network_tier=getattr(args, 'network_tier', None))
+    )
 
-    scheduling = instance_utils.CreateSchedulingMessage(
+  def _GetScheduling(self, args, client):
+    return instance_utils.CreateSchedulingMessage(
         messages=client.messages,
         maintenance_policy=args.maintenance_policy,
         preemptible=args.preemptible,
         restart_on_failure=args.restart_on_failure)
 
+  def _GetServiceAccounts(self, args, client):
     if args.no_service_account:
       service_account = None
     else:
       service_account = args.service_account
-    service_accounts = instance_utils.CreateServiceAccountMessages(
+    return instance_utils.CreateServiceAccountMessages(
         messages=client.messages,
         scopes=[] if args.no_scopes else args.scopes,
         service_account=service_account)
 
+  def _GetImageUri(self, args, client, holder, instance_template_ref):
     if (args.IsSpecified('image') or args.IsSpecified('image_family') or
         args.IsSpecified('image_project')):
       image_expander = image_utils.ImageExpander(client, holder.resources)
@@ -150,23 +145,48 @@ class CreateWithContainer(base.CreateCommand):
                  'cos-dev image families).')
     else:
       image_uri = containers_utils.ExpandKonletCosImageFlag(client)
+    return image_uri
 
-    machine_type = instance_utils.InterpretMachineType(
+  def _GetMachineType(self, args):
+    return instance_utils.InterpretMachineType(
         machine_type=args.machine_type,
         custom_cpu=args.custom_cpu,
         custom_memory=args.custom_memory,
         ext=getattr(args, 'custom_extensions', None))
 
-    metadata = containers_utils.CreateKonletMetadataMessage(
-        client.messages, args, instance_template_ref.Name(), user_metadata)
+  def _GetDisks(self, args, client, holder, instance_template_ref):
+    boot_disk_size_gb = self._GetBootDiskSize(args)
+    image_uri = self._GetImageUri(args, client, holder, instance_template_ref)
+    return self._CreateDiskMessages(
+        holder, args, boot_disk_size_gb, image_uri,
+        instance_template_ref.project)
+
+  def Run(self, args):
+    """Issues an InstanceTemplates.Insert request.
+
+    Args:
+      args: the argparse arguments that this command was invoked with.
+
+    Returns:
+      an InstanceTemplate message object
+    """
+    self._ValidateBetaArgs(args)
+
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+    instance_template_ref = self._GetInstanceTemplateRef(args, holder)
+    metadata = self._GetUserMetadata(args, client, instance_template_ref)
+    network_interface = self._GetNetworkInterface(args, client, holder)
+    scheduling = self._GetScheduling(args, client)
+    service_accounts = self._GetServiceAccounts(args, client)
+    machine_type = self._GetMachineType(args)
+    disks = self._GetDisks(args, client, holder, instance_template_ref)
 
     request = client.messages.ComputeInstanceTemplatesInsertRequest(
         instanceTemplate=client.messages.InstanceTemplate(
             properties=client.messages.InstanceProperties(
                 machineType=machine_type,
-                disks=self._CreateDiskMessages(holder, args, boot_disk_size_gb,
-                                               image_uri,
-                                               instance_template_ref.project),
+                disks=disks,
                 canIpForward=args.can_ip_forward,
                 metadata=metadata,
                 minCpuPlatform=args.min_cpu_platform,
@@ -215,14 +235,71 @@ class CreateWithContainer(base.CreateCommand):
             persistent_create_disks + local_ssds)
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateWithContainerBeta(CreateWithContainer):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateWithContainerAlpha(CreateWithContainer):
+  """Command for creating VM instance templates hosting Docker images."""
 
   @staticmethod
   def Args(parser):
     _Args(parser)
+    instances_flags.AddNetworkTierArgs(parser, instance=True)
 
+  def _GetNetworkInterface(self, args, client, holder):
+    return instance_template_utils.CreateNetworkInterfaceMessage(
+        resources=holder.resources,
+        scope_lister=flags.GetDefaultScopeLister(client),
+        messages=client.messages,
+        network=args.network,
+        region=args.region,
+        subnet=args.subnet,
+        address=(instance_template_utils.EPHEMERAL_ADDRESS
+                 if not args.no_address and not args.address
+                 else args.address),
+        network_tier=getattr(args, 'network_tier', None))
+
+  def Run(self, args):
+    """Issues an InstanceTemplates.Insert request.
+
+    Args:
+      args: the argparse arguments that this command was invoked with.
+
+    Returns:
+      an InstanceTemplate message object
+    """
+    self._ValidateBetaArgs(args)
+    instances_flags.ValidateNetworkTierArgs(args)
+
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+    instance_template_ref = self._GetInstanceTemplateRef(args, holder)
+    metadata = self._GetUserMetadata(args, client, instance_template_ref)
+    network_interface = self._GetNetworkInterface(args, client, holder)
+    scheduling = self._GetScheduling(args, client)
+    service_accounts = self._GetServiceAccounts(args, client)
+    machine_type = self._GetMachineType(args)
+    disks = self._GetDisks(args, client, holder, instance_template_ref)
+
+    request = client.messages.ComputeInstanceTemplatesInsertRequest(
+        instanceTemplate=client.messages.InstanceTemplate(
+            properties=client.messages.InstanceProperties(
+                machineType=machine_type,
+                disks=disks,
+                canIpForward=args.can_ip_forward,
+                metadata=metadata,
+                minCpuPlatform=args.min_cpu_platform,
+                networkInterfaces=[network_interface],
+                serviceAccounts=service_accounts,
+                scheduling=scheduling,
+                tags=containers_utils.CreateTagsMessage(
+                    client.messages, args.tags),
+            ),
+            description=args.description,
+            name=instance_template_ref.Name(),
+        ),
+        project=instance_template_ref.project)
+
+    return client.MakeRequests([(client.apitools_client.instanceTemplates,
+                                 'Insert', request)])
 
 CreateWithContainer.detailed_help = {
     'brief':

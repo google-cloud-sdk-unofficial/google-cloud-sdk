@@ -19,8 +19,14 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
+_WARNING = ('The `service-management` command group has been replaced by '
+            'the `endpoints` command group (for service-producer commands) '
+            'and the `services` command group (for service-consumer commands).')
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.Deprecate(is_removed=False, warning=_WARNING)
 class ServiceManagement(base.Group):
   """Create, enable and manage API services.
 

@@ -451,7 +451,8 @@ class Create(base.CreateCommand):
     instances_flags.ValidateNicFlags(args)
     instances_flags.ValidateServiceAccountAndScopeArgs(args)
     instances_flags.ValidateAcceleratorArgs(args)
-    instances_flags.ValidateNetworkTierArgs(args, self._support_network_tier)
+    if self._support_network_tier:
+      instances_flags.ValidateNetworkTierArgs(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     compute_client = holder.client

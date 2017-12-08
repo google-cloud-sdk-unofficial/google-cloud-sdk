@@ -76,7 +76,7 @@ class UpdateBeta(Update):
           To configure a new managed certificate:
 
               $ {command} '*.example.com' \
-                  --certificate-management=AUTOMATIC
+                  --certificate-management=automatic
           """,
   }
 
@@ -93,9 +93,9 @@ class UpdateBeta(Update):
                                                   args.certificate_management)
     if (not args.certificate_management and
         (args.certificate_id or args.no_certificate_id)):
-      args.certificate_management = 'MANUAL'
+      args.certificate_management = 'manual'
 
-    if (args.certificate_management.upper() == 'MANUAL' and
+    if (args.certificate_management.upper() == 'manual' and
         not args.certificate_id and not args.no_certificate_id):
       args.no_certificate_id = True
 

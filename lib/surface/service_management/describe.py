@@ -20,6 +20,11 @@ from googlecloudsdk.command_lib.service_management import arg_parsers
 from googlecloudsdk.command_lib.service_management import common_flags
 
 
+_WARNING = ('The `service-management describe` command has been '
+            ' replaced by `endpoints services describe`.')
+
+
+@base.Deprecate(is_removed=False, warning=_WARNING)
 class Describe(base.DescribeCommand):
   """Describes a service given a service name."""
 

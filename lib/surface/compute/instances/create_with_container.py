@@ -63,7 +63,7 @@ def _Args(parser):
   CreateWithContainer.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateWithContainer(base.CreateCommand):
   """Command for creating VM instances running container images."""
 
@@ -72,99 +72,92 @@ class CreateWithContainer(base.CreateCommand):
     """Register parser args."""
     _Args(parser)
 
-    instances_flags.AddNetworkTierArgs(parser, instance=True)
-
   def GetSourceInstanceTemplate(self, args, resources):
     if not args.IsSpecified('source_instance_template'):
       return None
     ref = self.SOURCE_INSTANCE_TEMPLATE.ResolveAsResource(args, resources)
     return ref.SelfLink()
 
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    source_instance_template = self.GetSourceInstanceTemplate(
-        args, holder.resources)
+  def _GetSkipDefaults(self, source_instance_template):
     # gcloud creates default values for some fields in Instance resource
     # when no value was specified on command line.
     # When --source-instance-template was specified, defaults are taken from
     # Instance Template and gcloud flags are used to override them - by default
     # fields should not be initialized.
-    skip_defaults = source_instance_template is not None
+    return source_instance_template is not None
 
+  def _ValidateBetaArgs(self, args):
     instances_flags.ValidateKonletArgs(args)
     instances_flags.ValidateDiskCommonFlags(args)
     instances_flags.ValidateLocalSsdFlags(args)
     instances_flags.ValidateServiceAccountAndScopeArgs(args)
-    instances_flags.ValidateNetworkTierArgs(args, support_network_tier=True)
     if instance_utils.UseExistingBootDisk(args.disk or []):
       raise exceptions.InvalidArgumentException(
           '--disk',
           'Boot disk specified for containerized VM.')
 
+  def _GetScheduling(self, args, client, skip_defaults):
     if (skip_defaults and not args.IsSpecified('maintenance_policy') and
         not args.IsSpecified('preemptible') and
         not args.IsSpecified('restart_on_failure')):
-      scheduling = None
+      return None
     else:
-      scheduling = instance_utils.CreateSchedulingMessage(
+      return instance_utils.CreateSchedulingMessage(
           messages=client.messages,
           maintenance_policy=args.maintenance_policy,
           preemptible=args.preemptible,
           restart_on_failure=args.restart_on_failure)
 
+  def _IsAnySpecified(self, args, *dests):
+    return any([args.IsSpecified(dest) for dest in dests])
+
+  def _GetServiceAccounts(self, args, client, skip_defaults):
     if args.no_service_account:
       service_account = None
     else:
       service_account = args.service_account
-    if (skip_defaults and not args.IsSpecified('scopes') and
-        not args.IsSpecified('no_scopes') and
-        not args.IsSpecified('service_account') and
-        not args.IsSpecified('no_service_account')):
-      service_accounts = []
+    if (skip_defaults and not self._IsAnySpecified(
+        args, 'scopes', 'no_scopes', 'service_account', 'no_service_account')):
+      return []
     else:
-      service_accounts = instance_utils.CreateServiceAccountMessages(
+      return instance_utils.CreateServiceAccountMessages(
           messages=client.messages,
           scopes=[] if args.no_scopes else args.scopes,
           service_account=service_account)
 
+  def _GetValidatedMetadata(self, args, client):
     user_metadata = metadata_utils.ConstructMetadataMessage(
         client.messages,
         metadata=args.metadata,
         metadata_from_file=args.metadata_from_file)
     containers_utils.ValidateUserMetadata(user_metadata)
+    return user_metadata
 
+  def _GetBootDiskSizeGb(self, args):
     boot_disk_size_gb = utils.BytesToGb(args.boot_disk_size)
     utils.WarnIfDiskSizeIsTooSmall(boot_disk_size_gb, args.boot_disk_type)
+    return boot_disk_size_gb
 
+  def _GetInstanceRefs(self, args, client, holder):
     instance_refs = instances_flags.INSTANCES_ARG.ResolveAsResource(
         args,
         holder.resources,
         scope_lister=flags.GetDefaultScopeLister(client))
-
     # Check if the zone is deprecated or has maintenance coming.
     zone_resource_fetcher = zone_utils.ZoneResourceFetcher(client)
     zone_resource_fetcher.WarnForZonalCreation(instance_refs)
+    return instance_refs
 
-    instances_flags.ValidatePublicDnsFlags(args)
-    instances_flags.ValidatePublicPtrFlags(args)
-
-    if (skip_defaults and not args.IsSpecified('network') and
-        not args.IsSpecified('subnet') and
-        not args.IsSpecified('private_network_ip') and
-        not args.IsSpecified('no_address') and
-        not args.IsSpecified('address') and
-        not args.IsSpecified('network_tier') and
-        not args.IsSpecified('no_public_dns') and
-        not args.IsSpecified('public_dns') and
-        not args.IsSpecified('no_public_ptr') and
-        not args.IsSpecified('public_ptr') and
-        not args.IsSpecified('no_public_ptr_domain') and
-        not args.IsSpecified('public_ptr_domain')):
-      network_interfaces = []
+  def _GetNetworkInterfaces(
+      self, args, client, holder, instance_refs, skip_defaults):
+    if (skip_defaults and not args.IsSpecified('network') and not
+        self._IsAnySpecified(
+            args, 'subnet', 'private_network_ip', 'no_address', 'address',
+            'no_public_ptr', 'public_ptr', 'no_public_ptr_domain',
+            'public_ptr_domain')):
+      return []
     else:
-      network_interfaces = [instance_utils.CreateNetworkInterfaceMessage(
+      return [instance_utils.CreateNetworkInterfaceMessage(
           resources=holder.resources,
           compute_client=client,
           network=args.network,
@@ -173,20 +166,20 @@ class CreateWithContainer(base.CreateCommand):
           no_address=args.no_address,
           address=args.address,
           instance_refs=instance_refs,
-          network_tier=getattr(args, 'network_tier', None),
-          no_public_dns=getattr(args, 'no_public_dns', None),
-          public_dns=getattr(args, 'public_dns', None),
-          no_public_ptr=getattr(args, 'no_public_ptr', None),
-          public_ptr=getattr(args, 'public_ptr', None),
-          no_public_ptr_domain=getattr(args, 'no_public_ptr_domain', None),
-          public_ptr_domain=getattr(args, 'public_ptr_domain', None))]
+          no_public_ptr=args.no_public_ptr,
+          public_ptr=args.public_ptr,
+          no_public_ptr_domain=args.no_public_ptr_domain,
+          public_ptr_domain=args.public_ptr_domain,
+      )]
 
+  def _GetMachineTypeUris(
+      self, args, client, holder, instance_refs, skip_defaults):
     if (skip_defaults and not args.IsSpecified('machine_type') and
         not args.IsSpecified('custom_cpu') and
         not args.IsSpecified('custom_memory')):
-      machine_type_uris = [None for _ in instance_refs]
+      return [None for _ in instance_refs]
     else:
-      machine_type_uris = instance_utils.CreateMachineTypeUris(
+      return instance_utils.CreateMachineTypeUris(
           resources=holder.resources,
           compute_client=client,
           machine_type=args.machine_type,
@@ -195,6 +188,7 @@ class CreateWithContainer(base.CreateCommand):
           ext=getattr(args, 'custom_extensions', None),
           instance_refs=instance_refs)
 
+  def GetImageUri(self, args, client, holder, instance_refs):
     if (args.IsSpecified('image') or args.IsSpecified('image_family') or
         args.IsSpecified('image_project')):
       image_expander = image_utils.ImageExpander(client, holder.resources)
@@ -210,7 +204,9 @@ class CreateWithContainer(base.CreateCommand):
                  'cos-dev image families).')
     else:
       image_uri = containers_utils.ExpandKonletCosImageFlag(client)
+    return image_uri
 
+  def _GetLabels(self, args, client):
     args_labels = getattr(args, 'labels', None)
     labels = None
     if args_labels:
@@ -219,23 +215,49 @@ class CreateWithContainer(base.CreateCommand):
               client.messages.Instance.LabelsValue.AdditionalProperty(
                   key=key, value=value)
               for key, value in sorted(args.labels.iteritems())])
+    return labels
 
+  def _GetCanIpForward(self, args, skip_defaults):
     if skip_defaults and not args.IsSpecified('can_ip_forward'):
-      can_ip_forward = None
+      return None
     else:
-      can_ip_forward = args.can_ip_forward
+      return args.can_ip_forward
+
+  def Run(self, args):
+    self._ValidateBetaArgs(args)
+
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+    source_instance_template = self.GetSourceInstanceTemplate(
+        args, holder.resources)
+    skip_defaults = self._GetSkipDefaults(source_instance_template)
+    scheduling = self._GetScheduling(args, client, skip_defaults)
+    service_accounts = self._GetServiceAccounts(args, client, skip_defaults)
+    user_metadata = self._GetValidatedMetadata(args, client)
+    boot_disk_size_gb = self._GetBootDiskSizeGb(args)
+    instance_refs = self._GetInstanceRefs(args, client, holder)
+    network_interfaces = self._GetNetworkInterfaces(
+        args, client, holder, instance_refs, skip_defaults)
+    machine_type_uris = self._GetMachineTypeUris(
+        args, client, holder, instance_refs, skip_defaults)
+    image_uri = self.GetImageUri(args, client, holder, instance_refs)
+    labels = self._GetLabels(args, client)
+    can_ip_forward = self._GetCanIpForward(args, skip_defaults)
+    tags = containers_utils.CreateTagsMessage(client.messages, args.tags)
 
     requests = []
     for instance_ref, machine_type_uri in zip(instance_refs, machine_type_uris):
       metadata = containers_utils.CreateKonletMetadataMessage(
           client.messages, args, instance_ref.Name(), user_metadata)
+      disks = self._CreateDiskMessages(
+          holder, args, boot_disk_size_gb, image_uri, instance_ref,
+          skip_defaults)
       request = client.messages.ComputeInstancesInsertRequest(
           instance=client.messages.Instance(
               canIpForward=can_ip_forward,
-              disks=(self._CreateDiskMessages(holder, args, boot_disk_size_gb,
-                                              image_uri, instance_ref,
-                                              skip_defaults)),
+              disks=disks,
               description=args.description,
+              labels=labels,
               machineType=machine_type_uri,
               metadata=metadata,
               minCpuPlatform=args.min_cpu_platform,
@@ -243,14 +265,10 @@ class CreateWithContainer(base.CreateCommand):
               networkInterfaces=network_interfaces,
               serviceAccounts=service_accounts,
               scheduling=scheduling,
-              tags=containers_utils.CreateTagsMessage(client.messages,
-                                                      args.tags)),
+              tags=tags),
+          sourceInstanceTemplate=source_instance_template,
           project=instance_ref.project,
           zone=instance_ref.zone)
-      if labels:
-        request.instance.labels = labels
-      if source_instance_template:
-        request.sourceInstanceTemplate = source_instance_template
 
       requests.append((client.apitools_client.instances,
                        'Insert', request))
@@ -260,12 +278,10 @@ class CreateWithContainer(base.CreateCommand):
   def _CreateDiskMessages(self, holder, args, boot_disk_size_gb, image_uri,
                           instance_ref, skip_defaults):
     """Creates API messages with disks attached to VM instance."""
-    if (skip_defaults and not args.IsSpecified('disk') and
-        not args.IsSpecified('create_disk') and
-        not args.IsSpecified('local_ssd') and
-        not args.IsSpecified('boot_disk_type') and
-        not args.IsSpecified('boot_disk_device_name') and
-        not args.IsSpecified('boot_disk_auto_delete')):
+    if (skip_defaults and not args.IsSpecified('disk') and not
+        self._IsAnySpecified(
+            args, 'create_disk', 'local_ssd', 'boot_disk_type',
+            'boot_disk_device_name', 'boot_disk_auto_delete')):
       return []
     else:
       persistent_disks, _ = (
@@ -301,13 +317,95 @@ class CreateWithContainer(base.CreateCommand):
           [boot_disk] + persistent_disks + persistent_create_disks + local_ssds)
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateWithContainerBeta(CreateWithContainer):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateWithContainerAlpha(CreateWithContainer):
+  """Alpha version of compute instances create-with-container command."""
 
   @staticmethod
   def Args(parser):
     _Args(parser)
+
+    instances_flags.AddNetworkTierArgs(parser, instance=True)
+
+  def _GetNetworkInterfaces(
+      self, args, client, holder, instance_refs, skip_defaults):
+    if (skip_defaults and not args.IsSpecified('network') and not
+        self._IsAnySpecified(
+            args, 'subnet', 'private_network_ip', 'no_address', 'address',
+            'network_tier', 'no_public_dns', 'public_dns', 'no_public_ptr',
+            'public_ptr', 'no_public_ptr_domain', 'public_ptr_domain')):
+      return []
+    else:
+      return [instance_utils.CreateNetworkInterfaceMessage(
+          resources=holder.resources,
+          compute_client=client,
+          network=args.network,
+          subnet=args.subnet,
+          private_network_ip=args.private_network_ip,
+          no_address=args.no_address,
+          address=args.address,
+          instance_refs=instance_refs,
+          network_tier=getattr(args, 'network_tier', None),
+          no_public_dns=getattr(args, 'no_public_dns', None),
+          public_dns=getattr(args, 'public_dns', None),
+          no_public_ptr=getattr(args, 'no_public_ptr', None),
+          public_ptr=getattr(args, 'public_ptr', None),
+          no_public_ptr_domain=getattr(args, 'no_public_ptr_domain', None),
+          public_ptr_domain=getattr(args, 'public_ptr_domain', None))]
+
+  def Run(self, args):
+    self._ValidateBetaArgs(args)
+    instances_flags.ValidateNetworkTierArgs(args)
+    instances_flags.ValidatePublicDnsFlags(args)
+    instances_flags.ValidatePublicPtrFlags(args)
+
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+    source_instance_template = self.GetSourceInstanceTemplate(
+        args, holder.resources)
+    skip_defaults = self._GetSkipDefaults(source_instance_template)
+    scheduling = self._GetScheduling(args, client, skip_defaults)
+    service_accounts = self._GetServiceAccounts(args, client, skip_defaults)
+    user_metadata = self._GetValidatedMetadata(args, client)
+    boot_disk_size_gb = self._GetBootDiskSizeGb(args)
+    instance_refs = self._GetInstanceRefs(args, client, holder)
+    network_interfaces = self._GetNetworkInterfaces(
+        args, client, holder, instance_refs, skip_defaults)
+    machine_type_uris = self._GetMachineTypeUris(
+        args, client, holder, instance_refs, skip_defaults)
+    image_uri = self.GetImageUri(args, client, holder, instance_refs)
+    labels = self._GetLabels(args, client)
+    can_ip_forward = self._GetCanIpForward(args, skip_defaults)
+    tags = containers_utils.CreateTagsMessage(client.messages, args.tags)
+
+    requests = []
+    for instance_ref, machine_type_uri in zip(instance_refs, machine_type_uris):
+      metadata = containers_utils.CreateKonletMetadataMessage(
+          client.messages, args, instance_ref.Name(), user_metadata)
+      disks = self._CreateDiskMessages(
+          holder, args, boot_disk_size_gb, image_uri, instance_ref,
+          skip_defaults)
+      request = client.messages.ComputeInstancesInsertRequest(
+          instance=client.messages.Instance(
+              canIpForward=can_ip_forward,
+              disks=disks,
+              description=args.description,
+              labels=labels,
+              machineType=machine_type_uri,
+              metadata=metadata,
+              minCpuPlatform=args.min_cpu_platform,
+              name=instance_ref.Name(),
+              networkInterfaces=network_interfaces,
+              serviceAccounts=service_accounts,
+              scheduling=scheduling,
+              tags=tags),
+          sourceInstanceTemplate=source_instance_template,
+          project=instance_ref.project,
+          zone=instance_ref.zone)
+
+      requests.append((client.apitools_client.instances,
+                       'Insert', request))
+    return client.MakeRequests(requests)
 
 
 CreateWithContainer.detailed_help = {

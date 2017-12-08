@@ -77,7 +77,8 @@ class AddAccessConfigInstances(base.SilentCommand):
 
   def Run(self, args):
     """Invokes request necessary for adding an access config."""
-    flags.ValidateNetworkTierArgs(args, self._support_network_tier)
+    if self._support_network_tier:
+      flags.ValidateNetworkTierArgs(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client

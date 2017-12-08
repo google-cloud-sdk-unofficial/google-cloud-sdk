@@ -85,7 +85,7 @@ class CreateFromContainer(base.CreateCommand):
     instances_flags.ValidateDiskCommonFlags(args)
     instances_flags.ValidateLocalSsdFlags(args)
     instances_flags.ValidateServiceAccountAndScopeArgs(args)
-    instances_flags.ValidateNetworkTierArgs(args, support_network_tier=True)
+    instances_flags.ValidateNetworkTierArgs(args)
     if instance_utils.UseExistingBootDisk(args.disk or []):
       raise exceptions.InvalidArgumentException(
           '--disk',

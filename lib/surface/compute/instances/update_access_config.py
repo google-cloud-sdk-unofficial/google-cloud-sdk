@@ -132,7 +132,7 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
     if self._support_public_ptr:
       flags.ValidatePublicPtrFlags(args)
     if self._support_network_tier:
-      flags.ValidateNetworkTierArgs(args, support_network_tier=True)
+      flags.ValidateNetworkTierArgs(args)
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 

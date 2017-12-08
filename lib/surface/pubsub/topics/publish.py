@@ -13,12 +13,10 @@
 # limitations under the License.
 """Cloud Pub/Sub topics publish command."""
 from googlecloudsdk.api_lib.pubsub import topics
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.pubsub import flags
 from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core.resource import resource_projector
-
-MAX_ATTRIBUTES = 100
 
 
 class Publish(base.Command):
@@ -39,21 +37,8 @@ class Publish(base.Command):
 
   @staticmethod
   def Args(parser):
-    """Register flags for this command."""
-
-    parser.add_argument('topic', help='Topic name to publish messages to.')
-    parser.add_argument('message_body', nargs='?', default=None,
-                        help=("""
-The body of the message to publish to the given topic name.
-Information on message formatting and size limits can be found at:
-https://cloud.google.com/pubsub/docs/publisher#publish
-"""))
-    parser.add_argument('--attribute',
-                        type=arg_parsers.ArgDict(max_length=MAX_ATTRIBUTES),
-                        help=('Comma-separated list of attributes.'
-                              ' Each ATTRIBUTE has the form "name=value".'
-                              ' You can specify up to {0} attributes.'.format(
-                                  MAX_ATTRIBUTES)))
+    flags.AddTopicResourceArg(parser, 'to publish messages to.')
+    flags.AddPublishMessageFlags(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

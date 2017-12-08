@@ -21,6 +21,11 @@ from googlecloudsdk.command_lib.service_management import common_flags
 from googlecloudsdk.core import resources
 
 
+_WARNING = ('The `service-management configs describe` command has been '
+            ' replaced by `endpoints configs describe`.')
+
+
+@base.Deprecate(is_removed=False, warning=_WARNING)
 class Describe(base.DescribeCommand):
   """Describes the configuration for a given version of a service.
 

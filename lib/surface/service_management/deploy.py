@@ -107,6 +107,9 @@ FORCE_ADVICE_STRING = ('Advice found for changes in the new service config, '
 
 NUM_ADVICE_TO_PRINT = 3
 
+_WARNING = ('The `service-management deploy` command has been replaced by '
+            '`endpoints services deploy`.')
+
 
 def _CommonArgs(parser):
   parser.add_argument(
@@ -392,11 +395,13 @@ class _BaseDeploy(object):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.Deprecate(is_removed=False, warning=_WARNING)
 class Deploy(_BaseDeploy, base.Command):
   """Deploys a service configuration for the given service name."""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.Deprecate(is_removed=False, warning=_WARNING)
 class DeployBeta(_BaseDeploy, base.Command):
   """Deploys a service configuration for the given service name."""
 
@@ -425,6 +430,7 @@ class DeployBeta(_BaseDeploy, base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Deprecate(is_removed=False, warning=_WARNING)
 class DeployAlpha(_BaseDeploy, base.Command):
   """Deploys a service configuration for the given service name."""
 

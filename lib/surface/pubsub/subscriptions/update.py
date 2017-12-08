@@ -14,31 +14,11 @@
 """Cloud Pub/Sub subscriptions update command."""
 from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.api_lib.util import exceptions
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.pubsub import flags
 from googlecloudsdk.command_lib.pubsub import util
+from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
-
-
-def _Duration():
-  """Returns a function that can parse time duration args.
-
-  This is an extension of googlecloudsdk.calliope.arg_parsers.Duration() to
-  a) Format the result as expected for a Duration proto field, and
-  b) Allow for a special default string value.
-
-  Raises:
-    An ArgumentTypeError if the input cannot be parsed.
-
-  Returns:
-    A function that accepts a single time duration as input to be parsed.
-  """
-  def ParseWithDefault(value):
-    if value == subscriptions.DEFAULT_MESSAGE_RETENTION_VALUE:
-      return subscriptions.DEFAULT_MESSAGE_RETENTION_VALUE
-    return util.FormatDuration(arg_parsers.Duration()(value))
-
-  return ParseWithDefault
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -52,45 +32,13 @@ class UpdateAlpha(base.UpdateCommand):
   contact cloud-pubsub@google.com with any questions in the meantime.
   """
 
-  @staticmethod
-  def Args(parser):
-    """Registers flags for this command."""
+  @classmethod
+  def Args(cls, parser):
+    flags.AddSubscriptionResourceArg(parser, 'to update.')
+    flags.AddSubscriptionSettingsFlags(parser, cls.ReleaseTrack(),
+                                       is_update=True)
 
-    parser.add_argument('subscription',
-                        help='Name of the subscription to update.')
-
-    parser.add_argument(
-        '--ack-deadline', type=int,
-        help=('The number of seconds the system will wait for a subscriber to'
-              ' acknowledge receiving a message before re-attempting'
-              ' delivery.  If set to 0, the system default to be used.'))
-
-    parser.add_argument(
-        '--push-endpoint',
-        help=('A URL to use as the endpoint for this subscription.'
-              ' This will also automatically set the subscription'
-              ' type to PUSH.'))
-
-    parser.add_argument(
-        '--retain-acked-messages',
-        action='store_true',
-        default=None,
-        help=('Whether or not to retain acknowledged messages.  If true,'
-              ' messages are not expunged from the subscription\'s backlog'
-              ' until they fall out of the --message-retention-duration'
-              ' window.'))
-
-    parser.add_argument(
-        '--message-retention-duration',
-        type=_Duration(),
-        help=('How long to retain unacknowledged messages in the'
-              ' subscription\'s backlog, from the moment a message is'
-              ' published.  If --retain-acked-messages is true, this also'
-              ' configures the retention of acknowledged messages.  Specify'
-              ' "default" to use the default value.  Valid values are strings'
-              ' of the form INTEGER[UNIT] or "default", where UNIT is one of'
-              ' "s", "m", "h", and "d" for seconds, minutes, hours, and days,'
-              ' respectively.  If the unit is omitted, seconds is assumed.'))
+    labels_util.AddUpdateLabelsFlags(parser)
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()
   def Run(self, args):
@@ -111,11 +59,24 @@ class UpdateAlpha(base.UpdateCommand):
     """
     client = subscriptions.SubscriptionsClient()
     subscription_ref = util.ParseSubscription(args.subscription)
+
+    update_labels = labels_util.GetUpdateLabelsDictFromArgs(args)
+    remove_labels = labels_util.GetRemoveLabelsListFromArgs(args)
+    if update_labels or remove_labels:
+      original_subscription = client.Get(subscription_ref)
+      labels = labels_util.UpdateLabels(
+          original_subscription.labels,
+          client.messages.Subscription.LabelsValue,
+          update_labels=update_labels,
+          remove_labels=remove_labels)
+    else:
+      labels = None
     result = client.Patch(
         subscription_ref,
         ack_deadline=args.ack_deadline,
         push_config=util.ParsePushConfig(args.push_endpoint),
         retain_acked_messages=args.retain_acked_messages,
+        labels=labels,
         message_retention_duration=args.message_retention_duration)
 
     result = util.SubscriptionDisplayDict(result)

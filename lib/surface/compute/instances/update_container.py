@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class UpdateContainer(base.UpdateCommand):
   """Command for updating VM instances running container images."""
 
@@ -308,12 +308,6 @@ class UpdateContainer(base.UpdateCommand):
     return waiter.WaitFor(
         operation_poller, operation_ref,
         'Starting instance [{0}]'.format(instance_ref.Name()))
-
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateContainerBeta(UpdateContainer):
-  pass
 
 UpdateContainer.detailed_help = {
     'brief':

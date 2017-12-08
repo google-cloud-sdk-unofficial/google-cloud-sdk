@@ -17,5 +17,10 @@
 from googlecloudsdk.calliope import base
 
 
+_WARNING = ('The `service-management configs` command group has been '
+            'replaced by the `endpoints configs` command group.')
+
+
+@base.Deprecate(is_removed=False, warning=_WARNING)
 class Configs(base.Group):
   """View configurations for various services."""

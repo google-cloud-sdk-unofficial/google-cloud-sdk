@@ -96,10 +96,10 @@ class CreateBeta(base.CreateCommand):
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
 
   def Run(self, args):
-    dns = apis.GetClientInstance('dns', 'v2beta1')
-    messages = apis.GetMessagesModule('dns', 'v2beta1')
+    dns = apis.GetClientInstance('dns', 'v1beta2')
+    messages = apis.GetMessagesModule('dns', 'v1beta2')
 
-    zone_ref = util.GetRegistry('v2beta1').Parse(
+    zone_ref = util.GetRegistry('v1beta2').Parse(
         args.dns_zone,
         params={
             'project': properties.VALUES.core.project.GetOrFail,

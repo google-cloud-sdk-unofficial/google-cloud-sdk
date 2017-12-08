@@ -17,7 +17,9 @@ from apitools.base.py import exceptions as api_ex
 from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.pubsub import flags
 from googlecloudsdk.command_lib.pubsub import util
+from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
 
 
@@ -35,9 +37,8 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    """Registers flags for this command."""
-    parser.add_argument('topic', nargs='+',
-                        help='One or more topic names to create.')
+    flags.AddTopicResourceArg(parser, 'to create.', plural=True)
+    labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -56,12 +57,16 @@ class Create(base.CreateCommand):
     """
     client = topics.TopicsClient()
 
+    labels = labels_util.UpdateLabels(
+        None, client.messages.Topic.LabelsValue,
+        update_labels=labels_util.GetUpdateLabelsDictFromArgs(args))
+
     failed = []
     for topic_name in args.topic:
       topic_ref = util.ParseTopic(topic_name)
 
       try:
-        result = client.Create(topic_ref)
+        result = client.Create(topic_ref, labels=labels)
       except api_ex.HttpError as error:
         exc = exceptions.HttpException(error)
         log.CreatedResource(topic_ref.RelativeName(), kind='topic',

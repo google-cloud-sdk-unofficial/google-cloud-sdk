@@ -42,6 +42,11 @@ _DETAILED_HELP = {
 }
 
 
+_WARNING = ('The `service-management undelete` command has been '
+            ' replaced by `endpoints services undelete`.')
+
+
+@base.Deprecate(is_removed=False, warning=_WARNING)
 class Undelete(base.Command):
   """Undeletes a service given a service name."""
 

@@ -36,6 +36,12 @@ _DETAILED_HELP = {
 }
 
 
+_WARNING = ('The `service-management operations wait` command has been '
+            'replaced by `endpoints operations wait` and '
+            '`services operations wait`.')
+
+
+@base.Deprecate(is_removed=False, warning=_WARNING)
 class Wait(base.Command):
   """Waits for an operation to complete."""
 

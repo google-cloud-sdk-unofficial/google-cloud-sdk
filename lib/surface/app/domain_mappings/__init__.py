@@ -71,6 +71,6 @@ class DomainMappingsAlpha(base.Group):
           To create a domain with a manual certificate, run:
 
             $ {command} create 'example.com' \
-                --certificate-management=MANUAL --certificate-id=1234
+                --certificate-management=manual --certificate-id=1234
       """,
   }

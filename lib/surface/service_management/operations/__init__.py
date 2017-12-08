@@ -17,5 +17,12 @@
 from googlecloudsdk.calliope import base
 
 
+_WARNING = ('The `service-management operations` command group has been '
+            'replaced by the `endpoints operations` command group (for '
+            'service-producer commands) and the `services operations` '
+            'command group (for service-consumer commands).')
+
+
+@base.Deprecate(is_removed=False, warning=_WARNING)
 class Operations(base.Group):
   """Manage Operation for various services."""

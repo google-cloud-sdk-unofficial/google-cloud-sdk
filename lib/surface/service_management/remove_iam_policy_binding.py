@@ -24,9 +24,16 @@ from googlecloudsdk.command_lib.service_management import arg_parsers
 from googlecloudsdk.command_lib.service_management import common_flags
 
 
+_WARNING = ('The `service-management remove-iam-policy-binding` command has '
+            'been replaced by `endpoints services remove-iam-policy-binding`.')
+
+
+@base.Deprecate(is_removed=False, warning=_WARNING)
 class RemoveIamPolicyBinding(base.Command):
   """Removes an IAM policy binding from a service's access policy."""
 
+  # This detailed help helper interacts weirdly with the deprecate decorator...
+  # Messages are doubled and I'm not sure why. Still, not harmful.
   detailed_help = iam_util.GetDetailedHelpForRemoveIamPolicyBinding(
       'service', 'my-service', role='roles/servicemanagement.serviceConsumer')
 

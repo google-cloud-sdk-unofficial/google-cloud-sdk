@@ -38,9 +38,9 @@ class Describe(base.DescribeCommand):
     parser.add_argument('operation_id', metavar='OPERATION_ID')
 
   def Run(self, args):
-    dns_client = apis.GetClientInstance('dns', 'v2beta1')
+    dns_client = apis.GetClientInstance('dns', 'v1beta2')
 
-    zone_ref = util.GetRegistry('v2beta1').Parse(
+    zone_ref = util.GetRegistry('v1beta2').Parse(
         args.zone,
         params={
             'project': properties.VALUES.core.project.GetOrFail,

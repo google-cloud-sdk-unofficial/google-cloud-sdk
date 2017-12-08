@@ -17,7 +17,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class NetworkProfiles(base.Group):
   """Explore network profiles available for testing.
 

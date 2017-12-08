@@ -30,14 +30,28 @@ cluster {0} is not running. The kubernetes API may not be available.'''
 class GetCredentials(base.Command):
   """Fetch credentials for a running cluster.
 
-  Updates a kubeconfig file with appropriate credentials to point
-  kubectl at a Container Engine Cluster. By default, credentials
-  are written to HOME/.kube/config. You can provide an alternate
-  path by setting the KUBECONFIG environment variable.
+  {command} updates a kubeconfig file with appropriate credentials and endpoint
+  information to point kubectl at a specific cluster in Google Container Engine.
+  It takes a project and a zone as parameters, passed through by set defaults or
+  flags.
+  By default, credentials are written to HOME/.kube/config. You can provide an
+  alternate path by setting the KUBECONFIG environment variable.
+
+  This command enables switching to a specific cluster, when working
+  with multiple clusters. It can also be used to access a previously created
+  cluster from a new workstation.
 
   See [](https://cloud.google.com/container-engine/docs/kubectl) for
   kubectl documentation.
   """
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To switch to working on your cluster 'testcluster1', run:
+
+            $ {command} testcluster1 --zone us-central1-f
+      """,
+  }
 
   @staticmethod
   def Args(parser):

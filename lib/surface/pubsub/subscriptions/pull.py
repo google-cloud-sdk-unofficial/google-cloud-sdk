@@ -14,6 +14,7 @@
 """Cloud Pub/Sub subscription pull command."""
 from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.pubsub import flags
 from googlecloudsdk.command_lib.pubsub import util
 
 
@@ -26,25 +27,16 @@ class Pull(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    """Registers flags for this command."""
-
-    parser.add_argument('subscription',
-                        help='Name of subscription to pull messages from.')
-    parser.add_argument(
-        '--max-messages', type=int, default=1,
-        help=('The maximum number of messages that Cloud Pub/Sub can return'
-              ' in this response.'))
-    parser.add_argument(
-        '--auto-ack', action='store_true', default=False,
-        help=('Automatically ACK every message pulled from this subscription.'))
     parser.display_info.AddFormat("""
-          table[box](
-            message.data.decode(base64),
-            message.messageId,
-            message.attributes.list(separator=' '),
-            ackId.if(NOT auto_ack)
-          )
-        """)
+      table[box](
+        message.data.decode(base64),
+        message.messageId,
+        message.attributes.list(separator=' '),
+        ackId.if(NOT auto_ack)
+      )
+    """)
+    flags.AddSubscriptionResourceArg(parser, 'to pull messages from.')
+    flags.AddPullFlags(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

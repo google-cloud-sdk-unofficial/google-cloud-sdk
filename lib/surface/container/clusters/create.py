@@ -102,10 +102,6 @@ Cannot be used with the "--create-subnetwork" option.
       'this must be a subset of 10.0.0.0/8; however, starting with version '
       '1.7.0 can be any RFC 1918 IP range.')
   parser.add_argument(
-      '--password',
-      help='The password to use for cluster auth. Defaults to a '
-      'server-specified randomly-generated string.')
-  parser.add_argument(
       '--enable-cloud-endpoints',
       action='store_true',
       default=True,
@@ -130,10 +126,7 @@ Cannot be used with the "--create-subnetwork" option.
       '--disk-size',
       type=int,
       help='Size in GB for node VM boot disks. Defaults to 100GB.')
-  parser.add_argument(
-      '--username', '-u',
-      help='The user name to use for cluster auth.',
-      default='admin')
+  flags.AddBasicAuthFlags(parser)
   parser.add_argument(
       '--max-nodes-per-pool',
       type=arg_parsers.BoundedInt(100, api_adapter.MAX_NODES_PER_POOL),
@@ -162,9 +155,35 @@ for examples.
   parser.display_info.AddFormat(util.CLUSTERS_FORMAT)
 
 
+def ValidateBasicAuthFlags(args):
+  """Validates flags associated with basic auth.
+
+  Check that args don't conflict, but only if they're both specified; overwrites
+  username if enable_basic_auth is specified; and checks that password is set
+  only if username is non-empty.
+
+  Args:
+    args: an argparse namespace. All the arguments that were provided to this
+      command invocation.
+
+  Raises:
+    util.Error, if flags conflict.
+  """
+  if args.IsSpecified('enable_basic_auth'):
+    if args.IsSpecified('username'):
+      raise util.Error(constants.USERNAME_ENABLE_BASIC_AUTH_ERROR_MSG)
+    if not args.enable_basic_auth:
+      args.username = ''
+    # Right now, enable_basic_auth is a no-op because username defaults to
+    # admin.
+  if not args.username and args.IsSpecified('password'):
+    raise util.Error(constants.USERNAME_PASSWORD_ERROR_MSG)
+
+
 def ParseCreateOptionsBase(args):
   if not args.scopes:
     args.scopes = []
+  flags.MungeBasicAuthFlags(args)
   cluster_ipv4_cidr = args.cluster_ipv4_cidr
   enable_master_authorized_networks = args.enable_master_authorized_networks
   return api_adapter.CreateClusterOptions(

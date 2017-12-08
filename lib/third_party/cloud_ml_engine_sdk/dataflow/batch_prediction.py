@@ -32,6 +32,7 @@ from apache_beam.utils.windowed_value import WindowedValue
 from google.cloud.ml import prediction as mlprediction
 from google.cloud.ml.dataflow import _aggregators as aggregators
 from google.cloud.ml.dataflow import _cloud_logging_client as cloud_logging_client
+from google.cloud.ml.dataflow import _error_filter as error_filter
 from tensorflow.python.saved_model import signature_constants
 from tensorflow.python.saved_model import tag_constants
 
@@ -237,20 +238,23 @@ class PredictionDoFn(beam.DoFn):
         yield i, p
 
     except mlprediction.PredictionError as e:
-      logging.error("Got a known exception: [%s]\n%s", e.error_message,
+      logging.error("Got a known exception: [%s]\n%s", str(e),
                     traceback.format_exc())
+      clean_error_detail = error_filter.filter_tensorflow_error(e.error_detail)
       if self._cloud_logger:
         # TODO(user): consider to write a sink to buffer the logging events. It
         # also eliminates the restarting/duplicated running issue.
-        self._cloud_logger.write_error_message(e.error_message,
+        self._cloud_logger.write_error_message(clean_error_detail,
                                                self._create_snippet(element))
       # reraise failure to load model as permanent exception to end dataflow job
       if e.error_code == mlprediction.PredictionError.FAILED_TO_LOAD_MODEL:
-        raise beam.utils.retry.PermanentException(e.error_message)
+        raise beam.utils.retry.PermanentException(clean_error_detail)
       try:
-        yield beam.pvalue.TaggedOutput("errors", (e.error_message, element))
+        yield beam.pvalue.TaggedOutput("errors", (clean_error_detail,
+                                                  element))
       except AttributeError:
-        yield beam.pvalue.SideOutputValue("errors", (e.error_message, element))
+        yield beam.pvalue.SideOutputValue("errors", (clean_error_detail,
+                                                     element))
 
     except Exception as e:  # pylint: disable=broad-except
       logging.error("Got an unknown exception: [%s].", traceback.format_exc())

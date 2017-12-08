@@ -17,6 +17,7 @@ from apitools.base.py import exceptions as api_ex
 from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.pubsub import flags
 from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core import log
 
@@ -26,10 +27,7 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    """Registers flags for this command."""
-
-    parser.add_argument('subscription', nargs='+',
-                        help='One or more subscription names to delete.')
+    flags.AddSubscriptionResourceArg(parser, 'to delete.', plural=True)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -56,7 +54,7 @@ class Delete(base.DeleteCommand):
         client.Delete(subscription_ref)
       except api_ex.HttpError as error:
         exc = exceptions.HttpException(error)
-        log.CreatedResource(subscription_ref.RelativeName(),
+        log.DeletedResource(subscription_ref.RelativeName(),
                             kind='subscription',
                             failed=exc.payload.status_message)
         failed.append(subscription_name)

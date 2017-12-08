@@ -71,8 +71,8 @@ class DescribeBeta(base.DescribeCommand):
         help='The identifier for the project you want DNS related info for.')
 
   def Run(self, args):
-    dns = apis.GetClientInstance('dns', 'v2beta1')
-    project_ref = util.GetRegistry('v2beta1').Parse(
+    dns = apis.GetClientInstance('dns', 'v1beta2')
+    project_ref = util.GetRegistry('v1beta2').Parse(
         args.dns_project, collection='dns.projects')
 
     return dns.projects.Get(

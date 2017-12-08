@@ -47,6 +47,11 @@ _DETAILED_HELP = {
 }
 
 
+_WARNING = ('The `service-management disable` command has been '
+            ' replaced by `services disable`.')
+
+
+@base.Deprecate(is_removed=False, warning=_WARNING)
 class Disable(base.SilentCommand):
   """Disables a service for consumption for a project."""
 

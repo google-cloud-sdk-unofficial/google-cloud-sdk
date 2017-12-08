@@ -28,6 +28,11 @@ def _GetUriFromResource(resource):
       collection=services_util.SERVICES_COLLECTION).SelfLink()
 
 
+_WARNING = ('The `service-management list` command has been replaced by '
+            '`endpoints services list` and `services list`.')
+
+
+@base.Deprecate(is_removed=False, warning=_WARNING)
 class List(base.ListCommand):
   """List services for a project.
 

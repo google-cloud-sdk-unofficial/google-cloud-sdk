@@ -21,6 +21,11 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.service_management import arg_parsers
 
 
+_WARNING = ('The `service-management configs list` command has been '
+            ' replaced by `endpoints configs list`.')
+
+
+@base.Deprecate(is_removed=False, warning=_WARNING)
 class List(base.ListCommand):
   """Lists the configurations for a given service.
 

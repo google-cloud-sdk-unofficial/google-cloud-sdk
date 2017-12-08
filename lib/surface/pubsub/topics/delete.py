@@ -17,6 +17,7 @@ from apitools.base.py import exceptions as api_ex
 from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.pubsub import flags
 from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core import log
 
@@ -35,8 +36,7 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('topic', nargs='+',
-                        help='One or more topic names to delete.')
+    flags.AddTopicResourceArg(parser, 'to delete.', plural=True)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -63,7 +63,7 @@ class Delete(base.DeleteCommand):
         result = client.Delete(topic_ref)
       except api_ex.HttpError as error:
         exc = exceptions.HttpException(error)
-        log.CreatedResource(topic_ref.RelativeName(), kind='topic',
+        log.DeletedResource(topic_ref.RelativeName(), kind='topic',
                             failed=exc.payload.status_message)
         failed.append(topic_name)
         continue

@@ -70,9 +70,6 @@ SESSION_RUN_TIME = "Prediction-Session-Run-Time"
 ALIAS_TIME = "Prediction-Alias-Time"
 ROWIFY_TIME = "Prediction-Rowify-Time"
 # TODO(b/67586901): Consider removing INPUT_PROCESSING_TIME during cleanup.
-# Only used in skl_xgb/prediction_server_lib.py.
-INPUT_PROCESSING_TIME = "Prediction-Input-Processing-Time"
-
 SESSION_RUN_ENGINE_NAME = "TF_SESSION_RUN"
 
 PredictionErrorType = collections.namedtuple(

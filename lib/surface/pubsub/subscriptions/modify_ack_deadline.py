@@ -14,6 +14,7 @@
 """Cloud Pub/Sub subscription modify command."""
 from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.pubsub import flags
 from googlecloudsdk.command_lib.pubsub import util
 
 
@@ -27,18 +28,9 @@ class ModifyAckDeadline(base.Command):
 
   @staticmethod
   def Args(parser):
-    """Registers flags for this command."""
-
-    parser.add_argument('subscription',
-                        help='Name of the subscription messages belong to.')
-    parser.add_argument('ackid', nargs='+',
-                        help=('One or more ACK_ID that identify the messages'
-                              ' to modify the deadline for.'))
-    parser.add_argument(
-        '--ack-deadline', type=int, required=True,
-        help=('The number of seconds the system will wait for a subscriber to'
-              ' acknowledge receiving a message before re-attempting'
-              ' delivery.'))
+    flags.AddSubscriptionResourceArg(parser, 'messages belong to.')
+    flags.AddAckIdFlag(parser, 'modify the deadline for.')
+    flags.AddAckDeadlineFlag(parser, required=True)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -54,8 +46,8 @@ class ModifyAckDeadline(base.Command):
     client = subscriptions.SubscriptionsClient()
 
     subscription_ref = util.ParseSubscription(args.subscription)
-    client.ModifyAckDeadline(subscription_ref, args.ackid, args.ack_deadline)
+    client.ModifyAckDeadline(subscription_ref, args.ack_id, args.ack_deadline)
 
     return {'subscriptionId': subscription_ref.RelativeName(),
-            'ackId': args.ackid,
+            'ackId': args.ack_id,
             'ackDeadlineSeconds': args.ack_deadline}

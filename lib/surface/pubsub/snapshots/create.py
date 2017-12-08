@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.pubsub import snapshots
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
+from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
 
 
@@ -55,6 +56,8 @@ class Create(base.CreateCommand):
               ' If not set, it defaults to the currently selected'
               ' cloud project.'))
 
+    labels_util.AddCreateLabelsFlags(parser)
+
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -75,12 +78,16 @@ class Create(base.CreateCommand):
     subscription_ref = util.ParseSubscription(
         args.subscription, args.subscription_project)
 
+    labels = labels_util.UpdateLabels(
+        None, client.messages.CreateSnapshotRequest.LabelsValue,
+        update_labels=labels_util.GetUpdateLabelsDictFromArgs(args))
+
     failed = []
     for snapshot_name in args.snapshot:
       snapshot_ref = util.ParseSnapshot(snapshot_name)
 
       try:
-        result = client.Create(snapshot_ref, subscription_ref)
+        result = client.Create(snapshot_ref, subscription_ref, labels=labels)
       except api_ex.HttpError as error:
         exc = exceptions.HttpException(error)
         log.CreatedResource(snapshot_ref.RelativeName(), kind='snapshot',

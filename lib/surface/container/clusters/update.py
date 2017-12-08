@@ -119,12 +119,15 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
       action='store_true',
       default=None,
       help='Ask the server to generate a secure password and use that as the '
-      'admin password.')
+      'basic auth password, keeping the existing username.')
   mutex_group.add_argument(
       '--set-password',
       action='store_true',
       default=None,
-      help='Set the admin password to the user specified value.')
+      help='Set the basic auth password to the specified value, keeping the '
+      'existing username.')
+
+  flags.AddBasicAuthFlags(mutex_group, None, None)
 
 
 def _AddAdditionalZonesArg(mutex_group, deprecated=False):
@@ -218,6 +221,7 @@ class Update(base.UpdateCommand):
       locations = sorted([cluster_ref.zone] + args.additional_zones)
     if hasattr(args, 'node_locations') and args.node_locations is not None:
       locations = sorted(args.node_locations)
+
     if args.generate_password or args.set_password:
       if args.generate_password:
         password = ''
@@ -238,6 +242,17 @@ class Update(base.UpdateCommand):
       except apitools_exceptions.HttpError as error:
         del password
         del options
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif args.username is not None or args.enable_basic_auth is not None:
+      flags.MungeBasicAuthFlags(args)
+      options = api_adapter.SetMasterAuthOptions(
+          action=api_adapter.SetMasterAuthOptions.SET_USERNAME,
+          username=args.username,
+          password=args.password)
+
+      try:
+        op_ref = adapter.SetMasterAuth(cluster_ref, options)
+      except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif args.enable_network_policy is not None:
       console_io.PromptContinue(

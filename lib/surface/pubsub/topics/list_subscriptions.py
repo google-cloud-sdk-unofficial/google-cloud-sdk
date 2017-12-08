@@ -14,6 +14,7 @@
 """Cloud Pub/Sub topics list_subscriptions command."""
 from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.pubsub import flags
 from googlecloudsdk.command_lib.pubsub import util
 
 
@@ -43,13 +44,10 @@ class ListSubscriptions(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    """Register flags for this command."""
-    parser.add_argument(
-        'topic',
-        help=('The name of the topic to list subscriptions for.'))
-
     parser.display_info.AddFormat('yaml')
     parser.display_info.AddUriFunc(util.SubscriptionUriFunc)
+
+    flags.AddTopicResourceArg(parser, 'to list subscriptions for.')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

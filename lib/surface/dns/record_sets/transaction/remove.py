@@ -65,7 +65,7 @@ class Remove(base.Command):
     # If in the future there are differences between API version, do NOT use
     # this patter of checking ReleaseTrack. Break this into multiple classes.
     if self.ReleaseTrack() == base.ReleaseTrack.BETA:
-      api_version = 'v2beta1'
+      api_version = 'v1beta2'
 
     with trans_util.TransactionFile(args.transaction_file) as trans_file:
       change = trans_util.ChangeFromYamlFile(

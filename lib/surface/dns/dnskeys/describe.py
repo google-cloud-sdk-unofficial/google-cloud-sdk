@@ -22,24 +22,24 @@ from googlecloudsdk.core.resource import resource_projector
 
 
 ALGORITHM_NUMBERS = {
-    'RSAMD5': 1,
-    'DH': 2,
-    'DSA': 3,
-    'RSASHA1': 5,
-    'DSANSEC3SHA1': 6,
-    'RSASHA1NSEC3SHA1': 7,
-    'RSASHA256': 8,
-    'RSASHA512': 10,
-    'ECCGOST': 12,
-    'ECDSAP256SHA256': 13,
-    'ECDSAP384SHA384': 14,
+    'rsamd5': 1,
+    'dh': 2,
+    'dsa': 3,
+    'rsasha1': 5,
+    'dsansec3sha1': 6,
+    'rsasha1nsec3sha1': 7,
+    'rsasha256': 8,
+    'rsasha512': 10,
+    'eccgost': 12,
+    'ecdsap256sha256': 13,
+    'ecdsap384sha384': 14,
 }
 
 
 DIGEST_TYPE_NUMBERS = {
-    'SHA1': 1,
-    'SHA256': 2,
-    'SHA384': 4,
+    'sha1': 1,
+    'sha256': 2,
+    'sha384': 4,
 }
 
 
@@ -71,9 +71,9 @@ class Describe(base.DescribeCommand):
     flags.GetKeyArg().AddToParser(parser)
 
   def Run(self, args):
-    dns_client = apis.GetClientInstance('dns', 'v2beta1')
+    dns_client = apis.GetClientInstance('dns', 'v1beta2')
 
-    zone_ref = util.GetRegistry('v2beta1').Parse(
+    zone_ref = util.GetRegistry('v1beta2').Parse(
         args.zone,
         params={
             'project': properties.VALUES.core.project.GetOrFail,
@@ -86,6 +86,6 @@ class Describe(base.DescribeCommand):
             managedZone=zone_ref.Name(),
             project=zone_ref.project))
     result_dict = resource_projector.MakeSerializable(result_object)
-    if result_object.type.name == 'KEY_SIGNING':
+    if result_object.type.name == 'keySigning':
       result_dict['dsRecord'] = _GenerateDSRecord(result_object)
     return result_dict

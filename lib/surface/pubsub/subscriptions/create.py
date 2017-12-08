@@ -16,69 +16,14 @@ from apitools.base.py import exceptions as api_ex
 
 from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.api_lib.util import exceptions
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.pubsub import flags
 from googlecloudsdk.command_lib.pubsub import util
+from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
 
 
-def _ArgsBeta(parser):
-  """Registers flags for this command."""
-
-  parser.add_argument('subscription', nargs='+',
-                      help='One or more subscriptions to create.')
-
-  parser.add_argument(
-      '--topic', required=True,
-      help=('The name of the topic from which this subscription is receiving'
-            ' messages. Each subscription is attached to a single topic.'))
-
-  parser.add_argument(
-      '--topic-project',
-      help=('The name of the project the provided topic belongs to.'
-            ' If not set, it defaults to the currently selected'
-            ' cloud project.'))
-
-  parser.add_argument(
-      '--ack-deadline', type=int,
-      help=('The number of seconds the system will wait for a subscriber to'
-            ' acknowledge receiving a message before re-attempting'
-            ' delivery.'))
-
-  parser.add_argument(
-      '--push-endpoint',
-      help=('A URL to use as the endpoint for this subscription.'
-            ' This will also automatically set the subscription'
-            ' type to PUSH.'))
-
-
-def _ArgsAlpha(parser):
-  """Registers flags for this command that are available only in Alpha."""
-
-  parser.add_argument(
-      '--retain-acked-messages',
-      action='store_true',
-      default=None,
-      help=('Whether or not to retain acknowledged messages.  If true,'
-            ' messages are not expunged from the subscription\'s backlog'
-            ' until they fall out of the --message-retention-duration'
-            ' window.'))
-
-  parser.add_argument(
-      '--message-retention-duration',
-      type=arg_parsers.Duration(),
-      help=('How long to retain unacknowledged messages in the'
-            ' subscription\'s backlog, from the moment a message is'
-            ' published.  If --retain-acked-messages is true, this also'
-            ' configures the retention of acknowledged messages.  The default'
-            ' value is 7 days, the minimum is 10 minutes, and the maximum is'
-            ' 7 days.  Valid values are strings of the form INTEGER[UNIT],'
-            ' where UNIT is one of "s", "m", "h", and "d" for seconds,'
-            ' seconds, minutes, hours, and days, respectively.  If the unit'
-            ' is omitted, seconds is assumed.'))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CreateBeta(base.CreateCommand):
   """Creates one or more Cloud Pub/Sub subscriptions.
 
@@ -87,9 +32,12 @@ class CreateBeta(base.CreateCommand):
   is specified.
   """
 
-  @staticmethod
-  def Args(parser):
-    _ArgsBeta(parser)
+  @classmethod
+  def Args(cls, parser):
+    flags.AddSubscriptionResourceArg(parser, 'to create.', plural=True)
+    flags.AddSubscriptionTopicResourceFlags(parser)
+    flags.AddSubscriptionSettingsFlags(parser, cls.ReleaseTrack())
+    labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -115,6 +63,10 @@ class CreateBeta(base.CreateCommand):
     if retention_duration:
       retention_duration = util.FormatDuration(retention_duration)
 
+    labels = labels_util.UpdateLabels(
+        None, client.messages.Subscription.LabelsValue,
+        update_labels=labels_util.GetUpdateLabelsDictFromArgs(args))
+
     failed = []
     for subscription_name in args.subscription:
       subscription_ref = util.ParseSubscription(subscription_name)
@@ -122,7 +74,7 @@ class CreateBeta(base.CreateCommand):
       try:
         result = client.Create(subscription_ref, topic_ref, args.ack_deadline,
                                push_config, retain_acked_messages,
-                               retention_duration)
+                               retention_duration, labels=labels)
       except api_ex.HttpError as error:
         exc = exceptions.HttpException(error)
         log.CreatedResource(subscription_ref.RelativeName(),
@@ -138,18 +90,3 @@ class CreateBeta(base.CreateCommand):
 
     if failed:
       raise util.RequestsFailedError(failed, 'create')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  """Creates one or more Cloud Pub/Sub subscriptions.
-
-  Creates one or more Cloud Pub/Sub subscriptions for a given topic.
-  The new subscription defaults to a PULL subscription unless a push endpoint
-  is specified.
-  """
-
-  @staticmethod
-  def Args(parser):
-    _ArgsBeta(parser)
-    _ArgsAlpha(parser)

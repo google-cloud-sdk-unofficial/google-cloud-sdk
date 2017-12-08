@@ -110,7 +110,8 @@ def _RunCreate(compute_api,
       A resource object dispatched by display.Displayer().
   """
   _ValidateInstancesFlags(args)
-  instances_flags.ValidateNetworkTierArgs(args, support_network_tier)
+  if support_network_tier:
+    instances_flags.ValidateNetworkTierArgs(args)
 
   client = compute_api.client
 

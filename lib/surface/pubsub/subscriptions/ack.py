@@ -11,9 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Cloud Pub/Sub topics publish command."""
+"""Cloud Pub/Sub subscriptions ack command."""
 from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.pubsub import flags
 from googlecloudsdk.command_lib.pubsub import util
 
 
@@ -27,12 +28,8 @@ class Ack(base.Command):
 
   @staticmethod
   def Args(parser):
-    """Register flags for this command."""
-
-    parser.add_argument('subscription',
-                        help='Subscription name to ACK messages on.')
-    parser.add_argument('ackid', nargs='+',
-                        help='One or more AckId to acknowledge.')
+    flags.AddSubscriptionResourceArg(parser, 'to ACK messages on.')
+    flags.AddAckIdFlag(parser, 'acknowledge.')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -48,9 +45,9 @@ class Ack(base.Command):
     client = subscriptions.SubscriptionsClient()
 
     subscription_ref = util.ParseSubscription(args.subscription)
-    client.Ack(args.ackid, subscription_ref)
+    client.Ack(args.ack_id, subscription_ref)
 
     # Using this dict, instead of returning the AcknowledgeRequest directly,
     # to preserve the naming conventions for subscriptionId.
     return {'subscriptionId': subscription_ref.RelativeName(),
-            'ackIds': args.ackid}
+            'ackIds': args.ack_id}

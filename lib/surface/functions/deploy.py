@@ -365,7 +365,7 @@ class Deploy(base.Command):
     if timeout_sec:
       function.timeout = str(timeout_sec) + 's'
     if trigger_http:
-      function.httpsTrigger = messages.HTTPSTrigger()
+      function.httpsTrigger = messages.HttpsTrigger()
     elif trigger_params:
       function.eventTrigger = self._EventTrigger(**trigger_params)
     if retry:
@@ -376,8 +376,21 @@ class Deploy(base.Command):
     if memory:
       function.availableMemoryMb = utils.BytesToMb(memory)
 
+  def _GetSourceUrlFromArgs(
+      self, project, tag, branch, revision, source_url, source_path):
+    if revision:
+      revision_segment = '/revisions/' + revision
+    elif tag:
+      revision_segment = '/fixed-aliases/' + tag
+    elif branch:
+      revision_segment = '/moveable-aliases/' + branch
+    else:
+      revision_segment = ''
+    return '{}{}/{}'.format(source_url, revision_segment, source_path)
+
   def _ApplyArgsToFunction(
-      self, base_function, is_new_function, trigger_params, name, args):
+      self, base_function, is_new_function, trigger_params, name, args,
+      project):
     """Apply values from args to base_function.
 
     Args:
@@ -388,6 +401,7 @@ class Deploy(base.Command):
         trigger_params: parameters for creating functions trigger.
         name: relative name of the function.
         args: commandline args specyfying how to modify the function.
+        project: project of the function.
     """
     if args.IsSpecified('retry'):
       retry = args.retry
@@ -400,15 +414,17 @@ class Deploy(base.Command):
     if args.source:
       deploy_util.AddSourceToFunction(
           base_function, args.source, args.include_ignored_files, args.name,
-          args.stage_bucket)
+          args.stage_bucket, messages)
     elif args.source_url:
       deploy_util.CleanOldSourceInfo(base_function)
       source_path = args.source_path
       source_branch = args.source_branch or 'master'
       base_function.sourceRepository = messages.SourceRepository(
-          tag=args.source_tag, branch=source_branch,
-          revision=args.source_revision, repositoryUrl=args.source_url,
-          sourcePath=source_path)
+          url=self._GetSourceUrlFromArgs(
+              project, tag=args.source_tag, branch=source_branch,
+              revision=args.source_revision, source_url=args.source_url,
+              source_path=source_path))
+
     elif args.stage_bucket:
       # Do not change source of existing function unless instructed to.
       deploy_util.CleanOldSourceInfo(base_function)
@@ -460,7 +476,13 @@ class Deploy(base.Command):
   def _UpdateFunction(self, unused_location, function):
     client = util.GetApiClientInstance()
     messages = client.MESSAGES_MODULE
-    op = client.projects_locations_functions.Update(function)
+    op = client.projects_locations_functions.Patch(
+        messages.CloudfunctionsProjectsLocationsFunctionsPatchRequest(
+            cloudFunction=function,
+            name=function.name,
+            updateMask=None,
+        )
+    )
     operations.Wait(op, messages, client, _DEPLOY_WAIT_NOTICE)
     return self._GetExistingFunction(function.name)
 
@@ -511,7 +533,7 @@ class Deploy(base.Command):
       messages = util.GetApiMessagesModule()
       function = messages.CloudFunction()
     self._ApplyArgsToFunction(function, is_new_function, trigger_params,
-                              function_url, args)
+                              function_url, args, project)
     if is_new_function:
       return self._CreateFunction(location, function)
     else:

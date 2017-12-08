@@ -64,7 +64,7 @@ class Delete(base.DeleteCommand):
         client.Delete(snapshot_ref)
       except api_ex.HttpError as error:
         exc = exceptions.HttpException(error)
-        log.CreatedResource(snapshot_ref.RelativeName(), kind='snapshot',
+        log.DeletedResource(snapshot_ref.RelativeName(), kind='snapshot',
                             failed=exc.payload.status_message)
         failed.append(snapshot_name)
         continue

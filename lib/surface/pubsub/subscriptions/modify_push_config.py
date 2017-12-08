@@ -14,6 +14,7 @@
 """Cloud Pub/Sub subscription modify-push-config command."""
 from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.pubsub import flags
 from googlecloudsdk.command_lib.pubsub import util
 
 
@@ -22,15 +23,8 @@ class ModifyPushConfig(base.Command):
 
   @staticmethod
   def Args(parser):
-    """Registers flags for this command."""
-
-    parser.add_argument('subscription',
-                        help='Name of the subscription to modify.')
-    parser.add_argument(
-        '--push-endpoint', required=True,
-        help=('A URL to use as the endpoint for this subscription.'
-              ' This will also automatically set the subscription'
-              ' type to PUSH.'))
+    flags.AddSubscriptionResourceArg(parser, 'to modify.')
+    flags.AddPushEndpointFlag(parser, required=True)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

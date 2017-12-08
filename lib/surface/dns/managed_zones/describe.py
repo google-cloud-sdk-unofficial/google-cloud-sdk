@@ -74,8 +74,8 @@ class DescribeBeta(base.DescribeCommand):
         'The name of the managed-zone to be described.').AddToParser(parser)
 
   def Run(self, args):
-    dns = apis.GetClientInstance('dns', 'v2beta1')
-    zone_ref = util.GetRegistry('v2beta1').Parse(
+    dns = apis.GetClientInstance('dns', 'v1beta2')
+    zone_ref = util.GetRegistry('v1beta2').Parse(
         args.dns_zone,
         params={
             'project': properties.VALUES.core.project.GetOrFail,

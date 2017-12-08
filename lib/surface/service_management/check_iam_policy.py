@@ -20,6 +20,11 @@ from googlecloudsdk.command_lib.service_management import arg_parsers
 from googlecloudsdk.command_lib.service_management import common_flags
 
 
+_WARNING = ('The `service-management check-iam-policy` command has been '
+            ' replaced by `endpoints services check-iam-policy`.')
+
+
+@base.Deprecate(is_removed=False, warning=_WARNING)
 class CheckIamPolicy(base.Command):
   """Returns information about a member's permissions on a service.
 

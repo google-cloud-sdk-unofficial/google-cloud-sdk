@@ -26,6 +26,7 @@ _DEFAULT_KINDS = [
     'BUILD_DETAILS',
     'PACKAGE_VULNERABILITY',
     'IMAGE_BASIS',
+    'DEPLOYABLE',
 ]
 
 
@@ -127,6 +128,10 @@ class DescribeAlpha(Describe):
         action='store_true',
         help='Include base image metadata in the output.')
     parser.add_argument(
+        '--show-deployment',
+        action='store_true',
+        help='Include deployment metadata in the output.')
+    parser.add_argument(
         '--show-all-metadata',
         action='store_true',
         help='Include all metadata in the output.')
@@ -151,6 +156,8 @@ class DescribeAlpha(Describe):
       filter_kinds.append('PACKAGE_VULNERABILITY')
     if args.show_image_basis:
       filter_kinds.append('IMAGE_BASIS')
+    if args.show_deployment:
+      filter_kinds.append('DEPLOYABLE')
 
     if args.show_all_metadata:
       filter_kinds = _DEFAULT_KINDS
@@ -172,7 +179,8 @@ class DescribeAlpha(Describe):
       with RecoverFromDiagnosticException(args.image_name):
         img_name = util.GetDigestFromName(args.image_name)
         data = util.TransformContainerAnalysisData(
-            img_name, occ_filter)
+            img_name, occ_filter,
+            deployments=(args.show_deployment or args.show_all_metadata))
         # Clear out fields that weren't asked for and have no data.
         if (not data.build_details_summary.build_details
             and not args.show_build_details
@@ -186,6 +194,10 @@ class DescribeAlpha(Describe):
             and not args.show_image_basis
             and not args.show_all_metadata):
           del data.image_basis_summary
+        if (not data.deployment_summary.deployments
+            and not args.show_deployment
+            and not args.show_all_metadata):
+          del data.deployment_summary
         return data
     else:
       with RecoverFromDiagnosticException(args.image_name):

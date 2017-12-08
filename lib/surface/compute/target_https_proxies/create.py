@@ -18,6 +18,8 @@ from googlecloudsdk.api_lib.compute import target_proxies_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.ssl_certificates import (
     flags as ssl_certificates_flags)
+from googlecloudsdk.command_lib.compute.ssl_policies import (flags as
+                                                             ssl_policies_flags)
 from googlecloudsdk.command_lib.compute.target_https_proxies import flags
 from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
 from googlecloudsdk.core import log
@@ -78,8 +80,11 @@ class CreateGA(base.CreateCommand):
 
     return self.SSL_CERTIFICATES_ARG.ResolveAsResource(args, holder.resources)
 
-  def _CreateRequestsWithCertRefs(self, args, ssl_cert_refs,
-                                  quic_override=None):
+  def _SendRequests(self,
+                    args,
+                    ssl_cert_refs,
+                    quic_override=None,
+                    ssl_policy_ref=None):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
@@ -95,6 +100,9 @@ class CreateGA(base.CreateCommand):
     if quic_override:
       target_https_proxy.quicOverride = quic_override
 
+    if ssl_policy_ref:
+      target_https_proxy.sslPolicy = ssl_policy_ref.SelfLink()
+
     request = client.messages.ComputeTargetHttpsProxiesInsertRequest(
         project=target_https_proxy_ref.project,
         targetHttpsProxy=target_https_proxy)
@@ -105,7 +113,7 @@ class CreateGA(base.CreateCommand):
   def Run(self, args):
     ssl_certificate_refs = self._GetSslCertificatesList(args)
 
-    return self._CreateRequestsWithCertRefs(args, ssl_certificate_refs)
+    return self._SendRequests(args, ssl_certificate_refs)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -119,13 +127,25 @@ class CreateAlpha(CreateGA):
   for routing the requests. The URL map's job is to map URLs to
   backend services which handle the actual requests. The target
   HTTPS proxy also points to at most 10 SSL certificates used for
-  server-side authentication.
+  server-side authentication. The target HTTPS proxy can be associated with
+  at most one SSL policy.
   """
+
+  SSL_POLICY_ARG = None
 
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
     target_proxies_utils.AddQuicOverrideCreateArgs(parser)
+    cls.SSL_POLICY_ARG = (
+        ssl_policies_flags.GetSslPolicyArgumentForOtherResource(
+            'HTTPS', required=False))
+    cls.SSL_POLICY_ARG.AddArgument(parser)
+
+  def _GetSslPolicy(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    return self.SSL_POLICY_ARG.ResolveAsResource(
+        args, holder.resources) if args.ssl_policy else None
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -134,5 +154,6 @@ class CreateAlpha(CreateGA):
         args.quic_override)
 
     ssl_certificate_refs = self._GetSslCertificatesList(args)
-    return self._CreateRequestsWithCertRefs(args, ssl_certificate_refs,
-                                            quic_override)
+    ssl_policy_ref = self._GetSslPolicy(args)
+    return self._SendRequests(args, ssl_certificate_refs, quic_override,
+                              ssl_policy_ref)

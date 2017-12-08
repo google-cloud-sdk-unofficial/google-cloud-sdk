@@ -90,4 +90,4 @@ class List(base.ListCommand):
 
   def BuildRequest(self, location_ref, messages):
     return messages.CloudfunctionsProjectsLocationsFunctionsListRequest(
-        location=location_ref.RelativeName())
+        parent=location_ref.RelativeName())

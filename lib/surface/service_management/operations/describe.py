@@ -50,6 +50,12 @@ _DETAILED_HELP = {
 MAX_RESPONSE_BYTES = 1000
 
 
+_WARNING = ('The `service-management operations describe` command has been '
+            'replaced by `endpoints operations describe` and '
+            '`services operations describe`.')
+
+
+@base.Deprecate(is_removed=False, warning=_WARNING)
 class Describe(base.DescribeCommand):
   """Describes an operation resource for a given operation name."""
 

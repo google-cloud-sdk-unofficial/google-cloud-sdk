@@ -13,8 +13,9 @@
 # limitations under the License.
 """Cloud Pub/Sub subscriptions seek command."""
 from googlecloudsdk.api_lib.pubsub import subscriptions
-from googlecloudsdk.calliope import arg_parsers
+
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.pubsub import flags
 from googlecloudsdk.command_lib.pubsub import util
 
 
@@ -31,28 +32,8 @@ class SeekAlpha(base.Command):
 
   @staticmethod
   def Args(parser):
-    """Registers flags for this command."""
-
-    parser.add_argument('subscription',
-                        help='Name of the subscription to affect.')
-
-    seek_to_parser = parser.add_mutually_exclusive_group(required=True)
-    seek_to_parser.add_argument(
-        '--time', type=arg_parsers.Datetime.Parse,
-        help=('The time to seek to. Messages in the subscription that '
-              'were published before this time are marked as acknowledged, and '
-              'messages retained in the subscription that were published after '
-              'this time are marked as unacknowledged. See `gcloud topic '
-              'datetimes` for information on time formats.'))
-    seek_to_parser.add_argument(
-        '--snapshot',
-        help=('The name of the snapshot. The snapshot\'s topic must be the same'
-              ' as that of the subscription.'))
-    parser.add_argument(
-        '--snapshot-project', default='',
-        help=('The name of the project the snapshot belongs to (if seeking to '
-              'a snapshot). If not set, it defaults to the currently selected '
-              'cloud project.'))
+    flags.AddSubscriptionResourceArg(parser, 'to affect.')
+    flags.AddSeekFlags(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

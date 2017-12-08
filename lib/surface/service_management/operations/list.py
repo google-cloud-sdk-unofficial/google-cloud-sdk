@@ -37,8 +37,13 @@ datetime value must be wrapped in quotation marks. For example:
 done is a boolean value and supports = and != operators.\
 '''
 
+_WARNING = ('The `service-management operations list` command has been '
+            'replaced by `endpoints operations list` and '
+            '`services operations list`.')
+
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.Deprecate(is_removed=False, warning=_WARNING)
 class List(base.ListCommand):
   # pylint: disable=line-too-long
   """List operations for a project.

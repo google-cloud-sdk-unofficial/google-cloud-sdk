@@ -84,10 +84,10 @@ class ListBeta(base.ListCommand):
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat('table(name, dnsName, description)')
-    parser.display_info.AddUriFunc(_GetUriFunction('v2beta1'))
+    parser.display_info.AddUriFunc(_GetUriFunction('v1beta2'))
 
   def Run(self, args):
-    dns_client = apis.GetClientInstance('dns', 'v2beta1')
+    dns_client = apis.GetClientInstance('dns', 'v1beta2')
 
     project_id = properties.VALUES.core.project.GetOrFail()
 

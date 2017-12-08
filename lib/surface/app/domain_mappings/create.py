@@ -54,9 +54,9 @@ class Create(base.CreateCommand):
 
       if not args.certificate_management:
         if not args.certificate_id:
-          args.certificate_management = 'AUTOMATIC'
+          args.certificate_management = 'automatic'
         else:
-          args.certificate_management = 'MANUAL'
+          args.certificate_management = 'manual'
 
       management_type = domains_util.ParseCertificateManagement(
           client.messages, args.certificate_management)
@@ -93,14 +93,14 @@ class CreateBeta(Create):
           To create a domain with a manual certificate, run:
 
               $ {command} '*.example.com' \
-                  --certificate-management=MANUAL --certificate-id=1234
+                  --certificate-management=manual --certificate-id=1234
 
           Note: managed certificates do not support wildcard domain mappings.
 
           To create a domain with no associated certificate, run:
 
               $ {command} '*.example.com' \
-                  --certificate-management=MANUAL
+                  --certificate-management=manual
           """,
   }
 
