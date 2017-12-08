@@ -72,6 +72,8 @@ try:
 except ImportError:
   from apache_beam.utils.options import PipelineOptions
 
+from tensorflow.python.saved_model import signature_constants
+from tensorflow.python.saved_model import tag_constants
 from google.cloud.ml.dataflow import _aggregators as aggregators
 from google.cloud.ml.dataflow import batch_prediction_pipeline
 # pylint: enable=g-import-not-at-top
@@ -109,6 +111,18 @@ class BatchPredictionOptions(PipelineOptions):
         "--output_error_prefix",
         dest="output_error_prefix",
         help="Output path to save the prediction errors.")
+
+    parser.add_value_provider_argument(
+        "--tags",
+        dest="tags",
+        default=tag_constants.SERVING,
+        help="List of tags for serving graph, separated by commas.")
+
+    parser.add_value_provider_argument(
+        "--signature_name",
+        dest="signature_name",
+        default=signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY,
+        help="The key of the signature map for serving signature.")
 
     parser.add_value_provider_argument(
         "--model_dir",

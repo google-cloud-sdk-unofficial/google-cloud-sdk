@@ -13,18 +13,35 @@
 # limitations under the License.
 """Command for listing zones."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import lister
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
 
 
-class List(base_classes.GlobalLister):
+class List(base.ListCommand):
   """List Google Compute Engine zones."""
 
-  @property
-  def service(self):
-    return self.compute.zones
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""\
+        table(name,
+              region.basename(),
+              status():label=STATUS,
+              maintenanceWindows.next_maintenance():label=NEXT_MAINTENANCE,
+              deprecated.deleted:label=TURNDOWN_DATE
+        )""")
+    parser.display_info.AddUriFunc(utils.MakeGetUriFunc())
+    lister.AddBaseListerArgs(parser)
 
-  @property
-  def resource_type(self):
-    return 'zones'
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
+    request_data = lister.ParseNamesAndRegexpFlags(args, holder.resources)
+
+    list_implementation = lister.GlobalLister(
+        client, client.apitools_client.zones)
+
+    return lister.Invoke(request_data, list_implementation)
 
 List.detailed_help = base_classes.GetGlobalListerHelp('zones')

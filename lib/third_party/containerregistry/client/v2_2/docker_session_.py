@@ -96,7 +96,7 @@ class Push(object):
             base_url=self._base_url(), digest=image.digest()),
         method='GET',
         accepted_codes=[httplib.OK, httplib.NOT_FOUND],
-        accepted_mimes=docker_http.MANIFEST_SCHEMA2_MIMES)
+        accepted_mimes=[image.media_type()])
 
     return resp.status == httplib.OK  # pytype: disable=attribute-error
 
@@ -220,8 +220,9 @@ class Push(object):
         '{base_url}/manifests/{tag_or_digest}'.format(
             base_url=self._base_url(),
             tag_or_digest=_tag_or_digest(self._name)),
-        method='PUT', body=image.manifest(),
-        content_type=docker_http.MANIFEST_SCHEMA2_MIME,
+        method='PUT',
+        body=image.manifest(),
+        content_type=image.media_type(),
         accepted_codes=[httplib.OK, httplib.CREATED, httplib.ACCEPTED])
 
   def _start_upload(

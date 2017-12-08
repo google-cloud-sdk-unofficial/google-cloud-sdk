@@ -17,10 +17,8 @@ import argparse
 
 from apitools.base.py import exceptions as apitools_exceptions
 
-from googlecloudsdk.api_lib.compute import constants as compute_constants
 from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.api_lib.container import util
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import flags
@@ -83,35 +81,6 @@ def _Args(parser):
       '--disk-size',
       type=int,
       help='Size in GB for node VM boot disks. Defaults to 100GB.')
-  parser.add_argument(
-      '--scopes',
-      type=arg_parsers.ArgList(min_length=1),
-      metavar='SCOPE',
-      help="""\
-Specifies scopes for the node instances. The project's default
-service account is used. Examples:
-
-  $ {{command}} node-pool-1 --cluster=example-cluster --scopes https://www.googleapis.com/auth/devstorage.read_only
-
-  $ {{command}} node-pool-1 --cluster=example-cluster --scopes bigquery,storage-rw,compute-ro
-
-Multiple SCOPEs can specified, separated by commas. The scopes
-necessary for the cluster to function properly (compute-rw, storage-ro),
-are always added, even if not explicitly specified.
-
-SCOPE can be either the full URI of the scope or an alias.
-Available aliases are:
-
-[options="header",format="csv",grid="none",frame="none"]
-|========
-Alias,URI
-{aliases}
-|========
-
-{scope_deprecation_msg}
-""".format(
-    aliases=compute_constants.ScopesForHelp(),
-    scope_deprecation_msg=compute_constants.DEPRECATED_SCOPES_MESSAGES))
   flags.AddImageTypeFlag(parser, 'node pool')
   flags.AddNodeLabelsFlag(parser, for_node_pool=True)
   flags.AddTagsFlag(parser, """\
@@ -163,6 +132,7 @@ class Create(base.CreateCommand):
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True, suppressed=True)
     flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True, suppressed=True)
     flags.AddServiceAccountFlag(parser, suppressed=True)
+    flags.AddOldNodePoolScopesFlag(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     return ParseCreateNodePoolOptionsBase(args)
@@ -223,12 +193,19 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddClusterAutoscalingFlags(parser, hidden=True)
+    flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDFlag(parser)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True)
     flags.AddServiceAccountFlag(parser)
+    flags.AddNodePoolScopesFlag(parser)
+    flags.AddMinCpuPlatformFlag(parser, for_node_pool=True, hidden=True)
+
+  def ParseCreateNodePoolOptions(self, args):
+    ops = ParseCreateNodePoolOptionsBase(args)
+    ops.min_cpu_platform = args.min_cpu_platform
+    return ops
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -238,6 +215,7 @@ class CreateAlpha(Create):
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
     ops.accelerators = args.accelerator
+    ops.min_cpu_platform = args.min_cpu_platform
     return ops
 
   @staticmethod
@@ -250,6 +228,8 @@ class CreateAlpha(Create):
     flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True)
     flags.AddServiceAccountFlag(parser)
     flags.AddAcceleratorArgs(parser)
+    flags.AddNodePoolScopesFlag(parser)
+    flags.AddMinCpuPlatformFlag(parser, for_node_pool=True, hidden=True)
 
 
 Create.detailed_help = DETAILED_HELP

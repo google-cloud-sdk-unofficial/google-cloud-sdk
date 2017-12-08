@@ -39,7 +39,7 @@ class DigestMismatchedError(Exception):
 class DockerImage(object):
   """Interface for implementations that interact with Docker images."""
 
-  __metaclass__ = abc.ABCMeta  # For enforcing that methods are overriden.
+  __metaclass__ = abc.ABCMeta  # For enforcing that methods are overridden.
 
   def fs_layers(self):
     """The ordered collection of filesystem layers that comprise this image."""
@@ -95,6 +95,10 @@ class DockerImage(object):
   @abc.abstractmethod
   def __exit__(self, unused_type, unused_value, unused_traceback):
     """Close the image."""
+
+  def __str__(self):
+    """A human-readable representation of the image."""
+    return str(type(self))
 
 
 class FromRegistry(DockerImage):
@@ -239,6 +243,9 @@ class FromRegistry(DockerImage):
 
   def __exit__(self, unused_type, unused_value, unused_traceback):
     pass
+
+  def __str__(self):
+    return '<docker_image.FromRegistry name: {}>'.format(str(self._name))
 
 
 def _in_whiteout_dir(

@@ -45,7 +45,7 @@ class RequireMaskError(exceptions.Error):
         '--ip-address', '--mask-length must be set if --ip-address is set')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateInterface(base.UpdateCommand):
   """Update an interface on a Google Compute Engine router.
 
@@ -136,8 +136,8 @@ class UpdateInterface(base.UpdateCommand):
         [self.GetSetRequest(client, router_ref, new_object)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaUpdateInterface(UpdateInterface):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class BetaUpdateInterface(UpdateInterface):
   """Update an interface on a Google Compute Engine router.
 
   *{command}* is used to update an interface on a Google Compute Engine
@@ -168,7 +168,7 @@ class AlphaUpdateInterface(UpdateInterface):
     router_flags.AddInterfaceArgs(parser, for_update=True)
 
   def Modify(self, client, resources, args, existing):
-    replacement = super(AlphaUpdateInterface, self).Modify(
+    replacement = super(BetaUpdateInterface, self).Modify(
         client, resources, args, existing)
 
     iface = None

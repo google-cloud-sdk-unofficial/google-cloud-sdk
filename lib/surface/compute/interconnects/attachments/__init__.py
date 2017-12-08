@@ -17,8 +17,7 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class InterconnectAttachments(base.Group):
-  """Read and manipulate  Google Compute Engine interconnect attachments."""
+  """Read and manipulate Google Compute Engine interconnect attachments."""
   pass

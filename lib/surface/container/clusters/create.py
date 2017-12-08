@@ -17,7 +17,6 @@ import argparse
 
 from apitools.base.py import exceptions as apitools_exceptions
 
-from googlecloudsdk.api_lib.compute import constants as compute_constants
 from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.api_lib.container import constants
 from googlecloudsdk.api_lib.container import kubeconfig as kconfig
@@ -113,35 +112,6 @@ def _Args(parser):
       '--password',
       help='The password to use for cluster auth. Defaults to a '
       'server-specified randomly-generated string.')
-  parser.add_argument(
-      '--scopes',
-      type=arg_parsers.ArgList(min_length=1),
-      metavar='SCOPE',
-      help="""\
-Specifies scopes for the node instances. The project's default
-service account is used. Examples:
-
-  $ {{command}} example-cluster --scopes https://www.googleapis.com/auth/devstorage.read_only
-
-  $ {{command}} example-cluster --scopes bigquery,storage-rw,compute-ro
-
-Multiple SCOPEs can specified, separated by commas. The scopes
-necessary for the cluster to function properly (compute-rw, storage-ro),
-are always added, even if not explicitly specified.
-
-SCOPE can be either the full URI of the scope or an alias.
-Available aliases are:
-
-[format="csv",options="header"]
-|========
-Alias,URI
-{aliases}
-|========
-
-{scope_deprecation_msg}
-""".format(
-    aliases=compute_constants.ScopesForHelp(),
-    scope_deprecation_msg=compute_constants.DEPRECATED_SCOPES_MESSAGES))
   parser.add_argument(
       '--enable-cloud-endpoints',
       action='store_true',
@@ -263,6 +233,7 @@ class Create(base.CreateCommand):
     flags.AddLabelsFlag(parser, suppressed=True)
     flags.AddNetworkPolicyFlags(parser, hidden=True)
     flags.AddIPAliasFlags(parser, hidden=True)
+    flags.AddOldClusterScopesFlag(parser)
 
   def ParseCreateOptions(self, args):
     return ParseCreateOptionsBase(args)
@@ -355,7 +326,7 @@ class CreateBeta(Create):
   def Args(parser):
     _Args(parser)
     _AddAdditionalZonesFlag(parser)
-    flags.AddClusterAutoscalingFlags(parser, hidden=True)
+    flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDFlag(parser)
     flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddPreemptibleFlag(parser)
@@ -367,6 +338,13 @@ class CreateBeta(Create):
     flags.AddLabelsFlag(parser)
     flags.AddNetworkPolicyFlags(parser, hidden=True)
     flags.AddIPAliasFlags(parser, hidden=True)
+    flags.AddClusterScopesFlag(parser)
+    flags.AddMinCpuPlatformFlag(parser, hidden=True)
+
+  def ParseCreateOptions(self, args):
+    ops = ParseCreateOptionsBase(args)
+    ops.min_cpu_platform = args.min_cpu_platform
+    return ops
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -392,11 +370,14 @@ class CreateAlpha(Create):
     flags.AddNetworkPolicyFlags(parser, hidden=False)
     flags.AddIPAliasFlags(parser)
     flags.AddAcceleratorArgs(parser)
-    flags.AddEnableAuditLoggingFlag(parser)
+    flags.AddEnableAuditLoggingFlag(parser, hidden=True)
+    flags.AddClusterScopesFlag(parser)
+    flags.AddMinCpuPlatformFlag(parser, hidden=True)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
     ops.accelerators = args.accelerator
     ops.node_locations = args.node_locations
     ops.enable_audit_logging = args.enable_audit_logging
+    ops.min_cpu_platform = args.min_cpu_platform
     return ops

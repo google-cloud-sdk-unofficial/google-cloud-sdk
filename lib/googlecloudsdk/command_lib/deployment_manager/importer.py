@@ -14,15 +14,15 @@
 
 """Library that handles importing files for Deployment Manager."""
 
+
 import os
 import posixpath
+import re
 import urlparse
-
 from apitools.base.py import exceptions as apitools_exceptions
-
 from googlecloudsdk.api_lib.deployment_manager import exceptions
 from googlecloudsdk.api_lib.util import exceptions as api_exceptions
-
+from googlecloudsdk.core import log
 import requests
 import yaml
 
@@ -33,10 +33,11 @@ OUTPUTS = 'outputs'
 
 
 class _BaseImport(object):
-  """Shared parent class for _ImportFile and _ImportUrl."""
-  content = None
-  base_name = None
-  is_template = None
+  """An imported DM config object."""
+
+  def __init__(self):
+    self.content = None
+    self.base_name = None
 
   def GetFullPath(self):
     return self.full_path
@@ -52,10 +53,41 @@ class _BaseImport(object):
     return self.full_path.endswith(('.jinja', '.py'))
 
 
+class _ImportSyntheticCompositeTypeFile(_BaseImport):
+  """Performs common operations on an imported composite type."""
+
+  def __init__(self, full_path, properties=None):
+    super(_ImportSyntheticCompositeTypeFile, self).__init__()
+    self.full_path = full_path
+    self.name = full_path.split(':')[1]
+    self.properties = properties
+
+  def GetBaseName(self):
+    if self.base_name is None:
+      self.base_name = self.name
+    return self.base_name
+
+  def Exists(self):
+    return True
+
+  def GetContent(self):
+    """Returns the content of the synthetic file as a string."""
+    if self.content is None:
+      resources = {'resources': [{'type': self.full_path, 'name': self.name}]}
+      if self.properties:
+        resources['resources'][0]['properties'] = self.properties
+      self.content = yaml.dump(resources, default_flow_style=False)
+    return self.content
+
+  def BuildChildPath(self, unused_child_path):
+    raise NotImplementedError
+
+
 class _ImportFile(_BaseImport):
   """Performs common operations on an imported file."""
 
   def __init__(self, full_path, name=None):
+    super(_ImportFile, self).__init__()
     self.full_path = full_path
     self.name = name if name else full_path
 
@@ -78,16 +110,17 @@ class _ImportFile(_BaseImport):
     return self.content
 
   def BuildChildPath(self, child_path):
-    if _IsFile(child_path):
-      return os.path.normpath(
-          os.path.join(os.path.dirname(self.full_path), child_path))
-    return child_path
+    if _IsUrl(child_path):
+      return child_path
+    return os.path.normpath(
+        os.path.join(os.path.dirname(self.full_path), child_path))
 
 
 class _ImportUrl(_BaseImport):
   """Class to perform operations on a URL import."""
 
   def __init__(self, full_path, name=None):
+    super(_ImportUrl, self).__init__()
     self.full_path = self._ValidateUrl(full_path)
     self.name = name if name else full_path
 
@@ -136,9 +169,9 @@ class _ImportUrl(_BaseImport):
     return True
 
   def BuildChildPath(self, child_path):
-    if _IsFile(child_path):
-      return urlparse.urljoin(self.full_path, child_path)
-    return child_path
+    if _IsUrl(child_path):
+      return child_path
+    return urlparse.urljoin(self.full_path, child_path)
 
   @staticmethod
   def _ValidateUrl(url):
@@ -161,18 +194,45 @@ class _ImportUrl(_BaseImport):
     return url
 
 
-def _IsFile(resource_handle):
-  """Returns true if the passed resource_handle is a filepath, not a url."""
+def _IsUrl(resource_handle):
+  """Returns true if the passed resource_handle is a url."""
   parsed = urlparse.urlparse(resource_handle)
+  return parsed.scheme and parsed.netloc
 
-  return not (parsed.scheme and parsed.netloc)
+
+def _IsValidCompositeTypeSyntax(composite_type_name):
+  """Returns true if the resource_handle matches composite type syntax.
+
+  Args:
+    composite_type_name: a string of the name of the composite type.
+
+  Catches most syntax errors by checking that the string contains the substring
+  '/composite:' preceded and followed by at least one character, none of which
+  are colons, periods, slashes, or whitespace.
+  """
+  return re.match(r'^[^/:.\s]+/composite:[^/:.\s]+$', composite_type_name)
 
 
-def _BuildImportObject(full_path, name=None):
-  if _IsFile(full_path):
-    return _ImportFile(full_path, name)
-  else:
+def _BuildFileImportObject(full_path, name=None):
+  if _IsUrl(full_path):
     return _ImportUrl(full_path, name)
+  else:
+    return _ImportFile(full_path, name)
+
+
+def _BuildImportObject(config=None, template=None,
+                       composite_type=None, properties=None):
+  """Build an import object from the given config name."""
+  if composite_type:
+    if not _IsValidCompositeTypeSyntax(composite_type):
+      raise exceptions.ConfigError('Invalid composite type syntax.')
+    return _ImportSyntheticCompositeTypeFile(composite_type, properties)
+  if config:
+    return _BuildFileImportObject(config)
+  if template:
+    return _BuildFileImportObject(template)
+  raise exceptions.ConfigError('No path or name for a config, template, or '
+                               'composite type was specified.')
 
 
 def _GetYamlImports(import_object):
@@ -229,7 +289,7 @@ def _GetImportObjects(parent_object):
 
   for yaml_import in yaml_imports:
     child_path = parent_object.BuildChildPath(yaml_import[PATH])
-    child_objects.append(_BuildImportObject(child_path, yaml_import[NAME]))
+    child_objects.append(_BuildFileImportObject(child_path, yaml_import[NAME]))
 
   return child_objects
 
@@ -250,7 +310,7 @@ def _HandleTemplateImport(import_object):
   schema_path = import_object.GetFullPath() + '.schema'
   schema_name = import_object.GetName() + '.schema'
 
-  schema_object = _BuildImportObject(schema_path, schema_name)
+  schema_object = _BuildFileImportObject(schema_path, schema_name)
 
   if not schema_object.Exists():
     # There is no schema file, so we have nothing to process
@@ -347,29 +407,51 @@ def _SanitizeBaseName(base_name):
   return sanitized[0].lower() + sanitized[1:]
 
 
-def BuildConfig(full_path, properties):
-  """Takes the argument from the --config flag, and returns a processed config.
+def BuildConfig(config=None, template=None,
+                composite_type=None, properties=None):
+  """Takes the path to a config and returns a processed config.
 
   Args:
-    full_path: Path to the config yaml file, with an optional list of imports.
-    properties: Dictionary of properties, only used if the file is a template.
+    config: Path to the yaml config file.
+    template: Path to the template config file.
+    composite_type: name of the composite type config.
+    properties: Dictionary of properties, only used if
+                the file is a template or composite type.
 
   Returns:
     A tuple of base_path, config_contents, and a list of import objects.
 
   Raises:
     ArgumentError: If using the properties flag for a config file
-        instead of a template.
+        instead of a template or composite type.
   """
-  config_obj = _BuildImportObject(full_path)
+  config_obj = _BuildImportObject(config=config,
+                                  template=template,
+                                  composite_type=composite_type,
+                                  properties=properties)
 
-  if not config_obj.IsTemplate():
-    if properties:
+  if composite_type:
+    return config_obj
+
+  if config:
+    if config_obj.IsTemplate():
+      # TODO(b/62844648): when support for passing templates with the config
+      # flag is completely removed, simply change the warning to an exception
+      log.warn('Creating deployments from templates with the \'--config\' '
+               'flag has been deprecated.  Support for this will be '
+               'removed 2017/11/08.  Please use \'--template\'instead.')
+    elif properties:
       raise exceptions.ArgumentError(
           'The properties flag should only be used '
-          'when passing in a template as your config file.')
+          'when using a template or composite type as your config file.')
+    else:
+      return config_obj
 
-    return config_obj
+  if template:
+    if not config_obj.IsTemplate():
+      raise exceptions.ArgumentError(
+          'The template flag should only be used '
+          'when using a template as your config file.')
 
   # Otherwise we should build the config from scratch.
   base_name = config_obj.GetBaseName()
@@ -392,7 +474,7 @@ def BuildConfig(full_path, properties):
   schema_path = config_obj.GetFullPath() + '.schema'
   schema_name = config_obj.GetName() + '.schema'
 
-  schema_object = _BuildImportObject(schema_path, schema_name)
+  schema_object = _BuildFileImportObject(schema_path, schema_name)
 
   if schema_object.Exists():
     schema_content = schema_object.GetContent()
@@ -418,14 +500,17 @@ def BuildConfig(full_path, properties):
   return config_obj.SetContent(custom_content)
 
 
-def BuildTargetConfig(messages, full_path, properties=None):
+def BuildTargetConfig(messages, config=None, template=None,
+                      composite_type=None, properties=None):
   """Construct a TargetConfig from the provided config file with imports.
 
   Args:
     messages: Object with v2 API messages.
-    full_path: Path to the config yaml file, with an optional list of imports.
+    config: Path to the yaml config file.
+    template: Path to the template config file.
+    composite_type: name of the composite type config.
     properties: Dictionary of properties, only used if the full_path is a
-        template.
+        template or composite type.
 
   Returns:
     TargetConfig containing the contents of the config file and the names and
@@ -435,7 +520,10 @@ def BuildTargetConfig(messages, full_path, properties=None):
     ConfigError: if the config file or import files cannot be read from
         the specified locations, or if they are malformed.
   """
-  config_object = BuildConfig(full_path, properties)
+  config_object = BuildConfig(config=config,
+                              template=template,
+                              composite_type=composite_type,
+                              properties=properties)
 
   return messages.TargetConfiguration(
       config=messages.ConfigFile(content=config_object.GetContent()),

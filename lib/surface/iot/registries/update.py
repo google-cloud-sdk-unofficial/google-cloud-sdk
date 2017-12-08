@@ -25,8 +25,7 @@ class Update(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     flags.AddRegistryResourceFlags(parser, 'to update')
-    for flag in flags.GetDeviceRegistrySettingsFlags(defaults=False):
-      flag.AddToParser(parser)
+    flags.AddDeviceRegistrySettingsFlagsToParser(parser, defaults=False)
 
   def Run(self, args):
     client = registries.RegistriesClient()
@@ -34,11 +33,12 @@ class Update(base.UpdateCommand):
     registry_ref = util.ParseRegistry(args.id, region=args.region)
     mqtt_state = util.ParseEnableMqttConfig(args.enable_mqtt_config,
                                             client=client)
-    pubsub_topic_ref = util.ParsePubsubTopic(args.pubsub_topic)
+    event_pubsub_topic = args.pubsub_topic or args.event_pubsub_topic
+    event_pubsub_topic_ref = util.ParsePubsubTopic(event_pubsub_topic)
 
     response = client.Patch(
         registry_ref,
-        pubsub_topic=pubsub_topic_ref,
+        pubsub_topic=event_pubsub_topic_ref,
         mqtt_config_state=mqtt_state)
     log.UpdatedResource(registry_ref.Name(), 'registry')
     return response

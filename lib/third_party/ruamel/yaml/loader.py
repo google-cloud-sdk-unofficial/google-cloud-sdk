@@ -21,7 +21,7 @@ except (ImportError, ValueError):  # for Jython
 
 
 class BaseLoader(Reader, Scanner, Parser, Composer, BaseConstructor, BaseResolver):
-    def __init__(self, stream, version=None):
+    def __init__(self, stream, version=None, preserve_quotes=None):
         Reader.__init__(self, stream)
         Scanner.__init__(self)
         Parser.__init__(self)
@@ -31,7 +31,7 @@ class BaseLoader(Reader, Scanner, Parser, Composer, BaseConstructor, BaseResolve
 
 
 class SafeLoader(Reader, Scanner, Parser, Composer, SafeConstructor, Resolver):
-    def __init__(self, stream, version=None):
+    def __init__(self, stream, version=None, preserve_quotes=None):
         Reader.__init__(self, stream)
         Scanner.__init__(self)
         Parser.__init__(self)
@@ -41,7 +41,7 @@ class SafeLoader(Reader, Scanner, Parser, Composer, SafeConstructor, Resolver):
 
 
 class Loader(Reader, Scanner, Parser, Composer, Constructor, Resolver):
-    def __init__(self, stream, version=None):
+    def __init__(self, stream, version=None, preserve_quotes=None):
         Reader.__init__(self, stream)
         Scanner.__init__(self)
         Parser.__init__(self)
@@ -52,10 +52,10 @@ class Loader(Reader, Scanner, Parser, Composer, Constructor, Resolver):
 
 class RoundTripLoader(Reader, RoundTripScanner, RoundTripParser, Composer,
                       RoundTripConstructor, VersionedResolver):
-    def __init__(self, stream, version=None):
+    def __init__(self, stream, version=None, preserve_quotes=None):
         Reader.__init__(self, stream)
         RoundTripScanner.__init__(self)
         RoundTripParser.__init__(self)
         Composer.__init__(self)
-        RoundTripConstructor.__init__(self)
+        RoundTripConstructor.__init__(self, preserve_quotes=preserve_quotes)
         VersionedResolver.__init__(self, version)

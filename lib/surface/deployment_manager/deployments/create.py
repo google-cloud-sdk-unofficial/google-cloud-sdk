@@ -19,14 +19,15 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.deployment_manager import dm_api_util
 from googlecloudsdk.api_lib.deployment_manager import dm_base
 from googlecloudsdk.api_lib.deployment_manager import exceptions as dm_exceptions
-from googlecloudsdk.api_lib.deployment_manager import importer
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deployment_manager import dm_util
 from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.command_lib.deployment_manager import flags
+from googlecloudsdk.command_lib.deployment_manager import importer
 from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 # Number of seconds (approximately) to wait for create operation to complete.
 OPERATION_TIMEOUT = 20 * 60  # 20 mins
@@ -44,15 +45,29 @@ class Create(base.CreateCommand, dm_base.DmCommand):
 
   detailed_help = {
       'EXAMPLES': """\
-          To create a new deployment, run:
+          To create a new deployment from a top-level yaml file, run:
 
             $ {command} my-deployment --config config.yaml --description "My deployment"
+
+          To create a new deployment from a top-level template file, run:
+
+            $ gcloud deployment-manager deployments create my-deployment \
+            --template template.{jinja|py} \
+            --properties "string-key:'string-value',integer-key:12345"
+
+          To create a new deployment directly from a composite type, run:
+
+            $ gcloud deployment-manager deployments create my-deployment \
+            --composite-type <project-id>/composite:<type-name> \
+            --properties "string-key:'string-value',integer-key:12345"
 
           To preview a deployment without actually creating resources, run:
 
             $ {command} my-new-deployment --config config.yaml --preview
 
           To instantiate a deployment that has been previewed, issue an update command for that deployment without specifying a config file.
+
+          More information is available at https://cloud.google.com/deployment-manager/docs/configuration/.
           """,
   }
 
@@ -69,6 +84,9 @@ class Create(base.CreateCommand, dm_base.DmCommand):
     """
     group = parser.add_mutually_exclusive_group()
 
+    config_group = parser.add_mutually_exclusive_group(required=True)
+
+    flags.AddConfigFlags(config_group)
     flags.AddAsyncFlag(group)
     flags.AddDeploymentNameFlag(parser)
     flags.AddPropertiesFlag(parser)
@@ -87,14 +105,6 @@ class Create(base.CreateCommand, dm_base.DmCommand):
         '--description',
         help='Optional description of the deployment to insert.',
         dest='description')
-
-    parser.add_argument(
-        '--config',
-        help='Filename of config that specifies resources to deploy. '
-        'More information is available at '
-        'https://cloud.google.com/deployment-manager/docs/configuration/.',
-        dest='config',
-        required=True)
 
     parser.add_argument(
         '--preview',
@@ -133,14 +143,22 @@ class Create(base.CreateCommand, dm_base.DmCommand):
       ConfigError: Config file could not be read or parsed, or the
           deployment creation operation encountered an error.
     """
+    deployment_ref = self.resources.Parse(
+        args.deployment_name,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='deploymentmanager.deployments')
     if ((not args.IsSpecified('format')) and
         (args.async or getattr(args, 'automatic_rollback', False))):
       args.format = flags.OPERATION_FORMAT
 
     deployment = self.messages.Deployment(
-        name=args.deployment_name,  # TODO(b/37913150): Use resource parser.
-        target=importer.BuildTargetConfig(
-            self.messages, args.config, args.properties),
+        name=deployment_ref.deployment,
+        target=importer.BuildTargetConfig(self.messages,
+                                          config=args.config,
+                                          template=args.template,
+                                          composite_type=args.composite_type,
+                                          properties=args.properties)
+
     )
 
     self._SetMetadata(args, deployment)
@@ -159,7 +177,7 @@ class Create(base.CreateCommand, dm_base.DmCommand):
           self.client,
           self.messages,
           dm_base.GetProject(),
-          args.deployment_name)
+          deployment_ref.deployment)
       dm_util.PrintFingerprint(fingerprint)
 
     except apitools_exceptions.HttpError as error:
@@ -184,17 +202,19 @@ class Create(base.CreateCommand, dm_base.DmCommand):
         response = self._HandleOperationError(error,
                                               args,
                                               operation,
-                                              dm_base.GetProject())
+                                              dm_base.GetProject(),
+                                              deployment_ref)
         return response
 
       return dm_api_util.FetchResourcesAndOutputs(self.client,
                                                   self.messages,
                                                   dm_base.GetProject(),
-                                                  args.deployment_name)
+                                                  deployment_ref.deployment)
 
-  def _HandleOperationError(self, error, args, operation, project):
+  def _HandleOperationError(
+      self, error, args, operation, project, deployment_ref):
     if args.automatic_rollback:
-      delete_operation = self._PerformRollback(args.deployment_name,
+      delete_operation = self._PerformRollback(deployment_ref.deployment,
                                                str(error))
       create_operation = dm_api_util.GetOperation(self.client, self.messages,
                                                   operation, project)

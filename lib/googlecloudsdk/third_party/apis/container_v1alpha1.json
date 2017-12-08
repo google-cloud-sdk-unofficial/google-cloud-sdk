@@ -3,6 +3,7 @@
   "discoveryVersion": "v1",
   "id": "container:v1alpha1",
   "name": "container",
+  "canonicalName": "Container",
   "version": "v1alpha1",
   "revision": "0",
   "title": "Google Container Engine API",
@@ -19,7 +20,7 @@
   "servicePath": "",
   "baseUrl": "https://container.googleapis.com/",
   "batchPath": "batch",
-  "version_module": "True",
+  "version_module": true,
   "parameters": {
     "access_token": {
       "type": "string",
@@ -1031,6 +1032,10 @@
         "desiredMasterAuthorizedNetworksConfig": {
           "description": "The desired configuration options for master authorized networks feature.",
           "$ref": "MasterAuthorizedNetworksConfig"
+        },
+        "desiredAuditConfig": {
+          "description": "Whether to enable execve audit logging on the nodes.",
+          "$ref": "AuditConfig"
         },
         "desiredMasterVersion": {
           "description": "The Kubernetes version to change the master to. The only valid value is the\nlatest supported version. Use \"-\" to have the server automatically select\nthe latest version.",

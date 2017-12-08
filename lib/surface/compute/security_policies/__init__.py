@@ -16,8 +16,7 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SecurityPolicies(base.Group):
   """Read and manipulate Google Compute Engine security policies."""
   pass

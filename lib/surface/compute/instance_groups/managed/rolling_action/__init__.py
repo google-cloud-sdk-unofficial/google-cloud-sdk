@@ -16,7 +16,7 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ManagedInstanceGroupsRollingAction(base.Group):
   """Read and manipulate Google Compute Engine managed instance groups."""
 

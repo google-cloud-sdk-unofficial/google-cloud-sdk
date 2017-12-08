@@ -19,15 +19,16 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.deployment_manager import dm_api_util
 from googlecloudsdk.api_lib.deployment_manager import dm_base
 from googlecloudsdk.api_lib.deployment_manager import dm_labels
-from googlecloudsdk.api_lib.deployment_manager import importer
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deployment_manager import dm_util
 from googlecloudsdk.command_lib.deployment_manager import dm_v2_base
 from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.command_lib.deployment_manager import flags
+from googlecloudsdk.command_lib.deployment_manager import importer
 from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 # Number of seconds (approximately) to wait for update operation to complete.
 OPERATION_TIMEOUT = 20 * 60  # 20 mins
@@ -45,9 +46,18 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
 
   detailed_help = {
       'EXAMPLES': """\
-          To update an existing deployment with a new config file, run:
+          To update an existing deployment with a new config yaml file, run:
 
             $ {command} my-deployment --config new_config.yaml
+
+          To update an existing deployment with a new config template file, run:
+
+            $ {command} my-deployment --template new_config.{jinja|py}
+
+          To update an existing deployment with a composite type as a new config, run:
+
+            $ {command} my-deployment --composite-type <project-id>/composite:<new-config>
+
 
           To preview an update to an existing deployment without actually modifying the resources, run:
 
@@ -68,6 +78,10 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
           To update an existing deployment with a new config file and a fingerprint, run:
 
             $ {command} my-deployment --config new_config.yaml --fingerprint deployment-fingerprint
+
+          Either the --config, --template, or --composite-type flag is required unless launching an already-previewed update to a deployment.
+
+          More information is available at https://cloud.google.com/deployment-manager/docs/configuration/.
           """,
   }
 
@@ -93,13 +107,7 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
     )
 
     group = parser.add_mutually_exclusive_group()
-    group.add_argument(
-        '--config',
-        help='Filename of config that specifies resources to deploy. '
-        'Required unless launching an already-previewed update to this '
-        'deployment. More information is available at '
-        'https://cloud.google.com/deployment-manager/docs/configuration/.',
-        dest='config')
+    flags.AddConfigFlags(group)
 
     if version in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
       group.add_argument(
@@ -158,30 +166,39 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
       HttpException: An http error response was received while executing api
           request.
     """
+    deployment_ref = self.resources.Parse(
+        args.deployment_name,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='deploymentmanager.deployments')
     if not args.IsSpecified('format') and args.async:
       args.format = flags.OPERATION_FORMAT
 
     patch_request = False
     deployment = self.messages.Deployment(
-        name=args.deployment_name,
+        name=deployment_ref.deployment,
     )
 
-    if args.config:
+    if not (args.config is None and args.template is None
+            and args.composite_type is None):
       deployment.target = importer.BuildTargetConfig(
-          self.messages, args.config, args.properties)
+          self.messages,
+          config=args.config,
+          template=args.template,
+          composite_type=args.composite_type,
+          properties=args.properties)
     elif (self.ReleaseTrack() in [base.ReleaseTrack.ALPHA,
                                   base.ReleaseTrack.BETA]
           and args.manifest_id):
       deployment.target = importer.BuildTargetConfigFromManifest(
           self.client, self.messages,
           dm_base.GetProject(),
-          args.deployment_name, args.manifest_id, args.properties)
+          deployment_ref.deployment, args.manifest_id, args.properties)
     # Get the fingerprint from the deployment to update.
     try:
       current_deployment = self.client.deployments.Get(
           self.messages.DeploymentmanagerDeploymentsGetRequest(
               project=dm_base.GetProject(),
-              deployment=args.deployment_name
+              deployment=deployment_ref.deployment
           )
       )
 
@@ -220,7 +237,7 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
       request = self.messages.DeploymentmanagerDeploymentsUpdateRequest(
           deploymentResource=deployment,
           project=dm_base.GetProject(),
-          deployment=args.deployment_name,
+          deployment=deployment_ref.deployment,
           preview=args.preview,
           createPolicy=(self.messages.DeploymentmanagerDeploymentsUpdateRequest.
                         CreatePolicyValueValuesEnum(args.create_policy)),
@@ -232,10 +249,9 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
       operation = client.deployments.Update(request)
 
       # Fetch and print the latest fingerprint of the deployment.
-      updated_deployment = dm_api_util.FetchDeployment(self.client,
-                                                       self.messages,
-                                                       dm_base.GetProject(),
-                                                       args.deployment_name)
+      updated_deployment = dm_api_util.FetchDeployment(
+          self.client, self.messages, dm_base.GetProject(),
+          deployment_ref.deployment)
       if patch_request:
         if args.async:
           log.warn('Updating Deployment metadata is synchronous, --async flag '
@@ -264,7 +280,7 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
       return dm_api_util.FetchResourcesAndOutputs(self.client,
                                                   self.messages,
                                                   dm_base.GetProject(),
-                                                  args.deployment_name)
+                                                  deployment_ref.deployment)
 
   def _GetUpdatedDeploymentLabels(self, args, deployment):
     update_labels = labels_util.GetUpdateLabelsDictFromArgs(args)

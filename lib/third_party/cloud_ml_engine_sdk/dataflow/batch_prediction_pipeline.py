@@ -48,6 +48,8 @@ def run(p, args, aggregator_dict):
   results, errors = (reader
                      | "BATCH_PREDICTION" >> batch_prediction.BatchPredict(
                          beam.pvalue.AsSingleton(model_dir),
+                         tags=args.tags,
+                         signature_name=args.signature_name,
                          batch_size=args.batch_size,
                          aggregator_dict=aggregator_dict,
                          user_project_id=args.user_project_id,

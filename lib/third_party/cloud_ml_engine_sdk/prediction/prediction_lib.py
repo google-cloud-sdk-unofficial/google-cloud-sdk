@@ -40,6 +40,7 @@ import tensorflow.contrib   # pylint: disable=unused-import
 from tensorflow.python.client import session as tf_session
 from tensorflow.python.framework import dtypes
 from tensorflow.python.saved_model import loader
+from tensorflow.python.saved_model import signature_constants
 from tensorflow.python.saved_model import tag_constants
 
 
@@ -62,33 +63,44 @@ INPUT_PROCESSING_TIME = "Prediction-Input-Processing-Time"
 
 SESSION_RUN_ENGINE_NAME = "TF_SESSION_RUN"
 
+PredictionErrorType = collections.namedtuple(
+    "PredictionErrorType", ("message", "code"))
+
 
 class PredictionError(Exception):
   """Customer exception for known prediction exception."""
 
   # The error code for prediction.
-  # TODO(b/34686732) Use strings instead of ints for these errors.
-  FAILED_TO_LOAD_MODEL = 0
-  FAILED_TO_PREPROCESS_INPUTS = 1
-  FAILED_TO_PARSE_INPUTS = 2
-  FAILED_TO_HANDLE_BAD_INPUTS = 3
-  FAILED_TO_RUN_GRAPH = 4
-  FAILED_TO_GET_INPUT_TENSOR_ALIAS_MAP = 5
-  FAILED_TO_GET_OUTPUT_TENSOR_ALIAS_MAP = 6
-  FAILED_TO_RUN_GRAPH_BAD_OUTPUTS = 7
-  FAILED_TO_GET_DEFAULT_SIGNATURE = 8
-  FAILED_TO_LOAD_USER_CODE = 9
+  FAILED_TO_LOAD_MODEL = PredictionErrorType(
+      message="Failed to load model", code=0)
+  INVALID_INPUTS = PredictionErrorType("Invalid inputs", code=1)
+  FAILED_TO_RUN_GRAPH = PredictionErrorType(
+      message="Failed to run Tensorflow graph", code=2)
+  INVALID_OUTPUTS = PredictionErrorType(
+      message="There was a problem processing the outputs", code=3)
+  INVALID_USER_CODE = PredictionErrorType(
+      message="There was a problem processing the user code", code=4)
+  # When adding new exception, please update the ERROR_MESSAGE_ list as well as
+  # unittest.
 
-  def __init__(self, error_code, error_message, *args):
-    super(PredictionError, self).__init__(error_code, error_message, *args)
+  def __init__(self, error_code, error_detail, *args):
+    super(PredictionError, self).__init__(error_code, error_detail, *args)
 
   @property
   def error_code(self):
-    return self.args[0]
+    return self.args[0].code
 
   @property
   def error_message(self):
+    return self.args[0].message
+
+  @property
+  def error_detail(self):
     return self.args[1]
+
+  def __str__(self):
+    return ("%s: %s (Error code: %d)" % (self.error_message,
+                                         self.error_detail, self.error_code))
 
 
 MICRO = 1000000
@@ -245,7 +257,7 @@ def rowify(columns):
   if len(sizes_set) != 1:
     sizes_dict = {name: e.shape[0] for name, e in columns.iteritems()}
     raise PredictionError(
-        PredictionError.FAILED_TO_RUN_GRAPH_BAD_OUTPUTS,
+        PredictionError.INVALID_OUTPUTS,
         "Bad output from running tensorflow session: outputs had differing "
         "sizes in the batch (outer) dimension. See the outputs and their "
         "size: %s. Check your model for bugs that effect the size of the "
@@ -259,11 +271,18 @@ def rowify(columns):
 
 # TODO(b/34686738): when we no longer load the model to get the signature
 # consider making this a named constructor on SessionClient.
-def load_model(model_path, config=None):
+def load_model(
+    model_path,
+    tags=(tag_constants.SERVING,),
+    signature_name=signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY,
+    config=None):
   """Loads the model at the specified path.
 
   Args:
     model_path: the path to either session_bundle or SavedModel
+    tags: the tags that determines the model to load.
+    signature_name: the string used as the key to signature map to locate the
+                   serving signature.
     config: tf.ConfigProto containing session configuration options.
 
   Returns:
@@ -275,11 +294,11 @@ def load_model(model_path, config=None):
   if loader.maybe_saved_model_directory(model_path):
     try:
       session = tf_session.Session(target="", graph=None, config=config)
-      meta_graph = loader.load(session, tags=[tag_constants.SERVING],
-                               export_dir=model_path)
+      meta_graph = loader.load(session, tags=list(tags), export_dir=model_path)
     except Exception:  # pylint: disable=broad-except
       raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL,
-                            "Failed to load the model due to bad model data.")
+                            "Failed to load the model due to bad model data."
+                            " tags: %s" % tags)
   else:
     raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL,
                           "Cloud ML only supports TF 1.0 or above and models "
@@ -288,16 +307,20 @@ def load_model(model_path, config=None):
   if session is None:
     raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL,
                           "Failed to create session when loading the model")
-  signature = _get_signature_from_meta_graph(session.graph, meta_graph)
+  signature = _get_signature_from_meta_graph(
+      session.graph, meta_graph, signature_name)
 
   return session, signature
 
 
-def _get_signature_from_meta_graph(graph, meta_graph):
+def _get_signature_from_meta_graph(
+    graph, meta_graph,
+    signature_name=signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY):
   """Returns the SignatureDef in meta_graph update dtypes using graph."""
   if not meta_graph.signature_def:
     raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL,
                           "MetaGraph must have at least one signature_def.")
+
   named_key = "serving_default_from_named"
   if len(meta_graph.signature_def) > 1:
     logging.warning("MetaGraph has multiple signatures %d. Support for "
@@ -306,9 +329,12 @@ def _get_signature_from_meta_graph(graph, meta_graph):
   if named_key in meta_graph.signature_def:
     return meta_graph.signature_def[named_key]
 
-  # TODO(b/34690042): document these and point to a public, canonical constant.
-  signature = meta_graph.signature_def["serving_default"]
+  if signature_name not in meta_graph.signature_def:
+    raise PredictionError(
+        PredictionError.FAILED_TO_LOAD_MODEL,
+        "No signature found for signature key %s." % signature_name)
 
+  signature = meta_graph.signature_def[signature_name]
   # Signatures often omit the dtype and shape information. Looks those up if
   # necessary.
   _update_dtypes(graph, signature.inputs)
@@ -375,7 +401,7 @@ class SessionClient(object):
         unaliased = {self.signature.inputs[key].name: val
                      for key, val in inputs.iteritems()}
       except Exception as e:
-        raise PredictionError(PredictionError.FAILED_TO_HANDLE_BAD_INPUTS,
+        raise PredictionError(PredictionError.INVALID_INPUTS,
                               "Input mismatch: " + str(e))
 
     with stats.time(SESSION_RUN_TIME):
@@ -445,7 +471,7 @@ def load_model_class(client, model_path):
   # TODO(b/37749453): right place to generate errors?
   if not model_class:
     package_uris = [str(s) for s in version.get("package_uris")]
-    raise PredictionError(PredictionError.FAILED_TO_LOAD_USER_CODE,
+    raise PredictionError(PredictionError.INVALID_USER_CODE,
                           "%s cannot be found. Please make sure "
                           "(1) model_class is the fully qualified function "
                           "name, and (2) model_class uses the correct package "
@@ -460,7 +486,7 @@ def _validate_model_class(user_class):
   """Validates a user provided instance of a Model implementation.
 
   Args:
-    user_class: An instance of of a Model implementation.
+    user_class: An instance of a Model implementation.
 
   Raises:
     PredictionError: for any of the following:
@@ -473,12 +499,12 @@ def _validate_model_class(user_class):
   # class. We can only inspect the user_class to check if it conforms to the
   # Model interface.
   if not hasattr(user_class, "predict"):
-    raise PredictionError(PredictionError.FAILED_TO_LOAD_USER_CODE,
+    raise PredictionError(PredictionError.INVALID_USER_CODE,
                           "The provided model class, %s, is missing the "
                           "required predict method." % user_class_name)
   # Check that the signature method is implemented
   if not hasattr(user_class, "signature"):
-    raise PredictionError(PredictionError.FAILED_TO_LOAD_USER_CODE,
+    raise PredictionError(PredictionError.INVALID_USER_CODE,
                           "The provided model class, %s, is missing the "
                           "required signature property." % user_class_name)
   # Check the predict method has the correct number of arguments
@@ -487,7 +513,7 @@ def _validate_model_class(user_class):
   user_predict_num_args = len(user_signature)
   predict_num_args = len(model_signature)
   if predict_num_args is not user_predict_num_args:
-    raise PredictionError(PredictionError.FAILED_TO_LOAD_USER_CODE,
+    raise PredictionError(PredictionError.INVALID_USER_CODE,
                           "The provided model class, %s, has a predict method "
                           "with an invalid signature. Expected signature: %s "
                           "User signature: %s" %
@@ -556,7 +582,7 @@ class DefaultModel(object):
       return [self._preprocess_fn(i).SerializeToString() for i in instances]
     except Exception as e:
       logging.error("Exception during preprocessing: " + str(e))
-      raise PredictionError(PredictionError.FAILED_TO_PREPROCESS_INPUTS,
+      raise PredictionError(PredictionError.INVALID_INPUTS,
                             "Exception during preprocessing: " + str(e))
 
   # TODO(b/34686738): can this be removed?
@@ -602,7 +628,7 @@ class DefaultModel(object):
         return x.values()[0]
       else:
         raise PredictionError(
-            PredictionError.FAILED_TO_PARSE_INPUTS,
+            PredictionError.INVALID_INPUTS,
             "Expected tensor name: %s, got tensor name: %s." %
             (tensor_name, x.keys()))
 
@@ -655,7 +681,7 @@ class DefaultModel(object):
         # TODO(b/34686738): perform this check in columnarize?
         if isinstance(v, list) and len(v) != len(preprocessed):
           raise PredictionError(
-              PredictionError.FAILED_TO_HANDLE_BAD_INPUTS,
+              PredictionError.INVALID_INPUTS,
               "Input %s was missing in at least one input instance." % k)
 
     with stats.time(ENGINE_RUN_TIME):
@@ -763,10 +789,14 @@ def _encode_str_tensor(data):
   return {"b64": base64.b64encode(data)}
 
 
-def local_predict(model_dir=None, instances=None):
+def local_predict(
+    model_dir=None,
+    tags=(tag_constants.SERVING,),
+    signature_name=signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY,
+    instances=None):
+  """Run a prediction locally."""
   instances = decode_base64(instances)
-
-  client = SessionClient(*load_model(model_dir))
+  client = SessionClient(*load_model(model_dir, tags, signature_name))
   model = create_model(client, model_dir)
   _, predictions = model.predict(instances)
   predictions = list(predictions)

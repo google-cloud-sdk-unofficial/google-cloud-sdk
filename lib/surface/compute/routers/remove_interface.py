@@ -66,7 +66,8 @@ class RemoveBgpPeer(base.UpdateCommand):
                 region=router_ref.region,
                 project=router_ref.project))
 
-  def Modify(self, args, existing):
+  def Modify(self, args, existing, cleared_fields):
+    """Mutate the router and record any cleared_fields for Patch request."""
     replacement = encoding.CopyProtoMessage(existing)
 
     # remove interface if exists
@@ -75,6 +76,8 @@ class RemoveBgpPeer(base.UpdateCommand):
       if i.name == args.interface_name:
         interface = i
         replacement.interfaces.remove(interface)
+        if not replacement.interfaces:
+          cleared_fields.append('interfaces')
         break
 
     if interface is None:
@@ -91,7 +94,12 @@ class RemoveBgpPeer(base.UpdateCommand):
 
     objects = client.MakeRequests([get_request])
 
-    new_object = self.Modify(args, objects[0])
+    # Cleared list fields need to be explicitly identified for Patch API.
+    cleared_fields = []
+    new_object = self.Modify(args, objects[0], cleared_fields)
 
-    return client.MakeRequests(
-        [self.GetSetRequest(client, router_ref, new_object)])
+    with client.apitools_client.IncludeFields(cleared_fields):
+      # There is only one response because one request is made above
+      result = client.MakeRequests(
+          [self.GetSetRequest(client, router_ref, new_object)])
+      return result

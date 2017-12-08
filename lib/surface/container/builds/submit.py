@@ -55,7 +55,15 @@ class FailedBuildException(core_exceptions.Error):
     base.ReleaseTrack.BETA,
     base.ReleaseTrack.GA)
 class Submit(base.CreateCommand):
-  """Submit a build using the Google Container Builder service."""
+  """Submit a build using the Google Container Builder service.
+
+  Submit a build using the Google Container Builder service.
+
+  ## NOTES
+
+  You can also run a build locally using the
+  separate component: `gcloud components install container-builder-local`.
+  """
 
   @staticmethod
   def Args(parser):

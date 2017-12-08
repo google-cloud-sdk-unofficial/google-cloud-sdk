@@ -20,11 +20,16 @@ from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute.backend_services import (
+    client as backend_service_client)
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
+from googlecloudsdk.command_lib.compute.security_policies import (
+    flags as security_policy_flags)
 from googlecloudsdk.core import log
+from googlecloudsdk.core import resources as resources_exceptions
 
 
 def AddIapFlag(parser):
@@ -81,6 +86,13 @@ class UpdateGA(base.UpdateCommand):
     flags.AddCacheKeyIncludeQueryString(parser, default=None)
     flags.AddCacheKeyQueryStringList(parser)
     AddIapFlag(parser)
+
+  def _CreateSetSecurityPoliciesRequest(self, client, backend_service_ref,
+                                        security_policy_ref):
+    backend_service = backend_service_client.BackendService(
+        backend_service_ref, compute_client=client)
+    return backend_service.SetSecurityPolicy(
+        security_policy=security_policy_ref, only_generate_request=True)
 
   def GetGetRequest(self, client, backend_service_ref):
     """Create Backend Services get request."""
@@ -213,13 +225,28 @@ class UpdateGA(base.UpdateCommand):
     # Modify() returns None, then there is no work to be done, so we
     # print the resource and return.
     if objects[0] == new_object:
-      log.status.Print(
-          'No change requested; skipping update for [{0}].'.format(
-              objects[0].name))
-      return objects
+      # Only skip push if security_policy is not set.
+      if getattr(args, 'security_policy', None) is None:
+        log.status.Print(
+            'No change requested; skipping update for [{0}].'.format(
+                objects[0].name))
+        return objects
+      requests = []
+    else:
+      requests = [self.GetSetRequest(client, backend_service_ref, new_object)]
 
-    return client.MakeRequests(
-        [self.GetSetRequest(client, backend_service_ref, new_object)])
+    # Empty string is a valid value.
+    if getattr(args, 'security_policy', None) is not None:
+      try:
+        security_policy_ref = self.SECURITY_POLICY_ARG.ResolveAsResource(
+            args, holder.resources).SelfLink()
+      # If security policy is an empty string we should clear the current policy
+      except resources_exceptions.InvalidResourceException:
+        security_policy_ref = None
+      requests += self._CreateSetSecurityPoliciesRequest(
+          client, backend_service_ref, security_policy_ref)
+
+    return client.MakeRequests(requests)
 
   def _ApplyIapArgs(self, client, iap_arg, existing, replacement):
     if iap_arg is not None:
@@ -244,6 +271,7 @@ class UpdateAlpha(UpdateGA):
   HEALTH_CHECK_ARG = None
   HTTP_HEALTH_CHECK_ARG = None
   HTTPS_HEALTH_CHECK_ARG = None
+  SECURITY_POLICY_ARG = None
 
   @classmethod
   def Args(cls, parser):
@@ -258,6 +286,10 @@ class UpdateAlpha(UpdateGA):
     cls.HTTPS_HEALTH_CHECK_ARG = flags.HttpsHealthCheckArgument()
     cls.HTTPS_HEALTH_CHECK_ARG.AddArgument(
         parser, cust_metavar='HTTPS_HEALTH_CHECK')
+    cls.SECURITY_POLICY_ARG = (
+        security_policy_flags.SecurityPolicyArgumentForTargetResource(
+            resource='backend service'))
+    cls.SECURITY_POLICY_ARG.AddArgument(parser)
     flags.AddTimeout(parser, default=None)
     flags.AddPortName(parser)
     flags.AddProtocol(parser, default=None)
@@ -300,6 +332,7 @@ class UpdateAlpha(UpdateGA):
         args.port,
         args.port_name,
         args.protocol,
+        args.security_policy is not None,
         args.session_affinity is not None,
         args.timeout is not None,
         getattr(args, 'health_checks', None),
@@ -318,6 +351,7 @@ class UpdateBeta(UpdateGA):
   HEALTH_CHECK_ARG = None
   HTTP_HEALTH_CHECK_ARG = None
   HTTPS_HEALTH_CHECK_ARG = None
+  SECURITY_POLICY_ARG = None
 
   @classmethod
   def Args(cls, parser):
@@ -332,6 +366,10 @@ class UpdateBeta(UpdateGA):
     cls.HTTPS_HEALTH_CHECK_ARG = flags.HttpsHealthCheckArgument()
     cls.HTTPS_HEALTH_CHECK_ARG.AddArgument(
         parser, cust_metavar='HTTPS_HEALTH_CHECK')
+    cls.SECURITY_POLICY_ARG = (
+        security_policy_flags.SecurityPolicyArgumentForTargetResource(
+            resource='backend service'))
+    cls.SECURITY_POLICY_ARG.AddArgument(parser)
     flags.AddTimeout(parser, default=None)
     flags.AddPortName(parser)
     flags.AddProtocol(parser, default=None)
@@ -376,6 +414,7 @@ class UpdateBeta(UpdateGA):
         args.port,
         args.port_name,
         args.protocol,
+        args.security_policy is not None,
         args.session_affinity is not None,
         args.timeout is not None,
     ]):

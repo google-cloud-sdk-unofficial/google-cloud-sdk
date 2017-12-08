@@ -155,6 +155,8 @@ class Update(base.UpdateCommand):
     flags.AddUpdateLabelsFlag(group, suppressed=True)
     flags.AddRemoveLabelsFlag(group, suppressed=True)
     flags.AddNetworkPolicyFlags(group, hidden=True)
+    flags.AddLoggingServiceFlag(group, hidden=True)
+    flags.AddEnableAuditLoggingFlag(group, hidden=True)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -262,6 +264,11 @@ class Update(base.UpdateCommand):
         op_ref = adapter.RemoveLabels(cluster_ref, args.remove_labels)
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif args.logging_service is not None:
+      try:
+        op_ref = adapter.SetLoggingService(cluster_ref, args.logging_service)
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     else:
       enable_master_authorized_networks = args.enable_master_authorized_networks
 
@@ -278,7 +285,8 @@ class Update(base.UpdateCommand):
             node_pool=args.node_pool,
             locations=locations,
             enable_master_authorized_networks=enable_master_authorized_networks,
-            master_authorized_networks=args.master_authorized_networks)
+            master_authorized_networks=args.master_authorized_networks,
+            enable_audit_logging=args.enable_audit_logging)
         op_ref = adapter.UpdateCluster(cluster_ref, options)
 
     if not args.async:
@@ -304,7 +312,7 @@ class UpdateBeta(Update):
     _AddCommonArgs(parser)
     group = parser.add_mutually_exclusive_group(required=True)
     _AddMutuallyExclusiveArgs(group)
-    flags.AddClusterAutoscalingFlags(parser, group, hidden=True)
+    flags.AddClusterAutoscalingFlags(parser, group)
     _AddAdditionalZonesArg(group)
     flags.AddMasterAuthorizedNetworksFlags(parser, group)
     flags.AddEnableLegacyAuthorizationFlag(group)
@@ -313,6 +321,8 @@ class UpdateBeta(Update):
     flags.AddUpdateLabelsFlag(group)
     flags.AddRemoveLabelsFlag(group)
     flags.AddNetworkPolicyFlags(group, hidden=True)
+    flags.AddLoggingServiceFlag(group)
+    flags.AddEnableAuditLoggingFlag(group, hidden=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -335,3 +345,5 @@ class UpdateAlpha(Update):
     flags.AddUpdateLabelsFlag(group)
     flags.AddRemoveLabelsFlag(group)
     flags.AddNetworkPolicyFlags(group, hidden=False)
+    flags.AddLoggingServiceFlag(group)
+    flags.AddEnableAuditLoggingFlag(group, hidden=True)

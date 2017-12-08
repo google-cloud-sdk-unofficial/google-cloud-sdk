@@ -15,7 +15,6 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import filter_rewrite
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
@@ -45,10 +44,12 @@ class List(base.ListCommand):
     return interconnect_attachments_lists, response.nextPageToken
 
   def Run(self, args):
-    compute_interconnect_attachments = apis.GetClientInstance(
-        'compute', 'alpha').interconnectAttachments
+    client = base_classes.ComputeApiHolder(
+        self.ReleaseTrack()).client.apitools_client
 
-    messages = apis.GetMessagesModule('compute', 'alpha')
+    compute_interconnect_attachments = client.interconnectAttachments
+
+    messages = client.MESSAGES_MODULE
     project = properties.VALUES.core.project.GetOrFail()
 
     args.filter, filter_expr = filter_rewrite.Rewriter().Rewrite(args.filter)

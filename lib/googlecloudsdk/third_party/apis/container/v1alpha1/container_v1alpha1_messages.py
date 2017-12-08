@@ -353,6 +353,7 @@ class ClusterUpdate(_messages.Message):
   Fields:
     desiredAddonsConfig: Configurations for the various addons available to
       run in the cluster.
+    desiredAuditConfig: Whether to enable execve audit logging on the nodes.
     desiredImageType: The desired image type for the node pool. NOTE: Set the
       "desired_node_pool" field as well.
     desiredLocations: The desired list of Google Compute Engine
@@ -389,16 +390,17 @@ class ClusterUpdate(_messages.Message):
   """
 
   desiredAddonsConfig = _messages.MessageField('AddonsConfig', 1)
-  desiredImageType = _messages.StringField(2)
-  desiredLocations = _messages.StringField(3, repeated=True)
-  desiredMasterAuthorizedNetworks = _messages.MessageField('MasterAuthorizedNetworks', 4)
-  desiredMasterAuthorizedNetworksConfig = _messages.MessageField('MasterAuthorizedNetworksConfig', 5)
-  desiredMasterMachineType = _messages.StringField(6)
-  desiredMasterVersion = _messages.StringField(7)
-  desiredMonitoringService = _messages.StringField(8)
-  desiredNodePoolAutoscaling = _messages.MessageField('NodePoolAutoscaling', 9)
-  desiredNodePoolId = _messages.StringField(10)
-  desiredNodeVersion = _messages.StringField(11)
+  desiredAuditConfig = _messages.MessageField('AuditConfig', 2)
+  desiredImageType = _messages.StringField(3)
+  desiredLocations = _messages.StringField(4, repeated=True)
+  desiredMasterAuthorizedNetworks = _messages.MessageField('MasterAuthorizedNetworks', 5)
+  desiredMasterAuthorizedNetworksConfig = _messages.MessageField('MasterAuthorizedNetworksConfig', 6)
+  desiredMasterMachineType = _messages.StringField(7)
+  desiredMasterVersion = _messages.StringField(8)
+  desiredMonitoringService = _messages.StringField(9)
+  desiredNodePoolAutoscaling = _messages.MessageField('NodePoolAutoscaling', 10)
+  desiredNodePoolId = _messages.StringField(11)
+  desiredNodeVersion = _messages.StringField(12)
 
 
 class CompleteIPRotationRequest(_messages.Message):

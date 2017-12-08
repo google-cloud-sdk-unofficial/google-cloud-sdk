@@ -88,6 +88,14 @@ aren't a first-class Cloud Storage concept) of `my-bucket`.
       type=int,
       help=('The maximum number of workers to be used for parallel processing. '
             'Defaults to 10 if not specified.'))
+  parser.add_argument(
+      '--batch-size',
+      required=False,
+      type=int,
+      help=('The number of records per batch. The service will buffer '
+            'batch_size number of records in memory before invoking TensorFlow.'
+            ' Defaults to 64 if not specified.'))
+
   flags.RUNTIME_VERSION.AddToParser(parser)
 
 
@@ -110,4 +118,5 @@ class Prediction(base.Command):
         output_path=args.output_path,
         region=args.region,
         runtime_version=args.runtime_version,
-        max_worker_count=args.max_worker_count)
+        max_worker_count=args.max_worker_count,
+        batch_size=args.batch_size)

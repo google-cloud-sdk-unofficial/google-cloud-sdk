@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.command_lib.deployment_manager import flags
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 # Number of seconds (approximately) to wait for each delete operation to
@@ -99,11 +100,15 @@ class Delete(base.DeleteCommand, dm_base.DmCommand):
     operations = []
     errors = []
     for deployment_name in args.deployment_name:
+      deployment_ref = self.resources.Parse(
+          deployment_name,
+          params={'project': properties.VALUES.core.project.GetOrFail},
+          collection='deploymentmanager.deployments')
       try:
         operation = self.client.deployments.Delete(
             self.messages.DeploymentmanagerDeploymentsDeleteRequest(
                 project=dm_base.GetProject(),
-                deployment=deployment_name,
+                deployment=deployment_ref.deployment,
                 deletePolicy=(self.messages
                               .DeploymentmanagerDeploymentsDeleteRequest
                               .DeletePolicyValueValuesEnum(args.delete_policy)),

@@ -14,19 +14,31 @@
 """Command for listing instance groups."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
+from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class List(base_classes.MultiScopeLister):
-  """List Google Compute Engine instance groups."""
+def _Args(parser):
+  """Adds flags common to all release tracks."""
+  parser.display_info.AddFormat("""\
+        table(
+          name,
+          location():label=LOCATION,
+          location_scope():label=SCOPE,
+          network.basename(),
+          isManaged:label=MANAGED,
+          size:label=INSTANCES
+        )""")
+  lister.AddMultiScopeListerFlags(parser, zonal=True, regional=True)
 
-  SCOPES = (base_classes.ScopeType.regional_scope,
-            base_classes.ScopeType.zonal_scope)
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class List(base.ListCommand):
+  """List Google Compute Engine instance groups."""
 
   @staticmethod
   def Args(parser):
-    base_classes.MultiScopeLister.AddScopeArgs(parser, List.SCOPES)
+    _Args(parser)
     # TODO(b/36050942): deprecate --only-managed and --only-unmanaged flags.
     managed_args_group = parser.add_mutually_exclusive_group()
     managed_args_group.add_argument(
@@ -39,31 +51,7 @@ class List(base_classes.MultiScopeLister):
         help=('If provided, a list of unmanaged instance groups '
               'will be returned.'))
 
-  @property
-  def service(self):
-    return self.compute.instanceGroups
-
-  @property
-  def global_service(self):
-    return None
-
-  @property
-  def regional_service(self):
-    return self.compute.regionInstanceGroups
-
-  @property
-  def zonal_service(self):
-    return self.compute.instanceGroups
-
-  @property
-  def aggregation_service(self):
-    return self.compute.instanceGroups
-
-  @property
-  def resource_type(self):
-    return 'instanceGroups'
-
-  def ComputeDynamicProperties(self, args, items):
+  def ComputeDynamicProperties(self, args, items, holder):
     mode = instance_groups_utils.InstanceGroupFilteringMode.ALL_GROUPS
     if args.only_managed:
       mode = (instance_groups_utils.InstanceGroupFilteringMode
@@ -72,9 +60,24 @@ class List(base_classes.MultiScopeLister):
       mode = (instance_groups_utils.InstanceGroupFilteringMode
               .ONLY_UNMANAGED_GROUPS)
     return instance_groups_utils.ComputeInstanceGroupManagerMembership(
-        compute_holder=self._compute_holder,
+        compute_holder=holder,
         items=items,
         filter_mode=mode)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
+
+    list_implementation = lister.MultiScopeLister(
+        client,
+        zonal_service=client.apitools_client.instanceGroups,
+        regional_service=client.apitools_client.regionInstanceGroups,
+        aggregation_service=client.apitools_client.instanceGroups)
+
+    return self.ComputeDynamicProperties(
+        args, lister.Invoke(request_data, list_implementation), holder)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
@@ -83,15 +86,16 @@ class ListBetaAlpha(List):
 
   @staticmethod
   def Args(parser):
-    base_classes.MultiScopeLister.AddScopeArgs(parser, List.SCOPES)
+    _Args(parser)
 
-  def ComputeDynamicProperties(self, args, items):
+  def ComputeDynamicProperties(self, args, items, holder):
     return instance_groups_utils.ComputeInstanceGroupManagerMembership(
-        compute_holder=self._compute_holder,
+        compute_holder=holder,
         items=items,
         filter_mode=instance_groups_utils.InstanceGroupFilteringMode.ALL_GROUPS)
 
 
 List.detailed_help = base_classes.GetMultiScopeListerHelp(
-    'instance groups', List.SCOPES)
+    'instance groups', (base_classes.ScopeType.regional_scope,
+                        base_classes.ScopeType.zonal_scope))
 ListBetaAlpha.detailed_help = List.detailed_help

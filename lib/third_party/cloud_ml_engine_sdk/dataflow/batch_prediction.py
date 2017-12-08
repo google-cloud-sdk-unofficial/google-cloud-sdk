@@ -32,9 +32,9 @@ from apache_beam.utils.windowed_value import WindowedValue
 from google.cloud.ml import prediction as mlprediction
 from google.cloud.ml.dataflow import _aggregators as aggregators
 from google.cloud.ml.dataflow import _cloud_logging_client as cloud_logging_client
+from tensorflow.python.saved_model import signature_constants
+from tensorflow.python.saved_model import tag_constants
 
-BASE64_JSON_ATTR_ = "b64"
-BASE64_TENSOR_NAME_SUFFIX_ = "_bytes"
 DEFAULT_BATCH_SIZE = 1000  # 1K instances per batch when evaluating models.
 LOG_SIZE_LIMIT = 1000  # 1K bytes for the input field in log entries.
 LOG_NAME = "worker"
@@ -105,10 +105,11 @@ class PredictionDoFn(beam.DoFn):
   class _ModelState(object):
     """Atomic representation of the in-memory state of the model."""
 
-    def __init__(self, model_dir, skip_preprocessing):
+    def __init__(self, model_dir, tags, signature_name, skip_preprocessing):
       self.model_dir = model_dir
 
-      session, signature = mlprediction.load_model(model_dir)
+      session, signature = mlprediction.load_model(
+          model_dir, tags=tags, signature_name=signature_name)
       client = mlprediction.SessionClient(session, signature)
       self.model = mlprediction.create_model(
           client, model_dir, skip_preprocessing=skip_preprocessing)
@@ -121,6 +122,9 @@ class PredictionDoFn(beam.DoFn):
                aggregator_dict=None,
                user_project_id="",
                user_job_id="",
+               tags=tag_constants.SERVING,
+               signature_name=(
+                   signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY),
                skip_preprocessing=False,
                target="",
                config=None):
@@ -131,6 +135,10 @@ class PredictionDoFn(beam.DoFn):
                        to the aggregator.
       user_project_id: A string. The project to which the logs will be sent.
       user_job_id:     A string. The job to which the logs will be sent.
+      tags: A comma-separated string that contains a list of tags for serving
+            graph.
+      signature_name: A string to map into the signature map to get the serving
+                     signature.
       skip_preprocessing: bool whether to skip preprocessing even when
                           the metadata.yaml/metadata.json file exists.
       target: The execution engine to connect to. See target in tf.Session(). In
@@ -150,14 +158,21 @@ class PredictionDoFn(beam.DoFn):
       user_project_id = StaticValueProvider(str, user_project_id)
     if isinstance(user_job_id, basestring):
       user_job_id = StaticValueProvider(str, user_job_id)
+    if isinstance(tags, basestring):
+      tags = StaticValueProvider(str, tags)
+    if isinstance(signature_name, basestring):
+      signature_name = StaticValueProvider(str, signature_name)
 
     self._user_project_id = user_project_id
     self._user_job_id = user_job_id
+    self._tags = tags
+    self._signature_name = signature_name
     self._skip_preprocessing = skip_preprocessing
     self._config = config
     self._aggregator_dict = aggregator_dict
     self._model_state = None
     self._cloud_logger = None
+    self._tag_list = []
 
     # Metrics.
     self._model_load_seconds_distribution = beam.metrics.Metrics.distribution(
@@ -169,6 +184,8 @@ class PredictionDoFn(beam.DoFn):
     if user_project_id and user_job_id:
       self._cloud_logger = cloud_logging_client.MLCloudLoggingClient.create(
           user_project_id, user_job_id, LOG_NAME, "jsonPayload")
+    self._tag_list = self._tags.get().split(",")
+    self._signature_name = self._signature_name.get()
 
   def _create_snippet(self, input_data):
     """Truncate the input data to create a snippet."""
@@ -180,13 +197,7 @@ class PredictionDoFn(beam.DoFn):
                       traceback.format_exc())
       return "Input snippet is unavailable."
 
-  # TODO(user): Remove the try catch after sdk update
   def process(self, element, model_dir):
-    try:
-      element = element.element
-    except AttributeError:
-      pass
-
     try:
       if isinstance(model_dir, ValueProvider):
         model_dir = model_dir.get()
@@ -196,7 +207,8 @@ class PredictionDoFn(beam.DoFn):
             self._thread_local.model_state.model_dir != model_dir):
           start = datetime.datetime.now()
           self._thread_local.model_state = self._ModelState(
-              model_dir, self._skip_preprocessing)
+              model_dir, self._tag_list, self._signature_name,
+              self._skip_preprocessing)
           self._model_load_seconds_distribution.update(
               int((datetime.datetime.now() - start).total_seconds()))
         self._model_state = self._thread_local.model_state
@@ -262,6 +274,9 @@ class BatchPredict(beam.PTransform):
 
   def __init__(self,
                model_dir,
+               tags=tag_constants.SERVING,
+               signature_name=(
+                   signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY),
                batch_size=DEFAULT_BATCH_SIZE,
                aggregator_dict=None,
                user_project_id="",
@@ -275,6 +290,10 @@ class BatchPredict(beam.PTransform):
     Args:
       model_dir: a Pvalue singleton of model directory that contains model
                  graph and model parameter files.
+      tags: A comma-separated string that contains a list of tags for
+            serving graph.
+      signature_name: A string to map into the signature map to get the serving
+                     signature.
       batch_size: the number of records in one batch or a ValueProvider of
                   integer.  All the instances in the same batch would be fed
                   into tf session together thereby only on Session.Run() is
@@ -295,12 +314,29 @@ class BatchPredict(beam.PTransform):
     """
     super(BatchPredict, self).__init__(**kwargs)
 
+    if not isinstance(tags, (basestring, ValueProvider)):
+      raise TypeError("%s: tags must be of type string"
+                      " or ValueProvider; got %r instead"
+                      % (self.__class__.__name__, tags))
+    if isinstance(tags, basestring):
+      tags = StaticValueProvider(str, tags)
+    self._tags = tags
+
+    if not isinstance(signature_name, (basestring, ValueProvider)):
+      raise TypeError("%s: signature_name must be of type string"
+                      " or ValueProvider; got %r instead"
+                      % (self.__class__.__name__, signature_name))
+    if isinstance(signature_name, basestring):
+      signature_name = StaticValueProvider(str, signature_name)
+    self._signature_name = signature_name
+
     if not isinstance(batch_size, (int, ValueProvider)):
       raise TypeError("%s: batch_size must be of type int"
                       " or ValueProvider; got %r instead"
                       % (self.__class__.__name__, batch_size))
     if isinstance(batch_size, int):
       batch_size = StaticValueProvider(int, batch_size)
+
     self._batch_size = batch_size
 
     self._aggregator_dict = aggregator_dict
@@ -345,6 +381,8 @@ class BatchPredict(beam.PTransform):
                       self._aggregator_dict,
                       self._user_project_id,
                       self._user_job_id,
+                      self._tags,
+                      self._signature_name,
                       skip_preprocessing=False,
                       target=self._target,
                       config=self._config), self._model_dir).with_outputs(

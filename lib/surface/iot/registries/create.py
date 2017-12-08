@@ -27,8 +27,7 @@ class Create(base.CreateCommand):
     noun = 'device registry'
     flags.GetIdFlag(noun, 'to create', 'REGISTRY_ID').AddToParser(parser)
     flags.GetRegionFlag(noun).AddToParser(parser)
-    for flag in flags.GetDeviceRegistrySettingsFlags():
-      flag.AddToParser(parser)
+    flags.AddDeviceRegistrySettingsFlagsToParser(parser)
 
   def Run(self, args):
     client = registries.RegistriesClient()
@@ -36,11 +35,12 @@ class Create(base.CreateCommand):
     location_ref = util.ParseLocation(region=args.region)
     mqtt_state = util.ParseEnableMqttConfig(args.enable_mqtt_config,
                                             client=client)
-    pubsub_topic_ref = util.ParsePubsubTopic(args.pubsub_topic)
+    event_pubsub_topic = args.pubsub_topic or args.event_pubsub_topic
+    event_pubsub_topic_ref = util.ParsePubsubTopic(event_pubsub_topic)
 
     response = client.Create(
         location_ref, args.id,
-        pubsub_topic=pubsub_topic_ref,
+        pubsub_topic=event_pubsub_topic_ref,
         mqtt_config_state=mqtt_state)
     log.CreatedResource(args.id, 'registry')
     return response

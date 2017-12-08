@@ -18,8 +18,12 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Resize(base.Command):
-  """Resizes an existing cluster for running containers."""
+  """Resizes an existing cluster for running containers.
+
+  Will eventually be replaced by logic in ResizeBeta
+  """
 
   @staticmethod
   def Args(parser):
@@ -91,6 +95,65 @@ will be scheduled onto the new instances.
 
 When decreasing a cluster, the pods that are scheduled on the instances being
 removed will be killed. If your pods are being managed by a replication
+controller, the controller will attempt to reschedule them onto the remaining
+instances. If your pods are not managed by a replication controller,
+they will not be restarted.
+Note that when resizing down, instances running pods and instances without pods
+are not differentiated. Resize will pick instances to remove at random.
+""",
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ResizeBeta(Resize):
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    """
+    adapter = self.context['api_adapter']
+    location_get = self.context['location_get']
+    location = location_get(args)
+
+    cluster_ref = adapter.ParseCluster(args.name, location)
+    cluster = adapter.GetCluster(cluster_ref)
+    pool = adapter.FindNodePool(cluster, args.node_pool)
+    console_io.PromptContinue(
+        message=('Pool [{pool}] for [{cluster_name}] will be resized to '
+                 '{new_size}.').format(pool=pool.name,
+                                       cluster_name=cluster.name,
+                                       new_size=args.size),
+        throw_if_unattended=True,
+        cancel_on_no=True)
+    op_ref = adapter.ResizeNodePool(cluster_ref, pool.name, args.size)
+
+    if not args.async:
+      adapter.WaitForOperation(op_ref,
+                               'Resizing {0}'.format(cluster_ref.clusterId))
+    log.UpdatedResource(cluster_ref)
+
+
+ResizeBeta.detailed_help = {
+    'brief': 'Resizes an existing cluster for running containers.',
+    'DESCRIPTION': """
+        Resize an existing cluster to a provided size.
+
+If you have multiple node pools, you must specify which node pool to resize by
+using the --node-pool flag. You are not required to use the flag if you have
+a single node pool.
+
+When increasing the size of a container cluster, the new instances are created
+with the same configuration as the existing instances.
+Existing pods are not moved onto the new instances,
+but new pods (such as those created by resizing a replication controller)
+will be scheduled onto the new instances.
+
+When decreasing a cluster, the pods that are scheduled on the instances being
+removed will be drained. If your pods are being managed by a replication
 controller, the controller will attempt to reschedule them onto the remaining
 instances. If your pods are not managed by a replication controller,
 they will not be restarted.

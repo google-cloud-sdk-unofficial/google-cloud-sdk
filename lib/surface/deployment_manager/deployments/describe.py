@@ -21,6 +21,7 @@ from googlecloudsdk.api_lib.deployment_manager import dm_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deployment_manager import flags
+from googlecloudsdk.core import properties
 
 
 class _Results(object):
@@ -89,10 +90,15 @@ class Describe(base.DescribeCommand, dm_base.DmCommand):
       HttpException: An http error response was received while executing api
           request.
     """
+    deployment_ref = self.resources.Parse(
+        args.deployment_name,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='deploymentmanager.deployments')
     try:
       deployment = self.client.deployments.Get(
           self.messages.DeploymentmanagerDeploymentsGetRequest(
-              project=dm_base.GetProject(), deployment=args.deployment_name))
+              project=dm_base.GetProject(),
+              deployment=deployment_ref.deployment))
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error, dm_api_util.HTTP_ERROR_FORMAT)
 
@@ -113,7 +119,7 @@ class Describe(base.DescribeCommand, dm_base.DmCommand):
       manifest_response = self.client.manifests.Get(
           self.messages.DeploymentmanagerManifestsGetRequest(
               project=dm_base.GetProject(),
-              deployment=args.deployment_name,
+              deployment=deployment_ref.deployment,
               manifest=manifest,
           )
       )

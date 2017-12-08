@@ -42,7 +42,7 @@ from tensorflow.python.lib.io import file_io
 METADATA_FILENAMES = {"metadata.yaml", "metadata.json"}
 
 # TODO(b/30986238): We want to use the OSS session_bundle here. But it doesn't
-# have these contants. So using ours.
+# have these constants. So using ours.
 INPUTS_KEY = session_bundle.INPUTS_KEY
 OUTPUTS_KEY = session_bundle.OUTPUTS_KEY
 
@@ -306,12 +306,13 @@ def _get_interface(graph):
 
 # TODO(b/34686738): when we no longer load the model to get the signature
 # consider making this a named constructor on SessionClient.
-def load_model(model_path, config=None):
+def load_model(model_path, config=None, **unused_kwargs):
   """Loads the model at the specified path.
 
   Args:
     model_path: the path to either session_bundle or SavedModel
     config: tf.ConfigProto containing session configuration options.
+    unused_kwargs: kwargs for compatiblity purpose.
 
   Returns:
     A pair of (Session, SignatureDef) objects.

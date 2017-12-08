@@ -13,18 +13,37 @@
 # limitations under the License.
 """Command for listing regions."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import lister
+from googlecloudsdk.calliope import base
 
 
-class List(base_classes.GlobalLister):
+class List(base.ListCommand):
   """List Google Compute Engine regions."""
 
-  @property
-  def service(self):
-    return self.compute.regions
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""\
+        table(
+          name,
+          quotas.metric.CPUS.quota():label=CPUS,
+          quotas.metric.DISKS_TOTAL_GB.quota():label=DISKS_GB,
+          quotas.metric.IN_USE_ADDRESSES.quota():label=ADDRESSES,
+          quotas.metric.STATIC_ADDRESSES.quota():label=RESERVED_ADDRESSES,
+          status():label=STATUS,
+          deprecated.deleted:label=TURNDOWN_DATE
+        )""")
+    lister.AddBaseListerArgs(parser)
 
-  @property
-  def resource_type(self):
-    return 'regions'
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    request_data = lister.ParseNamesAndRegexpFlags(args, holder.resources)
+
+    list_implementation = lister.GlobalLister(
+        client, client.apitools_client.regions)
+
+    return lister.Invoke(request_data, list_implementation)
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp('regions')

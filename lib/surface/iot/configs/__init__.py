@@ -15,6 +15,11 @@
 from googlecloudsdk.calliope import base
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=('This command group is deprecated. Use \'gcloud iot devices '
+             'configs\' instead.'))
+@base.Hidden
 class Configs(base.Group):
   """Manage configurations for Cloud IoT devices.
 

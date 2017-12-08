@@ -54,7 +54,7 @@ def _AddArgs(parser):
   instance_groups_managed_flags.AddForceArg(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class StartUpdate(base.Command):
   """Start update instances of managed instance group."""
 

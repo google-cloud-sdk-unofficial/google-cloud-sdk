@@ -38,10 +38,12 @@ def _Args(parser, release_track):
   csek_utils.AddCsekKeyArgs(parser, resource_type='image')
 
   labels_util.AddCreateLabelsFlags(parser)
+  flags.MakeForceArg().AddToParser(parser)
 
   # Alpha and Beta Args
   if release_track in (base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA):
     flags.AddCloningImagesArgs(parser, sources_group)
+    # Deprecated as of Aug 2017.
     flags.MakeForceCreateArg().AddToParser(parser)
 
 
@@ -144,9 +146,8 @@ class Create(base.CreateCommand):
           for key, value in sorted(args_labels.iteritems())])
       request.image.labels = labels
 
-    alpha_or_beta = self.ReleaseTrack() in (
-        base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-    if alpha_or_beta and args.force_create:
+    # --force is in GA, --force-create is in beta and deprecated.
+    if args.force or getattr(args, 'force_create', None):
       request.forceCreate = True
 
     return client.MakeRequests([(client.apitools_client.images, 'Insert',

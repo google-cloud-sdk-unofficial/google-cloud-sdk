@@ -67,9 +67,9 @@ class SetTraffic(base.Command):
         other. For example, v1=2,v2=2 is equivalent to v1=.5,v2=.5""")
     parser.add_argument(
         '--split-by',
-        choices=['cookie', 'ip'],
+        choices=['cookie', 'ip', 'random'],
         default='ip',
-        help='Whether to split traffic based on cookies or IP addresses.')
+        help='Whether to split traffic based on cookie, IP address or random.')
     parser.add_argument(
         '--migrate',
         action='store_true',

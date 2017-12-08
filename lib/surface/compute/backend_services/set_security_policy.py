@@ -21,7 +21,10 @@ from googlecloudsdk.command_lib.compute.security_policies import (
     flags as security_policy_flags)
 
 
-@base.Hidden
+@base.Deprecate(
+    is_removed=False,
+    warning=('This command is deprecated and will not be promoted to beta. '
+             'Please use "gcloud beta backend-services update" instead.'))
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetSecurityPolicy(base.SilentCommand):
   """Set the security policy for a backend service."""
@@ -33,7 +36,7 @@ class SetSecurityPolicy(base.SilentCommand):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     cls.SECURITY_POLICY_ARG = (
         security_policy_flags.SecurityPolicyArgumentForTargetResource(
-            resource='backend service'))
+            resource='backend service', required=True))
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
 
   def Run(self, args):

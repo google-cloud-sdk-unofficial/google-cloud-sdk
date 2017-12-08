@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.compute.instance_groups.managed import rolling_a
 from googlecloudsdk.command_lib.compute.managed_instance_groups import update_instances_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class StartUpdate(base.Command):
   """Replaces instances in a managed instance group.
 

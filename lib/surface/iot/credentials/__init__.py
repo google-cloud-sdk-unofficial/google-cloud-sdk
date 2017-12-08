@@ -15,6 +15,11 @@
 from googlecloudsdk.calliope import base
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=('This command group is deprecated. Use \'gcloud iot devices '
+             'credentials\' instead.'))
+@base.Hidden
 class Credentials(base.Group):
   """Manage credentials for Cloud IoT devices.
 
