@@ -57,8 +57,7 @@ class Create(base_classes.BaseAsyncCreator):
         instance_groups_flags.ZONAL_INSTANCE_GROUP_ARG.ResolveAsResource(
             args, self.resources,
             default_scope=compute_scope.ScopeEnum.ZONE,
-            scope_lister=flags.GetDefaultScopeLister(
-                self.compute_client, self.project)))
+            scope_lister=flags.GetDefaultScopeLister(self.compute_client)))
     zone_resource_fetcher = zone_utils.ZoneResourceFetcher(self.compute_client)
     zone_resource_fetcher.WarnForZonalCreation([group_ref])
 
@@ -67,7 +66,7 @@ class Create(base_classes.BaseAsyncCreator):
             name=group_ref.Name(),
             description=args.description),
         zone=group_ref.zone,
-        project=self.project)
+        project=group_ref.project)
 
     return [request]
 

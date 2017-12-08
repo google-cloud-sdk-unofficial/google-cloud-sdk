@@ -27,7 +27,6 @@ class Add(base.Command):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To add an A record, run:
 

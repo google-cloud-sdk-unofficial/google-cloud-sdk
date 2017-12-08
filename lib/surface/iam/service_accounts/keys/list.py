@@ -26,7 +26,6 @@ class List(base_classes.BaseIamCommand, base.ListCommand):
   """List the keys for a service account."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': textwrap.dedent("""\
           To list all user-managed keys created before noon on July 19th, 2015
           (to perform key rotation, for example), run:

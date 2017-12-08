@@ -1,5 +1,5 @@
-from pyasn1.type import tag, namedtype, univ
-from pyasn1.codec.ber import decoder
+from pyasn1.type import tag, namedtype, univ, char
+from pyasn1.codec.ber import decoder, eoo
 from pyasn1.compat.octets import ints2octs, str2octs, null
 from pyasn1.error import PyAsn1Error
 from sys import version_info
@@ -99,7 +99,14 @@ class BitStringDecoderTestCase(unittest.TestCase):
             ints2octs((35, 128, 3, 2, 0, 169, 3, 2, 1, 138, 0, 0)),
             substrateFun=lambda a,b,c: (b,c)
             ) == (ints2octs((3, 2, 0, 169, 3, 2, 1, 138, 0, 0)), -1)
-        
+    def testTypeChecking(self):
+        try:
+            decoder.decode(ints2octs((35, 4, 2, 2, 42, 42)))
+        except PyAsn1Error:
+            pass
+        else:
+            assert 0, 'accepted mis-encoded bit-string constructed out of an integer'
+
 class OctetStringDecoderTestCase(unittest.TestCase):
     def testDefMode(self):
         assert decoder.decode(
@@ -179,33 +186,66 @@ class NullDecoderTestCase(unittest.TestCase):
         else:
             assert 0, 'wrong tagFormat worked out'
 
+# Useful analysis of OID encoding issues could be found here:
+# http://www.viathinksoft.de/~daniel-marschall/asn.1/oid_facts.html
 class ObjectIdentifierDecoderTestCase(unittest.TestCase):
-    def testOID(self):
+    def testOne(self):
         assert decoder.decode(
             ints2octs((6, 6, 43, 6, 0, 191, 255, 126))
-            ) == ((1,3,6,0,0xffffe), null)
+        ) == ((1,3,6,0,0xffffe), null)
 
-    def testEdges1(self):
+    def testEdge1(self):
         assert decoder.decode(
-            ints2octs((6, 1, 255))
-            ) == ((6,15), null)
+            ints2octs((6, 1, 39))
+        ) == ((0,39), null)
 
-    def testEdges2(self):
+    def testEdge2(self):
         assert decoder.decode(
-            ints2octs((6, 1, 239))
-            ) == ((5,39), null)
+            ints2octs((6, 1, 79))
+        ) == ((1,39), null)
 
-    def testEdges3(self):
+    def testEdge3(self):
         assert decoder.decode(
-            ints2octs((6, 7, 43, 6, 143, 255, 255, 255, 127))
-            ) == ((1, 3, 6, 4294967295), null)
+            ints2octs((6, 1, 120))
+        ) == ((2,40), null)
+
+    def testEdge4(self):
+        assert decoder.decode(
+            ints2octs((6,5,0x90,0x80,0x80,0x80,0x4F))
+        ) == ((2,0xffffffff), null)
+
+    def testEdge5(self):
+        assert decoder.decode(
+            ints2octs((6,1,0x7F))
+        ) == ((2,47), null)
+
+    def testEdge6(self):
+        assert decoder.decode(
+            ints2octs((6,2,0x81,0x00))
+        ) == ((2,48), null)
+
+
+    def testEdge7(self):
+        assert decoder.decode(
+            ints2octs((6,3,0x81,0x34,0x03))
+        ) == ((2,100,3), null)
+
+    def testEdge8(self):
+        assert decoder.decode(
+            ints2octs((6,2,133,0))
+        ) == ((2,560), null)
+
+    def testEdge9(self):
+        assert decoder.decode(
+            ints2octs((6,4,0x88,0x84,0x87,0x02))
+        ) == ((2,16843570), null)
 
     def testNonLeading0x80(self):
         assert decoder.decode(
             ints2octs((6, 5, 85, 4, 129, 128, 0)),
-            ) == ((2, 5, 4, 16384), null)
+        ) == ((2, 5, 4, 16384), null)
 
-    def testLeading0x80(self):
+    def testLeading0x80Case1(self):
         try:
             decoder.decode(
                 ints2octs((6, 5, 85, 4, 128, 129, 0))
@@ -213,7 +253,37 @@ class ObjectIdentifierDecoderTestCase(unittest.TestCase):
         except PyAsn1Error:
             pass
         else:
-            assert 1, 'Leading 0x80 tolarated'
+            assert 0, 'Leading 0x80 tolarated'
+
+    def testLeading0x80Case2(self):
+        try:
+            decoder.decode(
+                ints2octs((6,7,1,0x80,0x80,0x80,0x80,0x80,0x7F))
+            )
+        except PyAsn1Error:
+            pass
+        else:
+            assert 0, 'Leading 0x80 tolarated'
+
+    def testLeading0x80Case3(self):
+        try:
+            decoder.decode(
+                ints2octs((6,2,0x80,1))
+            )
+        except PyAsn1Error:
+            pass
+        else:
+            assert 0, 'Leading 0x80 tolarated'
+
+    def testLeading0x80Case4(self):
+        try:
+            decoder.decode(
+                ints2octs((6,2,0x80,0x7F))
+            )
+        except PyAsn1Error:
+            pass
+        else:
+            assert 0, 'Leading 0x80 tolarated'
 
     def testTagFormat(self):
         try:
@@ -223,27 +293,78 @@ class ObjectIdentifierDecoderTestCase(unittest.TestCase):
         else:
             assert 0, 'wrong tagFormat worked out'
 
+    def testZeroLength(self):
+        try:
+            decoder.decode(ints2octs((6, 0, 0)))
+        except PyAsn1Error:
+            pass
+        else:
+            assert 0, 'zero length tolarated'
+
+    def testIndefiniteLength(self):
+        try:
+            decoder.decode(ints2octs((6, 128, 0)))
+        except PyAsn1Error:
+            pass
+        else:
+            assert 0, 'indefinite length tolarated'
+
+    def testReservedLength(self):
+        try:
+            decoder.decode(ints2octs((6, 255, 0)))
+        except PyAsn1Error:
+            pass
+        else:
+            assert 0, 'reserved length tolarated'
+
+    def testReservedLength(self):
+        try:
+            decoder.decode(ints2octs((6, 255, 0)))
+        except PyAsn1Error:
+            pass
+        else:
+            assert 0, 'reserved length tolarated'
+
+    def testLarge1(self):
+        assert decoder.decode(
+            ints2octs((0x06,0x11,0x83,0xC6,0xDF,0xD4,0xCC,0xB3,0xFF,0xFF,0xFE,0xF0,0xB8,0xD6,0xB8,0xCB,0xE2,0xB7,0x17))
+        ) == ((2,18446744073709551535184467440737095), null)
+
+    def testLarge2(self):
+        assert decoder.decode(
+            ints2octs((0x06,0x13,0x88,0x37,0x83,0xC6,0xDF,0xD4,0xCC,0xB3,0xFF,0xFF,0xFE,0xF0,0xB8,0xD6,0xB8,0xCB,0xE2,0xB6,0x47))
+        ) == ((2,999,18446744073709551535184467440737095), null)
+
 class RealDecoderTestCase(unittest.TestCase):
     def testChar(self):
         assert decoder.decode(
             ints2octs((9, 7, 3, 49, 50, 51, 69, 49, 49))
         ) == (univ.Real((123, 10, 11)), null)
 
-    def testBin1(self):
-        assert decoder.decode(
-            ints2octs((9, 4, 128, 245, 4, 77))
-        ) == (univ.Real((1101, 2, -11)), null)
+    def testBin1(self): # check base = 2
+        assert decoder.decode( # (0.5, 2, 0) encoded with base = 2
+            ints2octs((9, 3, 128, 255, 1))
+        ) == (univ.Real((1, 2, -1)), null)
 
-    def testBin2(self):
-        assert decoder.decode(
-            ints2octs((9, 4, 128, 11, 4, 77))
-        ) == (univ.Real((1101, 2, 11)), null)
+    def testBin2(self): # check base = 2 and scale factor
+        assert decoder.decode( # (3.25, 2, 0) encoded with base = 8
+            ints2octs((9, 3, 148, 255, 13))
+        ) == (univ.Real((26, 2, -3)), null)
 
-    def testBin3(self):
-        assert decoder.decode(
-            ints2octs((9, 3, 192, 10, 123))
-        ) == (univ.Real((-123, 2, 10)), null)
+    def testBin3(self): # check base = 16
+        assert decoder.decode( # (0.00390625, 2, 0) encoded with base = 16
+            ints2octs((9, 3, 160, 254, 1))
+        ) == (univ.Real((1, 2, -8)), null)
+    
+    def testBin4(self): # check exponenta = 0
+        assert decoder.decode( # (1, 2, 0) encoded with base = 2
+            ints2octs((9, 3, 128, 0, 1))
+        ) == (univ.Real((1, 2, 0)), null)
 
+    def testBin5(self): # case of 2 octs for exponenta and negative exponenta
+        assert decoder.decode( # (3, 2, -1020) encoded with base = 16
+            ints2octs((9, 4, 161, 255, 1, 3))
+        ) == (univ.Real((3, 2, -1020)), null)
 
     def testPlusInf(self):
         assert decoder.decode(
@@ -267,6 +388,27 @@ class RealDecoderTestCase(unittest.TestCase):
             pass
         else:
             assert 0, 'wrong tagFormat worked out'
+
+    def testShortEncoding(self):
+        try:
+            decoder.decode(ints2octs((9, 1, 131)))
+        except PyAsn1Error:
+            pass
+        else:
+            assert 0, 'accepted too-short real'
+
+if version_info[0:2] > (2, 5):
+    class UniversalStringDecoderTestCase(unittest.TestCase):
+        def testDecoder(self):
+             assert decoder.decode(ints2octs((28, 12, 0, 0, 0, 97, 0, 0, 0, 98, 0, 0, 0, 99))) == (char.UniversalString(version_info[0] == 3 and 'abc' or unicode('abc')), null)
+
+class BMPStringDecoderTestCase(unittest.TestCase):
+    def testDecoder(self):
+        assert decoder.decode(ints2octs((30, 6, 0, 97, 0, 98, 0, 99))) == (char.BMPString(version_info[0] == 3 and 'abc' or unicode('abc')), null)
+
+class UTF8StringDecoderTestCase(unittest.TestCase):
+    def testDecoder(self):
+        assert decoder.decode(ints2octs((12, 3, 97, 98, 99))) == (char.UTF8String(version_info[0] == 3 and 'abc' or unicode('abc')), null)
 
 class SequenceDecoderTestCase(unittest.TestCase):
     def setUp(self):
@@ -531,5 +673,55 @@ class AnyDecoderTestCase(unittest.TestCase):
             asn1Spec=self.s,
             substrateFun=lambda a,b,c: (b,c)
         ) == (ints2octs((164, 5, 4, 3, 102, 111, 120)), 7)
+
+class EndOfOctetsTestCase(unittest.TestCase):
+    def testUnexpectedEoo(self):
+        try:
+            decoder.decode(ints2octs((0, 0)))
+        except PyAsn1Error:
+            pass
+        else:
+            assert 0, 'end-of-contents octets accepted at top level'
+
+    def testExpectedEoo(self):
+        result, remainder = decoder.decode(ints2octs((0, 0)), allowEoo=True)
+        assert eoo.endOfOctets.isSameTypeWith(result) and result == eoo.endOfOctets
+        assert remainder == null
+
+    def testDefiniteNoEoo(self):
+        try:
+            decoder.decode(ints2octs((0x23, 0x02, 0x00, 0x00)))
+        except PyAsn1Error:
+            pass
+        else:
+            assert 0, 'end-of-contents octets accepted inside definite-length encoding'
+
+    def testIndefiniteEoo(self):
+        result, remainder = decoder.decode(ints2octs((0x23, 0x80, 0x00, 0x00)))
+        assert result == () and remainder == null, 'incorrect decoding of indefinite length end-of-octets'
+
+    def testNoLongFormEoo(self):
+        try:
+            decoder.decode(ints2octs((0x23, 0x80, 0x00, 0x81, 0x00)))
+        except PyAsn1Error:
+            pass
+        else:
+            assert 0, 'end-of-contents octets accepted with invalid long-form length'
+
+    def testNoConstructedEoo(self):
+        try:
+            decoder.decode(ints2octs((0x23, 0x80, 0x20, 0x00)))
+        except PyAsn1Error:
+            pass
+        else:
+            assert 0, 'end-of-contents octets accepted with invalid constructed encoding'
+
+    def testNoEooData(self):
+        try:
+            decoder.decode(ints2octs((0x23, 0x80, 0x00, 0x01, 0x00)))
+        except PyAsn1Error:
+            pass
+        else:
+            assert 0, 'end-of-contents octets accepted with unexpected data'
 
 if __name__ == '__main__': unittest.main()

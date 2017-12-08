@@ -52,14 +52,15 @@ class UpdateFirewall(base_classes.BaseCommand):
     self.new_allowed = firewalls_utils.ParseRules(
         args.allow, self.messages, firewalls_utils.ActionType.ALLOW)
 
-    args_unset = (args.allow is None
-                  and args.description is None
-                  and args.source_ranges is None
-                  and args.source_tags is None
-                  and args.target_tags is None)
+    args_unset = all(
+        x is None
+        for x in (args.allow, args.description, args.source_ranges,
+                  args.source_tags, args.target_tags))
     if self.with_egress_firewall:
-      args_unset = (args_unset and args.destination_ranges is None and
-                    args.priority is None and args.rules is None)
+      args_unset = args_unset and all(
+          x is None
+          for x in (args.destination_ranges, args.priority, args.rules,
+                    args.source_service_accounts, args.target_service_accounts))
     if args_unset:
       raise calliope_exceptions.ToolException(
           'At least one property must be modified.')
@@ -204,6 +205,22 @@ class AlphaUpdateFirewall(UpdateFirewall):
     else:
       new_firewall.destinationRanges = []
       cleared_fields.append('destinationRanges')
+
+    if args.source_service_accounts:
+      new_firewall.sourceServiceAccounts = args.source_service_accounts
+    elif args.source_service_accounts is None:
+      new_firewall.sourceServiceAccounts = existing.sourceServiceAccounts
+    else:
+      new_firewall.sourceServiceAccounts = []
+      cleared_fields.append('sourceServiceAccounts')
+
+    if args.target_service_accounts:
+      new_firewall.targetServiceAccounts = args.target_service_accounts
+    elif args.target_service_accounts is None:
+      new_firewall.targetServiceAccounts = existing.targetServiceAccounts
+    else:
+      new_firewall.targetServiceAccounts = []
+      cleared_fields.append('targetServiceAccounts')
 
     return new_firewall
 

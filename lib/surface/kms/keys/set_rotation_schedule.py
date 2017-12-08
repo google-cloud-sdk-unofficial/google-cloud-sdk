@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.kms import flags
 class SetRotationSchedule(base.UpdateCommand):
   r"""Update the rotation schedule for a key.
 
-  Updates the rotation schedule for the the given key. The schedule
+  Updates the rotation schedule for the given key. The schedule
   automatically creates a new primary version for the key
   according to the `--next-rotation-time` and `--rotation-period` flags.
 

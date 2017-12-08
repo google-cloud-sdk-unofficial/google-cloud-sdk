@@ -1,4 +1,4 @@
-from pyasn1.type import tag, namedtype, univ
+from pyasn1.type import tag, namedtype, univ, char
 from pyasn1.codec.ber import encoder
 from pyasn1.compat.octets import ints2octs
 from pyasn1.error import PyAsn1Error
@@ -132,10 +132,105 @@ class NullEncoderTestCase(unittest.TestCase):
         assert encoder.encode(univ.Null('')) == ints2octs((5, 0))
 
 class ObjectIdentifierEncoderTestCase(unittest.TestCase):
-    def testNull(self):
+    def testOne(self):
         assert encoder.encode(
             univ.ObjectIdentifier((1,3,6,0,0xffffe))
-            ) == ints2octs((6, 6, 43, 6, 0, 191, 255, 126))
+        ) == ints2octs((6, 6, 43, 6, 0, 191, 255, 126))
+
+    def testEdge1(self):
+        assert encoder.encode(
+            univ.ObjectIdentifier((0,39))
+        ) == ints2octs((6,1,39))
+
+    def testEdge2(self):
+        assert encoder.encode(
+            univ.ObjectIdentifier((1,39))
+        ) == ints2octs((6,1,79))
+
+    def testEdge3(self):
+        #01111111
+        assert encoder.encode(
+            univ.ObjectIdentifier((2,40))
+        ) == ints2octs((6,1,120))
+
+    def testEdge4(self):
+        #10010000|10000000|10000000|10000000|01001111
+        assert encoder.encode(
+            univ.ObjectIdentifier((2,0xffffffff))
+        ) == ints2octs((6,5,0x90,0x80,0x80,0x80,0x4F))
+
+    def testEdge5(self):
+        #01111111
+        assert encoder.encode(
+            univ.ObjectIdentifier((2,47))
+        ) == ints2octs((6,1,0x7F))
+
+    def testEdge6(self):
+        #10000001|00000000
+        assert encoder.encode(
+            univ.ObjectIdentifier((2,48))
+        ) == ints2octs((6,2,0x81,0x00))
+
+    def testEdge7(self):
+        #10000001|00110100|00000003
+        assert encoder.encode(
+            univ.ObjectIdentifier((2,100,3))
+        ) == ints2octs((6,3,0x81,0x34,0x03))
+
+    def testEdge8(self):
+        #10000101|00000000
+        assert encoder.encode(
+            univ.ObjectIdentifier((2,560))
+        ) == ints2octs((6,2,133,0))
+
+    def testEdge9(self):
+        #10001000|10000100|10000111|0000010
+        assert encoder.encode(
+            univ.ObjectIdentifier((2,16843570))
+        ) == ints2octs((6,4,0x88,0x84,0x87,0x02))
+
+    def testImpossible1(self):
+        try:
+            encoder.encode(univ.ObjectIdentifier((3,1,2)))
+        except PyAsn1Error:
+            pass
+        else:
+            assert 0, 'impossible leading arc tolerated'
+
+    def testImpossible2(self):
+        try:
+            encoder.encode(univ.ObjectIdentifier((0,)))
+        except PyAsn1Error:
+            pass
+        else:
+            assert 0, 'single arc OID tolerated'
+
+    def testImpossible3(self):
+        try:
+            encoder.encode(univ.ObjectIdentifier((0,40)))
+        except PyAsn1Error:
+            pass
+        else:
+            assert 0, 'second arc overflow tolerated'
+
+    def testImpossible4(self):
+        try:
+            encoder.encode(univ.ObjectIdentifier((1,40)))
+        except PyAsn1Error:
+            pass
+        else:
+            assert 0, 'second arc overflow tolerated'
+
+    def testLarge1(self):
+        assert encoder.encode(
+            univ.ObjectIdentifier((2,18446744073709551535184467440737095))
+        ) == ints2octs((0x06,0x11,0x83,0xC6,0xDF,0xD4,0xCC,0xB3,0xFF,0xFF,0xFE,0xF0,0xB8,0xD6,0xB8,0xCB,0xE2,0xB7,0x17))
+
+    def testLarge2(self):
+        assert encoder.encode(
+            univ.ObjectIdentifier((2,999,18446744073709551535184467440737095))
+        ) == ints2octs((0x06,0x13,0x88,0x37,0x83,0xC6,0xDF,0xD4,0xCC,0xB3,0xFF,0xFF,0xFE,0xF0,0xB8,0xD6,0xB8,0xCB,0xE2,0xB6,0x47))
+            
 
 class RealEncoderTestCase(unittest.TestCase):
     def testChar(self):
@@ -144,14 +239,51 @@ class RealEncoderTestCase(unittest.TestCase):
             ) == ints2octs((9, 7, 3, 49, 50, 51, 69, 49, 49))
 
     def testBin1(self):
-        assert encoder.encode(
-            univ.Real((1101, 2, 11))
-            ) == ints2octs((9, 4, 128, 11, 4, 77))
+        assert encoder.encode( # default binEncBase = 2
+            univ.Real((0.5, 2, 0)) # check encbase = 2 and exponenta = -1
+            ) == ints2octs((9, 3, 128, 255, 1))
 
     def testBin2(self):
+        r = univ.Real((3.25, 2, 0)) 
+        r.binEncBase = 8 # change binEncBase only for this instance of Real
         assert encoder.encode(
-            univ.Real((1101, 2, -11))
-            ) == ints2octs((9, 4, 128, 245, 4, 77))
+            r # check encbase = 8
+            ) == ints2octs((9, 3, 148, 255, 13))
+
+    def testBin3(self):
+        # change binEncBase in the RealEncoder instance => for all further Reals
+        encoder.tagMap[univ.Real.tagSet].binEncBase = 16
+        assert encoder.encode(
+            univ.Real((0.00390625, 2, 0)) # check encbase = 16
+            ) == ints2octs((9, 3, 160, 254, 1))
+
+    def testBin4(self):
+        # choose binEncBase automatically for all further Reals (testBin[4-7])
+        encoder.tagMap[univ.Real.tagSet].binEncBase = None 
+        assert encoder.encode(
+            univ.Real((1, 2, 0)) # check exponenta = 0
+            ) == ints2octs((9, 3, 128, 0, 1))
+
+    def testBin5(self):
+        assert encoder.encode(
+            univ.Real((3, 2, -1020)) # case of 2 octs for exponenta and
+                                     # negative exponenta and abs(exponenta) is
+                                     # all 1's and fills the whole octet(s) 
+            ) == ints2octs((9, 4, 161, 255, 1, 3))
+
+    def testBin6(self):
+        assert encoder.encode(
+            univ.Real((1, 2, 262140)) # case of 3 octs for exponenta and
+                                      # check that first 9 bits for exponenta
+                                      # are not all 1's
+            ) == ints2octs((9, 5, 162, 0, 255, 255, 1))
+
+    def testBin7(self):
+        assert encoder.encode(
+            univ.Real((-1, 2, 76354972)) # case of >3 octs for exponenta and
+                                         # mantissa < 0
+            ) == ints2octs((9, 7, 227, 4, 1, 35, 69, 103, 1))
+
 
     def testPlusInf(self):
         assert encoder.encode(univ.Real('inf')) == ints2octs((9, 1, 64))
@@ -161,7 +293,20 @@ class RealEncoderTestCase(unittest.TestCase):
         
     def testZero(self):
         assert encoder.encode(univ.Real(0)) == ints2octs((9, 0))
+
+if version_info[0:2] > (2, 5):
+    class UniversalStringEncoderTestCase(unittest.TestCase):
+        def testEncoding(self):
+            assert encoder.encode(char.UniversalString(version_info[0] == 3 and 'abc' or unicode('abc'))) == ints2octs((28, 12, 0, 0, 0, 97, 0, 0, 0, 98, 0, 0, 0, 99)), 'Incorrect encoding'
         
+class BMPStringEncoderTestCase(unittest.TestCase):
+    def testEncoding(self):
+        assert encoder.encode(char.BMPString(version_info[0] == 3 and 'abc' or unicode('abc'))) == ints2octs((30, 6, 0, 97, 0, 98, 0, 99)), 'Incorrect encoding'
+
+class UTF8StringEncoderTestCase(unittest.TestCase):
+    def testEncoding(self):
+        assert encoder.encode(char.UTF8String(version_info[0] == 3 and 'abc' or unicode('abc'))) == ints2octs((12, 3, 97, 98, 99)), 'Incorrect encoding'
+
 class SequenceEncoderTestCase(unittest.TestCase):
     def setUp(self):
         self.s = univ.Sequence(componentType=namedtype.NamedTypes(

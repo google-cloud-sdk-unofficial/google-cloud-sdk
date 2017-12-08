@@ -24,7 +24,6 @@ class Types(base.Group):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To see the list of all available resource types, run:
 

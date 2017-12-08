@@ -68,14 +68,14 @@ class SetDiskAutoDelete(base_classes.ReadWriteCommand):
   def CreateReference(self, args):
     return instance_flags.INSTANCE_ARG.ResolveAsResource(
         args, self.resources, scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client, self.project))
+            self.compute_client))
 
   def GetGetRequest(self, args):
     return (self.service,
             'Get',
             self.messages.ComputeInstancesGetRequest(
                 instance=self.ref.Name(),
-                project=self.project,
+                project=self.ref.project,
                 zone=self.ref.zone))
 
   def GetSetRequest(self, args, replacement, existing):
@@ -93,7 +93,7 @@ class SetDiskAutoDelete(base_classes.ReadWriteCommand):
             self.messages.ComputeInstancesSetDiskAutoDeleteRequest(
                 deviceName=changed_disk.deviceName,
                 instance=self.ref.Name(),
-                project=self.project,
+                project=self.ref.project,
                 zone=self.ref.zone,
                 autoDelete=changed_disk.autoDelete))
 

@@ -32,7 +32,6 @@ class Wait(base.Command):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To poll until an operation has completed, run:
 

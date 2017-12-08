@@ -25,7 +25,6 @@ class Tail(base.Command):
   """Streams logs for App Engine apps."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To stream logs from a serving app, run:
 

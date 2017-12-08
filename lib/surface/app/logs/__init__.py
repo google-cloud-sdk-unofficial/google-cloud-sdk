@@ -22,7 +22,6 @@ class Logs(base.Group):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To read the logs for the current App Engine project, run:
 

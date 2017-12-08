@@ -25,7 +25,6 @@ class List(base.ListCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To list all services in the current project, run:
 

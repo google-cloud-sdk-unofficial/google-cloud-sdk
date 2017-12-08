@@ -30,7 +30,7 @@ def LogResource(request, async):
                       async=async)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create a type provider.
 
@@ -39,7 +39,6 @@ class Create(base.CreateCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To create a new type provider, run:
 

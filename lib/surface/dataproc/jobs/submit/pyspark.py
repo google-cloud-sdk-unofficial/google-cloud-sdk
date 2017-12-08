@@ -175,7 +175,6 @@ class PySparkBase(object):
     job.pysparkJob = pyspark_job
 
 PySpark.detailed_help = {
-    'DESCRIPTION': '{description}',
     'EXAMPLES': """\
       To submit a PySpark job with a local script, run:
 

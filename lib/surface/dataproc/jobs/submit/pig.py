@@ -164,7 +164,6 @@ class PigBase(object):
     job.pigJob = pig_job
 
 Pig.detailed_help = {
-    'DESCRIPTION': '{description}',
     'EXAMPLES': """\
         To submit a Pig job with a local script, run:
 

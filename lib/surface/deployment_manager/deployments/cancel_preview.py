@@ -38,7 +38,6 @@ class CancelPreview(base.Command):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To cancel a running operation on a deployment, run:
 

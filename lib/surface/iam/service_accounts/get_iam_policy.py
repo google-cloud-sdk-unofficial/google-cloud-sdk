@@ -31,7 +31,6 @@ class GetIamPolicy(base_classes.BaseIamCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': textwrap.dedent("""\
           To print the IAM policy for a given service account, run:
 

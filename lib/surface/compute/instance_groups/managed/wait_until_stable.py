@@ -61,8 +61,7 @@ class WaitUntilStable(base_classes.BaseCommand):
             ResolveAsResource)(
                 args, self.resources,
                 default_scope=compute_scope.ScopeEnum.ZONE,
-                scope_lister=flags.GetDefaultScopeLister(
-                    self.compute_client, self.project))
+                scope_lister=flags.GetDefaultScopeLister(self.compute_client))
 
   def Run(self, args):
     start = time_util.CurrentTimeSec()
@@ -88,13 +87,13 @@ class WaitUntilStable(base_classes.BaseCommand):
       request = service.GetRequestType('Get')(
           instanceGroupManager=group_ref.Name(),
           region=group_ref.region,
-          project=self.project)
+          project=group_ref.project)
     else:
       service = self.compute.instanceGroupManagers
       request = service.GetRequestType('Get')(
           instanceGroupManager=group_ref.Name(),
           zone=group_ref.zone,
-          project=self.project)
+          project=group_ref.project)
     return (service, request)
 
   def _GetResources(self, group_ref):

@@ -25,7 +25,6 @@ class Describe(base.Command):
   """Display all data about an existing service."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To show all the data about the current application, run
 

@@ -22,7 +22,6 @@ class Describe(base.DescribeCommand):
   """Describes the operation."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To describe an App Engine operation called o1, run:
 

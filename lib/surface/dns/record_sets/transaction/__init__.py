@@ -22,7 +22,6 @@ class Transaction(base.Group):
   """Make scriptable and transactional changes to your record-sets."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To start a transaction, run:
 

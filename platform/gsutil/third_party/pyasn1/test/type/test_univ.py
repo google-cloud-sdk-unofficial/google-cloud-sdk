@@ -2,6 +2,7 @@ from pyasn1.type import univ, tag, constraint, namedtype, namedval, error
 from pyasn1.compat.octets import str2octs, ints2octs
 from pyasn1.error import PyAsn1Error
 from sys import version_info
+import math
 if version_info[0:2] < (2, 7) or \
    version_info[0:2] in ( (3, 0), (3, 1) ):
     try:
@@ -13,6 +14,8 @@ else:
 
 class IntegerTestCase(unittest.TestCase):
     def testStr(self): assert str(univ.Integer(1)) in ('1','1L'),'str() fails'
+    def testRepr(self):
+        assert eval(repr(univ.Integer(123)), { 'Integer': univ.Integer}) == univ.Integer(123), 'repr() fails'
     def testAnd(self): assert univ.Integer(1) & 0 == 0, '__and__() fails'
     def testOr(self): assert univ.Integer(1) | 0 == 1, '__or__() fails'
     def testXor(self): assert univ.Integer(1) ^ 0 == 1, '__xor__() fails'
@@ -36,6 +39,18 @@ class IntegerTestCase(unittest.TestCase):
     def testInt(self): assert int(univ.Integer(3)) == 3, '__int__() fails'
     def testLong(self): assert int(univ.Integer(8)) == 8, '__long__() fails'
     def testFloat(self): assert float(univ.Integer(4))==4.0,'__float__() fails'
+    def testPos(self): assert +univ.Integer(1) == 1, '__pos__() fails'
+    def testNeg(self): assert -univ.Integer(1) == -1, '__neg__() fails'
+    def testInvert(self): assert ~univ.Integer(1) == -2, '__invert__() fails'
+    def testRound(self): 
+        assert round(univ.Integer(1), 3) == 1.0,'__round__() fails'
+    def testFloor(self): 
+        assert math.floor(univ.Integer(1)) == 1,'__floor__() fails'
+    def testCeil(self): 
+        assert math.ceil(univ.Integer(1)) == 1,'__ceil__() fails'
+    if version_info[0:2] > (2, 5):
+        def testTrunc(self): 
+            assert math.trunc(univ.Integer(1)) == 1,'__trunc__() fails'
     def testPrettyIn(self): assert univ.Integer('3') == 3, 'prettyIn() fails'
     def testTag(self):
         assert univ.Integer().getTagSet() == tag.TagSet(
@@ -56,6 +71,8 @@ class BooleanTestCase(unittest.TestCase):
         assert not univ.Boolean(False) and not univ.Boolean(0), 'False initializer fails'
     def testStr(self):
         assert str(univ.Boolean(1)) in ('1', '1L'), 'str() fails'
+    def testRepr(self):
+        assert eval(repr(univ.Boolean(1)), { 'Boolean': univ.Boolean}) == univ.Boolean(1), 'repr() fails'
     def testTag(self):
         assert univ.Boolean().getTagSet() == tag.TagSet(
             (),
@@ -93,7 +110,7 @@ class BitStringTestCase(unittest.TestCase):
     def testStr(self):
         assert str(self.b.clone('Urgent,Active')) == '(1, 1)'
     def testRepr(self):
-        assert repr(self.b.clone('Urgent,Active')) == 'BitString("\'11\'B")'
+        assert eval(repr(self.b.clone('Urgent,Active')), { 'BitString': univ.BitString }) == self.b.clone('Urgent,Active'), 'repr() fails'
     def testTag(self):
         assert univ.BitString().getTagSet() == tag.TagSet(
             (),
@@ -114,10 +131,18 @@ class OctetStringTestCase(unittest.TestCase):
         assert univ.OctetString(hexValue="FA9823C43E43510DE3422") == ints2octs((250, 152, 35, 196, 62, 67, 81, 13, 227, 66, 32)), 'hex init fails'
     def testTuple(self):
         assert univ.OctetString((1,2,3,4,5)) == ints2octs((1,2,3,4,5)), 'tuple init failed'
+    if version_info[0] <= 2:
+        def testUnicode(self):
+            assert univ.OctetString(unicode('q')) == 'q', 'unicode init fails'
+    else:
+        def testUnicode(self):
+            assert univ.OctetString('q') == str2octs('q'), 'unicode init fails'
     def testStr(self):
         assert str(univ.OctetString('q')) == 'q', '__str__() fails'
     def testSeq(self):
         assert univ.OctetString('q')[0] == str2octs('q')[0],'__getitem__() fails'
+    def testRepr(self):
+        assert eval(repr(univ.OctetString('abc')), { 'OctetString': univ.OctetString}) == univ.OctetString('abc'), 'repr() fails'
     def testAsOctets(self):
         assert univ.OctetString('abcd').asOctets() == str2octs('abcd'), 'testAsOctets() fails'
     def testAsInts(self):
@@ -147,6 +172,8 @@ class OctetStringTestCase(unittest.TestCase):
 
 class Null(unittest.TestCase):
     def testStr(self): assert str(univ.Null('')) == '', 'str() fails'
+    def testRepr(self):
+        assert eval(repr(univ.Null()), { 'Null': univ.Null}) == univ.Null(), 'repr() fails'
     def testTag(self):
         assert univ.Null().getTagSet() == tag.TagSet(
             (),
@@ -161,8 +188,13 @@ class Null(unittest.TestCase):
             assert 0, 'constraint fail'
 
 class RealTestCase(unittest.TestCase):
+    def testFloat4BinEnc(self): assert univ.Real((0.25, 2, 3)) == 2.0, 'float initializer for binary encoding fails'
     def testStr(self): assert str(univ.Real(1.0)) == '1.0','str() fails'
-    def testRepr(self): assert repr(univ.Real(-4.1)) == 'Real((-41, 10, -1))','repr() fails'
+    def testRepr(self):
+        assert eval(repr(univ.Real(-4.1)), { 'Real': univ.Real}) == univ.Real(-4.1), 'repr() fails'
+        assert repr(univ.Real(-4.1)) == 'Real((-41, 10, -1))','repr() fails'
+        assert eval(repr(univ.Real('inf')), { 'Real': univ.Real}) == univ.Real('inf'), 'repr() fails'
+        assert repr(univ.Real('inf')) == 'Real(\'inf\')','repr() fails'
     def testAdd(self): assert univ.Real(-4.1) + 1.4 == -2.7, '__add__() fails'
     def testRadd(self): assert 4 + univ.Real(0.5) == 4.5, '__radd__() fails'
     def testSub(self): assert univ.Real(3.9) - 1.7 == 2.2, '__sub__() fails'
@@ -182,8 +214,6 @@ class RealTestCase(unittest.TestCase):
     # infinite float values
     def testStrInf(self):
         assert str(univ.Real('inf')) == 'inf','str() fails'
-    def testReprInf(self):
-        assert repr(univ.Real('inf')) == 'Real(\'inf\')','repr() fails'
     def testAddInf(self):
         assert univ.Real('inf') + 1 == float('inf'), '__add__() fails'
     def testRaddInf(self):
@@ -212,6 +242,18 @@ class RealTestCase(unittest.TestCase):
     def testMinusInf(self):
         assert univ.Real('-inf').isMinusInfinity(), 'isMinusInfinity failed'
 
+    def testPos(self): assert +univ.Real(1.0) == 1.0, '__pos__() fails'
+    def testNeg(self): assert -univ.Real(1.0) == -1.0, '__neg__() fails'
+    def testRound(self): 
+        assert round(univ.Real(1.123), 2) == 1.12,'__round__() fails'
+    def testFloor(self): 
+        assert math.floor(univ.Real(1.6)) == 1.0,'__floor__() fails'
+    def testCeil(self): 
+        assert math.ceil(univ.Real(1.2)) == 2.0,'__ceil__() fails'
+    if version_info[0:2] > (2, 5):
+        def testTrunc(self): 
+            assert math.trunc(univ.Real(1.1)) == 1.0,'__trunc__() fails'
+ 
     def testTag(self):
         assert univ.Real().getTagSet() == tag.TagSet(
             (),
@@ -220,7 +262,9 @@ class RealTestCase(unittest.TestCase):
 
 class ObjectIdentifier(unittest.TestCase):
     def testStr(self):
-        assert str(univ.ObjectIdentifier((1,3,6))) == '1.3.6'
+        assert str(univ.ObjectIdentifier((1,3,6))) == '1.3.6', 'str() fails'
+    def testRepr(self):
+        assert eval(repr(univ.ObjectIdentifier('1.3.6')), { 'ObjectIdentifier': univ.ObjectIdentifier}) == univ.ObjectIdentifier('1.3.6'), 'repr() fails'
     def testEq(self):
         assert univ.ObjectIdentifier((1,3,6)) == (1,3,6), '__cmp__() fails'
     def testAdd(self):
@@ -234,8 +278,17 @@ class ObjectIdentifier(unittest.TestCase):
         assert o.isPrefixOf((1,3,6)), 'isPrefixOf() fails'
         assert o.isPrefixOf((1,3,6,1)), 'isPrefixOf() fails'
         assert not o.isPrefixOf((1,3)), 'isPrefixOf() fails'        
-    def testInput(self):
+    def testInput1(self):
         assert univ.ObjectIdentifier('1.3.6')==(1,3,6),'prettyIn() fails'
+    def testInput2(self):
+        assert univ.ObjectIdentifier((1,3,6))==(1,3,6),'prettyIn() fails'
+    def testInput3(self):
+        assert univ.ObjectIdentifier(univ.ObjectIdentifier('1.3') + (6,))==(1,3,6),'prettyIn() fails'
+    def testUnicode(self):
+        s = '1.3.6'
+        if version_info[0] < 3:
+            s = s.decode()
+        assert univ.ObjectIdentifier(s) == (1,3,6), 'unicode init fails'
     def testTag(self):
         assert univ.ObjectIdentifier().getTagSet() == tag.TagSet(
             (),
@@ -248,6 +301,8 @@ class SequenceOf(unittest.TestCase):
             componentType=univ.OctetString('')
             )
         self.s2 = self.s1.clone()
+    def testRepr(self):
+        assert eval(repr(self.s1.clone().setComponents('a', 'b')), { 'SequenceOf': univ.SequenceOf, 'OctetString': univ.OctetString }) == self.s1.clone().setComponents('a', 'b'), 'repr() fails'
     def testTag(self):
         assert self.s1.getTagSet() == tag.TagSet(
             (),
@@ -275,9 +330,39 @@ class SequenceOf(unittest.TestCase):
         try:
             s.setComponentByPosition(1, univ.OctetString('Abc'))
         except:
-            pass
+            try:
+                s.setComponentByPosition(1, univ.OctetString('Abc'),
+                                         verifyConstraints=False)
+            except:
+                assert 0, 'constraint failes with verifyConstraints=True'
         else:
             assert 0, 'constraint fails'
+    def testComponentTagsMatching(self):
+        s = self.s1.clone()
+        o = univ.OctetString('abc').subtype(explicitTag=tag.Tag(tag.tagClassPrivate, tag.tagFormatSimple, 12))
+        try:
+            s.setComponentByPosition(0, o)
+        except:
+            pass
+        else:
+            assert 0, 'inner supertype tag allowed'
+    def testComponentConstraintsMatching(self):
+        s = self.s1.clone()
+        o = univ.OctetString().subtype(subtypeSpec=constraint.ConstraintsUnion(constraint.SingleValueConstraint(str2octs('cba'))))
+        s.strictConstraints = True
+        try:
+            s.setComponentByPosition(0, o.clone('cba'))
+        except:
+            pass
+        else:
+            assert 0, 'inner supertype constraint allowed'
+        s.strictConstraints = False
+        try:
+            s.setComponentByPosition(0, o.clone('cba'))
+        except:
+            assert 0, 'inner supertype constraint disallowed'
+        else:
+            pass
     def testSizeSpec(self):
         s = self.s1.clone(sizeSpec=constraint.ConstraintsUnion(
             constraint.ValueSizeConstraint(1,1)
@@ -317,7 +402,10 @@ class SequenceOf(unittest.TestCase):
         s = self.s1.clone(cloneValueFlag=1)
         assert len(s) == 1
         assert s.getComponentByPosition(0) == self.s1.getComponentByPosition(0)
-        
+    def testSetComponents(self):
+        assert self.s1.clone().setComponents('abc', 'def') == \
+            self.s1.setComponentByPosition(0, 'abc').setComponentByPosition(1, 'def')
+                
 class Sequence(unittest.TestCase):
     def setUp(self):
         self.s1 = univ.Sequence(componentType=namedtype.NamedTypes(
@@ -325,6 +413,8 @@ class Sequence(unittest.TestCase):
             namedtype.OptionalNamedType('nick', univ.OctetString('')),
             namedtype.DefaultedNamedType('age', univ.Integer(34))
             ))
+    def testRepr(self):
+        assert eval(repr(self.s1.clone().setComponents('a', 'b')), { 'Sequence': univ.Sequence, 'OctetString': univ.OctetString, 'Integer': univ.Integer, 'NamedTypes': namedtype.NamedTypes, 'NamedType': namedtype.NamedType, 'OptionalNamedType': namedtype.OptionalNamedType, 'DefaultedNamedType': namedtype.DefaultedNamedType }) == self.s1.clone().setComponents('a', 'b'), 'repr() fails'
     def testTag(self):
         assert self.s1.getTagSet() == tag.TagSet(
             (),
@@ -367,6 +457,35 @@ class Sequence(unittest.TestCase):
         assert s.getComponentByPosition(0) == self.s1.getComponentByPosition(0)
         assert s.getComponentByPosition(1) == self.s1.getComponentByPosition(1)
         assert s.getComponentByPosition(2) == self.s1.getComponentByPosition(2)
+    def testComponentTagsMatching(self):
+        s = self.s1.clone()
+        o = univ.OctetString('abc').subtype(explicitTag=tag.Tag(tag.tagClassPrivate, tag.tagFormatSimple, 12))
+        try:
+            s.setComponentByName('name', o)
+        except:
+            pass
+        else:
+            assert 0, 'inner supertype tag allowed'
+    def testComponentConstraintsMatching(self):
+        s = self.s1.clone()
+        o = univ.OctetString().subtype(subtypeSpec=constraint.ConstraintsUnion(constraint.SingleValueConstraint(str2octs('cba'))))
+        s.strictConstraints = True
+        try:
+            s.setComponentByName('name', o.clone('cba'))
+        except:
+            pass
+        else:
+            assert 0, 'inner supertype constraint allowed'
+        s.strictConstraints = False
+        try:
+            s.setComponentByName('name', o.clone('cba'))
+        except:
+            assert 0, 'inner supertype constraint disallowed'
+        else:
+            pass
+    def testSetComponents(self):
+        assert self.s1.clone().setComponents(name='a', nick='b', age=1) == \
+            self.s1.setComponentByPosition(0, 'a').setComponentByPosition(1, 'b').setComponentByPosition(2, 1)
 
 class SetOf(unittest.TestCase):
     def setUp(self):
@@ -432,6 +551,9 @@ class Choice(unittest.TestCase):
             ))
     def testTag(self):
         assert self.s1.getTagSet() == tag.TagSet(), 'wrong tagSet'
+    def testRepr(self):
+        assert eval(repr(self.s1.clone().setComponents('a')), { 'Choice': univ.Choice, 'OctetString': univ.OctetString, 'Integer': univ.Integer, 'Boolean': univ.Boolean, 'NamedTypes': namedtype.NamedTypes, 'NamedType': namedtype.NamedType }) == self.s1.clone().setComponents('a'), 'repr() fails'
+        assert eval(repr(self.s1.clone().setComponents(sex=self.s1.setComponentByPosition(1).getComponentByPosition(1).clone().setComponents(count=univ.Integer(123)))), { 'Choice': univ.Choice, 'OctetString': univ.OctetString, 'Integer': univ.Integer, 'Boolean': univ.Boolean, 'NamedTypes': namedtype.NamedTypes, 'NamedType': namedtype.NamedType }) == self.s1.clone().setComponents(sex=self.s1.setComponentByPosition(1).getComponentByPosition(1).clone().setComponents(count=univ.Integer(123))), 'repr() fails'
     def testOuterByTypeWithPythonValue(self):
         self.s1.setComponentByType(univ.OctetString.tagSet, 'abc')
         assert self.s1.getComponentByType(

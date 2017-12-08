@@ -54,7 +54,7 @@ class SetMachineType(base_classes.NoOutputAsyncMutator):
     """Returns a list of request necessary for setting scheduling options."""
     instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
         args, self.resources, scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client, self.project))
+            self.compute_client))
 
     machine_type = instance_utils.InterpretMachineType(
         machine_type=args.machine_type,
@@ -62,8 +62,9 @@ class SetMachineType(base_classes.NoOutputAsyncMutator):
         custom_memory=args.custom_memory,
         ext=getattr(args, 'custom_extensions', None))
 
-    instance_utils.CheckCustomCpuRamRatio(
-        self.compute_client, self.project, instance_ref.zone, machine_type)
+    instance_utils.CheckCustomCpuRamRatio(self.compute_client,
+                                          instance_ref.project,
+                                          instance_ref.zone, machine_type)
 
     machine_type_uri = self.resources.Parse(
         machine_type, collection='compute.machineTypes',
@@ -73,7 +74,7 @@ class SetMachineType(base_classes.NoOutputAsyncMutator):
         machineType=machine_type_uri)
     request = self.messages.ComputeInstancesSetMachineTypeRequest(
         instance=instance_ref.Name(),
-        project=self.project,
+        project=instance_ref.project,
         instancesSetMachineTypeRequest=set_machine_type_request,
         zone=instance_ref.zone)
 

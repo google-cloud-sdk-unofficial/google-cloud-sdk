@@ -158,7 +158,7 @@ class Init(base.Command):
         # Prompt for the account to use.
         idx = console_io.PromptChoice(
             accounts + ['Log in with a new account'],
-            message='Choose the account you would like use to perform '
+            message='Choose the account you would like to use to perform '
                     'operations for this configuration:',
             prompt_string=None)
         if idx is None:

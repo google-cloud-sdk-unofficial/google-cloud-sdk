@@ -27,7 +27,6 @@ class Delete(base.DeleteCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To delete a waiter named "my-waiter" within a configuration named
           "my-config", run:

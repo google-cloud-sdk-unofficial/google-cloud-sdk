@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.kms import flags
 class SetRotationSchedule(base.UpdateCommand):
   r"""Update the rotation schedule for a CryptoKey.
 
-  Updates the rotation schedule for the the given CryptoKey. The schedule
+  Updates the rotation schedule for the given CryptoKey. The schedule
   automatically creates a new primary CryptoKeyVersion for the CryptoKey
   according to the `--next-rotation-time` and `--rotation-period` flags.
 

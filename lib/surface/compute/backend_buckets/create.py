@@ -15,11 +15,9 @@
 
 from googlecloudsdk.api_lib.compute import backend_buckets_utils
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_buckets_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base_classes.BaseAsyncCreator):
   """Create a backend bucket."""
 

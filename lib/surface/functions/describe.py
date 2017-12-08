@@ -45,10 +45,11 @@ class Describe(base.DescribeCommand):
     project = properties.VALUES.core.project.Get(required=True)
     registry = self.context['registry']
     function_ref = registry.Parse(
-        args.name, params={'projectsId': project, 'locationsId': args.region},
+        args.name, params={
+            'projectsId': project,
+            'locationsId': properties.VALUES.functions.region.Get()},
         collection='cloudfunctions.projects.locations.functions')
 
-    # TODO(b/36055860): Use resources.py here after b/21908671 is fixed.
     return client.projects_locations_functions.Get(
         messages.CloudfunctionsProjectsLocationsFunctionsGetRequest(
             name=function_ref.RelativeName()))

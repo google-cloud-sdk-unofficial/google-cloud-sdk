@@ -26,7 +26,6 @@ class Describe(base.DescribeCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To display the details of a change, run:
 

@@ -26,7 +26,6 @@ class Describe(base.DescribeCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To describe a runtime-config resource named "my-config", run:
 

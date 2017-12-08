@@ -64,6 +64,7 @@ from gslib.tests.rewrite_helper import RewriteHaltException
 import gslib.tests.testcase as testcase
 from gslib.tests.testcase.base import NotParallelizable
 from gslib.tests.testcase.integration_testcase import SkipForS3
+from gslib.tests.testcase.integration_testcase import SkipForXML
 from gslib.tests.util import BuildErrorRegex
 from gslib.tests.util import GenerationFromURI as urigen
 from gslib.tests.util import HaltingCopyCallbackHandler
@@ -694,9 +695,11 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     bucket3_uri = self.CreateVersionedBucket()
 
     # Write two versions of an object to the bucket1.
-    self.CreateObject(bucket_uri=bucket1_uri, object_name='k', contents='data0')
+    v1_uri = self.CreateObject(bucket_uri=bucket1_uri, object_name='k',
+                               contents='data0')
     self.CreateObject(bucket_uri=bucket1_uri, object_name='k',
-                      contents='longer_data1')
+                      contents='longer_data1',
+                      gs_idempotent_generation=urigen(v1_uri))
 
     self.AssertNObjectsInBucket(bucket1_uri, 2, versioned=True)
     self.AssertNObjectsInBucket(bucket2_uri, 0, versioned=True)
@@ -1486,10 +1489,33 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     # Use @Retry as hedge against bucket listing eventual consistency.
     self.AssertNObjectsInBucket(bucket_uri, 1)
 
+    if self.default_provider == 's3':
+      expected_error_regex = r'AccessDenied'
+    else:
+      expected_error_regex = r'Anonymous user(s)? do(es)? not have'
+
     with self.SetAnonymousBotoCreds():
       stderr = self.RunGsUtil(['cp', suri(object_uri), 'foo'],
                               return_stderr=True, expected_status=1)
-      self.assertIn('AccessDenied', stderr)
+      self.assertRegexpMatches(stderr, expected_error_regex)
+
+  @unittest.skipIf(IS_WINDOWS, 'os.symlink() is not available on Windows.')
+  def test_cp_minus_r_minus_e(self):
+    """Tests that cp -e -r ignores symlinks when recursing."""
+    bucket_uri = self.CreateBucket()
+    tmpdir = self.CreateTempDir()
+    # Create a valid file, since cp expects to copy at least one source URL
+    # successfully.
+    self.CreateTempFile(tmpdir=tmpdir, contents='foo')
+    subdir = os.path.join(tmpdir, 'subdir')
+    os.mkdir(subdir)
+    os.mkdir(os.path.join(tmpdir, 'missing'))
+    # Create a blank directory that is a broken symlink to ensure that we
+    # don't fail recursive enumeration with a bad symlink.
+    os.symlink(os.path.join(tmpdir, 'missing'),
+               os.path.join(subdir, 'missing'))
+    os.rmdir(os.path.join(tmpdir, 'missing'))
+    self.RunGsUtil(['cp', '-r', '-e', tmpdir, suri(bucket_uri)])
 
   @unittest.skipIf(IS_WINDOWS, 'os.symlink() is not available on Windows.')
   def test_cp_minus_e(self):
@@ -1503,7 +1529,15 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
          suri(bucket_uri, 'files')],
         return_stderr=True)
     self.assertIn('Copying file', stderr)
-    self.assertIn('Skipping symbolic link file', stderr)
+    self.assertIn('Skipping symbolic link', stderr)
+
+    # Ensure that top-level arguments are ignored if they are symlinks.
+    stderr = self.RunGsUtil(
+        ['cp', '-e', fpath1, fpath2, suri(bucket_uri, 'files')],
+        return_stderr=True, expected_status=1)
+    self.assertIn('Copying file', stderr)
+    self.assertIn('Skipping symbolic link', stderr)
+    self.assertIn('CommandException: No URLs matched: %s' % fpath2, stderr)
 
   def test_cp_multithreaded_wildcard(self):
     """Tests that cp -m works with a wildcard."""
@@ -2217,8 +2251,10 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
       self.assertIn('Artifically halting download.', stderr)
       # Create a new object with different contents - it should have a
       # different ETag since the content has changed.
-      object_uri = self.CreateObject(bucket_uri=bucket_uri, object_name='foo',
-                                     contents='b' * self.halt_size)
+      object_uri = self.CreateObject(
+          bucket_uri=bucket_uri, object_name='foo',
+          contents='b' * self.halt_size,
+          gs_idempotent_generation=object_uri.generation)
       stderr = self.RunGsUtil(['cp', suri(object_uri), fpath],
                               return_stderr=True)
       self.assertNotIn('Resuming download', stderr)
@@ -3130,6 +3166,28 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     self.assertIn(
         'Cannot specify storage class for a non-cloud destination:', stderr)
 
+  # TODO: Remove @skip annotation from this test once we upgrade to the Boto
+  # version that parses the storage class header for HEAD Object responses.
+  @SkipForXML('Need Boto version > 2.46.1')
+  def test_cp_specify_nondefault_storage_class(self):
+    bucket_uri = self.CreateBucket()
+    object_uri = self.CreateObject(
+        bucket_uri=bucket_uri, object_name='foo', contents='foo')
+    object2_suri = suri(object_uri) + 'bar'
+    # Specify storage class name as mixed case here to ensure that it
+    # gets normalized to uppercase (S3 would return an error otherwise), and
+    # that using the normalized case is accepted by each API.
+    nondefault_storage_class = {
+        's3': 'Standard_iA',
+        'gs':'durable_REDUCED_availability'
+    }
+    storage_class = nondefault_storage_class[self.default_provider]
+    self.RunGsUtil(['cp', '-s', storage_class, suri(object_uri), object2_suri])
+    stdout = self.RunGsUtil(['stat', object2_suri], return_stdout=True)
+    self.assertRegexpMatchesWithFlags(
+        stdout, r'Storage class:\s+%s' % storage_class, flags=re.IGNORECASE)
+
+  @SkipForS3('Test uses gs-specific storage classes.')
   def test_cp_sets_correct_dest_storage_class(self):
     """Tests that object storage class is set correctly with and without -s."""
     # Use a non-default storage class as the default for the bucket.

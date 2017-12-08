@@ -55,8 +55,7 @@ class SetAutoscaling(base_classes.BaseAsyncMutator):
   def CreateGroupReference(self, args):
     resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
     default_scope = compute_scope.ScopeEnum.ZONE
-    scope_lister = flags.GetDefaultScopeLister(
-        self.compute_client, self.project)
+    scope_lister = flags.GetDefaultScopeLister(self.compute_client)
     return resource_arg.ResolveAsResource(
         args, self.resources, default_scope=default_scope,
         scope_lister=scope_lister)
@@ -82,13 +81,13 @@ class SetAutoscaling(base_classes.BaseAsyncMutator):
         autoscalers=managed_instance_groups_utils.AutoscalersForLocations(
             regions=regions,
             zones=zones,
-            project=self.project,
+            project=igm_ref.project,
             compute=self.compute,
             http=self.http,
             batch_url=self.batch_url),
         scope_name=scope_name,
         scope_type=scope_type,
-        project=self.project)
+        project=igm_ref.project)
     autoscaler_name = getattr(autoscaler, 'name', None)
     new_one = autoscaler_name is None
     autoscaler_name = autoscaler_name or args.name
@@ -125,13 +124,13 @@ class SetAutoscaling(base_classes.BaseAsyncMutator):
 
     if is_new:
       method = 'Insert'
-      request = service.GetRequestType(method)(project=self.project)
+      request = service.GetRequestType(method)(project=igm_ref.project)
       managed_instance_groups_utils.AdjustAutoscalerNameForCreation(
           autoscaler_resource)
       request.autoscaler = autoscaler_resource
     else:
       method = 'Update'
-      request = service.GetRequestType(method)(project=self.project)
+      request = service.GetRequestType(method)(project=igm_ref.project)
       request.autoscaler = autoscaler_resource.name
       request.autoscalerResource = autoscaler_resource
 

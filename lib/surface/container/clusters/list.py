@@ -30,17 +30,6 @@ from surface.container.clusters.upgrade import VersionVerifier
 class List(base.ListCommand):
   """List existing clusters for running containers."""
 
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command.
-
-    Args:
-      parser: An argparse.ArgumentParser-like object. It is mocked out in order
-          to capture some information, but behaves like an ArgumentParser.
-    """
-    # --uri is inherited for all ListCommands but is not implemented here.
-    base.URI_FLAG.RemoveFromParser(parser)
-
   def Collection(self):
     return 'container.projects.zones.clusters'
 

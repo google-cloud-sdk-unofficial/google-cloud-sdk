@@ -31,7 +31,6 @@ class Execute(base.ListCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To execute the transaction, run:
 

@@ -30,8 +30,7 @@ def LogResource(request, async):
                       async=async)
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create a type.
 
@@ -40,7 +39,6 @@ class Create(base.CreateCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To create a new composite type, run:
 

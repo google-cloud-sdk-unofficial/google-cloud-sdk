@@ -29,7 +29,6 @@ class Abort(base.Command):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To abort the transaction, run:
 

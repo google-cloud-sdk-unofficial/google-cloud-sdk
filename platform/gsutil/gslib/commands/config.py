@@ -145,10 +145,12 @@ _DETAILED_HELP_TEXT = ("""
 
 
 <B>ADDITIONAL CONFIGURATION-CONTROLLABLE FEATURES</B>
-  With the exception of setting up gsutil to work through a proxy (see
-  below), most users won't need to edit values in the boto configuration file;
-  values found in there tend to be of more specialized use than command line
-  option-controllable features.
+  With the exception of setting up gsutil to work through a proxy, most users
+  won't need to edit values in the boto configuration file; values found in
+  the file tend to be of more specialized use than command line
+  option-controllable features. For information on setting up gsutil to work
+  through a proxy, see the comments preceding the proxy settings in your
+  .boto file.
 
   The following are the currently defined configuration settings, broken
   down by section. Their use is documented in comments preceding each, in
@@ -465,9 +467,9 @@ CONFIG_INPUTLESS_GSUTIL_SECTION_CONTENT = """
 # that is done we will re-enable parallel composite uploads by default in
 # gsutil.
 #
-# Note: Parallel composite uploads should not be used with NEARLINE storage
-# class buckets, as doing this would incur an early deletion charge for each
-# component object.
+# Note: Parallel composite uploads should not be used with NEARLINE or COLDLINE
+# storage class buckets, as doing this incurs an early deletion charge for
+# each component object.
 #parallel_composite_upload_threshold = %(parallel_composite_upload_threshold)s
 #parallel_composite_upload_component_size = %(parallel_composite_upload_component_size)s
 

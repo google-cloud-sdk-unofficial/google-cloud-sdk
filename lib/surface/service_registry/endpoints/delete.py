@@ -29,7 +29,6 @@ class Delete(base.DeleteCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To delete an endpoint in Service Registry
 

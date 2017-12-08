@@ -27,7 +27,6 @@ class Delete(base.DeleteCommand):
   """Delete a specified instance."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To delete instance i1 of service s1 and version v1, run:
 

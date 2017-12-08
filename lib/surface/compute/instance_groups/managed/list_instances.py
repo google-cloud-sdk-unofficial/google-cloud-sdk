@@ -54,8 +54,7 @@ class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
         .ResolveAsResource(
             args, self.resources,
             default_scope=compute_scope.ScopeEnum.ZONE,
-            scope_lister=flags.GetDefaultScopeLister(
-                self.compute_client, self.project)))
+            scope_lister=flags.GetDefaultScopeLister(self.compute_client)))
 
   def GetResources(self, args):
     """Retrieves response with instance in the instance group."""

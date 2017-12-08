@@ -28,7 +28,6 @@ class SignBlob(base_classes.BaseIamCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': textwrap.dedent("""\
           To sign a blob file with a system-managed service account key,
           run:

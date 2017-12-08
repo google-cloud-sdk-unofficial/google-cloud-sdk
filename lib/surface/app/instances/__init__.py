@@ -27,7 +27,6 @@ class Instances(base.Group):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To list your App Engine instances, run:
 

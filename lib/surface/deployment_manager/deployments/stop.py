@@ -36,7 +36,6 @@ class Stop(base.Command):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To stop a running operation on a deployment, run:
 

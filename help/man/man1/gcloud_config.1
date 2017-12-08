@@ -255,6 +255,33 @@ Use the cluster's client certificate to authenticate to the cluster API server.
 .RE
 .sp
 .TP 2m
+\fIfunctions\fR
+
+.RS 2m
+.TP 2m
+\fBregion\fR
+The default region to use when working with Google Compute functions resources.
+When a \f5\-\-region\fR flag is required but not provided, the command will fall
+back to this value, if set. To see valid choices, run \f5gcloud functions
+regions list\fR.
+
+
+.RE
+.sp
+.TP 2m
+\fIml_engine\fR
+
+.RS 2m
+.TP 2m
+\fBpolling_interval\fR
+The interval (in seconds) at which to poll logs from your Cloud ML Engine jobs.
+Note that making it much faster than the default (60) will quickly use all of
+your quota.
+
+
+.RE
+.sp
+.TP 2m
 \fIproxy\fR
 
 .RS 2m

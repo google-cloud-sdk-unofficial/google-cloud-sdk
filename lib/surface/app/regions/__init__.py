@@ -25,7 +25,6 @@ class Regions(base.Group):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To view regional availability of App Engine runtime environments, run:
 

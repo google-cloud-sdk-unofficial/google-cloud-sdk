@@ -21,7 +21,6 @@ class List(base.ListCommand):
   """List the availability of flex and standard environments for each region."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To view regional availability of App Engine runtime environments, run:
 

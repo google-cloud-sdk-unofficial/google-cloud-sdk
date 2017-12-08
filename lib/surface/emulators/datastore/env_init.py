@@ -30,10 +30,6 @@ class EnvInit(base.Command):
     $ {command} --data-dir DATA-DIR
   """
 
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-  }
-
   def Run(self, args):
     return util.ReadEnvYaml(args.data_dir)
 

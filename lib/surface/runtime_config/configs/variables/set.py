@@ -31,7 +31,6 @@ class Set(base.CreateCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To create or update a variable named "my-var", run:
 

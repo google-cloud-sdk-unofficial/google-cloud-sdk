@@ -18,7 +18,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
-from googlecloudsdk.core import properties
 
 
 class GetNamedPortsBeta(base.ListCommand):
@@ -34,13 +33,11 @@ class GetNamedPortsBeta(base.ListCommand):
   def Run(self, args):
     """Retrieves response with named ports."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    project = properties.VALUES.core.project.Get(required=True)
     group_ref = (
         instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
             args, holder.resources,
             default_scope=compute_scope.ScopeEnum.ZONE,
-            scope_lister=flags.GetDefaultScopeLister(
-                holder.client, project)))
+            scope_lister=flags.GetDefaultScopeLister(holder.client)))
     return instance_groups_utils.OutputNamedPortsForGroup(
         group_ref, holder.client)
 

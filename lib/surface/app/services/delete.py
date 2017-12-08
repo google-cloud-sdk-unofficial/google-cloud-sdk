@@ -25,7 +25,6 @@ class Delete(base.DeleteCommand):
   """Delete services in the current project."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To delete a service (and all of its accompanying versions) in the
           current project, run:

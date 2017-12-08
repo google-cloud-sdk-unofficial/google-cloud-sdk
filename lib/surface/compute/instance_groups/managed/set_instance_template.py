@@ -50,7 +50,7 @@ class SetInstanceTemplate(base_classes.BaseAsyncMutator):
                    args, self.resources,
                    default_scope=compute_scope.ScopeEnum.ZONE,
                    scope_lister=flags.GetDefaultScopeLister(
-                       self.compute_client, self.project))
+                       self.compute_client))
     template_ref = self.resources.Parse(
         args.template, collection='compute.instanceTemplates')
 
@@ -64,7 +64,7 @@ class SetInstanceTemplate(base_classes.BaseAsyncMutator):
                       instanceTemplate=template_ref.SelfLink(),
                   )
               ),
-              project=self.project,
+              project=igm_ref.project,
               zone=igm_ref.zone,)
       )
     else:
@@ -78,7 +78,7 @@ class SetInstanceTemplate(base_classes.BaseAsyncMutator):
                       instanceTemplate=template_ref.SelfLink(),
                   )
               ),
-              project=self.project,
+              project=igm_ref.project,
               region=igm_ref.region,)
       )
 

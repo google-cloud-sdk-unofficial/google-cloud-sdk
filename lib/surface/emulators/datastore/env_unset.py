@@ -22,7 +22,6 @@ class EnvUnset(base.Command):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To print the commands necessary to unset the env variables for
           a datastore emulator, run:

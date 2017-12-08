@@ -29,7 +29,6 @@ class Create(base.CreateCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To create a waiter in "my-config" with success and failure paths
           nested under "/status", run:

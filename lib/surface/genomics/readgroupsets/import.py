@@ -32,7 +32,6 @@ class Import(base.Command):
   [](https://cloud.google.com/genomics/managing-reads for more details)
   """
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           Import a single BAM file and associate with the GRCh38 reference set:
 

@@ -21,7 +21,6 @@ class Locales(base.Group):
   """Explore Android locales available for testing."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To list all available Android locales which can be used for testing
           international applications, run:

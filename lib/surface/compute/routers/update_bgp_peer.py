@@ -48,7 +48,7 @@ class UpdateBgpPeer(base_classes.ReadWriteCommand):
 
     parser.add_argument(
         '--interface',
-        help='The new interface of the peer being modified.')
+        help='The name of the new interface of the peer being modified.')
 
     parser.add_argument(
         '--peer-asn',

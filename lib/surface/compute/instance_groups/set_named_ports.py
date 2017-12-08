@@ -40,8 +40,7 @@ class SetNamedPortsAlpha(base_classes.NoOutputAsyncMutator):
   def CreateRequests(self, args):
     group_ref = flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
         args, self.resources, default_scope=compute_scope.ScopeEnum.ZONE,
-        scope_lister=compute_flags.GetDefaultScopeLister(
-            self.compute_client, self.project))
+        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
     ports = instance_groups_utils.ValidateAndParseNamedPortsArgs(
         self.messages, args.named_ports)
     # service could be zonal or regional

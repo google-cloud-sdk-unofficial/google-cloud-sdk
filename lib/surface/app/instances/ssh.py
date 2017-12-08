@@ -30,6 +30,10 @@ ENABLE_DEBUG_WARNING = """\
 This instance is serving live application traffic.  Any changes made could
 result in downtime or unintended consequences."""
 
+# Used by OpenSSH for naming a logical host in the known_hosts file, rather than
+# relying on IP or DNS. Flexible instance IDs are unique per project.
+HOST_KEY_ALIAS = 'gae.{project}.{instance_id}'
+
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Ssh(base.Command):
@@ -94,11 +98,12 @@ class Ssh(base.Command):
     Returns:
       int, The exit code of the SSH command.
     """
+    api_client = appengine_api_client.GetApiClient()
     env = ssh.Environment.Current()
     env.RequireSSH()
     keys = ssh.Keys.FromFilename()
+    keys.EnsureKeysExist(overwrite=False)
 
-    api_client = appengine_api_client.GetApiClient()
     try:
       version = api_client.GetVersionResource(
           service=args.service, version=args.version)
@@ -137,7 +142,10 @@ class Ssh(base.Command):
     api_client.DebugInstance(res, ssh_key)
     options = {
         'IdentitiesOnly': 'yes',  # No ssh-agent as of yet
-        'UserKnownHostsFile': ssh.KnownHosts.DEFAULT_PATH}
+        'UserKnownHostsFile': ssh.KnownHosts.DEFAULT_PATH,
+        'CheckHostIP': 'no',
+        'HostKeyAlias': HOST_KEY_ALIAS.format(project=api_client.project,
+                                              instance_id=args.instance)}
     cmd = ssh.SSHCommand(remote, identity_file=keys.key_file, options=options)
     if args.container:
       cmd.tty = True

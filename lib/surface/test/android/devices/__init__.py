@@ -21,7 +21,6 @@ class Devices(base.Group):
   """Explore Android devices available in the Test Environment catalog."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To list all Android devices available for running tests, along with
           their basic characteristics and supported Android OS versions, run:

@@ -26,7 +26,6 @@ class Start(base.Command):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To start a local datastore emulator, run:
 
@@ -56,7 +55,10 @@ class Start(base.Command):
         required=False,
         type=float,
         default=0.9,
-        help='Fraction of datastore operations that should succeed.')
+        help='Fraction of eventually consistent operations that '
+             'should succeed immediately. Setting to 1.0 can be useful '
+             'for unit tests, but may mask incorrect assumptions about '
+             'non-ancestor queries which are eventually consistent.')
 
   def Run(self, args):
     if not args.host_port:

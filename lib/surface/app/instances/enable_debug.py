@@ -36,7 +36,6 @@ class EnableDebug(base.Command):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To enable debug mode for a particular instance, run:
 

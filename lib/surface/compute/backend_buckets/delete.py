@@ -13,10 +13,8 @@
 # limitations under the License.
 """Command for deleting backend buckets."""
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base_classes.GlobalDeleter):
   """Delete backend buckets.
 

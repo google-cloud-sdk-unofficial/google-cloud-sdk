@@ -89,7 +89,7 @@ def TypeProviderClient():
   return main_client.typeProviders
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ListALPHA(base.ListCommand):
   """Describe a type provider type."""
 

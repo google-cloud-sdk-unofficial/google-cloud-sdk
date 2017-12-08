@@ -34,7 +34,6 @@ class Migrate(base.Command):
   """Migrate traffic from one version to another for a set of services."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           This only works for automatically scaled Standard versions.
           To migrate from one version to another for all services where there

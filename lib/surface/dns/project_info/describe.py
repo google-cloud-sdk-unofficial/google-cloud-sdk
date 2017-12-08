@@ -25,7 +25,6 @@ class Describe(base.DescribeCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To display Cloud DNS related information for your project, run:
 

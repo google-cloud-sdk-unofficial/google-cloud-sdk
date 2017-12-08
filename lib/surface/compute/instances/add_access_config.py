@@ -87,7 +87,7 @@ class AddAccessConfigInstances(base_classes.NoOutputAsyncMutator):
     """Returns a list of request necessary for adding an access config."""
     instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
         args, self.resources, scope_lister=compute_flags.GetDefaultScopeLister(
-            self.compute_client, self.project))
+            self.compute_client))
 
     access_config = self.messages.AccessConfig(
         name=args.access_config_name,
@@ -120,7 +120,7 @@ class AddAccessConfigInstances(base_classes.NoOutputAsyncMutator):
         accessConfig=access_config,
         instance=instance_ref.Name(),
         networkInterface=args.network_interface,
-        project=self.project,
+        project=instance_ref.project,
         zone=instance_ref.zone)
 
     return [request]

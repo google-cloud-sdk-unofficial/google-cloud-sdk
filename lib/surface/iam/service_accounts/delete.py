@@ -27,7 +27,6 @@ class Delete(base_classes.BaseIamCommand, base.DeleteCommand):
   """Delete a service account from a project."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': textwrap.dedent("""\
           To delete an service account from your project, run:
 

@@ -135,7 +135,7 @@ class Delete(base_classes.ZonalDeleter):
   def CreateRequests(self, args):
     refs = instance_flags.INSTANCES_ARG.ResolveAsResource(
         args, self.resources, scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client, self.project))
+            self.compute_client))
     utils.PromptForDeletion(
         refs,
         scope_name='zone',

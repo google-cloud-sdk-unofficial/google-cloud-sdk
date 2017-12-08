@@ -16,6 +16,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
 from googlecloudsdk.command_lib.ml import jobs_util
 from googlecloudsdk.command_lib.ml import log_utils
+from googlecloudsdk.core import properties
 
 
 def _AddStreamLogsArgs(parser):
@@ -35,9 +36,10 @@ class StreamLogsGa(base.Command):
 
   def Run(self, args):
     """Run the stream-logs command."""
-    return jobs_util.StreamLogs('v1', args.job, args.task_name,
-                                args.polling_interval,
-                                args.allow_multiline_logs)
+    return jobs_util.StreamLogs(
+        'v1', args.job, args.task_name,
+        properties.VALUES.ml_engine.polling_interval.GetInt(),
+        args.allow_multiline_logs)
 
   def Format(self, args):
     return log_utils.LOG_FORMAT
@@ -53,9 +55,10 @@ class StreamLogsBeta(base.Command):
 
   def Run(self, args):
     """Run the stream-logs command."""
-    return jobs_util.StreamLogs('v1beta1', args.job, args.task_name,
-                                args.polling_interval,
-                                args.allow_multiline_logs)
+    return jobs_util.StreamLogs(
+        'v1beta1', args.job, args.task_name,
+        properties.VALUES.ml_engine.polling_interval.GetInt(),
+        args.allow_multiline_logs)
 
   def Format(self, args):
     return log_utils.LOG_FORMAT

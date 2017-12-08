@@ -84,14 +84,14 @@ SetMinCpuPlatform.detailed_help = {
         machine with the *TERMINATED* status (a virtual machine  instance that
         has been stopped).
 
-        For example if `example-instance` virtual machine currently has the
-        *TERMINATED* status running:
+        For example, running the command on example-instance virtual machine
+        which has a status of TERMINATED
 
           $ {command} example-instance --zone us-central1-a\
         --min-cpu-platform "Intel Broadwell"
 
         will set the minimum CPU platform to `Intel Broadwell`. When
-        you start `example-instance` later it will be provisioned using at
+        you start `example-instance` later, it will be provisioned using at
         least `Intel Broadwell` CPU platform.
 
         To get a list of available CPU platforms in us-central1-a zone, run:

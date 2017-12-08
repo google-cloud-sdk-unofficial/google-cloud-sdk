@@ -21,7 +21,6 @@ class RecordSets(base.Group):
   """Manage the record-sets within your managed-zones."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To import record-sets from a BIND zone file, run:
 

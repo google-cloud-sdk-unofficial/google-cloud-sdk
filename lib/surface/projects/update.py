@@ -32,7 +32,7 @@ class ArgumentError(exceptions.Error):
 class UpdateAlpha(base.UpdateCommand):
   """Update the name and/or labels of a project.
 
-  Update the the name and/or labels of the given project.
+  Update the name and/or labels of the given project.
 
   This command can fail for the following reasons:
   * There is no project with the given ID.
@@ -82,7 +82,7 @@ class UpdateAlpha(base.UpdateCommand):
 class Update(base.UpdateCommand):
   """Update the name of a project.
 
-  Update the the name of the given project.
+  Update the name of the given project.
 
   This command can fail for the following reasons:
   * There is no project with the given ID.

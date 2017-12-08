@@ -1,0 +1,281 @@
+# Copyright 2016 Google Inc. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""Cloud ML batch prediction dataflow transforms.
+"""
+# TODO(user): add a unittest to test logging futures.
+import json
+import logging
+import threading
+import traceback
+
+
+import apache_beam as beam
+
+from google.cloud.ml import prediction as mlprediction
+from google.cloud.ml.dataflow import _aggregators as aggregators
+
+BASE64_JSON_ATTR_ = "b64"
+BASE64_TENSOR_NAME_SUFFIX_ = "_bytes"
+DEFAULT_BATCH_SIZE = 1000  # 1K instances per batch when evaluating models.
+LOG_SIZE_LIMIT = 1000  # 1K bytes for the input field in log entries.
+
+
+class EmitAsBatchDoFn(beam.DoFn):
+  """A DoFn that buffers the records and emits them batch by batch."""
+
+  def __init__(self, desired_batch_size):
+    """Constructor of EmitAsBatchDoFn beam.DoFn class.
+
+    Args:
+      desired_batch_size: the desired size we want to buffer the records before
+        emitting.
+    """
+    self._desired_batch_size = desired_batch_size
+    self._batch = []
+
+    # Metrics.
+    self._num_batches = beam.metrics.Metrics.counter(self.__class__,
+                                                     "num_batches")
+    self._batch_size_distribution = beam.metrics.Metrics.distribution(
+        self.__class__, "batch_size_distribution")
+    self._num_instances = beam.metrics.Metrics.counter(self.__class__,
+                                                       "num_instances")
+
+  def _flush_batch(self):
+    self._num_batches.inc(1)
+    self._batch_size_distribution.update(len(self._batch))
+    self._num_instances.inc(len(self._batch))
+    result = self._batch
+    self._batch = []
+    return result
+
+  # TODO(user): Remove the context and try catch after sdk update
+  def process(self, element):
+    try:
+      element = element.element
+    except AttributeError:
+      pass
+
+    self._batch.append(element)
+    if len(self._batch) >= self._desired_batch_size:
+      yield self._flush_batch()
+
+  def finish_bundle(self, context=None):
+    if self._batch:
+      yield self._flush_batch()
+
+
+class PredictionDoFn(beam.DoFn):
+  """A DoFn class loading the model to create session and performing prediction.
+
+  The input PCollection consists of a list of strings from the input files.
+
+  The DoFn first loads model from a given path where meta graph data and
+  checkpoint data are exported to. Then if the there is only one string input
+  tensor or the model needs to preprocess the input, it directly passes the
+  data to prediction. Otherwise, it tries to load the data into JSON.
+
+  Then it batches the inputs of each instance into one feed_dict. After that, it
+  runs session and predicts the interesting values for all the instances.
+  Finally it emits the prediction result for each individual instance.
+  """
+
+  class _ModelState(object):
+    """Atomic representation of the in-memory state of the model."""
+
+    def __init__(self, model_dir, skip_preprocessing):
+      self.model_dir = model_dir
+
+      session, signature = self._load_model_with_retry(model_dir)
+      client = mlprediction.SessionClient(session, signature)
+      self.model = mlprediction.DefaultModel.from_client(
+          client, model_dir, skip_preprocessing=skip_preprocessing)
+
+    # TODO(user): Perhaps remove this once CL/148555282 makes it to a
+    # Dataflow release, or use a custom retry_filter below.
+    @beam.utils.retry.with_exponential_backoff()  # Using Beam's retry defaults.
+    def _load_model_with_retry(self, model_dir):
+      return mlprediction.load_model(model_dir)
+
+  # TODO(b/33746781): Make this a non-thread local and promote model_state to
+  # a direct member variable instead.
+  _thread_local = threading.local()
+
+  def __init__(self, aggregator_dict=None, cloud_logger=None,
+               skip_preprocessing=False,
+               target="", config=None):
+    """Constructor of Prediction beam.DoFn class.
+
+    Args:
+      aggregator_dict: A dict of aggregators containing maps from counter name
+                       to the aggregator.
+      cloud_logger: The cloud logging client to send logs to.
+      skip_preprocessing: bool whether to skip preprocessing even when
+                          the metadata.yaml/metadata.json file exists.
+      target: The execution engine to connect to. See target in tf.Session(). In
+              most cases, users should not set the target.
+      config: A ConfigProto proto with configuration options. See config in
+              tf.Session()
+
+    Side Inputs:
+      model_dir: The directory containing the model to load and the
+                 checkpoint files to restore the session.
+    """
+    self._target = target
+    self._skip_preprocessing = skip_preprocessing
+    self._config = config
+    self._aggregator_dict = aggregator_dict
+    self._cloud_logger = cloud_logger
+
+    # Metrics.
+    self._num_model_loads = beam.metrics.Metrics.counter(self.__class__,
+                                                         "num_model_loads")
+
+  def _create_snippet(self, input_data):
+    """Truncate the input data to create a snippet."""
+    input_snippet = "\n".join(str(x) for x in input_data)
+    return unicode(input_snippet[:LOG_SIZE_LIMIT], errors="replace")
+
+  # TODO(user): Remove the try catch after sdk update
+  def process(self, element, model_dir):
+    try:
+      element = element.element
+    except AttributeError:
+      pass
+
+    try:
+      # TODO(b/35795474): Should the model initialization be moved outside of
+      # the try block?
+      if (not hasattr(self._thread_local, "model_state") or
+          self._thread_local.model_state.model_dir != model_dir):
+        self._num_model_loads.inc(1)
+        self._thread_local.model_state = self._ModelState(
+            model_dir, self._skip_preprocessing)
+
+      # Try to load it.
+      if (self._thread_local.model_state.model.is_single_string_input() or
+          self._thread_local.model_state.model.need_preprocess()):
+        loaded_data = element
+      else:
+        loaded_data = [json.loads(d) for d in element]
+      instances = mlprediction.decode_base64(loaded_data)
+      inputs, predictions = self._thread_local.model_state.model.predict(
+          instances)
+      predictions = list(predictions)
+      predictions = mlprediction.encode_base64(
+          predictions,
+          self._thread_local.model_state.model.outputs_type_map())
+
+      if self._aggregator_dict:
+        aggr = self._aggregator_dict.get(
+            aggregators.AggregatorName.ML_PREDICTIONS, None)
+        if aggr:
+          aggr.inc(len(predictions))
+
+      for i, p in zip(inputs, predictions):
+        yield i, p
+
+    except mlprediction.PredictionError as e:
+      logging.error("Got a known exception: [%s]\n%s", e.error_message,
+                    traceback.format_exc())
+      if self._cloud_logger:
+        # TODO(user): consider to write a sink to buffer the logging events. It
+        # also eliminates the restarting/duplicated running issue.
+        self._cloud_logger.write_error_message(
+            e.error_message, self._create_snippet(element))
+      yield beam.pvalue.SideOutputValue("errors",
+                                        (e.error_message, element))
+
+    except Exception as e:  # pylint: disable=broad-except
+      logging.error("Got an unknown exception: [%s].", traceback.format_exc())
+      if self._cloud_logger:
+        self._cloud_logger.write_error_message(
+            str(e), self._create_snippet(element))
+      yield beam.pvalue.SideOutputValue("errors", (str(e), element))
+
+
+class BatchPredict(beam.PTransform):
+  """A transform to load tensorflow model and do prediction.
+
+  The transform first reads prediction instance from the input. Then it loads
+  the tensorflow model from disk and restores the session. For each input, it
+  performs prediction and emits the results.
+  """
+
+  def __init__(self,
+               model_dir,
+               batch_size=DEFAULT_BATCH_SIZE,
+               aggregator_dict=None,
+               cloud_logger=None,
+               target="",
+               config=None,
+               return_input=False,
+               **kwargs):
+    """Constructs the transform.
+
+    Args:
+      model_dir: a Pvalue singleton of model directory that contains model
+                 graph and model parameter files.
+      batch_size: the number of records in one batch.  All the instances in the
+                  same batch would be fed into tf session together thereby only
+                  on Session.Run() is invoked for one batch.
+      aggregator_dict: A dict of aggregators containing maps from counter name
+                 to the aggregator.
+      cloud_logger: cloud logging client to send log to cloud logging.
+      target: The execution engine to connect to. Optional. See target in
+              tf.Session()
+      config: A ConfigProto proto with configuration options. Optional. See
+              config in tf.Session()
+      return_input: if true, the transforms returns a tuple of [input, output]
+                    otherwise only the output is returned.
+      **kwargs: Other named arguments, e.g. label, passed to base PTransform.
+    """
+    super(BatchPredict, self).__init__(**kwargs)
+    self._batch_size = batch_size
+    self._aggregator_dict = aggregator_dict
+    self._cloud_logger = cloud_logger
+    self._target = target
+    self._config = config
+    self._model_dir = model_dir
+    self._return_input = return_input
+
+  # TODO(b/33677990): Remove apply method.
+  def apply(self, data):
+    return self.expand(data)
+
+  def expand(self, data):
+    """Apply the transform.
+
+    Args:
+      data: A PCollection of records containing the data to predict.
+
+    Returns:
+      A PCollection of prediction records and errors
+    """
+    result = (data | "Batch" >> beam.ParDo(EmitAsBatchDoFn(self._batch_size))
+              | "Prediction" >> beam.ParDo(PredictionDoFn(
+                  self._aggregator_dict,
+                  self._cloud_logger,
+                  skip_preprocessing=False,
+                  target=self._target,
+                  config=self._config),
+                                           self._model_dir).with_outputs(
+                                               "errors", main="main"))
+    input_output, errors = result.main, result.errors
+    if self._return_input:
+      output_data = input_output
+    else:
+      output_data = input_output | beam.Map(lambda (_, prediction): prediction)
+
+    return output_data, errors

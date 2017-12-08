@@ -31,7 +31,6 @@ class Remove(base.Command):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To remove an A record, run:
 

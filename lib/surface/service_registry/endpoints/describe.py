@@ -23,7 +23,6 @@ class Describe(base.DescribeCommand):
   """Describe an endpoint entry in Service Registry."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To display information about an endpoint
 

@@ -20,10 +20,10 @@ from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.container import container_command_util
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
-from googlecloudsdk.core.util import text
 from googlecloudsdk.core.util.semver import SemVer
 
 
@@ -138,31 +138,14 @@ class Upgrade(base.Command):
         node_pool=args.node_pool,
         image_type=args.image_type)
 
-    if options.version:
-      new_version_message = 'version [{new_version}]'.format(
-          new_version=options.version)
-    else:
-      new_version_message = 'master version'
-
-    if args.master:
-      node_message = 'Master'
-      current_version = cluster.currentMasterVersion
-    else:
-      node_message = 'All {node_count} {node}'.format(
-          node_count=cluster.currentNodeCount,
-          node=text.Pluralize(cluster.currentNodeCount, 'node'))
-      current_version = cluster.currentNodeVersion
+    upgrade_message = container_command_util.ClusterUpgradeMessage(
+        cluster,
+        master=args.master,
+        node_pool=args.node_pool,
+        new_version=options.version)
 
     console_io.PromptContinue(
-        message='{node_message} of cluster [{cluster_name}] will be upgraded '
-        'from version [{current_version}] to {new_version_message}. '
-        'This operation is long-running and will block other operations '
-        'on the cluster (including delete) until it has run to completion.'
-        .format(
-            node_message=node_message,
-            cluster_name=cluster.name,
-            current_version=current_version,
-            new_version_message=new_version_message),
+        message=upgrade_message,
         throw_if_unattended=True,
         cancel_on_no=True)
 

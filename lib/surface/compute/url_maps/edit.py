@@ -32,6 +32,7 @@ class EditGA(base_classes.BaseEdit):
   """Modify URL maps."""
 
   URL_MAP_ARG = None
+  TRACK = 'v1'
 
   @classmethod
   def Args(cls, parser):
@@ -46,100 +47,6 @@ class EditGA(base_classes.BaseEdit):
   @property
   def resource_type(self):
     return 'urlMaps'
-
-  @property
-  def example_resource(self):
-    uri_prefix = ('https://www.googleapis.com/compute/v1/projects/'
-                  'my-project/global/backendServices/')
-    return self.messages.UrlMap(
-        name='site-map',
-        defaultService=uri_prefix + 'default-service',
-        hostRules=[
-            self.messages.HostRule(
-                hosts=['*.google.com', 'google.com'],
-                pathMatcher='www'),
-            self.messages.HostRule(
-                hosts=['*.youtube.com', 'youtube.com', '*-youtube.com'],
-                pathMatcher='youtube'),
-        ],
-        pathMatchers=[
-            self.messages.PathMatcher(
-                name='www',
-                defaultService=uri_prefix + 'www-default',
-                pathRules=[
-                    self.messages.PathRule(
-                        paths=['/search', '/search/*'],
-                        service=uri_prefix + 'search'),
-                    self.messages.PathRule(
-                        paths=['/search/ads', '/search/ads/*'],
-                        service=uri_prefix + 'ads'),
-                    self.messages.PathRule(
-                        paths=['/images'],
-                        service=uri_prefix + 'images'),
-                ]),
-            self.messages.PathMatcher(
-                name='youtube',
-                defaultService=uri_prefix + 'youtube-default',
-                pathRules=[
-                    self.messages.PathRule(
-                        paths=['/search', '/search/*'],
-                        service=uri_prefix + 'youtube-search'),
-                    self.messages.PathRule(
-                        paths=['/watch', '/view', '/preview'],
-                        service=uri_prefix + 'youtube-watch'),
-                ]),
-        ],
-        tests=[
-            self.messages.UrlMapTest(
-                host='www.google.com',
-                path='/search/ads/inline?q=flowers',
-                service=uri_prefix + 'ads'),
-            self.messages.UrlMapTest(
-                host='youtube.com',
-                path='/watch/this',
-                service=uri_prefix + 'youtube-default'),
-        ],
-    )
-
-  def CreateReference(self, args):
-    return self.URL_MAP_ARG.ResolveAsResource(args, self.resources)
-
-  @property
-  def reference_normalizers(self):
-    def NormalizeBackendService(value):
-      return self.resources.Parse(
-          value, collection='compute.backendServices').SelfLink()
-
-    return [
-        ('defaultService', NormalizeBackendService),
-        ('pathMatchers[].defaultService', NormalizeBackendService),
-        ('pathMatchers[].pathRules[].service', NormalizeBackendService),
-        ('tests[].service', NormalizeBackendService),
-    ]
-
-  def GetGetRequest(self, args):
-    return (
-        self.service,
-        'Get',
-        self.messages.ComputeUrlMapsGetRequest(
-            project=self.project,
-            urlMap=args.name))
-
-  def GetSetRequest(self, args, replacement, _):
-    return (
-        self.service,
-        'Update',
-        self.messages.ComputeUrlMapsUpdateRequest(
-            project=self.project,
-            urlMap=args.name,
-            urlMapResource=replacement))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class EditBeta(EditGA):
-  """Modify URL maps."""
-
-  TRACK = 'beta'
 
   @property
   def example_resource(self):
@@ -201,6 +108,9 @@ class EditBeta(EditGA):
                                      'images'),
         ],)
 
+  def CreateReference(self, args):
+    return self.URL_MAP_ARG.ResolveAsResource(args, self.resources)
+
   @property
   def reference_normalizers(self):
 
@@ -233,6 +143,30 @@ class EditBeta(EditGA):
         ('tests[].service', MakeReferenceNormalizer(
             'service', allowed_collections)),
     ]
+
+  def GetGetRequest(self, args):
+    return (
+        self.service,
+        'Get',
+        self.messages.ComputeUrlMapsGetRequest(
+            project=self.project,
+            urlMap=args.name))
+
+  def GetSetRequest(self, args, replacement, _):
+    return (
+        self.service,
+        'Update',
+        self.messages.ComputeUrlMapsUpdateRequest(
+            project=self.project,
+            urlMap=args.name,
+            urlMapResource=replacement))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class EditBeta(EditGA):
+  """Modify URL maps."""
+
+  TRACK = 'beta'
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

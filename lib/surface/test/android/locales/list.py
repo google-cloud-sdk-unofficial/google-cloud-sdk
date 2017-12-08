@@ -22,7 +22,6 @@ class List(base.ListCommand):
   """List all Android locales available for testing internationalized apps."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To list all available locales which can be used for testing
           internationalized Android applications, run:

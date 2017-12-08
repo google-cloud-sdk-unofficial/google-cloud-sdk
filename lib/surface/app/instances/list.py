@@ -25,7 +25,6 @@ class List(base.ListCommand):
   """List the instances affiliated with the current App Engine project."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To list all App Engine instances, run:
 

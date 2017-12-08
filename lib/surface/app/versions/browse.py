@@ -24,7 +24,6 @@ class Browse(base.Command):
   """Open the specified versions in a browser."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To show version `v1` for the default service in the browser, run:
 

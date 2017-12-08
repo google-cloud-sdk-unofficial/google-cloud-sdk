@@ -32,7 +32,6 @@ class Create(base_classes.BaseIamCommand, base.CreateCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': textwrap.dedent("""\
           To create a service account for your project, run:
 

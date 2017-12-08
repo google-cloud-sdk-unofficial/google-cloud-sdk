@@ -30,7 +30,7 @@ def LogResource(request, async):
                       async=async)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
   """Delete a type provider.
 
@@ -38,7 +38,6 @@ class Delete(base.DeleteCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To delete a type provider, run:
 

@@ -29,7 +29,6 @@ class Unset(base.DeleteCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To delete a variable named "my-var", run:
 

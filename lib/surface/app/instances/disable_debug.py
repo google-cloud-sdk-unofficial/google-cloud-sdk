@@ -35,7 +35,6 @@ class DisableDebug(base.Command):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To disable debug mode for a particular instance, run:
 

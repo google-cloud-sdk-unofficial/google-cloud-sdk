@@ -30,7 +30,6 @@ class List(base.ListCommand):
   DEFAULT_PAGE_SIZE = 100
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To list all waiters within the configuration named "my-config", run:
 

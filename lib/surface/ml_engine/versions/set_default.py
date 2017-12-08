@@ -54,7 +54,7 @@ class SetDefaultGa(base.DescribeCommand):
 
 _DETAILED_HELP = {
     'DESCRIPTION': """\
- Sets an existing Cloud ML Engine version as the default for its model.
+Sets an existing Cloud ML Engine version as the default for its model.
 
 *{command}* sets an existing Cloud ML Engine version as the default for its
 model.  Only one version may be the default for a given version.

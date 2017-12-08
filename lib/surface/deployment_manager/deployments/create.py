@@ -41,7 +41,6 @@ class Create(base.CreateCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To create a new deployment, run:
 

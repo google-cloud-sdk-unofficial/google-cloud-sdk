@@ -27,7 +27,6 @@ class GetValue(base_commands.VariableRetrieverCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To print the value of a variable named "my-var", run:
 

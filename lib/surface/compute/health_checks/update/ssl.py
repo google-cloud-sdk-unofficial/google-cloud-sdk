@@ -15,6 +15,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import health_checks_utils
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute.health_checks import flags
 from googlecloudsdk.core import exceptions as core_exceptions
 
 
@@ -22,8 +23,12 @@ class Update(base_classes.ReadWriteCommand):
 
   """Update a SSL health check."""
 
-  @staticmethod
-  def Args(parser):
+  HEALTH_CHECK_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument('SSL')
+    cls.HEALTH_CHECK_ARG.AddArgument(parser)
     health_checks_utils.AddTcpRelatedUpdateArgs(parser)
     health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'SSL')
 
@@ -36,8 +41,7 @@ class Update(base_classes.ReadWriteCommand):
     return 'healthChecks'
 
   def CreateReference(self, args):
-    return self.CreateGlobalReference(
-        args.name, resource_type='healthChecks')
+    return self.HEALTH_CHECK_ARG.ResolveAsResource(args, self.resources)
 
   def GetGetRequest(self, args):
     """Returns a request for fetching the existing health check."""

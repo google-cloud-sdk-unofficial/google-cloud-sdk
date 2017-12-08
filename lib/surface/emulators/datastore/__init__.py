@@ -25,7 +25,6 @@ class Datastore(base.Group):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To start a local datastore emulator, run:
 

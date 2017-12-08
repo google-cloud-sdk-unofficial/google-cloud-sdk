@@ -36,8 +36,6 @@ class Cancel(base.Command):
           allowed.
     """
     parser.add_argument('update', help='Update id.')
-    # TODO(b/36050944): Support --async which does not wait for state
-    # transition.
 
   def Run(self, args):
     """Run 'rolling-updates cancel'.

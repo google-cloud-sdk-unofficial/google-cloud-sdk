@@ -14,6 +14,8 @@
 """Command for listing firewall rules."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.firewall_rules import flags
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
@@ -36,8 +38,36 @@ List.detailed_help = base_classes.GetGlobalListerHelp('firewall rules')
 class ListAlpha(List):
   """List Google Compute Engine firewall rules."""
 
+  def Run(self, args):
+    log.status.Print(flags.LIST_NOTICE)
+
+    return super(ListAlpha, self).Run(args)
+
   def Collection(self):
     return 'compute.firewalls.alpha'
 
 
-ListAlpha.detailed_help = base_classes.GetGlobalListerHelp('firewall rules')
+RESOURCE_TYPE = 'firewall rules'
+
+ListAlpha.detailed_help = {
+    'brief':
+        'List Google Compute Engine ' + RESOURCE_TYPE,
+    'DESCRIPTION':
+        """\
+          *{{command}}* displays all Google Compute Engine {0} in a project.
+          """.format(RESOURCE_TYPE),
+    'EXAMPLES':
+        """\
+          To list all {0} in a project in table form, run:
+
+            $ {{command}}
+
+          To list the URIs of all {0} in a project, run:
+
+            $ {{command}} --uri
+
+          To list all fields of all {0} in a project, run:
+
+            $ {{command}} --format="{1}"
+            """.format(RESOURCE_TYPE, flags.LIST_WITH_ALL_FIELDS_FORMAT)
+}

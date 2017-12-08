@@ -53,7 +53,7 @@ class TailSerialPortOutput(base_classes.BaseCommand):
   def Run(self, args):
     instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
         args, self.resources, scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client, self.project))
+            self.compute_client))
 
     start = None
     while True:
@@ -61,7 +61,7 @@ class TailSerialPortOutput(base_classes.BaseCommand):
                  'GetSerialPortOutput',
                  self.messages.ComputeInstancesGetSerialPortOutputRequest(
                      instance=instance_ref.Name(),
-                     project=self.project,
+                     project=instance_ref.project,
                      port=args.port,
                      start=start,
                      zone=instance_ref.zone))

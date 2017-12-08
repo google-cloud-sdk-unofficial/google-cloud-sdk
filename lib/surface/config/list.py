@@ -89,11 +89,13 @@ class List(base.ListCommand):
     if args.all and args.property:
       raise BadConfigListInvocation('`gcloud config list` cannot take both '
                                     'a property name and the `--all` flag.')
-
-    config_name = named_configs.ConfigurationStore.ActiveConfig().name
-    log.status.write('Your active configuration is: [{0}]\n\n'.format(
-        config_name))
     return self._GetPropertiesToDisplay(args)
 
   def Format(self, _):
     return 'config'
+
+  def Epilog(self, resources_were_displayed):
+    config_name = named_configs.ConfigurationStore.ActiveConfig().name
+    log.status.write('\nYour active configuration is: [{0}]\n'.format(
+        config_name))
+

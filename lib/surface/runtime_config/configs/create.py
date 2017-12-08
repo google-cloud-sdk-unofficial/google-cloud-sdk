@@ -27,7 +27,6 @@ class Create(base.CreateCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To create a runtime-config resource named "my-config", run:
 

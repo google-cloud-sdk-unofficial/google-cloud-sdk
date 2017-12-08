@@ -25,7 +25,6 @@ class List(base.ListCommand):
   """List Service Registry operations for a project."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To print out a list of operations with some summary information about each, run:
 

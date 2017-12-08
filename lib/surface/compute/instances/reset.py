@@ -41,12 +41,12 @@ class Reset(base_classes.NoOutputAsyncMutator):
   def CreateRequests(self, args):
     instance_refs = instance_flags.INSTANCES_ARG.ResolveAsResource(
         args, self.resources, scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client, self.project))
+            self.compute_client))
     request_list = []
     for instance_ref in instance_refs:
       request = self.messages.ComputeInstancesResetRequest(
           instance=instance_ref.Name(),
-          project=self.project,
+          project=instance_ref.project,
           zone=instance_ref.zone)
 
       request_list.append(request)

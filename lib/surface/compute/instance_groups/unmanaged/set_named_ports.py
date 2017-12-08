@@ -48,7 +48,7 @@ class SetNamedPorts(base_classes.NoOutputAsyncMutator):
             args, self.resources,
             default_scope=compute_scope.ScopeEnum.ZONE,
             scope_lister=compute_flags.GetDefaultScopeLister(
-                self.compute_client, self.project)))
+                self.compute_client)))
     ports = instance_groups_utils.ValidateAndParseNamedPortsArgs(
         self.messages, args.named_ports)
     # service should be always zonal

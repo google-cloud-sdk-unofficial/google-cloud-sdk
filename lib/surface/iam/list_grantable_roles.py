@@ -30,7 +30,6 @@ class ListGrantableRoles(base_classes.BaseIamCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': textwrap.dedent("""\
           List grantable roles for a resource identified via full resource name:
 

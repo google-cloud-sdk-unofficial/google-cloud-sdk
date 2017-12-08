@@ -39,7 +39,6 @@ class Import(base.Command):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To import record-sets from a yaml record-sets file, run:
 

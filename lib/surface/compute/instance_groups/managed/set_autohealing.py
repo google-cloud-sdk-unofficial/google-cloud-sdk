@@ -50,7 +50,7 @@ class SetAutohealing(base_classes.BaseAsyncMutator):
                    args, self.resources,
                    default_scope=compute_scope.ScopeEnum.ZONE,
                    scope_lister=flags.GetDefaultScopeLister(
-                       self.compute_client, self.project))
+                       self.compute_client))
     auto_healing_policies = (
         managed_instance_groups_utils.CreateAutohealingPolicies(
             self.resources, self.messages, args))
@@ -60,7 +60,7 @@ class SetAutohealing(base_classes.BaseAsyncMutator):
       request = (
           self.messages.
           ComputeInstanceGroupManagersSetAutoHealingPoliciesRequest(
-              project=self.project,
+              project=igm_ref.project,
               zone=igm_ref.zone,
               instanceGroupManager=igm_ref.Name(),
               instanceGroupManagersSetAutoHealingRequest=(
@@ -71,7 +71,7 @@ class SetAutohealing(base_classes.BaseAsyncMutator):
       request = (
           self.messages.
           ComputeRegionInstanceGroupManagersSetAutoHealingPoliciesRequest(
-              project=self.project,
+              project=igm_ref.project,
               region=igm_ref.region,
               instanceGroupManager=igm_ref.Name(),
               regionInstanceGroupManagersSetAutoHealingRequest=(

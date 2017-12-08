@@ -25,7 +25,6 @@ class Create(base_classes.BaseIamCommand):
   """Create a private key for a service account."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'NOTES': textwrap.dedent("""\
           The option --key-file-type=p12 is available here only for legacy
           reasons; all new use cases are encouraged to use the default 'json'

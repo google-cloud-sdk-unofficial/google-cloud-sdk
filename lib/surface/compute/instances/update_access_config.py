@@ -54,15 +54,14 @@ class UpdateAccessConfigInstances(base_classes.ReadWriteCommand):
     return instance_flags.INSTANCE_ARG.ResolveAsResource(
         args,
         self.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
-                                                         self.project))
+        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
 
   def GetGetRequest(self, args):
     return (self.service,
             'Get',
             self.messages.ComputeInstancesGetRequest(
                 instance=self.ref.Name(),
-                project=self.project,
+                project=self.ref.project,
                 zone=self.ref.zone))
 
   def GetSetRequest(self, args, replacement, existing):
@@ -76,7 +75,7 @@ class UpdateAccessConfigInstances(base_classes.ReadWriteCommand):
                 instance=self.ref.Name(),
                 networkInterface=args.network_interface,
                 accessConfig=access_config_replacement,
-                project=self.project,
+                project=self.ref.project,
                 zone=self.ref.zone))
 
   def Modify(self, args, original):

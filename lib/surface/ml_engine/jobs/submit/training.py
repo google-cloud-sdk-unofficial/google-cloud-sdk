@@ -33,7 +33,23 @@ def _AddSubmitTrainingArgs(parser):
   flags.GetUserArgs(local=False).AddToParser(parser)
   flags.SCALE_TIER.AddToParser(parser)
   flags.RUNTIME_VERSION.AddToParser(parser)
-  base.ASYNC_FLAG.AddToParser(parser)
+
+  sync_group = parser.add_mutually_exclusive_group()
+  # TODO(b/36195821): Use the flag deprecation machinery when it supports the
+  # store_true action
+  sync_group.add_argument(
+      '--async', action='store_true', help=(
+          '(DEPRECATED) Display information about the operation in progress '
+          'without waiting for the operation to complete. '
+          'Enabled by default and can be omitted; use `--stream-logs` to run '
+          'synchronously.'))
+  sync_group.add_argument(
+      '--stream-logs', action='store_true', help=(
+          'Block until job completion and stream the logs while the job runs.'
+          '\n\n'
+          'Note that even if command execution is halted, the job will still '
+          'run until cancelled with\n\n'
+          '    $ gcloud ml-engine jobs cancel JOB_ID'))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
@@ -48,6 +64,7 @@ class TrainBeta(base.Command):
     return jobs_util.JOB_FORMAT
 
   def Run(self, args):
+    stream_logs = jobs_util.GetStreamLogs(args.async, args.stream_logs)
     job = jobs_util.SubmitTraining(
         jobs.JobsClient('v1beta1'), args.job,
         job_dir=args.job_dir,
@@ -58,10 +75,10 @@ class TrainBeta(base.Command):
         config=args.config,
         module_name=args.module_name,
         runtime_version=args.runtime_version,
-        async_=args.async,
+        stream_logs=stream_logs,
         user_args=args.user_args)
     # If the job itself failed, we will return a failure status.
-    if not args.async and job.state is not job.StateValueValuesEnum.SUCCEEDED:
+    if stream_logs and job.state is not job.StateValueValuesEnum.SUCCEEDED:
       self.exit_code = 1
     return job
 
@@ -78,6 +95,7 @@ class TrainGa(base.Command):
     return jobs_util.JOB_FORMAT
 
   def Run(self, args):
+    stream_logs = jobs_util.GetStreamLogs(args.async, args.stream_logs)
     job = jobs_util.SubmitTraining(
         jobs.JobsClient('v1'), args.job,
         job_dir=args.job_dir,
@@ -88,10 +106,10 @@ class TrainGa(base.Command):
         config=args.config,
         module_name=args.module_name,
         runtime_version=args.runtime_version,
-        async_=args.async,
+        stream_logs=stream_logs,
         user_args=args.user_args)
     # If the job itself failed, we will return a failure status.
-    if not args.async and job.state is not job.StateValueValuesEnum.SUCCEEDED:
+    if stream_logs and job.state is not job.StateValueValuesEnum.SUCCEEDED:
       self.exit_code = 1
     return job
 
@@ -121,9 +139,12 @@ setup.py file at /my/code/path/setup.py then that file will be invoked
 with `sdist` and the generated tar files will be uploaded to Cloud Storage.
 Otherwise a temporary setup.py file will be generated for the build.
 
-By default, this command blocks until the job finishes, streaming the logs in
-the meantime. If the job succeeds, the command exits zero; otherwise, it exits
-non-zero. To avoid blocking, pass the `--async` flag.
+By default, this command runs asynchronously; it exits once the job is
+successfully submitted.
+
+To follow the progress of your job, pass the `--stream-logs` flag (note that
+even with the `--stream-logs` flag, the job will continue to run after this
+command exits and must be cancelled with `gcloud ml-engine jobs cancel JOB_ID`).
 
 For more information, see:
 https://cloud.google.com/ml/docs/concepts/training-overview

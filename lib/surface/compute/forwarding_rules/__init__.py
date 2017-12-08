@@ -17,9 +17,4 @@ from googlecloudsdk.calliope import base
 
 
 class ForwardingRules(base.Group):
-  """Read and manipulate forwarding rules to send traffic to load balancers."""
-
-ForwardingRules.detailed_help = {
-    'brief': ('Read and manipulate forwarding rules to send traffic to load '
-              'balancers'),
-}
+  """Read and manipulate traffic forwarding rules to network load balancers."""

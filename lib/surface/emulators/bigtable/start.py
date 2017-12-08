@@ -26,7 +26,6 @@ class Start(base.Command):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To start a local Bigtable emulator, run:
 

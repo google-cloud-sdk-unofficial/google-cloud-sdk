@@ -31,7 +31,6 @@ class Bigtable(base.Group):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To start a local Bigtable emulator, run:
 

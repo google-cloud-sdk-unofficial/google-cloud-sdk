@@ -31,7 +31,6 @@ class Export(base.Command):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To export record-sets into a yaml file, run:
 

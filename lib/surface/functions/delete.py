@@ -51,14 +51,16 @@ class Delete(base.DeleteCommand):
     messages = self.context['functions_messages']
     registry = self.context['registry']
     project = properties.VALUES.core.project.Get(required=True)
+    location = properties.VALUES.functions.region.Get()
     function_ref = registry.Parse(
-        args.name, params={'projectsId': project, 'locationsId': args.region},
+        args.name, params={
+            'projectsId': project,
+            'locationsId': location},
         collection='cloudfunctions.projects.locations.functions')
     function__url = function_ref.RelativeName()
     prompt_message = 'Resource [{0}] will be deleted.'.format(function__url)
     if not console_io.PromptContinue(message=prompt_message):
       raise exceptions.FunctionsError('Deletion aborted by user.')
-    # TODO(b/36050337): Use resources.py here after b/21908671 is fixed.
     op = client.projects_locations_functions.Delete(
         messages.CloudfunctionsProjectsLocationsFunctionsDeleteRequest(
             name=function__url))

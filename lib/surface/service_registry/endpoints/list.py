@@ -28,7 +28,6 @@ class List(base.ListCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To print out a list of endpoints with some summary information about each
 

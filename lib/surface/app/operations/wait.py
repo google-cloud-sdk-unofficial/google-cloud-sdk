@@ -25,7 +25,6 @@ class Wait(base.Command):
   """Polls an operation until completion."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To wait for an App Engine operation called o1 to complete, run:
 

@@ -15,14 +15,19 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import health_checks_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.health_checks import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base_classes.BaseAsyncCreator):
   """Create a HTTP2 health check to monitor load balanced instances."""
 
-  @staticmethod
-  def Args(parser):
+  HEALTH_CHECK_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument('HTTP2')
+    cls.HEALTH_CHECK_ARG.AddArgument(parser)
     health_checks_utils.AddHttpRelatedCreationArgs(parser)
     health_checks_utils.AddHttpRelatedResponseArg(parser)
     health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'HTTP2')
@@ -42,8 +47,8 @@ class Create(base_classes.BaseAsyncCreator):
   def CreateRequests(self, args):
     """Returns the request necessary for adding the health check."""
 
-    health_check_ref = self.CreateGlobalReference(
-        args.name, resource_type='healthChecks')
+    health_check_ref = self.HEALTH_CHECK_ARG.ResolveAsResource(
+        args, self.resources)
     proxy_header = self.messages.HTTP2HealthCheck.ProxyHeaderValueValuesEnum(
         args.proxy_header)
     request = self.messages.ComputeHealthChecksInsertRequest(

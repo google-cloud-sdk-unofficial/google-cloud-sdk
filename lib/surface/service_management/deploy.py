@@ -74,9 +74,8 @@ class SwaggerUploadException(exceptions.Error):
     super(SwaggerUploadException, self).__init__(message)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Deploy(base.Command):
-  """Deploys a service configuration."""
+class _BaseDeploy(object):
+  """Create deploy base class for all release tracks."""
 
   @staticmethod
   def Args(parser):
@@ -88,6 +87,11 @@ class Deploy(base.Command):
           allowed.
     """
     _CommonArgs(parser)
+    parser.add_argument(
+        '--validate-only',
+        action='store_true',
+        help='If included, the command will only validate the service '
+             'configuration(s). No configuration(s) will be persisted.')
 
   def Format(self, unused_args):
     return 'none'
@@ -261,7 +265,7 @@ class Deploy(base.Command):
 
     return push_config_result
 
-  def Epilog(self, resources_were_displayed):
+  def Epilog(self, unused_resources_were_displayed):
     # Print this to screen not to the log because the output is needed by the
     # human user. Only print this when not doing a validate-only run.
     if not self.validate_only:
@@ -269,33 +273,24 @@ class Deploy(base.Command):
           ('\nService Configuration [{0}] uploaded for '
            'service [{1}]\n').format(self.service_config_id, self.service_name))
 
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DeployBeta(Deploy):
-  """Deploys a service configuration for the given service name."""
-
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser)
-    parser.add_argument(
-        '--validate-only',
-        action='store_true',
-        help='If included, the command will only validate the service '
-             'configuration(s). No configuration(s) will be persisted.')
-
-  def Epilog(self, resources_were_displayed):
-    super(DeployBeta, self).Epilog(resources_were_displayed)
-
-    # Print link to Endpoints Management UI
-    if not self.validate_only:
       management_url = services_util.GenerateManagementUrl(
           self.service_name, properties.VALUES.core.project.Get(required=True))
       log.status.Print('To manage your API, go to: ' + management_url)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeployAlpha(DeployBeta):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Deploy(_BaseDeploy, base.Command):
   """Deploys a service configuration for the given service name."""
 
 
-Deploy.detailed_help = _DETAILED_HELP
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DeployBeta(_BaseDeploy, base.Command):
+  """Deploys a service configuration for the given service name."""
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeployAlpha(_BaseDeploy, base.Command):
+  """Deploys a service configuration for the given service name."""
+
+
+_BaseDeploy.detailed_help = _DETAILED_HELP

@@ -229,7 +229,6 @@ class Create(base.CreateCommand):
   """Create a cluster."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To create a cluster, run:
 

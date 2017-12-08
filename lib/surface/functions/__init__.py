@@ -17,6 +17,7 @@
 import argparse
 
 from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -40,8 +41,9 @@ class Functions(base.Group):
     """
     parser.add_argument(
         '--region',
-        default='us-central1',
-        help='The compute region (e.g. us-central1) to use')
+        help='The region in which the function will run.',
+        completion_resource='cloudfunctions.locations',
+        action=actions.StoreProperty(properties.VALUES.functions.region))
 
   def Filter(self, context, args):
     """Modify the context that will be given to this group's commands when run.

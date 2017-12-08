@@ -52,8 +52,7 @@ class RemoveInstances(base_classes.NoOutputAsyncMutator):
         instance_groups_flags.ZONAL_INSTANCE_GROUP_ARG.ResolveAsResource(
             args, self.resources,
             default_scope=compute_scope.ScopeEnum.ZONE,
-            scope_lister=flags.GetDefaultScopeLister(
-                self.compute_client, self.project)))
+            scope_lister=flags.GetDefaultScopeLister(self.compute_client)))
 
     instance_references = []
     for instance in args.instances:

@@ -16,7 +16,6 @@
 """
 
 import textwrap
-from apitools.base.py import exceptions
 
 from googlecloudsdk.api_lib.source import git
 from googlecloudsdk.api_lib.sourcerepo import sourcerepo
@@ -180,14 +179,14 @@ class CloneAlpha(base.Command):
                  'or create with\n'
                  '$ gcloud alpha source repos create {src}'.format(
                      src=args.src, prj=res.projectsId))
-      raise exceptions.InvalidUserInputError(message)
+      raise c_exc.InvalidArgumentException('REPOSITORY_NAME', message)
     if hasattr(repo, 'mirrorConfig') and repo.mirrorConfig:
       mirror_url = repo.mirrorConfig.url
       message = ('Repository "{src}" in project "{prj}" is a mirror. Clone the '
                  'mirrored repository directly with \n$ git clone '
                  '{url}'.format(
                      src=args.src, prj=res.projectsId, url=mirror_url))
-      raise exceptions.Error(message)
+      raise c_exc.InvalidArgumentException('REPOSITORY_NAME', message)
     # do the actual clone
     git_helper = git.Git(res.projectsId, args.src, uri=repo.url)
     path = git_helper.Clone(

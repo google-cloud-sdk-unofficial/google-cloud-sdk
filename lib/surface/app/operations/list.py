@@ -22,7 +22,6 @@ class List(base.ListCommand):
   """List the operations."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To list all App Engine operations, run:
 

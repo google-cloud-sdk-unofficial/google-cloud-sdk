@@ -63,8 +63,7 @@ class Resize(base_classes.BaseAsyncMutator):
             ResolveAsResource(
                 args, self.resources,
                 default_scope=compute_scope.ScopeEnum.ZONE,
-                scope_lister=flags.GetDefaultScopeLister(
-                    self.compute_client, self.project)))
+                scope_lister=flags.GetDefaultScopeLister(self.compute_client)))
 
   def CreateRequests(self, args):
     group_ref = self.CreateGroupReference(args)
@@ -73,14 +72,14 @@ class Resize(base_classes.BaseAsyncMutator):
       request = self.messages.ComputeInstanceGroupManagersResizeRequest(
           instanceGroupManager=group_ref.Name(),
           size=args.size,
-          project=self.project,
+          project=group_ref.project,
           zone=group_ref.zone,)
     else:
       service = self.compute.regionInstanceGroupManagers
       request = self.messages.ComputeRegionInstanceGroupManagersResizeRequest(
           instanceGroupManager=group_ref.Name(),
           size=args.size,
-          project=self.project,
+          project=group_ref.project,
           region=group_ref.region,)
 
     return [(service, self.method, request)]
@@ -113,7 +112,7 @@ class ResizeBeta(Resize):
                   noCreationRetries=not args.creation_retries,
               )
           ),
-          project=self.project,
+          project=group_ref.project,
           zone=group_ref.zone,)
     else:
       if not args.creation_retries:
@@ -125,7 +124,7 @@ class ResizeBeta(Resize):
       request = self.messages.ComputeRegionInstanceGroupManagersResizeRequest(
           instanceGroupManager=group_ref.Name(),
           size=args.size,
-          project=self.project,
+          project=group_ref.project,
           region=group_ref.region,)
 
     return [(service, method, request)]

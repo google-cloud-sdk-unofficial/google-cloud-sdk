@@ -15,7 +15,8 @@ flags.DEFINE_string(
 flags.DEFINE_string(
     'api',
     'https://www.googleapis.com',
-    'API endpoint to talk to.')
+    'API endpoint to talk to.'
+)
 flags.DEFINE_string(
     'api_version', 'v2',
     'API version to use.')
@@ -23,9 +24,11 @@ flags.DEFINE_boolean(
     'debug_mode', False,
     'Show tracebacks on Python exceptions.')
 flags.DEFINE_string(
-    'trace', None,
+    'trace',
+    None,
     'A tracing token of the form "token:<token>" '
-    'to include in api requests.')
+    'to include in api requests.'
+)
 
 flags.DEFINE_string(
     'bigqueryrc', os.path.join(os.path.expanduser('~'), '.bigqueryrc'),
@@ -35,8 +38,11 @@ flags.DEFINE_string(
     'BIGQUERYRC environment variable is used. If that is not specified, the '
     'path "~/.bigqueryrc" is used.')
 flags.DEFINE_string(
-    'credential_file', os.path.join(os.path.expanduser('~'),
-    '.bigquery.v2.token'),
+    'credential_file',
+    os.path.join(
+        os.path.expanduser('~'),
+        '.bigquery.v2.token'
+    ),
     'Filename used for storing the BigQuery OAuth token.')
 flags.DEFINE_string(
     'discovery_file', '',
@@ -102,14 +108,17 @@ flags.DEFINE_boolean(
     'account credentials instead of stored credentials. For more information, '
     'see: https://developers.google.com/compute/docs/authentication')
 flags.DEFINE_string(
-    'service_account', '',
+    'service_account',
+    '',
     'Use this service account email address for authorization. '
     'For example, 1234567890@developer.gserviceaccount.com.'
-    )
+)
 flags.DEFINE_string(
-    'service_account_private_key_file', '',
+    'service_account_private_key_file',
+    '',
     'Filename that contains the service account private key. '
-    'Required if --service_account is specified.')
+    'Required if --service_account is specified.'
+)
 flags.DEFINE_string(
     'service_account_private_key_password', 'notasecret',
     'Password for private key. This password must match the password '

@@ -26,7 +26,6 @@ class Browse(base.Command):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To show the url for the default service in the browser, run:
 

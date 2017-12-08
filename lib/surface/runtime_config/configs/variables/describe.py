@@ -26,7 +26,6 @@ class Describe(base_commands.VariableRetrieverCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To describe a variable named "my-var", run:
 

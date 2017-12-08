@@ -21,7 +21,6 @@ class Versions(base.Group):
   """Explore Android versions available for testing."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To list information about all versions of the Android OS available
           for running tests, including details such as OS code name and

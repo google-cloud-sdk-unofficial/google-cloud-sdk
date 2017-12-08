@@ -38,7 +38,6 @@ class Watch(base.Command):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To wait for a variable to change or be deleted, run:
 

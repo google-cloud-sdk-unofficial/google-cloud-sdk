@@ -27,7 +27,6 @@ class Wait(base.Command):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To wait for a waiter named "my-waiter" within a configuration named
           "my-config", run:

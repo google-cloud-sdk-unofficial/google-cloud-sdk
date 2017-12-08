@@ -24,7 +24,6 @@ class Deployments(base.Group):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To create a deployment, run:
 

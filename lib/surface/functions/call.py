@@ -47,8 +47,9 @@ class Call(base.Command):
     registry = self.context['registry']
     client = self.context['functions_client']
     messages = self.context['functions_messages']
+    location = properties.VALUES.functions.region.Get()
     function_ref = registry.Parse(
-        args.name, params={'projectsId': project, 'locationsId': args.region},
+        args.name, params={'projectsId': project, 'locationsId': location},
         collection='cloudfunctions.projects.locations.functions')
     # Do not retry calling function - most likely user want to know that the
     # call failed and debug.

@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.logging import common as logging_common
 from googlecloudsdk.api_lib.logging import util as logging_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -90,8 +91,10 @@ class GetLogs(base.ListCommand):
     Yields:
       Objects representing log entries.
     """
-    log_filter = ['resource.type="cloud_function"',
-                  'resource.labels.region="%s"' % args.region]
+    log_filter = [
+        'resource.type="cloud_function"',
+        'resource.labels.region="%s"' % (
+            properties.VALUES.functions.region.Get())]
 
     if args.name:
       log_filter.append('resource.labels.function_name="%s"' % args.name)
@@ -110,7 +113,7 @@ class GetLogs(base.ListCommand):
           'timestamp<="%s"' % logging_util.FormatTimestamp(args.end_time))
     log_filter = ' '.join(log_filter)
     # TODO(b/36054658): Consider using paging for listing more than 1000 log
-    # entries.  owever, reversing the order of received latest N entries before
+    # entries. However, reversing the order of received latest N entries before
     # a specified timestamp would be problematic with paging.
 
     entries = logging_common.FetchLogs(

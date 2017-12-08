@@ -27,7 +27,6 @@ class Delete(base.DeleteCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To delete a runtime-config resource named "my-config", run:
 

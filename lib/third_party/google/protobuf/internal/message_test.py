@@ -916,7 +916,7 @@ class MessageTest(BaseTestCase):
     #   throws an exception to avoid a segfault. Investigate if we
     #   want to support pickling of these fields.
     #
-    # For more information see: https://b2.corp.google.com/u/0/issues/18677897
+    # For more information see: b/18677897
     if (api_implementation.Type() != 'cpp' or
         api_implementation.Version() == 2):
       return

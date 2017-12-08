@@ -22,7 +22,6 @@ class EnvInit(base.Command):
   """Print the commands required to export Bigtable emulator's env variables."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To print the env variables exports for a Bigtable emulator, run:
 

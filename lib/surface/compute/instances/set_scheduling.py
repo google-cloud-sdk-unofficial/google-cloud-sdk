@@ -53,7 +53,7 @@ class SetSchedulingInstances(base_classes.NoOutputAsyncMutator):
     """Returns a list of request necessary for setting scheduling options."""
     instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
         args, self.resources, scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client, self.project))
+            self.compute_client))
 
     scheduling_options = self.messages.Scheduling()
 
@@ -66,7 +66,7 @@ class SetSchedulingInstances(base_classes.NoOutputAsyncMutator):
 
     request = self.messages.ComputeInstancesSetSchedulingRequest(
         instance=instance_ref.Name(),
-        project=self.project,
+        project=instance_ref.project,
         scheduling=scheduling_options,
         zone=instance_ref.zone)
 

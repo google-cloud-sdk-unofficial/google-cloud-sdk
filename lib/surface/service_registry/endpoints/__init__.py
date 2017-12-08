@@ -25,7 +25,6 @@ class Endpoints(base.Group):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To print out a list of endpoints with some summary information about each
 

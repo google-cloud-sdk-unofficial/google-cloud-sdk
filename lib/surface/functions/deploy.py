@@ -200,7 +200,6 @@ class Deploy(base.Command):
     client = self.context['functions_client']
     messages = self.context['functions_messages']
     try:
-      # TODO(b/36052474): Use resources.py here after b/21908671 is fixed.
       # We got response for a get request so a function exists.
       return client.projects_locations_functions.Get(
           messages.CloudfunctionsProjectsLocationsFunctionsGetRequest(
@@ -213,7 +212,8 @@ class Deploy(base.Command):
 
   def _GenerateRemoteZipFileName(self, args):
     sufix = ''.join(random.choice(string.ascii_lowercase) for _ in range(12))
-    return '{0}-{1}-{2}.zip'.format(args.region, args.name, sufix)
+    return '{0}-{1}-{2}.zip'.format(
+        properties.VALUES.functions.region.Get(), args.name, sufix)
 
   def _UploadFile(self, source, target):
     return storage.Upload(source, target)
@@ -323,7 +323,6 @@ class Deploy(base.Command):
   def _CreateFunction(self, location, function):
     client = self.context['functions_client']
     messages = self.context['functions_messages']
-    # TODO(b/36049691): Use resources.py here after b/21908671 is fixed.
     op = client.projects_locations_functions.Create(
         messages.CloudfunctionsProjectsLocationsFunctionsCreateRequest(
             location=location, cloudFunction=function))
@@ -336,7 +335,6 @@ class Deploy(base.Command):
   def _UpdateFunction(self, unused_location, function):
     client = self.context['functions_client']
     messages = self.context['functions_messages']
-    # TODO(b/36056504): Use resources.py here after b/21908671 is fixed.
     op = client.projects_locations_functions.Update(function)
     with progress_tracker.ProgressTracker(
         'Deploying function (may take a while - up to 2 minutes)'):
@@ -356,18 +354,18 @@ class Deploy(base.Command):
     Raises:
       FunctionsError if command line parameters are not valid.
     """
-    # TODO(b/24723761): This should be invoked as a hook method after arguments
-    # are parsed, but unfortunately gcloud framework doesn't support such a
-    # hook.
     trigger_params = deploy_util.DeduceAndCheckArgs(args)
     project = properties.VALUES.core.project.Get(required=True)
     registry = self.context['registry']
     location_ref = registry.Parse(
-        args.region, params={'projectsId': project},
+        properties.VALUES.functions.region.Get(),
+        params={'projectsId': project},
         collection='cloudfunctions.projects.locations')
     location = location_ref.RelativeName()
     function_ref = registry.Parse(
-        args.name, params={'projectsId': project, 'locationsId': args.region},
+        args.name, params={
+            'projectsId': project,
+            'locationsId': properties.VALUES.functions.region.Get()},
         collection='cloudfunctions.projects.locations.functions')
     function_url = function_ref.RelativeName()
 

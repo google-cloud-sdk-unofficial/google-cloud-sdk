@@ -47,8 +47,7 @@ class StopAutoscaling(base_classes.BaseAsyncMutator):
   def CreateGroupReference(self, args):
     resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
     default_scope = compute_scope.ScopeEnum.ZONE
-    scope_lister = flags.GetDefaultScopeLister(
-        self.compute_client, self.project)
+    scope_lister = flags.GetDefaultScopeLister(self.compute_client)
     return resource_arg.ResolveAsResource(
         args, self.resources, default_scope=default_scope,
         scope_lister=scope_lister)
@@ -80,11 +79,11 @@ class StopAutoscaling(base_classes.BaseAsyncMutator):
         autoscalers=managed_instance_groups_utils.AutoscalersForLocations(
             regions=regions,
             zones=zones,
-            project=self.project,
+            project=igm_ref.project,
             compute=self.compute,
             http=self.http,
             batch_url=self.batch_url),
-        project=self.project,
+        project=igm_ref.project,
         scope_name=scope_name,
         scope_type=scope_type)
     if autoscaler is None:
@@ -102,7 +101,7 @@ class StopAutoscaling(base_classes.BaseAsyncMutator):
 
     autoscaler = self.GetAutoscalerResource(igm_ref, args)
     request = service.GetRequestType(self.method)(
-        project=self.project,
+        project=igm_ref.project,
         autoscaler=autoscaler.name)
     self.ScopeRequest(request, igm_ref)
     return [(service, self.method, request,)]

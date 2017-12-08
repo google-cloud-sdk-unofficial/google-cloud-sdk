@@ -39,7 +39,6 @@ class Stop(base.Command):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To stop a specific version across all services, run:
 

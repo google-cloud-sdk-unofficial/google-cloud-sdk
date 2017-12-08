@@ -161,6 +161,8 @@ class AlphaCreate(Create):
             sourceRanges=args.source_ranges,
             destinationRanges=args.destination_ranges,
             sourceTags=args.source_tags,
-            targetTags=args.target_tags),
+            targetTags=args.target_tags,
+            sourceServiceAccounts=args.source_service_accounts,
+            targetServiceAccounts=args.target_service_accounts),
         project=self.project)
     return [request]

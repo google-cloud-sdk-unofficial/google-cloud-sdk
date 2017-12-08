@@ -11,7 +11,7 @@ gcloud compute routers update\-interface \- update an interface on a router
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute routers update\-interface\fR \fINAME\fR \fB\-\-interface\-name\fR=\fIINTERFACE_NAME\fR [\fB\-\-ip\-address\fR=\fIIP_ADDRESS\fR] [\fB\-\-mask\-length\fR=\fIMASK_LENGTH\fR] [\fB\-\-region\fR=\fIREGION\fR] [\fB\-\-vpn\-tunnel\fR=\fIVPN_TUNNEL\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute routers update\-interface\fR \fINAME\fR \fB\-\-interface\-name\fR=\fIINTERFACE_NAME\fR [\fB\-\-ip\-address\fR=\fIIP_ADDRESS\fR] [\fB\-\-mask\-length\fR=\fIMASK_LENGTH\fR] [\fB\-\-region\fR=\fIREGION\fR] [\fB\-\-vpn\-tunnel\fR=\fIVPN_TUNNEL\fR] [\fB\-\-vpn\-tunnel\-region\fR=\fIVPN_TUNNEL_REGION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -85,6 +85,12 @@ Alternatively, the region can be stored in the environment variable
 .TP 2m
 \fB\-\-vpn\-tunnel\fR=\fIVPN_TUNNEL\fR
 The tunnel of the interface being updated.
+
+.TP 2m
+\fB\-\-vpn\-tunnel\-region\fR=\fIVPN_TUNNEL_REGION\fR
+The region of the vpn tunnel to operate on. If not specified it will be set to
+the region of the router. Overrides the default \fBcompute/region\fR property
+value for this command invocation.
 
 
 .RE

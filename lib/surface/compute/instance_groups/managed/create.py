@@ -89,7 +89,7 @@ class CreateGA(base_classes.BaseAsyncCreator,
         ResolveAsResource)(args, self.resources,
                            default_scope=compute_scope.ScopeEnum.ZONE,
                            scope_lister=flags.GetDefaultScopeLister(
-                               self.compute_client, self.project))
+                               self.compute_client))
     if _IsZonalGroup(group_ref):
       zonal_resource_fetcher = zone_utils.ZoneResourceFetcher(
           self.compute_client)

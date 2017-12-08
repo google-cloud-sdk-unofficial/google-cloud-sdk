@@ -24,7 +24,6 @@ class Delete(base.DeleteCommand):
   """Delete a cluster."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To delete a cluster, run:
 

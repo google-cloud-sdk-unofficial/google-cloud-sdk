@@ -24,7 +24,6 @@ class Operations(base.Group):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To list your App Engine operations, run:
 

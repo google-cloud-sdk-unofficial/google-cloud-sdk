@@ -176,7 +176,7 @@ CopyFiles.detailed_help = {
 
         This command ensures that the user's public SSH key is present
         in the project's metadata. If the user does not have a public
-        SSH key, one is generated using *ssh-keygen(1)* (if the the `--quiet`
+        SSH key, one is generated using *ssh-keygen(1)* (if the `--quiet`
         flag is given, the generated key will have an empty passphrase).
         """,
 }

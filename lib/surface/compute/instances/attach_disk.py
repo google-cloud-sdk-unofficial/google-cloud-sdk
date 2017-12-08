@@ -94,7 +94,7 @@ class AttachDisk(base_classes.NoOutputAsyncMutator):
     """Returns a request for attaching a disk to an instance."""
     instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
         args, self.resources, scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client, self.project))
+            self.compute_client))
 
     disk_ref = self.ParseDiskRef(args, instance_ref)
 
@@ -111,7 +111,7 @@ class AttachDisk(base_classes.NoOutputAsyncMutator):
 
     request = self.messages.ComputeInstancesAttachDiskRequest(
         instance=instance_ref.Name(),
-        project=self.project,
+        project=instance_ref.project,
         attachedDisk=self.messages.AttachedDisk(
             deviceName=args.device_name,
             mode=mode,

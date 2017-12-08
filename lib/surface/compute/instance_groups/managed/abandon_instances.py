@@ -49,8 +49,7 @@ class AbandonInstances(base_classes.BaseAsyncMutator):
   def CreateRequests(self, args):
     resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
     default_scope = compute_scope.ScopeEnum.ZONE
-    scope_lister = flags.GetDefaultScopeLister(
-        self.compute_client, self.project)
+    scope_lister = flags.GetDefaultScopeLister(self.compute_client)
     igm_ref = resource_arg.ResolveAsResource(
         args, self.resources, default_scope=default_scope,
         scope_lister=scope_lister)
@@ -68,7 +67,7 @@ class AbandonInstances(base_classes.BaseAsyncMutator):
                       instances=instances,
                   )
               ),
-              project=self.project,
+              project=igm_ref.project,
               zone=igm_ref.zone,
           ))
     else:
@@ -83,7 +82,7 @@ class AbandonInstances(base_classes.BaseAsyncMutator):
                       instances=instances,
                   )
               ),
-              project=self.project,
+              project=igm_ref.project,
               region=igm_ref.region,
           ))
 

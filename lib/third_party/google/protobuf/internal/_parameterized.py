@@ -410,6 +410,30 @@ class ParameterizedTestCase(unittest.TestCase):
 
 
 def CoopParameterizedTestCase(other_base_class):
+  """Returns a new base class with a cooperative metaclass base.
+
+  This enables the ParameterizedTestCase to be used in combination
+  with other base classes that have custom metaclasses, such as
+  mox.MoxTestBase.
+
+  Only works with metaclasses that do not override type.__new__.
+
+  Example:
+
+    import mox
+
+    from google.protobuf.internal import _parameterized
+
+    class ExampleTest(
+        _parameterized.CoopParameterizedTestCase(mox.MoxTestBase)):
+      ...
+
+  Args:
+    other_base_class: (class) A test case base class.
+
+  Returns:
+    A new class object.
+  """
   metaclass = type(
       'CoopMetaclass',
       (other_base_class.__metaclass__,

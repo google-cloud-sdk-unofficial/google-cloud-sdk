@@ -17,13 +17,11 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class TypeProviders(base.Group):
   """Commands for Deployment Manager type providers."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To view the details of a type provider, run:
 
@@ -32,6 +30,9 @@ class TypeProviders(base.Group):
           To see the list of all type providers, run:
 
             $ {command} list
+
+          More information about type providers:
+          https://cloud.google.com/deployment-manager/docs/fundamentals#basetypes
           """,
   }
 

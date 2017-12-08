@@ -25,7 +25,6 @@ class Create(base.CreateCommand):
   """Create an endpoint entry in Service Registry."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To create an endpoint in Service Registry:
 

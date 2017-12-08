@@ -19,28 +19,29 @@ import copy
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.routers import flags
+from googlecloudsdk.command_lib.compute.vpn_tunnels import (flags as
+                                                            vpn_tunnel_flags)
 
 
 class AddInterface(base_classes.ReadWriteCommand):
   """Add an interface to a router."""
 
   ROUTER_ARG = None
+  VPN_TUNNEL_ARG = None
 
   @classmethod
   def Args(cls, parser):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser, operation_type='update')
+    cls.VPN_TUNNEL_ARG = vpn_tunnel_flags.VpnTunnelArgumentForRouter()
+    cls.VPN_TUNNEL_ARG.AddArgument(parser)
 
     parser.add_argument(
         '--interface-name',
         required=True,
         help='The name of the interface being added.')
-
-    parser.add_argument(
-        '--vpn-tunnel',
-        required=True,
-        help='The tunnel of the interface being added.')
 
     parser.add_argument(
         '--ip-address',
@@ -100,8 +101,13 @@ class AddInterface(base_classes.ReadWriteCommand):
         raise exceptions.ToolException(
             '--ip-address', '--mask-length must be set if --ip-address is set')
 
-    vpn_ref = self.CreateRegionalReference(
-        args.vpn_tunnel, args.region, resource_type='vpnTunnels')
+    if not args.vpn_tunnel_region:
+      args.vpn_tunnel_region = replacement.region
+    # TODO(b/36220901) ensure router has a project attribute.
+    vpn_ref = self.VPN_TUNNEL_ARG.ResolveAsResource(
+        args,
+        self.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
 
     interface = self.messages.RouterInterface(
         name=interface_name,

@@ -27,7 +27,6 @@ class Describe(base.DescribeCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To describe a waiter named "my-waiter" within a configuration named
           "my-config", run:

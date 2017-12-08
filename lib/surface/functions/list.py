@@ -71,7 +71,8 @@ class List(base.ListCommand):
     registry = self.context['registry']
     project = properties.VALUES.core.project.Get(required=True)
     location_ref = registry.Parse(
-        args.region, params={'projectsId': project},
+        properties.VALUES.functions.region.Get(),
+        params={'projectsId': project},
         collection='cloudfunctions.projects.locations')
     return messages.CloudfunctionsProjectsLocationsFunctionsListRequest(
         location=location_ref.RelativeName())

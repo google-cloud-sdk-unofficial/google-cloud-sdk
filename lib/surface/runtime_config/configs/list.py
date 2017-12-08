@@ -29,7 +29,6 @@ class List(base.ListCommand):
   DEFAULT_PAGE_SIZE = 100
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To list all runtime-config resources for the current project, run:
 

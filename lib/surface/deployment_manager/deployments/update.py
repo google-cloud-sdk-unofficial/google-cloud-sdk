@@ -42,7 +42,6 @@ class Update(base.UpdateCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To update an existing deployment with a new config file, run:
 

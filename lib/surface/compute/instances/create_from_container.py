@@ -175,7 +175,7 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
             instance_ref))
     persistent_create_disks = (
         instance_utils.CreatePersistentCreateDiskMessages(
-            self, self.compute_client, self.resources, None,
+            self.compute_client, self.resources, None,
             getattr(args, 'create_disk', []), instance_ref))
     local_ssds = []
     for x in args.local_ssd or []:

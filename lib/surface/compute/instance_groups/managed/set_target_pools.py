@@ -57,8 +57,7 @@ class SetTargetPools(base_classes.BaseAsyncMutator):
   def CreateRequests(self, args):
     resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
     default_scope = compute_scope.ScopeEnum.ZONE
-    scope_lister = flags.GetDefaultScopeLister(
-        self.compute_client, self.project)
+    scope_lister = flags.GetDefaultScopeLister(self.compute_client)
     group_ref = resource_arg.ResolveAsResource(
         args, self.resources, default_scope=default_scope,
         scope_lister=scope_lister)
@@ -85,7 +84,7 @@ class SetTargetPools(base_classes.BaseAsyncMutator):
                       targetPools=pools,
                   )
               ),
-              project=self.project,
+              project=group_ref.project,
               zone=group_ref.zone,)
       )
     else:
@@ -99,7 +98,7 @@ class SetTargetPools(base_classes.BaseAsyncMutator):
                       targetPools=pools,
                   )
               ),
-              project=self.project,
+              project=group_ref.project,
               region=group_ref.region,)
       )
     return [(service, self.method, request)]

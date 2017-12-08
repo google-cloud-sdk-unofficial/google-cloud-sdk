@@ -28,7 +28,6 @@ class List(base.ListCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To see the list of changes, run:
 

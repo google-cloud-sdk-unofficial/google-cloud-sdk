@@ -72,7 +72,7 @@ class Diagnose(base.Command):
           should_retry_if=lambda *_: driver_log_stream.open)
     except retry.MaxRetrialsException:
       log.warn(
-          'Diagnostic finished succesfully, '
+          'Diagnostic finished successfully, '
           'but output did not finish streaming.')
     log.err.Print('-----------------------------------------------')
     return output_uri

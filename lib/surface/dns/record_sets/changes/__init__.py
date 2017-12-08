@@ -21,7 +21,6 @@ class Changes(base.Group):
   """View details about changes to your Cloud DNS record-sets."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To view the details of a particular change, run:
 

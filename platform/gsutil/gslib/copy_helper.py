@@ -638,7 +638,8 @@ def ConstructDstUrl(src_url, exp_src_url, src_url_names_container,
     # where src_url ends. For example, for src_url=gs://bucket/ and
     # exp_src_url=gs://bucket/src_subdir/obj, dst_key_name should be
     # src_subdir/obj.
-    src_url_path_sans_final_dir = GetPathBeforeFinalDir(src_url)
+    src_url_path_sans_final_dir = GetPathBeforeFinalDir(src_url, exp_src_url)
+
     dst_key_name = exp_src_url.versionless_url_string[
         len(src_url_path_sans_final_dir):].lstrip(src_url.delim)
     # Handle case where dst_url is a non-existent subdir.
@@ -1425,23 +1426,27 @@ def _SetContentTypeFromFile(src_url, dst_obj_metadata):
     if object_name != '-':
       real_file_path = os.path.realpath(object_name)
       if config.getbool('GSUtil', 'use_magicfile', False) and not IS_WINDOWS:
-        p = subprocess.Popen(['file', '--mime-type', real_file_path],
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, error = p.communicate()
-        p.stdout.close()
-        p.stderr.close()
-        if p.returncode != 0 or error:
+        try:
+          p = subprocess.Popen(['file', '--mime-type', real_file_path],
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+          output, error = p.communicate()
+          p.stdout.close()
+          p.stderr.close()
+          if p.returncode != 0 or error:
+            raise CommandException(
+                'Encountered error running "file --mime-type %s" '
+                '(returncode=%d).\n%s' % (real_file_path, p.returncode, error))
+          # Parse output by removing line delimiter and splitting on last ":
+          content_type = output.rstrip().rpartition(': ')[2]
+        except OSError as e:  # 'file' executable may not always be present.
           raise CommandException(
-              'Encountered error running "file --mime-type %s" '
-              '(returncode=%d).\n%s' % (real_file_path, p.returncode, error))
-        # Parse output by removing line delimiter and splitting on last ":
-        content_type = output.rstrip().rpartition(': ')[2]
+              'Encountered OSError running "file --mime-type %s"\n%s' % (
+                  real_file_path, e))
       else:
         content_type = mimetypes.guess_type(real_file_path)[0]
     if not content_type:
       content_type = DEFAULT_CONTENT_TYPE
     dst_obj_metadata.contentType = content_type
-
 
 # pylint: disable=undefined-variable
 def _UploadFileToObjectNonResumable(src_url, src_obj_filestream,
@@ -2031,6 +2036,7 @@ def _MaintainSlicedDownloadTrackerFiles(src_obj_metadata, dst_url,
                                          TrackerFileType.SLICED_DOWNLOAD,
                                          api_selector)
 
+  fp = None
   # Check to see if we should attempt resuming the download.
   try:
     fp = open(download_file_name, 'rb')
@@ -2458,6 +2464,7 @@ def _DownloadObjectToFileNonResumable(src_url, src_obj_metadata, dst_url,
     server_encoding: Content-encoding string if it was detected that the server
                      sent encoded bytes during transfer, None otherwise.
   """
+  fp = None
   try:
     fp = open(download_file_name, 'w')
 
@@ -2986,7 +2993,8 @@ def GetSourceFieldsNeededForCopy(dst_is_cloud, skip_unsupported_objects,
 # Map of (lowercase) storage classes with early deletion charges to their
 # minimum lifetime in seconds.
 EARLY_DELETION_MINIMUM_LIFETIME = {
-    'nearline': 30 * SECONDS_PER_DAY
+    'nearline': 30 * SECONDS_PER_DAY,
+    'coldline': 90 * SECONDS_PER_DAY
 }
 
 
@@ -3444,7 +3452,7 @@ class SkipGlacierError(SkipUnsupportedObjectError):
     self.unsupported_type = 'GLACIER'
 
 
-def GetPathBeforeFinalDir(url):
+def GetPathBeforeFinalDir(url, exp_src_url):
   """Returns the path section before the final directory component of the URL.
 
   This handles cases for file system directories, bucket, and bucket
@@ -3454,6 +3462,8 @@ def GetPathBeforeFinalDir(url):
   Args:
     url: StorageUrl representing a filesystem directory, cloud bucket or
          bucket subdir.
+    exp_src_url: StorageUrl representing the fully expanded object
+        to-be-copied; used for resolving cloud wildcards.
 
   Returns:
     String name of above-described path, sans final path separator.
@@ -3468,7 +3478,55 @@ def GetPathBeforeFinalDir(url):
   if url.IsBucket():
     return '%s://' % url.scheme
   # Else it names a bucket subdir.
-  return url.url_string.rstrip(sep).rpartition(sep)[0]
+  path_sans_final_dir = url.url_string.rstrip(sep).rpartition(sep)[0]
+  return ResolveWildcardsInPathBeforeFinalDir(path_sans_final_dir, exp_src_url)
+
+
+def ResolveWildcardsInPathBeforeFinalDir(src_url_path_sans_final_dir,
+                                         exp_src_url):
+  """Returns the path section for a bucket subdir with wildcards resolved.
+
+  This handles cases for bucket subdirectories where the initial source URL
+  contains a wildcard. In this case, src_url must be wildcard-expanded
+  before calculating the final directory.
+
+  Example:
+    A bucket containing:
+      gs://bucket/dir1/subdir/foo
+      gs://bucket/dir2/subdir/foo
+
+    and source URL gs://bucket/*/subdir
+    and src_url_path_sans_final dir gs://bucket/*
+
+    should yield final path gs://bucket/dir1 or gs://bucket/dir2 according to
+    the expanded source URL.
+
+  Args:
+    src_url_path_sans_final_dir: URL string with wildcards representing a
+        bucket subdir as computed from GetPathBeforeFinalDir.
+    exp_src_url: CloudUrl representing the fully expanded object to-be-copied.
+
+  Returns:
+    String name of above-described path, sans final path separator.
+  """
+  if not ContainsWildcard(src_url_path_sans_final_dir):
+    return src_url_path_sans_final_dir
+
+  # Parse the expanded source URL, replacing wildcarded
+  # portions of the path with what they actually expanded to.
+  wildcarded_src_obj_path = StorageUrlFromString(
+      src_url_path_sans_final_dir).object_name.split('/')
+  expanded_src_obj_path = exp_src_url.object_name.split('/')
+  for path_segment_index in xrange(len(wildcarded_src_obj_path)):
+    if ContainsWildcard(wildcarded_src_obj_path[path_segment_index]):
+      # The expanded path is guaranteed to be have at least as many path
+      # segments as the wildcarded path.
+      wildcarded_src_obj_path[path_segment_index] = (
+          expanded_src_obj_path[path_segment_index])
+  resolved_src_path = '/'.join(wildcarded_src_obj_path)
+  final_path_url = exp_src_url.Clone()
+  final_path_url.object_name = resolved_src_path
+  return final_path_url.url_string
 
 
 def _GetPartitionInfo(file_size, max_components, default_component_size):

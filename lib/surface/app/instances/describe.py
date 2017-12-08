@@ -24,7 +24,6 @@ class Describe(base.Command):
   """Display all data about an existing instance."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To show all data about instance i1 for service s1 and version v1, run:
 

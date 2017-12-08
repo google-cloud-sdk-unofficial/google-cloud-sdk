@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.logging import common as logging_common
 from googlecloudsdk.api_lib.logging import util as logging_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
 
 
 class GetLogs(base.ListCommand):
@@ -89,8 +90,9 @@ class GetLogs(base.ListCommand):
     Yields:
       Objects representing log entries.
     """
+    region = properties.VALUES.functions.region.Get()
     log_filter = ['resource.type="cloud_function"',
-                  'resource.labels.region="%s"' % args.region,
+                  'resource.labels.region="%s"' % region,
                   'logName:"cloud-functions"']
 
     if args.name:

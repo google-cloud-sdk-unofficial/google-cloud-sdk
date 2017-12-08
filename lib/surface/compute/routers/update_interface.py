@@ -18,7 +18,10 @@ import copy
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.routers import flags
+from googlecloudsdk.command_lib.compute.vpn_tunnels import (flags as
+                                                            vpn_tunnel_flags)
 from googlecloudsdk.core import exceptions
 
 
@@ -44,20 +47,20 @@ class UpdateInterface(base_classes.ReadWriteCommand):
   """Update an interface on a router."""
 
   ROUTER_ARG = None
+  VPN_TUNNEL_ARG = None
 
   @classmethod
   def Args(cls, parser):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser, operation_type='update')
+    cls.VPN_TUNNEL_ARG = vpn_tunnel_flags.VpnTunnelArgumentForRouter(
+        required=False, operation_type='updated')
+    cls.VPN_TUNNEL_ARG.AddArgument(parser)
 
     parser.add_argument(
         '--interface-name',
         required=True,
         help='The name of the interface being updated.')
-
-    parser.add_argument(
-        '--vpn-tunnel',
-        help='The tunnel of the interface being updated.')
 
     parser.add_argument(
         '--ip-address',
@@ -121,9 +124,14 @@ class UpdateInterface(base_classes.ReadWriteCommand):
 
       iface.ipRange = '{0}/{1}'.format(args.ip_address, args.mask_length)
 
+    if not args.vpn_tunnel_region:
+      args.vpn_tunnel_region = replacement.region
+
     if args.vpn_tunnel is not None:
-      vpn_ref = self.CreateRegionalReference(
-          args.vpn_tunnel, args.region, resource_type='vpnTunnels')
+      vpn_ref = self.VPN_TUNNEL_ARG.ResolveAsResource(
+          args,
+          self.resources,
+          scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
       iface.linkedVpnTunnel = vpn_ref.SelfLink()
 
     return replacement

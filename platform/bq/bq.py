@@ -1345,6 +1345,11 @@ class _Query(BigqueryCmd):
         'destination_table', '',
         'Name of destination table for query results.',
         flag_values=fv)
+    flags.DEFINE_string(
+        'destination_schema', '',
+        'Schema for the destination table. Either a filename or '
+        'a comma-separated list of fields in the form name[:type].',
+        flag_values=fv)
     flags.DEFINE_integer(
         'start_row', 0,
         'First row to return in the result.',
@@ -1497,6 +1502,9 @@ class _Query(BigqueryCmd):
       query = sys.stdin.read()
     client = Client.Get()
     kwds['use_legacy_sql'] = self.use_legacy_sql
+    if self.destination_schema and not self.destination_table:
+      raise app.UsageError(
+          'destination_schema can only be used with destination_table.')
     if self.rpc:
       if self.allow_large_results:
         raise app.UsageError(
@@ -1544,6 +1552,10 @@ class _Query(BigqueryCmd):
         Factory.ClientTablePrinter.GetTablePrinter().PrintTable(fields, rows)
         # If we are here, the job succeeded, but print warnings if any.
         _PrintJobMessages(client.FormatJobInfo(job))
+    if self.destination_schema:
+      client.UpdateTable(
+          client.GetTableReference(self.destination_table),
+          BigqueryClient.ReadSchema(self.destination_schema))
 
 
 def _GetExternalDataConfig(file_path_or_simple_spec):
@@ -2087,8 +2099,10 @@ class _Copy(BigqueryCmd):
       _PrintJobMessages(client.FormatJobInfo(job))
 
 
-def _ParseTimePartitioning(partitioning_type=None,
-                           partitioning_expiration=None): # pylint: disable=line-too-long
+def _ParseTimePartitioning(
+    partitioning_type=None,
+    partitioning_expiration=None,
+):
   """Parses time partitioning from the arguments.
 
   Args:
@@ -2201,6 +2215,10 @@ class _Make(BigqueryCmd):
         'will have an expiration time of its creation time plus this value. '
         'A negative number means no expiration.',
         flag_values=fv)
+    flags.DEFINE_multistring(
+        'label', None,
+        'A label to set on the table. The format is "key:value"',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier='', schema=''):
@@ -2279,6 +2297,9 @@ class _Make(BigqueryCmd):
       else:
         schema = None
       expiration = None
+      labels = None
+      if self.label is not None:
+        labels = _ParseLabels(self.label)
       if self.data_location:
         raise app.UsageError('Cannot specify data location for a table.')
       if self.default_table_expiration:
@@ -2306,6 +2327,7 @@ class _Make(BigqueryCmd):
                          view_udf_resources=view_udf_resources,
                          use_legacy_sql=self.use_legacy_sql,
                          external_data_config=external_data_config,
+                         labels=labels,
                          time_partitioning=time_partitioning)
       print "%s '%s' successfully created." % (object_name, reference,)
 
@@ -2449,14 +2471,15 @@ class _Update(BigqueryCmd):
       default_table_exp_ms = None
       if self.default_table_expiration is not None:
         default_table_exp_ms = self.default_table_expiration * 1000
-      _UpdateDataset(client,
-                     reference,
-                     self.description,
-                     self.source,
-                     default_table_exp_ms,
-                     labels_to_set,
-                     label_keys_to_remove,
-                     )
+      _UpdateDataset(
+          client,
+          reference,
+          self.description,
+          self.source,
+          default_table_exp_ms,
+          labels_to_set,
+          label_keys_to_remove,
+      )
       print "Dataset '%s' successfully updated." % (reference,)
     elif isinstance(reference, TableReference):
       object_name = 'Table'
@@ -2503,19 +2526,22 @@ class _Update(BigqueryCmd):
                          view_udf_resources=view_udf_resources,
                          use_legacy_sql=self.use_legacy_sql,
                          external_data_config=external_data_config,
+                         labels_to_set=labels_to_set,
+                         label_keys_to_remove=label_keys_to_remove,
                          time_partitioning=time_partitioning)
 
       print "%s '%s' successfully updated." % (object_name, reference,)
 
 
-def _UpdateDataset(client,
-                   reference,
-                   description,
-                   source,
-                   default_table_expiration_ms,
-                   labels_to_set,
-                   label_keys_to_remove,
-                   ):
+def _UpdateDataset(
+    client,
+    reference,
+    description,
+    source,
+    default_table_expiration_ms,
+    labels_to_set,
+    label_keys_to_remove,
+):
   """Updates a dataset.
 
   Reads JSON file if specified and loads updated values, before calling bigquery
@@ -2551,13 +2577,14 @@ def _UpdateDataset(client,
       except ValueError as e:
         raise app.UsageError('Error decoding JSON schema from file %s: %s'
                              % (source, e))
-  client.UpdateDataset(reference,
-                       description=description,
-                       acl=acl,
-                       default_table_expiration_ms=default_table_expiration_ms,
-                       labels_to_set=labels_to_set,
-                       label_keys_to_remove=label_keys_to_remove,
-                       )
+  client.UpdateDataset(
+      reference,
+      description=description,
+      acl=acl,
+      default_table_expiration_ms=default_table_expiration_ms,
+      labels_to_set=labels_to_set,
+      label_keys_to_remove=label_keys_to_remove,
+  )
 
 
 class _Show(BigqueryCmd):
@@ -2740,6 +2767,12 @@ class _Head(BigqueryCmd):
         'max_rows', 100,
         'The number of rows to print when showing table data.',
         short_name='n', flag_values=fv)
+    flags.DEFINE_string(
+        'selected_fields', None,
+        'A subset of fields (including nested fields) to return when showing '
+        'table data. If not specified, full row will be retrieved. '
+        'For example, "-c:a,b".',
+        short_name='c', flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier=''):
@@ -2761,7 +2794,6 @@ class _Head(BigqueryCmd):
     else:
       reference = client.GetTableReference(identifier)
 
-
     if isinstance(reference, JobReference):
       fields, rows = client.ReadSchemaAndJobRows(dict(reference),
                                                  start_row=self.s,
@@ -2769,8 +2801,8 @@ class _Head(BigqueryCmd):
     elif isinstance(reference, TableReference):
       fields, rows = client.ReadSchemaAndRows(dict(reference),
                                               start_row=self.s,
-                                              max_rows=self.n
-                                             )
+                                              max_rows=self.n,
+                                              selected_fields=self.c)
     else:
       raise app.UsageError("Invalid identifier '%s' for head." % (identifier,))
 
@@ -3432,7 +3464,9 @@ def main(unused_argv):
   # bq <global flags> <command> <global and local flags> <command args>,
   # only "<global flags>" will parse before main, not "<global and local flags>"
   try:
-    FLAGS.auth_local_webserver = False
+    # Some versions of oauthclient specify this flag.
+    if hasattr(FLAGS, 'auth_local_webserver'):
+      FLAGS.auth_local_webserver = False
     _ValidateGlobalFlags()
 
     bq_commands = {

@@ -30,7 +30,6 @@ class Wait(base.Command):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To wait on a single operation
 

@@ -92,7 +92,7 @@ class Start(base_classes.NoOutputAsyncMutator):
     request_list = []
     instance_refs = instance_flags.INSTANCES_ARG.ResolveAsResource(
         args, self.resources, scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client, self.project))
+            self.compute_client))
     if csek_key_file:
       instances = self.GetInstances(instance_refs)
     else:
@@ -125,7 +125,7 @@ class Start(base_classes.NoOutputAsyncMutator):
             self.messages.ComputeInstancesStartWithEncryptionKeyRequest(
                 instance=instance_ref.Name(),
                 instancesStartWithEncryptionKeyRequest=encryption_req,
-                project=self.project,
+                project=instance_ref.project,
                 zone=instance_ref.zone))
       else:
         request = (
@@ -133,7 +133,7 @@ class Start(base_classes.NoOutputAsyncMutator):
             'Start',
             self.messages.ComputeInstancesStartRequest(
                 instance=instance_ref.Name(),
-                project=self.project,
+                project=instance_ref.project,
                 zone=instance_ref.zone))
 
       request_list.append(request)

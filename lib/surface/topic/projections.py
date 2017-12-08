@@ -82,7 +82,7 @@ class Projections(base.TopicCommand):
           A string value used to label output. Use :label="" or :label=''
           for no label. The *table* format uses _LABEL_ values as column
           headings. Also sets _LABEL_ as an alias for the projection key.
-          The default label is the the disambiguated right hand parts of the
+          The default label is the disambiguated right hand parts of the
           column key name in ANGRY_SNAKE_CASE.
 
           [no-]*reverse*::

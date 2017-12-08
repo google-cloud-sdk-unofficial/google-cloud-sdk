@@ -5,13 +5,13 @@
 
 .SH "NAME"
 .HP
-gcloud service\-management deploy \- deploys a service configuration
+gcloud service\-management deploy \- deploys a service configuration for the given service name
 
 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud service\-management deploy\fR \fISERVICE_CONFIG_FILE\fR [\fISERVICE_CONFIG_FILE\fR\ ...] [\fB\-\-async\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud service\-management deploy\fR \fISERVICE_CONFIG_FILE\fR [\fISERVICE_CONFIG_FILE\fR\ ...] [\fB\-\-async\fR] [\fB\-\-validate\-only\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -50,8 +50,13 @@ Configuration files in JSON and YAML formats are acceptable.
 .RS 2m
 .TP 2m
 \fB\-\-async\fR
-Display information about the operation in progress and don't wait for the
+Display information about the operation in progress, without waiting for the
 operation to complete.
+
+.TP 2m
+\fB\-\-validate\-only\fR
+If included, the command will only validate the service configuration(s). No
+configuration(s) will be persisted.
 
 
 .RE

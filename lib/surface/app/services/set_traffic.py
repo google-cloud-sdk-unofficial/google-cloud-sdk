@@ -37,7 +37,6 @@ class SetTraffic(base.Command):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To send all traffic to 'v2' of service 's1', run:
 

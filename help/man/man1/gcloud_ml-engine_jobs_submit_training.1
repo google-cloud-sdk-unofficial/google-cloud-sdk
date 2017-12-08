@@ -11,7 +11,7 @@ gcloud ml\-engine jobs submit training \- submits a Cloud Machine Learning train
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud ml\-engine jobs submit training\fR \fIJOB\fR \fB\-\-module\-name\fR=\fIMODULE_NAME\fR [\fB\-\-async\fR] [\fB\-\-config\fR=\fICONFIG\fR] [\fB\-\-job\-dir\fR=\fIJOB_DIR\fR] [\fB\-\-package\-path\fR=\fIPACKAGE_PATH\fR] [\fB\-\-packages\fR=[\fIPACKAGE\fR,...]] [\fB\-\-region\fR=\fIREGION\fR] [\fB\-\-runtime\-version\fR=\fIRUNTIME_VERSION\fR] [\fB\-\-scale\-tier\fR=\fISCALE_TIER\fR] [\fB\-\-staging\-bucket\fR=\fISTAGING_BUCKET\fR] [\fIGLOBAL\-FLAG\ ...\fR] [\-\-\ \fIUSER_ARGS\fR\ ...]
+\f5gcloud ml\-engine jobs submit training\fR \fIJOB\fR \fB\-\-module\-name\fR=\fIMODULE_NAME\fR [\fB\-\-config\fR=\fICONFIG\fR] [\fB\-\-job\-dir\fR=\fIJOB_DIR\fR] [\fB\-\-package\-path\fR=\fIPACKAGE_PATH\fR] [\fB\-\-packages\fR=[\fIPACKAGE\fR,...]] [\fB\-\-region\fR=\fIREGION\fR] [\fB\-\-runtime\-version\fR=\fIRUNTIME_VERSION\fR] [\fB\-\-scale\-tier\fR=\fISCALE_TIER\fR] [\fB\-\-staging\-bucket\fR=\fISTAGING_BUCKET\fR] [\fB\-\-async\fR\ |\ \fB\-\-stream\-logs\fR] [\fIGLOBAL\-FLAG\ ...\fR] [\-\-\ \fIUSER_ARGS\fR\ ...]
 
 
 
@@ -44,9 +44,13 @@ file at /my/code/path/setup.py then that file will be invoked with \f5sdist\fR
 and the generated tar files will be uploaded to Cloud Storage. Otherwise a
 temporary setup.py file will be generated for the build.
 
-By default, this command blocks until the job finishes, streaming the logs in
-the meantime. If the job succeeds, the command exits zero; otherwise, it exits
-non\-zero. To avoid blocking, pass the \f5\-\-async\fR flag.
+By default, this command runs asynchronously; it exits once the job is
+successfully submitted.
+
+To follow the progress of your job, pass the \f5\-\-stream\-logs\fR flag (note
+that even with the \f5\-\-stream\-logs\fR flag, the job will continue to run
+after this command exits and must be cancelled with \f5gcloud ml\-engine jobs
+cancel JOB_ID\fR).
 
 For more information, see:
 https://cloud.google.com/ml/docs/concepts/training\-overview
@@ -85,11 +89,6 @@ Name of the module to run
 .SH "OPTIONAL FLAGS"
 
 .RS 2m
-.TP 2m
-\fB\-\-async\fR
-Display information about the operation in progress and don't wait for the
-operation to complete.
-
 .TP 2m
 \fB\-\-config\fR=\fICONFIG\fR
 Path to the job configuration file. The file should be a YAML document (JSON
@@ -213,6 +212,28 @@ Bucket in which to stage training archives.
 
 Required only if a file upload is necessary (that is, other flags include local
 paths) and no other flags implicitly specify an upload path.
+
+.RE
+.sp
+At most one of these may be specified:
+
+.RS 2m
+.TP 2m
+\fB\-\-async\fR
+(DEPRECATED) Display information about the operation in progress without waiting
+for the operation to complete. Enabled by default and can be omitted; use
+\f5\-\-stream\-logs\fR to run synchronously.
+
+.TP 2m
+\fB\-\-stream\-logs\fR
+Block until job completion and stream the logs while the job runs.
+
+Note that even if command execution is halted, the job will still run until
+cancelled with
+
+.RS 2m
+$ gcloud ml\-engine jobs cancel JOB_ID
+.RE
 
 
 .RE

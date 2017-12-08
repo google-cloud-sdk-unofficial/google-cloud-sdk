@@ -64,13 +64,13 @@ class DeleteAccessConfig(base_classes.NoOutputAsyncMutator):
     """Returns a request necessary for removing an access config."""
     instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
         args, self.resources, scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client, self.project))
+            self.compute_client))
 
     request = self.messages.ComputeInstancesDeleteAccessConfigRequest(
         accessConfig=args.access_config_name,
         instance=instance_ref.Name(),
         networkInterface=args.network_interface,
-        project=self.project,
+        project=instance_ref.project,
         zone=instance_ref.zone)
 
     return [request]

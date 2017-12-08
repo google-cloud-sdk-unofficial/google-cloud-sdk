@@ -51,13 +51,13 @@ class Suspend(base_classes.NoOutputAsyncMutator):
     return self.messages.ComputeInstancesSuspendRequest(
         discardLocalSsd=discard_local_ssd,
         instance=instance_ref.Name(),
-        project=self.project,
+        project=instance_ref.project,
         zone=instance_ref.zone)
 
   def CreateRequests(self, args):
     instance_refs = instance_flags.INSTANCES_ARG.ResolveAsResource(
         args, self.resources, scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client, self.project))
+            self.compute_client))
     return [self._CreateSuspendRequest(instance_ref, args.discard_local_ssd)
             for instance_ref in instance_refs]
 

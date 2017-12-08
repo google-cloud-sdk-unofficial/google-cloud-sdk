@@ -27,7 +27,6 @@ class Update(base.UpdateCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To update a runtime-config resource's description, run:
 

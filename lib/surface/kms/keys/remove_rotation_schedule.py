@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.kms import flags
 class RemoveRotationSchedule(base.UpdateCommand):
   r"""Remove the rotation schedule for a key.
 
-  Removes the rotation schedule for the the given key.
+  Removes the rotation schedule for the given key.
 
   ## EXAMPLES
 

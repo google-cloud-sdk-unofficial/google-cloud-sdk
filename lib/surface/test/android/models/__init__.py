@@ -21,7 +21,6 @@ class Models(base.Group):
   """Explore Android models available in the Test Environment catalog."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To list all Android models available for running tests, along with
           their basic characteristics and supported Android OS versions, run:

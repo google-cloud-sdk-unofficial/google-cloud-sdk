@@ -30,7 +30,6 @@ class List(base.ListCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To see the list of all record-sets in my_zone, run:
 

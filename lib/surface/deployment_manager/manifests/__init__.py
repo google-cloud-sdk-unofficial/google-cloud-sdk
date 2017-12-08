@@ -25,7 +25,6 @@ class Manifests(base.Group):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To view all details about a manifest, run:
 

@@ -1,0 +1,66 @@
+
+.TH "GCLOUD_KMS_KEYS_GET\-IAM\-POLICY" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud kms keys get\-iam\-policy \- get the IAM policy for a key
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud kms keys get\-iam\-policy\fR \fIKEY\fR [\fB\-\-keyring\fR=\fIKEYRING\fR] [\fB\-\-location\fR=\fILOCATION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+
+.SH "DESCRIPTION"
+
+Gets the IAM policy for the given key.
+
+Returns an empty policy if the resource does not have a policy set.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+.RS 2m
+.TP 2m
+\fIKEY\fR
+Name of the key whose IAM policy to fetch.
+
+
+.RE
+.sp
+
+.SH "FLAGS"
+
+.RS 2m
+.TP 2m
+\fB\-\-keyring\fR=\fIKEYRING\fR
+The containing keyring.
+
+.TP 2m
+\fB\-\-location\fR=\fILOCATION\fR
+The location of the requested resource.
+
+
+.RE
+.sp
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+The following command gets the IAM policy for the key \f5frodo\fR within the
+keyring \f5fellowship\fR and location \f5global\fR:
+
+.RS 2m
+$ gcloud kms keys get\-iam\-policy frodo \-\-keyring fellowship \e
+    \-\-location global
+.RE

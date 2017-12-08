@@ -38,7 +38,7 @@ class AddBgpPeer(base_classes.ReadWriteCommand):
     parser.add_argument(
         '--interface',
         required=True,
-        help='The interface of the peer being added.')
+        help='The name of the interface of the peer being added.')
 
     parser.add_argument(
         '--peer-asn',

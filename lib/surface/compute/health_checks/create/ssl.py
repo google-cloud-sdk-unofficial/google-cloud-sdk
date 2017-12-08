@@ -14,13 +14,18 @@
 """Command for creating SSL health checks."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import health_checks_utils
+from googlecloudsdk.command_lib.compute.health_checks import flags
 
 
 class Create(base_classes.BaseAsyncCreator):
   """Create a SSL health check to monitor load balanced instances."""
 
-  @staticmethod
-  def Args(parser):
+  HEALTH_CHECK_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument('SSL')
+    cls.HEALTH_CHECK_ARG.AddArgument(parser)
     health_checks_utils.AddTcpRelatedCreationArgs(parser)
     health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'SSL')
 
@@ -39,8 +44,8 @@ class Create(base_classes.BaseAsyncCreator):
   def CreateRequests(self, args):
     """Returns the request necessary for adding the health check."""
 
-    health_check_ref = self.CreateGlobalReference(
-        args.name, resource_type='healthChecks')
+    health_check_ref = self.HEALTH_CHECK_ARG.ResolveAsResource(
+        args, self.resources)
     proxy_header = self.messages.SSLHealthCheck.ProxyHeaderValueValuesEnum(
         args.proxy_header)
     request = self.messages.ComputeHealthChecksInsertRequest(
