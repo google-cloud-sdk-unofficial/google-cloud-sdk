@@ -43,6 +43,7 @@ class Create(base.Command):
   @staticmethod
   def Args(parser):
     instance_utils.AddTagsArgs(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
     parser.add_argument(
         '--metadata',
         type=arg_parsers.ArgDict(min_length=1),
@@ -287,6 +288,13 @@ Alias,URI
             projectId=cluster_ref.projectId,
             region=cluster_ref.region,
             cluster=cluster))
+
+    if args.async:
+      log.status.write(
+          'Creating [{0}] with operation [{1}].'.format(
+              cluster_ref, operation.name))
+      return
+
     operation = util.WaitForOperation(
         operation, self.context, 'Waiting for cluster creation operation')
 

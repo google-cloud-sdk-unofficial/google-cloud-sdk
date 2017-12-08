@@ -33,9 +33,9 @@ def _AddArgs(parser, multizonal):
             'instances.'))
   parser.add_argument(
       '--base-instance-name',
-      required=True,
       help=('The base name to use for the Compute Engine instances that will '
-            'be created with the managed instance group.'))
+            'be created with the managed instance group. If not provided '
+            'base instance name will be the prefix of instance group name.'))
   parser.add_argument(
       '--size',
       required=True,
@@ -133,11 +133,17 @@ class CreateGA(base_classes.BaseAsyncCreator, zone_utils.ZoneResourceFetcher):
     else:
       pools = []
 
+    name = group_ref.Name()
+    if args.base_instance_name:
+      base_instance_name = args.base_instance_name
+    else:
+      base_instance_name = name[0:54]
+
     instance_group_manager = self.messages.InstanceGroupManager(
-        name=group_ref.Name(),
-        baseInstanceName=args.base_instance_name,
+        name=name,
         description=args.description,
         instanceTemplate=template_ref.SelfLink(),
+        baseInstanceName=base_instance_name,
         targetPools=pools,
         targetSize=int(args.size))
     auto_healing_policies = (

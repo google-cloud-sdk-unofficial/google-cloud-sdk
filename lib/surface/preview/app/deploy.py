@@ -431,6 +431,7 @@ class Deploy(base.Command):
         endpoint=clients.api.client.url,
         version=clients.api.api_version))
     cloudbuild_client = apis.GetClientInstance('cloudbuild', 'v1', self.Http())
+    storage_client = apis.GetClientInstance('storage', 'v1', self.Http())
     promote = properties.VALUES.app.promote_by_default.GetBool()
     deployed_urls = _DisplayProposedDeployment(project, app_config, version,
                                                promote)
@@ -460,14 +461,12 @@ class Deploy(base.Command):
         # style array of extended contexts.
         source_contexts = [context_util.ExtendContextDict(source_contexts)]
 
-    code_bucket = None
+    code_bucket_ref = None
     if use_cloud_build or app_config.NonHermeticModules():
       # If using Argo CloudBuild, we'll need to upload source to a GCS bucket.
-      code_bucket = self._GetCodeBucket(clients.api, args)
+      code_bucket_ref = self._GetCodeBucket(clients.api, args)
       metrics.CustomTimedEvent(metric_names.GET_CODE_BUCKET)
-      log.debug('Using bucket [{b}].'.format(b=code_bucket))
-      if not code_bucket:
-        raise DefaultBucketAccessError(project)
+      log.debug('Using bucket [{b}].'.format(b=code_bucket_ref))
 
     modules = app_config.Modules()
     if any([m.RequiresImage() for m in modules.values()]):
@@ -486,8 +485,9 @@ class Deploy(base.Command):
       images = deploy_command_util.BuildAndPushDockerImages(modules,
                                                             version,
                                                             cloudbuild_client,
+                                                            storage_client,
                                                             self.Http(),
-                                                            code_bucket,
+                                                            code_bucket_ref,
                                                             self.cli,
                                                             remote_build,
                                                             source_contexts,
@@ -495,9 +495,19 @@ class Deploy(base.Command):
 
     deployment_manifests = {}
     if app_config.NonHermeticModules():
-      deployment_manifests = deploy_app_command_util.CopyFilesToCodeBucket(
-          app_config.NonHermeticModules().items(), code_bucket, source_contexts)
-      metrics.CustomTimedEvent(metric_names.COPY_APP_FILES)
+      if properties.VALUES.app.use_gsutil.GetBool():
+        copy_func = deploy_app_command_util.CopyFilesToCodeBucket
+        metric_name = metric_names.COPY_APP_FILES
+      else:
+        copy_func = deploy_app_command_util.CopyFilesToCodeBucketNoGsUtil
+        metric_name = metric_names.COPY_APP_FILES_NO_GSUTIL
+
+      deployment_manifests = copy_func(
+          app_config.NonHermeticModules().items(),
+          code_bucket_ref,
+          source_contexts,
+          storage_client)
+      metrics.CustomTimedEvent(metric_name)
 
     all_services = clients.api.ListServices()
     # Now do deployment.
@@ -543,7 +553,13 @@ class Deploy(base.Command):
 
   def _GetCodeBucket(self, api_client, args):
     if args.bucket:
-      return args.bucket
-    # Attempt to retrieve the default appspot bucket, if one can be created.
-    log.debug('No bucket specified, retrieving default bucket.')
-    return api_client.GetApplicationCodeBucket()
+      bucket_with_gs = args.bucket
+    else:
+      # Attempt to retrieve the default appspot bucket, if one can be created.
+      log.debug('No bucket specified, retrieving default bucket.')
+      bucket_with_gs = api_client.GetApplicationCodeBucket()
+      if not bucket_with_gs:
+        project = properties.VALUES.core.project.Get(required=True)
+        raise DefaultBucketAccessError(project)
+
+    return cloud_storage.BucketReference(bucket_with_gs)

@@ -82,9 +82,12 @@ class Import(base.Command):
 
   @util.HandleHttpError
   def Run(self, args):
-    if not os.path.isfile(args.records_file):
+    if not os.path.exists(args.records_file):
       raise exceptions.ToolException(
           'no such file [{0}]'.format(args.records_file))
+    if os.path.isdir(args.records_file):
+      raise exceptions.ToolException(
+          '[{0}] is a directory'.format(args.records_file))
 
     dns = self.context['dns_client']
     messages = self.context['dns_messages']

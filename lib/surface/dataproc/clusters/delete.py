@@ -36,6 +36,7 @@ class Delete(base.Command):
   @staticmethod
   def Args(parser):
     parser.add_argument('name', help='The name of the cluster to delete.')
+    base.ASYNC_FLAG.AddToParser(parser)
 
   @util.HandleHttpError
   def Run(self, args):
@@ -55,6 +56,13 @@ class Delete(base.Command):
       raise exceptions.ToolException('Deletion aborted by user.')
 
     operation = client.projects_regions_clusters.Delete(request)
+
+    if args.async:
+      log.status.write(
+          'Deleting [{0}] with operation [{1}].'.format(
+              cluster_ref, operation.name))
+      return operation
+
     operation = util.WaitForOperation(
         operation, self.context, 'Waiting for cluster deletion operation')
     log.DeletedResource(cluster_ref)

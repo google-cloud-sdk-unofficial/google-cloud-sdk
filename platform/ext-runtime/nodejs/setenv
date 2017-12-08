@@ -1,2 +1,0 @@
-
-export PYTHONPATH=$HOME/pkg/google-cloud-sdk/lib:$HOME/pkg/google-cloud-sdk/platform/google_appengine

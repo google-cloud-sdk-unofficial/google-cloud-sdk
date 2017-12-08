@@ -11,7 +11,7 @@ gcloud dataproc clusters update \- update the number of worker nodes in a cluste
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud dataproc clusters update\fR \fINAME\fR [\fB\-\-num\-preemptible\-workers\fR\ \fINUM_PREEMPTIBLE_WORKERS\fR] [\fB\-\-num\-workers\fR\ \fINUM_WORKERS\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud dataproc clusters update\fR \fINAME\fR [\fB\-\-async\fR] [\fB\-\-num\-preemptible\-workers\fR\ \fINUM_PREEMPTIBLE_WORKERS\fR] [\fB\-\-num\-workers\fR\ \fINUM_WORKERS\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -31,6 +31,12 @@ The name of the cluster to update.
 
 .SH "FLAGS"
 
+\fB\-\-async\fR
+.RS 2m
+Display information about the operation in progress and don't wait for the
+operation to complete.
+
+.RE
 \fB\-\-num\-preemptible\-workers\fR \fINUM_PREEMPTIBLE_WORKERS\fR
 .RS 2m
 The new number of preemptible worker nodes in the cluster.

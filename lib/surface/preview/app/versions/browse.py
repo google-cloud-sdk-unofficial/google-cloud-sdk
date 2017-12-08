@@ -47,7 +47,7 @@ class Browse(base.Command):
     versions = parser.add_argument('versions', nargs='+',
                                    help='The versions to open.')
     versions.detailed_help = (
-        'The versions to open. (optionally filtered by the --service flag). '
+        'The versions to open (optionally filtered by the --service flag). '
         'Can also be a resource path (<service name>/<version name> or '
         '<project name>/<service name>/<version name>).')
     parser.add_argument('--service', '-s',

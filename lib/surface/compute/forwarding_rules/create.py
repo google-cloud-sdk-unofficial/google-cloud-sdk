@@ -143,7 +143,7 @@ Create.detailed_help = {
         *{{command}}* is used to create a forwarding rule. {overview}
 
         When creating a forwarding rule, exactly one of  ``--target-instance'',
-        ``--target-pool'', ``--target-http-proxy'', ``-target-https-proxy'',
-        and ``--target-vpn-gateway'' must be specified.
+        ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
+        or ``--target-vpn-gateway'' must be specified.
         """.format(overview=utils.FORWARDING_RULES_OVERVIEW)),
 }

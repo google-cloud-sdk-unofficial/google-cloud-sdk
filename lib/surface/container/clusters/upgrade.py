@@ -106,6 +106,9 @@ class Upgrade(base.Command):
       and looking at the returned "validNodeVersions".
     """
     parser.add_argument(
+        '--node-pool',
+        help='The node pool to upgrade.')
+    parser.add_argument(
         '--master',
         help='Upgrade the cluster\'s master to the latest version of Kubernetes'
         ' supported on Container Engine. Nodes cannot be upgraded at the same'
@@ -138,7 +141,8 @@ class Upgrade(base.Command):
     options = api_adapter.UpdateClusterOptions(
         version=args.cluster_version,
         update_master=args.master,
-        update_nodes=(not args.master))
+        update_nodes=(not args.master),
+        node_pool=args.node_pool)
 
     if options.version:
       new_version = options.version

@@ -22,7 +22,13 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.credentials import store as c_store
-from googlecloudsdk.third_party.py27 import py27_collections as collections
+
+
+class _AuthInfo(object):
+
+  def __init__(self, active_account, accounts):
+    self.active_account = active_account
+    self.accounts = accounts
 
 
 class List(base.Command):
@@ -60,10 +66,7 @@ class List(base.Command):
       else:
         accounts = []
 
-    auth_info = collections.namedtuple(
-        'auth_info',
-        ['active_account', 'accounts'])
-    return auth_info(active_account, accounts)
+    return _AuthInfo(active_account, accounts)
 
   def Display(self, unused_args, result):
     if result.accounts:

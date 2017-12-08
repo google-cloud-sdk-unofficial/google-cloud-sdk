@@ -54,7 +54,7 @@ def _Args(parser):
       default=3)
   parser.add_argument(
       '--machine-type', '-m',
-      help='The type of machine to use for workers. Defaults to '
+      help='The type of machine to use for nodes. Defaults to '
       'server-specified')
   parser.add_argument(
       '--subnetwork',
@@ -107,6 +107,12 @@ Alias,URI
         ','.join(value) for value in
         sorted(constants.SCOPES.iteritems()))))
   parser.add_argument(
+      '--enable-cloud-endpoints',
+      action='store_true',
+      default=True,
+      help='Automatically enable Google Cloud Endpoints to take advantage of '
+      'API management features.')
+  parser.add_argument(
       '--enable-cloud-logging',
       action='store_true',
       default=True,
@@ -156,6 +162,7 @@ class Create(base.Command):
     return api_adapter.CreateClusterOptions(
         node_machine_type=args.machine_type,
         scopes=args.scopes,
+        enable_cloud_endpoints=args.enable_cloud_endpoints,
         num_nodes=args.num_nodes,
         user=args.username,
         password=args.password,
@@ -192,12 +199,13 @@ class Create(base.Command):
     cluster_ref = adapter.ParseCluster(args.name)
     options = self.ParseCreateOptions(args)
 
+    operation = None
     try:
       operation_ref = adapter.CreateCluster(cluster_ref, options)
       if not args.wait:
         return adapter.GetCluster(cluster_ref)
 
-      adapter.WaitForOperation(
+      operation = adapter.WaitForOperation(
           operation_ref,
           'Creating cluster {0}'.format(cluster_ref.clusterId),
           timeout_s=args.timeout)
@@ -206,6 +214,10 @@ class Create(base.Command):
       raise exceptions.HttpException(util.GetError(error))
 
     log.CreatedResource(cluster_ref)
+    if operation.detail:
+      # Non-empty detail on a DONE create operation should be surfaced as
+      # a warning to end user.
+      log.warning(operation.detail)
     # Persist cluster config
     current_context = kconfig.Kubeconfig.Default().current_context
     c_config = util.ClusterConfig.Persist(cluster, cluster_ref.projectId)

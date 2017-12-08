@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-import logging
 import os
 import re
 import sys
@@ -10,15 +9,9 @@ import textwrap
 import unittest
 
 from gae_ext_runtime import testutil
-from googlecloudsdk.third_party.appengine.api import appinfo
-from googlecloudsdk.core import log
-from googlecloudsdk.api_lib.app import ext_runtime
-from googlecloudsdk.api_lib.app.runtimes import fingerprinter
-from googlecloudsdk.api_lib.app.ext_runtimes import fingerprinting
 
 RUNTIME_DEF_ROOT = os.path.dirname(os.path.dirname(__file__))
 
-log.SetVerbosity(logging.DEBUG)
 
 class RuntimeTests(testutil.TestBase):
 

@@ -223,6 +223,8 @@ class _BasePatch(object):
 
     self._PrintAndConfirmWarningMessage(args)
 
+    return cleared_fields
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Patch(_BasePatch, base.Command):

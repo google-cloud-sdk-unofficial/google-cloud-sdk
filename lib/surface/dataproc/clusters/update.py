@@ -40,6 +40,7 @@ class Update(base.Command):
 
   @staticmethod
   def Args(parser):
+    base.ASYNC_FLAG.AddToParser(parser)
     parser.add_argument(
         'name',
         help='The name of the cluster to update.')
@@ -109,6 +110,13 @@ class Update(base.Command):
         updateMask=','.join(changed_fields))
 
     operation = client.projects_regions_clusters.Patch(request)
+
+    if args.async:
+      log.status.write(
+          'Updating [{0}] with operation [{1}].'.format(
+              cluster_ref, operation.name))
+      return
+
     util.WaitForOperation(
         operation,
         self.context,
