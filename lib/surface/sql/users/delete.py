@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -69,6 +70,14 @@ class DeleteBeta(base.DeleteCommand):
 
     instance_ref = resources.Parse(args.instance, collection='sql.instances')
     operation_ref = None
+
+    console_io.PromptContinue(
+        message='{0}@{1} will be deleted. New connections can no longer be '
+        'made using this user. Existing connections are not affected.'.format(
+            args.username, args.host),
+        default=True,
+        cancel_on_no=True)
+
     result_operation = sql_client.users.Delete(
         sql_messages.SqlUsersDeleteRequest(project=project_id,
                                            instance=args.instance,

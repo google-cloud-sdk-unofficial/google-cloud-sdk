@@ -56,12 +56,13 @@ Run \fB$ gcloud help\fR for a description of flags available to all commands.
 .SH "EXAMPLES"
 
 The following command will remove a IAM policy binding for the role of
-\'roles/editor' for the user 'test\-user@gmail.com' on service with identifier
-\'my\-service'
+\'roles/servicemanagement.serviceConsumer' for the user 'test\-user@gmail.com'
+on service with identifier 'my\-service'
 
 .RS 2m
 $ gcloud service\-management remove\-iam\-policy\-binding my\-service \e
-    \-\-member='user:test\-user@gmail.com' \-\-role='roles/editor'
+    \-\-member='user:test\-user@gmail.com' \e
+    \-\-role='roles/servicemanagement.serviceConsumer'
 .RE
 
 See https://cloud.google.com/iam/docs/managing\-policies for details of policy

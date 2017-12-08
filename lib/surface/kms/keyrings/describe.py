@@ -41,6 +41,4 @@ class Describe(base.DescribeCommand):
     key_ring_ref = flags.ParseKeyRingName(args)
     return client.projects_locations_keyRings.Get(
         messages.CloudkmsProjectsLocationsKeyRingsGetRequest(
-            projectsId=key_ring_ref.projectsId,
-            locationsId=key_ring_ref.locationsId,
-            keyRingsId=key_ring_ref.keyRingsId))
+            name=key_ring_ref.RelativeName()))

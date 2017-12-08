@@ -25,11 +25,14 @@ from googlecloudsdk.core import log
 class GetPublicKey(base_classes.BaseIamCommand, base.Command):
   """Get the public key for a service account key pair.
 
-  ## EXAMPLES:
+  Get the public key for a service account key pair in pem or raw format.
+
+  ## EXAMPLES
+
   To get the public key for some key ID for some service account
   (to validate a blob or JWT signature, for example), run:
 
-     $ {command} keyid --iam-account my-iam-account@somedomain.com
+    $ {command} keyid --output-file key-file --iam-account my-iam-account@ab.com
   """
 
   @staticmethod

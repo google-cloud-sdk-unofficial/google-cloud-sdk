@@ -17,12 +17,16 @@ gcloud config \- view and edit Cloud SDK properties
 
 .SH "DESCRIPTION"
 
+The gcloud config command group lets you set, view and unset properties used by
+Cloud SDK.
+
 A configuration is a set of properties that govern the behavior of gcloud and
-other tools in the Cloud SDK. The SDK provides a configuration named
-\f5default\fR whose initial properties are set when you run the \f5gcloud
-init\fR command. You can create any number of additional named configurations
-using \f5gcloud init\fR or \f5gcloud config configurations create\fR, and switch
-between configurations using \f5gcloud config configurations activate\fR.
+other Cloud SDK tools. The initial \f5default\fR configuration is set when
+\f5gcloud init\fR is run. You can create additional named configurations using
+\f5gcloud init\fR or \f5gcloud config configuration create\fR.
+
+To switch between configurations, use \f5gcloud config configurations
+activate\fR.
 
 gcloud supports several flags that have the same effect as properties in a
 configuration (for example, gcloud supports both the \f5\-\-project\fR flag and
@@ -278,6 +282,19 @@ http_no_tunnel, socks4, socks5].
 .TP 2m
 \fBusername\fR
 If your proxy requires authentication, the username to use when connecting.
+
+
+.RE
+.sp
+.TP 2m
+\fIspanner\fR
+
+.RS 2m
+.TP 2m
+\fBinstance\fR
+The default instance to use when working with Cloud Spanner resources. When an
+\f5instance\fR is required but not provided by a flag, the command will fall
+back to this value, if set.
 .RE
 .RE
 .sp

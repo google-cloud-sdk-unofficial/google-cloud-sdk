@@ -91,7 +91,7 @@ class BetaTrain(base.Command):
             other data needed for training.
 
             This path will be passed to your TensorFlow program as `--job_dir`
-            command-line arg.The benefit of specifying this field is that Cloud
+            command-line arg. The benefit of specifying this field is that Cloud
             ML will validate the path for use in training.
 
             If packages must be uploaded and `--staging-bucket` is not provided,

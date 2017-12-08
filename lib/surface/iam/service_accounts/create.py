@@ -24,7 +24,7 @@ from googlecloudsdk.core import properties
 
 
 class Create(base_classes.BaseIamCommand, base.CreateCommand):
-  """Create an service account for a project.
+  """Create a service account for a project.
 
   This command creates a service account with the provided name. For
   subsequent commands regarding service accounts, this service account should be
@@ -34,7 +34,7 @@ class Create(base_classes.BaseIamCommand, base.CreateCommand):
   detailed_help = {
       'DESCRIPTION': '{description}',
       'EXAMPLES': textwrap.dedent("""\
-          To create an service account for your project, run:
+          To create a service account for your project, run:
 
             $ {command} some-account-name --display-name "My Service Account"
 

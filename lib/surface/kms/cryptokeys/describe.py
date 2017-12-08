@@ -42,7 +42,4 @@ class Describe(base.DescribeCommand):
     crypto_key_ref = flags.ParseCryptoKeyName(args)
     return client.projects_locations_keyRings_cryptoKeys.Get(
         messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysGetRequest(
-            projectsId=crypto_key_ref.projectsId,
-            locationsId=crypto_key_ref.locationsId,
-            keyRingsId=crypto_key_ref.keyRingsId,
-            cryptoKeysId=crypto_key_ref.cryptoKeysId))
+            name=crypto_key_ref.RelativeName()))

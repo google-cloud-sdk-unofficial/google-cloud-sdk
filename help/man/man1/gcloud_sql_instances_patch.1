@@ -11,7 +11,7 @@ gcloud sql instances patch \- updates the settings of a Cloud SQL instance
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud sql instances patch\fR \fIINSTANCE\fR [\fB\-\-activation\-policy\fR=\fIACTIVATION_POLICY\fR] [\fB\-\-assign\-ip\fR] [\fB\-\-async\fR] [\fB\-\-diff\fR] [\fB\-\-enable\-bin\-log\fR] [\fB\-\-enable\-database\-replication\fR] [\fB\-\-follow\-gae\-app\fR=\fIFOLLOW_GAE_APP\fR] [\fB\-\-gce\-zone\fR=\fIGCE_ZONE\fR] [\fB\-\-pricing\-plan\fR=\fIPRICING_PLAN\fR,\ \fB\-p\fR\ \fIPRICING_PLAN\fR] [\fB\-\-replication\fR=\fIREPLICATION\fR] [\fB\-\-require\-ssl\fR] [\fB\-\-tier\fR=\fITIER\fR,\ \fB\-t\fR\ \fITIER\fR] [\fB\-\-authorized\-gae\-apps\fR=\fIAPP\fR,[\fIAPP\fR,...]\ |\ \fB\-\-clear\-gae\-apps\fR] [\fB\-\-authorized\-networks\fR=\fINETWORK\fR,[\fINETWORK\fR,...]\ |\ \fB\-\-clear\-authorized\-networks\fR] [\fB\-\-backup\-start\-time\fR=\fIBACKUP_START_TIME\fR\ |\ \fB\-\-no\-backup\fR] [\fB\-\-clear\-database\-flags\fR\ |\ \fB\-\-database\-flags\fR=\fIFLAG\fR=\fIVALUE\fR,[\fIFLAG\fR=\fIVALUE\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud sql instances patch\fR \fIINSTANCE\fR [\fB\-\-activation\-policy\fR=\fIACTIVATION_POLICY\fR] [\fB\-\-assign\-ip\fR] [\fB\-\-async\fR] [\fB\-\-cpu\fR=\fICPU\fR] [\fB\-\-diff\fR] [\fB\-\-enable\-bin\-log\fR] [\fB\-\-enable\-database\-replication\fR] [\fB\-\-follow\-gae\-app\fR=\fIFOLLOW_GAE_APP\fR] [\fB\-\-gce\-zone\fR=\fIGCE_ZONE\fR] [\fB\-\-memory\fR=\fIMEMORY\fR] [\fB\-\-pricing\-plan\fR=\fIPRICING_PLAN\fR,\ \fB\-p\fR\ \fIPRICING_PLAN\fR] [\fB\-\-replication\fR=\fIREPLICATION\fR] [\fB\-\-require\-ssl\fR] [\fB\-\-tier\fR=\fITIER\fR,\ \fB\-t\fR\ \fITIER\fR] [\fB\-\-authorized\-gae\-apps\fR=\fIAPP\fR,[\fIAPP\fR,...]\ |\ \fB\-\-clear\-gae\-apps\fR] [\fB\-\-authorized\-networks\fR=\fINETWORK\fR,[\fINETWORK\fR,...]\ |\ \fB\-\-clear\-authorized\-networks\fR] [\fB\-\-backup\-start\-time\fR=\fIBACKUP_START_TIME\fR\ |\ \fB\-\-no\-backup\fR] [\fB\-\-clear\-database\-flags\fR\ |\ \fB\-\-database\-flags\fR=\fIFLAG\fR=\fIVALUE\fR,[\fIFLAG\fR=\fIVALUE\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -52,6 +52,12 @@ disable.
 Do not wait for the operation to complete.
 
 .TP 2m
+\fB\-\-cpu\fR=\fICPU\fR
+A whole number value indicating how many cores are desired inthe machine. Both
+\-\-cpu and \-\-memory must be specified if a custom machine type is desired,
+and the \-\-tier flag must be omitted.
+
+.TP 2m
 \fB\-\-diff\fR
 Show what changed as a result of the update.
 
@@ -75,6 +81,13 @@ the instance. WARNING: Instance may be restarted.
 \fB\-\-gce\-zone\fR=\fIGCE_ZONE\fR
 The preferred Compute Engine zone (e.g. us\-central1\-a, us\-central1\-b, etc.).
 WARNING: Instance may be restarted.
+
+.TP 2m
+\fB\-\-memory\fR=\fIMEMORY\fR
+A whole number value indicating how much memory is desired in the machine. A
+size unit should be provided (eg. 3072MiB or 9GiB) \- if no units are specified,
+GiB is assumed. Both \-\-cpu and \-\-memory must be specified if a custom
+machine type is desired, and the \-\-tier flag must be omitted.
 
 .TP 2m
 \fB\-\-pricing\-plan\fR=\fIPRICING_PLAN\fR, \fB\-p\fR \fIPRICING_PLAN\fR

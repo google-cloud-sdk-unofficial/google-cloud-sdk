@@ -49,10 +49,7 @@ class List(base.ListCommand):
     crypto_key_ref = resources.REGISTRY.Create(flags.CRYPTO_KEY_COLLECTION)
 
     request = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsListRequest(
-        projectsId=crypto_key_ref.projectsId,
-        locationsId=crypto_key_ref.locationsId,
-        keyRingsId=crypto_key_ref.keyRingsId,
-        cryptoKeysId=crypto_key_ref.cryptoKeysId)
+        parent=crypto_key_ref.RelativeName())
 
     return list_pager.YieldFromList(
         client.projects_locations_keyRings_cryptoKeys_cryptoKeyVersions,

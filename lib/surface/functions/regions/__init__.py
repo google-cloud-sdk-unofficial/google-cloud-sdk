@@ -17,7 +17,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Regions(base.Group):
   """Provides information about Google Cloud Functions regions."""
   pass

@@ -24,9 +24,9 @@ from googlecloudsdk.calliope import base
 class GetLogs(base.ListCommand):
   """Show logs produced by functions.
 
-  This command displays log entries produced by all functions running in a
-  region, or by a single function if it is specified through a command argument.
-  By default, when no extra flags are specified, the most recent 20 log entries
+  Display log entries produced by all functions running in a region, or by a
+  single function if it is specified through a command argument. By default,
+  when no extra flags are specified, the most recent 20 log entries
   are displayed.
   """
 

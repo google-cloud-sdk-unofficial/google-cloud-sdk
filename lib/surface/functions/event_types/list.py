@@ -19,7 +19,6 @@ from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.Command):
   """Describes the allowed values and meanings of --trigger-* flags.
 

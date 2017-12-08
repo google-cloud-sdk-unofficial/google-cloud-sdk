@@ -21,6 +21,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GetLogs(base.ListCommand):
   """Show logs produced by functions.
 

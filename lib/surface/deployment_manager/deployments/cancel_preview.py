@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deployment_manager import dm_base
+from googlecloudsdk.command_lib.deployment_manager import dm_util
 from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.command_lib.deployment_manager import flags
 from googlecloudsdk.core import log
@@ -46,6 +47,10 @@ class CancelPreview(base.Command):
           To issue a cancel preview command without waiting for the operation to complete, run:
 
             $ {command} my-deployment --async
+
+          To cancel a preview command providing a fingerprint:
+
+            $ {command} my-deployment --fingerprint deployment-fingerprint
           """,
   }
 
@@ -60,6 +65,7 @@ class CancelPreview(base.Command):
     """
     flags.AddDeploymentNameFlag(parser)
     flags.AddAsyncFlag(parser)
+    flags.AddFingerprintFlag(parser)
 
   def Run(self, args):
     """Run 'deployments cancel-preview'.
@@ -77,20 +83,18 @@ class CancelPreview(base.Command):
       HttpException: An http error response was received while executing api
           request.
     """
-    # Get the fingerprint from the previewing deployment to cancel.
-    try:
-      current_deployment = dm_base.GetClient().deployments.Get(
-          dm_base.GetMessages().DeploymentmanagerDeploymentsGetRequest(
-              project=dm_base.GetProject(),
-              deployment=args.deployment_name
-          )
-      )
+
+    if args.fingerprint:
+      fingerprint = dm_util.DecodeFingerprint(args.fingerprint)
+    else:
       # If no fingerprint is present, default to an empty fingerprint.
-      # This empty default can be removed once the fingerprint change is
-      # fully implemented and all deployments have fingerprints.
-      fingerprint = current_deployment.fingerprint or ''
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
+      # TODO(b/34966984): Remove the empty default after cleaning up all
+      # deployments that has no fingerprint
+      fingerprint = dm_v2_util.FetchDeploymentFingerprint(
+          dm_base.GetClient(),
+          dm_base.GetMessages(),
+          dm_base.GetProject(),
+          args.deployment_name,) or ''
 
     try:
       operation = dm_base.GetClient().deployments.CancelPreview(
@@ -104,6 +108,13 @@ class CancelPreview(base.Command):
               ),
           )
       )
+      # Fetch and print the latest fingerprint of the deployment.
+      new_fingerprint = dm_v2_util.FetchDeploymentFingerprint(
+          dm_base.GetClient(),
+          dm_base.GetMessages(),
+          dm_base.GetProject(),
+          args.deployment_name)
+      dm_util.PrintFingerprint(new_fingerprint)
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
     if args.async:

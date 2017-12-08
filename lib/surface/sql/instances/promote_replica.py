@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 
 
 class _BasePromoteReplica(object):
@@ -64,6 +65,12 @@ class PromoteReplica(_BasePromoteReplica, base.Command):
 
     validate.ValidateInstanceName(args.replica)
     instance_ref = resources.Parse(args.replica, collection='sql.instances')
+
+    console_io.PromptContinue(
+        message='Once the read replica has been promoted to a stand-alone '
+        'instance it cannot be converted back.',
+        default=True,
+        cancel_on_no=True)
 
     result = sql_client.instances.PromoteReplica(
         sql_messages.SqlInstancesPromoteReplicaRequest(
@@ -116,6 +123,12 @@ class PromoteReplicaBeta(_BasePromoteReplica, base.Command):
 
     validate.ValidateInstanceName(args.replica)
     instance_ref = resources.Parse(args.replica, collection='sql.instances')
+
+    console_io.PromptContinue(
+        message='Once the read replica has been promoted to a stand-alone '
+        'instance it cannot be converted back.',
+        default=True,
+        cancel_on_no=True)
 
     result = sql_client.instances.PromoteReplica(
         sql_messages.SqlInstancesPromoteReplicaRequest(

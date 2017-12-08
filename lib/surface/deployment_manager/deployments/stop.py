@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deployment_manager import dm_base
+from googlecloudsdk.command_lib.deployment_manager import dm_util
 from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.command_lib.deployment_manager import flags
 from googlecloudsdk.core import log
@@ -44,6 +45,10 @@ class Stop(base.Command):
           To issue a stop command without waiting for the operation to complete, run:
 
             $ {command} my-deployment --async
+
+          To stop a running operation on a deployment providing a fingerprint, run:
+
+            $ {command} my-deployment --fingerprint deployment-fingerprint
           """,
   }
 
@@ -58,6 +63,7 @@ class Stop(base.Command):
     """
     flags.AddAsyncFlag(parser)
     flags.AddDeploymentNameFlag(parser)
+    flags.AddFingerprintFlag(parser)
 
   def Run(self, args):
     """Run 'deployments stop'.
@@ -74,21 +80,17 @@ class Stop(base.Command):
       HttpException: An http error response was received while executing api
           request.
     """
-    # Get the fingerprint from the deployment to stop.
-    try:
-      current_deployment = dm_base.GetClient().deployments.Get(
-          dm_base.GetMessages().DeploymentmanagerDeploymentsGetRequest(
-              project=dm_base.GetProject(),
-              deployment=args.deployment_name
-          )
-      )
+    if args.fingerprint:
+      fingerprint = dm_util.DecodeFingerprint(args.fingerprint)
+    else:
       # If no fingerprint is present, default to an empty fingerprint.
-      # This empty default can be removed once the fingerprint change is
-      # fully implemented and all deployments have fingerprints.
-      fingerprint = current_deployment.fingerprint or ''
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
-
+      # TODO(b/34966984): Remove the empty default after cleaning up all
+      # deployments that has no fingerprint
+      fingerprint = dm_v2_util.FetchDeploymentFingerprint(
+          dm_base.GetClient(),
+          dm_base.GetMessages(),
+          dm_base.GetProject(),
+          args.deployment_name) or ''
     try:
       operation = dm_base.GetClient().deployments.Stop(
           dm_base.GetMessages().DeploymentmanagerDeploymentsStopRequest(

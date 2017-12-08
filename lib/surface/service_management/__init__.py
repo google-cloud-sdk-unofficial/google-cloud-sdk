@@ -22,7 +22,17 @@ from googlecloudsdk.core import properties
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class ServiceManagement(base.Group):
-  """Create, enable, or otherwise manage API services."""
+  """Create, enable and manage API services.
+
+  Google Service Management is an infrastructure service of Google Cloud
+  Platform that manages other APIs and services, including Google's own Cloud
+  Platform services and their APIs, and services created using Google Cloud
+  Endpoints.
+
+  More information on Service Management can be found here:
+  https://cloud.google.com/service-management and detailed documentation can be
+  found here: https://cloud.google.com/service-management/docs/
+  """
 
   def Filter(self, context, args):
     """Context() is a filter function that can update the context.

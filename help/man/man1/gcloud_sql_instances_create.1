@@ -11,7 +11,7 @@ gcloud sql instances create \- creates a new Cloud SQL instance
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud sql instances create\fR \fIINSTANCE\fR [\fB\-\-activation\-policy\fR=\fIACTIVATION_POLICY\fR] [\fB\-\-assign\-ip\fR] [\fB\-\-async\fR] [\fB\-\-authorized\-gae\-apps\fR=\fIAPP\fR,[\fIAPP\fR,...]] [\fB\-\-authorized\-networks\fR=\fINETWORK\fR,[\fINETWORK\fR,...]] [\fB\-\-no\-backup\fR] [\fB\-\-backup\-start\-time\fR=\fIBACKUP_START_TIME\fR] [\fB\-\-database\-flags\fR=\fIFLAG\fR=\fIVALUE\fR,[\fIFLAG\fR=\fIVALUE\fR,...]] [\fB\-\-database\-version\fR=\fIDATABASE_VERSION\fR;\ default="MYSQL_5_6"] [\fB\-\-enable\-bin\-log\fR] [\fB\-\-follow\-gae\-app\fR=\fIFOLLOW_GAE_APP\fR] [\fB\-\-gce\-zone\fR=\fIGCE_ZONE\fR] [\fB\-\-master\-instance\-name\fR=\fIMASTER_INSTANCE_NAME\fR] [\fB\-\-pricing\-plan\fR=\fIPRICING_PLAN\fR,\ \fB\-p\fR\ \fIPRICING_PLAN\fR;\ default="PER_USE"] [\fB\-\-region\fR=\fIREGION\fR;\ default="us\-central"] [\fB\-\-replication\fR=\fIREPLICATION\fR] [\fB\-\-require\-ssl\fR] [\fB\-\-tier\fR=\fITIER\fR,\ \fB\-t\fR\ \fITIER\fR;\ default="D1"] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud sql instances create\fR \fIINSTANCE\fR [\fB\-\-activation\-policy\fR=\fIACTIVATION_POLICY\fR] [\fB\-\-assign\-ip\fR] [\fB\-\-async\fR] [\fB\-\-authorized\-gae\-apps\fR=\fIAPP\fR,[\fIAPP\fR,...]] [\fB\-\-authorized\-networks\fR=\fINETWORK\fR,[\fINETWORK\fR,...]] [\fB\-\-no\-backup\fR] [\fB\-\-backup\-start\-time\fR=\fIBACKUP_START_TIME\fR] [\fB\-\-cpu\fR=\fICPU\fR] [\fB\-\-database\-flags\fR=\fIFLAG\fR=\fIVALUE\fR,[\fIFLAG\fR=\fIVALUE\fR,...]] [\fB\-\-database\-version\fR=\fIDATABASE_VERSION\fR;\ default="MYSQL_5_6"] [\fB\-\-enable\-bin\-log\fR] [\fB\-\-follow\-gae\-app\fR=\fIFOLLOW_GAE_APP\fR] [\fB\-\-gce\-zone\fR=\fIGCE_ZONE\fR] [\fB\-\-master\-instance\-name\fR=\fIMASTER_INSTANCE_NAME\fR] [\fB\-\-memory\fR=\fIMEMORY\fR] [\fB\-\-pricing\-plan\fR=\fIPRICING_PLAN\fR,\ \fB\-p\fR\ \fIPRICING_PLAN\fR;\ default="PER_USE"] [\fB\-\-region\fR=\fIREGION\fR;\ default="us\-central"] [\fB\-\-replication\fR=\fIREPLICATION\fR] [\fB\-\-require\-ssl\fR] [\fB\-\-tier\fR=\fITIER\fR,\ \fB\-t\fR\ \fITIER\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -73,6 +73,12 @@ The start time of daily backups, specified in the 24 hour format \- HH:MM, in
 the UTC timezone.
 
 .TP 2m
+\fB\-\-cpu\fR=\fICPU\fR
+A whole number value indicating how many cores are desired inthe machine. Both
+\-\-cpu and \-\-memory must be specified if a custom machine type is desired,
+and the \-\-tier flag must be omitted.
+
+.TP 2m
 \fB\-\-database\-flags\fR=\fIFLAG\fR=\fIVALUE\fR,[\fIFLAG\fR=\fIVALUE\fR,...]
 A comma\-separated list of database flags to set on the instance. Use an equals
 sign to separate flag name and value. Flags without values, like
@@ -106,6 +112,13 @@ Name of the instance which will act as master in the replication setup. The
 newly created instance will be a read replica of the specified master instance.
 
 .TP 2m
+\fB\-\-memory\fR=\fIMEMORY\fR
+A whole number value indicating how much memory is desired in the machine. A
+size unit should be provided (eg. 3072MiB or 9GiB) \- if no units are specified,
+GiB is assumed. Both \-\-cpu and \-\-memory must be specified if a custom
+machine type is desired, and the \-\-tier flag must be omitted.
+
+.TP 2m
 \fB\-\-pricing\-plan\fR=\fIPRICING_PLAN\fR, \fB\-p\fR \fIPRICING_PLAN\fR; default="PER_USE"
 The pricing plan for this instance. \fIPRICING_PLAN\fR must be one of:
 \fBPER_USE\fR, \fBPACKAGE\fR.
@@ -126,7 +139,7 @@ Specified if users connecting over IP must use SSL. Use
 \fB\-\-no\-require\-ssl\fR to disable.
 
 .TP 2m
-\fB\-\-tier\fR=\fITIER\fR, \fB\-t\fR \fITIER\fR; default="D1"
+\fB\-\-tier\fR=\fITIER\fR, \fB\-t\fR \fITIER\fR
 The tier for first generation Cloud SQL instances, for example D0, D1, D2. A
 complete list of tiers is available here:
 https://cloud.google.com/sql/pricing#packages

@@ -28,7 +28,7 @@ class RemoveIamPolicyBinding(base.Command):
   """Removes an IAM policy binding from a service's access policy."""
 
   detailed_help = iam_util.GetDetailedHelpForRemoveIamPolicyBinding(
-      'service', 'my-service')
+      'service', 'my-service', role='roles/servicemanagement.serviceConsumer')
 
   @staticmethod
   def Args(parser):

@@ -22,7 +22,7 @@ from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.command_lib.compute import scope as compute_scope
+from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.core import log
 
@@ -46,6 +46,10 @@ def AddIapFlag(parser):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateGA(base_classes.ReadWriteCommand):
   """Update a backend service."""
+
+  def __init__(self, *args, **kwargs):
+    super(UpdateGA, self).__init__(*args, **kwargs)
+    self.ref = None
 
   @staticmethod
   def Args(parser):
@@ -75,13 +79,14 @@ class UpdateGA(base_classes.ReadWriteCommand):
     return 'backendServices'
 
   def CreateReference(self, args):
-    if self.regional:
-      return flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-          args, self.resources,
-          default_scope=compute_scope.ScopeEnum.GLOBAL)
-
-    return flags.GLOBAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, self.resources)
+    # TODO(b/35133484): remove once base classes are refactored away
+    if not self.ref:
+      self.ref = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
+          args,
+          self.resources,
+          scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
+      self.regional = self.ref.Collection() == 'compute.regionBackendServices'
+    return self.ref
 
   def GetGetRequest(self, args):
     if self.regional:
@@ -177,14 +182,9 @@ class UpdateGA(base_classes.ReadWriteCommand):
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
 
-  def SetRegional(self, args):
-    # Check whether --region flag was used for regional resource.
-    self.regional = getattr(args, 'region', None) is not None
-
   def Run(self, args):
     self.ValidateArgs(args)
-
-    self.regional = backend_services_utils.IsRegionalRequest(args)
+    self.CreateReference(args)
 
     return super(UpdateGA, self).Run(args)
 

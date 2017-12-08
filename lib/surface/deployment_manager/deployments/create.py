@@ -21,6 +21,7 @@ from googlecloudsdk.api_lib.deployment_manager import importer
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deployment_manager import dm_base
+from googlecloudsdk.command_lib.deployment_manager import dm_util
 from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.command_lib.deployment_manager import flags
 from googlecloudsdk.command_lib.util import labels_util
@@ -148,6 +149,14 @@ class Create(base.CreateCommand):
               preview=args.preview,
           )
       )
+      # Fetch and print the latest fingerprint of the deployment.
+      fingerprint = dm_v2_util.FetchDeploymentFingerprint(
+          dm_base.GetClient(),
+          dm_base.GetMessages(),
+          dm_base.GetProject(),
+          args.deployment_name)
+      dm_util.PrintFingerprint(fingerprint)
+
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
     if args.async:

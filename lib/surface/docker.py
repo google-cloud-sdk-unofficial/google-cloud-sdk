@@ -36,37 +36,42 @@ _DEFAULT_REGISTRIES = constants.ALL_SUPPORTED_REGISTRIES
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Docker(base.Command):
-  """Provides the docker CLI access to the Google Container Registry."""
+  """Provides the docker CLI access to the Google Container Registry.
+
+  The {command} command group wraps docker commands, so that gcloud can
+  inject the appropriate fresh authentication token into requests that interact
+  with the docker registry.
+
+  All docker-specific flags are passed through to the underlying docker command.
+  A full reference of docker's command line options available after -- can be
+  found here: [](http://docs.docker.com/reference/commandline/cli/).
+
+  More information on Google Container Registry can be found here:
+  https://cloud.google.com/container-registry/ and detailed documentation can be
+  found here: https://cloud.google.com/container-registry/docs/
+
+  ## EXAMPLES
+
+  Pull the image '{registry}/google-containers/pause:1.0' from the docker
+  registry:
+
+    $ {command} -- pull {registry}/google-containers/pause:1.0
+
+  Push the image '{registry}/example-org/example-image:latest' to our private
+  docker registry.
+
+    $ {command} -- push {registry}/example-org/example-image:latest
+
+  Configure authentication, then simply use docker:
+
+    $ {command} --authorize-only
+
+    $ docker push {registry}/example-org/example-image:latest
+
+  """
 
   detailed_help = {
-      'DESCRIPTION': """\
-          The docker sub-command of gcloud wraps docker commands, so that
-          gcloud can inject the appropriate fresh authentication token into
-          requests that interact with the docker registry.  As commands are
-          simply passed through to docker, see
-          [](http://docs.docker.com/reference/commandline/cli/) for a full
-          reference of command-line options that can be supplied after the --.
-
-          For more information please visit [](https://gcr.io/)
-      """,
-      'EXAMPLES': """\
-          Pull the image '{registry}/google-containers/pause:1.0' from the
-          docker registry:
-
-            $ {{command}} -- pull {registry}/google-containers/pause:1.0
-
-          Push the image '{registry}/example-org/example-image:latest' to our
-          private docker registry.
-
-            $ {{command}} -- push {registry}/example-org/example-image:latest
-
-          Configure authentication, then simply use docker:
-
-            $ {{command}} --authorize-only
-
-            $ docker push {registry}/example-org/example-image:latest
-
-      """.format(registry=constants.DEFAULT_REGISTRY),
+      'registry': constants.DEFAULT_REGISTRY,
   }
 
   @staticmethod

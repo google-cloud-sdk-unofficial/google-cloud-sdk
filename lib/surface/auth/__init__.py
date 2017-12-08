@@ -20,4 +20,8 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Auth(base.Group):
-  """Manage oauth2 credentials for the Google Cloud SDK."""
+  """Manage oauth2 credentials for the Google Cloud SDK.
+
+  The gcloud auth command group lets you grant and revoke authorization to Cloud
+  SDK (gcloud) to access Google Cloud Platform.
+  """

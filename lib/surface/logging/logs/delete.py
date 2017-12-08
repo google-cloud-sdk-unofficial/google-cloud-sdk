@@ -18,7 +18,6 @@ from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
@@ -37,17 +36,14 @@ class Delete(base.DeleteCommand):
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
     """
-    project = properties.VALUES.core.project.Get(required=True)
-
     if not console_io.PromptContinue(
         'Really delete all log entries from [%s]?' % args.log_name):
       raise exceptions.ToolException('action canceled by user')
 
-    # TODO(b/32504514): Use resource parser
     util.GetClient().projects_logs.Delete(
         util.GetMessages().LoggingProjectsLogsDeleteRequest(
             logName=util.CreateLogResourceName(
-                'projects/{0}'.format(project), args.log_name)))
+                util.GetCurrentProjectParent(), args.log_name)))
     log.DeletedResource(args.log_name)
 
 

@@ -39,7 +39,7 @@ class Delete(base.DeleteCommand):
     refs = self._BACKEND_SERVICE_ARG.ResolveAsResource(
         args,
         holder.resources,
-        default_scope=backend_services_utils.GetDefaultScope(args))
+        default_scope=backend_services_utils.GetDefaultScope())
     utils.PromptForDeletion(refs)
 
     requests = []

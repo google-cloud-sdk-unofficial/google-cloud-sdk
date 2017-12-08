@@ -11,7 +11,7 @@ gcloud deployment\-manager deployments update \- update a deployment based on a 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud deployment\-manager deployments update\fR \fIDEPLOYMENT_NAME\fR [\fB\-\-async\fR] [\fB\-\-config\fR=\fICONFIG\fR] [\fB\-\-create\-policy\fR=\fICREATE_POLICY\fR;\ default="CREATE_OR_ACQUIRE"] [\fB\-\-delete\-policy\fR=\fIDELETE_POLICY\fR;\ default="DELETE"] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-preview\fR] [\fB\-\-properties\fR=[\fIPROPERTIES\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud deployment\-manager deployments update\fR \fIDEPLOYMENT_NAME\fR [\fB\-\-async\fR] [\fB\-\-config\fR=\fICONFIG\fR] [\fB\-\-create\-policy\fR=\fICREATE_POLICY\fR;\ default="CREATE_OR_ACQUIRE"] [\fB\-\-delete\-policy\fR=\fIDELETE_POLICY\fR;\ default="DELETE"] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-fingerprint\fR=\fIFINGERPRINT\fR] [\fB\-\-preview\fR] [\fB\-\-properties\fR=[\fIPROPERTIES\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -61,6 +61,15 @@ from the deployment. \fIDELETE_POLICY\fR must be one of: \fBABANDON\fR,
 .TP 2m
 \fB\-\-description\fR=\fIDESCRIPTION\fR
 The new description of the deployment.
+
+.TP 2m
+\fB\-\-fingerprint\fR=\fIFINGERPRINT\fR
+The fingerprint to use in requests to modify a deployment. If not specified, a
+get deployment request will be made to fetch the latest fingerprint. A
+fingerprint is a randomly generated value that is part of the update, stop, and
+cancel\-preview request to perform optimistic locking. It is initially generated
+by Deployment Manager and changes after every request to modify data. The latest
+fingerprint is printed when deployment data is modified.
 
 .TP 2m
 \fB\-\-preview\fR
@@ -120,4 +129,11 @@ To perform an update without waiting for the operation to complete, run:
 .RS 2m
 $ gcloud deployment\-manager deployments update my\-deployment \e
     \-\-config new_config.yaml \-\-async
+.RE
+
+To update an existing deployment with a new config file and a fingerprint, run:
+
+.RS 2m
+$ gcloud deployment\-manager deployments update my\-deployment \e
+    \-\-config new_config.yaml \-\-fingerprint deployment\-fingerprint
 .RE

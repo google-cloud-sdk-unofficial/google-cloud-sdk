@@ -19,6 +19,12 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.Deprecate(
+    is_removed=False,
+    warning=('This command is deprecated. '
+             'Please use `gcloud beta test android models list` instead.'),
+    error=('This command has been removed. '
+           'Please use `gcloud beta test android models list` instead.'))
 class List(base.ListCommand):
   """List all Android device environments available for testing."""
 

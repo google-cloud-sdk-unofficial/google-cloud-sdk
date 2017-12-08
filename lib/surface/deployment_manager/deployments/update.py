@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.deployment_manager import importer
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deployment_manager import dm_base
+from googlecloudsdk.command_lib.deployment_manager import dm_util
 from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.command_lib.deployment_manager import flags
 from googlecloudsdk.command_lib.util import labels_util
@@ -62,6 +63,10 @@ class Update(base.UpdateCommand):
           To perform an update without waiting for the operation to complete, run:
 
             $ {command} my-deployment --config new_config.yaml --async
+
+          To update an existing deployment with a new config file and a fingerprint, run:
+
+            $ {command} my-deployment --config new_config.yaml --fingerprint deployment-fingerprint
           """,
   }
 
@@ -121,6 +126,7 @@ class Update(base.UpdateCommand):
 
     flags.AddDeletePolicyFlag(
         parser, dm_base.GetMessages().DeploymentmanagerDeploymentsUpdateRequest)
+    flags.AddFingerprintFlag(parser)
 
   def Collection(self):
     return 'deploymentmanager.resources_and_outputs'
@@ -174,6 +180,15 @@ class Update(base.UpdateCommand):
               deployment=args.deployment_name
           )
       )
+
+      if args.fingerprint:
+        deployment.fingerprint = dm_util.DecodeFingerprint(args.fingerprint)
+      else:
+        # If no fingerprint is present, default to an empty fingerprint.
+        # TODO(b/34966984): Remove the empty default after cleaning up all
+        # deployments that has no fingerprint
+        deployment.fingerprint = current_deployment.fingerprint or ''
+
       # Update the labels of the deployment
       if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA]:
         update_labels = labels_util.GetUpdateLabelsDictFromArgs(args)
@@ -195,10 +210,6 @@ class Update(base.UpdateCommand):
                   dm_base.GetClient(), dm_base.GetMessages(),
                   dm_base.GetProject(), args.deployment_name, current_manifest)
 
-      # If no fingerprint is present, default to an empty fingerprint.
-      # This empty default can be removed once the fingerprint change is
-      # fully implemented and all deployments have fingerprints.
-      deployment.fingerprint = current_deployment.fingerprint or ''
       if args.description is None:
         deployment.description = current_deployment.description
       elif not args.description or args.description.isspace():
@@ -223,6 +234,13 @@ class Update(base.UpdateCommand):
                             .DeletePolicyValueValuesEnum(args.delete_policy)),
           )
       )
+      # Fetch and print the latest fingerprint of the deployment.
+      new_fingerprint = dm_v2_util.FetchDeploymentFingerprint(
+          dm_base.GetClient(),
+          dm_base.GetMessages(),
+          dm_base.GetProject(),
+          args.deployment_name)
+      dm_util.PrintFingerprint(new_fingerprint)
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
     if args.async:

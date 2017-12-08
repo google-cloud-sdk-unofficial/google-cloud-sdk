@@ -16,81 +16,6 @@ from gae_ext_runtime import testutil
 RUNTIME_DEF_ROOT = os.path.dirname(os.path.dirname(__file__))
 
 
-class InjectExecutable(object):
-    """A decorator whose constructor has a 'name' and a 'content' argument.
-
-    The decorator is used to decorate a method used for testing where it:
-    1. Updates the path so that executing a command with name 'name'
-       invokes a Python script with the give Python code specified by
-       the 'content' specified when constructing the decorator.
-    2. Invoke the method used for testing.
-    3. Restore the path to its original state and clean up any temporary
-       files created.
-    """
-
-    def __init__(self, name, content):
-        self.name = name
-        self.content = content
-
-    def __call__(self, func):
-        def which(name):
-            ext = '.exe' if sys.platform.lower() == 'win32' else ''
-            for d in os.environ['PATH'].split(os.pathsep):
-                fullpath = os.path.join(d, name + ext)
-                if os.access(fullpath, os.X_OK):
-                    return fullpath
-
-            return None
-
-        def modified_func(*args, **kwargs):
-            python_path = which('python') or sys.executable
-
-            base_dir = tempfile.mkdtemp()
-            try:
-                old_path = os.environ['PATH']
-                os.environ['PATH'] = (base_dir + os.pathsep +
-                                      os.path.dirname(python_path))
-
-                is_windows = sys.platform.lower() == 'win32'
-
-                runner_name = self.name + '.bat' if is_windows else self.name
-                runner_path = os.path.join(base_dir, runner_name)
-
-                exec_name = '_{0}.py'.format(runner_name)
-                exec_path = os.path.join(base_dir, exec_name)
-
-                runner_content = ('{0} {1} %*' if is_windows else
-                                  '#!/bin/sh\n{0} {1} "$@"').format(
-                                      python_path, exec_path)
-
-                try:
-                    with open(runner_path, 'w') as f:
-                        f.write(runner_content)
-
-                    os.chmod(runner_path,
-                             stat.S_IEXEC | stat.S_IREAD | stat.S_IWRITE)
-
-                    content = textwrap.dedent(self.content).lstrip()
-
-                    with open(exec_path, 'w') as f:
-                        f.write(content)
-
-                    func(*args, **kwargs)
-                finally:
-                    if os.path.exists(runner_path):
-                        os.remove(runner_path)
-
-                    if os.path.exists(exec_path):
-                        os.remove(exec_path)
-
-                    os.environ['PATH'] = old_path
-            finally:
-                if os.path.exists(base_dir):
-                    shutil.rmtree(base_dir)
-
-        return modified_func
-
-
 class RuntimeTests(testutil.TestBase):
 
     def setUp(self):
@@ -164,16 +89,7 @@ class RuntimeTests(testutil.TestBase):
         self.assertEqual({f.filename for f in cfg_files},
                          {'Dockerfile', '.dockerignore'})
 
-    def test_node_js_package_json_npm(self):
-        self.write_file('foo.js', 'bogus contents')
-        self.write_file('package.json', '{"scripts": {"start": "foo.js"}}')
-        self.generate_configs()
-        self.assert_file_exists_with_contents(
-            'app.yaml',
-            self.read_dist_file('data', 'app.yaml').format(runtime='nodejs'))
-
-        self.generate_configs(deploy=True)
-
+    def _validate_docker_files_for_npm(self):
         base_dockerfile = self.read_dist_file('data', 'Dockerfile')
         self.assert_file_exists_with_contents(
             'Dockerfile',
@@ -183,26 +99,21 @@ class RuntimeTests(testutil.TestBase):
         self.assert_file_exists_with_contents(
             '.dockerignore',
             self.read_dist_file('data', 'dockerignore'))
+
+    def test_node_js_package_json_npm(self):
+        self.write_file('foo.js', 'bogus contents')
+        self.write_file('package.json', '{"scripts": {"start": "foo.js"}}')
+        self.generate_configs()
+        self.assert_file_exists_with_contents(
+            'app.yaml',
+            self.read_dist_file('data', 'app.yaml').format(runtime='nodejs'))
+        self.generate_configs(deploy=True)
+        self._validate_docker_files_for_npm()
         self.assertEqual(set(os.listdir(self.temp_path)),
                          {'Dockerfile', '.dockerignore', 'app.yaml',
                           'foo.js', 'package.json'})
 
-    @InjectExecutable(name='yarn',
-                      content='''
-                          import sys
-                          sys.exit(0)
-                      ''')
-    def test_node_js_package_json_yarn(self):
-        self.write_file('foo.js', 'bogus contents')
-        self.write_file('package.json', '{"scripts": {"start": "foo.js"}}')
-        self.write_file('yarn.lock', 'yarn overridden')
-
-        self.generate_configs(deploy=True)
-
-        self.assert_file_exists_with_contents(
-            'app.yaml',
-            self.read_dist_file('data', 'app.yaml').format(runtime='nodejs'))
-
+    def _validate_docker_files_for_yarn(self):
         base_dockerfile = self.read_dist_file('data', 'Dockerfile')
         install_yarn = self.read_dist_file('data', 'install-yarn')
         self.assert_file_exists_with_contents(
@@ -213,9 +124,101 @@ class RuntimeTests(testutil.TestBase):
         self.assert_file_exists_with_contents(
             '.dockerignore',
             self.read_dist_file('data', 'dockerignore'))
+
+    def test_node_js_package_json_yarn(self):
+        self.write_file('foo.js', 'bogus contents')
+        self.write_file('package.json', '{"scripts": {"start": "foo.js"}}')
+        self.write_file('yarn.lock', 'yarn overridden')
+        self.generate_configs()
+        self.assert_file_exists_with_contents(
+            'app.yaml',
+            self.read_dist_file('data', 'app.yaml').format(runtime='nodejs'))
+        self.generate_configs(deploy=True)
+        self._validate_docker_files_for_yarn()
         self.assertEqual(set(os.listdir(self.temp_path)),
                          {'Dockerfile', '.dockerignore', 'app.yaml',
                           'foo.js', 'package.json', 'yarn.lock'})
+
+    def _validate_file_list_for_skip_yarn_lock(self):
+        self.assertEqual(set(os.listdir(self.temp_path)),
+                         {'Dockerfile', '.dockerignore', 'yarn.lock',
+                          'foo.js', 'package.json'})
+
+    def test_skip_yarn_lock_with_other_files(self):
+        """Ensure use_yarn is False with yarn.lock present but is being skipped.
+
+        Further, this test verifies that use_yarn is False even if multiple
+        other entries are present in skip_files.
+
+        A yarn executable is injected that passes all checks to ensure that if
+        yarn.lock is set to be skipped, use_yarn is set to False even if yarn
+        can be executed and reports that the yarn.lock file is valid.
+        """
+        self.write_file('package.json', '{"scripts": {"start": "foo.js"}}')
+        self.write_file('foo.js', 'fake contents')
+        self.write_file('yarn.lock', 'fake contents')
+        config = testutil.AppInfoFake(runtime='nodejs',
+                                      skip_files=['^abc$',
+                                                  '^xyz$',
+                                                  '^yarn\.lock$',
+                                                  '^node_modules$'])
+        configurator = self.detect(appinfo=config)
+        self.assertEqual(configurator.data['use_yarn'], False)
+        self.generate_configs(appinfo=config, deploy=True)
+        self._validate_docker_files_for_npm()
+        self._validate_file_list_for_skip_yarn_lock()
+
+    def test_only_skip_yarn_lock(self):
+        """Ensure use_yarn is False with yarn.lock present but is being skipped.
+
+        Further, this test ensures use_yarn is false if the value obtained
+        from skip_files is a regex string and not a list of strings.
+
+        A yarn executable is injected that passes all checks to ensure that if
+        yarn.lock is set to be skipped, use_yarn is set to False even if yarn
+        can be executed and reports that the yarn.lock file is valid.
+        """
+        self.write_file('package.json', '{"scripts": {"start": "foo.js"}}')
+        self.write_file('foo.js', 'fake contents')
+        self.write_file('yarn.lock', 'fake contents')
+        config = testutil.AppInfoFake(runtime='nodejs',
+                                      skip_files='^yarn\.lock$')
+        configurator = self.detect(appinfo=config)
+        self.assertEqual(configurator.data['use_yarn'], False)
+        self.generate_configs(appinfo=config, deploy=True)
+        self._validate_docker_files_for_npm()
+        self._validate_file_list_for_skip_yarn_lock()
+
+    def test_do_not_skip_yarn_lock(self):
+        """Ensure use_yarn is True with yarn.lock present and not skipped.
+        """
+        self.write_file('package.json', '{"scripts": {"start": "foo.js"}}')
+        self.write_file('foo.js', 'fake contents')
+        self.write_file('yarn.lock', 'fake contents')
+        # Here only 'node_modules' will be skipped
+        config = testutil.AppInfoFake(runtime='nodejs',
+                                      skip_files='^node_modules$')
+        configurator = self.detect(appinfo=config)
+        self.assertEqual(configurator.data['use_yarn'], True)
+        self.generate_configs(appinfo=config, deploy=True)
+        self._validate_docker_files_for_yarn()
+        self._validate_file_list_for_skip_yarn_lock()
+
+    def test_use_yarn_skip_files_not_present(self):
+        """Ensure use_yarn is True with yarn.lock present and not skipped.
+
+        In particular, this test ensures use_yarn is True even if app.yaml
+        doesn't contain a skip_files section.
+        """
+        self.write_file('package.json', '{"scripts": {"start": "foo.js"}}')
+        self.write_file('foo.js', 'fake contents')
+        self.write_file('yarn.lock', 'fake contents')
+        config = testutil.AppInfoFake(runtime='nodejs')
+        configurator = self.detect(appinfo=config)
+        self.assertEqual(configurator.data['use_yarn'], True)
+        self.generate_configs(appinfo=config, deploy=True)
+        self._validate_docker_files_for_yarn()
+        self._validate_file_list_for_skip_yarn_lock()
 
     def test_node_js_package_json_no_write(self):
         """Test generate_config_data with a nodejs file and package.json."""
@@ -458,120 +461,6 @@ class FailureLoggingTests(testutil.TestBase):
             self.assertTrue(self.errors[0].startswith(
                 'node.js checker: Neither "start" in the "scripts" section '
                 'of "package.json" nor the "server.js" file were found.'))
-
-    @InjectExecutable(name='yarn',
-                      content='''
-                          import sys
-                          sys.exit(0)
-                      ''')
-    def test_yarn_lock_not_readable(self):
-        self.write_file('foo.js', 'bogus contents')
-        self.write_file('package.json', '{"scripts": {"start": "foo.js"}}')
-        self.write_file('yarn.lock', 'yarn overridden')
-
-        # ensure the yarn.lock file is not readable
-        os.chmod(self.full_path('yarn.lock'), ~stat.S_IREAD)
-
-        variations = [
-            (testutil.AppInfoFake(runtime='nodejs'), None),
-            (None, 'nodejs'),
-        ]
-        for appinfo, runtime in variations:
-            self.errors = []
-            with mock.patch.dict(ext_runtime._LOG_FUNCS,
-                                 {'error': self.error_fake}):
-                self.generate_configs(appinfo=appinfo, runtime=runtime)
-
-            self.assertTrue(
-                self.errors[0].startswith(
-                    'Yarn checker: "yarn.lock" exists, indicating Yarn '
-                    'should be used, but Yarn cannot run since "yarn.lock" '
-                    'is not readable.'))
-
-    @InjectExecutable(name='yarn',
-                      content='''
-                          import sys
-                          sys.exit(1)
-                      ''')
-    def test_no_yarn(self):
-        self.write_file('foo.js', 'bogus contents')
-        self.write_file('package.json', '{"scripts": {"start": "foo.js"}}')
-        self.write_file('yarn.lock', 'yarn overridden')
-
-        variations = [
-            (testutil.AppInfoFake(runtime='nodejs'), None),
-            (None, 'nodejs'),
-        ]
-        for appinfo, runtime in variations:
-            self.errors = []
-            with mock.patch.dict(ext_runtime._LOG_FUNCS,
-                                 {'error': self.error_fake}):
-                self.generate_configs(appinfo=appinfo, runtime=runtime)
-
-            self.assertTrue(
-                self.errors[0].startswith(
-                    'Yarn checker: "yarn.lock" was found indicating Yarn '
-                    'is being used, but "yarn" could not be run.'))
-
-    @InjectExecutable(name='yarn',
-                      content='''
-                          import sys
-                          if sys.argv[1] == '--version':
-                              sys.exit(1)
-                          else:
-                              sys.exit(0)
-                      ''')
-    def test_yarn_identification_fails(self):
-        self.write_file('foo.js', 'bogus contents')
-        self.write_file('package.json', '{"scripts": {"start": "foo.js"}}')
-        self.write_file('yarn.lock', 'yarn overridden')
-
-        variations = [
-            (testutil.AppInfoFake(runtime='nodejs'), None),
-            (None, 'nodejs'),
-        ]
-        for appinfo, runtime in variations:
-            self.errors = []
-            with mock.patch.dict(ext_runtime._LOG_FUNCS,
-                                 {'error': self.error_fake}):
-                self.generate_configs(appinfo=appinfo, runtime=runtime)
-            self.assertTrue(
-                self.errors[0].startswith(
-                    'Yarn checker: "yarn.lock" was found indicating Yarn '
-                    'is being used, but "yarn" could not be run.'))
-
-    @InjectExecutable(name='yarn',
-                      content='''
-                          import os
-
-                          # Remove the yarn script so that the first
-                          # invocation of 'yarn' with arguments '--version'
-                          # succeeds, but the second invocation with arguments
-                          # 'check' will fail.
-                          os.remove(__file__)
-                      ''')
-    def _impl_test_yarn_check_invalid_yarn_lock(self, appinfo, runtime):
-        self.write_file('foo.js', 'bogus contents')
-        self.write_file('package.json', '{"scripts": {"start": "foo.js"}}')
-        self.write_file('yarn.lock', 'yarn overridden')
-
-        self.errors = []
-        with mock.patch.dict(ext_runtime._LOG_FUNCS,
-                             {'error': self.error_fake}):
-            self.generate_configs(appinfo=appinfo, runtime=runtime)
-        self.assertTrue(
-            self.errors[0].startswith(
-                'Yarn checker: "yarn.lock" was found indicating Yarn '
-                'is being used, but "yarn check" indicates '
-                '"yarn.lock" is invalid.'))
-
-    def test_yarn_check_invalid_yarn_lock(self):
-        variations = [
-            (testutil.AppInfoFake(runtime='nodejs'), None),
-            (None, 'nodejs'),
-        ]
-        for appinfo, runtime in variations:
-            self._impl_test_yarn_check_invalid_yarn_lock(appinfo, runtime)
 
 if __name__ == '__main__':
   unittest.main()

@@ -21,6 +21,5 @@ from googlecloudsdk.core import apis
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class EventTypes(base.Group):
   """Provides information about Google Cloud Functions Event Types."""

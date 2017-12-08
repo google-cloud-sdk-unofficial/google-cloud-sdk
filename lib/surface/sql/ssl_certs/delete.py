@@ -21,6 +21,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 
 
 class _BaseDelete(object):
@@ -71,6 +72,13 @@ class Delete(_BaseDelete, base.Command):
 
     # TODO(user): figure out how to rectify the common_name and the
     # sha1fingerprint, so that things can work with the resource parser.
+
+    console_io.PromptContinue(
+        message='{0} will be deleted. New connections can no longer be made '
+        'using this certificate. Existing connections are not affected.'.format(
+            args.common_name),
+        default=True,
+        cancel_on_no=True)
 
     cert_ref = cert.GetCertRefFromName(sql_client, sql_messages, resources,
                                        instance_ref, args.common_name)
@@ -135,6 +143,13 @@ class DeleteBeta(_BaseDelete, base.Command):
 
     # TODO(user): figure out how to rectify the common_name and the
     # sha1fingerprint, so that things can work with the resource parser.
+
+    console_io.PromptContinue(
+        message='{0} will be deleted. New connections can no longer be made '
+        'using this certificate. Existing connections are not affected.'.format(
+            args.common_name),
+        default=True,
+        cancel_on_no=True)
 
     cert_ref = cert.GetCertRefFromName(sql_client, sql_messages, resources,
                                        instance_ref, args.common_name)

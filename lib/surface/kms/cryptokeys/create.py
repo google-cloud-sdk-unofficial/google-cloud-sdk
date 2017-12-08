@@ -70,12 +70,11 @@ class Create(base.CreateCommand):
     messages = cloudkms_base.GetMessagesModule()
 
     crypto_key_ref = flags.ParseCryptoKeyName(args)
+    parent_ref = flags.ParseKeyRingName(args)
 
     req = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysCreateRequest(
-        projectsId=crypto_key_ref.projectsId,
-        locationsId=crypto_key_ref.locationsId,
-        keyRingsId=crypto_key_ref.keyRingsId,
-        cryptoKeyId=crypto_key_ref.cryptoKeysId,
+        parent=parent_ref.RelativeName(),
+        cryptoKeyId=crypto_key_ref.Name(),
         cryptoKey=messages.CryptoKey(
             # TODO(user): Find a better way to get the enum value by name.
             purpose=getattr(messages.CryptoKey.PurposeValueValuesEnum,

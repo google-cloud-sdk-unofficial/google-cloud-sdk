@@ -52,10 +52,7 @@ class Create(base.CreateCommand):
     crypto_key_ref = resources.REGISTRY.Create(flags.CRYPTO_KEY_COLLECTION)
 
     req = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsCreateRequest(
-        projectsId=crypto_key_ref.projectsId,
-        locationsId=crypto_key_ref.locationsId,
-        keyRingsId=crypto_key_ref.keyRingsId,
-        cryptoKeysId=crypto_key_ref.cryptoKeysId)
+        parent=crypto_key_ref.RelativeName())
 
     ckv = client.projects_locations_keyRings_cryptoKeys_cryptoKeyVersions
     new_version = ckv.Create(req)
@@ -65,10 +62,7 @@ class Create(base.CreateCommand):
       version_id = os.path.basename(new_version.name)
 
       req = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysUpdatePrimaryVersionRequest(
-          projectsId=crypto_key_ref.projectsId,
-          locationsId=crypto_key_ref.locationsId,
-          keyRingsId=crypto_key_ref.keyRingsId,
-          cryptoKeysId=crypto_key_ref.cryptoKeysId,
+          name=crypto_key_ref.RelativeName(),
           updateCryptoKeyPrimaryVersionRequest=(
               messages.UpdateCryptoKeyPrimaryVersionRequest(
                   cryptoKeyVersionId=version_id)))

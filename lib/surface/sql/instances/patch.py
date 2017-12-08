@@ -119,6 +119,13 @@ class _BasePatch(object):
         help='Clear the database flags set on the instance. '
         'WARNING: Instance will be restarted.')
     parser.add_argument(
+        '--cpu',
+        type=int,
+        required=False,
+        help='A whole number value indicating how many cores are desired in'
+        'the machine. Both --cpu and --memory must be specified if a custom '
+        'machine type is desired, and the --tier flag must be omitted.')
+    parser.add_argument(
         '--enable-bin-log',
         action='store_true',
         default=None,  # Tri-valued: None => don't change the setting.
@@ -140,6 +147,15 @@ class _BasePatch(object):
         'instance',
         completion_resource='sql.instances',
         help='Cloud SQL instance ID.')
+    parser.add_argument(
+        '--memory',
+        type=arg_parsers.BinarySize(),
+        required=False,
+        help='A whole number value indicating how much memory is desired in '
+        'the machine. A size unit should be provided (eg. 3072MiB or 9GiB) - '
+        'if no units are specified, GiB is assumed. Both --cpu and --memory '
+        'must be specified if a custom machine type is desired, and the --tier '
+        'flag must be omitted.')
     parser.add_argument(
         '--pricing-plan',
         '-p',

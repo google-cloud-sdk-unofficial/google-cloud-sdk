@@ -31,6 +31,10 @@ from googlecloudsdk.command_lib.compute.backend_services import flags
 class UpdateBackend(base_classes.ReadWriteCommand):
   """Update an existing backend in a backend service."""
 
+  def __init__(self, *args, **kwargs):
+    super(UpdateBackend, self).__init__(*args, **kwargs)
+    self.ref = None
+
   @staticmethod
   def Args(parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
@@ -54,12 +58,14 @@ class UpdateBackend(base_classes.ReadWriteCommand):
     return 'backendServices'
 
   def CreateReference(self, args):
-    if self.regional:
-      return flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-          args, self.resources)
-
-    return flags.GLOBAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, self.resources)
+    # TODO(b/35133484): remove once base classes are refactored away
+    if not self.ref:
+      self.ref = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
+          args,
+          self.resources,
+          scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
+      self.regional = self.ref.Collection() == 'compute.regionBackendServices'
+    return self.ref
 
   def GetGetRequest(self, args):
     if self.regional:
@@ -160,8 +166,7 @@ class UpdateBackend(base_classes.ReadWriteCommand):
         args.capacity_scaler is not None,
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
-
-    self.regional = backend_services_utils.IsRegionalRequest(args)
+    self.CreateReference(args)
 
     return super(UpdateBackend, self).Run(args)
 

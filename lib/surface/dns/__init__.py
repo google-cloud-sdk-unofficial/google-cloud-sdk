@@ -30,8 +30,17 @@ from googlecloudsdk.core import resources
 class DNS(base.Group):
   """Manage your Cloud DNS managed-zones and record-sets.
 
-  This set of commands allows you to create and maintain managed-zones and their
-  record-sets.
+  The gcloud dns command group lets you create and manage DNS zones and
+  their associated records on Google Cloud DNS.
+
+  Cloud DNS is a scalable, reliable and managed authoritative DNS service
+  running on the same infrastructure as Google. It has low latency, high
+  availability and is a cost-effective way to make your applications and
+  services available to your users.
+
+  More information on Cloud DNS can be found here:
+  https://cloud.google.com/dns and detailed documentation can be found
+  here: https://cloud.google.com/dns/docs/
 
   ## EXAMPLES
 
@@ -46,7 +55,6 @@ class DNS(base.Group):
   To display Cloud DNS related information for your project, run:
 
     $ {command} project-info describe --help
-
   """
 
   @staticmethod

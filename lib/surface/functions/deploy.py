@@ -49,7 +49,7 @@ def _FunctionArgs(parser):
   memory.detailed_help = """\
     The amount of memory allocated to your function.
 
-    Allowed values are: 128MB, 256MB, 512MB, and 1024MB.
+    Allowed values are: 128MB, 256MB, 512MB, 1024MB, and 2048MB.
     """
   parser.add_argument(
       '--timeout',

@@ -56,10 +56,7 @@ class SetPrimaryVersion(base.Command):
     version_ref = flags.ParseCryptoKeyVersionName(args)
 
     req = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysUpdatePrimaryVersionRequest(
-        projectsId=version_ref.projectsId,
-        locationsId=version_ref.locationsId,
-        keyRingsId=version_ref.keyRingsId,
-        cryptoKeysId=version_ref.cryptoKeysId,
+        name=version_ref.RelativeName(),
         updateCryptoKeyPrimaryVersionRequest=(
             messages.UpdateCryptoKeyPrimaryVersionRequest(
                 cryptoKeyVersionId=version_ref.cryptoKeyVersionsId)))

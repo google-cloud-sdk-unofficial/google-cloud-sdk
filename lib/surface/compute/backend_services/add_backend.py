@@ -31,6 +31,10 @@ from googlecloudsdk.command_lib.compute.backend_services import flags
 class AddBackend(base_classes.ReadWriteCommand):
   """Add a backend to a backend service."""
 
+  def __init__(self, *args, **kwargs):
+    super(AddBackend, self).__init__(*args, **kwargs)
+    self.ref = None
+
   @staticmethod
   def Args(parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
@@ -55,9 +59,14 @@ class AddBackend(base_classes.ReadWriteCommand):
     return 'backendServices'
 
   def CreateReference(self, args):
-    return flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, self.resources,
-        default_scope=compute_scope.ScopeEnum.GLOBAL)
+    # TODO(b/35133484): remove once base classes are refactored away
+    if not self.ref:
+      self.ref = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
+          args,
+          self.resources,
+          scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
+      self.regional = self.ref.Collection() == 'compute.regionBackendServices'
+    return self.ref
 
   def GetGetRequest(self, args):
     if self.regional:
@@ -155,7 +164,7 @@ class AddBackend(base_classes.ReadWriteCommand):
     return replacement
 
   def Run(self, args):
-    self.regional = backend_services_utils.IsRegionalRequest(args)
+    self.CreateReference(args)
     return super(AddBackend, self).Run(args)
 
 

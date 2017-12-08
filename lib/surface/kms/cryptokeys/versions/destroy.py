@@ -49,11 +49,7 @@ class Destroy(base.UpdateCommand):
 
     version_ref = flags.ParseCryptoKeyVersionName(args)
     req = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsDestroyRequest(
-        projectsId=version_ref.projectsId,
-        locationsId=version_ref.locationsId,
-        keyRingsId=version_ref.keyRingsId,
-        cryptoKeysId=version_ref.cryptoKeysId,
-        cryptoKeyVersionsId=version_ref.cryptoKeyVersionsId)
+        name=version_ref.RelativeName())
 
     ckv = client.projects_locations_keyRings_cryptoKeys_cryptoKeyVersions
     return ckv.Destroy(req)

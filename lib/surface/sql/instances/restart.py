@@ -17,6 +17,7 @@ from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 
 
 class _BaseRestart(object):
@@ -64,6 +65,13 @@ class Restart(_BaseRestart, base.Command):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = resources.Parse(args.instance, collection='sql.instances')
+
+    console_io.PromptContinue(
+        message='The instance will shut down and start up again immediately if '
+        'its activation policy is "always." If "on demand," the instance will '
+        'start up again when a new connection request is made.',
+        default=True,
+        cancel_on_no=True)
 
     result = sql_client.instances.Restart(
         sql_messages.SqlInstancesRestartRequest(
@@ -117,6 +125,13 @@ class RestartBeta(_BaseRestart, base.Command):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = resources.Parse(args.instance, collection='sql.instances')
+
+    console_io.PromptContinue(
+        message='The instance will shut down and start up again immediately if '
+        'its activation policy is "always." If "on demand," the instance will '
+        'start up again when a new connection request is made.',
+        default=True,
+        cancel_on_no=True)
 
     result_operation = sql_client.instances.Restart(
         sql_messages.SqlInstancesRestartRequest(

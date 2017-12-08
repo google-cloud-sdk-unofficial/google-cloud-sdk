@@ -67,6 +67,7 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
   if release_track in [base.ReleaseTrack.ALPHA]:
     instances_flags.AddCreateDiskArgs(parser)
     instances_flags.AddExtendedMachineTypeArgs(parser)
+  if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
     instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddLocalSsdArgs(parser)
   instances_flags.AddCanIpForwardArgs(parser)

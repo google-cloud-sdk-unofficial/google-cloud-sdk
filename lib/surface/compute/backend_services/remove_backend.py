@@ -16,7 +16,6 @@
 
 import copy
 
-from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import base
@@ -41,6 +40,10 @@ class RemoveBackend(base_classes.ReadWriteCommand):
   """
   _BACKEND_SERVICE_ARG = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG
 
+  def __init__(self, *args, **kwargs):
+    super(RemoveBackend, self).__init__(*args, **kwargs)
+    self.ref = None
+
   @classmethod
   def Args(cls, parser):
     cls._BACKEND_SERVICE_ARG.AddArgument(parser)
@@ -60,9 +63,14 @@ class RemoveBackend(base_classes.ReadWriteCommand):
     return 'backendServices'
 
   def CreateReference(self, args):
-    return self._BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, self.resources,
-        default_scope=compute_scope.ScopeEnum.GLOBAL)
+    # TODO(b/35133484): remove once base classes are refactored away
+    if not self.ref:
+      self.ref = self._BACKEND_SERVICE_ARG.ResolveAsResource(
+          args,
+          self.resources,
+          scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
+      self.regional = self.ref.Collection() == 'compute.regionBackendServices'
+    return self.ref
 
   def GetGetRequest(self, args):
     if self.regional:
@@ -139,7 +147,7 @@ class RemoveBackend(base_classes.ReadWriteCommand):
     return replacement
 
   def Run(self, args):
-    self.regional = backend_services_utils.IsRegionalRequest(args)
+    self.CreateReference(args)
     return super(RemoveBackend, self).Run(args)
 
 

@@ -86,6 +86,13 @@ class _BaseCreate(object):
         default=True,
         help='Enables daily backup.')
     parser.add_argument(
+        '--cpu',
+        type=int,
+        required=False,
+        help='A whole number value indicating how many cores are desired in'
+        'the machine. Both --cpu and --memory must be specified if a custom '
+        'machine type is desired, and the --tier flag must be omitted.')
+    parser.add_argument(
         '--database-version',
         required=False,
         default='MYSQL_5_6',
@@ -117,6 +124,15 @@ class _BaseCreate(object):
         help='Name of the instance which will act as master in the replication '
         'setup. The newly created instance will be a read replica of the '
         'specified master instance.')
+    parser.add_argument(
+        '--memory',
+        type=arg_parsers.BinarySize(),
+        required=False,
+        help='A whole number value indicating how much memory is desired in '
+        'the machine. A size unit should be provided (eg. 3072MiB or 9GiB) - '
+        'if no units are specified, GiB is assumed. Both --cpu and --memory '
+        'must be specified if a custom machine type is desired, and the --tier '
+        'flag must be omitted.')
     parser.add_argument(
         '--on-premises-host-port',
         required=False,
@@ -152,7 +168,6 @@ class _BaseCreate(object):
         '--tier',
         '-t',
         required=False,
-        default='D1',
         help='The tier for first generation Cloud SQL instances, for example '
         ' D0, D1, D2. A complete list of tiers is available here: '
         'https://cloud.google.com/sql/pricing#packages')

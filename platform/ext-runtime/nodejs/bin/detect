@@ -17,6 +17,7 @@
 
 import json
 import os
+import re
 import sys
 import subprocess
 
@@ -28,19 +29,10 @@ sys.path.append(os.path.join(ROOT_DIR, 'lib'))
 
 import comm
 
-def invoke(cmdArr):
-    """Invoke the given command in a shell and return its exit code.
-
-    This function is needed so that invoking a command returns the correct
-    return code on both Windows and Unix where invoking the command is
-    either mocked in unit tests or run on an actual machine.
+def asList(val):
+    """Returns the value if it is a list else returns a list with the value.
     """
-    try:
-        return subprocess.check_call(' '.join(cmdArr),
-                                     shell=True,
-                                     stdout=DEV_NULL)
-    except subprocess.CalledProcessError as e:
-        return e.returncode
+    return val if isinstance(val, list) else [val]
 
 def main(args):
 
@@ -65,7 +57,8 @@ def main(args):
 
     comm.info('Checking for Node.js.')
     package_json = os.path.join(path, 'package.json')
-    yarn_lock = os.path.join(path, 'yarn.lock')
+    yarn_lock_name = 'yarn.lock'
+    yarn_lock = os.path.join(path, yarn_lock_name)
     got_shrinkwrap = False
 
     if not os.path.isfile(package_json):
@@ -77,63 +70,24 @@ def main(args):
     else:
         got_package_json = True
 
-        has_yarn_lock = os.path.isfile(yarn_lock)
-        if has_yarn_lock:
-            # This check is needed since with Yarn version 0.17.2, the current
-            # version at the time this code was written, the command
-            #     yarn check --strict-semver --integrity
-            # hangs if the yarn.lock file cannot be read.
-            #
-            # A possible race condition exists here where the yarn.lock file
-            # is readable at this point in the code, but is not readable when
-            # the 'yarn check ...' command is run.  However, since the file is
-            # ultimately going to be used by a subprocess, a race condition
-            # cannot be solved in this process's code.  Further, the
-            # probability of a race condition should be low.
-            if not os.access(yarn_lock, os.R_OK):
-                warn('Yarn checker: "yarn.lock" exists, indicating Yarn '
-                     'should be used, but Yarn cannot run since "yarn.lock" '
-                     'is not readable.')
-                return 1
+        # Consider the yarn.lock file as present if and only if the yarn.lock
+        # file exists and is not specified as being skipped in app.yaml.
+        try:
+            raw_skip_files = config.params.appinfo.skip_files
+            skip_files = [] if raw_skip_files is None else asList(raw_skip_files)
+        except AttributeError:
+            # If the skip_file attribute or any other parent attribute
+            # does not exist, treat the skip_files as not user specified.
+            skip_files = []
 
-            try:
-                yarn_version_cmd = ['yarn', '--version']
-                yarn_version_ret = invoke(yarn_version_cmd)
-                comm.info('{0} returned {1}'.format(
-                    ' '.join(yarn_version_cmd), yarn_version_ret))
-                yarn_detected = yarn_version_ret == 0
-            except OSError as e:
-                warn('Encountered error {0} while trying to run Yarn'.format(e))
-                yarn_detected = False
+        yarn_lock_exists = os.path.isfile(yarn_lock)
+        yarn_lock_skipped = False
+        for pattern in skip_files:
+            if re.match(pattern, yarn_lock_name) is not None:
+                yarn_lock_skipped = True
+                break;
 
-            if not yarn_detected:
-                warn('Yarn checker: "yarn.lock" was found indicating Yarn '
-                     'is being used, but "yarn" could not be run.')
-                return 1
-
-            try:
-                yarn_check_cmd = ['yarn',
-                                  'check',
-                                  '--strict-semver',
-                                  '--integrity']
-                yarn_check_ret = invoke(yarn_check_cmd)
-                comm.info('{0} returned {1}'.format(
-                    ' '.join(yarn_check_cmd), yarn_check_ret))
-                yarn_lock_valid = yarn_check_ret == 0
-
-                if yarn_lock_valid:
-                    use_yarn = True
-                else:
-                    warn('Yarn checker: "yarn.lock" was found indicating '
-                         'Yarn is being used, but "yarn check" indicates '
-                         '"yarn.lock" is invalid.')
-                    return 1
-            except OSError:
-                warn('Yarn checker: Failed to check the integrity of the '
-                     'file "yarn.lock"')
-                return 1
-        else:
-            use_yarn = False
+        use_yarn = yarn_lock_exists and not yarn_lock_skipped
 
         # Try to read the package.json file.
         try:

@@ -13,9 +13,11 @@
 # limitations under the License.
 """List images command."""
 
+from containerregistry.client.v2_2 import docker_http
 from containerregistry.client.v2_2 import docker_image
 from googlecloudsdk.api_lib.container.images import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import http
 from googlecloudsdk.core import properties
 
@@ -84,5 +86,13 @@ class List(base.ListCommand):
     with docker_image.FromRegistry(basic_creds=util.CredentialProvider(),
                                    name=repository,
                                    transport=http_obj) as r:
-      images = [{'name': _DisplayName(c)} for c in r.children()]
-      return images
+      try:
+        images = [{'name': _DisplayName(c)} for c in r.children()]
+        return images
+      except docker_http.V2DiagnosticException as err:
+        if err.http_status_code == 403:
+          raise exceptions.Error('Access denied: {0}'.format(repository))
+        elif err.http_status_code == 404:
+          raise exceptions.Error('Not found: {0}'.format(repository))
+        else:
+          raise

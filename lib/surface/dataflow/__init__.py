@@ -43,7 +43,17 @@ DATAFLOW_REGISTRY_KEY = 'dataflow_registry'
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Dataflow(base.Group):
-  """Read and manipulate Google Dataflow resources.
+  """Manage Google Cloud Dataflow jobs.
+
+  The gcloud dataflow command group lets you manage Google Cloud Dataflow jobs.
+
+  Cloud Dataflow is a unified programming model and a managed service for
+  developing and executing a wide range of data processing patterns
+  including ETL, batch computation, and continuous computation.
+
+  More information on Cloud Dataflow can be found here:
+  https://cloud.google.com/dataflow and detailed documentation can be found
+  here: https://cloud.google.com/dataflow/docs/
   """
 
   def Filter(self, context, args):

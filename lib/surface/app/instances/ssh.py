@@ -52,6 +52,10 @@ class Ssh(base.Command):
           To SSH into an App Engine Flexible instance, run:
 
               $ {command} --service s1 --version v1 i1
+
+          To SSH into the app container within an instance, run:
+
+              $ {command} --service s1 --version v1 i1 --container=gaeapp
           """,
   }
 
@@ -68,6 +72,9 @@ class Ssh(base.Command):
         '--version', '-v',
         required=True,
         help='The version ID.')
+    parser.add_argument(
+        '--container',
+        help='Name of the container within the VM to connect to.')
 
   def Run(self, args):
     """Connect to a running flex instance.
@@ -130,7 +137,10 @@ class Ssh(base.Command):
     options = {
         'IdentitiesOnly': 'yes',  # No ssh-agent as of yet
         'UserKnownHostsFile': ssh.KnownHosts.DEFAULT_PATH}
-    cmd = ssh.SSHCommand(instance.vmIp, user=user, identity_file=keys.key_file,
-                         options=options)
+    cmd = ssh.SSHCommand(
+        instance.vmIp, user=user, identity_file=keys.key_file, options=options)
+    if args.container:
+      cmd.tty = True
+      cmd.remote_command = ['container_exec', args.container, '/bin/sh']
     return cmd.Run(env)
 

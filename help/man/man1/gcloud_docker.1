@@ -17,13 +17,17 @@ gcloud docker \- provides the docker CLI access to the Google Container Registry
 
 .SH "DESCRIPTION"
 
-The docker sub\-command of gcloud wraps docker commands, so that gcloud can
-inject the appropriate fresh authentication token into requests that interact
-with the docker registry. As commands are simply passed through to docker, see
-http://docs.docker.com/reference/commandline/cli/ for a full reference of
-command\-line options that can be supplied after the \-\-.
+The gcloud docker command group wraps docker commands, so that gcloud can inject
+the appropriate fresh authentication token into requests that interact with the
+docker registry.
 
-For more information please visit https://gcr.io/
+All docker\-specific flags are passed through to the underlying docker command.
+A full reference of docker's command line options available after \-\- can be
+found here: http://docs.docker.com/reference/commandline/cli/.
+
+More information on Google Container Registry can be found here:
+https://cloud.google.com/container\-registry/ and detailed documentation can be
+found here: https://cloud.google.com/container\-registry/docs/
 
 
 

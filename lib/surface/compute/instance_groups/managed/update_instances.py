@@ -65,6 +65,10 @@ def _AddArgs(parser):
   instance_groups_managed_flags.AddForceArg(parser)
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning='This command is deprecated. Use gcloud alpha compute '
+            'instance-groups managed rolling-action command group instead.')
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateInstancesAlpha(base_classes.BaseCommand):
   """Update instances of managed instance group."""

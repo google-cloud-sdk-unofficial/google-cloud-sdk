@@ -30,8 +30,8 @@ from googlecloudsdk.command_lib.service_management import common_flags
 class AddIamPolicyBinding(base.Command):
   """Adds IAM policy binding to a service's access policy."""
 
-  detailed_help = iam_util.GetDetailedHelpForAddIamPolicyBinding('service',
-                                                                 'my-service')
+  detailed_help = iam_util.GetDetailedHelpForAddIamPolicyBinding(
+      'service', 'my-service', role='roles/servicemanagement.serviceConsumer')
 
   @staticmethod
   def Args(parser):

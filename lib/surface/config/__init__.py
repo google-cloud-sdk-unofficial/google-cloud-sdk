@@ -23,12 +23,15 @@ from googlecloudsdk.core import properties
 class Config(base.Group):
   """View and edit Cloud SDK properties.
 
+  The {command} command group lets you set, view and unset properties used by
+  Cloud SDK.
+
   A configuration is a set of properties that govern the behavior of gcloud
-  and other tools in the Cloud SDK. The SDK provides a configuration named
-  `default` whose initial properties are set when you run the `gcloud init`
-  command. You can create any number of additional named configurations using
-  `gcloud init` or `gcloud config configurations create`, and switch between
-  configurations using `gcloud config configurations activate`.
+  and other Cloud SDK tools. The initial `default` configuration is set when
+  `gcloud init` is run. You can create additional named configurations using
+  `gcloud init` or `{command} configuration create`.
+
+  To switch between configurations, use `{command} configurations activate`.
 
   gcloud supports several flags that have the same effect as properties in
   a configuration (for example, gcloud supports both the `--project` flag and

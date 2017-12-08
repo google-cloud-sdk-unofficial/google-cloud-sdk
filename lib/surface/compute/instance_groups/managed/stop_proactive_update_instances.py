@@ -19,6 +19,11 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning='This command is deprecated. Use gcloud alpha compute '
+            'instance-groups managed rolling-action '
+            'stop-proactive-update instead.')
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class StopUpdateInstancesAlpha(base_classes.BaseAsyncMutator):
   """Stop current proactive update instances of managed instance group."""

@@ -115,7 +115,7 @@ class ListInstancesAlpha(ListInstances):
     return """\
         table(instance.basename():label=NAME,
               instance.scope().segment(0):label=ZONE,
-              extract(instanceStatus, standbyMode).join('-'):label=STATUS,
+              instanceStatus:label=STATUS,
               currentAction:label=ACTION,
               instanceTemplate.basename():label=INSTANCE_TEMPLATE,
               tag:label=TAG,

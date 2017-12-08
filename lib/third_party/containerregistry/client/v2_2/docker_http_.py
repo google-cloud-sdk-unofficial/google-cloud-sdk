@@ -92,6 +92,14 @@ class V2DiagnosticException(Exception):
   def diagnostics(self):
     return self._diagnostics
 
+  @property
+  def response(self):
+    return self._resp
+
+  @property
+  def http_status_code(self):
+    return int(self._resp.get('status'))
+
 
 class BadStateException(Exception):
   """Exceptions when we have entered an unexpected state."""

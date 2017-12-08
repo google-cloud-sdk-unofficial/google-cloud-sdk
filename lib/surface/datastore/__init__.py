@@ -16,23 +16,29 @@
 from googlecloudsdk.calliope import base
 
 
-DETAILED_HELP = {
-    'brief': 'Manage your Cloud Datastore indexes.',
-    'DESCRIPTION': """
-This set of commands allows you to create and delete datastore indexes.
-      """,
-    'EXAMPLES': """\
-          To create new indexes from a file, run:
-
-            $ {command} create-indexes index.yaml
-
-          To clean up unused indexes from a file, run:
-
-            $ {command} cleanup-indexes index.yaml
-          """,
-}
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Datastore(base.Group):
-  detailed_help = DETAILED_HELP
+  """Manage your Cloud Datastore indexes.
+
+  The gcloud datastore command group lets you create and delete Google Cloud
+  Datastore indexes.
+
+  Cloud Datastore is a highly-scalable NoSQL database for your applications.
+  Cloud Datastore automatically handles sharding and replication, providing you
+  with a highly available and durable database that scales automatically to
+  handle your applications' load.
+
+  More information on Cloud Datastore can be found here:
+  https://cloud.google.com/datastore and detailed documentation can be
+  found here: https://cloud.google.com/datastore/docs
+
+  ## EXAMPLES
+
+  To create new indexes from a file, run:
+
+    $ {command} create-indexes index.yaml
+
+  To clean up unused indexes from a file, run:
+
+    $ {command} cleanup-indexes index.yaml
+  """

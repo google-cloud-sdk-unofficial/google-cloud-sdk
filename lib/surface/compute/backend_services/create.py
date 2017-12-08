@@ -17,8 +17,10 @@
 """
 
 from googlecloudsdk.api_lib.compute import backend_services_utils
+from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.core import log
 
@@ -67,7 +69,7 @@ def AddIapFlag(parser):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class CreateGA(backend_services_utils.BackendServiceMutator):
+class CreateGA(base_classes.BaseAsyncMutator):
   """Create a backend service."""
 
   @staticmethod
@@ -90,10 +92,7 @@ class CreateGA(backend_services_utils.BackendServiceMutator):
   def method(self):
     return 'Insert'
 
-  def _CreateBackendService(self, args):
-    backend_services_ref = flags.GLOBAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, self.resources)
-
+  def _CreateBackendService(self, args, backend_services_ref):
     health_checks = backend_services_utils.GetHealthChecks(args, self)
     if not health_checks:
       raise exceptions.ToolException('At least one health check required.')
@@ -110,11 +109,11 @@ class CreateGA(backend_services_utils.BackendServiceMutator):
         timeoutSec=args.timeout,
         enableCDN=enable_cdn)
 
-  def CreateGlobalRequests(self, args):
+  def CreateGlobalRequests(self, args, backend_services_ref):
     if args.load_balancing_scheme == 'INTERNAL':
       raise exceptions.ToolException(
           'Must specify --region for internal load balancer.')
-    backend_service = self._CreateBackendService(args)
+    backend_service = self._CreateBackendService(args, backend_services_ref)
 
     if args.connection_draining_timeout is not None:
       backend_service.connectionDraining = self.messages.ConnectionDraining(
@@ -133,9 +132,7 @@ class CreateGA(backend_services_utils.BackendServiceMutator):
 
     return [request]
 
-  def CreateRegionalRequests(self, args):
-    backend_services_ref = self.CreateRegionalReference(
-        args.name, args.region, resource_type='regionBackendServices')
+  def CreateRegionalRequests(self, args, backend_services_ref):
     backend_service = self._CreateRegionBackendService(args)
     if args.connection_draining_timeout is not None:
       backend_service.connectionDraining = self.messages.ConnectionDraining(
@@ -173,6 +170,35 @@ class CreateGA(backend_services_utils.BackendServiceMutator):
           self.messages.BackendService.ProtocolValueValuesEnum.HTTPS):
         log.warning(backend_services_utils.IapHttpWarning())
 
+  def CreateRequests(self, args):
+    ref = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
+        args,
+        self.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
+    if ref.Collection() == 'compute.backendServices':
+      self.global_request = True
+    elif ref.Collection() == 'compute.regionBackendServices':
+      self.global_request = False
+
+    if self.global_request:
+      return self.CreateGlobalRequests(args, ref)
+    else:
+      return self.CreateRegionalRequests(args, ref)
+
+  def Format(self, args):
+    return self.ListFormat(args)
+
+  @property
+  def resource_type(self):
+    return 'backendServices'
+
+  @property
+  def service(self):
+    if self.global_request:
+      return self.compute.backendServices
+    else:
+      return self.compute.regionBackendServices
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateGA):
@@ -199,11 +225,11 @@ class CreateAlpha(CreateGA):
     flags.AddLoadBalancingScheme(parser)
     AddIapFlag(parser)
 
-  def CreateGlobalRequests(self, args):
+  def CreateGlobalRequests(self, args, backend_services_ref):
     if args.load_balancing_scheme == 'INTERNAL':
       raise exceptions.ToolException(
           'Must specify --region for internal load balancer.')
-    backend_service = self._CreateBackendService(args)
+    backend_service = self._CreateBackendService(args, backend_services_ref)
     if args.connection_draining_timeout is not None:
       backend_service.connectionDraining = self.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
@@ -237,7 +263,7 @@ class CreateAlpha(CreateGA):
 
     return [request]
 
-  def CreateRegionalRequests(self, args):
+  def CreateRegionalRequests(self, args, backend_services_ref):
     if (not args.cache_key_include_host or
         not args.cache_key_include_protocol or
         not args.cache_key_include_query_string or
@@ -245,8 +271,6 @@ class CreateAlpha(CreateGA):
         args.cache_key_query_string_whitelist is not None):
       raise exceptions.ToolException(
           'Custom cache key flags cannot be used for regional requests.')
-    backend_services_ref = self.CreateRegionalReference(
-        args.name, args.region, resource_type='regionBackendServices')
     backend_service = self._CreateRegionBackendService(args)
     if args.connection_draining_timeout is not None:
       backend_service.connectionDraining = self.messages.ConnectionDraining(
@@ -296,11 +320,11 @@ class CreateBeta(CreateGA):
     flags.AddLoadBalancingScheme(parser)
     AddIapFlag(parser)
 
-  def CreateGlobalRequests(self, args):
+  def CreateGlobalRequests(self, args, backend_services_ref):
     if args.load_balancing_scheme == 'INTERNAL':
       raise exceptions.ToolException(
           'Must specify --region for internal load balancer.')
-    backend_service = self._CreateBackendService(args)
+    backend_service = self._CreateBackendService(args, backend_services_ref)
 
     if args.connection_draining_timeout is not None:
       backend_service.connectionDraining = self.messages.ConnectionDraining(
@@ -320,9 +344,7 @@ class CreateBeta(CreateGA):
 
     return [request]
 
-  def CreateRegionalRequests(self, args):
-    backend_services_ref = self.CreateRegionalReference(
-        args.name, args.region, resource_type='regionBackendServices')
+  def CreateRegionalRequests(self, args, backend_services_ref):
     backend_service = self._CreateRegionBackendService(args)
     if args.connection_draining_timeout is not None:
       backend_service.connectionDraining = self.messages.ConnectionDraining(

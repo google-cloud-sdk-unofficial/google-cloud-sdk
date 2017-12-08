@@ -37,7 +37,8 @@ class List(base.ListCommand):
     messages = cloudkms_base.GetMessagesModule()
 
     project = properties.VALUES.core.project.Get(required=True)
-    request = messages.CloudkmsProjectsLocationsListRequest(projectsId=project)
+    request = messages.CloudkmsProjectsLocationsListRequest(
+        name='projects/' + project)
 
     return list_pager.YieldFromList(
         client.projects_locations,

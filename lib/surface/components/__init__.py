@@ -27,49 +27,42 @@ from googlecloudsdk.core.util import platforms
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Components(base.Group):
-  """List, install, update, or remove Google Cloud SDK components."""
+  """List, install, update, or remove Google Cloud SDK components.
 
-  detailed_help = {
-      'DESCRIPTION': """\
-          {description}
+  The {command} command group lets you control which tools are installed
+  in the Cloud SDK. It can be used to install, update and remove components of
+  the Cloud SDK, ensuring a lean, up-to-date installation.
 
-          Because you might need only some of the tools in the Cloud SDK to do
-          your work, you can control which tools are installed on your
-          workstation. You can install new tools on your workstation when you
-          find that you need them, and remove tools that you no longer need.
-          The gcloud command regularly checks whether updates are available for
-          the tools you already have installed, and gives you the opportunity
-          to upgrade to the latest version.
+  {command} regularly checks whether updates are available for the
+  tools you already have installed, and gives you the opportunity to upgrade to
+  the latest version.
 
-          Certain components _depend_ on other components. When you install a
-          component that you need, all components upon which it directly or
-          indirectly depends, and that are not already present on your
-          workstation, are installed automatically. When you remove a
-          component, all components that depend on the removed component are
-          also removed.
-      """,
-      'EXAMPLES': """\
-          To see all available components:
+  Certain components have dependencies. {command} will install any dependencies,
+  and during removal, any dependant components will be uninstalled
+  automatically.
 
-            $ {command} list
+  ## EXAMPLES
 
-          To install a component you don't have:
+  To see all available components:
 
-            $ {command} install COMPONENT
+    $ {command} list
 
-          To remove a component you no longer need:
+  To install a component you don't have:
 
-            $ {command} remove COMPONENT
+    $ {command} install COMPONENT
 
-          To update all components you have to their latest version:
+  To remove a component you no longer need:
 
-            $ {command} update
+    $ {command} remove COMPONENT
 
-          To update all installed components to version 1.2.3:
+  To update all components you have to their latest version:
 
-            $ {command} update --version 1.2.3
-      """,
-  }
+    $ {command} update
+
+  To update all installed components to version 1.2.3:
+
+    $ {command} update --version 1.2.3
+  """
 
   @staticmethod
   def Args(parser):

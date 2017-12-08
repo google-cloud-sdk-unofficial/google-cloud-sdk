@@ -11,7 +11,7 @@ gcloud deployment\-manager deployments stop \- stop a pending or running deploym
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud deployment\-manager deployments stop\fR \fIDEPLOYMENT_NAME\fR [\fB\-\-async\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud deployment\-manager deployments stop\fR \fIDEPLOYMENT_NAME\fR [\fB\-\-async\fR] [\fB\-\-fingerprint\fR=\fIFINGERPRINT\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -40,6 +40,15 @@ Deployment name.
 Return immediately and print information about the Operation in progress rather
 than waiting for the Operation to complete. (default=False)
 
+.TP 2m
+\fB\-\-fingerprint\fR=\fIFINGERPRINT\fR
+The fingerprint to use in requests to modify a deployment. If not specified, a
+get deployment request will be made to fetch the latest fingerprint. A
+fingerprint is a randomly generated value that is part of the update, stop, and
+cancel\-preview request to perform optimistic locking. It is initially generated
+by Deployment Manager and changes after every request to modify data. The latest
+fingerprint is printed when deployment data is modified.
+
 
 .RE
 .sp
@@ -62,4 +71,11 @@ To issue a stop command without waiting for the operation to complete, run:
 
 .RS 2m
 $ gcloud deployment\-manager deployments stop my\-deployment \-\-async
+.RE
+
+To stop a running operation on a deployment providing a fingerprint, run:
+
+.RS 2m
+$ gcloud deployment\-manager deployments stop my\-deployment \e
+    \-\-fingerprint deployment\-fingerprint
 .RE

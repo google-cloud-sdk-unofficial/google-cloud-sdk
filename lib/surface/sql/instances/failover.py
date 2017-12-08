@@ -16,6 +16,7 @@
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -57,6 +58,13 @@ class Failover(base.Command):
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = resources.Parse(args.instance, collection='sql.instances')
+
+    console_io.PromptContinue(
+        message='Failover will be initiated. Existing connections to the '
+        'master instance will break and no new connection can be established '
+        'during the failover.',
+        default=True,
+        cancel_on_no=True)
 
     instance = sql_client.instances.Get(
         sql_messages.SqlInstancesGetRequest(

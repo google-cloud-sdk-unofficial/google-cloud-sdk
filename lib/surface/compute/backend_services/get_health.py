@@ -37,7 +37,7 @@ class GetHealth(base.ListCommand):
     return self._BACKEND_SERVICE_ARG.ResolveAsResource(
         args,
         holder.resources,
-        default_scope=backend_services_utils.GetDefaultScope(args),
+        default_scope=backend_services_utils.GetDefaultScope(),
         scope_lister=compute_flags.GetDefaultScopeLister(
             holder.client, properties.VALUES.core.project))
 

@@ -44,10 +44,7 @@ class RemoveRotationSchedule(base.UpdateCommand):
 
     crypto_key_ref = flags.ParseCryptoKeyName(args)
     req = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysPatchRequest(
-        projectsId=crypto_key_ref.projectsId,
-        locationsId=crypto_key_ref.locationsId,
-        keyRingsId=crypto_key_ref.keyRingsId,
-        cryptoKeysId=crypto_key_ref.cryptoKeysId,
+        name=crypto_key_ref.RelativeName(),
         cryptoKey=messages.CryptoKey(),
         updateMask='rotationPeriod,nextRotationTime')
 

@@ -43,8 +43,4 @@ class Describe(base.DescribeCommand):
     return client.projects_locations_keyRings_cryptoKeys_cryptoKeyVersions.Get(
         messages.
         CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsGetRequest(
-            projectsId=version_ref.projectsId,
-            locationsId=version_ref.locationsId,
-            keyRingsId=version_ref.keyRingsId,
-            cryptoKeysId=version_ref.cryptoKeysId,
-            cryptoKeyVersionsId=version_ref.cryptoKeyVersionsId))
+            name=version_ref.RelativeName()))

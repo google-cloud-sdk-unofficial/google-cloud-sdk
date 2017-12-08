@@ -30,14 +30,9 @@ class Describe(base_classes.MultiScopeDescriber):
         parser, 'backendServices', Describe.SCOPES)
 
   def CreateReference(self, args):
-    default_scope = base_classes.ScopeType.global_scope
-    if backend_services_utils.IsRegionDefaultModeWarnOtherwise(
-        print_warning=(
-            getattr(args, 'global', None) is None and
-            getattr(args, 'region', None) is None)):
-      default_scope = base_classes.ScopeType.regional_scope
-    return super(Describe, self).CreateReference(
-        args, default=default_scope)
+    (backend_services_utils.
+     IsDefaultRegionalBackendServicePropertyNoneWarnOtherwise())
+    return super(Describe, self).CreateReference(args)
 
   @property
   def global_service(self):
