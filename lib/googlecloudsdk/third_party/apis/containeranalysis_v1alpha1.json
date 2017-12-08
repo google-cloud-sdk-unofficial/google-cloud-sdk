@@ -1,0 +1,3978 @@
+{
+  "kind": "discovery#restDescription",
+  "discoveryVersion": "v1",
+  "id": "containeranalysis:v1alpha1",
+  "name": "containeranalysis",
+  "canonicalName": "Container Analysis",
+  "version": "v1alpha1",
+  "revision": "0",
+  "title": "Container Analysis API",
+  "description": "An API to insert and retrieve annotations on container resources.",
+  "ownerDomain": "google.com",
+  "ownerName": "Google",
+  "icons": {
+    "x16": "http://www.google.com/images/icons/product/search-16.gif",
+    "x32": "http://www.google.com/images/icons/product/search-32.gif"
+   },
+  "documentationLink": "https://cloud.google.com/container-analysis/api/reference/rest/",
+  "protocol": "rest",
+  "rootUrl": "https://containeranalysis.googleapis.com/",
+  "servicePath": "",
+  "baseUrl": "https://containeranalysis.googleapis.com/",
+  "batchPath": "batch",
+  "version_module": true,
+  "parameters": {
+    "access_token": {
+      "type": "string",
+      "description": "OAuth access token.",
+      "location": "query"
+    },
+    "alt": {
+      "type": "string",
+      "description": "Data format for response.",
+      "default": "json",
+      "enum": [
+        "json",
+        "media",
+        "proto"
+      ],
+      "enumDescriptions": [
+        "Responses with Content-Type of application/json",
+        "Media download with context-dependent Content-Type",
+        "Responses with Content-Type of application/x-protobuf"
+      ],
+      "location": "query"
+    },
+    "bearer_token": {
+      "type": "string",
+      "description": "OAuth bearer token.",
+      "location": "query"
+    },
+    "callback": {
+      "type": "string",
+      "description": "JSONP",
+      "location": "query"
+    },
+    "fields": {
+      "type": "string",
+      "description": "Selector specifying which fields to include in a partial response.",
+      "location": "query"
+    },
+    "key": {
+      "type": "string",
+      "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token.",
+      "location": "query"
+    },
+    "oauth_token": {
+      "type": "string",
+      "description": "OAuth 2.0 token for the current user.",
+      "location": "query"
+    },
+    "pp": {
+      "type": "boolean",
+      "description": "Pretty-print response.",
+      "default": "true",
+      "location": "query"
+    },
+    "prettyPrint": {
+      "type": "boolean",
+      "description": "Returns response with indentations and line breaks.",
+      "default": "true",
+      "location": "query"
+    },
+    "quotaUser": {
+      "type": "string",
+      "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+      "location": "query"
+    },
+    "upload_protocol": {
+      "type": "string",
+      "description": "Upload protocol for media (e.g. \"raw\", \"multipart\").",
+      "location": "query"
+    },
+    "uploadType": {
+      "type": "string",
+      "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\").",
+      "location": "query"
+    },
+    "$.xgafv": {
+      "type": "string",
+      "description": "V1 error format.",
+      "enum": [
+        "1",
+        "2"
+      ],
+      "enumDescriptions": [
+        "v1 error format",
+        "v2 error format"
+      ],
+      "location": "query"
+    }
+  },
+  "auth": {
+    "oauth2": {
+      "scopes": {
+        "https://www.googleapis.com/auth/cloud-platform": {
+          "description": "View and manage your data across Google Cloud Platform services"
+        }
+      }
+    }
+  },
+  "schemas": {
+    "Occurrence": {
+      "id": "Occurrence",
+      "description": "Occurrence includes information about analysis occurrences for an image.\n``",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Output only. The name of the occurrence in the form\n\"projects\/{project_id}\/occurrences\/{occurrence_id}\"",
+          "type": "string"
+        },
+        "resourceUrl": {
+          "description": "The unique url of the image or container for which the occurrence applies.\nExample: https:\/\/gcr.io\/project\/image@sha256:foo\nThis field can be used as a filter in list requests.",
+          "type": "string"
+        },
+        "noteName": {
+          "description": "An analysis note associated with this image, in the form\n\"providers\/{provider_id}\/notes\/{note_id}\"\nThis field can be used as a filter in list requests.",
+          "type": "string"
+        },
+        "kind": {
+          "description": "Output only. This explicitly denotes which of the occurrence details is\nspecified. This field can be used as a filter in list requests.",
+          "enumDescriptions": [
+            "Unknown",
+            "The note and occurrence represent a package vulnerability.",
+            "The note and occurrence assert build provenance.",
+            "This represents an image basis relationship.",
+            "This represents a package installed via a package manager.",
+            "The note and occurrence track deployment events."
+          ],
+          "type": "string",
+          "enum": [
+            "KIND_UNSPECIFIED",
+            "PACKAGE_VULNERABILITY",
+            "BUILD_DETAILS",
+            "IMAGE_BASIS",
+            "PACKAGE_MANAGER",
+            "DEPLOYABLE"
+          ]
+        },
+        "vulnerabilityDetails": {
+          "description": "Details of a security vulnerability note.",
+          "$ref": "VulnerabilityDetails"
+        },
+        "buildDetails": {
+          "description": "Build details for a verifiable build.",
+          "$ref": "BuildDetails"
+        },
+        "derivedImage": {
+          "description": "Describes how this resource derives from the basis\nin the associated note.",
+          "$ref": "Derived"
+        },
+        "installation": {
+          "description": "Describes the installation of a package on the linked resource.",
+          "$ref": "Installation"
+        },
+        "deployment": {
+          "description": "Describes the deployment of an artifact on a runtime.",
+          "$ref": "Deployment"
+        },
+        "discovered": {
+          "description": "Describes the initial scan status for this resource.",
+          "$ref": "Discovered"
+        },
+        "remediation": {
+          "description": "A description of actions that can be taken to remedy the note",
+          "type": "string"
+        },
+        "createTime": {
+          "description": "Output only. The time this occurrence was created.",
+          "type": "string",
+          "format": "google-datetime"
+        },
+        "updateTime": {
+          "description": "Output only. The time this occurrence was last updated.",
+          "type": "string",
+          "format": "google-datetime"
+        }
+      }
+    },
+    "VulnerabilityDetails": {
+      "id": "VulnerabilityDetails",
+      "description": "Used by Occurrence to point to where the vulnerability exists and how\nto fix it.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "The type of package; whether native or non native(ruby gems,\nnode.js packages etc)",
+          "type": "string"
+        },
+        "severity": {
+          "description": "The note provider assigned Severity of the vulnerability.\n@OutputOnly",
+          "enumDescriptions": [
+            "Unknown Impact",
+            "Minimal Impact",
+            "Low Impact",
+            "Medium Impact",
+            "High Impact",
+            "Critical Impact"
+          ],
+          "type": "string",
+          "enum": [
+            "SEVERITY_UNSPECIFIED",
+            "MINIMAL",
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ]
+        },
+        "cvssScore": {
+          "description": "The CVSS score of this vulnerability. CVSS score is on a scale of 0-10\nwhere 0 indicates low severity and 10 indicates high severity.\n@OutputOnly",
+          "type": "number",
+          "format": "float"
+        },
+        "packageIssue": {
+          "description": "The set of affected locations and their fixes (if available) within\nthe associated resource.",
+          "type": "array",
+          "items": {
+            "$ref": "PackageIssue"
+          }
+        }
+      }
+    },
+    "PackageIssue": {
+      "id": "PackageIssue",
+      "description": "This message wraps a location affected by a vulnerability and its\nassociated fix (if one is available).",
+      "type": "object",
+      "properties": {
+        "affectedLocation": {
+          "description": "The location of the vulnerability.",
+          "$ref": "VulnerabilityLocation"
+        },
+        "fixedLocation": {
+          "description": "The location of the available fix for vulnerability.",
+          "$ref": "VulnerabilityLocation"
+        },
+        "severityName": {
+          "description": "The severity (eg: distro assigned severity) for this vulnerability.",
+          "type": "string"
+        }
+      }
+    },
+    "VulnerabilityLocation": {
+      "id": "VulnerabilityLocation",
+      "description": "The location of the vulnerability",
+      "type": "object",
+      "properties": {
+        "cpeUri": {
+          "description": "The cpe_uri in [cpe format] (https:\/\/cpe.mitre.org\/specification\/)\nformat. Examples include distro or storage location for vulnerable jar.\nThis field can be used as a filter in list requests.",
+          "type": "string"
+        },
+        "package": {
+          "description": "The package being described.",
+          "type": "string"
+        },
+        "version": {
+          "description": "The version of the package being described.\nThis field can be used as a filter in list requests.",
+          "$ref": "Version"
+        }
+      }
+    },
+    "Version": {
+      "id": "Version",
+      "description": "Version contains structured information about the version of the package.\nFor a discussion of this in Debian\/Ubuntu:\nhttp:\/\/serverfault.com\/questions\/604541\/debian-packages-version-convention\nFor a discussion of this in Redhat\/Fedora\/Centos:\nhttp:\/\/blog.jasonantman.com\/2014\/07\/how-yum-and-rpm-compare-versions\/",
+      "type": "object",
+      "properties": {
+        "epoch": {
+          "description": "Used to correct mistakes in the version numbering scheme.",
+          "type": "integer",
+          "format": "int32"
+        },
+        "name": {
+          "description": "The main part of the version name.",
+          "type": "string"
+        },
+        "revision": {
+          "description": "The iteration of the package build from the above version.",
+          "type": "string"
+        },
+        "kind": {
+          "description": "Distinguish between sentinel MIN\/MAX versions and normal versions.\nIf kind is not NORMAL, then the other fields are ignored.",
+          "enumDescriptions": [
+            "A standard package version, defined by the other fields.",
+            "A special version representing negative infinity,\nother fields are ignored.",
+            "A special version representing positive infinity,\nother fields are ignored."
+          ],
+          "type": "string",
+          "enum": [
+            "NORMAL",
+            "MINIMUM",
+            "MAXIMUM"
+          ]
+        }
+      }
+    },
+    "BuildDetails": {
+      "id": "BuildDetails",
+      "description": "Message encapsulating build provenance details",
+      "type": "object",
+      "properties": {
+        "provenance": {
+          "description": "The actual provenance",
+          "$ref": "BuildProvenance"
+        },
+        "provenanceBytes": {
+          "description": "Serialized json representation of the provenance, used in generating the\nBuildSignature in the corresponding Result. After verifying the signature,\nprovenance_bytes can be unmarshalled and compared to the provenance to\nconfirm that it is unchanged. A base64-encoded string representation of the\nprovenance bytes is used for the signature in order to interoperate with\nopenssl which expects this format for signature verification.\n\nThe serialized form is captured both to avoid ambiguity in how the\nprovenance is marshalled to json as well to prevent incompatibilities with\nfuture changes.",
+          "type": "string"
+        }
+      }
+    },
+    "BuildProvenance": {
+      "id": "BuildProvenance",
+      "description": "Provenance of a build. Contains all information needed to verify the full\ndetails about the build from source to completion.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique identifier of the build.",
+          "type": "string"
+        },
+        "projectId": {
+          "description": "ID of the project.",
+          "type": "string"
+        },
+        "commands": {
+          "description": "Commands requested by the build.",
+          "type": "array",
+          "items": {
+            "$ref": "Command"
+          }
+        },
+        "builtArtifacts": {
+          "description": "Output of the build.",
+          "type": "array",
+          "items": {
+            "$ref": "Artifact"
+          }
+        },
+        "createTime": {
+          "description": "Time at which the build was created.",
+          "type": "string",
+          "format": "google-datetime"
+        },
+        "startTime": {
+          "description": "Time at which execution of the build was started.",
+          "type": "string",
+          "format": "google-datetime"
+        },
+        "finishTime": {
+          "description": "Time at whihc execution of the build was finished.",
+          "type": "string",
+          "format": "google-datetime"
+        },
+        "creator": {
+          "description": "E-mail address of the user who initiated this build. Note that this was the\nuser's e-mail address at the time the build was initiated; this address may\nnot represent the same end-user for all time.",
+          "type": "string"
+        },
+        "logsBucket": {
+          "description": "Google Cloud Storage bucket where logs were written.",
+          "type": "string"
+        },
+        "sourceProvenance": {
+          "description": "Details of the Source input to the build.",
+          "$ref": "Source"
+        },
+        "triggerId": {
+          "description": "Trigger identifier if the build was triggered automatically; empty if not.",
+          "type": "string"
+        },
+        "buildOptions": {
+          "description": "Special options applied to this build. This is a catch-all field where\nbuild providers can enter any desired additional details.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "builderVersion": {
+          "description": "Version string of the builder at the time this build was executed.",
+          "type": "string"
+        }
+      }
+    },
+    "Command": {
+      "id": "Command",
+      "description": "Command describes a step performed as part of the build pipeline.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Name of the command, as presented on the command line, or if the command is\npackaged as a Docker container, as presented to `docker pull`.",
+          "type": "string"
+        },
+        "env": {
+          "description": "Environment variables set before running this Command.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "args": {
+          "description": "Command-line arguments used when executing this Command.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dir": {
+          "description": "Working directory (relative to project source root) used when running\nthis Command.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Optional unique identifier for this Command, used in wait_for to reference\nthis Command as a dependency.",
+          "type": "string"
+        },
+        "waitFor": {
+          "description": "The ID(s) of the Command(s) that this Command depends on.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "Artifact": {
+      "id": "Artifact",
+      "description": "Artifact destribes a build product.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Name of the artifact. This may be the path to a binary or jar file, or in\nthe case of a container build, the name used to push the container image to\nGoogle Container Registry, as presented to `docker push`.\n\nThis field is deprecated in favor of the plural `names` field; it continues\nto exist here to allow existing BuildProvenance serialized to json in\ngoogle.devtools.containeranalysis.v1alpha1.BuildDetails.provenance_bytes to\ndeserialize back into proto.",
+          "type": "string"
+        },
+        "checksum": {
+          "description": "Hash or checksum value of a binary, or Docker Registry 2.0 digest of a\ncontainer.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Artifact ID, if any; for container images, this will be a URL by digest\nlike gcr.io\/projectID\/imagename@sha256:123456",
+          "type": "string"
+        },
+        "names": {
+          "description": "Related artifact names. This may be the path to a binary or jar file, or in\nthe case of a container build, the name used to push the container image to\nGoogle Container Registry, as presented to `docker push`. Note that a\nsingle Artifact ID can have multiple names, for example if two tags are\napplied to one image.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "Source": {
+      "id": "Source",
+      "description": "Source describes the location of the source used for the build.",
+      "type": "object",
+      "properties": {
+        "storageSource": {
+          "description": "If provided, get the source from this location in in Google Cloud\nStorage.",
+          "$ref": "StorageSource"
+        },
+        "repoSource": {
+          "description": "If provided, get source from this location in a Cloud Repo.",
+          "$ref": "RepoSource"
+        },
+        "artifactStorageSource": {
+          "description": "If provided, the input binary artifacts for the build came from this\nlocation.",
+          "$ref": "StorageSource"
+        },
+        "sourceContext": {
+          "description": "If provided, the source code used for the build came from this location.",
+          "$ref": "ExtendedSourceContext"
+        },
+        "additionalSourceContexts": {
+          "description": "If provided, some of the source code used for the build may be found in\nthese locations, in the case where the source repository had multiple\nremotes or submodules. This list will not include the context specified in\nthe source_context field.",
+          "type": "array",
+          "items": {
+            "$ref": "ExtendedSourceContext"
+          }
+        },
+        "fileHashes": {
+          "description": "Hash(es) of the build source, which can be used to verify that the original\nsource integrity was maintained in the build.\n\nThe keys to this map are file paths used as build source and the values\ncontain the hash values for those files.\n\nIf the build source came in a single package such as a gzipped tarfile\n(.tar.gz), the FileHash will be for the single path to that file.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "FileHashes"
+          }
+        }
+      }
+    },
+    "StorageSource": {
+      "id": "StorageSource",
+      "description": "StorageSource describes the location of the source in an archive file in\nGoogle Cloud Storage.",
+      "type": "object",
+      "properties": {
+        "bucket": {
+          "description": "Google Cloud Storage bucket containing source (see [Bucket Name\nRequirements]\n(https:\/\/cloud.google.com\/storage\/docs\/bucket-naming#requirements)).",
+          "type": "string"
+        },
+        "object": {
+          "description": "Google Cloud Storage object containing source.",
+          "type": "string"
+        },
+        "generation": {
+          "description": "Google Cloud Storage generation for the object.",
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "RepoSource": {
+      "id": "RepoSource",
+      "description": "RepoSource describes the location of the source in a Google Cloud Source\nRepository.",
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "description": "ID of the project that owns the repo.",
+          "type": "string"
+        },
+        "repoName": {
+          "description": "Name of the repo.",
+          "type": "string"
+        },
+        "branchName": {
+          "description": "Name of the branch to build.",
+          "type": "string"
+        },
+        "tagName": {
+          "description": "Name of the tag to build.",
+          "type": "string"
+        },
+        "commitSha": {
+          "description": "Explicit commit SHA to build.",
+          "type": "string"
+        }
+      }
+    },
+    "ExtendedSourceContext": {
+      "id": "ExtendedSourceContext",
+      "description": "An ExtendedSourceContext is a SourceContext combined with additional\ndetails describing the context.",
+      "type": "object",
+      "properties": {
+        "context": {
+          "description": "Any source context.",
+          "$ref": "SourceContext"
+        },
+        "labels": {
+          "description": "Labels with user defined metadata.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "SourceContext": {
+      "id": "SourceContext",
+      "description": "A SourceContext is a reference to a tree of files. A SourceContext together\nwith a path point to a unique revision of a single file or directory.",
+      "type": "object",
+      "properties": {
+        "cloudRepo": {
+          "description": "A SourceContext referring to a revision in a cloud repo.",
+          "$ref": "CloudRepoSourceContext"
+        },
+        "cloudWorkspace": {
+          "description": "A SourceContext referring to a snapshot in a cloud workspace.",
+          "$ref": "CloudWorkspaceSourceContext"
+        },
+        "gerrit": {
+          "description": "A SourceContext referring to a Gerrit project.",
+          "$ref": "GerritSourceContext"
+        },
+        "git": {
+          "description": "A SourceContext referring to any third party Git repo (e.g. GitHub).",
+          "$ref": "GitSourceContext"
+        }
+      }
+    },
+    "CloudRepoSourceContext": {
+      "id": "CloudRepoSourceContext",
+      "description": "A CloudRepoSourceContext denotes a particular revision in a cloud\nrepo (a repo hosted by the Google Cloud Platform).",
+      "type": "object",
+      "properties": {
+        "repoId": {
+          "description": "The ID of the repo.",
+          "$ref": "RepoId"
+        },
+        "revisionId": {
+          "description": "A revision ID.",
+          "type": "string"
+        },
+        "aliasName": {
+          "description": "The name of an alias (branch, tag, etc.).",
+          "type": "string"
+        },
+        "aliasContext": {
+          "description": "An alias, which may be a branch or tag.",
+          "$ref": "AliasContext"
+        }
+      }
+    },
+    "RepoId": {
+      "id": "RepoId",
+      "description": "A unique identifier for a cloud repo.",
+      "type": "object",
+      "properties": {
+        "projectRepoId": {
+          "description": "A combination of a project ID and a repo name.",
+          "$ref": "ProjectRepoId"
+        },
+        "uid": {
+          "description": "A server-assigned, globally unique identifier.",
+          "type": "string"
+        }
+      }
+    },
+    "ProjectRepoId": {
+      "id": "ProjectRepoId",
+      "description": "Selects a repo using a Google Cloud Platform project ID\n(e.g. winged-cargo-31) and a repo name within that project.",
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "description": "The ID of the project.",
+          "type": "string"
+        },
+        "repoName": {
+          "description": "The name of the repo. Leave empty for the default repo.",
+          "type": "string"
+        }
+      }
+    },
+    "AliasContext": {
+      "id": "AliasContext",
+      "description": "An alias to a repo revision.",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "description": "The alias kind.",
+          "enumDescriptions": [
+            "Do not use.",
+            "Git tag",
+            "Git branch",
+            "OTHER is used to specify non-standard aliases, those not of the kinds\nabove. For example, if a Git repo has a ref named \"refs\/foo\/bar\", it\nis considered to be of kind OTHER."
+          ],
+          "type": "string",
+          "enum": [
+            "ANY",
+            "FIXED",
+            "MOVABLE",
+            "OTHER"
+          ]
+        },
+        "name": {
+          "description": "The alias name.",
+          "type": "string"
+        }
+      }
+    },
+    "CloudWorkspaceSourceContext": {
+      "id": "CloudWorkspaceSourceContext",
+      "description": "A CloudWorkspaceSourceContext denotes a workspace at a particular snapshot.",
+      "type": "object",
+      "properties": {
+        "workspaceId": {
+          "description": "The ID of the workspace.",
+          "$ref": "CloudWorkspaceId"
+        },
+        "snapshotId": {
+          "description": "The ID of the snapshot.\nAn empty snapshot_id refers to the most recent snapshot.",
+          "type": "string"
+        }
+      }
+    },
+    "CloudWorkspaceId": {
+      "id": "CloudWorkspaceId",
+      "description": "A CloudWorkspaceId is a unique identifier for a cloud workspace.\nA cloud workspace is a place associated with a repo where modified files\ncan be stored before they are committed.",
+      "type": "object",
+      "properties": {
+        "repoId": {
+          "description": "The ID of the repo containing the workspace.",
+          "$ref": "RepoId"
+        },
+        "name": {
+          "description": "The unique name of the workspace within the repo.  This is the name\nchosen by the client in the Source API's CreateWorkspace method.",
+          "type": "string"
+        }
+      }
+    },
+    "GerritSourceContext": {
+      "id": "GerritSourceContext",
+      "description": "A SourceContext referring to a Gerrit project.",
+      "type": "object",
+      "properties": {
+        "hostUri": {
+          "description": "The URI of a running Gerrit instance.",
+          "type": "string"
+        },
+        "gerritProject": {
+          "description": "The full project name within the host. Projects may be nested, so\n\"project\/subproject\" is a valid project name.\nThe \"repo name\" is hostURI\/project.",
+          "type": "string"
+        },
+        "revisionId": {
+          "description": "A revision (commit) ID.",
+          "type": "string"
+        },
+        "aliasName": {
+          "description": "The name of an alias (branch, tag, etc.).",
+          "type": "string"
+        },
+        "aliasContext": {
+          "description": "An alias, which may be a branch or tag.",
+          "$ref": "AliasContext"
+        }
+      }
+    },
+    "GitSourceContext": {
+      "id": "GitSourceContext",
+      "description": "A GitSourceContext denotes a particular revision in a third party Git\nrepository (e.g. GitHub).",
+      "type": "object",
+      "properties": {
+        "url": {
+          "description": "Git repository URL.",
+          "type": "string"
+        },
+        "revisionId": {
+          "description": "Git commit hash.\nrequired.",
+          "type": "string"
+        }
+      }
+    },
+    "FileHashes": {
+      "id": "FileHashes",
+      "description": "Container message for hashes of byte content of files, used in Source\nmessages to verify integrity of source input to the build.",
+      "type": "object",
+      "properties": {
+        "fileHash": {
+          "description": "Collection of file hashes.",
+          "type": "array",
+          "items": {
+            "$ref": "Hash"
+          }
+        }
+      }
+    },
+    "Hash": {
+      "id": "Hash",
+      "description": "Container message for hash values.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "The type of hash that was performed.",
+          "enumDescriptions": [
+            "No hash requested.",
+            "A sha256 hash."
+          ],
+          "type": "string",
+          "enum": [
+            "NONE",
+            "SHA256"
+          ]
+        },
+        "value": {
+          "description": "The hash value.",
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "Derived": {
+      "id": "Derived",
+      "description": "Derived describes the derived image portion (Occurrence) of the\nDockerImage relationship.  This image would be produced from a Dockerfile\nwith FROM <DockerImage.Basis in attached Note>.",
+      "type": "object",
+      "properties": {
+        "fingerprint": {
+          "description": "The fingerprint of the derived image",
+          "$ref": "Fingerprint"
+        },
+        "distance": {
+          "description": "The number of layers by which this image differs from\nthe associated image basis.\n@OutputOnly",
+          "type": "integer",
+          "format": "uint32"
+        },
+        "layerInfo": {
+          "description": "This contains layer-specific metadata, if populated it\nhas length \u201Cdistance\u201D and is ordered with [distance] being the\nlayer immediately following the base image and [1]\nbeing the final layer.",
+          "type": "array",
+          "items": {
+            "$ref": "Layer"
+          }
+        },
+        "baseResourceUrl": {
+          "description": "This contains the base image url for the derived image Occurrence\n@OutputOnly",
+          "type": "string"
+        }
+      }
+    },
+    "Fingerprint": {
+      "id": "Fingerprint",
+      "description": "A set of properties that uniquely identify a given Docker image.",
+      "type": "object",
+      "properties": {
+        "v1Name": {
+          "description": "The layer-id of the final layer in the Docker image\u2019s v1\nrepresentation.\nThis field can be used as a filter in list requests.",
+          "type": "string"
+        },
+        "v2Blob": {
+          "description": "The ordered list of v2 blobs that represent a given image.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "v2Name": {
+          "description": "The name of the image\u2019s v2 blobs computed via:\n  [bottom] := v2_blobbottom := sha256(v2_blob[N] + \u201C \u201D + v2_name[N+1])\nOnly the name of the final blob is kept.\nThis field can be used as a filter in list requests.\n@OutputOnly",
+          "type": "string"
+        }
+      }
+    },
+    "Layer": {
+      "id": "Layer",
+      "description": "Layer holds metadata specific to a layer of a Docker image.",
+      "type": "object",
+      "properties": {
+        "directive": {
+          "description": "The recovered Dockerfile directive used to construct this layer.",
+          "enumDescriptions": [
+            "Default value for unsupported\/missing directive",
+            "https:\/\/docs.docker.com\/reference\/builder\/#maintainer",
+            "https:\/\/docs.docker.com\/reference\/builder\/#run",
+            "https:\/\/docs.docker.com\/reference\/builder\/#cmd",
+            "https:\/\/docs.docker.com\/reference\/builder\/#label",
+            "https:\/\/docs.docker.com\/reference\/builder\/#expose",
+            "https:\/\/docs.docker.com\/reference\/builder\/#env",
+            "https:\/\/docs.docker.com\/reference\/builder\/#add",
+            "https:\/\/docs.docker.com\/reference\/builder\/#copy",
+            "https:\/\/docs.docker.com\/reference\/builder\/#entrypoint",
+            "https:\/\/docs.docker.com\/reference\/builder\/#volume",
+            "https:\/\/docs.docker.com\/reference\/builder\/#user",
+            "https:\/\/docs.docker.com\/reference\/builder\/#workdir",
+            "https:\/\/docs.docker.com\/reference\/builder\/#arg",
+            "https:\/\/docs.docker.com\/reference\/builder\/#onbuild",
+            "https:\/\/docs.docker.com\/reference\/builder\/#stopsignal",
+            "https:\/\/docs.docker.com\/reference\/builder\/#healthcheck",
+            "https:\/\/docs.docker.com\/reference\/builder\/#shell"
+          ],
+          "type": "string",
+          "enum": [
+            "DIRECTIVE_UNSPECIFIED",
+            "MAINTAINER",
+            "RUN",
+            "CMD",
+            "LABEL",
+            "EXPOSE",
+            "ENV",
+            "ADD",
+            "COPY",
+            "ENTRYPOINT",
+            "VOLUME",
+            "USER",
+            "WORKDIR",
+            "ARG",
+            "ONBUILD",
+            "STOPSIGNAL",
+            "HEALTHCHECK",
+            "SHELL"
+          ]
+        },
+        "arguments": {
+          "description": "The recovered arguments to the Dockerfile directive.",
+          "type": "string"
+        }
+      }
+    },
+    "Installation": {
+      "id": "Installation",
+      "description": "This represents how a particular software package may be installed on\na system.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "The name of the installed package.\n@OutputOnly",
+          "type": "string"
+        },
+        "location": {
+          "description": "All of the places within the filesystem versions of this package\nhave been found.",
+          "type": "array",
+          "items": {
+            "$ref": "Location"
+          }
+        }
+      }
+    },
+    "Location": {
+      "id": "Location",
+      "description": "An occurrence of a particular package installation found within a\nsystem's filesystem.\ne.g. glibc was found in \/var\/lib\/dpkg\/status",
+      "type": "object",
+      "properties": {
+        "cpeUri": {
+          "description": "The cpe_uri in [cpe format](https:\/\/cpe.mitre.org\/specification\/)\ndenoting the package manager version distributing a package.",
+          "type": "string"
+        },
+        "version": {
+          "description": "The version installed at this location.",
+          "$ref": "Version"
+        },
+        "path": {
+          "description": "The path from which we gathered that this package\/version is installed.",
+          "type": "string"
+        }
+      }
+    },
+    "Deployment": {
+      "id": "Deployment",
+      "description": "The period during which some deployable was active in a runtime.",
+      "type": "object",
+      "properties": {
+        "userEmail": {
+          "description": "Identity of the user that triggered this deployment.",
+          "type": "string"
+        },
+        "deployTime": {
+          "description": "Beginning of the lifetime of this deployment.",
+          "type": "string",
+          "format": "google-datetime"
+        },
+        "undeployTime": {
+          "description": "End of the lifetime of this deployment.",
+          "type": "string",
+          "format": "google-datetime"
+        },
+        "config": {
+          "description": "Configuration used to create this deployment.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "any",
+            "description": "Properties of the object. Contains field @type with type URL."
+          }
+        },
+        "address": {
+          "description": "Address of the runtime element hosting this deployment.",
+          "type": "string"
+        },
+        "resourceUri": {
+          "description": "Output only. Resource URI for the artifact being deployed. Taken from the\nDeployable field with the same name.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "platform": {
+          "description": "Platform hosting this deployment.",
+          "enumDescriptions": [
+            "Unknown",
+            "Google Container Engine",
+            "Google App Engine: Flexible Environment",
+            "Custom user-defined platform"
+          ],
+          "type": "string",
+          "enum": [
+            "PLATFORM_UNSPECIFIED",
+            "GKE",
+            "FLEX",
+            "CUSTOM"
+          ]
+        }
+      }
+    },
+    "Discovered": {
+      "id": "Discovered",
+      "description": "Provides information about the scan status of a discovered resource.",
+      "type": "object",
+      "properties": {
+        "operation": {
+          "description": "Output only. An operation that indicates the status of the current scan.",
+          "$ref": "Operation"
+        }
+      }
+    },
+    "Operation": {
+      "id": "Operation",
+      "description": "This resource represents a long-running operation that is the result of a\nnetwork API call.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "The server-assigned name, which is only unique within the same service that\noriginally returns it. If you use the default HTTP mapping, the\n`name` should have the format of `operations\/some\/unique\/name`.",
+          "type": "string"
+        },
+        "metadata": {
+          "description": "Service-specific metadata associated with the operation.  It typically\ncontains progress information and common metadata such as create time.\nSome services might not provide such metadata.  Any method that returns a\nlong-running operation should document the metadata type, if any.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "any",
+            "description": "Properties of the object. Contains field @type with type URL."
+          }
+        },
+        "done": {
+          "description": "If the value is `false`, it means the operation is still in progress.\nIf `true`, the operation is completed, and either `error` or `response` is\navailable.",
+          "type": "boolean"
+        },
+        "error": {
+          "description": "The error result of the operation in case of failure or cancellation.",
+          "$ref": "Status"
+        },
+        "response": {
+          "description": "The normal response of the operation in case of success.  If the original\nmethod returns no data on success, such as `Delete`, the response is\n`google.protobuf.Empty`.  If the original method is standard\n`Get`\/`Create`\/`Update`, the response should be the resource.  For other\nmethods, the response should have the type `XxxResponse`, where `Xxx`\nis the original method name.  For example, if the original method name\nis `TakeSnapshot()`, the inferred response type is\n`TakeSnapshotResponse`.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "any",
+            "description": "Properties of the object. Contains field @type with type URL."
+          }
+        }
+      }
+    },
+    "Status": {
+      "id": "Status",
+      "description": "The `Status` type defines a logical error model that is suitable for different\nprogramming environments, including REST APIs and RPC APIs. It is used by\n[gRPC](https:\/\/github.com\/grpc). The error model is designed to be:\n\n- Simple to use and understand for most users\n- Flexible enough to meet unexpected needs\n\n# Overview\n\nThe `Status` message contains three pieces of data: error code, error message,\nand error details. The error code should be an enum value of\ngoogle.rpc.Code, but it may accept additional error codes if needed.  The\nerror message should be a developer-facing English message that helps\ndevelopers *understand* and *resolve* the error. If a localized user-facing\nerror message is needed, put the localized message in the error details or\nlocalize it in the client. The optional error details may contain arbitrary\ninformation about the error. There is a predefined set of error detail types\nin the package `google.rpc` that can be used for common error conditions.\n\n# Language mapping\n\nThe `Status` message is the logical representation of the error model, but it\nis not necessarily the actual wire format. When the `Status` message is\nexposed in different client libraries and different wire protocols, it can be\nmapped differently. For example, it will likely be mapped to some exceptions\nin Java, but more likely mapped to some error codes in C.\n\n# Other uses\n\nThe error model and the `Status` message can be used in a variety of\nenvironments, either with or without APIs, to provide a\nconsistent developer experience across different environments.\n\nExample uses of this error model include:\n\n- Partial errors. If a service needs to return partial errors to the client,\n    it may embed the `Status` in the normal response to indicate the partial\n    errors.\n\n- Workflow errors. A typical workflow has multiple steps. Each step may\n    have a `Status` message for error reporting.\n\n- Batch operations. If a client uses batch request and batch response, the\n    `Status` message should be used directly inside batch response, one for\n    each error sub-response.\n\n- Asynchronous operations. If an API call embeds asynchronous operation\n    results in its response, the status of those operations should be\n    represented directly using the `Status` message.\n\n- Logging. If some API errors are stored in logs, the message `Status` could\n    be used directly after any stripping needed for security\/privacy reasons.",
+      "type": "object",
+      "properties": {
+        "code": {
+          "description": "The status code, which should be an enum value of google.rpc.Code.",
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "description": "A developer-facing error message, which should be in English. Any\nuser-facing error message should be localized and sent in the\ngoogle.rpc.Status.details field, or localized by the client.",
+          "type": "string"
+        },
+        "details": {
+          "description": "A list of messages that carry the error details.  There is a common set of\nmessage types for APIs to use.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "any",
+              "description": "Properties of the object. Contains field @type with type URL."
+            }
+          }
+        }
+      }
+    },
+    "ListOccurrencesResponse": {
+      "id": "ListOccurrencesResponse",
+      "description": "Response including listed active occurrences.",
+      "type": "object",
+      "properties": {
+        "occurrences": {
+          "description": "The occurrences requested.",
+          "type": "array",
+          "items": {
+            "$ref": "Occurrence"
+          }
+        },
+        "nextPageToken": {
+          "description": "The next pagination token in the List response. It should be used as\npage_token for the following request. An empty value means no more results.",
+          "type": "string"
+        }
+      }
+    },
+    "Empty": {
+      "id": "Empty",
+      "description": "A generic empty message that you can re-use to avoid defining duplicated\nempty messages in your APIs. A typical example is to use it as the request\nor the response type of an API method. For instance:\n\n    service Foo {\n      rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty);\n    }\n\nThe JSON representation for `Empty` is empty JSON object `{}`.",
+      "type": "object",
+      "properties": {
+      }
+    },
+    "Note": {
+      "id": "Note",
+      "description": "Note provides a detailed description of a note using information\nfrom the provider of the note.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "The name of the note in the form\n\"providers\/{provider_id}\/notes\/{note_id}\"",
+          "type": "string"
+        },
+        "shortDescription": {
+          "description": "A one sentence description of this note",
+          "type": "string"
+        },
+        "longDescription": {
+          "description": "A detailed description of this note",
+          "type": "string"
+        },
+        "kind": {
+          "description": "Output only. This explicitly denotes which kind of note is specified. This\nfield can be used as a filter in list requests.",
+          "enumDescriptions": [
+            "Unknown",
+            "The note and occurrence represent a package vulnerability.",
+            "The note and occurrence assert build provenance.",
+            "This represents an image basis relationship.",
+            "This represents a package installed via a package manager.",
+            "The note and occurrence track deployment events."
+          ],
+          "type": "string",
+          "enum": [
+            "KIND_UNSPECIFIED",
+            "PACKAGE_VULNERABILITY",
+            "BUILD_DETAILS",
+            "IMAGE_BASIS",
+            "PACKAGE_MANAGER",
+            "DEPLOYABLE"
+          ]
+        },
+        "vulnerabilityType": {
+          "description": "A package vulnerability type of note.",
+          "$ref": "VulnerabilityType"
+        },
+        "buildType": {
+          "description": "Build provenance type for a verifiable build.",
+          "$ref": "BuildType"
+        },
+        "baseImage": {
+          "description": "A note describing a base image.",
+          "$ref": "Basis"
+        },
+        "package": {
+          "description": "A note describing a package hosted by various package managers.",
+          "$ref": "Package"
+        },
+        "deployable": {
+          "description": "A note describing something that can be deployed.",
+          "$ref": "Deployable"
+        },
+        "relatedUrl": {
+          "description": "Urls associated with this note",
+          "type": "array",
+          "items": {
+            "$ref": "RelatedUrl"
+          }
+        },
+        "expirationTime": {
+          "description": "Time of expiration for this note, null if note currently does not expire.",
+          "type": "string",
+          "format": "google-datetime"
+        },
+        "createTime": {
+          "description": "Output only. The time this note was created. This field can be used as a\nfilter in list requests.",
+          "type": "string",
+          "format": "google-datetime"
+        },
+        "updateTime": {
+          "description": "Output only. The time this note was last updated. This field can be used as\na filter in list requests.",
+          "type": "string",
+          "format": "google-datetime"
+        }
+      }
+    },
+    "VulnerabilityType": {
+      "id": "VulnerabilityType",
+      "description": "VulnerabilityType provides metadata about a security vulnerability.",
+      "type": "object",
+      "properties": {
+        "cvssScore": {
+          "description": "The CVSS score for this Vulnerability.",
+          "type": "number",
+          "format": "float"
+        },
+        "severity": {
+          "description": "Note provider assigned impact of the vulnerability",
+          "enumDescriptions": [
+            "Unknown Impact",
+            "Minimal Impact",
+            "Low Impact",
+            "Medium Impact",
+            "High Impact",
+            "Critical Impact"
+          ],
+          "type": "string",
+          "enum": [
+            "SEVERITY_UNSPECIFIED",
+            "MINIMAL",
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ]
+        },
+        "details": {
+          "description": "All information about the package to specifically identify this\nvulnerability. One entry per (version range and cpe_uri) the\npackage vulnerability has manifested in.",
+          "type": "array",
+          "items": {
+            "$ref": "Detail"
+          }
+        }
+      }
+    },
+    "Detail": {
+      "id": "Detail",
+      "description": "Identifies all occurences of this vulnerability in the package for a\nspecific distro\/location\nFor example: glibc in cpe:\/o:debian:debian_linux:8 for versions 2.1 - 2.2",
+      "type": "object",
+      "properties": {
+        "cpeUri": {
+          "description": "The cpe_uri in [cpe format] (https:\/\/cpe.mitre.org\/specification\/) in\nwhich the vulnerability manifests.  Examples include distro or storage\nlocation for vulnerable jar.\nThis field can be used as a filter in list requests.",
+          "type": "string"
+        },
+        "package": {
+          "description": "The name of the package where the vulnerability was found.\nThis field can be used as a filter in list requests.",
+          "type": "string"
+        },
+        "minAffectedVersion": {
+          "description": "The min version of the package in which the vulnerability exists.",
+          "$ref": "Version"
+        },
+        "maxAffectedVersion": {
+          "description": "The max version of the package in which the vulnerability exists.\nThis field can be used as a filter in list requests.",
+          "$ref": "Version"
+        },
+        "severityName": {
+          "description": "The severity (eg: distro assigned severity) for this vulnerability.",
+          "type": "string"
+        },
+        "description": {
+          "description": "A vendor-specific description of this note.",
+          "type": "string"
+        },
+        "fixedLocation": {
+          "description": "The fix for this specific package version.",
+          "$ref": "VulnerabilityLocation"
+        },
+        "packageType": {
+          "description": "The type of package; whether native or non native(ruby gems,\nnode.js packages etc)",
+          "type": "string"
+        }
+      }
+    },
+    "BuildType": {
+      "id": "BuildType",
+      "description": "Note holding the version of the provider's builder and the signature of\nthe provenance message in linked BuildDetails.",
+      "type": "object",
+      "properties": {
+        "builderVersion": {
+          "description": "Version of the builder which produced this Note.",
+          "type": "string"
+        },
+        "signature": {
+          "description": "Signature of the build in Occurrences pointing to the Note containing this\nBuilderDetails.",
+          "$ref": "BuildSignature"
+        }
+      }
+    },
+    "BuildSignature": {
+      "id": "BuildSignature",
+      "description": "Message encapsulating signature of the verified build",
+      "type": "object",
+      "properties": {
+        "publicKey": {
+          "description": "Public key of the builder which can be used to verify that related\nFindings are valid and unchanged.  If `key_type` is empty this defaults\nto PEM encoded public keys.\n\nThis field may be empty if `key_id` references an external key.\n\nFor Cloud Container Builder based signatures this is a PEM encoded public\nkey. To verify the Cloud Container Builder signature, place the contents of\nthis field into a file (public.pem). The signature field is base64-decoded\ninto its binary representation in signature.bin, and the provenance bytes\nfrom BuildDetails are base64-decoded into a binary representation in\nsigned.bin. OpenSSL can then verify the signature:\n`openssl sha256 -verify public.pem -signature signature.bin signed.bin`",
+          "type": "string"
+        },
+        "signature": {
+          "description": "Signature of the related BuildProvenance, encoded in a base64 string.",
+          "type": "string"
+        },
+        "keyId": {
+          "description": "An ID for the key used to sign.  This could be either an ID for the key\nstored in `public_key` (e.g., the ID or fingerprint for a PGP key, or the\nCN for a cert), or a reference to an external key (e.g., a reference to a\nkey in Cloud KMS).",
+          "type": "string"
+        },
+        "keyType": {
+          "description": "The type of the key, either stored in `public_key` or referenced in\n`key_id`",
+          "enumDescriptions": [
+            "KeyType is not set.",
+            "PGP ASCII Armored public key.",
+            "PKIX PEM public key."
+          ],
+          "type": "string",
+          "enum": [
+            "KEY_TYPE_UNSPECIFIED",
+            "PGP_ASCII_ARMORED",
+            "PKIX_PEM"
+          ]
+        }
+      }
+    },
+    "Basis": {
+      "id": "Basis",
+      "description": "Basis describes the base image portion (Note) of the DockerImage\nrelationship.  Linked occurrences are derived from this or an\nequivalent image via:\n  FROM <Basis.resource_url>\nOr an equivalent reference, e.g. a tag of the resource_url.",
+      "type": "object",
+      "properties": {
+        "resourceUrl": {
+          "description": "The resource_url for the resource representing the basis of\nassociated occurrence images.",
+          "type": "string"
+        },
+        "fingerprint": {
+          "description": "The fingerprint of the base image",
+          "$ref": "Fingerprint"
+        }
+      }
+    },
+    "Package": {
+      "id": "Package",
+      "description": "This represents a particular package that is distributed over\nvarious channels.\ne.g. glibc (aka libc6) is distributed by many, at various versions.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "The name of the package.",
+          "type": "string"
+        },
+        "distribution": {
+          "description": "The various channels by which a package is distributed.",
+          "type": "array",
+          "items": {
+            "$ref": "Distribution"
+          }
+        }
+      }
+    },
+    "Distribution": {
+      "id": "Distribution",
+      "description": "This represents a particular channel of distribution for a given package.\ne.g. Debian's jessie-backports dpkg mirror",
+      "type": "object",
+      "properties": {
+        "cpeUri": {
+          "description": "The cpe_uri in [cpe format](https:\/\/cpe.mitre.org\/specification\/)\ndenoting the package manager version distributing a package.",
+          "type": "string"
+        },
+        "architecture": {
+          "description": "The CPU architecture for which packages in this distribution\nchannel were built",
+          "enumDescriptions": [
+            "Unknown architecture",
+            "X86 architecture",
+            "x64 architecture"
+          ],
+          "type": "string",
+          "enum": [
+            "ARCHITECTURE_UNSPECIFIED",
+            "X86",
+            "X64"
+          ]
+        },
+        "latestVersion": {
+          "description": "The latest available version of this package in\nthis distribution channel.",
+          "$ref": "Version"
+        },
+        "maintainer": {
+          "description": "A freeform string denoting the maintainer of this package.",
+          "type": "string"
+        },
+        "url": {
+          "description": "The distribution channel-specific homepage for this package.",
+          "type": "string"
+        },
+        "description": {
+          "description": "The distribution channel-specific description of this package.",
+          "type": "string"
+        }
+      }
+    },
+    "Deployable": {
+      "id": "Deployable",
+      "description": "An artifact that can be deployed in some runtime.",
+      "type": "object",
+      "properties": {
+        "resourceUri": {
+          "description": "Resource URI for the artifact being deployed.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "RelatedUrl": {
+      "id": "RelatedUrl",
+      "description": "Metadata for any related url information",
+      "type": "object",
+      "properties": {
+        "url": {
+          "description": "Specific url to associate with the note",
+          "type": "string"
+        },
+        "label": {
+          "description": "Label to describe usage of the url",
+          "type": "string"
+        }
+      }
+    },
+    "ListNotesResponse": {
+      "id": "ListNotesResponse",
+      "description": "Response including listed notes.",
+      "type": "object",
+      "properties": {
+        "notes": {
+          "description": "The occurrences requested",
+          "type": "array",
+          "items": {
+            "$ref": "Note"
+          }
+        },
+        "nextPageToken": {
+          "description": "The next pagination token in the List response. It should be used as\npage_token for the following request. An empty value means no more result.",
+          "type": "string"
+        }
+      }
+    },
+    "ListNoteOccurrencesResponse": {
+      "id": "ListNoteOccurrencesResponse",
+      "description": "Response including listed occurrences for a note.",
+      "type": "object",
+      "properties": {
+        "occurrences": {
+          "description": "The occurrences attached to the specified note.",
+          "type": "array",
+          "items": {
+            "$ref": "Occurrence"
+          }
+        },
+        "nextPageToken": {
+          "description": "Token to receive the next page of notes.",
+          "type": "string"
+        }
+      }
+    },
+    "GetVulnzOccurrencesSummaryResponse": {
+      "id": "GetVulnzOccurrencesSummaryResponse",
+      "description": "A summary of how many vulnz occurrences there are per severity type.",
+      "type": "object",
+      "properties": {
+        "counts": {
+          "description": "A map of how many occurrences were found for each severity.",
+          "type": "array",
+          "items": {
+            "$ref": "SeverityCount"
+          }
+        }
+      }
+    },
+    "SeverityCount": {
+      "id": "SeverityCount",
+      "description": "The number of occurrences created for a specific severity.",
+      "type": "object",
+      "properties": {
+        "severity": {
+          "description": "The severity of the occurrences.",
+          "enumDescriptions": [
+            "Unknown Impact",
+            "Minimal Impact",
+            "Low Impact",
+            "Medium Impact",
+            "High Impact",
+            "Critical Impact"
+          ],
+          "type": "string",
+          "enum": [
+            "SEVERITY_UNSPECIFIED",
+            "MINIMAL",
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ]
+        },
+        "count": {
+          "description": "The number of occurrences with the severity.",
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "SetIamPolicyRequest": {
+      "id": "SetIamPolicyRequest",
+      "description": "Request message for `SetIamPolicy` method.",
+      "type": "object",
+      "properties": {
+        "policy": {
+          "description": "REQUIRED: The complete policy to be applied to the `resource`. The size of\nthe policy is limited to a few 10s of KB. An empty policy is a\nvalid policy but certain Cloud Platform services (such as Projects)\nmight reject them.",
+          "$ref": "Policy"
+        },
+        "updateMask": {
+          "description": "OPTIONAL: A FieldMask specifying which fields of the policy to modify. Only\nthe fields in the mask will be modified. If no mask is provided, the\nfollowing default mask is used:\npaths: \"bindings, etag\"\nThis field is only used by Cloud IAM.",
+          "type": "string",
+          "format": "google-fieldmask"
+        }
+      }
+    },
+    "Policy": {
+      "id": "Policy",
+      "description": "Defines an Identity and Access Management (IAM) policy. It is used to\nspecify access control policies for Cloud Platform resources.\n\n\nA `Policy` consists of a list of `bindings`. A `Binding` binds a list of\n`members` to a `role`, where the members can be user accounts, Google groups,\nGoogle domains, and service accounts. A `role` is a named list of permissions\ndefined by IAM.\n\n**Example**\n\n    {\n      \"bindings\": [\n        {\n          \"role\": \"roles\/owner\",\n          \"members\": [\n            \"user:mike@example.com\",\n            \"group:admins@example.com\",\n            \"domain:google.com\",\n            \"serviceAccount:my-other-app@appspot.gserviceaccount.com\",\n          ]\n        },\n        {\n          \"role\": \"roles\/viewer\",\n          \"members\": [\"user:sean@example.com\"]\n        }\n      ]\n    }\n\nFor a description of IAM and its features, see the\n[IAM developer's guide](https:\/\/cloud.google.com\/iam).",
+      "type": "object",
+      "properties": {
+        "version": {
+          "description": "Version of the `Policy`. The default version is 0.",
+          "type": "integer",
+          "format": "int32"
+        },
+        "bindings": {
+          "description": "Associates a list of `members` to a `role`.\n`bindings` with no members will result in an error.",
+          "type": "array",
+          "items": {
+            "$ref": "Binding"
+          }
+        },
+        "auditConfigs": {
+          "description": "Specifies cloud audit logging configuration for this policy.",
+          "type": "array",
+          "items": {
+            "$ref": "AuditConfig"
+          }
+        },
+        "etag": {
+          "description": "`etag` is used for optimistic concurrency control as a way to help\nprevent simultaneous updates of a policy from overwriting each other.\nIt is strongly suggested that systems make use of the `etag` in the\nread-modify-write cycle to perform policy updates in order to avoid race\nconditions: An `etag` is returned in the response to `getIamPolicy`, and\nsystems are expected to put that etag in the request to `setIamPolicy` to\nensure that their change will be applied to the same version of the policy.\n\nIf no `etag` is provided in the call to `setIamPolicy`, then the existing\npolicy is overwritten blindly.",
+          "type": "string",
+          "format": "byte"
+        },
+        "iamOwned": {
+
+          "type": "boolean"
+        }
+      }
+    },
+    "Binding": {
+      "id": "Binding",
+      "description": "Associates `members` with a `role`.",
+      "type": "object",
+      "properties": {
+        "role": {
+          "description": "Role that is assigned to `members`.\nFor example, `roles\/viewer`, `roles\/editor`, or `roles\/owner`.\nRequired",
+          "type": "string"
+        },
+        "members": {
+          "description": "Specifies the identities requesting access for a Cloud Platform resource.\n`members` can have the following values:\n\n* `allUsers`: A special identifier that represents anyone who is\n   on the internet; with or without a Google account.\n\n* `allAuthenticatedUsers`: A special identifier that represents anyone\n   who is authenticated with a Google account or a service account.\n\n* `user:{emailid}`: An email address that represents a specific Google\n   account. For example, `alice@gmail.com` or `joe@example.com`.\n\n\n* `serviceAccount:{emailid}`: An email address that represents a service\n   account. For example, `my-other-app@appspot.gserviceaccount.com`.\n\n* `group:{emailid}`: An email address that represents a Google group.\n   For example, `admins@example.com`.\n\n\n* `domain:{domain}`: A Google Apps domain name that represents all the\n   users of that domain. For example, `google.com` or `example.com`.\n\n",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "condition": {
+          "description": "The condition that is associated with this binding.\nNOTE: an unsatisfied condition will not allow user access via current\nbinding. Different bindings, including their conditions, are examined\nindependently.\nThis field is GOOGLE_INTERNAL.",
+          "$ref": "Expr"
+        }
+      }
+    },
+    "Expr": {
+      "id": "Expr",
+      "description": "Represents an expression text. Example:\n\n    title: \"User account presence\"\n    description: \"Determines whether the request has a user account\"\n    expression: \"size(request.user) > 0\"",
+      "type": "object",
+      "properties": {
+        "expression": {
+          "description": "Textual representation of an expression in\nCommon Expression Language syntax.\n\nThe application context of the containing message determines which\nwell-known feature set of CEL is supported.",
+          "type": "string"
+        },
+        "title": {
+          "description": "An optional title for the expression, i.e. a short string describing\nits purpose. This can be used e.g. in UIs which allow to enter the\nexpression.",
+          "type": "string"
+        },
+        "description": {
+          "description": "An optional description of the expression. This is a longer text which\ndescribes the expression, e.g. when hovered over it in a UI.",
+          "type": "string"
+        },
+        "location": {
+          "description": "An optional string indicating the location of the expression for error\nreporting, e.g. a file name and a position in the file.",
+          "type": "string"
+        }
+      }
+    },
+    "AuditConfig": {
+      "id": "AuditConfig",
+      "description": "Specifies the audit configuration for a service.\nThe configuration determines which permission types are logged, and what\nidentities, if any, are exempted from logging.\nAn AuditConfig must have one or more AuditLogConfigs.\n\nIf there are AuditConfigs for both `allServices` and a specific service,\nthe union of the two AuditConfigs is used for that service: the log_types\nspecified in each AuditConfig are enabled, and the exempted_members in each\nAuditConfig are exempted.\n\nExample Policy with multiple AuditConfigs:\n\n    {\n      \"audit_configs\": [\n        {\n          \"service\": \"allServices\"\n          \"audit_log_configs\": [\n            {\n              \"log_type\": \"DATA_READ\",\n              \"exempted_members\": [\n                \"user:foo@gmail.com\"\n              ]\n            },\n            {\n              \"log_type\": \"DATA_WRITE\",\n            },\n            {\n              \"log_type\": \"ADMIN_READ\",\n            }\n          ]\n        },\n        {\n          \"service\": \"fooservice.googleapis.com\"\n          \"audit_log_configs\": [\n            {\n              \"log_type\": \"DATA_READ\",\n            },\n            {\n              \"log_type\": \"DATA_WRITE\",\n              \"exempted_members\": [\n                \"user:bar@gmail.com\"\n              ]\n            }\n          ]\n        }\n      ]\n    }\n\nFor fooservice, this policy enables DATA_READ, DATA_WRITE and ADMIN_READ\nlogging. It also exempts foo@gmail.com from DATA_READ logging, and\nbar@gmail.com from DATA_WRITE logging.",
+      "type": "object",
+      "properties": {
+        "service": {
+          "description": "Specifies a service that will be enabled for audit logging.\nFor example, `storage.googleapis.com`, `cloudsql.googleapis.com`.\n`allServices` is a special value that covers all services.",
+          "type": "string"
+        },
+        "exemptedMembers": {
+
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "auditLogConfigs": {
+          "description": "The configuration for logging of each type of permission.\nNext ID: 4",
+          "type": "array",
+          "items": {
+            "$ref": "AuditLogConfig"
+          }
+        }
+      }
+    },
+    "AuditLogConfig": {
+      "id": "AuditLogConfig",
+      "description": "Provides the configuration for logging a type of permissions.\nExample:\n\n    {\n      \"audit_log_configs\": [\n        {\n          \"log_type\": \"DATA_READ\",\n          \"exempted_members\": [\n            \"user:foo@gmail.com\"\n          ]\n        },\n        {\n          \"log_type\": \"DATA_WRITE\",\n        }\n      ]\n    }\n\nThis enables 'DATA_READ' and 'DATA_WRITE' logging, while exempting\nfoo@gmail.com from DATA_READ logging.",
+      "type": "object",
+      "properties": {
+        "logType": {
+          "description": "The log type that this config enables.",
+          "enumDescriptions": [
+            "Default case. Should never be this.",
+            "Admin reads. Example: CloudIAM getIamPolicy",
+            "Data writes. Example: CloudSQL Users create",
+            "Data reads. Example: CloudSQL Users list"
+          ],
+          "type": "string",
+          "enum": [
+            "LOG_TYPE_UNSPECIFIED",
+            "ADMIN_READ",
+            "DATA_WRITE",
+            "DATA_READ"
+          ]
+        },
+        "exemptedMembers": {
+          "description": "Specifies the identities that do not cause logging for this type of\npermission.\nFollows the same format of Binding.members.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "GetIamPolicyRequest": {
+      "id": "GetIamPolicyRequest",
+      "description": "Request message for `GetIamPolicy` method.",
+      "type": "object",
+      "properties": {
+      }
+    },
+    "TestIamPermissionsRequest": {
+      "id": "TestIamPermissionsRequest",
+      "description": "Request message for `TestIamPermissions` method.",
+      "type": "object",
+      "properties": {
+        "permissions": {
+          "description": "The set of permissions to check for the `resource`. Permissions with\nwildcards (such as '*' or 'storage.*') are not allowed. For more\ninformation see\n[IAM Overview](https:\/\/cloud.google.com\/iam\/docs\/overview#permissions).",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "TestIamPermissionsResponse": {
+      "id": "TestIamPermissionsResponse",
+      "description": "Response message for `TestIamPermissions` method.",
+      "type": "object",
+      "properties": {
+        "permissions": {
+          "description": "A subset of `TestPermissionsRequest.permissions` that the caller is\nallowed.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "PodSpec": {
+      "id": "PodSpec",
+      "description": "PodSpec is a description of a pod.",
+      "type": "object",
+      "properties": {
+        "volumes": {
+          "description": "List of volumes that can be mounted by containers belonging to the pod.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/volumes\n+optional",
+          "type": "array",
+          "items": {
+            "$ref": "Volume"
+          }
+        },
+        "containers": {
+          "description": "List of containers belonging to the pod.\nContainers cannot currently be added or removed.\nThere must be at least one container in a Pod.\nCannot be updated.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/containers",
+          "type": "array",
+          "items": {
+            "$ref": "Container"
+          }
+        },
+        "restartPolicy": {
+          "description": "Restart policy for all containers within the pod.\nOne of Always, OnFailure, Never.\nDefault to Always.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/pod-states#restartpolicy\n+optional",
+          "type": "string"
+        },
+        "terminationGracePeriodSeconds": {
+          "description": "Optional duration in seconds the pod needs to terminate gracefully. May be decreased in delete request.\nValue must be non-negative integer. The value zero indicates delete immediately.\nIf this value is nil, the default grace period will be used instead.\nThe grace period is the duration in seconds after the processes running in the pod are sent\na termination signal and the time when the processes are forcibly halted with a kill signal.\nSet this value longer than the expected cleanup time for your process.\nDefaults to 30 seconds.\n+optional",
+          "type": "string",
+          "format": "int64"
+        },
+        "activeDeadlineSeconds": {
+          "description": "Optional duration in seconds the pod may be active on the node relative to\nStartTime before the system will actively try to mark it failed and kill associated containers.\nValue must be a positive integer.\n+optional",
+          "type": "string",
+          "format": "int64"
+        },
+        "dnsPolicy": {
+          "description": "Set DNS policy for containers within the pod.\nOne of 'ClusterFirst' or 'Default'.\nDefaults to \"ClusterFirst\".\n+optional",
+          "type": "string"
+        },
+        "nodeSelector": {
+          "description": "NodeSelector is a selector which must be true for the pod to fit on a node.\nSelector which must match a node's labels for the pod to be scheduled on that node.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/node-selection\/README\n+optional",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "serviceAccountName": {
+          "description": "ServiceAccountName is the name of the ServiceAccount to use to run this pod.\nMore info: http:\/\/releases.k8s.io\/HEAD\/docs\/design\/service_accounts.md\n+optional",
+          "type": "string"
+        },
+        "serviceAccount": {
+          "description": "DeprecatedServiceAccount is a depreciated alias for ServiceAccountName.\nDeprecated: Use serviceAccountName instead.\n+k8s:conversion-gen=false\n+optional",
+          "type": "string"
+        },
+        "nodeName": {
+          "description": "NodeName is a request to schedule this pod onto a specific node. If it is non-empty,\nthe scheduler simply schedules this pod onto that node, assuming that it fits resource\nrequirements.\n+optional",
+          "type": "string"
+        },
+        "hostNetwork": {
+          "description": "Host networking requested for this pod. Use the host's network namespace.\nIf this option is set, the ports that will be used must be specified.\nDefault to false.\n+k8s:conversion-gen=false\n+optional",
+          "type": "boolean"
+        },
+        "hostPID": {
+          "description": "Use the host's pid namespace.\nOptional: Default to false.\n+k8s:conversion-gen=false\n+optional",
+          "type": "boolean"
+        },
+        "hostIPC": {
+          "description": "Use the host's ipc namespace.\nOptional: Default to false.\n+k8s:conversion-gen=false\n+optional",
+          "type": "boolean"
+        },
+        "securityContext": {
+          "description": "SecurityContext holds pod-level security attributes and common container settings.\nOptional: Defaults to empty.  See type description for default values of each field.\n+optional",
+          "$ref": "PodSecurityContext"
+        },
+        "imagePullSecrets": {
+          "description": "ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.\nIf specified, these secrets will be passed to individual puller implementations for them to use. For example,\nin the case of docker, only DockerConfig type secrets are honored.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/images#specifying-imagepullsecrets-on-a-pod\n+optional",
+          "type": "array",
+          "items": {
+            "$ref": "LocalObjectReference"
+          }
+        },
+        "hostname": {
+          "description": "Specifies the hostname of the Pod\nIf not specified, the pod's hostname will be set to a system-defined value.\n+optional",
+          "type": "string"
+        },
+        "subdomain": {
+          "description": "If specified, the fully qualified Pod hostname will be \"<hostname>.<subdomain>.<pod namespace>.svc.<cluster domain>\".\nIf not specified, the pod will not have a domainname at all.\n+optional",
+          "type": "string"
+        }
+      }
+    },
+    "Volume": {
+      "id": "Volume",
+      "description": "Volume represents a named volume in a pod that may be accessed by any container in the pod.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Volume's name.\nMust be a DNS_LABEL and unique within the pod.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/identifiers#names",
+          "type": "string"
+        },
+        "volumeSource": {
+          "description": "VolumeSource represents the location and type of the mounted volume.\nIf not specified, the Volume is implied to be an EmptyDir.\nThis implied behavior is deprecated and will be removed in a future version.",
+          "$ref": "VolumeSource"
+        }
+      }
+    },
+    "VolumeSource": {
+      "id": "VolumeSource",
+      "description": "Represents the source of a volume to mount.\nOnly one of its members may be specified.",
+      "type": "object",
+      "properties": {
+        "hostPath": {
+          "description": "HostPath represents a pre-existing file or directory on the host\nmachine that is directly exposed to the container. This is generally\nused for system agents or other privileged things that are allowed\nto see the host machine. Most containers will NOT need this.\n## More info: http:\/\/kubernetes.io\/docs\/user-guide\/volumes#hostpath\n\nTODO(user) We need to restrict who can use host directory mounts and who can\/can not\nmount host directories as read\/write.\n+optional",
+          "$ref": "HostPathVolumeSource"
+        },
+        "emptyDir": {
+          "description": "EmptyDir represents a temporary directory that shares a pod's lifetime.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/volumes#emptydir\n+optional",
+          "$ref": "EmptyDirVolumeSource"
+        },
+        "gcePersistentDisk": {
+          "description": "GCEPersistentDisk represents a GCE Disk resource that is attached to a\nkubelet's host machine and then exposed to the pod.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/volumes#gcepersistentdisk\n+optional",
+          "$ref": "GCEPersistentDiskVolumeSource"
+        },
+        "awsElasticBlockStore": {
+          "description": "AWSElasticBlockStore represents an AWS Disk resource that is attached to a\nkubelet's host machine and then exposed to the pod.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/volumes#awselasticblockstore\n+optional",
+          "$ref": "AWSElasticBlockStoreVolumeSource"
+        },
+        "gitRepo": {
+          "description": "GitRepo represents a git repository at a particular revision.\n+optional",
+          "$ref": "GitRepoVolumeSource"
+        },
+        "secret": {
+          "description": "Secret represents a secret that should populate this volume.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/volumes#secrets\n+optional",
+          "$ref": "SecretVolumeSource"
+        },
+        "nfs": {
+          "description": "NFS represents an NFS mount on the host that shares a pod's lifetime\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/volumes#nfs\n+optional",
+          "$ref": "NFSVolumeSource"
+        },
+        "iscsi": {
+          "description": "ISCSI represents an ISCSI Disk resource that is attached to a\nkubelet's host machine and then exposed to the pod.\nMore info: http:\/\/releases.k8s.io\/HEAD\/examples\/volumes\/iscsi\/README.md\n+optional",
+          "$ref": "ISCSIVolumeSource"
+        },
+        "glusterfs": {
+          "description": "Glusterfs represents a Glusterfs mount on the host that shares a pod's lifetime.\nMore info: http:\/\/releases.k8s.io\/HEAD\/examples\/volumes\/glusterfs\/README.md\n+optional",
+          "$ref": "GlusterfsVolumeSource"
+        },
+        "persistentVolumeClaim": {
+          "description": "PersistentVolumeClaimVolumeSource represents a reference to a\nPersistentVolumeClaim in the same namespace.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/persistent-volumes#persistentvolumeclaims\n+optional",
+          "$ref": "PersistentVolumeClaimVolumeSource"
+        },
+        "rbd": {
+          "description": "RBD represents a Rados Block Device mount on the host that shares a pod's lifetime.\nMore info: http:\/\/releases.k8s.io\/HEAD\/examples\/volumes\/rbd\/README.md\n+optional",
+          "$ref": "RBDVolumeSource"
+        },
+        "flexVolume": {
+          "description": "FlexVolume represents a generic volume resource that is\nprovisioned\/attached using an exec based plugin. This is an\nalpha feature and may change in future.\n+optional",
+          "$ref": "FlexVolumeSource"
+        },
+        "cinder": {
+          "description": "Cinder represents a cinder volume attached and mounted on kubelets host machine\nMore info: http:\/\/releases.k8s.io\/HEAD\/examples\/mysql-cinder-pd\/README.md\n+optional",
+          "$ref": "CinderVolumeSource"
+        },
+        "cephfs": {
+          "description": "CephFS represents a Ceph FS mount on the host that shares a pod's lifetime\n+optional",
+          "$ref": "CephFSVolumeSource"
+        },
+        "flocker": {
+          "description": "Flocker represents a Flocker volume attached to a kubelet's host machine. This depends on the Flocker control service being running\n+optional",
+          "$ref": "FlockerVolumeSource"
+        },
+        "downwardAPI": {
+          "description": "DownwardAPI represents downward API about the pod that should populate this volume\n+optional",
+          "$ref": "DownwardAPIVolumeSource"
+        },
+        "fc": {
+          "description": "FC represents a Fibre Channel resource that is attached to a kubelet's host machine and then exposed to the pod.\n+optional",
+          "$ref": "FCVolumeSource"
+        },
+        "azureFile": {
+          "description": "AzureFile represents an Azure File Service mount on the host and bind mount to the pod.\n+optional",
+          "$ref": "AzureFileVolumeSource"
+        },
+        "configMap": {
+          "description": "ConfigMap represents a configMap that should populate this volume\n+optional",
+          "$ref": "ConfigMapVolumeSource"
+        },
+        "vsphereVolume": {
+          "description": "VsphereVolume represents a vSphere volume attached and mounted on kubelets host machine\n+optional",
+          "$ref": "VsphereVirtualDiskVolumeSource"
+        },
+        "quobyte": {
+          "description": "Quobyte represents a Quobyte mount on the host that shares a pod's lifetime\n+optional",
+          "$ref": "QuobyteVolumeSource"
+        },
+        "azureDisk": {
+          "description": "AzureDisk represents an Azure Data Disk mount on the host and bind mount to the pod.\n+optional",
+          "$ref": "AzureDiskVolumeSource"
+        },
+        "photonPersistentDisk": {
+          "description": "PhotonPersistentDisk represents a PhotonController persistent disk attached and mounted on kubelets host machine",
+          "$ref": "PhotonPersistentDiskVolumeSource"
+        }
+      }
+    },
+    "HostPathVolumeSource": {
+      "id": "HostPathVolumeSource",
+      "description": "Represents a host path mapped into a pod.\nHost path volumes do not support ownership management or SELinux relabeling.",
+      "type": "object",
+      "properties": {
+        "path": {
+          "description": "Path of the directory on the host.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/volumes#hostpath",
+          "type": "string"
+        }
+      }
+    },
+    "EmptyDirVolumeSource": {
+      "id": "EmptyDirVolumeSource",
+      "description": "Represents an empty directory for a pod.\nEmpty directory volumes support ownership management and SELinux relabeling.",
+      "type": "object",
+      "properties": {
+        "medium": {
+          "description": "What type of storage medium should back this directory.\nThe default is \"\" which means to use the node's default medium.\nMust be an empty string (default) or Memory.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/volumes#emptydir\n+optional",
+          "type": "string"
+        }
+      }
+    },
+    "GCEPersistentDiskVolumeSource": {
+      "id": "GCEPersistentDiskVolumeSource",
+      "description": "Represents a Persistent Disk resource in Google Compute Engine.\n\nA GCE PD must exist before mounting to a container. The disk must\nalso be in the same GCE project and zone as the kubelet. A GCE PD\ncan only be mounted as read\/write once or read-only many times. GCE\nPDs support ownership management and SELinux relabeling.",
+      "type": "object",
+      "properties": {
+        "pdName": {
+          "description": "Unique name of the PD resource in GCE. Used to identify the disk in GCE.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/volumes#gcepersistentdisk",
+          "type": "string"
+        },
+        "fsType": {
+          "description": "Filesystem type of the volume that you want to mount.\nTip: Ensure that the filesystem type is supported by the host operating system.\nExamples: \"ext4\", \"xfs\", \"ntfs\". Implicitly inferred to be \"ext4\" if unspecified.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/volumes#gcepersistentdisk",
+          "type": "string"
+        },
+        "partition": {
+          "description": "The partition in the volume that you want to mount.\nIf omitted, the default is to mount by volume name.\nExamples: For volume \/dev\/sda1, you specify the partition as \"1\".\nSimilarly, the volume partition for \/dev\/sda is \"0\" (or you can leave the property empty).\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/volumes#gcepersistentdisk\n+optional",
+          "type": "integer",
+          "format": "int32"
+        },
+        "readOnly": {
+          "description": "ReadOnly here will force the ReadOnly setting in VolumeMounts.\nDefaults to false.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/volumes#gcepersistentdisk\n+optional",
+          "type": "boolean"
+        }
+      }
+    },
+    "AWSElasticBlockStoreVolumeSource": {
+      "id": "AWSElasticBlockStoreVolumeSource",
+      "description": "Represents a Persistent Disk resource in AWS.\n\nAn AWS EBS disk must exist before mounting to a container. The disk\nmust also be in the same AWS zone as the kubelet. An AWS EBS disk\ncan only be mounted as read\/write once. AWS EBS volumes support\nownership management and SELinux relabeling.",
+      "type": "object",
+      "properties": {
+        "volumeID": {
+          "description": "Unique ID of the persistent disk resource in AWS (Amazon EBS volume).\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/volumes#awselasticblockstore",
+          "type": "string"
+        },
+        "fsType": {
+          "description": "Filesystem type of the volume that you want to mount.\nTip: Ensure that the filesystem type is supported by the host operating system.\nExamples: \"ext4\", \"xfs\", \"ntfs\". Implicitly inferred to be \"ext4\" if unspecified.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/volumes#awselasticblockstore",
+          "type": "string"
+        },
+        "partition": {
+          "description": "The partition in the volume that you want to mount.\nIf omitted, the default is to mount by volume name.\nExamples: For volume \/dev\/sda1, you specify the partition as \"1\".\nSimilarly, the volume partition for \/dev\/sda is \"0\" (or you can leave the property empty).\n+optional",
+          "type": "integer",
+          "format": "int32"
+        },
+        "readOnly": {
+          "description": "Specify \"true\" to force and set the ReadOnly property in VolumeMounts to \"true\".\nIf omitted, the default is \"false\".\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/volumes#awselasticblockstore\n+optional",
+          "type": "boolean"
+        }
+      }
+    },
+    "GitRepoVolumeSource": {
+      "id": "GitRepoVolumeSource",
+      "description": "Represents a volume that is populated with the contents of a git repository.\nGit repo volumes do not support ownership management.\nGit repo volumes support SELinux relabeling.",
+      "type": "object",
+      "properties": {
+        "repository": {
+          "description": "Repository URL",
+          "type": "string"
+        },
+        "revision": {
+          "description": "Commit hash for the specified revision.\n+optional",
+          "type": "string"
+        },
+        "directory": {
+          "description": "Target directory name.\nMust not contain or start with '..'.  If '.' is supplied, the volume directory will be the\ngit repository.  Otherwise, if specified, the volume will contain the git repository in\nthe subdirectory with the given name.\n+optional",
+          "type": "string"
+        }
+      }
+    },
+    "SecretVolumeSource": {
+      "id": "SecretVolumeSource",
+      "description": "Adapts a Secret into a volume.\n\nThe contents of the target Secret's Data field will be presented in a volume\nas files using the keys in the Data field as the file names.\nSecret volumes support ownership management and SELinux relabeling.",
+      "type": "object",
+      "properties": {
+        "secretName": {
+          "description": "Name of the secret in the pod's namespace to use.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/volumes#secrets\n+optional",
+          "type": "string"
+        },
+        "items": {
+          "description": "If unspecified, each key-value pair in the Data field of the referenced\nSecret will be projected into the volume as a file whose name is the\nkey and content is the value. If specified, the listed keys will be\nprojected into the specified paths, and unlisted keys will not be\npresent. If a key is specified which is not present in the Secret,\nthe volume setup will error. Paths must be relative and may not contain\nthe '..' path or start with '..'.\n+optional",
+          "type": "array",
+          "items": {
+            "$ref": "KeyToPath"
+          }
+        },
+        "defaultMode": {
+          "description": "Optional: mode bits to use on created files by default. Must be a\nvalue between 0 and 0777. Defaults to 0644.\nDirectories within the path are not affected by this setting.\nThis might be in conflict with other options that affect the file\nmode, like fsGroup, and the result can be other mode bits set.\n+optional",
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "KeyToPath": {
+      "id": "KeyToPath",
+      "description": "Maps a string key to a path within a volume.",
+      "type": "object",
+      "properties": {
+        "key": {
+          "description": "The key to project.",
+          "type": "string"
+        },
+        "path": {
+          "description": "The relative path of the file to map the key to.\nMay not be an absolute path.\nMay not contain the path element '..'.\nMay not start with the string '..'.",
+          "type": "string"
+        },
+        "mode": {
+          "description": "Optional: mode bits to use on this file, must be a value between 0\nand 0777. If not specified, the volume defaultMode will be used.\nThis might be in conflict with other options that affect the file\nmode, like fsGroup, and the result can be other mode bits set.\n+optional",
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "NFSVolumeSource": {
+      "id": "NFSVolumeSource",
+      "description": "Represents an NFS mount that lasts the lifetime of a pod.\nNFS volumes do not support ownership management or SELinux relabeling.",
+      "type": "object",
+      "properties": {
+        "server": {
+          "description": "Server is the hostname or IP address of the NFS server.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/volumes#nfs",
+          "type": "string"
+        },
+        "path": {
+          "description": "Path that is exported by the NFS server.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/volumes#nfs",
+          "type": "string"
+        },
+        "readOnly": {
+          "description": "ReadOnly here will force\nthe NFS export to be mounted with read-only permissions.\nDefaults to false.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/volumes#nfs\n+optional",
+          "type": "boolean"
+        }
+      }
+    },
+    "ISCSIVolumeSource": {
+      "id": "ISCSIVolumeSource",
+      "description": "Represents an ISCSI disk.\nISCSI volumes can only be mounted as read\/write once.\nISCSI volumes support ownership management and SELinux relabeling.",
+      "type": "object",
+      "properties": {
+        "targetPortal": {
+          "description": "iSCSI target portal. The portal is either an IP or ip_addr:port if the port\nis other than default (typically TCP ports 860 and 3260).",
+          "type": "string"
+        },
+        "iqn": {
+          "description": "Target iSCSI Qualified Name.",
+          "type": "string"
+        },
+        "lun": {
+          "description": "iSCSI target lun number.",
+          "type": "integer",
+          "format": "int32"
+        },
+        "iscsiInterface": {
+          "description": "Optional: Defaults to 'default' (tcp). iSCSI interface name that uses an iSCSI transport.\n+optional",
+          "type": "string"
+        },
+        "fsType": {
+          "description": "Filesystem type of the volume that you want to mount.\nTip: Ensure that the filesystem type is supported by the host operating system.\nExamples: \"ext4\", \"xfs\", \"ntfs\". Implicitly inferred to be \"ext4\" if unspecified.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/volumes#iscsi",
+          "type": "string"
+        },
+        "readOnly": {
+          "description": "ReadOnly here will force the ReadOnly setting in VolumeMounts.\nDefaults to false.\n+optional",
+          "type": "boolean"
+        }
+      }
+    },
+    "GlusterfsVolumeSource": {
+      "id": "GlusterfsVolumeSource",
+      "description": "Represents a Glusterfs mount that lasts the lifetime of a pod.\nGlusterfs volumes do not support ownership management or SELinux relabeling.",
+      "type": "object",
+      "properties": {
+        "endpoints": {
+          "description": "EndpointsName is the endpoint name that details Glusterfs topology.\nMore info: http:\/\/releases.k8s.io\/HEAD\/examples\/volumes\/glusterfs\/README.md#create-a-pod",
+          "type": "string"
+        },
+        "path": {
+          "description": "Path is the Glusterfs volume path.\nMore info: http:\/\/releases.k8s.io\/HEAD\/examples\/volumes\/glusterfs\/README.md#create-a-pod",
+          "type": "string"
+        },
+        "readOnly": {
+          "description": "ReadOnly here will force the Glusterfs volume to be mounted with read-only permissions.\nDefaults to false.\nMore info: http:\/\/releases.k8s.io\/HEAD\/examples\/volumes\/glusterfs\/README.md#create-a-pod\n+optional",
+          "type": "boolean"
+        }
+      }
+    },
+    "PersistentVolumeClaimVolumeSource": {
+      "id": "PersistentVolumeClaimVolumeSource",
+      "description": "PersistentVolumeClaimVolumeSource references the user's PVC in the same namespace.\nThis volume finds the bound PV and mounts that volume for the pod. A\nPersistentVolumeClaimVolumeSource is, essentially, a wrapper around another\ntype of volume that is owned by someone else (the system).",
+      "type": "object",
+      "properties": {
+        "claimName": {
+          "description": "ClaimName is the name of a PersistentVolumeClaim in the same namespace as the pod using this volume.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/persistent-volumes#persistentvolumeclaims",
+          "type": "string"
+        },
+        "readOnly": {
+          "description": "Will force the ReadOnly setting in VolumeMounts.\nDefault false.\n+optional",
+          "type": "boolean"
+        }
+      }
+    },
+    "RBDVolumeSource": {
+      "id": "RBDVolumeSource",
+      "description": "Represents a Rados Block Device mount that lasts the lifetime of a pod.\nRBD volumes support ownership management and SELinux relabeling.",
+      "type": "object",
+      "properties": {
+        "monitors": {
+          "description": "A collection of Ceph monitors.\nMore info: http:\/\/releases.k8s.io\/HEAD\/examples\/volumes\/rbd\/README.md#how-to-use-it",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "image": {
+          "description": "The rados image name.\nMore info: http:\/\/releases.k8s.io\/HEAD\/examples\/volumes\/rbd\/README.md#how-to-use-it",
+          "type": "string"
+        },
+        "fsType": {
+          "description": "Filesystem type of the volume that you want to mount.\nTip: Ensure that the filesystem type is supported by the host operating system.\nExamples: \"ext4\", \"xfs\", \"ntfs\". Implicitly inferred to be \"ext4\" if unspecified.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/volumes#rbd",
+          "type": "string"
+        },
+        "pool": {
+          "description": "The rados pool name.\nDefault is rbd.\nMore info: http:\/\/releases.k8s.io\/HEAD\/examples\/volumes\/rbd\/README.md#how-to-use-it.\n+optional",
+          "type": "string"
+        },
+        "user": {
+          "description": "The rados user name.\nDefault is admin.\nMore info: http:\/\/releases.k8s.io\/HEAD\/examples\/volumes\/rbd\/README.md#how-to-use-it\n+optional",
+          "type": "string"
+        },
+        "keyring": {
+          "description": "Keyring is the path to key ring for RBDUser.\nDefault is \/etc\/ceph\/keyring.\nMore info: http:\/\/releases.k8s.io\/HEAD\/examples\/volumes\/rbd\/README.md#how-to-use-it\n+optional",
+          "type": "string"
+        },
+        "secretRef": {
+          "description": "SecretRef is name of the authentication secret for RBDUser. If provided\noverrides keyring.\nDefault is nil.\nMore info: http:\/\/releases.k8s.io\/HEAD\/examples\/volumes\/rbd\/README.md#how-to-use-it\n+optional",
+          "$ref": "LocalObjectReference"
+        },
+        "readOnly": {
+          "description": "ReadOnly here will force the ReadOnly setting in VolumeMounts.\nDefaults to false.\nMore info: http:\/\/releases.k8s.io\/HEAD\/examples\/volumes\/rbd\/README.md#how-to-use-it\n+optional",
+          "type": "boolean"
+        }
+      }
+    },
+    "LocalObjectReference": {
+      "id": "LocalObjectReference",
+      "description": "LocalObjectReference contains enough information to let you locate the\nreferenced object inside the same namespace.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Name of the referent.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/identifiers#names",
+          "type": "string"
+        }
+      }
+    },
+    "FlexVolumeSource": {
+      "id": "FlexVolumeSource",
+      "description": "FlexVolume represents a generic volume resource that is\nprovisioned\/attached using an exec based plugin. This is an alpha feature and may change in future.",
+      "type": "object",
+      "properties": {
+        "driver": {
+          "description": "Driver is the name of the driver to use for this volume.",
+          "type": "string"
+        },
+        "fsType": {
+          "description": "Filesystem type to mount.\nMust be a filesystem type supported by the host operating system.\nEx. \"ext4\", \"xfs\", \"ntfs\". The default filesystem depends on FlexVolume script.\n+optional",
+          "type": "string"
+        },
+        "secretRef": {
+          "description": "Optional: SecretRef is reference to the secret object containing\nsensitive information to pass to the plugin scripts. This may be\nempty if no secret object is specified. If the secret object\ncontains more than one secret, all secrets are passed to the plugin\nscripts.\n+optional",
+          "$ref": "LocalObjectReference"
+        },
+        "readOnly": {
+          "description": "Optional: Defaults to false (read\/write). ReadOnly here will force\nthe ReadOnly setting in VolumeMounts.\n+optional",
+          "type": "boolean"
+        },
+        "options": {
+          "description": "Optional: Extra command options if any.\n+optional",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "CinderVolumeSource": {
+      "id": "CinderVolumeSource",
+      "description": "Represents a cinder volume resource in Openstack.\nA Cinder volume must exist before mounting to a container.\nThe volume must also be in the same region as the kubelet.\nCinder volumes support ownership management and SELinux relabeling.",
+      "type": "object",
+      "properties": {
+        "volumeID": {
+          "description": "volume id used to identify the volume in cinder\nMore info: http:\/\/releases.k8s.io\/HEAD\/examples\/mysql-cinder-pd\/README.md",
+          "type": "string"
+        },
+        "fsType": {
+          "description": "Filesystem type to mount.\nMust be a filesystem type supported by the host operating system.\nExamples: \"ext4\", \"xfs\", \"ntfs\". Implicitly inferred to be \"ext4\" if unspecified.\nMore info: http:\/\/releases.k8s.io\/HEAD\/examples\/mysql-cinder-pd\/README.md\n+optional",
+          "type": "string"
+        },
+        "readOnly": {
+          "description": "Optional: Defaults to false (read\/write). ReadOnly here will force\nthe ReadOnly setting in VolumeMounts.\nMore info: http:\/\/releases.k8s.io\/HEAD\/examples\/mysql-cinder-pd\/README.md\n+optional",
+          "type": "boolean"
+        }
+      }
+    },
+    "CephFSVolumeSource": {
+      "id": "CephFSVolumeSource",
+      "description": "Represents a Ceph Filesystem mount that lasts the lifetime of a pod\nCephfs volumes do not support ownership management or SELinux relabeling.",
+      "type": "object",
+      "properties": {
+        "monitors": {
+          "description": "Required: Monitors is a collection of Ceph monitors\nMore info: http:\/\/releases.k8s.io\/HEAD\/examples\/volumes\/cephfs\/README.md#how-to-use-it",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "path": {
+          "description": "Optional: Used as the mounted root, rather than the full Ceph tree, default is \/\n+optional",
+          "type": "string"
+        },
+        "user": {
+          "description": "Optional: User is the rados user name, default is admin\nMore info: http:\/\/releases.k8s.io\/HEAD\/examples\/volumes\/cephfs\/README.md#how-to-use-it\n+optional",
+          "type": "string"
+        },
+        "secretFile": {
+          "description": "Optional: SecretFile is the path to key ring for User, default is \/etc\/ceph\/user.secret\nMore info: http:\/\/releases.k8s.io\/HEAD\/examples\/volumes\/cephfs\/README.md#how-to-use-it\n+optional",
+          "type": "string"
+        },
+        "secretRef": {
+          "description": "Optional: SecretRef is reference to the authentication secret for User, default is empty.\nMore info: http:\/\/releases.k8s.io\/HEAD\/examples\/volumes\/cephfs\/README.md#how-to-use-it\n+optional",
+          "$ref": "LocalObjectReference"
+        },
+        "readOnly": {
+          "description": "Optional: Defaults to false (read\/write). ReadOnly here will force\nthe ReadOnly setting in VolumeMounts.\nMore info: http:\/\/releases.k8s.io\/HEAD\/examples\/volumes\/cephfs\/README.md#how-to-use-it\n+optional",
+          "type": "boolean"
+        }
+      }
+    },
+    "FlockerVolumeSource": {
+      "id": "FlockerVolumeSource",
+      "description": "Represents a Flocker volume mounted by the Flocker agent.\nOne and only one of datasetName and datasetUUID should be set.\nFlocker volumes do not support ownership management or SELinux relabeling.",
+      "type": "object",
+      "properties": {
+        "datasetName": {
+          "description": "Name of the dataset stored as metadata -> name on the dataset for Flocker\nshould be considered as deprecated\n+optional",
+          "type": "string"
+        },
+        "datasetUUID": {
+          "description": "UUID of the dataset. This is unique identifier of a Flocker dataset\n+optional",
+          "type": "string"
+        }
+      }
+    },
+    "DownwardAPIVolumeSource": {
+      "id": "DownwardAPIVolumeSource",
+      "description": "DownwardAPIVolumeSource represents a volume containing downward API info.\nDownward API volumes support ownership management and SELinux relabeling.",
+      "type": "object",
+      "properties": {
+        "items": {
+          "description": "Items is a list of downward API volume file\n+optional",
+          "type": "array",
+          "items": {
+            "$ref": "DownwardAPIVolumeFile"
+          }
+        },
+        "defaultMode": {
+          "description": "Optional: mode bits to use on created files by default. Must be a\nvalue between 0 and 0777. Defaults to 0644.\nDirectories within the path are not affected by this setting.\nThis might be in conflict with other options that affect the file\nmode, like fsGroup, and the result can be other mode bits set.\n+optional",
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "DownwardAPIVolumeFile": {
+      "id": "DownwardAPIVolumeFile",
+      "description": "DownwardAPIVolumeFile represents information to create the file containing the pod field",
+      "type": "object",
+      "properties": {
+        "path": {
+          "description": "Required: Path is  the relative path name of the file to be created. Must not be absolute or contain the '..' path. Must be utf-8 encoded. The first item of the relative path must not start with '..'",
+          "type": "string"
+        },
+        "fieldRef": {
+          "description": "Required: Selects a field of the pod: only annotations, labels, name and namespace are supported.\n+optional",
+          "$ref": "ObjectFieldSelector"
+        },
+        "resourceFieldRef": {
+          "description": "Selects a resource of the container: only resources limits and requests\n(limits.cpu, limits.memory, requests.cpu and requests.memory) are currently supported.\n+optional",
+          "$ref": "ResourceFieldSelector"
+        },
+        "mode": {
+          "description": "Optional: mode bits to use on this file, must be a value between 0\nand 0777. If not specified, the volume defaultMode will be used.\nThis might be in conflict with other options that affect the file\nmode, like fsGroup, and the result can be other mode bits set.\n+optional",
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "ObjectFieldSelector": {
+      "id": "ObjectFieldSelector",
+      "description": "ObjectFieldSelector selects an APIVersioned field of an object.",
+      "type": "object",
+      "properties": {
+        "apiVersion": {
+          "description": "Version of the schema the FieldPath is written in terms of, defaults to \"v1\".\n+optional",
+          "type": "string"
+        },
+        "fieldPath": {
+          "description": "Path of the field to select in the specified API version.",
+          "type": "string"
+        }
+      }
+    },
+    "ResourceFieldSelector": {
+      "id": "ResourceFieldSelector",
+      "description": "ResourceFieldSelector represents container resources (cpu, memory) and their output format",
+      "type": "object",
+      "properties": {
+        "containerName": {
+          "description": "Container name: required for volumes, optional for env vars\n+optional",
+          "type": "string"
+        },
+        "resource": {
+          "description": "Required: resource to select",
+          "type": "string"
+        },
+        "divisor": {
+          "description": "Specifies the output format of the exposed resources, defaults to \"1\"\n+optional",
+          "$ref": "Quantity"
+        }
+      }
+    },
+    "Quantity": {
+      "id": "Quantity",
+      "description": "Quantity is a fixed-point representation of a number.\nIt provides convenient marshaling\/unmarshaling in JSON and YAML,\nin addition to String() and Int64() accessors.\n\nThe serialization format is:\n\n<quantity>        ::= <signedNumber><suffix>\n  (Note that <suffix> may be empty, from the \"\" case in <decimalSI>.)\n<digit>           ::= 0 | 1 | ... | 9\n<digits>          ::= <digit> | <digit><digits>\n<number>          ::= <digits> | <digits>.<digits> | <digits>. | .<digits>\n<sign>            ::= \"+\" | \"-\"\n<signedNumber>    ::= <number> | <sign><number>\n<suffix>          ::= <binarySI> | <decimalExponent> | <decimalSI>\n<binarySI>        ::= Ki | Mi | Gi | Ti | Pi | Ei\n  (International System of units; See: http:\/\/physics.nist.gov\/cuu\/Units\/binary.html)\n<decimalSI>       ::= m | \"\" | k | M | G | T | P | E\n  (Note that 1024 = 1Ki but 1000 = 1k; I didn't choose the capitalization.)\n<decimalExponent> ::= \"e\" <signedNumber> | \"E\" <signedNumber>\n\nNo matter which of the three exponent forms is used, no quantity may represent\na number greater than 2^63-1 in magnitude, nor may it have more than 3 decimal\nplaces. Numbers larger or more precise will be capped or rounded up.\n(E.g.: 0.1m will rounded up to 1m.)\nThis may be extended in the future if we require larger or smaller quantities.\n\nWhen a Quantity is parsed from a string, it will remember the type of suffix\nit had, and will use the same type again when it is serialized.\n\nBefore serializing, Quantity will be put in \"canonical form\".\nThis means that Exponent\/suffix will be adjusted up or down (with a\ncorresponding increase or decrease in Mantissa) such that:\n  a. No precision is lost\n  b. No fractional digits will be emitted\n  c. The exponent (or suffix) is as large as possible.\nThe sign will be omitted unless the number is negative.\n\nExamples:\n  1.5 will be serialized as \"1500m\"\n  1.5Gi will be serialized as \"1536Mi\"\n\nNOTE: We reserve the right to amend this canonical format, perhaps to\n  allow 1.5 to be canonical.",
+      "type": "object",
+      "properties": {
+        "string": {
+
+          "type": "string"
+        }
+      }
+    },
+    "FCVolumeSource": {
+      "id": "FCVolumeSource",
+      "description": "Represents a Fibre Channel volume.\nFibre Channel volumes can only be mounted as read\/write once.\nFibre Channel volumes support ownership management and SELinux relabeling.",
+      "type": "object",
+      "properties": {
+        "targetWWNs": {
+          "description": "Required: FC target worldwide names (WWNs)",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "lun": {
+          "description": "Required: FC target lun number",
+          "type": "integer",
+          "format": "int32"
+        },
+        "fsType": {
+          "description": "Filesystem type to mount.\nMust be a filesystem type supported by the host operating system.\nEx. \"ext4\", \"xfs\", \"ntfs\". Implicitly inferred to be \"ext4\" if unspecified.",
+          "type": "string"
+        },
+        "readOnly": {
+          "description": "Optional: Defaults to false (read\/write). ReadOnly here will force\nthe ReadOnly setting in VolumeMounts.\n+optional",
+          "type": "boolean"
+        }
+      }
+    },
+    "AzureFileVolumeSource": {
+      "id": "AzureFileVolumeSource",
+      "description": "AzureFile represents an Azure File Service mount on the host and bind mount to the pod.",
+      "type": "object",
+      "properties": {
+        "secretName": {
+          "description": "the name of secret that contains Azure Storage Account Name and Key",
+          "type": "string"
+        },
+        "shareName": {
+          "description": "Share Name",
+          "type": "string"
+        },
+        "readOnly": {
+          "description": "Defaults to false (read\/write). ReadOnly here will force\nthe ReadOnly setting in VolumeMounts.\n+optional",
+          "type": "boolean"
+        }
+      }
+    },
+    "ConfigMapVolumeSource": {
+      "id": "ConfigMapVolumeSource",
+      "description": "Adapts a ConfigMap into a volume.\n\nThe contents of the target ConfigMap's Data field will be presented in a\nvolume as files using the keys in the Data field as the file names, unless\nthe items element is populated with specific mappings of keys to paths.\nConfigMap volumes support ownership management and SELinux relabeling.",
+      "type": "object",
+      "properties": {
+        "localObjectReference": {
+
+          "$ref": "LocalObjectReference"
+        },
+        "items": {
+          "description": "If unspecified, each key-value pair in the Data field of the referenced\nConfigMap will be projected into the volume as a file whose name is the\nkey and content is the value. If specified, the listed keys will be\nprojected into the specified paths, and unlisted keys will not be\npresent. If a key is specified which is not present in the ConfigMap,\nthe volume setup will error. Paths must be relative and may not contain\nthe '..' path or start with '..'.\n+optional",
+          "type": "array",
+          "items": {
+            "$ref": "KeyToPath"
+          }
+        },
+        "defaultMode": {
+          "description": "Optional: mode bits to use on created files by default. Must be a\nvalue between 0 and 0777. Defaults to 0644.\nDirectories within the path are not affected by this setting.\nThis might be in conflict with other options that affect the file\nmode, like fsGroup, and the result can be other mode bits set.\n+optional",
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "VsphereVirtualDiskVolumeSource": {
+      "id": "VsphereVirtualDiskVolumeSource",
+      "description": "Represents a vSphere volume resource.",
+      "type": "object",
+      "properties": {
+        "volumePath": {
+          "description": "Path that identifies vSphere volume vmdk",
+          "type": "string"
+        },
+        "fsType": {
+          "description": "Filesystem type to mount.\nMust be a filesystem type supported by the host operating system.\nEx. \"ext4\", \"xfs\", \"ntfs\". Implicitly inferred to be \"ext4\" if unspecified.\n+optional",
+          "type": "string"
+        }
+      }
+    },
+    "QuobyteVolumeSource": {
+      "id": "QuobyteVolumeSource",
+      "description": "Represents a Quobyte mount that lasts the lifetime of a pod.\nQuobyte volumes do not support ownership management or SELinux relabeling.",
+      "type": "object",
+      "properties": {
+        "registry": {
+          "description": "Registry represents a single or multiple Quobyte Registry services\nspecified as a string as host:port pair (multiple entries are separated with commas)\nwhich acts as the central registry for volumes",
+          "type": "string"
+        },
+        "volume": {
+          "description": "Volume is a string that references an already created Quobyte volume by name.",
+          "type": "string"
+        },
+        "readOnly": {
+          "description": "ReadOnly here will force the Quobyte volume to be mounted with read-only permissions.\nDefaults to false.\n+optional",
+          "type": "boolean"
+        },
+        "user": {
+          "description": "User to map volume access to\nDefaults to serivceaccount user\n+optional",
+          "type": "string"
+        },
+        "group": {
+          "description": "Group to map volume access to\nDefault is no group\n+optional",
+          "type": "string"
+        }
+      }
+    },
+    "AzureDiskVolumeSource": {
+      "id": "AzureDiskVolumeSource",
+      "description": "AzureDisk represents an Azure Data Disk mount on the host and bind mount to the pod.",
+      "type": "object",
+      "properties": {
+        "diskName": {
+          "description": "The Name of the data disk in the blob storage",
+          "type": "string"
+        },
+        "diskURI": {
+          "description": "The URI the data disk in the blob storage",
+          "type": "string"
+        },
+        "cachingMode": {
+          "description": "Host Caching mode: None, Read Only, Read Write.\n+optional",
+          "type": "string"
+        },
+        "fsType": {
+          "description": "Filesystem type to mount.\nMust be a filesystem type supported by the host operating system.\nEx. \"ext4\", \"xfs\", \"ntfs\". Implicitly inferred to be \"ext4\" if unspecified.\n+optional",
+          "type": "string"
+        },
+        "readOnly": {
+          "description": "Defaults to false (read\/write). ReadOnly here will force\nthe ReadOnly setting in VolumeMounts.\n+optional",
+          "type": "boolean"
+        }
+      }
+    },
+    "PhotonPersistentDiskVolumeSource": {
+      "id": "PhotonPersistentDiskVolumeSource",
+      "description": "Represents a Photon Controller persistent disk resource.",
+      "type": "object",
+      "properties": {
+        "pdID": {
+          "description": "ID that identifies Photon Controller persistent disk",
+          "type": "string"
+        },
+        "fsType": {
+          "description": "Filesystem type to mount.\nMust be a filesystem type supported by the host operating system.\nEx. \"ext4\", \"xfs\", \"ntfs\". Implicitly inferred to be \"ext4\" if unspecified.",
+          "type": "string"
+        }
+      }
+    },
+    "Container": {
+      "id": "Container",
+      "description": "A single application container that you want to run within a pod.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Name of the container specified as a DNS_LABEL.\nEach container in a pod must have a unique name (DNS_LABEL).\nCannot be updated.",
+          "type": "string"
+        },
+        "image": {
+          "description": "Docker image name.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/images\n+optional",
+          "type": "string"
+        },
+        "command": {
+          "description": "Entrypoint array. Not executed within a shell.\nThe docker image's ENTRYPOINT is used if this is not provided.\nVariable references $(VAR_NAME) are expanded using the container's environment. If a variable\ncannot be resolved, the reference in the input string will be unchanged. The $(VAR_NAME) syntax\ncan be escaped with a double $$, ie: $$(VAR_NAME). Escaped references will never be expanded,\nregardless of whether the variable exists or not.\nCannot be updated.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/containers#containers-and-commands\n+optional",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "args": {
+          "description": "Arguments to the entrypoint.\nThe docker image's CMD is used if this is not provided.\nVariable references $(VAR_NAME) are expanded using the container's environment. If a variable\ncannot be resolved, the reference in the input string will be unchanged. The $(VAR_NAME) syntax\ncan be escaped with a double $$, ie: $$(VAR_NAME). Escaped references will never be expanded,\nregardless of whether the variable exists or not.\nCannot be updated.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/containers#containers-and-commands\n+optional",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "workingDir": {
+          "description": "Container's working directory.\nIf not specified, the container runtime's default will be used, which\nmight be configured in the container image.\nCannot be updated.\n+optional",
+          "type": "string"
+        },
+        "ports": {
+          "description": "List of ports to expose from the container. Exposing a port here gives\nthe system additional information about the network connections a\ncontainer uses, but is primarily informational. Not specifying a port here\nDOES NOT prevent that port from being exposed. Any port which is\nlistening on the default \"0.0.0.0\" address inside a container will be\naccessible from the network.\nCannot be updated.\n+optional",
+          "type": "array",
+          "items": {
+            "$ref": "ContainerPort"
+          }
+        },
+        "env": {
+          "description": "List of environment variables to set in the container.\nCannot be updated.\n+optional",
+          "type": "array",
+          "items": {
+            "$ref": "EnvVar"
+          }
+        },
+        "resources": {
+          "description": "Compute Resources required by this container.\nCannot be updated.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/persistent-volumes#resources\n+optional",
+          "$ref": "ResourceRequirements"
+        },
+        "volumeMounts": {
+          "description": "Pod volumes to mount into the container's filesystem.\nCannot be updated.\n+optional",
+          "type": "array",
+          "items": {
+            "$ref": "VolumeMount"
+          }
+        },
+        "livenessProbe": {
+          "description": "Periodic probe of container liveness.\nContainer will be restarted if the probe fails.\nCannot be updated.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/pod-states#container-probes\n+optional",
+          "$ref": "Probe"
+        },
+        "readinessProbe": {
+          "description": "Periodic probe of container service readiness.\nContainer will be removed from service endpoints if the probe fails.\nCannot be updated.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/pod-states#container-probes\n+optional",
+          "$ref": "Probe"
+        },
+        "lifecycle": {
+          "description": "Actions that the management system should take in response to container lifecycle events.\nCannot be updated.\n+optional",
+          "$ref": "Lifecycle"
+        },
+        "terminationMessagePath": {
+          "description": "Optional: Path at which the file to which the container's termination message\nwill be written is mounted into the container's filesystem.\nMessage written is intended to be brief final status, such as an assertion failure message.\nDefaults to \/dev\/termination-log.\nCannot be updated.\n+optional",
+          "type": "string"
+        },
+        "imagePullPolicy": {
+          "description": "Image pull policy.\nOne of Always, Never, IfNotPresent.\nDefaults to Always if :latest tag is specified, or IfNotPresent otherwise.\nCannot be updated.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/images#updating-images\n+optional",
+          "type": "string"
+        },
+        "securityContext": {
+          "description": "Security options the pod should run with.\nMore info: http:\/\/releases.k8s.io\/HEAD\/docs\/design\/security_context.md\n+optional",
+          "$ref": "SecurityContext"
+        },
+        "stdin": {
+          "description": "Whether this container should allocate a buffer for stdin in the container runtime. If this\nis not set, reads from stdin in the container will always result in EOF.\nDefault is false.\n+optional",
+          "type": "boolean"
+        },
+        "stdinOnce": {
+          "description": "Whether the container runtime should close the stdin channel after it has been opened by\na single attach. When stdin is true the stdin stream will remain open across multiple attach\nsessions. If stdinOnce is set to true, stdin is opened on container start, is empty until the\nfirst client attaches to stdin, and then remains open and accepts data until the client disconnects,\nat which time stdin is closed and remains closed until the container is restarted. If this\nflag is false, a container processes that reads from stdin will never receive an EOF.\nDefault is false\n+optional",
+          "type": "boolean"
+        },
+        "tty": {
+          "description": "Whether this container should allocate a TTY for itself, also requires 'stdin' to be true.\nDefault is false.\n+optional",
+          "type": "boolean"
+        }
+      }
+    },
+    "ContainerPort": {
+      "id": "ContainerPort",
+      "description": "ContainerPort represents a network port in a single container.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "If specified, this must be an IANA_SVC_NAME and unique within the pod. Each\nnamed port in a pod must have a unique name. Name for the port that can be\nreferred to by services.\n+optional",
+          "type": "string"
+        },
+        "hostPort": {
+          "description": "Number of port to expose on the host.\nIf specified, this must be a valid port number, 0 < x < 65536.\nIf HostNetwork is specified, this must match ContainerPort.\nMost containers do not need this.\n+optional",
+          "type": "integer",
+          "format": "int32"
+        },
+        "containerPort": {
+          "description": "Number of port to expose on the pod's IP address.\nThis must be a valid port number, 0 < x < 65536.",
+          "type": "integer",
+          "format": "int32"
+        },
+        "protocol": {
+          "description": "Protocol for port. Must be UDP or TCP.\nDefaults to \"TCP\".\n+optional",
+          "type": "string"
+        },
+        "hostIP": {
+          "description": "What host IP to bind the external port to.\n+optional",
+          "type": "string"
+        }
+      }
+    },
+    "EnvVar": {
+      "id": "EnvVar",
+      "description": "EnvVar represents an environment variable present in a Container.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Name of the environment variable. Must be a C_IDENTIFIER.",
+          "type": "string"
+        },
+        "value": {
+          "description": "Variable references $(VAR_NAME) are expanded\nusing the previous defined environment variables in the container and\nany service environment variables. If a variable cannot be resolved,\nthe reference in the input string will be unchanged. The $(VAR_NAME)\nsyntax can be escaped with a double $$, ie: $$(VAR_NAME). Escaped\nreferences will never be expanded, regardless of whether the variable\nexists or not.\nDefaults to \"\".\n+optional",
+          "type": "string"
+        },
+        "valueFrom": {
+          "description": "Source for the environment variable's value. Cannot be used if value is not empty.\n+optional",
+          "$ref": "EnvVarSource"
+        }
+      }
+    },
+    "EnvVarSource": {
+      "id": "EnvVarSource",
+      "description": "EnvVarSource represents a source for the value of an EnvVar.",
+      "type": "object",
+      "properties": {
+        "fieldRef": {
+          "description": "Selects a field of the pod: supports metadata.name, metadata.namespace, metadata.labels, metadata.annotations,\nspec.nodeName, spec.serviceAccountName, status.podIP.\n+optional",
+          "$ref": "ObjectFieldSelector"
+        },
+        "resourceFieldRef": {
+          "description": "Selects a resource of the container: only resources limits and requests\n(limits.cpu, limits.memory, requests.cpu and requests.memory) are currently supported.\n+optional",
+          "$ref": "ResourceFieldSelector"
+        },
+        "configMapKeyRef": {
+          "description": "Selects a key of a ConfigMap.\n+optional",
+          "$ref": "ConfigMapKeySelector"
+        },
+        "secretKeyRef": {
+          "description": "Selects a key of a secret in the pod's namespace\n+optional",
+          "$ref": "SecretKeySelector"
+        }
+      }
+    },
+    "ConfigMapKeySelector": {
+      "id": "ConfigMapKeySelector",
+      "description": "Selects a key from a ConfigMap.",
+      "type": "object",
+      "properties": {
+        "localObjectReference": {
+          "description": "The ConfigMap to select from.",
+          "$ref": "LocalObjectReference"
+        },
+        "key": {
+          "description": "The key to select.",
+          "type": "string"
+        }
+      }
+    },
+    "SecretKeySelector": {
+      "id": "SecretKeySelector",
+      "description": "SecretKeySelector selects a key of a Secret.",
+      "type": "object",
+      "properties": {
+        "localObjectReference": {
+          "description": "The name of the secret in the pod's namespace to select from.",
+          "$ref": "LocalObjectReference"
+        },
+        "key": {
+          "description": "The key of the secret to select from.  Must be a valid secret key.",
+          "type": "string"
+        }
+      }
+    },
+    "ResourceRequirements": {
+      "id": "ResourceRequirements",
+      "description": "ResourceRequirements describes the compute resource requirements.",
+      "type": "object",
+      "properties": {
+        "limits": {
+          "description": "Limits describes the maximum amount of compute resources allowed.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/compute-resources\/\n+optional",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "Quantity"
+          }
+        },
+        "requests": {
+          "description": "Requests describes the minimum amount of compute resources required.\nIf Requests is omitted for a container, it defaults to Limits if that is explicitly specified,\notherwise to an implementation-defined value.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/compute-resources\/\n+optional",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "Quantity"
+          }
+        }
+      }
+    },
+    "VolumeMount": {
+      "id": "VolumeMount",
+      "description": "VolumeMount describes a mounting of a Volume within a container.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "This must match the Name of a Volume.",
+          "type": "string"
+        },
+        "readOnly": {
+          "description": "Mounted read-only if true, read-write otherwise (false or unspecified).\nDefaults to false.\n+optional",
+          "type": "boolean"
+        },
+        "mountPath": {
+          "description": "Path within the container at which the volume should be mounted.  Must\nnot contain ':'.",
+          "type": "string"
+        },
+        "subPath": {
+          "description": "Path within the volume from which the container's volume should be mounted.\nDefaults to \"\" (volume's root).\n+optional",
+          "type": "string"
+        }
+      }
+    },
+    "Probe": {
+      "id": "Probe",
+      "description": "Probe describes a health check to be performed against a container to determine whether it is\nalive or ready to receive traffic.",
+      "type": "object",
+      "properties": {
+        "handler": {
+          "description": "The action taken to determine the health of a container",
+          "$ref": "Handler"
+        },
+        "initialDelaySeconds": {
+          "description": "Number of seconds after the container has started before liveness probes are initiated.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/pod-states#container-probes\n+optional",
+          "type": "integer",
+          "format": "int32"
+        },
+        "timeoutSeconds": {
+          "description": "Number of seconds after which the probe times out.\nDefaults to 1 second. Minimum value is 1.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/pod-states#container-probes\n+optional",
+          "type": "integer",
+          "format": "int32"
+        },
+        "periodSeconds": {
+          "description": "How often (in seconds) to perform the probe.\nDefault to 10 seconds. Minimum value is 1.\n+optional",
+          "type": "integer",
+          "format": "int32"
+        },
+        "successThreshold": {
+          "description": "Minimum consecutive successes for the probe to be considered successful after having failed.\nDefaults to 1. Must be 1 for liveness. Minimum value is 1.\n+optional",
+          "type": "integer",
+          "format": "int32"
+        },
+        "failureThreshold": {
+          "description": "Minimum consecutive failures for the probe to be considered failed after having succeeded.\nDefaults to 3. Minimum value is 1.\n+optional",
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "Handler": {
+      "id": "Handler",
+      "description": "Handler defines a specific action that should be taken",
+      "type": "object",
+      "properties": {
+        "exec": {
+          "description": "One and only one of the following should be specified.\nExec specifies the action to take.\n+optional",
+          "$ref": "ExecAction"
+        },
+        "httpGet": {
+          "description": "HTTPGet specifies the http request to perform.\n+optional",
+          "$ref": "HTTPGetAction"
+        },
+        "tcpSocket": {
+          "description": "TCPSocket specifies an action involving a TCP port.\nTCP hooks not yet supported",
+          "$ref": "TCPSocketAction"
+        }
+      }
+    },
+    "ExecAction": {
+      "id": "ExecAction",
+      "description": "ExecAction describes a \"run in container\" action.",
+      "type": "object",
+      "properties": {
+        "command": {
+          "description": "Command is the command line to execute inside the container, the working directory for the\ncommand  is root ('\/') in the container's filesystem. The command is simply exec'd, it is\nnot run inside a shell, so traditional shell instructions ('|', etc) won't work. To use\na shell, you need to explicitly call out to that shell.\nExit status of 0 is treated as live\/healthy and non-zero is unhealthy.\n+optional",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "HTTPGetAction": {
+      "id": "HTTPGetAction",
+      "description": "HTTPGetAction describes an action based on HTTP Get requests.",
+      "type": "object",
+      "properties": {
+        "path": {
+          "description": "Path to access on the HTTP server.\n+optional",
+          "type": "string"
+        },
+        "port": {
+          "description": "Name or number of the port to access on the container.\nNumber must be in the range 1 to 65535.\nName must be an IANA_SVC_NAME.",
+          "$ref": "IntOrString"
+        },
+        "host": {
+          "description": "Host name to connect to, defaults to the pod IP. You probably want to set\n\"Host\" in httpHeaders instead.\n+optional",
+          "type": "string"
+        },
+        "scheme": {
+          "description": "Scheme to use for connecting to the host.\nDefaults to HTTP.\n+optional",
+          "type": "string"
+        },
+        "httpHeaders": {
+          "description": "Custom headers to set in the request. HTTP allows repeated headers.\n+optional",
+          "type": "array",
+          "items": {
+            "$ref": "HTTPHeader"
+          }
+        }
+      }
+    },
+    "IntOrString": {
+      "id": "IntOrString",
+      "description": "IntOrString is a type that can hold an int32 or a string.  When used in\nJSON or YAML marshalling and unmarshalling, it produces or consumes the\ninner type.  This allows you to have, for example, a JSON field that can\naccept a name or number.",
+      "type": "object",
+      "properties": {
+        "type": {
+
+          "type": "string",
+          "format": "int64"
+        },
+        "intVal": {
+
+          "type": "integer",
+          "format": "int32"
+        },
+        "strVal": {
+
+          "type": "string"
+        }
+      }
+    },
+    "HTTPHeader": {
+      "id": "HTTPHeader",
+      "description": "HTTPHeader describes a custom header to be used in HTTP probes",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "The header field name",
+          "type": "string"
+        },
+        "value": {
+          "description": "The header field value",
+          "type": "string"
+        }
+      }
+    },
+    "TCPSocketAction": {
+      "id": "TCPSocketAction",
+      "description": "TCPSocketAction describes an action based on opening a socket",
+      "type": "object",
+      "properties": {
+        "port": {
+          "description": "Number or name of the port to access on the container.\nNumber must be in the range 1 to 65535.\nName must be an IANA_SVC_NAME.",
+          "$ref": "IntOrString"
+        }
+      }
+    },
+    "Lifecycle": {
+      "id": "Lifecycle",
+      "description": "Lifecycle describes actions that the management system should take in response to container lifecycle\nevents. For the PostStart and PreStop lifecycle handlers, management of the container blocks\nuntil the action is complete, unless the container process fails, in which case the handler is aborted.",
+      "type": "object",
+      "properties": {
+        "postStart": {
+          "description": "PostStart is called immediately after a container is created. If the handler fails,\nthe container is terminated and restarted according to its restart policy.\nOther management of the container blocks until the hook completes.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/container-environment#hook-details\n+optional",
+          "$ref": "Handler"
+        },
+        "preStop": {
+          "description": "PreStop is called immediately before a container is terminated.\nThe container is terminated after the handler completes.\nThe reason for termination is passed to the handler.\nRegardless of the outcome of the handler, the container is eventually terminated.\nOther management of the container blocks until the hook completes.\nMore info: http:\/\/kubernetes.io\/docs\/user-guide\/container-environment#hook-details\n+optional",
+          "$ref": "Handler"
+        }
+      }
+    },
+    "SecurityContext": {
+      "id": "SecurityContext",
+      "description": "SecurityContext holds security configuration that will be applied to a container.\nSome fields are present in both SecurityContext and PodSecurityContext.  When both\nare set, the values in SecurityContext take precedence.",
+      "type": "object",
+      "properties": {
+        "capabilities": {
+          "description": "The capabilities to add\/drop when running containers.\nDefaults to the default set of capabilities granted by the container runtime.\n+optional",
+          "$ref": "Capabilities"
+        },
+        "privileged": {
+          "description": "Run container in privileged mode.\nProcesses in privileged containers are essentially equivalent to root on the host.\nDefaults to false.\n+optional",
+          "type": "boolean"
+        },
+        "seLinuxOptions": {
+          "description": "The SELinux context to be applied to the container.\nIf unspecified, the container runtime will allocate a random SELinux context for each\ncontainer.  May also be set in PodSecurityContext.  If set in both SecurityContext and\nPodSecurityContext, the value specified in SecurityContext takes precedence.\n+optional",
+          "$ref": "SELinuxOptions"
+        },
+        "runAsUser": {
+          "description": "The UID to run the entrypoint of the container process.\nDefaults to user specified in image metadata if unspecified.\nMay also be set in PodSecurityContext.  If set in both SecurityContext and\nPodSecurityContext, the value specified in SecurityContext takes precedence.\n+optional",
+          "type": "string",
+          "format": "int64"
+        },
+        "runAsNonRoot": {
+          "description": "Indicates that the container must run as a non-root user.\nIf true, the Kubelet will validate the image at runtime to ensure that it\ndoes not run as UID 0 (root) and fail to start the container if it does.\nIf unset or false, no such validation will be performed.\nMay also be set in PodSecurityContext.  If set in both SecurityContext and\nPodSecurityContext, the value specified in SecurityContext takes precedence.\n+optional",
+          "type": "boolean"
+        },
+        "readOnlyRootFilesystem": {
+          "description": "Whether this container has a read-only root filesystem.\nDefault is false.\n+optional",
+          "type": "boolean"
+        }
+      }
+    },
+    "Capabilities": {
+      "id": "Capabilities",
+      "description": "Adds and removes POSIX capabilities from running containers.",
+      "type": "object",
+      "properties": {
+        "add": {
+          "description": "Added capabilities\n+optional",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "drop": {
+          "description": "Removed capabilities\n+optional",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "SELinuxOptions": {
+      "id": "SELinuxOptions",
+      "description": "SELinuxOptions are the labels to be applied to the container",
+      "type": "object",
+      "properties": {
+        "user": {
+          "description": "User is a SELinux user label that applies to the container.\n+optional",
+          "type": "string"
+        },
+        "role": {
+          "description": "Role is a SELinux role label that applies to the container.\n+optional",
+          "type": "string"
+        },
+        "type": {
+          "description": "Type is a SELinux type label that applies to the container.\n+optional",
+          "type": "string"
+        },
+        "level": {
+          "description": "Level is SELinux level label that applies to the container.\n+optional",
+          "type": "string"
+        }
+      }
+    },
+    "PodSecurityContext": {
+      "id": "PodSecurityContext",
+      "description": "PodSecurityContext holds pod-level security attributes and common container settings.\nSome fields are also present in container.securityContext.  Field values of\ncontainer.securityContext take precedence over field values of PodSecurityContext.",
+      "type": "object",
+      "properties": {
+        "seLinuxOptions": {
+          "description": "The SELinux context to be applied to all containers.\nIf unspecified, the container runtime will allocate a random SELinux context for each\ncontainer.  May also be set in SecurityContext.  If set in\nboth SecurityContext and PodSecurityContext, the value specified in SecurityContext\ntakes precedence for that container.\n+optional",
+          "$ref": "SELinuxOptions"
+        },
+        "runAsUser": {
+          "description": "The UID to run the entrypoint of the container process.\nDefaults to user specified in image metadata if unspecified.\nMay also be set in SecurityContext.  If set in both SecurityContext and\nPodSecurityContext, the value specified in SecurityContext takes precedence\nfor that container.\n+optional",
+          "type": "string",
+          "format": "int64"
+        },
+        "runAsNonRoot": {
+          "description": "Indicates that the container must run as a non-root user.\nIf true, the Kubelet will validate the image at runtime to ensure that it\ndoes not run as UID 0 (root) and fail to start the container if it does.\nIf unset or false, no such validation will be performed.\nMay also be set in SecurityContext.  If set in both SecurityContext and\nPodSecurityContext, the value specified in SecurityContext takes precedence.\n+optional",
+          "type": "boolean"
+        },
+        "supplementalGroups": {
+          "description": "A list of groups applied to the first process run in each container, in addition\nto the container's primary GID.  If unspecified, no groups will be added to\nany container.\n+optional",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "int64"
+          }
+        },
+        "fsGroup": {
+          "description": "A special supplemental group that applies to all containers in a pod.\nSome volume types allow the Kubelet to change the ownership of that volume\nto be owned by the pod:\n\n1. The owning GID will be the FSGroup\n2. The setgid bit is set (new files created in the volume will be owned by FSGroup)\n3. The permission bits are OR'd with rw-rw----\n\nIf unset, the Kubelet will not modify the ownership and permissions of any volume.\n+optional",
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "OperationMetadata": {
+      "id": "OperationMetadata",
+      "description": "OperationMetadata will be used and required as metadata for all operations\nthat created by Container Analysis Providers",
+      "type": "object",
+      "properties": {
+        "createTime": {
+          "description": "Output only. The time this operation was created.",
+          "type": "string",
+          "format": "google-datetime"
+        },
+        "endTime": {
+          "description": "Output only. The time that this operation was marked completed or failed.",
+          "type": "string",
+          "format": "google-datetime"
+        }
+      }
+    }
+  },
+  "resources": {
+    "providers": {
+      "resources": {
+        "notes": {
+          "methods": {
+            "get": {
+              "id": "containeranalysis.providers.notes.get",
+              "path": "v1alpha1/{+name}",
+              "flatPath": "v1alpha1/providers/{providersId}/notes/{notesId}",
+              "httpMethod": "GET",
+              "description": "Returns the requested occurrence",
+              "parameters": {
+                "name": {
+                  "description": "The name of the note in the form\n\"providers\/{provider_id}\/notes\/{note_id}\"",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^providers\/[^\/]+\/notes\/[^\/]+$",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "response": {
+                "$ref": "Note"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "list": {
+              "id": "containeranalysis.providers.notes.list",
+              "path": "v1alpha1/{+name}/notes",
+              "flatPath": "v1alpha1/providers/{providersId}/notes",
+              "httpMethod": "GET",
+              "description": "Lists all notes for a given project.",
+              "parameters": {
+                "name": {
+                  "description": "The name field will contain the projectId for example:\n\"providers\/{provider_id}\n@Deprecated",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^providers\/[^\/]+$",
+                  "type": "string"
+                },
+                "parent": {
+                  "description": "This field contains the projectId for example:\n\"project\/{project_id}",
+                  "location": "query",
+                  "type": "string"
+                },
+                "filter": {
+                  "description": "The filter expression.",
+                  "location": "query",
+                  "type": "string"
+                },
+                "pageSize": {
+                  "description": "Number of notes to return in the list.",
+                  "location": "query",
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "pageToken": {
+                  "description": "Token to provide to skip to a particular spot in the list.",
+                  "location": "query",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "response": {
+                "$ref": "ListNotesResponse"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "delete": {
+              "id": "containeranalysis.providers.notes.delete",
+              "path": "v1alpha1/{+name}",
+              "flatPath": "v1alpha1/providers/{providersId}/notes/{notesId}",
+              "httpMethod": "DELETE",
+              "description": "Deletes the given note from the system.",
+              "parameters": {
+                "name": {
+                  "description": "The name of the note in the form\n\"providers\/{provider_id}\/notes\/{note_id}\"",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^providers\/[^\/]+\/notes\/[^\/]+$",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "response": {
+                "$ref": "Empty"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "create": {
+              "id": "containeranalysis.providers.notes.create",
+              "path": "v1alpha1/{+name}/notes",
+              "flatPath": "v1alpha1/providers/{providersId}/notes",
+              "httpMethod": "POST",
+              "description": "Creates a new note.",
+              "parameters": {
+                "name": {
+                  "description": "The name of the project.\nShould be of the form \"providers\/{provider_id}\".\n@Deprecated",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^providers\/[^\/]+$",
+                  "type": "string"
+                },
+                "parent": {
+                  "description": "This field contains the projectId for example:\n\"project\/{project_id}",
+                  "location": "query",
+                  "type": "string"
+                },
+                "noteId": {
+                  "description": "The ID to use for this note.",
+                  "location": "query",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "request": {
+                "$ref": "Note"
+              },
+              "response": {
+                "$ref": "Note"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "patch": {
+              "id": "containeranalysis.providers.notes.patch",
+              "path": "v1alpha1/{+name}",
+              "flatPath": "v1alpha1/providers/{providersId}/notes/{notesId}",
+              "httpMethod": "PATCH",
+              "description": "Updates an existing note.",
+              "parameters": {
+                "name": {
+                  "description": "The name of the note.\nShould be of the form \"projects\/{provider_id}\/notes\/{note_id}\".",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^providers\/[^\/]+\/notes\/[^\/]+$",
+                  "type": "string"
+                },
+                "updateMask": {
+                  "location": "query",
+                  "type": "string",
+                  "format": "google-fieldmask"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "request": {
+                "$ref": "Note"
+              },
+              "response": {
+                "$ref": "Note"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "setIamPolicy": {
+              "id": "containeranalysis.providers.notes.setIamPolicy",
+              "path": "v1alpha1/{+resource}:setIamPolicy",
+              "flatPath": "v1alpha1/providers/{providersId}/notes/{notesId}:setIamPolicy",
+              "httpMethod": "POST",
+              "description": "Sets the access control policy on the specified note or occurrence\nresource.\nRequires \"containeranalysis.notes.setIamPolicy\" or\n\"containeranalysis.occurrences.setIamPolicy\" permission if the resource is\na note or occurrence, respectively.\nAttempting this RPC on a resource without the needed permission will note\nin a PERMISSION_DENIED error.\nAttempting this RPC on a non-existent resource will result in a NOT_FOUND\nerror if the user has list permission on the project, or a\nPERMISSION_DENIED error otherwise.\nThe resource takes the following formats:\nprojects\/{projectid}\/occurrences\/{occurrenceid} for occurrences and\nprojects\/{projectid}\/notes\/{noteid} for notes",
+              "parameters": {
+                "resource": {
+                  "description": "REQUIRED: The resource for which the policy is being specified.\nSee the operation documentation for the appropriate value for this field.",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^providers\/[^\/]+\/notes\/[^\/]+$",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "resource"
+              ],
+              "request": {
+                "$ref": "SetIamPolicyRequest"
+              },
+              "response": {
+                "$ref": "Policy"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "getIamPolicy": {
+              "id": "containeranalysis.providers.notes.getIamPolicy",
+              "path": "v1alpha1/{+resource}:getIamPolicy",
+              "flatPath": "v1alpha1/providers/{providersId}/notes/{notesId}:getIamPolicy",
+              "httpMethod": "POST",
+              "description": "Gets the access control policy for a note or occurrence resource.\nRequires \"containeranalysis.notes.setIamPolicy\" or\n\"containeranalysis.occurrences.setIamPolicy\" permission if the resource is\na note or occurrence, respectively.\nAttempting this RPC on a resource without the needed permission will note\nin a PERMISSION_DENIED error.\nAttempting this RPC on a non-existent resource will result in a NOT_FOUND\nerror if the user has list permission on the project,\nor a PERMISSION_DENIED error otherwise.\nThe resource takes the following formats:\nprojects\/{projectid}\/occurrences\/{occurrenceid} for occurrences and\nprojects\/{projectid}\/notes\/{noteid} for notes",
+              "parameters": {
+                "resource": {
+                  "description": "REQUIRED: The resource for which the policy is being requested.\nSee the operation documentation for the appropriate value for this field.",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^providers\/[^\/]+\/notes\/[^\/]+$",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "resource"
+              ],
+              "request": {
+                "$ref": "GetIamPolicyRequest"
+              },
+              "response": {
+                "$ref": "Policy"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "testIamPermissions": {
+              "id": "containeranalysis.providers.notes.testIamPermissions",
+              "path": "v1alpha1/{+resource}:testIamPermissions",
+              "flatPath": "v1alpha1/providers/{providersId}/notes/{notesId}:testIamPermissions",
+              "httpMethod": "POST",
+              "description": "Returns permissions that a caller has on the specified note or occurrence\nresource.\nRequires list permission on the project (e.g., \"storage.objects.list\" on\nthe containing bucket for testing permission of an object).\nAttempting this RPC on a non-existent resource will result in a NOT_FOUND\nerror if the user has list permission on the project,\nor a PERMISSION_DENIED error otherwise.\nThe resource takes the following formats:\nprojects\/{projectid}\/occurrences\/{occurrenceid} for occurrences and\nprojects\/{projectid}\/notes\/{noteid} for notes",
+              "parameters": {
+                "resource": {
+                  "description": "REQUIRED: The resource for which the policy detail is being requested.\nSee the operation documentation for the appropriate value for this field.",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^providers\/[^\/]+\/notes\/[^\/]+$",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "resource"
+              ],
+              "request": {
+                "$ref": "TestIamPermissionsRequest"
+              },
+              "response": {
+                "$ref": "TestIamPermissionsResponse"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            }
+          }
+          ,
+          "resources": {
+            "occurrences": {
+              "methods": {
+                "list": {
+                  "id": "containeranalysis.providers.notes.occurrences.list",
+                  "path": "v1alpha1/{+name}/occurrences",
+                  "flatPath": "v1alpha1/providers/{providersId}/notes/{notesId}/occurrences",
+                  "httpMethod": "GET",
+                  "description": "Lists the names of occurrences linked to a particular note.",
+                  "parameters": {
+                    "name": {
+                      "description": "The name field will contain the note name for example:\n  \"provider\/{provider_id}\/notes\/{note_id}\"",
+                      "location": "path",
+                      "required": true,
+                      "pattern": "^providers\/[^\/]+\/notes\/[^\/]+$",
+                      "type": "string"
+                    },
+                    "filter": {
+                      "description": "The filter expression.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "pageSize": {
+                      "description": "Number of notes to return in the list.",
+                      "location": "query",
+                      "type": "integer",
+                      "format": "int32"
+                    },
+                    "pageToken": {
+                      "description": "Token to provide to skip to a particular spot in the list.",
+                      "location": "query",
+                      "type": "string"
+                    }
+                  },
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "response": {
+                    "$ref": "ListNoteOccurrencesResponse"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "projects": {
+      "methods": {
+        "getVulnzsummary": {
+          "id": "containeranalysis.projects.getVulnzsummary",
+          "path": "v1alpha1/{+parent}/vulnzsummary",
+          "flatPath": "v1alpha1/projects/{projectsId}/vulnzsummary",
+          "httpMethod": "GET",
+          "description": "Gets a summary of the number and severity of occurrences.",
+          "parameters": {
+            "parent": {
+              "description": "This contains the projectId for example: projects\/{project_id}",
+              "location": "path",
+              "required": true,
+              "pattern": "^projects\/[^\/]+$",
+              "type": "string"
+            },
+            "filter": {
+              "description": "The filter expression.",
+              "location": "query",
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "parent"
+          ],
+          "response": {
+            "$ref": "GetVulnzOccurrencesSummaryResponse"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform"
+          ]
+        }
+      }
+      ,
+      "resources": {
+        "occurrences": {
+          "methods": {
+            "get": {
+              "id": "containeranalysis.projects.occurrences.get",
+              "path": "v1alpha1/{+name}",
+              "flatPath": "v1alpha1/projects/{projectsId}/occurrences/{occurrencesId}",
+              "httpMethod": "GET",
+              "description": "Returns the requested occurrence.",
+              "parameters": {
+                "name": {
+                  "description": "The name of the occurrence in the form\n\"projects\/{project_id}\/occurrences\/{occurrence_id}\"",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^projects\/[^\/]+\/occurrences\/[^\/]+$",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "response": {
+                "$ref": "Occurrence"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "list": {
+              "id": "containeranalysis.projects.occurrences.list",
+              "path": "v1alpha1/{+parent}/occurrences",
+              "flatPath": "v1alpha1/projects/{projectsId}/occurrences",
+              "httpMethod": "GET",
+              "description": "Lists active occurrences for a given project\/Digest.",
+              "parameters": {
+                "parent": {
+                  "description": "This contains the projectId for example: projects\/{project_id}",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^projects\/[^\/]+$",
+                  "type": "string"
+                },
+                "name": {
+                  "description": "The name field will contain the projectId for example:\n\"projects\/{project_id}\n@Deprecated",
+                  "location": "query",
+                  "type": "string"
+                },
+                "filter": {
+                  "description": "The filter expression.",
+                  "location": "query",
+                  "type": "string"
+                },
+                "pageSize": {
+                  "description": "Number of occurrences to return in the list.",
+                  "location": "query",
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "pageToken": {
+                  "description": "Token to provide to skip to a particular spot in the list.",
+                  "location": "query",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "parent"
+              ],
+              "response": {
+                "$ref": "ListOccurrencesResponse"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "delete": {
+              "id": "containeranalysis.projects.occurrences.delete",
+              "path": "v1alpha1/{+name}",
+              "flatPath": "v1alpha1/projects/{projectsId}/occurrences/{occurrencesId}",
+              "httpMethod": "DELETE",
+              "description": "Deletes the given occurrence from the system.",
+              "parameters": {
+                "name": {
+                  "description": "The name of the occurrence in the form\n\"projects\/{project_id}\/occurrences\/{occurrence_id}\"",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^projects\/[^\/]+\/occurrences\/[^\/]+$",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "response": {
+                "$ref": "Empty"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "create": {
+              "id": "containeranalysis.projects.occurrences.create",
+              "path": "v1alpha1/{+parent}/occurrences",
+              "flatPath": "v1alpha1/projects/{projectsId}/occurrences",
+              "httpMethod": "POST",
+              "description": "Creates a new occurrence.",
+              "parameters": {
+                "parent": {
+                  "description": "This field contains the projectId for example: \"projects\/{project_id}\"",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^projects\/[^\/]+$",
+                  "type": "string"
+                },
+                "name": {
+                  "description": "The name of the project.  Should be of the form \"projects\/{project_id}\".\n@Deprecated",
+                  "location": "query",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "parent"
+              ],
+              "request": {
+                "$ref": "Occurrence"
+              },
+              "response": {
+                "$ref": "Occurrence"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "patch": {
+              "id": "containeranalysis.projects.occurrences.patch",
+              "path": "v1alpha1/{+name}",
+              "flatPath": "v1alpha1/projects/{projectsId}/occurrences/{occurrencesId}",
+              "httpMethod": "PATCH",
+              "description": "Updates an existing occurrence.",
+              "parameters": {
+                "name": {
+                  "description": "The name of the occurrence.\nShould be of the form \"projects\/{project_id}\/occurrences\/{occurrence_id}\".",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^projects\/[^\/]+\/occurrences\/[^\/]+$",
+                  "type": "string"
+                },
+                "updateMask": {
+                  "location": "query",
+                  "type": "string",
+                  "format": "google-fieldmask"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "request": {
+                "$ref": "Occurrence"
+              },
+              "response": {
+                "$ref": "Occurrence"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "getNotes": {
+              "id": "containeranalysis.projects.occurrences.getNotes",
+              "path": "v1alpha1/{+name}/notes",
+              "flatPath": "v1alpha1/projects/{projectsId}/occurrences/{occurrencesId}/notes",
+              "httpMethod": "GET",
+              "description": "Gets the note that this occurrence is attached to.",
+              "parameters": {
+                "name": {
+                  "description": "The name of the occurrence in the form\n\"projects\/{project_id}\/occurrences\/{occurrence_id}\"",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^projects\/[^\/]+\/occurrences\/[^\/]+$",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "response": {
+                "$ref": "Note"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "setIamPolicy": {
+              "id": "containeranalysis.projects.occurrences.setIamPolicy",
+              "path": "v1alpha1/{+resource}:setIamPolicy",
+              "flatPath": "v1alpha1/projects/{projectsId}/occurrences/{occurrencesId}:setIamPolicy",
+              "httpMethod": "POST",
+              "description": "Sets the access control policy on the specified note or occurrence\nresource.\nRequires \"containeranalysis.notes.setIamPolicy\" or\n\"containeranalysis.occurrences.setIamPolicy\" permission if the resource is\na note or occurrence, respectively.\nAttempting this RPC on a resource without the needed permission will note\nin a PERMISSION_DENIED error.\nAttempting this RPC on a non-existent resource will result in a NOT_FOUND\nerror if the user has list permission on the project, or a\nPERMISSION_DENIED error otherwise.\nThe resource takes the following formats:\nprojects\/{projectid}\/occurrences\/{occurrenceid} for occurrences and\nprojects\/{projectid}\/notes\/{noteid} for notes",
+              "parameters": {
+                "resource": {
+                  "description": "REQUIRED: The resource for which the policy is being specified.\nSee the operation documentation for the appropriate value for this field.",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^projects\/[^\/]+\/occurrences\/[^\/]+$",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "resource"
+              ],
+              "request": {
+                "$ref": "SetIamPolicyRequest"
+              },
+              "response": {
+                "$ref": "Policy"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "getIamPolicy": {
+              "id": "containeranalysis.projects.occurrences.getIamPolicy",
+              "path": "v1alpha1/{+resource}:getIamPolicy",
+              "flatPath": "v1alpha1/projects/{projectsId}/occurrences/{occurrencesId}:getIamPolicy",
+              "httpMethod": "POST",
+              "description": "Gets the access control policy for a note or occurrence resource.\nRequires \"containeranalysis.notes.setIamPolicy\" or\n\"containeranalysis.occurrences.setIamPolicy\" permission if the resource is\na note or occurrence, respectively.\nAttempting this RPC on a resource without the needed permission will note\nin a PERMISSION_DENIED error.\nAttempting this RPC on a non-existent resource will result in a NOT_FOUND\nerror if the user has list permission on the project,\nor a PERMISSION_DENIED error otherwise.\nThe resource takes the following formats:\nprojects\/{projectid}\/occurrences\/{occurrenceid} for occurrences and\nprojects\/{projectid}\/notes\/{noteid} for notes",
+              "parameters": {
+                "resource": {
+                  "description": "REQUIRED: The resource for which the policy is being requested.\nSee the operation documentation for the appropriate value for this field.",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^projects\/[^\/]+\/occurrences\/[^\/]+$",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "resource"
+              ],
+              "request": {
+                "$ref": "GetIamPolicyRequest"
+              },
+              "response": {
+                "$ref": "Policy"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "testIamPermissions": {
+              "id": "containeranalysis.projects.occurrences.testIamPermissions",
+              "path": "v1alpha1/{+resource}:testIamPermissions",
+              "flatPath": "v1alpha1/projects/{projectsId}/occurrences/{occurrencesId}:testIamPermissions",
+              "httpMethod": "POST",
+              "description": "Returns permissions that a caller has on the specified note or occurrence\nresource.\nRequires list permission on the project (e.g., \"storage.objects.list\" on\nthe containing bucket for testing permission of an object).\nAttempting this RPC on a non-existent resource will result in a NOT_FOUND\nerror if the user has list permission on the project,\nor a PERMISSION_DENIED error otherwise.\nThe resource takes the following formats:\nprojects\/{projectid}\/occurrences\/{occurrenceid} for occurrences and\nprojects\/{projectid}\/notes\/{noteid} for notes",
+              "parameters": {
+                "resource": {
+                  "description": "REQUIRED: The resource for which the policy detail is being requested.\nSee the operation documentation for the appropriate value for this field.",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^projects\/[^\/]+\/occurrences\/[^\/]+$",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "resource"
+              ],
+              "request": {
+                "$ref": "TestIamPermissionsRequest"
+              },
+              "response": {
+                "$ref": "TestIamPermissionsResponse"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            }
+          }
+        },
+        "notes": {
+          "methods": {
+            "get": {
+              "id": "containeranalysis.projects.notes.get",
+              "path": "v1alpha1/{+name}",
+              "flatPath": "v1alpha1/projects/{projectsId}/notes/{notesId}",
+              "httpMethod": "GET",
+              "description": "Returns the requested occurrence",
+              "parameters": {
+                "name": {
+                  "description": "The name of the note in the form\n\"providers\/{provider_id}\/notes\/{note_id}\"",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^projects\/[^\/]+\/notes\/[^\/]+$",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "response": {
+                "$ref": "Note"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "list": {
+              "id": "containeranalysis.projects.notes.list",
+              "path": "v1alpha1/{+parent}/notes",
+              "flatPath": "v1alpha1/projects/{projectsId}/notes",
+              "httpMethod": "GET",
+              "description": "Lists all notes for a given project.",
+              "parameters": {
+                "parent": {
+                  "description": "This field contains the projectId for example:\n\"project\/{project_id}",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^projects\/[^\/]+$",
+                  "type": "string"
+                },
+                "name": {
+                  "description": "The name field will contain the projectId for example:\n\"providers\/{provider_id}\n@Deprecated",
+                  "location": "query",
+                  "type": "string"
+                },
+                "filter": {
+                  "description": "The filter expression.",
+                  "location": "query",
+                  "type": "string"
+                },
+                "pageSize": {
+                  "description": "Number of notes to return in the list.",
+                  "location": "query",
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "pageToken": {
+                  "description": "Token to provide to skip to a particular spot in the list.",
+                  "location": "query",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "parent"
+              ],
+              "response": {
+                "$ref": "ListNotesResponse"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "delete": {
+              "id": "containeranalysis.projects.notes.delete",
+              "path": "v1alpha1/{+name}",
+              "flatPath": "v1alpha1/projects/{projectsId}/notes/{notesId}",
+              "httpMethod": "DELETE",
+              "description": "Deletes the given note from the system.",
+              "parameters": {
+                "name": {
+                  "description": "The name of the note in the form\n\"providers\/{provider_id}\/notes\/{note_id}\"",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^projects\/[^\/]+\/notes\/[^\/]+$",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "response": {
+                "$ref": "Empty"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "create": {
+              "id": "containeranalysis.projects.notes.create",
+              "path": "v1alpha1/{+parent}/notes",
+              "flatPath": "v1alpha1/projects/{projectsId}/notes",
+              "httpMethod": "POST",
+              "description": "Creates a new note.",
+              "parameters": {
+                "parent": {
+                  "description": "This field contains the projectId for example:\n\"project\/{project_id}",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^projects\/[^\/]+$",
+                  "type": "string"
+                },
+                "name": {
+                  "description": "The name of the project.\nShould be of the form \"providers\/{provider_id}\".\n@Deprecated",
+                  "location": "query",
+                  "type": "string"
+                },
+                "noteId": {
+                  "description": "The ID to use for this note.",
+                  "location": "query",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "parent"
+              ],
+              "request": {
+                "$ref": "Note"
+              },
+              "response": {
+                "$ref": "Note"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "patch": {
+              "id": "containeranalysis.projects.notes.patch",
+              "path": "v1alpha1/{+name}",
+              "flatPath": "v1alpha1/projects/{projectsId}/notes/{notesId}",
+              "httpMethod": "PATCH",
+              "description": "Updates an existing note.",
+              "parameters": {
+                "name": {
+                  "description": "The name of the note.\nShould be of the form \"projects\/{provider_id}\/notes\/{note_id}\".",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^projects\/[^\/]+\/notes\/[^\/]+$",
+                  "type": "string"
+                },
+                "updateMask": {
+                  "location": "query",
+                  "type": "string",
+                  "format": "google-fieldmask"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "request": {
+                "$ref": "Note"
+              },
+              "response": {
+                "$ref": "Note"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "setIamPolicy": {
+              "id": "containeranalysis.projects.notes.setIamPolicy",
+              "path": "v1alpha1/{+resource}:setIamPolicy",
+              "flatPath": "v1alpha1/projects/{projectsId}/notes/{notesId}:setIamPolicy",
+              "httpMethod": "POST",
+              "description": "Sets the access control policy on the specified note or occurrence\nresource.\nRequires \"containeranalysis.notes.setIamPolicy\" or\n\"containeranalysis.occurrences.setIamPolicy\" permission if the resource is\na note or occurrence, respectively.\nAttempting this RPC on a resource without the needed permission will note\nin a PERMISSION_DENIED error.\nAttempting this RPC on a non-existent resource will result in a NOT_FOUND\nerror if the user has list permission on the project, or a\nPERMISSION_DENIED error otherwise.\nThe resource takes the following formats:\nprojects\/{projectid}\/occurrences\/{occurrenceid} for occurrences and\nprojects\/{projectid}\/notes\/{noteid} for notes",
+              "parameters": {
+                "resource": {
+                  "description": "REQUIRED: The resource for which the policy is being specified.\nSee the operation documentation for the appropriate value for this field.",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^projects\/[^\/]+\/notes\/[^\/]+$",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "resource"
+              ],
+              "request": {
+                "$ref": "SetIamPolicyRequest"
+              },
+              "response": {
+                "$ref": "Policy"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "getIamPolicy": {
+              "id": "containeranalysis.projects.notes.getIamPolicy",
+              "path": "v1alpha1/{+resource}:getIamPolicy",
+              "flatPath": "v1alpha1/projects/{projectsId}/notes/{notesId}:getIamPolicy",
+              "httpMethod": "POST",
+              "description": "Gets the access control policy for a note or occurrence resource.\nRequires \"containeranalysis.notes.setIamPolicy\" or\n\"containeranalysis.occurrences.setIamPolicy\" permission if the resource is\na note or occurrence, respectively.\nAttempting this RPC on a resource without the needed permission will note\nin a PERMISSION_DENIED error.\nAttempting this RPC on a non-existent resource will result in a NOT_FOUND\nerror if the user has list permission on the project,\nor a PERMISSION_DENIED error otherwise.\nThe resource takes the following formats:\nprojects\/{projectid}\/occurrences\/{occurrenceid} for occurrences and\nprojects\/{projectid}\/notes\/{noteid} for notes",
+              "parameters": {
+                "resource": {
+                  "description": "REQUIRED: The resource for which the policy is being requested.\nSee the operation documentation for the appropriate value for this field.",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^projects\/[^\/]+\/notes\/[^\/]+$",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "resource"
+              ],
+              "request": {
+                "$ref": "GetIamPolicyRequest"
+              },
+              "response": {
+                "$ref": "Policy"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "testIamPermissions": {
+              "id": "containeranalysis.projects.notes.testIamPermissions",
+              "path": "v1alpha1/{+resource}:testIamPermissions",
+              "flatPath": "v1alpha1/projects/{projectsId}/notes/{notesId}:testIamPermissions",
+              "httpMethod": "POST",
+              "description": "Returns permissions that a caller has on the specified note or occurrence\nresource.\nRequires list permission on the project (e.g., \"storage.objects.list\" on\nthe containing bucket for testing permission of an object).\nAttempting this RPC on a non-existent resource will result in a NOT_FOUND\nerror if the user has list permission on the project,\nor a PERMISSION_DENIED error otherwise.\nThe resource takes the following formats:\nprojects\/{projectid}\/occurrences\/{occurrenceid} for occurrences and\nprojects\/{projectid}\/notes\/{noteid} for notes",
+              "parameters": {
+                "resource": {
+                  "description": "REQUIRED: The resource for which the policy detail is being requested.\nSee the operation documentation for the appropriate value for this field.",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^projects\/[^\/]+\/notes\/[^\/]+$",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "resource"
+              ],
+              "request": {
+                "$ref": "TestIamPermissionsRequest"
+              },
+              "response": {
+                "$ref": "TestIamPermissionsResponse"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            }
+          }
+          ,
+          "resources": {
+            "occurrences": {
+              "methods": {
+                "list": {
+                  "id": "containeranalysis.projects.notes.occurrences.list",
+                  "path": "v1alpha1/{+name}/occurrences",
+                  "flatPath": "v1alpha1/projects/{projectsId}/notes/{notesId}/occurrences",
+                  "httpMethod": "GET",
+                  "description": "Lists the names of occurrences linked to a particular note.",
+                  "parameters": {
+                    "name": {
+                      "description": "The name field will contain the note name for example:\n  \"provider\/{provider_id}\/notes\/{note_id}\"",
+                      "location": "path",
+                      "required": true,
+                      "pattern": "^projects\/[^\/]+\/notes\/[^\/]+$",
+                      "type": "string"
+                    },
+                    "filter": {
+                      "description": "The filter expression.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "pageSize": {
+                      "description": "Number of notes to return in the list.",
+                      "location": "query",
+                      "type": "integer",
+                      "format": "int32"
+                    },
+                    "pageToken": {
+                      "description": "Token to provide to skip to a particular spot in the list.",
+                      "location": "query",
+                      "type": "string"
+                    }
+                  },
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "response": {
+                    "$ref": "ListNoteOccurrencesResponse"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "acknowledgments": {
+          "methods": {
+            "setIamPolicy": {
+              "id": "containeranalysis.projects.acknowledgments.setIamPolicy",
+              "path": "v1alpha1/{+resource}:setIamPolicy",
+              "flatPath": "v1alpha1/projects/{projectsId}/acknowledgments/{acknowledgmentsId}:setIamPolicy",
+              "httpMethod": "POST",
+              "description": "Sets the access control policy on the specified note or occurrence\nresource.\nRequires \"containeranalysis.notes.setIamPolicy\" or\n\"containeranalysis.occurrences.setIamPolicy\" permission if the resource is\na note or occurrence, respectively.\nAttempting this RPC on a resource without the needed permission will note\nin a PERMISSION_DENIED error.\nAttempting this RPC on a non-existent resource will result in a NOT_FOUND\nerror if the user has list permission on the project, or a\nPERMISSION_DENIED error otherwise.\nThe resource takes the following formats:\nprojects\/{projectid}\/occurrences\/{occurrenceid} for occurrences and\nprojects\/{projectid}\/notes\/{noteid} for notes",
+              "parameters": {
+                "resource": {
+                  "description": "REQUIRED: The resource for which the policy is being specified.\nSee the operation documentation for the appropriate value for this field.",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^projects\/[^\/]+\/acknowledgments\/[^\/]+$",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "resource"
+              ],
+              "request": {
+                "$ref": "SetIamPolicyRequest"
+              },
+              "response": {
+                "$ref": "Policy"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "getIamPolicy": {
+              "id": "containeranalysis.projects.acknowledgments.getIamPolicy",
+              "path": "v1alpha1/{+resource}:getIamPolicy",
+              "flatPath": "v1alpha1/projects/{projectsId}/acknowledgments/{acknowledgmentsId}:getIamPolicy",
+              "httpMethod": "POST",
+              "description": "Gets the access control policy for a note or occurrence resource.\nRequires \"containeranalysis.notes.setIamPolicy\" or\n\"containeranalysis.occurrences.setIamPolicy\" permission if the resource is\na note or occurrence, respectively.\nAttempting this RPC on a resource without the needed permission will note\nin a PERMISSION_DENIED error.\nAttempting this RPC on a non-existent resource will result in a NOT_FOUND\nerror if the user has list permission on the project,\nor a PERMISSION_DENIED error otherwise.\nThe resource takes the following formats:\nprojects\/{projectid}\/occurrences\/{occurrenceid} for occurrences and\nprojects\/{projectid}\/notes\/{noteid} for notes",
+              "parameters": {
+                "resource": {
+                  "description": "REQUIRED: The resource for which the policy is being requested.\nSee the operation documentation for the appropriate value for this field.",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^projects\/[^\/]+\/acknowledgments\/[^\/]+$",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "resource"
+              ],
+              "request": {
+                "$ref": "GetIamPolicyRequest"
+              },
+              "response": {
+                "$ref": "Policy"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "basePath": ""
+}
