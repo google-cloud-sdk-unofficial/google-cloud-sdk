@@ -14,6 +14,7 @@
 
 """The command group for cloud container clusters."""
 
+from googlecloudsdk.api_lib.container import transforms
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container import flags
@@ -40,6 +41,7 @@ class Clusters(base.Group):
         for its capabilities.
     """
     flags.AddZoneFlag(parser)
+    parser.display_info.AddTransforms(transforms.GetTransforms())
 
   def Filter(self, context, args):
     """Modify the context that will be given to this group's commands when run.

@@ -51,7 +51,8 @@ class AddIamPolicyBinding(orgs_base.OrganizationCommand):
             getIamPolicyRequest=messages.GetIamPolicyRequest()))
     policy = self.OrganizationsClient().GetIamPolicy(get_policy_request)
 
-    iam_util.AddBindingToIamPolicy(messages, policy, args.member, args.role)
+    iam_util.AddBindingToIamPolicy(
+        messages.Binding, policy, args.member, args.role)
 
     set_policy_request = (
         messages.CloudresourcemanagerOrganizationsSetIamPolicyRequest(

@@ -393,6 +393,7 @@ https://console.developers.google.com/apis page.
     configuration_name = console_io.PromptResponse(
         'Enter configuration name. Names start with a lower case letter and '
         'contain only lower case letters a-z, digits 0-9, and hyphens \'-\':  ')
+    configuration_name = configuration_name.strip()
     named_configs.ConfigurationStore.CreateConfig(configuration_name)
     named_configs.ConfigurationStore.ActivateConfig(configuration_name)
     named_configs.ActivePropertiesFile.Invalidate()

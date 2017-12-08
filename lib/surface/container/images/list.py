@@ -44,9 +44,6 @@ class List(base.ListCommand):
       """,
   }
 
-  def Collection(self):
-    return 'container.images'
-
   @staticmethod
   def Args(parser):
     """Register flags for this command.
@@ -60,6 +57,7 @@ class List(base.ListCommand):
         required=False,
         help=('The name of the repository. Format: *.gcr.io/repository. '
               'Defaults to gcr.io/<project>, for the active project.'))
+    parser.display_info.AddFormat('table(name)')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

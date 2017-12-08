@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Command for updating a BGP peer on a Google Compute Engine router."""
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -21,6 +20,7 @@ from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.command_lib.compute.routers import router_utils
+from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
@@ -61,7 +61,8 @@ class UpdateBgpPeer(base.UpdateCommand):
 
 
 UpdateBgpPeer.detailed_help = {
-    'DESCRIPTION': """
+    'DESCRIPTION':
+        """
         *{command}* is used to update a BGP peer on a Google Compute Engine
         router.
         """,
@@ -78,6 +79,7 @@ class UpdateBgpPeerAlpha(base.UpdateCommand):
   def Args(cls, parser):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
     flags.AddUpdateBgpPeerArgs(parser)
     flags.AddCustomAdvertisementArgs(parser, 'peer')
 
@@ -169,7 +171,14 @@ class UpdateBgpPeerAlpha(base.UpdateCommand):
             'region': router_ref.region,
         })
 
-    # TODO(b/62801777): add support for --async flag.
+    if args.async:
+      log.UpdatedResource(
+          operation_ref,
+          kind='peer {0} in router {1}'.format(peer.name, router_ref.Name()),
+          async=True,
+          details='Run the [gcloud compute operations describe] command '
+          'to check the status of this operation.')
+      return result
 
     target_router_ref = holder.resources.Parse(
         router_ref.Name(),
@@ -180,9 +189,9 @@ class UpdateBgpPeerAlpha(base.UpdateCommand):
         })
 
     operation_poller = poller.Poller(service, target_router_ref)
-    return waiter.WaitFor(
-        operation_poller, operation_ref,
-        'Updating peer {0} in router {1}'.format(peer.name, router_ref.Name()))
+    return waiter.WaitFor(operation_poller, operation_ref,
+                          'Updating peer {0} in router {1}'.format(
+                              peer.name, router_ref.Name()))
 
 
 def _UpdateBgpPeer(resource, args):
@@ -204,8 +213,10 @@ def _UpdateBgpPeer(resource, args):
 
   return peer
 
+
 UpdateBgpPeerAlpha.detailed_help = {
-    'DESCRIPTION': """
+    'DESCRIPTION':
+        """
         *{command}* is used to update a BGP peer on a Google Compute Engine
         router.
         """,

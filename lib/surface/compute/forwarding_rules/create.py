@@ -116,8 +116,8 @@ class Create(base.CreateCommand):
   def _CreateRegionalRequests(self, client, resources, args,
                               forwarding_rule_ref):
     """Create a regionally scoped request."""
-    target_ref, region_ref = utils.GetRegionalTarget(client, resources, args,
-                                                     forwarding_rule_ref)
+    target_ref, region_ref = utils.GetRegionalTarget(
+        client, resources, args, forwarding_rule_ref, include_alpha=False)
     if not args.region and region_ref:
       args.region = region_ref
     protocol = self.ConstructProtocol(client.messages, args)
@@ -296,8 +296,8 @@ class CreateAlpha(Create):
   def _CreateRegionalRequests(self, client, resources, args,
                               forwarding_rule_ref):
     """Create a regionally scoped request."""
-    target_ref, region_ref = utils.GetRegionalTarget(client, resources, args,
-                                                     forwarding_rule_ref)
+    target_ref, region_ref = utils.GetRegionalTarget(
+        client, resources, args, forwarding_rule_ref, include_alpha=True)
     if not args.region and region_ref:
       args.region = region_ref
     protocol = self.ConstructProtocol(client.messages, args)

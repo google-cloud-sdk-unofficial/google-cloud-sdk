@@ -48,9 +48,6 @@ class Delete(base.DeleteCommand):
       """,
   }
 
-  def Collection(self):
-    return 'container.images'
-
   @staticmethod
   def Args(parser):
     """Register flags for this command.

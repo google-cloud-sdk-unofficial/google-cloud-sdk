@@ -125,6 +125,7 @@ See https://cloud.google.com/sdk/gcloud/reference/compute/firewall-rules/create
 for examples.
 """)
   flags.AddDiskTypeFlag(parser, suppressed=True)
+  parser.display_info.AddFormat(util.NODEPOOLS_FORMAT)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -204,13 +205,7 @@ class Create(base.CreateCommand):
       raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
 
     log.CreatedResource(pool_ref)
-    return pool
-
-  def Collection(self):
-    return 'container.projects.zones.clusters.nodePools'
-
-  def DeprecatedFormat(self, args):
-    return self.ListFormat(args)
+    return [pool]
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

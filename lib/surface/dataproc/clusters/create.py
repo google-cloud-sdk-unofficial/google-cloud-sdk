@@ -91,10 +91,6 @@ def _CommonArgs(parser):
       exclusive with --network.
       """)
   parser.add_argument(
-      '--zone', '-z',
-      help='The compute zone (e.g. us-central1-a) for the cluster.',
-      action=actions.StoreProperty(properties.VALUES.compute.zone))
-  parser.add_argument(
       '--num-worker-local-ssds',
       type=int,
       help='The number of local SSDs to attach to each worker in a cluster.')
@@ -242,6 +238,11 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
+    parser.add_argument(
+        '--zone',
+        '-z',
+        help='The compute zone (e.g. us-central1-a) for the cluster.',
+        action=actions.StoreProperty(properties.VALUES.compute.zone))
     parser.add_argument('--num-masters', type=int, hidden=True)
     parser.add_argument('--single-node', action='store_true', hidden=True)
     parser.add_argument('--no-address', action='store_true', hidden=True)
@@ -440,7 +441,16 @@ class Create(base.CreateCommand):
     cluster = dataproc.client.projects_regions_clusters.Get(get_request)
     if cluster.status.state == (
         dataproc.messages.ClusterStatus.StateValueValuesEnum.RUNNING):
-      log.CreatedResource(cluster_ref)
+
+      zone_uri = cluster.config.gceClusterConfig.zoneUri
+      zone_short_name = zone_uri.split('/')[-1]
+
+      # Log the URL of the cluster
+      log.CreatedResource(
+          cluster_ref,
+          # Also indicate which zone the cluster was placed in. This is helpful
+          # if the server picked a zone (auto zone)
+          details='Cluster placed in zone [{0}]'.format(zone_short_name))
     else:
       log.error('Create cluster failed!')
       if operation.details:
@@ -466,6 +476,16 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
+    parser.add_argument(
+        '--zone',
+        '-z',
+        help="""
+            The compute zone (e.g. us-central1-a) for the cluster. If empty,
+            and --region is set to a value other than 'global', the server will
+            pick a zone in the region.
+            """,
+        action=actions.StoreProperty(properties.VALUES.compute.zone))
+
     parser.add_argument(
         '--num-masters',
         type=int,

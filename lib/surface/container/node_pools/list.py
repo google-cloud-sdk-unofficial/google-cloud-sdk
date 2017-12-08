@@ -47,6 +47,7 @@ class List(base.ListCommand):
           to capture some information, but behaves like an ArgumentParser.
     """
     flags.AddNodePoolClusterFlag(parser, 'The name of the cluster.')
+    parser.display_info.AddFormat(util.NODEPOOLS_FORMAT)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -69,9 +70,6 @@ class List(base.ListCommand):
       return res.nodePools
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
-
-  def Collection(self):
-    return 'container.projects.zones.clusters.nodePools'
 
 
 List.detailed_help = DETAILED_HELP

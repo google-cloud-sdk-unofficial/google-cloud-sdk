@@ -138,9 +138,11 @@ multi\-device\-group3:
 If your app has a login screen, or has additional UI elements which require
 input text, you may specify the resource names of the Android target UI
 elements, along with their corresponding input values, in the 'robo\-directives'
-map argument. In the example below, "username_resource" is the resource name of
-the username field and "username" is the input for that field (similarly for
-password).
+map argument. You may also specify the elements which the Robo test should
+prioritize clicking. In the example below, "username_resource" is the resource
+name of the username field and "username" is the input for that field (similarly
+for password), and "signin_button_resource" is the resource name of the sign in
+button.
 
 .RS 2m
 # Run a 'robo' test on the 'Excelsior' app with login credentials.
@@ -148,8 +150,9 @@ robo\-test\-with\-login:
   app: path/to/excelsior.apk
   type: robo
   robo\-directives:
-    username_resource: username
-    password_resource: password
+    "text:username_resource": username
+    "text:password_resource": password
+    "click:sigin_button_resource": ""
 .RE
 
 Assuming the above YAML text is appended to the arg\-file named

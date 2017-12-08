@@ -44,7 +44,7 @@ class AddIamPolicyBinding(base_classes.BaseIamCommand):
         self.messages.IamProjectsServiceAccountsGetIamPolicyRequest(
             resource=iam_util.EmailToAccountResourceName(args.account)))
 
-    iam_util.AddBindingToIamPolicy(self.messages, policy, args.member,
+    iam_util.AddBindingToIamPolicy(self.messages.Binding, policy, args.member,
                                    args.role)
 
     return self.iam_client.projects_serviceAccounts.SetIamPolicy(

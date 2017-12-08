@@ -76,7 +76,9 @@ Multiple locations can be specified, separated by commas. For example:
       help='The name of the Google Compute Engine subnetwork '
       '(https://cloud.google.com/compute/docs/subnetworks) to which the '
       'cluster is connected. If specified, the cluster\'s network must be a '
-      '"custom subnet" network.')
+      '"custom subnet" network.'
+      ''
+      'Can not be used with the "--create-subnetwork" option.')
   parser.add_argument(
       '--disable-addons',
       type=arg_parsers.ArgList(
@@ -177,6 +179,7 @@ for examples.
 """)
   flags.AddClusterVersionFlag(parser)
   flags.AddDiskTypeFlag(parser, suppressed=True)
+  parser.display_info.AddFormat(util.CLUSTERS_FORMAT)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -197,12 +200,11 @@ class Create(base.CreateCommand):
     flags.AddEnableLegacyAuthorizationFlag(parser, hidden=True)
     flags.AddLabelsFlag(parser, suppressed=True)
     flags.AddNetworkPolicyFlags(parser, hidden=True)
+    flags.AddIPAliasFlags(parser, hidden=True)
 
   def ParseCreateOptions(self, args):
     if not args.scopes:
       args.scopes = []
-    cluster_ipv4_cidr = args.cluster_ipv4_cidr
-    enable_master_authorized_networks = args.enable_master_authorized_networks
     return api_adapter.CreateClusterOptions(
         node_machine_type=args.machine_type,
         scopes=args.scopes,
@@ -214,7 +216,7 @@ class Create(base.CreateCommand):
         cluster_version=args.cluster_version,
         network=args.network,
         subnetwork=args.subnetwork,
-        cluster_ipv4_cidr=cluster_ipv4_cidr,
+        cluster_ipv4_cidr=args.cluster_ipv4_cidr,
         node_disk_size_gb=args.disk_size,
         enable_cloud_logging=args.enable_cloud_logging,
         enable_cloud_monitoring=args.enable_cloud_monitoring,
@@ -232,18 +234,16 @@ class Create(base.CreateCommand):
         enable_autorepair=args.enable_autorepair,
         enable_autoupgrade=args.enable_autoupgrade,
         service_account=args.service_account,
-        enable_master_authorized_networks=enable_master_authorized_networks,
+        enable_master_authorized_networks=args.
+        enable_master_authorized_networks,
         master_authorized_networks=args.master_authorized_networks,
         enable_legacy_authorization=args.enable_legacy_authorization,
         labels=args.labels,
         disk_type=args.disk_type,
-        enable_network_policy=args.enable_network_policy)
-
-  def Collection(self):
-    return 'container.projects.zones.clusters'
-
-  def DeprecatedFormat(self, args):
-    return self.ListFormat(args)
+        enable_network_policy=args.enable_network_policy,
+        services_ipv4_cidr=args.services_ipv4_cidr,
+        enable_ip_alias=args.enable_ip_alias,
+        create_subnetwork=args.create_subnetwork)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -258,6 +258,9 @@ class Create(base.CreateCommand):
     Raises:
       util.Error, if creation failed.
     """
+    if args.async and not args.IsSpecified('format'):
+      args.format = util.OPERATIONS_FORMAT
+
     util.CheckKubectlInstalled()
 
     adapter = self.context['api_adapter']
@@ -305,7 +308,7 @@ class Create(base.CreateCommand):
     except kconfig.MissingEnvVarError as error:
       log.warning(error.message)
 
-    return cluster
+    return [cluster]
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -326,6 +329,7 @@ class CreateBeta(Create):
     flags.AddEnableLegacyAuthorizationFlag(parser)
     flags.AddLabelsFlag(parser)
     flags.AddNetworkPolicyFlags(parser, hidden=True)
+    flags.AddIPAliasFlags(parser, hidden=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -346,3 +350,4 @@ class CreateAlpha(Create):
     flags.AddEnableLegacyAuthorizationFlag(parser)
     flags.AddLabelsFlag(parser)
     flags.AddNetworkPolicyFlags(parser, hidden=False)
+    flags.AddIPAliasFlags(parser)

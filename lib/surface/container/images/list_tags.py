@@ -40,6 +40,18 @@ _DEFAULT_SHOW_OCCURRENCES_FROM = 10
 # (The --sort-by flag uses syntax `~X` to mean "sort descending on field X.")
 _DEFAULT_SORT_BY = '~timestamp'
 
+_TAGS_FORMAT = """
+    table(
+        digest.slice(7:19).join(''),
+        tags.list(),
+        timestamp.date():optional,
+        BUILD_DETAILS.buildDetails.provenance.sourceProvenance.sourceContext.context.cloudRepo.revisionId.notnull().list().slice(:8).join(''):optional:label=GIT_SHA,
+        PACKAGE_VULNERABILITY.vulnerabilityDetails.severity.notnull().count().list():optional:label=VULNERABILITIES,
+        IMAGE_BASIS.derivedImage.sort(distance).map().extract(baseResourceUrl).slice(:1).map().list().list().split('//').slice(1:).list().split('@').slice(:1).list():optional:label=FROM,
+        BUILD_DETAILS.buildDetails.provenance.id.notnull().list():optional:label=BUILD
+    )
+"""
+
 
 class ArgumentError(exceptions.Error):
   """For missing required mutually inclusive flags."""
@@ -68,9 +80,6 @@ class ListTags(base.ListCommand):
 
       """,
   }
-
-  def Collection(self):
-    return 'container.tags'
 
   @staticmethod
   def Args(parser):
@@ -104,6 +113,7 @@ class ListTags(base.ListCommand):
 
     # Does nothing for us, included in base.ListCommand
     base.URI_FLAG.RemoveFromParser(parser)
+    parser.display_info.AddFormat(_TAGS_FORMAT)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

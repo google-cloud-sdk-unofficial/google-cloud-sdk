@@ -66,7 +66,7 @@ class Create(base.CreateCommand):
         messages.DnsManagedZonesCreateRequest(managedZone=zone,
                                               project=zone_ref.project))
     log.CreatedResource(zone_ref)
-    return result
+    return [result]
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -134,4 +134,4 @@ class CreateBeta(base.CreateCommand):
         messages.DnsManagedZonesCreateRequest(managedZone=zone,
                                               project=zone_ref.project))
     log.CreatedResource(zone_ref)
-    return result
+    return [result]

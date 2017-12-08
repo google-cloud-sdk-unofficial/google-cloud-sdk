@@ -65,9 +65,6 @@ class Create(base.CreateCommand):
       """,
   }
 
-  def Collection(self):
-    return 'container.images'
-
   @staticmethod
   def Args(parser):
     parser.add_argument(

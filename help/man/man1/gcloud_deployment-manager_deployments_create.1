@@ -11,7 +11,7 @@ gcloud deployment\-manager deployments create \- create a deployment
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud deployment\-manager deployments create\fR \fIDEPLOYMENT_NAME\fR \fB\-\-config\fR=\fICONFIG\fR [\fB\-\-async\fR] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-preview\fR] [\fB\-\-properties\fR=[\fIPROPERTIES\fR,...]] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
+\f5gcloud deployment\-manager deployments create\fR \fIDEPLOYMENT_NAME\fR \fB\-\-config\fR=\fICONFIG\fR [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-preview\fR] [\fB\-\-properties\fR=[\fIPROPERTIES\fR,...]] [\fB\-\-async\fR\ |\ \fB\-\-automatic\-rollback\-on\-error\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -48,11 +48,6 @@ available at https://cloud.google.com/deployment\-manager/docs/configuration/.
 
 .RS 2m
 .TP 2m
-\fB\-\-async\fR
-Return immediately and print information about the Operation in progress rather
-than waiting for the Operation to complete. (default=False)
-
-.TP 2m
 \fB\-\-description\fR=\fIDESCRIPTION\fR
 Optional description of the deployment to insert.
 
@@ -65,6 +60,21 @@ resources. (default=False)
 \fB\-\-properties\fR=[\fIPROPERTIES\fR,...]
 A comma separated, key:value, map to be used when deploying a template file
 directly.
+
+.RE
+.sp
+At most one of these may be specified:
+
+.RS 2m
+.TP 2m
+\fB\-\-async\fR
+Return immediately and print information about the Operation in progress rather
+than waiting for the Operation to complete. (default=False)
+
+.TP 2m
+\fB\-\-automatic\-rollback\-on\-error\fR
+If the create request results in a deployment with resource errors, delete that
+deployment immediately after creation. (default=False)
 
 
 .RE

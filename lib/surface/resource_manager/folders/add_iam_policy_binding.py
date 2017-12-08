@@ -45,5 +45,6 @@ class AddIamPolicyBinding(base.Command):
   def Run(self, args):
     messages = folders.FoldersMessages()
     policy = folders.GetIamPolicy(args.id)
-    iam_util.AddBindingToIamPolicy(messages, policy, args.member, args.role)
+    iam_util.AddBindingToIamPolicy(
+        messages.Binding, policy, args.member, args.role)
     return folders.SetIamPolicy(args.id, policy)

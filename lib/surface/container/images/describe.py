@@ -37,12 +37,6 @@ class Describe(base.DescribeCommand):
     $ {command} gcr.io/myproject/myimage:tag
   """
 
-  def Collection(self):
-    return 'container.images'
-
-  def DeprecatedFormat(self, unused_args):
-    return 'object'
-
   @staticmethod
   def Args(parser):
     parser.add_argument(
@@ -57,6 +51,7 @@ class Describe(base.DescribeCommand):
             ['kind = "{kind}"'.format(kind=x) for x in _DEFAULT_KINDS]),
         help=('Additional filter to fetch occurrences for '
               'a given fully qualified image reference.'))
+    parser.display_info.AddFormat('object')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

@@ -1,0 +1,73 @@
+
+.TH "GCLOUD_COMPUTE_NETWORKS_PEERINGS_CREATE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud compute networks peerings create \- create a Google Compute Engine network peering
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud compute networks peerings create\fR \fINAME\fR \fB\-\-network\fR=\fINETWORK\fR \fB\-\-peer\-network\fR=\fIPEER_NETWORK\fR [\fB\-\-auto\-create\-routes\fR] [\fB\-\-peer\-project\fR=\fIPEER_PROJECT\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
+
+
+
+.SH "DESCRIPTION"
+
+Create a Google Compute Engine network peering.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+.RS 2m
+.TP 2m
+\fINAME\fR
+The name of the peering.
+
+
+.RE
+.sp
+
+.SH "REQUIRED FLAGS"
+
+.RS 2m
+.TP 2m
+\fB\-\-network\fR=\fINETWORK\fR
+The name of the network in the current project to be peered with the peer
+network.
+
+.TP 2m
+\fB\-\-peer\-network\fR=\fIPEER_NETWORK\fR
+The name of the network to be peered with the current network.
+
+
+.RE
+.sp
+
+.SH "OPTIONAL FLAGS"
+
+.RS 2m
+.TP 2m
+\fB\-\-auto\-create\-routes\fR
+If set, will automatically create routes for the network peering. Note that a
+backend error will be returned if this is not set.
+
+.TP 2m
+\fB\-\-peer\-project\fR=\fIPEER_PROJECT\fR
+The name of the project for the peer network. If not specified, defaults to
+current project.
+
+
+.RE
+.sp
+
+.SH "GCLOUD WIDE FLAGS"
+
+These flags are available to all commands: \-\-account, \-\-configuration,
+\-\-flatten, \-\-format, \-\-help, \-\-log\-http, \-\-project, \-\-quiet,
+\-\-trace\-token, \-\-user\-output\-enabled, \-\-verbosity. Run \fB$ gcloud
+help\fR for details.

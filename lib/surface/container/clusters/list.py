@@ -30,8 +30,9 @@ from surface.container.clusters.upgrade import VersionVerifier
 class List(base.ListCommand):
   """List existing clusters for running containers."""
 
-  def Collection(self):
-    return 'container.projects.zones.clusters'
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(util.CLUSTERS_FORMAT)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

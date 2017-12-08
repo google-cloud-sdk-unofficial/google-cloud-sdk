@@ -34,9 +34,7 @@ class List(base.ListCommand):
     """
     # --uri is inherited for all ListCommands but is not implemented here.
     base.URI_FLAG.RemoveFromParser(parser)
-
-  def Collection(self):
-    return 'container.projects.zones.operations'
+    parser.display_info.AddFormat(util.OPERATIONS_FORMAT)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
