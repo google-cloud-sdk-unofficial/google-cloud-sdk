@@ -17,7 +17,9 @@ gcloud service\-management configs describe \- describes the configuration for a
 
 .SH "DESCRIPTION"
 
-Describes the configuration for a given version of a service.
+This command prints out the configuration for the given version of a given
+service. You specify the name of the service and the ID of the configuration,
+and the command will print out the specified config.
 
 
 
@@ -46,3 +48,15 @@ The service from which to retrieve the configuration.
 .SH "GLOBAL FLAGS"
 
 Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To print the configuration with ID \f5\fI2017\-01\-01R0\fR\fR for the service
+called \f5\fImy\-service\fR\fR, run:
+
+.RS 2m
+$ gcloud service\-management configs describe \-\-service my\-service \e
+    2017\-01\-01R0
+.RE

@@ -5,7 +5,7 @@
 
 .SH "NAME"
 .HP
-gcloud service\-management enable \- enables a service on the current project
+gcloud service\-management enable \- enables a service for consumption for a project
 
 
 
@@ -17,9 +17,17 @@ gcloud service\-management enable \- enables a service on the current project
 
 .SH "DESCRIPTION"
 
-Enables a service on the current project.
+This command enables a service for consumption for a project.
 
-More information on enabling a service can be found at:
+To see a list of available services for a project, run:
+
+.RS 2m
+$ gcloud service\-management list \-\-available
+.RE
+
+More information on listing services can be found at:
+https://cloud.google.com/service\-management/list\-services and on enabling a
+service at:
 https://cloud.google.com/service\-management/enable\-disable#enabling_services
 
 
@@ -50,3 +58,20 @@ operation to complete.
 .SH "GLOBAL FLAGS"
 
 Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To enable a service called \f5my\-consumed\-service\fR on the current project,
+run:
+
+.RS 2m
+$ gcloud service\-management enable my\-consumed\-service
+.RE
+
+To run the same command asynchronously (non\-blocking), run:
+
+.RS 2m
+$ gcloud service\-management enable my\-consumed\-service \-\-async
+.RE

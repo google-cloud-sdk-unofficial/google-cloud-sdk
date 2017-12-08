@@ -16,11 +16,13 @@
 
 from apitools.base.py import exceptions as apitools_exceptions
 
+from googlecloudsdk.api_lib.deployment_manager import dm_labels
 from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
 from googlecloudsdk.api_lib.deployment_manager import importer
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deployment_manager import dm_base
+from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.command_lib.deployment_manager import flags
 from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
@@ -77,6 +79,11 @@ class Update(base.UpdateCommand):
     flags.AddDeploymentNameFlag(parser)
     flags.AddPropertiesFlag(parser)
     flags.AddAsyncFlag(parser)
+    parser.add_argument(
+        '--description',
+        help='The new description of the deployment.',
+        dest='description'
+    )
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
@@ -173,8 +180,9 @@ class Update(base.UpdateCommand):
         remove_labels = labels_util.GetRemoveLabelsListFromArgs(args)
         current_labels = current_deployment.labels
 
-        deployment.labels = dm_v2_util.DmUpdateLabels(
-            current_labels, dm_base.GetMessages(), update_labels, remove_labels)
+        deployment.labels = dm_labels.UpdateLabels(
+            current_labels, dm_base.GetMessages().DeploymentLabelEntry,
+            update_labels, remove_labels)
 
         # If no config or manifest_id are specified, but try to update labels,
         # only get current manifest when it is not a preveiw request
@@ -191,7 +199,12 @@ class Update(base.UpdateCommand):
       # This empty default can be removed once the fingerprint change is
       # fully implemented and all deployments have fingerprints.
       deployment.fingerprint = current_deployment.fingerprint or ''
-      deployment.description = current_deployment.description
+      if args.description is None:
+        deployment.description = current_deployment.description
+      elif not args.description or args.description.isspace():
+        deployment.description = None
+      else:
+        deployment.description = args.description
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error, dm_v2_util.HTTP_ERROR_FORMAT)
 
@@ -217,9 +230,10 @@ class Update(base.UpdateCommand):
     else:
       op_name = operation.name
       try:
-        dm_v2_util.WaitForOperation(dm_base.GetClient(), dm_base.GetMessages(),
-                                    op_name, dm_base.GetProject(), 'update',
-                                    OPERATION_TIMEOUT)
+        dm_write.WaitForOperation(op_name,
+                                  'update',
+                                  dm_base.GetProject(),
+                                  timeout=OPERATION_TIMEOUT)
         log.status.Print('Update operation ' + op_name
                          + ' completed successfully.')
       except apitools_exceptions.HttpError as error:

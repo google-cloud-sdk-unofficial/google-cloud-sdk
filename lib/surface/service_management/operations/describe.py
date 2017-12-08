@@ -22,6 +22,31 @@ from googlecloudsdk.command_lib.service_management import common_flags
 from googlecloudsdk.core import log
 
 
+_DETAILED_HELP = {
+    'DESCRIPTION': """\
+        This command will return information about an operation given the name
+        of that operation.
+
+        The amount of information inside an operation can be very large, so by
+        default, only a summary is returned. If you want the entire operation
+        resource, you can include the `--full` flag.
+
+        Note that the `operations/` prefix of the operation name is optional
+        and may be omitted.
+        """,
+    'EXAMPLES': """\
+        To describe an operation resource named
+        `operations/serviceConfigs.my-service.1`, run:
+
+          $ {command} serviceConfigs.my-service.1
+
+        To get the full operation resource, run:
+
+          $ {command} serviceConfigs.my-service.1 --full
+        """,
+}
+
+
 OPTIONAL_PREFIX_TO_STRIP = 'operations/'
 MAX_RESPONSE_BYTES = 1000
 
@@ -78,3 +103,6 @@ class Describe(base.DescribeCommand):
     # Set async to True because we don't need to wait for the operation
     # to complete to check the status of it.
     return services_util.GetProcessedOperationResult(operation, async=True)
+
+
+Describe.detailed_help = _DETAILED_HELP

@@ -15,6 +15,7 @@
 """The command to perform any necessary post installation steps."""
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.search_help import table as help_table
 from googlecloudsdk.command_lib.static_completion import table
 from googlecloudsdk.core import remote_completion
 from googlecloudsdk.core.updater import local_state
@@ -29,7 +30,7 @@ class PostProcess(base.SilentCommand):
     parser.add_argument('data', nargs='*', default='')
 
   def Run(self, args):
-    # Re-complile python files.
+    # Re-compile python files.
     state = local_state.InstallationState.ForCurrent()
     state.CompilePythonFiles()
 
@@ -38,3 +39,6 @@ class PostProcess(base.SilentCommand):
 
     # Re-generate static completion table.
     table.Update(self.cli)
+
+    # Re-generate help table.
+    help_table.Update(self.cli)

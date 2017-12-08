@@ -11,7 +11,7 @@ gcloud deployment\-manager deployments update \- update a deployment based on a 
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud deployment\-manager deployments update\fR \fIDEPLOYMENT_NAME\fR [\fB\-\-async\fR] [\fB\-\-config\fR=\fICONFIG\fR] [\fB\-\-create\-policy\fR=\fICREATE_POLICY\fR;\ default="CREATE_OR_ACQUIRE"] [\fB\-\-delete\-policy\fR=\fIDELETE_POLICY\fR;\ default="DELETE"] [\fB\-\-preview\fR] [\fB\-\-properties\fR=[\fIPROPERTIES\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud deployment\-manager deployments update\fR \fIDEPLOYMENT_NAME\fR [\fB\-\-async\fR] [\fB\-\-config\fR=\fICONFIG\fR] [\fB\-\-create\-policy\fR=\fICREATE_POLICY\fR;\ default="CREATE_OR_ACQUIRE"] [\fB\-\-delete\-policy\fR=\fIDELETE_POLICY\fR;\ default="DELETE"] [\fB\-\-description\fR=\fIDESCRIPTION\fR] [\fB\-\-preview\fR] [\fB\-\-properties\fR=[\fIPROPERTIES\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -57,6 +57,10 @@ Delete policy for resources that will change as part of an update or delete.
 DELETE deletes the resource while ABANDON just removes the resource reference
 from the deployment. \fIDELETE_POLICY\fR must be one of: \fBABANDON\fR,
 \fBDELETE\fR.
+
+.TP 2m
+\fB\-\-description\fR=\fIDESCRIPTION\fR
+The new description of the deployment.
 
 .TP 2m
 \fB\-\-preview\fR

@@ -14,6 +14,7 @@
 
 """Base functions for DM commands targeting the v2beta API."""
 
+from googlecloudsdk.command_lib.deployment_manager import dm_base
 from googlecloudsdk.core import apis
 
 
@@ -23,3 +24,9 @@ def GetClient():
 
 def GetMessages():
   return apis.GetMessagesModule('deploymentmanager', 'v2beta')
+
+
+def GetResources():
+  registry = dm_base.GetResources()
+  registry.RegisterApiByName('deploymentmanager', 'v2beta')
+  return registry

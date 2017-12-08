@@ -25,6 +25,37 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
+_DETAILED_HELP = {
+    'DESCRIPTION': """\
+        This command is used to deploy a service configuration for a service
+        to Google Service Management. As input, it takes one or more paths
+        to service configurations that should be uploaded. These configuration
+        files can be Proto Descriptors, Open API (Swagger) specifications,
+        or Google Service Configuration files in JSON or YAML formats.
+
+        If a service name is present in multiple configuration files (given
+        in the `host` field in OpenAPI specifications or the `name` field in
+        Google Service Configuration files), the first one will take precedence.
+
+        This command will block until deployment is complete unless the
+        `--async` flag is passed.
+        """,
+    'EXAMPLES': """\
+        To deploy a single Open API service configuration, run:
+
+          $ {command} ~/my_app/openapi.json
+
+        To run the deployment asynchronously (non-blocking), run:
+
+          $ {command} ~/my_app/openapi.json --async
+
+        To deploy a service config with a Proto, run:
+
+          $ {command} ~/my_app/service-config.yaml ~/my_app/service-protos.pb
+        """,
+}
+
+
 def _CommonArgs(parser):
   parser.add_argument(
       'service_config_file',
@@ -45,7 +76,7 @@ class SwaggerUploadException(exceptions.Error):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Deploy(base.Command):
-  """Deploys a service configuration for the given service name."""
+  """Deploys a service configuration."""
 
   @staticmethod
   def Args(parser):
@@ -116,15 +147,16 @@ class Deploy(base.Command):
               '[{0}].'.format(service_config_file))
 
         if 'swagger' in service_config_dict:
-          if not self.service_name:
-            self.service_name = service_config_dict.get('host', None)
+          if not self.service_name and service_config_dict.get('host'):
+            self.service_name = service_config_dict.get('host')
 
           # Always use YAML for Open API because JSON is a subset of YAML.
           config_files.append(
               self.MakeConfigFileMessage(config_contents, service_config_file,
                                          file_types.OPEN_API_YAML))
         elif service_config_dict.get('type') == 'google.api.Service':
-          self.service_name = service_config_dict.get('name')
+          if not self.service_name and service_config_dict.get('name'):
+            self.service_name = service_config_dict.get('name')
 
           config_files.append(
               self.MakeConfigFileMessage(config_contents, service_config_file,
@@ -150,7 +182,7 @@ class Deploy(base.Command):
                                    'when using normalized service configs as '
                                    'input.')
 
-          self.service_name = service_config_dict.get('name', None)
+          self.service_name = service_config_dict.get('name')
           config_files = []
           break
         else:
@@ -244,3 +276,6 @@ class DeployBeta(Deploy):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DeployAlpha(DeployBeta):
   """Deploys a service configuration for the given service name."""
+
+
+Deploy.detailed_help = _DETAILED_HELP

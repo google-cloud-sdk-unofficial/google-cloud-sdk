@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deployment_manager import dm_base
+from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.command_lib.deployment_manager import flags
 from googlecloudsdk.core import log
 
@@ -106,12 +107,10 @@ class Stop(base.Command):
     else:
       op_name = operation.name
       try:
-        dm_v2_util.WaitForOperation(dm_base.GetClient(),
-                                    dm_base.GetMessages(),
-                                    op_name,
-                                    dm_base.GetProject(),
-                                    'stop',
-                                    OPERATION_TIMEOUT)
+        dm_write.WaitForOperation(op_name,
+                                  'stop',
+                                  dm_base.GetProject(),
+                                  timeout=OPERATION_TIMEOUT)
         log.status.Print('Stop operation ' + op_name
                          + ' completed successfully.')
       except apitools_exceptions.HttpError as error:

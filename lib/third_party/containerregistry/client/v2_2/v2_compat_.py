@@ -215,7 +215,7 @@ class V2FromV22(v2_image.DockerImage):
         'id': layer_id,
         'parent': parent,
         'container_config': {
-            'cmd': [history['created_by']]
+            'Cmd': [history['created_by']]
         } if 'created_by' in history else {},
         'throwaway': True if 'empty_layer' in history else False
     }

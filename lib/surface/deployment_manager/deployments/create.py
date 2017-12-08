@@ -21,6 +21,7 @@ from googlecloudsdk.api_lib.deployment_manager import importer
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deployment_manager import dm_base
+from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.command_lib.deployment_manager import flags
 from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
@@ -154,12 +155,10 @@ class Create(base.CreateCommand):
     else:
       op_name = operation.name
       try:
-        dm_v2_util.WaitForOperation(dm_base.GetClient(),
-                                    dm_base.GetMessages(),
-                                    op_name,
-                                    dm_base.GetProject(),
-                                    'create',
-                                    OPERATION_TIMEOUT)
+        dm_write.WaitForOperation(op_name,
+                                  operation_description='create',
+                                  project=dm_base.GetProject(),
+                                  timeout=OPERATION_TIMEOUT)
         log.status.Print('Create operation ' + op_name
                          + ' completed successfully.')
       except apitools_exceptions.HttpError as error:

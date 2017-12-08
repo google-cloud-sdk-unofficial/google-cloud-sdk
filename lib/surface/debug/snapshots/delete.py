@@ -18,6 +18,7 @@ import StringIO
 
 from googlecloudsdk.api_lib.debug import debug
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.debug import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
@@ -34,7 +35,7 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    debug.AddIdOptions(parser, 'snapshot', 'snapshots', 'deleted')
+    flags.AddIdOptions(parser, 'snapshot', 'snapshots', 'deleted')
     parser.add_argument(
         '--all-users', action='store_true', default=False,
         help="""\

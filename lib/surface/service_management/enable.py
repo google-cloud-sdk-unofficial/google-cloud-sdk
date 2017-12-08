@@ -21,14 +21,34 @@ from googlecloudsdk.command_lib.service_management import common_flags
 from googlecloudsdk.core import properties
 
 
+_DETAILED_HELP = {
+    'DESCRIPTION': """\
+        This command enables a service for consumption for a project.
+
+        To see a list of available services for a project, run:
+
+          $ {parent_command} list --available
+
+        More information on listing services can be found at:
+        https://cloud.google.com/service-management/list-services and on
+        enabling a service at:
+        https://cloud.google.com/service-management/enable-disable#enabling_services
+        """,
+    'EXAMPLES': """\
+        To enable a service called `my-consumed-service` on the current
+        project, run:
+
+          $ {command} my-consumed-service
+
+        To run the same command asynchronously (non-blocking), run:
+
+          $ {command} my-consumed-service --async
+        """,
+}
+
+
 class Enable(base.SilentCommand):
-  """Enables a service on the current project.
-
-  Enables a service on the current project.
-
-  More information on enabling a service can be found at:
-  https://cloud.google.com/service-management/enable-disable#enabling_services
-  """
+  """Enables a service for consumption for a project."""
 
   @staticmethod
   def Args(parser):
@@ -55,3 +75,6 @@ class Enable(base.SilentCommand):
     project = properties.VALUES.core.project.Get(required=True)
     operation = enable_api.EnableServiceApiCall(project, args.service)
     return services_util.ProcessOperationResult(operation, args.async)
+
+
+Enable.detailed_help = _DETAILED_HELP

@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import display
 from googlecloudsdk.command_lib.bio import flags
 from googlecloudsdk.command_lib.bio import util as command_lib_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.resource import resource_printer
 
@@ -55,7 +56,7 @@ class Delete(base.Command):
     flags.GetOperationNameFlag('cancel').AddToParser(parser)
 
   def Run(self, args):
-    operations = bio.Operations()
+    operations = bio.Operations(properties.VALUES.core.project.Get())
 
     operation_ref = command_lib_util.ParseOperation(args.name)
     op = operations.Get(operation_ref)

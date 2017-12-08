@@ -17,7 +17,10 @@ gcloud service\-management check\-iam\-policy \- returns information about a mem
 
 .SH "DESCRIPTION"
 
-Returns information about a member's permissions on a service.
+This command lists the permissions that the current authenticated gcloud user
+has for a service. For example, if the authenticated user is able to delete the
+service, \f5servicemanagement.services.delete\fR will be among the returned
+permissions.
 
 
 
@@ -35,3 +38,13 @@ The name of the service for which to check the IAM policy.
 .SH "GLOBAL FLAGS"
 
 Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To check the permissions for the currently authenticated gcloud, run:
+
+.RS 2m
+$ gcloud service\-management check\-iam\-policy my_produced_service_name
+.RE

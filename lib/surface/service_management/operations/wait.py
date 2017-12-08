@@ -19,6 +19,22 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.service_management import common_flags
 
 
+_DETAILED_HELP = {
+    'DESCRIPTION': """\
+        This command will block until an operation has been marked as complete.
+
+        Note that the `operations/` prefix of the operation name is optional
+        and may be omitted.
+        """,
+    'EXAMPLES': """\
+        To wait on an operation named `operations/serviceConfigs.my-service.1`
+        to complete, run:
+
+          $ {command} serviceConfigs.my-service.1
+        """,
+}
+
+
 class Wait(base.Command):
   """Waits for an operation to complete."""
 
@@ -54,3 +70,6 @@ class Wait(base.Command):
     operation = client.operations.Get(request)
 
     return services_util.ProcessOperationResult(operation, async=False)
+
+
+Wait.detailed_help = _DETAILED_HELP

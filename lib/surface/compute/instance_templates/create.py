@@ -54,8 +54,8 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
 
   flags.AddRegionFlag(
       parser,
-      resource_type='instance template',
-      operation_type='create')
+      resource_type='subnetwork',
+      operation_type='attach')
 
   parser.add_argument(
       '--description',

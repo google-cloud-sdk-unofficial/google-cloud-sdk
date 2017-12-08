@@ -19,6 +19,21 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.service_management import common_flags
 
 
+_DETAILED_HELP = {
+    'DESCRIPTION': """\
+        This command lists the permissions that the current authenticated
+        gcloud user has for a service. For example, if the authenticated user is
+        able to delete the service, `servicemanagement.services.delete` will
+        be among the returned permissions.
+        """,
+    'EXAMPLES': """\
+        To check the permissions for the currently authenticated gcloud, run:
+
+          $ {command} my_produced_service_name
+        """,
+}
+
+
 class CheckIamPolicy(base.Command):
   """Returns information about a member's permissions on a service."""
 
@@ -48,18 +63,7 @@ class CheckIamPolicy(base.Command):
     """
     messages = services_util.GetMessagesModule()
     client = services_util.GetClientInstance()
-    all_iam_permissions = [
-        'servicemanagement.services.get',
-        'servicemanagement.services.getProjectSettings',
-        'servicemanagement.services.delete',
-        'servicemanagement.services.update',
-        'servicemanagement.services.use',
-        'servicemanagement.services.updateProjectSettings',
-        'servicemanagement.services.check',
-        'servicemanagement.services.report',
-        'servicemanagement.services.setIamPolicy',
-        'servicemanagement.services.getIamPolicy',
-    ]
+    all_iam_permissions = services_util.ALL_IAM_PERMISSIONS
 
     # Shorten the query request name for better readability
     query_request = messages.ServicemanagementServicesTestIamPermissionsRequest
@@ -73,3 +77,6 @@ class CheckIamPolicy(base.Command):
 
   def Collection(self):
     return services_util.SERVICES_COLLECTION
+
+
+CheckIamPolicy.detailed_help = _DETAILED_HELP

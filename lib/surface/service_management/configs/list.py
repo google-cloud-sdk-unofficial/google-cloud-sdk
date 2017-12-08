@@ -21,6 +21,22 @@ from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
 
 
+_DETAILED_HELP = {
+    'DESCRIPTION': """\
+        This command lists all the configurations for a given service by ID.
+
+        To get more detailed information about a specific configuration, run:
+
+          $ {parent_command} describe
+        """,
+    'EXAMPLES': """\
+        To list the configurations for a service named `my-service`, run:
+
+          $ {command} --service my-service
+        """,
+}
+
+
 class List(base.ListCommand):
   """Lists the configurations for a given service."""
 
@@ -64,3 +80,6 @@ class List(base.ListCommand):
 
   def Collection(self):
     return services_util.CONFIG_COLLECTION
+
+
+List.detailed_help = _DETAILED_HELP

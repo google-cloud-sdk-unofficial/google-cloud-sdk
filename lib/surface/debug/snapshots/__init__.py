@@ -15,7 +15,7 @@
 """The targets command group for the gcloud debug command."""
 
 from googlecloudsdk.calliope import base
-from surface import debug
+from googlecloudsdk.command_lib.debug import flags
 
 
 class Snapshots(base.Group):
@@ -33,25 +33,4 @@ class Snapshots(base.Group):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        '--target', metavar='(ID|DESCRIPTION_REGEXP)',
-        help="""\
-            The debug target. It may be a target ID or name obtained from
-            'debug targets list', or it may be a regular expression uniquely
-            specifying a debuggee based on its description or name. For App
-            Engine projects, if not specified, the default target is
-            the most recent deployment of the default module and version.
-        """)
-
-  def Filter(self, context, args):
-    """Initialize context for Cloud Debugger targets commands.
-
-    Args:
-      context: The current context.
-      args: The argparse namespace that was specified on the CLI or API.
-
-    Returns:
-      The updated context.
-    """
-    debug.SetApiDefaults()
-    return context
+    flags.AddTargetOption(parser)

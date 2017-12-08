@@ -5,7 +5,7 @@
 
 .SH "NAME"
 .HP
-gcloud service\-management disable \- disables a service on a provided (or\ previously\ configured) project
+gcloud service\-management disable \- disables a service for consumption for a project
 
 
 
@@ -17,7 +17,18 @@ gcloud service\-management disable \- disables a service on a provided (or\ prev
 
 .SH "DESCRIPTION"
 
-Disables a service on a provided (or previously configured) project.
+This command disables a previously\-enabled service for consumption.
+
+To see a list of the enabled services for a project, run:
+
+.RS 2m
+$ gcloud service\-management list \-\-enabled
+.RE
+
+More information on listing services can be found at:
+https://cloud.google.com/service\-management/list\-services and on disabling a
+service at:
+https://cloud.google.com/service\-management/enable\-disable#disabling_services
 
 
 
@@ -47,3 +58,20 @@ operation to complete.
 .SH "GLOBAL FLAGS"
 
 Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To disable a service called \f5my\-consumed\-service\fR for the active project,
+run:
+
+.RS 2m
+$ gcloud service\-management disable my\-consumed\-service
+.RE
+
+To run the same command asynchronously (non\-blocking), run:
+
+.RS 2m
+$ gcloud service\-management disable my\-consumed\-service \-\-async
+.RE

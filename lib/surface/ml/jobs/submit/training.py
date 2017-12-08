@@ -102,8 +102,9 @@ class BetaTrain(base.Command):
     flags.ProcessPackages(args)
 
     region = properties.VALUES.compute.region.Get(required=True)
-    uris = jobs_prep.RunSetupAndUpload(
-        args.packages, args.staging_bucket, args.package_path, args.job)
+    uris = jobs_prep.UploadPythonPackages(
+        packages=args.packages, package_path=args.package_path,
+        staging_bucket=args.staging_bucket, job_name=args.job)
     log.debug('Using {0} as trainer uris'.format(uris))
     scale_tier_enum = (jobs.GetMessagesModule().
                        GoogleCloudMlV1beta1TrainingInput.

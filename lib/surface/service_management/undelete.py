@@ -18,12 +18,31 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.service_management import common_flags
 
 
-class Undelete(base.Command):
-  """Undeletes a service configuration given a service name.
+_DETAILED_HELP = {
+    'DESCRIPTION': """\
+        Undeletes a service configuration that was previously deleted.
 
-  Note: This command is effective for up to 30 days after a service
-  configuration has been marked for deletion.
-  """
+        Services that are deleted will be retained in the system for 30 days.
+        If a deleted service is still within this retention window, it can be
+        undeleted with this command.
+
+        Note that this means that this command will not be effective for
+        service configurations marked for deletion more than 30 days ago.
+        """,
+    'EXAMPLES': """\
+        To undelete a service named `my-service`, run:
+
+          $ {command} my-service
+
+        To run the same command asynchronously (non-blocking), run:
+
+          $ {command} my-service --async
+        """,
+}
+
+
+class Undelete(base.Command):
+  """Undeletes a service given a service name."""
 
   @staticmethod
   def Args(parser):
@@ -56,3 +75,6 @@ class Undelete(base.Command):
     operation = client.services.Undelete(request)
 
     return services_util.ProcessOperationResult(operation, args.async)
+
+
+Undelete.detailed_help = _DETAILED_HELP

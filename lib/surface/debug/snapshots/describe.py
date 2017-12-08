@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.debug import debug
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.debug import flags
 from googlecloudsdk.core import properties
 
 
@@ -34,7 +35,7 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    debug.AddIdOptions(parser, 'snapshot', 'snapshots', 'displayed')
+    flags.AddIdOptions(parser, 'snapshot', 'snapshots', 'displayed')
 
   def Run(self, args):
     """Run the describe command."""

@@ -36,6 +36,8 @@ class Describe(base.DescribeCommand):
   Describe container analysis data for a specified image:
 
     $ {{command}} gcr.io/myproject/myimage@digest
+          OR
+    $ {{command}} gcr.io/myproject/myimage:tag
   """
 
   def Collection(self):
@@ -49,7 +51,8 @@ class Describe(base.DescribeCommand):
     parser.add_argument('image',
                         help=('The fully qualified image '
                               'reference to describe.\n'
-                              '*.gcr.io/repository@digest'))
+                              '*.gcr.io/repository@digest, '
+                              '*.gcr.io/repository:tag'))
     parser.add_argument('--occurrence-filter',
                         default=' OR '.join(['kind = "{kind}"'.format(kind=x)
                                              for x in _DEFAULT_KINDS]),

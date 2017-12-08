@@ -5,7 +5,7 @@
 
 .SH "NAME"
 .HP
-gcloud service\-management deploy \- deploys a service configuration for the given service name
+gcloud service\-management deploy \- deploys a service configuration
 
 
 
@@ -17,7 +17,18 @@ gcloud service\-management deploy \- deploys a service configuration for the giv
 
 .SH "DESCRIPTION"
 
-Deploys a service configuration for the given service name.
+This command is used to deploy a service configuration for a service to Google
+Service Management. As input, it takes one or more paths to service
+configurations that should be uploaded. These configuration files can be Proto
+Descriptors, Open API (Swagger) specifications, or Google Service Configuration
+files in JSON or YAML formats.
+
+If a service name is present in multiple configuration files (given in the
+\f5host\fR field in OpenAPI specifications or the \f5name\fR field in Google
+Service Configuration files), the first one will take precedence.
+
+This command will block until deployment is complete unless the \f5\-\-async\fR
+flag is passed.
 
 
 
@@ -49,3 +60,26 @@ operation to complete.
 .SH "GLOBAL FLAGS"
 
 Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To deploy a single Open API service configuration, run:
+
+.RS 2m
+$ gcloud service\-management deploy ~/my_app/openapi.json
+.RE
+
+To run the deployment asynchronously (non\-blocking), run:
+
+.RS 2m
+$ gcloud service\-management deploy ~/my_app/openapi.json \-\-async
+.RE
+
+To deploy a service config with a Proto, run:
+
+.RS 2m
+$ gcloud service\-management deploy ~/my_app/service\-config.yaml \e
+    ~/my_app/service\-protos.pb
+.RE

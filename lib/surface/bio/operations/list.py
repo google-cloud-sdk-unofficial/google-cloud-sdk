@@ -18,6 +18,7 @@
 from googlecloudsdk.api_lib.bio import bio
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bio import util as command_lib_util
+from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -40,6 +41,4 @@ class List(base.ListCommand):
   def Run(self, args):
     """Run the list command."""
 
-    return bio.Operations().List()
-
-
+    return bio.Operations(properties.VALUES.core.project.Get()).List()

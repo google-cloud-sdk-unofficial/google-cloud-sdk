@@ -50,8 +50,7 @@ class Deploy(base.Command):
         type=arg_parsers.BinarySize(
             suggested_binary_size_scales=['KB', 'MB', 'MiB', 'GB', 'GiB']))
     memory.detailed_help = """\
-      The value must be a whole number followed by a size unit of ``KB'' for
-      kilobyte, ``MB'' for megabyte, or ``GB'' for gigabyte.
+      The amount of memory allocated to your function.
 
       Allowed values are: 128MB, 256MB, 512MB, and 1024MB.
       """
@@ -96,9 +95,9 @@ class Deploy(base.Command):
     source_version_group = parser.add_mutually_exclusive_group()
     source_version_group.add_argument(
         '--source-revision',
-        help=('The revision ID (for instance, git tag) that will be used to '
-              'get the source code of the function. Can be specified only '
-              'together with --source-url parameter.'))
+        help=('The revision ID (for instance, git commit hash) that will be '
+              'used to get the source code of the function. Can be specified '
+              'only together with --source-url parameter.'))
     source_version_group.add_argument(
         '--source-branch',
         help=('The branch that will be used to get the source code of the '
@@ -110,11 +109,18 @@ class Deploy(base.Command):
         help=('The revision tag for the source that will be used as the source '
               'code of the function. Can be specified only together with '
               '--source-url parameter.'))
-    parser.add_argument(
+    entry_point = parser.add_argument(
         '--entry-point',
-        help=('The name of the function (as defined in source code) that will '
-              'be executed.'),
+        help='Specified function to run when triggering event happens.',
         type=util.ValidateEntryPointNameOrRaise)
+    entry_point.detailed_help = (
+        'By default when a Google Cloud Function is triggered, it executes a '
+        'JavaScript function with the same name. Or, if it cannot find a '
+        'function with the same name, it executes a function named `function`. '
+        'You can use this flag to override the default behavior, by specifying '
+        'the name of a JavaScript function that will be executed when the '
+        'Google Cloud Function is triggered.'
+    )
     parser.add_argument(
         '--timeout',
         help=('The function execution timeout, e.g. 30s for 30 seconds. '
@@ -142,10 +148,10 @@ class Deploy(base.Command):
         '--trigger-http', action='store_true',
         help='Associates an HTTP endpoint with this function.')
     trigger_http.detailed_help = (
-        'Every HTTP POST request to the function\'s endpoint '
-        '(web_trigger.url parameter of the deploy output) will trigger '
-        'function execution. Result of the function execution will be returned '
-        'in response body.')
+        'Function will be assigned an endpoint, which you can view by using '
+        'the `describe` command. Any HTTP request (of a supported type) to the '
+        'endpoint will trigger function execution. Supported HTTP request '
+        'types are: POST, PUT, GET, DELETE, and OPTIONS.')
     trigger_group.add_argument(
         '--trigger-provider',
         metavar='PROVIDER',

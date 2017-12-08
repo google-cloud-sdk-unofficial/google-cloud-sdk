@@ -15,7 +15,6 @@
 """The targets command group for the gcloud debug command."""
 
 from googlecloudsdk.calliope import base
-from surface import debug
 
 
 class Targets(base.Group):
@@ -32,16 +31,3 @@ class Targets(base.Group):
               $ {command} list
        """
   }
-
-  def Filter(self, context, args):
-    """Initialize context for Cloud Debugger targets commands.
-
-    Args:
-      context: The current context.
-      args: The argparse namespace that was specified on the CLI or API.
-
-    Returns:
-      The updated context.
-    """
-    debug.SetApiDefaults()
-    return context

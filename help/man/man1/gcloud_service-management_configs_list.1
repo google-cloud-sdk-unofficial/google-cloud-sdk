@@ -17,7 +17,13 @@ gcloud service\-management configs list \- lists the configurations for a given 
 
 .SH "DESCRIPTION"
 
-Lists the configurations for a given service.
+This command lists all the configurations for a given service by ID.
+
+To get more detailed information about a specific configuration, run:
+
+.RS 2m
+$ gcloud service\-management configs describe
+.RE
 
 
 
@@ -75,3 +81,13 @@ Print a list of resource URIs instead of the default output.
 .SH "GLOBAL FLAGS"
 
 Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To list the configurations for a service named \f5my\-service\fR, run:
+
+.RS 2m
+$ gcloud service\-management configs list \-\-service my\-service
+.RE

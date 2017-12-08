@@ -5,7 +5,7 @@
 
 .SH "NAME"
 .HP
-gcloud service\-management undelete \- undeletes a service configuration given a service name
+gcloud service\-management undelete \- undeletes a service given a service name
 
 
 
@@ -17,8 +17,14 @@ gcloud service\-management undelete \- undeletes a service configuration given a
 
 .SH "DESCRIPTION"
 
-Note: This command is effective for up to 30 days after a service configuration
-has been marked for deletion.
+Undeletes a service configuration that was previously deleted.
+
+Services that are deleted will be retained in the system for 30 days. If a
+deleted service is still within this retention window, it can be undeleted with
+this command.
+
+Note that this means that this command will not be effective for service
+configurations marked for deletion more than 30 days ago.
 
 
 
@@ -48,3 +54,19 @@ operation to complete.
 .SH "GLOBAL FLAGS"
 
 Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To undelete a service named \f5my\-service\fR, run:
+
+.RS 2m
+$ gcloud service\-management undelete my\-service
+.RE
+
+To run the same command asynchronously (non\-blocking), run:
+
+.RS 2m
+$ gcloud service\-management undelete my\-service \-\-async
+.RE

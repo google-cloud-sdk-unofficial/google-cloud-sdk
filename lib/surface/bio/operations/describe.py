@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.bio import bio
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bio import flags
 from googlecloudsdk.command_lib.bio import util as command_lib_util
+from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -47,4 +48,5 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     operation_ref = command_lib_util.ParseOperation(args.name)
-    return bio.Operations().Get(operation_ref)
+    return bio.Operations(properties.VALUES.core.project.Get()).Get(
+        operation_ref)

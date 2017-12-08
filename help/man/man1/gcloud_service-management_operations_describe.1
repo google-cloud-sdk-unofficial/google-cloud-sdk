@@ -17,7 +17,15 @@ gcloud service\-management operations describe \- describes an operation resourc
 
 .SH "DESCRIPTION"
 
-Describes an operation resource for a given operation name.
+This command will return information about an operation given the name of that
+operation.
+
+The amount of information inside an operation can be very large, so by default,
+only a summary is returned. If you want the entire operation resource, you can
+include the \f5\-\-full\fR flag.
+
+Note that the \f5operations/\fR prefix of the operation name is optional and may
+be omitted.
 
 
 
@@ -47,3 +55,22 @@ will be printed instead.
 .SH "GLOBAL FLAGS"
 
 Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To describe an operation resource named
+\f5operations/serviceConfigs.my\-service.1\fR, run:
+
+.RS 2m
+$ gcloud service\-management operations describe \e
+    serviceConfigs.my\-service.1
+.RE
+
+To get the full operation resource, run:
+
+.RS 2m
+$ gcloud service\-management operations describe \e
+    serviceConfigs.my\-service.1 \-\-full
+.RE

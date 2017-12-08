@@ -22,7 +22,9 @@ import urllib
 
 from pyu2f import errors as u2ferrors
 from pyu2f import model
-from pyu2f import u2f
+from pyu2f.convenience import authenticator
+
+from oauth2client.contrib import reauth_errors
 
 
 REAUTH_API = 'https://reauth.googleapis.com/v2/sessions'
@@ -30,48 +32,9 @@ REAUTH_SCOPE = 'https://www.googleapis.com/auth/accounts.reauth'
 REAUTH_ORIGIN = 'https://accounts.google.com'
 
 
-class ReauthError(Exception):
-  """Base exception for reauthentication."""
-  pass
-
-
-class ReauthUnattendedError(ReauthError):
-  """An exception for when reauth cannot be answered."""
-
-  def __init__(self):
-    super(ReauthUnattendedError, self).__init__(
-        'Reauthentication challenge could not be answered because you are not '
-        'in an interactive session.')
-
-
-class ReauthFailError(ReauthError):
-  """An exception for when reauth failed."""
-
-  def __init__(self):
-    super(ReauthFailError, self).__init__(
-        'Reauthentication challenge failed.')
-
-
-class ReauthAPIError(ReauthError):
-  """An exception for when reauth API returned something we can't handle."""
-
-  def __init__(self, api_error):
-    super(ReauthAPIError, self).__init__(
-        'Reauthentication challenge failed due to API error: {0}.'.format(
-            api_error))
-
-
-class ReauthAccessTokenRefreshError(ReauthError):
-  """An exception for when we can't get an access token for reauth."""
-
-  def __init__(self):
-    super(ReauthAccessTokenRefreshError, self).__init__(
-        'Failed to get an access token for reauthentication.')
-
-
 def HandleErrors(msg):
   if 'error' in msg:
-    raise ReauthAPIError(msg['error']['message'])
+    raise reauth_errors.ReauthAPIError(msg['error']['message'])
   return msg
 
 
@@ -144,49 +107,32 @@ class SecurityKeyChallenge(ReauthChallenge):
     return True
 
   def InternalObtainCredentials(self, metadata):
-    api = None
-    try:
-      api = u2f.GetLocalU2FInterface(origin=REAUTH_ORIGIN)
-    except u2ferrors.NoDeviceFoundError:
-      sys.stderr.write('Please insert your security key and press enter...')
-      raw_input()
-      try:
-        api = u2f.GetLocalU2FInterface(origin=REAUTH_ORIGIN)
-      except u2ferrors.NoDeviceFoundError:
-        return None
-
     sk = metadata['securityKey']
     challenges = sk['challenges']
     app_id = sk['applicationId']
 
-    sys.stderr.write('Please touch your security key.\n')
+    challenge_data = []
     for c in challenges:
       kh = c['keyHandle'].encode('ascii')
       key = model.RegisteredKey(bytearray(base64.urlsafe_b64decode(kh)))
       challenge = c['challenge'].encode('ascii')
       challenge = base64.urlsafe_b64decode(challenge)
+      challenge_data.append({'key': key, 'challenge': challenge})
 
-      try:
-        ret = api.Authenticate(app_id, challenge, [key])
-        client_data = base64.urlsafe_b64encode(ret.client_data.GetJson())
-        signature_data = base64.urlsafe_b64encode(ret.signature_data)
-        payload = {
-            'securityKey': {
-                'clientData': client_data,
-                'signatureData': signature_data,
-                'applicationId': app_id,
-                'keyHandle': c['keyHandle'],
-            }
-        }
-        return payload
-      except u2ferrors.U2FError as e:
-        if e.code == u2ferrors.U2FError.DEVICE_INELIGIBLE:
-          continue
-        elif e.code == u2ferrors.U2FError.TIMEOUT:
-          sys.stderr.write('Timed out while waiting for security key touch.\n')
-          continue
-        else:
-          raise e
+    try:
+      api = authenticator.CreateCompositeAuthenticator(REAUTH_ORIGIN)
+      response = api.Authenticate(app_id, challenge_data,
+                                  print_callback=sys.stderr.write)
+      return {'securityKey': response}
+    except u2ferrors.U2FError as e:
+      if e.code == u2ferrors.U2FError.DEVICE_INELIGIBLE:
+        sys.stderr.write('Ineligible security key.\n')
+      elif e.code == u2ferrors.U2FError.TIMEOUT:
+        sys.stderr.write('Timed out while waiting for security key touch.\n')
+      else:
+        raise e
+    except u2ferrors.NoDeviceFoundError:
+      sys.stderr.write('No security key found.\n')
     return None
 
 
@@ -247,15 +193,16 @@ class ReauthManager(object):
 
       if not (msg['status'] == 'CHALLENGE_REQUIRED' or
               msg['status'] == 'CHALLENGE_PENDING'):
-        raise ReauthAPIError('Challenge status {0}'.format(msg['status']))
+        raise reauth_errors.ReauthAPIError(
+            'Challenge status {0}'.format(msg['status']))
 
       if not sys.stdin.isatty():
-        raise ReauthUnattendedError()
+        raise reauth_errors.ReauthUnattendedError()
 
       msg = self.DoOneRoundOfChallenges(msg)
 
     # If we got here it means we didn't get authenticated.
-    raise ReauthFailError()
+    raise reauth_errors.ReauthFailError()
 
 
 def ObtainRapt(http_request, access_token, requested_scopes):
@@ -286,7 +233,7 @@ def GetRaptToken(http_request, client_id, client_secret, refresh_token,
   try:
     reauth_access_token = json.loads(content)['access_token']
   except (ValueError, KeyError) as _:
-    raise ReauthAccessTokenRefreshError
+    raise reauth_errors.ReauthAccessTokenRefreshError
 
   # Get rapt token from reauth API.
   rapt_token = ObtainRapt(

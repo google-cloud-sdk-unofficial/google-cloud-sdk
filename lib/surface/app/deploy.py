@@ -18,6 +18,7 @@
 from googlecloudsdk.api_lib.app import deploy_app_command_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import deploy_util
+from googlecloudsdk.core import properties
 
 
 _DETAILED_HELP = {
@@ -69,9 +70,12 @@ class DeployBeta(base.SilentCommand):
 
   def Run(self, args):
     upload_strategy = deploy_app_command_util.UploadStrategy.THREADS
+    # The runtime builders are property-configurable AND beta-only
+    use_runtime_builders = properties.VALUES.app.use_runtime_builders.GetBool()
     return deploy_util.RunDeploy(args, enable_endpoints=True,
                                  use_beta_stager=True,
-                                 upload_strategy=upload_strategy)
+                                 upload_strategy=upload_strategy,
+                                 use_runtime_builders=use_runtime_builders)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.PREVIEW)

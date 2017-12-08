@@ -17,7 +17,7 @@ gcloud service\-management get\-iam\-policy \- describes the IAM policy for a se
 
 .SH "DESCRIPTION"
 
-Describes the IAM policy for a service.
+Gets the IAM policy for a produced service, given the service name.
 
 
 
@@ -35,3 +35,13 @@ The name of the service whose IAM policy is to be described.
 .SH "GLOBAL FLAGS"
 
 Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To print the IAM policy for a service named \f5my\-service\fR, run:
+
+.RS 2m
+$ gcloud service\-management get\-iam\-policy my\-service
+.RE

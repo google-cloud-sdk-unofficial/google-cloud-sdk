@@ -20,8 +20,34 @@ from googlecloudsdk.command_lib.service_management import common_flags
 from googlecloudsdk.core import properties
 
 
+_DETAILED_HELP = {
+    'DESCRIPTION': """\
+        This command disables a previously-enabled service for consumption.
+
+        To see a list of the enabled services for a project, run:
+
+          $ {parent_command} list --enabled
+
+        More information on listing services can be found at:
+        https://cloud.google.com/service-management/list-services and on
+        disabling a service at:
+        https://cloud.google.com/service-management/enable-disable#disabling_services
+        """,
+    'EXAMPLES': """\
+        To disable a service called `my-consumed-service` for the active
+        project, run:
+
+          $ {command} my-consumed-service
+
+        To run the same command asynchronously (non-blocking), run:
+
+          $ {command} my-consumed-service --async
+        """,
+}
+
+
 class Disable(base.SilentCommand):
-  """Disables a service on a provided (or previously configured) project."""
+  """Disables a service for consumption for a project."""
 
   @staticmethod
   def Args(parser):
@@ -55,3 +81,6 @@ class Disable(base.SilentCommand):
             consumerId='project:' + project))
     operation = client.services.Disable(request)
     return services_util.ProcessOperationResult(operation, args.async)
+
+
+Disable.detailed_help = _DETAILED_HELP

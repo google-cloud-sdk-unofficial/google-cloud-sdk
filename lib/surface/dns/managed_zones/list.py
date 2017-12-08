@@ -17,6 +17,7 @@
 from apitools.base.py import list_pager
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import apis
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
@@ -25,20 +26,17 @@ class List(base.ListCommand):
   """View the list of all your managed-zones.
 
   This command displays the list of your managed-zones.
+
+  ## EXAMPLES
+
+  To see the list of all managed-zones, run:
+
+    $ {command}
+
+  To see the list of first 10 managed-zones, run:
+
+    $ {command} --limit=10
   """
-
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To see the list of all managed-zones, run:
-
-            $ {command}
-
-          To see the list of first 10 managed-zones, run:
-
-            $ {command} --limit=10
-          """,
-  }
 
   def Collection(self):
     return 'dns.managedZones'
@@ -50,8 +48,8 @@ class List(base.ListCommand):
     return _GetUri
 
   def Run(self, args):
-    dns_client = self.context['dns_client']
-    dns_messages = self.context['dns_messages']
+    dns_client = apis.GetClientInstance('dns', 'v1')
+    dns_messages = apis.GetMessagesModule('dns', 'v1')
 
     project_id = properties.VALUES.core.project.Get(required=True)
 

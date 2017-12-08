@@ -17,7 +17,10 @@ gcloud service\-management operations wait \- waits for an operation to complete
 
 .SH "DESCRIPTION"
 
-Waits for an operation to complete.
+This command will block until an operation has been marked as complete.
+
+Note that the \f5operations/\fR prefix of the operation name is optional and may
+be omitted.
 
 
 
@@ -35,3 +38,15 @@ The name of the operation on which to wait.
 .SH "GLOBAL FLAGS"
 
 Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To wait on an operation named \f5operations/serviceConfigs.my\-service.1\fR to
+complete, run:
+
+.RS 2m
+$ gcloud service\-management operations wait \e
+    serviceConfigs.my\-service.1
+.RE

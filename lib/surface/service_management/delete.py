@@ -20,13 +20,28 @@ from googlecloudsdk.command_lib.service_management import common_flags
 from googlecloudsdk.core.console import console_io
 
 
-class Delete(base.DeleteCommand):
-  """Deletes a service.
+_DETAILED_HELP = {
+    'DESCRIPTION': """\
+        Deletes a service from Google Service Management.
 
-  Deletes a service from Google Service Management. Services that are deleted
-  will be retained in the system for 30 days. If a deleted service is still
-  within this retention window, it can be undeleted with the undelete command.
-  """
+        Services that are deleted will be retained in the system for 30 days.
+        If a deleted service is still within this retention window, it can be
+        undeleted with the undelete command.
+        """,
+    'EXAMPLES': """\
+        To delete a service named `my-service`, run:
+
+          $ {command} my-service
+
+        To run the same command asynchronously (non-blocking), run:
+
+          $ {command} my-service --async
+        """,
+}
+
+
+class Delete(base.DeleteCommand):
+  """Deletes a service."""
 
   @staticmethod
   def Args(parser):
@@ -73,3 +88,6 @@ class Delete(base.DeleteCommand):
     operation = client.services.Delete(request)
 
     return services_util.ProcessOperationResult(operation, args.async)
+
+
+Delete.detailed_help = _DETAILED_HELP

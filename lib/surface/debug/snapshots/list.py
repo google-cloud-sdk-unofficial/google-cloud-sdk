@@ -19,6 +19,7 @@ import datetime
 from googlecloudsdk.api_lib.debug import debug
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.debug import flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import times
 
@@ -36,7 +37,7 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     base.URI_FLAG.RemoveFromParser(parser)
-    debug.AddIdOptions(parser, 'snapshot', 'snapshots', 'displayed')
+    flags.AddIdOptions(parser, 'snapshot', 'snapshots', 'displayed')
     parser.add_argument(
         '--all-users', action='store_true', default=False,
         help="""\

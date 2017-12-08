@@ -15,7 +15,10 @@
 """gcloud dns managed-zone delete command."""
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dns import flags
+from googlecloudsdk.core import apis
 from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
 
 
 class Delete(base.DeleteCommand):
@@ -23,29 +26,25 @@ class Delete(base.DeleteCommand):
 
   This command deletes an empty Cloud DNS managed-zone. An empty managed-zone
   has only SOA and NS record-sets.
+
+  ## EXAMPLES
+
+  To delete an empty managed-zone, run:
+
+    $ {command} my_zone
   """
-
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To delete an empty managed-zone, run:
-
-            $ {command} my_zone
-          """,
-  }
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('dns_zone', metavar='ZONE_NAME',
-                        completion_resource='dns.managedZones',
-                        help='Name of the empty managed-zone to be deleted.')
+    flags.GetDnsZoneArg(
+        'The name of the empty managed-zone to be deleted.').AddToParser(parser)
 
   def Run(self, args):
-    dns = self.context['dns_client']
-    messages = self.context['dns_messages']
-    resources = self.context['dns_resources']
+    dns = apis.GetClientInstance('dns', 'v1')
+    messages = apis.GetMessagesModule('dns', 'v1')
 
-    zone_ref = resources.Parse(args.dns_zone, collection='dns.managedZones')
+    zone_ref = resources.REGISTRY.Parse(
+        args.dns_zone, collection='dns.managedZones')
 
     result = dns.managedZones.Delete(
         messages.DnsManagedZonesDeleteRequest(

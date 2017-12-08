@@ -5,7 +5,7 @@
 
 .SH "NAME"
 .HP
-gcloud service\-management list \- list services for a given project
+gcloud service\-management list \- list services for a project
 
 
 
@@ -17,7 +17,10 @@ gcloud service\-management list \- list services for a given project
 
 .SH "DESCRIPTION"
 
-List services for a given project.
+This command lists the services that are produced, enabled, or available to be
+enabled by a project. You can choose the mode in which the command will list
+services by using exactly one of the \f5\-\-produced\fR, \f5\-\-enabled\fR, or
+\f5\-\-available\fR flags. \f5\-\-produced\fR is the default.
 
 
 
@@ -85,3 +88,25 @@ field. This flag interacts with other flags that are applied in this order:
 .SH "GLOBAL FLAGS"
 
 Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To list the services the current project produces, run:
+
+.RS 2m
+$ gcloud service\-management list \-\-produced
+.RE
+
+To list the services the current project has enabled for consumption, run:
+
+.RS 2m
+$ gcloud service\-management list \-\-enabled
+.RE
+
+To list the services the current project can enable for consumption, run:
+
+.RS 2m
+$ gcloud service\-management list \-\-available
+.RE
