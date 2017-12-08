@@ -15,8 +15,7 @@
 """The command to perform any necessary post installation steps."""
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.search_help import table as help_table
-from googlecloudsdk.command_lib.static_completion import table
+from googlecloudsdk.calliope import cli_tree
 from googlecloudsdk.core import log
 from googlecloudsdk.core.cache import exceptions as cache_exceptions
 from googlecloudsdk.core.cache import resource_cache
@@ -47,8 +46,5 @@ class PostProcess(base.SilentCommand):
     except cache_exceptions.Error as e:
       log.info('Unexpected resource cache error ignored: [%s].', e)
 
-    # Re-generate static completion table.
-    table.Update(self._cli_power_users_only)
-
-    # Re-generate help table.
-    help_table.Update(self._cli_power_users_only)
+    # Re-generate the static gcloud CLI tree.
+    cli_tree.Dump(self._cli_power_users_only, path=cli_tree.CliTreePath())

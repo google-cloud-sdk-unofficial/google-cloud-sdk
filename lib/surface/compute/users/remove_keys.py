@@ -47,7 +47,7 @@ class RemoveKeys(base.SilentCommand):
     client = holder.client
     name = args.name
     if not name:
-      name = gaia.GetDefaultAccountName(client.http)
+      name = gaia.GetDefaultAccountName()
 
     user_ref = holder.resources.Parse(
         name,

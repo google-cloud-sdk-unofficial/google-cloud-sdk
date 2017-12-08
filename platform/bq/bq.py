@@ -77,6 +77,13 @@ JobReference = bigquery_client.ApiClientHelper.JobReference
 ProjectReference = bigquery_client.ApiClientHelper.ProjectReference
 DatasetReference = bigquery_client.ApiClientHelper.DatasetReference
 TableReference = bigquery_client.ApiClientHelper.TableReference
+TransferConfigReference = (
+    bigquery_client.ApiClientHelper.TransferConfigReference)
+TransferRunReference = bigquery_client.ApiClientHelper.TransferRunReference
+TransferLogReference = bigquery_client.ApiClientHelper.TransferLogReference
+NextPageTokenReference = bigquery_client.ApiClientHelper.NextPageTokenReference
+EncryptionServiceAccount = (
+    bigquery_client.ApiClientHelper.EncryptionServiceAccount)
 BigqueryClient = bigquery_client.BigqueryClient
 JobIdGenerator = bigquery_client.JobIdGenerator
 JobIdGeneratorIncrementing = bigquery_client.JobIdGeneratorIncrementing
@@ -136,6 +143,53 @@ _DELIMITER_MAP = {
 ####################
 
 
+def _FormatDataTransferIdentifiers(client, transfer_identifier):
+  """Formats a transfer config or run identifier.
+
+  Transfer configuration/run commands should be able to support different
+  formats of how the user could input the project information. This function
+  will take the user input and create a uniform transfer config or
+  transfer run reference that can be used for various commands.
+
+  This function will also set the client's project id to the specified
+  project id.
+
+  Returns:
+    The formatted transfer config or run.
+  """
+
+  formatted_identifier = transfer_identifier
+  match = re.search(r'projects/([^/]+)', transfer_identifier)
+  if not match:
+    formatted_identifier = ('projects/'
+                            + client.GetProjectReference().projectId
+                            + '/' + transfer_identifier)
+  else:
+    client.project_id = match.group(1)
+
+  return formatted_identifier
+
+
+def _FormatProjectIdentifier(client, project_id):
+  """Formats a project identifier.
+
+  If the user specifies a project with "projects/${PROJECT_ID}", isolate the
+  project id and return it.
+
+  This function will also set the client's project id to the specified
+  project id.
+
+  Returns:
+    The project is.
+  """
+
+  formatted_identifier = project_id
+  match = re.search(r'projects/([^/]+)', project_id)
+  if match:
+    formatted_identifier = match.group(1)
+    client.project_id = formatted_identifier
+
+  return formatted_identifier
 
 
 def _ValidateGlobalFlags():
@@ -216,10 +270,12 @@ def _ProcessBigqueryrcSection(section_name, flag_values):
             % (flag, section_name if section_name else 'global'))
       if not flag_values[flag].present:
         flag_values[flag].Parse(value)
-      elif flag_values[flag].Type().startswith('multi'):
-        old_value = getattr(flag_values, flag)
-        flag_values[flag].Parse(value)
-        setattr(flag_values, flag, old_value + getattr(flag_values, flag))
+      else:
+        flag_type = flag_values[flag].Type()
+        if flag_type.startswith('multi'):
+          old_value = getattr(flag_values, flag)
+          flag_values[flag].Parse(value)
+          setattr(flag_values, flag, old_value + getattr(flag_values, flag))
 
 
 
@@ -957,7 +1013,7 @@ class BigqueryCmd(NewCmd):
         'Please file a bug report in our '
         'public '
         'issue tracker:\n'
-        '  https://code.google.com/p/google-bigquery/issues/list\n'
+        '  https://issuetracker.google.com/issues/new?component=187149&template=0\n'
         'Please include a brief description of '
         'the steps that led to this issue, as well as '
         'any rows that can be made public from '
@@ -982,7 +1038,7 @@ class BigqueryCmd(NewCmd):
             _VERSION_NUMBER,
             sys.argv,
             time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()),
-            ''.join(traceback.format_tb(sys.exc_info()[2]))
+            ''.join(traceback.format_exception(*sys.exc_info()))
             )
 
     codecs.register_error('strict', codecs.replace_errors)
@@ -1149,6 +1205,32 @@ class _Load(BigqueryCmd):
         'An optional custom string that will represent a NULL value'
         'in CSV import data.',
         flag_values=fv)
+    flags.DEFINE_string(
+        'time_partitioning_type',
+        None,
+        'Enables time based partitioning on the table and set the type. The '
+        'only type accepted is DAY, which will generate one partition per day.',
+        flag_values=fv)
+    flags.DEFINE_integer(
+        'time_partitioning_expiration',
+        None,
+        'Enables time based partitioning on the table and set the number of '
+        'seconds for which to keep the storage for a partition. The storage '
+        'will have an expiration time of its creation time plus this value. '
+        'A negative number means no expiration.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'time_partitioning_field',
+        None,
+        'Enables time based partitioning on the table and the table will be '
+        'partitioned based on the value of this field. If time based '
+        'partitioning is enabled without this value, the table will be '
+        'partitioned based on the loading time.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'destination_kms_key', None,
+        'Cloud KMS key for encryption of the destination table data.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, destination_table, source, schema=None):
@@ -1219,6 +1301,17 @@ class _Load(BigqueryCmd):
       opts['schema_update_options'] = self.schema_update_option
     if self.null_marker:
       opts['null_marker'] = self.null_marker
+    time_partitioning = _ParseTimePartitioning(
+        self.time_partitioning_type,
+        self.time_partitioning_expiration,
+        self.time_partitioning_field
+    )
+    if time_partitioning is not None:
+      opts['time_partitioning'] = time_partitioning
+    if self.destination_kms_key is not None:
+      opts['destination_encryption_configuration'] = {
+          'kmsKeyName': self.destination_kms_key
+      }
     job = client.Load(table_reference, source, schema=schema, **opts)
     if FLAGS.sync:
       _PrintJobMessages(client.FormatJobInfo(job))
@@ -1484,6 +1577,32 @@ class _Query(BigqueryCmd):
          'a positional parameter. The type may be ommitted to assume STRING: '
          'name::value or ::value. The value "NULL" produces a null value.'),
         flag_values=fv)
+    flags.DEFINE_string(
+        'time_partitioning_type',
+        None,
+        'Enables time based partitioning on the table and set the type. The '
+        'only type accepted is DAY, which will generate one partition per day.',
+        flag_values=fv)
+    flags.DEFINE_integer(
+        'time_partitioning_expiration',
+        None,
+        'Enables time based partitioning on the table and set the number of '
+        'seconds for which to keep the storage for a partition. The storage '
+        'will have an expiration time of its creation time plus this value. '
+        'A negative number means no expiration.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'time_partitioning_field',
+        None,
+        'Enables time based partitioning on the table and the table will be '
+        'partitioned based on the value of this field. If time based '
+        'partitioning is enabled without this value, the table will be '
+        'partitioned based on the loading time.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'destination_kms_key', None,
+        'Cloud KMS key for encryption of the destination table data.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, *args):
@@ -1534,9 +1653,21 @@ class _Query(BigqueryCmd):
       query = sys.stdin.read()
     client = Client.Get()
     kwds['use_legacy_sql'] = self.use_legacy_sql
+    time_partitioning = _ParseTimePartitioning(
+        self.time_partitioning_type,
+        self.time_partitioning_expiration,
+        self.time_partitioning_field
+    )
+    if time_partitioning is not None:
+      kwds['time_partitioning'] = time_partitioning
     if self.destination_schema and not self.destination_table:
       raise app.UsageError(
           'destination_schema can only be used with destination_table.')
+    if self.destination_kms_key:
+      kwds['destination_encryption_configuration'] = {
+          'kmsKeyName': self.destination_kms_key
+      }
+
     if self.rpc:
       if self.allow_large_results:
         raise app.UsageError(
@@ -1863,6 +1994,8 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         'all', None,
         'Show all results. For jobs, will show jobs from all users. For '
         'datasets, will list hidden datasets.'
+        'For transfer configs and runs, '
+        'this flag is redundant and not necessary.'
         '',
         short_name='a', flag_values=fv)
     flags.DEFINE_boolean(
@@ -1886,6 +2019,39 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         'Show datasets described by this identifier.',
         short_name='d', flag_values=fv)
     flags.DEFINE_string(
+        'transfer_location',
+        None,
+        'Location for list transfer config (e.g., "eu" or "us").',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'transfer_config',
+        False,
+        'Show transfer configurations described by this identifier. '
+        'This requires setting --transfer_location.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'transfer_run', False, 'List the transfer runs.', flag_values=fv)
+    flags.DEFINE_string(
+        'run_attempt',
+        'LATEST', 'For transfer run, respresents which runs should be '
+        'pulled. See https://cloud.google.com/bigquery/docs/reference/'
+        'datatransfer/rest/v1/projects.transferConfigs.runs/list#RunAttempt '
+        'for details', flag_values=fv)
+    flags.DEFINE_bool(
+        'transfer_log', False,
+        'List messages under the run specified',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'message_type', None,
+        'usage:- messageTypes:INFO '
+        'For transferlog, represents which messages should '
+        'be listed. See '
+        'https://cloud.google.com/bigquery/docs/reference'
+        '/datatransfer/rest/v1/projects.transferConfigs'
+        '.runs.transferLogs#MessageSeverity '
+        'for details.',
+        flag_values=fv)
+    flags.DEFINE_string(
         'page_token', None,
         'Start listing from this page token.',
         short_name='k', flag_values=fv)
@@ -1898,6 +2064,16 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         'all provided filter expressions. See '
         'https://cloud.google.com/bigquery/docs/labeling-datasets'
         '#filtering_datasets_using_labels '
+        'for details'
+        '\nFor transfer configurations, the filter expression, '
+        'in the form "dataSourceIds:value(s)", will show '
+        'transfer configurations with '
+        ' the specified dataSourceId. '
+        '\nFor transfer runs, the filter expression, '
+        'in the form "statuses:VALUE(s)", will show '
+        'transfer runs with the specified statuses. See '
+        'https://cloud.google.com/bigquery/docs/reference/datatransfer/rest/v1/'
+        'TransferStatus '
         'for details'
         ,
         flag_values=fv)
@@ -1919,6 +2095,12 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
       bq ls -a
       bq ls --filter labels.color:red
       bq ls --filter 'labels.color:red labels.size:*'
+      bq ls --transfer_config --transfer_location='us'
+          --filter='dataSourceIds:play,adwords'
+      bq ls --transfer_run --filter='statuses:SUCCESSED,PENDING'
+          --run_attempt='LATEST' projects/p/locations/l/transferConfigs/c
+      bq ls --transfer_log --message_type='messageTypes:INFO,ERROR'
+          projects/p/locations/l/transferConfigs/c/runs/r
     """
 
     # pylint: disable=g-doc-exception
@@ -1970,6 +2152,61 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
       results = client.ListJobs(reference=reference,
                                 max_results=self.max_results,
                                 all_users=self.a, page_token=page_token)
+    elif self.transfer_config:
+      object_type = TransferConfigReference
+      reference = client.GetProjectReference(
+          _FormatProjectIdentifier(client, identifier))
+      _Typecheck(reference, ProjectReference,
+                 'Cannot determine transfer configuration(s) '
+                 'associated with "%s"' % (identifier,))
+
+      if self.transfer_location is None:
+        raise app.UsageError(('Need to specify transfer_location for '
+                              'list transfer configs.'))
+
+      # transfer_configs tuple contains transfer configs at index 0 and
+      # next page token at index 1 if there is one.
+      transfer_configs = client.ListTransferConfigs(
+          reference=reference,
+          location=self.transfer_location,
+          page_size=self.max_results,
+          page_token=page_token,
+          data_source_ids=self.filter)
+      # If the max_results flag is set and the length of transfer_configs is 2
+      # then it also contains the next_page_token.
+      if self.max_results and len(transfer_configs) == 2:
+        page_token = dict(nextPageToken=transfer_configs[1])
+        _PrintPageToken(page_token)
+      results = transfer_configs[0]
+    elif self.transfer_run:
+      object_type = TransferRunReference
+      run_attempt = self.run_attempt
+      formatted_identifier = _FormatDataTransferIdentifiers(client, identifier)
+      reference = TransferRunReference(transferRunName=formatted_identifier)
+      # list_transfer_runs_result tuple contains transfer runs at index 0 and
+      # next page token at index 1 if there is next page token.
+      list_transfer_runs_result = client.ListTransferRuns(
+          reference, run_attempt, max_results=self.max_results,
+          statuses=self.filter, page_token=self.page_token)
+      # If the max_results flag is set and the length of response is 2
+      # then it also contains the next_page_token.
+      if self.max_results and len(list_transfer_runs_result) == 2:
+        page_token = dict(nextPageToken=list_transfer_runs_result[1])
+        _PrintPageToken(page_token)
+      results = list_transfer_runs_result[0]
+    elif self.transfer_log:
+      object_type = TransferLogReference
+      formatted_identifier = _FormatDataTransferIdentifiers(client, identifier)
+      reference = TransferLogReference(transferRunName=formatted_identifier)
+      # list_transfer_log_result tuple contains transfer logs at index 0 and
+      # next page token at index 1 if there is one.
+      list_transfer_log_result = client.ListTransferLogs(
+          reference, message_type=self.message_type,
+          max_results=self.max_results, page_token=self.page_token)
+      if self.max_results and len(list_transfer_log_result) == 2:
+        page_token = dict(nextPageToken=list_transfer_log_result[1])
+        _PrintPageToken(page_token)
+      results = list_transfer_log_result[0]
     elif self.p or reference is None:
       object_type = ProjectReference
       results = client.ListProjects(
@@ -1990,6 +2227,16 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
       _PrintObjectsArray(results, object_type)
 
 
+def _PrintPageToken(page_token):
+  """Prints the page token in the pretty format.
+
+  Args:
+    page_token: The dictonary mapping of pageToken with string 'nextPageToken'.
+  """
+  formatter = _GetFormatterFromFlags(secondary_format='pretty')
+  BigqueryClient.ConfigureFormatter(formatter, NextPageTokenReference)
+  formatter.AddDict(page_token)
+  formatter.Print()
 
 
 class _Delete(BigqueryCmd):
@@ -2005,6 +2252,11 @@ class _Delete(BigqueryCmd):
         'table', False,
         'Remove table described by this identifier.',
         short_name='t', flag_values=fv)
+    flags.DEFINE_boolean(
+        'transfer_config',
+        False,
+        'Remove transfer configuration described by this identifier.',
+        flag_values=fv)
     flags.DEFINE_boolean(
         'force', False,
         "Ignore existing tables and datasets, don't prompt.",
@@ -2028,6 +2280,7 @@ class _Delete(BigqueryCmd):
     Examples:
       bq rm ds.table
       bq rm -r -f old_dataset
+      bq rm --transfer_config=projects/p/locations/l/transferConfigs/c
     """
 
     client = Client.Get()
@@ -2042,6 +2295,10 @@ class _Delete(BigqueryCmd):
       reference = client.GetTableReference(identifier)
     elif self.d:
       reference = client.GetDatasetReference(identifier)
+    elif self.transfer_config:
+      formatted_identifier = _FormatDataTransferIdentifiers(client, identifier)
+      reference = TransferConfigReference(
+          transferConfigName=formatted_identifier)
     else:
       reference = client.GetReference(identifier)
       _Typecheck(reference, (DatasetReference, TableReference),
@@ -2069,6 +2326,9 @@ class _Delete(BigqueryCmd):
     elif isinstance(reference, TableReference):
       client.DeleteTable(reference,
                          ignore_not_found=self.force)
+    elif isinstance(reference, TransferConfigReference):
+      client.DeleteTransferConfig(reference,
+                                  ignore_not_found=self.force)
 
 
 class _Copy(BigqueryCmd):
@@ -2088,6 +2348,11 @@ class _Copy(BigqueryCmd):
         'append_table', False,
         'Append to an existing table.',
         short_name='a', flag_values=fv)
+    flags.DEFINE_string(
+        'destination_kms_key',
+        None,
+        'Cloud KMS key for encryption of the destination table data.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, source_tables, dest_table):
@@ -2095,6 +2360,7 @@ class _Copy(BigqueryCmd):
 
     Examples:
       bq cp dataset.old_table dataset2.new_table
+      bq cp --destination_kms_key=kms_key dataset.old_table dataset2.new_table
     """
     client = Client.Get()
     source_references = [
@@ -2121,6 +2387,10 @@ class _Copy(BigqueryCmd):
         'ignore_already_exists': ignore_already_exists,
         'job_id': _GetJobIdFromFlags(),
         }
+    if self.destination_kms_key:
+      kwds['encryption_configuration'] = {
+          'kmsKeyName': self.destination_kms_key
+      }
     job = client.CopyTable(source_references, dest_reference, **kwds)
     if job is None:
       print "Table '%s' already exists, skipping" % (dest_reference,)
@@ -2133,10 +2403,9 @@ class _Copy(BigqueryCmd):
       _PrintJobMessages(client.FormatJobInfo(job))
 
 
-def _ParseTimePartitioning(
-    partitioning_type=None,
-    partitioning_expiration=None,
-):
+def _ParseTimePartitioning(partitioning_type=None,
+                           partitioning_expiration=None,
+                           partitioning_field=None):
   """Parses time partitioning from the arguments.
 
   Args:
@@ -2144,6 +2413,9 @@ def _ParseTimePartitioning(
       when other arguments are specified, which generates one partition per day.
     partitioning_expiration: number of seconds to keep the storage for a
       partition. A negative value clears this setting.
+    partitioning_field: if not set, the table is partitioned based on the
+      loading time; if set, the table is partitioned based on the value of this
+      field.
 
   Returns:
     Time partitioning if any of the arguments is not None, otherwise None.
@@ -2155,10 +2427,13 @@ def _ParseTimePartitioning(
   time_partitioning = {}
   key_type = 'type'
   key_expiration = 'expirationMs'
+  key_field = 'field'
   if partitioning_type is not None:
     time_partitioning[key_type] = partitioning_type
   if partitioning_expiration is not None:
     time_partitioning[key_expiration] = partitioning_expiration * 1000
+  if partitioning_field is not None:
+    time_partitioning[key_field] = partitioning_field
 
   if time_partitioning:
     if key_type not in time_partitioning:
@@ -2188,6 +2463,56 @@ class _Make(BigqueryCmd):
         'table', False,
         'Create table with this name.',
         short_name='t', flag_values=fv)
+    flags.DEFINE_boolean(
+        'transfer_config', None, 'Create transfer config.', flag_values=fv)
+    flags.DEFINE_string(
+        'target_dataset',
+        '',
+        'Target dataset for the created transfer configuration.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'display_name',
+        '',
+        'Display name for the created transfer configuration.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'data_source',
+        '',
+        'Data source for the created transfer configuration.',
+        flag_values=fv)
+    flags.DEFINE_integer(
+        'refresh_window_days',
+        0,
+        'Refresh window days for the created transfer configuration.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'params', None,
+        'Parameters for the created transfer configuration in JSON format. '
+        'For example: --params=\'{\"param\":\"param_value\"}\'',
+        short_name='p', flag_values=fv)
+    flags.DEFINE_bool(
+        'transfer_run',
+        False,
+        'Creates transfer runs for a time range.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'start_time',
+        None,
+        'Start time of the range of transfer runs. '
+        'The format for the time stamp is RFC3339 UTC "Zulu". '
+        'Read more: '
+        'https://developers.google.com/protocol-buffers/docs/'
+        'reference/google.protobuf#google.protobuf.Timestamp ',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'end_time',
+        None,
+        'End time of the range of transfer runs. '
+        'The format for the time stamp is RFC3339 UTC "Zulu". '
+        'Read more: '
+        'https://developers.google.com/protocol-buffers/docs/'
+        'reference/google.protobuf#google.protobuf.Timestamp ',
+        flag_values=fv)
     flags.DEFINE_string(
         'schema', '',
         'Either a filename or a comma-separated list of fields in the form '
@@ -2249,6 +2574,19 @@ class _Make(BigqueryCmd):
         'will have an expiration time of its creation time plus this value. '
         'A negative number means no expiration.',
         flag_values=fv)
+    flags.DEFINE_string(
+        'time_partitioning_field',
+        None,
+        'Enables time based partitioning on the table and the table will be '
+        'partitioned based on the value of this field. If time based '
+        'partitioning is enabled without this value, the table will be '
+        'partitioned based on the loading time.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'destination_kms_key',
+        None,
+        'Cloud KMS key for encryption of the destination table data.',
+        flag_values=fv)
     flags.DEFINE_multistring(
         'label', None,
         'A label to set on the table. The format is "key:value"',
@@ -2269,6 +2607,10 @@ class _Make(BigqueryCmd):
       bq mk --view='select 1 as num' new_dataset.newview
          (--view_udf_resource=path/to/file.js)
       bq mk -d --data_location=EU new_dataset
+      bq mk --transfer_config --target_dataset=dataset --display_name=name
+          -p='{"param":"value"}' --data_source=source
+      bq mk --transfer_run --start_time={start_time} --end_time={end_time}
+          projects/p/locations/l/transferConfigs/c
     """
 
     client = Client.Get()
@@ -2282,6 +2624,57 @@ class _Make(BigqueryCmd):
       reference = client.GetTableReference(identifier)
     elif self.view:
       reference = client.GetTableReference(identifier)
+    elif self.transfer_config:
+      transfer_client = client.GetTransferV1ApiClient()
+      reference = 'projects/' + (client.GetProjectReference().projectId)
+      credentials = False
+      if self.data_source:
+        data_sources_reference = (reference + '/dataSources/'
+                                  + self.data_source)
+        try:
+          transfer_client.projects().dataSources().get(
+              name=data_sources_reference).execute()
+        except:
+          raise bigquery_client.BigqueryNotFoundError(
+              'Unknown data source %r' % (self.data_source),
+              {'reason': 'notFound'}, [])
+        credentials = transfer_client.projects().dataSources().checkValidCreds(
+            name=data_sources_reference,
+            body={}).execute()
+      else:
+        raise bigquery_client.BigqueryError(
+            'A data source must be provided.')
+      authorization_code = ''
+      if not credentials and self.data_source != 'loadtesting':
+        authorization_code = RetrieveAuthorizationCode(
+            reference, self.data_source, transfer_client)
+      transfer_name = client.CreateTransferConfig(reference,
+                                                  self.data_source,
+                                                  self.target_dataset,
+                                                  self.display_name,
+                                                  self.refresh_window_days,
+                                                  self.params,
+                                                  authorization_code,)
+      print ('Transfer configuration \'%s\' successfully created.'
+             % transfer_name)
+    elif self.transfer_run:
+      formatter = _GetFormatterFromFlags()
+      formatted_identifier = _FormatDataTransferIdentifiers(client, identifier)
+      reference = TransferConfigReference(
+          transferConfigName=formatted_identifier)
+      if not self.start_time or not self.end_time:
+        raise app.UsageError(
+            'Need to specify both --start_time and --end_time.')
+      start_time = self.start_time
+      end_time = self.end_time
+      results = map(client.FormatTransferRunInfo,
+                    client.ScheduleTransferRun(reference, start_time, end_time))
+      BigqueryClient.ConfigureFormatter(formatter, TransferRunReference,
+                                        print_format='make',
+                                        object_info=results[0])
+      for result in results:
+        formatter.AddDict(result)
+      formatter.Print()
     elif self.d or not identifier:
       reference = client.GetDatasetReference(identifier)
     else:
@@ -2348,7 +2741,8 @@ class _Make(BigqueryCmd):
         view_udf_resources = _ParseUdfResources(self.view_udf_resource)
       time_partitioning = _ParseTimePartitioning(
           self.time_partitioning_type,
-          self.time_partitioning_expiration
+          self.time_partitioning_expiration,
+          self.time_partitioning_field
       )
       client.CreateTable(reference,
                          ignore_existing=True,
@@ -2360,7 +2754,9 @@ class _Make(BigqueryCmd):
                          use_legacy_sql=self.use_legacy_sql,
                          external_data_config=external_data_config,
                          labels=labels,
-                         time_partitioning=time_partitioning
+                         time_partitioning=time_partitioning,
+                         destination_kms_key=(
+                             self.destination_kms_key)
                         )
       print "%s '%s' successfully created." % (object_name, reference,)
 
@@ -2378,6 +2774,37 @@ class _Update(BigqueryCmd):
         'table', False,
         'Updates a table with this name.',
         short_name='t', flag_values=fv)
+    flags.DEFINE_boolean(
+        'transfer_config',
+        False,
+        'Updates a transfer configuration for a configuration resource name.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'target_dataset',
+        '',
+        'Updated dataset ID for the transfer configuration.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'display_name',
+        '',
+        'Updated display name for the updated transfer configuration.',
+        flag_values=fv)
+    flags.DEFINE_integer(
+        'refresh_window_days',
+        None,
+        'Updated refresh window days for the updated transfer configuration.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'params', None,
+        'Updated parameters for the updated transfer configuration '
+        'in JSON format.'
+        'For example: --params=\'{\"param\":\"param_value\"}\'',
+        short_name='p', flag_values=fv)
+    flags.DEFINE_boolean(
+        'update_credentials',
+        False,
+        'Update the transfer configuration credentials.',
+        flag_values=fv)
     flags.DEFINE_string(
         'schema', '',
         'Either a filename or a comma-separated list of fields in the form '
@@ -2448,6 +2875,16 @@ class _Update(BigqueryCmd):
         'will have an expiration time of its creation time plus this value. '
         'A negative number means no expiration.',
         flag_values=fv)
+    flags.DEFINE_string(
+        'time_partitioning_field',
+        None,
+        'Enables time based partitioning on the table and the table will be '
+        'partitioned based on the value of this field. If time based '
+        'partitioning is enabled without this value, the table will be '
+        'partitioned based on the loading time.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'etag', None, 'Only update if etag matches.', flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier='', schema=''):
@@ -2462,6 +2899,11 @@ class _Update(BigqueryCmd):
       bq update -t existing_dataset.existing_table name:integer,value:string
       bq update --view='select 1 as num' existing_dataset.existing_view
          (--view_udf_resource=path/to/file.js)
+      bq update --transfer_config --display_name=name -p='{"param":"value"}'
+          projects/p/locations/l/transferConfigs/c
+      bq update --transfer_config --target_dataset=dataset
+          --refresh_window_days=5 --update_credentials
+          projects/p/locations/l/transferConfigs/c
     """
     client = Client.Get()
     if self.d and self.t:
@@ -2476,6 +2918,10 @@ class _Update(BigqueryCmd):
       reference = client.GetTableReference(identifier)
     elif self.d or not identifier:
       reference = client.GetDatasetReference(identifier)
+    elif self.transfer_config:
+      formatted_identifier = _FormatDataTransferIdentifiers(client, identifier)
+      reference = TransferConfigReference(
+          transferConfigName=formatted_identifier)
     else:
       reference = client.GetReference(identifier)
       _Typecheck(reference, (DatasetReference, TableReference),
@@ -2511,7 +2957,7 @@ class _Update(BigqueryCmd):
           default_table_exp_ms,
           labels_to_set,
           label_keys_to_remove,
-      )
+          self.etag)
       print "Dataset '%s' successfully updated." % (reference,)
     elif isinstance(reference, TableReference):
       object_name = 'Table'
@@ -2548,23 +2994,75 @@ class _Update(BigqueryCmd):
         view_udf_resources = _ParseUdfResources(self.view_udf_resource)
       time_partitioning = _ParseTimePartitioning(
           self.time_partitioning_type,
-          self.time_partitioning_expiration
+          self.time_partitioning_expiration,
+          self.time_partitioning_field
       )
-      client.UpdateTable(reference,
-                         schema=schema,
-                         description=self.description,
-                         expiration=expiration,
-                         view_query=query_arg,
-                         view_udf_resources=view_udf_resources,
-                         use_legacy_sql=self.use_legacy_sql,
-                         external_data_config=external_data_config,
-                         labels_to_set=labels_to_set,
-                         label_keys_to_remove=label_keys_to_remove,
-                         time_partitioning=time_partitioning)
+      client.UpdateTable(
+          reference,
+          schema=schema,
+          description=self.description,
+          expiration=expiration,
+          view_query=query_arg,
+          view_udf_resources=view_udf_resources,
+          use_legacy_sql=self.use_legacy_sql,
+          external_data_config=external_data_config,
+          labels_to_set=labels_to_set,
+          label_keys_to_remove=label_keys_to_remove,
+          time_partitioning=time_partitioning,
+          etag=self.etag)
 
       print "%s '%s' successfully updated." % (object_name, reference,)
+    elif isinstance(reference, TransferConfigReference):
+      if client.TransferExists(reference):
+        authorization_code = ''
+        if self.update_credentials:
+          transfer_client = client.GetTransferV1ApiClient()
+          current_config = transfer_client.projects().transferConfigs().get(
+              name=reference.transferConfigName).execute()
+          authorization_code = RetrieveAuthorizationCode(
+              'projects/' + client.GetProjectReference().projectId,
+              current_config['dataSourceId'], transfer_client)
+        client.UpdateTransferConfig(reference,
+                                    self.target_dataset,
+                                    self.display_name,
+                                    self.refresh_window_days,
+                                    self.params,
+                                    authorization_code)
+        print "Transfer configuration '%s' successfully updated." % (reference,)
+      else:
+        raise bigquery_client.BigqueryNotFoundError(
+            'Not found: %r' % (reference,), {'reason': 'notFound'}, [])
 
 
+def RetrieveAuthorizationCode(reference, data_source, transfer_client):
+  """Retrieves the authorization code.
+
+  An authorization code is needed if the Data Transfer Service does not
+  have credentials for the requesting user and data source. The Data
+  Transfer Service will convert this authorization code into a refresh
+  token to perform transfer runs on the user's behalf.
+
+  Args:
+    reference: The project reference.
+    data_source: The data source of the transfer config.
+    transfer_client: The transfer api client.
+
+  Returns:
+    authentication_code: Authentication from user.
+
+  """
+  data_source_retrieval = reference + '/dataSources/' + data_source
+  data_source_info = transfer_client.projects().dataSources().get(
+      name=data_source_retrieval).execute()
+  auth_uri = ('https://www.gstatic.com/bigquerydatatransfer/oauthz/'
+              'auth?client_id=' + data_source_info['clientId'] + '&scope='+
+              data_source_info['scopes'][0]+
+              '&redirect_uri=urn:ietf:wg:oauth:2.0:oob')
+  print  '\n' + auth_uri
+  print ('Please copy and paste the above URL into your web browser'
+         ' and follow the instructions to retrieve an authentication code.')
+  authentication_code = raw_input('Enter your authentication code here: ')
+  return authentication_code
 
 
 def _UpdateDataset(
@@ -2575,7 +3073,7 @@ def _UpdateDataset(
     default_table_expiration_ms,
     labels_to_set,
     label_keys_to_remove,
-):
+    etag=None):
   """Updates a dataset.
 
   Reads JSON file if specified and loads updated values, before calling bigquery
@@ -2618,7 +3116,7 @@ def _UpdateDataset(
       default_table_expiration_ms=default_table_expiration_ms,
       labels_to_set=labels_to_set,
       label_keys_to_remove=label_keys_to_remove,
-  )
+      etag=etag)
 
 
 class _Show(BigqueryCmd):
@@ -2642,6 +3140,22 @@ class _Show(BigqueryCmd):
         'schema', False,
         'Show only the schema instead of general table details.',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'encryption_service_account',
+        False,
+        'Show the service account for a user if it exists, or create one '
+        'if it does not exist.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'transfer_config',
+        False,
+        'Show transfer configuration for configuration resource name.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'transfer_run',
+        False,
+        'Show information about the particular transfer run.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier=''):
@@ -2652,6 +3166,9 @@ class _Show(BigqueryCmd):
       bq show dataset
       bq show [--schema] dataset.table
       bq show [--view] dataset.view
+      bq show --transfer_config projects/p/locations/l/transferConfigs/c
+      bq show --transfer_run projects/p/locations/l/transferConfigs/c/runs/r
+      bq show --encryption_service_account
     """
     # pylint: disable=g-doc-exception
     client = Client.Get()
@@ -2670,6 +3187,21 @@ class _Show(BigqueryCmd):
             'Table schema output format must be json or prettyjson.')
       reference = client.GetTableReference(identifier)
       custom_format = 'schema'
+    elif self.transfer_config:
+      formatted_identifier = _FormatDataTransferIdentifiers(client, identifier)
+      reference = TransferConfigReference(
+          transferConfigName=formatted_identifier)
+      object_info = client.GetTransferConfig(formatted_identifier)
+    elif self.transfer_run:
+      formatted_identifier = _FormatDataTransferIdentifiers(client, identifier)
+      reference = TransferRunReference(transferRunName=formatted_identifier)
+      object_info = client.GetTransferRun(formatted_identifier)
+    elif self.encryption_service_account:
+      object_info = client.apiclient.projects().getServiceAccount(
+          projectId=client.GetProjectReference().projectId).execute()
+      email = object_info['email']
+      object_info = {'ServiceAccountID': email}
+      reference = EncryptionServiceAccount(serviceAccount='serviceAccount')
     else:
       reference = client.GetReference(identifier)
     if reference is None:
@@ -2990,6 +3522,10 @@ class _Wait(BigqueryCmd):  # pylint: disable=missing-docstring
         'When done waiting for the job, exit the process with an error '
         'if the job is still running, or ended with a failure.',
         flag_values=fv)
+    flags.DEFINE_string(
+        'wait_for_status', 'DONE',
+        'Wait for the job to have a certain status. Default is DONE.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, job_id='', secs=sys.maxint):
@@ -3030,7 +3566,8 @@ class _Wait(BigqueryCmd):  # pylint: disable=missing-docstring
       job_reference = client.GetJobReference(job_id)
 
     try:
-      job = client.WaitJob(job_reference=job_reference, wait=secs)
+      job = client.WaitJob(
+          job_reference=job_reference, wait=secs, status=FLAGS.wait_for_status)
       _PrintObjectInfo(job, JobReference.Create(**job['jobReference']),
                        custom_format='show')
       return 1 if self.fail_on_error and BigqueryClient.IsFailedJob(job) else 0

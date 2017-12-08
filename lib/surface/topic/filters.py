@@ -24,8 +24,8 @@ class Filters(base.TopicCommand):
   """Resource filters supplementary help."""
 
   detailed_help = {
-
-      'DESCRIPTION': textwrap.dedent("""\
+      'DESCRIPTION':
+          textwrap.dedent("""\
           {description}
 
           === Filter Expressions ===
@@ -82,7 +82,7 @@ class Filters(base.TopicCommand):
           different matches using both the deprecated and new implementations.
           +
           The current deprecated default is True if _key_ contains
-          _simple-pattern_.  The match is case insentitive.  It allows one
+          _simple-pattern_.  The match is case insensitive.  It allows one
           ```*``` that matches any sequence of 0 or more characters.
           If ```*``` is specified then the match is anchored, meaning all
           characters from the beginning and end of the value must match.
@@ -149,10 +149,10 @@ class Filters(base.TopicCommand):
           True if _key_ does not match the RE (regular expression)
           pattern _value_.
 
-          """).format(
-              description=resource_topics.ResourceDescription('filter')),
-
-      'EXAMPLES': textwrap.dedent("""\
+          """)
+          .format(description=resource_topics.ResourceDescription('filter')),
+      'EXAMPLES':
+          textwrap.dedent("""\
           List all instances resources:
 
             $ gcloud compute instances list
@@ -203,4 +203,4 @@ class Filters(base.TopicCommand):
           xyz,abc.pdq.xyz,True,True
           |========
           """),
-      }
+  }

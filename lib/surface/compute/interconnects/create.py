@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Command for creating interconnects."""
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -20,25 +19,36 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.interconnects import flags
 from googlecloudsdk.command_lib.compute.interconnects.locations import flags as location_flags
 
+
 DETAILED_HELP = {
-    'DESCRIPTION': """\
-        *{command}* is used to create interconnect. An interconnect represents a
-  single specific connection between Google and the customer.
+    'DESCRIPTION':
+        """\
+        *{command}* is used to create interconnects. An interconnect represents
+        a single specific connection between Google and the customer.
 
         For an example, refer to the *EXAMPLES* section below.
         """,
-    'EXAMPLES': """\
+    # pylint: disable=line-too-long
+    'EXAMPLES':
+        """\
         To create an interconnect of type IT_PRIVATE, run:
 
           $ {command} example-interconnect --customer-name "Example Customer Name" --interconnect-type IT_PRIVATE --link-type LINK_TYPE_ETHERNET_10G_LR --location example-zone1-1 --requested-link-count 1 --noc-contact-email noc@example.com --description "Example interconnect"
         """,
+    # pylint: enable=line-too-long
 }
 
+_LOCATION_FLAG_MSG = (
+    'The location for the interconnect. The locations can be listed by using '
+    'the `{parent_command} locations list` command to find '
+    'the appropriate location to use when creating an interconnect.')
 
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a Google Compute Engine interconnect.
 
-  *{command}* is used to create interconnect. A interconnect represents a
+  *{command}* is used to create interconnects. An interconnect represents a
   single specific connection between Google and the customer.
   """
 
@@ -49,24 +59,11 @@ class Create(base.CreateCommand):
   def Args(cls, parser):
     cls.LOCATION_ARG = (
         location_flags.InterconnectLocationArgumentForOtherResource(
-            'The location for the interconnect. The locations can be listed by '
-            'using the  '
-            '{ gcloud alpha compute interconnects locations list } command, '
-            'then find the appropriate location to use when creating an '
-            'interconnect here.'))
+            _LOCATION_FLAG_MSG))
     cls.LOCATION_ARG.AddArgument(parser)
     cls.INTERCONNECT_ARG = flags.InterconnectArgument()
     cls.INTERCONNECT_ARG.AddArgument(parser, operation_type='create')
-
-    parser.add_argument(
-        '--description',
-        help='An optional, textual description for the interconnect.')
-    flags.AddAdminEnabled(parser)
-    flags.AddCustomerName(parser)
-    flags.AddInterconnectType(parser)
-    flags.AddLinkType(parser)
-    flags.AddNocContactEmail(parser)
-    flags.AddRequestedLinkCount(parser)
+    flags.AddCreateBetaArgs(parser)
 
   def Collection(self):
     return 'compute.interconnects'
@@ -75,12 +72,12 @@ class Create(base.CreateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.INTERCONNECT_ARG.ResolveAsResource(args, holder.resources)
     interconnect = client.Interconnect(ref, compute_client=holder.client)
-
-    enum_values = flags.ResolveInterconnectEnumValues(args, holder)
-    interconnect_type = enum_values['interconnect_type']
-    link_type = enum_values['link_type']
-
     location_ref = self.LOCATION_ARG.ResolveAsResource(args, holder.resources)
+
+    messages = holder.client.messages
+    interconnect_type = flags.GetInterconnectType(messages,
+                                                  args.interconnect_type)
+    link_type = flags.GetLinkType(messages, args.link_type)
 
     return interconnect.Create(
         description=args.description,
@@ -91,5 +88,28 @@ class Create(base.CreateCommand):
         noc_contact_email=args.noc_contact_email,
         location=location_ref.SelfLink(),
         customer_name=args.customer_name)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a Google Compute Engine interconnect.
+
+  *{command}* is used to create interconnects. An interconnect represents a
+  single specific connection between Google and the customer.
+  """
+
+  INTERCONNECT_ARG = None
+  LOCATION_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.LOCATION_ARG = (
+        location_flags.InterconnectLocationArgumentForOtherResource(
+            _LOCATION_FLAG_MSG))
+    cls.LOCATION_ARG.AddArgument(parser)
+    cls.INTERCONNECT_ARG = flags.InterconnectArgument()
+    cls.INTERCONNECT_ARG.AddArgument(parser, operation_type='create')
+    flags.AddCreateAlphaArgs(parser)
+
 
 Create.detailed_help = DETAILED_HELP

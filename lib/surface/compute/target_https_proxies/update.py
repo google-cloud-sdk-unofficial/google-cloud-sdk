@@ -14,6 +14,7 @@
 """Command for updating target HTTPS proxies."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import target_proxies_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.ssl_certificates import (
@@ -23,7 +24,8 @@ from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
 from googlecloudsdk.core import log
 
 
-class Update(base.SilentCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class UpdateGA(base.SilentCommand):
   """Update a target HTTPS proxy.
 
   *{command}* is used to change the SSL certificate and/or URL map of
@@ -73,7 +75,8 @@ class Update(base.SilentCommand):
   def resource_type(self):
     return 'targetHttpProxies'
 
-  def _CreateRequestsWithCertRefs(self, args, ssl_cert_refs):
+  def _CreateRequestsWithCertRefs(self, args, ssl_cert_refs,
+                                  quic_override=None):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
@@ -103,6 +106,16 @@ class Update(base.SilentCommand):
                urlMapReference=client.messages.UrlMapReference(
                    urlMap=url_map_ref.SelfLink()))))
 
+    if quic_override:
+      requests.append(
+          (client.apitools_client.targetHttpsProxies, 'SetQuicOverride',
+           client.messages.ComputeTargetHttpsProxiesSetQuicOverrideRequest(
+               project=target_https_proxy_ref.project,
+               targetHttpsProxy=target_https_proxy_ref.Name(),
+               targetHttpsProxiesSetQuicOverrideRequest=(
+                   client.messages.TargetHttpsProxiesSetQuicOverrideRequest(
+                       quicOverride=quic_override)))))
+
     return client.MakeRequests(requests)
 
   def _GetSslCertificatesList(self, args):
@@ -121,7 +134,8 @@ class Update(base.SilentCommand):
     return []
 
   def _CheckMissingArgument(self, args):
-    if not (args.ssl_certificates or args.ssl_certificate) and not args.url_map:
+    if not (args.IsSpecified('ssl_certificates') or
+            args.IsSpecified('ssl_certificate') or args.IsSpecified('url_map')):
       raise exceptions.ToolException(
           'You must specify at least one of [--ssl-certificates] or '
           '[--url-map].')
@@ -131,3 +145,46 @@ class Update(base.SilentCommand):
 
     ssl_certificate_refs = self._GetSslCertificatesList(args)
     return self._CreateRequestsWithCertRefs(args, ssl_certificate_refs)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateGA):
+  """Update a target HTTPS proxy.
+
+  *{command}* is used to change the SSL certificate and/or URL map of
+  existing target HTTPS proxies. A target HTTPS proxy is referenced
+  by one or more forwarding rules which
+  define which packets the proxy is responsible for routing. The
+  target HTTPS proxy in turn points to a URL map that defines the rules
+  for routing the requests. The URL map's job is to map URLs to
+  backend services which handle the actual requests. The target
+  HTTPS proxy also points to at most 10 SSL certificates used for
+  server-side authentication.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    super(UpdateAlpha, cls).Args(parser)
+    target_proxies_utils.AddQuicOverrideUpdateArgs(parser)
+
+  def _CheckMissingArgument(self, args):
+    if not (args.IsSpecified('ssl_certificates') or
+            args.IsSpecified('ssl_certificate') or
+            args.IsSpecified('url_map') or args.IsSpecified('quic_override')):
+      raise exceptions.ToolException(
+          'You must specify at least one of [--ssl-certificates], '
+          '[--url-map] or [--quic-override].')
+
+  def Run(self, args):
+    self._CheckMissingArgument(args)
+
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    messages = holder.client.messages
+    quic_override = (messages.TargetHttpsProxiesSetQuicOverrideRequest.
+                     QuicOverrideValueValuesEnum(args.quic_override)
+                    ) if args.IsSpecified('quic_override') else None
+
+    ssl_certificate_refs = self._GetSslCertificatesList(args)
+
+    return self._CreateRequestsWithCertRefs(args, ssl_certificate_refs,
+                                            quic_override)

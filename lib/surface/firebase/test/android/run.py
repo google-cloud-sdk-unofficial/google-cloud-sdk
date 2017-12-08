@@ -185,8 +185,9 @@ class _BaseRun(object):
     history_name = PickHistoryName(args)
     history_id = tr_history_picker.GetToolResultsHistoryId(history_name)
 
-    matrix = matrix_creator.CreateMatrix(
-        args, self.context, history_id, bucket_ops.gcs_results_root)
+    matrix = matrix_creator.CreateMatrix(args, self.context, history_id,
+                                         bucket_ops.gcs_results_root,
+                                         str(self.ReleaseTrack()))
     monitor = matrix_ops.MatrixMonitor(
         matrix.testMatrixId, args.type, self.context)
 

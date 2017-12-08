@@ -16,7 +16,6 @@
 
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -36,9 +35,9 @@ class Delete(base.DeleteCommand):
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
     """
-    if not console_io.PromptContinue(
-        'Really delete all log entries from [%s]?' % args.log_name):
-      raise exceptions.ToolException('action canceled by user')
+    console_io.PromptContinue(
+        'Really delete all log entries from [%s]?' % args.log_name,
+        cancel_on_no=True)
 
     util.GetClient().projects_logs.Delete(
         util.GetMessages().LoggingProjectsLogsDeleteRequest(

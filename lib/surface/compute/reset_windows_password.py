@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.command_lib.util import gaia
 from googlecloudsdk.command_lib.util import time_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
 
@@ -312,7 +313,7 @@ class ResetWindowsPassword(base.UpdateCommand):
           'Your platform does not support OpenSSL.')
 
     # Get Authenticated email address and default username.
-    email = gaia.GetAuthenticatedGaiaEmail(client.apitools_client.http)
+    email = properties.VALUES.core.account.GetOrFail()
     if args.user:
       user = args.user
     else:

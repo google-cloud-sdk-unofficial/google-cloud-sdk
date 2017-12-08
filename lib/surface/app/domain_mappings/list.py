@@ -55,10 +55,12 @@ class ListBeta(List):
 
   @staticmethod
   def Args(parser):
+    # TODO(b/65059086): Add an UNSPECIFIED default value to SslManagementType
+    # so we don't have to do this hacky conversion.
     parser.display_info.AddFormat("""
         table(
           id:sort=1,
           ssl_settings.certificate_id:label=SSL_CERTIFICATE_ID,
-          ssl_settings.sslManagementType:label=SSL_MANAGEMENT_TYPE,
+          ssl_settings.sslManagementType.encode('utf-8').sub('^$', 'AUTOMATIC'):label=SSL_MANAGEMENT_TYPE,
           ssl_settings.pending_managed_certificate_id:label=PENDING_AUTO_CERT)
         """)

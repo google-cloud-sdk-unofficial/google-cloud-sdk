@@ -68,7 +68,7 @@ class Update(base.UpdateCommand):
         messages.ComputeInstancesGetRequest(**instance_ref.AsDict()))
     for i in instance.networkInterfaces:
       if i.name == args.network_interface:
-        interface = i
+        fingerprint = i.fingerprint
         break
     else:
       raise exceptions.UnknownArgumentException(
@@ -78,19 +78,21 @@ class Update(base.UpdateCommand):
               args.network_interface, ', '.join(
                   [i.name for i in instance.networkInterfaces])))
 
-    interface.aliasIpRanges = (
-        alias_ip_range_utils.CreateAliasIpRangeMessagesFromString(
-            messages, True, args.aliases))
+    patch_network_interface = messages.NetworkInterface(
+        aliasIpRanges=(
+            alias_ip_range_utils.CreateAliasIpRangeMessagesFromString(
+                messages, True, args.aliases)),
+        fingerprint=fingerprint)
 
     request = messages.ComputeInstancesUpdateNetworkInterfaceRequest(
         project=instance_ref.project,
         instance=instance_ref.instance,
         zone=instance_ref.zone,
         networkInterface=args.network_interface,
-        networkInterfaceResource=interface)
+        networkInterfaceResource=patch_network_interface)
 
     cleared_fields = []
-    if not interface.aliasIpRanges:
+    if not patch_network_interface.aliasIpRanges:
       cleared_fields.append('aliasIpRanges')
     with client.IncludeFields(cleared_fields):
       operation = client.instances.UpdateNetworkInterface(request)

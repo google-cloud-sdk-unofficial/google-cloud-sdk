@@ -17,7 +17,7 @@
 from googlecloudsdk.api_lib.oslogin import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.oslogin import oslogin_utils
-from googlecloudsdk.command_lib.util import gaia
+from googlecloudsdk.core import properties
 
 
 def _TransformExpiry(resource, undefined=None):
@@ -55,7 +55,7 @@ class List(base.ListCommand):
     """See ssh_utils.BaseSSHCLICommand.Run."""
 
     oslogin_client = client.OsloginClient(self.ReleaseTrack())
-    user_email = gaia.GetAuthenticatedGaiaEmail(oslogin_client.client.http)
+    user_email = properties.VALUES.core.account.Get()
 
     keys = oslogin_utils.GetKeysFromProfile(user_email, oslogin_client)
     return keys

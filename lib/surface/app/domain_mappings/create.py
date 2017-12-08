@@ -88,11 +88,11 @@ class CreateBeta(Create):
           To create a new App Engine new domain mapping with an automatically
           managed certificate, run:
 
-              $ {command} '*.example.com'
+              $ {command} 'example.com'
 
-          To create a domain with a manually managed certificate, run:
+          To create a domain with a manual certificate, run:
 
-              $ {command} 'example.com' \
+              $ {command} '*.example.com' \
                   --certificate-management=MANUAL --certificate-id=1234
 
           Note: managed certificates do not support wildcard domain mappings.

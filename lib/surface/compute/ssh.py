@@ -123,8 +123,7 @@ class SshGA(base.Command):
     ssh_helper = ssh_utils.BaseSSHCLIHelper()
     ssh_helper.Run(args)
     user, instance_name = ssh_utils.GetUserAndInstance(
-        args.user_host, self._use_account_service,
-        client.apitools_client.http)
+        args.user_host, self._use_account_service)
     instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
         [instance_name], compute_scope.ScopeEnum.ZONE, args.zone,
         holder.resources,
@@ -135,8 +134,7 @@ class SshGA(base.Command):
       use_oslogin = False
     else:
       user, use_oslogin = ssh_helper.CheckForOsloginAndGetUser(
-          instance, project, user,
-          self.ReleaseTrack(), client.apitools_client.http)
+          instance, project, user, self.ReleaseTrack())
     if self._use_internal_ip:
       ip_address = ssh_utils.GetInternalIPAddress(instance)
     else:

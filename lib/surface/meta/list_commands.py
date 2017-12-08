@@ -17,7 +17,12 @@
 import sys
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import cli_tree
 from googlecloudsdk.calliope import walker_util
+
+
+_LOOKUP_INTERNAL_FLAGS = '_flags_'
+_LOOKUP_INTERNAL_NAME = '_name_'
 
 
 def DisplayFlattenedCommandTree(command, out=None):
@@ -38,19 +43,20 @@ def DisplayFlattenedCommandTree(command, out=None):
       command: dict, The tree (nested dict) of command/group names.
       args: [str], The subcommand arg prefix.
     """
-    args_next = args + [command['_name_']]
+    args_next = args + [command[_LOOKUP_INTERNAL_NAME]]
     if commands:
       commands.append(' '.join(args_next))
     else:
       # List the global flags with the root command.
-      commands.append(' '.join(args_next + command.get('_flags_', [])))
-    if 'commands' in command:
-      for c in command['commands']:
-        name = c.get('_name_', c)
-        flags = c.get('_flags_', [])
+      commands.append(' '.join(
+          args_next + command.get(_LOOKUP_INTERNAL_FLAGS, [])))
+    if cli_tree.LOOKUP_COMMANDS in command:
+      for c in command[cli_tree.LOOKUP_COMMANDS]:
+        name = c.get(_LOOKUP_INTERNAL_NAME, c)
+        flags = c.get(_LOOKUP_INTERNAL_FLAGS, [])
         commands.append(' '.join(args_next + [name] + flags))
-    if 'groups' in command:
-      for g in command['groups']:
+    if cli_tree.LOOKUP_GROUPS in command:
+      for g in command[cli_tree.LOOKUP_GROUPS]:
         WalkCommandTree(commands, g, args_next)
 
   commands = []
@@ -84,15 +90,15 @@ def DisplayCompletions(command, out=None):
       command: dict, The tree (nested dict) of command/group names.
       prefix: [str], The subcommand arg prefix.
     """
-    name = command.get('_name_')
+    name = command.get(_LOOKUP_INTERNAL_NAME)
     args = prefix + [name]
-    commands = command.get('commands', [])
-    groups = command.get('groups', [])
+    commands = command.get(cli_tree.LOOKUP_COMMANDS, [])
+    groups = command.get(cli_tree.LOOKUP_GROUPS, [])
     names = []
     for c in commands + groups:
-      names.append(c.get('_name_', c))
+      names.append(c.get(_LOOKUP_INTERNAL_NAME, c))
     if names:
-      flags = command.get('_flags_', [])
+      flags = command.get(_LOOKUP_INTERNAL_FLAGS, [])
       if prefix:
         out.write('{identifier}=({args})\n'.format(
             identifier=ConvertPathToIdentifier(args),
@@ -105,8 +111,8 @@ def DisplayCompletions(command, out=None):
             identifier=ConvertPathToIdentifier(args),
             args=' '.join(names)))
       for c in commands:
-        name = c.get('_name_', c)
-        flags = c.get('_flags_', [])
+        name = c.get(_LOOKUP_INTERNAL_NAME, c)
+        flags = c.get(_LOOKUP_INTERNAL_FLAGS, [])
         out.write('{identifier}=({args})\n'.format(
             identifier=ConvertPathToIdentifier(args + [name]),
             args=' '.join(flags)))

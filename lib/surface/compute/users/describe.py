@@ -44,14 +44,12 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     """Issues requests necessary for describing users."""
-    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     holder = base_classes.ComputeUserAccountsApiHolder(self.ReleaseTrack())
     client = holder.client
 
     user = args.name
     if not user:
-      user = gaia.GetDefaultAccountName(
-          compute_holder.client.apitools_client.http)
+      user = gaia.GetDefaultAccountName()
 
     user_ref = holder.resources.Parse(
         user,

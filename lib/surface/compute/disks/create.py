@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import csek_utils
 from googlecloudsdk.api_lib.compute import image_utils
+from googlecloudsdk.api_lib.compute import kms_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute import zone_utils
 from googlecloudsdk.api_lib.compute.regions import utils as region_utils
@@ -293,6 +294,7 @@ class Create(base.Command):
 
       # Those features are only exposed in alpha/beta, it would be nice to have
       # code supporting them only in alpha and beta versions of the command.
+      # TODO(b/65161039): Stop checking release path in the middle of GA code.
       kwargs = {}
       if csek_keys:
         disk_key_or_none = csek_keys.LookupKey(
@@ -306,6 +308,11 @@ class Create(base.Command):
             project_to_source_image[disk_ref.project].keys[1])
       if labels:
         kwargs['labels'] = labels
+
+      kwargs['diskEncryptionKey'] = kms_utils.MaybeGetKmsKey(
+          args, disk_ref.project, client.apitools_client,
+          kwargs.get('diskEncryptionKey', None))
+
       # end of alpha/beta features.
 
       disk = client.messages.Disk(
@@ -375,6 +382,7 @@ class CreateAlpha(Create):
               'creating regional disk.'),
         hidden=True)
 
+    kms_utils.AddKmsKeyArgs(parser, resource_type='disk')
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
 
   def ValidateAndParseDiskRefs(self, args, compute_holder):

@@ -49,8 +49,8 @@ class Update(base.UpdateCommand):
     """
     # One of the flags is required to update the metric.
     if not (args.description or args.log_filter):
-      raise exceptions.ToolException(
-          '--description or --log-filter argument is required')
+      raise exceptions.MinimumArgumentException(
+          ['--description', '--log-filter'])
 
     # Calling the API's Update method on a non-existing metric creates it.
     # Make sure the metric exists so we don't accidentally create it.

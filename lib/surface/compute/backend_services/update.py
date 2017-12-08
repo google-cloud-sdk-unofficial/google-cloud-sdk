@@ -303,6 +303,7 @@ class UpdateAlpha(UpdateGA):
     flags.AddSessionAffinity(parser, internal_lb=True)
     flags.AddAffinityCookieTtl(parser)
     AddIapFlag(parser)
+    flags.AddCustomRequestHeaders(parser, remove_all_flag=True, default=None)
 
   def Modify(self, client, resources, args, existing):
     """Modify Backend Service."""
@@ -312,6 +313,10 @@ class UpdateAlpha(UpdateGA):
     if args.connection_draining_timeout is not None:
       replacement.connectionDraining = client.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
+    if args.no_custom_request_headers is not None:
+      replacement.customRequestHeaders = []
+    if args.custom_request_header is not None:
+      replacement.customRequestHeaders = args.custom_request_header
 
     return replacement
 
@@ -320,6 +325,8 @@ class UpdateAlpha(UpdateGA):
     if not any([
         args.affinity_cookie_ttl is not None,
         args.connection_draining_timeout is not None,
+        args.no_custom_request_headers is not None,
+        args.custom_request_header is not None,
         args.description is not None,
         args.enable_cdn is not None,
         args.cache_key_include_protocol is not None,

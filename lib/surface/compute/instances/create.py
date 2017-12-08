@@ -65,12 +65,13 @@ def _CommonArgs(parser,
                 support_public_dns,
                 support_network_tier,
                 enable_regional=False,
-                support_local_ssd_size=False):
+                support_local_ssd_size=False,
+                enable_kms=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
-  instances_flags.AddDiskArgs(parser, enable_regional)
+  instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
   if release_track in [base.ReleaseTrack.ALPHA]:
-    instances_flags.AddCreateDiskArgs(parser)
+    instances_flags.AddCreateDiskArgs(parser, enable_kms=enable_kms)
   if support_local_ssd_size:
     instances_flags.AddLocalSsdArgsWithSize(parser)
   else:
@@ -284,6 +285,10 @@ class Create(base.CreateCommand):
         not args.IsSpecified('boot_disk_type') and
         not args.IsSpecified('boot_disk_device_name') and
         not args.IsSpecified('boot_disk_auto_delete') and
+        not args.IsSpecified('boot_disk_kms_key') and
+        not args.IsSpecified('boot_disk_kms_project') and
+        not args.IsSpecified('boot_disk_kms_location') and
+        not args.IsSpecified('boot_disk_kms_keyring') and
         not args.IsSpecified('require_csek_key_create')):
       disks_messages = [[] for _ in instance_refs]
     else:
@@ -323,7 +328,8 @@ class Create(base.CreateCommand):
                   args.require_csek_key_create if self.csek_keys else None),
               image_uri=image_uri,
               instance_ref=instance_ref,
-              csek_keys=self.csek_keys)
+              csek_keys=self.csek_keys,
+              kms_args=args)
           persistent_disks = [boot_disk] + persistent_disks
         else:
           existing_boot_disks[boot_disk_ref.zone] = boot_disk_ref
@@ -429,7 +435,8 @@ class Create(base.CreateCommand):
     return requests
 
   def Run(self, args):
-    instances_flags.ValidateDiskFlags(args)
+    instances_flags.ValidateDiskFlags(
+        args, enable_kms=self.ReleaseTrack() in [base.ReleaseTrack.ALPHA])
     instances_flags.ValidateLocalSsdFlags(args)
     instances_flags.ValidateNicFlags(args)
     instances_flags.ValidateServiceAccountAndScopeArgs(args)
@@ -521,7 +528,8 @@ class CreateAlpha(Create):
         support_public_dns=cls._support_public_dns,
         support_network_tier=cls._support_network_tier,
         enable_regional=True,
-        support_local_ssd_size=True)
+        support_local_ssd_size=True,
+        enable_kms=True)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())

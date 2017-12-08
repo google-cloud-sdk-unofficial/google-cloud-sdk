@@ -18,7 +18,7 @@ from googlecloudsdk.api_lib.oslogin import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.oslogin import flags
 from googlecloudsdk.command_lib.oslogin import oslogin_utils
-from googlecloudsdk.command_lib.util import gaia
+from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -42,7 +42,7 @@ class Add(base.Command):
     """See ssh_utils.BaseSSHCLICommand.Run."""
     key = flags.GetKeyFromArgs(args)
     oslogin_client = client.OsloginClient(self.ReleaseTrack())
-    user_email = gaia.GetAuthenticatedGaiaEmail(oslogin_client.client.http)
+    user_email = properties.VALUES.core.account.Get()
 
     expiry = oslogin_utils.ConvertTtlArgToExpiry(args.ttl)
 

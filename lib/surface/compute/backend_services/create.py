@@ -271,6 +271,7 @@ class CreateAlpha(CreateGA):
     flags.AddAffinityCookieTtl(parser)
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddLoadBalancingScheme(parser)
+    flags.AddCustomRequestHeaders(parser, remove_all_flag=False, default=False)
     AddIapFlag(parser)
 
   def CreateGlobalRequests(self, holder, args, backend_services_ref):
@@ -297,6 +298,8 @@ class CreateAlpha(CreateGA):
               args.session_affinity))
     if args.affinity_cookie_ttl is not None:
       backend_service.affinityCookieTtlSec = args.affinity_cookie_ttl
+    if args.custom_request_header is not None:
+      backend_service.customRequestHeaders = args.custom_request_header
 
     self._ApplyIapArgs(client.messages, args.iap, backend_service)
 
@@ -321,6 +324,8 @@ class CreateAlpha(CreateGA):
     if args.connection_draining_timeout is not None:
       backend_service.connectionDraining = client.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
+    if args.custom_request_header is not None:
+      backend_service.customRequestHeaders = args.custom_request_header
 
     request = client.messages.ComputeRegionBackendServicesInsertRequest(
         backendService=backend_service,

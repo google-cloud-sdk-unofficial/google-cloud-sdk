@@ -38,7 +38,7 @@ def main():
     try:
       # pylint:disable=g-import-not-at-top
       import googlecloudsdk.command_lib.static_completion.lookup as lookup
-      lookup.Complete(_GCLOUD_PY_DIR)
+      lookup.Complete()
       return
     except Exception:  # pylint:disable=broad-except, hide completion errors
       if os.environ.get('_ARGCOMPLETE_TRACE') == 'static':

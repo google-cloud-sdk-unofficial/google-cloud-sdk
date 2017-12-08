@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Deletes a backup run for a Cloud SQL instance."""
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import sys
 
@@ -60,7 +63,7 @@ class Delete(base.DeleteCommand):
     Raises:
       HttpException: A http error response was received while executing api
           request.
-      ToolException: An error other than http error occured while executing the
+      ToolException: An error other than http error occurred while executing the
           command.
     """
 
@@ -91,6 +94,13 @@ class Delete(base.DeleteCommand):
 
     operation_ref = client.resource_parser.Create(
         'sql.operations', operation=result.name, project=instance_ref.project)
+
+    if args.async:
+      # Don't wait for the running operation to complete when async is used.
+      return sql_client.operations.Get(
+          sql_messages.SqlOperationsGetRequest(
+              project=operation_ref.project,
+              operation=operation_ref.operation))
 
     operations.OperationsV1Beta4.WaitForOperation(sql_client, operation_ref,
                                                   'Deleting backup run')

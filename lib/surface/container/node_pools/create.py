@@ -202,7 +202,7 @@ class CreateBeta(Create):
     flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True)
     flags.AddServiceAccountFlag(parser)
     flags.AddNodePoolScopesFlag(parser)
-    flags.AddMinCpuPlatformFlag(parser, for_node_pool=True, hidden=True)
+    flags.AddMinCpuPlatformFlag(parser, for_node_pool=True)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True, hidden=True)
 
   def ParseCreateNodePoolOptions(self, args):
@@ -233,7 +233,7 @@ class CreateAlpha(Create):
     flags.AddServiceAccountFlag(parser)
     flags.AddAcceleratorArgs(parser)
     flags.AddNodePoolScopesFlag(parser)
-    flags.AddMinCpuPlatformFlag(parser, for_node_pool=True, hidden=True)
+    flags.AddMinCpuPlatformFlag(parser, for_node_pool=True)
     flags.AddWorkloadMetadataFromNodeFlag(parser, hidden=True)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True, hidden=True)
 

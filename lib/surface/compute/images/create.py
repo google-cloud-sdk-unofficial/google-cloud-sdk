@@ -16,6 +16,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import csek_utils
 from googlecloudsdk.api_lib.compute import image_utils
+from googlecloudsdk.api_lib.compute import kms_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -81,6 +82,9 @@ class Create(base.CreateCommand):
           csek_keys.LookupKey(image_ref,
                               raise_if_missing=args.require_csek_key_create),
           client.apitools_client)
+    image.imageEncryptionKey = kms_utils.MaybeGetKmsKey(
+        args, image_ref.project, client.apitools_client,
+        image.imageEncryptionKey)
 
     # Validate parameters.
     if args.source_disk_zone and not args.source_disk:
@@ -168,6 +172,12 @@ class CreateBeta(Create):
 class CreateAlpha(CreateBeta):
 
   _GUEST_OS_FEATURES = image_utils.GUEST_OS_FEATURES_ALPHA
+
+  @classmethod
+  def Args(cls, parser):
+    _Args(parser, cls.ReleaseTrack())
+    flags.AddGuestOsFeaturesArg(parser, cls._GUEST_OS_FEATURES)
+    kms_utils.AddKmsKeyArgs(parser, resource_type='image')
 
 
 Create.detailed_help = {

@@ -15,7 +15,7 @@
 """Implements the command for SSHing into an instance."""
 from googlecloudsdk.api_lib.oslogin import client
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.util import gaia
+from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -28,7 +28,7 @@ class DescribeProfile(base.Command):
   def Run(self, args):
     """See ssh_utils.BaseSSHCLICommand.Run."""
     oslogin_client = client.OsloginClient(self.ReleaseTrack())
-    user_email = gaia.GetAuthenticatedGaiaEmail(oslogin_client.client.http)
+    user_email = properties.VALUES.core.account.Get()
     return oslogin_client.GetLoginProfile(user_email)
 
 

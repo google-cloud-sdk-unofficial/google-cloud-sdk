@@ -45,7 +45,7 @@ class Create(base.CreateCommand):
 
     owner = args.owner
     if not owner:
-      owner = gaia.GetAuthenticatedGaiaEmail(client.http)
+      owner = properties.VALUES.core.account.Get()
 
     name = args.name
     if not name:

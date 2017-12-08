@@ -50,9 +50,9 @@ class DomainMappingsAlpha(base.Group):
 
   App Engine Domain Mappings allow an application to be served via one or many
   custom domains, such as `example.com`, instead of the default `appspot.com`
-  address. You can use a custom domain with or without SSL. Additionally use the
-  AUTOMATIC management type to automatically provision an SSL certificate for
-  your domain.
+  address. You can use a custom domain with or without SSL. Use the AUTOMATIC
+  management type to automatically provision an SSL certificate for your domain.
+  Use the MANUAL management type to provide your own certificate or omit SSL.
   """
 
   detailed_help = {
@@ -66,6 +66,11 @@ class DomainMappingsAlpha(base.Group):
 
           To create a domain with an automatically managed certiticate, run:
 
-            $ {command} create 'example.com' --ssl-management-type=AUTOMATIC
+            $ {command} create 'example.com' --certificate-management=AUTOMATIC
+
+          To create a domain with a manual certificate, run:
+
+            $ {command} create 'example.com' \
+                --certificate-management=MANUAL --certificate-id=1234
       """,
   }

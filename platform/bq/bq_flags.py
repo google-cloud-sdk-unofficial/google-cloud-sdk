@@ -78,7 +78,9 @@ flags.DEFINE_string(
     'Default project to use for requests.')
 flags.DEFINE_string(
     'dataset_id', '',
-    'Default dataset to use for requests. (Ignored when not applicable.)')
+    'Default dataset reference to use for requests (Ignored when not '
+    'applicable.). Can be set as "project:dataset" or "dataset". If project '
+    'is missing, the value of the project_id flag will be used.')
 # This flag is "hidden" at the global scope to avoid polluting help
 # text on individual commands for rarely used functionality.
 flags.DEFINE_string(
@@ -156,8 +158,6 @@ flags.DEFINE_boolean(
     'enable_gdrive', None,
     'When set to true, requests new OAuth token with GDrive scope. '
     'When set to false, requests new OAuth token without GDrive scope.')
-
-
 
 
 def ResolveApiInfoFromFlags():
