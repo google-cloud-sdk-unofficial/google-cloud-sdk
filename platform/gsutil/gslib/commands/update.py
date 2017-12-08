@@ -20,6 +20,7 @@ import os
 import shutil
 import signal
 import stat
+import sys
 import tarfile
 import tempfile
 import textwrap
@@ -136,7 +137,7 @@ class UpdateCommand(Command):
     # 'third_party', which isn't present in manifest but gets added to the
     # gsutil distro by the gsutil submodule configuration; and the MANIFEST.in
     # and CHANGES.md files.
-    manifest_lines = ['gslib', 'third_party', 'MANIFEST.in', 'CHANGES.md']
+    manifest_lines = ['gslib', 'third_party', 'MANIFEST.in']
 
     try:
       with open(os.path.join(gslib.GSUTIL_DIR, 'MANIFEST.in'), 'r') as fp:
@@ -347,6 +348,14 @@ class UpdateCommand(Command):
                                'installed.', informational=True)
 
     if not no_prompt:
+      if (2, 6) == sys.version_info[:2]:
+        print('\n'.join(textwrap.wrap(
+            'WARNING: You are using Python 2.6, which gsutil will stop '
+            'supporting on September 1, 2016. If run gsutil update to a '
+            'version released after that date, you will need to upgrade your '
+            'system\'s Python installation to a supported Python version '
+            '(at the time of this writing, version 2.7), or else gsutil will '
+            'fail.\n')))
       (_, major) = CompareVersions(tarball_version, gslib.VERSION)
       if major:
         print('\n'.join(textwrap.wrap(

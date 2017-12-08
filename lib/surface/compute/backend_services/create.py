@@ -124,6 +124,20 @@ class CreateAlpha(CreateGA):
   def Args(parser):
     _Args(parser, compute_alpha_messages)
 
+    connection_draining_timeout = parser.add_argument(
+        '--connection-draining-timeout',
+        type=int,
+        default=None,  # None => use default 'backend' value.
+        help='Connection draining timeout in seconds.')
+    connection_draining_timeout.detailed_help = """\
+        Connection draining timeout, in seconds, to be used during removal of
+        VMs from instance groups. This guarantees that for the specified time
+        all existing connections to a VM will remain untouched, but no new
+        connections will be accepted. Set timeout to zero to disable connection
+        draining. Enable feature by specifying timeout up to one hour.
+        Connection draining is disabled by default.
+        """
+
     enable_cdn = parser.add_argument(
         '--enable-cdn',
         action='store_true',
@@ -181,6 +195,10 @@ class CreateAlpha(CreateGA):
 
   def CreateRequests(self, args):
     kwargs = self._CommonBackendServiceKwargs(args)
+    if args.connection_draining_timeout is not None:
+      kwargs['connectionDraining'] = self.messages.ConnectionDraining(
+          drainingTimeoutSec=args.connection_draining_timeout)
+
     if args.enable_cdn is not None:
       kwargs['enableCDN'] = args.enable_cdn
 

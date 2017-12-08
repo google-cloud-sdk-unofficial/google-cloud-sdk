@@ -16,25 +16,27 @@
 
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import properties
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """Lists the defined sinks."""
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
+    base.FLATTEN_FLAG.RemoveFromParser(parser)
+    base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
     parser.add_argument(
         '--only-project-sinks', required=False, action='store_true',
         help='Display only project sinks.')
-    parser.add_argument(
-        '--limit', required=False, type=int, default=None,
-        help='If greater than zero, limit the number of results.')
 
-  def ListLogSinks(self, project, log_name, limit):
+  def Collection(self):
+    return 'logging.sinks'
+
+  def ListLogSinks(self, project, log_name):
     """List log sinks from the specified log."""
     client = self.context['logging_client_v1beta3']
     messages = self.context['logging_messages_v1beta3']
@@ -43,11 +45,8 @@ class List(base.Command):
             projectsId=project, logsId=log_name))
     for sink in result.sinks:
       yield util.TypedLogSink(sink, log_name=log_name)
-      limit -= 1
-      if not limit:
-        return
 
-  def ListLogServiceSinks(self, project, service_name, limit):
+  def ListLogServiceSinks(self, project, service_name):
     """List log service sinks from the specified service."""
     client = self.context['logging_client_v1beta3']
     messages = self.context['logging_messages_v1beta3']
@@ -56,11 +55,8 @@ class List(base.Command):
             projectsId=project, logServicesId=service_name))
     for sink in result.sinks:
       yield util.TypedLogSink(sink, service_name=service_name)
-      limit -= 1
-      if not limit:
-        return
 
-  def ListProjectSinks(self, project, limit):
+  def ListProjectSinks(self, project):
     """List project sinks from the specified project."""
     # Use V2 logging API for project sinks.
     client = self.context['logging_client_v2beta1']
@@ -69,11 +65,8 @@ class List(base.Command):
         messages.LoggingProjectsSinksListRequest(projectsId=project))
     for sink in result.sinks:
       yield util.TypedLogSink(sink)
-      limit -= 1
-      if not limit:
-        return
 
-  def YieldAllSinks(self, project, limit):
+  def YieldAllSinks(self, project):
     """Yield all log and log service sinks from the specified project."""
     client = self.context['logging_client_v1beta3']
     messages = self.context['logging_messages_v1beta3']
@@ -85,11 +78,8 @@ class List(base.Command):
     for log in response:
       # We need only the base log name, not the full resource uri.
       log_id = util.ExtractLogId(log.name)
-      for typed_sink in self.ListLogSinks(project, log_id, limit):
+      for typed_sink in self.ListLogSinks(project, log_id):
         yield typed_sink
-        limit -= 1
-        if not limit:
-          return
     # Now get all the log service sinks.
     response = list_pager.YieldFromList(
         client.projects_logServices,
@@ -97,17 +87,11 @@ class List(base.Command):
         field='logServices', batch_size=None, batch_size_attribute='pageSize')
     for service in response:
       # In contrast, service.name correctly contains only the name.
-      for typed_sink in self.ListLogServiceSinks(project, service.name, limit):
+      for typed_sink in self.ListLogServiceSinks(project, service.name):
         yield typed_sink
-        limit -= 1
-        if not limit:
-          return
     # Lastly, get all project sinks.
-    for typed_sink in self.ListProjectSinks(project, limit):
+    for typed_sink in self.ListProjectSinks(project):
       yield typed_sink
-      limit -= 1
-      if not limit:
-        return
 
   @util.HandlePagerHttpError
   def Run(self, args):
@@ -122,29 +106,14 @@ class List(base.Command):
     """
     project = properties.VALUES.core.project.Get(required=True)
 
-    if args.limit is None or args.limit < 0:
-      limit = float('inf')
-    else:
-      limit = args.limit
-
     if args.log:
-      return self.ListLogSinks(project, args.log, limit)
+      return self.ListLogSinks(project, args.log)
     elif args.service:
-      return self.ListLogServiceSinks(project, args.service, limit)
+      return self.ListLogServiceSinks(project, args.service)
     elif args.only_project_sinks:
-      return self.ListProjectSinks(project, limit)
+      return self.ListProjectSinks(project)
     else:
-      return self.YieldAllSinks(project, limit)
-
-  def Display(self, unused_args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      unused_args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    list_printer.PrintResourceList('logging.typedSinks', result)
-
+      return self.YieldAllSinks(project)
 
 List.detailed_help = {
     'DESCRIPTION': """\

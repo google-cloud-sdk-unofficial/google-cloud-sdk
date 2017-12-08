@@ -16,7 +16,6 @@
 from googlecloudsdk.api_lib.compute import autoscaler_utils as util
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 from googlecloudsdk.third_party.apitools.base.py import exceptions
 
@@ -32,6 +31,12 @@ class CreateAutoscaler(base_classes.BaseCommand):
         help='Do not wait for the operation to complete.',)
     parser.add_argument('name', help='Autoscaler name.')
     util.AddAutoscalerArgs(parser)
+
+  def Collection(self):
+    return 'autoscaler.instances'
+
+  def Format(self, args):
+    return self.ListFormat(args)
 
   def Run(self, args):
     log.warn('Please use instead [gcloud compute instance-groups '
@@ -65,6 +70,3 @@ class CreateAutoscaler(base_classes.BaseCommand):
       raise calliope_exceptions.HttpException(util.GetErrorMessage(error))
     except ValueError as error:
       raise calliope_exceptions.HttpException(error)
-
-  def Display(self, unused_args, result):
-    list_printer.PrintResourceList('autoscaler.instances', [result])

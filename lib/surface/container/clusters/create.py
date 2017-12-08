@@ -53,6 +53,21 @@ def _Args(parser):
       help='The number of nodes in the cluster.',
       default=3)
   parser.add_argument(
+      '--additional-zones',
+      type=arg_parsers.ArgList(min_length=1),
+      metavar='ZONE',
+      action=arg_parsers.FloatingListValuesCatcher(),
+      help="""\
+The set of additional zones in which the specified node footprint should be
+replicated. All zones must be in the same region as the cluster's primary zone.
+If additional-zones is not specified, all nodes will be in the cluster's primary
+zone.
+
+Multiple locations can be specified, separated by commas. For example:
+
+  $ {{command}} example-cluster --zone us-central1-a --additional-zones us-central1-b,us-central1-c
+""")
+  parser.add_argument(
       '--machine-type', '-m',
       help='The type of machine to use for nodes. Defaults to '
       'server-specified')
@@ -144,6 +159,11 @@ Alias,URI
   parser.add_argument(
       '--cluster-version',
       help=argparse.SUPPRESS)
+  parser.add_argument(
+      '--local-ssd-count',
+      help=argparse.SUPPRESS,
+      type=int,
+      default=0)
 
 
 NO_CERTS_ERROR_FMT = '''\
@@ -170,6 +190,7 @@ class Create(base.Command):
         scopes=args.scopes,
         enable_cloud_endpoints=args.enable_cloud_endpoints,
         num_nodes=args.num_nodes,
+        additional_zones=args.additional_zones,
         user=args.username,
         password=args.password,
         cluster_version=args.cluster_version,
@@ -179,7 +200,8 @@ class Create(base.Command):
         node_disk_size_gb=args.disk_size,
         enable_cloud_logging=args.enable_cloud_logging,
         enable_cloud_monitoring=args.enable_cloud_monitoring,
-        disable_addons=args.disable_addons)
+        disable_addons=args.disable_addons,
+        local_ssd_count=args.local_ssd_count)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

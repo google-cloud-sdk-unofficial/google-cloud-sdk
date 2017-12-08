@@ -17,12 +17,11 @@
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-class Create(base.Command):
+class Create(base.CreateCommand):
   """Creates a sink."""
 
   @staticmethod
@@ -41,6 +40,9 @@ class Create(base.Command):
         help=('Format of the log entries being exported. Detailed information: '
               'https://cloud.google.com/logging/docs/api/introduction_v2'),
         choices=('V1', 'V2'), default='V1')
+
+  def Collection(self):
+    return 'logging.sinks'
 
   def CreateLogSink(self, sink_data):
     """Creates a log sink specified by the arguments."""
@@ -111,17 +113,11 @@ class Create(base.Command):
       sink_data['outputVersionFormat'] = args.output_version_format
       result = util.TypedLogSink(self.CreateProjectSink(sink_data))
     log.CreatedResource(sink_ref)
+    self._epilog_result_destination = result.destination
     return result
 
-  def Display(self, unused_args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      unused_args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    list_printer.PrintResourceList('logging.typedSinks', [result])
-    util.PrintPermissionInstructions(result.destination)
+  def Epilog(self, unused_resources_were_displayed):
+    util.PrintPermissionInstructions(self._epilog_result_destination)
 
 
 Create.detailed_help = {

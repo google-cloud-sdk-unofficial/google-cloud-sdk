@@ -116,26 +116,6 @@ JSON (http://www.json.org), JavaScript Object Notation.
 .RS 2m
 An ordered list of items.
 
-The format attributes are:
-
-\fBempty\-legend=\fISENTENCES\fR\fR
-.RS 2m
-Prints \fISENTENCES\fR to the \fBstatus\fR logger if there are no items. The
-default \fBempty\-legend\fR is "Listed 0 items.". \fBno\-empty\-legend\fR
-disables the default.
-.RE
-\fBlegend=\fISENTENCES\fR\fR
-.RS 2m
-Prints \fISENTENCES\fR to the \fBout\fR logger after the last item if there is
-at least one item.
-.RE
-\fBlegend\-log=\fITYPE\fR\fR
-.RS 2m
-Prints the legend to the \fITYPE\fR logger instead of the default. \fITYPE\fR
-may be: \fBout\fR (the default), \fBstatus\fR (standard error), \fBdebug\fR,
-\fBinfo\fR, \fBwarn\fR, or \fBerror\fR.
-
-.RE
 .RE
 \fBmulti\fR
 .RS 2m
@@ -159,20 +139,13 @@ in ANGRY_SNAKE_CASE. For example, the projection keys (first.name, last.name)
 produce the default column heading ('NAME', 'LAST_NAME'). If
 \fB\-\-page\-size\fR=\fIN\fR is specified then output is grouped into tables
 with at most \fIN\fR rows. Headings, alignment and sorting are done per\-page.
-The title, if any, is printed before the first table. The legend, if any, is
-printed after the last table.
+The title, if any, is printed before the first table.
 
 The format attributes are:
 
 \fBbox\fR
 .RS 2m
 Prints a box around the entire table and each cell, including the title if any.
-.RE
-\fBempty\-legend=\fISENTENCES\fR\fR
-.RS 2m
-Prints \fISENTENCES\fR to the \fBstatus\fR logger if there are no items. The
-default \fBempty\-legend\fR is "Listed 0 items.". \fBno\-empty\-legend\fR
-disables the default.
 .RE
 \fBformat=\fIFORMAT\-STRING\fR\fR
 .RS 2m
@@ -182,17 +155,6 @@ reference any of the supported formats.
 \fBno\-heading\fR
 .RS 2m
 Disables the column headings.
-.RE
-\fBlegend=\fISENTENCES\fR\fR
-.RS 2m
-Prints \fISENTENCES\fR to the \fBout\fR logger after the last item if there is
-at least one item.
-.RE
-\fBlegend\-log=\fITYPE\fR\fR
-.RS 2m
-Prints the legend to the \fITYPE\fR logger instead of the default. \fITYPE\fR
-may be: \fBout\fR (the default), \fBstatus\fR (standard error), \fBdebug\fR,
-\fBinfo\fR, \fBwarn\fR, or \fBerror\fR.
 .RE
 \fBpad=N\fR
 .RS 2m
@@ -213,29 +175,12 @@ An alias for the \fBflattened\fR format.
 .RE
 \fBvalue\fR
 .RS 2m
-CSV with no heading and <TAB> separator instead of <COMMA>, and a legend. Used
-to retrieve individual resource values. This format requires a projection to
-define the value(s) to be printed.
+CSV with no heading and <TAB> separator instead of <COMMA>. Used to retrieve
+individual resource values. This format requires a projection to define the
+value(s) to be printed.
 
 The format attributes are:
 
-\fBempty\-legend=\fISENTENCES\fR\fR
-.RS 2m
-Prints \fISENTENCES\fR to the \fBstatus\fR logger if there are no items. The
-default \fBempty\-legend\fR is "Listed 0 items.". \fBno\-empty\-legend\fR
-disables the default.
-.RE
-\fBlegend=\fISENTENCES\fR\fR
-.RS 2m
-Prints \fISENTENCES\fR to the \fBout\fR logger after the last item if there is
-at least one item.
-.RE
-\fBlegend\-log=\fITYPE\fR\fR
-.RS 2m
-Prints the legend to the \fITYPE\fR logger instead of the default. \fITYPE\fR
-may be: \fBout\fR (the default), \fBstatus\fR (standard error), \fBdebug\fR,
-\fBinfo\fR, \fBwarn\fR, or \fBerror\fR.
-.RE
 \fBno\-quote\fR
 .RS 2m
 Prints NEWLINE terminated TAB delimited values with no quoting.

@@ -154,7 +154,8 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
         ssh_args.append('/bin/sh')
 
     elif args.command:
-      ssh_args.append('--')
+      if not ssh_utils.IsRunningOnWindows():
+        ssh_args.append('--')
       ssh_args.append(args.command)
 
     # Don't use strict error checking for ssh: if the executed command fails, we

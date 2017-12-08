@@ -16,11 +16,10 @@
 
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import properties
 
 
-class Describe(base.Command):
+class Describe(base.DescribeCommand):
   """Shows the definition of a logs-based metric."""
 
   @staticmethod
@@ -28,6 +27,9 @@ class Describe(base.Command):
     """Register flags for this command."""
     parser.add_argument(
         'metric_name', help='The name of the metric.')
+
+  def Collection(self):
+    return 'logging.metrics'
 
   @util.HandleHttpError
   def Run(self, args):
@@ -47,15 +49,6 @@ class Describe(base.Command):
     return client.projects_metrics.Get(
         messages.LoggingProjectsMetricsGetRequest(
             metricsId=args.metric_name, projectsId=project))
-
-  def Display(self, unused_args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      unused_args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    list_printer.PrintResourceList('logging.metrics', [result])
 
 
 Describe.detailed_help = {

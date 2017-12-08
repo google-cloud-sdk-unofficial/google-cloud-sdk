@@ -354,6 +354,10 @@ class CreateGA(base_classes.BaseAsyncCreator,
       network_interface = self.messages.NetworkInterface(
           network=network_ref.SelfLink())
 
+    # TODO(user): Remove this before GA launch.
+    if getattr(args, 'private_network_ip', None):
+      network_interface.networkIP = args.private_network_ip
+
     if not args.no_address:
       access_config = self.messages.AccessConfig(
           name=constants.DEFAULT_ACCESS_CONFIG_NAME,
@@ -512,6 +516,7 @@ class CreateBeta(CreateGA):
     _CommonArgs(parser)
     csek_utils.AddCsekKeyArgs(parser)
     instance_utils.AddImageArgsBeta(parser)
+    instance_utils.AddNetworkArgsBeta(parser)
 
 
 CreateBeta.detailed_help = DETAILED_HELP

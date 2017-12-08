@@ -11,7 +11,7 @@ gcloud container clusters create \- create a cluster for running containers
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud container clusters create\fR \fINAME\fR [\fB\-\-cluster\-ipv4\-cidr\fR\ \fICLUSTER_IPV4_CIDR\fR] [\fB\-\-disable\-addons\fR\ [\fIDISABLE_ADDONS\fR,...]] [\fB\-\-disk\-size\fR\ \fIDISK_SIZE\fR] [\fB\-\-enable\-cloud\-endpoints\fR] [\fB\-\-enable\-cloud\-logging\fR] [\fB\-\-enable\-cloud\-monitoring\fR] [\fB\-\-machine\-type\fR\ \fIMACHINE_TYPE\fR,\ \fB\-m\fR\ \fIMACHINE_TYPE\fR] [\fB\-\-network\fR\ \fINETWORK\fR] [\fB\-\-num\-nodes\fR\ \fINUM_NODES\fR;\ default="3"] [\fB\-\-password\fR\ \fIPASSWORD\fR] [\fB\-\-scopes\fR\ \fISCOPE\fR,[\fISCOPE\fR,...]] [\fB\-\-subnetwork\fR\ \fISUBNETWORK\fR] [\fB\-\-username\fR\ \fIUSERNAME\fR,\ \fB\-u\fR\ \fIUSERNAME\fR;\ default="admin"] [\fB\-\-wait\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud container clusters create\fR \fINAME\fR [\fB\-\-additional\-zones\fR\ \fIZONE\fR,[\fIZONE\fR,...]] [\fB\-\-cluster\-ipv4\-cidr\fR\ \fICLUSTER_IPV4_CIDR\fR] [\fB\-\-disable\-addons\fR\ [\fIDISABLE_ADDONS\fR,...]] [\fB\-\-disk\-size\fR\ \fIDISK_SIZE\fR] [\fB\-\-enable\-cloud\-endpoints\fR] [\fB\-\-enable\-cloud\-logging\fR] [\fB\-\-enable\-cloud\-monitoring\fR] [\fB\-\-machine\-type\fR\ \fIMACHINE_TYPE\fR,\ \fB\-m\fR\ \fIMACHINE_TYPE\fR] [\fB\-\-network\fR\ \fINETWORK\fR] [\fB\-\-num\-nodes\fR\ \fINUM_NODES\fR;\ default="3"] [\fB\-\-password\fR\ \fIPASSWORD\fR] [\fB\-\-scopes\fR\ \fISCOPE\fR,[\fISCOPE\fR,...]] [\fB\-\-subnetwork\fR\ \fISUBNETWORK\fR] [\fB\-\-username\fR\ \fIUSERNAME\fR,\ \fB\-u\fR\ \fIUSERNAME\fR;\ default="admin"] [\fB\-\-wait\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -31,6 +31,22 @@ The name of this cluster.
 
 .SH "FLAGS"
 
+\fB\-\-additional\-zones\fR \fIZONE\fR,[\fIZONE\fR,...]
+.RS 2m
+The set of additional zones in which the specified node footprint should be
+replicated. All zones must be in the same region as the cluster's primary zone.
+If additional\-zones is not specified, all nodes will be in the cluster's
+primary zone.
+
+Multiple locations can be specified, separated by commas. For example:
+
+.RS 2m
+$ {command} example\-cluster \-\-zone us\-central1\-a \e
+    \-\-additional\-zones us\-central1\-b,us\-central1\-c
+.RE
+
+
+.RE
 \fB\-\-cluster\-ipv4\-cidr\fR \fICLUSTER_IPV4_CIDR\fR
 .RS 2m
 The IP address range for the pods in this cluster in CIDR notation (e.g.

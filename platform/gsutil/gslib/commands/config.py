@@ -1002,7 +1002,7 @@ class ConfigCommand(Command):
         time.sleep(2)
       else:
         sys.stdout.write(
-            '\nPlease navigate your browser to %s,\nthen find the project'
+            '\nPlease navigate your browser to %s,\nthen find the project '
             'you will use, and copy the Project ID string from the\nsecond '
             'column. Older projects do not have Project ID strings. For such '
             'projects,\n click the project and then copy the Project Number '
@@ -1088,6 +1088,13 @@ class ConfigCommand(Command):
           'SDK. Run "gcloud auth login" to configure authentication, unless '
           'you want to authenticate with an HMAC access key and secret, in '
           'which case run "gsutil config -a".')
+
+    if os.environ.get('CLOUDSDK_WRAPPER') == '1' and has_a:
+      sys.stderr.write('\n'.join(textwrap.wrap(
+          'This command will configure HMAC credentials, but gsutil will use '
+          'OAuth2 credentials from the Cloud SDK by default. To make sure '
+          'the HMAC credentials are used, run: "gcloud config set '
+          'pass_credentials_to_gsutil false".')) + '\n\n')
 
     if not scopes:
       scopes.append(SCOPE_FULL_CONTROL)

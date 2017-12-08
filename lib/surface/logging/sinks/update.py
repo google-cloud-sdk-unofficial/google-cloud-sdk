@@ -17,7 +17,6 @@
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 
 
@@ -42,6 +41,9 @@ class Update(base.Command):
         help=('Format of the log entries being exported. Detailed information: '
               'https://cloud.google.com/logging/docs/api/introduction_v2'),
         choices=('V1', 'V2'))
+
+  def Collection(self):
+    return 'logging.sinks'
 
   def GetLogSink(self):
     """Returns a log sink specified by the arguments."""
@@ -158,17 +160,11 @@ class Update(base.Command):
         sink_data['outputVersionFormat'] = sink.outputVersionFormat.name
       result = util.TypedLogSink(self.UpdateProjectSink(sink_data))
     log.UpdatedResource(sink_ref)
+    self._epilog_result_destination = result.destination
     return result
 
-  def Display(self, unused_args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      unused_args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    list_printer.PrintResourceList('logging.typedSinks', [result])
-    util.PrintPermissionInstructions(result.destination)
+  def Epilog(self, unused_resources_were_displayed):
+    util.PrintPermissionInstructions(self._epilog_result_destination)
 
 
 Update.detailed_help = {

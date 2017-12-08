@@ -5,7 +5,7 @@
  "name": "serviceregistry",
  "canonicalName": "Service Registry",
  "version": "beta",
- "revision": "20160404",
+ "revision": "20160413",
  "title": "Google Cloud Service Registry API",
  "description": "Manages service endpoints in Service Registry and provides integration with DNS for service discovery and name resolution.",
  "ownerDomain": "google.com",
@@ -96,7 +96,7 @@
      "type": "array",
      "description": "User-provided addresses / ports of the service represented by an endpoint.",
      "items": {
-      "$ref": "EndpointEndpointAddress"
+      "$ref": "EndpointAddress"
      }
     },
     "creationTimestamp": {
@@ -135,6 +135,24 @@
     }
    }
   },
+  "EndpointAddress": {
+   "id": "EndpointAddress",
+   "type": "object",
+   "description": "Information about a single address and corresponding ports for an endpoint.",
+   "properties": {
+    "address": {
+     "type": "string",
+     "description": "User-provided addresses of the service represented by an endpoint. Each address can be an IPv4 or IPv6 address, or a hostname."
+    },
+    "ports": {
+     "type": "array",
+     "description": "User provided information about ports to be used with this address.",
+     "items": {
+      "$ref": "EndpointPort"
+     }
+    }
+   }
+  },
   "EndpointDnsIntegration": {
    "id": "EndpointDnsIntegration",
    "type": "object",
@@ -148,26 +166,8 @@
     }
    }
   },
-  "EndpointEndpointAddress": {
-   "id": "EndpointEndpointAddress",
-   "type": "object",
-   "description": "Information about a single address and corresponding ports for an endpoint.",
-   "properties": {
-    "address": {
-     "type": "string",
-     "description": "User-provided addresses of the service represented by an endpoint. Each address can be an IPv4 or IPv6 address, or a hostname."
-    },
-    "ports": {
-     "type": "array",
-     "description": "User provided information about ports to be used with this address.",
-     "items": {
-      "$ref": "EndpointEndpointPort"
-     }
-    }
-   }
-  },
-  "EndpointEndpointPort": {
-   "id": "EndpointEndpointPort",
+  "EndpointPort": {
+   "id": "EndpointPort",
    "type": "object",
    "description": "Information about a single port used by an endpoint.",
    "properties": {

@@ -25,22 +25,22 @@ class RecordSets(base.Group):
       'EXAMPLES': """\
           To import record-sets from a BIND zone file, run:
 
-            $ {command} -z MANAGED_ZONE import --zone-file-format ZONE_FILE
+            $ {command} import -z MANAGED_ZONE  --zone-file-format ZONE_FILE
 
           To export record-sets in yaml format, run:
 
-            $ {command} -z MANAGED_ZONE export
+            $ {command} export -z MANAGED_ZONE
 
           To see how to make scriptable changes to your record-sets through transactions, run:
 
-            $ {command} -z MANAGED_ZONE transaction
+            $ {command} transaction -z MANAGED_ZONE
 
           To see change details or list of all changes, run:
 
-            $ {command} -z MANAGED_ZONE changes
+            $ {command} changes -z MANAGED_ZONE
 
           To see the list of all record-sets, run:
 
-            $ {command} -z MANAGED_ZONE list
+            $ {command} list -z MANAGED_ZONE
           """,
   }

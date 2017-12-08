@@ -89,6 +89,11 @@ Alias,URI
     aliases='\n        '.join(
         ','.join(value) for value in
         sorted(constants.SCOPES.iteritems()))))
+  parser.add_argument(
+      '--local-ssd-count',
+      help=argparse.SUPPRESS,
+      type=int,
+      default=0)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -104,7 +109,8 @@ class Create(base.Command):
         machine_type=args.machine_type,
         disk_size_gb=args.disk_size,
         scopes=args.scopes,
-        num_nodes=args.num_nodes)
+        num_nodes=args.num_nodes,
+        local_ssd_count=args.local_ssd_count)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

@@ -285,12 +285,3 @@ class Deploy(base.Command):
       return self._DeployFunction(name, location, args, self._CreateFunction)
     else:
       return self._DeployFunction(name, location, args, self._UpdateFunction)
-
-  def Display(self, unused_args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      unused_args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    self.format(result)

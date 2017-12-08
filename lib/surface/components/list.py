@@ -92,7 +92,7 @@ class List(base.ListCommand):
       yield c
     yield resource_printer_base.FinishMarker()
 
-  def Epilog(self):
+  def Epilog(self, unused_resources_were_displayed):
     log.status.write("""\
 To install or remove components at your current SDK version [{current}], run:
   $ gcloud components install COMPONENT_ID

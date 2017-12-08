@@ -14,6 +14,7 @@
 
 """The command group for Service Registry CLI."""
 
+from googlecloudsdk.api_lib.service_registry import constants
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import apis
@@ -52,14 +53,14 @@ class ServiceRegistry(base.Group):
       ToolException: When no project is specified.
     """
 
-    context['serviceregistry_client'] = apis.GetClientInstance(
+    context[constants.CLIENT] = apis.GetClientInstance(
         'serviceregistry', 'beta')
-    context['serviceregistry_messages'] = apis.GetMessagesModule(
+    context[constants.MESSAGES] = apis.GetMessagesModule(
         'serviceregistry', 'beta')
 
     project = properties.VALUES.core.project
     resolver = resolvers.FromProperty(project)
     resources.SetParamDefault('serviceregistry', None, 'project', resolver)
-    context['serviceregistry_resources'] = resources
+    context[constants.RESOURCES] = resources
 
     return context

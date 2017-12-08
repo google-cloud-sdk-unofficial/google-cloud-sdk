@@ -96,7 +96,7 @@ class Stop(base.Command):
     for version in sorted(versions):
       try:
         with console_io.ProgressTracker('Stopping [{0}]'.format(version)):
-          client.StopModule(module=version.service, version=version.id)
+          client.StopService(service=version.service, version=version.id)
       except util.RPCError as err:
         errors.append(str(err))
     if errors:

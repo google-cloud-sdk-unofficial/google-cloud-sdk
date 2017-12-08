@@ -93,6 +93,6 @@ class EnableDebug(base.Command):
     console_io.PromptContinue(
         'Enabling debug mode for instance [{0}].'.format(instance),
         cancel_on_no=True)
-    client.SetManagedBySelf(module=instance.service, version=instance.version,
+    client.SetManagedBySelf(service=instance.service, version=instance.version,
                             instance=instance.id)
     log.status.Print('Enabled debug mode for instance [{0}].'.format(instance))

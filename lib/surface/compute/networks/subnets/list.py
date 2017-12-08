@@ -14,7 +14,6 @@
 
 """Command for listing subnetworks."""
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.calliope import exceptions
 
 
 class List(base_classes.RegionalLister):
@@ -37,16 +36,8 @@ class List(base_classes.RegionalLister):
     return 'subnetworks'
 
   def Run(self, args):
-    if args.uri and args.network is not None:
-      # TODO(b/25276193): --uri and --network don't work together
-      raise exceptions.InvalidArgumentException(
-          '--uri', '--uri cannot be used with --network')
-
     for resource in super(List, self).Run(args):
-      if args.network is not None:
-        if resource.get('network', None) == args.network:
-          yield resource
-      else:
+      if args.network is None or resource.get('network', None) == args.network:
         yield resource
 
 

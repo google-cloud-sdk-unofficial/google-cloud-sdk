@@ -63,8 +63,8 @@ class Start(base_classes.NoOutputAsyncMutator):
       request_list.append(request)
     return request_list
 
-  def Display(self, _, resources):
+  def Format(self, _):
     # There is no need to display anything when starting an
-    # instance. Instead, we consume the generator returned from Run()
-    # to invoke the logic that waits for the start to complete.
-    list(resources)
+    # instance. Instead, format 'none' consumes the generator returned from
+    # Run() # to invoke the logic that waits for the start to complete.
+    return 'none'

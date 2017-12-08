@@ -16,13 +16,17 @@ gcloud preview app modules set\-managed\-by \- \fB(BETA)\fR sets the policy for 
 
 .SH "DESCRIPTION"
 
-\fB(BETA)\fR This command sets the policy for the Managed VMs of the given
-modules and version. When your module uses VM runtimes, you can use this command
-to change the management mode for a set of your VMs. If you switch to
-self\-managed, SSH will be enabled on the VMs, and they will be removed from the
-health checking pools, but will still receive requests. When you switch back to
-Google\-managed mode, any local changes on the VMs are lost and they are
-restarted and added back into the normal pools.
+\fB(BETA)\fR This command is deprecated. Please use the \f5gcloud preview app
+instances enable\-debug\fR and \f5gcloud preview app instances disable\-debug\fR
+commands instead.
+
+This command sets the policy for the Managed VMs of the given modules and
+version. When your module uses VM runtimes, you can use this command to change
+the management mode for a set of your VMs. If you switch to self\-managed, SSH
+will be enabled on the VMs, and they will be removed from the health checking
+pools, but will still receive requests. When you switch back to Google\-managed
+mode, any local changes on the VMs are lost and they are restarted and added
+back into the normal pools.
 
 
 
@@ -30,8 +34,8 @@ restarted and added back into the normal pools.
 
 \fIMODULES\fR [\fIMODULES\fR ...]
 .RS 2m
-One or more module names to perform this action on. To select the default module
-for your app, use "default".
+One or more service names to perform this action on. To select the default
+service for your app, use "default".
 
 
 .RE

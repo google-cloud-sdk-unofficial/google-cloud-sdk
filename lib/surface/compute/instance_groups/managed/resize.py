@@ -17,10 +17,12 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.core import exceptions
 
 
-def _AddArgs(parser, multizonal):
+def _AddArgs(parser, multizonal, creation_retries):
   """Adds args."""
   parser.add_argument('name', help='Managed instance group name.')
   parser.add_argument(
@@ -45,15 +47,18 @@ def _AddArgs(parser, multizonal):
         parser,
         resource_type='instance group manager',
         operation_type='resize')
+  if creation_retries:
+    parser.add_argument('--creation-retries', action='store_true', default=True,
+                        help='When instance creation fails do not retry it.')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Resize(base_classes.BaseAsyncMutator):
   """Set managed instance group size."""
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, multizonal=False)
+    _AddArgs(parser=parser, multizonal=False, creation_retries=False)
 
   @property
   def method(self):
@@ -80,14 +85,56 @@ class Resize(base_classes.BaseAsyncMutator):
                  zone=ref.zone,))]
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ResizeBeta(base_classes.BaseAsyncMutator):
+  """Set managed instance group size."""
+
+  @staticmethod
+  def Args(parser):
+    _AddArgs(parser=parser, multizonal=False, creation_retries=True)
+
+  @property
+  def method(self):
+    return 'ResizeAdvanced'
+
+  @property
+  def service(self):
+    return self.compute.instanceGroupManagers
+
+  @property
+  def resource_type(self):
+    return 'instanceGroupManagers'
+
+  def CreateGroupReference(self, args):
+    return self.CreateZonalReference(args.name, args.zone)
+
+  def CreateRequests(self, args):
+    ref = self.CreateZonalReference(args.name, args.zone)
+    return [(self.method,
+             self.messages.ComputeInstanceGroupManagersResizeAdvancedRequest(
+                 instanceGroupManager=ref.Name(),
+                 instanceGroupManagersResizeAdvancedRequest=(
+                     self.messages.InstanceGroupManagersResizeAdvancedRequest(
+                         targetSize=args.size,
+                         noCreationRetries=not args.creation_retries,
+                     )
+                 ),
+                 project=self.project,
+                 zone=ref.zone,))]
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ResizeAlpha(Resize,
                   instance_groups_utils.InstanceGroupReferenceMixin):
   """Set managed instance group size."""
 
+  class ConflictingFlagsError(exceptions.Error):
+    """Conflicting flags were passed."""
+    pass
+
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, multizonal=True)
+    _AddArgs(parser=parser, multizonal=True, creation_retries=True)
 
   def CreateGroupReference(self, args):
     return self.CreateInstanceGroupReference(
@@ -97,20 +144,31 @@ class ResizeAlpha(Resize,
     group_ref = self.CreateGroupReference(args)
     if group_ref.Collection() == 'compute.instanceGroupManagers':
       service = self.compute.instanceGroupManagers
-      request = self.messages.ComputeInstanceGroupManagersResizeRequest(
+      method = 'ResizeAdvanced'
+      request = self.messages.ComputeInstanceGroupManagersResizeAdvancedRequest(
           instanceGroupManager=group_ref.Name(),
-          size=args.size,
+          instanceGroupManagersResizeAdvancedRequest=(
+              self.messages.InstanceGroupManagersResizeAdvancedRequest(
+                  targetSize=args.size,
+                  noCreationRetries=not args.creation_retries,
+              )
+          ),
           project=self.project,
           zone=group_ref.zone,)
     else:
+      if not args.creation_retries:
+        raise ConflictingFlagsError(
+            'argument --no-creation-retries: not allowed with argument '
+            '--region')
       service = self.compute.regionInstanceGroupManagers
+      method = 'Resize'
       request = self.messages.ComputeRegionInstanceGroupManagersResizeRequest(
           instanceGroupManager=group_ref.Name(),
           size=args.size,
           project=self.project,
           region=group_ref.region,)
 
-    return [(service, self.method, request)]
+    return [(service, method, request)]
 
 
 Resize.detailed_help = {
@@ -127,3 +185,4 @@ instance template until the group reaches the desired size.
 """,
 }
 ResizeAlpha.detailed_help = Resize.detailed_help
+ResizeBeta.detailed_help = Resize.detailed_help

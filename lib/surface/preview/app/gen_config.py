@@ -66,7 +66,7 @@ class GenConfig(base.Command):
     parser.add_argument(
         '--config',
         default=None,
-        help=('The yaml file defining the module configuration.  This is '
+        help=('The yaml file defining the service configuration.  This is '
               'normally one of the generated files, but when generating a '
               'custom runtime there can be an app.yaml containing parameters.'))
 
@@ -100,7 +100,7 @@ class GenConfig(base.Command):
     # directory, load it.
     if config_filename:
       try:
-        myi = yaml_parsing.ModuleYamlInfo.FromFile(config_filename)
+        myi = yaml_parsing.ServiceYamlInfo.FromFile(config_filename)
         config = myi.parsed
       except IOError as ex:
         log.error('Unable to open %s: %s', config_filename, ex)

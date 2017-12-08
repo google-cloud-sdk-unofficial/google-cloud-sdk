@@ -17,10 +17,10 @@
 
 from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import consumers_flags
+from googlecloudsdk.api_lib.service_management import enable_api
 from googlecloudsdk.api_lib.service_management import services_util
+from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Enable(base.Command, base_classes.BaseServiceManagementCommand):
@@ -38,6 +38,7 @@ class Enable(base.Command, base_classes.BaseServiceManagementCommand):
     consumers_flags.CONSUMER_PROJECT_FLAG.AddToParser(parser)
     consumers_flags.SERVICE_FLAG.AddToParser(parser)
 
+  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Run 'service-management enable'.
 
@@ -52,27 +53,10 @@ class Enable(base.Command, base_classes.BaseServiceManagementCommand):
       HttpException: An http error response was received while executing api
           request.
     """
-    # Shorten the patch request name for better readability
-    patch_request = (self.services_messages
-                     .ServicemanagementServicesProjectSettingsPatchRequest)
 
-    usage_settings = self.services_messages.UsageSettings(
-        consumerEnableStatus=(self.services_messages.UsageSettings
-                              .ConsumerEnableStatusValueValuesEnum.ENABLED))
-
-    project_settings = self.services_messages.ProjectSettings(
-        usageSettings=usage_settings)
-
-    request = patch_request(
-        serviceName=args.service,
-        consumerProjectId=args.consumer_project,
-        projectSettings=project_settings,
-        updateMask='usage_settings.consumer_enable_status')
-
-    try:
-      # TODO(user): Add support for Operation completion, and --async flag
-      result = self.services_client.services_projectSettings.Patch(request)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(services_util.GetError(error))
+    # TODO(b/25392897): Add support for Operation completion, and --async flag
+    result = enable_api.EnableServiceApiCall(
+        self.services_client, self.services_messages,
+        args.consumer_project, args.service)
 
     return services_util.ProcessOperationResult(result)

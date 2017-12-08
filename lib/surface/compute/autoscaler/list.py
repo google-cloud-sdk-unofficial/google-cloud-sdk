@@ -15,18 +15,20 @@
 
 from googlecloudsdk.api_lib.compute import autoscaler_utils as util
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.third_party.apitools.base.py import exceptions
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
-class ListAutoscalers(base_classes.BaseCommand):
+class ListAutoscalers(base_classes.BaseCommand, base.ListCommand):
   """List Autoscaler instances."""
 
-  # TODO(user): Add --limit flag.
+  def Collection(self):
+    return 'autoscaler.instances'
+
   def Run(self, args):
     log.warn('Please use instead [gcloud compute instance-groups '
              'managed list].')
@@ -44,6 +46,3 @@ class ListAutoscalers(base_classes.BaseCommand):
       raise calliope_exceptions.HttpException(util.GetErrorMessage(error))
     except ValueError as error:
       raise calliope_exceptions.HttpException(error)
-
-  def Display(self, unused_args, result):
-    list_printer.PrintResourceList('autoscaler.instances', result)

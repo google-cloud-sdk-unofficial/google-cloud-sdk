@@ -18,7 +18,7 @@ import textwrap
 
 from googlecloudsdk.api_lib.iam import base_classes
 from googlecloudsdk.api_lib.iam import utils
-from googlecloudsdk.core import log
+from googlecloudsdk.calliope.exceptions import ToolException
 
 
 class Create(base_classes.BaseIamCommand):
@@ -55,11 +55,10 @@ class Create(base_classes.BaseIamCommand):
   @utils.CatchHttpErrors
   def Run(self, args):
     if not utils.ValidateAccountId(args.name):
-      raise ValueError('[{0}] is an invalid name'.format(args.name))
+      raise ToolException('[{0}] is an invalid name'.format(args.name))
 
     if not self.project or not self.project.Get():
-      log.error('no project id set')
-      return
+      raise ToolException('No project id set')
 
     return self.iam_client.projects_serviceAccounts.Create(
         self.messages.IamProjectsServiceAccountsCreateRequest(

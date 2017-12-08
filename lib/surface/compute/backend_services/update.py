@@ -130,6 +130,20 @@ class UpdateAlpha(UpdateGA):
   def Args(parser):
     _Args(parser, compute_alpha_messages)
 
+    connection_draining_timeout = parser.add_argument(
+        '--connection-draining-timeout',
+        type=int,
+        default=None,  # None => use default value.
+        help='Connection draining timeout in seconds.')
+    connection_draining_timeout.detailed_help = """\
+        Connection draining timeout, in seconds, to be used during removal of
+        VMs from instance groups. This guarantees that for the specified time
+        all existing connections to a VM will remain untouched, but no new
+        connections will be accepted. Set timeout to zero to disable connection
+        draining. Enable feature by specifying timeout up to one hour.
+        Connection draining is disabled by default.
+        """
+
     enable_cdn = parser.add_argument(
         '--enable-cdn',
         action='store_true',
@@ -186,6 +200,10 @@ class UpdateAlpha(UpdateGA):
   def Modify(self, args, existing):
     replacement = super(UpdateAlpha, self).Modify(args, existing)
 
+    if args.connection_draining_timeout is not None:
+      replacement.connectionDraining = self.messages.ConnectionDraining(
+          drainingTimeoutSec=args.connection_draining_timeout)
+
     if args.enable_cdn is not None:
       replacement.enableCDN = args.enable_cdn
 
@@ -209,6 +227,7 @@ class UpdateAlpha(UpdateGA):
         args.timeout is not None,
         args.port,
         args.port_name,
+        args.connection_draining_timeout is not None,
         args.enable_cdn is not None,
         args.session_affinity is not None,
         args.affinity_cookie_ttl is not None

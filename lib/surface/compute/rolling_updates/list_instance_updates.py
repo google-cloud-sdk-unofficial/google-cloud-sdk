@@ -16,12 +16,11 @@
 from googlecloudsdk.api_lib.compute import rolling_updates_util as updater_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
-class ListInstanceUpdates(base.Command):
+class ListInstanceUpdates(base.ListCommand):
   """Lists all instance updates for a given update."""
 
   @staticmethod
@@ -34,6 +33,9 @@ class ListInstanceUpdates(base.Command):
           allowed.
     """
     parser.add_argument('update', help='Update id.')
+
+  def Collection(self):
+    return 'replicapoolupdater.rollingUpdates.instanceUpdates'
 
   def Run(self, args):
     """Run 'rolling-updates list-instance-updates'.
@@ -69,7 +71,3 @@ class ListInstanceUpdates(base.Command):
           client.rollingUpdates, request, method='ListInstanceUpdates')
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(updater_util.GetError(error))
-
-  def Display(self, unused_args, result):
-    list_printer.PrintResourceList(
-        'replicapoolupdater.rollingUpdates.instanceUpdates', result)

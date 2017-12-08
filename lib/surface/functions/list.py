@@ -16,25 +16,18 @@
 
 import sys
 from googlecloudsdk.api_lib.functions import util
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as base_exceptions
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import properties
 from googlecloudsdk.third_party.apitools.base.py import exceptions
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """Lists all the functions in a given region."""
 
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    parser.add_argument(
-        '--limit', default=None,
-        help='If greater than zero, the maximum number of results.',
-        type=arg_parsers.BoundedInt(1, sys.maxint))
+  def Collection(self):
+    return 'functions.projects.regions.functions'
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -79,13 +72,3 @@ class List(base.Command):
         project, args.region)
     return messages.CloudfunctionsProjectsRegionsFunctionsListRequest(
         location=location)
-
-  def Display(self, unused_args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      unused_args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    list_printer.PrintResourceList('functions.projects.regions.functions',
-                                   result)

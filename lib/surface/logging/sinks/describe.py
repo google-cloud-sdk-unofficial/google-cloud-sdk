@@ -16,16 +16,18 @@
 
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 
 
-class Describe(base.Command):
+class Describe(base.DescribeCommand):
   """Displays information about a sink."""
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument('sink_name', help='The name of the sink to describe.')
+
+  def Collection(self):
+    return 'logging.sinks'
 
   def GetLogSink(self):
     """Returns a log sink specified by the arguments."""
@@ -67,15 +69,6 @@ class Describe(base.Command):
                                service_name=args.service)
     else:
       return util.TypedLogSink(self.GetProjectSink())
-
-  def Display(self, unused_args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      unused_args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    list_printer.PrintResourceList('logging.typedSinks', [result])
 
 
 Describe.detailed_help = {

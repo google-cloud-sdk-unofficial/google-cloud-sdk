@@ -17,19 +17,23 @@
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
-from googlecloudsdk.core.console import console_io
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
-class List(base.Command):
-  """Lists your project's logs."""
+class List(base.ListCommand):
+  """Lists your project's logs.
+
+  Only logs that contain log entries are listed.
+  """
 
   @staticmethod
   def Args(parser):
-    """Register flags for this command."""
-    parser.add_argument(
-        '--limit', required=False, type=int, default=None,
-        help='If greater than zero, the maximum number of results.')
+    base.FLATTEN_FLAG.RemoveFromParser(parser)
+    base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
+
+  def Collection(self):
+    return 'logging.logs'
 
   @util.HandlePagerHttpError
   def Run(self, args):
@@ -46,30 +50,8 @@ class List(base.Command):
     messages = self.context['logging_messages_v1beta3']
     project = properties.VALUES.core.project.Get(required=True)
 
-    if args.limit is not None and args.limit < 0:
-      args.limit = None
-
     request = messages.LoggingProjectsLogsListRequest(projectsId=project)
 
     return list_pager.YieldFromList(
         client.projects_logs, request, field='logs', limit=args.limit,
         batch_size=None, batch_size_attribute='pageSize')
-
-  def Display(self, unused_args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      unused_args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    # Custom selector to return user friendly log names.
-    selector = ('ID', lambda log: util.ExtractLogId(log.name))
-    console_io.PrintExtendedList(result, (selector,))
-
-
-List.detailed_help = {
-    'DESCRIPTION': """\
-        {index}
-        Only logs that contain log entries are listed.
-    """,
-}

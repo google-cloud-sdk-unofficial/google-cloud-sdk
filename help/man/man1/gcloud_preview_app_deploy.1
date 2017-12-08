@@ -18,7 +18,7 @@ gcloud preview app deploy \- \fB(BETA)\fR deploy the local code and/or configura
 
 \fB(BETA)\fR This command is used to deploy both code and configuration to the
 App Engine server. As an input it takes one or more \f5\fIDEPLOYABLES\fR\fR that
-should be uploaded. A \f5\fIDEPLOYABLE\fR\fR can be a module's .yaml file or a
+should be uploaded. A \f5\fIDEPLOYABLE\fR\fR can be a service's .yaml file or a
 configuration's .yaml file.
 
 To use a temporary VM (with the default \f5\-\-docker\-build=remote\fR setting),
@@ -36,7 +36,7 @@ See https://cloud.google.com/container\-builder/docs/ for more information.
 
 [\fIDEPLOYABLES\fR ...]
 .RS 2m
-The yaml files for the modules or configurations you want to deploy. If not
+The yaml files for the services or configurations you want to deploy. If not
 given, defaults to \f5app.yaml\fR in the current directory. If that is not
 found, attempts to automatically generate necessary configuration files (such as
 app.yaml) in the current directory.
@@ -116,17 +116,17 @@ Run \fB$ gcloud help\fR for a description of flags available to all commands.
 
 .SH "EXAMPLES"
 
-To deploy a single module, run:
+To deploy a single service, run:
 
 .RS 2m
 $ gcloud preview app deploy ~/my_app/app.yaml
 .RE
 
-To deploy multiple modules, run:
+To deploy multiple services, run:
 
 .RS 2m
 $ gcloud preview app deploy ~/my_app/app.yaml \e
-    ~/my_app/another_module.yaml
+    ~/my_app/another_service.yaml
 .RE
 
 

@@ -23,6 +23,9 @@ from googlecloudsdk.core import log
 class Stop(base.Command):
   """Stop serving a specific version of the given modules.
 
+  This command is deprecated. Please use `gcloud preview app versions stop`
+  instead.
+
   This command stops serving a specific version of the given modules.  It may
   only be used if the scaling module for your module has been set to manual.
   """
@@ -47,11 +50,13 @@ class Stop(base.Command):
     flags.MODULES_ARG.AddToParser(parser)
 
   def Run(self, args):
+    log.warn('This command is deprecated. '
+             'Please use `gcloud preview app versions stop` instead.')
     # TODO(user): This fails with "module/version does not exist" even
     # when it exists if the scaling mode is set to auto.  It would be good
     # to improve that error message.
     client = appengine_client.AppengineClient(args.server)
     for module in args.modules:
-      client.StopModule(module=module, version=args.version)
+      client.StopService(service=module, version=args.version)
       log.status.Print('Stopped: {0}/{1}/{2}'.format(
           client.project, module, args.version))

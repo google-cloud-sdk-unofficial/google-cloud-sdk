@@ -13,7 +13,6 @@
 # limitations under the License.
 """Command for creating forwarding rules."""
 
-from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import forwarding_rules_utils as utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -77,8 +76,7 @@ def _Args(parser, include_alpha_targets):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class Create(base_classes.ListOutputMixin,
-             utils.ForwardingRulesTargetMutator):
+class Create(utils.ForwardingRulesTargetMutator):
   """Create a forwarding rule to direct network traffic to a load balancer."""
 
   @staticmethod

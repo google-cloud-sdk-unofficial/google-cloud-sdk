@@ -15,6 +15,7 @@
 """endpoints update' command."""
 
 from googlecloudsdk.api_lib.service_registry import arg_support
+from googlecloudsdk.api_lib.service_registry import constants
 from googlecloudsdk.api_lib.service_registry import write_support
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
@@ -74,10 +75,11 @@ class Update(base.Command):
           request.
       ToolException: Endpoint update encountered an error.
     """
-    client = self.context['serviceregistry_client']
-    messages = self.context['serviceregistry_messages']
+    client = self.context[constants.CLIENT]
+    messages = self.context[constants.MESSAGES]
+    resources = self.context[constants.RESOURCES]
     project = properties.VALUES.core.project.Get(required=True)
-    writer = write_support.ServiceRegistryClient(client, messages, project)
+    writer = write_support.ServiceRegistryClient(client, resources)
 
     fingerprint = None
     endpoint = client.endpoints.Get(

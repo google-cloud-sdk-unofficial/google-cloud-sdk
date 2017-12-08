@@ -14,6 +14,7 @@
 
 """'operations list' command."""
 
+from googlecloudsdk.api_lib.service_registry import constants
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 from googlecloudsdk.third_party.apitools.base.py import list_pager
@@ -60,8 +61,8 @@ class List(base.ListCommand):
       HttpException: An http error response was received while executing api
           request.
     """
-    client = self.context['serviceregistry_client']
-    messages = self.context['serviceregistry_messages']
+    client = self.context[constants.CLIENT]
+    messages = self.context[constants.MESSAGES]
     project = properties.VALUES.core.project.Get(required=True)
 
     request = messages.ServiceregistryOperationsListRequest(project=project,)

@@ -363,6 +363,10 @@ def main():
 
     _CheckAndWarnForProxyDifferences()
 
+    if not test_exception_traces:
+      # Disable warning for tests, as it interferes with test stderr parsing.
+      _CheckAndWarnForPython26()
+
     if os.environ.get('_ARGCOMPLETE', '0') == '1':
       return _PerformTabCompletion(command_runner)
 
@@ -373,6 +377,16 @@ def main():
         perf_trace_token=perf_trace_token)
   finally:
     _Cleanup()
+
+
+def _CheckAndWarnForPython26():
+  if (2, 6) == sys.version_info[:2]:
+    sys.stderr.write('\n'.join(textwrap.wrap(
+        'Warning: You are running Python 2.6, which stopped receiving '
+        'security patches as of October 2013. gsutil will stop supporting '
+        'Python 2.6 on September 1, 2016. Please update your Python '
+        'installation to 2.7 to ensure compatibility with future gsutil '
+        'versions.\n')))
 
 
 def _CheckAndWarnForProxyDifferences():
@@ -452,7 +466,7 @@ def _HandleControlC(signal_num, cur_stack_frame):
 
 
 def _HandleSigQuit(signal_num, cur_stack_frame):
-  """Called when user hits ^\\, so we can force breakpoint a running gsutil."""
+  r"""Called when user hits ^\, so we can force breakpoint a running gsutil."""
   import pdb  # pylint: disable=g-import-not-at-top
   pdb.set_trace()
 
@@ -625,7 +639,7 @@ def _RunNamedCommandAndHandleExceptions(
           'problem see https://github.com/boto/boto/issues/2207')))
     else:
       _HandleUnknownFailure(e)
-  except Exception as e:
+  except Exception as e:  # pylint: disable=broad-except
     # Check for two types of errors related to service accounts. These errors
     # appear to be the same except for their messages, but they are caused by
     # different problems and both have unhelpful error messages. Moreover,

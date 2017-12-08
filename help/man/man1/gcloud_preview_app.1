@@ -32,9 +32,24 @@ Run \fB$ gcloud help\fR for a description of flags available to all commands.
 
 \f5\fIGROUP\fR\fR is one of the following:
 
+\fBinstances\fR
+.RS 2m
+\fB(BETA)\fR View and manage your App Engine instances.
+
+.RE
 \fBmodules\fR
 .RS 2m
 \fB(BETA)\fR View and manage your App Engine modules.
+
+.RE
+\fBservices\fR
+.RS 2m
+\fB(BETA)\fR View and manage your App Engine services.
+
+.RE
+\fBversions\fR
+.RS 2m
+\fB(BETA)\fR View and manage your App Engine versions.
 
 
 .RE
@@ -69,7 +84,7 @@ To run your app locally in the development application server, run:
 $ dev_appserver.py DEPLOYABLES
 .RE
 
-To create a new deployment of one or more modules, run:
+To create a new deployment of one or more services, run:
 
 .RS 2m
 $ gcloud preview app deploy DEPLOYABLES
@@ -78,7 +93,7 @@ $ gcloud preview app deploy DEPLOYABLES
 To list your existing deployments, run:
 
 .RS 2m
-$ gcloud preview app modules list
+$ gcloud preview app versions list
 .RE
 
 To generate config files for your source directory:

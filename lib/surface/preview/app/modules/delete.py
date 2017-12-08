@@ -18,11 +18,15 @@ from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import flags
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
 class Delete(base.Command):
   """Delete a specific version of the given modules.
+
+  This command is deprecated. Please use
+  `gcloud preview app versions delete` instead.
 
   This command deletes the specified version of the given modules from the
   App Engine server.
@@ -48,6 +52,8 @@ class Delete(base.Command):
     flags.MODULES_ARG.AddToParser(parser)
 
   def Run(self, args):
+    log.warn('This command is deprecated. '
+             'Please use `gcloud preview app versions delete` instead.')
     api_client = appengine_api_client.GetApiClient()
 
     message = 'You are about to delete the following module versions:\n\t'

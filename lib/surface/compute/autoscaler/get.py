@@ -53,6 +53,3 @@ class GetAutoscaler(base_classes.BaseCommand):
 
     except exceptions.HttpError as error:
       raise calliope_exceptions.HttpException(util.GetErrorMessage(error))
-
-  def Display(self, unused_args, result):
-    self.format(result)

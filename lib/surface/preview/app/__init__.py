@@ -56,13 +56,13 @@ class Appengine(base.Group):
 
             $ dev_appserver.py DEPLOYABLES
 
-          To create a new deployment of one or more modules, run:
+          To create a new deployment of one or more services, run:
 
             $ {command} deploy DEPLOYABLES
 
           To list your existing deployments, run:
 
-            $ {command} modules list
+            $ {command} versions list
 
           To generate config files for your source directory:
 

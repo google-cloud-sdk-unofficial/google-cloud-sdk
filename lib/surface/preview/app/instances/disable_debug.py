@@ -94,6 +94,6 @@ class DisableDebug(base.Command):
         'Any local changes will be LOST and the instance '
         'restarted.'.format(instance),
         cancel_on_no=True)
-    client.SetManagedByGoogle(module=instance.service, version=instance.version,
-                              instance=instance.id)
+    client.SetManagedByGoogle(service=instance.service,
+                              version=instance.version, instance=instance.id)
     log.status.Print('Disabled debug mode for instance [{0}].'.format(instance))

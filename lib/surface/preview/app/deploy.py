@@ -47,16 +47,16 @@ from googlecloudsdk.core.docker import constants
 
 
 DEPLOY_MESSAGE_TEMPLATE = """\
-{project}/{module} (from [{file}])
+{project}/{service} (from [{file}])
      Deployed URL: [{url}]
 """
 # We can't reliably calculate the URL for domain scoped projects, so don't show
 # it.
 DEPLOY_MESSAGE_DOMAIN_SCOPED_TEMPLATE = """\
-{project}/{module} (from [{file}])
+{project}/{service} (from [{file}])
 """
 PROMOTE_MESSAGE = """\
-     (add --promote if you also want to make this module available from
+     (add --promote if you also want to make this service available from
      [{default_url}])
 """
 
@@ -93,7 +93,7 @@ class MultiDeployError(DeployError):
   """Indicates a failed attempt to deploy multiple image urls."""
 
   def __str__(self):
-    return ('No more than one module may be deployed when using the '
+    return ('No more than one service may be deployed when using the '
             'image-url flag')
 
 
@@ -141,36 +141,36 @@ def _DisplayProposedDeployment(project, app_config, version, promote):
       (this affects deployed URLs)
 
   Returns:
-    dict (str->str), a mapping of module names to deployed module URLs
+    dict (str->str), a mapping of service names to deployed service URLs
 
-  This includes information on to-be-deployed modules (including module name,
+  This includes information on to-be-deployed services (including service name,
   version number, and deployed URLs) as well as configurations.
   """
-  # TODO(user): Have modules and configs be able to print themselves.  We
+  # TODO(user): Have services and configs be able to print themselves.  We
   # do this right now because we actually need to pass a yaml file to appcfg.
   # Until we can make a call with the correct values for project and version
   # it is weird to override those values in the yaml parsing code (because
   # it does not carry through to the actual file contents).
   deployed_urls = {}
-  if app_config.Modules():
+  if app_config.Services():
     printer = console_io.ListPrinter(
-        'You are about to deploy the following modules:')
+        'You are about to deploy the following services:')
     deploy_messages = []
-    for module, info in app_config.Modules().iteritems():
+    for service, info in app_config.Services().iteritems():
       use_ssl = deploy_command_util.UseSsl(info.parsed.handlers)
       version = None if promote else version
       if ':' in project:
         deploy_message = DEPLOY_MESSAGE_DOMAIN_SCOPED_TEMPLATE.format(
-            project=project, module=module, file=info.file)
+            project=project, service=service, file=info.file)
       else:
         url = deploy_command_util.GetAppHostname(
-            project, module=info.module, version=version, use_ssl=use_ssl)
-        deployed_urls[module] = url
+            project, service=info.module, version=version, use_ssl=use_ssl)
+        deployed_urls[service] = url
         deploy_message = DEPLOY_MESSAGE_TEMPLATE.format(
-            project=project, module=module, file=info.file, url=url)
+            project=project, service=service, file=info.file, url=url)
       if not promote:
         default_url = deploy_command_util.GetAppHostname(
-            project, module=info.module, use_ssl=use_ssl)
+            project, service=info.module, use_ssl=use_ssl)
         deploy_message += PROMOTE_MESSAGE.format(default_url=default_url)
       deploy_messages.append(deploy_message)
     printer.Print(deploy_messages, output_stream=log.status)
@@ -270,8 +270,8 @@ def _StopPreviousVersionIfApplies(old_default_version, clients):
     return
 
   try:
-    clients.gae.StopModule(module=old_default_version.service,
-                           version=old_default_version.id)
+    clients.gae.StopService(service=old_default_version.service,
+                            version=old_default_version.id)
   except util.RPCError as err:
     log.warn('Error stopping version [{0}]: {1}'.format(old_default_version,
                                                         str(err)))
@@ -285,7 +285,7 @@ class Deploy(base.Command):
 
   This command is used to deploy both code and configuration to the App Engine
   server.  As an input it takes one or more ``DEPLOYABLES'' that should be
-  uploaded.  A ``DEPLOYABLE'' can be a module's .yaml file or a configuration's
+  uploaded.  A ``DEPLOYABLE'' can be a service's .yaml file or a configuration's
   .yaml file.
   """
 
@@ -303,13 +303,13 @@ class Deploy(base.Command):
           information.
           """,
       'EXAMPLES': """\
-          To deploy a single module, run:
+          To deploy a single service, run:
 
             $ {command} ~/my_app/app.yaml
 
-          To deploy multiple modules, run:
+          To deploy multiple services, run:
 
-            $ {command} ~/my_app/app.yaml ~/my_app/another_module.yaml
+            $ {command} ~/my_app/app.yaml ~/my_app/another_service.yaml
           """,
   }
 
@@ -349,10 +349,10 @@ class Deploy(base.Command):
               "build."))
     deployables = parser.add_argument(
         'deployables', nargs='*',
-        help='The yaml files for the modules or configurations you want to '
+        help='The yaml files for the services or configurations you want to '
         'deploy.')
     deployables.detailed_help = (
-        'The yaml files for the modules or configurations you want to deploy. '
+        'The yaml files for the services or configurations you want to deploy. '
         'If not given, defaults to `app.yaml` in the current directory. '
         'If that is not found, attempts to automatically generate necessary '
         'configuration files (such as app.yaml) in the current directory.')
@@ -361,7 +361,7 @@ class Deploy(base.Command):
         help=argparse.SUPPRESS)
     unused_repo_info_file_help = (
         'The name of a file containing source context information for the '
-        'modules being deployed. If not specified, the source context '
+        'services being deployed. If not specified, the source context '
         'information will be inferred from the directory containing the '
         'app.yaml file.')
     parser.add_argument(
@@ -400,7 +400,7 @@ class Deploy(base.Command):
             'Deployment to Google App Engine requires an app.yaml file. '
             'This command will run `gcloud preview app gen-config` to generate '
             'an app.yaml file for you in the current directory (if the current '
-            'directory does not contain an App Engine module, please answer '
+            'directory does not contain an App Engine service, please answer '
             '"no").', cancel_on_no=True)
         # This generates the app.yaml AND the Dockerfile (and related files).
         params = ext_runtime.Params(deploy=True)
@@ -418,9 +418,9 @@ class Deploy(base.Command):
 
     # If the app has enabled Endpoints API Management features, pass
     # control to the cloud_endpoints handler.
-    for _, module in app_config.Modules().items():
-      if module and module.parsed and module.parsed.beta_settings:
-        bs = module.parsed.beta_settings
+    for _, service in app_config.Services().items():
+      if service and service.parsed and service.parsed.beta_settings:
+        bs = service.parsed.beta_settings
         use_endpoints = bs.get('use_endpoints_api_management', '').lower()
         if (use_endpoints in ('true', '1', 'yes') and
             bs.get('endpoints_swagger_spec_file')):
@@ -476,27 +476,27 @@ class Deploy(base.Command):
         source_contexts = [context_util.ExtendContextDict(source_contexts)]
 
     code_bucket_ref = None
-    if use_cloud_build or app_config.NonHermeticModules():
+    if use_cloud_build or app_config.NonHermeticServices():
       # If using Argo CloudBuild, we'll need to upload source to a GCS bucket.
       code_bucket_ref = self._GetCodeBucket(clients.api, args)
       metrics.CustomTimedEvent(metric_names.GET_CODE_BUCKET)
       log.debug('Using bucket [{b}].'.format(b=code_bucket_ref))
 
-    modules = app_config.Modules()
-    if any([m.RequiresImage() for m in modules.values()]):
+    services = app_config.Services()
+    if any([m.RequiresImage() for m in services.values()]):
       deploy_command_util.DoPrepareManagedVms(clients.gae)
     if args.image_url:
-      if len(modules) != 1:
+      if len(services) != 1:
         raise MultiDeployError()
       for registry in constants.ALL_SUPPORTED_REGISTRIES:
         if args.image_url.startswith(registry):
           break
       else:
         raise UnsupportedRegistryError(args.image_url)
-      module = modules.keys()[0]
-      images = {module: args.image_url}
+      service = services.keys()[0]
+      images = {service: args.image_url}
     else:
-      images = deploy_command_util.BuildAndPushDockerImages(modules,
+      images = deploy_command_util.BuildAndPushDockerImages(services,
                                                             version,
                                                             cloudbuild_client,
                                                             storage_client,
@@ -507,7 +507,7 @@ class Deploy(base.Command):
                                                             config_cleanup)
 
     deployment_manifests = {}
-    if app_config.NonHermeticModules():
+    if app_config.NonHermeticServices():
       if properties.VALUES.app.use_gsutil.GetBool():
         copy_func = deploy_app_command_util.CopyFilesToCodeBucket
         metric_name = metric_names.COPY_APP_FILES
@@ -516,7 +516,7 @@ class Deploy(base.Command):
         metric_name = metric_names.COPY_APP_FILES_NO_GSUTIL
 
       deployment_manifests = copy_func(
-          app_config.NonHermeticModules().items(),
+          app_config.NonHermeticServices().items(),
           code_bucket_ref,
           source_contexts,
           storage_client)
@@ -524,22 +524,22 @@ class Deploy(base.Command):
 
     all_services = clients.api.ListServices()
     # Now do deployment.
-    for (module, info) in app_config.Modules().iteritems():
-      message = 'Updating module [{module}]'.format(module=module)
+    for (service, info) in app_config.Services().iteritems():
+      message = 'Updating service [{service}]'.format(service=service)
       with console_io.ProgressTracker(message):
         if args.force:
           log.warning('The --force argument is deprecated and no longer '
                       'required. It will be removed in a future release.')
 
-        clients.api.DeployModule(module, version, info,
-                                 deployment_manifests.get(module),
-                                 images.get(module))
+        clients.api.DeployService(service, version, info,
+                                  deployment_manifests.get(service),
+                                  images.get(service))
         metrics.CustomTimedEvent(metric_names.DEPLOY_API)
 
         stop_previous_version = (
             deploy_command_util.GetStopPreviousVersionFromArgs(args))
         if promote:
-          new_version = version_util.Version(project, module, version)
+          new_version = version_util.Version(project, service, version)
           _Promote(all_services, new_version, clients,
                    stop_previous_version)
         elif stop_previous_version:
@@ -561,8 +561,8 @@ class Deploy(base.Command):
       result: The value returned from the Run() method.
     """
     writer = log.out
-    for module, url in result.items():
-      writer.Print('Deployed module [{0}] to [{1}]'.format(module, url))
+    for service, url in result.items():
+      writer.Print('Deployed service [{0}] to [{1}]'.format(service, url))
 
   def _GetCodeBucket(self, api_client, args):
     if args.bucket:

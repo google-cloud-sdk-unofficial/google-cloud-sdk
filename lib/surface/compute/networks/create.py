@@ -117,7 +117,7 @@ class Create(base_classes.BaseAsyncCreator):
 
     return [request]
 
-  def Epilog(self):
+  def Epilog(self, resources_were_displayed=True):
     message = """\
 
         Instances on this network will not be reachable until firewall rules

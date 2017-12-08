@@ -516,6 +516,37 @@ Returns this value if the resource cannot be formatted.
 
 .RE
 .RE
+\fBlocation\fR(undefined="")
+.RS 2m
+Return the region or zone name.
+
+
+The arguments are:
+
+\fB\f5undefined\fR\fR
+.RS 2m
+Returns this value if the resource cannot be formatted.
+
+.RE
+.RE
+\fBlocation_scope\fR(undefined="")
+.RS 2m
+Return the location scope name, either region or zone.
+
+
+The arguments are:
+
+\fB\f5undefined\fR\fR
+.RS 2m
+Returns this value if the resource cannot be formatted.
+
+.RE
+.RE
+\fBmachine_type\fR()
+.RS 2m
+Return the formatted name for a machine type.
+
+.RE
 \fBnext_maintenance\fR(undefined="")
 .RS 2m
 Returns the timestamps of the next scheduled maintenance. All timestamps are
@@ -572,13 +603,21 @@ Returns this value if the resource cannot be formatted.
 .RE
 The debug transform functions are:
 
-\fBshort_status\fR()
+\fBshort_status\fR(undefined="")
 .RS 2m
 Returns a short description of the status of a logpoint or snapshot. Status will
 be one of ACTIVE, COMPLETED, or a short error description. If the status is an
 error, there will be additional information available in the status field of the
 object.
 
+
+The arguments are:
+
+\fB\f5undefined\fR\fR
+.RS 2m
+Returns this value if the resource is not a valid status.
+
+.RE
 For example\f5:\fR
 .RS 2m
 \-\-format="table(id, location, short_status()())"

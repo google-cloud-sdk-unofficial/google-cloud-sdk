@@ -17,10 +17,14 @@
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import flags
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
 
 
 class List(base.ListCommand):
   """List your existing deployed modules and versions.
+
+  This command is deprecated. Please use
+  `gcloud preview app versions list` instead.
 
   This command lists all the modules and their versions that are currently
   deployed to the App Engine server.  The default serving version for each
@@ -49,6 +53,8 @@ class List(base.ListCommand):
     return 'app.module_versions'
 
   def Run(self, args):
+    log.warn('This command is deprecated. '
+             'Please use `gcloud preview app versions list` instead.')
     api_client = appengine_api_client.GetApiClient()
     services = api_client.ListServices()
     versions = api_client.ListVersions(services)

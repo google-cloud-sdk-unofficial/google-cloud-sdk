@@ -15,9 +15,9 @@
 """'endpoints describe' command."""
 
 from googlecloudsdk.api_lib.service_registry import arg_support
+from googlecloudsdk.api_lib.service_registry import constants
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
 
 
 class Describe(base.DescribeCommand):
@@ -57,10 +57,9 @@ class Describe(base.DescribeCommand):
           request.
       InvalidArgumentException: The requested endpoint could not be found.
     """
-    client = self.context['serviceregistry_client']
-    messages = self.context['serviceregistry_messages']
-    project = properties.VALUES.core.project.Get(required=True)
+    client = self.context[constants.CLIENT]
+    resources = self.context[constants.RESOURCES]
+    endpoint_ref = resources.Parse(args.endpoint_name,
+                                   collection=constants.ENDPOINTS_COLLECTION)
 
-    return client.endpoints.Get(
-        messages.ServiceregistryEndpointsGetRequest(
-            project=project, endpoint=args.endpoint_name))
+    return client.endpoints.Get(endpoint_ref.Request())

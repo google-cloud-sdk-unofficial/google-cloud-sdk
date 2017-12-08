@@ -15,11 +15,10 @@
 """'logging read' command."""
 
 import datetime
+from googlecloudsdk.api_lib.logging import common
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
-from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
 class Read(base.Command):
@@ -28,13 +27,11 @@ class Read(base.Command):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
+    base.LIMIT_FLAG.AddToParser(parser)
     parser.add_argument(
         'log_filter', help=('A filter expression that specifies the '
                             'log entries to return.'),
         nargs='?')
-    parser.add_argument(
-        '--limit', required=False, type=int, default=None,
-        help='If greater than zero, the maximum number of results.')
     parser.add_argument(
         '--order', required=False,
         help=('Ordering of returned log entries based on timestamp field: '
@@ -57,18 +54,6 @@ class Read(base.Command):
     Returns:
       The list of log entries.
     """
-    client = self.context['logging_client_v2beta1']
-    messages = self.context['logging_messages_v2beta1']
-    project = properties.VALUES.core.project.Get(required=True)
-
-    if args.limit is not None and args.limit < 0:
-      args.limit = None
-
-    if args.order == 'DESC':
-      order_by = 'timestamp desc'
-    else:
-      order_by = 'timestamp asc'
-
     # Take into account freshness only if all requirements are met.
     if (args.freshness and args.order == 'DESC' and
         (not args.log_filter or 'timestamp' not in args.log_filter)):
@@ -84,26 +69,7 @@ class Read(base.Command):
     else:
       log_filter = args.log_filter
 
-    request = messages.ListLogEntriesRequest(
-        projectIds=[project], filter=log_filter, orderBy=order_by)
-
-    # The backend has an upper limit of 1000 for page_size.
-    page_size = args.limit or 1000
-
-    return list_pager.YieldFromList(
-        client.entries, request, field='entries',
-        limit=args.limit, batch_size=page_size, batch_size_attribute='pageSize')
-
-  def Display(self, unused_args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      unused_args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    # Log entry has to many fields to use list_printer here.
-    # Use the build-in yaml parser to display results.
-    self.format(result)
+    return common.FetchLogs(log_filter, order_by=args.order, limit=args.limit)
 
 
 Read.detailed_help = {

@@ -34,19 +34,19 @@ class List(base.Command):
       'EXAMPLES': """\
           To see the list of all record-sets in my_zone, run:
 
-            $ {parent_command} -z my_zone list
+            $ {command} -z my_zone
 
           To see the list of first 10 record-sets in my_zone, run:
 
-            $ {parent_command} -z my_zone list --limit=10
+            $ {command} -z my_zone --limit=10
 
           To see the list of 'my.zone.com.' record-sets in my_zone, run:
 
-            $ {parent_command} -z my_zone list --name="my.zone.com."
+            $ {command} -z my_zone --name="my.zone.com."
 
           To see the list of 'my.zone.com.' CNAME record-sets in my_zone, run:
 
-            $ {parent_command} -z my_zone list --name="my.zone.com." --type="CNAME"
+            $ {command} -z my_zone --name="my.zone.com." --type="CNAME"
           """,
   }
 

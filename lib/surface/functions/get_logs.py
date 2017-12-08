@@ -18,14 +18,12 @@ from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
-from googlecloudsdk.core.console import console_io
-from googlecloudsdk.core.util import attrpath
 
 
-class GetLogs(base.Command):
+class GetLogs(base.ListCommand):
   """Show logs produced by functions.
 
-  This command displays log entries produced by a all functions running in a
+  This command displays log entries produced by all functions running in a
   region, or by a single function if it is specified through a command argument.
   By default, when no extra flags are specified, the most recent 20 log entries
   are displayed.
@@ -36,6 +34,7 @@ class GetLogs(base.Command):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
+    base.LIMIT_FLAG.RemoveFromParser(parser)
     parser.add_argument(
         'name', nargs='?',
         help=('Name of the function which logs are to be displayed. If no name '
@@ -146,22 +145,15 @@ class GetLogs(base.Command):
         row['time_utc'] = util.FormatTimestamp(entry.timestamp)
       yield row
 
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    columns = []
+  def Format(self, args):
+    fields = []
     if args.show_log_levels:
-      columns.append(('LEVEL', attrpath.Selector('level')))
+      fields.append('level')
     if args.show_function_names:
-      columns.append(('NAME', attrpath.Selector('name')))
+      fields.append('name')
     if args.show_execution_ids:
-      columns.append(('EXECUTION_ID', attrpath.Selector('execution_id')))
+      fields.append('execution_id')
     if args.show_timestamps:
-      columns.append(('TIME_UTC', attrpath.Selector('time_utc')))
-    columns.append(('LOG', attrpath.Selector('log')))
-
-    console_io.PrintExtendedList(result, columns)
+      fields.append('time_utc')
+    fields.append('log')
+    return 'table[box]({0})'.format(','.join(fields))

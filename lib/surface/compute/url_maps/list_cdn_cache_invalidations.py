@@ -14,13 +14,10 @@
 
 """Command for listing Cloud CDN cache invalidations."""
 
-import sys
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 
 
@@ -39,11 +36,6 @@ which have completed.
   @staticmethod
   def Args(parser):
     parser.add_argument('urlmap', help='The name of the URL map.')
-
-    parser.add_argument(
-        '--limit',
-        type=arg_parsers.BoundedInt(1, sys.maxint),
-        help='The maximum number of results.')
 
   @property
   def resource_type(self):

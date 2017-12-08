@@ -19,7 +19,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-class Describe(base.Command):
+class Describe(base.DescribeCommand):
   """Show description of a function."""
 
   @staticmethod
@@ -49,12 +49,3 @@ class Describe(base.Command):
     # TODO(user): Use resources.py here after b/21908671 is fixed.
     return client.projects_regions_functions.Get(
         messages.CloudfunctionsProjectsRegionsFunctionsGetRequest(name=name))
-
-  def Display(self, unused_args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      unused_args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    self.format(result)

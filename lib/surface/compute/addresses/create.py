@@ -14,13 +14,12 @@
 """Command for reserving IP addresses."""
 
 from googlecloudsdk.api_lib.compute import addresses_utils
-from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import name_generator
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import exceptions
 
 
-class Create(base_classes.ListOutputMixin, addresses_utils.AddressesMutator):
+class Create(addresses_utils.AddressesMutator):
   """Reserve IP addresses."""
 
   @staticmethod

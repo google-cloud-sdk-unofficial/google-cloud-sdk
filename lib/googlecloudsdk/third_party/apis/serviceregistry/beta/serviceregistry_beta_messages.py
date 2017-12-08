@@ -39,7 +39,7 @@ class Endpoint(_messages.Message):
       the system.
   """
 
-  addresses = _messages.MessageField('EndpointEndpointAddress', 1, repeated=True)
+  addresses = _messages.MessageField('EndpointAddress', 1, repeated=True)
   creationTimestamp = _messages.StringField(2)
   description = _messages.StringField(3)
   dnsIntegration = _messages.MessageField('EndpointDnsIntegration', 4)
@@ -48,6 +48,20 @@ class Endpoint(_messages.Message):
   name = _messages.StringField(7)
   selfLink = _messages.StringField(8)
   state = _messages.StringField(9)
+
+
+class EndpointAddress(_messages.Message):
+  """Information about a single address and corresponding ports for an
+  endpoint.
+
+  Fields:
+    address: User-provided addresses of the service represented by an
+      endpoint. Each address can be an IPv4 or IPv6 address, or a hostname.
+    ports: User provided information about ports to be used with this address.
+  """
+
+  address = _messages.StringField(1)
+  ports = _messages.MessageField('EndpointPort', 2, repeated=True)
 
 
 class EndpointDnsIntegration(_messages.Message):
@@ -61,21 +75,7 @@ class EndpointDnsIntegration(_messages.Message):
   networks = _messages.StringField(1, repeated=True)
 
 
-class EndpointEndpointAddress(_messages.Message):
-  """Information about a single address and corresponding ports for an
-  endpoint.
-
-  Fields:
-    address: User-provided addresses of the service represented by an
-      endpoint. Each address can be an IPv4 or IPv6 address, or a hostname.
-    ports: User provided information about ports to be used with this address.
-  """
-
-  address = _messages.StringField(1)
-  ports = _messages.MessageField('EndpointEndpointPort', 2, repeated=True)
-
-
-class EndpointEndpointPort(_messages.Message):
+class EndpointPort(_messages.Message):
   """Information about a single port used by an endpoint.
 
   Fields:

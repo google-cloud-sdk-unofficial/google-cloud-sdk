@@ -20,7 +20,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-class Write(base.Command):
+class Write(base.SilentCommand):
   """Writes a log entry."""
 
   SEVERITY_ENUM = ('DEFAULT', 'DEBUG', 'INFO', 'NOTICE', 'WARNING',

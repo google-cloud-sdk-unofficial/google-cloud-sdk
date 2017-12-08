@@ -23,6 +23,9 @@ from googlecloudsdk.core import log
 class Start(base.Command):
   """Start serving a specific version of the given modules.
 
+  This command is deprecated. Please use
+  `gcloud preview app services set-traffic` instead.
+
   This command starts serving a specific version of the given modules.  It may
   only be used if the scaling module for your module has been set to manual.
   """
@@ -47,11 +50,13 @@ class Start(base.Command):
     flags.MODULES_ARG.AddToParser(parser)
 
   def Run(self, args):
+    log.warn('This command is deprecated. '
+             'Please use `gcloud preview app versions start` instead.')
     # TODO(user): This fails with "module/version does not exist" even
     # when it exists if the scaling mode is set to auto.  It would be good
     # to improve that error message.
     client = appengine_client.AppengineClient(args.server)
     for module in args.modules:
-      client.StartModule(module=module, version=args.version)
+      client.StartService(service=module, version=args.version)
       log.status.Print('Started: {0}/{1}/{2}'.format(
           client.project, module, args.version))

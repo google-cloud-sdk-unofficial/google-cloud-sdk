@@ -67,9 +67,6 @@ class Describe(base.Command):
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(updater_util.GetError(error))
 
-  def Display(self, args, result):
-    self.format(result)
-
 
 Describe.detailed_help = {
     'brief': 'Gets information about a single update.',

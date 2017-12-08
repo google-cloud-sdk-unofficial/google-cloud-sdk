@@ -14,6 +14,7 @@
 
 """'operations describe' command."""
 
+from googlecloudsdk.api_lib.service_registry import constants
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 
@@ -57,9 +58,9 @@ class Describe(base.Command):
       HttpException: An http error response was received while executing api
           request.
     """
-    client = self.context['serviceregistry_client']
-    resources = self.context['serviceregistry_resources']
+    client = self.context[constants.CLIENT]
+    resources = self.context[constants.RESOURCES]
     operation_ref = resources.Parse(args.operation,
-                                    collection='serviceregistry.operations')
+                                    collection=constants.OPERATIONS_COLLECTION)
 
     return client.operations.Get(operation_ref.Request())

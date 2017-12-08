@@ -19,7 +19,7 @@ from googlecloudsdk.core import named_configs
 from googlecloudsdk.core import properties
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """Lists existing named configurations."""
 
   detailed_help = {
@@ -35,6 +35,12 @@ class List(base.Command):
             $ {command}
           """,
   }
+
+  @staticmethod
+  def Args(parser):
+    base.FLATTEN_FLAG.RemoveFromParser(parser)
+    base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     configs = named_configs.ListNamedConfigs(log_warnings=True)

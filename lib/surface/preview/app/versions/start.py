@@ -95,7 +95,7 @@ class Start(base.Command):
     for version in versions:
       try:
         with console_io.ProgressTracker('Starting [{0}]'.format(version)):
-          client.StartModule(module=version.service, version=version.id)
+          client.StartService(service=version.service, version=version.id)
       except util.RPCError as err:
         errors[version] = str(err)
     if errors:

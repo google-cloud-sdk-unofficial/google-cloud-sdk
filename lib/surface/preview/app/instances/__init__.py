@@ -16,7 +16,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 class Instances(base.Group):
   """View and manage your App Engine instances.
 

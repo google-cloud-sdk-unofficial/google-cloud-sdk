@@ -16,9 +16,11 @@ gcloud preview app modules set\-default \- \fB(BETA)\fR set the default serving 
 
 .SH "DESCRIPTION"
 
-\fB(BETA)\fR This command sets the default serving version for the given
-modules. The default version for a module is served when you visit
-mymodule.myapp.appspot.com.'
+\fB(BETA)\fR This command is deprecated. Please use \f5gcloud preview app
+services set\-traffic\fR instead.
+
+This command sets the default serving version for the given modules. The default
+version for a module is served when you visit mymodule.myapp.appspot.com.'
 
 
 
@@ -26,8 +28,8 @@ mymodule.myapp.appspot.com.'
 
 \fIMODULES\fR [\fIMODULES\fR ...]
 .RS 2m
-One or more module names to perform this action on. To select the default module
-for your app, use "default".
+One or more service names to perform this action on. To select the default
+service for your app, use "default".
 
 
 .RE

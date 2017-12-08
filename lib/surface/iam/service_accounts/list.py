@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.iam import base_classes
 from googlecloudsdk.api_lib.iam import data_formats
 from googlecloudsdk.api_lib.iam import utils
+from googlecloudsdk.calliope.exceptions import ToolException
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
@@ -34,7 +35,7 @@ class List(base_classes.BaseIamCommand):
   def Run(self, args):
     if args.limit is not None:
       if args.limit < 1:
-        raise ValueError('Limit size must be >=1')
+        raise ToolException('Limit size must be >=1')
 
     # TODO(user): We can't use the default list printing functions until
     # there is support for atomic names. This property is the equivalent of

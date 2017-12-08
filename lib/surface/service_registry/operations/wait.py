@@ -14,10 +14,10 @@
 
 """'opertaions wait' command."""
 
+from googlecloudsdk.api_lib.service_registry import constants
 from googlecloudsdk.api_lib.service_registry import write_support
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 
 class Wait(base.Command):
@@ -63,16 +63,16 @@ class Wait(base.Command):
       ServiceRegistryError: One or more operations finished with error(s) or
         the wait timed out.
     """
-    client = self.context['serviceregistry_client']
-    messages = self.context['serviceregistry_messages']
-    project = properties.VALUES.core.project.Get(required=True)
-    writer = write_support.ServiceRegistryClient(client, messages, project)
+    client = self.context[constants.CLIENT]
+    resources = self.context[constants.RESOURCES]
+    writer = write_support.ServiceRegistryClient(client, resources)
 
     failed_operations = []
     for operation in args.operations:
+      operation_ref = resources.Parse(
+          operation, collection=constants.OPERATIONS_COLLECTION)
       try:
-        # TODO(b/27272474): need to use resources.Parse with write_support
-        writer.wait_for_operation(operation)
+        writer.wait_for_operation(operation_ref)
       except write_support.ServiceRegistryError as error:
         log.Print(error)
         failed_operations.append(operation)

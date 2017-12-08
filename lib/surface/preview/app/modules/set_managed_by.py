@@ -16,10 +16,15 @@
 from googlecloudsdk.api_lib.app import appengine_client
 from googlecloudsdk.api_lib.app import flags
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
 
 
 class SetManagedBy(base.Command):
   """Sets the policy for the Managed VMs of the given modules and version.
+
+  This command is deprecated. Please use the
+  `gcloud preview app instances enable-debug` and
+  `gcloud preview app instances disable-debug` commands instead.
 
   This command sets the policy for the Managed VMs of the given modules and
   version.  When your module uses VM runtimes, you can use this command to
@@ -71,8 +76,11 @@ class SetManagedBy(base.Command):
         'into, and debug your app on these machines.')
 
   def Run(self, args):
+    log.warn('This command is deprecated. Please use the '
+             '`gcloud preview app instances enable-debug` and '
+             '`gcloud preview app instances disable-debug` commands instead.')
     client = appengine_client.AppengineClient(args.server,
                                               args.ignore_bad_certs)
     func = client.SetManagedBySelf if args.self else client.SetManagedByGoogle
     for module in args.modules:
-      func(module=module, version=args.version, instance=args.instance)
+      func(service=module, version=args.version, instance=args.instance)

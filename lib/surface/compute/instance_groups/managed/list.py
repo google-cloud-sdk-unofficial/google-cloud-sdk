@@ -13,51 +13,15 @@
 # limitations under the License.
 """Command for listing managed instance groups."""
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
-
-
-def _AutoscalerWithErrorInList(resources):
-  """Checks, if there exists autoscaler, which reports errors."""
-  for resource in resources:
-    if resource['autoscaled'] == 'yes (*)':
-      return True
-  return False
-
-
-class ListDynamicPropertisMixin(object):
-  """Untilies for computling Autoscaler related data for 'list' commands."""
-
-  def ComputeDynamicProperties(self, args, items):
-    """Add Autoscaler information if Autoscaler is defined for the item."""
-    _ = args
-    # Items are expected to be IGMs.
-    items = list(items)
-    for mig in managed_instance_groups_utils.AddAutoscalersToMigs(
-        migs_iterator=self.ComputeInstanceGroupSize(items=items),
-        project=self.project,
-        compute=self.compute,
-        http=self.http,
-        batch_url=self.batch_url,
-        fail_when_api_not_supported=False):
-      if 'autoscaler' in mig and mig['autoscaler'] is not None:
-        if (hasattr(mig['autoscaler'], 'status') and mig['autoscaler'].status ==
-            self.messages.Autoscaler.StatusValueValuesEnum.ERROR):
-          mig['autoscaled'] = 'yes (*)'
-        else:
-          mig['autoscaled'] = 'yes'
-      else:
-        mig['autoscaled'] = 'no'
-      yield mig
 
 
 # TODO(user): This acts like
 # instance-groups list --only-managed
 # so they should share code.
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class List(ListDynamicPropertisMixin,
-           base_classes.InstanceGroupManagerDynamicProperiesMixin,
+class List(base_classes.InstanceGroupManagerDynamicProperiesMixin,
            base_classes.ZonalLister):
   """List Google Compute Engine managed instance groups."""
 
@@ -69,22 +33,34 @@ class List(ListDynamicPropertisMixin,
   def resource_type(self):
     return 'instanceGroupManagers'
 
+  def Format(self, unused_args):
+    return """
+          table(
+            name,
+            location():label=ZONE,
+            baseInstanceName,
+            size,
+            targetSize,
+            instanceTemplate.basename(),
+            autoscaled
+          )
+          """
+
   def GetResources(self, args, errors):
+    # GetResources() may set _had_errors True if it encounters errors that don't
+    # stop processing. If True then Epilog() below emits one error message.
+    self._had_errors = False
     resources = super(List, self).GetResources(args, errors)
     return (resource for resource in resources if resource.zone)
 
-  def Display(self, args, resources):
-    """Prints the given resources."""
-    resources = list(resources)
-    super(List, self).Display(args, resources)
-    if _AutoscalerWithErrorInList(resources):
+  def Epilog(self, unused_resources_were_displayed):
+    if self._had_errors:
       log.err.Print('(*) - there are errors in your autoscaling setup, please '
                     'describe the resource to see details')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(ListDynamicPropertisMixin,
-                base_classes.InstanceGroupManagerDynamicProperiesMixin,
+class ListAlpha(base_classes.InstanceGroupManagerDynamicProperiesMixin,
                 base_classes.MultiScopeLister):
   """List Google Compute Engine managed instance groups."""
 
@@ -115,11 +91,12 @@ class ListAlpha(ListDynamicPropertisMixin,
   def resource_type(self):
     return 'instanceGroupManagers'
 
-  def Display(self, args, resources):
-    """Prints the given resources."""
-    resources = list(resources)
-    super(ListAlpha, self).Display(args, resources)
-    if _AutoscalerWithErrorInList(resources):
+  def GetResources(self, args, errors):
+    self._had_errors = False
+    return super(ListAlpha, self).GetResources(args, errors)
+
+  def Epilog(self, unused_resources_were_displayed):
+    if self._had_errors:
       log.err.Print('(*) - there are errors in your autoscaling setup, please '
                     'describe the resource to see details')
 

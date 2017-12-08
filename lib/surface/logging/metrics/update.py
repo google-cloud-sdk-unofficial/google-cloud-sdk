@@ -17,7 +17,6 @@
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
@@ -38,6 +37,9 @@ class Update(base.Command):
         '--filter', required=False,
         help=('A new filter string for the metric. '
               'If omitted, the filter is not changed.'))
+
+  def Collection(self):
+    return 'logging.metrics'
 
   @util.HandleHttpError
   def Run(self, args):
@@ -89,15 +91,6 @@ class Update(base.Command):
             projectsId=project))
     log.UpdatedResource(args.metric_name)
     return result
-
-  def Display(self, unused_args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      unused_args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    list_printer.PrintResourceList('logging.metrics', [result])
 
 
 Update.detailed_help = {

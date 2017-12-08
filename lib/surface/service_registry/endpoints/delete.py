@@ -15,6 +15,7 @@
 """'endpoints delete' command."""
 
 from googlecloudsdk.api_lib.service_registry import arg_support
+from googlecloudsdk.api_lib.service_registry import constants
 from googlecloudsdk.api_lib.service_registry import write_support
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
@@ -67,10 +68,11 @@ class Delete(base.Command):
           request.
       ToolException: The endpoint deletion operation encountered an error.
     """
-    client = self.context['serviceregistry_client']
-    messages = self.context['serviceregistry_messages']
+    client = self.context[constants.CLIENT]
+    messages = self.context[constants.MESSAGES]
+    resources = self.context[constants.RESOURCES]
     project = properties.VALUES.core.project.Get(required=True)
-    writer = write_support.ServiceRegistryClient(client, messages, project)
+    writer = write_support.ServiceRegistryClient(client, resources)
 
     request = messages.ServiceregistryEndpointsDeleteRequest(
         project=project,

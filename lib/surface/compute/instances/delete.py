@@ -208,8 +208,8 @@ class Delete(base_classes.ZonalDeleter):
 
     return delete_requests
 
-  def Display(self, _, resources):
-    list(resources)
+  def Format(self, _):
+    return 'none'
 
 
 Delete.detailed_help = {

@@ -59,6 +59,9 @@ class GetSerialPortOutputBase(object):
   def resource_type(self):
     return 'instances'
 
+  def Format(self, _):
+    return 'value[no-quote](contents)'
+
 
 GetSerialPortOutputBase.detailed_help = {
     'brief': "Read output from a virtual machine instance's serial port",
@@ -94,11 +97,6 @@ class GetSerialPortOutputAlpha(GetSerialPortOutputBase,
         byte returned in a request will be reported on STDERR.
         """
 
-  def Format(self, args):
-    # no Display-driven formatting; output is handled in Run method in order to
-    # display warnings at end
-    return None
-
   def Run(self, args):
     instance_ref = self.CreateZonalReference(args.name, args.zone)
 
@@ -124,19 +122,20 @@ class GetSerialPortOutputAlpha(GetSerialPortOutputBase,
           ','.join([error[1] for error in errors]))
 
     response = objects[0]
-    if not args.format:
-      log.out.write(response.contents)
-      if args.start and response.start != args.start:
-        log.warn(
-            'Some serial port output was lost due to a limited buffer. The '
-            'oldest byte of output returned was at offset {0}.'.format(
-                response.start))
-      log.status.Print(
-          '\nSpecify --start={0} in the next get-serial-port-output invocation '
-          'to get only the new output starting from here.'.format(
-              response.next))
-
+    self._start = args.start
+    self._response = response
     return response
+
+  def Epilog(self, unused_resources_were_displayed):
+    if self._start and self._response.start != self._start:
+      log.warn(
+          'Some serial port output was lost due to a limited buffer. The '
+          'oldest byte of output returned was at offset {0}.'.format(
+              self._response.start))
+    log.status.Print(
+        '\nSpecify --start={0} in the next get-serial-port-output invocation '
+        'to get only the new output starting from here.'.format(
+            self._response.next))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
@@ -167,7 +166,4 @@ class GetSerialPortOutput(GetSerialPortOutputBase,
           'Could not fetch serial port output: ' +
           ','.join([error[1] for error in errors]))
 
-    return objects[0].contents
-
-  def Display(self, _, response):
-    log.out.write(response)
+    return objects[0]

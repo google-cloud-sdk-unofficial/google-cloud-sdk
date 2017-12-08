@@ -17,13 +17,12 @@
 from googlecloudsdk.api_lib.compute import rolling_updates_util as updater_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import properties
 from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """Lists all updates for a given group."""
 
   @staticmethod
@@ -37,8 +36,6 @@ class List(base.Command):
     """
     parser.add_argument('--group',
                         help='Managed instance group name.')
-    parser.add_argument('--limit', type=int,
-                        help='The maximum number of results to list.')
 
   def Run(self, args):
     """Run 'rolling-updates list'.
@@ -47,7 +44,7 @@ class List(base.Command):
       args: argparse.Namespace, The arguments that this command was invoked
           with.
 
-    Returns:
+    Yields:
       List of all the updates.
 
     Raises:
@@ -67,18 +64,14 @@ class List(base.Command):
     limit = updater_util.SanitizeLimitFlag(args.limit)
 
     try:
-      return list_pager.YieldFromList(
-          client.rollingUpdates, request, limit=limit)
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(updater_util.GetError(error))
-
-  def Display(self, unused_args, result):
-    # TODO(user): Consider getting rid of instance group manager in api.
-    def CoalescedInstanceGroupGenerator():
-      for item in result:
+      for item in list_pager.YieldFromList(
+          client.rollingUpdates, request, limit=limit):
+        # TODO(user): Consider getting rid of instance group manager in api.
         if item.instanceGroup:
           item.instanceGroupManager = item.instanceGroup
         yield item
+    except apitools_exceptions.HttpError as error:
+      raise exceptions.HttpException(updater_util.GetError(error))
 
-    list_printer.PrintResourceList(
-        'replicapoolupdater.rollingUpdates', CoalescedInstanceGroupGenerator())
+  def Collection(self):
+    return 'replicapoolupdater.rollingUpdates'

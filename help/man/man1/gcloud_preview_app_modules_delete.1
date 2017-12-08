@@ -16,8 +16,11 @@ gcloud preview app modules delete \- \fB(BETA)\fR delete a specific version of t
 
 .SH "DESCRIPTION"
 
-\fB(BETA)\fR This command deletes the specified version of the given modules
-from the App Engine server.
+\fB(BETA)\fR This command is deprecated. Please use \f5gcloud preview app
+versions delete\fR instead.
+
+This command deletes the specified version of the given modules from the App
+Engine server.
 
 
 
@@ -25,8 +28,8 @@ from the App Engine server.
 
 \fIMODULES\fR [\fIMODULES\fR ...]
 .RS 2m
-One or more module names to perform this action on. To select the default module
-for your app, use "default".
+One or more service names to perform this action on. To select the default
+service for your app, use "default".
 
 
 .RE

@@ -1,0 +1,87 @@
+
+.TH "GCLOUD_PREVIEW_APP_VERSIONS_DELETE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud preview app versions delete \- \fB(BETA)\fR delete a specified version
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud preview app versions delete\fR \fIVERSIONS\fR [\fIVERSIONS\fR\ ...] [\fB\-\-service\fR\ \fISERVICE\fR,\ \fB\-s\fR\ \fISERVICE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fB(BETA)\fR You cannot delete a version of a service that is currently
+receiving traffic.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIVERSIONS\fR [\fIVERSIONS\fR ...]
+.RS 2m
+The versions to delete (optionally filtered by the \-\-service flag). Can also
+be a resource path (<service name>/<version name> or <project name>/<service
+name>/<version name>).
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-service\fR \fISERVICE\fR, \fB\-s\fR \fISERVICE\fR
+.RS 2m
+If specified, only delete versions from the given service.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To delete a specific version of a specific service, run:
+
+.RS 2m
+$ gcloud preview app versions delete \-\-service myService v1
+.RE
+
+or, using resource paths:
+
+.RS 2m
+$ gcloud preview app versions delete myService/v1
+.RE
+
+To delete a named version accross all services, run:
+
+.RS 2m
+$ gcloud preview app versions delete v1
+.RE
+
+To delete multiple versions of a specific service, run:
+
+.RS 2m
+$ gcloud preview app versions delete delete \-\-service myService v1 v2
+.RE
+
+To delete multiple named versions accross all services, run:
+
+.RS 2m
+$ gcloud preview app versions delete delete v1 v2
+.RE
+
+
+
+.SH "NOTES"
+
+This command is currently in BETA and may change without notice.
+

@@ -16,45 +16,14 @@
 It's an alias for the instance-groups list-instances command.
 """
 from googlecloudsdk.api_lib.compute import instance_groups_utils
-from googlecloudsdk.api_lib.compute import path_simplifier
-from googlecloudsdk.api_lib.compute import property_selector
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.calliope import base
-
-
-def LastAttemptErrorToMessage(last_attempt):
-  if 'errors' not in last_attempt:
-    return None
-  if 'errors' not in last_attempt['errors']:
-    return None
-  return ', '.join(['Error ' + e['code'] + ': ' + e['message']
-                    for e in last_attempt['errors']['errors']])
-
-
-def _InstanceName(instance):
-  """Get the name of resource."""
-  return instance['instance'].split('/')[-1]
-
-
-def _InstanceScopeName(instance):
-  """Get the scope name of resource."""
-  return instance['instance'].split('/')[0]
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase,
                     instance_groups_utils.InstanceGroupReferenceMixin):
   """List Google Compute Engine instances present in managed instance group."""
-
-  _LIST_TABS = [
-      ('NAME', property_selector.PropertyGetter('instance')),
-      ('STATUS', property_selector.PropertyGetter('instanceStatus')),
-      ('ACTION', property_selector.PropertyGetter('currentAction')),
-      ('LAST_ERROR', property_selector.PropertyGetter('lastAttempt'))]
-
-  _FIELD_TRANSFORMS = [
-      ('instance', path_simplifier.Name),
-      ('lastAttempt', LastAttemptErrorToMessage)]
 
   @staticmethod
   def Args(parser):
@@ -99,6 +68,16 @@ class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase,
 
     return results, errors
 
+  def Format(self, args):
+    return """\
+        table(instance.basename():label=NAME,
+              instanceStatus:label=STATUS,
+              currentAction:label=ACTION,
+              lastAttempt.errors.errors.map().format(
+                "Error {0}: {1}", code, message).list(separator=", ")
+                :label=LAST_ERROR
+        )"""
+
   detailed_help = {
       'brief': 'List instances present in the managed instance group',
       'DESCRIPTION': """\
@@ -110,17 +89,6 @@ class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase,
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListInstancesAlpha(ListInstances):
   """List Google Compute Engine instances present in managed instance group."""
-
-  _LIST_TABS = [
-      ('NAME', _InstanceName),
-      ('ZONE', _InstanceScopeName),
-      ('STATUS', property_selector.PropertyGetter('instanceStatus')),
-      ('ACTION', property_selector.PropertyGetter('currentAction')),
-      ('LAST_ERROR', property_selector.PropertyGetter('lastAttempt'))]
-
-  _FIELD_TRANSFORMS = [
-      ('instance', path_simplifier.ScopedSuffix),
-      ('lastAttempt', LastAttemptErrorToMessage)]
 
   @staticmethod
   def Args(parser):
@@ -157,5 +125,14 @@ class ListInstancesAlpha(ListInstances):
         custom_get_requests=None))
 
     return results, errors
+
+  def Format(self, args):
+    return """\
+        table(instance.basename():label=NAME,
+              instance.scope().segment(0):label=ZONE,
+              instanceStatus:label=STATUS,
+              currentAction:label=ACTION,
+              lastAttempt.errors.errors.map().format("Error {0}: {1}", code, message).list(separator=", "):label=LAST_ERROR
+        )"""
 
 ListInstancesAlpha.detailed_help = ListInstances.detailed_help
