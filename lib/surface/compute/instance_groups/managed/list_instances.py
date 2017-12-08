@@ -55,7 +55,7 @@ class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
     request = self.service.GetRequestType(self.method)(
         instanceGroupManager=group_ref.Name(),
         zone=group_ref.zone,
-        project=self.context['project'])
+        project=group_ref.project)
 
     errors = []
     results = list(request_helper.MakeRequests(
@@ -108,13 +108,13 @@ class ListInstancesAlpha(ListInstances):
       request = service.GetRequestType(self.method)(
           instanceGroupManager=group_ref.Name(),
           zone=group_ref.zone,
-          project=self.context['project'])
+          project=group_ref.project)
     elif hasattr(group_ref, 'region'):
       service = self.compute.regionInstanceGroupManagers
       request = service.GetRequestType(self.method)(
           instanceGroupManager=group_ref.Name(),
           region=group_ref.region,
-          project=self.context['project'])
+          project=group_ref.project)
 
     errors = []
     results = list(request_helper.MakeRequests(

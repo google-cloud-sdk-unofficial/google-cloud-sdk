@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.debug import debug
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
@@ -99,7 +100,12 @@ class Create(base.CreateCommand):
     # Wait a short time to see if the logpoint generates an error. Ideally,
     # we'd want to wait until we get a response that the logpoint was set
     # by at least one instance, but the API does not currently support that.
-    final_logpoint = debuggee.WaitForBreakpoint(logpoint.id, args.wait)
+    final_logpoint = debuggee.WaitForBreakpointSet(logpoint.id, args.wait,
+                                                   args.location)
+    if args.location != final_logpoint.location:
+      log.status.write(
+          'The debugger adjusted the logpoint location to {0}'.format(
+              final_logpoint.location))
     return final_logpoint or logpoint
 
   def Collection(self):

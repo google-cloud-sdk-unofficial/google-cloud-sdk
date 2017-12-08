@@ -16,6 +16,7 @@
 from googlecloudsdk.api_lib.compute import rolling_updates_util as updater_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.core import resources
 from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
@@ -53,9 +54,8 @@ class ListInstanceUpdates(base.ListCommand):
       ToolException: An error other than http error occured while executing
           the command.
     """
-    client = self.context['updater_api']
-    messages = self.context['updater_messages']
-    resources = self.context['updater_resources']
+    client = updater_util.GetApiClientInstance()
+    messages = updater_util.GetApiMessages()
 
     ref = resources.Parse(
         args.update,

@@ -11,7 +11,7 @@ gcloud container clusters update \- update cluster settings for an existing cont
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud container clusters update\fR \fINAME\fR [\fB\-\-monitoring\-service\fR\ \fIMONITORING_SERVICE\fR\ |\ \fB\-\-update\-addons\fR\ [\fIADDON\fR=\fIENABLED\fR|\fIDISABLED\fR,...]] [\fB\-\-no\-wait\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud container clusters update\fR \fINAME\fR [\fB\-\-async\fR] [\fB\-\-monitoring\-service\fR\ \fIMONITORING_SERVICE\fR\ |\ \fB\-\-update\-addons\fR\ [\fIADDON\fR=\fIENABLED\fR|\fIDISABLED\fR,...]] [\fB\-\-wait\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -31,6 +31,11 @@ The name of the cluster to update.
 
 .SH "FLAGS"
 
+\fB\-\-async\fR
+.RS 2m
+Don't wait for the operation to complete. Use \fB\-\-no\-async\fR to disable.
+
+.RE
 \fB\-\-monitoring\-service\fR \fIMONITORING_SERVICE\fR
 .RS 2m
 The monitoring service to use for the cluster. Options are:
@@ -46,8 +51,8 @@ HorizontalPodAutoscaling=ENABLED|DISABLED HttpLoadBalancing=ENABLED|DISABLED
 .RE
 \fB\-\-wait\fR
 .RS 2m
-Poll the operation for completion after issuing an update request. Enabled by
-default, use \fB\-\-no\-wait\fR to disable.
+Poll the operation for completion after issuing a create request. Use
+\fB\-\-no\-wait\fR to disable.
 
 .RE
 \fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR

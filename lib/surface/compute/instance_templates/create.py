@@ -187,6 +187,6 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
             description=args.description,
             name=instance_template_ref.Name(),
         ),
-        project=self.context['project'])
+        project=self.project)
 
     return [request]

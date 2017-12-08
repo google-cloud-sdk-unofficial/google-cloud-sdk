@@ -110,12 +110,7 @@ def _Args(parser):
       ' supported on Container Engine. Nodes cannot be upgraded at the same'
       ' time as the master.',
       action='store_true')
-  parser.add_argument(
-      '--wait',
-      action='store_true',
-      default=True,
-      help='Poll the operation for completion after issuing an upgrade '
-      'request.')
+  flags.AddClustersWaitAndAsyncFlags(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -182,7 +177,7 @@ class Upgrade(base.Command):
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(util.GetError(error))
 
-    if args.wait:
+    if not flags.GetAsyncValueFromAsyncAndWaitFlags(args.async, args.wait):
       adapter.WaitForOperation(
           op_ref, 'Upgrading {0}'.format(cluster_ref.clusterId))
 

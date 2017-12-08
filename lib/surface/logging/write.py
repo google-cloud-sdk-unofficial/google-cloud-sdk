@@ -63,7 +63,8 @@ class Write(base.SilentCommand):
                              args.severity.upper())
 
     entry = messages.LogEntry(
-        logName=util.CreateLogResourceName(project, args.log_name),
+        logName=util.CreateLogResourceName('projects/{0}'.format(project),
+                                           args.log_name),
         resource=messages.MonitoredResource(type='global'),
         severity=severity_value)
 

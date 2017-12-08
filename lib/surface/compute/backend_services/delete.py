@@ -14,6 +14,7 @@
 
 """Command for deleting backend services."""
 
+from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute.backend_services import client
 from googlecloudsdk.calliope import base
@@ -21,33 +22,45 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Delete(base.Command):
   """Delete backend services.
 
     *{command}* deletes one or more backend services.
   """
 
-  @staticmethod
-  def Args(parser):
-    flags.GLOBAL_MULTI_BACKEND_SERVICE_ARG.AddArgument(parser)
+  _BACKEND_SERVICE_ARG = flags.GLOBAL_MULTI_BACKEND_SERVICE_ARG
+
+  @classmethod
+  def Args(cls, parser):
+    cls._BACKEND_SERVICE_ARG.AddArgument(parser)
 
   def Run(self, args):
-    refs = flags.GLOBAL_MULTI_BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, self.context['resources'],
+    holder = base_classes.ComputeApiHolder(self.context['api_version'])
+    refs = self._BACKEND_SERVICE_ARG.ResolveAsResource(
+        args, holder.resources,
         default_scope=compute_flags.ScopeEnum.GLOBAL)
     utils.PromptForDeletion(refs)
-
-    compute_client = self.context['client']
 
     requests = []
     for ref in refs:
       backend_service = client.BackendService(
-          ref, compute_client=compute_client)
+          ref, compute_client=holder.client)
       requests.extend(backend_service.Delete(only_generate_request=True))
 
     errors = []
-    resources = compute_client.MakeRequests(requests, errors)
+    resources = holder.client.MakeRequests(requests, errors)
 
     if errors:
       utils.RaiseToolException(errors)
     return resources
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(Delete):
+  """Delete backend services.
+
+    *{command}* deletes one or more backend services.
+  """
+
+  _BACKEND_SERVICE_ARG = flags.GLOBAL_REGIONAL_MULTI_BACKEND_SERVICE_ARG

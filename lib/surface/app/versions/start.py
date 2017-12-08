@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.resource import resource_printer
 
 
 class VersionsStartError(exceptions.Error):
@@ -79,8 +80,8 @@ class Start(base.Command):
       log.warn('No matching versions found.')
       return
 
-    printer = console_io.ListPrinter('Starting the following versions:')
-    printer.Print(versions, output_stream=log.status)
+    fmt = 'list[title="Starting the following versions:"]'
+    resource_printer.Print(versions, fmt, out=log.status)
     console_io.PromptContinue(cancel_on_no=True)
 
     errors = {}

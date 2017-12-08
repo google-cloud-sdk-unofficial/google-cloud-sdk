@@ -16,6 +16,7 @@
 """
 
 from googlecloudsdk.api_lib.auth import util as auth_util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core import log
@@ -37,7 +38,8 @@ class PrintAccessToken(base.Command):
   def Args(parser):
     parser.add_argument(
         '--scopes',
-        nargs='+',
+        type=arg_parsers.ArgList(min_length=1),
+        action=arg_parsers.FloatingListValuesCatcher(),
         help='The names of the scopes to print an access token for.')
 
   @c_exc.RaiseToolExceptionInsteadOf(c_store.Error)

@@ -14,6 +14,7 @@
 """Command for modifying backend services."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
@@ -27,16 +28,21 @@ class InvalidResourceError(exceptions.ToolException):
   pass
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Edit(base_classes.BaseEdit):
   """Modify backend services."""
 
-  @staticmethod
-  def Args(parser):
+  _BACKEND_SERVICE_ARG = flags.GLOBAL_BACKEND_SERVICE_ARG
+
+  @classmethod
+  def Args(cls, parser):
     base_classes.BaseEdit.Args(parser)
-    flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    cls._BACKEND_SERVICE_ARG.AddArgument(parser)
 
   @property
   def service(self):
+    if self.regional:
+      return self.compute.regionBackendServices
     return self.compute.backendServices
 
   @property
@@ -82,9 +88,11 @@ class Edit(base_classes.BaseEdit):
     )
 
   def CreateReference(self, args):
-    return flags.GLOBAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, self.context['resources'],
+    ref = self._BACKEND_SERVICE_ARG.ResolveAsResource(
+        args, self.resources,
         default_scope=compute_flags.ScopeEnum.GLOBAL)
+    self.regional = getattr(ref, 'region', None) is not None
+    return ref
 
   @property
   def reference_normalizers(self):
@@ -123,19 +131,23 @@ class Edit(base_classes.BaseEdit):
     ]
 
   def GetGetRequest(self, args):
-    return (
-        self.service,
-        'Get',
-        self.messages.ComputeBackendServicesGetRequest(
-            project=self.project,
-            backendService=self.ref.Name()))
+    return (self.service, 'Get', self.ref.Request())
 
   def GetSetRequest(self, args, replacement, _):
+    if self.regional:
+      return (
+          self.service,
+          'Update',
+          self.messages.ComputeRegionBackendServicesUpdateRequest(
+              project=self.ref.project,
+              region=self.ref.region,
+              backendService=self.ref.Name(),
+              backendServiceResource=replacement))
     return (
         self.service,
         'Update',
         self.messages.ComputeBackendServicesUpdateRequest(
-            project=self.project,
+            project=self.ref.project,
             backendService=self.ref.Name(),
             backendServiceResource=replacement))
 
@@ -160,3 +172,9 @@ Edit.detailed_help = {
         the ``EDITOR'' environment variable.
         """,
 }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class EditAlpha(Edit):
+  _BACKEND_SERVICE_ARG = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG
+

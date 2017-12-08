@@ -17,13 +17,13 @@
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import apis as core_apis
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.credentials import store
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Updater(base.Group):
   """Manage updates in a managed instance group."""
@@ -53,10 +53,6 @@ class Updater(base.Group):
       The updated context.
     """
     properties.VALUES.compute.zone.Get(required=True)
-    context['updater_api'] = core_apis.GetClientInstance(
-        'replicapoolupdater', 'v1beta1')
-    context['updater_messages'] = core_apis.GetMessagesModule(
-        'replicapoolupdater', 'v1beta1')
     resources.SetParamDefault(
         api='compute', collection=None, param='project',
         resolver=resolvers.FromProperty(properties.VALUES.core.project))
@@ -69,5 +65,4 @@ class Updater(base.Group):
     resources.SetParamDefault(
         api='replicapoolupdater', collection=None, param='zone',
         resolver=resolvers.FromProperty(properties.VALUES.compute.zone))
-    context['updater_resources'] = resources
     return context

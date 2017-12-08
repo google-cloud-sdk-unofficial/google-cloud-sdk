@@ -14,10 +14,12 @@
 """Command for creating forwarding rules."""
 
 from googlecloudsdk.api_lib.compute import forwarding_rules_utils as utils
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.forwarding_rules import flags
 from googlecloudsdk.core import apis as core_apis
+from googlecloudsdk.core import log
 
 
 def _SupportedProtocols(messages):
@@ -59,15 +61,36 @@ def _Args(parser, include_alpha_targets):
       '--description',
       help='An optional textual description for the forwarding rule.')
 
-  port_range = parser.add_argument(
+  ports_scope = parser.add_mutually_exclusive_group()
+  ports = ports_scope.add_argument(
+      '--ports',
+      metavar='[PORT | PORT-PORT]',
+      help=('If specified, only packets addressed to the ports or '
+            'port ranges will be forwarded.'),
+      type=arg_parsers.ArgList(
+          min_length=1, element_type=arg_parsers.Range.Parse),
+      action=arg_parsers.FloatingListValuesCatcher(),
+      default=[])
+
+  ports.detailed_help = """\
+          If specified, only packets addressed to ports in the specified
+          list will be forwarded. If not specified for regional forwarding
+          rules, all ports are matched. This flag is required for global
+          forwarding rules and accepts a single continuous set of ports.
+
+          Individual ports and ranges can be specified,
+          for example (`--ports 8000-8004` or `--ports 80`).
+          """
+  port_range = ports_scope.add_argument(
       '--port-range',
-      help=('If specified, only packets addressed to the port or '
-            'ports in the specified range will be forwarded.'),
+      type=arg_parsers.Range.Parse,
+      help='DEPRECATED, use --ports. If specified, only packets addressed to '
+           'the port or ports in the specified range will be forwarded.',
       metavar='[PORT | PORT-PORT]')
   port_range.detailed_help = """\
-      If specified, only packets addressed to ports in the specified
-      range will be forwarded. If not specified for regional forwarding
-      rules, all ports are matched. This flag is required for global
+      DEPRECATED, use --ports. If specified, only packets addressed to ports in
+      the specified range will be forwarded. If not specified for regional
+      forwarding rules, all ports are matched. This flag is required for global
       forwarding rules.
 
       Either an individual port (`--port-range 80`) or a range of ports
@@ -96,10 +119,10 @@ class Create(utils.ForwardingRulesTargetMutator):
 
   def CreateGlobalRequests(self, args):
     """Create a globally scoped request."""
-    if not args.port_range:
+    port_range = _ResolvePortRange(args.port_range, args.ports)
+    if not port_range:
       raise exceptions.ToolException(
-          '[--port-range] is required for global forwarding rules.')
-
+          '[--ports] is required for global forwarding rules.')
     target_ref = self.GetGlobalTarget(args)
     forwarding_rule_ref = self.CreateGlobalReference(
         args.name, resource_type='globalForwardingRules')
@@ -111,7 +134,7 @@ class Create(utils.ForwardingRulesTargetMutator):
             name=forwarding_rule_ref.Name(),
             IPAddress=args.address,
             IPProtocol=protocol,
-            portRange=args.port_range,
+            portRange=port_range,
             target=target_ref.SelfLink(),
         ),
         project=self.project)
@@ -131,7 +154,7 @@ class Create(utils.ForwardingRulesTargetMutator):
             name=forwarding_rule_ref.Name(),
             IPAddress=args.address,
             IPProtocol=protocol,
-            portRange=args.port_range,
+            portRange=_ResolvePortRange(args.port_range, args.ports),
             target=target_ref.SelfLink(),
         ),
         project=self.project,
@@ -174,3 +197,29 @@ CreateAlpha.detailed_help = {
         ``--target-ssl-proxy'', or ``--target-vpn-gateway'' must be specified.
         """.format(overview=flags.FORWARDING_RULES_OVERVIEW)),
 }
+
+
+def _GetPortRange(ports_range_list):
+  """Return single range by combining the ranges."""
+  if not ports_range_list:
+    return None, None
+  ports = sorted(ports_range_list)
+  combined_port_range = ports.pop(0)
+  for port_range in ports_range_list:
+    try:
+      combined_port_range = combined_port_range.Combine(port_range)
+    except arg_parsers.Error:
+      raise exceptions.InvalidArgumentException(
+          '--ports', 'Must specify consecutive ports at this time.')
+  return combined_port_range
+
+
+def _ResolvePortRange(port_range, port_range_list):
+  """Reconciles deprecated port_range value and list of port ranges."""
+  if port_range:
+    log.warn('The --port-range flag is deprecated. Use equivalent --ports=%s'
+             ' flag.', port_range)
+  elif port_range_list:
+    port_range = _GetPortRange(port_range_list)
+  return str(port_range) if port_range else None
+

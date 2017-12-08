@@ -75,7 +75,7 @@ class AddInstances(base_classes.NoOutputAsyncMutator):
         instanceGroup=group_ref.Name(),
         instanceGroupsAddInstancesRequest=request_payload,
         zone=group_ref.zone,
-        project=self.context['project']
+        project=group_ref.project
     )
 
     return [request]

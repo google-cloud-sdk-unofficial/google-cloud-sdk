@@ -35,6 +35,29 @@ class Debug(base.Group):
           To view all available debug targets, run:
 
               $ {command} targets list
+              NAME           ID             DESCRIPTION
+              default-test   gcp:1234:5678  myproject-test-9876543
+              default-test2  gcp:9012:3456  myproject-test2-1234567
+
+          To create a snapshot in a for a particular target:
+
+              $ {command} snapshots create --target=default-test foo.py:12
+              ...
+
+          Note that if there is not a target with the exact name or ID
+          specified, the target is treated as a regular expression to match
+          against the name or description:
+
+              $ {command} snapshots create --target=test foo.py:12
+              ERROR: (gcloud.beta.debug.snapshots.create) Multiple possible
+              targets found.
+              Use the --target option to select one of the following targets:
+                  default-test
+                  default-test2
+
+          In the above case, "test" matches both targets' names. Specifying
+          'test$' would match only "default-test" (by name), while "9876" would
+          match "default-test" by description.
        """
   }
 

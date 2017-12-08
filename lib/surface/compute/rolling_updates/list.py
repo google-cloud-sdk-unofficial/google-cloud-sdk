@@ -53,8 +53,8 @@ class List(base.ListCommand):
       ToolException: An error other than http error occured while executing
           the command.
     """
-    client = self.context['updater_api']
-    messages = self.context['updater_messages']
+    client = updater_util.GetApiClientInstance()
+    messages = updater_util.GetApiMessages()
 
     request = messages.ReplicapoolupdaterRollingUpdatesListRequest(
         project=properties.VALUES.core.project.Get(required=True),

@@ -14,38 +14,21 @@
 
 """Command for getting health status of backend(s) in a backend service."""
 
+from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.backend_services import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class GetHealth(base.ListCommand):
-  """Get backend health statuses from a backend service.
 
-  *{command}* is used to request the current health status of
-  instances in a backend service. Every group in the service
-  is checked and the health status of each configured instance
-  is printed.
+  _BACKEND_SERVICE_ARG = flags.GLOBAL_BACKEND_SERVICE_ARG
 
-  If a group contains names of instances that don't exist or
-  instances that haven't yet been pushed to the load-balancing
-  system, they will not show up. Those that are listed as
-  ``HEALTHY'' are able to receive load-balanced traffic. Those that
-  are marked as ``UNHEALTHY'' are either failing the configured
-  health-check or not responding to it.
-
-  Since the health checks are performed continuously and in
-  a distributed manner, the state returned by this command is
-  the most recent result of a vote of several redundant health
-  checks. Backend services that do not have a valid global
-  forwarding rule referencing it will not be health checked and
-  so will have no health status.
-  """
-
-  @staticmethod
-  def Args(parser):
-    flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+  @classmethod
+  def Args(cls, parser):
+    cls._BACKEND_SERVICE_ARG.AddArgument(parser)
 
   def Run(self, args):
     """Returns a list of backendServiceGroupHealth objects."""
@@ -53,11 +36,42 @@ class GetHealth(base.ListCommand):
       args.uri = False
       self.SetFormat('value(status.healthStatus[].instance)')
 
-    ref = flags.GLOBAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, self.context['resources'],
+    holder = base_classes.ComputeApiHolder(self.context['api_version'])
+    ref = self._BACKEND_SERVICE_ARG.ResolveAsResource(
+        args, holder.resources,
         default_scope=compute_flags.ScopeEnum.GLOBAL)
 
     backend_service = client.BackendService(
-        ref, compute_client=self.context['client'])
+        ref, compute_client=holder.client)
 
     return backend_service.GetHealth()
+
+
+GetHealth.detailed_help = {
+    'brief': 'Get backend health statuses from a backend service.',
+    'DESCRIPTION': """
+        *{command}* is used to request the current health status of
+        instances in a backend service. Every group in the service
+        is checked and the health status of each configured instance
+        is printed.
+
+        If a group contains names of instances that don't exist or
+        instances that haven't yet been pushed to the load-balancing
+        system, they will not show up. Those that are listed as
+        ``HEALTHY'' are able to receive load-balanced traffic. Those that
+        are marked as ``UNHEALTHY'' are either failing the configured
+        health-check or not responding to it.
+
+        Since the health checks are performed continuously and in
+        a distributed manner, the state returned by this command is
+        the most recent result of a vote of several redundant health
+        checks. Backend services that do not have a valid global
+        forwarding rule referencing it will not be health checked and
+        so will have no health status.
+    """
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class GetHealthAlpha(GetHealth):
+  _BACKEND_SERVICE_ARG = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG

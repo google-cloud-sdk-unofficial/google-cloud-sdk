@@ -65,6 +65,7 @@ class CreateGA(backend_services_utils.BackendServiceMutator):
     flags.AddTimeout(parser)
     flags.AddPortName(parser)
     flags.AddProtocol(parser)
+    flags.AddEnableCdn(parser, default=False)
 
   @property
   def method(self):
@@ -72,12 +73,14 @@ class CreateGA(backend_services_utils.BackendServiceMutator):
 
   def _CreateBackendService(self, args):
     backend_services_ref = flags.GLOBAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, self.context['resources'],
+        args, self.resources,
         default_scope=compute_flags.ScopeEnum.GLOBAL)
 
     health_checks = backend_services_utils.GetHealthChecks(args, self)
     if not health_checks:
       raise exceptions.ToolException('At least one health check required.')
+
+    enable_cdn = True if args.enable_cdn else None
 
     return self.messages.BackendService(
         description=args.description,
@@ -86,7 +89,8 @@ class CreateGA(backend_services_utils.BackendServiceMutator):
         port=_ResolvePort(args),
         portName=_ResolvePortName(args),
         protocol=_ResolveProtocol(self.messages, args),
-        timeoutSec=args.timeout)
+        timeoutSec=args.timeout,
+        enableCDN=enable_cdn)
 
   def CreateGlobalRequests(self, args):
     request = self.messages.ComputeBackendServicesInsertRequest(
@@ -102,13 +106,13 @@ class CreateAlpha(CreateGA):
 
   @staticmethod
   def Args(parser):
-    flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddDescription(parser)
     flags.AddHttpHealthChecks(parser)
     flags.AddHttpsHealthChecks(parser)
     flags.AddTimeout(parser)
     flags.AddPortName(parser)
-    flags.AddProtocol(parser)
+    flags.AddProtocol(parser, default=None)
 
     # These are in beta
     flags.AddEnableCdn(parser, default=False)
@@ -125,9 +129,6 @@ class CreateAlpha(CreateGA):
       backend_service.connectionDraining = self.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
 
-    if args.enable_cdn:
-      backend_service.enableCDN = args.enable_cdn
-
     if args.session_affinity is not None:
       backend_service.sessionAffinity = (
           self.messages.BackendService.SessionAffinityValueValuesEnum(
@@ -140,6 +141,33 @@ class CreateAlpha(CreateGA):
         project=self.project)
 
     return [request]
+
+  def CreateRegionalRequests(self, args):
+    backend_services_ref = self.CreateRegionalReference(
+        args.name, args.region, resource_type='regionBackendServices')
+    backend_service = self._CreateRegionBackendService(args)
+    if args.connection_draining_timeout is not None:
+      backend_service.connectionDraining = self.messages.ConnectionDraining(
+          drainingTimeoutSec=args.connection_draining_timeout)
+
+    request = self.messages.ComputeRegionBackendServicesInsertRequest(
+        backendService=backend_service,
+        region=backend_services_ref.region,
+        project=backend_services_ref.project)
+
+    return [request]
+
+  def _CreateRegionBackendService(self, args):
+    health_checks = backend_services_utils.GetHealthChecks(args, self)
+    if not health_checks:
+      raise exceptions.ToolException('At least one health check required.')
+
+    return self.messages.BackendService(
+        description=args.description,
+        name=args.name,
+        healthChecks=health_checks,
+        protocol=_ResolveProtocol(self.messages, args, default='TCP'),
+        timeoutSec=args.timeout)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -163,8 +191,6 @@ class CreateBeta(CreateGA):
 
   def CreateGlobalRequests(self, args):
     backend_service = self._CreateBackendService(args)
-    if args.enable_cdn:
-      backend_service.enableCDN = args.enable_cdn
 
     if args.session_affinity is not None:
       backend_service.sessionAffinity = (

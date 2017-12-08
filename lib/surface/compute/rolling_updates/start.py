@@ -20,6 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
@@ -104,9 +105,8 @@ class Start(base.Command):
       ToolException: An error other than http error occured while executing
           the command.
     """
-    client = self.context['updater_api']
-    messages = self.context['updater_messages']
-    resources = self.context['updater_resources']
+    client = updater_util.GetApiClientInstance()
+    messages = updater_util.GetApiMessages()
 
     request = messages.ReplicapoolupdaterRollingUpdatesInsertRequest(
         project=properties.VALUES.core.project.Get(required=True),
@@ -142,8 +142,7 @@ class Start(base.Command):
     Raises:
       SystemExit: Incorrect command line flags.
     """
-    messages = self.context['updater_messages']
-    resources = self.context['updater_resources']
+    messages = updater_util.GetApiMessages()
 
     policy = messages.RollingUpdate.PolicyValue()
     if args.auto_pause_after_instances:

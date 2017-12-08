@@ -11,7 +11,7 @@ gcloud compute backend\-services create \- create a backend service
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute backend\-services create\fR \fINAME\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-http\-health\-checks\fR\ \fIHTTP_HEALTH_CHECK\fR,[\fIHTTP_HEALTH_CHECK\fR,...]] [\fB\-\-https\-health\-checks\fR\ \fIHTTPS_HEALTH_CHECK\fR,[\fIHTTPS_HEALTH_CHECK\fR,...]] [\fB\-\-port\fR\ \fIPORT\fR] [\fB\-\-port\-name\fR\ \fIPORT_NAME\fR] [\fB\-\-protocol\fR\ \fIPROTOCOL\fR;\ default="HTTP"] [\fB\-\-timeout\fR\ \fITIMEOUT\fR;\ default="30s"] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute backend\-services create\fR \fINAME\fR [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-enable\-cdn\fR] [\fB\-\-http\-health\-checks\fR\ \fIHTTP_HEALTH_CHECK\fR,[\fIHTTP_HEALTH_CHECK\fR,...]] [\fB\-\-https\-health\-checks\fR\ \fIHTTPS_HEALTH_CHECK\fR,[\fIHTTPS_HEALTH_CHECK\fR,...]] [\fB\-\-port\fR\ \fIPORT\fR] [\fB\-\-port\-name\fR\ \fIPORT_NAME\fR] [\fB\-\-protocol\fR\ \fIPROTOCOL\fR;\ default="HTTP"] [\fB\-\-timeout\fR\ \fITIMEOUT\fR;\ default="30s"] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -42,6 +42,13 @@ The name of the backend service.
 \fB\-\-description\fR \fIDESCRIPTION\fR
 .RS 2m
 An optional, textual description for the backend service.
+
+.RE
+\fB\-\-enable\-cdn\fR
+.RS 2m
+Enable Cloud CDN for the backend service. Cloud CDN can cache HTTP responses
+from a backend service at the edge of the network, close to users. Cloud CDN is
+disabled by default.
 
 .RE
 \fB\-\-http\-health\-checks\fR \fIHTTP_HEALTH_CHECK\fR,[\fIHTTP_HEALTH_CHECK\fR,...]

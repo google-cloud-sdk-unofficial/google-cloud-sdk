@@ -42,18 +42,34 @@ class UpdateBackend(base_classes.ReadWriteCommand):
 
   @property
   def service(self):
+    if self.regional:
+      return self.compute.regionBackendServices
     return self.compute.backendServices
 
   @property
   def resource_type(self):
+    if self.regional:
+      return 'regionBackendServices'
     return 'backendServices'
 
   def CreateReference(self, args):
+    if self.regional:
+      return flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
+          args, self.resources,
+          default_scope=compute_flags.ScopeEnum.GLOBAL)
+
     return flags.GLOBAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, self.context['resources'],
+        args, self.resources,
         default_scope=compute_flags.ScopeEnum.GLOBAL)
 
   def GetGetRequest(self, args):
+    if self.regional:
+      return (self.service,
+              'Get',
+              self.messages.ComputeRegionBackendServicesGetRequest(
+                  backendService=self.ref.Name(),
+                  region=self.ref.region,
+                  project=self.project))
     return (self.service,
             'Get',
             self.messages.ComputeBackendServicesGetRequest(
@@ -61,6 +77,14 @@ class UpdateBackend(base_classes.ReadWriteCommand):
                 project=self.project))
 
   def GetSetRequest(self, args, replacement, existing):
+    if self.regional:
+      return (self.service,
+              'Update',
+              self.messages.ComputeRegionBackendServicesUpdateRequest(
+                  backendService=self.ref.Name(),
+                  backendServiceResource=replacement,
+                  region=self.ref.region,
+                  project=self.project))
     return (self.service,
             'Update',
             self.messages.ComputeBackendServicesUpdateRequest(
@@ -159,6 +183,9 @@ class UpdateBackend(base_classes.ReadWriteCommand):
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
 
+    # Check whether --region flag was used for regional resource.
+    self.regional = getattr(args, 'region', None) is not None
+
     return super(UpdateBackend, self).Run(args)
 
 
@@ -168,7 +195,7 @@ class UpdateBackendAlpha(UpdateBackend):
 
   @classmethod
   def Args(cls, parser):
-    flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     backend_flags.AddDescription(parser)
     backend_flags.AddInstanceGroup(
         parser, operation_type='update', multizonal=True)
@@ -257,6 +284,9 @@ class UpdateBackendAlpha(UpdateBackend):
         args.capacity_scaler is not None,
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
+
+    # Check whether --region flag was used for regional resource.
+    self.regional = getattr(args, 'region', None) is not None
     return super(UpdateBackend, self).Run(args)
 
 

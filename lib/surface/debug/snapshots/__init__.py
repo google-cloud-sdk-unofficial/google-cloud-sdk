@@ -35,9 +35,9 @@ class Snapshots(base.Group):
     parser.add_argument(
         '--target', metavar='(ID|DESCRIPTION_REGEXP)',
         help="""\
-            The debug target. It may be a target ID obtained from
+            The debug target. It may be a target ID or name obtained from
             'debug targets list', or it may be a regular expression uniquely
-            specifying a debuggee based on its description. For App Engine
-            projects, if not specified, the default target is
+            specifying a debuggee based on its description or name. For App
+            Engine projects, if not specified, the default target is
             the most recent deployment of the default module and version.
         """)

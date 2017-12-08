@@ -35,6 +35,7 @@ RUNTIME_MISMATCH_MSG = ("You've generated a Dockerfile that may be customized "
                         'the runtime field in [{0}] must be set to custom.')
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.PREVIEW)
 class GenConfig(base.Command):
   """Generate missing configuration files for a source directory.
 

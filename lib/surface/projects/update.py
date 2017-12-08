@@ -14,7 +14,8 @@
 
 """Command to update a new project."""
 
-from googlecloudsdk.api_lib.projects import util
+from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
+from googlecloudsdk.api_lib.cloudresourcemanager import projects_util
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import flags
@@ -56,16 +57,13 @@ class Update(base.Command):
     parser.add_argument('--name', required=True,
                         help='New name for the project.')
 
-  # util.HandleKnownHttpErrors needs to be the first one to handle errors.
+  # HandleKnownHttpErrors needs to be the first one to handle errors.
   # It needs to be placed after http_error_handler.HandleHttpErrors.
   @http_error_handler.HandleHttpErrors
-  @util.HandleKnownHttpErrors
+  @projects_util.HandleKnownHttpErrors
   def Run(self, args):
-    projects = util.GetClient()
     project_ref = command_lib_util.ParseProject(args.id)
-    project = projects.projects.Get(project_ref.Request())
-    project.name = args.name
-    result = projects.projects.Update(project)
+    result = projects_api.Update(project_ref, name=args.name)
     log.UpdatedResource(project_ref)
     return result
 

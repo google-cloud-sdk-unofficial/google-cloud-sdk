@@ -16,7 +16,8 @@ from googlecloudsdk.api_lib.pubsub import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as sdk_ex
-from googlecloudsdk.core.console import console_io as io
+from googlecloudsdk.core.resource import resource_printer
+from googlecloudsdk.core.util import text
 
 MAX_ATTRIBUTES = 100
 
@@ -93,6 +94,8 @@ class Publish(base.Command):
       args: The arguments that command was run with.
       result: The value returned from the Run() method.
     """
-    printer = io.ListPrinter(
-        '{0} message(s) published.'.format(len(result.messageIds)))
-    printer.Print(['messageId: {0}'.format(msg) for msg in result.messageIds])
+    fmt = 'list[title="{0} {1} published."]'.format(
+        len(result.messageIds),
+        text.Pluralize(len(result.messageIds), 'message'))
+    resource_printer.Print(
+        ['messageId: {0}'.format(msg) for msg in result.messageIds], fmt)

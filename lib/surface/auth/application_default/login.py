@@ -17,6 +17,7 @@
 import textwrap
 
 from googlecloudsdk.api_lib.auth import util as auth_util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core import log
@@ -62,7 +63,8 @@ class Login(base.Command):
         help='A file containing a client id.')
     parser.add_argument(
         '--scopes',
-        nargs='+',
+        type=arg_parsers.ArgList(min_length=1),
+        action=arg_parsers.FloatingListValuesCatcher(),
         help='The names of the scopes to authorize for.')
 
   def Format(self, unused_args):
@@ -116,6 +118,7 @@ class Login(base.Command):
         creds.refresh_token, creds.token_expiry, creds.token_uri,
         creds.user_agent, creds.revoke_uri)
     try:
+      auth_util.CreateWellKnownFileDir()
       client.save_to_well_known_file(google_creds)
     except IOError as e:
       raise c_exc.ToolException(

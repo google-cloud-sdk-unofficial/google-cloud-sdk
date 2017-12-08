@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.resource import resource_printer
 
 
 class TrafficSplitError(exceptions.Error):
@@ -109,9 +110,8 @@ class SetTraffic(base.Command):
             version,
             split))
 
-    printer = console_io.ListPrinter(
-        'Setting the following traffic allocations:')
-    printer.Print(display_allocations, output_stream=log.status)
+    fmt = 'list[title="Setting the following traffic allocations:"]'
+    resource_printer.Print(display_allocations, fmt, out=log.status)
     log.status.Print('Any other versions on the specified services will '
                      'receive zero traffic.')
     console_io.PromptContinue(cancel_on_no=True)

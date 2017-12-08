@@ -27,4 +27,4 @@ class List(base_classes.GlobalLister):
     return 'zones'
 
 
-List.detailed_help = base_classes.GetRegionalListerHelp('zones')
+List.detailed_help = base_classes.GetGlobalListerHelp('zones')

@@ -11,7 +11,7 @@ gcloud container clusters create \- create a cluster for running containers
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud container clusters create\fR \fINAME\fR [\fB\-\-additional\-zones\fR\ \fIZONE\fR,[\fIZONE\fR,...]] [\fB\-\-cluster\-ipv4\-cidr\fR\ \fICLUSTER_IPV4_CIDR\fR] [\fB\-\-disable\-addons\fR\ [\fIDISABLE_ADDONS\fR,...]] [\fB\-\-disk\-size\fR\ \fIDISK_SIZE\fR] [\fB\-\-no\-enable\-cloud\-endpoints\fR] [\fB\-\-no\-enable\-cloud\-logging\fR] [\fB\-\-no\-enable\-cloud\-monitoring\fR] [\fB\-\-machine\-type\fR\ \fIMACHINE_TYPE\fR,\ \fB\-m\fR\ \fIMACHINE_TYPE\fR] [\fB\-\-max\-nodes\-per\-pool\fR\ \fIMAX_NODES_PER_POOL\fR] [\fB\-\-network\fR\ \fINETWORK\fR] [\fB\-\-num\-nodes\fR\ \fINUM_NODES\fR;\ default="3"] [\fB\-\-password\fR\ \fIPASSWORD\fR] [\fB\-\-scopes\fR\ \fISCOPE\fR,[\fISCOPE\fR,...]] [\fB\-\-subnetwork\fR\ \fISUBNETWORK\fR] [\fB\-\-username\fR\ \fIUSERNAME\fR,\ \fB\-u\fR\ \fIUSERNAME\fR;\ default="admin"] [\fB\-\-no\-wait\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud container clusters create\fR \fINAME\fR [\fB\-\-additional\-zones\fR\ \fIZONE\fR,[\fIZONE\fR,...]] [\fB\-\-async\fR] [\fB\-\-cluster\-ipv4\-cidr\fR\ \fICLUSTER_IPV4_CIDR\fR] [\fB\-\-disable\-addons\fR\ [\fIDISABLE_ADDONS\fR,...]] [\fB\-\-disk\-size\fR\ \fIDISK_SIZE\fR] [\fB\-\-no\-enable\-cloud\-endpoints\fR] [\fB\-\-no\-enable\-cloud\-logging\fR] [\fB\-\-no\-enable\-cloud\-monitoring\fR] [\fB\-\-machine\-type\fR\ \fIMACHINE_TYPE\fR,\ \fB\-m\fR\ \fIMACHINE_TYPE\fR] [\fB\-\-max\-nodes\-per\-pool\fR\ \fIMAX_NODES_PER_POOL\fR] [\fB\-\-network\fR\ \fINETWORK\fR] [\fB\-\-num\-nodes\fR\ \fINUM_NODES\fR;\ default="3"] [\fB\-\-password\fR\ \fIPASSWORD\fR] [\fB\-\-scopes\fR\ \fISCOPE\fR,[\fISCOPE\fR,...]] [\fB\-\-subnetwork\fR\ \fISUBNETWORK\fR] [\fB\-\-username\fR\ \fIUSERNAME\fR,\ \fB\-u\fR\ \fIUSERNAME\fR;\ default="admin"] [\fB\-\-wait\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -49,6 +49,11 @@ $ {command} example\-cluster \-\-zone us\-central1\-a \e
     \-\-additional\-zones us\-central1\-b,us\-central1\-c
 .RE
 
+
+.RE
+\fB\-\-async\fR
+.RS 2m
+Don't wait for the operation to complete. Use \fB\-\-no\-async\fR to disable.
 
 .RE
 \fB\-\-cluster\-ipv4\-cidr\fR \fICLUSTER_IPV4_CIDR\fR
@@ -186,8 +191,8 @@ The user name to use for cluster auth.
 .RE
 \fB\-\-wait\fR
 .RS 2m
-Poll the operation for completion after issuing a create request. Enabled by
-default, use \fB\-\-no\-wait\fR to disable.
+Poll the operation for completion after issuing a create request. Use
+\fB\-\-no\-wait\fR to disable.
 
 .RE
 \fB\-\-zone\fR \fIZONE\fR, \fB\-z\fR \fIZONE\fR

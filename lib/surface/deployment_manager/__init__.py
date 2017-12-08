@@ -21,7 +21,9 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.credentials import store
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA,
+                    base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class DmV2(base.Group):
   """Manage deployments of cloud resources."""
 

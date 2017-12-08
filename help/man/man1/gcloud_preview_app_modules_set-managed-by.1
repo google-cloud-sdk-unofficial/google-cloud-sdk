@@ -5,7 +5,7 @@
 
 .SH "NAME"
 .HP
-gcloud preview app modules set\-managed\-by \- sets the policy for the Managed VMs of the given modules and version
+gcloud preview app modules set\-managed\-by \- sets the policy for the Flexible VMs of the given services and version
 
 
 
@@ -20,13 +20,13 @@ gcloud preview app modules set\-managed\-by \- sets the policy for the Managed V
 instances enable\-debug\fR and \f5gcloud preview app instances disable\-debug\fR
 commands instead.
 
-This command sets the policy for the Managed VMs of the given modules and
-version. When your module uses VM runtimes, you can use this command to change
-the management mode for a set of your VMs. If you switch to self\-managed, SSH
-will be enabled on the VMs, and they will be removed from the health checking
-pools, but will still receive requests. When you switch back to Google\-managed
-mode, any local changes on the VMs are lost and they are restarted and added
-back into the normal pools.
+This command sets the policy for the App Engine Flexible VMs of the given
+services and version. When your module uses VM runtimes, you can use this
+command to change the management mode for a set of your VMs. If you switch to
+self\-managed, SSH will be enabled on the VMs, and they will be removed from the
+health checking pools, but will still receive requests. When you switch back to
+Google\-managed mode, any local changes on the VMs are lost and they are
+restarted and added back into the normal pools.
 
 
 

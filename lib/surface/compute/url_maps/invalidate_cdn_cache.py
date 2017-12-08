@@ -19,11 +19,9 @@ from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.api_lib.compute import property_selector
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
-from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class InvalidateCache(base_classes.BaseCommand):
   """Invalidate specified objects for a URL map in Cloud CDN caches."""
 

@@ -15,10 +15,50 @@
 """Implementation of gcloud genomics pipelines run.
 """
 from googlecloudsdk.api_lib import genomics as lib
+from googlecloudsdk.api_lib.genomics import exceptions
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
+from googlecloudsdk.core.util import files
+
+
+def _ValidateAndMergeArgInputs(args):
+  """Turn args.inputs and args.inputs_from_file dicts into a single dict.
+
+  Args:
+    args: The parsed command-line arguments
+
+  Returns:
+    A dict that is the merge of args.inputs and args.inputs_from_file
+  Raises:
+    files.Error
+  """
+
+  # If no inputs from file, then no validation or merge needed
+  if not args.inputs_from_file:
+    return args.inputs
+
+  # Initialize the merged dictionary
+  arg_inputs = {}
+
+  if args.inputs:
+    # Validate args.inputs and args.inputs-from-file do not overlap
+    overlap = set(args.inputs.keys()).intersection(
+        set(args.inputs_from_file.keys()))
+    if overlap:
+      raise exceptions.GenomicsError(
+          '--{0} and --{1} may not specify overlapping values: {2}'
+          .format('inputs', 'inputs-from-file', ', '.join(overlap)))
+
+    # Add the args.inputs
+    arg_inputs.update(args.inputs)
+
+  # Read up the inputs-from-file and add the values from the file
+  for key, value in args.inputs_from_file.iteritems():
+    arg_inputs[key] = files.GetFileContents(value)
+
+  return arg_inputs
 
 
 class Run(base.Command):
@@ -70,8 +110,22 @@ class Run(base.Command):
         help='''Map of input PipelineParameter names to values.
         Used to pass literal parameters to the pipeline, and to specify
         input files in Google Cloud Storage that will have a localCopy
-        made.  Specified as a comma-separated list: --inputs
+        made. Specified as a comma-separated list: --inputs
         file=gs://my-bucket/in.txt,name=hello''')
+
+    parser.add_argument(
+        '--inputs-from-file',
+        category=base.COMMONLY_USED_FLAGS,
+        type=arg_parsers.ArgDict(),
+        action=arg_parsers.FloatingListValuesCatcher(
+            arg_parsers.UpdateAction,
+            switch_value={}),
+        help='''Map of input PipelineParameter names to values.
+        Used to pass literal parameters to the pipeline where values come
+        from local files; this can be used to send large pipeline input
+        parameters, such as code, data, or configuration values.
+        Specified as a comma-separated list:
+        --inputs-from-file script=myshellscript.sh,pyfile=mypython.py''')
 
     parser.add_argument(
         '--outputs',
@@ -155,6 +209,7 @@ class Run(base.Command):
         command invocation.
 
     Raises:
+      files.Error: A file argument could not be read.
       GenomicsError: User input was invalid.
       HttpException: An http error response was received while executing api
           request.
@@ -170,8 +225,10 @@ class Run(base.Command):
         self.context[lib.STORAGE_V1_CLIENT_KEY])
     pipeline.projectId = genomics_util.GetProjectId()
 
+    arg_inputs = _ValidateAndMergeArgInputs(args)
+
     inputs = genomics_util.ArgDictToAdditionalPropertiesList(
-        args.inputs,
+        arg_inputs,
         genomics_messages.RunPipelineArgs.InputsValue.AdditionalProperty)
     outputs = genomics_util.ArgDictToAdditionalPropertiesList(
         args.outputs,

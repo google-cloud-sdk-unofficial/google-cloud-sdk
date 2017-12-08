@@ -160,6 +160,7 @@ class Login(base.Command):
         creds.refresh_token, creds.token_expiry, creds.token_uri,
         creds.user_agent, creds.revoke_uri)
     try:
+      auth_util.CreateWellKnownFileDir()
       client.save_to_well_known_file(google_creds)
     except IOError as e:
       raise c_exc.ToolException(

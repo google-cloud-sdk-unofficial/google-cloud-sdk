@@ -19,9 +19,6 @@ gcloud compute zones list \- list Google Compute Engine zones
 \fBgcloud compute zones list\fR displays all Google Compute Engine zones in a
 project.
 
-By default, zones from all regions are listed. The results can be narrowed down
-by providing the \f5\fI\-\-regions\fR\fR flag.
-
 
 
 .SH "POSITIONAL ARGUMENTS"
@@ -109,11 +106,4 @@ To list the URIs of all zones in a project, run:
 
 .RS 2m
 $ gcloud compute zones list \-\-uri
-.RE
-
-To list all zones in the \f5\fIus\-central1\fR\fR and \f5\fIeurope\-west1\fR\fR
-regions, run:
-
-.RS 2m
-$ gcloud compute zones list \-\-regions us\-central1 europe\-west1
 .RE

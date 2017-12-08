@@ -41,19 +41,19 @@ class Import(base.Command):
       'EXAMPLES': """\
           To import data from csv with given schema specified in json file, run:
 
-            $ {command} ds/new_tbl ./info.csv --schema ./info_schema.json
+            $ {command} ./info.csv ds/new_tbl --schema-file ./info_schema.json
 
           To import data located on cloud storage, run:
 
-            $ {command} ds/new_tbl gs://mybucket/info.csv --schema-file ./info_schema.json
+            $ {command} gs://mybucket/info.csv ds/new_tbl --schema-file ./info_schema.json
 
           To import data with command line specified schema, run:
 
-            $ {command} ds/small gs://mybucket/small.csv --schema name:integer,value:string
+            $ {command} gs://mybucket/small.csv ds/small --schema name:integer,value:string
 
           To import data with default field string type, run:
 
-            $ {command} ds/small gs://mybucket/small.csv --schema field1,field2,field3
+            $ {command} gs://mybucket/small.csv ds/small --schema field1,field2,field3
        """,
   }
 

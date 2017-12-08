@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.resource import resource_printer
 
 
 class VersionsStopError(exceptions.Error):
@@ -79,8 +80,8 @@ class Stop(base.Command):
         args.versions, args.service)
 
     if versions:
-      printer = console_io.ListPrinter('Stopping the following versions:')
-      printer.Print(versions, output_stream=log.status)
+      fmt = 'list[title="Stopping the following versions:"]'
+      resource_printer.Print(versions, fmt, out=log.status)
       console_io.PromptContinue(cancel_on_no=True)
     else:
       log.warn('No matching versions found.')

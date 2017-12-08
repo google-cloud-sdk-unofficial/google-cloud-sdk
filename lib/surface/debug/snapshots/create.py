@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.debug import debug
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
@@ -86,7 +87,12 @@ class Create(base.CreateCommand):
     snapshot = debuggee.CreateSnapshot(
         location=args.location, expressions=args.expression,
         condition=args.condition, user_email=user_email)
-    final_snapshot = debuggee.WaitForBreakpoint(snapshot.id, args.wait)
+    final_snapshot = debuggee.WaitForBreakpointSet(snapshot.id, args.wait,
+                                                   args.location)
+    if args.location != final_snapshot.location:
+      log.status.write(
+          'The debugger adjusted the snapshot location to {0}'.format(
+              final_snapshot.location))
     return final_snapshot or snapshot
 
   def Collection(self):

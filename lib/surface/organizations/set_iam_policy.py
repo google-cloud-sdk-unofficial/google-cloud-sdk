@@ -53,6 +53,6 @@ class SetIamPolicy(orgs_base.OrganizationCommand):
     policy = iam_util.ParseJsonPolicyFile(args.policy_file, messages.Policy)
     policy_request = (
         messages.CloudresourcemanagerOrganizationsSetIamPolicyRequest(
-            resource=self.GetOrganizationRef(args.id).Name(),
+            organizationsId=args.id,
             setIamPolicyRequest=messages.SetIamPolicyRequest(policy=policy)))
     return self.OrganizationsClient().SetIamPolicy(policy_request)

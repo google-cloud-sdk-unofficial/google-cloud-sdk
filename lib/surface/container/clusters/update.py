@@ -77,15 +77,10 @@ class Update(base.Command):
   {ingress}=ENABLED|DISABLED'''.format(
       hpa=api_adapter.HPA, ingress=api_adapter.INGRESS))
     parser.add_argument(
-        '--wait',
-        action='store_true',
-        default=True,
-        help='Poll the operation for completion after issuing an update '
-        'request.')
-    parser.add_argument(
         '--node-pool',
         help=argparse.SUPPRESS)
     flags.AddClusterAutoscalingFlags(parser, group)
+    flags.AddClustersWaitAndAsyncFlags(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -116,7 +111,7 @@ class Update(base.Command):
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(util.GetError(error))
 
-    if args.wait:
+    if not flags.GetAsyncValueFromAsyncAndWaitFlags(args.async, args.wait):
       adapter.WaitForOperation(
           op_ref, 'Updating {0}'.format(cluster_ref.clusterId))
 

@@ -42,18 +42,29 @@ class AddBackend(base_classes.ReadWriteCommand):
 
   @property
   def service(self):
+    if self.regional:
+      return self.compute.regionBackendServices
     return self.compute.backendServices
 
   @property
   def resource_type(self):
+    if self.regional:
+      return 'regionBackendServices'
     return 'backendServices'
 
   def CreateReference(self, args):
     return flags.GLOBAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, self.context['resources'],
+        args, self.resources,
         default_scope=compute_flags.ScopeEnum.GLOBAL)
 
   def GetGetRequest(self, args):
+    if self.regional:
+      return (self.service,
+              'Get',
+              self.messages.ComputeRegionBackendServicesGetRequest(
+                  backendService=self.ref.Name(),
+                  region=self.ref.region,
+                  project=self.project))
     return (self.service,
             'Get',
             self.messages.ComputeBackendServicesGetRequest(
@@ -61,6 +72,14 @@ class AddBackend(base_classes.ReadWriteCommand):
                 project=self.project))
 
   def GetSetRequest(self, args, replacement, existing):
+    if self.regional:
+      return (self.service,
+              'Update',
+              self.messages.ComputeRegionBackendServicesUpdateRequest(
+                  backendService=self.ref.Name(),
+                  backendServiceResource=replacement,
+                  region=self.ref.region,
+                  project=self.project))
     return (self.service,
             'Update',
             self.messages.ComputeBackendServicesUpdateRequest(
@@ -124,6 +143,11 @@ class AddBackend(base_classes.ReadWriteCommand):
     replacement.backends.append(backend)
     return replacement
 
+  def Run(self, args):
+    # Check whether --region flag was used for regional resource.
+    self.regional = getattr(args, 'region', None) is not None
+    return super(AddBackend, self).Run(args)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AddBackendAlpha(AddBackend):
@@ -131,13 +155,18 @@ class AddBackendAlpha(AddBackend):
 
   @staticmethod
   def Args(parser):
-    flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     backend_flags.AddDescription(parser)
     backend_flags.AddInstanceGroup(
         parser, operation_type='add to', multizonal=True)
     backend_flags.AddBalancingMode(parser, with_connection=True)
     backend_flags.AddCapacityLimits(parser, with_connection=True)
     backend_flags.AddCapacityScalar(parser)
+
+  def CreateReference(self, args):
+    return flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
+        args, self.resources,
+        default_scope=compute_flags.ScopeEnum.GLOBAL)
 
   def CreateGroupReference(self, args):
     return instance_groups_utils.CreateInstanceGroupReference(

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""gcloud datastore emulator start command."""
+"""gcloud datastore emulator env-init command."""
 
 from googlecloudsdk.api_lib.emulators import util
 from googlecloudsdk.calliope import base

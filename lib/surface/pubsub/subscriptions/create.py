@@ -17,7 +17,8 @@ import json
 from googlecloudsdk.api_lib.pubsub import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
-from googlecloudsdk.core.console import console_io as io
+from googlecloudsdk.core.resource import resource_printer
+from googlecloudsdk.core.util import text
 from googlecloudsdk.third_party.apitools.base.py import exceptions as api_ex
 
 
@@ -108,10 +109,11 @@ class Create(base.Command):
       subscription_type = 'push'
 
     if succeeded:
-      success_printer = io.ListPrinter(
-          '{0} {1} subscription(s) created successfully'.format(
-              len(succeeded), subscription_type))
-      success_printer.Print([subscription.name for subscription in succeeded])
+      fmt = 'list[title="{0} {1} {2} created successfully"]'.format(
+          len(succeeded), subscription_type,
+          text.Pluralize(len(succeeded), 'subscription'))
+      resource_printer.Print(
+          [subscription.name for subscription in succeeded], fmt)
 
       log.out.Print('for topic "{0}"'.format(
           util.TopicFormat(args.topic, args.topic_project)))
@@ -123,7 +125,8 @@ class Create(base.Command):
         log.out.Print('Push endpoint: "{0}"'.format(args.push_endpoint))
 
     if failed:
-      fail_printer = io.ListPrinter(
-          '{0} subscription(s) failed'.format(len(failed)))
-      fail_printer.Print(
-          ['{0} (reason: {1})'.format(topic, desc) for topic, desc in failed])
+      fmt = 'list[title="{0} {1} failed"]'.format(
+          len(failed), text.Pluralize(len(failed), 'subscriptions'))
+      resource_printer.Print(
+          ['{0} (reason: {1})'.format(topic, desc) for topic, desc in failed],
+          fmt)

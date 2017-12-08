@@ -122,6 +122,7 @@ class Deploy(base.SilentCommand):
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)
     version = args.version or util.GenerateVersionId()
+    flags.ValidateVersion(version)
     promote = properties.VALUES.app.promote_by_default.GetBool()
     stop_previous_version = (
         properties.VALUES.app.stop_previous_version.GetBool())
@@ -176,9 +177,9 @@ your own host, you can run:
       # All deployment paths for a service involve uploading source to GCS.
       code_bucket_ref = flags.GetCodeBucket(api_client, project, args.bucket)
       metrics.CustomTimedEvent(metric_names.GET_CODE_BUCKET)
-      log.debug('Using bucket [{b}].'.format(b=code_bucket_ref))
+      log.debug('Using bucket [{b}].'.format(b=code_bucket_ref.ToBucketUrl()))
 
-      # Prepare managed VMs if any service is going to deploy an image.
+      # Prepare Flex if any service is going to deploy an image.
       if any([m.RequiresImage() for m in services.values()]):
         deploy_command_util.DoPrepareManagedVms(ac_client)
 

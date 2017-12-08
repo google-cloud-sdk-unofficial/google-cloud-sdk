@@ -1548,9 +1548,6 @@ class _Partition(BigqueryCmd):  # pylint: disable=missing-docstring
         client.FormatTableInfo,
         client.ListTables(source_dataset, max_results=1000 * 1000))
 
-    print 'Copying %d source partitions to %s' % (
-        len(results), destination_table)
-
     dates = []
     representative_table = None
     for result in results:
@@ -1569,11 +1566,16 @@ class _Partition(BigqueryCmd):  # pylint: disable=missing-docstring
       print 'No matching source tables found'
       return
 
+    print 'Copying %d source partitions to %s' % (len(dates), destination_table)
+
     # Check to see if we need to create the destination table.
     if not client.TableExists(destination_table):
       source_table_id = representative_table['tableId']
       source_table_ref = source_dataset.GetTableReference(source_table_id)
       source_table_schema = client.GetTableSchema(source_table_ref)
+      # Get fields in the schema.
+      if source_table_schema:
+        source_table_schema = source_table_schema['fields']
 
       time_partitioning = _ParseTimePartitioning(
           self.time_partitioning_type, self.time_partitioning_expiration)
@@ -1726,8 +1728,10 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
       BigqueryClient.ConfigureFormatter(formatter, DatasetReference)
       results = map(  # pylint: disable=g-long-lambda
           client.FormatDatasetInfo,
-          client.ListDatasets(reference, max_results=self.max_results,
-                              list_all=self.a, page_token=page_token))
+          client.ListDatasets(reference,
+                              max_results=self.max_results,
+                              list_all=self.a,
+                              page_token=page_token))
     else:  # isinstance(reference, DatasetReference):
       BigqueryClient.ConfigureFormatter(formatter, TableReference)
       results = map(  # pylint: disable=g-long-lambda

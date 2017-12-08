@@ -63,5 +63,5 @@ class Submit(base.Group):
 
     parser.add_argument(
         '--bucket',
-        help=("The Cloud Storage bucket to stage files in. Default's to the "
-              "cluster's configured bucket"))
+        help=("The Cloud Storage bucket to stage files in. Defaults to the "
+              "cluster's configured bucket."))

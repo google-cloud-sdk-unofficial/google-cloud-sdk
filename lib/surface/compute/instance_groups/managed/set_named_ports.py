@@ -15,95 +15,75 @@
 
 It's an alias for the instance-groups set-named-ports command.
 """
+from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
-from googlecloudsdk.api_lib.compute import request_helper
-from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
-
-
-def _IsZonalGroup(group_ref):
-  """Checks if group is zonal."""
-  return group_ref.Collection() == 'compute.instanceGroups'
+from googlecloudsdk.command_lib.compute.instance_groups import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class SetNamedPorts(instance_groups_utils.InstanceGroupSetNamedPorts):
+class SetNamedPorts(base_classes.NoOutputAsyncMutator):
   """Sets named ports for instance groups."""
+
+  @property
+  def service(self):
+    return self.compute.instanceGroups
+
+  @property
+  def method(self):
+    return 'SetNamedPorts'
+
+  @property
+  def resource_type(self):
+    return 'instanceGroups'
 
   @staticmethod
   def Args(parser):
-    instance_groups_utils.InstanceGroupSetNamedPorts.AddArgs(
-        parser=parser, multizonal=False)
+    flags.AddNamedPortsArgs(parser)
+    flags.AddScopeArgs(parser=parser, multizonal=False)
+
+  def CreateRequests(self, args):
+    group_ref = self.CreateZonalReference(args.group, args.zone)
+    ports = instance_groups_utils.ValidateAndParseNamedPortsArgs(
+        self.messages, args.named_ports)
+    # service should be always zonal
+    request, _ = instance_groups_utils.GetSetNamedPortsRequestForGroup(
+        self.compute_client, group_ref, ports)
+    return [(self.service, self.method, request)]
+
+  detailed_help = instance_groups_utils.SET_NAMED_PORTS_HELP
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SetNamedPortsAlpha(instance_groups_utils.InstanceGroupSetNamedPorts):
+class SetNamedPortsAlpha(base_classes.NoOutputAsyncMutator):
   """Sets named ports for instance groups."""
+
+  @property
+  def service(self):
+    # service property not implemented on this command as it is specified
+    # for each request
+    return None
+
+  @property
+  def method(self):
+    return 'SetNamedPorts'
 
   @staticmethod
   def Args(parser):
-    instance_groups_utils.InstanceGroupSetNamedPorts.AddArgs(
-        parser=parser, multizonal=True)
+    flags.AddNamedPortsArgs(parser)
+    flags.AddScopeArgs(parser=parser, multizonal=True)
 
-  def GetGroupReference(self, args):
-    return instance_groups_utils.CreateInstanceGroupReference(
+  def CreateRequests(self, args):
+    group_ref = instance_groups_utils.CreateInstanceGroupReference(
         scope_prompter=self, compute=self.compute, resources=self.resources,
         name=args.group, region=args.region, zone=args.zone,
         zonal_resource_type='instanceGroups',
         regional_resource_type='regionInstanceGroups')
+    ports = instance_groups_utils.ValidateAndParseNamedPortsArgs(
+        self.messages, args.named_ports)
+    # service could be zonal or regional
+    request, service = instance_groups_utils.GetSetNamedPortsRequestForGroup(
+        self.compute_client, group_ref, ports)
+    return [(service, self.method, request)]
 
-  def GetServiceForGroup(self, group_ref):
-    if _IsZonalGroup(group_ref):
-      return self.compute.instanceGroups
-    else:
-      return self.compute.regionInstanceGroups
-
-  def CreateRequestForGroup(self, group_ref, ports, fingerprint):
-    if _IsZonalGroup(group_ref):
-      request_body = self.messages.InstanceGroupsSetNamedPortsRequest(
-          fingerprint=fingerprint,
-          namedPorts=ports)
-      return self.messages.ComputeInstanceGroupsSetNamedPortsRequest(
-          instanceGroup=group_ref.Name(),
-          instanceGroupsSetNamedPortsRequest=request_body,
-          zone=group_ref.zone,
-          project=self.project)
-    else:
-      request_body = self.messages.RegionInstanceGroupsSetNamedPortsRequest(
-          fingerprint=fingerprint,
-          namedPorts=ports)
-      return self.messages.ComputeRegionInstanceGroupsSetNamedPortsRequest(
-          instanceGroup=group_ref.Name(),
-          regionInstanceGroupsSetNamedPortsRequest=request_body,
-          region=group_ref.region,
-          project=self.project)
-
-  def GetGroupFingerprint(self, group):
-    """Gets fingerprint of given instance group."""
-    if _IsZonalGroup(group):
-      service = self.compute.instanceGroups
-      get_request = service.GetRequestType('Get')(
-          instanceGroup=group.Name(),
-          zone=group.zone,
-          project=self.project)
-    else:
-      service = self.compute.regionInstanceGroups
-      get_request = service.GetRequestType('Get')(
-          instanceGroup=group.Name(),
-          region=group.region,
-          project=self.project)
-
-    errors = []
-    resources = list(request_helper.MakeRequests(
-        requests=[(service, 'Get', get_request)],
-        http=self.http,
-        batch_url=self.batch_url,
-        errors=errors,
-        custom_get_requests=None))
-
-    if errors:
-      utils.RaiseException(
-          errors,
-          instance_groups_utils.FingerprintFetchException,
-          error_message='Could not set named ports for resource:')
-    return resources[0].fingerprint
+  detailed_help = instance_groups_utils.SET_NAMED_PORTS_HELP

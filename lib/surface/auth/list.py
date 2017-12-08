@@ -19,8 +19,8 @@ import textwrap
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.credentials import store as c_store
+from googlecloudsdk.core.resource import resource_printer
 
 
 class _AuthInfo(object):
@@ -60,10 +60,11 @@ class List(base.Command):
 
   def Display(self, unused_args, result):
     if result.accounts:
-      lp = console_io.ListPrinter('Credentialed accounts:')
-      lp.Print([account +
-                (' (active)' if account == result.active_account else '')
-                for account in result.accounts])
+      items = [account +
+               (' (active)' if account == result.active_account else '')
+               for account in result.accounts]
+      fmt = 'list[title="Credentialed accounts:"]'
+      resource_printer.Print(items, fmt)
       log.err.Print(textwrap.dedent("""
           To set the active account, run:
             $ gcloud config set account ``ACCOUNT''

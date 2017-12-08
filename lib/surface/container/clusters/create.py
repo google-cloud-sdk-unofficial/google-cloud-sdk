@@ -43,11 +43,7 @@ def _Args(parser):
       type=int,
       default=1800,
       help=argparse.SUPPRESS)
-  parser.add_argument(
-      '--wait',
-      action='store_true',
-      default=True,
-      help='Poll the operation for completion after issuing a create request.')
+  flags.AddClustersWaitAndAsyncFlags(parser)
   parser.add_argument(
       '--num-nodes',
       type=arg_parsers.BoundedInt(1),
@@ -258,7 +254,7 @@ class Create(base.Command):
     operation = None
     try:
       operation_ref = adapter.CreateCluster(cluster_ref, options)
-      if not args.wait:
+      if flags.GetAsyncValueFromAsyncAndWaitFlags(args.async, args.wait):
         return adapter.GetCluster(cluster_ref)
 
       operation = adapter.WaitForOperation(

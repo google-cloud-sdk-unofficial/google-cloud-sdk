@@ -14,7 +14,8 @@
 
 """Command to delete a project."""
 
-from googlecloudsdk.api_lib.projects import util
+from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
+from googlecloudsdk.api_lib.cloudresourcemanager import projects_util
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import flags
@@ -53,18 +54,14 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     flags.GetProjectFlag('delete').AddToParser(parser)
 
-  # util.HandleKnownHttpErrors needs to be the first one to handle errors.
+  # HandleKnownHttpErrors needs to be the first one to handle errors.
   # It needs to be placed after http_error_handler.HandleHttpErrors.
   @http_error_handler.HandleHttpErrors
-  @util.HandleKnownHttpErrors
+  @projects_util.HandleKnownHttpErrors
   def Run(self, args):
-    projects = util.GetClient()
-    messages = util.GetMessages()
     project_ref = command_lib_util.ParseProject(args.id)
     if not console_io.PromptContinue('Your project will be deleted.'):
       return None
-    projects.projects.Delete(
-        messages.CloudresourcemanagerProjectsDeleteRequest(
-            projectId=project_ref.Name()))
+    result = projects_api.Delete(project_ref)
     log.DeletedResource(project_ref)
-    return util.DeletedResource(project_ref.Name())
+    return result

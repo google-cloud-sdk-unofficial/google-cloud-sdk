@@ -17,70 +17,55 @@
 import sys
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.app import checks
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import platforms
 
 
-class UnsupportedPythonVersionError(exceptions.Error):
-  pass
+DETAILED_HELP = {
+    'brief': 'Manage your App Engine app.',
+    'DESCRIPTION': """
+        This set of commands allows you to deploy your app, manage your existing
+        deployments, and also run your app locally.  These commands replace
+        their equivalents in the appcfg tool.
+        """,
+    'EXAMPLES': """\
+        To run your app locally in the development application server, run:
+
+          $ dev_appserver.py DEPLOYABLES
+
+        To create a new deployment of one or more services, run:
+
+          $ {command} deploy DEPLOYABLES
+
+        To list your existing deployments, run:
+
+          $ {command} versions list
+
+        To generate config files for your source directory:
+
+          $ {command} gen-config
+        """
+}
 
 
-# TODO(b/24169312): remove
-CHANGE_WARNING = """\
-The `gcloud preview app` surface is rapidly improving. Look out for
-changing flags and new commands before the transition out of the `preview`
-component. These changes will be documented in the Cloud SDK release notes
-<https://goo.gl/X8apDJ> and via deprecation notices for changing commands.
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class AppengineGA(base.Group):
 
-If you would like to avoid changing behavior, please pin to a fixed version of
-the Google Cloud SDK as described under the "Alternative Methods" section of the
-Cloud SDK web site: <https://cloud.google.com/sdk/#alternative>.
-"""
+  def Filter(self, unused_context, unused_args):
+    checks.RaiseIfNotPython27()
 
 
 @base.ReleaseTracks(base.ReleaseTrack.PREVIEW)
-class Appengine(base.Group):
-  """Manage your App Engine app.
-
-  This set of commands allows you to deploy your app, manage your existing
-  deployments, and also run your app locally.  These commands replace their
-  equivalents in the appcfg tool.
-  """
-
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To run your app locally in the development application server, run:
-
-            $ dev_appserver.py DEPLOYABLES
-
-          To create a new deployment of one or more services, run:
-
-            $ {command} deploy DEPLOYABLES
-
-          To list your existing deployments, run:
-
-            $ {command} versions list
-
-          To generate config files for your source directory:
-
-            $ {command} gen-config
-          """,
-  }
+class AppenginePreview(base.Group):
 
   def Filter(self, unused_context, unused_args):
-    # TODO(b/24169312): remove
-    if not properties.VALUES.app.suppress_change_warning.GetBool():
-      log.warn(CHANGE_WARNING)
-      properties.PersistProperty(properties.VALUES.app.suppress_change_warning,
-                                 'true')
-    if not platforms.PythonVersion().IsSupported():
-      raise UnsupportedPythonVersionError(
-          ('Python 2.7 or greater is required for App Engine commands in '
-           'gcloud.\n\n'
-           'Your Python location: [{0}]\n\n'
-           'Please set the CLOUDSDK_PYTHON environment variable to point to a '
-           'supported version in order to use this command.'
-          ).format(sys.executable))
+    checks.RaiseIfNotPython27()
+    checks.WarnAboutChangingBehavior()
+
+
+AppengineGA.detailed_help = DETAILED_HELP
+AppenginePreview.detailed_help = DETAILED_HELP

@@ -16,7 +16,8 @@
 
 import httplib
 
-from googlecloudsdk.api_lib.projects import util
+from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
+from googlecloudsdk.api_lib.cloudresourcemanager import projects_util
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.api_lib.util import http_retry
 from googlecloudsdk.calliope import base
@@ -48,25 +49,12 @@ class RemoveIamPolicyBinding(base.Command):
     iam_util.AddArgsForRemoveIamPolicyBinding(
         parser, 'id', 'cloudresourcemanager.projects')
 
-  # util.HandleKnownHttpErrors needs to be the first one to handle errors.
+  # HandleKnownHttpErrors needs to be the first one to handle errors.
   # It needs to be placed after http_error_handler.HandleHttpErrors.
   @http_error_handler.HandleHttpErrors
-  @util.HandleKnownHttpErrors
+  @projects_util.HandleKnownHttpErrors
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
-    projects = util.GetClient()
-    messages = util.GetMessages()
-
     project_ref = command_lib_util.ParseProject(args.id)
-
-    policy_request = messages.CloudresourcemanagerProjectsGetIamPolicyRequest(
-        resource=project_ref.Name(),
-        getIamPolicyRequest=messages.GetIamPolicyRequest())
-    policy = projects.projects.GetIamPolicy(policy_request)
-
-    iam_util.RemoveBindingFromIamPolicy(policy, args)
-
-    policy_request = messages.CloudresourcemanagerProjectsSetIamPolicyRequest(
-        resource=project_ref.Name(),
-        setIamPolicyRequest=messages.SetIamPolicyRequest(policy=policy))
-    return projects.projects.SetIamPolicy(policy_request)
+    return projects_api.RemoveIamPolicyBinding(project_ref,
+                                               args.member, args.role)

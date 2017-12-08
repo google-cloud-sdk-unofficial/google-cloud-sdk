@@ -16,7 +16,8 @@
 import json
 from googlecloudsdk.api_lib.pubsub import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core.console import console_io as io
+from googlecloudsdk.core.resource import resource_printer
+from googlecloudsdk.core.util import text
 from googlecloudsdk.third_party.apitools.base.py import exceptions as api_ex
 
 
@@ -72,12 +73,13 @@ class Delete(base.Command):
     failures = len(failed)
 
     if successes:
-      success_printer = io.ListPrinter(
-          '{0} subscription(s) deleted successfully'.format(successes))
-      success_printer.Print([subscription for subscription in succeeded])
+      fmt = 'list[title="{0} {1} deleted successfully"]'.format(
+          successes, text.Pluralize(successes, 'subscription'))
+      resource_printer.Print([subscription for subscription in succeeded], fmt)
 
     if failures:
-      fail_printer = io.ListPrinter(
-          '{0} subscription(s) failed'.format(failures))
-      fail_printer.Print(
-          ['{0} (reason: {1})'.format(subs, reason) for subs, reason in failed])
+      fmt = 'list[title="{0} {1} failed"]'.format(
+          failures, text.Pluralize(failures, 'subscription'))
+      resource_printer.Print(
+          ['{0} (reason: {1})'.format(subs, reason) for subs, reason in failed],
+          fmt)

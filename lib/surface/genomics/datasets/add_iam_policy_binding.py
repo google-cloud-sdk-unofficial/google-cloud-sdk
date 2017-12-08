@@ -52,7 +52,7 @@ class AddIamPolicyBinding(base.Command):
     )
     policy = apitools_client.datasets.GetIamPolicy(policy_request)
 
-    iam_util.AddBindingToIamPolicy(messages, policy, args)
+    iam_util.AddBindingToIamPolicy(messages, policy, args.member, args.role)
 
     policy_request = messages.GenomicsDatasetsSetIamPolicyRequest(
         resource='datasets/{0}'.format(dataset_resource.Name()),

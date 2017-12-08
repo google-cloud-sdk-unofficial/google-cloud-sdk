@@ -19,7 +19,8 @@ import os
 import sys
 import types
 
-from googlecloudsdk.api_lib.projects import projects_api
+from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
+from googlecloudsdk.api_lib.sdktool.diagnostics import network_checks
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core import config
@@ -105,6 +106,9 @@ class Init(base.Command):
       return
     log.status.write('Your current configuration has been set to: [{0}]\n\n'
                      .format(configuration_name))
+
+    if not network_checks.DiagnoseNetworkConnection():
+      return
 
     if not self._PickAccount(args.console_only, preselected=args.account):
       return

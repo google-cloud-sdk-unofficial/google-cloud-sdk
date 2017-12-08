@@ -45,6 +45,6 @@ class GetIamPolicy(orgs_base.OrganizationCommand):
     messages = self.OrganizationsMessages()
     policy_request = (
         messages.CloudresourcemanagerOrganizationsGetIamPolicyRequest(
-            resource=self.GetOrganizationRef(args.id).Name(),
+            organizationsId=args.id,
             getIamPolicyRequest=messages.GetIamPolicyRequest()))
     return self.OrganizationsClient().GetIamPolicy(policy_request)

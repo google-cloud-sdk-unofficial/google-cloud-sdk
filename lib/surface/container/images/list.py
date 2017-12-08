@@ -56,7 +56,7 @@ class List(base.ListCommand):
     parser.add_argument(
         '--repository',
         required=False,
-        help=('The name of the repository. Format: *.gcr.io/repository.'
+        help=('The name of the repository. Format: *.gcr.io/repository. '
               'Defaults to gcr.io/<project>, for the active project.'))
 
   def Run(self, args):

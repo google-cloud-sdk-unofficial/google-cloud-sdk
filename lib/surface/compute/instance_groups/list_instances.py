@@ -57,7 +57,7 @@ class ListInstancesAlpha(instance_groups_utils.InstanceGroupListInstancesBase):
               self.messages.InstanceGroupsListInstancesRequest()),
           zone=group_ref.zone,
           filter=filter_expr,
-          project=self.context['project'])
+          project=group_ref.project)
     else:
       service = self.compute.regionInstanceGroups
       request = service.GetRequestType(self.method)(
@@ -66,7 +66,7 @@ class ListInstancesAlpha(instance_groups_utils.InstanceGroupListInstancesBase):
               self.messages.RegionInstanceGroupsListInstancesRequest()),
           region=group_ref.region,
           filter=filter_expr,
-          project=self.context['project'])
+          project=group_ref.project)
 
     errors = []
     results = self.compute_client.MakeRequests(

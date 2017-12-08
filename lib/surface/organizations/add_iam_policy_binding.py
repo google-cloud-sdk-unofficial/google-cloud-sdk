@@ -45,19 +45,18 @@ class AddIamPolicyBinding(orgs_base.OrganizationCommand):
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
     messages = self.OrganizationsMessages()
-    org_name = self.GetOrganizationRef(args.id).Name()
 
     get_policy_request = (
         messages.CloudresourcemanagerOrganizationsGetIamPolicyRequest(
-            resource=org_name,
+            organizationsId=args.id,
             getIamPolicyRequest=messages.GetIamPolicyRequest()))
     policy = self.OrganizationsClient().GetIamPolicy(get_policy_request)
 
-    iam_util.AddBindingToIamPolicy(messages, policy, args)
+    iam_util.AddBindingToIamPolicy(messages, policy, args.member, args.role)
 
     set_policy_request = (
         messages.CloudresourcemanagerOrganizationsSetIamPolicyRequest(
-            resource=org_name,
+            organizationsId=args.id,
             setIamPolicyRequest=messages.SetIamPolicyRequest(policy=policy)))
 
     return self.OrganizationsClient().SetIamPolicy(set_policy_request)

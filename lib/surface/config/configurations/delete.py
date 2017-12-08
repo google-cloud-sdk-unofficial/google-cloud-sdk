@@ -19,6 +19,7 @@ from googlecloudsdk.command_lib.config import completers
 from googlecloudsdk.core import log
 from googlecloudsdk.core.configurations import named_configs
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.resource import resource_printer
 
 
 class Delete(base.SilentCommand):
@@ -70,9 +71,8 @@ class Delete(base.SilentCommand):
           'activate` to change the active configuration.'.format(
               active_config.name))
 
-    printer = console_io.ListPrinter(
-        'The following configurations will be deleted:')
-    printer.Print(args.configuration_names, output_stream=log.status)
+    fmt = 'list[title="The following configurations will be deleted:"]'
+    resource_printer.Print(args.configuration_names, fmt, out=log.status)
     console_io.PromptContinue(default=True, cancel_on_no=True)
 
     for configuration_name in args.configuration_names:

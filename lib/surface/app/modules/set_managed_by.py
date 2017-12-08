@@ -20,15 +20,15 @@ from googlecloudsdk.core import log
 
 
 class SetManagedBy(base.Command):
-  """Sets the policy for the Managed VMs of the given modules and version.
+  """Sets the policy for the Flexible VMs of the given services and version.
 
   This command is deprecated. Please use the
   `gcloud preview app instances enable-debug` and
   `gcloud preview app instances disable-debug` commands instead.
 
-  This command sets the policy for the Managed VMs of the given modules and
-  version.  When your module uses VM runtimes, you can use this command to
-  change the management mode for a set of your VMs.  If you switch to
+  This command sets the policy for the App Engine Flexible VMs of the given
+  services and version.  When your module uses VM runtimes, you can use this
+  command to change the management mode for a set of your VMs.  If you switch to
   self-managed, SSH will be enabled on the VMs, and they will be removed from
   the health checking pools, but will still receive requests.  When you switch
   back to Google-managed mode, any local changes on the VMs are lost and they

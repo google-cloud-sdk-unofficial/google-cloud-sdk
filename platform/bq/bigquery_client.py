@@ -1273,7 +1273,11 @@ class BigqueryClient(object):
     lower_camel = typename[0].lower() + typename[1:]
     return {lower_camel: dict(reference)}
 
-  def _PrepareListRequest(self, reference, max_results=None, page_token=None):
+  def _PrepareListRequest(self,
+                          reference,
+                          max_results=None,
+                          page_token=None):
+    """Create and populate a list request."""
     request = dict(reference)
     if max_results is not None:
       request['maxResults'] = max_results
@@ -1351,21 +1355,27 @@ class BigqueryClient(object):
     return map(  # pylint: disable=g-long-lambda
         BigqueryClient.ConstructObjectReference, self.ListDatasets(**kwds))
 
-  def ListDatasets(self, reference=None, max_results=None, page_token=None,
+  def ListDatasets(self,
+                   reference=None,
+                   max_results=None,
+                   page_token=None,
                    list_all=None):
     """List the datasets associated with this reference."""
     reference = self._NormalizeProjectReference(reference)
     _Typecheck(reference, ApiClientHelper.ProjectReference,
                method='ListDatasets')
-    request = self._PrepareListRequest(reference, max_results, page_token)
+    request = self._PrepareListRequest(reference,
+                                       max_results,
+                                       page_token)
     if list_all is not None:
       request['all'] = list_all
     result = self.apiclient.datasets().list(**request).execute()
     results = result.get('datasets', [])
     if max_results is not None:
       while 'nextPageToken' in result and len(results) < max_results:
-        request = self._PrepareListRequest(
-            reference, max_results - len(results), result['nextPageToken'])
+        request = self._PrepareListRequest(reference,
+                                           max_results - len(results),
+                                           result['nextPageToken'])
         if list_all is not None:
           request['all'] = list_all
         result = self.apiclient.datasets().list(**request).execute()

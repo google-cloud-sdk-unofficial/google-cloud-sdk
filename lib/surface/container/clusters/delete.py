@@ -16,6 +16,7 @@
 import argparse
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
@@ -43,12 +44,7 @@ class Delete(base.Command):
         type=int,
         default=1800,
         help=argparse.SUPPRESS)
-    parser.add_argument(
-        '--wait',
-        action='store_true',
-        default=True,
-        help='Poll the operation for completion after issuing a delete '
-        'request.')
+    flags.AddClustersWaitAndAsyncFlags(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -89,7 +85,7 @@ class Delete(base.Command):
         errors.append(util.GetError(error))
       except util.Error as error:
         errors.append(error)
-    if args.wait:
+    if not flags.GetAsyncValueFromAsyncAndWaitFlags(args.async, args.wait):
       # Poll each operation for completion
       for operation_ref, cluster_ref in operations:
         try:

@@ -16,6 +16,7 @@
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.PREVIEW)
 class Modules(base.Group):
   """Deprecated. View and manage your App Engine modules.
 

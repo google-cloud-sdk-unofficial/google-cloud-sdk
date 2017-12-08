@@ -19,7 +19,6 @@ import textwrap
 from googlecloudsdk.api_lib.organizations import errors
 from googlecloudsdk.api_lib.organizations import orgs_base
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 
 
@@ -60,12 +59,3 @@ class Update(orgs_base.OrganizationCommand):
     result = client.Update(org)
     log.UpdatedResource(org_ref)
     return result
-
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    list_printer.PrintResourceList(self.Collection(), [result])

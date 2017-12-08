@@ -14,13 +14,12 @@
 
 """Command to create a new project."""
 
-from googlecloudsdk.api_lib.projects import util
-from googlecloudsdk.api_lib.service_management import enable_api
-from googlecloudsdk.api_lib.service_management import services_util
+from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
+from googlecloudsdk.api_lib.cloudresourcemanager import projects_util
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import util as command_lib_util
-from googlecloudsdk.core import apis
+
 from googlecloudsdk.core import log
 
 
@@ -59,29 +58,12 @@ class Create(base.CreateCommand):
                         default=True,
                         help='Enable cloudapis.googleapis.com during creation.')
 
-  # util.HandleKnownHttpErrors needs to be the first one to handle errors.
+  # HandleKnownHttpErrors needs to be the first one to handle errors.
   # It needs to be placed after http_error_handler.HandleHttpErrors.
   @http_error_handler.HandleHttpErrors
-  @util.HandleKnownHttpErrors
+  @projects_util.HandleKnownHttpErrors
   def Run(self, args):
-    projects = util.GetClient()
-    messages = util.GetMessages()
-
     project_ref = command_lib_util.ParseProject(args.id)
-
-    # Create project.
-    project_creation_result = projects.projects.Create(
-        messages.Project(
-            projectId=project_ref.Name(),
-            name=args.name if args.name else project_ref.Name()))
-
-    if args.enable_cloud_apis:
-      # Enable cloudapis.googleapis.com
-      services_client = apis.GetClientInstance('servicemanagement', 'v1')
-      enable_operation = enable_api.EnableServiceApiCall(
-          project_ref.Name(), 'cloudapis.googleapis.com')
-      services_util.WaitForOperation(enable_operation.name, services_client)
-      # TODO(user): Retry in case it failed?
-
+    result = projects_api.Create(project_ref, args.name, args.enable_cloud_apis)
     log.CreatedResource(project_ref)
-    return project_creation_result
+    return result

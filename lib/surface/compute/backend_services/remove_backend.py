@@ -36,32 +36,40 @@ class RemoveBackend(base_classes.ReadWriteCommand):
   capacity scaler to zero through 'gcloud compute
   backend-services edit'.
   """
-  _BACKEND_SERVICE_ARG = compute_flags.ResourceArgument(
-      resource_name='backend service',
-      completion_resource_id='compute.backendService',
-      global_collection='compute.backendServices')
+  _BACKEND_SERVICE_ARG = flags.GLOBAL_BACKEND_SERVICE_ARG
 
-  @staticmethod
-  def Args(parser):
-    flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+  @classmethod
+  def Args(cls, parser):
+    cls._BACKEND_SERVICE_ARG.AddArgument(parser)
     backend_flags.AddInstanceGroup(
         parser, operation_type='remove from', multizonal=False,
         with_deprecated_zone=True)
 
   @property
   def service(self):
+    if self.regional:
+      return self.compute.regionBackendServices
     return self.compute.backendServices
 
   @property
   def resource_type(self):
+    if self.regional:
+      return 'regionBackendServices'
     return 'backendServices'
 
   def CreateReference(self, args):
-    return flags.GLOBAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, self.context['resources'],
+    return self._BACKEND_SERVICE_ARG.ResolveAsResource(
+        args, self.resources,
         default_scope=compute_flags.ScopeEnum.GLOBAL)
 
   def GetGetRequest(self, args):
+    if self.regional:
+      return (self.service,
+              'Get',
+              self.messages.ComputeRegionBackendServicesGetRequest(
+                  backendService=self.ref.Name(),
+                  region=self.ref.region,
+                  project=self.project))
     return (self.service,
             'Get',
             self.messages.ComputeBackendServicesGetRequest(
@@ -69,6 +77,14 @@ class RemoveBackend(base_classes.ReadWriteCommand):
                 project=self.project))
 
   def GetSetRequest(self, args, replacement, existing):
+    if self.regional:
+      return (self.service,
+              'Update',
+              self.messages.ComputeRegionBackendServicesUpdateRequest(
+                  backendService=self.ref.Name(),
+                  backendServiceResource=replacement,
+                  region=self.ref.region,
+                  project=self.project))
     return (self.service,
             'Update',
             self.messages.ComputeBackendServicesUpdateRequest(
@@ -96,15 +112,28 @@ class RemoveBackend(base_classes.ReadWriteCommand):
         backend_idx = i
 
     if backend_idx is None:
+      scope_value = getattr(group_ref, 'region', None)
+      if scope_value is None:
+        scope_value = getattr(group_ref, 'zone', None)
+        scope = 'zone'
+      else:
+        scope = 'region'
+
       raise exceptions.ToolException(
-          'Backend [{0}] in zone [{1}] is not a backend of backend service '
-          '[{2}].'.format(group_ref.Name(),
-                          group_ref.zone,
-                          args.name))
+          'Backend [{0}] in {1} [{2}] is not a backend of backend service '
+          '[{3}].'.format(group_ref.Name(),
+                          scope,
+                          scope_value,
+                          self.ref.Name()))
     else:
       replacement.backends.pop(backend_idx)
 
     return replacement
+
+  def Run(self, args):
+    # Check whether --region flag was used for regional resource.
+    self.regional = getattr(args, 'region', None) is not None
+    return super(RemoveBackend, self).Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -119,6 +148,8 @@ class RemoveBackendAlpha(RemoveBackend):
   capacity scaler to zero through 'gcloud compute
   backend-services edit'.
   """
+
+  _BACKEND_SERVICE_ARG = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG
 
   @classmethod
   def Args(cls, parser):

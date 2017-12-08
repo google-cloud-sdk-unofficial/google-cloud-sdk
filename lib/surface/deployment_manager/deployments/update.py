@@ -28,6 +28,7 @@ from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_e
 OPERATION_TIMEOUT = 20 * 60  # 20 mins
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update a deployment based on a provided config file.
 
@@ -61,13 +62,15 @@ class Update(base.Command):
   }
 
   @staticmethod
-  def Args(parser):
+  def Args(parser, version=base.ReleaseTrack.GA):
     """Args is called by calliope to gather arguments for this command.
 
     Args:
       parser: An argparse parser that you can use to add arguments that go
           on the command line after this command. Positional arguments are
           allowed.
+      version: The version this tool is running as. base.ReleaseTrack.GA
+          is the default.
     """
     parser.add_argument(
         '--async',
@@ -80,12 +83,20 @@ class Update(base.Command):
 
     parser.add_argument('deployment_name', help='Deployment name.')
 
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
         '--config',
         help='Filename of config which specifies resources to deploy. '
         'Required unless launching an already-previewed update to this '
         'deployment.',
         dest='config')
+
+    if version in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
+      group.add_argument(
+          '--manifest-id',
+          help='Manifest Id of a previous deployment. '
+          'This flag cannot be used with --config.',
+          dest='manifest_id')
 
     parser.add_argument(
         '--properties',
@@ -161,9 +172,16 @@ class Update(base.Command):
     deployment = messages.Deployment(
         name=args.deployment_name,
     )
+
     if args.config:
       deployment.target = importer.BuildTargetConfig(
           messages, args.config, args.properties)
+    elif (self.ReleaseTrack() in [base.ReleaseTrack.ALPHA,
+                                  base.ReleaseTrack.BETA]
+          and args.manifest_id):
+      deployment.target = importer.BuildTargetConfigFromManifest(
+          client, messages, project, args.deployment_name, args.manifest_id,
+          args.properties)
     # Get the fingerprint from the deployment to update.
     try:
       current_deployment = client.deployments.Get(
@@ -214,3 +232,29 @@ class Update(base.Command):
 
       return dm_v2_util.FetchResourcesAndOutputs(client, messages, project,
                                                  args.deployment_name)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBETA(Update):
+  """Update a deployment based on a provided config file.
+
+  This command will update a deployment with the new config file provided.
+  Different policies for create, update, and delete policies can be specified.
+  """
+
+  @staticmethod
+  def Args(parser):
+    Update.Args(parser, version=base.ReleaseTrack.BETA)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateALPHA(Update):
+  """Update a deployment based on a provided config file.
+
+  This command will update a deployment with the new config file provided.
+  Different policies for create, update, and delete policies can be specified.
+  """
+
+  @staticmethod
+  def Args(parser):
+    Update.Args(parser, version=base.ReleaseTrack.ALPHA)

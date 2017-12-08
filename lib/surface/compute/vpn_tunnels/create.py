@@ -18,7 +18,6 @@ import re
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
-from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 
@@ -125,6 +124,19 @@ class _BaseCreate(object):
               'of CIDR formatted strings. '
               'Example: 192.168.0.0/16,10.0.0.0/24.'))
 
+    parser.add_argument(
+        '--remote-traffic-selector',
+        type=arg_parsers.ArgList(min_length=1),
+        action=arg_parsers.FloatingListValuesCatcher(),
+        metavar='CIDR',
+        help=('Traffic selector is an agreement between IKE peers to permit '
+              'traffic through a tunnel if the traffic matches a specified pair'
+              ' of local and remote addresses.\n\n'
+              'remote_traffic_selector allows to configure the remote addresses'
+              ' that are permitted. The value should be a comma separated list '
+              'of CIDR formatted strings. '
+              'Example: 192.168.0.0/16,10.0.0.0/24.'))
+
     # TODO(b/29072646): autocomplete --router argument
     parser.add_argument(
         '--router',
@@ -161,90 +173,12 @@ _BaseCreate.detailed_help = {
     }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateGA(_BaseCreate, base_classes.BaseAsyncCreator):
   """Create a VPN tunnel."""
 
   @staticmethod
   def Args(parser):
     _BaseCreate.Args(parser)
-
-  def CreateRequests(self, args):
-    """Builds API requests to construct VPN Tunnels."""
-
-    if args.ike_networks is not None:
-      raise DeprecatedArgumentException(
-          '--ike-networks',
-          'It has been renamed to --local-traffic-selector.')
-
-    vpn_tunnel_ref = self.CreateRegionalReference(
-        args.name, args.region, resource_type='vpnTunnels')
-
-    # The below is a hack.  The code below ensures that the following two
-    # properties hold:
-    #   1) scope prompting occurs at most once for the vpn tunnel and gateway
-    #   2) if the user gives exactly one of the vpn tunnel and gateway as a URL
-    #        and one as short name we do still check --region or prompt as
-    #        usual.
-    #
-    # TODO(user) Change the semantics of the scope prompter so that a
-    # single prompt can set the region for resources of multiple types with a
-    # single user prompt.  See b/18313268.
-
-    # requested by args or prompt?
-    if args.region:
-      requested_region = args.region
-    elif not args.name.startswith('https://'):
-      requested_region = vpn_tunnel_ref.region
-    else:
-      requested_region = None
-
-    target_vpn_gateway_ref = self.CreateRegionalReference(
-        args.target_vpn_gateway, requested_region,
-        resource_type='targetVpnGateways')
-
-    router_link = None
-    if args.router is not None:
-      router_ref = self.CreateRegionalReference(
-          args.router, requested_region,
-          resource_type='routers')
-      router_link = router_ref.SelfLink()
-
-    request = self.messages.ComputeVpnTunnelsInsertRequest(
-        project=self.project,
-        region=vpn_tunnel_ref.region,
-        vpnTunnel=self.messages.VpnTunnel(
-            description=args.description,
-            router=router_link,
-            localTrafficSelector=args.local_traffic_selector or [],
-            ikeVersion=args.ike_version,
-            name=vpn_tunnel_ref.Name(),
-            peerIp=args.peer_address,
-            sharedSecret=args.shared_secret,
-            targetVpnGateway=target_vpn_gateway_ref.SelfLink()))
-
-    return [request]
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class CreateBeta(_BaseCreate, base_classes.BaseAsyncCreator):
-  """Create a VPN tunnel."""
-
-  @staticmethod
-  def Args(parser):
-    CreateGA.Args(parser)
-    parser.add_argument(
-        '--remote-traffic-selector',
-        type=arg_parsers.ArgList(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
-        metavar='CIDR',
-        help=('Traffic selector is an agreement between IKE peers to permit '
-              'traffic through a tunnel if the traffic matches a specified pair'
-              ' of local and remote addresses.\n\n'
-              'remote_traffic_selector allows to configure the remote addresses'
-              ' that are permitted. The value should be a comma separated list '
-              'of CIDR formatted strings. '
-              'Example: 192.168.0.0/16,10.0.0.0/24.'))
 
   def CreateRequests(self, args):
     """Builds API requests to construct VPN Tunnels."""

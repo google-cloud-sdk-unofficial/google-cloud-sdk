@@ -21,6 +21,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.resource import resource_printer
 
 
 class CreateIndexes(base.Command):
@@ -58,11 +59,10 @@ class CreateIndexes(base.Command):
           'index_file', 'You must provide the path to a valid index.yaml file.')
 
     info = app_config.Configs()[yaml_parsing.ConfigYamlInfo.INDEX]
-    printer = console_io.ListPrinter(
-        'You are about to update the following configurations:')
-    printer.Print(
+    fmt = 'list[title="You are about to update the following configurations:"]'
+    resource_printer.Print(
         ['{0}/{1}  From: [{2}]'.format(project, info.config, info.file)],
-        output_stream=log.status)
+        fmt, out=log.status)
     console_io.PromptContinue(default=True, throw_if_unattended=False,
                               cancel_on_no=True)
 

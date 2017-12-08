@@ -11,10 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Command for listing backend services."""
+
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class List(base_classes.GlobalLister):
   """List backend services."""
 
@@ -28,3 +32,35 @@ class List(base_classes.GlobalLister):
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp('backend services')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(base_classes.GlobalRegionalLister):
+  """List backend services."""
+
+  def Collection(self):
+    return 'compute.backendServices.alpha'
+
+  @property
+  def aggregation_service(self):
+    return None  # Force global
+
+  @property
+  def global_service(self):
+    return self.compute.backendServices
+
+  @property
+  def regional_service(self):
+    return self.compute.regionBackendServices
+
+  @property
+  def resource_type(self):
+    return 'backendServices'
+
+  @property
+  def allowed_filtering_types(self):
+    return ['regionBackendServices', 'backendServices']
+
+
+ListAlpha.detailed_help = base_classes.GetGlobalRegionalListerHelp(
+    'backend services')

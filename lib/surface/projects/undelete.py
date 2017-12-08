@@ -14,7 +14,8 @@
 
 """Command to undelete a project."""
 
-from googlecloudsdk.api_lib.projects import util
+from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
+from googlecloudsdk.api_lib.cloudresourcemanager import projects_util
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import util as command_lib_util
@@ -56,13 +57,9 @@ class Undelete(base.CreateCommand):
   # util.HandleKnownHttpErrors needs to be the first one to handle errors.
   # It needs to be placed after http_error_handler.HandleHttpErrors.
   @http_error_handler.HandleHttpErrors
-  @util.HandleKnownHttpErrors
+  @projects_util.HandleKnownHttpErrors
   def Run(self, args):
-    projects = util.GetClient()
-    messages = util.GetMessages()
     project_ref = command_lib_util.ParseProject(args.id)
-    projects.projects.Undelete(
-        messages.CloudresourcemanagerProjectsUndeleteRequest(
-            projectId=project_ref.Name()))
+    result = projects_api.Undelete(project_ref)
     log.status.write('Undeleted [{r}].\n'.format(r=project_ref))
-    return util.DeletedResource(project_ref.Name())
+    return result

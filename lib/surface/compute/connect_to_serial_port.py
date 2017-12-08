@@ -40,7 +40,6 @@ DEFAULT_HOST_KEY = ('ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDkOOCaBZVTxzvjJ7+7'
                     'oQFQl5aCwcS8UQnzzwMDflQ+JgsynYN08dLIRGcwkJe9')
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
   """Class for connecting through a gateway to the interactive serial port."""
@@ -204,4 +203,3 @@ ConnectToSerialPort.detailed_help = {
       one is generated using ssh-keygen.
       """,
     }
-

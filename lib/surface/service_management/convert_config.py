@@ -37,8 +37,8 @@ class ConvertConfig(base.Command, base_classes.BaseServiceManagementCommand):
           allowed.
     """
     parser.add_argument(
-        'swagger_file',
-        help='The file path containing the swagger specification to convert.')
+        'open_api_file',
+        help='The file path containing the Open API specification to convert.')
     parser.add_argument(
         'output_file', nargs='?', default='',
         help=('The file path of the output file containing the converted '
@@ -59,22 +59,21 @@ class ConvertConfig(base.Command, base_classes.BaseServiceManagementCommand):
       IOError: An IOError is returned if the input file cannot be read, or
           the output file cannot be written to.
     """
+    # TODO(user): Add support for swagger file references later
+    # This requires the API to support multiple files first. b/23353397
     try:
-      with open(args.swagger_file) as f:
-        swagger = self.services_messages.File(
-            contents=f.read(),
-            path=os.path.basename(args.swagger_file),
+      with open(args.open_api_file) as f:
+        open_api_spec = self.services_messages.OpenApiSpec(
+            openApiFiles=[self.services_messages.ConfigFile(
+                filePath=os.path.basename(args.open_api_file),
+                fileContents=f.read())]
         )
     except IOError:
       raise exceptions.ToolException.FromCurrent(
-          'Cannot open {f} file'.format(f=args.swagger_file))
-
-    # TODO(user): Add support for swagger file references later
-    # This requires the API to support multiple files first. b/23353397
-    swagger_spec = self.services_messages.SwaggerSpec(swaggerFiles=[swagger])
+          'Cannot open {f} file'.format(f=args.open_api_file))
 
     request = self.services_messages.ConvertConfigRequest(
-        swaggerSpec=swagger_spec,
+        openApiSpec=open_api_spec,
     )
 
     converted_config = self.services_client.v1.ConvertConfig(request)

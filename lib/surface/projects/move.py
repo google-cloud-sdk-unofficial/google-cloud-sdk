@@ -13,8 +13,8 @@
 # limitations under the License.
 """Command to move a project into an organization."""
 
-from googlecloudsdk.api_lib.projects import errors
-from googlecloudsdk.api_lib.projects import util
+from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
+from googlecloudsdk.api_lib.cloudresourcemanager import projects_util
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import flags
@@ -67,20 +67,13 @@ class Move(base.Command):
         required=True,
         help='ID of the organization to move the project into.')
 
-  # util.HandleKnownHttpErrors needs to be the first one to handle errors.
+  # HandleKnownHttpErrors needs to be the first one to handle errors.
   # It needs to be placed after http_error_handler.HandleHttpErrors.
   @http_error_handler.HandleHttpErrors
-  @util.HandleKnownHttpErrors
+  @projects_util.HandleKnownHttpErrors
   def Run(self, args):
-    projects = util.GetClient()
-    messages = util.GetMessages()
     project_ref = command_lib_util.ParseProject(args.id)
-    project = projects.projects.Get(project_ref.Request())
-    if project.parent is not None:
-      raise errors.ProjectMoveError(project, args.organization)
-    project.parent = messages.ResourceId(id=args.organization,
-                                         type='organization')
-    result = projects.projects.Update(project)
+    result = projects_api.Update(project_ref, organization=args.organization)
     log.UpdatedResource(project_ref)
     return result
 
@@ -91,4 +84,5 @@ class Move(base.Command):
       args: The arguments that command was run with.
       result: The value returned from the Run() method.
     """
-    list_printer.PrintResourceList('cloudresourcemanager.projects', [result])
+    list_printer.PrintResourceList(command_lib_util.PROJECTS_COLLECTION,
+                                   [result])

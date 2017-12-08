@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.resource import resource_printer
 from googlecloudsdk.core.util import text
 
 
@@ -99,16 +100,15 @@ class Delete(base.Command):
       word = text.Pluralize(len(services_to_delete), 'service')
       log.warn('Requested deletion of all existing versions for the following '
                '{0}:'.format(word))
-      printer = console_io.ListPrinter('')
-      printer.Print(services_to_delete, output_stream=log.status)
+      resource_printer.Print(services_to_delete, 'list', out=log.status)
       console_io.PromptContinue(prompt_string=(
           '\nYou cannot delete all versions of a service. Would you like to '
           'delete the entire {0} instead?').format(word), cancel_on_no=True)
       service_util.DeleteServices(client, services_to_delete)
 
     if versions:
-      printer = console_io.ListPrinter('Deleting the following versions:')
-      printer.Print(versions, output_stream=log.status)
+      fmt = 'list[title="Deleting the following versions:"]'
+      resource_printer.Print(versions, fmt, out=log.status)
       console_io.PromptContinue(cancel_on_no=True)
     else:
       if not services_to_delete:

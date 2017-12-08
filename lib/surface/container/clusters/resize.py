@@ -13,6 +13,7 @@
 # limitations under the License.
 """Resize cluster command."""
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -34,13 +35,8 @@ class Resize(base.Command):
         required=True,
         type=int,
         help=('Target number of nodes in the cluster.'))
-    parser.add_argument(
-        '--wait',
-        action='store_true',
-        default=True,
-        help='Poll the operation for completion after issuing an resize '
-        'request.')
     parser.add_argument('--node-pool', help='The node pool to resize.')
+    flags.AddClustersWaitAndAsyncFlags(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -68,7 +64,7 @@ class Resize(base.Command):
                                      igm.instanceGroupManager, args.size)
       ops.append(op_ref)
 
-    if args.wait:
+    if not flags.GetAsyncValueFromAsyncAndWaitFlags(args.async, args.wait):
       adapter.WaitForComputeOperations(
           cluster_ref.projectId, cluster.zone, [op.name for op in ops],
           'Resizing {0}'.format(cluster_ref.clusterId))

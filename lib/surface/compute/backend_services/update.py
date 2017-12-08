@@ -38,21 +38,39 @@ class UpdateGA(base_classes.ReadWriteCommand):
     flags.AddTimeout(parser, default=None)
     flags.AddPortName(parser)
     flags.AddProtocol(parser, default=None)
+    flags.AddEnableCdn(parser, default=None)
 
   @property
   def service(self):
+    if self.regional:
+      return self.compute.regionBackendServices
     return self.compute.backendServices
 
   @property
   def resource_type(self):
+    if self.regional:
+      return 'regionBackendServices'
     return 'backendServices'
 
   def CreateReference(self, args):
+    if self.regional:
+      return flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
+          args, self.resources,
+          default_scope=compute_flags.ScopeEnum.GLOBAL)
+
     return flags.GLOBAL_BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, self.context['resources'],
+        args, self.resources,
         default_scope=compute_flags.ScopeEnum.GLOBAL)
 
   def GetGetRequest(self, args):
+    if self.regional:
+      return (
+          self.service,
+          'Get',
+          self.messages.ComputeRegionBackendServicesGetRequest(
+              project=self.project,
+              region=self.ref.region,
+              backendService=self.ref.Name()))
     return (
         self.service,
         'Get',
@@ -61,6 +79,16 @@ class UpdateGA(base_classes.ReadWriteCommand):
             backendService=self.ref.Name()))
 
   def GetSetRequest(self, args, replacement, _):
+    if self.regional:
+      return (
+          self.service,
+          'Update',
+          self.messages.ComputeRegionBackendServicesUpdateRequest(
+              project=self.project,
+              region=self.ref.region,
+              backendService=self.ref.Name(),
+              backendServiceResource=replacement))
+
     return (
         self.service,
         'Update',
@@ -94,9 +122,12 @@ class UpdateGA(base_classes.ReadWriteCommand):
       replacement.protocol = (self.messages.BackendService
                               .ProtocolValueValuesEnum(args.protocol))
 
+    if args.enable_cdn is not None:
+      replacement.enableCDN = args.enable_cdn
+
     return replacement
 
-  def Run(self, args):
+  def ValidateArgs(self, args):
     if not any([
         args.protocol,
         args.description is not None,
@@ -105,8 +136,15 @@ class UpdateGA(base_classes.ReadWriteCommand):
         args.timeout is not None,
         args.port,
         args.port_name,
+        args.enable_cdn is not None,
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
+
+  def Run(self, args):
+    self.ValidateArgs(args)
+
+    # Check whether --region flag was used for regional resource.
+    self.regional = getattr(args, 'region', None) is not None
 
     return super(UpdateGA, self).Run(args)
 
@@ -117,7 +155,7 @@ class UpdateAlpha(UpdateGA):
 
   @staticmethod
   def Args(parser):
-    flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddDescription(parser)
     flags.AddHttpHealthChecks(parser)
     flags.AddHttpsHealthChecks(parser)
@@ -138,9 +176,6 @@ class UpdateAlpha(UpdateGA):
       replacement.connectionDraining = self.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
 
-    if args.enable_cdn is not None:
-      replacement.enableCDN = args.enable_cdn
-
     if args.session_affinity is not None:
       replacement.sessionAffinity = (
           self.messages.BackendService.SessionAffinityValueValuesEnum(
@@ -151,7 +186,7 @@ class UpdateAlpha(UpdateGA):
 
     return replacement
 
-  def Run(self, args):
+  def ValidateArgs(self, args):
     if not any([
         args.protocol,
         args.description is not None,
@@ -167,8 +202,6 @@ class UpdateAlpha(UpdateGA):
         args.affinity_cookie_ttl is not None
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
-
-    return super(UpdateGA, self).Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -192,9 +225,6 @@ class UpdateBeta(UpdateGA):
   def Modify(self, args, existing):
     replacement = super(UpdateBeta, self).Modify(args, existing)
 
-    if args.enable_cdn is not None:
-      replacement.enableCDN = args.enable_cdn
-
     if args.session_affinity is not None:
       replacement.sessionAffinity = (
           self.messages.BackendService.SessionAffinityValueValuesEnum(
@@ -205,7 +235,7 @@ class UpdateBeta(UpdateGA):
 
     return replacement
 
-  def Run(self, args):
+  def ValidateArgs(self, args):
     if not any([
         args.protocol,
         args.description is not None,
@@ -219,8 +249,6 @@ class UpdateBeta(UpdateGA):
         args.affinity_cookie_ttl is not None
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
-
-    return super(UpdateGA, self).Run(args)
 
 
 UpdateGA.detailed_help = {

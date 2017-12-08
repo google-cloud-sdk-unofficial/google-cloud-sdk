@@ -142,7 +142,7 @@ Create.detailed_help = {
 
           $ {command} --log-service=appengine.googleapis.com my-bq-sink bigquery.googleapis.com/projects/my-project/datasets/my_dataset
 
-        To export "syslog" from App Engine Managed VM's to Cloud Storage, run:
+        To export "syslog" from App Engine Flexible to Cloud Storage, run:
 
           $ {command} --log=appengine.googleapis.com/syslog my-gcs-sink storage.googleapis.com/my-bucket
 

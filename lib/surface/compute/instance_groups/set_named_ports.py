@@ -12,12 +12,75 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for setting named ports in instance groups."""
+from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.instance_groups import flags
 
 
-class SetNamedPorts(instance_groups_utils.InstanceGroupSetNamedPorts):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class SetNamedPorts(base_classes.NoOutputAsyncMutator):
+  """Sets named ports for instance groups."""
+
+  @property
+  def service(self):
+    return self.compute.instanceGroups
+
+  @property
+  def method(self):
+    return 'SetNamedPorts'
+
+  @property
+  def resource_type(self):
+    return 'instanceGroups'
 
   @staticmethod
   def Args(parser):
-    instance_groups_utils.InstanceGroupSetNamedPorts.AddArgs(
-        parser=parser, multizonal=False)
+    flags.AddNamedPortsArgs(parser)
+    flags.AddScopeArgs(parser=parser, multizonal=False)
+
+  def CreateRequests(self, args):
+    group_ref = self.CreateZonalReference(args.group, args.zone)
+    ports = instance_groups_utils.ValidateAndParseNamedPortsArgs(
+        self.messages, args.named_ports)
+    # service should be always zonal
+    request, _ = instance_groups_utils.GetSetNamedPortsRequestForGroup(
+        self.compute_client, group_ref, ports)
+    return [(self.service, self.method, request)]
+
+  detailed_help = instance_groups_utils.SET_NAMED_PORTS_HELP
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SetNamedPortsAlpha(base_classes.NoOutputAsyncMutator):
+  """Sets named ports for instance groups."""
+
+  @property
+  def service(self):
+    # service property not implemented on this command as it is specified
+    # for each request
+    return None
+
+  @property
+  def method(self):
+    return 'SetNamedPorts'
+
+  @staticmethod
+  def Args(parser):
+    flags.AddNamedPortsArgs(parser)
+    flags.AddScopeArgs(parser=parser, multizonal=True)
+
+  def CreateRequests(self, args):
+    group_ref = instance_groups_utils.CreateInstanceGroupReference(
+        scope_prompter=self, compute=self.compute, resources=self.resources,
+        name=args.group, region=args.region, zone=args.zone,
+        zonal_resource_type='instanceGroups',
+        regional_resource_type='regionInstanceGroups')
+    ports = instance_groups_utils.ValidateAndParseNamedPortsArgs(
+        self.messages, args.named_ports)
+    # service could be zonal or regional
+    request, service = instance_groups_utils.GetSetNamedPortsRequestForGroup(
+        self.compute_client, group_ref, ports)
+    return [(service, self.method, request)]
+
+  detailed_help = instance_groups_utils.SET_NAMED_PORTS_HELP

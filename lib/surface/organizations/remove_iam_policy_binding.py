@@ -45,19 +45,18 @@ class RemoveIamPolicyBinding(orgs_base.OrganizationCommand):
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
     messages = self.OrganizationsMessages()
-    organization_ref = self.GetOrganizationRef(args.id)
 
     get_policy_request = (
         messages.CloudresourcemanagerOrganizationsGetIamPolicyRequest(
-            resource=organization_ref.Name(),
+            organizationsId=args.id,
             getIamPolicyRequest=messages.GetIamPolicyRequest()))
     policy = self.OrganizationsClient().GetIamPolicy(get_policy_request)
 
-    iam_util.RemoveBindingFromIamPolicy(policy, args)
+    iam_util.RemoveBindingFromIamPolicy(policy, args.member, args.role)
 
     set_policy_request = (
         messages.CloudresourcemanagerOrganizationsSetIamPolicyRequest(
-            resource=organization_ref.Name(),
+            organizationsId=args.id,
             setIamPolicyRequest=messages.SetIamPolicyRequest(policy=policy)))
 
     return self.OrganizationsClient().SetIamPolicy(set_policy_request)
