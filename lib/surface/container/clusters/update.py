@@ -40,6 +40,66 @@ def _ParseAddonDisabled(val):
   raise InvalidAddonValueError(val)
 
 
+def _AddCommonArgs(parser):
+  parser.add_argument(
+      'name',
+      metavar='NAME',
+      help='The name of the cluster to update.')
+  parser.add_argument(
+      '--node-pool',
+      help='Node pool to be updated.')
+  flags.AddClustersWaitAndAsyncFlags(parser)
+
+
+def _AddMutuallyExclusiveArgs(parser, mutex_group):
+  """Add all arguments that need to be mutually eclusive from each other."""
+  mutex_group.add_argument(
+      '--monitoring-service',
+      help='The monitoring service to use for the cluster. Options '
+      'are: "monitoring.googleapis.com" (the Google Cloud Monitoring '
+      'service),  "none" (no metrics will be exported from the cluster)')
+  mutex_group.add_argument(
+      '--update-addons',
+      type=arg_parsers.ArgDict(spec={
+          api_adapter.INGRESS: _ParseAddonDisabled,
+          api_adapter.HPA: _ParseAddonDisabled,
+      }),
+      dest='disable_addons',
+      action=arg_parsers.FloatingListValuesCatcher(),
+      metavar='ADDON=ENABLED|DISABLED',
+      help='''Cluster addons to enable or disable. Options are
+{hpa}=ENABLED|DISABLED
+{ingress}=ENABLED|DISABLED'''.format(
+    hpa=api_adapter.HPA, ingress=api_adapter.INGRESS))
+  flags.AddClusterAutoscalingFlags(parser, mutex_group)
+
+
+def _AddAdditionalZonesArg(mutex_group):
+  mutex_group.add_argument(
+      '--additional-zones',
+      type=arg_parsers.ArgList(),
+      metavar='ZONE',
+      action=arg_parsers.FloatingListValuesCatcher(),
+      help="""\
+The set of additional zones in which the cluster's node footprint should be
+replicated. All zones must be in the same region as the cluster's primary zone.
+
+Note that the exact same footprint will be replicated in all zones, such that
+if you created a cluster with 4 nodes in a single zone and then use this option
+to spread across 2 more zones, 8 additional nodes will be created.
+
+Multiple locations can be specified, separated by commas. For example:
+
+  $ {{command}} example-cluster --zone us-central1-a --additional-zones us-central1-b,us-central1-c
+
+To remove all zones other than the cluster's primary zone, pass the empty string
+to the flag. For example:
+
+  $ {{command}} example-cluster --zone us-central1-a --additional-zones ""
+""")
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update cluster settings for an existing container cluster."""
 
@@ -51,34 +111,9 @@ class Update(base.Command):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
           to capture some information, but behaves like an ArgumentParser.
     """
-    parser.add_argument(
-        'name',
-        metavar='NAME',
-        help='The name of the cluster to update.')
+    _AddCommonArgs(parser)
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument(
-        '--monitoring-service',
-        help='The monitoring service to use for the cluster. Options '
-        'are: "monitoring.googleapis.com" (the Google Cloud Monitoring '
-        'service),  "none" (no metrics will be exported from the cluster)')
-    group.add_argument(
-        '--update-addons',
-        type=arg_parsers.ArgDict(spec={
-            api_adapter.INGRESS: _ParseAddonDisabled,
-            api_adapter.HPA: _ParseAddonDisabled,
-        }),
-        dest='disable_addons',
-        action=arg_parsers.FloatingListValuesCatcher(),
-        metavar='ADDON=ENABLED|DISABLED',
-        help='''Cluster addons to enable or disable. Options are
-  {hpa}=ENABLED|DISABLED
-  {ingress}=ENABLED|DISABLED'''.format(
-      hpa=api_adapter.HPA, ingress=api_adapter.INGRESS))
-    parser.add_argument(
-        '--node-pool',
-        help='Node pool to be updated.')
-    flags.AddClusterAutoscalingFlags(parser, group)
-    flags.AddClustersWaitAndAsyncFlags(parser)
+    _AddMutuallyExclusiveArgs(parser, group)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -96,13 +131,25 @@ class Update(base.Command):
     # Make sure it exists (will raise appropriate error if not)
     adapter.GetCluster(cluster_ref)
 
+    # locations will be None if additional-zones was specified, an empty list
+    # if it was specified with no argument, or a populated list if zones were
+    # provided. We want to distinguish between the case where it isn't
+    # specified (and thus shouldn't be passed on to the API) and the case where
+    # it's specified as wanting no additional zones, in which case we must pass
+    # the cluster's primary zone to the API.
+    # TODO(b/29578401): Remove the hasattr once the flag is GA.
+    locations = None
+    if hasattr(args, 'additional_zones') and args.additional_zones is not None:
+      locations = sorted([cluster_ref.zone] + args.additional_zones)
+
     options = api_adapter.UpdateClusterOptions(
         monitoring_service=args.monitoring_service,
         disable_addons=args.disable_addons,
         enable_autoscaling=args.enable_autoscaling,
         min_nodes=args.min_nodes,
         max_nodes=args.max_nodes,
-        node_pool=args.node_pool)
+        node_pool=args.node_pool,
+        locations=locations)
 
     try:
       op_ref = adapter.UpdateCluster(cluster_ref, options)
@@ -114,3 +161,15 @@ class Update(base.Command):
           op_ref, 'Updating {0}'.format(cluster_ref.clusterId))
 
       log.UpdatedResource(cluster_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class UpdateBeta(Update):
+  """Update cluster settings for an existing container cluster."""
+
+  @staticmethod
+  def Args(parser):
+    _AddCommonArgs(parser)
+    group = parser.add_mutually_exclusive_group(required=True)
+    _AddMutuallyExclusiveArgs(parser, group)
+    _AddAdditionalZonesArg(group)

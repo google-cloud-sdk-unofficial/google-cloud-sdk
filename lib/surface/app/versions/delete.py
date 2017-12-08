@@ -90,7 +90,7 @@ class Delete(base.Command):
             'Version [{version}] is currently serving {allocation:.2f}% of '
             'traffic for service [{service}].\n\n'
             'Please move all traffic away by deploying a new version with the'
-            '`--promote` argument or running `gcloud preview app services '
+            '`--promote` argument or running `gcloud app services '
             'set-traffic`.'.format(
                 version=version.id,
                 allocation=version.traffic_split * 100,

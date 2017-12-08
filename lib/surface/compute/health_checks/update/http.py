@@ -90,6 +90,10 @@ class Update(base_classes.ReadWriteCommand):
     else:
       port_name = None
 
+    proxy_header = existing_check.httpHealthCheck.proxyHeader
+    if args.proxy_header is not None:
+      proxy_header = self.messages.HTTPHealthCheck.ProxyHeaderValueValuesEnum(
+          args.proxy_header)
     new_health_check = self.messages.HealthCheck(
         name=existing_check.name,
         description=description,
@@ -99,7 +103,8 @@ class Update(base_classes.ReadWriteCommand):
             port=args.port or existing_check.httpHealthCheck.port,
             portName=port_name,
             requestPath=(args.request_path or
-                         existing_check.httpHealthCheck.requestPath)),
+                         existing_check.httpHealthCheck.requestPath),
+            proxyHeader=proxy_header),
         checkIntervalSec=(args.check_interval or
                           existing_check.checkIntervalSec),
         timeoutSec=args.timeout or existing_check.timeoutSec,
@@ -118,7 +123,8 @@ class Update(base_classes.ReadWriteCommand):
                       or args.check_interval
                       or args.timeout
                       or args.healthy_threshold
-                      or args.unhealthy_threshold)
+                      or args.unhealthy_threshold
+                      or args.proxy_header)
     if (args.description is None and args.host is None and
         args.port_name is None and args_unset):
       raise exceptions.ToolException('At least one property must be modified.')

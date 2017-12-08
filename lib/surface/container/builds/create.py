@@ -16,6 +16,7 @@
 import os.path
 
 from googlecloudsdk.api_lib.app import cloud_build
+from googlecloudsdk.api_lib.cloudbuild import config
 from googlecloudsdk.api_lib.cloudbuild import logs as cb_logs
 from googlecloudsdk.api_lib.cloudbuild import snapshot
 from googlecloudsdk.api_lib.cloudbuild import storage as cb_storage
@@ -46,8 +47,8 @@ class Create(base.Command):
     """
     parser.add_argument(
         'source',
-        help='The source tarball on local disk or in Google Cloud Storage to '
-             'use for this build.',
+        help='The source directory on local disk or tarball in Google Cloud '
+             'Storage to use for this build.',
     )
     parser.add_argument(
         '--gcs-source-staging-dir',
@@ -55,21 +56,21 @@ class Create(base.Command):
              'used for the build. If the bucket does not exist, it will be '
              'created. If not set, gs://<project id>_cloudbuild/source is '
              'used.',
-        # TODO(b/29183856): Use a gs://-style default.
-        default=None,
     )
     parser.add_argument(
         '--gcs-log-dir',
         help='Directory in Google Cloud Storage to hold build logs. If the '
              'bucket does not exist, it will be created. If not set, '
              'gs://<project id>_cloudbuild/logs is used.',
-        # TODO(b/29183856): Use a gs://-style default.
-        default=None,
     )
-    parser.add_argument(
+    build_config = parser.add_mutually_exclusive_group(required=True)
+    build_config.add_argument(
         '--tag',
         help='The tag to use with a "docker build" image creation.',
-        required=True,
+    )
+    build_config.add_argument(
+        '--config',
+        help='The .yaml or .json file to use for build configuration.',
     )
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -103,21 +104,23 @@ class Create(base.Command):
     gcs_client = cb_storage.Client(properties.VALUES.core.project.Get())
 
     # First, create the build request.
-    image_to_create = args.tag
-    build_config = messages.Build(
-        images=[image_to_create],
-        steps=[
-            messages.BuildStep(
-                args=[image_to_create],
-                name='gcr.io/cloud-builders/dockerizer',
-            ),
-        ],
-    )
+    if args.tag:
+      build_config = messages.Build(
+          images=[args.tag],
+          steps=[
+              messages.BuildStep(
+                  name='gcr.io/cloud-builders/docker',
+                  args=['build', '-t', args.tag],
+              ),
+          ],
+      )
+    elif args.config:
+      build_config = config.LoadCloudbuildConfig(args.config, messages)
 
-    # Next, stage the source to GCS.
+    # Next, stage the source to Cloud Storage.
     staged_object = '{stamp}_{tag_ish}.tgz'.format(
         stamp=times.GetTimeStampFromDateTime(times.Now()),
-        tag_ish=args.tag.replace('/', '_'),
+        tag_ish='_'.join(build_config.images or 'null').replace('/', '_'),
     )
     gcs_source_staging_dir = registry.Parse(
         args.gcs_source_staging_dir, collection='storage.objects')
@@ -164,7 +167,9 @@ class Create(base.Command):
                 generation=staged_source_obj.generation,
             ))
       elif os.path.isfile(args.source):
-        pass
+        raise c_exceptions.BadFileException(
+            '[{src}] is a local file, must be a local directory or a tarball '
+            'in Google Cloud Storage'.format(src=args.source))
 
     gcs_log_dir = registry.Parse(
         args.gcs_log_dir, collection='storage.objects')

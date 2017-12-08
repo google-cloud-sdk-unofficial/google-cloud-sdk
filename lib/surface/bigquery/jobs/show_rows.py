@@ -17,7 +17,6 @@
 
 from googlecloudsdk.api_lib.bigquery import bigquery
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core.console import console_io
 
 
 class JobsShowRows(base.Command):
@@ -50,15 +49,12 @@ class JobsShowRows(base.Command):
       A bigquery.QueryResults object.
     """
     job = bigquery.Job.ResolveFromId(args.job_id)
-    return job.GetQueryResults(start_row=args.start_row, max_rows=args.limit)
+    query_results = job.GetQueryResults(
+        start_row=args.start_row, max_rows=args.limit)
+    self._schema = query_results.GetSchema()
+    return query_results
 
-  def Display(self, args, query_results):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that the command was run with.
-      query_results: A bigquery.QueryResults object.
-    """
-    console_io.PrintExtendedList(query_results,
-                                 query_results.GetColumnFetchers())
-
+  def Format(self, args):
+    fields = ['[{0}]:label={1}'.format(i, field[0].upper())
+              for i, field in enumerate(self._schema)]
+    return 'table(.:format="table({0})")'.format(','.join(fields))

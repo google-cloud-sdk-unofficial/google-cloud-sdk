@@ -25,7 +25,8 @@ class CreateInstance(base.CreateCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    (arguments.ArgAdder(parser).AddInstance().AddInstanceDescription()
+    (arguments.ArgAdder(parser).AddInstance()
+     .AddInstanceDescription(required=True)
      .AddCluster(positional=False).AddClusterNodes(in_instance=True)
      .AddClusterStorage(in_instance=True).AddClusterZone(in_instance=True)
      .AddAsync())

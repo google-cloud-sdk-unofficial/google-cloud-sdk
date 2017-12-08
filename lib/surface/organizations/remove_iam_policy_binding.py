@@ -17,9 +17,10 @@
 import httplib
 
 from googlecloudsdk.api_lib.organizations import errors
-from googlecloudsdk.api_lib.organizations import orgs_base
 from googlecloudsdk.api_lib.util import http_retry
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.organizations import flags
+from googlecloudsdk.command_lib.organizations import orgs_base
 from googlecloudsdk.core.iam import iam_util
 
 
@@ -37,8 +38,7 @@ class RemoveIamPolicyBinding(orgs_base.OrganizationCommand):
 
   @staticmethod
   def Args(parser):
-    orgs_base.OrganizationCommand.IdArg(
-        parser, 'ID for the organization whose IAM binding you want to remove.')
+    flags.IdArg('whose IAM binding you want to remove.').AddToParser(parser)
     iam_util.AddArgsForRemoveIamPolicyBinding(parser)
 
   @errors.HandleHttpError

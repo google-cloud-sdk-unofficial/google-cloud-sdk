@@ -13,8 +13,9 @@
 # limitations under the License.
 """Cloud Pub/Sub subscription pull command."""
 
-from googlecloudsdk.api_lib.pubsub import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.pubsub import util
+from googlecloudsdk.core import resources
 
 
 class Pull(base.ListCommand):
@@ -39,7 +40,7 @@ class Pull(base.ListCommand):
         help=('Automatically ACK every message pulled from this subscription.'))
 
   def Collection(self):
-    return 'pubsub.pull'
+    return util.SUBSCRIPTIONS_PULL_COLLECTION
 
   @util.MapHttpError
   def Run(self, args):
@@ -55,10 +56,13 @@ class Pull(base.ListCommand):
     msgs = self.context['pubsub_msgs']
     pubsub = self.context['pubsub']
 
+    subscription = util.SubscriptionFormat(
+        resources.Parse(args.subscription,
+                        collection=util.SUBSCRIPTIONS_COLLECTION).Name())
     pull_req = msgs.PubsubProjectsSubscriptionsPullRequest(
         pullRequest=msgs.PullRequest(
             maxMessages=args.max_messages, returnImmediately=True),
-        subscription=util.SubscriptionFormat(args.subscription))
+        subscription=subscription)
 
     pull_response = pubsub.projects_subscriptions.Pull(pull_req)
 
@@ -67,7 +71,7 @@ class Pull(base.ListCommand):
 
       ack_req = msgs.PubsubProjectsSubscriptionsAcknowledgeRequest(
           acknowledgeRequest=msgs.AcknowledgeRequest(ackIds=ack_ids),
-          subscription=util.SubscriptionFormat(args.subscription))
+          subscription=subscription)
       pubsub.projects_subscriptions.Acknowledge(ack_req)
 
     return pull_response.receivedMessages

@@ -13,9 +13,9 @@
 # limitations under the License.
 """Cloud Pub/Sub subscription modify-push-config command."""
 
-from googlecloudsdk.api_lib.pubsub import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import log
+from googlecloudsdk.command_lib.pubsub import util
+from googlecloudsdk.core import resources
 
 
 class ModifyPushConfig(base.Command):
@@ -33,6 +33,9 @@ class ModifyPushConfig(base.Command):
               ' This will also automatically set the subscription'
               ' type to PUSH.'))
 
+  def Collection(self):
+    return util.SUBSCRIPTIONS_MOD_CONFIG_COLLECTION
+
   @util.MapHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -47,19 +50,14 @@ class ModifyPushConfig(base.Command):
     msgs = self.context['pubsub_msgs']
     pubsub = self.context['pubsub']
 
+    subscription = util.SubscriptionFormat(
+        resources.Parse(args.subscription,
+                        collection=util.SUBSCRIPTIONS_COLLECTION).Name())
     mod_req = msgs.PubsubProjectsSubscriptionsModifyPushConfigRequest(
         modifyPushConfigRequest=msgs.ModifyPushConfigRequest(
             pushConfig=msgs.PushConfig(pushEndpoint=args.push_endpoint)),
-        subscription=util.SubscriptionFormat(args.subscription))
+        subscription=subscription)
 
     pubsub.projects_subscriptions.ModifyPushConfig(mod_req)
-
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    log.out.Print('New Push Endpoint URL:')
-    log.out.Print('"{0}"'.format(args.push_endpoint))
+    return {'subscriptionId': subscription,
+            'pushEndpoint': args.push_endpoint}

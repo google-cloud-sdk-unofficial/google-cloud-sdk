@@ -17,7 +17,7 @@ from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base_classes.ZonalDescriber):
   """Describe a managed instance group."""
 
@@ -45,8 +45,8 @@ class Describe(base_classes.ZonalDescriber):
         fail_when_api_not_supported=False)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(base_classes.MultiScopeDescriber):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class DescribeBeta(base_classes.MultiScopeDescriber):
   """Describe a managed instance group."""
 
   SCOPES = [base_classes.ScopeType.regional_scope,
@@ -79,7 +79,7 @@ class DescribeAlpha(base_classes.MultiScopeDescriber):
   @staticmethod
   def Args(parser):
     base_classes.MultiScopeDescriber.AddScopeArgs(
-        parser, 'instanceGroupManagers', DescribeAlpha.SCOPES)
+        parser, 'instanceGroupManagers', DescribeBeta.SCOPES)
 
   def ComputeDynamicProperties(self, args, items):
     """Add Autoscaler information if Autoscaler is defined for the item."""
@@ -100,5 +100,5 @@ Describe.detailed_help = {
 managed instance group.
 """,
 }
-DescribeAlpha.detailed_help = base_classes.GetMultiScopeDescriberHelp(
-    'managed instance group', DescribeAlpha.SCOPES)
+DescribeBeta.detailed_help = base_classes.GetMultiScopeDescriberHelp(
+    'managed instance group', DescribeBeta.SCOPES)

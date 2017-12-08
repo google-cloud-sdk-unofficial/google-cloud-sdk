@@ -13,9 +13,9 @@
 # limitations under the License.
 """Cloud Pub/Sub topics publish command."""
 
-from googlecloudsdk.api_lib.pubsub import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import log
+from googlecloudsdk.command_lib.pubsub import util
+from googlecloudsdk.core import resources
 
 
 class Ack(base.Command):
@@ -35,6 +35,9 @@ class Ack(base.Command):
     parser.add_argument('ackid', nargs='+',
                         help='One or more AckId to acknowledge.')
 
+  def Collection(self):
+    return util.SUBSCRIPTIONS_ACK_COLLECTION
+
   @util.MapHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -44,23 +47,21 @@ class Ack(base.Command):
         command invocation.
 
     Returns:
-      None
+      Ack display dictionary with information about the acknowledged messages
+      and related subscription.
     """
     msgs = self.context['pubsub_msgs']
     pubsub = self.context['pubsub']
 
+    subscription = resources.Parse(args.subscription,
+                                   collection=util.SUBSCRIPTIONS_COLLECTION)
     ack_req = msgs.PubsubProjectsSubscriptionsAcknowledgeRequest(
         acknowledgeRequest=msgs.AcknowledgeRequest(ackIds=args.ackid),
-        subscription=util.SubscriptionFormat(args.subscription))
+        subscription=util.SubscriptionFormat(subscription.Name()))
 
     pubsub.projects_subscriptions.Acknowledge(ack_req)
 
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    log.out.Print('{0} message(s) acknowledged for subscription {1}'.format(
-        len(args.ackid), util.SubscriptionFormat(args.subscription)))
+    # Using this dict, instead of returning the AcknowledgeRequest directly,
+    # to preserve the naming conventions for subscriptionId.
+    return {'subscriptionId': ack_req.subscription,
+            'ackIds': ack_req.acknowledgeRequest.ackIds}

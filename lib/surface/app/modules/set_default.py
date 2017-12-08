@@ -25,7 +25,7 @@ class SetDefault(base.Command):
   """Set the default serving version for the given modules.
 
   This command is deprecated. Please use
-  `gcloud preview app services set-traffic` instead.
+  `gcloud app services set-traffic` instead.
 
   This command sets the default serving version for the given modules.
   The default version for a module is served when you visit
@@ -53,7 +53,7 @@ class SetDefault(base.Command):
 
   def Run(self, args):
     log.warn('This command is deprecated. '
-             'Please use `gcloud preview app services set-traffic` instead.')
+             'Please use `gcloud app services set-traffic` instead.')
     client = appengine_api_client.GetApiClient()
 
     message = ('You are about to set the default serving version to [{version}]'

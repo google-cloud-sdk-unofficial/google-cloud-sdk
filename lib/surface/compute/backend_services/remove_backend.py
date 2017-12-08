@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class RemoveBackend(base_classes.ReadWriteCommand):
   """Remove a backend from a backend service.
 
@@ -136,8 +136,42 @@ class RemoveBackend(base_classes.ReadWriteCommand):
     return super(RemoveBackend, self).Run(args)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class RemoveBackendBeta(RemoveBackend):
+  """Remove a backend from a backend service.
+
+  *{command}* is used to remove a backend from a backend
+  service.
+
+  Before removing a backend, it is a good idea to "drain" the
+  backend first. A backend can be drained by setting its
+  capacity scaler to zero through 'gcloud compute
+  backend-services edit'.
+  """
+
+  _BACKEND_SERVICE_ARG = flags.GLOBAL_BACKEND_SERVICE_ARG
+
+  @classmethod
+  def Args(cls, parser):
+    cls._BACKEND_SERVICE_ARG.AddArgument(parser)
+    backend_flags.AddInstanceGroup(
+        parser, operation_type='remove from', multizonal=True,
+        with_deprecated_zone=True)
+
+  def CreateGroupReference(self, args):
+    return instance_groups_utils.CreateInstanceGroupReference(
+        scope_prompter=self,
+        compute=self.compute,
+        resources=self.resources,
+        name=args.instance_group,
+        region=args.instance_group_region,
+        zone=args.instance_group_zone,
+        zonal_resource_type='instanceGroups',
+        regional_resource_type='regionInstanceGroups')
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RemoveBackendAlpha(RemoveBackend):
+class RemoveBackendAlpha(RemoveBackendBeta):
   """Remove a backend from a backend service.
 
   *{command}* is used to remove a backend from a backend
@@ -156,14 +190,3 @@ class RemoveBackendAlpha(RemoveBackend):
     cls._BACKEND_SERVICE_ARG.AddArgument(parser)
     backend_flags.AddInstanceGroup(
         parser, operation_type='remove from', multizonal=True)
-
-  def CreateGroupReference(self, args):
-    return instance_groups_utils.CreateInstanceGroupReference(
-        scope_prompter=self,
-        compute=self.compute,
-        resources=self.resources,
-        name=args.instance_group,
-        region=args.instance_group_region,
-        zone=args.instance_group_zone,
-        zonal_resource_type='instanceGroups',
-        regional_resource_type='regionInstanceGroups')

@@ -41,7 +41,8 @@ class Create(base_classes.BaseAsyncCreator):
 
     health_check_ref = self.CreateGlobalReference(
         args.name, resource_type='healthChecks')
-
+    proxy_header = self.messages.TCPHealthCheck.ProxyHeaderValueValuesEnum(
+        args.proxy_header)
     request = self.messages.ComputeHealthChecksInsertRequest(
         healthCheck=self.messages.HealthCheck(
             name=health_check_ref.Name(),
@@ -51,7 +52,8 @@ class Create(base_classes.BaseAsyncCreator):
                 request=args.request,
                 response=args.response,
                 port=args.port,
-                portName=args.port_name),
+                portName=args.port_name,
+                proxyHeader=proxy_header),
             checkIntervalSec=args.check_interval,
             timeoutSec=args.timeout,
             healthyThreshold=args.healthy_threshold,

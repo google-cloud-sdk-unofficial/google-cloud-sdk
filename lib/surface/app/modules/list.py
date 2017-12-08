@@ -24,7 +24,7 @@ class List(base.ListCommand):
   """List your existing deployed modules and versions.
 
   This command is deprecated. Please use
-  `gcloud preview app versions list` instead.
+  `gcloud app versions list` instead.
 
   This command lists all the modules and their versions that are currently
   deployed to the App Engine server.  The default serving version for each
@@ -50,11 +50,11 @@ class List(base.ListCommand):
     flags.MODULES_OPTIONAL_ARG.AddToParser(parser)
 
   def Collection(self):
-    return 'app.module_versions'
+    return 'appengine.module_versions'
 
   def Run(self, args):
     log.warn('This command is deprecated. '
-             'Please use `gcloud preview app versions list` instead.')
+             'Please use `gcloud app versions list` instead.')
     api_client = appengine_api_client.GetApiClient()
     services = api_client.ListServices()
     versions = api_client.ListVersions(services)

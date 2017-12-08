@@ -16,9 +16,23 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
-from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.resource import resource_registry
 from googlecloudsdk.core.updater import snapshots
 from googlecloudsdk.core.updater import update_manager
+
+
+def TransformLastUpdate(r):
+  try:
+    snapshot = snapshots.ComponentSnapshot.FromURLs(
+        r, command_path='components.repositories.list')
+    return snapshot.sdk_definition.LastUpdatedString()
+  except (AttributeError, TypeError, snapshots.URLFetchError):
+    return 'Unknown'
+
+
+_COMPONENTS_REPOSITORIES_TRANSFORMS = {
+    'last_update': TransformLastUpdate,
+}
 
 
 class List(base.Command):
@@ -34,28 +48,27 @@ class List(base.Command):
       """,
   }
 
-  @staticmethod
-  def _LastUpdate(repo):
-    try:
-      snapshot = snapshots.ComponentSnapshot.FromURLs(
-          repo, command_path='components.repositories.list')
-      return snapshot.sdk_definition.LastUpdatedString()
-    # pylint: disable=bare-except, We should always print a table even if we
-    # can't calculate the date.
-    except:
-      return 'Unknown'
-
   def Run(self, args):
     """Runs the list command."""
     repos = update_manager.UpdateManager.GetAdditionalRepositories()
     return repos if repos else []
 
-  def Display(self, unused_args, repos):
-    if repos:
-      console_io.PrintExtendedList(
-          repos,
-          [('REPOSITORY', lambda x: x), ('LAST_UPDATE', List._LastUpdate)])
-    else:
+  def Format(self, args):
+    return self.ListFormat(args)
+
+  def ResourceInfo(self, args):
+    return resource_registry.ResourceInfo(
+        list_format="""
+          table(
+            .:label=REPOSITORY,
+            last_update():label=LAST_UPDATE
+          )
+        """,
+        transforms=_COMPONENTS_REPOSITORIES_TRANSFORMS,
+    )
+
+  def Epilog(self, resources_were_displayed):
+    if not resources_were_displayed:
       log.status.write(
           'You have no registered component repositories.  To add one, run:\n'
           '  $ gcloud components repositories add URL\n\n')

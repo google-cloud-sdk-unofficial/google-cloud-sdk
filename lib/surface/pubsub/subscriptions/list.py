@@ -13,9 +13,9 @@
 # limitations under the License.
 """Cloud Pub/Sub subscription list command."""
 import re
-from googlecloudsdk.api_lib.pubsub import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as sdk_ex
+from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core.resource import resource_printer_base
 from googlecloudsdk.core.resource import resource_projector
 
@@ -74,7 +74,7 @@ class List(base.ListCommand):
       raise sdk_ex.HttpException(str(e))
 
   def Collection(self):
-    return 'pubsub.subscriptions'
+    return util.SUBSCRIPTIONS_LIST_COLLECTION
 
 
 def SubscriptionDict(subscription):

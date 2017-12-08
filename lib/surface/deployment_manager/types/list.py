@@ -14,8 +14,6 @@
 
 """operations list command."""
 
-import types
-
 from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
@@ -23,20 +21,25 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """List types in a project.
 
   Prints a a list of the available resource types.
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To print out a list of all available type names, run:
 
             $ {command}
           """,
   }
+
+  @staticmethod
+  def Args(parser):
+    base.FLATTEN_FLAG.RemoveFromParser(parser)
+    base.SORT_BY_FLAG.RemoveFromParser(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     """Run 'types list'.
@@ -59,26 +62,11 @@ class List(base.Command):
     request = messages.DeploymentmanagerTypesListRequest(project=project)
     return dm_v2_util.YieldWithHttpExceptions(
         list_pager.YieldFromList(client.types, request, field='types',
-                                 batch_size=500))
+                                 batch_size=args.page_size, limit=args.limit))
 
-  def Display(self, args, result):
-    """Display prints information about what just happened to stdout.
+  def Format(self, unused_args):
+    return 'value(name)'
 
-    Args:
-      args: The same as the args in Run.
-
-      result: a list of types, where each dict is a Type object with a name
-          attribute.
-
-    Raises:
-      ValueError: if result is None or not a generator
-    """
-    if not isinstance(result, types.GeneratorType):
-      raise ValueError('result must be a generator')
-
-    empty_generator = True
-    for type_item in result:
-      empty_generator = False
-      log.Print(type_item.name)
-    if empty_generator:
-      log.Print('No types were found for your project!')
+  def Epilog(self, resources_were_displayed):
+    if not resources_were_displayed:
+      log.status.Print('No types were found for your project!')

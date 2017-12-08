@@ -25,7 +25,7 @@ def _IsZonalGroup(ref):
   return ref.Collection() == 'compute.instanceGroupManagers'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class SetAutoscaling(base_classes.BaseAsyncMutator):
   """Set autoscaling parameters of a managed instance group."""
 
@@ -104,14 +104,14 @@ class SetAutoscaling(base_classes.BaseAsyncMutator):
     return ((service, method, request),)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SetAutoscalingAlpha(SetAutoscaling):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class SetAutoscalingBeta(SetAutoscaling):
   """Set autoscaling parameters of a managed instance group."""
 
   @staticmethod
   def Args(parser):
     managed_instance_groups_utils.AddAutoscalerArgs(
-        parser=parser, multizonal_enabled=True, queue_scaling_enabled=True)
+        parser=parser, multizonal_enabled=True, queue_scaling_enabled=False)
 
   def CreateGroupReference(self, args):
     return instance_groups_utils.CreateInstanceGroupReference(
@@ -173,6 +173,16 @@ class SetAutoscalingAlpha(SetAutoscaling):
       request.region = igm_ref.region
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SetAutoscalingAlpha(SetAutoscalingBeta):
+  """Set autoscaling parameters of a managed instance group."""
+
+  @staticmethod
+  def Args(parser):
+    managed_instance_groups_utils.AddAutoscalerArgs(
+        parser=parser, multizonal_enabled=True, queue_scaling_enabled=True)
+
+
 SetAutoscaling.detailed_help = {
     'brief': 'Set autoscaling parameters of a managed instance group',
     'DESCRIPTION': """\
@@ -180,4 +190,5 @@ SetAutoscaling.detailed_help = {
 group.
         """,
 }
+SetAutoscalingBeta.detailed_help = SetAutoscaling.detailed_help
 SetAutoscalingAlpha.detailed_help = SetAutoscaling.detailed_help

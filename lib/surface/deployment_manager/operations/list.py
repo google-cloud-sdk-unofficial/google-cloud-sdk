@@ -27,7 +27,6 @@ class List(base.ListCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To print out a list of operations with some summary information about each, run:
 
@@ -76,4 +75,4 @@ class List(base.ListCommand):
     )
     return dm_v2_util.YieldWithHttpExceptions(list_pager.YieldFromList(
         client.operations, request, field='operations', limit=args.limit,
-        batch_size=500))
+        batch_size=args.page_size))

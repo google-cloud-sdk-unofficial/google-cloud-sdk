@@ -62,8 +62,9 @@ class AppengineGA(base.Group):
 class AppenginePreview(base.Group):
 
   def Filter(self, unused_context, unused_args):
+    log.warn('The `gcloud preview app` command group is deprecated; please use '
+             'the `gcloud app` commands instead.')
     checks.RaiseIfNotPython27()
-    checks.WarnAboutChangingBehavior()
 
 
 AppengineGA.detailed_help = DETAILED_HELP

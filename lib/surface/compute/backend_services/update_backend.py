@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateBackend(base_classes.ReadWriteCommand):
   """Update an existing backend in a backend service."""
 
@@ -189,6 +189,56 @@ class UpdateBackend(base_classes.ReadWriteCommand):
     return super(UpdateBackend, self).Run(args)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBackendBeta(UpdateBackend):
+  """Update an existing backend in a backend service."""
+
+  @classmethod
+  def Args(cls, parser):
+    flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    backend_flags.AddDescription(parser)
+    backend_flags.AddInstanceGroup(
+        parser, operation_type='update', multizonal=True,
+        with_deprecated_zone=True)
+    backend_flags.AddBalancingMode(parser, with_connection=True)
+    backend_flags.AddCapacityLimits(parser, with_connection=True)
+    backend_flags.AddCapacityScalar(parser)
+
+  def CreateGroupReference(self, args):
+    return instance_groups_utils.CreateInstanceGroupReference(
+        scope_prompter=self,
+        compute=self.compute,
+        resources=self.resources,
+        name=args.instance_group,
+        region=args.instance_group_region,
+        zone=(args.instance_group_zone
+              if args.instance_group_zone else args.zone),
+        zonal_resource_type='instanceGroups',
+        regional_resource_type='regionInstanceGroups')
+
+  def ModifyBalancingModeArgs(self, args, backend_to_update):
+    """Override. See base class, UpdateBackend."""
+    _ModifyBalancingModeArgs(self.messages, args, backend_to_update)
+
+  def Run(self, args):
+    if not any([
+        args.description is not None,
+        args.balancing_mode,
+        args.max_utilization is not None,
+        args.max_rate is not None,
+        args.max_rate_per_instance is not None,
+        args.max_connections is not None,
+        args.max_connections_per_instance is not None,
+        args.capacity_scaler is not None,
+    ]):
+      raise exceptions.ToolException('At least one property must be modified.')
+
+    # Check whether --region flag was used for regional resource.
+    self.regional = getattr(args, 'region', None) is not None
+
+    return super(UpdateBackend, self).Run(args)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateBackendAlpha(UpdateBackend):
   """Update an existing backend in a backend service."""
@@ -214,63 +264,9 @@ class UpdateBackendAlpha(UpdateBackend):
         zonal_resource_type='instanceGroups',
         regional_resource_type='regionInstanceGroups')
 
-  def ClearMutualExclusiveBackendCapacityThresholds(self, backend):
-    """Initialize the backend's mutually exclusive capacity thresholds."""
-    backend.maxRate = None
-    backend.maxRatePerInstance = None
-    backend.maxConnections = None
-    backend.maxConnectionsPerInstance = None
-
   def ModifyBalancingModeArgs(self, args, backend_to_update):
     """Override. See base class, UpdateBackend."""
-
-    backend_services_utils.ValidateBalancingModeArgs(
-        args,
-        backend_to_update.balancingMode)
-
-    if args.balancing_mode:
-      backend_to_update.balancingMode = (
-          self.messages.Backend.BalancingModeValueValuesEnum(
-              args.balancing_mode))
-
-      # If the balancing mode is being changed to RATE (CONNECTION), we must
-      # clear the max utilization and max connections (rate) fields, otherwise
-      # the server will reject the request.
-      if (backend_to_update.balancingMode ==
-          self.messages.Backend.BalancingModeValueValuesEnum.RATE):
-        backend_to_update.maxUtilization = None
-        backend_to_update.maxConnections = None
-        backend_to_update.maxConnectionsPerInstance = None
-      elif (backend_to_update.balancingMode ==
-            self.messages.Backend.BalancingModeValueValuesEnum.CONNECTION):
-        backend_to_update.maxUtilization = None
-        backend_to_update.maxRate = None
-        backend_to_update.maxRatePerInstance = None
-
-    # Now, we set the parameters that control load balancing.
-    # ValidateBalancingModeArgs takes care that the control parameters
-    # are compatible with the balancing mode.
-    if args.max_utilization is not None:
-      backend_to_update.maxUtilization = args.max_utilization
-
-    # max_rate, max_rate_per_instance, max_connections and
-    # max_connections_per_instance are mutually exclusive arguments.
-    if args.max_rate is not None:
-      self.ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
-      backend_to_update.maxRate = args.max_rate
-    elif args.max_rate_per_instance is not None:
-      self.ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
-      backend_to_update.maxRatePerInstance = args.max_rate_per_instance
-    elif args.max_connections is not None:
-      self.ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
-      backend_to_update.maxConnections = args.max_connections
-    elif args.max_connections_per_instance is not None:
-      self.ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
-      backend_to_update.maxConnectionsPerInstance = (
-          args.max_connections_per_instance)
-
-    if args.capacity_scaler is not None:
-      backend_to_update.capacityScaler = args.capacity_scaler
+    _ModifyBalancingModeArgs(self.messages, args, backend_to_update)
 
   def Run(self, args):
     if not any([
@@ -288,6 +284,73 @@ class UpdateBackendAlpha(UpdateBackend):
     # Check whether --region flag was used for regional resource.
     self.regional = getattr(args, 'region', None) is not None
     return super(UpdateBackend, self).Run(args)
+
+
+def _ClearMutualExclusiveBackendCapacityThresholds(backend):
+  """Initialize the backend's mutually exclusive capacity thresholds."""
+  backend.maxRate = None
+  backend.maxRatePerInstance = None
+  backend.maxConnections = None
+  backend.maxConnectionsPerInstance = None
+
+
+def _ModifyBalancingModeArgs(messages, args, backend_to_update):
+  """Update balancing mode fields in backend_to_update according to args.
+
+  Args:
+    messages: API messages class, determined by the release track.
+    args: The arguments given to the update-backend command.
+    backend_to_update: The backend message to modify.
+  """
+
+  backend_services_utils.ValidateBalancingModeArgs(
+      messages,
+      args,
+      backend_to_update.balancingMode)
+
+  if args.balancing_mode:
+    backend_to_update.balancingMode = (
+        messages.Backend.BalancingModeValueValuesEnum(
+            args.balancing_mode))
+
+    # If the balancing mode is being changed to RATE (CONNECTION), we must
+    # clear the max utilization and max connections (rate) fields, otherwise
+    # the server will reject the request.
+    if (backend_to_update.balancingMode ==
+        messages.Backend.BalancingModeValueValuesEnum.RATE):
+      backend_to_update.maxUtilization = None
+      backend_to_update.maxConnections = None
+      backend_to_update.maxConnectionsPerInstance = None
+    elif (backend_to_update.balancingMode ==
+          messages.Backend.BalancingModeValueValuesEnum.CONNECTION):
+      backend_to_update.maxUtilization = None
+      backend_to_update.maxRate = None
+      backend_to_update.maxRatePerInstance = None
+
+  # Now, we set the parameters that control load balancing.
+  # ValidateBalancingModeArgs takes care that the control parameters
+  # are compatible with the balancing mode.
+  if args.max_utilization is not None:
+    backend_to_update.maxUtilization = args.max_utilization
+
+  # max_rate, max_rate_per_instance, max_connections and
+  # max_connections_per_instance are mutually exclusive arguments.
+  if args.max_rate is not None:
+    _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
+    backend_to_update.maxRate = args.max_rate
+  elif args.max_rate_per_instance is not None:
+    _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
+    backend_to_update.maxRatePerInstance = args.max_rate_per_instance
+  elif args.max_connections is not None:
+    _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
+    backend_to_update.maxConnections = args.max_connections
+  elif args.max_connections_per_instance is not None:
+    _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
+    backend_to_update.maxConnectionsPerInstance = (
+        args.max_connections_per_instance)
+
+  if args.capacity_scaler is not None:
+    backend_to_update.capacityScaler = args.capacity_scaler
 
 
 UpdateBackend.detailed_help = {
@@ -311,3 +374,4 @@ UpdateBackend.detailed_help = {
         """,
 }
 UpdateBackendAlpha.detailed_help = UpdateBackend.detailed_help
+UpdateBackendBeta.detailed_help = UpdateBackend.detailed_help

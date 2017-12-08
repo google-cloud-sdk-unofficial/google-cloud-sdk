@@ -85,46 +85,8 @@ class Resize(base_classes.BaseAsyncMutator):
                  zone=ref.zone,))]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ResizeBeta(base_classes.BaseAsyncMutator):
-  """Set managed instance group size."""
-
-  @staticmethod
-  def Args(parser):
-    _AddArgs(parser=parser, multizonal=False, creation_retries=True)
-
-  @property
-  def method(self):
-    return 'ResizeAdvanced'
-
-  @property
-  def service(self):
-    return self.compute.instanceGroupManagers
-
-  @property
-  def resource_type(self):
-    return 'instanceGroupManagers'
-
-  def CreateGroupReference(self, args):
-    return self.CreateZonalReference(args.name, args.zone)
-
-  def CreateRequests(self, args):
-    ref = self.CreateZonalReference(args.name, args.zone)
-    return [(self.method,
-             self.messages.ComputeInstanceGroupManagersResizeAdvancedRequest(
-                 instanceGroupManager=ref.Name(),
-                 instanceGroupManagersResizeAdvancedRequest=(
-                     self.messages.InstanceGroupManagersResizeAdvancedRequest(
-                         targetSize=args.size,
-                         noCreationRetries=not args.creation_retries,
-                     )
-                 ),
-                 project=self.project,
-                 zone=ref.zone,))]
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ResizeAlpha(Resize):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class ResizeBeta(Resize):
   """Set managed instance group size."""
 
   class ConflictingFlagsError(exceptions.Error):
@@ -184,5 +146,4 @@ If you resize up, the service adds instances to the group using the current
 instance template until the group reaches the desired size.
 """,
 }
-ResizeAlpha.detailed_help = Resize.detailed_help
 ResizeBeta.detailed_help = Resize.detailed_help

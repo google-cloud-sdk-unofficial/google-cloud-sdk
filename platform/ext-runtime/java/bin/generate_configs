@@ -119,7 +119,7 @@ class JavaConfigurator(object):
           out.write(constants.DOCKERFILE_CMD % self.entrypoint)
       elif self.artifact_to_deploy.endswith('.jar'):
           # for jar execution generate the command to run:
-          out.write(constants.DOCKERFILE_JAVA8_ENTRYPOINT.format(
+          out.write(constants.DOCKERFILE_JAVA8_JAR_CMD.format(
               self.artifact_to_deploy))
       comm.gen_file('Dockerfile', out.getvalue())
 

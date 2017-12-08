@@ -111,11 +111,25 @@ outputs.
 .RS 2m
 JSON (http://www.json.org), JavaScript Object Notation.
 
+The format attributes are:
+
+\fBno\-undefined\fR
+.RS 2m
+Does not display resource data items with null values.
+
+.RE
 .RE
 \fBlist\fR
 .RS 2m
 An ordered list of items.
 
+The format attributes are:
+
+\fBcompact\fR
+.RS 2m
+Display all items in a record on one line.
+
+.RE
 .RE
 \fBmulti\fR
 .RS 2m
@@ -195,6 +209,17 @@ The format attributes are:
 .RS 2m
 YAML (http://www.yaml.org), YAML ain't markup language.
 
+The format attributes are:
+
+\fBnull=string\fR
+.RS 2m
+Display string instead of \f5null\fR for null/None values.
+.RE
+\fBno\-undefined\fR
+.RS 2m
+Does not display resource data items with null values.
+
+.RE
 .RE
 All formats have these attributes:
 

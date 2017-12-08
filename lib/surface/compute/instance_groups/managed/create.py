@@ -161,18 +161,8 @@ class CreateGA(base_classes.BaseAsyncCreator, zone_utils.ZoneResourceFetcher,
     return [(service, self.method, request)]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CreateBeta(CreateGA):
-  """Create Google Compute Engine managed instance groups."""
-
-  @staticmethod
-  def Args(parser):
-    _AddArgs(parser=parser, multizonal=False)
-    managed_instance_groups_utils.AddAutohealingArgs(parser)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateGA):
   """Create Google Compute Engine managed instance groups."""
 
   @staticmethod
@@ -235,4 +225,3 @@ in the ``us-central1-a'' zone.
 }
 CreateGA.detailed_help = DETAILED_HELP
 CreateBeta.detailed_help = DETAILED_HELP
-CreateAlpha.detailed_help = DETAILED_HELP

@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Cloud Pub/Sub topics publish command."""
-from googlecloudsdk.api_lib.pubsub import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as sdk_ex
+from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.resource import resource_projector
 

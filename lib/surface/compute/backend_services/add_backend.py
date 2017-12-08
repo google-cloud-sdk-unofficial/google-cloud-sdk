@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class AddBackend(base_classes.ReadWriteCommand):
   """Add a backend to a backend service."""
 
@@ -149,8 +149,48 @@ class AddBackend(base_classes.ReadWriteCommand):
     return super(AddBackend, self).Run(args)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class AddBackendBeta(AddBackend):
+  """Add a backend to a backend service."""
+
+  @staticmethod
+  def Args(parser):
+    flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    backend_flags.AddDescription(parser)
+    backend_flags.AddInstanceGroup(
+        parser, operation_type='add to',
+        multizonal=True, with_deprecated_zone=True)
+    backend_flags.AddBalancingMode(parser, with_connection=True)
+    backend_flags.AddCapacityLimits(parser, with_connection=True)
+    backend_flags.AddCapacityScalar(parser)
+
+  def CreateGroupReference(self, args):
+    return instance_groups_utils.CreateInstanceGroupReference(
+        scope_prompter=self,
+        compute=self.compute,
+        resources=self.resources,
+        name=args.instance_group,
+        region=args.instance_group_region,
+        zone=(args.instance_group_zone
+              if args.instance_group_zone else args.zone),
+        zonal_resource_type='instanceGroups',
+        regional_resource_type='regionInstanceGroups')
+
+  def CreateBackendMessage(self, group_uri, balancing_mode, args):
+    """Override. See base class, AddBackend."""
+
+    backend_services_utils.ValidateBalancingModeArgs(self.messages, args)
+    backend = super(AddBackendBeta, self).CreateBackendMessage(
+        group_uri=group_uri,
+        balancing_mode=balancing_mode,
+        args=args)
+    backend.maxConnections = args.max_connections
+    backend.maxConnectionsPerInstance = args.max_connections_per_instance
+    return backend
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AddBackendAlpha(AddBackend):
+class AddBackendAlpha(AddBackendBeta):
   """Add a backend to a backend service."""
 
   @staticmethod
@@ -179,22 +219,6 @@ class AddBackendAlpha(AddBackend):
         zonal_resource_type='instanceGroups',
         regional_resource_type='regionInstanceGroups')
 
-  def CreateBackendMessage(self, group_uri, balancing_mode, args):
-    """Override. See base class, AddBackend."""
-
-    backend_services_utils.ValidateBalancingModeArgs(args)
-
-    backend = self.messages.Backend(
-        balancingMode=balancing_mode,
-        capacityScaler=args.capacity_scaler,
-        description=args.description,
-        group=group_uri,
-        maxRate=args.max_rate,
-        maxRatePerInstance=args.max_rate_per_instance,
-        maxUtilization=args.max_utilization,
-        maxConnections=args.max_connections,
-        maxConnectionsPerInstance=args.max_connections_per_instance)
-    return backend
 
 AddBackend.detailed_help = {
     'brief': 'Add a backend to a backend service',
@@ -214,4 +238,6 @@ AddBackend.detailed_help = {
         update-backend' or 'gcloud compute backend-services edit'.
         """,
 }
+AddBackendBeta.detailed_help = AddBackend.detailed_help
 AddBackendAlpha.detailed_help = AddBackend.detailed_help
+AddBackendBeta.detailed_help = AddBackend.detailed_help

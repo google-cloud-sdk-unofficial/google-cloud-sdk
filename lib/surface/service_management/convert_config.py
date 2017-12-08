@@ -66,7 +66,7 @@ class ConvertConfig(base.Command, base_classes.BaseServiceManagementCommand):
         open_api_spec = self.services_messages.OpenApiSpec(
             openApiFiles=[self.services_messages.ConfigFile(
                 filePath=os.path.basename(args.open_api_file),
-                fileContents=f.read())]
+                contents=f.read())]
         )
     except IOError:
       raise exceptions.ToolException.FromCurrent(

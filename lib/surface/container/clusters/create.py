@@ -169,11 +169,6 @@ Alias,URI
       '--cluster-version',
       help=argparse.SUPPRESS)
   parser.add_argument(
-      '--local-ssd-count',
-      help=argparse.SUPPRESS,
-      type=int,
-      default=0)
-  parser.add_argument(
       '--tags',
       help=argparse.SUPPRESS,
       type=arg_parsers.ArgList(min_length=1),
@@ -197,6 +192,7 @@ class Create(base.Command):
     _Args(parser)
     flags.AddImageTypeFlag(parser, 'cluster', True)
     flags.AddClusterAutoscalingFlags(parser)
+    flags.AddLocalSSDFlag(parser, True)
 
   def ParseCreateOptions(self, args):
     if not args.scopes:
@@ -294,6 +290,7 @@ class CreateBeta(Create):
     _Args(parser)
     flags.AddImageTypeFlag(parser, 'cluster', False)
     flags.AddClusterAutoscalingFlags(parser)
+    flags.AddLocalSSDFlag(parser, False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -305,3 +302,4 @@ class CreateAlpha(Create):
     _Args(parser)
     flags.AddImageTypeFlag(parser, 'cluster', False)
     flags.AddClusterAutoscalingFlags(parser)
+    flags.AddLocalSSDFlag(parser, False)

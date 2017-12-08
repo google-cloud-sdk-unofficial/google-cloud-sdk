@@ -13,8 +13,8 @@
 # limitations under the License.
 """Cloud Pub/Sub topics create command."""
 import json
-from googlecloudsdk.api_lib.pubsub import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core import resources
 from googlecloudsdk.third_party.apitools.base.py import exceptions as api_ex
 

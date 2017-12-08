@@ -20,7 +20,6 @@ import sys
 import types
 
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
-from googlecloudsdk.api_lib.sdktool.diagnostics import network_checks
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core import config
@@ -29,6 +28,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.configurations import named_configs
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.diagnostics import network_diagnostics
 from googlecloudsdk.core.util import platforms
 
 
@@ -107,7 +107,7 @@ class Init(base.Command):
     log.status.write('Your current configuration has been set to: [{0}]\n\n'
                      .format(configuration_name))
 
-    if not network_checks.DiagnoseNetworkConnection():
+    if not network_diagnostics.NetworkDiagnostic().Run():
       return
 
     if not self._PickAccount(args.console_only, preselected=args.account):
@@ -307,7 +307,7 @@ class Init(base.Command):
     """Pulls metadata properties for region and zone and sets them in gcloud."""
     try:
       project_info = self._RunCmd(['compute', 'project-info', 'describe'])
-    except c_exc.FailedSubCommand:
+    except Exception:  # pylint:disable=broad-except
       log.status.write("""\
 Not setting default zone/region (this feature makes it easier to use
 [gcloud compute] by setting an appropriate default value for the
@@ -330,6 +330,15 @@ https://console.developers.google.com/apis page.
           default_zone = item['value']
         elif item['key'] == 'google-compute-default-region':
           default_region = item['value']
+
+    # We could not determine zone automatically. Before offering choices for
+    # zone and/or region ask user if he/she wants to do this.
+    if not default_zone:
+      answer = console_io.PromptContinue(
+          prompt_string=('Do you want to configure Google Compute Engine '
+                         '(https://cloud.google.com/compute) settings'))
+      if not answer:
+        return
 
     # Same logic applies to region and zone properties.
     def SetProperty(name, default_value, list_command):
@@ -483,6 +492,9 @@ information about configuring Google Cloud Storage.
           disable_user_output):
         # Unless user explicitly set verbosity, suppress from subcommands.
         args.append('--verbosity=none')
+
+      if properties.VALUES.core.log_http.GetBool():
+        args.append('--log-http')
 
       result = self.cli.Execute(args)
       # Best effort to force result of Execute eagerly.  Don't just check

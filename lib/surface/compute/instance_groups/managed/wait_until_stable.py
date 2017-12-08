@@ -50,7 +50,7 @@ def _AddArgs(parser, multizonal):
         operation_type='wait until stable')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class WaitUntilStable(base_classes.BaseCommand):
   """Waits until state of managed instance group is stable."""
 
@@ -130,7 +130,7 @@ class WaitUntilStable(base_classes.BaseCommand):
     return results, errors
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class WaitUntilStableAlpha(WaitUntilStable):
   """Waits until state of managed instance group is stable."""
 

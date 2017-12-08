@@ -48,29 +48,34 @@ class List(base_classes.BaseLister):
       protocol_value = self._ConvertProtocolArgToValue(args)
       if (protocol_value ==
           self.messages.HealthCheck.TypeValueValuesEnum.HTTP.number):
-        columns.extend(['httpHealthCheck.host:label=HOST'])
-        columns.extend(['httpHealthCheck.port:label=PORT'])
-        columns.extend(['httpHealthCheck.requestPath:label=REQUEST_PATH'])
+        columns.extend(['httpHealthCheck.host:label=HOST',
+                        'httpHealthCheck.port:label=PORT',
+                        'httpHealthCheck.requestPath:label=REQUEST_PATH',
+                        'httpHealthCheck.proxyHeader:label=PROXY_HEADER'])
       elif (protocol_value ==
             self.messages.HealthCheck.TypeValueValuesEnum.HTTPS.number):
-        columns.extend(['httpsHealthCheck.host:label=HOST'])
-        columns.extend(['httpsHealthCheck.port:label=PORT'])
-        columns.extend(['httpsHealthCheck.requestPath:label=REQUEST_PATH'])
+        columns.extend(['httpsHealthCheck.host:label=HOST',
+                        'httpsHealthCheck.port:label=PORT',
+                        'httpsHealthCheck.requestPath:label=REQUEST_PATH',
+                        'httpsHealthCheck.proxyHeader:label=PROXY_HEADER'])
       elif (protocol_value ==
             self.messages.HealthCheck.TypeValueValuesEnum.HTTP2.number):
-        columns.extend(['http2HealthCheck.host:label=HOST'])
-        columns.extend(['http2HealthCheck.port:label=PORT'])
-        columns.extend(['http2HealthCheck.requestPath:label=REQUEST_PATH'])
+        columns.extend(['http2HealthCheck.host:label=HOST',
+                        'http2HealthCheck.port:label=PORT',
+                        'http2HealthCheck.requestPath:label=REQUEST_PATH',
+                        'http2HealthCheck.proxyHeader:label=PROXY_HEADER'])
       elif (protocol_value ==
             self.messages.HealthCheck.TypeValueValuesEnum.TCP.number):
-        columns.extend(['tcpHealthCheck.port:label=PORT'])
-        columns.extend(['tcpHealthCheck.request:label=REQUEST'])
-        columns.extend(['tcpHealthCheck.response:label=RESPONSE'])
+        columns.extend(['tcpHealthCheck.port:label=PORT',
+                        'tcpHealthCheck.request:label=REQUEST',
+                        'tcpHealthCheck.response:label=RESPONSE',
+                        'tcpHealthCheck.proxyHeader:label=PROXY_HEADER'])
       elif (protocol_value ==
             self.messages.HealthCheck.TypeValueValuesEnum.SSL.number):
-        columns.extend(['sslHealthCheck.port:label=PORT'])
-        columns.extend(['sslHealthCheck.request:label=REQUEST'])
-        columns.extend(['sslHealthCheck.response:label=RESPONSE'])
+        columns.extend(['sslHealthCheck.port:label=PORT',
+                        'sslHealthCheck.request:label=REQUEST',
+                        'sslHealthCheck.response:label=RESPONSE',
+                        'sslHealthCheck.proxyHeader:label=PROXY_HEADER'])
 
     return 'table[]({columns})'.format(columns=','.join(columns))
 

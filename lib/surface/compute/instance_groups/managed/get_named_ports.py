@@ -19,7 +19,7 @@ from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetNamedPorts(instance_groups_utils.InstanceGroupGetNamedPortsBase):
 
   @staticmethod
@@ -34,7 +34,7 @@ class GetNamedPorts(instance_groups_utils.InstanceGroupGetNamedPortsBase):
         group_ref, self.compute_client)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class GetNamedPortsAlpha(
     instance_groups_utils.InstanceGroupGetNamedPortsBase):
 

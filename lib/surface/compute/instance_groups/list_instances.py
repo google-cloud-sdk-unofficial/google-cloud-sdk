@@ -16,12 +16,12 @@ from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListInstances(instance_groups_utils.InstanceGroupListInstances):
   pass
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ListInstancesAlpha(instance_groups_utils.InstanceGroupListInstancesBase):
   """List Google Compute Engine instances present in instance group."""
 

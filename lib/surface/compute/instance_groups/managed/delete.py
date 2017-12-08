@@ -51,7 +51,7 @@ def _AddArgs(parser, multizonal):
         operation_type='delete')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base_classes.ZonalDeleter):
   """Delete Google Compute Engine managed instance group."""
 
@@ -112,7 +112,7 @@ class Delete(base_classes.ZonalDeleter):
         args, request_protobufs=delete_managed_instance_groups_requests)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class DeleteAlpha(base_classes.BaseAsyncMutator):
   """Delete Google Compute Engine managed instance group."""
 

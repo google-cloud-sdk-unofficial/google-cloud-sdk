@@ -115,12 +115,12 @@ class CreateAlpha(CreateGA):
     flags.AddProtocol(parser, default=None)
 
     # These are in beta
+    flags.AddConnectionDrainingTimeout(parser)
     flags.AddEnableCdn(parser, default=False)
     flags.AddSessionAffinity(parser)
     flags.AddAffinityCookieTtl(parser)
 
     # These are added for alpha
-    flags.AddConnectionDrainingTimeout(parser)
     flags.AddHealthChecks(parser)
 
     flags.AddLoadBalancingScheme(parser)
@@ -196,6 +196,7 @@ class CreateBeta(CreateGA):
     flags.AddProtocol(parser)
 
     # These are added for beta
+    flags.AddConnectionDrainingTimeout(parser)
     flags.AddEnableCdn(parser, default=False)
     flags.AddSessionAffinity(parser)
     flags.AddAffinityCookieTtl(parser)
@@ -203,6 +204,9 @@ class CreateBeta(CreateGA):
   def CreateGlobalRequests(self, args):
     backend_service = self._CreateBackendService(args)
 
+    if args.connection_draining_timeout is not None:
+      backend_service.connectionDraining = self.messages.ConnectionDraining(
+          drainingTimeoutSec=args.connection_draining_timeout)
     if args.session_affinity is not None:
       backend_service.sessionAffinity = (
           self.messages.BackendService.SessionAffinityValueValuesEnum(

@@ -46,7 +46,7 @@ def _AddArgs(parser, multizonal):
         operation_type='set instance template')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class SetInstanceTemplate(base_classes.BaseAsyncMutator):
   """Set an instances template of managed instance group."""
 
@@ -84,7 +84,7 @@ class SetInstanceTemplate(base_classes.BaseAsyncMutator):
     return [request]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class SetInstanceTemplateAlpha(SetInstanceTemplate):
   """Set an instances template of managed instance group."""
 

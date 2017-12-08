@@ -18,7 +18,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instance_groups import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class SetNamedPorts(base_classes.NoOutputAsyncMutator):
   """Sets named ports for instance groups."""
 
@@ -51,7 +51,7 @@ class SetNamedPorts(base_classes.NoOutputAsyncMutator):
   detailed_help = instance_groups_utils.SET_NAMED_PORTS_HELP
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class SetNamedPortsAlpha(base_classes.NoOutputAsyncMutator):
   """Sets named ports for instance groups."""
 

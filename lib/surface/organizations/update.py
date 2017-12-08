@@ -17,8 +17,9 @@
 import textwrap
 
 from googlecloudsdk.api_lib.organizations import errors
-from googlecloudsdk.api_lib.organizations import orgs_base
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.organizations import flags
+from googlecloudsdk.command_lib.organizations import orgs_base
 from googlecloudsdk.core import log
 
 
@@ -45,8 +46,7 @@ class Update(orgs_base.OrganizationCommand):
 
   @staticmethod
   def Args(parser):
-    orgs_base.OrganizationCommand.IdArg(
-        parser, 'ID for the organization you want to update.')
+    flags.IdArg('you want to update.').AddToParser(parser)
     parser.add_argument('--display-name', required=True,
                         help='New display name for the organization.')
 

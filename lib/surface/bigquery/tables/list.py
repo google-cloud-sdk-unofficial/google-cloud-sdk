@@ -23,12 +23,14 @@ from googlecloudsdk.third_party.apitools.base.py import exceptions
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
-class TablesList(base.Command):
+class TablesList(base.ListCommand):
   """Lists the name of each table or view in a specified dataset."""
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
+    base.FLATTEN_FLAG.RemoveFromParser(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
     parser.add_argument(
         'dataset_name',
         help='The dataset whose tables and views are to be listed.')

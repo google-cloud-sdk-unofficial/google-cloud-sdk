@@ -20,7 +20,7 @@ from googlecloudsdk.core import log
 # TODO(user): This acts like
 # instance-groups list --only-managed
 # so they should share code.
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base_classes.InstanceGroupManagerDynamicProperiesMixin,
            base_classes.ZonalLister):
   """List Google Compute Engine managed instance groups."""
@@ -59,9 +59,9 @@ class List(base_classes.InstanceGroupManagerDynamicProperiesMixin,
                     'describe the resource to see details')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base_classes.InstanceGroupManagerDynamicProperiesMixin,
-                base_classes.MultiScopeLister):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class ListBeta(base_classes.InstanceGroupManagerDynamicProperiesMixin,
+               base_classes.MultiScopeLister):
   """List Google Compute Engine managed instance groups."""
 
   SCOPES = [base_classes.ScopeType.regional_scope,
@@ -69,7 +69,7 @@ class ListAlpha(base_classes.InstanceGroupManagerDynamicProperiesMixin,
 
   @staticmethod
   def Args(parser):
-    base_classes.MultiScopeLister.AddScopeArgs(parser, ListAlpha.SCOPES)
+    base_classes.MultiScopeLister.AddScopeArgs(parser, ListBeta.SCOPES)
 
   @property
   def global_service(self):
@@ -93,7 +93,7 @@ class ListAlpha(base_classes.InstanceGroupManagerDynamicProperiesMixin,
 
   def GetResources(self, args, errors):
     self._had_errors = False
-    return super(ListAlpha, self).GetResources(args, errors)
+    return super(ListBeta, self).GetResources(args, errors)
 
   def Epilog(self, unused_resources_were_displayed):
     if self._had_errors:
@@ -103,5 +103,5 @@ class ListAlpha(base_classes.InstanceGroupManagerDynamicProperiesMixin,
 
 List.detailed_help = base_classes.GetZonalListerHelp(
     'managed instance groups')
-ListAlpha.detailed_help = base_classes.GetMultiScopeListerHelp(
-    'managed instance groups', ListAlpha.SCOPES)
+ListBeta.detailed_help = base_classes.GetMultiScopeListerHelp(
+    'managed instance groups', ListBeta.SCOPES)

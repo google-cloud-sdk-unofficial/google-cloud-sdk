@@ -15,8 +15,9 @@
 """Command to set IAM policy for a resource."""
 
 from googlecloudsdk.api_lib.organizations import errors
-from googlecloudsdk.api_lib.organizations import orgs_base
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.organizations import flags
+from googlecloudsdk.command_lib.organizations import orgs_base
 from googlecloudsdk.core.iam import iam_util
 
 
@@ -41,8 +42,7 @@ class SetIamPolicy(orgs_base.OrganizationCommand):
 
   @staticmethod
   def Args(parser):
-    orgs_base.OrganizationCommand.IdArg(
-        parser, 'ID of the organization whose IAM policy you want to set.')
+    flags.IdArg('whose IAM policy you want to set.').AddToParser(parser)
     parser.add_argument(
         'policy_file',
         help='JSON file containing the IAM policy.')

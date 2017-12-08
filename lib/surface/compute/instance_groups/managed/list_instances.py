@@ -20,7 +20,7 @@ from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
   """List Google Compute Engine instances present in managed instance group."""
 
@@ -85,8 +85,8 @@ class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
   }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListInstancesAlpha(ListInstances):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListInstancesBeta(ListInstances):
   """List Google Compute Engine instances present in managed instance group."""
 
   @staticmethod
@@ -130,10 +130,32 @@ class ListInstancesAlpha(ListInstances):
     return """\
         table(instance.basename():label=NAME,
               instance.scope().segment(0):label=ZONE,
+              instanceStatus:label=STATUS,
+              currentAction:label=ACTION,
+              lastAttempt.errors.errors.map().format(
+                "Error {0}: {1}", code, message).list(separator=", ")
+                :label=LAST_ERROR
+        )"""
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListInstancesAlpha(ListInstancesBeta):
+  """List Google Compute Engine instances present in managed instance group."""
+
+  @staticmethod
+  def Args(parser):
+    instance_groups_utils.InstanceGroupListInstancesBase.ListInstancesArgs(
+        parser, multizonal=True)
+
+  def Format(self, args):
+    return """\
+        table(instance.basename():label=NAME,
+              instance.scope().segment(0):label=ZONE,
               extract(instanceStatus, standbyMode).join('-'):label=STATUS,
               currentAction:label=ACTION,
               instanceTemplate.basename():label=INSTANCE_TEMPLATE,
               lastAttempt.errors.errors.map().format("Error {0}: {1}", code, message).list(separator=", "):label=LAST_ERROR
         )"""
 
+ListInstancesBeta.detailed_help = ListInstances.detailed_help
 ListInstancesAlpha.detailed_help = ListInstances.detailed_help

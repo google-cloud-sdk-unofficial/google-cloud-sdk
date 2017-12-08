@@ -15,8 +15,9 @@
 """Command to get IAM policy for an organization."""
 
 from googlecloudsdk.api_lib.organizations import errors
-from googlecloudsdk.api_lib.organizations import orgs_base
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.organizations import flags
+from googlecloudsdk.command_lib.organizations import orgs_base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -37,8 +38,7 @@ class GetIamPolicy(orgs_base.OrganizationCommand):
 
   @staticmethod
   def Args(parser):
-    orgs_base.OrganizationCommand.IdArg(
-        parser, 'ID for the organization whose policy you want to get.')
+    flags.IdArg('whose policy you want to get.').AddToParser(parser)
 
   @errors.HandleHttpError
   def Run(self, args):

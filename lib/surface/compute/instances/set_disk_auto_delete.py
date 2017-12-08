@@ -40,6 +40,7 @@ class SetDiskAutoDelete(base_classes.ReadWriteCommand):
     parser.add_argument(
         '--auto-delete',
         action='store_true',
+        default=True,
         help='Enables auto-delete for the given disk.')
 
     disk_group = parser.add_mutually_exclusive_group(required=True)

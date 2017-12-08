@@ -81,23 +81,32 @@ class Run(base.Command):
         '--pipeline-file',
         required=True,
         help='''A YAML or JSON file containing a Pipeline object. See
-        https://cloud.google.com/genomics/reference/rest/v1alpha2/pipelines#Pipeline
+          https://cloud.google.com/genomics/reference/rest/v1alpha2/pipelines#Pipeline
 
-        Example:
-        {
-          "name": "hello",
-          "inputParameters": [
-            {"name":"greeting"}
-          ],
-          "resources": {
-            "minimumCpuCores":1,
-            "minimumRamGb":1
-          },
-          "docker": {
-          "imageName": "ubuntu",
-          "cmd": "echo $greeting"
-          }
-        }
+          YAML Example:
+            name: hello world
+
+            inputParameters:
+            - name: greeting
+              defaultValue: Hello
+            - name: object
+              defaultValue: World
+
+            outputParameters:
+            - name: outputFile
+              localCopy:
+                path: /data/output/greeting.txt
+                disk: boot
+
+            resources:
+              minimumCpuCores: 1
+              minimumRamGb: 1
+              preemptible: true
+
+            docker:
+              imageName: ubuntu
+              cmd: >
+                echo "${greeting} ${object}" > /data/output/greeting.txt
         ''')
 
     parser.add_argument(
@@ -108,10 +117,10 @@ class Run(base.Command):
             arg_parsers.UpdateAction,
             switch_value={}),
         help='''Map of input PipelineParameter names to values.
-        Used to pass literal parameters to the pipeline, and to specify
-        input files in Google Cloud Storage that will have a localCopy
-        made. Specified as a comma-separated list: --inputs
-        file=gs://my-bucket/in.txt,name=hello''')
+            Used to pass literal parameters to the pipeline, and to specify
+            input files in Google Cloud Storage that will have a localCopy
+            made. Specified as a comma-separated list: --inputs
+            file=gs://my-bucket/in.txt,name=hello''')
 
     parser.add_argument(
         '--inputs-from-file',
@@ -121,11 +130,11 @@ class Run(base.Command):
             arg_parsers.UpdateAction,
             switch_value={}),
         help='''Map of input PipelineParameter names to values.
-        Used to pass literal parameters to the pipeline where values come
-        from local files; this can be used to send large pipeline input
-        parameters, such as code, data, or configuration values.
-        Specified as a comma-separated list:
-        --inputs-from-file script=myshellscript.sh,pyfile=mypython.py''')
+            Used to pass literal parameters to the pipeline where values come
+            from local files; this can be used to send large pipeline input
+            parameters, such as code, data, or configuration values.
+            Specified as a comma-separated list:
+            --inputs-from-file script=myshellscript.sh,pyfile=mypython.py''')
 
     parser.add_argument(
         '--outputs',
@@ -135,20 +144,20 @@ class Run(base.Command):
             arg_parsers.UpdateAction,
             switch_value={}),
         help='''Map of output PipelineParameter names to values.
-        Used to specify output files in Google Cloud Storage that will be
-        made from a localCopy. Specified as a comma-separated list:
-        --outputs ref=gs://my-bucket/foo,ref2=gs://my-bucket/bar''')
+            Used to specify output files in Google Cloud Storage that will be
+            made from a localCopy. Specified as a comma-separated list:
+            --outputs ref=gs://my-bucket/foo,ref2=gs://my-bucket/bar''')
 
     parser.add_argument(
         '--logging',
         category=base.COMMONLY_USED_FLAGS,
         help='''The location in Google Cloud Storage to which the pipeline logs
-        will be copied. Can be specified as a fully qualified directory
-        path, in which case logs will be output with a unique identifier
-        as the filename in that directory, or as a fully specified path,
-        which must end in `.log`, in which case that path will be
-        used. Stdout and stderr logs from the run are also generated and output
-        as `-stdout.log` and `-stderr.log`.''')
+            will be copied. Can be specified as a fully qualified directory
+            path, in which case logs will be output with a unique identifier
+            as the filename in that directory, or as a fully specified path,
+            which must end in `.log`, in which case that path will be
+            used. Stdout and stderr logs from the run are also generated and
+            output as `-stdout.log` and `-stderr.log`.''')
 
     parser.add_argument(
         '--memory',
@@ -169,9 +178,10 @@ class Run(base.Command):
     parser.add_argument(
         '--preemptible',
         category=base.COMMONLY_USED_FLAGS,
-        type=bool,
-        help='''Whether to use a preemptible VM for this pipeline, if the
-        pipeline-file allows preemptible VMs.''')
+        action='store_true',
+        help='''Whether to use a preemptible VM for this pipeline. The
+            "resource" section of the pipeline-file must also set preemptible
+            to "true" for this flag to take effect.''')
 
     parser.add_argument(
         '--run-id',
@@ -182,7 +192,7 @@ class Run(base.Command):
         '--service-account-email',
         default='default',
         help='''The service account used to run the pipeline. If unspecified,
-        defaults to the Compute Engine service account for your project.''')
+            defaults to the Compute Engine service account for your project.''')
 
     parser.add_argument(
         '--service-account-scopes',

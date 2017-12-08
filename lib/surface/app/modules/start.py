@@ -24,7 +24,7 @@ class Start(base.Command):
   """Start serving a specific version of the given modules.
 
   This command is deprecated. Please use
-  `gcloud preview app versions start` instead.
+  `gcloud app versions start` instead.
 
   This command starts serving a specific version of the given modules.  It may
   only be used if the scaling module for your module has been set to manual.
@@ -51,7 +51,7 @@ class Start(base.Command):
 
   def Run(self, args):
     log.warn('This command is deprecated. '
-             'Please use `gcloud preview app versions start` instead.')
+             'Please use `gcloud app versions start` instead.')
     # TODO(user): This fails with "module/version does not exist" even
     # when it exists if the scaling mode is set to auto.  It would be good
     # to improve that error message.

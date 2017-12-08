@@ -18,14 +18,16 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.forwarding_rules import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Set(utils.ForwardingRulesTargetMutator):
   """Modify a forwarding rule to direct network traffic to a new target."""
 
   @staticmethod
   def Args(parser):
     flags.AddCommonFlags(parser)
-    flags.AddUpdateArgs(parser, include_alpha_targets=False)
+    flags.AddUpdateArgs(parser,
+                        include_alpha_targets=False,
+                        include_beta_targets=False)
 
   @property
   def method(self):
@@ -67,20 +69,34 @@ class Set(utils.ForwardingRulesTargetMutator):
     return [request]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SetAlpha(Set):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class SetBeta(Set):
   """Modify a forwarding rule to direct network traffic to a new target."""
 
   @staticmethod
   def Args(parser):
     flags.AddCommonFlags(parser)
-    flags.AddUpdateArgs(parser, include_alpha_targets=True)
+    flags.AddUpdateArgs(parser,
+                        include_alpha_targets=False,
+                        include_beta_targets=True)
 
   def GetGlobalTarget(self, args):
     if args.target_ssl_proxy:
       return self.CreateGlobalReference(
           args.target_ssl_proxy, resource_type='targetSslProxies')
-    return super(SetAlpha, self).GetGlobalTarget(args)
+    return super(SetBeta, self).GetGlobalTarget(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SetAlpha(SetBeta):
+  """Modify a forwarding rule to direct network traffic to a new target."""
+
+  @staticmethod
+  def Args(parser):
+    flags.AddCommonFlags(parser)
+    flags.AddUpdateArgs(parser,
+                        include_alpha_targets=True,
+                        include_beta_targets=True)
 
 
 Set.detailed_help = {
@@ -96,7 +112,7 @@ Set.detailed_help = {
         """.format(overview=flags.FORWARDING_RULES_OVERVIEW)),
 }
 
-SetAlpha.detailed_help = {
+SetBeta.detailed_help = {
     'brief': ('Modify a forwarding rule to direct network traffic to a new '
               'target'),
     'DESCRIPTION': ("""\
@@ -108,3 +124,5 @@ SetAlpha.detailed_help = {
         ``--target-ssl-proxy'', or ``--target-vpn-gateway'' must be specified.
         """.format(overview=flags.FORWARDING_RULES_OVERVIEW)),
 }
+
+SetAlpha.detailed_help = SetBeta.detailed_help

@@ -50,7 +50,7 @@ def _IsZonalGroup(ref):
   return ref.Collection() == 'compute.instanceGroupManagers'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class StopAutoscaling(base_classes.BaseAsyncMutator):
   """Stop autoscaling a managed instance group."""
 
@@ -113,7 +113,7 @@ class StopAutoscaling(base_classes.BaseAsyncMutator):
     return [(service, self.method, request,)]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class StopAutoscalingAlpha(StopAutoscaling):
   """Stop autoscaling a managed instance group."""
 

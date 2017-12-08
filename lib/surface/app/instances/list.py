@@ -17,6 +17,8 @@
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.calliope import base
 
+APPENGINE_PATH_START = 'https://appengine.googleapis.com/v1beta5/'
+
 
 class List(base.ListCommand):
   """List the instances affiliated with the current App Engine project."""
@@ -39,7 +41,14 @@ class List(base.ListCommand):
   }
 
   def Collection(self):
-    return 'app.instances'
+    return 'appengine.instances'
+
+  def GetUriFunc(self):
+    def _GetUri(resource):
+      # TODO(user): Use parser when instances collection adds simple URIs
+      # (b/29539463) and a Get method
+      return APPENGINE_PATH_START + resource.instance.name
+    return _GetUri
 
   @staticmethod
   def Args(parser):

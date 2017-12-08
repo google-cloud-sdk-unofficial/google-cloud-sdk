@@ -16,19 +16,17 @@
 
 from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """List manifests in a deployment.
 
   Prints a table with summary information on all manifests in the deployment.
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To print out a list of manifests in a deployment, run:
 
@@ -49,8 +47,7 @@ class List(base.Command):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    parser.add_argument('--limit', type=int,
-                        help='The maximum number of results to list.')
+    dm_v2_util.SIMPLE_LIST_FLAG.AddToParser(parser)
 
   def Run(self, args):
     """Run 'manifests list'.
@@ -76,22 +73,7 @@ class List(base.Command):
     )
     return dm_v2_util.YieldWithHttpExceptions(list_pager.YieldFromList(
         client.manifests, request, field='manifests', limit=args.limit,
-        batch_size=500))
+        batch_size=args.page_size))
 
-  def Display(self, unused_args, result):
-    """Display prints information about what just happened to stdout.
-
-    Args:
-      unused_args: The same as the args in Run.
-
-      result: a generator of Manifests, where each dict has a name attribute.
-
-    Raises:
-      ValueError: if result is None or not a generator
-    """
-    empty_generator = True
-    for manifest in result:
-      empty_generator = False
-      log.Print(manifest.name)
-    if empty_generator:
-      log.Print('No Manifests were found in your deployment!')
+  def Format(self, unused_args):
+    return 'table(name, id, insertTime)'

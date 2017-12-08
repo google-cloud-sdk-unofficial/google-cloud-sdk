@@ -17,9 +17,10 @@
 import httplib
 
 from googlecloudsdk.api_lib.organizations import errors
-from googlecloudsdk.api_lib.organizations import orgs_base
 from googlecloudsdk.api_lib.util import http_retry
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.organizations import flags
+from googlecloudsdk.command_lib.organizations import orgs_base
 from googlecloudsdk.core.iam import iam_util
 
 
@@ -36,8 +37,7 @@ class AddIamPolicyBinding(orgs_base.OrganizationCommand):
 
   @staticmethod
   def Args(parser):
-    orgs_base.OrganizationCommand.IdArg(
-        parser, 'ID for the organization to which you want to add a binding')
+    flags.IdArg('to which you want to add a binding').AddToParser(parser)
     iam_util.AddArgsForAddIamPolicyBinding(parser, 'id',
                                            'cloudresourcemanager.organizations')
 

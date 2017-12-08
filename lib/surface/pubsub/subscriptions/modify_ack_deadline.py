@@ -13,9 +13,9 @@
 # limitations under the License.
 """Cloud Pub/Sub subscription modify command."""
 
-from googlecloudsdk.api_lib.pubsub import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import log
+from googlecloudsdk.command_lib.pubsub import util
+from googlecloudsdk.core import resources
 
 
 class ModifyAckDeadline(base.Command):
@@ -41,6 +41,9 @@ class ModifyAckDeadline(base.Command):
               ' acknowledge receiving a message before re-attempting'
               ' delivery.'))
 
+  def Collection(self):
+    return util.SUBSCRIPTIONS_MOD_ACK_COLLECTION
+
   @util.MapHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -50,24 +53,21 @@ class ModifyAckDeadline(base.Command):
         command invocation.
 
     Returns:
-      None
+      Display dictionary with information about the new ACK deadline seconds
+      for the given subscription and ackId.
     """
     msgs = self.context['pubsub_msgs']
     pubsub = self.context['pubsub']
 
+    subscription = util.SubscriptionFormat(resources.Parse(
+        args.subscription, collection=util.SUBSCRIPTIONS_COLLECTION).Name())
     mod_req = msgs.PubsubProjectsSubscriptionsModifyAckDeadlineRequest(
         modifyAckDeadlineRequest=msgs.ModifyAckDeadlineRequest(
             ackDeadlineSeconds=args.ack_deadline,
             ackIds=args.ackid),
-        subscription=util.SubscriptionFormat(args.subscription))
+        subscription=subscription)
 
     pubsub.projects_subscriptions.ModifyAckDeadline(mod_req)
-
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    log.out.Print('New ACK deadline: {0} second(s)'.format(args.ack_deadline))
+    return {'subscriptionId': subscription,
+            'ackId': args.ackid,
+            'ackDeadlineSeconds': args.ack_deadline}

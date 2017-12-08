@@ -52,7 +52,7 @@ def _AddArgs(parser, multizonal):
         operation_type='set target pools')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class SetTargetPools(base_classes.BaseAsyncMutator):
   """Set target pools of managed instance group."""
 
@@ -92,7 +92,7 @@ class SetTargetPools(base_classes.BaseAsyncMutator):
     return [request]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class SetTargetPoolsAlpha(SetTargetPools):
   """Set target pools of managed instance group."""
 

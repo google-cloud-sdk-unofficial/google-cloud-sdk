@@ -27,10 +27,10 @@ def _SupportedProtocols(messages):
       messages.ForwardingRule.IPProtocolValueValuesEnum.to_dict().keys())
 
 
-def _Args(parser, include_alpha_targets):
+def _Args(parser, include_alpha_targets, include_beta_targets):
   """Argument parsing."""
   flags.AddCommonFlags(parser)
-  flags.AddUpdateArgs(parser, include_alpha_targets)
+  flags.AddUpdateArgs(parser, include_alpha_targets, include_beta_targets)
 
   address = parser.add_argument(
       '--address',
@@ -98,13 +98,13 @@ def _Args(parser, include_alpha_targets):
       """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(utils.ForwardingRulesTargetMutator):
   """Create a forwarding rule to direct network traffic to a load balancer."""
 
   @staticmethod
   def Args(parser):
-    _Args(parser, include_alpha_targets=False)
+    _Args(parser, include_alpha_targets=False, include_beta_targets=False)
 
   @property
   def method(self):
@@ -163,19 +163,28 @@ class Create(utils.ForwardingRulesTargetMutator):
     return [request]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
   """Create a forwarding rule to direct network traffic to a load balancer."""
 
   @staticmethod
   def Args(parser):
-    _Args(parser, include_alpha_targets=True)
+    _Args(parser, include_alpha_targets=False, include_beta_targets=True)
 
   def GetGlobalTarget(self, args):
     if args.target_ssl_proxy:
       return self.CreateGlobalReference(
           args.target_ssl_proxy, resource_type='targetSslProxies')
-    return super(CreateAlpha, self).GetGlobalTarget(args)
+    return super(CreateBeta, self).GetGlobalTarget(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a forwarding rule to direct network traffic to a load balancer."""
+
+  @staticmethod
+  def Args(parser):
+    _Args(parser, include_alpha_targets=True, include_beta_targets=True)
 
   def CreateRegionalRequests(self, args):
     """Create a regionally scoped request."""
@@ -226,7 +235,7 @@ Create.detailed_help = {
         """.format(overview=flags.FORWARDING_RULES_OVERVIEW)),
 }
 
-CreateAlpha.detailed_help = {
+CreateBeta.detailed_help = {
     'DESCRIPTION': ("""\
         *{{command}}* is used to create a forwarding rule. {overview}
 
@@ -235,6 +244,8 @@ CreateAlpha.detailed_help = {
         ``--target-ssl-proxy'', or ``--target-vpn-gateway'' must be specified.
         """.format(overview=flags.FORWARDING_RULES_OVERVIEW)),
 }
+
+CreateAlpha.detailed_help = CreateBeta.detailed_help
 
 
 def _GetPortRange(ports_range_list):

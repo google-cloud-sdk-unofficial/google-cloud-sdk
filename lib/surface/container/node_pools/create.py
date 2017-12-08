@@ -115,11 +115,6 @@ Alias,URI
         ','.join(value) for value in
         sorted(constants.SCOPES.iteritems()))))
   parser.add_argument(
-      '--local-ssd-count',
-      help=argparse.SUPPRESS,
-      type=int,
-      default=0)
-  parser.add_argument(
       '--tags',
       help=argparse.SUPPRESS,
       type=arg_parsers.ArgList(min_length=1),
@@ -127,6 +122,7 @@ Alias,URI
       action=arg_parsers.FloatingListValuesCatcher())
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a node pool in a running cluster."""
 
@@ -135,6 +131,7 @@ class Create(base.CreateCommand):
     _Args(parser)
     flags.AddImageTypeFlag(parser, 'node pool', False)
     flags.AddClusterAutoscalingFlags(parser)
+    flags.AddLocalSSDFlag(parser, True)
 
   def ParseCreateNodePoolOptions(self, args):
     return api_adapter.CreateNodePoolOptions(
@@ -194,3 +191,27 @@ class Create(base.CreateCommand):
 
 
 Create.detailed_help = DETAILED_HELP
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a node pool in a running cluster."""
+
+  @staticmethod
+  def Args(parser):
+    _Args(parser)
+    flags.AddImageTypeFlag(parser, 'node pool', False)
+    flags.AddClusterAutoscalingFlags(parser)
+    flags.AddLocalSSDFlag(parser, False)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a node pool in a running cluster."""
+
+  @staticmethod
+  def Args(parser):
+    _Args(parser)
+    flags.AddImageTypeFlag(parser, 'node pool', False)
+    flags.AddClusterAutoscalingFlags(parser)
+    flags.AddLocalSSDFlag(parser, False)

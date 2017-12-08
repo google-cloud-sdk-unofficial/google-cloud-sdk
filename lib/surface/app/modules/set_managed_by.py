@@ -23,8 +23,8 @@ class SetManagedBy(base.Command):
   """Sets the policy for the Flexible VMs of the given services and version.
 
   This command is deprecated. Please use the
-  `gcloud preview app instances enable-debug` and
-  `gcloud preview app instances disable-debug` commands instead.
+  `gcloud app instances enable-debug` and
+  `gcloud app instances disable-debug` commands instead.
 
   This command sets the policy for the App Engine Flexible VMs of the given
   services and version.  When your module uses VM runtimes, you can use this
@@ -78,8 +78,8 @@ class SetManagedBy(base.Command):
 
   def Run(self, args):
     log.warn('This command is deprecated. Please use the '
-             '`gcloud preview app instances enable-debug` and '
-             '`gcloud preview app instances disable-debug` commands instead.')
+             '`gcloud app instances enable-debug` and '
+             '`gcloud app instances disable-debug` commands instead.')
     client = appengine_client.AppengineClient(args.server,
                                               args.ignore_bad_certs)
     func = client.SetManagedBySelf if args.self else client.SetManagedByGoogle

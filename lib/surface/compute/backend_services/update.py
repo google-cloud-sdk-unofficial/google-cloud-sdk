@@ -129,14 +129,14 @@ class UpdateGA(base_classes.ReadWriteCommand):
 
   def ValidateArgs(self, args):
     if not any([
-        args.protocol,
         args.description is not None,
+        args.enable_cdn is not None,
         args.http_health_checks,
         args.https_health_checks,
-        args.timeout is not None,
         args.port,
         args.port_name,
-        args.enable_cdn is not None,
+        args.protocol,
+        args.timeout is not None,
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
 
@@ -188,18 +188,18 @@ class UpdateAlpha(UpdateGA):
 
   def ValidateArgs(self, args):
     if not any([
-        args.protocol,
+        args.affinity_cookie_ttl is not None,
+        args.connection_draining_timeout is not None,
         args.description is not None,
-        getattr(args, 'health_checks', None),
+        args.enable_cdn is not None,
         args.http_health_checks,
-        getattr(args, 'https_health_checks', None),
-        args.timeout is not None,
         args.port,
         args.port_name,
-        args.connection_draining_timeout is not None,
-        args.enable_cdn is not None,
+        args.protocol,
         args.session_affinity is not None,
-        args.affinity_cookie_ttl is not None
+        args.timeout is not None,
+        getattr(args, 'health_checks', None),
+        getattr(args, 'https_health_checks', None),
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
 
@@ -218,12 +218,17 @@ class UpdateBeta(UpdateGA):
     flags.AddPortName(parser)
     flags.AddProtocol(parser, default=None)
 
+    flags.AddConnectionDrainingTimeout(parser)
     flags.AddEnableCdn(parser, default=None)
     flags.AddSessionAffinity(parser)
     flags.AddAffinityCookieTtl(parser)
 
   def Modify(self, args, existing):
     replacement = super(UpdateBeta, self).Modify(args, existing)
+
+    if args.connection_draining_timeout is not None:
+      replacement.connectionDraining = self.messages.ConnectionDraining(
+          drainingTimeoutSec=args.connection_draining_timeout)
 
     if args.session_affinity is not None:
       replacement.sessionAffinity = (
@@ -237,16 +242,17 @@ class UpdateBeta(UpdateGA):
 
   def ValidateArgs(self, args):
     if not any([
-        args.protocol,
+        args.affinity_cookie_ttl is not None,
+        args.connection_draining_timeout is not None,
         args.description is not None,
+        args.enable_cdn is not None,
         args.http_health_checks,
         args.https_health_checks,
-        args.timeout is not None,
         args.port,
         args.port_name,
-        args.enable_cdn is not None,
+        args.protocol,
         args.session_affinity is not None,
-        args.affinity_cookie_ttl is not None
+        args.timeout is not None,
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
 

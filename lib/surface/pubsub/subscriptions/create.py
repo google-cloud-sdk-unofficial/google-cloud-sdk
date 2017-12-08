@@ -14,11 +14,11 @@
 """Cloud Pub/Sub subscription create command."""
 
 import json
-from googlecloudsdk.api_lib.pubsub import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import log
-from googlecloudsdk.core.resource import resource_printer
-from googlecloudsdk.core.util import text
+from googlecloudsdk.command_lib.projects import util as projects_util
+from googlecloudsdk.command_lib.pubsub import util
+from googlecloudsdk.core import resources
+from googlecloudsdk.core.resource import resource_projector
 from googlecloudsdk.third_party.apitools.base.py import exceptions as api_ex
 
 
@@ -60,6 +60,9 @@ class Create(base.Command):
               ' This will also automatically set the subscription'
               ' type to PUSH.'))
 
+  def Collection(self):
+    return util.SUBSCRIPTIONS_COLLECTION
+
   @util.MapHttpError
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -68,65 +71,68 @@ class Create(base.Command):
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
 
-    Returns:
-      A 2-tuple of lists, one populated with the subscription paths that were
-      successfully created, the other one with the list of subscription names
-      that could not be created.
+    Yields:
+      A serialized object (dict) describing the results of the operation.
+      This description fits the Resource described in the ResourceRegistry under
+      'pubsub.projects.topics'.
     """
     msgs = self.context['pubsub_msgs']
     pubsub = self.context['pubsub']
 
-    succeeded = []
-    failed = []
+    topic_project = ''
+    if args.topic_project:
+      topic_project = projects_util.ParseProject(args.topic_project).Name()
+    topic_name = resources.Parse(args.topic,
+                                 collection=util.TOPICS_COLLECTION).Name()
 
     for subscription in args.subscription:
-      create_req = msgs.Subscription(name=util.SubscriptionFormat(subscription),
-                                     topic=util.TopicFormat(
-                                         args.topic, args.topic_project),
-                                     ackDeadlineSeconds=args.ack_deadline)
+      subscription_name = resources.Parse(
+          subscription, collection=util.SUBSCRIPTIONS_COLLECTION).Name()
+      create_req = msgs.Subscription(
+          name=util.SubscriptionFormat(subscription_name),
+          topic=util.TopicFormat(topic_name, topic_project),
+          ackDeadlineSeconds=args.ack_deadline)
       if args.push_endpoint:
         create_req.pushConfig = msgs.PushConfig(pushEndpoint=args.push_endpoint)
 
       try:
-        succeeded.append(pubsub.projects_subscriptions.Create(create_req))
+        yield SubscriptionDisplayDict(
+            pubsub.projects_subscriptions.Create(create_req))
       except api_ex.HttpError as exc:
-        failed.append((subscription,
-                       json.loads(exc.content)['error']['message']))
+        yield SubscriptionDisplayDict(
+            subscription, json.loads(exc.content)['error']['message'])
 
-    return succeeded, failed
 
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
+def SubscriptionDisplayDict(subscription, error_msg=''):
+  """Creates a serializable from a Cloud Pub/Sub create Subscription operation.
 
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    succeeded, failed = result
+  Args:
+    subscription: (Cloud Pub/Sub Subscription) Subscription to be serialized.
+    error_msg: (string) An error message to be added to the serialized
+               result, if any.
+  Returns:
+    A serialized object representing a Cloud Pub/Sub Subscription
+    create operation.
+  """
+  subs_create_dict = resource_projector.MakeSerializable(subscription)
 
-    subscription_type = 'pull'
-    if args.push_endpoint:
-      subscription_type = 'push'
+  push_endpoint = ''
+  subscription_type = 'pull'
+  if subscription.pushConfig:
+    push_endpoint = subscription.pushConfig.pushEndpoint
+    subscription_type = 'push'
+    del subs_create_dict['pushConfig']
 
-    if succeeded:
-      fmt = 'list[title="{0} {1} {2} created successfully"]'.format(
-          len(succeeded), subscription_type,
-          text.Pluralize(len(succeeded), 'subscription'))
-      resource_printer.Print(
-          [subscription.name for subscription in succeeded], fmt)
+  success = True
+  if error_msg:
+    success = False
 
-      log.out.Print('for topic "{0}"'.format(
-          util.TopicFormat(args.topic, args.topic_project)))
+  subs_create_dict['subscriptionId'] = subscription.name
+  subs_create_dict['type'] = subscription_type
+  subs_create_dict['topic'] = subscription.topic
+  subs_create_dict['pushEndpoint'] = push_endpoint
+  subs_create_dict['success'] = success
+  subs_create_dict['reason'] = error_msg
+  del subs_create_dict['name']
 
-      log.out.Print(
-          'Acknowledgement deadline: {0} seconds'.format(args.ack_deadline))
-
-      if args.push_endpoint:
-        log.out.Print('Push endpoint: "{0}"'.format(args.push_endpoint))
-
-    if failed:
-      fmt = 'list[title="{0} {1} failed"]'.format(
-          len(failed), text.Pluralize(len(failed), 'subscriptions'))
-      resource_printer.Print(
-          ['{0} (reason: {1})'.format(topic, desc) for topic, desc in failed],
-          fmt)
+  return subs_create_dict

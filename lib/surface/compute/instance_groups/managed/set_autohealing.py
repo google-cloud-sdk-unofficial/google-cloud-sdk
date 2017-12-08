@@ -43,13 +43,13 @@ def _AddArgs(parser, multizonal):
         operation_type='set autohealing policy')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class SetAutohealing(base_classes.BaseAsyncMutator):
   """Set autohealing policy of instance group manager."""
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, multizonal=False)
+    _AddArgs(parser=parser, multizonal=True)
 
   @property
   def method(self):
@@ -58,34 +58,6 @@ class SetAutohealing(base_classes.BaseAsyncMutator):
   @property
   def service(self):
     return self.compute.instanceGroupManagers
-
-  @property
-  def resource_type(self):
-    return 'instanceGroupManagers'
-
-  def CreateRequests(self, args):
-    ref = self.CreateZonalReference(args.name, args.zone)
-    auto_healing_policies = (
-        managed_instance_groups_utils.CreateAutohealingPolicies(self, args))
-    request = (
-        self.messages.ComputeInstanceGroupManagersSetAutoHealingPoliciesRequest(
-            project=self.project,
-            zone=ref.zone,
-            instanceGroupManager=ref.Name(),
-            instanceGroupManagersSetAutoHealingRequest=(
-                self.messages.InstanceGroupManagersSetAutoHealingRequest(
-                    autoHealingPolicies=auto_healing_policies)))
-    )
-    return [request]
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SetAutohealingAlpha(SetAutohealing):
-  """Set autohealing policy of instance group manager."""
-
-  @staticmethod
-  def Args(parser):
-    _AddArgs(parser=parser, multizonal=True)
 
   def CreateRequests(self, args):
     group_ref = instance_groups_utils.CreateInstanceGroupReference(
@@ -139,4 +111,3 @@ refrain from autohealing the instance even if the instance is reported as not
 RUNNING or UNHEALTHY.
 """,
 }
-SetAutohealingAlpha.detailed_help = SetAutohealing.detailed_help

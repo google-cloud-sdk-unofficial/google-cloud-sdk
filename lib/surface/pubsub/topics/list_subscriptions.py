@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Cloud Pub/Sub topics list_subscriptions command."""
-from googlecloudsdk.api_lib.pubsub import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core.resource import resource_printer_base
 from googlecloudsdk.core.resource import resource_projector
 

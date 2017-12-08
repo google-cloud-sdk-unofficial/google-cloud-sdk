@@ -27,7 +27,6 @@ class List(base.ListCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           To print out a list of resources in the deployment with some summary information about each, run:
 
@@ -80,4 +79,4 @@ class List(base.ListCommand):
                                  request,
                                  field='resources',
                                  limit=args.limit,
-                                 batch_size=500))
+                                 batch_size=args.page_size))

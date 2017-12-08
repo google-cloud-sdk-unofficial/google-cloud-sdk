@@ -55,7 +55,7 @@ class List(base.ListCommand):
                         help='Only show versions that are receiving traffic.')
 
   def Collection(self):
-    return 'app.versions'
+    return 'appengine.versions'
 
   def Run(self, args):
     api_client = appengine_api_client.GetApiClient()

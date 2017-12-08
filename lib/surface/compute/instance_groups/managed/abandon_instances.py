@@ -50,7 +50,7 @@ def _AddArgs(parser, multizonal):
         operation_type='abandon instances')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class AbandonInstances(base_classes.BaseAsyncMutator):
   """Abandon instances owned by a managed instance group."""
 
@@ -90,9 +90,8 @@ class AbandonInstances(base_classes.BaseAsyncMutator):
              ),),]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AbandonInstancesAlpha(base_classes.BaseAsyncMutator,
-                            instance_groups_utils.InstancesReferenceMixin):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class AbandonInstancesAlpha(base_classes.BaseAsyncMutator):
   """Abandon instances owned by a managed instance group."""
 
   @staticmethod
@@ -112,12 +111,11 @@ class AbandonInstancesAlpha(base_classes.BaseAsyncMutator,
     return 'instanceGroupManagers'
 
   def CreateRequests(self, args):
-    errors = []
     group_ref = instance_groups_utils.CreateInstanceGroupReference(
         scope_prompter=self, compute=self.compute, resources=self.resources,
         name=args.name, region=args.region, zone=args.zone)
-    instances = self.CreateInstanceReferences(
-        group_ref, args.instances, errors)
+    instances = instance_groups_utils.CreateInstanceReferences(
+        self, self.compute_client, group_ref, args.instances)
 
     if group_ref.Collection() == 'compute.instanceGroupManagers':
       service = self.compute.instanceGroupManagers

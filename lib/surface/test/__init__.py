@@ -70,10 +70,8 @@ class Test(base.Group):
     # Create the client for the Storage service.
     context['storage_client'] = apis.GetClientInstance('storage', 'v1')
 
-    # TODO(user): remove this message for general release.
     log.status.Print(
-        '\nHave questions, feedback, or issues? Please let us know by using '
-        'this Google Group:\n  https://groups.google.com/forum/#!forum'
-        '/google-cloud-test-lab-external\n')
+        '\nHave questions, feedback, or issues? Get support by '
+        'visiting:\n  https://firebase.google.com/support/\n')
 
     return context

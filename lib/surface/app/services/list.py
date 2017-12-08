@@ -35,7 +35,7 @@ class List(base.ListCommand):
   }
 
   def Collection(self):
-    return 'app.services'
+    return 'appengine.services'
 
   def Run(self, args):
     api_client = appengine_api_client.GetApiClient()

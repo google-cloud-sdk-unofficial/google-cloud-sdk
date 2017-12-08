@@ -50,7 +50,7 @@ def _AddArgs(parser, multizonal):
         operation_type='recreate instances')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class RecreateInstances(base_classes.BaseAsyncMutator):
   """Recreate instances managed by a managed instance group."""
 
@@ -90,9 +90,8 @@ class RecreateInstances(base_classes.BaseAsyncMutator):
              ),),]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RecreateInstancesAlpha(RecreateInstances,
-                             instance_groups_utils.InstancesReferenceMixin):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class RecreateInstancesAlpha(RecreateInstances):
   """Recreate instances managed by a managed instance group."""
 
   @staticmethod
@@ -100,11 +99,11 @@ class RecreateInstancesAlpha(RecreateInstances,
     _AddArgs(parser=parser, multizonal=True)
 
   def CreateRequests(self, args):
-    errors = []
     group_ref = instance_groups_utils.CreateInstanceGroupReference(
         scope_prompter=self, compute=self.compute, resources=self.resources,
         name=args.name, region=args.region, zone=args.zone)
-    instances = self.CreateInstanceReferences(group_ref, args.instances, errors)
+    instances = instance_groups_utils.CreateInstanceReferences(
+        self, self.compute_client, group_ref, args.instances)
 
     if group_ref.Collection() == 'compute.instanceGroupManagers':
       service = self.compute.instanceGroupManagers
