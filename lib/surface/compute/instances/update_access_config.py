@@ -12,17 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for updating access configs for virtual machine instances."""
-import copy
+from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAccessConfigInstances(base_classes.ReadWriteCommand):
+class UpdateAccessConfigInstances(base.UpdateCommand):
   """Update a Google Compute Engine virtual machine access configuration.
 
   *{command}* is used to update access configurations for network
@@ -36,49 +37,34 @@ class UpdateAccessConfigInstances(base_classes.ReadWriteCommand):
     instance_flags.AddPublicDnsArgs(parser, instance=False)
     instance_flags.AddNetworkTierArgs(parser, instance=False)
 
-  @property
-  def service(self):
-    return self.compute.instances
-
-  @property
-  def method(self):
-    return 'UpdateAccessConfig'
-
-  @property
-  def resource_type(self):
-    return 'instances'
-
-  def CreateReference(self, args):
+  def CreateReference(self, client, resources, args):
     instance_flags.ValidatePublicDnsFlags(args)
 
     return instance_flags.INSTANCE_ARG.ResolveAsResource(
         args,
-        self.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
+        resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-  def GetGetRequest(self, args):
-    return (self.service,
+  def GetGetRequest(self, client, instance_ref):
+    return (client.apitools_client.instances,
             'Get',
-            self.messages.ComputeInstancesGetRequest(
-                instance=self.ref.Name(),
-                project=self.ref.project,
-                zone=self.ref.zone))
+            client.messages.ComputeInstancesGetRequest(**instance_ref.AsDict()))
 
-  def GetSetRequest(self, args, replacement, existing):
+  def GetSetRequest(self, client, args, instance_ref, replacement):
     for network_interface in replacement.networkInterfaces:
       if network_interface.name == args.network_interface:
         access_config_replacement = network_interface.accessConfigs[0]
 
-    return (self.service,
+    return (client.apitools_client.instances,
             'UpdateAccessConfig',
-            self.messages.ComputeInstancesUpdateAccessConfigRequest(
-                instance=self.ref.Name(),
+            client.messages.ComputeInstancesUpdateAccessConfigRequest(
+                instance=instance_ref.instance,
                 networkInterface=args.network_interface,
                 accessConfig=access_config_replacement,
-                project=self.ref.project,
-                zone=self.ref.zone))
+                project=instance_ref.project,
+                zone=instance_ref.zone))
 
-  def Modify(self, args, original):
+  def Modify(self, client, args, original):
     if args.public_dns is True:
       set_public_dns = True
     elif args.no_public_dns is True:
@@ -95,10 +81,10 @@ class UpdateAccessConfigInstances(base_classes.ReadWriteCommand):
     else:
       set_ptr = None
 
-    new_network_tier = self.messages.AccessConfig.NetworkTierValueValuesEnum(
+    new_network_tier = client.messages.AccessConfig.NetworkTierValueValuesEnum(
         args.network_tier)
 
-    modified = copy.deepcopy(original)
+    modified = encoding.CopyProtoMessage(original)
     for interface in modified.networkInterfaces:
       if interface.name == args.network_interface:
         interface.accessConfigs[0].setPublicDns = set_public_dns
@@ -116,3 +102,26 @@ class UpdateAccessConfigInstances(base_classes.ReadWriteCommand):
         '--network-interface',
         'The specified network interface \'{0}\' does not exist.'.format(
             args.network_interface))
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    instance_ref = self.CreateReference(client, holder.resources, args)
+    get_request = self.GetGetRequest(client, instance_ref)
+
+    objects = client.MakeRequests([get_request])
+
+    new_object = self.Modify(client, args, objects[0])
+
+    # If existing object is equal to the proposed object or if
+    # Modify() returns None, then there is no work to be done, so we
+    # print the resource and return.
+    if not new_object or objects[0] == new_object:
+      log.status.Print(
+          'No change requested; skipping update for [{0}].'.format(
+              objects[0].name))
+      return objects
+
+    return client.MakeRequests(
+        requests=[self.GetSetRequest(client, args, instance_ref, new_object)])

@@ -33,10 +33,10 @@ class AddIamPolicyBinding(base.Command):
   `frodo` with the keyring `fellowship` and location `global`:
 
     $ {command} frodo \
-  --keyring fellowship \
-  --location global \
-  --member='user:test-user@gmail.com' \
-  --role='roles/editor'
+        --keyring fellowship \
+        --location global \
+        --member='user:test-user@gmail.com' \
+        --role='roles/editor'
   """
 
   # Above text based on output from function call below

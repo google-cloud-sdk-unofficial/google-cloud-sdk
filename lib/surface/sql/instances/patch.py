@@ -47,9 +47,9 @@ class _BasePatch(object):
         '--activation-policy',
         required=False,
         choices=['ALWAYS', 'NEVER', 'ON_DEMAND'],
-        help='The activation policy for this instance. This specifies when the '
-        'instance should be activated and is applicable only when the '
-        'instance state is RUNNABLE.')
+        help=('The activation policy for this instance. This specifies when '
+              'the instance should be activated and is applicable only when '
+              'the instance state is RUNNABLE.'))
     parser.add_argument(
         '--assign-ip',
         action='store_true',
@@ -61,7 +61,9 @@ class _BasePatch(object):
         type=arg_parsers.ArgList(min_length=1),
         metavar='APP',
         required=False,
-        help='A list of App Engine app IDs that can access this instance.')
+        help=('First Generation instances only. List of IDs for App Engine '
+              'applications running in the Standard environment that '
+              'can access this instance.'))
     gae_apps_group.add_argument(
         '--clear-gae-apps',
         required=False,
@@ -74,21 +76,21 @@ class _BasePatch(object):
         type=arg_parsers.ArgList(min_length=1),
         metavar='NETWORK',
         required=False,
-        help='The list of external networks that are allowed to connect to the '
-        'instance. Specified in CIDR notation, also known as \'slash\' '
-        'notation (e.g. 192.168.100.0/24).')
+        help=('The list of external networks that are allowed to connect to '
+              'the instance. Specified in CIDR notation, also known as '
+              '\'slash\' notation (e.g. 192.168.100.0/24).'))
     networks_group.add_argument(
         '--clear-authorized-networks',
         required=False,
         action='store_true',
-        help='Clear the list of external networks that are allowed to connect '
-        'to the instance.')
+        help=('Clear the list of external networks that are allowed to connect '
+              'to the instance.'))
     backups_group = parser.add_mutually_exclusive_group()
     backups_group.add_argument(
         '--backup-start-time',
         required=False,
-        help='The start time of daily backups, specified in the 24 hour format '
-        '- HH:MM, in the UTC timezone.')
+        help=('The start time of daily backups, specified in the 24 hour '
+              'format - HH:MM, in the UTC timezone.'))
     backups_group.add_argument(
         '--no-backup',
         required=False,
@@ -100,37 +102,36 @@ class _BasePatch(object):
         type=arg_parsers.ArgDict(min_length=1),
         metavar='FLAG=VALUE',
         required=False,
-        help='A comma-separated list of database flags to set on the instance. '
-        'Use an equals sign to separate flag name and value. Flags without '
-        'values, like skip_grant_tables, can be written out without a value '
-        'after, e.g., `skip_grant_tables=`. Use on/off for '
-        'booleans. View the Instance Resource API for allowed flags. '
-        '(e.g., `--database-flags max_allowed_packet=55555,skip_grant_tables=,'
-        'log_output=1`)')
+        help=('A comma-separated list of database flags to set on the '
+              'instance. Use an equals sign to separate flag name and value. '
+              'Flags without values, like skip_grant_tables, can be written '
+              'out without a value after, e.g., `skip_grant_tables=`. Use '
+              'on/off for booleans. View the Instance Resource API for allowed '
+              'flags. (e.g., `--database-flags max_allowed_packet=55555,'
+              'skip_grant_tables=,log_output=1`)'))
     database_flags_group.add_argument(
         '--clear-database-flags',
         required=False,
         action='store_true',
-        help='Clear the database flags set on the instance. '
-        'WARNING: Instance will be restarted.')
+        help=('Clear the database flags set on the instance. '
+              'WARNING: Instance will be restarted.'))
     parser.add_argument(
         '--enable-bin-log',
         action='store_true',
         default=None,  # Tri-valued: None => don't change the setting.
-        help='Enable binary log. If backup configuration is disabled, binary '
-        'log should be disabled as well.')
+        help=('Enable binary log. If backup configuration is disabled, binary '
+              'log should be disabled as well.'))
     parser.add_argument(
         '--follow-gae-app',
         required=False,
-        help='The App Engine app this instance should follow. It must be in '
-        'the same region as the instance. '
-        'WARNING: Instance may be restarted.')
+        help=('First Generation instances only. The App Engine app '
+              'this instance should follow. It must be in the same region as '
+              'the instance. WARNING: Instance may be restarted.'))
     parser.add_argument(
         '--gce-zone',
         required=False,
-        help='The preferred Compute Engine zone (e.g. us-central1-a, '
-        'us-central1-b, etc.). '
-        'WARNING: Instance may be restarted.')
+        help=('The preferred Compute Engine zone (e.g. us-central1-a, '
+              'us-central1-b, etc.). WARNING: Instance may be restarted.'))
     parser.add_argument(
         'instance',
         completion_resource='sql.instances',
@@ -140,7 +141,8 @@ class _BasePatch(object):
         '-p',
         required=False,
         choices=['PER_USE', 'PACKAGE'],
-        help='The pricing plan for this instance. ')
+        help=('First Generation instances only. The pricing plan for this '
+              'instance.'))
     parser.add_argument(
         '--replication',
         required=False,
@@ -150,20 +152,24 @@ class _BasePatch(object):
         '--require-ssl',
         action='store_true',
         default=None,  # Tri-valued: None => don't change the setting.
-        help='mysqld should default to \'REQUIRE X509\' for users connecting '
-        'over IP.')
+        help=('mysqld should default to \'REQUIRE X509\' for users connecting '
+              'over IP.'))
     parser.add_argument(
         '--tier',
         '-t',
         required=False,
-        help='The tier of service for this instance, for example D0, D1. '
-        'WARNING: Instance will be restarted.')
+        help=('The tier for this instance. For Second Generation instances, '
+              'TIER is the instance\'s machine type (e.g., db-n1-standard-1). '
+              'For PostgreSQL instances, only shared-core machine types '
+              '(e.g., db-f1-micro) apply. A complete list of tiers is '
+              'available here: https://cloud.google.com/sql/pricing. WARNING: '
+              'Instance will be restarted.'))
     parser.add_argument(
         '--enable-database-replication',
         action='store_true',
         default=None,  # Tri-valued: None => don't change the setting.
-        help='Enable database replication. Applicable only '
-        'for read replica instance(s). WARNING: Instance will be restarted.')
+        help=('Enable database replication. Applicable only for read replica '
+              'instance(s). WARNING: Instance will be restarted.'))
     parser.add_argument(
         '--async',
         action='store_true',

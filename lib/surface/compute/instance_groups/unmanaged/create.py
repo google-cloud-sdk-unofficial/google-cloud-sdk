@@ -16,35 +16,38 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import zone_utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
+from googlecloudsdk.command_lib.compute.instance_groups.unmanaged import flags as instance_groups_unmanaged_flags
 
 
-class Create(base_classes.BaseAsyncCreator):
-  """Create Google Compute Engine unmanaged instance groups."""
+class Create(base.CreateCommand):
+  """Create a Compute Engine unmanaged instance group.
+
+    *{command}* creates a new Google Compute Engine unmanaged
+  instance group.
+  For example:
+
+    $ {command} example-instance-group --zone us-central1-a
+
+  The above example creates one unmanaged instance group called
+  'example-instance-group' in the ``us-central1-a'' zone.
+  """
 
   @staticmethod
   def Args(parser):
-    instance_groups_flags.ZONAL_INSTANCE_GROUP_ARG.AddArgument(parser)
+    parser.display_info.AddFormat(instance_groups_unmanaged_flags.LIST_FORMAT)
+    Create.ZONAL_INSTANCE_GROUP_ARG = (
+        instance_groups_flags.MakeZonalInstanceGroupArg())
+    Create.ZONAL_INSTANCE_GROUP_ARG.AddArgument(parser, operation_type='create')
     parser.add_argument(
         '--description',
         help=('Specifies a textual description for the '
               'unmanaged instance group.'))
 
-  @property
-  def service(self):
-    return self.compute.instanceGroups
-
-  @property
-  def method(self):
-    return 'Insert'
-
-  @property
-  def resource_type(self):
-    return 'instanceGroups'
-
-  def CreateRequests(self, args):
+  def Run(self, args):
     """Creates and returns an InstanceGroups.Insert request.
 
     Args:
@@ -53,33 +56,23 @@ class Create(base_classes.BaseAsyncCreator):
     Returns:
       request: a ComputeInstanceGroupsInsertRequest message object
     """
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
     group_ref = (
-        instance_groups_flags.ZONAL_INSTANCE_GROUP_ARG.ResolveAsResource(
-            args, self.resources,
+        Create.ZONAL_INSTANCE_GROUP_ARG.ResolveAsResource(
+            args, holder.resources,
             default_scope=compute_scope.ScopeEnum.ZONE,
-            scope_lister=flags.GetDefaultScopeLister(self.compute_client)))
-    zone_resource_fetcher = zone_utils.ZoneResourceFetcher(self.compute_client)
+            scope_lister=flags.GetDefaultScopeLister(client)))
+    zone_resource_fetcher = zone_utils.ZoneResourceFetcher(client)
     zone_resource_fetcher.WarnForZonalCreation([group_ref])
 
-    request = self.messages.ComputeInstanceGroupsInsertRequest(
-        instanceGroup=self.messages.InstanceGroup(
+    request = client.messages.ComputeInstanceGroupsInsertRequest(
+        instanceGroup=client.messages.InstanceGroup(
             name=group_ref.Name(),
             description=args.description),
         zone=group_ref.zone,
         project=group_ref.project)
 
-    return [request]
-
-Create.detailed_help = {
-    'brief': 'Create a Compute Engine unmanaged instance group',
-    'DESCRIPTION': """\
-        *{command}* creates a new Google Compute Engine unmanaged
-        instance group.
-        For example:
-
-          $ {command} example-instance-group --zone us-central1-a
-
-        The above example creates one unmanaged instance group called
-        'example-instance-group' in the ``us-central1-a'' zone.
-        """,
-}
+    return client.MakeRequests([(client.apitools_client.instanceGroups,
+                                 'Insert', request)])

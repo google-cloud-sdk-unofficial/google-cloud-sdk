@@ -53,9 +53,10 @@ Maximum number of replicas Autoscaler will set.
 .RS 2m
 .TP 2m
 \fB\-\-cool\-down\-period\fR=\fICOOL_DOWN_PERIOD\fR
-Number of seconds Autoscaler will wait between resizing collection. Note: The
-Autoscaler waits 10 minutes before scaling down, the value entered here is in
-addition to the initial 10 minute period.
+The time period that the autoscaler should wait before it starts collecting
+information from a new instance. This prevents the autoscaler from collecting
+information when the instance is initializing, during which the collected usage
+would not be reliable. The default is 60 seconds.
 
 .TP 2m
 \fB\-\-custom\-metric\-utilization\fR=[\fImetric\fR=\fIMETRIC\fR],[\fIutilization\-target\fR=\fIUTILIZATION\-TARGET\fR],[\fIutilization\-target\-type\fR=\fIUTILIZATION\-TARGET\-TYPE\fR]

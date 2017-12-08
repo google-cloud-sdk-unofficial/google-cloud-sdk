@@ -45,7 +45,8 @@ class Update(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    snapshots_flags.SNAPSHOT_ARG.AddArgument(parser)
+    Update.SnapshotArg = snapshots_flags.MakeSnapshotArg()
+    Update.SnapshotArg.AddArgument(parser)
     labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):
@@ -53,7 +54,7 @@ class Update(base.UpdateCommand):
     client = holder.client.apitools_client
     messages = holder.client.messages
 
-    snapshot_ref = snapshots_flags.SNAPSHOT_ARG.ResolveAsResource(
+    snapshot_ref = Update.SnapshotArg.ResolveAsResource(
         args, holder.resources)
 
     update_labels, remove_labels = labels_util.GetAndValidateOpsFromArgs(args)

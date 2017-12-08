@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.util import labels_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Create(base_classes.BaseAsyncCreator):
+class Create(base.CreateCommand):
   """Create Google Compute Engine images."""
 
   _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = False
@@ -35,6 +35,7 @@ class Create(base_classes.BaseAsyncCreator):
 
   @classmethod
   def Args(cls, parser):
+    parser.display_info.AddFormat(flags.LIST_FORMAT)
     parser.add_argument(
         '--description',
         help=('An optional, textual description for the image being created.'))
@@ -70,29 +71,21 @@ class Create(base_classes.BaseAsyncCreator):
                                    choices=cls._GUEST_OS_FEATURES),
           help=('One or more features supported by the OS in the image.'))
 
-    flags.DISK_IMAGE_ARG.AddArgument(parser, operation_type='create')
+    Create.DISK_IMAGE_ARG = flags.MakeDiskImageArg()
+    Create.DISK_IMAGE_ARG.AddArgument(parser, operation_type='create')
     csek_utils.AddCsekKeyArgs(parser, resource_type='image')
 
-  @property
-  def service(self):
-    return self.compute.images
-
-  @property
-  def method(self):
-    return 'Insert'
-
-  @property
-  def resource_type(self):
-    return 'images'
-
-  def CreateRequests(self, args):
+  def Run(self, args):
     """Returns a list of requests necessary for adding images."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+    messages = client.messages
 
-    image_ref = flags.DISK_IMAGE_ARG.ResolveAsResource(args, self.resources)
-    image = self.messages.Image(
+    image_ref = Create.DISK_IMAGE_ARG.ResolveAsResource(args, holder.resources)
+    image = messages.Image(
         name=image_ref.image,
         description=args.description,
-        sourceType=self.messages.Image.SourceTypeValueValuesEnum.RAW,
+        sourceType=messages.Image.SourceTypeValueValuesEnum.RAW,
         family=args.family)
 
     csek_keys = csek_utils.CsekKeyStore.FromArgs(
@@ -101,7 +94,7 @@ class Create(base_classes.BaseAsyncCreator):
       image.imageEncryptionKey = csek_utils.MaybeToMessage(
           csek_keys.LookupKey(image_ref,
                               raise_if_missing=args.require_csek_key_create),
-          self.compute_client.apitools_client)
+          client.apitools_client)
 
     # Validate parameters.
     if args.source_disk_zone and not args.source_disk:
@@ -123,14 +116,14 @@ class Create(base_classes.BaseAsyncCreator):
     # TODO(b/30086260): use resources.REGISTRY.Parse() for GCS URIs.
     if args.source_uri:
       source_uri = utils.NormalizeGoogleStorageUri(args.source_uri)
-      image.rawDisk = self.messages.Image.RawDiskValue(source=source_uri)
+      image.rawDisk = messages.Image.RawDiskValue(source=source_uri)
     else:
       source_disk_ref = flags.SOURCE_DISK_ARG.ResolveAsResource(
-          args, self.resources,
-          scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
+          args, holder.resources,
+          scope_lister=compute_flags.GetDefaultScopeLister(client))
       image.sourceDisk = source_disk_ref.SelfLink()
       image.sourceDiskEncryptionKey = csek_utils.MaybeLookupKeyMessage(
-          csek_keys, source_disk_ref, self.compute_client.apitools_client)
+          csek_keys, source_disk_ref, client.apitools_client)
 
     if args.licenses:
       image.licenses = args.licenses
@@ -139,25 +132,26 @@ class Create(base_classes.BaseAsyncCreator):
     if guest_os_features:
       guest_os_feature_messages = []
       for feature in guest_os_features:
-        gf_type = self.messages.GuestOsFeature.TypeValueValuesEnum(feature)
-        guest_os_feature = self.messages.GuestOsFeature()
+        gf_type = messages.GuestOsFeature.TypeValueValuesEnum(feature)
+        guest_os_feature = messages.GuestOsFeature()
         guest_os_feature.type = gf_type
         guest_os_feature_messages.append(guest_os_feature)
       image.guestOsFeatures = guest_os_feature_messages
 
-    request = self.messages.ComputeImagesInsertRequest(
+    request = messages.ComputeImagesInsertRequest(
         image=image,
         project=image_ref.project)
 
     args_labels = getattr(args, 'labels', None)
     if args_labels:
-      labels = self.messages.Image.LabelsValue(additionalProperties=[
-          self.messages.Image.LabelsValue.AdditionalProperty(
+      labels = messages.Image.LabelsValue(additionalProperties=[
+          messages.Image.LabelsValue.AdditionalProperty(
               key=key, value=value)
           for key, value in sorted(args_labels.iteritems())])
       request.image.labels = labels
 
-    return [request]
+    return client.MakeRequests([(client.apitools_client.images, 'Insert',
+                                 request)])
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

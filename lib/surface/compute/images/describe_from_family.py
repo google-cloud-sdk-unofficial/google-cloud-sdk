@@ -14,9 +14,12 @@
 
 """Command for getting the latest image from a family."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.images import flags
 
 
-class DescribeFromFamily(base_classes.GlobalDescriber):
+class DescribeFromFamily(base.DescribeCommand):
   """Describe the latest image from an image family.
 
   *{command}* looks up the latest image from an image family and runs a describe
@@ -25,25 +28,25 @@ class DescribeFromFamily(base_classes.GlobalDescriber):
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalDescriber.Args(parser, 'compute.images')
+    DescribeFromFamily.DiskImageArg = flags.MakeDiskImageArg()
+    DescribeFromFamily.DiskImageArg.AddArgument(
+        parser, operation_type='describe')
 
-  @property
-  def service(self):
-    return self.compute.images
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'images'
+    image_ref = DescribeFromFamily.DiskImageArg.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-  @property
-  def method(self):
-    return 'GetFromFamily'
+    family = image_ref.image
+    if family.startswith('family/'):
+      family = family[len('family/'):]
 
-  def SetNameField(self, ref, request):
-    """Sets the field in the request that corresponds to the object name."""
-    name = ref.Name()
+    request = client.messages.ComputeImagesGetFromFamilyRequest(
+        family=family, project=image_ref.project)
 
-    if name.startswith('family/'):
-      request.family = name[len('family/'):]
-    else:
-      request.family = name
+    return client.MakeRequests([(client.apitools_client.images, 'GetFromFamily',
+                                 request)])[0]

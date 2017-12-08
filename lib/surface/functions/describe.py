@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 class Describe(base.DescribeCommand):
@@ -40,14 +41,13 @@ class Describe(base.DescribeCommand):
     Returns:
       The specified function with its description and configured filter.
     """
-    client = self.context['functions_client']
-    messages = self.context['functions_messages']
-    project = properties.VALUES.core.project.Get(required=True)
-    registry = self.context['registry']
-    function_ref = registry.Parse(
+    client = util.GetApiClientInstance()
+    messages = client.MESSAGES_MODULE
+
+    function_ref = resources.REGISTRY.Parse(
         args.name, params={
-            'projectsId': project,
-            'locationsId': properties.VALUES.functions.region.Get()},
+            'projectsId': properties.VALUES.core.project.GetOrFail,
+            'locationsId': properties.VALUES.functions.region.GetOrFail},
         collection='cloudfunctions.projects.locations.functions')
 
     return client.projects_locations_functions.Get(

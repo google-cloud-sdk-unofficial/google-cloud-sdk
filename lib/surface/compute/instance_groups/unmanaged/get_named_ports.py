@@ -29,14 +29,16 @@ class GetNamedPorts(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    instance_groups_flags.ZONAL_INSTANCE_GROUP_ARG.AddArgument(parser)
+    GetNamedPorts.ZonalInstanceGroupArg = (
+        instance_groups_flags.MakeZonalInstanceGroupArg())
+    GetNamedPorts.ZonalInstanceGroupArg.AddArgument(parser)
 
   def Run(self, args):
     """Retrieves response with named ports."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     project = properties.VALUES.core.project.Get(required=True)
     group_ref = (
-        instance_groups_flags.ZONAL_INSTANCE_GROUP_ARG.ResolveAsResource(
+        GetNamedPorts.ZonalInstanceGroupArg.ResolveAsResource(
             args, holder.resources,
             scope_lister=flags.GetDefaultScopeLister(
                 holder.client, project)))

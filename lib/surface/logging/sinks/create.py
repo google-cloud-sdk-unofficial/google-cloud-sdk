@@ -66,6 +66,10 @@ class Create(base.CreateCommand):
         '--log-filter', required=False,
         help=('A filter expression for the sink. If present, the filter '
               'specifies which log entries to export.'))
+    parser.add_argument(
+        '--include-children', required=False, action='store_true',
+        help=('Whether to export logs from all child projects and folders. '
+              'Only applies to sinks for organizations and folders.'))
     util.AddNonProjectArgs(parser, 'Create a sink')
 
   def CreateSink(self, parent, sink_data):
@@ -91,6 +95,10 @@ class Create(base.CreateCommand):
       console_io.PromptContinue(
           'Sink with empty filter matches all entries.', cancel_on_no=True)
 
+    if args.include_children and not (args.organization or args.folder):
+      log.warn('include-children only has an effect for sinks at the folder '
+               'or organization level')
+
     sink_ref = resources.REGISTRY.Parse(
         args.sink_name,
         params={'projectsId': properties.VALUES.core.project.GetOrFail},
@@ -99,7 +107,8 @@ class Create(base.CreateCommand):
     sink_data = {
         'name': sink_ref.sinksId,
         'destination': args.destination,
-        'filter': args.log_filter
+        'filter': args.log_filter,
+        'includeChildren': args.include_children
     }
 
     result = util.TypedLogSink(

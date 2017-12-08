@@ -11,7 +11,7 @@ gcloud container builds submit \- submit a build using the Google Container Buil
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud container builds submit\fR \fISOURCE\fR (\fB\-\-config\fR=\fICONFIG\fR\ |\ \fB\-\-tag\fR=\fITAG\fR,\ \fB\-t\fR\ \fITAG\fR) [\fB\-\-async\fR] [\fB\-\-gcs\-log\-dir\fR=\fIGCS_LOG_DIR\fR] [\fB\-\-gcs\-source\-staging\-dir\fR=\fIGCS_SOURCE_STAGING_DIR\fR] [\fB\-\-substitutions\fR=[\f5_\fR\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-timeout\fR=\fITIMEOUT\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud container builds submit\fR [\fISOURCE\fR] (\fB\-\-config\fR=\fICONFIG\fR\ |\ \fB\-\-tag\fR=\fITAG\fR,\ \fB\-t\fR\ \fITAG\fR) [\fB\-\-async\fR] [\fB\-\-gcs\-log\-dir\fR=\fIGCS_LOG_DIR\fR] [\fB\-\-gcs\-source\-staging\-dir\fR=\fIGCS_SOURCE_STAGING_DIR\fR] [\fB\-\-no\-source\fR] [\fB\-\-substitutions\fR=[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-timeout\fR=\fITIMEOUT\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -25,7 +25,7 @@ Submit a build using the Google Container Builder service.
 
 .RS 2m
 .TP 2m
-\fISOURCE\fR
+[\fISOURCE\fR]
 The source directory on local disk or tarball in Google Cloud Storage or disk to
 use for this build.
 
@@ -73,7 +73,11 @@ build. If the bucket does not exist, it will be created. If not set,
 \f5gs://<project id>_cloudbuild/source\fR is used.
 
 .TP 2m
-\fB\-\-substitutions\fR=[\f5_\fR\fIKEY\fR=\fIVALUE\fR,...]
+\fB\-\-no\-source\fR
+Specify that no source should be uploaded with this build.
+
+.TP 2m
+\fB\-\-substitutions\fR=[\fIKEY\fR=\fIVALUE\fR,...]
 Parameters to be substituted in the build specification.
 
 For example (using some nonsensical substitution keys; all keys must begin with

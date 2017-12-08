@@ -33,8 +33,8 @@ class AddIamPolicyBinding(base.Command):
   `fellowship` with location `global`:
 
     $ {command} fellowship --location global \
-  --member='user:test-user@gmail.com' \
-  --role='roles/editor'
+        --member='user:test-user@gmail.com' \
+        --role='roles/editor'
   """
 
   @staticmethod

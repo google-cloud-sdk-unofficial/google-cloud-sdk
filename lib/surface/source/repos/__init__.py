@@ -18,4 +18,4 @@ from googlecloudsdk.calliope import base
 
 
 class Repos(base.Group):
-  """Repos command group."""
+  """Manage cloud source repositories."""

@@ -27,8 +27,14 @@ from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
 
 
-class _BaseList(object):
-  """Base class for sql list operations."""
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class List(base.ListCommand):
+  """Lists all instance operations for the given Cloud SQL instance."""
+
+  @staticmethod
+  def Args(parser):
+    flags.INSTANCE_FLAG.AddToParser(parser)
+    parser.display_info.AddFormat(flags.OPERATION_FORMAT_BETA)
 
   def Run(self, args):
     """Lists all instance operations that have been performed on an instance.
@@ -46,7 +52,7 @@ class _BaseList(object):
       ToolException: An error other than http error occured while executing the
           command.
     """
-    client = self.GetSqlClient()
+    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client
     sql_messages = client.sql_messages
 
@@ -62,29 +68,3 @@ class _BaseList(object):
             project=instance_ref.project,
             instance=instance_ref.instance),
         limit=args.limit)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class List(_BaseList, base.ListCommand):
-  """Lists all instance operations for the given Cloud SQL instance."""
-
-  @staticmethod
-  def Args(parser):
-    flags.INSTANCE_FLAG.AddToParser(parser)
-    parser.display_info.AddFormat(flags.OPERATION_FORMAT)
-
-  def GetSqlClient(self):
-    return api_util.SqlClient(api_util.API_VERSION_FALLBACK)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(_BaseList, base.ListCommand):
-  """Lists all instance operations for the given Cloud SQL instance."""
-
-  @staticmethod
-  def Args(parser):
-    flags.INSTANCE_FLAG.AddToParser(parser)
-    parser.display_info.AddFormat(flags.OPERATION_FORMAT_BETA)
-
-  def GetSqlClient(self):
-    return api_util.SqlClient(api_util.API_VERSION_DEFAULT)

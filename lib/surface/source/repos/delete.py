@@ -27,7 +27,7 @@ from googlecloudsdk.core.console import console_io
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
-  """Delete project git repository in the current directory."""
+  """Delete a cloud source repository."""
 
   detailed_help = {
       'DESCRIPTION':
@@ -41,7 +41,7 @@ class Delete(base.DeleteCommand):
           following commands:
 
             $ gcloud init
-            $ gcloud beta source repos delete REPO_NAME
+            $ {command} REPOSITORY_NAME
       """),
   }
 

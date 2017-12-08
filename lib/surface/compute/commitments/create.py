@@ -40,8 +40,8 @@ class Create(base.Command):
                               'or `36-months`.'))
     resources_help = """\
     Resources to be included in the commitment commitment:
-    * MEMORY should include unit (eg. 3072MiB or 9GiB). If no units are
-      specified, GiB is assumed.
+    * MEMORY should include unit (eg. 3072MB or 9GB). If no units are specified,
+      GB is assumed.
     * VCPU is number of commited cores.
     Ratio between number of VCPU cores and memory must conform to limits
     described on:

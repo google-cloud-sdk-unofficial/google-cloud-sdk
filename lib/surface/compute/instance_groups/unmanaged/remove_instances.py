@@ -26,7 +26,9 @@ class RemoveInstances(base_classes.NoOutputAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    instance_groups_flags.ZONAL_INSTANCE_GROUP_ARG.AddArgument(parser)
+    RemoveInstances.ZonalInstanceGroupArg = (
+        instance_groups_flags.MakeZonalInstanceGroupArg())
+    RemoveInstances.ZonalInstanceGroupArg.AddArgument(parser)
 
     parser.add_argument(
         '--instances',
@@ -49,7 +51,7 @@ class RemoveInstances(base_classes.NoOutputAsyncMutator):
 
   def CreateRequests(self, args):
     group_ref = (
-        instance_groups_flags.ZONAL_INSTANCE_GROUP_ARG.ResolveAsResource(
+        RemoveInstances.ZonalInstanceGroupArg.ResolveAsResource(
             args, self.resources,
             default_scope=compute_scope.ScopeEnum.ZONE,
             scope_lister=flags.GetDefaultScopeLister(self.compute_client)))

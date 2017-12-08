@@ -102,25 +102,25 @@ class CloneGA(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CloneAlpha(base.Command):
-  """Clone project git repository in the current directory."""
+  """Clone a cloud source repository."""
 
   detailed_help = {
-      'DESCRIPTION': """\
-          This command clones git repository for the currently active
-          Google Cloud Platform project into the specified folder in the
-          current directory.
+      'DESCRIPTION':
+          """\
+          This command clones a git repository for the currently active
+          Google Cloud Platform project into the specified directory or into
+          the current directory if no target directory is specified.
+
+          The clone operation configures the local clone to use your gcloud
+          credentials to authenticate future git operations.
       """,
-      'EXAMPLES': textwrap.dedent("""\
-          To use the default Google Cloud repository for development, use the
-          following commands. We recommend that you use your project name as
-          TARGET_DIR to make it apparent which directory is used for which
-          project. We also recommend to clone the repository named 'default'
-          since it is automatically created for each project, and its
-          contents can be browsed and edited in the Developers Console.
+      'EXAMPLES':
+          textwrap.dedent("""\
+          The example commands below show a sample workflow.
 
             $ gcloud init
-            $ gcloud source repos clone default TARGET_DIR
-            $ cd TARGET_DIR
+            $ {command} REPOSITORY_NAME DIRECTORY_NAME
+            $ cd DIRECTORY_NAME
             ... create/edit files and create one or more commits ...
             $ git push origin master
       """),
@@ -141,11 +141,7 @@ class CloneAlpha(base.Command):
          'Using the full path means that gcloud does not need to be in '
          'the path for future git operations on the repository.'))
     parser.add_argument(
-        'src',
-        metavar='REPOSITORY_NAME',
-        help=('Name of the repository. '
-              'Note: Google Cloud Platform projects generally have (if '
-              'created) a repository named "default"'))
+        'src', metavar='REPOSITORY_NAME', help=('Name of the repository. '))
     parser.add_argument(
         'dst',
         metavar='DIRECTORY_NAME',

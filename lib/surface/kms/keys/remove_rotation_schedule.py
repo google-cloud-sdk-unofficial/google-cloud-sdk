@@ -29,8 +29,8 @@ class RemoveRotationSchedule(base.UpdateCommand):
   named `frodo` within the keyring `fellowship` and location `global`:
 
     $ {command} frodo \
-  --location global \
-  --keyring fellowship
+        --location global \
+        --keyring fellowship
   """
 
   @staticmethod

@@ -13,22 +13,33 @@
 # limitations under the License.
 """Command for describing instance templates."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.instance_templates import flags
 
 
-class Describe(base_classes.GlobalDescriber):
+class Describe(base.DescribeCommand):
   """Describe a virtual machine instance template."""
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalDescriber.Args(parser)
+    Describe.InstanceTemplateArg = flags.MakeInstanceTemplateArg()
+    Describe.InstanceTemplateArg.AddArgument(parser, operation_type='describe')
 
-  @property
-  def service(self):
-    return self.compute.instanceTemplates
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'instanceTemplates'
+    instance_template_ref = Describe.InstanceTemplateArg.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+
+    request = client.messages.ComputeInstanceTemplatesGetRequest(
+        **instance_template_ref.AsDict())
+
+    return client.MakeRequests([(client.apitools_client.instanceTemplates,
+                                 'Get', request)])[0]
 
 
 Describe.detailed_help = {

@@ -13,32 +13,48 @@
 # limitations under the License.
 """Command for deleting unmanaged instance groups."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.instance_groups import flags
 
 
-class Delete(base_classes.ZonalDeleter):
-  """Delete Google Compute Engine unmanaged instance groups."""
+class Delete(base.DeleteCommand):
+  r"""Delete Google Compute Engine unmanaged instance groups.
 
-  @property
-  def service(self):
-    return self.compute.instanceGroups
+    *{command}* deletes one or more Google Compute Engine unmanaged
+  instance groups. This command just deletes the instance group and does
+  not delete the individual virtual machine instances
+  in the instance group.
+  For example:
 
-  @property
-  def resource_type(self):
-    return 'instanceGroups'
+    $ {command} example-instance-group-1 example-instance-group-2 \
+        --zone us-central1-a
 
+  The above example deletes two instance groups, example-instance-group-1
+  and example-instance-group-2, in the ``us-central1-a'' zone.
+  """
 
-Delete.detailed_help = {
-    'brief': 'Delete Google Compute Engine unmanaged instance groups',
-    'DESCRIPTION': """\
-        *{command}* deletes one or more Google Compute Engine unmanaged
-        instance groups. This command just deletes the instance group and does
-        not delete the individual virtual machine instances
-        in the instance group.
-        For example:
+  @staticmethod
+  def Args(parser):
+    Delete.ZonalInstanceGroupArg = flags.MakeZonalInstanceGroupArg(plural=True)
+    Delete.ZonalInstanceGroupArg.AddArgument(parser, operation_type='delete')
 
-          $ {command} example-instance-group-1 example-instance-group-2 --zone us-central1-a
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-        The above example deletes two instance groups, example-instance-group-1
-        and example-instance-group-2, in the ``us-central1-a'' zone.
-        """,
-}
+    instance_group_refs = Delete.ZonalInstanceGroupArg.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+
+    utils.PromptForDeletion(instance_group_refs, 'zone')
+
+    requests = []
+    for instance_group_ref in instance_group_refs:
+      requests.append((client.apitools_client.instanceGroups, 'Delete',
+                       client.messages.ComputeInstanceGroupsDeleteRequest(
+                           **instance_group_ref.AsDict())))
+
+    return client.MakeRequests(requests)

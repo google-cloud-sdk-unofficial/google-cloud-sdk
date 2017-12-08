@@ -16,13 +16,12 @@
 
 import argparse
 import os
-import sys
 import types
 
-from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.calliope import usage_text
+from googlecloudsdk.command_lib import init_util
 from googlecloudsdk.core import config
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
@@ -118,8 +117,7 @@ class Init(base.Command):
     if not self._PickAccount(args.console_only, preselected=args.account):
       return
 
-    project_id = self._PickProject(preselected=args.project)
-    if not project_id:
+    if not self._PickProject(preselected=args.project):
       return
 
     self._PickDefaultRegionAndZone()
@@ -267,49 +265,11 @@ class Init(base.Command):
     Returns:
       str, project_id or None if was not selected.
     """
-    try:
-      projects = list(projects_api.List())
-    except Exception:  # pylint: disable=broad-except
-      log.debug('Failed to execute projects list: %s, %s, %s', *sys.exc_info())
-      projects = None
-
-    if projects is None:  # Failed to get the list.
-      project_id = preselected or console_io.PromptResponse(
-          'Enter project id you would like to use:  ')
-      if not project_id:
-        return None
-    else:
-      projects = sorted(projects, key=lambda prj: prj.projectId)
-      choices = [project.projectId for project in projects]
-      if not choices:
-        log.status.write('\nThis account has no projects. Please create one in '
-                         'developers console '
-                         '(https://console.developers.google.com/project) '
-                         'before running this command.\n')
-        return None
-      if preselected:
-        project_id = preselected
-        project_names = [project.projectId for project in projects]
-        if project_id not in project_names:
-          log.status.write(
-              '\n[{0}] is not one of your projects [{1}].\n'.format(
-                  project_id, ','.join(project_names)))
-          return None
-      elif len(choices) == 1:
-        project_id = projects[0].projectId
-      else:
-        idx = console_io.PromptChoice(
-            choices,
-            message='Pick cloud project to use: ',
-            allow_freeform=True,
-            freeform_suggester=usage_text.TextChoiceSuggester())
-        if idx is None:
-          return None
-        project_id = projects[idx].projectId
-
-    self._RunCmd(['config', 'set'], ['project', project_id])
-    log.status.write('Your current project has been set to: [{0}].\n\n'
-                     .format(project_id))
+    project_id = init_util.PickProject(preselected=preselected)
+    if project_id is not None:
+      self._RunCmd(['config', 'set'], ['project', project_id])
+      log.status.write('Your current project has been set to: [{0}].\n\n'
+                       .format(project_id))
     return project_id
 
   def _PickDefaultRegionAndZone(self):

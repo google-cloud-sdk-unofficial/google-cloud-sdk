@@ -22,7 +22,7 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
-  """Lists all repositories in a particular project.
+  """List the repositories the currently active project.
 
   By default, repos in the current project are listed; this can be overridden
   with the gcloud --project flag.

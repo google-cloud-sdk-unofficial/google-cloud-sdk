@@ -18,7 +18,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Operations(base.Group):
   """Provide commands for working with Cloud SQL instance operations.
 
@@ -26,14 +26,3 @@ class Operations(base.Group):
   listing and getting information about instance operations of a Cloud SQL
   instance.
   """
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class OperationsBeta(base.Group):
-  """Provide commands for working with Cloud SQL instance operations.
-
-  Provide commands for working with Cloud SQL instance operations, including
-  listing and getting information about instance operations of a Cloud SQL
-  instance.
-  """
-  pass

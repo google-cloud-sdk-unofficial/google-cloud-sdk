@@ -20,7 +20,7 @@ from googlecloudsdk.api_lib.app import util
 from googlecloudsdk.api_lib.app import version_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import exceptions as command_exceptions
-from googlecloudsdk.command_lib.util import ssh
+from googlecloudsdk.command_lib.util.ssh import ssh
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources

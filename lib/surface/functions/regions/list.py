@@ -31,10 +31,10 @@ class List(base.ListCommand):
     return 'functions.projects.locations'
 
   def Run(self, args):
-    client = self.context['functions_client']
+    client = util.GetApiClientInstance()
     list_generator = list_pager.YieldFromList(
         service=client.projects_locations,
-        request=self.BuildRequest(args),
+        request=self._BuildRequest(),
         field='locations', batch_size_attribute='pageSize')
     try:
       for item in list_generator:
@@ -44,9 +44,9 @@ class List(base.ListCommand):
       unused_type, unused_value, traceback = sys.exc_info()
       raise base_exceptions.HttpException, msg, traceback
 
-  def BuildRequest(self, args):
-    messages = self.context['functions_messages']
-    project = properties.VALUES.core.project.Get(required=True)
+  def _BuildRequest(self):
+    messages = util.GetApiMessagesModule()
+    project = properties.VALUES.core.project.GetOrFail()
     return messages.CloudfunctionsProjectsLocationsListRequest(
         name='projects/' + project,
     )

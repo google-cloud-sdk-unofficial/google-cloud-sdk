@@ -13,9 +13,13 @@
 # limitations under the License.
 """Command for deleting sole-tenancy hosts."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.sole_tenancy.hosts import flags
 
 
-class Delete(base_classes.ZonalDeleter):
+class Delete(base.DeleteCommand):
   """Delete Google Compute Engine sole-tenancy hosts.
 
   *{command}* deletes one or more Google Compute Engine
@@ -23,19 +27,27 @@ class Delete(base_classes.ZonalDeleter):
   being used by any virtual machine instances.
   """
 
-  @property
-  def service(self):
-    return self.compute.hosts
-
-  @property
-  def resource_type(self):
-    return 'hosts'
-
-  @property
-  def custom_prompt(self):
-    return ('The following hosts will be deleted. Deleting a host is '
-            'irreversible and any data on the host will be lost.')
-
   @staticmethod
   def Args(parser):
-    base_classes.ZonalDeleter.Args(parser, 'compute.hosts')
+    Delete.HOST_ARG = flags.MakeHostArg(plural=True)
+    Delete.HOST_ARG.AddArgument(parser, operation_type='delete')
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    host_refs = Delete.HOST_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+
+    custom_prompt = ('The following hosts will be deleted. Deleting a host is '
+                     'irreversible and any data on the host will be lost.')
+
+    utils.PromptForDeletion(host_refs, 'zone', prompt_title=custom_prompt)
+
+    requests = [(client.apitools_client.hosts, 'Delete',
+                 client.messages.ComputeHostsDeleteRequest(**host_ref.AsDict()))
+                for host_ref in host_refs]
+
+    return client.MakeRequests(requests)

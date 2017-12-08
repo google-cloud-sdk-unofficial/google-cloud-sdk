@@ -36,7 +36,7 @@ def AddFlags(parser, is_ga):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class DescribeGA(base_classes.BaseDescriber):
+class DescribeGA(base.DescribeCommand):
   """Describe a Google Compute Engine operation."""
 
   def __init__(self, *args, **kwargs):
@@ -59,10 +59,10 @@ class DescribeGA(base_classes.BaseDescriber):
         raise exceptions.ConflictingArgumentsException(
             '--user-accounts', '--' + arg)
 
-  def _ResolveAsAccountOperation(self, args):
-    self._service = self.clouduseraccounts.globalAccountsOperations
+  def _ResolveAsAccountOperation(self, args, clouduseraccounts_holder):
+    self._service = clouduseraccounts_holder.client.globalAccountsOperations
     return flags.ACCOUNT_OPERATION_ARG.ResolveAsResource(
-        args, self.clouduseraccounts_resources,
+        args, clouduseraccounts_holder.resources,
         default_scope=compute_scope.ScopeEnum.GLOBAL)
 
   def _RaiseWrongResourceCollectionException(self, got, path):
@@ -78,28 +78,31 @@ class DescribeGA(base_classes.BaseDescriber):
         got=got,
         path=path)
 
-  def CreateReference(self, args):
+  def CreateReference(self, args, compute_holder, clouduseraccounts_holder):
     self._ValidateArgs(args)
 
     if not self._ga and args.user_accounts:
-      return self._ResolveAsAccountOperation(args)
+      return self._ResolveAsAccountOperation(args, clouduseraccounts_holder)
 
     try:
       ref = flags.COMPUTE_OPERATION_ARG.ResolveAsResource(
-          args, self.resources, default_scope=compute_scope.ScopeEnum.GLOBAL,
-          scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
+          args,
+          compute_holder.resources,
+          default_scope=compute_scope.ScopeEnum.GLOBAL,
+          scope_lister=compute_flags.GetDefaultScopeLister(
+              compute_holder.client))
     except resources.WrongResourceCollectionException:
       try:
-        return self._ResolveAsAccountOperation(args)
+        return self._ResolveAsAccountOperation(args, clouduseraccounts_holder)
       except resources.WrongResourceCollectionException as ex:
         self._RaiseWrongResourceCollectionException(ex.got, ex.path)
 
     if ref.Collection() == 'compute.globalOperations':
-      self._service = self.compute.globalOperations
+      self._service = compute_holder.client.apitools_client.globalOperations
     elif ref.Collection() == 'compute.regionOperations':
-      self._service = self.compute.regionOperations
+      self._service = compute_holder.client.apitools_client.regionOperations
     else:
-      self._service = self.compute.zoneOperations
+      self._service = compute_holder.client.apitools_client.zoneOperations
     return ref
 
   def ScopeRequest(self, ref, request):
@@ -107,6 +110,20 @@ class DescribeGA(base_classes.BaseDescriber):
       request.region = ref.region
     elif ref.Collection() == 'compute.zoneOperations':
       request.zone = ref.zone
+
+  def Run(self, args):
+    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    clouduseraccounts_holder = base_classes.ComputeUserAccountsApiHolder(
+        self.ReleaseTrack())
+
+    operation_ref = self.CreateReference(args, compute_holder,
+                                         clouduseraccounts_holder)
+
+    request_type = self.service.GetRequestType('Get')
+    request = request_type(**operation_ref.AsDict())
+
+    return compute_holder.client.MakeRequests([(self.service, 'Get',
+                                                request)])[0]
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)

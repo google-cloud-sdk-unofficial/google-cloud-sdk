@@ -66,9 +66,14 @@ class Submit(base.CreateCommand):
     """
     parser.add_argument(
         'source',
+        nargs='?',
         help='The source directory on local disk or tarball in Google Cloud '
              'Storage or disk to use for this build.',
     )
+    parser.add_argument(
+        '--no-source',
+        action='store_true',
+        help='Specify that no source should be uploaded with this build.')
     parser.add_argument(
         '--gcs-source-staging-dir',
         help='Directory in Google Cloud Storage to stage a copy of the source '
@@ -92,7 +97,7 @@ class Submit(base.CreateCommand):
     )
     parser.add_argument(
         '--substitutions',
-        metavar='```_```KEY=VALUE',
+        metavar='KEY=VALUE',
         type=arg_parsers.ArgDict(),
         help="""\
 Parameters to be substituted in the build specification.
@@ -201,118 +206,132 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
     if timeout_str:
       build_config.timeout = timeout_str
 
-    suffix = '.tgz'
-    if args.source.startswith('gs://') or os.path.isfile(args.source):
-      _, suffix = os.path.splitext(args.source)
-
-    # Next, stage the source to Cloud Storage.
-    staged_object = '{stamp}{suffix}'.format(
-        stamp=times.GetTimeStampFromDateTime(times.Now()),
-        suffix=suffix,
-    )
-    gcs_source_staging_dir = resources.REGISTRY.Parse(
-        args.gcs_source_staging_dir, collection='storage.objects')
-
-    # We first try to create the bucket, before doing all the checks, in order
-    # to avoid a race condition. If we do the check first, an attacker could
-    # be lucky enough to create the bucket after the check and before this
-    # bucket creation.
-    gcs_client.CreateBucketIfNotExists(gcs_source_staging_dir.bucket)
-
-    # If no bucket is specified (for the source `default_gcs_source` or for the
-    # logs `default_gcs_log_dir`), check that the default bucket is also owned
-    # by the project (b/33046325).
-    if default_gcs_source or default_gcs_log_dir:
-      # This request returns only the buckets owned by the project.
-      bucket_list_req = gcs_client.messages.StorageBucketsListRequest(
-          project=project,
-          prefix=default_bucket_name)
-      bucket_list = gcs_client.client.buckets.List(bucket_list_req)
-      found_bucket = False
-      for bucket in bucket_list.items:
-        if bucket.id == default_bucket_name:
-          found_bucket = True
-          break
-      if not found_bucket:
-        if default_gcs_source:
-          raise c_exceptions.RequiredArgumentException(
-              'gcs_source_staging_dir',
-              'A bucket with name {} already exists and is owned by '
-              'another project. Specify a bucket using '
-              '--gcs_source_staging_dir.'.format(default_bucket_name))
-        elif default_gcs_log_dir:
-          raise c_exceptions.RequiredArgumentException(
-              'gcs-log-dir',
-              'A bucket with name {} already exists and is owned by '
-              'another project. Specify a bucket to hold build logs '
-              'using --gcs-log-dir.'.format(default_bucket_name))
-
-    if gcs_source_staging_dir.object:
-      staged_object = gcs_source_staging_dir.object + '/' + staged_object
-
-    gcs_source_staging = resources.REGISTRY.Create(
-        collection='storage.objects',
-        bucket=gcs_source_staging_dir.bucket,
-        object=staged_object)
-
-    if args.source.startswith('gs://'):
-      gcs_source = resources.REGISTRY.Parse(
-          args.source, collection='storage.objects')
-      staged_source_obj = gcs_client.Rewrite(gcs_source, gcs_source_staging)
-      build_config.source = messages.Source(
-          storageSource=messages.StorageSource(
-              bucket=staged_source_obj.bucket,
-              object=staged_source_obj.name,
-              generation=staged_source_obj.generation,
-          ))
-    else:
-      if not os.path.exists(args.source):
-        raise c_exceptions.BadFileException(
-            'could not find source [{src}]'.format(src=args.source))
-      if os.path.isdir(args.source):
-        source_snapshot = snapshot.Snapshot(args.source)
-        size_str = resource_transform.TransformSize(
-            source_snapshot.uncompressed_size)
-        log.status.Print(
-            'Creating temporary tarball archive of {num_files} file(s)'
-            ' totalling {size} before compression.'.format(
-                num_files=len(source_snapshot.files),
-                size=size_str))
-        staged_source_obj = source_snapshot.CopyTarballToGCS(
-            gcs_client, gcs_source_staging)
-        build_config.source = messages.Source(
-            storageSource=messages.StorageSource(
-                bucket=staged_source_obj.bucket,
-                object=staged_source_obj.name,
-                generation=staged_source_obj.generation,
-            ))
-      elif os.path.isfile(args.source):
-        unused_root, ext = os.path.splitext(args.source)
-        if ext not in _ALLOWED_SOURCE_EXT:
-          raise c_exceptions.BadFileException(
-              'Local file [{src}] is none of '+', '.join(_ALLOWED_SOURCE_EXT))
-        log.status.Print(
-            'Uploading local file [{src}] to '
-            '[gs://{bucket}/{object}].'.format(
+    gcs_source_staging = None
+    if args.source:
+      if args.no_source:
+        raise c_exceptions.InvalidArgumentException(
+            '--no-source',
+            'Cannot provide both source [{src}] and [--no-source].'.format(
                 src=args.source,
-                bucket=gcs_source_staging.bucket,
-                object=gcs_source_staging.object,
             ))
-        staged_source_obj = gcs_client.CopyFileToGCS(
-            storage_util.BucketReference.FromBucketUrl(
-                gcs_source_staging.bucket),
-            args.source, gcs_source_staging.object)
+
+      suffix = '.tgz'
+      if args.source.startswith('gs://') or os.path.isfile(args.source):
+        _, suffix = os.path.splitext(args.source)
+
+      # Next, stage the source to Cloud Storage.
+      staged_object = '{stamp}{suffix}'.format(
+          stamp=times.GetTimeStampFromDateTime(times.Now()),
+          suffix=suffix,
+      )
+      gcs_source_staging_dir = resources.REGISTRY.Parse(
+          args.gcs_source_staging_dir, collection='storage.objects')
+
+      # We first try to create the bucket, before doing all the checks, in order
+      # to avoid a race condition. If we do the check first, an attacker could
+      # be lucky enough to create the bucket after the check and before this
+      # bucket creation.
+      gcs_client.CreateBucketIfNotExists(gcs_source_staging_dir.bucket)
+
+      # If no bucket is specified (for the source `default_gcs_source` or for
+      # the logs `default_gcs_log_dir`), check that the default bucket is also
+      # owned by the project (b/33046325).
+      if default_gcs_source or default_gcs_log_dir:
+        # This request returns only the buckets owned by the project.
+        bucket_list_req = gcs_client.messages.StorageBucketsListRequest(
+            project=project,
+            prefix=default_bucket_name)
+        bucket_list = gcs_client.client.buckets.List(bucket_list_req)
+        found_bucket = False
+        for bucket in bucket_list.items:
+          if bucket.id == default_bucket_name:
+            found_bucket = True
+            break
+        if not found_bucket:
+          if default_gcs_source:
+            raise c_exceptions.RequiredArgumentException(
+                'gcs_source_staging_dir',
+                'A bucket with name {} already exists and is owned by '
+                'another project. Specify a bucket using '
+                '--gcs_source_staging_dir.'.format(default_bucket_name))
+          elif default_gcs_log_dir:
+            raise c_exceptions.RequiredArgumentException(
+                'gcs-log-dir',
+                'A bucket with name {} already exists and is owned by '
+                'another project. Specify a bucket to hold build logs '
+                'using --gcs-log-dir.'.format(default_bucket_name))
+
+      if gcs_source_staging_dir.object:
+        staged_object = gcs_source_staging_dir.object + '/' + staged_object
+      gcs_source_staging = resources.REGISTRY.Create(
+          collection='storage.objects',
+          bucket=gcs_source_staging_dir.bucket,
+          object=staged_object)
+
+      if args.source.startswith('gs://'):
+        gcs_source = resources.REGISTRY.Parse(
+            args.source, collection='storage.objects')
+        staged_source_obj = gcs_client.Rewrite(gcs_source, gcs_source_staging)
         build_config.source = messages.Source(
             storageSource=messages.StorageSource(
                 bucket=staged_source_obj.bucket,
                 object=staged_source_obj.name,
                 generation=staged_source_obj.generation,
             ))
+      else:
+        if not os.path.exists(args.source):
+          raise c_exceptions.BadFileException(
+              'could not find source [{src}]'.format(src=args.source))
+        if os.path.isdir(args.source):
+          source_snapshot = snapshot.Snapshot(args.source)
+          size_str = resource_transform.TransformSize(
+              source_snapshot.uncompressed_size)
+          log.status.Print(
+              'Creating temporary tarball archive of {num_files} file(s)'
+              ' totalling {size} before compression.'.format(
+                  num_files=len(source_snapshot.files),
+                  size=size_str))
+          staged_source_obj = source_snapshot.CopyTarballToGCS(
+              gcs_client, gcs_source_staging)
+          build_config.source = messages.Source(
+              storageSource=messages.StorageSource(
+                  bucket=staged_source_obj.bucket,
+                  object=staged_source_obj.name,
+                  generation=staged_source_obj.generation,
+              ))
+        elif os.path.isfile(args.source):
+          unused_root, ext = os.path.splitext(args.source)
+          if ext not in _ALLOWED_SOURCE_EXT:
+            raise c_exceptions.BadFileException(
+                'Local file [{src}] is none of '+', '.join(_ALLOWED_SOURCE_EXT))
+          log.status.Print(
+              'Uploading local file [{src}] to '
+              '[gs://{bucket}/{object}].'.format(
+                  src=args.source,
+                  bucket=gcs_source_staging.bucket,
+                  object=gcs_source_staging.object,
+              ))
+          staged_source_obj = gcs_client.CopyFileToGCS(
+              storage_util.BucketReference.FromBucketUrl(
+                  gcs_source_staging.bucket),
+              args.source, gcs_source_staging.object)
+          build_config.source = messages.Source(
+              storageSource=messages.StorageSource(
+                  bucket=staged_source_obj.bucket,
+                  object=staged_source_obj.name,
+                  generation=staged_source_obj.generation,
+              ))
+    else:
+      # No source
+      if not args.no_source:
+        raise c_exceptions.InvalidArgumentException(
+            '--no-source',
+            'To omit source, use the --no-source flag.')
 
     gcs_log_dir = resources.REGISTRY.Parse(
         args.gcs_log_dir, collection='storage.objects')
 
-    if gcs_log_dir.bucket != gcs_source_staging.bucket:
+    if gcs_source_staging and gcs_log_dir.bucket != gcs_source_staging.bucket:
       # Create the logs bucket if it does not yet exist.
       gcs_client.CreateBucketIfNotExists(gcs_log_dir.bucket)
     build_config.logsBucket = 'gs://'+gcs_log_dir.bucket+'/'+gcs_log_dir.object

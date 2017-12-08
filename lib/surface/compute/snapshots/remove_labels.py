@@ -28,7 +28,8 @@ class SnapshotsRemoveLabels(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    snapshots_flags.SNAPSHOT_ARG.AddArgument(parser)
+    SnapshotsRemoveLabels.SnapshotArg = snapshots_flags.MakeSnapshotArg()
+    SnapshotsRemoveLabels.SnapshotArg.AddArgument(parser)
     labels_flags.AddArgsForRemoveLabels(parser)
 
   def Run(self, args):
@@ -36,7 +37,7 @@ class SnapshotsRemoveLabels(base.UpdateCommand):
     client = holder.client.apitools_client
     messages = holder.client.messages
 
-    snapshot_ref = snapshots_flags.SNAPSHOT_ARG.ResolveAsResource(
+    snapshot_ref = SnapshotsRemoveLabels.SnapshotArg.ResolveAsResource(
         args, holder.resources)
 
     remove_labels = labels_util.GetUpdateLabelsDictFromArgs(args)

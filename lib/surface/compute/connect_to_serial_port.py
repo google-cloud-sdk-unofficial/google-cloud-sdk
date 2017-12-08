@@ -15,17 +15,14 @@
 """Connects to a serial port gateway using SSH."""
 
 import argparse
-import getpass
 import sys
 
 from googlecloudsdk.calliope import arg_parsers
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
-from googlecloudsdk.command_lib.util import ssh
-
+from googlecloudsdk.command_lib.util.ssh import ssh
 from googlecloudsdk.core import http
 from googlecloudsdk.core import log
 
@@ -44,26 +41,23 @@ SERIAL_PORT_HELP = ('https://cloud.google.com/compute/docs/'
                     'instances/interacting-with-serial-console')
 
 
-class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
+class ConnectToSerialPort(ssh_utils.BaseSSHCommand):
   """Class for connecting through a gateway to the interactive serial port."""
 
   @staticmethod
   def Args(parser):
-    # Use BaseSSHCommand args here, since we don't want --plain or
-    # --strict-host-key-checking.
-    ssh_utils.BaseSSHCommand.Args(parser)
+    """Set up arguments for this command.
+
+    Args:
+      parser: An argparse.ArgumentParser.
+    """
+    super(ConnectToSerialPort, ConnectToSerialPort).Args(parser)
 
     parser.add_argument(
         '--dry-run',
         action='store_true',
         help=('If provided, the ssh command is printed to standard out '
               'rather than being executed.'))
-
-    # This flag should be hidden for this command, but needs to exist.
-    parser.add_argument(
-        '--plain',
-        action='store_true',
-        help=argparse.SUPPRESS)
 
     parser.add_argument(
         'user_host',
@@ -78,6 +72,7 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
 
     parser.add_argument(
         '--port',
+        default=1,
         help="""\
         The number of the requested serial port. Can be 1-4, default is 1.
 
@@ -108,24 +103,24 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
         operation_type='connect to')
 
   def Run(self, args):
+    """See ssh_utils.BaseSSHCommand.Run."""
     super(ConnectToSerialPort, self).Run(args)
+    self.keys.EnsureKeysExist(args.force_key_file_overwrite,
+                              allow_passphrase=True)
 
-    parts = args.user_host.split('@')
-    if len(parts) == 1:
-      user = getpass.getuser()
-      instance = parts[0]
-    elif len(parts) == 2:
-      user, instance = parts
-    else:
-      raise exceptions.ToolException(
-          'Expected argument of the form [USER@]INSTANCE; received [{0}].'
+    remote = ssh.Remote.FromArg(args.user_host)
+    if not remote:
+      raise ssh_utils.ArgumentError(
+          'Expected argument of the form [USER@]INSTANCE. Received [{0}].'
           .format(args.user_host))
+    if not remote.user:
+      remote.user = ssh.GetDefaultSshUsername()
 
+    hostname = '[{0}]:{1}'.format(args.serial_port_gateway, CONNECTION_PORT)
     # Update google_compute_known_hosts file with published host key
     if args.serial_port_gateway == SERIAL_PORT_GATEWAY:
       http_client = http.Http()
       http_response = http_client.request(HOST_KEY_URL)
-      hostname = '[{0}]:{1}'.format(SERIAL_PORT_GATEWAY, CONNECTION_PORT)
       known_hosts = ssh.KnownHosts.FromDefaultFile()
       if http_response[0]['status'] == '200':
         host_key = http_response[1].strip()
@@ -148,44 +143,41 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
                  .format(SERIAL_PORT_GATEWAY, HOST_KEY_URL))
 
     instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
-        [instance], compute_scope.ScopeEnum.ZONE, args.zone, self.resources,
+        [remote.host], compute_scope.ScopeEnum.ZONE, args.zone, self.resources,
         scope_lister=flags.GetDefaultScopeLister(self.compute_client))[0]
     instance = self.GetInstance(instance_ref)
 
-    ssh_args = [self.env.ssh]
-
-    ssh_args.extend(ssh.GetDefaultFlags(self.keys.key_file))
-    if args.serial_port_gateway == SERIAL_PORT_GATEWAY:
-      ssh_args.extend(['-o', 'StrictHostKeyChecking=yes'])
-
-    ssh_args.extend(['-p', CONNECTION_PORT])
-
-    if args.port:
-      port = 'port={0}'.format(args.port)
-    else:
-      port = 'port=1'
-
+    # Determine the serial user, host tuple (remote)
+    port = 'port={0}'.format(args.port)
     constructed_username_list = [instance_ref.project, instance_ref.zone,
-                                 instance_ref.Name(), user, port]
-
+                                 instance_ref.Name(), remote.user, port]
     if args.extra_args:
       for k, v in args.extra_args.items():
         constructed_username_list.append('{0}={1}'.format(k, v))
+    serial_user = '.'.join(constructed_username_list)
+    serial_remote = ssh.Remote(args.serial_port_gateway, user=serial_user)
 
-    ssh_args.append(ssh.UserHost('.'.join(constructed_username_list),
-                                 args.serial_port_gateway))
-
-    log.info('ssh command: {0}'.format(' '.join(ssh_args)))
+    identity_file = self.keys.key_file
+    options = self.GetConfig(hostname, strict_host_key_checking='yes')
+    del options['HostKeyAlias']
+    cmd = ssh.SSHCommand(serial_remote, identity_file=identity_file,
+                         port=CONNECTION_PORT,
+                         options=options)
+    if args.dry_run:
+      log.out.Print(' '.join(cmd.Build(self.env)))
+      return
+    self.EnsureSSHKeyExists(
+        remote.user, instance, instance_ref.project)
 
     # Don't wait for the instance to become SSHable. We are not connecting to
     # the instance itself through SSH, so the instance doesn't need to have
     # fully booted to connect to the serial port. Also, ignore exit code 255,
     # since the normal way to terminate the serial port connection is ~. and
     # that causes ssh to exit with 255.
-    return_code = self.ActuallyRun(
-        args, ssh_args, user, instance, instance_ref.project, ip_address=None,
-        strict_error_checking=False, use_account_service=False,
-        wait_for_sshable=False, ignore_ssh_errors=True)
+    try:
+      return_code = cmd.Run(self.env, force_connect=True)
+    except ssh.CommandError:
+      return_code = 255
     if return_code:
       sys.exit(return_code)
 

@@ -16,11 +16,9 @@
 
 import argparse
 
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -44,20 +42,3 @@ class Functions(base.Group):
         help='The region in which the function will run.',
         completion_resource='cloudfunctions.locations',
         action=actions.StoreProperty(properties.VALUES.functions.region))
-
-  def Filter(self, context, args):
-    """Modify the context that will be given to this group's commands when run.
-
-    Args:
-      context: The current context.
-      args: The argparse namespace given to the corresponding .Run() invocation.
-
-    Returns:
-      The updated context.
-    """
-    context['functions_client'] = apis.GetClientInstance(
-        'cloudfunctions', 'v1beta2')
-    context['functions_messages'] = apis.GetMessagesModule(
-        'cloudfunctions', 'v1beta2')
-    context['registry'] = resources.REGISTRY
-    return context

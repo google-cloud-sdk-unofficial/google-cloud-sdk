@@ -40,11 +40,12 @@ class SetNamedPorts(base_classes.NoOutputAsyncMutator):
   @staticmethod
   def Args(parser):
     flags.AddNamedPortsArgs(parser)
-    flags.ZONAL_INSTANCE_GROUP_ARG.AddArgument(parser)
+    SetNamedPorts.ZonalInstanceGroupArg = flags.MakeZonalInstanceGroupArg()
+    SetNamedPorts.ZonalInstanceGroupArg.AddArgument(parser)
 
   def CreateRequests(self, args):
     group_ref = (
-        flags.ZONAL_INSTANCE_GROUP_ARG.ResolveAsResource(
+        SetNamedPorts.ZonalInstanceGroupArg.ResolveAsResource(
             args, self.resources,
             default_scope=compute_scope.ScopeEnum.ZONE,
             scope_lister=compute_flags.GetDefaultScopeLister(

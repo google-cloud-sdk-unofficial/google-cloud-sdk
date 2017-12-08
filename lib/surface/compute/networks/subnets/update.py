@@ -15,11 +15,9 @@
 """Command for modifying the properties of a subnetwork."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.networks.subnets import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base_classes.BaseAsyncMutator):
   """Updates properties of an existing Google Compute Engine subnetwork."""
 

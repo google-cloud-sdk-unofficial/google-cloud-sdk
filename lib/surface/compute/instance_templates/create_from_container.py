@@ -58,7 +58,9 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
         '--description',
         help='Specifies a textual description for the instance template.')
 
-    instance_templates_flags.INSTANCE_TEMPLATE_ARG.AddArgument(parser)
+    CreateFromContainer.InstanceTemplateArg = (
+        instance_templates_flags.MakeInstanceTemplateArg())
+    CreateFromContainer.InstanceTemplateArg.AddArgument(parser)
 
   @property
   def service(self):
@@ -94,7 +96,7 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
     utils.WarnIfDiskSizeIsTooSmall(boot_disk_size_gb, args.boot_disk_type)
 
     instance_template_ref = (
-        instance_templates_flags.INSTANCE_TEMPLATE_ARG.ResolveAsResource(
+        CreateFromContainer.InstanceTemplateArg.ResolveAsResource(
             args, self.resources))
 
     user_metadata = metadata_utils.ConstructMetadataMessage(
@@ -147,7 +149,8 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
             properties=self.messages.InstanceProperties(
                 machineType=machine_type,
                 disks=self._CreateDiskMessages(args, boot_disk_size_gb,
-                                               image_uri),
+                                               image_uri,
+                                               instance_template_ref.project),
                 canIpForward=args.can_ip_forward,
                 metadata=metadata,
                 minCpuPlatform=args.min_cpu_platform,
@@ -164,7 +167,7 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
 
     return [request]
 
-  def _CreateDiskMessages(self, args, boot_disk_size_gb, image_uri):
+  def _CreateDiskMessages(self, args, boot_disk_size_gb, image_uri, project):
     """Creates API messages with disks attached to VM instance."""
     persistent_disks = (
         instance_template_utils.CreatePersistentAttachedDiskMessages(
@@ -179,7 +182,8 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
             image_uri=image_uri)]
     persistent_create_disks = (
         instance_template_utils.CreatePersistentCreateDiskMessages(
-            self, self.messages, getattr(args, 'create_disk', [])))
+            self.compute_client, self.resources, project,
+            getattr(args, 'create_disk', [])))
     local_ssds = []
     for x in args.local_ssd or []:
       local_ssd = instance_utils.CreateLocalSsdMessage(

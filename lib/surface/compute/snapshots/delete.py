@@ -13,27 +13,39 @@
 # limitations under the License.
 """Command for deleting snapshots."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.snapshots import flags
 
 
-class Delete(base_classes.GlobalDeleter):
-  """Delete Google Compute Engine snapshots."""
+class Delete(base.DeleteCommand):
+  """Delete Google Compute Engine snapshots.
+
+  *{command}* deletes one or more Google Compute Engine snapshots.
+  """
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalDeleter.Args(parser, 'compute.snapshots')
+    Delete.SnapshotArg = flags.MakeSnapshotArg(plural=True)
+    Delete.SnapshotArg.AddArgument(parser, operation_type='delete')
 
-  @property
-  def service(self):
-    return self.compute.snapshots
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'snapshots'
+    snapshot_refs = Delete.SnapshotArg.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+    utils.PromptForDeletion(snapshot_refs)
 
-Delete.detailed_help = {
-    'brief': 'Delete Google Compute Engine snapshots',
-    'DESCRIPTION': """\
-        *{command}* deletes one or more Google Compute Engine snapshots.
-        """,
-}
+    requests = []
+    for snapshot_ref in snapshot_refs:
+      requests.append((client.apitools_client.snapshots, 'Delete',
+                       client.messages.ComputeSnapshotsDeleteRequest(
+                           project=snapshot_ref.project,
+                           snapshot=snapshot_ref.snapshot)))
+
+    return client.MakeRequests(requests)

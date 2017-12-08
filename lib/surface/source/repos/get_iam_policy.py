@@ -24,7 +24,7 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class GetIamPolicy(base.DescribeCommand):
-  """Get the IAM policy for the named repository."""
+  """Get the IAM policy for the named cloud source repository."""
 
   detailed_help = {
       'DESCRIPTION':
@@ -34,7 +34,7 @@ class GetIamPolicy(base.DescribeCommand):
       'EXAMPLES':
           textwrap.dedent("""\
           To get the IAM policy, issue the following command:\n
-            $ gcloud beta source repos get-iam-policy REPO_NAME
+            $ {command} REPOSITORY_NAME
       """),
   }
 

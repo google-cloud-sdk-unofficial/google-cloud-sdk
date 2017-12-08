@@ -13,28 +13,34 @@
 # limitations under the License.
 """Command for describing machine types."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.machine_types import flags
 
 
-class Describe(base_classes.ZonalDescriber):
-  """Describe a Google Compute Engine machine type."""
+class Describe(base.DescribeCommand):
+  """Describe a Google Compute Engine machine type.
+
+  *{command}* displays all data associated with a Google Compute
+  Engine machine type.
+  """
 
   @staticmethod
   def Args(parser):
-    base_classes.ZonalDescriber.Args(parser, 'compute.machineTypes')
+    Describe.MachineTypeArg = flags.MakeMachineTypeArg()
+    Describe.MachineTypeArg.AddArgument(parser, operation_type='describe')
 
-  @property
-  def service(self):
-    return self.compute.machineTypes
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'machineTypes'
+    machine_type_ref = Describe.MachineTypeArg.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+    request = client.messages.ComputeMachineTypesGetRequest(
+        **machine_type_ref.AsDict())
 
-Describe.detailed_help = {
-    'brief': 'Describe a Google Compute Engine machine type',
-    'DESCRIPTION': """\
-        *{command}* displays all data associated with a Google Compute
-        Engine machine type.
-        """,
-}
+    return client.MakeRequests([(client.apitools_client.machineTypes, 'Get',
+                                 request)])[0]

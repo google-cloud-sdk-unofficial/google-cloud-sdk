@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as base_exceptions
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 class List(base.ListCommand):
@@ -40,7 +41,7 @@ class List(base.ListCommand):
     Yields:
       Objects representing user functions.
     """
-    client = self.context['functions_client']
+    client = util.GetApiClientInstance()
     list_generator = list_pager.YieldFromList(
         service=client.projects_locations_functions,
         request=self.BuildRequest(args),
@@ -67,10 +68,9 @@ class List(base.ListCommand):
     Returns:
       A ListRequest message.
     """
-    messages = self.context['functions_messages']
-    registry = self.context['registry']
-    project = properties.VALUES.core.project.Get(required=True)
-    location_ref = registry.Parse(
+    messages = util.GetApiMessagesModule()
+    project = properties.VALUES.core.project.GetOrFail()
+    location_ref = resources.REGISTRY.Parse(
         properties.VALUES.functions.region.Get(),
         params={'projectsId': project},
         collection='cloudfunctions.projects.locations')

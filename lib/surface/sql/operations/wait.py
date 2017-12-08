@@ -16,65 +16,13 @@
 
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
-from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Wait(base.Command):
-  """Waits for one or more operations to complete."""
-
-  @staticmethod
-  def Args(parser):
-    flags.OPERATION_ARGUMENT.AddToParser(parser)
-    flags.DEPRECATED_INSTANCE_FLAG_REQUIRED.AddToParser(parser)
-    parser.display_info.AddFormat(flags.OPERATION_FORMAT)
-
-  def Run(self, args):
-    """Wait for a Cloud SQL instance operation.
-
-    Args:
-      args: argparse.Namespace, The arguments that this command was invoked
-          with.
-
-    Yields:
-      Operations that were waited for.
-    Raises:
-      HttpException: A http error response was received while executing api
-          request.
-      ToolException: An error other than http error occured while executing the
-          command.
-    """
-    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
-    sql_client = client.sql_client
-    sql_messages = client.sql_messages
-
-    validate.ValidateInstanceName(args.instance)
-    instance_ref = client.resource_parser.Parse(
-        args.instance,
-        params={'project': properties.VALUES.core.project.GetOrFail},
-        collection='sql.instances')
-
-    for op in args.operation:
-      operation_ref = client.resource_parser.Parse(
-          op, collection='sql.operations',
-          params={'project': instance_ref.project,
-                  'instance': instance_ref.instance})
-
-      operations.OperationsV1Beta3.WaitForOperation(
-          sql_client, operation_ref,
-          'Waiting for [{operation}]'.format(operation=operation_ref))
-      yield sql_client.operations.Get(
-          sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project,
-              instance=operation_ref.instance,
-              operation=operation_ref.operation))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class WaitBeta(base.Command):
   """Waits for one or more operations to complete."""
 
   @staticmethod

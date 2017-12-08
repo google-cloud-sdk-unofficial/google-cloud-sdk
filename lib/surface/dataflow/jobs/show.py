@@ -61,8 +61,6 @@ class Show(base.Command):
     # Extract the basic display information for the job
     shown_job = job_display.DisplayInfo(job)
 
-    # TODO(b/36057351): "Prettify" the environment, etc, since it includes
-    # JSON as a string in some of the fields.
     if args.environment:
       shown_job.environment = job.environment
 

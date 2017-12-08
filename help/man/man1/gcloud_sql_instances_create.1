@@ -54,7 +54,8 @@ operation to complete.
 
 .TP 2m
 \fB\-\-authorized\-gae\-apps\fR=\fIAPP\fR,[\fIAPP\fR,...]
-List of App Engine app IDs that can access this instance.
+First Generation instances only. List of IDs for App Engine applications running
+in the Standard environment that can access this instance.
 
 .TP 2m
 \fB\-\-authorized\-networks\fR=\fINETWORK\fR,[\fINETWORK\fR,...]
@@ -82,7 +83,8 @@ max_allowed_packet=55555,skip_grant_tables=,log_output=1\fR)
 
 .TP 2m
 \fB\-\-database\-version\fR=\fIDATABASE_VERSION\fR; default="MYSQL_5_6"
-The database engine type and version. Can be MYSQL_5_5, MYSQL_5_6, or MYSQL_5_7.
+The database engine type and version. \fIDATABASE_VERSION\fR must be one of:
+\fBMYSQL_5_5\fR, \fBMYSQL_5_6\fR, \fBMYSQL_5_7\fR, \fBPOSTGRES_9_6\fR.
 
 .TP 2m
 \fB\-\-enable\-bin\-log\fR
@@ -91,8 +93,8 @@ binary log must be disabled as well.
 
 .TP 2m
 \fB\-\-follow\-gae\-app\fR=\fIFOLLOW_GAE_APP\fR
-The App Engine app this instance should follow. It must be in the same region as
-the instance.
+First Generation instances only. The App Engine app this instance should follow.
+It must be in the same region as the instance.
 
 .TP 2m
 \fB\-\-gce\-zone\fR=\fIGCE_ZONE\fR
@@ -105,8 +107,8 @@ newly created instance will be a read replica of the specified master instance.
 
 .TP 2m
 \fB\-\-pricing\-plan\fR=\fIPRICING_PLAN\fR, \fB\-p\fR \fIPRICING_PLAN\fR; default="PER_USE"
-The pricing plan for this instance. \fIPRICING_PLAN\fR must be one of:
-\fBPER_USE\fR, \fBPACKAGE\fR.
+First Generation instances only. The pricing plan for this instance.
+\fIPRICING_PLAN\fR must be one of: \fBPER_USE\fR, \fBPACKAGE\fR.
 
 .TP 2m
 \fB\-\-region\fR=\fIREGION\fR; default="us\-central"
@@ -124,9 +126,10 @@ Specified if users connecting over IP must use SSL.
 
 .TP 2m
 \fB\-\-tier\fR=\fITIER\fR, \fB\-t\fR \fITIER\fR
-The tier for first generation Cloud SQL instances, for example D0, D1, D2. A
-complete list of tiers is available here:
-https://cloud.google.com/sql/pricing#packages
+The tier for this instance. For Second Generation instances, TIER is the
+instance's machine type (e.g., db\-n1\-standard\-1). For PostgreSQL instances,
+only shared\-core machine types (e.g., db\-f1\-micro) apply. A complete list of
+tiers is available here: https://cloud.google.com/sql/pricing.
 
 
 .RE

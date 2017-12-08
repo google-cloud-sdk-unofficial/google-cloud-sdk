@@ -13,28 +13,33 @@
 # limitations under the License.
 """Command for describing zones."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.zones import flags
 
 
-class Describe(base_classes.GlobalDescriber):
-  """Describe a Google Compute Engine zone."""
+class Describe(base.DescribeCommand):
+  """Describe a Google Compute Engine zone.
+
+  *{command}* displays all data associated with a Google Compute Engine zone.
+  """
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalDescriber.Args(parser, 'compute.zones')
+    Describe.ZoneArg = flags.MakeZoneArg()
+    Describe.ZoneArg.AddArgument(parser, operation_type='describe')
 
-  @property
-  def service(self):
-    return self.compute.zones
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'zones'
+    zone_ref = Describe.ZoneArg.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+    request = client.messages.ComputeZonesGetRequest(**zone_ref.AsDict())
 
-Describe.detailed_help = {
-    'brief': 'Describe a Google Compute Engine zone',
-    'DESCRIPTION': """\
-        *{command}* displays all data associated with a Google Compute
-        Engine zone.
-        """,
-}
+    return client.MakeRequests([(client.apitools_client.zones, 'Get',
+                                 request)])[0]
+

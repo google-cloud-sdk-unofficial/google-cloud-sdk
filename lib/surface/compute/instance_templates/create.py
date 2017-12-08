@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.compute.instances import flags as instances_flag
 def _CommonArgs(parser, multiple_network_interface_cards, release_track,
                 support_alias_ip_ranges, support_local_ssd_size=False):
   """Common arguments used in Alpha, Beta, and GA."""
+  parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser)
   if release_track in [base.ReleaseTrack.ALPHA]:
@@ -62,11 +63,13 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
       '--description',
       help='Specifies a textual description for the instance template.')
 
-  instance_templates_flags.INSTANCE_TEMPLATE_ARG.AddArgument(parser)
+  Create.InstanceTemplateArg = (
+      instance_templates_flags.MakeInstanceTemplateArg())
+  Create.InstanceTemplateArg.AddArgument(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Create(base_classes.BaseAsyncCreator):
+class Create(base.CreateCommand):
   """Create a Compute Engine virtual machine instance template.
 
   *{command}* facilitates the creation of Google Compute Engine
@@ -86,33 +89,25 @@ class Create(base_classes.BaseAsyncCreator):
                 release_track=base.ReleaseTrack.GA,
                 support_alias_ip_ranges=False)
 
-  @property
-  def service(self):
-    return self.compute.instanceTemplates
-
-  @property
-  def method(self):
-    return 'Insert'
-
-  @property
-  def resource_type(self):
-    return 'instanceTemplates'
-
   def ValidateDiskFlags(self, args):
     """Validates the values of all disk-related flags."""
     instances_flags.ValidateDiskCommonFlags(args)
     instances_flags.ValidateDiskBootFlags(args)
     instances_flags.ValidateCreateDiskFlags(args)
 
-  def CreateRequests(self, args):
-    """Creates and returns an InstanceTemplates.Insert request.
+  def Run(self, args):
+    """Creates and runs an InstanceTemplates.Insert request.
 
     Args:
-      args: the argparse arguments that this command was invoked with.
+      args: argparse.Namespace, An object that contains the values for the
+          arguments specified in the .Args() method.
 
     Returns:
-      request: a ComputeInstanceTemplatesInsertRequest message object
+      A resource object dispatched by display.Displayer().
     """
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
     self.ValidateDiskFlags(args)
     instances_flags.ValidateLocalSsdFlags(args)
     instances_flags.ValidateNicFlags(args)
@@ -123,28 +118,28 @@ class Create(base_classes.BaseAsyncCreator):
     utils.WarnIfDiskSizeIsTooSmall(boot_disk_size_gb, args.boot_disk_type)
 
     instance_template_ref = (
-        instance_templates_flags.INSTANCE_TEMPLATE_ARG.ResolveAsResource(
-            args, self.resources))
+        Create.InstanceTemplateArg.ResolveAsResource(
+            args, holder.resources))
 
     metadata = metadata_utils.ConstructMetadataMessage(
-        self.messages,
+        client.messages,
         metadata=args.metadata,
         metadata_from_file=args.metadata_from_file)
 
     if hasattr(args, 'network_interface') and args.network_interface:
       network_interfaces = (
           instance_template_utils.CreateNetworkInterfaceMessages)(
-              resources=self.resources,
-              scope_lister=flags.GetDefaultScopeLister(self.compute_client),
-              messages=self.messages,
+              resources=holder.resources,
+              scope_lister=flags.GetDefaultScopeLister(client),
+              messages=client.messages,
               network_interface_arg=args.network_interface,
               region=args.region)
     else:
       network_interfaces = [
           instance_template_utils.CreateNetworkInterfaceMessage(
-              resources=self.resources,
-              scope_lister=flags.GetDefaultScopeLister(self.compute_client),
-              messages=self.messages,
+              resources=holder.resources,
+              scope_lister=flags.GetDefaultScopeLister(client),
+              messages=client.messages,
               network=args.network,
               region=args.region,
               subnet=args.subnet,
@@ -154,7 +149,7 @@ class Create(base_classes.BaseAsyncCreator):
       ]
 
     scheduling = instance_utils.CreateSchedulingMessage(
-        messages=self.messages,
+        messages=client.messages,
         maintenance_policy=args.maintenance_policy,
         preemptible=args.preemptible,
         restart_on_failure=args.restart_on_failure)
@@ -164,14 +159,13 @@ class Create(base_classes.BaseAsyncCreator):
     else:
       service_account = args.service_account
     service_accounts = instance_utils.CreateServiceAccountMessages(
-        messages=self.messages,
+        messages=client.messages,
         scopes=[] if args.no_scopes else args.scopes,
         service_account=service_account)
 
     create_boot_disk = not instance_utils.UseExistingBootDisk(args.disk or [])
     if create_boot_disk:
-      image_expander = image_utils.ImageExpander(self.compute_client,
-                                                 self.resources)
+      image_expander = image_utils.ImageExpander(client, holder.resources)
       image_uri, _ = image_expander.ExpandImageFlag(
           user_project=instance_template_ref.project,
           image=args.image,
@@ -182,22 +176,23 @@ class Create(base_classes.BaseAsyncCreator):
       image_uri = None
 
     if args.tags:
-      tags = self.messages.Tags(items=args.tags)
+      tags = client.messages.Tags(items=args.tags)
     else:
       tags = None
 
     persistent_disks = (
         instance_template_utils.CreatePersistentAttachedDiskMessages(
-            self.messages, args.disk or []))
+            client.messages, args.disk or []))
 
     persistent_create_disks = (
         instance_template_utils.CreatePersistentCreateDiskMessages(
-            self, self.messages, getattr(args, 'create_disk', [])))
+            client, holder.resources, instance_template_ref.project,
+            getattr(args, 'create_disk', [])))
 
     if create_boot_disk:
       boot_disk_list = [
           instance_template_utils.CreateDefaultBootAttachedDiskMessage(
-              messages=self.messages,
+              messages=client.messages,
               disk_type=args.boot_disk_type,
               disk_device_name=args.boot_disk_device_name,
               disk_auto_delete=args.boot_disk_auto_delete,
@@ -209,8 +204,8 @@ class Create(base_classes.BaseAsyncCreator):
     local_ssds = []
     for x in args.local_ssd or []:
       local_ssd = instance_utils.CreateLocalSsdMessage(
-          self.resources,
-          self.messages,
+          holder.resources,
+          client.messages,
           x.get('device-name'),
           x.get('interface'),
           x.get('size'))
@@ -228,9 +223,9 @@ class Create(base_classes.BaseAsyncCreator):
 
     guest_accelerators = (
         instance_template_utils.CreateAcceleratorConfigMessages(
-            self.compute_client.messages, getattr(args, 'accelerator', None)))
+            client.messages, getattr(args, 'accelerator', None)))
 
-    instance_properties = self.messages.InstanceProperties(
+    instance_properties = client.messages.InstanceProperties(
         machineType=machine_type,
         disks=disks,
         canIpForward=args.can_ip_forward,
@@ -245,8 +240,8 @@ class Create(base_classes.BaseAsyncCreator):
     if guest_accelerators:
       instance_properties.guestAccelerators = guest_accelerators
 
-    request = self.messages.ComputeInstanceTemplatesInsertRequest(
-        instanceTemplate=self.messages.InstanceTemplate(
+    request = client.messages.ComputeInstanceTemplatesInsertRequest(
+        instanceTemplate=client.messages.InstanceTemplate(
             properties=instance_properties,
             description=args.description,
             name=instance_template_ref.Name(),
@@ -256,7 +251,8 @@ class Create(base_classes.BaseAsyncCreator):
     if getattr(args, 'min_cpu_platform', None):
       request.instanceTemplate.properties.minCpuPlatform = args.min_cpu_platform
 
-    return [request]
+    return client.MakeRequests([(client.apitools_client.instanceTemplates,
+                                 'Insert', request)])
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

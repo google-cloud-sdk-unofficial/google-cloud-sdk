@@ -26,9 +26,12 @@ from googlecloudsdk.command_lib.util import labels_util
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ImagesRemoveLabels(base.UpdateCommand):
 
-  @staticmethod
-  def Args(parser):
-    images_flags.IMAGE_ARG.AddArgument(parser)
+  DISK_IMAGE_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.DISK_IMAGE_ARG = images_flags.MakeDiskImageArg(plural=False)
+    cls.DISK_IMAGE_ARG.AddArgument(parser)
     labels_flags.AddArgsForRemoveLabels(parser)
 
   def Run(self, args):
@@ -36,7 +39,7 @@ class ImagesRemoveLabels(base.UpdateCommand):
     client = holder.client.apitools_client
     messages = holder.client.messages
 
-    image_ref = images_flags.IMAGE_ARG.ResolveAsResource(
+    image_ref = self.DISK_IMAGE_ARG.ResolveAsResource(
         args, holder.resources)
 
     remove_labels = labels_util.GetUpdateLabelsDictFromArgs(args)

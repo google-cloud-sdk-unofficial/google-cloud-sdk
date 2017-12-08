@@ -12,34 +12,47 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """instance-groups unmanaged describe command."""
+from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.instance_groups import flags
 
 
-class Describe(base_classes.ZonalDescriber):
+class Describe(base.DescribeCommand):
   """Describe an instance group."""
 
   @staticmethod
   def Args(parser):
-    base_classes.ZonalDescriber.Args(parser)
+    Describe.ZonalInstanceGroupArg = flags.MakeZonalInstanceGroupArg()
+    Describe.ZonalInstanceGroupArg.AddArgument(
+        parser, operation_type='describe')
 
-  @property
-  def service(self):
-    return self.compute.instanceGroups
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'instanceGroups'
+    instance_group_ref = Describe.ZonalInstanceGroupArg.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-  def ComputeDynamicProperties(self, args, items):
+    request = client.messages.ComputeInstanceGroupsGetRequest(
+        **instance_group_ref.AsDict())
+
+    response = client.MakeRequests([(client.apitools_client.instanceGroups,
+                                     'Get', request)])[0]
+
     return instance_groups_utils.ComputeInstanceGroupManagerMembership(
-        compute=self.compute,
-        resources=self.resources,
-        http=self.http,
-        batch_url=self.batch_url,
-        items=items,
-        filter_mode=instance_groups_utils.InstanceGroupFilteringMode.ALL_GROUPS)
+        compute=client.apitools_client,
+        resources=holder.resources,
+        http=client.apitools_client.http,
+        batch_url=client.batch_url,
+        items=[encoding.MessageToDict(response)],
+        filter_mode=instance_groups_utils.InstanceGroupFilteringMode.ALL_GROUPS
+    )[0]
 
   detailed_help = {
       'brief': 'Describe an instance group',

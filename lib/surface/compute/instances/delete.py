@@ -14,8 +14,8 @@
 """Command for deleting instances."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
@@ -28,8 +28,12 @@ AUTO_DELETE_OVERRIDE_CHOICES = {
 }
 
 
-class Delete(base_classes.ZonalDeleter):
-  """Delete Google Compute Engine virtual machine instances."""
+class Delete(base.DeleteCommand):
+  """Delete Google Compute Engine virtual machine instances.
+
+  *{command}* deletes one or more Google Compute Engine virtual machine
+  instances.
+  """
 
   @staticmethod
   def Args(parser):
@@ -63,30 +67,19 @@ class Delete(base_classes.ZonalDeleter):
 
     instance_flags.INSTANCES_ARG.AddArgument(parser)
 
-  @property
-  def service(self):
-    return self.compute.instances
-
-  @property
-  def resource_type(self):
-    return 'instances'
-
-  def GetInstances(self, refs):
+  def GetInstances(self, refs, client):
     """Fetches instance objects corresponding to the given references."""
     instance_get_requests = []
     for ref in refs:
-      request_protobuf = self.messages.ComputeInstancesGetRequest(
-          instance=ref.Name(),
-          zone=ref.zone,
-          project=ref.project)
-      instance_get_requests.append((self.service, 'Get', request_protobuf))
+      request_protobuf = client.messages.ComputeInstancesGetRequest(
+          **ref.AsDict())
+      instance_get_requests.append((client.apitools_client.instances, 'Get',
+                                    request_protobuf))
 
     errors = []
-    instances = list(request_helper.MakeRequests(
+    instances = client.MakeRequests(
         requests=instance_get_requests,
-        http=self.http,
-        batch_url=self.batch_url,
-        errors=errors))
+        errors_to_collect=errors)
     if errors:
       utils.RaiseToolException(
           errors,
@@ -132,10 +125,13 @@ class Delete(base_classes.ZonalDeleter):
 
     return False
 
-  def CreateRequests(self, args):
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
     refs = instance_flags.INSTANCES_ARG.ResolveAsResource(
-        args, self.resources, scope_lister=flags.GetDefaultScopeLister(
-            self.compute_client))
+        args, holder.resources, scope_lister=flags.GetDefaultScopeLister(
+            client))
     utils.PromptForDeletion(
         refs,
         scope_name='zone',
@@ -146,7 +142,7 @@ class Delete(base_classes.ZonalDeleter):
                       'disk will be lost.'))
 
     if args.delete_disks or args.keep_disks:
-      instance_resources = self.GetInstances(refs)
+      instance_resources = self.GetInstances(refs, client)
 
       disks_to_warn_for = []
       set_auto_delete_requests = []
@@ -164,14 +160,14 @@ class Delete(base_classes.ZonalDeleter):
           # Yay, computer science! :) :) :)
           new_auto_delete = not disk.autoDelete
           if new_auto_delete:
-            disks_to_warn_for.append(self.resources.Parse(
+            disks_to_warn_for.append(holder.resources.Parse(
                 disk.source, collection='compute.disks',
                 params={'zone': ref.zone}))
 
           set_auto_delete_requests.append((
-              self.service,
+              client.apitools_client.instances,
               'SetDiskAutoDelete',
-              self.messages.ComputeInstancesSetDiskAutoDeleteRequest(
+              client.messages.ComputeInstancesSetDiskAutoDeleteRequest(
                   autoDelete=new_auto_delete,
                   deviceName=disk.deviceName,
                   instance=ref.Name(),
@@ -181,11 +177,9 @@ class Delete(base_classes.ZonalDeleter):
       if set_auto_delete_requests:
         self.PromptIfDisksWithoutAutoDeleteWillBeDeleted(disks_to_warn_for)
         errors = []
-        list(request_helper.MakeRequests(
+        client.MakeRequests(
             requests=set_auto_delete_requests,
-            http=self.http,
-            batch_url=self.batch_url,
-            errors=errors))
+            errors_to_collect=errors)
         if errors:
           utils.RaiseToolException(
               errors,
@@ -194,22 +188,9 @@ class Delete(base_classes.ZonalDeleter):
 
     delete_requests = []
     for ref in refs:
-      request_protobuf = self.messages.ComputeInstancesDeleteRequest(
-          instance=ref.Name(),
-          zone=ref.zone,
-          project=ref.project)
-      delete_requests.append(request_protobuf)
+      request_protobuf = client.messages.ComputeInstancesDeleteRequest(
+          **ref.AsDict())
+      delete_requests.append((client.apitools_client.instances, 'Delete',
+                              request_protobuf))
 
-    return delete_requests
-
-  def Format(self, _):
-    return 'none'
-
-
-Delete.detailed_help = {
-    'brief': 'Delete Google Compute Engine virtual machine instances',
-    'DESCRIPTION': """\
-        *{command}* deletes one or more Google Compute Engine virtual machine
-        instances.
-        """,
-}
+    return client.MakeRequests(delete_requests)

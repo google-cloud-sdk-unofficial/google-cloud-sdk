@@ -88,7 +88,9 @@ The following command creates a key named \f5frodo\fR within the keyring
 
 .RS 2m
 $ gcloud kms keys create frodo \e
-\-\-location us\-east1 \e \-\-keyring fellowship \e \-\-purpose encryption
+    \-\-location us\-east1 \e
+    \-\-keyring fellowship \e
+    \-\-purpose encryption
 .RE
 
 The following command creates a key named \f5strider\fR within the keyring
@@ -96,6 +98,8 @@ The following command creates a key named \f5strider\fR within the keyring
 
 .RS 2m
 $ gcloud kms keys create strider \e
-\-\-location global \-\-keyring rangers \e \-\-purpose encryption \e
-\-\-rotation\-period 30d \e \-\-next\-rotation\-time 2017\-10\-12T12:34:56.1234Z
+    \-\-location global \-\-keyring rangers \e
+    \-\-purpose encryption \e
+    \-\-rotation\-period 30d \e
+    \-\-next\-rotation\-time 2017\-10\-12T12:34:56.1234Z
 .RE

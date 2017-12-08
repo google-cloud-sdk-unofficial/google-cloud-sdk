@@ -13,24 +13,39 @@
 # limitations under the License.
 """Command for deleting instance templates."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.instance_templates import flags
 
 
-class Delete(base_classes.GlobalDeleter):
-  """Delete Google Compute Engine virtual machine instance templates."""
+class Delete(base.DeleteCommand):
+  """Delete Google Compute Engine virtual machine instance templates.
 
-  @property
-  def service(self):
-    return self.compute.instanceTemplates
+  *{command}* deletes one or more Google Compute Engine virtual machine
+  instance templates.
+  """
 
-  @property
-  def resource_type(self):
-    return 'instanceTemplates'
+  @staticmethod
+  def Args(parser):
+    Delete.InstanceTemplateArg = flags.MakeInstanceTemplateArg(plural=True)
+    Delete.InstanceTemplateArg.AddArgument(parser, operation_type='delete')
 
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-Delete.detailed_help = {
-    'brief': 'Delete Google Compute Engine virtual machine instance templates',
-    'DESCRIPTION': """\
-        *{command}* deletes one or more Google Compute Engine virtual machine
-        instance templates.
-        """,
-}
+    instance_template_refs = Delete.InstanceTemplateArg.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+
+    utils.PromptForDeletion(instance_template_refs)
+
+    requests = []
+    for instance_template_ref in instance_template_refs:
+      requests.append((client.apitools_client.instanceTemplates, 'Delete',
+                       client.messages.ComputeInstanceTemplatesDeleteRequest(
+                           **instance_template_ref.AsDict())))
+
+    return client.MakeRequests(requests)

@@ -19,7 +19,7 @@ import os
 import pprint
 import sys
 
-from tools.regen_apis import regen
+from googlecloudsdk.api_lib.regen import generate
 import yaml
 
 
@@ -107,14 +107,14 @@ def main(argv=None):
 
   for api_name, api_version, api_config in sorted(regenerate_list):
     logging.info('Generating %s %s', api_name, api_version)
-    regen.GenerateApi(args.base_dir, root_dir,
-                      api_name, api_version, api_config)
-    regen.GenerateResourceModule(args.base_dir, root_dir,
-                                 api_name, api_version,
-                                 api_config['discovery_doc'],
-                                 api_config.get('resources', {}))
+    generate.GenerateApi(args.base_dir, root_dir,
+                         api_name, api_version, api_config)
+    generate.GenerateResourceModule(args.base_dir, root_dir,
+                                    api_name, api_version,
+                                    api_config['discovery_doc'],
+                                    api_config.get('resources', {}))
 
-  regen.GenerateApiMap(args.base_dir, root_dir, config['apis'])
+  generate.GenerateApiMap(args.base_dir, root_dir, config['apis'])
 
 
 if __name__ == '__main__':

@@ -81,7 +81,9 @@ class DeployBeta(base.SilentCommand):
         args,
         enable_endpoints=True,
         use_beta_stager=True,
-        runtime_builder_strategy=runtime_builder_strategy)
+        runtime_builder_strategy=runtime_builder_strategy,
+        use_service_management=True
+    )
 
 DeployGA.detailed_help = _DETAILED_HELP
 DeployBeta.detailed_help = _DETAILED_HELP

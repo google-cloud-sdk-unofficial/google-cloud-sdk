@@ -126,22 +126,23 @@ class Timer(object):
     print(timer.duration_secs)
   """
 
-  def __init__(self):
+  def __init__(self, timer_fn=timeit.default_timer):
     self.start = None
     self.end = None
+    self._get_time = timer_fn
 
   def __enter__(self):
     self.end = None
-    self.start = timeit.default_timer()
+    self.start = self._get_time()
     return self
 
   def __exit__(self, exc_type, value, traceback):
-    self.end = timeit.default_timer()
+    self.end = self._get_time()
     return False
 
   @property
   def seconds(self):
-    now = timeit.default_timer()
+    now = self._get_time()
     return (self.end or now) - (self.start or now)
 
   @property
@@ -305,11 +306,12 @@ def _get_interface(graph):
 
 # TODO(b/34686738): when we no longer load the model to get the signature
 # consider making this a named constructor on SessionClient.
-def load_model(model_path):
+def load_model(model_path, config=None):
   """Loads the model at the specified path.
 
   Args:
     model_path: the path to either session_bundle or SavedModel
+    config: tf.ConfigProto containing session configuration options.
 
   Returns:
     A pair of (Session, SignatureDef) objects.
@@ -334,10 +336,10 @@ def load_model(model_path):
     # model server.
     session, meta_graph = (
         bundle_shim.load_session_bundle_or_saved_model_bundle_from_path(
-            model_path, tags=[tag_constants.SERVING]))
+            model_path, tags=[tag_constants.SERVING], config=config))
   except Exception:  # pylint: disable=broad-except
     session, meta_graph = session_bundle.load_session_bundle_from_path(
-        model_path)
+        model_path, config=config)
 
   if session is None:
     raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL,

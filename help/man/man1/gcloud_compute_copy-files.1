@@ -5,7 +5,7 @@
 
 .SH "NAME"
 .HP
-gcloud compute copy\-files \- copy files to and from Google Compute Engine virtual machines
+gcloud compute copy\-files \- copy files to and from Google Compute Engine virtual machines via scp
 
 
 
@@ -18,7 +18,7 @@ gcloud compute copy\-files \- copy files to and from Google Compute Engine virtu
 .SH "DESCRIPTION"
 
 \fBgcloud compute copy\-files\fR copies files between a virtual machine instance
-and your local machine.
+and your local machine using the scp command.
 
 To denote a remote file, prefix the file name with the virtual machine instance
 name (e.g., \fIexample\-instance\fR:~/\fIFILE\fR). To denote a local file, do
@@ -43,15 +43,11 @@ $ gcloud compute copy\-files ~/LOCAL\-FILE\-1 ~/LOCAL\-FILE\-2 \e
 If a file contains a colon (``:''), you must specify it by either using an
 absolute path or a path that begins with ``./''.
 
-Under the covers, \fBscp(1)\fR is used to facilitate the transfer.
+Under the covers, \fBscp(1)\fR or pscp (on Windows) is used to facilitate the
+transfer.
 
 When the destination is local, all sources must be the same virtual machine
-instance. When the destination is remote, all source must be local.
-
-This command ensures that the user's public SSH key is present in the project's
-metadata. If the user does not have a public SSH key, one is generated using
-\fBssh\-keygen(1)\fR (if the \f5\-\-quiet\fR flag is given, the generated key
-will have an empty passphrase).
+instance. When the destination is remote, all sources must be local.
 
 
 
@@ -60,7 +56,7 @@ will have an empty passphrase).
 .RS 2m
 .TP 2m
 [[\fIUSER\fR@]\fIINSTANCE\fR:]\fISRC\fR [[[\fIUSER\fR@]\fIINSTANCE\fR:]\fISRC\fR ...]
-Specifies a source file.
+Specifies the files to copy.
 
 .TP 2m
 [[\fIUSER\fR@]\fIINSTANCE\fR:]\fIDEST\fR
@@ -108,8 +104,7 @@ of: \fByes\fR, \fBno\fR, \fBask\fR.
 
 .TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
-The zone of the instance to copy files to/from. If omitted, you will be prompted
-to select a zone.
+The zone of the instance to copy files to/from.
 
 If not specified, you will be prompted to select a zone.
 

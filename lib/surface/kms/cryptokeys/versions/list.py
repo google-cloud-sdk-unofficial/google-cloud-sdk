@@ -31,8 +31,8 @@ class List(base.ListCommand):
   CryptoKey `frodo`, KeyRing `fellowship`, and Location `global`:
 
     $ {command} --location global \
-  --keyring fellowship \
-  --cryptokey frodo
+        --keyring fellowship \
+        --cryptokey frodo
   """
 
   def Collection(self):

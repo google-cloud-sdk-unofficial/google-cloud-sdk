@@ -11,7 +11,7 @@ gcloud compute connect\-to\-serial\-port \- connect to the serial port of an ins
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute connect\-to\-serial\-port\fR [\fIUSER\fR@]\fIINSTANCE\fR [\fB\-\-dry\-run\fR] [\fB\-\-extra\-args\fR=\fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-force\-key\-file\-overwrite\fR] [\fB\-\-port\fR=\fIPORT\fR] [\fB\-\-ssh\-key\-file\fR=\fISSH_KEY_FILE\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute connect\-to\-serial\-port\fR [\fIUSER\fR@]\fIINSTANCE\fR [\fB\-\-dry\-run\fR] [\fB\-\-extra\-args\fR=\fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-force\-key\-file\-overwrite\fR] [\fB\-\-port\fR=\fIPORT\fR;\ default="1"] [\fB\-\-ssh\-key\-file\fR=\fISSH_KEY_FILE\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -73,7 +73,7 @@ If disabled gcloud will not attempt to regenerate the files associated with a
 broken SSH key and fail in both interactive and non\-interactive environment.
 
 .TP 2m
-\fB\-\-port\fR=\fIPORT\fR
+\fB\-\-port\fR=\fIPORT\fR; default="1"
 The number of the requested serial port. Can be 1\-4, default is 1.
 
 Instances can support up to four serial ports. By default, this command will

@@ -111,22 +111,23 @@ class Timer(object):
     print(timer.duration_secs)
   """
 
-  def __init__(self):
+  def __init__(self, timer_fn=timeit.default_timer):
     self.start = None
     self.end = None
+    self._get_time = timer_fn
 
   def __enter__(self):
     self.end = None
-    self.start = timeit.default_timer()
+    self.start = self._get_time()
     return self
 
   def __exit__(self, exc_type, value, traceback):
-    self.end = timeit.default_timer()
+    self.end = self._get_time()
     return False
 
   @property
   def seconds(self):
-    now = timeit.default_timer()
+    now = self._get_time()
     return (self.end or now) - (self.start or now)
 
   @property
@@ -250,12 +251,12 @@ def rowify(columns):
 
 # TODO(b/34686738): when we no longer load the model to get the signature
 # consider making this a named constructor on SessionClient.
-def load_model(model_path):
+def load_model(model_path, config=None):
   """Loads the model at the specified path.
 
   Args:
-
     model_path: the path to either session_bundle or SavedModel
+    config: tf.ConfigProto containing session configuration options.
 
   Returns:
     A pair of (Session, SignatureDef) objects.
@@ -263,11 +264,9 @@ def load_model(model_path):
   Raises:
     PredictionError: if the model could not be loaded.
   """
-  meta_graph = None
-  session = None
   if loader.maybe_saved_model_directory(model_path):
     try:
-      session = tf_session.Session(target="", graph=None, config=None)
+      session = tf_session.Session(target="", graph=None, config=config)
       meta_graph = loader.load(session, tags=[tag_constants.SERVING],
                                export_dir=model_path)
     except Exception:  # pylint: disable=broad-except

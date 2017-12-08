@@ -174,6 +174,7 @@ on the Compute Engine API instance object and can be used in firewall rules.
 See https://cloud.google.com/sdk/gcloud/reference/compute/firewall-rules/create
 for examples.
 """)
+  flags.AddClusterVersionFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -186,7 +187,6 @@ class Create(base.CreateCommand):
     flags.AddClusterAutoscalingFlags(parser, hidden=True)
     flags.AddLocalSSDFlag(parser, suppressed=True)
     flags.AddEnableKubernetesAlphaFlag(parser, suppressed=True)
-    flags.AddClusterVersionFlag(parser, suppressed=True)
     flags.AddPreemptibleFlag(parser, suppressed=True)
     flags.AddEnableAutoRepairFlag(parser, suppressed=True)
     flags.AddEnableAutoUpgradeFlag(parser, suppressed=True)
@@ -311,7 +311,6 @@ class CreateBeta(Create):
     flags.AddClusterAutoscalingFlags(parser, hidden=True)
     flags.AddLocalSSDFlag(parser)
     flags.AddEnableKubernetesAlphaFlag(parser)
-    flags.AddClusterVersionFlag(parser)
     flags.AddPreemptibleFlag(parser)
     flags.AddEnableAutoRepairFlag(parser)
     flags.AddEnableAutoUpgradeFlag(parser)
@@ -330,7 +329,6 @@ class CreateAlpha(Create):
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDFlag(parser)
     flags.AddEnableKubernetesAlphaFlag(parser)
-    flags.AddClusterVersionFlag(parser)
     flags.AddPreemptibleFlag(parser)
     flags.AddEnableAutoRepairFlag(parser)
     flags.AddEnableAutoUpgradeFlag(parser)

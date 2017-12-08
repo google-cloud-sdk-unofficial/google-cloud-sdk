@@ -15,75 +15,13 @@
 """Retrieves information about a Cloud SQL instance operation."""
 
 from googlecloudsdk.api_lib.sql import api_util
-from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
 
 
-class _BaseGet(object):
-  """Base class for sql get operations."""
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Get(_BaseGet, base.DescribeCommand):
-  """Retrieves information about a Cloud SQL instance operation."""
-
-  @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use it to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
-    parser.add_argument(
-        'operation',
-        help='Name that uniquely identifies the operation.')
-    flags.DEPRECATED_INSTANCE_FLAG_REQUIRED.AddToParser(parser)
-
-  def Run(self, args):
-    """Retrieves information about a Cloud SQL instance operation.
-
-    Args:
-      args: argparse.Namespace, The arguments that this command was invoked
-          with.
-
-    Returns:
-      A dict object representing the operations resource if the api request was
-      successful.
-    Raises:
-      HttpException: A http error response was received while executing api
-          request.
-      ToolException: An error other than http error occured while executing the
-          command.
-    """
-
-    client = api_util.SqlClient(api_util.API_VERSION_FALLBACK)
-    sql_client = client.sql_client
-    sql_messages = client.sql_messages
-
-    validate.ValidateInstanceName(args.instance)
-    instance_ref = client.resource_parser.Parse(
-        args.instance,
-        params={'project': properties.VALUES.core.project.GetOrFail},
-        collection='sql.instances')
-
-    operation_ref = client.resource_parser.Parse(
-        args.operation, collection='sql.operations',
-        params={'project': instance_ref.project,
-                'instance': instance_ref.instance})
-
-    return sql_client.operations.Get(
-        sql_messages.SqlOperationsGetRequest(
-            project=operation_ref.project,
-            instance=operation_ref.instance,
-            operation=operation_ref.operation))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class GetBeta(_BaseGet, base.DescribeCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class Get(base.DescribeCommand):
   """Retrieves information about a Cloud SQL instance operation."""
 
   @staticmethod

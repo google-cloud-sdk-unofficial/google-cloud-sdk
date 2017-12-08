@@ -21,12 +21,51 @@ from googlecloudsdk.command_lib.ml_engine import versions_util
 
 
 def _AddCreateArgs(parser):
+  """Add common arguments for `versions create` command."""
   flags.GetModelName(positional=False, required=True).AddToParser(parser)
   flags.VERSION_NAME.AddToParser(parser)
-  flags.VERSION_DATA.AddToParser(parser)
+  base.Argument(
+      '--origin',
+      help="""\
+          Location of ```model/``` "directory" (as output by
+          https://www.tensorflow.org/versions/r0.12/api_docs/python/state_ops.html#Saver).
+
+          This overrides `deploymentUri` in the `--config` file. If this flag is
+          not passed, `deploymentUri` *must* be specified in the file from
+          `--config`.
+
+          Can be a Google Cloud Storage (`gs://`) path or local file path (no
+          prefix). In the latter case the files will be uploaded to Google Cloud
+          Storage and a `--staging-bucket` argument is required.
+      """).AddToParser(parser)
   flags.RUNTIME_VERSION.AddToParser(parser)
   base.ASYNC_FLAG.AddToParser(parser)
   flags.STAGING_BUCKET.AddToParser(parser)
+  base.Argument(
+      '--config',
+      help="""\
+          Path to a YAML configuration file containing configuration parameters
+          for the
+          [Version](https://cloud.google.com/ml/reference/rest/v1/projects.models.versions)
+          to create.
+
+          The file is in YAML format. Note that not all attributes of a Version
+          are configurable; available attributes (with example values) are:
+
+              description: A free-form description of the version.
+              deploymentUri: gs://path/to/source
+              runtimeVersion: '1.0'
+              manualScaling:
+                nodes: 10  # The number of nodes to allocate for this model.
+
+          The name of the version must always be specified via the required
+          VERSION argument.
+
+          If an option is specified both in the configuration file and via
+          command line arguments, the command line arguments override the
+          configuration file.
+      """
+  ).AddToParser(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
@@ -45,6 +84,7 @@ class CreateBeta(base.CreateCommand):
                                 origin=args.origin,
                                 staging_bucket=args.staging_bucket,
                                 runtime_version=args.runtime_version,
+                                config_file=args.config,
                                 async_=args.async)
 
 
@@ -64,4 +104,5 @@ class CreateGa(base.CreateCommand):
                                 origin=args.origin,
                                 staging_bucket=args.staging_bucket,
                                 runtime_version=args.runtime_version,
+                                config_file=args.config,
                                 async_=args.async)

@@ -14,20 +14,30 @@
 """Command for describing sole-tenancy host types."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.sole_tenancy.host_types import flags
 
 
 @base.Hidden
-class Describe(base_classes.ZonalDescriber):
+class Describe(base.DescribeCommand):
   """Display detailed information about a sole-tenancy host type."""
 
   @staticmethod
   def Args(parser):
-    base_classes.ZonalDescriber.Args(parser, 'compute.hostTypes')
+    Describe.HOST_TYPE_ARG = flags.MakeHostTypeArg()
+    Describe.HOST_TYPE_ARG.AddArgument(parser, operation_type='describe')
 
-  @property
-  def service(self):
-    return self.compute.hostTypes
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'hostTypes'
+    host_type_ref = Describe.HOST_TYPE_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+
+    request = client.messages.ComputeHostTypesGetRequest(
+        **host_type_ref.AsDict())
+
+    return client.MakeRequests([(client.apitools_client.hostTypes, 'Get',
+                                 request)])[0]

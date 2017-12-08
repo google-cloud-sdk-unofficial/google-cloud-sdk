@@ -48,4 +48,4 @@ class ListAssociatedResources(base.ListCommand):
 
   def Run(self, args):
     xpn_client = xpn_api.GetXpnClient()
-    return xpn_client.ListEnabledResources(args.project).resources
+    return xpn_client.ListEnabledResources(args.project)

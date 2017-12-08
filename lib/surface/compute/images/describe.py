@@ -13,22 +13,32 @@
 # limitations under the License.
 """Command for describing images."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.images import flags
 
 
-class Describe(base_classes.GlobalDescriber):
+class Describe(base.DescribeCommand):
   """Describe a Google Compute Engine image."""
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalDescriber.Args(parser, 'compute.images')
+    Describe.DiskImageArg = flags.MakeDiskImageArg()
+    Describe.DiskImageArg.AddArgument(parser, operation_type='describe')
 
-  @property
-  def service(self):
-    return self.compute.images
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'images'
+    image_ref = Describe.DiskImageArg.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+
+    request = client.messages.ComputeImagesGetRequest(**image_ref.AsDict())
+
+    return client.MakeRequests([(client.apitools_client.images, 'Get',
+                                 request)])[0]
 
 
 Describe.detailed_help = {

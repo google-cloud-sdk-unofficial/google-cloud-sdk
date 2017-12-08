@@ -13,39 +13,33 @@
 # limitations under the License.
 """Command for describing instances."""
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import resource_specs
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.instances import flags
 
 
-class Describe(base_classes.ZonalDescriber):
-  """Describe a virtual machine instance."""
+class Describe(base.DescribeCommand):
+  """Describe a virtual machine instance.
+
+  *{command}* displays all data associated with a Google Compute
+  Engine virtual machine instance.
+  """
 
   @staticmethod
   def Args(parser):
-    base_classes.ZonalDescriber.Args(parser, 'compute.instances')
+    flags.INSTANCE_ARG.AddArgument(parser, operation_type='describe')
 
-  @property
-  def service(self):
-    return self.compute.instances
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'instances'
+    instance_ref = flags.INSTANCE_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-  def ComputeDynamicProperties(self, args, items):
-    # This is an overridden function that modifies the output of the custom
-    # machine type in instances describe.
-    items_dict = items.next()
-    machine_type = resource_specs.FormatDescribeMachineTypeName(
-        items_dict,
-        args.command_path)
-    if machine_type:
-      items_dict['machineType'] = machine_type
-    yield items_dict
+    request = client.messages.ComputeInstancesGetRequest(
+        **instance_ref.AsDict())
 
-Describe.detailed_help = {
-    'brief': 'Describe a virtual machine instance',
-    'DESCRIPTION': """\
-        *{command}* displays all data associated with a Google Compute
-        Engine virtual machine instance.
-        """,
-}
+    return client.MakeRequests([(client.apitools_client.instances, 'Get',
+                                 request)])[0]

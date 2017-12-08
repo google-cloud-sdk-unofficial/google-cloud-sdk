@@ -46,7 +46,8 @@ class SnapshotsAddLabels(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    snapshots_flags.SNAPSHOT_ARG.AddArgument(parser)
+    SnapshotsAddLabels.SnapshotArg = snapshots_flags.MakeSnapshotArg()
+    SnapshotsAddLabels.SnapshotArg.AddArgument(parser)
     labels_flags.AddArgsForAddLabels(parser)
 
   def Run(self, args):
@@ -54,7 +55,7 @@ class SnapshotsAddLabels(base.UpdateCommand):
     client = holder.client.apitools_client
     messages = holder.client.messages
 
-    snapshot_ref = snapshots_flags.SNAPSHOT_ARG.ResolveAsResource(
+    snapshot_ref = SnapshotsAddLabels.SnapshotArg.ResolveAsResource(
         args, holder.resources)
 
     add_labels = labels_util.GetUpdateLabelsDictFromArgs(args)

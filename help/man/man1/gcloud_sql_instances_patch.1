@@ -66,8 +66,9 @@ WARNING: Instance will be restarted.
 
 .TP 2m
 \fB\-\-follow\-gae\-app\fR=\fIFOLLOW_GAE_APP\fR
-The App Engine app this instance should follow. It must be in the same region as
-the instance. WARNING: Instance may be restarted.
+First Generation instances only. The App Engine app this instance should follow.
+It must be in the same region as the instance. WARNING: Instance may be
+restarted.
 
 .TP 2m
 \fB\-\-gce\-zone\fR=\fIGCE_ZONE\fR
@@ -76,8 +77,8 @@ WARNING: Instance may be restarted.
 
 .TP 2m
 \fB\-\-pricing\-plan\fR=\fIPRICING_PLAN\fR, \fB\-p\fR \fIPRICING_PLAN\fR
-The pricing plan for this instance. \fIPRICING_PLAN\fR must be one of:
-\fBPER_USE\fR, \fBPACKAGE\fR.
+First Generation instances only. The pricing plan for this instance.
+\fIPRICING_PLAN\fR must be one of: \fBPER_USE\fR, \fBPACKAGE\fR.
 
 .TP 2m
 \fB\-\-replication\fR=\fIREPLICATION\fR
@@ -90,7 +91,10 @@ mysqld should default to 'REQUIRE X509' for users connecting over IP.
 
 .TP 2m
 \fB\-\-tier\fR=\fITIER\fR, \fB\-t\fR \fITIER\fR
-The tier of service for this instance, for example D0, D1. WARNING: Instance
+The tier for this instance. For Second Generation instances, TIER is the
+instance's machine type (e.g., db\-n1\-standard\-1). For PostgreSQL instances,
+only shared\-core machine types (e.g., db\-f1\-micro) apply. A complete list of
+tiers is available here: https://cloud.google.com/sql/pricing. WARNING: Instance
 will be restarted.
 
 .RE
@@ -100,7 +104,8 @@ At most one of these may be specified:
 .RS 2m
 .TP 2m
 \fB\-\-authorized\-gae\-apps\fR=\fIAPP\fR,[\fIAPP\fR,...]
-A list of App Engine app IDs that can access this instance.
+First Generation instances only. List of IDs for App Engine applications running
+in the Standard environment that can access this instance.
 
 .TP 2m
 \fB\-\-clear\-gae\-apps\fR

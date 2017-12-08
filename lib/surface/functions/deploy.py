@@ -198,8 +198,8 @@ class Deploy(base.Command):
 
   @util.CatchHTTPErrorRaiseHTTPException
   def _GetExistingFunction(self, name):
-    client = self.context['functions_client']
-    messages = self.context['functions_messages']
+    client = util.GetApiClientInstance()
+    messages = client.MESSAGES_MODULE
     try:
       # We got response for a get request so a function exists.
       return client.projects_locations_functions.Get(
@@ -242,7 +242,7 @@ class Deploy(base.Command):
 
   def _EventTrigger(self, trigger_provider, trigger_event,
                     trigger_resource):
-    messages = self.context['functions_messages']
+    messages = util.GetApiMessagesModule()
     event_trigger = messages.EventTrigger()
     event_type_ref = resources.REGISTRY.Parse(
         None,
@@ -277,7 +277,7 @@ class Deploy(base.Command):
     Returns:
       The specified function with its description and configured filter.
     """
-    messages = self.context['functions_messages']
+    messages = util.GetApiMessagesModule()
     function = messages.CloudFunction()
     function.name = name
     if entry_point:
@@ -295,7 +295,7 @@ class Deploy(base.Command):
     function = self._PrepareFunctionWithoutSources(
         name, args.entry_point, args.timeout, args.trigger_http, trigger_params)
     if args.source_url:
-      messages = self.context['functions_messages']
+      messages = util.GetApiMessagesModule()
       source_path = args.source_path
       source_branch = args.source_branch or 'master'
       function.sourceRepository = messages.SourceRepository(
@@ -322,8 +322,8 @@ class Deploy(base.Command):
 
   @util.CatchHTTPErrorRaiseHTTPException
   def _CreateFunction(self, location, function):
-    client = self.context['functions_client']
-    messages = self.context['functions_messages']
+    client = util.GetApiClientInstance()
+    messages = client.MESSAGES_MODULE
     op = client.projects_locations_functions.Create(
         messages.CloudfunctionsProjectsLocationsFunctionsCreateRequest(
             location=location, cloudFunction=function))
@@ -334,8 +334,8 @@ class Deploy(base.Command):
 
   @util.CatchHTTPErrorRaiseHTTPException
   def _UpdateFunction(self, unused_location, function):
-    client = self.context['functions_client']
-    messages = self.context['functions_messages']
+    client = util.GetApiClientInstance()
+    messages = client.MESSAGES_MODULE
     op = client.projects_locations_functions.Update(function)
     with progress_tracker.ProgressTracker(
         'Deploying function (may take a while - up to 2 minutes)'):
@@ -357,13 +357,12 @@ class Deploy(base.Command):
     """
     trigger_params = deploy_util.DeduceAndCheckArgs(args)
     project = properties.VALUES.core.project.Get(required=True)
-    registry = self.context['registry']
-    location_ref = registry.Parse(
+    location_ref = resources.REGISTRY.Parse(
         properties.VALUES.functions.region.Get(),
         params={'projectsId': project},
         collection='cloudfunctions.projects.locations')
     location = location_ref.RelativeName()
-    function_ref = registry.Parse(
+    function_ref = resources.REGISTRY.Parse(
         args.name, params={
             'projectsId': project,
             'locationsId': properties.VALUES.functions.region.Get()},

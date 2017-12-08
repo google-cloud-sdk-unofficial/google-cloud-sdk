@@ -39,19 +39,19 @@ class Create(base.CreateCommand):
   keyring `fellowship` and location `us-east1`:
 
     $ {command} frodo \
-  --location us-east1 \
-  --keyring fellowship \
-  --purpose encryption
+        --location us-east1 \
+        --keyring fellowship \
+        --purpose encryption
 
   The following command creates a key named `strider` within the
   keyring `rangers` and location `global` with a specified rotation
   schedule:
 
     $ {command} strider \
-  --location global --keyring rangers \
-  --purpose encryption \
-  --rotation-period 30d \
-  --next-rotation-time 2017-10-12T12:34:56.1234Z
+        --location global --keyring rangers \
+        --purpose encryption \
+        --rotation-period 30d \
+        --next-rotation-time 2017-10-12T12:34:56.1234Z
   """
 
   @staticmethod

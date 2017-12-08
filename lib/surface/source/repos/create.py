@@ -38,7 +38,7 @@ _SOURCEREPO_SERVICE_NAME = 'sourcerepo.googleapis.com'
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
-  """Create a named git repo for the project in the current directory."""
+  """Create a cloud source repository."""
 
   detailed_help = {
       'DESCRIPTION':
@@ -52,7 +52,7 @@ class Create(base.CreateCommand):
           following commands:
 
             $ gcloud init
-            $ gcloud beta source repos create REPO_NAME
+            $ {command} REPOSITORY_NAME
 
           Once you push contents to it, they can be browsed in the
           Developers Console.

@@ -13,6 +13,8 @@
 # limitations under the License.
 """Sets the IAM policy for the repository."""
 
+import textwrap
+
 from googlecloudsdk.api_lib.sourcerepo import sourcerepo
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
@@ -22,16 +24,20 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SetIamPolicy(base.UpdateCommand):
-  """Sets the IAM policy for the named repository.
+  """Set the IAM policy for the named repository."""
 
-  This command sets the IAM policy for the given repository from the
-  policy in the provided file.
-
-  ## EXAMPLES
-
-  To set the IAM policy, issue the following command:
-    $ gcloud beta source repos set-iam-policy REPO_NAME POLICY_FILE
-  """
+  detailed_help = {
+      'DESCRIPTION':
+          """\
+            This command sets the IAM policy for the given repository from the
+            policy in the provided file.
+      """,
+      'EXAMPLES':
+          textwrap.dedent("""\
+          To set the IAM policy, issue the following command:\n
+            $ {command} REPOSITORY_NAME POLICY_FILE
+      """),
+  }
 
   @staticmethod
   def Args(parser):

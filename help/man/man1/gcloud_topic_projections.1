@@ -870,6 +870,53 @@ Returns ["a", "b", "c", "d"].
 .RE
 .sp
 .TP 2m
+\fBsub\fR(pattern, replacement, count=0, ignorecase=true)
+Replaces a pattern matched in a string with the given replacement.
+
+Return the string obtained by replacing the leftmost non\-overlapping
+occurrences of pattern in the string by replacement. If the pattern isn't found,
+then the original string is returned unchanged.
+
+The arguments are:
+
+.RS 2m
+.TP 2m
+\fB\f5pattern\fR\fR
+The regular expression pattern to match in r that we want to replace with
+something.
+.RE
+.sp
+.RS 2m
+.TP 2m
+\fB\f5replacement\fR\fR
+The value to substitute into whatever pattern is matched.
+.RE
+.sp
+.RS 2m
+.TP 2m
+\fB\f5count\fR\fR
+The max number of pattern occurrences to be replaced. Must be non\-negative. If
+omitted or zero, all occurrences will be replaces.
+.RE
+.sp
+.RS 2m
+.TP 2m
+\fB\f5ignorecase\fR\fR
+Whether to perform case\-insensitive matching.
+.RE
+.sp
+
+For example:
+
+.RS 2m
+.TP 2m
+\f5table(field.sub(" there", ""))\fR
+If the field string is "hey there" it will be displayed as "hey".
+
+
+.RE
+.sp
+.TP 2m
 \fBsynthesize\fR(args)
 Synthesizes a new resource from the schema arguments.
 

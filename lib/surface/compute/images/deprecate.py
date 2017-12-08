@@ -45,7 +45,8 @@ class DeprecateImages(base_classes.NoOutputAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    flags.DISK_IMAGE_ARG.AddArgument(parser)
+    DeprecateImages.DiskImageArg = flags.MakeDiskImageArg()
+    DeprecateImages.DiskImageArg.AddArgument(parser)
     flags.REPLACEMENT_DISK_IMAGE_ARG.AddArgument(parser)
 
     deprecation_statuses = {
@@ -168,7 +169,8 @@ class DeprecateImages(base_classes.NoOutputAsyncMutator):
     else:
       replacement_uri = None
 
-    image_ref = flags.DISK_IMAGE_ARG.ResolveAsResource(args, self.resources)
+    image_ref = DeprecateImages.DiskImageArg.ResolveAsResource(
+        args, self.resources)
 
     request = self.messages.ComputeImagesDeprecateRequest(
         deprecationStatus=self.messages.DeprecationStatus(

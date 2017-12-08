@@ -11,14 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Command for updating an interface on a router."""
 
 import copy
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.api_lib.compute import routers_utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import parser_errors
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.interconnects.attachments import (
+    flags as attachment_flags)
 from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.command_lib.compute.vpn_tunnels import (flags as
                                                             vpn_tunnel_flags)
@@ -31,8 +34,7 @@ class InterfaceNotFoundError(exceptions.Error):
   def __init__(self, name):
     self.name = name
     msg = 'interface `{0}` not found'.format(name)
-    super(InterfaceNotFoundError, self
-         ).__init__(msg)
+    super(InterfaceNotFoundError, self).__init__(msg)
 
 
 class RequireMaskError(exceptions.Error):
@@ -43,6 +45,7 @@ class RequireMaskError(exceptions.Error):
         '--ip-address', '--mask-length must be set if --ip-address is set')
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class UpdateInterface(base_classes.ReadWriteCommand):
   """Update an interface on a router."""
 
@@ -57,21 +60,7 @@ class UpdateInterface(base_classes.ReadWriteCommand):
         required=False, operation_type='updated')
     cls.VPN_TUNNEL_ARG.AddArgument(parser)
 
-    parser.add_argument(
-        '--interface-name',
-        required=True,
-        help='The name of the interface being updated.')
-
-    parser.add_argument(
-        '--ip-address',
-        type=utils.IPV4Argument,
-        help='The link local address of the router for this interface.')
-
-    parser.add_argument(
-        '--mask-length',
-        type=int,
-        # TODO(b/36051080): better help
-        help='The mask for network used for the server IP address.')
+    routers_utils.AddCommonArgs(parser, for_update=True)
 
   @property
   def service(self):
@@ -85,21 +74,15 @@ class UpdateInterface(base_classes.ReadWriteCommand):
     return self.ROUTER_ARG.ResolveAsResource(args, self.resources)
 
   def GetGetRequest(self, args):
-    return (self.service,
-            'Get',
-            self.messages.ComputeRoutersGetRequest(
-                router=self.ref.Name(),
-                region=self.ref.region,
-                project=self.project))
+    return (self.service, 'Get', self.messages.ComputeRoutersGetRequest(
+        router=self.ref.Name(), region=self.ref.region, project=self.project))
 
   def GetSetRequest(self, args, replacement, existing):
-    return (self.service,
-            'Update',
-            self.messages.ComputeRoutersUpdateRequest(
-                router=self.ref.Name(),
-                routerResource=replacement,
-                region=self.ref.region,
-                project=self.project))
+    return (self.service, 'Update', self.messages.ComputeRoutersUpdateRequest(
+        router=self.ref.Name(),
+        routerResource=replacement,
+        region=self.ref.region,
+        project=self.project))
 
   def Modify(self, args, existing):
     replacement = copy.deepcopy(existing)
@@ -137,8 +120,62 @@ class UpdateInterface(base_classes.ReadWriteCommand):
     return replacement
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaUpdateInterface(UpdateInterface):
+  """Update an interface on a router."""
+
+  ROUTER_ARG = None
+  VPN_TUNNEL_ARG = None
+  INTERCONNECT_ATTACHMENT_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.ROUTER_ARG = flags.RouterArgument()
+    cls.ROUTER_ARG.AddArgument(parser, operation_type='update')
+
+    link_parser = parser.add_mutually_exclusive_group(
+        required=False)
+
+    cls.VPN_TUNNEL_ARG = vpn_tunnel_flags.VpnTunnelArgumentForRouter(
+        required=False, operation_type='updated')
+    cls.VPN_TUNNEL_ARG.AddArgument(link_parser)
+
+    cls.INTERCONNECT_ATTACHMENT_ARG = (
+        attachment_flags.InterconnectAttachmentArgumentForRouter(
+            required=False, operation_type='updated'))
+    cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(link_parser)
+
+    routers_utils.AddCommonArgs(parser, for_update=True)
+
+  def Modify(self, args, existing):
+    replacement = super(AlphaUpdateInterface, self).Modify(args, existing)
+
+    iface = None
+    for i in replacement.interfaces:
+      if i.name == args.interface_name:
+        iface = i
+        break
+
+    if not args.interconnect_attachment_region:
+      args.interconnect_attachment_region = replacement.region
+
+    if args.interconnect_attachment is not None:
+      attachment_ref = self.INTERCONNECT_ATTACHMENT_ARG.ResolveAsResource(
+          args, self.resources)
+      iface.linkedInterconnectAttachment = attachment_ref.SelfLink()
+
+    if (iface.linkedVpnTunnel is not None and
+        iface.linkedInterconnectAttachment is not None):
+      raise parser_errors.ArgumentException(
+          'cannot have both vpn-tunnel and interconnect-attachment for the '
+          'interface.')
+
+    return replacement
+
+
 UpdateInterface.detailed_help = {
-    'DESCRIPTION': """
+    'DESCRIPTION':
+        """
         *{command}* is used to update an interface on a router.
         """,
 }

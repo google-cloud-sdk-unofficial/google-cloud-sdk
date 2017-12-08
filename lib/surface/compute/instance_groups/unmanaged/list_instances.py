@@ -26,7 +26,9 @@ class ListInstances(instance_groups_utils.InstanceGroupListInstancesBase):
 
   @staticmethod
   def Args(parser):
-    instance_groups_flags.ZONAL_INSTANCE_GROUP_ARG.AddArgument(parser)
+    ListInstances.ZonalInstanceGroupArg = (
+        instance_groups_flags.MakeZonalInstanceGroupArg())
+    ListInstances.ZonalInstanceGroupArg.AddArgument(parser)
     flags.AddRegexArg(parser)
 
   def GetResources(self, args):

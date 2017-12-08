@@ -16,7 +16,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope
-from googlecloudsdk.command_lib.compute.sole_tenant_hosts import flags as hosts_flags
+from googlecloudsdk.command_lib.compute.sole_tenancy.hosts import flags as hosts_flags
 
 
 class Create(base_classes.BaseAsyncCreator):
@@ -24,7 +24,8 @@ class Create(base_classes.BaseAsyncCreator):
 
   @staticmethod
   def Args(parser):
-    hosts_flags.HOSTS_ARG.AddArgument(parser)
+    Create.HOST_ARG = hosts_flags.MakeHostArg(plural=True)
+    Create.HOST_ARG.AddArgument(parser, operation_type='create')
     parser.add_argument(
         '--description',
         help='Specifies a textual description of the hosts.')
@@ -53,7 +54,7 @@ class Create(base_classes.BaseAsyncCreator):
   def CreateRequests(self, args):
     """Returns a list of requests necessary for adding hosts."""
 
-    host_refs = hosts_flags.HOSTS_ARG.ResolveAsResource(
+    host_refs = Create.HOST_ARG.ResolveAsResource(
         args, self.resources,
         default_scope=scope.ScopeEnum.ZONE,
         scope_lister=flags.GetDefaultScopeLister(

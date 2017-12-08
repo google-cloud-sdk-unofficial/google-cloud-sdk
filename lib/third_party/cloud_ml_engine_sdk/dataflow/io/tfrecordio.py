@@ -15,6 +15,12 @@ try:
 except ImportError:
   from apache_beam.io.fileio import CompressionTypes  # pylint: disable=g-import-not-at-top
 
+try:
+  # TODO(user): Remove this after updating to latest Beam.
+  from apache_beam.io import Read  # pylint: disable=g-import-not-at-top
+except ImportError:
+  from apache_beam import Read  # pylint: disable=g-import-not-at-top
+
 _crc32c_fn = None
 try:
   import snappy  # pylint: disable=g-import-not-at-top
@@ -182,7 +188,7 @@ class ReadFromTFRecord(beam.PTransform):
     return self.expand(pvalue)
 
   def expand(self, pvalue):
-    return pvalue.pipeline | beam.Read(_TFRecordSource(*self._args))
+    return pvalue.pipeline | Read(_TFRecordSource(*self._args))
 
 
 class _TFRecordSink(fileio.FileSink):

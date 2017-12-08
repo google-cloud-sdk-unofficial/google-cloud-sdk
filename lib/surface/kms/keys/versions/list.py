@@ -32,8 +32,8 @@ class List(base.ListCommand):
   key `frodo`, keyring `fellowship`, and location `global`:
 
     $ {command} --location global \
-  --keyring fellowship \
-  --key frodo
+        --keyring fellowship \
+        --key frodo
   """
 
   @staticmethod

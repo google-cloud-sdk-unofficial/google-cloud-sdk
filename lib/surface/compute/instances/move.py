@@ -24,7 +24,7 @@ from googlecloudsdk.core import resources
 
 
 class Move(base.SilentCommand):
-  """Move an instance between zones."""
+  """Move an instance and its attached persistent disks between zones."""
 
   @staticmethod
   def Args(parser):
@@ -89,7 +89,8 @@ class Move(base.SilentCommand):
 
 
 Move.detailed_help = {
-    'brief': 'Move an instance between zones',
+    'brief': ('Move an instance and its attached persistent disks between '
+              'zones.'),
     'DESCRIPTION': """\
         *{command}* facilitates moving a Google Compute Engine virtual machine
         from one zone to another. Moving a virtual machine may incur downtime
@@ -100,6 +101,6 @@ Move.detailed_help = {
 
            $ gcloud compute instances move example-instance-1 --zone us-central1-b --destination-zone us-central1-f
 
-        will move the instance called example-instance-1, currently running in
-        us-central1-b, to us-central1-f.
+        will move the instance called example-instance-1 with its all attached
+        persistent disks, currently running in us-central1-b, to us-central1-f.
     """}

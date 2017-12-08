@@ -13,22 +13,33 @@
 # limitations under the License.
 """Command for describing snapshots."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.snapshots import flags
 
 
-class Describe(base_classes.GlobalDescriber):
+class Describe(base.DescribeCommand):
   """Describe a Google Compute Engine snapshot."""
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalDescriber.Args(parser, 'compute.snapshots')
+    Describe.SnapshotArg = flags.MakeSnapshotArg()
+    Describe.SnapshotArg.AddArgument(parser, operation_type='describe')
 
-  @property
-  def service(self):
-    return self.compute.snapshots
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'snapshots'
+    snapshot_ref = Describe.SnapshotArg.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+
+    request = client.messages.ComputeSnapshotsGetRequest(
+        **snapshot_ref.AsDict())
+
+    return client.MakeRequests([(client.apitools_client.snapshots, 'Get',
+                                 request)])[0]
 
 
 Describe.detailed_help = {

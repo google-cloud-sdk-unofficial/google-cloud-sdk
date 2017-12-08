@@ -17,14 +17,13 @@ import argparse
 import sys
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
-from googlecloudsdk.command_lib.util import ssh
-from googlecloudsdk.core import exceptions as core_exceptions
-from googlecloudsdk.core.util import platforms
+from googlecloudsdk.command_lib.util.ssh import ssh
+from googlecloudsdk.core import log
+from googlecloudsdk.core.util import retry
 
 
 def _Args(parser):
@@ -97,69 +96,87 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
 
   def __init__(self, *args, **kwargs):
     super(SshGA, self).__init__(*args, **kwargs)
-    self._use_accounts_service = False
 
   @staticmethod
   def Args(parser):
+    """Set up arguments for this command.
+
+    Args:
+      parser: An argparse.ArgumentParser.
+    """
     _Args(parser)
 
   def Run(self, args):
+    """See ssh_utils.BaseSSHCLICommand.Run."""
     super(SshGA, self).Run(args)
     user, instance_name = ssh_utils.GetUserAndInstance(
-        args.user_host, self._use_accounts_service, self.http)
+        args.user_host, self._use_account_service, self.http)
     instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
         [instance_name], compute_scope.ScopeEnum.ZONE, args.zone,
         self.resources,
         scope_lister=flags.GetDefaultScopeLister(self.compute_client))[0]
     instance = self.GetInstance(instance_ref)
-    external_ip_address = ssh_utils.GetExternalIPAddress(instance)
+    if self._use_internal_ip:
+      ip_address = ssh_utils.GetInternalIPAddress(instance)
+    else:
+      ip_address = ssh_utils.GetExternalIPAddress(instance)
 
-    ssh_args = [self.env.ssh]
+    remote = ssh.Remote(ip_address, user)
+
+    identity_file = None
+    options = None
     if not args.plain:
-      ssh_args.extend(ssh.GetDefaultFlags(self.keys.key_file))
-      # Allocates a tty if no command was provided and a container was provided.
-      if args.container and not args.command:
-        ssh_args.append('-t')
+      identity_file = self.keys.key_file
+      options = self.GetConfig(ssh_utils.HostKeyAlias(instance),
+                               args.strict_host_key_checking)
+
+    extra_flags = []
 
     if args.ssh_flag:
       for flag in args.ssh_flag:
         for flag_part in flag.split():  # We want grouping here
           dereferenced_flag = (
-              flag_part.replace('%USER%', user)
-              .replace('%INSTANCE%', external_ip_address))
-          ssh_args.append(dereferenced_flag)
-
-    host_key_alias = ssh_utils.HostKeyAlias(instance)
-    ssh_args.extend(ssh.GetHostKeyArgs(host_key_alias, args.plain,
-                                       args.strict_host_key_checking))
-
-    ssh_args.append(ssh.UserHost(user, external_ip_address))
+              flag_part.replace('%USER%', remote.user)
+              .replace('%INSTANCE%', ip_address))
+          extra_flags.append(dereferenced_flag)
 
     if args.ssh_args:
-      ssh_args.extend(args.ssh_args)
-    if args.container:
-      ssh_args.append('--')
-      ssh_args.append('container_exec')
-      ssh_args.append(args.container)
-      # Runs the given command inside the given container if --command was
-      # specified, otherwise runs /bin/sh.
-      if args.command:
-        ssh_args.append(args.command)
-      else:
-        ssh_args.append('/bin/sh')
+      extra_flags.extend(args.ssh_args)
 
-    elif args.command:
-      if not platforms.OperatingSystem.IsWindows():
-        ssh_args.append('--')
-      ssh_args.append(args.command)
+    tty = ssh_utils.GetTty(args.container, args.command)
+    remote_command = ssh_utils.GetRemoteCommand(args.container, args.command)
 
-    # Don't use strict error checking for ssh: if the executed command fails, we
-    # don't want to consider it an error. We do, however, want to propagate its
-    # return code.
-    return_code = self.ActuallyRun(
-        args, ssh_args, user, instance, instance_ref.project,
-        external_ip_address, strict_error_checking=False,
-        use_account_service=self._use_accounts_service)
+    cmd = ssh.SSHCommand(remote, identity_file=identity_file,
+                         options=options, extra_flags=extra_flags,
+                         remote_command=remote_command, tty=tty)
+    if args.dry_run:
+      log.out.Print(' '.join(cmd.Build(self.env)))
+      return
+
+    if args.plain:
+      keys_newly_added = False
+    else:
+      keys_newly_added = self.EnsureSSHKeyExists(
+          remote.user, instance, instance_ref.project,
+          use_account_service=self._use_account_service)
+
+    if keys_newly_added:
+      poller = ssh.SSHPoller(
+          remote, identity_file=identity_file, options=options,
+          extra_flags=extra_flags,
+          max_wait_ms=ssh_utils.SSH_KEY_PROPAGATION_TIMEOUT_SEC)
+      log.status.Print('Waiting for SSH key to propagate.')
+      # TODO(b/35355795): Don't force_connect
+      try:
+        poller.Poll(self.env, force_connect=True)
+      except retry.WaitException:
+        raise ssh_utils.NetworkError()
+
+    if self._use_internal_ip:
+      self._PreliminarylyVerifyInstance(instance.id, remote, identity_file,
+                                        options, extra_flags)
+
+    return_code = cmd.Run(self.env, force_connect=True)
     if return_code:
       # Can't raise an exception because we don't want any "ERROR" message
       # printed; the output from `ssh` will be enough.
@@ -172,10 +189,15 @@ class SshBeta(SshGA):
 
   def __init__(self, *args, **kwargs):
     super(SshBeta, self).__init__(*args, **kwargs)
-    self._use_accounts_service = True
+    self._use_account_service = True
 
   @staticmethod
   def Args(parser):
+    """Set up arguments for this command.
+
+    Args:
+      parser: An argparse.ArgumentParser.
+    """
     _Args(parser)
 
 
@@ -183,28 +205,13 @@ class SshBeta(SshGA):
 class SshAlpha(SshBeta):
   """SSH into a virtual machine instance."""
 
-  def _PreliminarylyVerifyInstance(
-      self, args, instance, project, user, ip_address):
-    ssh_args = ssh_utils.GetSshArgsForPreliminaryVerification(
-        args, user, instance, ip_address, self.env, self.keys)
-    ssh_return_code = self.ActuallyRun(
-        args, ssh_args, user, instance, project, ip_address,
-        strict_error_checking=False,
-        use_account_service=self._use_accounts_service)
-
-    if ssh_return_code == 0:
-      return
-    if ssh_return_code == 255:
-      raise core_exceptions.NetworkIssueError(
-          'Unable to connect to private IP {0}.'.format(ip_address))
-    if ssh_return_code == 1:
-      raise core_exceptions.NetworkIssueError(
-          'Established connection with private IP {0} but was unable to '
-          'confirm ID of the instance.'.format(ip_address))
-    raise exceptions.FailedSubCommand(' '.join(ssh_args), ssh_return_code)
-
   @staticmethod
   def Args(parser):
+    """Set up arguments for this command.
+
+    Args:
+      parser: An argparse.ArgumentParser.
+    """
     _Args(parser)
     parser.add_argument(
         '--internal-ip', default=False, action='store_true',
@@ -230,36 +237,9 @@ class SshAlpha(SshBeta):
         `errors gcloud` requires the instance to have curl tool available.""")
 
   def Run(self, args):
-    super(SshGA, self).Run(args)
-
-    user, instance_name = ssh_utils.GetUserAndInstance(
-        args.user_host, self._use_accounts_service, self.http)
-    instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
-        [instance_name], compute_scope.ScopeEnum.ZONE, args.zone,
-        self.resources,
-        scope_lister=flags.GetDefaultScopeLister(self.compute_client))[0]
-    instance = self.GetInstance(instance_ref)
-
-    if args.internal_ip:
-      ip_address = ssh_utils.GetInternalIPAddress(instance)
-      self._PreliminarylyVerifyInstance(
-          args, instance, instance_ref.project, user, ip_address)
-    else:
-      ip_address = ssh_utils.GetExternalIPAddress(instance)
-
-    # Don't use strict error checking for ssh: if the executed command fails, we
-    # don't want to consider it an error. We do, however, want to propagate its
-    # return code.
-    ssh_args = ssh_utils.GetSshArgs(
-        args, user, instance, ip_address, self.env, self.keys)
-    return_code = self.ActuallyRun(
-        args, ssh_args, user, instance, instance_ref.project, ip_address,
-        strict_error_checking=False,
-        use_account_service=self._use_accounts_service)
-    if return_code:
-      # Can't raise an exception because we don't want any "ERROR" message
-      # printed; the output from `ssh` will be enough.
-      sys.exit(return_code)
+    """See SshGA.Run."""
+    self._use_internal_ip = args.internal_ip
+    super(SshAlpha, self).Run(args)
 
 
 def DetailedHelp(version):

@@ -40,6 +40,13 @@ def _AddArgs(cls, parser):
       required=True,
       help='The IP space allocated to this subnetwork in CIDR format.')
 
+  parser.add_argument(
+      '--enable-private-ip-google-access',
+      action='store_true',
+      default=False,
+      help=('Enable/disable access to Google Cloud APIs from this subnet for '
+            'instances without a public ip address.'))
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base_classes.BaseAsyncCreator):
@@ -80,6 +87,7 @@ class Create(base_classes.BaseAsyncCreator):
             description=args.description,
             network=network_ref.SelfLink(),
             ipCidrRange=args.range,
+            privateIpGoogleAccess=args.enable_private_ip_google_access,
         ),
         region=subnet_ref.region,
         project=self.project)
@@ -94,12 +102,6 @@ class CreateBeta(Create):
   @classmethod
   def Args(cls, parser):
     _AddArgs(cls, parser)
-    parser.add_argument(
-        '--enable-private-ip-google-access',
-        action='store_true',
-        default=False,
-        help=('Enable/disable access to Google Cloud APIs from this subnet for '
-              'instances without a public ip address.'))
     parser.add_argument(
         '--secondary-range',
         type=arg_parsers.ArgDict(spec={'name': str, 'range': str}),

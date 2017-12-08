@@ -34,8 +34,8 @@ class Create(base.CreateCommand):
   the primary version:
 
     $ {command} --location global \
-  --keyring fellowship \
-  --key frodo --primary
+        --keyring fellowship \
+        --key frodo --primary
   """
 
   @staticmethod
