@@ -42,6 +42,11 @@ class Read(base.Command):
         help=('Return entries that are not older than this value. '
               'Works only with DESC ordering and filters without a timestamp.'),
         default='1d')
+    parser.add_argument(
+        '--organization', required=False, metavar='ORGANIZATION_ID',
+        completion_resource='cloudresourcemanager.organizations',
+        list_command_path='organizations',
+        help='Read log entries associated with this organization')
 
   @util.HandlePagerHttpError
   def Run(self, args):
@@ -69,7 +74,14 @@ class Read(base.Command):
     else:
       log_filter = args.log_filter
 
-    return common.FetchLogs(log_filter, order_by=args.order, limit=args.limit)
+    parent = None
+    if args.organization:
+      parent = 'organizations/%s' % args.organization
+
+    return common.FetchLogs(log_filter,
+                            order_by=args.order,
+                            limit=args.limit,
+                            parent=parent)
 
 
 Read.detailed_help = {
@@ -83,7 +95,6 @@ Read.detailed_help = {
         entires available to be read are those written within the last 30
         days.
     """,
-
     'EXAMPLES': """\
         To read log entries from Google Cloud Compute, run:
 

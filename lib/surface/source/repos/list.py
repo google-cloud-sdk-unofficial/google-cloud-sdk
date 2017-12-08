@@ -12,37 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""List project repositories.
-"""
+"""List project repositories."""
 
 from googlecloudsdk.api_lib.source import source
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(base.Command):
+class List(base.ListCommand):
   """Lists all repositories in a particular project.
 
   By default, repos in the current project are listed; this can be overridden
   with the gcloud --project flag.
   """
 
+  def Collection(self):
+    return 'source.jobs'
+
   @staticmethod
   def Args(parser):
-    pass
+    base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     """Run the list command."""
     project = source.Project(properties.VALUES.core.project.Get(required=True))
     return project.ListRepos()
-
-  def Display(self, args, repos):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      repos: The iterator over Repo messages returned from the Run() method.
-    """
-    list_printer.PrintResourceList('source.jobs.list', repos)

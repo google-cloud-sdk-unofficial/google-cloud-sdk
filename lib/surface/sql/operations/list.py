@@ -22,7 +22,6 @@ from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
@@ -38,11 +37,6 @@ class _BaseList(object):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    parser.add_argument(
-        '--limit',
-        type=int,
-        default=None,
-        help='Maximum number of operations to list.')
     flags.INSTANCE_FLAG.AddToParser(parser)
 
   @errors.ReraiseHttpException
@@ -78,16 +72,16 @@ class _BaseList(object):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class List(_BaseList, base.Command):
+class List(_BaseList, base.ListCommand):
   """Lists all instance operations for the given Cloud SQL instance."""
 
-  def Display(self, unused_args, result):
-    list_printer.PrintResourceList('sql.operations', result)
+  def Collection(self):
+    return 'sql.operations'
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(_BaseList, base.Command):
+class ListBeta(_BaseList, base.ListCommand):
   """Lists all instance operations for the given Cloud SQL instance."""
 
-  def Display(self, unused_args, result):
-    list_printer.PrintResourceList('sql.operations.v1beta4', result)
+  def Collection(self):
+    return 'sql.operations.v1beta4'

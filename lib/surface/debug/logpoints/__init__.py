@@ -61,6 +61,14 @@ class Logpoints(base.Group):
           567890abcdef1-1234-56789  product.py:123  ...
           $ {command} delete 567890abcdef1-1234-56789
 
+      For App Engine services, logpoint resources include the "logQuery"
+      property, which is suitable for use with the "gcloud beta logging read"
+      command. You can save this property's value and use it to read logs from
+      the command line:
+
+          $ log_query=$({command} create product.py:123 \
+              "No description for {product.name}" --format="value(logQuery)")
+          $ gcloud beta logging read "$log_query"
       """
   }
 

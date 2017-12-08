@@ -89,12 +89,3 @@ class Export(base.Command):
             bigqueryTable=args.table))
 
     return apitools_client.variantsets.Export(request)
-
-  def Display(self, args_unused, resp):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args_unused: The arguments that command was run with.
-      resp: The value returned from the Run() method.
-    """
-    self.format(resp)

@@ -177,6 +177,44 @@ class CreateAlpha(Create):
           args.target_ssl_proxy, resource_type='targetSslProxies')
     return super(CreateAlpha, self).GetGlobalTarget(args)
 
+  def CreateRegionalRequests(self, args):
+    """Create a regionally scoped request."""
+    target_ref, target_region = self.GetRegionalTarget(args)
+    forwarding_rule_ref = self.CreateRegionalReference(
+        args.name, args.region or target_region)
+    protocol = self.ConstructProtocol(args)
+
+    forwarding_rule = self.messages.ForwardingRule(
+        description=args.description,
+        name=forwarding_rule_ref.Name(),
+        IPAddress=args.address,
+        IPProtocol=protocol,
+        portRange=args.port_range)
+    if target_ref.Collection() == 'compute.regionBackendServices':
+      forwarding_rule.loadBalancingScheme = (
+          self.messages.ForwardingRule.LoadBalancingSchemeValueValuesEnum(
+              args.load_balancing_scheme))
+      forwarding_rule.backendService = target_ref.SelfLink()
+      if args.load_balancing_scheme == 'INTERNAL':
+        if args.ports:
+          forwarding_rule.portRange = None
+          forwarding_rule.ports = [str(p) for p in _GetPortList(args.ports)]
+        if args.subnet is not None:
+          forwarding_rule.subnetwork = self.CreateRegionalReference(
+              args.subnet, forwarding_rule.region,
+              resource_type='subnetworks').SelfLink()
+        if args.network is not None:
+          forwarding_rule.network = self.CreateGlobalReference(
+              args.network, resource_type='networks').SelfLink()
+    else:
+      forwarding_rule.target = target_ref.SelfLink()
+    request = self.messages.ComputeForwardingRulesInsertRequest(
+        forwardingRule=forwarding_rule,
+        project=self.project,
+        region=forwarding_rule_ref.region)
+
+    return [request]
+
 
 Create.detailed_help = {
     'DESCRIPTION': ("""\
@@ -222,4 +260,11 @@ def _ResolvePortRange(port_range, port_range_list):
   elif port_range_list:
     port_range = _GetPortRange(port_range_list)
   return str(port_range) if port_range else None
+
+
+def _GetPortList(range_list):
+  ports = []
+  for port_range in range_list:
+    ports.extend(range(port_range.start, port_range.end + 1))
+  return sorted(ports)
 

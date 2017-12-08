@@ -39,8 +39,13 @@ class Start(base.Command):
     parser.add_argument(
         '--host-port',
         required=False,
-        type=arg_parsers.HostPort.Parse,
-        help='The host:port to which the emulator should be bound.')
+        type=lambda arg: arg_parsers.HostPort.Parse(arg, ipv6_enabled=True),
+        help='The host:port to which the emulator should be bound. Can '
+        'take the form of a single address (hostname, IPv4, or IPv6) and port:'
+        '\n\n  ADDRESS[:PORT]\n\n'
+        'In this format you must enclose IPv6 addresses in square brackets: '
+        'e.g.\n\n'
+        '  [2001:db8:0:0:0:ff00:42:8329]:8080\n\n')
     parser.add_argument(
         '--store-on-disk',
         default=True,

@@ -84,13 +84,3 @@ class Export(base.Command):
              .replace('referenceNames', '--reference-names'))
       unused_type, unused_value, traceback = sys.exc_info()
       raise exceptions.HttpException, msg, traceback
-
-  def Display(self, args_unused, op):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args_unused: The arguments that command was run with.
-      op: The operation message returned from the Run() method.
-    """
-
-    self.format(op)

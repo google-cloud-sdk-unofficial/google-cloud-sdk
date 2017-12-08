@@ -20,7 +20,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """List operations for container clusters."""
 
   @staticmethod
@@ -31,7 +31,11 @@ class List(base.Command):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
           to capture some information, but behaves like an ArgumentParser.
     """
-    pass
+    # --uri is inherited for all ListCommands but is not implemented here.
+    base.URI_FLAG.RemoveFromParser(parser)
+
+  def Collection(self):
+    return 'container.projects.zones.operations'
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -52,15 +56,6 @@ class List(base.Command):
           args.zone, collection='compute.zones').zone
 
     try:
-      return adapter.ListOperations(project_id, zone)
+      return adapter.ListOperations(project_id, zone).operations
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(util.GetError(error))
-
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    self.context['api_adapter'].PrintOperations(result.operations)

@@ -11,7 +11,7 @@ gcloud container clusters create \- create a cluster for running containers
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud container clusters create\fR \fINAME\fR [\fB\-\-additional\-zones\fR\ \fIZONE\fR,[\fIZONE\fR,...]] [\fB\-\-async\fR] [\fB\-\-cluster\-ipv4\-cidr\fR\ \fICLUSTER_IPV4_CIDR\fR] [\fB\-\-disable\-addons\fR\ [\fIDISABLE_ADDONS\fR,...]] [\fB\-\-disk\-size\fR\ \fIDISK_SIZE\fR] [\fB\-\-no\-enable\-cloud\-endpoints\fR] [\fB\-\-no\-enable\-cloud\-logging\fR] [\fB\-\-no\-enable\-cloud\-monitoring\fR] [\fB\-\-machine\-type\fR\ \fIMACHINE_TYPE\fR,\ \fB\-m\fR\ \fIMACHINE_TYPE\fR] [\fB\-\-max\-nodes\-per\-pool\fR\ \fIMAX_NODES_PER_POOL\fR] [\fB\-\-network\fR\ \fINETWORK\fR] [\fB\-\-num\-nodes\fR\ \fINUM_NODES\fR;\ default="3"] [\fB\-\-password\fR\ \fIPASSWORD\fR] [\fB\-\-scopes\fR\ \fISCOPE\fR,[\fISCOPE\fR,...]] [\fB\-\-subnetwork\fR\ \fISUBNETWORK\fR] [\fB\-\-username\fR\ \fIUSERNAME\fR,\ \fB\-u\fR\ \fIUSERNAME\fR;\ default="admin"] [\fB\-\-wait\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud container clusters create\fR \fINAME\fR [\fB\-\-additional\-zones\fR\ \fIZONE\fR,[\fIZONE\fR,...]] [\fB\-\-async\fR] [\fB\-\-cluster\-ipv4\-cidr\fR\ \fICLUSTER_IPV4_CIDR\fR] [\fB\-\-disable\-addons\fR\ [\fIDISABLE_ADDONS\fR,...]] [\fB\-\-disk\-size\fR\ \fIDISK_SIZE\fR] [\fB\-\-enable\-autoscaling\fR] [\fB\-\-no\-enable\-cloud\-endpoints\fR] [\fB\-\-no\-enable\-cloud\-logging\fR] [\fB\-\-no\-enable\-cloud\-monitoring\fR] [\fB\-\-machine\-type\fR\ \fIMACHINE_TYPE\fR,\ \fB\-m\fR\ \fIMACHINE_TYPE\fR] [\fB\-\-max\-nodes\fR\ \fIMAX_NODES\fR] [\fB\-\-max\-nodes\-per\-pool\fR\ \fIMAX_NODES_PER_POOL\fR] [\fB\-\-min\-nodes\fR\ \fIMIN_NODES\fR] [\fB\-\-network\fR\ \fINETWORK\fR] [\fB\-\-num\-nodes\fR\ \fINUM_NODES\fR;\ default="3"] [\fB\-\-password\fR\ \fIPASSWORD\fR] [\fB\-\-scopes\fR\ \fISCOPE\fR,[\fISCOPE\fR,...]] [\fB\-\-subnetwork\fR\ \fISUBNETWORK\fR] [\fB\-\-username\fR\ \fIUSERNAME\fR,\ \fB\-u\fR\ \fIUSERNAME\fR;\ default="admin"] [\fB\-\-wait\fR] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -73,6 +73,11 @@ HorizontalPodAutoscaling
 Size in GB for node VM boot disks. Defaults to 100GB.
 
 .RE
+\fB\-\-enable\-autoscaling\fR
+.RS 2m
+Enables autoscaling for the node pool.
+
+.RE
 \fB\-\-enable\-cloud\-endpoints\fR
 .RS 2m
 Automatically enable Google Cloud Endpoints to take advantage of API management
@@ -99,12 +104,22 @@ to disable.
 The type of machine to use for nodes. Defaults to server\-specified
 
 .RE
+\fB\-\-max\-nodes\fR \fIMAX_NODES\fR
+.RS 2m
+Maximum number of nodes in the node pool.
+
+.RE
 \fB\-\-max\-nodes\-per\-pool\fR \fIMAX_NODES_PER_POOL\fR
 .RS 2m
 The maximum number of nodes to allocate per default initial node pool. Container
 engine will automatically create enough nodes pools such that each node pool
 contains less than \-\-max\-nodes\-per\-pool nodes. Defaults to 1000 nodes, but
 can be set as low as 100 nodes per pool on initial create.
+
+.RE
+\fB\-\-min\-nodes\fR \fIMIN_NODES\fR
+.RS 2m
+Minimum number of nodes in the node pool.
 
 .RE
 \fB\-\-network\fR \fINETWORK\fR

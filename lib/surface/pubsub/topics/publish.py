@@ -16,8 +16,8 @@ from googlecloudsdk.api_lib.pubsub import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as sdk_ex
-from googlecloudsdk.core.resource import resource_printer
-from googlecloudsdk.core.util import text
+from googlecloudsdk.core import resources
+from googlecloudsdk.core.resource import resource_projector
 
 MAX_ATTRIBUTES = 100
 
@@ -45,6 +45,9 @@ class Publish(base.Command):
                               ' Each ATTRIBUTE has the form "name=value".'
                               ' You can specify up to {0} attributes.'.format(
                                   MAX_ATTRIBUTES)))
+
+  def Collection(self):
+    return util.TOPICS_PUBLISH_COLLECTION
 
   @util.MapHttpError
   def Run(self, args):
@@ -77,25 +80,25 @@ class Publish(base.Command):
                                   ' You must specify either a MESSAGE_BODY,'
                                   ' one or more ATTRIBUTE, or both.'))
 
+    topic_name = resources.Parse(
+        args.topic, collection=util.TOPICS_COLLECTION).Name()
+
     message = msgs.PubsubMessage(
         data=args.message_body,
         attributes=msgs.PubsubMessage.AttributesValue(
             additionalProperties=attributes))
 
-    return pubsub.projects_topics.Publish(
+    result = pubsub.projects_topics.Publish(
         msgs.PubsubProjectsTopicsPublishRequest(
             publishRequest=msgs.PublishRequest(messages=[message]),
-            topic=util.TopicFormat(args.topic)))
+            topic=util.TopicFormat(topic_name)))
 
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
+    if not result.messageIds:
+      # If we got a result with empty messageIds, then we've got a problem.
+      raise sdk_ex.HttpException('Publish operation failed with Unknown error.')
 
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    fmt = 'list[title="{0} {1} published."]'.format(
-        len(result.messageIds),
-        text.Pluralize(len(result.messageIds), 'message'))
-    resource_printer.Print(
-        ['messageId: {0}'.format(msg) for msg in result.messageIds], fmt)
+    # We only allow to publish one message at a time, so do not return a
+    # list of messageId.
+    resource = resource_projector.MakeSerializable(result)
+    resource['messageIds'] = result.messageIds[0]
+    return resource

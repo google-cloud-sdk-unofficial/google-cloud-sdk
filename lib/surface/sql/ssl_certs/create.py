@@ -19,7 +19,6 @@ from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.sql import flags
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 
@@ -45,6 +44,12 @@ class _BaseAddCert(object):
         help=('Location of file which the private key of the created ssl-cert'
               ' will be written to.'))
     flags.INSTANCE_FLAG.AddToParser(parser)
+
+  def Collection(self):
+    return 'sql.sslCerts'
+
+  def Format(self, args):
+    return self.ListFormat(args)
 
   @errors.ReraiseHttpException
   def Run(self, args):
@@ -107,18 +112,7 @@ class _BaseAddCert(object):
         sha1Fingerprint=result.clientCert.certInfo.sha1Fingerprint)
 
     log.CreatedResource(cert_ref)
-    return result
-
-  def Display(self, unused_args, result):
-    """Display prints information about what just happened to stdout.
-
-    Args:
-      unused_args: The same as the args in Run.
-      result: A dict object representing the response if the api
-          request was successful.
-    """
-
-    list_printer.PrintResourceList('sql.sslCerts', [result.clientCert.certInfo])
+    return result.clientCert.certInfo
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

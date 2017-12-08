@@ -17,11 +17,10 @@
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """List genomics references.
 
   Prints a table with summary information on references.
@@ -51,10 +50,8 @@ class List(base.Command):
         '--reference-set-id',
         help='Only return reference sets for this referenceset.')
 
-    parser.add_argument(
-        '--limit',
-        type=int,
-        help='The maximum number of results to list.')
+  def Collection(self):
+    return 'genomics.references'
 
   @genomics_util.ReraiseHttpException
   def Run(self, args):
@@ -64,41 +61,25 @@ class List(base.Command):
       args: argparse.Namespace, The arguments that this command was invoked
           with.
 
-    Returns:
+    Yields:
       The list of matching references.
 
     Raises:
       HttpException: An http error response was received while executing api
           request.
     """
-    genomics_util.ValidateLimitFlag(args.limit)
-
     apitools_client = genomics_util.GetGenomicsClient()
-    req_class = (genomics_util.GetGenomicsMessages()
-                 .SearchReferencesRequest)
+    req_class = genomics_util.GetGenomicsMessages().SearchReferencesRequest
     request = req_class(
         md5checksums=args.md5checksums,
         accessions=args.accessions,
         referenceSetId=args.reference_set_id)
-    return list_pager.YieldFromList(
+    for resource in list_pager.YieldFromList(
         apitools_client.references,
         request,
         method='Search',
         limit=args.limit,
         batch_size_attribute='pageSize',
         batch_size=args.limit,  # Use limit if any, else server default.
-        field='references')
-
-  @genomics_util.ReraiseHttpException
-  def Display(self, args, result):
-    """Display prints information about what just happened to stdout.
-
-    Args:
-      args: The same as the args in Run.
-
-      result: a list of Reference objects.
-
-    Raises:
-      ValueError: if result is None or not a list
-    """
-    list_printer.PrintResourceList('genomics.references', result)
+        field='references'):
+      yield resource

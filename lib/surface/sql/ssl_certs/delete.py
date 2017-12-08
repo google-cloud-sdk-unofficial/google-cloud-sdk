@@ -36,17 +36,11 @@ class _BaseDelete(object):
           on the command line after this command. Positional arguments are
           allowed.
     """
+    base.ASYNC_FLAG.AddToParser(parser)
     parser.add_argument(
         'common_name',
         help='User supplied name. Constrained to [a-zA-Z.-_ ]+.')
-    parser.add_argument(
-        '--async',
-        action='store_true',
-        help='Do not wait for the operation to complete.')
     flags.INSTANCE_FLAG.AddToParser(parser)
-
-  def Display(self, unused_args, result):
-    self.format(result)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

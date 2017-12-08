@@ -17,12 +17,11 @@
 from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import properties
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """View the list of record-sets in a managed-zone.
 
   This command displays the list of record-sets contained within the specified
@@ -54,9 +53,6 @@ class List(base.Command):
   def Args(parser):
     util.ZONE_FLAG.AddToParser(parser)
     parser.add_argument(
-        '--limit', default=None, required=False, type=int,
-        help='Maximum number of record-sets to list.')
-    parser.add_argument(
         '--name', required=False,
         help='Only list record-sets with this exact domain name.')
     parser.add_argument(
@@ -64,6 +60,10 @@ class List(base.Command):
         help='Only list records of this type. If present, the --name parameter '
         'must also be present.')
 
+  def Collection(self):
+    return 'dns.resourceRecordSets'
+
+  @util.HandleHttpError
   def Run(self, args):
     dns_client = self.context['dns_client']
     dns_messages = self.context['dns_messages']
@@ -74,15 +74,12 @@ class List(base.Command):
       raise exceptions.ToolException(
           '--name should also be provided when --type is used')
 
-    return list_pager.YieldFromList(
+    for resource in list_pager.YieldFromList(
         dns_client.resourceRecordSets,
         dns_messages.DnsResourceRecordSetsListRequest(
             project=project_id,
             managedZone=args.zone,
             name=util.AppendTrailingDot(args.name),
             type=args.type),
-        limit=args.limit, field='rrsets')
-
-  @util.HandleHttpError
-  def Display(self, args, result):
-    list_printer.PrintResourceList('dns.resourceRecordSets', result)
+        limit=args.limit, field='rrsets'):
+      yield resource

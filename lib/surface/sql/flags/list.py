@@ -16,11 +16,13 @@
 
 from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 
 
 class _BaseList(object):
   """Lists customizable MySQL flags for Google Cloud SQL instances."""
+
+  def Collection(self):
+    return 'sql.flags'
 
   @errors.ReraiseHttpException
   def Run(self, unused_args):
@@ -45,17 +47,14 @@ class _BaseList(object):
     result = sql_client.flags.List(sql_messages.SqlFlagsListRequest())
     return iter(result.items)
 
-  def Display(self, unused_args, result):
-    list_printer.PrintResourceList('sql.flags', result)
-
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class List(_BaseList, base.Command):
+class List(_BaseList, base.ListCommand):
   """Lists customizable MySQL flags for Google Cloud SQL instances."""
   pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(_BaseList, base.Command):
+class ListBeta(_BaseList, base.ListCommand):
   """Lists customizable MySQL flags for Google Cloud SQL instances."""
   pass

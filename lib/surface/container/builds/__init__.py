@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The command group for cloud container clusters."""
+"""The command group for cloud container builds."""
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import apis as core_apis
@@ -38,13 +38,15 @@ class Builds(base.Group):
       The refined command context.
     """
 
-    client = core_apis.GetClientInstance('cloudbuild', 'v1')
-    registry = resources.REGISTRY.CloneAndSwitchAPIs(client)
+    # client = core_apis.GetClientInstance('cloudbuild', 'v1')
+    # registry = resources.REGISTRY.CloneAndSwitchAPIs(client)
+    # registry = registry.CloneAndSwitchAPIs(
+    #     core_apis.GetClientInstance('storage', 'v1'))
 
-    registry.SetParamDefault(
+    resources.REGISTRY.SetParamDefault(
         api='cloudbuild', collection=None, param='projectId',
         resolver=resolvers.FromProperty(properties.VALUES.core.project))
 
-    context['registry'] = registry
+    context['registry'] = resources.REGISTRY
 
     return context

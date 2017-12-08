@@ -16,11 +16,12 @@
 
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
+from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """List Genomics variant sets in a dataset.
 
   Prints a table with summary information on variant sets in the dataset.
@@ -38,9 +39,9 @@ class List(base.Command):
     parser.add_argument(
         'dataset_id',
         help="""Restrict the query to variant sets within the given dataset.""")
-    parser.add_argument('--limit',
-                        type=int,
-                        help='The maximum number of results to list.')
+
+  def Collection(self):
+    return 'genomics.variantsets'
 
   @genomics_util.ReraiseHttpException
   def Run(self, args):
@@ -50,39 +51,25 @@ class List(base.Command):
       args: argparse.Namespace, The arguments that this command was invoked
           with.
 
-    Returns:
+    Yields:
       The list of variant sets for this dataset.
 
     Raises:
       HttpException: An http error response was received while executing api
           request.
     """
-    genomics_util.ValidateLimitFlag(args.limit)
-
     apitools_client = genomics_util.GetGenomicsClient()
-    req_class = (genomics_util.GetGenomicsMessages()
-                 .SearchVariantSetsRequest)
-    request = req_class(
-        datasetIds=[args.dataset_id])
-    return list_pager.YieldFromList(
-        apitools_client.variantsets,
-        request,
-        method='Search',
-        limit=args.limit,
-        batch_size_attribute='pageSize',
-        batch_size=args.limit,  # Use limit if any, else server default.
-        field='variantSets')
-
-  @genomics_util.ReraiseHttpException
-  def Display(self, args, result):
-    """Display prints information about what just happened to stdout.
-
-    Args:
-      args: The same as the args in Run.
-
-      result: a list of Variantset objects.
-
-    Raises:
-      ValueError: if result is None or not a list
-    """
-    list_printer.PrintResourceList('genomics.variantsets', result)
+    req_class = genomics_util.GetGenomicsMessages().SearchVariantSetsRequest
+    request = req_class(datasetIds=[args.dataset_id])
+    try:
+      for resource in list_pager.YieldFromList(
+          apitools_client.variantsets,
+          request,
+          method='Search',
+          limit=args.limit,
+          batch_size_attribute='pageSize',
+          batch_size=args.limit,  # Use limit if any, else server default.
+          field='variantSets'):
+        yield resource
+    except apitools_exceptions.HttpError as error:
+      raise exceptions.HttpException(genomics_util.GetErrorMessage(error))

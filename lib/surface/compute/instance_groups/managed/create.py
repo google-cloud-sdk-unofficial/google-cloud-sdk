@@ -227,7 +227,7 @@ DETAILED_HELP = {
 
 For example, running:
 
-        $ {command} example-managed-instance-group --zone us-central1-a
+        $ {command} example-managed-instance-group --zone us-central1-a --template example-instance-template --size 1
 
 will create one managed instance group called 'example-managed-instance-group'
 in the ``us-central1-a'' zone.

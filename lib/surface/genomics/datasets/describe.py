@@ -44,12 +44,3 @@ class Describe(base.Command):
     apitools_client = genomics_util.GetGenomicsClient()
     dataset_resource = resources.Parse(args.id, collection='genomics.datasets')
     return apitools_client.datasets.Get(dataset_resource.Request())
-
-  def Display(self, args_unused, dataset):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args_unused: The arguments that command was run with.
-      dataset: The Dataset message returned from the Run() method.
-    """
-    self.format(dataset)

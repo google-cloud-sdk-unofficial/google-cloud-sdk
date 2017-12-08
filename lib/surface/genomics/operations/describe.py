@@ -52,12 +52,3 @@ class Describe(base.Command):
       name = _OPERATIONS_PREFIX + name
     return apitools_client.operations.Get(
         genomics_messages.GenomicsOperationsGetRequest(name=name))
-
-  def Display(self, args_unused, operation):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args_unused: The arguments that command was run with.
-      operation: The Operation message returned from the Run() method.
-    """
-    self.format(operation)

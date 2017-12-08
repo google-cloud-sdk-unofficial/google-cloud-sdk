@@ -1,4 +1,4 @@
-# Copyright 2014 Google Inc. All Rights Reserved.
+# Copyright 2016 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -40,10 +40,13 @@ class List(base.ListCommand):
         help='Only list builds that are currently QUEUED or WORKING, and were '
              'created less than %d seconds ago.' % _ONGOING_THRESHOLD_SECONDS,
         action='store_true')
+    base.LIMIT_FLAG.SetDefault(parser, 50)
 
   def Collection(self):
     return 'cloudbuild.projects.builds'
 
+  # TODO(user,b/29048700): Until resolution of this bug, the error message
+  # printed by gcloud (for 404s, eg) will be really terrible.
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -57,9 +60,6 @@ class List(base.ListCommand):
 
     client = core_apis.GetClientInstance('cloudbuild', 'v1')
     messages = core_apis.GetMessagesModule('cloudbuild', 'v1')
-
-    if args.limit is None:
-      args.limit = 50  # TODO(user): a property for this default limit?
 
     if args.ongoing:
       tz = times.GetTimeZone('UTC')
@@ -96,8 +96,7 @@ class List(base.ListCommand):
         batch_size_attribute='pageSize'):
       if args.ongoing:
         tz_create_time = build.createTime
-        create_time = times.ParseDateTime(
-            tz_create_time, tz)
+        create_time = times.ParseDateTime(tz_create_time, tz)
         create_seconds = times.GetTimeStampFromDateTime(create_time)
         delta_seconds = now_seconds - create_seconds
         if delta_seconds > _ONGOING_THRESHOLD_SECONDS:

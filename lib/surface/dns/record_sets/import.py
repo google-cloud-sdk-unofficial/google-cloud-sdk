@@ -18,7 +18,6 @@ from googlecloudsdk.api_lib.dns import import_util
 from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
@@ -79,6 +78,12 @@ class Import(base.Command):
         action='store_true',
         help='Indicates that NS records for the origin of a zone should be'
         ' imported if defined')
+
+  def Collection(self):
+    return 'dns.changes'
+
+  def Format(self, args):
+    return self.ListFormat(args)
 
   @util.HandleHttpError
   def Run(self, args):
@@ -148,7 +153,3 @@ class Import(base.Command):
     log.status.Print(msg)
     log.CreatedResource(change_ref)
     return result
-
-  def Display(self, args, result):
-    if result:
-      list_printer.PrintResourceList('dns.changes', [result])

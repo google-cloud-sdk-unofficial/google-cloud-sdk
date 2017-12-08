@@ -15,6 +15,8 @@
 """Implementation of gcloud genomics variants list.
 """
 
+import sys
+
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -29,7 +31,8 @@ class List(base.ListCommand):
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument('--limit-calls',
-                        type=int,
+                        type=arg_parsers.BoundedInt(
+                            1, sys.maxint, unlimited=True),
                         help=('The maximum number of calls to return.'
                               'At least one variant will be returned even '
                               'if it exceeds this limit.'))
@@ -83,8 +86,6 @@ class List(base.ListCommand):
     Returns:
       A list of variants that meet the search criteria.
     """
-    genomics_util.ValidateLimitFlag(args.limit_calls, 'limit-calls')
-
     apitools_client = genomics_util.GetGenomicsClient()
     genomics_messages = genomics_util.GetGenomicsMessages()
 

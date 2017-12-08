@@ -1,0 +1,102 @@
+
+.TH "GCLOUD_APP" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud app \- manage your App Engine app
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud app\fR \fIGROUP\fR | \fICOMMAND\fR [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+This set of commands allows you to deploy your app, manage your existing
+deployments, and also run your app locally. These commands replace their
+equivalents in the appcfg tool.
+
+
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "GROUPS"
+
+\f5\fIGROUP\fR\fR is one of the following:
+
+\fBinstances\fR
+.RS 2m
+View and manage your App Engine instances.
+
+.RE
+\fBlogs\fR
+.RS 2m
+Manage your App Engine logs.
+
+.RE
+\fBservices\fR
+.RS 2m
+View and manage your App Engine services.
+
+.RE
+\fBversions\fR
+.RS 2m
+View and manage your App Engine versions.
+
+
+.RE
+
+.SH "COMMANDS"
+
+\f5\fICOMMAND\fR\fR is one of the following:
+
+\fBbrowse\fR
+.RS 2m
+Open the current app in a web browser.
+
+.RE
+\fBdeploy\fR
+.RS 2m
+Deploy the local code and/or configuration of your app to App Engine.
+
+.RE
+\fBopen\-console\fR
+.RS 2m
+Open the App Engine dashboard, or log viewer, in a web browser.
+
+
+.RE
+
+.SH "EXAMPLES"
+
+To run your app locally in the development application server, run:
+
+.RS 2m
+$ dev_appserver.py DEPLOYABLES
+.RE
+
+To create a new deployment of one or more services, run:
+
+.RS 2m
+$ gcloud app deploy DEPLOYABLES
+.RE
+
+To list your existing deployments, run:
+
+.RS 2m
+$ gcloud app versions list
+.RE
+
+To generate config files for your source directory:
+
+.RS 2m
+$ gcloud app gen\-config
+.RE

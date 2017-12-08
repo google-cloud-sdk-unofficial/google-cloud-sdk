@@ -19,12 +19,13 @@ from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
-from googlecloudsdk.core import list_printer
 
 
 class _BaseWait(object):
   """Base class for sql wait operations."""
-  pass
+
+  def Format(self, args):
+    return self.ListFormat(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -45,6 +46,9 @@ class Wait(_BaseWait, base.Command):
         nargs='+',
         help='An identifier that uniquely identifies the operation.')
     flags.INSTANCE_FLAG.AddToParser(parser)
+
+  def Collection(self):
+    return 'sql.operations'
 
   @errors.ReraiseHttpException
   def Run(self, args):
@@ -79,9 +83,6 @@ class Wait(_BaseWait, base.Command):
           'Waiting for [{operation}]'.format(operation=operation_ref))
       yield sql_client.operations.Get(operation_ref.Request())
 
-  def Display(self, unused_args, result):
-    list_printer.PrintResourceList('sql.operations', result)
-
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class WaitBeta(_BaseWait, base.Command):
@@ -100,6 +101,9 @@ class WaitBeta(_BaseWait, base.Command):
         'operation',
         nargs='+',
         help='An identifier that uniquely identifies the operation.')
+
+  def Collection(self):
+    return 'sql.operations.v1beta4'
 
   @errors.ReraiseHttpException
   def Run(self, args):
@@ -129,6 +133,3 @@ class WaitBeta(_BaseWait, base.Command):
           sql_client, operation_ref,
           'Waiting for [{operation}]'.format(operation=operation_ref))
       yield sql_client.operations.Get(operation_ref.Request())
-
-  def Display(self, unused_args, result):
-    list_printer.PrintResourceList('sql.operations.v1beta4', result)

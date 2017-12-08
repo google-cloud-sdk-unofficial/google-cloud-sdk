@@ -1,4 +1,4 @@
-# Copyright 2015 Google Inc. All Rights Reserved.
+# Copyright 2016 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DeleteCluster(base.Command):
   """Delete a Bigtable cluster (along with all its data)."""
 
@@ -56,4 +57,3 @@ class DeleteCluster(base.Command):
     writer = log.out
     writer.Print('Cluster [{0}] in zone [{1}] marked for deletion.'.format(
         args.cluster, args.zone))
-

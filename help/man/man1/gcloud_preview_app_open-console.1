@@ -1,0 +1,81 @@
+
+.TH "GCLOUD_PREVIEW_APP_OPEN\-CONSOLE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud preview app open\-console \- open the App Engine dashboard, or log viewer, in a web browser
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud preview app open\-console\fR [\fB\-\-logs\fR,\ \fB\-l\fR] [\fB\-\-service\fR\ \fISERVICE\fR,\ \fB\-s\fR\ \fISERVICE\fR] [\fB\-\-version\fR\ \fIVERSION\fR,\ \fB\-v\fR\ \fIVERSION\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+\fB(PREVIEW)\fR Open the App Engine dashboard, or log viewer, in a web browser.
+
+
+
+.SH "FLAGS"
+
+\fB\-\-logs\fR, \fB\-l\fR
+.RS 2m
+Open the log viewer instead of the App Engine dashboard.
+
+.RE
+\fB\-\-service\fR \fISERVICE\fR, \fB\-s\fR \fISERVICE\fR
+.RS 2m
+The service to consider. If not specified, use the default service.
+
+.RE
+\fB\-\-version\fR \fIVERSION\fR, \fB\-v\fR \fIVERSION\fR
+.RS 2m
+The version to consider. If not specified, all versions for the given service
+are considered.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+Open the App Engine dashboard for the default service:
+
+.RS 2m
+$ gcloud preview app open\-console
+.RE
+
+Open the service specific dashboard view:
+
+.RS 2m
+$ gcloud preview app open\-console \-\-service="myService"
+.RE
+
+Open the version specific dashboard view:
+
+.RS 2m
+$ gcloud preview app open\-console \-\-service="myService" \e
+  \-\-version="v1"
+.RE
+
+Open the log viewer for the default service:
+
+.RS 2m
+$ gcloud preview app open\-console \-\-logs
+.RE
+
+
+
+.SH "NOTES"
+
+This command is currently in DEVELOPER PREVIEW and may change without notice.
+

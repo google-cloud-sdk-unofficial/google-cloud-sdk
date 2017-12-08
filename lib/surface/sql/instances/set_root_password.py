@@ -34,6 +34,7 @@ class SetRootPassword(base.Command):
           on the command line after this command. Positional arguments are
           allowed.
     """
+    base.ASYNC_FLAG.AddToParser(parser)
     parser.add_argument(
         'instance',
         completion_resource='sql.instances',
@@ -50,10 +51,6 @@ class SetRootPassword(base.Command):
         '--password-file',
         help='The path to the filename which has the password to be set. The '
         'first line of the file will be interpreted as the password to be set.')
-    parser.add_argument(
-        '--async',
-        action='store_true',
-        help='Do not wait for the operation to complete.')
 
   @errors.ReraiseHttpException
   def Run(self, args):
@@ -112,14 +109,3 @@ class SetRootPassword(base.Command):
         instance=instance_ref))
 
     return None
-
-  # pylint: disable=unused-argument
-  def Display(self, args, result):
-    """Display prints information about what just happened to stdout.
-
-    Args:
-      args: The same as the args in Run.
-      result: A dict object representing the operations resource describing the
-          set-root-password operation if the set-root-password was successful.
-    """
-    self.format(result)

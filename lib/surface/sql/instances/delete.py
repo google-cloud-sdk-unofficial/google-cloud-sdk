@@ -23,22 +23,8 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.third_party.apitools.base.py import exceptions
 
 
-class _BaseDelete(object):
-  """Deletes a Cloud SQL instance."""
-
-  def Display(self, unused_args, result):
-    """Display prints information about what just happened to stdout.
-
-    Args:
-      unused_args: The same as the args in Run.
-      result: A dict object representing the operations resource describing the
-          delete operation if the delete was successful.
-    """
-    self.format(result)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Delete(_BaseDelete, base.Command):
+class Delete(base.Command):
   """Deletes a Cloud SQL instance."""
 
   @classmethod
@@ -106,7 +92,7 @@ class Delete(_BaseDelete, base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DeleteBeta(_BaseDelete, base.Command):
+class DeleteBeta(base.Command):
   """Deletes a Cloud SQL instance."""
 
   @classmethod
@@ -118,14 +104,11 @@ class DeleteBeta(_BaseDelete, base.Command):
           on the command line after this command. Positional arguments are
           allowed.
     """
+    base.ASYNC_FLAG.AddToParser(parser)
     parser.add_argument(
         'instance',
         completion_resource='sql.instances',
         help='Cloud SQL instance ID.')
-    parser.add_argument(
-        '--async',
-        action='store_true',
-        help='Do not wait for the operation to complete.')
 
   @errors.ReraiseHttpException
   def Run(self, args):

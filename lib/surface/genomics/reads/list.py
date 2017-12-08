@@ -69,8 +69,6 @@ class List(base.ListCommand):
     Returns:
       A list of reads that meet the search criteria.
     """
-    genomics_util.ValidateLimitFlag(args.limit)
-
     apitools_client = genomics_util.GetGenomicsClient()
     messages = genomics_util.GetGenomicsMessages()
     fields = genomics_util.GetQueryFields(self.GetReferencedKeyNames(args),

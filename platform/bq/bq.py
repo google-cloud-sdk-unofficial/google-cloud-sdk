@@ -152,15 +152,31 @@ def _GetBigqueryRcFilename():
 
 def _ProcessBigqueryrc():
   """Updates FLAGS with values found in the bigqueryrc file."""
+  _ProcessBigqueryrcSection(None, FLAGS)
+
+
+def _ProcessBigqueryrcSection(section_name, flag_values):
+  """Read the bigqueryrc file into flag_values for section section_name.
+
+  If section_name evaluates as False, read the global flag settings.
+
+  Raises:
+    UsageError: Unknown flag found.
+  """
+
   bigqueryrc = _GetBigqueryRcFilename()
   if not os.path.exists(bigqueryrc):
     return
   with open(bigqueryrc) as rcfile:
+    in_section = not section_name
     for line in rcfile:
-      if line.lstrip().startswith('#') or not line.strip():
+      if line.lstrip().startswith('[') and line.rstrip().endswith(']'):
+        next_section = line.strip()[1:-1]
+        in_section = section_name == next_section
         continue
-      elif line.lstrip().startswith('['):
-        # TODO(craigcitro): Support command-specific flag sections.
+      elif not in_section:
+        continue
+      elif line.lstrip().startswith('#') or not line.strip():
         continue
       flag, equalsign, value = line.partition('=')
       # if no value given, assume stringified boolean true
@@ -172,15 +188,16 @@ def _ProcessBigqueryrc():
         flag = flag[1:]
       # We want flags specified at the command line to override
       # those in the flagfile.
-      if flag not in FLAGS:
+      if flag not in flag_values:
         raise app.UsageError(
-            'Unknown flag %s found in bigqueryrc file' % (flag,))
-      if not FLAGS[flag].present:
-        FLAGS[flag].Parse(value)
-      elif FLAGS[flag].Type().startswith('multi'):
-        old_value = getattr(FLAGS, flag)
-        FLAGS[flag].Parse(value)
-        setattr(FLAGS, flag, old_value + getattr(FLAGS, flag))
+            'Unknown flag %s found in bigqueryrc file in section %s'
+            % (flag, section_name if section_name else 'global'))
+      if not flag_values[flag].present:
+        flag_values[flag].Parse(value)
+      elif flag_values[flag].Type().startswith('multi'):
+        old_value = getattr(flag_values, flag)
+        flag_values[flag].Parse(value)
+        setattr(flag_values, flag, old_value + getattr(flag_values, flag))
 
 
 
@@ -904,6 +921,9 @@ class BigqueryCmd(NewCmd):
     reference = BigqueryClient.ConstructObjectReference(job)
     print 'Successfully started %s %s' % (self._command_name, reference)
 
+  def _ProcessCommandRc(self, fv):
+    _ProcessBigqueryrcSection(self._command_name, fv)
+
 
 class _Load(BigqueryCmd):
   usage = """load <destination_table> <source> <schema>"""
@@ -982,6 +1002,7 @@ class _Load(BigqueryCmd):
         'Enable auto detection of schema and options for formats that are not '
         'self describing like CSV and JSON.',
         flag_values=fv)
+    self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, destination_table, source, schema=None):
     """Perform a load operation of source into destination_table.
@@ -1153,6 +1174,7 @@ class _MakeExternalTableDefinition(BigqueryCmd):
         '\n DATASTORE_BACKUP'
         '\n AVRO',
         flag_values=fv)
+    self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, source_uris, schema=None):
     """Emits a definition in JSON for a GCS backed table.
@@ -1275,11 +1297,16 @@ class _Query(BigqueryCmd):
         'maximum_billing_tier', None,
         'The upper limit of billing tier for the query.',
         flag_values=fv)
+    flags.DEFINE_integer(
+        'maximum_bytes_billed', None,
+        'The upper limit of bytes billed for the query.',
+        flag_values=fv)
     flags.DEFINE_boolean(
         'use_legacy_sql', None,
         ('Whether to use Legacy SQL for the query. If not set, the default '
          'value is true.'),
         flag_values=fv)
+    self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, *args):
     # pylint: disable=g-doc-exception
@@ -1312,6 +1339,8 @@ class _Query(BigqueryCmd):
       kwds['udf_resources'] = _ParseUdfResources(self.udf_resource)
     if self.maximum_billing_tier:
       kwds['maximum_billing_tier'] = self.maximum_billing_tier
+    if self.maximum_bytes_billed:
+      kwds['maximum_bytes_billed'] = self.maximum_bytes_billed
     query = ' '.join(args)
     if not query:
       query = sys.stdin.read()
@@ -1450,6 +1479,7 @@ class _Extract(BigqueryCmd):
         'print_header', None, 'Whether to print header rows for formats that '
         'have headers. Prints headers by default.',
         flag_values=fv)
+    self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, source_table, destination_uris):
     """Perform an extract operation of source_table into destination_uris.
@@ -1505,6 +1535,7 @@ class _Partition(BigqueryCmd):  # pylint: disable=missing-docstring
         'will have an expiration time of its creation time plus this value. '
         'A negative number means no expiration.',
         flag_values=fv)
+    self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, source_prefix, destination_table):
     """Copies source tables into partitioned tables.
@@ -1651,6 +1682,7 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         'datasets', False,
         'Show datasets described by this identifier.',
         short_name='d', flag_values=fv)
+    self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier=''):
     """List the objects contained in the named collection.
@@ -1765,6 +1797,7 @@ class _Delete(BigqueryCmd):
         'recursive', False,
         'Remove dataset and any tables it may contain.',
         short_name='r', flag_values=fv)
+    self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier):
     """Delete the dataset or table described by identifier.
@@ -1837,6 +1870,7 @@ class _Copy(BigqueryCmd):
         'append_table', False,
         'Append to an existing table.',
         short_name='a', flag_values=fv)
+    self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, source_tables, dest_table):
     """Copies one table to another.
@@ -1995,6 +2029,7 @@ class _Make(BigqueryCmd):
         'will have an expiration time of its creation time plus this value. '
         'A negative number means no expiration.',
         flag_values=fv)
+    self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier='', schema=''):
     # pylint: disable=g-doc-exception
@@ -2176,6 +2211,7 @@ class _Update(BigqueryCmd):
         'will have an expiration time of its creation time plus this value. '
         'A negative number means no expiration.',
         flag_values=fv)
+    self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier='', schema=''):
     # pylint: disable=g-doc-exception
@@ -2330,6 +2366,7 @@ class _Show(BigqueryCmd):
         'view', False,
         'Show view specific details instead of general table details.',
         flag_values=fv)
+    self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier=''):
     """Show all information about an object.
@@ -2431,6 +2468,7 @@ class _Cancel(BigqueryCmd):
 
   def __init__(self, name, fv):
     super(_Cancel, self).__init__(name, fv)
+    self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, job_id=''):
     # pylint: disable=g-doc-exception
@@ -2489,6 +2527,7 @@ class _Head(BigqueryCmd):
         'max_rows', 100,
         'The number of rows to print when showing table data.',
         short_name='n', flag_values=fv)
+    self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier=''):
     # pylint: disable=g-doc-exception
@@ -2543,6 +2582,7 @@ class _Insert(BigqueryCmd):
         '"{destination}{templateSuffix}". BigQuery will manage creation of the '
         'instance table, using the schema of the base template table.',
         short_name='x', flag_values=fv)
+    self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier='', filename=None):
     """Inserts rows in a table.
@@ -2628,6 +2668,7 @@ class _Wait(BigqueryCmd):  # pylint: disable=missing-docstring
         'When done waiting for the job, exit the process with an error '
         'if the job is still running, or ended with a failure.',
         flag_values=fv)
+    self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, job_id='', secs=sys.maxint):
     # pylint: disable=g-doc-exception
@@ -2873,6 +2914,7 @@ class _Repl(BigqueryCmd):
         'prompt', '',
         'Prompt to use for BigQuery shell.',
         flag_values=fv)
+    self._ProcessCommandRc(fv)
 
   def RunWithArgs(self):
     """Start an interactive bq session."""

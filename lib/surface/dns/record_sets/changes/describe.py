@@ -51,6 +51,3 @@ class Describe(base.Command):
         collection='dns.changes')
 
     return dns.changes.Get(change_ref.Request())
-
-  def Display(self, args, result):
-    self.format(result)

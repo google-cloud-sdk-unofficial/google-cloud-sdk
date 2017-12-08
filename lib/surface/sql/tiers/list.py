@@ -17,12 +17,17 @@
 
 from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import properties
 
 
 class _BaseList(object):
   """Lists all available service tiers for Google Cloud SQL."""
+
+  def Collection(self):
+    return 'sql.tiers'
+
+  def Format(self, args):
+    return self.ListFormat(args)
 
   @errors.ReraiseHttpException
   def Run(self, unused_args):
@@ -47,9 +52,6 @@ class _BaseList(object):
     result = sql_client.tiers.List(sql_messages.SqlTiersListRequest(
         project=properties.VALUES.core.project.Get(required=True)))
     return iter(result.items)
-
-  def Display(self, unused_args, result):
-    list_printer.PrintResourceList('sql.tiers', result)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

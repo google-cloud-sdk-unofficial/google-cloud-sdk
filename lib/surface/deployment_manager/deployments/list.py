@@ -16,13 +16,11 @@
 
 from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
-from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """List deployments in a project.
 
   Prints a table with summary information on all deployments in the project.
@@ -50,15 +48,10 @@ class List(base.Command):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    parser.add_argument('--limit',
-                        type=int,
-                        help='The maximum number of results to list.')
-    parser.add_argument(
-        '--simple-list',
-        action='store_true',
-        default=False,
-        help='If true, only the list of resource IDs is printed. If false, '
-        'prints a human-readable table of resource information.')
+    dm_v2_util.SIMPLE_LIST_FLAG.AddToParser(parser)
+
+  def Collection(self):
+    return 'deploymentmanager.deployments'
 
   def Run(self, args):
     """Run 'deployments list'.
@@ -84,24 +77,3 @@ class List(base.Command):
     return dm_v2_util.YieldWithHttpExceptions(list_pager.YieldFromList(
         client.deployments, request, field='deployments', limit=args.limit,
         batch_size=500))
-
-  def Display(self, args, result):
-    """Display prints information about what just happened to stdout.
-
-    Args:
-      args: The same as the args in Run.
-
-      result: a generator of Deployment objects.
-
-    Raises:
-      ValueError: if result is None or not a generator
-    """
-    if args.simple_list:
-      empty_generator = True
-      for deployment in result:
-        empty_generator = False
-        log.Print(deployment.name)
-      if empty_generator:
-        log.Print('No Deployments were found in your project!')
-    else:
-      list_printer.PrintResourceList('deploymentmanagerv2.deployments', result)

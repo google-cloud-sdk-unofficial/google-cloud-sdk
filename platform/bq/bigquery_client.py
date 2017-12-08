@@ -2287,6 +2287,7 @@ class BigqueryClient(object):
             external_table_definitions_json=None,
             udf_resources=None,
             maximum_billing_tier=None,
+            maximum_bytes_billed=None,
             use_legacy_sql=None,
             **kwds):
     # pylint: disable=g-doc-args
@@ -2323,6 +2324,7 @@ class BigqueryClient(object):
         definitions.
       udf_resources: Array of inline and remote UDF resources.
       maximum_billing_tier: Upper limit for billing tier.
+      maximum_bytes_billed: Upper limit for bytes billed.
       use_legacy_sql: Whether to use Legacy SQL. If not set, the default value
           is true.
       **kwds: Passed on to self.ExecuteJob.
@@ -2359,6 +2361,7 @@ class BigqueryClient(object):
         use_query_cache=use_cache,
         flatten_results=flatten_results,
         maximum_billing_tier=maximum_billing_tier,
+        maximum_bytes_billed=maximum_bytes_billed,
         use_legacy_sql=use_legacy_sql,
         min_completion_ratio=min_completion_ratio)
     request = {'query': query_config}

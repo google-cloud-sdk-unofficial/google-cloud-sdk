@@ -14,11 +14,15 @@
 """Implementation of gcloud genomics operations cancel.
 """
 
+from StringIO import StringIO
+
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.api_lib.genomics.exceptions import GenomicsError
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import display
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.resource import resource_printer
 
 _OPERATIONS_PREFIX = 'operations/'
 
@@ -57,12 +61,15 @@ class Cancel(base.Command):
     if not name.startswith(_OPERATIONS_PREFIX):
       name = _OPERATIONS_PREFIX + name
 
-    # Look it up first so that we can display it
+    # Look up the operation so we can display it in the confirmation prompt
     op = apitools_client.operations.Get(
         genomics_messages.GenomicsOperationsGetRequest(name=name))
-    self.format(op)
+    operation_string = StringIO()
+    print_format = display.Displayer(self, args).GetFormat()
+    resource_printer.Print(op, print_format, out=operation_string)
 
-    if not console_io.PromptContinue(message='This operation will be canceled'):
+    if not console_io.PromptContinue(message='%s\n%s' % (
+        operation_string.getvalue(), 'This operation will be canceled')):
       raise GenomicsError('Cancel aborted by user.')
 
     apitools_client.operations.Cancel(

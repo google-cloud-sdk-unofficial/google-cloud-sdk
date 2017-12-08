@@ -108,7 +108,7 @@ class Login(base.Command):
 
           You can run:
 
-            $ gcloud config set account ``ACCOUNT''
+            $ gcloud config set account `ACCOUNT`
 
           to switch accounts if necessary.
 

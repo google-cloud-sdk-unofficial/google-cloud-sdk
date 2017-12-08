@@ -22,7 +22,7 @@ from surface.container.clusters.upgrade import VersionVerifier
 from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """List existing clusters for running containers."""
 
   @staticmethod
@@ -33,7 +33,11 @@ class List(base.Command):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
           to capture some information, but behaves like an ArgumentParser.
     """
-    pass
+    # --uri is inherited for all ListCommands but is not implemented here.
+    base.URI_FLAG.RemoveFromParser(parser)
+
+  def Collection(self):
+    return 'container.projects.zones.clusters'
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -88,17 +92,10 @@ class List(base.Command):
       if self._upgrade_hint:
         self._upgrade_hint += UpgradeHelpText.UPGRADE_COMMAND.format(
             name='NAME')
-      return clusters
+      return clusters.clusters
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(util.GetError(error))
 
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    self.context['api_adapter'].PrintClusters(result.clusters)
+  def Epilog(self, resources_were_displayed):
     if self._upgrade_hint:
       log.status.Print(self._upgrade_hint)

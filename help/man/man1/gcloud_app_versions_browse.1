@@ -1,0 +1,66 @@
+
+.TH "GCLOUD_APP_VERSIONS_BROWSE" 1
+
+
+
+.SH "NAME"
+.HP
+gcloud app versions browse \- open the specified versions in a browser
+
+
+
+.SH "SYNOPSIS"
+.HP
+\f5gcloud app versions browse\fR \fIVERSIONS\fR [\fIVERSIONS\fR\ ...] [\fB\-\-service\fR\ \fISERVICE\fR,\ \fB\-s\fR\ \fISERVICE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
+
+.SH "DESCRIPTION"
+
+Open the specified versions in a browser.
+
+
+
+.SH "POSITIONAL ARGUMENTS"
+
+\fIVERSIONS\fR [\fIVERSIONS\fR ...]
+.RS 2m
+The versions to open (optionally filtered by the \-\-service flag).
+
+
+.RE
+
+.SH "FLAGS"
+
+\fB\-\-service\fR \fISERVICE\fR, \fB\-s\fR \fISERVICE\fR
+.RS 2m
+If specified, only open versions from the given service. If not specified, use
+the default service.
+
+
+.RE
+
+.SH "GLOBAL FLAGS"
+
+Run \fB$ gcloud help\fR for a description of flags available to all commands.
+
+
+
+.SH "EXAMPLES"
+
+To show version \f5v1\fR for the default service in the browser, run:
+
+.RS 2m
+$ gcloud app versions browse v1
+.RE
+
+To show version \f5v1\fR of a specific service in the browser, run:
+
+.RS 2m
+$ gcloud app versions browse v1 \-\-service="myService"
+.RE
+
+To show multiple versions side\-by\-side, run:
+
+.RS 2m
+$ gcloud app versions browse v1 v2 \-\-service="myService"
+.RE

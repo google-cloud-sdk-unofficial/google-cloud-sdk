@@ -47,6 +47,3 @@ class Describe(base.Command):
     project_ref = resources.Parse(args.dns_project, collection='dns.projects')
 
     return dns.projects.Get(project_ref.Request())
-
-  def Display(self, args, result):
-    self.format(result)

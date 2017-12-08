@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for creating VM instances hosting Docker images."""
+"""Command for creating VM instances running Docker images."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import containers_utils
 from googlecloudsdk.api_lib.compute import instance_utils
@@ -24,11 +24,10 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateFromContainer(base_classes.BaseAsyncCreator,
                           zone_utils.ZoneResourceFetcher):
-  """Command for creating VM instances hosting Docker images."""
+  """Command for creating VM instances running Docker images."""
 
   @staticmethod
   def Args(parser):
@@ -177,25 +176,37 @@ class CreateFromContainer(base_classes.BaseAsyncCreator,
 
 
 CreateFromContainer.detailed_help = {
+    'brief': """\
+    Command for creating Google Compute engine virtual machine instances running Docker images.
+    """,
     'DESCRIPTION': """\
-        Run a Docker image on Google Compute Engine VM instance.
+        *{command}* facilitates the creation of Google Compute Engine virtual
+        machines that runs a Docker image. For example, running:
+
+          $ {command} instance-1 --zone us-central1-a --docker-image=gcr.io/google-containers/busybox
+
+        will create an instance called instance-1, in the us-central1-a zone,
+        running the 'busybox' image.
+
+        For more examples, refer to the *EXAMPLES* section below.
         """,
     'EXAMPLES': """\
-        To run gcr.io/google-containers/busybox on VM instance named
-        'instance-1' and expose 80 port, run:
+        To run the gcr.io/google-containers/busybox image on an instance named
+        'instance-1' that exposes port 80, run:
 
           $ {command} instance-1 --docker-image=gcr.io/google-containers/busybox --port-mappings=80:80:TCP
 
-        To run gcr.io/google-containers/busybox on VM instance named
-        'instance-1' and specify 'echo "Hello world"' as run command, run:
+        To run the gcr.io/google-containers/busybox image on an instance named
+        'instance-1' that executes 'echo "Hello world"' as a run command, run:
 
           $ {command} instance-1 --docker-image=gcr.io/google-containers/busybox --run-command='echo "Hello world"'
 
-        To run gcr.io/google-containers/busybox in privileged mode, run:
+        To run the gcr.io/google-containers/busybox image in privileged mode, run:
 
           $ {command} instance-1 --docker-image=gcr.io/google-containers/busybox --run-as-privileged
 
-        To run Docker deployment described by container manifest in containers.json file, run:
+        To run a Docker deployment described by a container manifest in a
+        containers.json file, run:
 
           $ {command} instance-1 --container-manifest=containers.json
         """

@@ -29,7 +29,8 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Compute(base.Group):
   """Read and manipulate Google Compute Engine resources."""
   detailed_help = DETAILED_HELP
@@ -37,32 +38,3 @@ class Compute(base.Group):
   @staticmethod
   def Args(parser):
     pass
-
-  def Filter(self, context, unused_args):
-    context['api_version'] = 'v1'
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ComputeBeta(base.Group):
-  """Read and manipulate Google Compute Engine resources."""
-  detailed_help = DETAILED_HELP
-
-  @staticmethod
-  def Args(parser):
-    pass
-
-  def Filter(self, context, unused_args):
-    context['api_version'] = 'beta'
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ComputeAlpha(base.Group):
-  """Read and manipulate Google Compute Engine resources."""
-  detailed_help = DETAILED_HELP
-
-  @staticmethod
-  def Args(parser):
-    pass
-
-  def Filter(self, context, unused_args):
-    context['api_version'] = 'alpha'

@@ -51,7 +51,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class AppengineGA(base.Group):
 

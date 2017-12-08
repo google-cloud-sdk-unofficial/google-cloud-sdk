@@ -59,8 +59,6 @@ class GetLogs(base.Command):
           """,
   }
 
-  SEVERITIES = ['debug', 'info', 'warning', 'error', 'critical']
-
   @staticmethod
   def Args(parser):
     """Get arguments for this command.
@@ -79,7 +77,7 @@ class GetLogs(base.Command):
         'The following flags determine which log messages are returned.')
     filters.add_argument(
         '--severity',
-        choices=GetLogs.SEVERITIES,
+        choices=flags.LOG_SEVERITIES,
         help='The severity of app level logs to get.  If not given, only '
         'request logs are returned.')
     filters.add_argument(
@@ -125,7 +123,7 @@ class GetLogs(base.Command):
 
   def Run(self, args):
     client = appengine_client.AppengineClient(args.server)
-    severity = (GetLogs.SEVERITIES.index(args.severity)
+    severity = (flags.LOG_SEVERITIES.index(args.severity)
                 if args.severity else None)
     include_vhost = args.details
     include_all = args.details

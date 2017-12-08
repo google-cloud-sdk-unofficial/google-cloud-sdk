@@ -36,7 +36,7 @@ class GetHealth(base.ListCommand):
       args.uri = False
       self.SetFormat('value(status.healthStatus[].instance)')
 
-    holder = base_classes.ComputeApiHolder(self.context['api_version'])
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self._BACKEND_SERVICE_ARG.ResolveAsResource(
         args, holder.resources,
         default_scope=compute_flags.ScopeEnum.GLOBAL)

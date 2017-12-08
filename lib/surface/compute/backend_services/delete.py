@@ -36,7 +36,7 @@ class Delete(base.Command):
     cls._BACKEND_SERVICE_ARG.AddArgument(parser)
 
   def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.context['api_version'])
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     refs = self._BACKEND_SERVICE_ARG.ResolveAsResource(
         args, holder.resources,
         default_scope=compute_flags.ScopeEnum.GLOBAL)

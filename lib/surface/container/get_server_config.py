@@ -42,12 +42,3 @@ class GetServerConfig(base.Command):
 
     log.status.Print('Fetching server config for {zone}'.format(zone=zone))
     return adapter.GetServerConfig(project_id, zone)
-
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    self.format(result)

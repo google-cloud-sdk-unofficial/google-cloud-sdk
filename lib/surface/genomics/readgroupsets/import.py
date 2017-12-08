@@ -117,13 +117,3 @@ class Import(base.Command):
              .replace('referenceSetId', '--reference-set-id'))
       unused_type, unused_value, traceback = sys.exc_info()
       raise exceptions.HttpException, msg, traceback
-
-  def Display(self, args_unused, read_group_set):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args_unused: The arguments that command was run with.
-      read_group_set: The read group set message returned from the Run() method.
-    """
-
-    self.format(read_group_set)

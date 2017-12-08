@@ -67,16 +67,6 @@ class _BaseGet(object):
     return cert.GetCertFromName(sql_client, sql_messages,
                                 instance_ref, args.common_name)
 
-  def Display(self, unused_args, result):
-    """Display prints information about what just happened to stdout.
-
-    Args:
-      unused_args: The same as the args in Run.
-      result: A dict object representing the sslCert resource if the api
-      request was successful.
-    """
-    self.format(result)
-
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Get(_BaseGet, base.Command):

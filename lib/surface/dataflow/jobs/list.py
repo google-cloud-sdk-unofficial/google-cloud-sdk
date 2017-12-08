@@ -21,12 +21,11 @@ from googlecloudsdk.api_lib.dataflow import list_pager
 from googlecloudsdk.api_lib.dataflow import time_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import properties
 from surface import dataflow as commands
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """Lists all jobs in a particular project.
 
   By default, jobs in the current project are listed; this can be overridden
@@ -53,6 +52,9 @@ class List(base.Command):
     parser.add_argument(
         '--created-before', type=time_util.ParseTimeArg,
         help='Filter the jobs to those created before the given time')
+
+  def Collection(self):
+    return 'dataflow.jobs'
 
   def Run(self, args):
     """Runs the command.
@@ -81,15 +83,6 @@ class List(base.Command):
 
     dataflow_messages = self.context[commands.DATAFLOW_MESSAGES_MODULE_KEY]
     return [job_display.DisplayInfo(job, dataflow_messages) for job in jobs]
-
-  def Display(self, args, jobs):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: all the arguments that were provided to this command invocation.
-      jobs: The iterator over Job messages returned from the Run() method.
-    """
-    list_printer.PrintResourceList('dataflow.jobs', jobs)
 
   def _JobSummariesForProject(self, project_id, filter_predicate):
     """Get the list of job summaries that match the predicate.

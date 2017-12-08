@@ -19,7 +19,6 @@ from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import flags
 from googlecloudsdk.command_lib.projects import util as command_lib_util
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 
 
@@ -67,6 +66,9 @@ class Move(base.Command):
         required=True,
         help='ID of the organization to move the project into.')
 
+  def Format(self, args):
+    return self.ListFormat(args)
+
   # HandleKnownHttpErrors needs to be the first one to handle errors.
   # It needs to be placed after http_error_handler.HandleHttpErrors.
   @http_error_handler.HandleHttpErrors
@@ -76,13 +78,3 @@ class Move(base.Command):
     result = projects_api.Update(project_ref, organization=args.organization)
     log.UpdatedResource(project_ref)
     return result
-
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    list_printer.PrintResourceList(command_lib_util.PROJECTS_COLLECTION,
-                                   [result])

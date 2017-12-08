@@ -25,23 +25,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
-class _BaseImport(object):
-  """Imports data into a Cloud SQL instance from Google Cloud Storage."""
-
-  def Display(self, unused_args, result):
-    """Display prints information about what just happened to stdout.
-
-    Args:
-      unused_args: The same as the args in Run.
-      result: A dict object representing the operations resource describing the
-      import operation if the import was successful.
-    """
-    if result:
-      self.format(result)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Import(_BaseImport, base.Command):
+class Import(base.Command):
   """Imports data into a Cloud SQL instance from Google Cloud Storage."""
 
   @staticmethod
@@ -53,6 +38,7 @@ class Import(_BaseImport, base.Command):
           on the command line after this command. Positional arguments are
           allowed.
     """
+    base.ASYNC_FLAG.AddToParser(parser)
     parser.add_argument(
         'instance',
         completion_resource='sql.instances',
@@ -71,10 +57,6 @@ class Import(_BaseImport, base.Command):
         help='The database (for example, guestbook) to which the import is'
         ' made. If not set, it is assumed that the database is specified in'
         ' the file to be imported.')
-    parser.add_argument(
-        '--async',
-        action='store_true',
-        help='Do not wait for the operation to complete.')
 
   @errors.ReraiseHttpException
   def Run(self, args):
@@ -133,7 +115,7 @@ class Import(_BaseImport, base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ImportBeta(_BaseImport, base.Command):
+class ImportBeta(base.Command):
   """Imports data into a Cloud SQL instance from Google Cloud Storage."""
 
   @staticmethod

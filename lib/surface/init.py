@@ -411,9 +411,6 @@ https://console.developers.google.com/apis page.
     log.status.Print(
         '* Run `gcloud topic -h` to learn about advanced features of the SDK '
         'like arg files and output formatting')
-    log.status.Print(
-        '* Clone your Google Source Repository to a local directory by running '
-        'the command `gcloud source repos clone default /local/path`')
 
   def _CreateConfiguration(self):
     configuration_name = console_io.PromptResponse(

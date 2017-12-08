@@ -1,4 +1,4 @@
-# Copyright 2015 Google Inc. All Rights Reserved.
+# Copyright 2016 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import apis
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resolvers
+from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -34,3 +36,16 @@ class Bigtable(base.Group):
     """
     context['clusteradmin'] = apis.GetClientInstance('bigtable', 'v1')
     context['clusteradmin-msgs'] = apis.GetMessagesModule('bigtable', 'v1')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BigtableV2(base.Group):
+  """Manage your Cloud Bigtable storage."""
+
+  def Filter(self, context, args):
+    project = properties.VALUES.core.project
+    resolver = resolvers.FromProperty(project)
+    resources.SetParamDefault('bigtableadmin',
+                              collection=None,
+                              param='projectsId',
+                              resolver=resolver)

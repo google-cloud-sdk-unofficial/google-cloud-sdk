@@ -37,7 +37,7 @@ from googlecloudsdk.core.util import text as text_util
 
 STACKOVERFLOW_URL = 'http://stackoverflow.com/questions/tagged/gcloud'
 GROUPS_PAGE_URL = ('https://groups.google.com/forum/?fromgroups#!forum/'
-                   'google-cloud-sdk')
+                   'google-cloud-dev')
 
 
 FEEDBACK_MESSAGE = """\
@@ -49,7 +49,7 @@ If you have a question, post it on Stack Overflow using the "gcloud" tag at
 
 For general feedback, use our groups page
 [{1}],
-send a mail to [google-cloud-sdk@googlegroups.com] or visit the [#gcloud] IRC
+send a mail to [google-cloud-dev@googlegroups.com] or visit the [#gcloud] IRC
 channel on freenode.
 """.format(STACKOVERFLOW_URL, GROUPS_PAGE_URL)
 
@@ -79,7 +79,7 @@ def _PrintQuiet(info_str, log_data):
 
       For general feedback, use our groups page
       [{1}],
-      send a mail to [google-cloud-sdk@googlegroups.com], or visit the [#gcloud]
+      send a mail to [google-cloud-dev@googlegroups.com], or visit the [#gcloud]
       IRC channel on freenode.
 
       If you have found a bug, file it using our issue tracker site at
@@ -122,7 +122,7 @@ class Feedback(base.Command):
 
   * Google Cloud SDK Issue Tracker
   * Stack Overflow "#gcloud" tag
-  * google-cloud-sdk Google group
+  * google-cloud-dev Google group
 
   This command lists the available channels and facilitates getting help through
   one of them by opening a web browser to the relevant page, possibly with

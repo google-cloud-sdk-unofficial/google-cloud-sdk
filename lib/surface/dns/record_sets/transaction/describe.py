@@ -41,6 +41,3 @@ class Describe(base.Command):
   def Run(self, args):
     with transaction_util.TransactionFile(args.transaction_file) as trans_file:
       return transaction_util.ChangeFromYamlFile(trans_file)
-
-  def Display(self, args, result):
-    self.format(result)

@@ -61,12 +61,3 @@ class Describe(base.Command):
       A Job message.
     """
     return job_utils.GetJobForArgs(self.context, args, args.full, required=True)
-
-  def Display(self, args, job):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: all the arguments that were provided to this command invocation.
-      job: The Job message returned from the Run() method.
-    """
-    self.format(job)

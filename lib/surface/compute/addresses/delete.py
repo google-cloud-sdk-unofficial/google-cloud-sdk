@@ -13,17 +13,16 @@
 # limitations under the License.
 """Command for deleting addresses."""
 
-from googlecloudsdk.api_lib.compute import addresses_utils
+from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.command_lib.compute import flags
 
 
-class Delete(addresses_utils.AddressesMutator):
+class Delete(base_classes.BaseAsyncMutator):
   """Release reserved IP addresses."""
 
   @staticmethod
   def Args(parser):
-    addresses_utils.AddressesMutator.Args(parser)
-
     parser.add_argument(
         'names',
         metavar='NAME',
@@ -31,11 +30,43 @@ class Delete(addresses_utils.AddressesMutator):
         completion_resource='compute.addresses',
         help='The names of the addresses to delete.')
 
+    scope = parser.add_mutually_exclusive_group()
+
+    flags.AddRegionFlag(
+        scope,
+        resource_type='address',
+        operation_type='operate on')
+
+    scope.add_argument(
+        '--global',
+        action='store_true',
+        help='If provided, it is assumed the addresses are global.')
+
+  @property
+  def service(self):
+    if self.global_request:
+      return self.compute.globalAddresses
+    else:
+      return self.compute.addresses
+
+  @property
+  def resource_type(self):
+    return 'addresses'
+
   @property
   def method(self):
     return 'Delete'
 
-  def CreateGlobalRequests(self, args):
+  def CreateRequests(self, args):
+    """Overrides."""
+    self.global_request = getattr(args, 'global')
+
+    if self.global_request:
+      return self._CreateGlobalRequests(args)
+
+    return self._CreateRegionalRequests(args)
+
+  def _CreateGlobalRequests(self, args):
     """Create a globally scoped request."""
 
     # TODO(user): In the future we should support concurrently deleting both
@@ -53,7 +84,7 @@ class Delete(addresses_utils.AddressesMutator):
 
     return requests
 
-  def CreateRegionalRequests(self, args):
+  def _CreateRegionalRequests(self, args):
     """Create a regionally scoped request."""
 
     address_refs = (

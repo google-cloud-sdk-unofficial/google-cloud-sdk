@@ -12,36 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""List captures in a project repository.
-"""
+"""List captures in a project repository."""
 
 from googlecloudsdk.api_lib.source import capture
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 
 
-class List(base.Command):
-  """List source captures."""
+class List(base.ListCommand):
+  """List source captures.
 
-  detailed_help = {
-      'DESCRIPTION': """\
-          This command displays a list of the source captures for a project.
-          Source captures enable cloud diagnostics tools such as the Cloud
-          Debugger to work with a copy of the source code corresponding to a
-          deployed binary.
-      """
-  }
+  This command displays a list of the source captures for a project. Source
+  captures enable cloud diagnostics tools such as the Cloud Debugger to work
+  with a copy of the source code corresponding to a deployed binary.
+  """
+
+  def Collection(self):
+    return 'source.captures'
+
+  @staticmethod
+  def Args(parser):
+    base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     """Run the capture command."""
     mgr = capture.CaptureManager()
     return mgr.ListCaptures()
-
-  def Display(self, args, captures):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      captures: The value returned from the Run() method.
-    """
-    list_printer.PrintResourceList('source.captures.list', captures)

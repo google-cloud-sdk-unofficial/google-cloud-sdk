@@ -21,21 +21,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
 
 
-class _BaseDescribe(object):
-  """Base class for sql backups describe."""
-
-  def Display(self, unused_args, result):
-    """Display prints information about what just happened to stdout.
-
-    Args:
-      unused_args: The same as the args in Run.
-      result: A dict object that has the backupRun resource.
-    """
-    self.format(result)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Describe(_BaseDescribe, base.Command):
+class Describe(base.Command):
   """Retrieves information about a backup.
 
   Retrieves information about a backup.
@@ -92,7 +79,7 @@ class Describe(_BaseDescribe, base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(_BaseDescribe, base.Command):
+class DescribeBeta(base.Command):
   """Retrieves information about a backup.
 
   Retrieves information about a backup.

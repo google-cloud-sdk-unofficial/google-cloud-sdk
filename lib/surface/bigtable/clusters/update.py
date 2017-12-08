@@ -1,4 +1,4 @@
-# Copyright 2015 Google Inc. All Rights Reserved.
+# Copyright 2016 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,10 +16,13 @@
 
 from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
 
 
-class UpdateCluster(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateClusterAlpha(base.Command):
   """Update a Bigtable cluster's friendly name and serving nodes."""
 
   @staticmethod
@@ -65,3 +68,43 @@ class UpdateCluster(base.Command):
     writer.Print('Cluster [{0}] in zone [{1}] update{2}.'.format(
         args.cluster, args.zone, ' in progress' if args.async else 'd'))
 
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateCluster(base.Command):
+  """Update a Bigtable cluster's friendly name and serving nodes."""
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    (arguments.ArgAdder(parser).AddCluster().AddInstance(positional=False)
+     .AddClusterNodes().AddAsync())
+
+  @util.MapHttpError
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+    cli = util.GetAdminClient()
+    msgs = util.GetAdminMessages()
+    ref = resources.Parse(
+        args.cluster,
+        params={'instancesId': args.instance},
+        collection='bigtableadmin.projects.instances.clusters')
+    msg = msgs.BigtableadminProjectsInstancesClustersUpdateRequest(
+        projectsId=ref.projectsId,
+        instancesId=ref.instancesId,
+        clustersId=ref.Name(),
+        cluster=msgs.Cluster(name=ref.Name(),
+                             serveNodes=args.num_nodes))
+    result = cli.projects_instances_clusters.Update(msg)
+    if not args.async:
+      # TODO(user): enable this line when b/29563942 is fixed in apitools
+      pass
+      # util.WaitForOpV2(result, 'Updating cluster')
+    return result

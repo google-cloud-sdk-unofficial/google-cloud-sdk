@@ -14,10 +14,13 @@
 
 """Command for listing Cloud CDN cache invalidations."""
 
+import sys
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 
 
@@ -32,6 +35,13 @@ Cloud CDN to stop using cached content. You can list invalidations to check
 which have completed.
 """,
   }
+
+  @staticmethod
+  def _Flags(parser):
+    parser.add_argument(
+        '--limit',
+        type=arg_parsers.BoundedInt(1, sys.maxint, unlimited=True),
+        help='The maximum number of invalidations to list.')
 
   @staticmethod
   def Args(parser):

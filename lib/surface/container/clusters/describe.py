@@ -59,13 +59,6 @@ class Describe(base.Command):
 
     return c
 
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    self.format(result)
+  def Epilog(self, results_were_displayed):
     if self._upgrade_hint:
       log.status.Print(self._upgrade_hint)

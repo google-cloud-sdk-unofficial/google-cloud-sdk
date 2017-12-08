@@ -22,9 +22,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 from googlecloudsdk.third_party.appengine.tools import context_util
 
-OLD_SOURCE_CONTEXT_FILENAME = 'source-context.json'
-SOURCE_CONTEXTS_FILENAME = 'source-contexts.json'
-
 
 @base.Hidden
 class GenRepoInfoFile(base.Command):
@@ -50,8 +47,8 @@ class GenRepoInfoFile(base.Command):
           {old_name} is deprecated in favor of {contexts_filename}.
           It is generated solely for compatibility with existing tools during
           the transition.
-          """.format(old_name=OLD_SOURCE_CONTEXT_FILENAME,
-                     contexts_filename=SOURCE_CONTEXTS_FILENAME),
+          """.format(old_name=context_util.CONTEXT_FILENAME,
+                     contexts_filename=context_util.EXT_CONTEXT_FILENAME),
       'EXAMPLES': """\
           To generate repository information files for your app,
           from your source directory run:
@@ -74,7 +71,7 @@ class GenRepoInfoFile(base.Command):
             'Specifies the full name of the output file to contain a single '
             'source context.  The file name must be "{old_name}" in '
             'order to work with cloud diagnostic tools.').format(
-                old_name=OLD_SOURCE_CONTEXT_FILENAME))
+                old_name=context_util.CONTEXT_FILENAME))
     parser.add_argument(
         '--output-directory',
         default='',
@@ -96,7 +93,7 @@ class GenRepoInfoFile(base.Command):
       output_file = args.output_file
     else:
       output_directory = ''
-      output_file = OLD_SOURCE_CONTEXT_FILENAME
+      output_file = context_util.CONTEXT_FILENAME
 
     if not output_directory:
       if args.output_directory:
@@ -115,6 +112,6 @@ class GenRepoInfoFile(base.Command):
     if args.output_directory and args.output_directory != output_directory:
       output_directory = args.output_directory
       files.MakeDir(output_directory)
-    with open(
-        os.path.join(output_directory, SOURCE_CONTEXTS_FILENAME), 'w') as f:
+    with open(os.path.join(output_directory, context_util.EXT_CONTEXT_FILENAME),
+              'w') as f:
       json.dump(contexts, f, indent=2, sort_keys=True)

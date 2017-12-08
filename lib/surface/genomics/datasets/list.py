@@ -17,30 +17,20 @@
 
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
+from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """List Genomics datasets in a project.
 
   Prints a table with summary information on datasets in the project.
   """
 
-  @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
+  def Collection(self):
+    return 'genomics.datasets'
 
-    Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
-    parser.add_argument('--limit',
-                        type=int,
-                        help='The maximum number of results to list.')
-
-  @genomics_util.ReraiseHttpException
   def Run(self, args):
     """Run 'datasets list'.
 
@@ -48,36 +38,24 @@ class List(base.Command):
       args: argparse.Namespace, The arguments that this command was invoked
           with.
 
-    Returns:
+    Yields:
       The list of datasets for this project.
 
     Raises:
       HttpException: An http error response was received while executing api
           request.
     """
-    genomics_util.ValidateLimitFlag(args.limit)
-
     apitools_client = genomics_util.GetGenomicsClient()
     request = genomics_util.GetGenomicsMessages().GenomicsDatasetsListRequest(
         projectId=genomics_util.GetProjectId())
-    return list_pager.YieldFromList(
-        apitools_client.datasets,
-        request,
-        limit=args.limit,
-        batch_size_attribute='pageSize',
-        batch_size=args.limit,  # Use limit if any, else server default.
-        field='datasets')
-
-  @genomics_util.ReraiseHttpException
-  def Display(self, args, result):
-    """Display prints information about what just happened to stdout.
-
-    Args:
-      args: The same as the args in Run.
-
-      result: a list of Dataset objects.
-
-    Raises:
-      ValueError: if result is None or not a list
-    """
-    list_printer.PrintResourceList('genomics.datasets', result)
+    try:
+      for resource in list_pager.YieldFromList(
+          apitools_client.datasets,
+          request,
+          limit=args.limit,
+          batch_size_attribute='pageSize',
+          batch_size=args.limit,  # Use limit if any, else server default.
+          field='datasets'):
+        yield resource
+    except apitools_exceptions.HttpError as error:
+      raise exceptions.HttpException(genomics_util.GetErrorMessage(error))

@@ -27,7 +27,9 @@ from googlecloudsdk.core.resource import resource_printer
 class Delete(base.DeleteCommand):
   """Delete debug logpoints.
 
-  This command deletes logpoints from a Cloud Debugger debug target.
+  This command deletes logpoints from a Cloud Debugger debug target. It will
+  ask for confirmation before deleting any logpoints. To suppress confirmation,
+  use the global --quiet option.
   """
 
   @staticmethod

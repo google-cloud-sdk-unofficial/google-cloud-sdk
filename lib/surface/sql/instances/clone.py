@@ -18,7 +18,6 @@ from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 from googlecloudsdk.core import remote_completion
 
@@ -54,6 +53,7 @@ OR
           on the command line after this command. Positional arguments are
           allowed.
     """
+    base.ASYNC_FLAG.AddToParser(parser)
     parser.add_argument(
         'source',
         completion_resource='sql.instances',
@@ -87,10 +87,6 @@ OR
         binary log coordinates.
         e.g., mysql-bin.000001
         """
-    parser.add_argument(
-        '--async',
-        action='store_true',
-        help='Do not wait for the operation to complete.')
 
   def _CheckSourceAndDestination(self, source_instance_ref,
                                  destination_instance_ref):
@@ -188,18 +184,11 @@ class Clone(_BaseClone, base.Command):
     cache.AddToCache(destination_instance_ref.SelfLink())
     return rsource
 
-  def Display(self, unused_args, result):
-    """Display prints information about what just happened to stdout.
+  def Collection(self):
+    return 'sql.instances'
 
-    Args:
-      unused_args: The same as the args in Run.
-      result: A dict object representing the operations resource describing the
-      clone operation if the clone was successful.
-    """
-    if result.kind == 'sql#instance':
-      list_printer.PrintResourceList('sql.instances', [result])
-    else:
-      self.format(result)
+  def Format(self, args):
+    return self.ListFormat(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -260,15 +249,8 @@ class CloneBeta(_BaseClone, base.Command):
     cache.AddToCache(destination_instance_ref.SelfLink())
     return rsource
 
-  def Display(self, unused_args, result):
-    """Display prints information about what just happened to stdout.
+  def Collection(self):
+    return 'sql.instances.v1beta4'
 
-    Args:
-      unused_args: The same as the args in Run.
-      result: A dict object representing the operations resource describing the
-      clone operation if the clone was successful.
-    """
-    if result.kind == 'sql#instance':
-      list_printer.PrintResourceList('sql.instances.v1beta4', [result])
-    else:
-      self.format(result)
+  def Format(self, args):
+    return self.ListFormat(args)

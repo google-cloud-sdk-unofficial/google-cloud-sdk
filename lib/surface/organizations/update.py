@@ -50,6 +50,9 @@ class Update(orgs_base.OrganizationCommand):
     parser.add_argument('--display-name', required=True,
                         help='New display name for the organization.')
 
+  def Format(self, args):
+    return self.ListFormat(args)
+
   @errors.HandleHttpError
   def Run(self, args):
     client = self.OrganizationsClient()

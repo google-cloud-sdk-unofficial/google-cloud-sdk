@@ -1,4 +1,4 @@
-"""Generated message classes for appengine version v1beta4.
+"""Generated message classes for appengine version v1beta5.
 
 Provisions and manages App Engine applications.
 """
@@ -122,179 +122,13 @@ class AppengineAppsGetRequest(_messages.Message):
       when performing the `GET` operation. If specified and any resources
       could not be created, the request will fail with an error code.
       Additionally, this parameter can cause the request to take longer to
-      complete.
+      complete. Note: This parameter will be deprecated in a future version of
+      the API.
     name: Name of the application to get. For example: "apps/myapp".
   """
 
   ensureResourcesExist = _messages.BooleanField(1)
   name = _messages.StringField(2, required=True)
-
-
-class AppengineAppsModulesDeleteRequest(_messages.Message):
-  """A AppengineAppsModulesDeleteRequest object.
-
-  Fields:
-    name: Name of the resource requested. For example:
-      "apps/myapp/modules/default".
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class AppengineAppsModulesGetRequest(_messages.Message):
-  """A AppengineAppsModulesGetRequest object.
-
-  Fields:
-    name: Name of the resource requested. For example:
-      "apps/myapp/modules/default".
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class AppengineAppsModulesListRequest(_messages.Message):
-  """A AppengineAppsModulesListRequest object.
-
-  Fields:
-    name: Name of the resource requested. For example: "apps/myapp".
-    pageSize: Maximum results to return per page.
-    pageToken: Continuation token for fetching the next page of results.
-  """
-
-  name = _messages.StringField(1, required=True)
-  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(3)
-
-
-class AppengineAppsModulesPatchRequest(_messages.Message):
-  """A AppengineAppsModulesPatchRequest object.
-
-  Fields:
-    mask: Standard field mask for the set of fields to be updated.
-    migrateTraffic: Whether to use Traffic Migration to shift traffic
-      gradually. Traffic can only be migrated from a single version to another
-      single version.
-    module: A Module resource to be passed as the request body.
-    name: Name of the resource to update. For example:
-      "apps/myapp/modules/default".
-  """
-
-  mask = _messages.StringField(1)
-  migrateTraffic = _messages.BooleanField(2)
-  module = _messages.MessageField('Module', 3)
-  name = _messages.StringField(4, required=True)
-
-
-class AppengineAppsModulesVersionsCreateRequest(_messages.Message):
-  """A AppengineAppsModulesVersionsCreateRequest object.
-
-  Fields:
-    name: Name of the resource to update. For example:
-      "apps/myapp/modules/default".
-    version: A Version resource to be passed as the request body.
-  """
-
-  name = _messages.StringField(1, required=True)
-  version = _messages.MessageField('Version', 2)
-
-
-class AppengineAppsModulesVersionsDeleteRequest(_messages.Message):
-  """A AppengineAppsModulesVersionsDeleteRequest object.
-
-  Fields:
-    name: Name of the resource requested. For example:
-      "apps/myapp/modules/default/versions/v1".
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class AppengineAppsModulesVersionsGetRequest(_messages.Message):
-  """A AppengineAppsModulesVersionsGetRequest object.
-
-  Enums:
-    ViewValueValuesEnum: Controls the set of fields returned in the `Get`
-      response.
-
-  Fields:
-    name: Name of the resource requested. For example:
-      "apps/myapp/modules/default/versions/v1".
-    view: Controls the set of fields returned in the `Get` response.
-  """
-
-  class ViewValueValuesEnum(_messages.Enum):
-    """Controls the set of fields returned in the `Get` response.
-
-    Values:
-      BASIC: <no description>
-      FULL: <no description>
-    """
-    BASIC = 0
-    FULL = 1
-
-  name = _messages.StringField(1, required=True)
-  view = _messages.EnumField('ViewValueValuesEnum', 2)
-
-
-class AppengineAppsModulesVersionsInstancesListRequest(_messages.Message):
-  """A AppengineAppsModulesVersionsInstancesListRequest object.
-
-  Fields:
-    name: Name of the resource requested. For example:
-      "apps/myapp/modules/default/versions/v1".
-    pageSize: Maximum results to return per page.
-    pageToken: Continuation token for fetching the next page of results.
-  """
-
-  name = _messages.StringField(1, required=True)
-  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(3)
-
-
-class AppengineAppsModulesVersionsListRequest(_messages.Message):
-  """A AppengineAppsModulesVersionsListRequest object.
-
-  Enums:
-    ViewValueValuesEnum: Controls the set of fields returned in the `List`
-      response.
-
-  Fields:
-    name: Name of the resource requested. For example:
-      "apps/myapp/modules/default".
-    pageSize: Maximum results to return per page.
-    pageToken: Continuation token for fetching the next page of results.
-    view: Controls the set of fields returned in the `List` response.
-  """
-
-  class ViewValueValuesEnum(_messages.Enum):
-    """Controls the set of fields returned in the `List` response.
-
-    Values:
-      BASIC: <no description>
-      FULL: <no description>
-    """
-    BASIC = 0
-    FULL = 1
-
-  name = _messages.StringField(1, required=True)
-  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(3)
-  view = _messages.EnumField('ViewValueValuesEnum', 4)
-
-
-class AppengineAppsModulesVersionsPatchRequest(_messages.Message):
-  """A AppengineAppsModulesVersionsPatchRequest object.
-
-  Fields:
-    mask: Standard field mask for the set of fields to be updated.
-    name: Name of the resource to update. For example:
-      "apps/myapp/modules/default/versions/1".
-    version: A Version resource to be passed as the request body.
-  """
-
-  mask = _messages.StringField(1)
-  name = _messages.StringField(2, required=True)
-  version = _messages.MessageField('Version', 3)
 
 
 class AppengineAppsOperationsGetRequest(_messages.Message):
@@ -323,6 +157,173 @@ class AppengineAppsOperationsListRequest(_messages.Message):
   pageToken = _messages.StringField(4)
 
 
+class AppengineAppsServicesDeleteRequest(_messages.Message):
+  """A AppengineAppsServicesDeleteRequest object.
+
+  Fields:
+    name: Name of the resource requested. For example:
+      "apps/myapp/services/default".
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AppengineAppsServicesGetRequest(_messages.Message):
+  """A AppengineAppsServicesGetRequest object.
+
+  Fields:
+    name: Name of the resource requested. For example:
+      "apps/myapp/services/default".
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AppengineAppsServicesListRequest(_messages.Message):
+  """A AppengineAppsServicesListRequest object.
+
+  Fields:
+    name: Name of the resource requested. For example: "apps/myapp".
+    pageSize: Maximum results to return per page.
+    pageToken: Continuation token for fetching the next page of results.
+  """
+
+  name = _messages.StringField(1, required=True)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+
+
+class AppengineAppsServicesPatchRequest(_messages.Message):
+  """A AppengineAppsServicesPatchRequest object.
+
+  Fields:
+    mask: Standard field mask for the set of fields to be updated.
+    migrateTraffic: Whether to use Traffic Migration to shift traffic
+      gradually. Traffic can only be migrated from a single version to another
+      single version.
+    name: Name of the resource to update. For example:
+      "apps/myapp/services/default".
+    service: A Service resource to be passed as the request body.
+  """
+
+  mask = _messages.StringField(1)
+  migrateTraffic = _messages.BooleanField(2)
+  name = _messages.StringField(3, required=True)
+  service = _messages.MessageField('Service', 4)
+
+
+class AppengineAppsServicesVersionsCreateRequest(_messages.Message):
+  """A AppengineAppsServicesVersionsCreateRequest object.
+
+  Fields:
+    name: Name of the resource to update. For example:
+      "apps/myapp/services/default".
+    version: A Version resource to be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  version = _messages.MessageField('Version', 2)
+
+
+class AppengineAppsServicesVersionsDeleteRequest(_messages.Message):
+  """A AppengineAppsServicesVersionsDeleteRequest object.
+
+  Fields:
+    name: Name of the resource requested. For example:
+      "apps/myapp/services/default/versions/v1".
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AppengineAppsServicesVersionsGetRequest(_messages.Message):
+  """A AppengineAppsServicesVersionsGetRequest object.
+
+  Enums:
+    ViewValueValuesEnum: Controls the set of fields returned in the `Get`
+      response.
+
+  Fields:
+    name: Name of the resource requested. For example:
+      "apps/myapp/services/default/versions/v1".
+    view: Controls the set of fields returned in the `Get` response.
+  """
+
+  class ViewValueValuesEnum(_messages.Enum):
+    """Controls the set of fields returned in the `Get` response.
+
+    Values:
+      BASIC: <no description>
+      FULL: <no description>
+    """
+    BASIC = 0
+    FULL = 1
+
+  name = _messages.StringField(1, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 2)
+
+
+class AppengineAppsServicesVersionsInstancesListRequest(_messages.Message):
+  """A AppengineAppsServicesVersionsInstancesListRequest object.
+
+  Fields:
+    name: Name of the resource requested. For example:
+      "apps/myapp/services/default/versions/v1".
+    pageSize: Maximum results to return per page.
+    pageToken: Continuation token for fetching the next page of results.
+  """
+
+  name = _messages.StringField(1, required=True)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+
+
+class AppengineAppsServicesVersionsListRequest(_messages.Message):
+  """A AppengineAppsServicesVersionsListRequest object.
+
+  Enums:
+    ViewValueValuesEnum: Controls the set of fields returned in the `List`
+      response.
+
+  Fields:
+    name: Name of the resource requested. For example:
+      "apps/myapp/services/default".
+    pageSize: Maximum results to return per page.
+    pageToken: Continuation token for fetching the next page of results.
+    view: Controls the set of fields returned in the `List` response.
+  """
+
+  class ViewValueValuesEnum(_messages.Enum):
+    """Controls the set of fields returned in the `List` response.
+
+    Values:
+      BASIC: <no description>
+      FULL: <no description>
+    """
+    BASIC = 0
+    FULL = 1
+
+  name = _messages.StringField(1, required=True)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  view = _messages.EnumField('ViewValueValuesEnum', 4)
+
+
+class AppengineAppsServicesVersionsPatchRequest(_messages.Message):
+  """A AppengineAppsServicesVersionsPatchRequest object.
+
+  Fields:
+    mask: Standard field mask for the set of fields to be updated.
+    name: Name of the resource to update. For example:
+      "apps/myapp/services/default/versions/1".
+    version: A Version resource to be passed as the request body.
+  """
+
+  mask = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  version = _messages.MessageField('Version', 3)
+
+
 class Application(_messages.Message):
   """An Application contains the top-level configuration of an App Engine
   application.
@@ -334,16 +335,15 @@ class Application(_messages.Message):
     codeBucket: A Google Cloud Storage bucket which can be used for storing
       files associated with an application. This bucket is associated with the
       application and can be used by the gcloud deployment commands.
-      @OutputOnly
     defaultBucket: A Google Cloud Storage bucket which can be used by the
-      application to store content.  @OutputOnly
+      application to store content.
     defaultCookieExpiration: Determines the cookie expiration policy for the
-      application.  @OutputOnly
+      application.
     defaultHostname: The hostname used to reach the application, as resolved
-      by App Engine.  @OutputOnly
+      by App Engine.
     dispatchRules: HTTP path dispatch rules for requests to the app that do
-      not explicitly target a module or version. The rules are order-
-      dependent.  @OutputOnly
+      not explicitly target a service or version. The rules are order-
+      dependent.
     id: The relative name/path of the application. Example: "myapp".
     location: The location from which the application will be run. Application
       instances will run out of data centers in the chosen location and all of
@@ -351,7 +351,6 @@ class Application(_messages.Message):
       is "us-central". Choices are:  "us-central" - Central US  "europe-west"
       - Western Europe  "us-east1" - Eastern US
     name: The full path to the application in the API. Example: "apps/myapp".
-      @OutputOnly
   """
 
   authDomain = _messages.StringField(1)
@@ -389,7 +388,7 @@ class AutomaticScaling(_messages.Message):
       handle requests.
     minIdleInstances: The minimum number of idle instances that App Engine
       should maintain for this version. Only applies to the default version of
-      a module, since other versions are not expected to receive significant
+      a service, since other versions are not expected to receive significant
       traffic.
     minPendingLatency: The minimum amount of time that App Engine should allow
       a request to wait in the pending queue before starting a new instance to
@@ -415,7 +414,7 @@ class AutomaticScaling(_messages.Message):
 
 
 class BasicScaling(_messages.Message):
-  """A module with basic scaling will create an instance when the application
+  """A service with basic scaling will create an instance when the application
   receives a request. The instance will be turned down when the app becomes
   idle. Basic scaling is ideal for work that is intermittent or driven by user
   activity.
@@ -610,38 +609,34 @@ class Instance(_messages.Message):
   scale an application.
 
   Enums:
-    AvailabilityValueValuesEnum: Availability of instance.  @OutputOnly
+    AvailabilityValueValuesEnum: Availability of instance.
 
   Fields:
     appEngineRelease: The App Engine release the instance is running on.
-      @OutputOnly
-    availability: Availability of instance.  @OutputOnly
+    availability: Availability of instance.
     averageLatency: Latency in milliseconds (averaged over the last minute).
-      @OutputOnly
-    errors: Number of errors since the instance was started.  @OutputOnly
+    errors: Number of errors since the instance was started.
     id: The relative name/path of the instance within the version. Example:
-      "instance-1"  @OutputOnly
-    memoryUsage: Memory usage (in bytes).  @OutputOnly
+      "instance-1"
+    memoryUsage: Memory usage (in bytes).
     name: The full path to the Instance resource in the API. Example:
-      "apps/myapp/modules/default/versions/v1/instances/instance-1"
-      @OutputOnly
-    qps: QPS for this instance (averaged over the last minute).  @OutputOnly
-    requests: Number of requests (since the clone was started).  @OutputOnly
-    startTimestamp: Time when instance was started.  @OutputOnly
+      "apps/myapp/services/default/versions/v1/instances/instance-1"
+    qps: QPS for this instance (averaged over the last minute).
+    requests: Number of requests (since the clone was started).
+    startTimestamp: Time when instance was started.
     vmId: For VMEngines instances, the Compute Engine VM ID of the instance.
-      @OutputOnly
     vmName: For VMEngines instances, the name of the Compute Engine VM where
-      the instance lives.  @OutputOnly
+      the instance lives.
     vmStatus: For VMEngines instances, the status of the Compute Engine VM
-      where the instance lives.  @OutputOnly
+      where the instance lives.
     vmUnlocked: For VMEngines instances, whether the instance has been
-      unlocked.  @OutputOnly
+      unlocked.
     vmZoneName: For VMEngines instances, the zone where the Compute Engine VM
-      is located.  @OutputOnly
+      is located.
   """
 
   class AvailabilityValueValuesEnum(_messages.Enum):
-    """Availability of instance.  @OutputOnly
+    """Availability of instance.
 
     Values:
       UNSPECIFIED: <no description>
@@ -693,18 +688,6 @@ class ListInstancesResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
-class ListModulesResponse(_messages.Message):
-  """Response message for `Modules.ListModules`.
-
-  Fields:
-    modules: The modules belonging to the requested application.
-    nextPageToken: Continuation token for fetching the next page of results.
-  """
-
-  modules = _messages.MessageField('Module', 1, repeated=True)
-  nextPageToken = _messages.StringField(2)
-
-
 class ListOperationsResponse(_messages.Message):
   """The response message for Operations.ListOperations.
 
@@ -718,12 +701,24 @@ class ListOperationsResponse(_messages.Message):
   operations = _messages.MessageField('Operation', 2, repeated=True)
 
 
+class ListServicesResponse(_messages.Message):
+  """Response message for `Services.ListServices`.
+
+  Fields:
+    nextPageToken: Continuation token for fetching the next page of results.
+    services: The services belonging to the requested application.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  services = _messages.MessageField('Service', 2, repeated=True)
+
+
 class ListVersionsResponse(_messages.Message):
   """Response message for `Versions.ListVersions`.
 
   Fields:
     nextPageToken: Continuation token for fetching the next page of results.
-    versions: The versions belonging to the requested application module.
+    versions: The versions belonging to the requested application service.
   """
 
   nextPageToken = _messages.StringField(1)
@@ -735,36 +730,17 @@ class LocationMetadata(_messages.Message):
 
 
 class ManualScaling(_messages.Message):
-  """A module with manual scaling runs continuously, allowing you to perform
+  """A service with manual scaling runs continuously, allowing you to perform
   complex initialization and rely on the state of its memory over time.
 
   Fields:
-    instances: The number of instances to assign to the module at the start.
+    instances: The number of instances to assign to the service at the start.
       This number can later be altered by using the [Modules
       API](https://cloud.google.com/appengine/docs/python/modules/functions)
       `set_num_instances()` function.
   """
 
   instances = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-
-
-class Module(_messages.Message):
-  """A module is a component of an application that provides a single service
-  or configuration. A module has a collection of versions that define a
-  specific set of code used to implement the functionality of that module.
-
-  Fields:
-    id: The relative name/path of the module within the application. Example:
-      "default"  @OutputOnly
-    name: The full path to the Module resource in the API. Example:
-      "apps/myapp/modules/default"  @OutputOnly
-    split: A mapping that defines fractional HTTP traffic diversion to
-      different versions within the module.
-  """
-
-  id = _messages.StringField(1)
-  name = _messages.StringField(2)
-  split = _messages.MessageField('TrafficSplit', 3)
 
 
 class Network(_messages.Message):
@@ -851,8 +827,8 @@ class Operation(_messages.Message):
       AdditionalProperty: An additional property for a MetadataValue object.
 
     Fields:
-      additionalProperties: Properties of the object. Contains field @ype with
-        type URL.
+      additionalProperties: Properties of the object. Contains field @type
+        with type URL.
     """
 
     class AdditionalProperty(_messages.Message):
@@ -882,8 +858,8 @@ class Operation(_messages.Message):
       AdditionalProperty: An additional property for a ResponseValue object.
 
     Fields:
-      additionalProperties: Properties of the object. Contains field @ype with
-        type URL.
+      additionalProperties: Properties of the object. Contains field @type
+        with type URL.
     """
 
     class AdditionalProperty(_messages.Message):
@@ -911,15 +887,15 @@ class OperationMetadata(_messages.Message):
 
   Fields:
     endTime: Timestamp that this operation was completed. (Not present if the
-      operation is still in progress.)  @OutputOnly
-    insertTime: Timestamp that this operation was received.  @OutputOnly
+      operation is still in progress.)
+    insertTime: Timestamp that this operation was received.
     method: API method name that initiated the operation. Example:
-      "google.appengine.v1beta4.Version.CreateVersion".  @OutputOnly
+      "google.appengine.v1beta4.Version.CreateVersion".
     operationType: The type of the operation (deprecated, use method field
-      instead). Example: "create_version".  @OutputOnly
+      instead). Example: "create_version".
     target: Resource that this operation is acting on. Example:
-      "apps/myapp/modules/default".  @OutputOnly
-    user: The user who requested this operation.  @OutputOnly
+      "apps/myapp/modules/default".
+    user: The user who requested this operation.
   """
 
   endTime = _messages.StringField(1)
@@ -935,13 +911,13 @@ class OperationMetadataV1(_messages.Message):
 
   Fields:
     endTime: Timestamp that this operation was completed. (Not present if the
-      operation is still in progress.)  @OutputOnly
-    insertTime: Timestamp that this operation was received.  @OutputOnly
+      operation is still in progress.)
+    insertTime: Timestamp that this operation was received.
     method: API method name that initiated the operation. Example:
-      "google.appengine.v1.Version.CreateVersion".  @OutputOnly
+      "google.appengine.v1.Version.CreateVersion".
     target: Resource that this operation is acting on. Example:
-      "apps/myapp/services/default".  @OutputOnly
-    user: The user who requested this operation.  @OutputOnly
+      "apps/myapp/services/default".
+    user: The user who requested this operation.
   """
 
   endTime = _messages.StringField(1)
@@ -956,13 +932,13 @@ class OperationMetadataV1Beta5(_messages.Message):
 
   Fields:
     endTime: Timestamp that this operation was completed. (Not present if the
-      operation is still in progress.)  @OutputOnly
-    insertTime: Timestamp that this operation was received.  @OutputOnly
+      operation is still in progress.)
+    insertTime: Timestamp that this operation was received.
     method: API method name that initiated the operation. Example:
-      "google.appengine.v1beta5.Version.CreateVersion".  @OutputOnly
+      "google.appengine.v1beta5.Version.CreateVersion".
     target: Resource that this operation is acting on. Example:
-      "apps/myapp/services/default".  @OutputOnly
-    user: The user who requested this operation.  @OutputOnly
+      "apps/myapp/services/default".
+    user: The user who requested this operation.
   """
 
   endTime = _messages.StringField(1)
@@ -1007,6 +983,28 @@ class ScriptHandler(_messages.Message):
   """
 
   scriptPath = _messages.StringField(1)
+
+
+class Service(_messages.Message):
+  """A service is a logical component of an application that can share state
+  and communicate in a secure fashion with other services. For example, an
+  application that handles customer requests might include separate services
+  to handle other tasks such as API requests from mobile devices or backend
+  data analysis. Each service has a collection of versions that define a
+  specific set of code used to implement the functionality of that service.
+
+  Fields:
+    id: The relative name/path of the service within the application. Example:
+      "default"
+    name: The full path to the Service resource in the API. Example:
+      "apps/myapp/services/default"
+    split: A mapping that defines fractional HTTP traffic diversion to
+      different versions within the service.
+  """
+
+  id = _messages.StringField(1)
+  name = _messages.StringField(2)
+  split = _messages.MessageField('TrafficSplit', 3)
 
 
 class SourceReference(_messages.Message):
@@ -1090,70 +1088,6 @@ class StandardQueryParameters(_messages.Message):
   trace = _messages.StringField(12)
   uploadType = _messages.StringField(13)
   upload_protocol = _messages.StringField(14)
-
-
-class StaticDirectoryHandler(_messages.Message):
-  """Files served directly to the user for a given URL, such as images, CSS
-  stylesheets, or JavaScript source files. Static directory handlers make it
-  easy to serve the entire contents of a directory as static files.
-
-  Messages:
-    HttpHeadersValue: HTTP headers to use for all responses from these URLs.
-
-  Fields:
-    applicationReadable: By default, files declared in static file handlers
-      are uploaded as static data and are only served to end users, they
-      cannot be read by an application. If this field is set to true, the
-      files are also uploaded as code data so your application can read them.
-      Both uploads are charged against your code and static data storage
-      resource quotas.
-    directory: The path to the directory containing the static files, from the
-      application root directory. Everything after the end of the matched url
-      pattern is appended to static_dir to form the full path to the requested
-      file.
-    expiration: The length of time a static file served by this handler ought
-      to be cached by web proxies and browsers.
-    httpHeaders: HTTP headers to use for all responses from these URLs.
-    mimeType: If specified, all files served by this handler will be served
-      using the specified MIME type. If not specified, the MIME type for a
-      file will be derived from the file's filename extension.
-    requireMatchingFile: If true, this UrlMap entry does not match the request
-      unless the file referenced by the handler also exists. If no such file
-      exists, processing will continue with the next UrlMap that matches the
-      requested URL.
-  """
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class HttpHeadersValue(_messages.Message):
-    """HTTP headers to use for all responses from these URLs.
-
-    Messages:
-      AdditionalProperty: An additional property for a HttpHeadersValue
-        object.
-
-    Fields:
-      additionalProperties: Additional properties of type HttpHeadersValue
-    """
-
-    class AdditionalProperty(_messages.Message):
-      """An additional property for a HttpHeadersValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A string attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.StringField(2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  applicationReadable = _messages.BooleanField(1)
-  directory = _messages.StringField(2)
-  expiration = _messages.StringField(3)
-  httpHeaders = _messages.MessageField('HttpHeadersValue', 4)
-  mimeType = _messages.StringField(5)
-  requireMatchingFile = _messages.BooleanField(6)
 
 
 class StaticFilesHandler(_messages.Message):
@@ -1279,8 +1213,8 @@ class Status(_messages.Message):
         object.
 
     Fields:
-      additionalProperties: Properties of the object. Contains field @ype with
-        type URL.
+      additionalProperties: Properties of the object. Contains field @type
+        with type URL.
     """
 
     class AdditionalProperty(_messages.Message):
@@ -1302,8 +1236,8 @@ class Status(_messages.Message):
 
 
 class TrafficSplit(_messages.Message):
-  """Configuration for traffic splitting for versions within a single module.
-  Traffic splitting allows traffic directed to the module to be assigned to
+  """Configuration for traffic splitting for versions within a single service.
+  Traffic splitting allows traffic directed to the service to be assigned to
   one of several versions in a fractional way, enabling experiments and
   canarying new builds, for example.
 
@@ -1313,21 +1247,21 @@ class TrafficSplit(_messages.Message):
       will be stable for either type until allocations are changed.
 
   Messages:
-    AllocationsValue: Mapping from module version IDs within the module to
+    AllocationsValue: Mapping from service version IDs within the service to
       fractional (0.000, 1] allocations of traffic for that version. Each
-      version may only be specified once, but some versions in the module may
-      not have any traffic allocation. Modules that have traffic allocated in
-      this field may not be deleted until the module is deleted, or their
+      version may only be specified once, but some versions in the service may
+      not have any traffic allocation. Services that have traffic allocated in
+      this field may not be deleted until the service is deleted, or their
       traffic allocation is removed. Allocations must sum to 1. Supports
       precision up to two decimal places for IP-based splits and up to three
       decimal places for cookie-based splits.
 
   Fields:
-    allocations: Mapping from module version IDs within the module to
+    allocations: Mapping from service version IDs within the service to
       fractional (0.000, 1] allocations of traffic for that version. Each
-      version may only be specified once, but some versions in the module may
-      not have any traffic allocation. Modules that have traffic allocated in
-      this field may not be deleted until the module is deleted, or their
+      version may only be specified once, but some versions in the service may
+      not have any traffic allocation. Services that have traffic allocated in
+      this field may not be deleted until the service is deleted, or their
       traffic allocation is removed. Allocations must sum to 1. Supports
       precision up to two decimal places for IP-based splits and up to three
       decimal places for cookie-based splits.
@@ -1354,14 +1288,14 @@ class TrafficSplit(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AllocationsValue(_messages.Message):
-    """Mapping from module version IDs within the module to fractional (0.000,
-    1] allocations of traffic for that version. Each version may only be
-    specified once, but some versions in the module may not have any traffic
-    allocation. Modules that have traffic allocated in this field may not be
-    deleted until the module is deleted, or their traffic allocation is
-    removed. Allocations must sum to 1. Supports precision up to two decimal
-    places for IP-based splits and up to three decimal places for cookie-based
-    splits.
+    """Mapping from service version IDs within the service to fractional
+    (0.000, 1] allocations of traffic for that version. Each version may only
+    be specified once, but some versions in the service may not have any
+    traffic allocation. Services that have traffic allocated in this field may
+    not be deleted until the service is deleted, or their traffic allocation
+    is removed. Allocations must sum to 1. Supports precision up to two
+    decimal places for IP-based splits and up to three decimal places for
+    cookie-based splits.
 
     Messages:
       AdditionalProperty: An additional property for a AllocationsValue
@@ -1389,23 +1323,23 @@ class TrafficSplit(_messages.Message):
 
 
 class UrlDispatchRule(_messages.Message):
-  """Rules to match an HTTP request and dispatch that request to a module.
+  """Rules to match an HTTP request and dispatch that request to a service.
 
   Fields:
     domain: The domain name to match on. Supports '*' (glob) wildcarding on
       the left-hand side of a '.'. If empty, all domains will be matched (the
       same as '*').
-    module: The resource id of a Module in this application that should
-      service the matched request. The Module must already exist. Example:
-      "default".
     path: The pathname within the host. This must start with a '/'. A single
       '*' (glob) can be included at the end of the path. The sum of the
       lengths of the domain and path may not exceed 100 characters.
+    service: The resource id of a Service in this application that should
+      service the matched request. The Service must already exist. Example:
+      "default".
   """
 
   domain = _messages.StringField(1)
-  module = _messages.StringField(2)
-  path = _messages.StringField(3)
+  path = _messages.StringField(2)
+  service = _messages.StringField(3)
 
 
 class UrlMap(_messages.Message):
@@ -1434,9 +1368,6 @@ class UrlMap(_messages.Message):
       pattern.
     securityLevel: Configures whether security (HTTPS) should be enforced for
       this URL.
-    staticDirectory: Serves the entire contents of a directory as static
-      files.  This attribute is deprecated. You can mimic the behavior of
-      static directories using static files.
     staticFiles: Returns the contents of a file, such as an image, as the
       response.
     urlRegex: A URL prefix. This value uses regular expression syntax (and so
@@ -1530,14 +1461,13 @@ class UrlMap(_messages.Message):
   redirectHttpResponseCode = _messages.EnumField('RedirectHttpResponseCodeValueValuesEnum', 4)
   script = _messages.MessageField('ScriptHandler', 5)
   securityLevel = _messages.EnumField('SecurityLevelValueValuesEnum', 6)
-  staticDirectory = _messages.MessageField('StaticDirectoryHandler', 7)
-  staticFiles = _messages.MessageField('StaticFilesHandler', 8)
-  urlRegex = _messages.StringField(9)
+  staticFiles = _messages.MessageField('StaticFilesHandler', 7)
+  urlRegex = _messages.StringField(8)
 
 
 class Version(_messages.Message):
   """A Version is a specific set of source code and configuration files
-  deployed to a module.
+  deployed to a service.
 
   Enums:
     InboundServicesValueListEntryValuesEnum:
@@ -1560,24 +1490,24 @@ class Version(_messages.Message):
     automaticScaling: Automatic scaling is the scaling policy that App Engine
       has used since its inception. It is based on request rate, response
       latencies, and other application metrics.
-    basicScaling: A module with basic scaling will create an instance when the
-      application receives a request. The instance will be turned down when
-      the app becomes idle. Basic scaling is ideal for work that is
+    basicScaling: A service with basic scaling will create an instance when
+      the application receives a request. The instance will be turned down
+      when the app becomes idle. Basic scaling is ideal for work that is
       intermittent or driven by user activity.
     betaSettings: Beta settings supplied to the application via metadata.
     creationTime: Creation time of this version. This will be between the
       start and end times of the operation that creates this version.
-      @OutputOnly
     defaultExpiration: The length of time a static file served by a static
       file handler ought to be cached by web proxies and browsers, if the
       handler does not specify its own expiration. Only returned in `GET`
       requests if `view=FULL` is set. May only be set on create requests; once
       created, is immutable.
     deployer: The email address of the user who created this version.
-      @OutputOnly
     deployment: Code and application artifacts that make up this version. Only
       returned in `GET` requests if `view=FULL` is set. May only be set on
       create requests; once created, is immutable.
+    diskUsageBytes: Total size of version files hosted on App Engine disk in
+      bytes.
     env: The App Engine execution environment to use for this version.
       Default: "1"
     envVariables: Environment variables made available to the application.
@@ -1595,22 +1525,24 @@ class Version(_messages.Message):
       instances will be stopped and replaced with new instances. Only returned
       in `GET` requests if `view=FULL` is set. May only be set on create
       requests; once created, is immutable.
-    id: The relative name/path of the Version within the module.  Example:
+    id: The relative name/path of the Version within the service.  Example:
       "v1". Version specifiers can contain lowercase letters, digits, and
       hyphens. It cannot begin with the prefix `ah-` and the names `default`
       and `latest` are reserved and cannot be used.
     inboundServices: Before an application can receive email or XMPP messages,
       the application must be configured to enable the service.
-    instanceClass: The frontend instance class to use to run this app. Valid
-      values are `[F1, F2, F4, F4_1G]`.  Default: "F1"
+    instanceClass: The instance class to use to run this app. Valid values for
+      AutomaticScaling are `[F1, F2, F4, F4_1G]`. Valid values for
+      ManualScaling and BasicScaling are `[B1, B2, B4, B8, B4_1G]`.  Default:
+      "F1" for AutomaticScaling, "B1" for ManualScaling and BasicScaling
     libraries: Configuration for Python runtime third-party libraries required
       by the application. Only returned in `GET` requests if `view=FULL` is
       set. May only be set on create requests; once created, is immutable.
-    manualScaling: A module with manual scaling runs continuously, allowing
+    manualScaling: A service with manual scaling runs continuously, allowing
       you to perform complex initialization and rely on the state of its
       memory over time.
     name: The full path to the Version resource in the API.  Example:
-      "apps/myapp/modules/default/versions/v1".  @OutputOnly
+      "apps/myapp/services/default/versions/v1".
     network: Used to specify extra network settings (for VM runtimes only).
     nobuildFilesRegex: Go only. Files that match this pattern will not be
       built into the app. May only be set on create requests.
@@ -1728,24 +1660,25 @@ class Version(_messages.Message):
   defaultExpiration = _messages.StringField(6)
   deployer = _messages.StringField(7)
   deployment = _messages.MessageField('Deployment', 8)
-  env = _messages.StringField(9)
-  envVariables = _messages.MessageField('EnvVariablesValue', 10)
-  errorHandlers = _messages.MessageField('ErrorHandler', 11, repeated=True)
-  handlers = _messages.MessageField('UrlMap', 12, repeated=True)
-  healthCheck = _messages.MessageField('HealthCheck', 13)
-  id = _messages.StringField(14)
-  inboundServices = _messages.EnumField('InboundServicesValueListEntryValuesEnum', 15, repeated=True)
-  instanceClass = _messages.StringField(16)
-  libraries = _messages.MessageField('Library', 17, repeated=True)
-  manualScaling = _messages.MessageField('ManualScaling', 18)
-  name = _messages.StringField(19)
-  network = _messages.MessageField('Network', 20)
-  nobuildFilesRegex = _messages.StringField(21)
-  resources = _messages.MessageField('Resources', 22)
-  runtime = _messages.StringField(23)
-  servingStatus = _messages.EnumField('ServingStatusValueValuesEnum', 24)
-  threadsafe = _messages.BooleanField(25)
-  vm = _messages.BooleanField(26)
+  diskUsageBytes = _messages.IntegerField(9)
+  env = _messages.StringField(10)
+  envVariables = _messages.MessageField('EnvVariablesValue', 11)
+  errorHandlers = _messages.MessageField('ErrorHandler', 12, repeated=True)
+  handlers = _messages.MessageField('UrlMap', 13, repeated=True)
+  healthCheck = _messages.MessageField('HealthCheck', 14)
+  id = _messages.StringField(15)
+  inboundServices = _messages.EnumField('InboundServicesValueListEntryValuesEnum', 16, repeated=True)
+  instanceClass = _messages.StringField(17)
+  libraries = _messages.MessageField('Library', 18, repeated=True)
+  manualScaling = _messages.MessageField('ManualScaling', 19)
+  name = _messages.StringField(20)
+  network = _messages.MessageField('Network', 21)
+  nobuildFilesRegex = _messages.StringField(22)
+  resources = _messages.MessageField('Resources', 23)
+  runtime = _messages.StringField(24)
+  servingStatus = _messages.EnumField('ServingStatusValueValuesEnum', 25)
+  threadsafe = _messages.BooleanField(26)
+  vm = _messages.BooleanField(27)
 
 
 encoding.AddCustomJsonFieldMapping(

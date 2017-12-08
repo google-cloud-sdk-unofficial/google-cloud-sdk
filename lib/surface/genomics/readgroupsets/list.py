@@ -64,8 +64,6 @@ class List(base.ListCommand):
       HttpException: An http error response was received while executing api
           request.
     """
-    genomics_util.ValidateLimitFlag(args.limit)
-
     apitools_client = genomics_util.GetGenomicsClient()
     messages = genomics_util.GetGenomicsMessages()
     req_class = messages.SearchReadGroupSetsRequest

@@ -13,8 +13,6 @@
 # limitations under the License.
 
 """Update cluster command."""
-import argparse
-
 from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import arg_parsers
@@ -78,7 +76,7 @@ class Update(base.Command):
       hpa=api_adapter.HPA, ingress=api_adapter.INGRESS))
     parser.add_argument(
         '--node-pool',
-        help=argparse.SUPPRESS)
+        help='Node pool to be updated.')
     flags.AddClusterAutoscalingFlags(parser, group)
     flags.AddClustersWaitAndAsyncFlags(parser)
 

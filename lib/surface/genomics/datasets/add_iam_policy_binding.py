@@ -59,14 +59,3 @@ class AddIamPolicyBinding(base.Command):
         setIamPolicyRequest=messages.SetIamPolicyRequest(policy=policy),
     )
     return apitools_client.datasets.SetIamPolicy(policy_request)
-
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    _ = args  # in case lint gets unhappy about unused args.
-    # pylint:disable=not-callable, self.format is callable.
-    self.format(result)

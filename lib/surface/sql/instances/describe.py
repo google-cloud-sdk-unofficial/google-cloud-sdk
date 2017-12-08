@@ -61,15 +61,6 @@ class _BaseGet(object):
 
     return sql_client.instances.Get(instance_ref.Request())
 
-  def Display(self, unused_args, result):
-    """Display prints information about what just happened to stdout.
-
-    Args:
-      unused_args: The same as the args in Run.
-      result: the value returned by Run().
-    """
-    self.format(result)
-
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Get(_BaseGet, base.Command):

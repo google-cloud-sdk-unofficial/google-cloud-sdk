@@ -15,7 +15,6 @@
 
 from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 
 
@@ -47,6 +46,12 @@ class Create(base.Command):
                         required=True,
                         help='Short description for the managed-zone.')
 
+  def Collection(self):
+    return 'dns.managedZones'
+
+  def Format(self, args):
+    return self.ListFormat(args)
+
   @util.HandleHttpError
   def Run(self, args):
     dns = self.context['dns_client']
@@ -64,6 +69,3 @@ class Create(base.Command):
                                               project=zone_ref.project))
     log.CreatedResource(zone_ref)
     return result
-
-  def Display(self, args, result):
-    list_printer.PrintResourceList('dns.managedZones', [result])

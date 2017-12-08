@@ -117,12 +117,3 @@ class Import(base.Command):
         infoMergeConfig=info_merge_config)
 
     return apitools_client.variants.Import(request)
-
-  def Display(self, args_unused, resp):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args_unused: The arguments that command was run with.
-      resp: The ImportVariantsResponse message returned from the Run() method.
-    """
-    self.format(resp)

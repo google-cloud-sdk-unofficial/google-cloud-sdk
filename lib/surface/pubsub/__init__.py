@@ -26,6 +26,8 @@ of the default behavior.
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import apis
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resolvers
+from googlecloudsdk.core import resources as cloud_resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -49,3 +51,7 @@ class Pubsub(base.Group):
     """
     context['pubsub_msgs'] = apis.GetMessagesModule('pubsub', 'v1')
     context['pubsub'] = apis.GetClientInstance('pubsub', 'v1')
+    cloud_resources.SetParamDefault(
+        api='pubsub', collection=None,
+        param='project',
+        resolver=resolvers.FromProperty(properties.VALUES.core.project))

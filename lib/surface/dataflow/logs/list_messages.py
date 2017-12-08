@@ -19,11 +19,11 @@ from googlecloudsdk.api_lib.dataflow import job_utils
 from googlecloudsdk.api_lib.dataflow import list_pager
 from googlecloudsdk.api_lib.dataflow import time_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import log
+from googlecloudsdk.core.resource import resource_projection_spec
 from surface import dataflow as commands
 
 
-class ListMessages(base.Command):
+class ListMessages(base.ListCommand):
   """Retrieve the logs from a specific job using the GetMessages RPC.
 
   This is intended for short-term use and will be removed once the CLI based on
@@ -44,6 +44,19 @@ class ListMessages(base.Command):
         '--importance', choices=['debug', 'detailed', 'warning', 'error'],
         help='Minimum importance a message must have to be displayed',
         default='warning')
+
+  def Collection(self):
+    return 'dataflow.logs'
+
+  def Defaults(self):
+    importances = {
+        'JOB_MESSAGE_DETAILED': 'd',
+        'JOB_MESSAGE_DEBUG': 'D',
+        'JOB_MESSAGE_WARNING': 'W',
+        'JOB_MESSAGE_ERROR': 'E',
+    }
+    symbols = {'dataflow.JobMessage::enum': importances}
+    return resource_projection_spec.ProjectionSpec(symbols=symbols)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -86,29 +99,3 @@ class ListMessages(base.Command):
         request,
         batch_size=None,  # Use server default.
         field='jobMessages')
-
-  def Display(self, args, logs):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: all the arguments that were provided to this command invocation.
-      logs: The logs returned from the Run() method.
-    """
-    if not args.format or args.format == 'text':
-      importance_enum = (
-          self.context[commands.DATAFLOW_MESSAGES_MODULE_KEY].JobMessage.
-          MessageImportanceValueValuesEnum)
-      importances = {
-          importance_enum.JOB_MESSAGE_DETAILED: 'd',
-          importance_enum.JOB_MESSAGE_DEBUG: 'D',
-          importance_enum.JOB_MESSAGE_WARNING: 'W',
-          importance_enum.JOB_MESSAGE_ERROR: 'E',
-      }
-      for msg in logs:
-        log.out.Print('{0} {1} {2} {3}'.format(
-            importances.get(msg.messageImportance, '?'),
-            time_util.FormatTimestamp(msg.time),
-            msg.id,
-            msg.messageText))
-    else:
-      self.format(logs)

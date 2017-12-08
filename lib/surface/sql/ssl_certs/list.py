@@ -19,7 +19,6 @@ from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
-from googlecloudsdk.core import list_printer
 
 
 class _BaseList(object):
@@ -35,6 +34,9 @@ class _BaseList(object):
           allowed.
     """
     flags.INSTANCE_FLAG.AddToParser(parser)
+
+  def Collection(self):
+    return 'sql.sslCerts'
 
   @errors.ReraiseHttpException
   def Run(self, args):
@@ -65,17 +67,14 @@ class _BaseList(object):
         instance=instance_ref.instance))
     return iter(result.items)
 
-  def Display(self, unused_args, result):
-    list_printer.PrintResourceList('sql.sslCerts', result)
-
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class List(_BaseList, base.Command):
+class List(_BaseList, base.ListCommand):
   """Lists all SSL certs for a Cloud SQL instance."""
   pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(_BaseList, base.Command):
+class ListBeta(_BaseList, base.ListCommand):
   """Lists all SSL certs for a Cloud SQL instance."""
   pass

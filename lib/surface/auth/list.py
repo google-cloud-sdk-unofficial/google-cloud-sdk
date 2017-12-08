@@ -67,12 +67,12 @@ class List(base.Command):
       resource_printer.Print(items, fmt)
       log.err.Print(textwrap.dedent("""
           To set the active account, run:
-            $ gcloud config set account ``ACCOUNT''
+            $ gcloud config set account `ACCOUNT`
           """))
     else:
       log.err.Print(textwrap.dedent("""\
           No credentialed accounts.
 
           To login, run:
-            $ gcloud auth login ``ACCOUNT''
+            $ gcloud auth login `ACCOUNT`
           """))

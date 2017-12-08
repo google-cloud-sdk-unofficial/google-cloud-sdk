@@ -19,12 +19,11 @@ from googlecloudsdk.api_lib.dns import import_util
 from googlecloudsdk.api_lib.dns import transaction_util
 from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-class Execute(base.Command):
+class Execute(base.ListCommand):
   """Execute the transaction on Cloud DNS.
 
   This command executes the transaction on Cloud DNS. This will result in
@@ -43,6 +42,12 @@ class Execute(base.Command):
   @staticmethod
   def Args(parser):
     util.ZONE_FLAG.AddToParser(parser)
+
+  def Collection(self):
+    return 'dns.changes'
+
+  def Format(self, args):
+    return self.ListFormat(args)
 
   @util.HandleHttpError
   def Run(self, args):
@@ -74,7 +79,3 @@ class Execute(base.Command):
     log.CreatedResource(change_ref)
     os.remove(args.transaction_file)
     return result
-
-  def Display(self, args, result):
-    if result:
-      list_printer.PrintResourceList('dns.changes', [result])

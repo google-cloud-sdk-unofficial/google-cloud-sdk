@@ -27,7 +27,9 @@ from googlecloudsdk.core.resource import resource_printer
 class Delete(base.DeleteCommand):
   """Delete debug snapshots.
 
-  This command deletes snapshots from a Cloud Debugger debug target.
+  This command deletes snapshots from a Cloud Debugger debug target. It will
+  ask for confirmation before deleting any snapshots. To suppress confirmation,
+  use the global --quiet option.
   """
 
   @staticmethod

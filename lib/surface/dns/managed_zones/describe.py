@@ -47,6 +47,3 @@ class Describe(base.Command):
     zone_ref = resources.Parse(args.dns_zone, collection='dns.managedZones')
 
     return dns.managedZones.Get(zone_ref.Request())
-
-  def Display(self, args, result):
-    self.format(result)

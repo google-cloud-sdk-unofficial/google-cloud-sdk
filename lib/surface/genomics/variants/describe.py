@@ -47,12 +47,3 @@ class Describe(base.Command):
     )
 
     return apitools_client.variants.Get(request)
-
-  def Display(self, args_unused, variant):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args_unused: The arguments that command was run with.
-      variant: The Variant message returned from the Run() method.
-    """
-    self.format(variant)

@@ -48,13 +48,3 @@ class Describe(base.Command):
       return adapter.GetOperation(adapter.ParseOperation(args.operation_id))
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(util.GetError(error))
-
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    self.format(result)
-

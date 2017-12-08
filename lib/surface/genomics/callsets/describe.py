@@ -40,12 +40,3 @@ class Describe(base.Command):
       a CallSet message
     """
     return genomics_util.GetCallSet(args.id)
-
-  def Display(self, args_unused, call_set):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args_unused: The arguments that command was run with.
-      call_set: The Callset message returned from the Run() method.
-    """
-    self.format(call_set)

@@ -83,7 +83,8 @@ class Tail(base.Command):
           .format(job_ref.jobId, job_ref.projectId,
                   dataflow_util.GetErrorMessage(error)))
 
-    return [m for m in response.metrics if all([pred(m) for pred in preds])]
+    return [self._Format(m)
+            for m in response.metrics if all([pred(m) for pred in preds])]
 
   def _IsSentinelWatermark(self, metric):
     """This returns true if the metric is a watermark with a sentinel value.
@@ -140,12 +141,3 @@ class Tail(base.Command):
         if prop.key == key:
           return prop.value
     return None
-
-  def Display(self, args, metrics):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: all the arguments that were provided to this command invocation.
-      metrics: The JobMetrics returned from the Run() method.
-    """
-    self.format([self._Format(m) for m in metrics])

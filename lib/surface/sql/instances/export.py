@@ -38,6 +38,7 @@ class _BaseExport(object):
           on the command line after this command. Positional arguments are
           allowed.
     """
+    base.ASYNC_FLAG.AddToParser(parser)
     parser.add_argument(
         'instance',
         completion_resource='sql.instances',
@@ -66,21 +67,6 @@ class _BaseExport(object):
         action=arg_parsers.FloatingListValuesCatcher(),
         help='Tables to export from the specified database. If you specify '
         'tables, specify one and only one database.')
-    parser.add_argument(
-        '--async',
-        action='store_true',
-        help='Do not wait for the operation to complete.')
-
-  def Display(self, unused_args, result):
-    """Display prints information about what just happened to stdout.
-
-    Args:
-      unused_args: The same as the args in Run.
-      result: A dict object representing the operations resource describing the
-          export operation if the export was successful.
-    """
-    if result:
-      self.format(result)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

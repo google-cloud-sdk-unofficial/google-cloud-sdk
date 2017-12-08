@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for creating instance templates."""
+"""Command for creating instance templates running Docker images."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import containers_utils
 from googlecloudsdk.api_lib.compute import instance_template_utils
@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateFromContainer(base_classes.BaseAsyncCreator):
   """Command for creating VM instance templates hosting Docker images."""
@@ -174,25 +173,40 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
 
 
 CreateFromContainer.detailed_help = {
+    'brief': """\
+    Command for creating Google Compute engine virtual machine instance templates for running Docker images.
+    """,
     'DESCRIPTION': """\
-        Create a VM instance template, which executes Docker image.
+        *{command}* facilitates the creation of a Google Compute Engine virtual
+        machine instance template that runs a Docker image. For example, running:
+
+          $ {command} instance-template-1 --docker-image=gcr.io/google-containers/busybox
+
+        will create an instance template that runs the 'busybox' image.
+        In this example, the instance template will have the name
+        'instance-template-1'
+
+        For more examples, refer to the *EXAMPLES* section below.
         """,
     'EXAMPLES': """\
-        To create a template, named 'instance-template-1', for VM running gcr.io/google-containers/busybox
-        and exposing 80 port, run:
+        To create a template named 'instance-template-1' that runs the
+        gcr.io/google-containers/busybox image and exposes port 80, run:
 
           $ {command} instance-template-1 --docker-image=gcr.io/google-containers/busybox --port-mappings=80:80:TCP
 
-        To create a template, named 'instance-template-1', for VM running gcr.io/google-containers/busybox
-        and specify 'echo "Hello world"' as run command, run:
+        To create a template named 'instance-template-1' that runs the
+        gcr.io/google-containers/busybox image and executes 'echo "Hello world"'
+        as a command, run:
 
           $ {command} instance-template-1 --docker-image=gcr.io/google-containers/busybox --run-command='echo "Hello world"'
 
-        To create a template for VMs running gcr.io/google-containers/busybox in privileged mode, run:
+        To create a template running gcr.io/google-containers/busybox in
+        privileged mode, run:
 
           $ {command} instance-template-1 --docker-image=gcr.io/google-containers/busybox --run-as-privileged
 
-        To create a template for VMs using deployment described by container manifest in containers.json file, run:
+        To create a template that uses a deployment described by a container
+        manifest in a containers.json file, run:
 
           $ {command} instance-template-1 --container-manifest=containers.json
         """

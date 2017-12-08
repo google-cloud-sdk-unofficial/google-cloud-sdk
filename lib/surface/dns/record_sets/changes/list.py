@@ -16,12 +16,11 @@
 
 from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import properties
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """View the list of changes that have been made to your record-sets.
 
   This command displays the list of changes that have been made to your
@@ -45,27 +44,25 @@ class List(base.Command):
   def Args(parser):
     util.ZONE_FLAG.AddToParser(parser)
     parser.add_argument(
-        '--limit', default=None, required=False, type=int,
-        help='Maximum number of changes to list.')
-    parser.add_argument(
         '--sort-order', default=None, required=False,
         choices=['ascending', 'descending'],
         help='Sort order for listing (ascending|descending).')
 
+  def Collection(self):
+    return 'dns.changes'
+
+  @util.HandleHttpError
   def Run(self, args):
     dns_client = self.context['dns_client']
     dns_messages = self.context['dns_messages']
 
     project_id = properties.VALUES.core.project.Get(required=True)
 
-    return list_pager.YieldFromList(
+    for resource in list_pager.YieldFromList(
         dns_client.changes,
         dns_messages.DnsChangesListRequest(
             project=project_id,
             managedZone=args.zone,
             sortOrder=args.sort_order),
-        limit=args.limit, field='changes')
-
-  @util.HandleHttpError
-  def Display(self, args, result):
-    list_printer.PrintResourceList('dns.changes', result)
+        limit=args.limit, field='changes'):
+      yield resource

@@ -47,13 +47,3 @@ class Describe(base.Command):
         referenceSetId=args.id,
     )
     return apitools_client.referencesets.Get(request)
-
-  def Display(self, args_unused, reference_set):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args_unused: The arguments that command was run with.
-      reference_set: The reference set message returned from the Run() method.
-    """
-
-    self.format(reference_set)

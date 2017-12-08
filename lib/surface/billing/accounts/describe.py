@@ -60,12 +60,3 @@ class Describe(base.DescribeCommand):
             ),
         )
     )
-
-  def Display(self, _, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      result: The value returned from the Run() method.
-    """
-    # pylint:disable=not-callable, self.format is callable.
-    self.format(result)

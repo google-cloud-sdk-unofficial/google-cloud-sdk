@@ -49,7 +49,3 @@ class Describe(orgs_base.OrganizationCommand, base.DescribeCommand):
   def Run(self, args):
     request = self.GetOrganizationRef(args.id).Request()
     return self.OrganizationsClient().Get(request)
-
-  def Display(self, args, result):
-    # pylint:disable=not-callable, self.format is callable.
-    self.format(result)

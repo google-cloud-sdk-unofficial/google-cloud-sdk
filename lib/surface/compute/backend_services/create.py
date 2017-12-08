@@ -123,11 +123,19 @@ class CreateAlpha(CreateGA):
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddHealthChecks(parser)
 
+    flags.AddLoadBalancingScheme(parser)
+
   def CreateGlobalRequests(self, args):
+    if args.load_balancing_scheme == 'INTERNAL':
+      raise exceptions.ToolException(
+          'Must specify --region for internal load balancer.')
     backend_service = self._CreateBackendService(args)
     if args.connection_draining_timeout is not None:
       backend_service.connectionDraining = self.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
+
+    if args.enable_cdn:
+      backend_service.enableCDN = args.enable_cdn
 
     if args.session_affinity is not None:
       backend_service.sessionAffinity = (
@@ -166,6 +174,9 @@ class CreateAlpha(CreateGA):
         description=args.description,
         name=args.name,
         healthChecks=health_checks,
+        loadBalancingScheme=(
+            self.messages.BackendService.LoadBalancingSchemeValueValuesEnum(
+                args.load_balancing_scheme)),
         protocol=_ResolveProtocol(self.messages, args, default='TCP'),
         timeoutSec=args.timeout)
 

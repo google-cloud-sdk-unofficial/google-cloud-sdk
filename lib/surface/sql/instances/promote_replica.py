@@ -33,23 +33,10 @@ class _BasePromoteReplica(object):
           on the command line after this command. Positional arguments are
           allowed.
     """
+    base.ASYNC_FLAG.AddToParser(parser)
     parser.add_argument('replica',
                         completion_resource='sql.instances',
                         help='Cloud SQL read replica ID.')
-    parser.add_argument(
-        '--async',
-        action='store_true',
-        help='Do not wait for the operation to complete.')
-
-  def Display(self, unused_args, result):
-    """Display information about what just happened to stdout.
-
-    Args:
-      unused_args: The same as the args in Run.
-      result: A dict object representing the operations resource describing the
-          promote-replica operation if the promote-replica was successful.
-    """
-    self.format(result)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

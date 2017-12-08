@@ -24,15 +24,11 @@ from gae_ext_runtime import ext_runtime
 from googlecloudsdk.api_lib.app import yaml_parsing
 from googlecloudsdk.api_lib.app.runtimes import fingerprinter
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.app import output_helpers
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.third_party.appengine.api import appinfo
 from ruamel import yaml
-
-
-RUNTIME_MISMATCH_MSG = ("You've generated a Dockerfile that may be customized "
-                        'for your application.  To use this Dockerfile, '
-                        'the runtime field in [{0}] must be set to custom.')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.PREVIEW)
@@ -120,7 +116,8 @@ class GenConfig(base.Command):
     # TODO(user): If --config is given, should it still be modified?
     if config and args.custom and config.GetEffectiveRuntime() != 'custom':
       alter = console_io.PromptContinue(
-          default=False, message=RUNTIME_MISMATCH_MSG.format(config_filename),
+          default=False,
+          message=output_helpers.RUNTIME_MISMATCH_MSG.format(config_filename),
           prompt_string='Would you like to update it now?')
       if alter:
         _AlterRuntime(config_filename, 'custom')

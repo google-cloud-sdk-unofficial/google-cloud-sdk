@@ -22,7 +22,6 @@ from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
@@ -38,22 +37,19 @@ class _BaseList(object):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    parser.add_argument(
-        '--limit',
-        type=int,
-        required=False,
-        default=None,
-        help='Maximum number of backups to list.')
     flags.INSTANCE_FLAG.AddToParser(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class List(_BaseList, base.Command):
+class List(_BaseList, base.ListCommand):
   """Lists all backups associated with a given instance.
 
   Lists all backups associated with a given Cloud SQL instance and
   configuration in the reverse chronological order of the enqueued time.
   """
+
+  def Collection(self):
+    return 'sql.backupRuns'
 
   @errors.ReraiseHttpException
   def Run(self, args):
@@ -93,17 +89,17 @@ class List(_BaseList, base.Command):
             backupConfiguration=config_id),
         limit=args.limit)
 
-  def Display(self, unused_args, result):
-    list_printer.PrintResourceList('sql.backupRuns', result)
-
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(_BaseList, base.Command):
+class ListBeta(_BaseList, base.ListCommand):
   """Lists all backups associated with a given instance.
 
   Lists all backups associated with a given Cloud SQL instance and
   configuration in the reverse chronological order of the enqueued time.
   """
+
+  def Collection(self):
+    return 'sql.backupRuns.v1beta4'
 
   @errors.ReraiseHttpException
   def Run(self, args):
@@ -136,6 +132,3 @@ class ListBeta(_BaseList, base.Command):
             project=instance_ref.project,
             instance=instance_ref.instance),
         limit=args.limit)
-
-  def Display(self, unused_args, result):
-    list_printer.PrintResourceList('sql.backupRuns.v1beta4', result)

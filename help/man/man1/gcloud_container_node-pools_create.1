@@ -11,7 +11,7 @@ gcloud container node\-pools create \- create a node pool in a running cluster
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud container node\-pools create\fR \fINAME\fR [\fB\-\-cluster\fR\ \fICLUSTER\fR] [\fB\-\-disk\-size\fR\ \fIDISK_SIZE\fR] [\fB\-\-no\-enable\-cloud\-endpoints\fR] [\fB\-\-image\-type\fR\ \fIIMAGE_TYPE\fR] [\fB\-\-machine\-type\fR\ \fIMACHINE_TYPE\fR,\ \fB\-m\fR\ \fIMACHINE_TYPE\fR] [\fB\-\-num\-nodes\fR\ \fINUM_NODES\fR;\ default="3"] [\fB\-\-scopes\fR\ \fISCOPE\fR,[\fISCOPE\fR,...]] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud container node\-pools create\fR \fINAME\fR [\fB\-\-cluster\fR\ \fICLUSTER\fR] [\fB\-\-disk\-size\fR\ \fIDISK_SIZE\fR] [\fB\-\-enable\-autoscaling\fR] [\fB\-\-no\-enable\-cloud\-endpoints\fR] [\fB\-\-image\-type\fR\ \fIIMAGE_TYPE\fR] [\fB\-\-machine\-type\fR\ \fIMACHINE_TYPE\fR,\ \fB\-m\fR\ \fIMACHINE_TYPE\fR] [\fB\-\-max\-nodes\fR\ \fIMAX_NODES\fR] [\fB\-\-min\-nodes\fR\ \fIMIN_NODES\fR] [\fB\-\-num\-nodes\fR\ \fINUM_NODES\fR;\ default="3"] [\fB\-\-scopes\fR\ \fISCOPE\fR,[\fISCOPE\fR,...]] [\fB\-\-zone\fR\ \fIZONE\fR,\ \fB\-z\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -43,6 +43,11 @@ The cluster to add the node pool to.
 Size in GB for node VM boot disks. Defaults to 100GB.
 
 .RE
+\fB\-\-enable\-autoscaling\fR
+.RS 2m
+Enables autoscaling for the node pool.
+
+.RE
 \fB\-\-enable\-cloud\-endpoints\fR
 .RS 2m
 Automatically enable Google Cloud Endpoints to take advantage of API management
@@ -71,6 +76,16 @@ $ gcloud container get\-server\-config
 \fB\-\-machine\-type\fR \fIMACHINE_TYPE\fR, \fB\-m\fR \fIMACHINE_TYPE\fR
 .RS 2m
 The type of machine to use for nodes. Defaults to server\-specified
+
+.RE
+\fB\-\-max\-nodes\fR \fIMAX_NODES\fR
+.RS 2m
+Maximum number of nodes in the node pool.
+
+.RE
+\fB\-\-min\-nodes\fR \fIMIN_NODES\fR
+.RS 2m
+Minimum number of nodes in the node pool.
 
 .RE
 \fB\-\-num\-nodes\fR \fINUM_NODES\fR; default="3"

@@ -28,6 +28,6 @@ class Targets(base.Group):
       'EXAMPLES': """\
           To view all available debug targets, run:
 
-              $ {command} targets list
+              $ {command} list
        """
   }

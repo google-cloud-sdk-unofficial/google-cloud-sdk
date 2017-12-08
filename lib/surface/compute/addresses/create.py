@@ -13,19 +13,18 @@
 # limitations under the License.
 """Command for reserving IP addresses."""
 
-from googlecloudsdk.api_lib.compute import addresses_utils
+from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import name_generator
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import flags
 
 
-class Create(addresses_utils.AddressesMutator):
+class Create(base_classes.BaseAsyncMutator):
   """Reserve IP addresses."""
 
   @staticmethod
   def Args(parser):
-    addresses_utils.AddressesMutator.Args(parser)
-
     addresses = parser.add_argument(
         '--addresses',
         metavar='ADDRESS',
@@ -56,6 +55,29 @@ class Create(addresses_utils.AddressesMutator):
         nargs='*',
         help='The names to assign to the reserved IP addresses.')
 
+    scope = parser.add_mutually_exclusive_group()
+
+    flags.AddRegionFlag(
+        scope,
+        resource_type='address',
+        operation_type='operate on')
+
+    scope.add_argument(
+        '--global',
+        action='store_true',
+        help='If provided, it is assumed the addresses are global.')
+
+  @property
+  def service(self):
+    if self.global_request:
+      return self.compute.globalAddresses
+    else:
+      return self.compute.addresses
+
+  @property
+  def resource_type(self):
+    return 'addresses'
+
   @property
   def method(self):
     return 'Insert'
@@ -85,7 +107,16 @@ class Create(addresses_utils.AddressesMutator):
 
     return names, addresses
 
-  def CreateGlobalRequests(self, args):
+  def CreateRequests(self, args):
+    """Overrides."""
+    self.global_request = getattr(args, 'global')
+
+    if self.global_request:
+      return self._CreateGlobalRequests(args)
+
+    return self._CreateRegionalRequests(args)
+
+  def _CreateGlobalRequests(self, args):
     names, addresses = self.GetNamesAndAddresses(args)
     address_refs = self.CreateGlobalReferences(
         names, resource_type='globalAddresses')
@@ -103,7 +134,7 @@ class Create(addresses_utils.AddressesMutator):
 
     return requests
 
-  def CreateRegionalRequests(self, args):
+  def _CreateRegionalRequests(self, args):
     names, addresses = self.GetNamesAndAddresses(args)
     address_refs = self.CreateRegionalReferences(names, args.region)
 

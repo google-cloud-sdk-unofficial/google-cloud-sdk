@@ -110,7 +110,9 @@ def _CommonArgs(parser):
 
   size = parser.add_argument(
       '--size',
-      type=arg_parsers.BinarySize(lower_bound='1GB'),
+      type=arg_parsers.BinarySize(
+          lower_bound='1GB',
+          suggested_binary_size_scales=['GB', 'GiB', 'TB', 'TiB', 'PiB', 'PB']),
       help='Indicates the size of the disks.')
   size.detailed_help = """\
       Indicates the size of the disks. The value must be a whole

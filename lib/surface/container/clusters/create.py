@@ -226,6 +226,12 @@ class Create(base.Command):
         image_type=args.image_type,
         max_nodes_per_pool=args.max_nodes_per_pool)
 
+  def Collection(self):
+    return 'container.projects.zones.clusters'
+
+  def Format(self, args):
+    return self.ListFormat(args)
+
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -277,15 +283,6 @@ class Create(base.Command):
       log.warning(error.message)
 
     return cluster
-
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    self.context['api_adapter'].PrintClusters([result])
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

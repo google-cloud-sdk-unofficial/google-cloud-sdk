@@ -21,7 +21,6 @@ from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 from googlecloudsdk.core import remote_completion
 from googlecloudsdk.core.console import console_io
@@ -29,6 +28,7 @@ from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_e
 
 
 class _BaseCreate(object):
+  """Create command base class for all release tracks."""
 
   @staticmethod
   def Args(parser):
@@ -41,6 +41,7 @@ class _BaseCreate(object):
           on the command line after this command. Positional arguments are
           allowed.
     """
+    base.ASYNC_FLAG.AddToParser(parser)
     parser.add_argument(
         '--activation-policy',
         required=False,
@@ -166,15 +167,17 @@ class _BaseCreate(object):
         'booleans. View the Instance Resource API for allowed flags. '
         '(e.g., `--database-flags max_allowed_packet=55555,skip_grant_tables=,'
         'log_output=1`)')
-    parser.add_argument(
-        '--async',
-        action='store_true',
-        help='Do not wait for the operation to complete.')
+
+  def Format(self, args):
+    return self.ListFormat(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(_BaseCreate, base.Command):
   """Creates a new Cloud SQL instance."""
+
+  def Collection(self):
+    return 'sql.instances'
 
   @errors.ReraiseHttpException
   def Run(self, args):
@@ -236,22 +239,13 @@ class Create(_BaseCreate, base.Command):
       log.debug('operation : %s', str(operation_ref))
       raise
 
-  def Display(self, unused_args, result):
-    """Display prints information about what just happened to stdout.
-
-    Args:
-      unused_args: The same as the args in Run.
-      result: The database created, or the operation if async.
-    """
-    if result.kind == 'sql#instance':
-      list_printer.PrintResourceList('sql.instances', [result])
-    else:
-      self.format(result)
-
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(_BaseCreate, base.Command):
   """Creates a new Cloud SQL instance."""
+
+  def Collection(self):
+    return 'sql.instances.v1beta4'
 
   @errors.ReraiseHttpException
   def Run(self, args):
@@ -312,15 +306,3 @@ class CreateBeta(_BaseCreate, base.Command):
     except apitools_exceptions.HttpError:
       log.debug('operation : %s', str(operation_ref))
       raise
-
-  def Display(self, unused_args, result):
-    """Display prints information about what just happened to stdout.
-
-    Args:
-      unused_args: The same as the args in Run.
-      result: The database created, or the operation if async.
-    """
-    if result.kind == 'sql#instance':
-      list_printer.PrintResourceList('sql.instances.v1beta4', [result])
-    else:
-      self.format(result)

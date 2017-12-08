@@ -20,16 +20,12 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
-DETAILED_HELP = {
-    'DESCRIPTION': """\
-        *{command}* displays all data associated with the node pool in the
-        Google Container Engine cluster.
-        """,
-}
-
-
 class Describe(base.DescribeCommand):
-  """Describe an existing node pool for a cluster."""
+  """Describe an existing node pool for a cluster.
+
+  *{command}* displays all data associated with the node pool in the
+  Google Container Engine cluster.
+  """
 
   @staticmethod
   def Args(parser):
@@ -61,6 +57,3 @@ class Describe(base.DescribeCommand):
       return adapter.GetNodePool(adapter.ParseNodePool(args.name))
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(util.GetError(error))
-
-
-Describe.detailed_help = DETAILED_HELP

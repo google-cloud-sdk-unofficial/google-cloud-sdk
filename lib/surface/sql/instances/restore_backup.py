@@ -21,22 +21,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
-class _BaseRestoreBackup(object):
-  """Restores a backup of a Cloud SQL instance."""
-
-  def Display(self, unused_args, result):
-    """Display prints information about what just happened to stdout.
-
-    Args:
-      unused_args: The same as the args in Run.
-      result: A dict object representing the operations resource describing the
-      restoreBackup operation if the restoreBackup was successful.
-    """
-    self.format(result)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class RestoreBackup(_BaseRestoreBackup, base.Command):
+class RestoreBackup(base.Command):
   """Restores a backup of a Cloud SQL instance."""
 
   @staticmethod
@@ -48,6 +34,7 @@ class RestoreBackup(_BaseRestoreBackup, base.Command):
           on the command line after this command. Positional arguments are
           allowed.
     """
+    base.ASYNC_FLAG.AddToParser(parser)
     parser.add_argument(
         'instance',
         completion_resource='sql.instances',
@@ -58,10 +45,6 @@ class RestoreBackup(_BaseRestoreBackup, base.Command):
         required=True,
         help='The time when this run was due to start in RFC 3339 format, for '
         'example 2012-11-15T16:19:00.094Z.')
-    parser.add_argument(
-        '--async',
-        action='store_true',
-        help='Do not wait for the operation to complete.')
 
   @errors.ReraiseHttpException
   def Run(self, args):
@@ -118,7 +101,7 @@ class RestoreBackup(_BaseRestoreBackup, base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class RestoreBackupBeta(_BaseRestoreBackup, base.Command):
+class RestoreBackupBeta(base.Command):
   """Restores a backup of a Cloud SQL instance."""
 
   @staticmethod
