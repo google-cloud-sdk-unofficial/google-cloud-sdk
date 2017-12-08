@@ -11,7 +11,7 @@ gcloud compute instance\-groups managed set\-target\-pools \- set instance templ
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instance\-groups managed set\-target\-pools\fR \fINAME\fR [\fB\-\-clear\-target\-pools\fR\ |\ \fB\-\-target\-pools\fR\ \fITARGET_POOL\fR,[\fITARGET_POOL\fR,...]] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instance\-groups managed set\-target\-pools\fR \fINAME\fR [\fB\-\-target\-pools\fR\ [\fITARGET_POOL\fR,...]] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -38,16 +38,11 @@ Managed instance group name.
 
 .SH "FLAGS"
 
-\fB\-\-clear\-target\-pools\fR
+\fB\-\-target\-pools\fR [\fITARGET_POOL\fR,...]
 .RS 2m
-Do not add instances to any Compute Engine Target Pools.
-
-.RE
-\fB\-\-target\-pools\fR \fITARGET_POOL\fR,[\fITARGET_POOL\fR,...]
-.RS 2m
-Compute Engine Target Pools to add the instances to. Target Pools must can
+Compute Engine Target Pools to add the instances to. Target Pools must be
 specified by name or by URL. Example: \-\-target\-pool
-target\-pool\-1,target\-pool\-2
+target\-pool\-1,target\-pool\-2.
 
 .RE
 \fB\-\-zone\fR \fIZONE\fR

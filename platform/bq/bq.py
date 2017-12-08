@@ -1196,20 +1196,7 @@ class _Query(BigqueryCmd):
             table_name_and_def[1])
       kwds['external_table_definitions_json'] = dict(external_table_defs)
     if self.udf_resource:
-      inline_udf_resources = []
-      external_udf_resources = []
-      for uris in self.udf_resource:
-        for uri in uris.split(','):
-          if uri.startswith('gs://'):
-            external_udf_resources.append(uri)
-          else:
-            if os.path.isfile(uri):
-              with open(uri) as udf_file:
-                inline_udf_resources.append(udf_file.read())
-            else:
-              raise app.UsageError('File not found: %s' % uri)
-      kwds['inline_udf_resources'] = inline_udf_resources
-      kwds['external_udf_resources'] = external_udf_resources
+      kwds['udf_resources'] = _ParseUdfResources(self.udf_resource)
     query = ' '.join(args)
     if not query:
       query = sys.stdin.read()
@@ -2610,6 +2597,33 @@ class _Version(BigqueryCmd):
   def RunWithArgs(self):
     """Return the version of bq."""
     print 'This is BigQuery CLI %s' % (_VERSION_NUMBER,)
+
+
+def _ParseUdfResources(udf_resources):
+
+  if udf_resources is None:
+    return None
+  inline_udf_resources = []
+  external_udf_resources = []
+  for uris in udf_resources:
+    for uri in uris.split(','):
+      if os.path.isfile(uri):
+        with open(uri) as udf_file:
+          inline_udf_resources.append(udf_file.read())
+      else:
+        if not uri.startswith('gs://'):
+          raise app.UsageError(
+              'Non-inline resources must be Google Cloud Storage '
+              '(gs://) URIs')
+        external_udf_resources.append(uri)
+  udfs = []
+  if inline_udf_resources:
+    for udf_code in inline_udf_resources:
+      udfs.append({'inlineCode': udf_code})
+  if external_udf_resources:
+    for uri in external_udf_resources:
+      udfs.append({'resourceUri': uri})
+  return udfs
 
 
 def main(unused_argv):

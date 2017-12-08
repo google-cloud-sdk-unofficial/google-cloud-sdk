@@ -1440,8 +1440,7 @@ class BigqueryClient(object):
 
   def CreateTable(self, reference, ignore_existing=False, schema=None,
                   description=None, friendly_name=None, expiration=None,
-                  view_query=None,
-                  external_data_config=None):
+                  view_query=None, external_data_config=None):  # pylint: disable=line-too-long
     """Create a table corresponding to TableReference.
 
     Args:
@@ -1476,7 +1475,8 @@ class BigqueryClient(object):
       if expiration is not None:
         body['expirationTime'] = expiration
       if view_query is not None:
-        body['view'] = {'query': view_query}
+        view_args = {'query': view_query}
+        body['view'] = view_args
       if external_data_config is not None:
         body['externalDataConfiguration'] = external_data_config
       self.apiclient.tables().insert(
@@ -1488,8 +1488,7 @@ class BigqueryClient(object):
 
   def UpdateTable(self, reference, schema=None,
                   description=None, friendly_name=None, expiration=None,
-                  view_query=None,
-                  external_data_config=None):
+                  view_query=None, external_data_config=None):  # pylint: disable=line-too-long
     """Updates a table.
 
     Args:
@@ -1522,7 +1521,8 @@ class BigqueryClient(object):
       else:
         body['expirationTime'] = expiration
     if view_query is not None:
-      body['view'] = {'query': view_query}
+      view_args = {'query': view_query}
+      body['view'] = view_args
     if external_data_config is not None:
       body['externalDataConfiguration'] = external_data_config
 
@@ -1674,8 +1674,7 @@ class BigqueryClient(object):
                      min_completion_ratio=None,
                      project_id=None,
                      external_table_definitions_json=None,
-                     inline_udf_resources=None,
-                     external_udf_resources=None,
+                     udf_resources=None,
                      **kwds):
     """Executes the given query using the rpc-style query api.
 
@@ -1696,9 +1695,7 @@ class BigqueryClient(object):
       project_id: Project id to use.
       external_table_definitions_json: Json representation of external table
           definitions.
-      inline_udf_resources: Code payload to load into an inline UDF resource.
-      external_udf_resources: Remote URIs of code to load into external UDF
-          resources.
+      udf_resources: Array of inline and external UDF code resources.
       **kwds: Extra keyword arguments passed directly to jobs.Query().
 
     Returns:
@@ -1715,15 +1712,8 @@ class BigqueryClient(object):
     request = {'query': query}
     if external_table_definitions_json:
       request['tableDefinitions'] = external_table_definitions_json
-    udfs = []
-    if inline_udf_resources:
-      for udf_code in inline_udf_resources:
-        udfs.append({'inlineCode': udf_code})
-    if external_udf_resources:
-      for uri in external_udf_resources:
-        udfs.append({'resourceUri': uri})
-    if udfs:
-      request['userDefinedFunctionResources'] = udfs
+    if udf_resources:
+      request['userDefinedFunctionResources'] = udf_resources
     if self.dataset_id:
       request['defaultDataset'] = dict(self.GetDatasetReference())
     _ApplyParameters(
@@ -1998,8 +1988,7 @@ class BigqueryClient(object):
                   wait_printer_factory=None,
                   max_single_wait=None,
                   external_table_definitions_json=None,
-                  inline_udf_resources=None,
-                  external_udf_resources=None,
+                  udf_resources=None,
                   **kwds):
     """Executes the given query using the rpc-style query api.
 
@@ -2024,9 +2013,7 @@ class BigqueryClient(object):
           to query() / getQueryResults().
       external_table_definitions_json: Json representation of external table
           definitions.
-      inline_udf_resources: Code payload to load into an inline UDF resource.
-      external_udf_resources: Remote URIs of code to load into external UDF
-          resources.
+      udf_resources: Array of inline and remote UDF resources.
       **kwds: Passed directly to self.ExecuteSyncQuery.
 
     Raises:
@@ -2075,8 +2062,7 @@ class BigqueryClient(object):
               timeout_ms=current_wait_ms,
               max_results=0,
               external_table_definitions_json=external_table_definitions_json,
-              inline_udf_resources=inline_udf_resources,
-              external_udf_resources=external_udf_resources,
+              udf_resources=udf_resources,
               **kwds)
           job_reference = ApiClientHelper.JobReference.Create(
               **result['jobReference'])
@@ -2111,8 +2097,7 @@ class BigqueryClient(object):
             min_completion_ratio=None,
             flatten_results=None,
             external_table_definitions_json=None,
-            inline_udf_resources=None,
-            external_udf_resources=None,
+            udf_resources=None,
             **kwds):
     # pylint: disable=g-doc-args
     """Execute the given query, returning the created job.
@@ -2146,9 +2131,7 @@ class BigqueryClient(object):
         result schema. If not set, the default behavior is to flatten.
       external_table_definitions_json: Json representation of external table
         definitions.
-      inline_udf_resources: Code payload to load into an inline UDF resource.
-      external_udf_resources: Remote URIs of code to load into external UDF
-          resources.
+      udf_resources: Array of inline and remote UDF resources.
       **kwds: Passed on to self.ExecuteJob.
 
     Raises:
@@ -2164,15 +2147,8 @@ class BigqueryClient(object):
       query_config['defaultDataset'] = dict(self.GetDatasetReference())
     if external_table_definitions_json:
       query_config['tableDefinitions'] = external_table_definitions_json
-    udfs = []
-    if inline_udf_resources:
-      for udf_code in inline_udf_resources:
-        udfs.append({'inlineCode': udf_code})
-    if external_udf_resources:
-      for uri in external_udf_resources:
-        udfs.append({'resourceUri': uri})
-    if udfs:
-      query_config['userDefinedFunctionResources'] = udfs
+    if udf_resources:
+      query_config['userDefinedFunctionResources'] = udf_resources
     if destination_table:
       try:
         reference = self.GetTableReference(destination_table)
@@ -2484,7 +2460,7 @@ class ApiClientHelper(object):
   def __init__(self, *unused_args, **unused_kwds):
     raise NotImplementedError('Cannot instantiate static class ApiClientHelper')
 
-  class Reference(object):
+  class Reference(collections.Mapping):
     """Base class for Reference objects returned by apiclient."""
     _required_fields = set()
     _format_str = ''
@@ -2507,7 +2483,15 @@ class ApiClientHelper(object):
       return cls(**args)
 
     def __iter__(self):
-      return ((name, getattr(self, name)) for name in self._required_fields)
+      return iter(self._required_fields)
+
+    def __getitem__(self, key):
+      if key in self._required_fields:
+        return self.__dict__[key]
+      raise KeyError(key)
+
+    def __len__(self):
+      return len(self._required_fields)
 
     def __str__(self):
       return self._format_str % dict(self)
@@ -2525,10 +2509,22 @@ class ApiClientHelper(object):
     _format_str = '%(projectId)s:%(jobId)s'
     typename = 'job'
 
+    def GetProjectReference(self):
+      return ApiClientHelper.ProjectReference.Create(
+          projectId=self.projectId)
+
   class ProjectReference(Reference):
     _required_fields = set(('projectId',))
     _format_str = '%(projectId)s'
     typename = 'project'
+
+    def GetDatasetReference(self, dataset_id):
+      return ApiClientHelper.DatasetReference.Create(
+          projectId=self.projectId, datasetId=dataset_id)
+
+    def GetTableReference(self, dataset_id, table_id):
+      return ApiClientHelper.TableReference.Create(
+          projectId=self.projectId, datasetId=dataset_id, tableId=table_id)
 
   class DatasetReference(Reference):
     _required_fields = set(('projectId', 'datasetId'))
@@ -2538,6 +2534,10 @@ class ApiClientHelper(object):
     def GetProjectReference(self):
       return ApiClientHelper.ProjectReference.Create(
           projectId=self.projectId)
+
+    def GetTableReference(self, table_id):
+      return ApiClientHelper.TableReference.Create(
+          projectId=self.projectId, datasetId=self.datasetId, tableId=table_id)
 
   class TableReference(Reference):
     _required_fields = set(('projectId', 'datasetId', 'tableId'))
@@ -2551,4 +2551,3 @@ class ApiClientHelper(object):
     def GetProjectReference(self):
       return ApiClientHelper.ProjectReference.Create(
           projectId=self.projectId)
-

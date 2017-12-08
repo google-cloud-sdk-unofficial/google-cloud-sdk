@@ -70,13 +70,20 @@ adds box decorations to a default table, and
 
 lists the resource in \fBjson\fR format.
 
-The supported formats and format specific attributes are:
+The formats and format specific attributes are:
 
 \fBcsv\fR
 .RS 2m
 Comma Separated Values with no keys. This format requires a projection to define
 the values to be printed.
 
+The format attributes are:
+
+\fBno\-heading\fR
+.RS 2m
+Disables the initial key name heading record.
+
+.RE
 .RE
 \fBdefault\fR
 .RS 2m
@@ -106,10 +113,30 @@ JSON, JavaScript Object Notation.
 .RS 2m
 An ordered list of items.
 
+The format attributes are:
+
+\fBempty\-legend=\fISENTENCES\fR\fR
+.RS 2m
+Prints \fISENTENCES\fR to the \fBstatus\fR logger if there are no items. The
+default \fBempty\-legend\fR is "Listed 0 items.". \fBno\-empty\-legend\fR
+disables the default.
+.RE
+\fBlegend=\fISENTENCES\fR\fR
+.RS 2m
+Prints \fISENTENCES\fR to the \fBout\fR logger after the last item if there is
+at least one item.
+.RE
+\fBlog=\fITYPE\fR\fR
+.RS 2m
+Prints the legend to the \fITYPE\fR logger instead of the default. \fITYPE\fR
+may be: \fBout\fR (the default), \fBstatus\fR (standard error), \fBdebug\fR,
+\fBinfo\fR, \fBwarn\fR, or \fBerror\fR.
+
+.RE
 .RE
 \fBnone\fR
 .RS 2m
-Disables formatted output.
+Disables formatted output and consumes the resources.
 
 .RE
 \fBtable\fR
@@ -128,9 +155,9 @@ Prints a box around the entire table and each cell, including the title if any.
 .RE
 \fBempty\-legend=\fISENTENCES\fR\fR
 .RS 2m
-Prints \fISENTENCES\fR after the table if the table has no rows. The default
-\fBempty\-legend\fR is "Listed 0 items.". \fBno\-empty\-legend\fR disables the
-default.
+Prints \fISENTENCES\fR to the \fBstatus\fR logger if there are no items. The
+default \fBempty\-legend\fR is "Listed 0 items.". \fBno\-empty\-legend\fR
+disables the default.
 .RE
 \fBno\-heading\fR
 .RS 2m
@@ -138,13 +165,26 @@ Disables the column headings.
 .RE
 \fBlegend=\fISENTENCES\fR\fR
 .RS 2m
-Prints \fISENTENCES\fR after the table if the table has at least one row. The
-legend is not included in the table box.
+Prints \fISENTENCES\fR to the \fBout\fR logger after the last item if there is
+at least one item.
+.RE
+\fBlog=\fITYPE\fR\fR
+.RS 2m
+Prints the legend to the \fITYPE\fR logger instead of the default. \fITYPE\fR
+may be: \fBout\fR (the default), \fBstatus\fR (standard error), \fBdebug\fR,
+\fBinfo\fR, \fBwarn\fR, or \fBerror\fR.
 .RE
 \fBpad=N\fR
 .RS 2m
 Sets the column horizontal pad to \fIN\fR spaces. The default is 1 for box, 2
 otherwise.
+.RE
+\fBpage=N\fR
+.RS 2m
+If \fIN\fR > 0 then output is grouped into tables with \fIN\fR rows. The last
+table may have less rows. Headings, alignment and sorting are done per\-page.
+The title, if any, is printed before the first table. The legend, if any, is
+printed after the last table.
 .RE
 \fBtitle=\fITITLE\fR\fR
 .RS 2m
@@ -160,14 +200,47 @@ An alias for the \fBflattened\fR format.
 .RE
 \fBvalue\fR
 .RS 2m
-CSV with no heading and <TAB> delimiter instead of <COMMA>. Used to retrieve
-individual resource values. This format requires a projection to define the
-value(s) to be printed.
+CSV with no heading and <TAB> delimiter instead of <COMMA>, and a legend. Used
+to retrieve individual resource values. This format requires a projection to
+define the value(s) to be printed.
 
+The format attributes are:
+
+\fBempty\-legend=\fISENTENCES\fR\fR
+.RS 2m
+Prints \fISENTENCES\fR to the \fBstatus\fR logger if there are no items. The
+default \fBempty\-legend\fR is "Listed 0 items.". \fBno\-empty\-legend\fR
+disables the default.
+.RE
+\fBlegend=\fISENTENCES\fR\fR
+.RS 2m
+Prints \fISENTENCES\fR to the \fBout\fR logger after the last item if there is
+at least one item.
+.RE
+\fBlog=\fITYPE\fR\fR
+.RS 2m
+Prints the legend to the \fITYPE\fR logger instead of the default. \fITYPE\fR
+may be: \fBout\fR (the default), \fBstatus\fR (standard error), \fBdebug\fR,
+\fBinfo\fR, \fBwarn\fR, or \fBerror\fR.
+
+.RE
 .RE
 \fByaml\fR
 .RS 2m
 YAML, YAML ain't markup language.
+
+.RE
+All formats have these attributes:
+
+\fBdisable\fR
+.RS 2m
+Disables formatted output and does not consume the resources.
+.RE
+\fBprivate\fR
+.RS 2m
+Disables log file output. Use this for sensitive resource data that should not
+be displayed in log files. Explicit command line IO redirection overrides this
+attribute.
 
 
 .RE

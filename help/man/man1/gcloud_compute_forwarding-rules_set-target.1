@@ -11,7 +11,7 @@ gcloud compute forwarding\-rules set\-target \- modify a forwarding rule to dire
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute forwarding\-rules set\-target\fR \fINAME\fR [\fB\-\-global\fR\ |\ \fB\-\-region\fR\ \fIREGION\fR] [\fB\-\-target\-http\-proxy\fR\ \fITARGET_HTTP_PROXY\fR\ |\ \fB\-\-target\-instance\fR\ \fITARGET_INSTANCE\fR\ |\ \fB\-\-target\-pool\fR\ \fITARGET_POOL\fR\ |\ \fB\-\-target\-vpn\-gateway\fR\ \fITARGET_VPN_GATEWAY\fR] [\fB\-\-target\-instance\-zone\fR\ \fITARGET_INSTANCE_ZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute forwarding\-rules set\-target\fR \fINAME\fR [\fB\-\-global\fR\ |\ \fB\-\-region\fR\ \fIREGION\fR] [\fB\-\-target\-http\-proxy\fR\ \fITARGET_HTTP_PROXY\fR\ |\ \fB\-\-target\-https\-proxy\fR\ \fITARGET_HTTPS_PROXY\fR\ |\ \fB\-\-target\-instance\fR\ \fITARGET_INSTANCE\fR\ |\ \fB\-\-target\-pool\fR\ \fITARGET_POOL\fR\ |\ \fB\-\-target\-vpn\-gateway\fR\ \fITARGET_VPN_GATEWAY\fR] [\fB\-\-target\-instance\-zone\fR\ \fITARGET_INSTANCE_ZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -31,14 +31,11 @@ HTTP proxy.
 For more information on load balancing, see
 https://cloud.google.com/compute/docs/load\-balancing\-and\-autoscaling/.
 
-When modifying a forwarding rule, exactly one of
-\f5\fI\-\-target\-instance\fR\fR \f5\fI\-\-target\-pool\fR\fR, and
-\f5\fI\-\-target\-http\-proxy\fR\fR must be specified.
 
-When modifying a forwarding rule, exactly one of
-\f5\fI\-\-target\-instance\fR\fR \f5\fI\-\-target\-pool\fR\fR,
-\f5\fI\-\-target\-vpn\-gateway\fR\fR, and \f5\fI\-\-target\-http\-proxy\fR\fR
-must be specified.
+When creating a forwarding rule, exactly one of
+\f5\fI\-\-target\-instance\fR\fR, \f5\fI\-\-target\-pool\fR\fR,
+\f5\fI\-\-target\-http\-proxy\fR\fR, \f5\fI\-target\-https\-proxy\fR\fR, and
+\f5\fI\-\-target\-vpn\-gateway\fR\fR must be specified.
 
 
 
@@ -90,6 +87,11 @@ Alternatively, the region can be stored in the environment variable
 \fB\-\-target\-http\-proxy\fR \fITARGET_HTTP_PROXY\fR
 .RS 2m
 The target HTTP proxy that will receive the traffic.
+
+.RE
+\fB\-\-target\-https\-proxy\fR \fITARGET_HTTPS_PROXY\fR
+.RS 2m
+The target HTTPS proxy that will receive the traffic.
 
 .RE
 \fB\-\-target\-instance\fR \fITARGET_INSTANCE\fR

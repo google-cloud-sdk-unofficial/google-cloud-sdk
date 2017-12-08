@@ -5,7 +5,7 @@
 
 .SH "NAME"
 .HP
-gcloud preview app run \- \fB(BETA)\fR run one or more modules in the local development application server
+gcloud preview app run \- \fB(BETA)\fR (DEPRECATED) Run one or more modules in the local development application server
 
 
 
@@ -16,13 +16,16 @@ gcloud preview app run \- \fB(BETA)\fR run one or more modules in the local deve
 
 .SH "DESCRIPTION"
 
-\fB(BETA)\fR This command is used to run one or more of your modules in the
-local development application server. This allows you to test and debug your app
-before deploying. As an input it takes one or more \f5\fIRUNNABLES\fR\fR that
-should be run locally. A \f5\fIRUNNABLE\fR\fR can be a module's .yaml file, or a
-directory. If given a directory, all modules found will be run. You can run
-multiple modules at the same time, even if they are implemented in different
-languages.
+\fB(BETA)\fR This comamand is deprecated, and will soon be removed. Please use
+\f5dev_appserver.py\fR (in the same directory as the \f5gcloud\fR command)
+instead.
+
+This command is used to run one or more of your modules in the local development
+application server. This allows you to test and debug your app before deploying.
+As an input it takes one or more \f5\fIRUNNABLES\fR\fR that should be run
+locally. A \f5\fIRUNNABLE\fR\fR can be a module's .yaml file, or a directory. If
+given a directory, all modules found will be run. You can run multiple modules
+at the same time, even if they are implemented in different languages.
 
 
 
