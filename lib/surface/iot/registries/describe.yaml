@@ -1,0 +1,15 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Show details about a device registry.
+    DESCRIPTION: Show details about a device registry.
+
+  request:
+    collection: cloudiot.projects.locations.registries
+
+  arguments:
+    resource:
+      help_text: The registry you want to get the details of.
+      params:
+        - _COMMON_: args.region
+        - _COMMON_: args.registry

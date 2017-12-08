@@ -17,7 +17,7 @@ Includes (from the Cloud ML SDK):
 - _predict_lib
 
 Important changes:
-- Remove interfaces for TensorflowModel (they don't change behavior).
+- Remove interfaces for TensorFlowModel (they don't change behavior).
 - Set from_client(skip_preprocessing=True) and remove the pre-processing code.
 """
 import base64
@@ -59,6 +59,7 @@ POSTPROCESS_KEY = "postprocess"
 FROM_MODEL_KEY = "from_model_path"
 
 ENGINE = "Prediction-Engine"
+FRAMEWORK = "Framework"
 PREPROCESS_TIME = "Prediction-Preprocess-Time"
 POSTPROCESS_TIME = "Prediction-Postprocess-Time"
 COLUMNARIZE_TIME = "Prediction-Columnarize-Time"
@@ -68,6 +69,8 @@ ENGINE_RUN_TIME = "Prediction-Engine-Run-Time"
 SESSION_RUN_TIME = "Prediction-Session-Run-Time"
 ALIAS_TIME = "Prediction-Alias-Time"
 ROWIFY_TIME = "Prediction-Rowify-Time"
+# TODO(b/67586901): Consider removing INPUT_PROCESSING_TIME during cleanup.
+# Only used in skl_xgb/prediction_server_lib.py.
 INPUT_PROCESSING_TIME = "Prediction-Input-Processing-Time"
 
 SESSION_RUN_ENGINE_NAME = "TF_SESSION_RUN"
@@ -89,8 +92,6 @@ class PredictionError(Exception):
       message="There was a problem processing the outputs", code=3)
   INVALID_USER_CODE = PredictionErrorType(
       message="There was a problem processing the user code", code=4)
-  FAILED_TO_ENCODE = PredictionErrorType(
-      message="Prediction failed during encoding instances", code=5)
   # When adding new exception, please update the ERROR_MESSAGE_ list as well as
   # unittest.
 
@@ -280,6 +281,52 @@ def rowify(columns):
            for name, output in columns.iteritems()}
 
 
+def canonicalize_single_tensor_input(instances, tensor_name):
+  """Canonicalize single input tensor instances into list of dicts.
+
+  Instances that are single input tensors may or may not be provided with their
+  tensor name. The following are both valid instances:
+    1) instances = [{"x": "a"}, {"x": "b"}, {"x": "c"}]
+    2) instances = ["a", "b", "c"]
+  This function canonicalizes the input instances to be of type 1).
+
+  Arguments:
+    instances: single input tensor instances as supplied by the user to the
+      predict method.
+    tensor_name: the expected name of the single input tensor.
+
+  Raises:
+    PredictionError: if the wrong tensor name is supplied to instances.
+
+  Returns:
+    A list of dicts. Where each dict is a single instance, mapping the
+    tensor_name to the value (as supplied by the original instances).
+  """
+
+  # Input is a single string tensor, the tensor name might or might not
+  # be given.
+  # There are 3 cases (assuming the tensor name is "t", tensor = "abc"):
+  # 1) {"t": "abc"}
+  # 2) "abc"
+  # 3) {"y": ...} --> wrong tensor name is given.
+  def parse_single_tensor(x, tensor_name):
+    if not isinstance(x, dict):
+      # case (2)
+      return {tensor_name: x}
+    elif len(x) == 1 and tensor_name == x.keys()[0]:
+      # case (1)
+      return x
+    else:
+      raise PredictionError(PredictionError.INVALID_INPUTS,
+                            "Expected tensor name: %s, got tensor name: %s." %
+                            (tensor_name, x.keys()))
+
+  if not isinstance(instances, list):
+    instances = [instances]
+  instances = [parse_single_tensor(x, tensor_name) for x in instances]
+  return instances
+
+
 class BaseModel(object):
   """The base definition of a Model interface.
   """
@@ -464,6 +511,7 @@ class SessionClient(object):
       dict.
     """
     stats[ENGINE] = "SessionRun"
+    stats[FRAMEWORK] = "TENSORFLOW"
 
     with stats.time(UNALIAS_TIME):
       try:
@@ -491,20 +539,20 @@ class SessionClient(object):
 def create_model(client, model_path, **kwargs):
   """Creates and returns the appropriate model.
 
-  Creates and returns the TensorflowModel if no user specified model is
+  Creates and returns the TensorFlowModel if no user specified model is
   provided. Otherwise, the user specified model is imported, created, and
   returned.
 
   Args:
     client: An instance of ModelServerClient for performing prediction.
     model_path: the path to either session_bundle or SavedModel
-    **kwargs: keyword arguments to pass to TensorflowModel.from_client.
+    **kwargs: keyword arguments to pass to TensorFlowModel.from_client.
 
   Returns:
     An instance of the appropriate model class.
   """
   return (load_model_class(client, model_path) or
-          TensorflowModel.from_client(client, model_path, **kwargs))
+          TensorFlowModel.from_client(client, model_path, **kwargs))
 
 
 def load_model_class(client, model_path):
@@ -643,13 +691,13 @@ def _validate_fn_signature(fn, required_arg_names, expected_fn_name, cls_name):
     if arg not in inspect.getargspec(fn).args:
       raise PredictionError(
           PredictionError.INVALID_USER_CODE,
-          "The provided %s function in the Processor class"
+          "The provided %s function in the Processor class "
           "has an invalid signature. It should take %s as arguments but"
           "takes %s" %
           (fn.__name__, required_arg_names, inspect.getargspec(fn).args))
 
 
-class TensorflowModel(BaseModel):
+class TensorFlowModel(BaseModel):
   """The default implementation of the Model interface that uses TensorFlow.
 
   This implementation optionally performs preprocessing and postprocessing
@@ -659,7 +707,7 @@ class TensorflowModel(BaseModel):
   """
 
   def __init__(self, client, preprocess_fn=None, postprocess_fn=None):
-    """Constructs a TensorflowModel.
+    """Constructs a TensorFlowModel.
 
     Args:
       client: An instance of ModelServerClient for performing prediction.
@@ -668,7 +716,7 @@ class TensorflowModel(BaseModel):
       postprocess_fn: a function to run on each instance after calling predict,
           if this parameter is not None. See class docstring.
     """
-    super(TensorflowModel, self).__init__(client)
+    super(TensorFlowModel, self).__init__(client)
     self._preprocess_fn = preprocess_fn
     self._postprocess_fn = postprocess_fn
 
@@ -694,11 +742,7 @@ class TensorflowModel(BaseModel):
       PredictionError: if an error occurs during prediction.
     """
     with stats.time(COLUMNARIZE_TIME):
-      if len(self._client.signature.inputs) == 1:
-        input_name = self._client.signature.inputs.keys()[0]
-        columns = {input_name: instances}
-      else:
-        columns = columnarize(instances)
+      columns = columnarize(instances)
       for k, v in columns.iteritems():
         if k not in self._client.signature.inputs.keys():
           raise PredictionError(
@@ -711,11 +755,6 @@ class TensorflowModel(BaseModel):
               PredictionError.INVALID_INPUTS,
               "Input %s was missing in at least one input instance." % k)
     return columns
-
-  # TODO(b/34686738): can this be removed?
-  def need_preprocess(self):
-    """Returns True if preprocessing is needed."""
-    return bool(self._preprocess_fn)
 
   # TODO(b/34686738): can this be removed?
   def is_single_input(self):
@@ -731,52 +770,23 @@ class TensorflowModel(BaseModel):
     return False
 
   def preprocess(self, instances, stats):
-    preprocessed = self._maybe_preprocess(instances)
+    preprocessed = self._canonicalize_input(instances)
+    if self._preprocess_fn:
+      try:
+        preprocessed = self._preprocess_fn(preprocessed)
+      except Exception as e:
+        logging.error("Exception during preprocessing: " + str(e))
+        raise PredictionError(PredictionError.INVALID_INPUTS,
+                              "Exception during preprocessing: " + str(e))
     return self._get_columns(preprocessed, stats)
 
-  # TODO(b/35704445): address the preprocessing code issue.
-  def _maybe_preprocess(self, instances):
-    """Preprocess the instances if necessary."""
+  def _canonicalize_input(self, instances):
+    """Preprocess single-input instances to be dicts if they aren't already."""
     # The instances should be already (b64-) decoded here.
     if not self.is_single_input():
       return instances
-
-    # Input is a single string tensor, the tensor name might or might not
-    # be given.
-    # There are 3 cases (assuming the tensor name is "t", tensor = "abc"):
-    # 1) {"t": "abc"}
-    # 2) "abc"
-    # 3) {"y": ...} --> wrong tensor name is given.
-
     tensor_name = self._client.signature.inputs.keys()[0]
-
-    def parse_single_tensor(x, tensor_name):
-      if not isinstance(x, dict):
-        # case (2)
-        return x
-      elif len(x) == 1 and tensor_name == x.keys()[0]:
-        # case (1)
-        return x.values()[0]
-      else:
-        raise PredictionError(
-            PredictionError.INVALID_INPUTS,
-            "Expected tensor name: %s, got tensor name: %s." %
-            (tensor_name, x.keys()))
-
-    if not isinstance(instances, list):
-      instances = [instances]
-    instances = [parse_single_tensor(x, tensor_name) for x in instances]
-    if not self._preprocess_fn:
-      return instances
-    try:
-      preprocessed = list([
-          self._preprocess_fn(i).SerializeToString() for i in instances
-      ])
-    except Exception as e:
-      logging.error("Exception during preprocessing: " + str(e))
-      raise PredictionError(PredictionError.INVALID_INPUTS,
-                            "Exception during preprocessing: " + str(e))
-    return preprocessed
+    return canonicalize_single_tensor_input(instances, tensor_name)
 
   def postprocess(self, predicted_output, original_input=None, stats=None):
     """Performs the necessary transformations on the prediction results.
@@ -817,23 +827,33 @@ class TensorflowModel(BaseModel):
       }
       postprocessed_outputs = rowify(postprocessed_outputs)
 
-    # TODO(b/34686738): this should probably be taken care of directly
-    # in batch_prediction.py, or at least a helper method. That would
-    # allow us to avoid processing the inputs when not necessary.
-    with stats.time(INPUT_PROCESSING_TIME):
-      if self.is_single_input():
-        input_name = self._client.signature.inputs.keys()[0]
-        original_input = [{input_name: i} for i in original_input]
+    postprocessed_outputs = list(postprocessed_outputs)
+    if self._postprocess_fn:
+      try:
+        postprocessed_outputs = self._postprocess_fn(postprocessed_outputs)
+      except Exception as e:
+        logging.error("Exception during postprocessing: %s", e)
+        raise PredictionError(PredictionError.INVALID_INPUTS,
+                              "Exception during postprocessing: " + str(e))
 
     with stats.time(ENCODE_TIME):
       try:
-        postprocessed_outputs = encode_base64(
-            list(postprocessed_outputs), self._client.signature.outputs)
-      except (PredictionError, ValueError, Exception) as e:
+        postprocessed_outputs = encode_base64(postprocessed_outputs,
+                                              self._client.signature.outputs)
+      except PredictionError as e:
         logging.error("Encode base64 failed: %s", e)
-        raise PredictionError(
-            PredictionError.FAILED_TO_ENCODE,
-            "Prediction failed during encoding instances: %s" % e.error_detail)
+        raise PredictionError(PredictionError.INVALID_OUTPUTS,
+                              "Prediction failed during encoding instances: {0}"
+                              .format(e.error_detail))
+      except ValueError as e:
+        logging.error("Encode base64 failed: %s", e)
+        raise PredictionError(PredictionError.INVALID_OUTPUTS,
+                              "Prediction failed during encoding instances: {0}"
+                              .format(e))
+      except Exception as e:  # pylint: disable=broad-except
+        logging.error("Encode base64 failed: %s", e)
+        raise PredictionError(PredictionError.INVALID_OUTPUTS,
+                              "Prediction failed during encoding instances")
 
       return postprocessed_outputs
 
@@ -847,39 +867,54 @@ class TensorflowModel(BaseModel):
   #   default_preprocess_fn(model_path, skip_preprocessing) and
   #   default_model_and_preprocessor.
   @classmethod
-  def from_client(cls, client, model_path, **unused_kwargs):
-    """Creates a TensorflowModel from a SessionClient and model data files."""
-    del model_path  # Unused in from_client
-    preprocess_fn = None
-    return cls(client, preprocess_fn)
+  def from_client(cls, client, unused_model_path, **unused_kwargs):
+    """Creates a TensorFlowModel from a SessionClient and model data files."""
+    processor_cls = _new_processor_class()
+    if processor_cls:
+      return cls(client,
+                 getattr(processor_cls, PREPROCESS_KEY, None),
+                 getattr(processor_cls, POSTPROCESS_KEY, None))
+    else:
+      return cls(client)
 
   @property
   def signature(self):
     return self._client.signature
 
 
-class XGBoostModel(BaseModel):
-  """The implementation of XGboost Model.
+class SklearnModel(BaseModel):
+  """The implementation of Scikit-learn Model.
   """
 
   def __init__(self, client):
-    super(XGBoostModel, self).__init__(client)
+    super(SklearnModel, self).__init__(client)
     self._user_processor = _new_processor_class()
     if self._user_processor and hasattr(self._user_processor, PREPROCESS_KEY):
       self._preprocess = self._user_processor.preprocess
     else:
       self._preprocess = self._null_processor
-
-    if self._user_processor and hasattr(self._user_processor, PREPROCESS_KEY):
+    if self._user_processor and hasattr(self._user_processor, POSTPROCESS_KEY):
       self._postprocess = self._user_processor.postprocess
     else:
       self._postprocess = self._null_processor
 
   def preprocess(self, instances, stats=None):
-    return self._preprocess(instances)
+    # TODO(b/67383676) Consider changing this to a more generic type.
+    return self._preprocess(np.array(instances))
 
   def postprocess(self, predicted_outputs, original_input=None, stats=None):
-    return self._postprocess(predicted_outputs)
+    # TODO(b/67383676) Consider changing this to a more generic type.
+    post_processed = self._postprocess(predicted_outputs)
+    if isinstance(post_processed, np.ndarray):
+      return post_processed.tolist()
+    if isinstance(post_processed, list):
+      return post_processed
+    raise PredictionError(
+        PredictionError.INVALID_OUTPUTS,
+        "Bad output type returned after running %s"
+        "The post-processing function should return either "
+        "a numpy ndarray or a list."
+        % self._postprocess.__name__)
 
   def _null_processor(self, instances):
     return instances
@@ -887,6 +922,14 @@ class XGBoostModel(BaseModel):
   @property
   def signature(self):
     return None
+
+
+class XGBoostModel(SklearnModel):
+  """The implementation of XGboost Model.
+  """
+
+  def __init__(self, client):
+    super(XGBoostModel, self).__init__(client)
 
 
 def decode_base64(data):
@@ -939,32 +982,6 @@ def _encode_str_tensor(data):
   if isinstance(data, list):
     return [_encode_str_tensor(val) for val in data]
   return {"b64": base64.b64encode(data)}
-
-
-# TODO(b/65369539): Remove when cl/167164265 is submitted. We should only be
-# base64 encoding predictions for TensorFlow models.
-def maybe_encode_base64(instances, model):
-  """Base64-encodes binary data for TensorFlow models that have a signature.
-
-  Checks if a model signature is present, and base64-encodes instances if so.
-  Otherwise, returns the provided instances.
-  TODO(b/65369539): Implement base64-encoding for frameworks where the models do
-  not have a signature, such as scikit-learn and xgboost.
-
-  Args:
-    instances: the list of instances as returned from the predict() method.
-    model: the model used to serve predictions.
-
-  Returns:
-    The base64-encoded instances if a model signature is present, or the
-    original instances otherwise.
-
-  Raises:
-    ValueError: if an error occurs during base64 encoding.
-  """
-  if hasattr(model, "signature"):
-    return encode_base64(instances, model.signature.outputs)
-  return instances
 
 
 def local_predict(

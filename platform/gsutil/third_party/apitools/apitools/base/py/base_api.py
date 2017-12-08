@@ -82,6 +82,7 @@ class ApiMethodInfo(messages.Message):
 
     Fields:
       relative_path: Relative path for this method.
+      flat_path: Expanded version (if any) of relative_path.
       method_id: ID for this method.
       http_method: HTTP verb to use for this method.
       path_params: (repeated) path parameters for this method.
@@ -102,17 +103,18 @@ class ApiMethodInfo(messages.Message):
     """
 
     relative_path = messages.StringField(1)
-    method_id = messages.StringField(2)
-    http_method = messages.StringField(3)
-    path_params = messages.StringField(4, repeated=True)
-    query_params = messages.StringField(5, repeated=True)
-    ordered_params = messages.StringField(6, repeated=True)
-    description = messages.StringField(7)
-    request_type_name = messages.StringField(8)
-    response_type_name = messages.StringField(9)
-    request_field = messages.StringField(10, default='')
-    upload_config = messages.MessageField(ApiUploadInfo, 11)
-    supports_download = messages.BooleanField(12, default=False)
+    flat_path = messages.StringField(2)
+    method_id = messages.StringField(3)
+    http_method = messages.StringField(4)
+    path_params = messages.StringField(5, repeated=True)
+    query_params = messages.StringField(6, repeated=True)
+    ordered_params = messages.StringField(7, repeated=True)
+    description = messages.StringField(8)
+    request_type_name = messages.StringField(9)
+    response_type_name = messages.StringField(10)
+    request_field = messages.StringField(11, default='')
+    upload_config = messages.MessageField(ApiUploadInfo, 12)
+    supports_download = messages.BooleanField(13, default=False)
 REQUEST_IS_BODY = '<request>'
 
 
@@ -338,6 +340,7 @@ class BaseApiClient(object):
     @property
     def _default_global_params(self):
         if self.__default_global_params is None:
+            # pylint: disable=not-callable
             self.__default_global_params = self.params_type()
         return self.__default_global_params
 
@@ -470,7 +473,23 @@ class BaseApiService(object):
         return self.__client
 
     def GetMethodConfig(self, method):
-        return self._method_configs[method]
+        """Returns service cached method config for given method."""
+        method_config = self._method_configs.get(method)
+        if method_config:
+            return method_config
+        func = getattr(self, method, None)
+        if func is None:
+            raise KeyError(method)
+        method_config = getattr(func, 'method_config', None)
+        if method_config is None:
+            raise KeyError(method)
+        self._method_configs[method] = config = method_config()
+        return config
+
+    @classmethod
+    def GetMethodsList(cls):
+        return [f.__name__ for f in six.itervalues(cls.__dict__)
+                if getattr(f, 'method_config', None)]
 
     def GetUploadConfig(self, method):
         return self._upload_configs.get(method)
@@ -572,11 +591,12 @@ class BaseApiService(object):
             url_builder.query_params = {}
         http_request.url = url_builder.url
 
-    def __ProcessHttpResponse(self, method_config, http_response):
+    def __ProcessHttpResponse(self, method_config, http_response, request):
         """Process the given http response."""
         if http_response.status_code not in (http_client.OK,
                                              http_client.NO_CONTENT):
-            raise exceptions.HttpError.FromResponse(http_response)
+            raise exceptions.HttpError.FromResponse(
+                http_response, method_config=method_config, request=request)
         if http_response.status_code == http_client.NO_CONTENT:
             # TODO(craigcitro): Find out why _replace doesn't seem to work
             # here.
@@ -585,11 +605,10 @@ class BaseApiService(object):
                 request_url=http_response.request_url)
         if self.__client.response_type_model == 'json':
             return http_response.content
-        else:
-            response_type = _LoadClass(method_config.response_type_name,
-                                       self.__client.MESSAGES_MODULE)
-            return self.__client.DeserializeMessage(
-                response_type, http_response.content)
+        response_type = _LoadClass(method_config.response_type_name,
+                                   self.__client.MESSAGES_MODULE)
+        return self.__client.DeserializeMessage(
+            response_type, http_response.content)
 
     def __SetBaseHeaders(self, http_request, client):
         """Fill in the basic headers on http_request."""
@@ -700,10 +719,10 @@ class BaseApiService(object):
             http_response = http_wrapper.MakeRequest(
                 http, http_request, **opts)
 
-        return self.ProcessHttpResponse(method_config, http_response)
+        return self.ProcessHttpResponse(method_config, http_response, request)
 
-    def ProcessHttpResponse(self, method_config, http_response):
+    def ProcessHttpResponse(self, method_config, http_response, request=None):
         """Convert an HTTP response to the expected message type."""
         return self.__client.ProcessResponse(
             method_config,
-            self.__ProcessHttpResponse(method_config, http_response))
+            self.__ProcessHttpResponse(method_config, http_response, request))

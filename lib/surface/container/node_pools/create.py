@@ -128,7 +128,7 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddClusterAutoscalingFlags(parser, hidden=True)
+    flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDFlag(parser, suppressed=True)
     flags.AddPreemptibleFlag(parser, for_node_pool=True, suppressed=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True, suppressed=True)

@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The command group for the ServiceManagement V1 CLI."""
+"""The command group for the Endpoints V1 CLI."""
 
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Endpoints(base.Group):
   """Create, enable and manage API services.
 

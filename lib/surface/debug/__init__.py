@@ -44,7 +44,7 @@ class Debug(base.Group):
     default-test   gcp:1234:5678  myproject-test-9876543
     default-test2  gcp:9012:3456  myproject-test2-1234567
 
-  To create a snapshot in a for a particular target:
+  To create a snapshot for a particular target:
 
     $ {command} snapshots create --target=default-test foo.py:12
 

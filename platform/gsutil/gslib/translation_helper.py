@@ -21,6 +21,7 @@ import json
 import re
 import textwrap
 import xml.etree.ElementTree
+from xml.etree.ElementTree import ParseError as XmlParseError
 
 from apitools.base.py import encoding
 import boto
@@ -43,13 +44,6 @@ from gslib.cloud_api import NotFoundException
 from gslib.cloud_api import Preconditions
 from gslib.exception import CommandException
 from gslib.third_party.storage_apitools import storage_v1_messages as apitools_messages
-
-# In Python 2.6, ElementTree raises ExpatError instead of ParseError.
-# pylint: disable=g-import-not-at-top
-try:
-  from xml.etree.ElementTree import ParseError as XmlParseError
-except ImportError:
-  from xml.parsers.expat import ExpatError as XmlParseError
 
 CACHE_CONTROL_REGEX = re.compile(r'^cache-control', re.I)
 CONTENT_DISPOSITION_REGEX = re.compile(r'^content-disposition', re.I)
@@ -635,19 +629,29 @@ class CorsTranslation(object):
     Args:
       json_cors: JSON string representing CORS configuration.
 
+    Raises:
+      ArgumentException on invalid CORS JSON data.
+
     Returns:
       List of apitools Bucket.CorsValueListEntry. An empty list represents
       no CORS configuration.
     """
+    deserialized_cors = None
     try:
       deserialized_cors = json.loads(json_cors)
-      cors = []
-      for cors_entry in deserialized_cors:
-        cors.append(encoding.DictToMessage(
-            cors_entry, apitools_messages.Bucket.CorsValueListEntry))
-      return cors
     except ValueError:
       CheckForXmlConfigurationAndRaise('CORS', json_cors)
+
+    if not isinstance(deserialized_cors, list):
+      raise ArgumentException(
+          'CORS JSON should be formatted as a list containing one or more JSON '
+          'objects.\nSee "gsutil help cors".')
+
+    cors = []
+    for cors_entry in deserialized_cors:
+      cors.append(encoding.DictToMessage(
+          cors_entry, apitools_messages.Bucket.CorsValueListEntry))
+    return cors
 
   @classmethod
   def MessageEntriesToJson(cls, cors_message):

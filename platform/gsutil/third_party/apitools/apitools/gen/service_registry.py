@@ -104,21 +104,6 @@ class ServiceRegistry(object):
             with printer.Indent():
                 printer('super(%s.%s, self).__init__(client)',
                         client_class_name, class_name)
-                printer('self._method_configs = {')
-                with printer.Indent(indent='    '):
-                    for method_name, method_info in method_info_map.items():
-                        printer("'%s': base_api.ApiMethodInfo(", method_name)
-                        with printer.Indent(indent='    '):
-                            attrs = sorted(
-                                x.name for x in method_info.all_fields())
-                            for attr in attrs:
-                                if attr in ('upload_config', 'description'):
-                                    continue
-                                printer(
-                                    '%s=%r,', attr, getattr(method_info, attr))
-                        printer('),')
-                    printer('}')
-                printer()
                 printer('self._upload_configs = {')
                 with printer.Indent(indent='    '):
                     for method_name, method_info in method_info_map.items():
@@ -164,6 +149,20 @@ class ServiceRegistry(object):
                         for line in arg_lines[:-1]:
                             printer('%s,', line)
                         printer('%s)', arg_lines[-1])
+                printer()
+                printer('{0}.method_config = lambda: base_api.ApiMethodInfo('
+                        .format(method_name))
+                with printer.Indent(indent='    '):
+                    method_info = method_info_map[method_name]
+                    attrs = sorted(
+                        x.name for x in method_info.all_fields())
+                    for attr in attrs:
+                        if attr in ('upload_config', 'description'):
+                            continue
+                        value = getattr(method_info, attr)
+                        if value is not None:
+                            printer('%s=%r,', attr, value)
+                printer(')')
 
     def __WriteProtoServiceDeclaration(self, printer, name, method_info_map):
         """Write a single service declaration to a proto file."""
@@ -393,6 +392,12 @@ class ServiceRegistry(object):
             response_type_name=self.__names.ClassName(response),
             request_field=request_field,
         )
+        flat_path = method_description.get('flatPath', None)
+        if flat_path is not None:
+            flat_path = self.__names.NormalizeRelativePath(
+                self.__client_info.base_path + flat_path)
+            if flat_path != relative_path:
+                method_info.flat_path = flat_path
         if method_description.get('supportsMediaUpload', False):
             method_info.upload_config = self.__ComputeUploadConfig(
                 method_description.get('mediaUpload'), method_id)

@@ -45,10 +45,12 @@ class ListSubscriptions(base.ListCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-
     parser.add_argument(
         'topic',
         help=('The name of the topic to list subscriptions for.'))
+
+    parser.display_info.AddFormat('yaml')
+    parser.display_info.AddUriFunc(util.SubscriptionUriFunc)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -75,7 +77,7 @@ class ListSubscriptions(base.ListCommand):
     while True:
       list_subscriptions_req = (
           msgs.PubsubProjectsTopicsSubscriptionsListRequest(
-              topic=util.TopicFormat(args.topic),
+              topic=util.ParseTopic(args.topic).RelativeName(),
               pageSize=page_size,
               pageToken=page_token))
 
@@ -97,7 +99,7 @@ def TopicSubscriptionDict(topic_subscription):
   result = resource_projector.MakeSerializable(
       {'subscription': topic_subscription})
 
-  subscription_info = util.SubscriptionIdentifier(topic_subscription)
-  result['projectId'] = subscription_info.project.project_name
-  result['subscriptionId'] = subscription_info.resource_name
+  subscription_ref = util.ParseSubscription(topic_subscription)
+  result['projectId'] = subscription_ref.projectsId
+  result['subscriptionId'] = subscription_ref.subscriptionsId
   return result

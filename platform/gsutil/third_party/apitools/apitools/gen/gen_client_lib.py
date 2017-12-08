@@ -30,8 +30,14 @@ from apitools.gen import util
 
 def _ApitoolsVersion():
     """Returns version of the currently installed google-apitools package."""
-    import pkg_resources
-    return pkg_resources.get_distribution('google-apitools').version
+    try:
+        import pkg_resources
+    except ImportError:
+        return 'X.X.X'
+    try:
+        return pkg_resources.get_distribution('google-apitools').version
+    except pkg_resources.DistributionNotFound:
+        return 'X.X.X'
 
 
 def _StandardQueryParametersSchema(discovery_doc):
@@ -84,7 +90,7 @@ class DescriptorGenerator(object):
             self.__root_package, self.__base_files_package,
             self.__protorpc_package)
         schemas = self.__discovery_doc.get('schemas', {})
-        for schema_name, schema in schemas.items():
+        for schema_name, schema in sorted(schemas.items()):
             self.__message_registry.AddDescriptorFromSchema(
                 schema_name, schema)
 

@@ -200,24 +200,16 @@ _DETAILED_HELP_TEXT = ("""
      "gsutil help versions".
 
 
-<B>IMPACT OF OBJECT LISTING EVENTUAL CONSISTENCY</B>
-  The rsync command operates by listing the source and destination URLs, and
-  then performing copy and remove operations according to the differences
-  between these listings. Because object listing is eventually (not strongly)
-  consistent within multi-regional locations, if you upload new objects or
-  delete objects from a bucket in a multi-regional location and then
-  immediately run gsutil rsync with that bucket as the source or destination,
-  it's possible the rsync command will not see the recent updates and thus
-  synchronize incorrectly. For example, if you rsync to a ``US`` bucket
-  immediately after uploading to or deleting objects from that bucket, it's
-  possible gsutil will re-upload objects that have already been uploaded or
-  attempt to delete objects that were already deleted. A more troublesome
-  problem can occur if you run gsutil rsync, specifying a bucket as the
-  source immediately after uploading to or deleting objects from that bucket.
-  In that case it's possible rsync will miss copying objects to, or deleting
-  objects from, the destination. If this happens you can rerun the rsync
-  operation again later (after the object listing has "caught up"), to cause
-  the missing objects to be copied and extra objects to be deleted.
+<B>EVENTUAL CONSISTENCY WITH NON-GOOGLE CLOUD PROVIDERS</B>
+  While Google Cloud Storage is strongly consistent, some cloud providers
+  only support eventual consistency. You may encounter scenarios where rsync
+  synchronizes using stale listing data when working with these other cloud
+  providers. For example, if you run rsync immediately after uploading an
+  object to an eventually consistent cloud provider, the added object may not
+  yet appear in the provider’s listing. Consequently, rsync will miss adding
+  the object to the destination. If this happens you can rerun the rsync
+  operation again later (after the object listing has "caught up").
+
 
 
 <B>CHECKSUM VALIDATION AND FAILURE HANDLING</B>
@@ -424,9 +416,8 @@ _DETAILED_HELP_TEXT = ("""
 
                   gsutil rsync -x ".*\.txt$|.*\.jpg$" dir gs://my-bucket
 
-                NOTE: While it will work to surround the regular expression with
-                either single or double quotes on Linux and MacOS, on Windows
-                you need to use double quotes.
+                NOTE: When using this on the Windows command line, use ^ as an
+                escape character instead of \ and escape the | character.
 """)
 
 _NA = '-'

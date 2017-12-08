@@ -123,10 +123,12 @@ class MessageJSONEncoder(json.JSONEncoder):
             for unknown_key in value.all_unrecognized_fields():
                 unrecognized_field, _ = value.get_unrecognized_field_info(
                     unknown_key)
+                # Unknown fields are not encoded as they should have been
+                # processed before we get to here.
                 result[unknown_key] = unrecognized_field
             return result
-        else:
-            return super(MessageJSONEncoder, self).default(value)
+
+        return super(MessageJSONEncoder, self).default(value)
 
 
 class ProtoJson(object):
@@ -272,27 +274,21 @@ class ProtoJson(object):
                 variant = self.__find_variant(value)
                 if variant:
                     message.set_unrecognized_field(key, value, variant)
-                else:
-                    logging.warning(
-                        'No variant found for unrecognized field: %s', key)
                 continue
 
-            # Normalize values in to a list.
-            if isinstance(value, list):
-                if not value:
-                    continue
-            else:
-                value = [value]
-
-            valid_value = []
-            for item in value:
-                valid_value.append(self.decode_field(field, item))
-
             if field.repeated:
-                _ = getattr(message, field.name)
+                # This should be unnecessary? Or in fact become an error.
+                if not isinstance(value, list):
+                    value = [value]
+                valid_value = [self.decode_field(field, item)
+                               for item in value]
                 setattr(message, field.name, valid_value)
             else:
-                setattr(message, field.name, valid_value[-1])
+                # This is just for consistency with the old behavior.
+                if value == []:
+                    continue
+                setattr(message, field.name, self.decode_field(field, value))
+
         return message
 
     def decode_field(self, field, value):

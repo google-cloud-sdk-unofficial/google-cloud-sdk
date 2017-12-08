@@ -422,6 +422,9 @@ class MessageRegistry(object):
 
         if type_name in self.PRIMITIVE_TYPE_INFO_MAP:
             type_info = self.PRIMITIVE_TYPE_INFO_MAP[type_name]
+            if type_info.type_name.startswith('extra_types.'):
+                self.__AddImport(
+                    'from %s import extra_types' % self.__base_files_package)
             return type_info
 
         if type_name == 'array':
@@ -438,8 +441,7 @@ class MessageRegistry(object):
                     entry_name_hint, items.get('items'), parent_name)
                 return TypeInfo(type_name=entry_type_name,
                                 variant=messages.Variant.MESSAGE)
-            else:
-                return self.__GetTypeInfo(items, entry_name_hint)
+            return self.__GetTypeInfo(items, entry_name_hint)
         elif type_name == 'any':
             self.__AddImport('from %s import extra_types' %
                              self.__base_files_package)

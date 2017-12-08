@@ -28,7 +28,7 @@ from googlecloudsdk.core import resources
 
 
 class List(base.ListCommand):
-  """Lists all the functions in a given region."""
+  """Lists Google Cloud Functions."""
 
   @staticmethod
   def Args(parser):
@@ -49,7 +49,13 @@ class List(base.ListCommand):
   def Run(self, args):
     client = util.GetApiClientInstance()
     messages = util.GetApiMessagesModule()
-    locations = args.regions or [properties.VALUES.functions.region.GetOrFail()]
+    locations = []
+    if args.regions:
+      locations = args.regions
+    if args.region:
+      locations += [args.region]
+    if not locations:
+      locations = ['-']
     project = properties.VALUES.core.project.GetOrFail()
     limit = args.limit
 

@@ -50,7 +50,7 @@ class Ack(base.Command):
 
     ack_req = msgs.PubsubProjectsSubscriptionsAcknowledgeRequest(
         acknowledgeRequest=msgs.AcknowledgeRequest(ackIds=args.ackid),
-        subscription=util.SubscriptionFormat(args.subscription))
+        subscription=util.ParseSubscription(args.subscription).RelativeName())
 
     pubsub.projects_subscriptions.Acknowledge(ack_req)
 

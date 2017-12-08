@@ -16,6 +16,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iot import resource_args
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List states for a device.
 

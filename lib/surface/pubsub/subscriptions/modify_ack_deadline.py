@@ -54,7 +54,7 @@ class ModifyAckDeadline(base.Command):
     msgs = self.context['pubsub_msgs']
     pubsub = self.context['pubsub']
 
-    subscription = util.SubscriptionFormat(args.subscription)
+    subscription = util.ParseSubscription(args.subscription).RelativeName()
     mod_req = msgs.PubsubProjectsSubscriptionsModifyAckDeadlineRequest(
         modifyAckDeadlineRequest=msgs.ModifyAckDeadlineRequest(
             ackDeadlineSeconds=args.ack_deadline,

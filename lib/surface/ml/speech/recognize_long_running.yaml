@@ -34,7 +34,7 @@
 
   async:
     collection: speech.operations
-    resource_get_method_params:
+    operation_get_method_params:
       name: operationsId
     extract_resource_result: False
     result_attribute: response

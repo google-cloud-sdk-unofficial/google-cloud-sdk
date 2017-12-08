@@ -19,7 +19,7 @@ from googlecloudsdk.command_lib.container import container_command_util
 from googlecloudsdk.command_lib.container import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Operations(base.Group):
   """Get and list operations for Google Container Engine clusters."""
 
@@ -50,8 +50,8 @@ class Operations(base.Group):
     return context
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class OperationsAlpha(Operations):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class OperationsAlphaBeta(Operations):
   """Get and list operations for Google Container Engine clusters."""
 
   @staticmethod
@@ -79,4 +79,3 @@ class OperationsAlpha(Operations):
     """
     context['location_get'] = container_command_util.GetZoneOrRegion
     return context
-

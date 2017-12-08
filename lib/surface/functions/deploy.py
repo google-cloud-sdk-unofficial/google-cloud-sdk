@@ -116,7 +116,11 @@ def _SourceCodeArgs(parser):
       The value will be interpreted as reference to source repository if it
       starts with `https://`..
 
-      Otherwise it will be interpeted as local filesystem path.
+      Otherwise, it will be interpreted as the local filesystem path. When
+      deploying source from the local filesystem, this command skips files
+      specified in the `.gcloudignore` file (see `gcloud topic gcloudignore` for
+      more information). If the `.gcloudignore` file doesn't exist, the command
+      will try to create it.
 
       If you provide reference to source repository it should be in one of the
       following formats:
@@ -207,11 +211,20 @@ def _SourceCodeArgs(parser):
   )
   parser.add_argument(
       '--include-ignored-files',
-      help=('Deploy sources together with files which are normally ignored '
-            '(contents of node_modules directory). This flag has an effect '
-            'only if a function is deployed from a local directory.'),
+      help=('Deploy source from the local filesystem, skipping files specified '
+            'in `.gcloudignore` file (see `gcloud topic gcloudignore` for more '
+            'information). If the `.gcloudignore` file doesn\'t exist, it will '
+            'be created.'),
       default=False,
-      action='store_true')
+      action=actions.DeprecationAction(
+          '--include-ignored-files',
+          warn=('The {flag_name} flag is deprecated; use `.gcloudignore` file '
+                'instead. See `gcloud topic gcloudignore` for more '
+                'information.'),
+          removed=False,
+          action='store_true',
+      ),
+  )
 
 
 def _TriggerArgs(parser):

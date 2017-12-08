@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Capture a project repository.
-
-TODO(b/36053571) make capture a group with "create", "list", etc.
-"""
+"""Capture a project repository."""
 
 import json
 import os

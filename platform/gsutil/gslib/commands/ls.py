@@ -128,8 +128,8 @@ _DETAILED_HELP_TEXT = ("""
   will print the object size, creation time stamp, and name of each matching
   object, along with the total count and sum of sizes of all matching objects:
 
-       2276224  2012-03-02T19:25:17Z  gs://bucket/obj1
-       3914624  2012-03-02T19:30:27Z  gs://bucket/obj2
+       2276224  2017-03-02T19:25:17Z  gs://bucket/obj1
+       3914624  2017-03-02T19:30:27Z  gs://bucket/obj2
     TOTAL: 2 objects, 6190848 bytes (5.9 MiB)
 
   Note that the total listed in parentheses above is in mebibytes (or gibibytes,
@@ -149,30 +149,38 @@ _DETAILED_HELP_TEXT = ("""
   will print something like:
 
     gs://bucket/obj1:
-            Creation time:                    Fri, 21 Oct 2016 19:25:17 GMT
-            Update time:                      Fri, 21 Oct 2016 21:17:59 GMT
-            Storage class update time:        Fri, 21 Oct 2016 22:12:32 GMT
-            Size:                             2276224
-            Cache-Control:                    private, max-age=0
-            Content-Type:                     application/x-executable
-            ETag:                             5ca6796417570a586723b7344afffc81
+            Creation time:                    Fri, 26 May 2017 22:55:44 GMT
+            Update time:                      Tue, 18 Jul 2017 12:31:18 GMT
+            Storage class:                    MULTI_REGIONAL
+            Content-Length:                   60183
+            Content-Type:                     image/jpeg
+            Hash (crc32c):                    zlUhtg==
+            Hash (md5):                       Bv86IAzFzrD1Z2io/c7yqA==
+            ETag:                             5ca67960a586723b7344afffc81
             Generation:                       1378862725952000
             Metageneration:                   1
-            ACL:
-    [
+            ACL:                              [
       {
-        "entity": "group-00b4903a97163d99003117abe64d292561d2b4074fc90ce5c0e35ac45f66ad70",
-        "entityId": "00b4903a97163d99003117abe64d292561d2b4074fc90ce5c0e35ac45f66ad70",
+        "entity": "project-owners-867484910061",
+        "projectTeam": {
+          "projectNumber": "867484910061",
+          "team": "owners"
+        },
+        "role": "OWNER"
+      },
+      {
+        "email": "jane@gmail.com",
+        "entity": "user-jane@gmail.com",
         "role": "OWNER"
       }
     ]
-    TOTAL: 1 objects, 2276224 bytes (2.17 MiB)
+    TOTAL: 1 objects, 60183 bytes (58.77 KiB)
 
-  Note that some fields above (time updated, storage class update time) are
-  not available with the (non-default) XML API.
+  Note that results may contain additional fields, such as custom metadata or
+  a storage class update time, if they are applicable to the object.
 
-  Also note that the Storage class update time field does not display unless it
-  differs from Creation time.
+  Also note that some fields, such as update time, are not available with the
+  (non-default) XML API.
 
   See also "gsutil help acl" for getting a more readable version of the ACL.
 
@@ -188,28 +196,35 @@ _DETAILED_HELP_TEXT = ("""
     gs://bucket/ :
             Storage class:                MULTI_REGIONAL
             Location constraint:          US
-            Versioning enabled:           True
+            Versioning enabled:           False
             Logging configuration:        None
             Website configuration:        None
-            CORS configuration:           Present
+            CORS configuration:           None
             Lifecycle configuration:      None
+            Requester Pays enabled:       True
             Labels:                       None
-            Time created:                 Fri, 21 Oct 2016 19:25:17 GMT
-            Time updated:                 Fri, 21 Oct 2016 21:17:59 GMT
+            Time created:                 Thu, 14 Jan 2016 19:25:17 GMT
+            Time updated:                 Thu, 08 Jun 2017 21:17:59 GMT
             Metageneration:               1
             ACL:
     [
       {
-        "entity": "group-00b4903a97163d99003117abe64d292561d2b4074fc90ce5c0e35ac45f66ad70",
-        "entityId": "00b4903a97163d99003117abe64d292561d2b4074fc90ce5c0e35ac45f66ad70",
+        "entity": "project-owners-867489160491",
+        "projectTeam": {
+          "projectNumber": "867489160491",
+          "team": "owners"
+        },
         "role": "OWNER"
       }
     ]
             Default ACL:
     [
       {
-        "entity": "group-00b4903a97163d99003117abe64d292561d2b4074fc90ce5c0e35ac45f66ad70",
-        "entityId": "00b4903a97163d99003117abe64d292561d2b4074fc90ce5c0e35ac45f66ad70",
+        "entity": "project-owners-867489160491",
+        "projectTeam": {
+          "projectNumber": "867489160491",
+          "team": "owners"
+        },
         "role": "OWNER"
       }
     ]
@@ -314,6 +329,7 @@ class LsCommand(Command):
     fields['logging_config'] = 'Present' if bucket.logging else 'None'
     fields['cors_config'] = 'Present' if bucket.cors else 'None'
     fields['lifecycle_config'] = 'Present' if bucket.lifecycle else 'None'
+    fields['requester_pays'] = bucket.billing and bucket.billing.requesterPays
     if bucket.labels:
       fields['labels'] = LabelTranslation.JsonFromMessage(
           bucket.labels, pretty_print=True)
@@ -361,6 +377,7 @@ class LsCommand(Command):
            '\tWebsite configuration:\t\t{website_config}\n'
            '\tCORS configuration: \t\t{cors_config}\n'
            '\tLifecycle configuration:\t{lifecycle_config}\n'
+           '\tRequester Pays enabled:\t\t{requester_pays}\n'
            '\tLabels:\t\t\t\t{labels}\n' +
            time_created_line +
            time_updated_line +
@@ -467,6 +484,7 @@ class LsCommand(Command):
         bucket_fields = ['id']
       elif listing_style == ListingStyle.LONG_LONG:
         bucket_fields = ['acl',
+                         'billing',
                          'cors',
                          'defaultObjectAcl',
                          'labels',

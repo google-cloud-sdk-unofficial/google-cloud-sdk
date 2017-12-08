@@ -61,6 +61,7 @@ class Parse(base.Command):
       params = {}
       for param, template in templates.iteritems():
         params[param] = template.format(i)
-      uri = resources.Resource(collection_info, '', params, None).SelfLink()
+      uri = resources.Resource(
+          None, collection_info, '', params, None).SelfLink()
       uris.append(uri)
     return uris

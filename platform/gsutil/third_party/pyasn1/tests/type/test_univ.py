@@ -6,17 +6,21 @@
 #
 import sys
 import math
+
+try:
+    import unittest2 as unittest
+
+except ImportError:
+    import unittest
+
+from tests.base import BaseTestCase
+
 from pyasn1.type import univ, tag, constraint, namedtype, namedval, error
 from pyasn1.compat.octets import str2octs, ints2octs, octs2ints
 from pyasn1.error import PyAsn1Error
 
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
 
-
-class NoValueTestCase(unittest.TestCase):
+class NoValueTestCase(BaseTestCase):
     def testSingleton(self):
         assert univ.NoValue() is univ.NoValue(), 'NoValue is not a singleton'
 
@@ -144,7 +148,7 @@ class NoValueTestCase(unittest.TestCase):
             assert False, 'sizeof failed for NoValue object'
 
 
-class IntegerTestCase(unittest.TestCase):
+class IntegerTestCase(BaseTestCase):
     def testStr(self):
         assert str(univ.Integer(1)) in ('1', '1L'), 'str() fails'
 
@@ -266,45 +270,18 @@ class IntegerTestCase(unittest.TestCase):
         assert univ.Integer('3') == 3, 'prettyIn() fails'
 
     def testTag(self):
-        assert univ.Integer().getTagSet() == tag.TagSet(
+        assert univ.Integer().tagSet == tag.TagSet(
             (),
             tag.Tag(tag.tagClassUniversal, tag.tagFormatSimple, 0x02)
         )
 
     def testNamedVals(self):
-        i = univ.Integer(
-            'asn1', namedValues=univ.Integer.namedValues.clone(('asn1', 1))
-        )
-        assert i == 1, 'named val fails'
-        assert str(i) != 'asn1', 'named val __str__() fails'
 
+        class Integer(univ.Integer):
+            namedValues = univ.Integer.namedValues.clone(('asn1', 1))
 
-class BooleanTestCase(unittest.TestCase):
-    def testTruth(self):
-        assert univ.Boolean(True) and univ.Boolean(1), 'Truth initializer fails'
-
-    def testFalse(self):
-        assert not univ.Boolean(False) and not univ.Boolean(0), 'False initializer fails'
-
-    def testStr(self):
-        assert str(univ.Boolean(1)) in ('1', '1L'), 'str() fails'
-
-    def testRepr(self):
-        assert eval(repr(univ.Boolean(1)), {'Boolean': univ.Boolean}) == univ.Boolean(1), 'repr() fails'
-
-    def testTag(self):
-        assert univ.Boolean().getTagSet() == tag.TagSet(
-            (),
-            tag.Tag(tag.tagClassUniversal, tag.tagFormatSimple, 0x01)
-        )
-
-    def testConstraints(self):
-        try:
-            univ.Boolean(2)
-        except error.ValueConstraintError:
-            pass
-        else:
-            assert 0, 'constraint fail'
+        assert Integer('asn1') == 1, 'named val fails'
+        assert str(Integer('asn1')) != 'asn1', 'named val __str__() fails'
 
     def testSubtype(self):
         assert univ.Integer().subtype(
@@ -319,8 +296,42 @@ class BooleanTestCase(unittest.TestCase):
         )
 
 
-class BitStringTestCase(unittest.TestCase):
+class BooleanTestCase(BaseTestCase):
+    def testTruth(self):
+        assert univ.Boolean(True) and univ.Boolean(1), 'Truth initializer fails'
+
+    def testFalse(self):
+        assert not univ.Boolean(False) and not univ.Boolean(0), 'False initializer fails'
+
+    def testStr(self):
+        assert str(univ.Boolean(1)) in ('1', '1L'), 'str() fails'
+
+    def testRepr(self):
+        assert eval(repr(univ.Boolean(1)), {'Boolean': univ.Boolean}) == univ.Boolean(1), 'repr() fails'
+
+    def testTag(self):
+        assert univ.Boolean().tagSet == tag.TagSet(
+            (),
+            tag.Tag(tag.tagClassUniversal, tag.tagFormatSimple, 0x01)
+        )
+
+    def testConstraints(self):
+
+        class Boolean(univ.Boolean):
+            pass
+
+        try:
+            Boolean(2)
+        except error.ValueConstraintError:
+            pass
+        else:
+            assert 0, 'constraint fail'
+
+
+class BitStringTestCase(BaseTestCase):
     def setUp(self):
+        BaseTestCase.setUp(self)
+
         self.b = univ.BitString(
             namedValues=namedval.NamedValues(('Active', 0), ('Urgent', 1))
         )
@@ -341,6 +352,8 @@ class BitStringTestCase(unittest.TestCase):
 
     def testSet(self):
         assert self.b.clone('Active') == (1,)
+        assert self.b.clone('Urgent') == (0, 1)
+        assert self.b.clone('Urgent, Active') == (1, 1)
         assert self.b.clone("'1010100110001010'B") == (1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0)
         assert self.b.clone("'A98A'H") == (1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0)
         assert self.b.clone(binValue='1010100110001010') == (1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0)
@@ -349,14 +362,14 @@ class BitStringTestCase(unittest.TestCase):
         assert self.b.clone((1, 0, 1)) == (1, 0, 1)
 
     def testStr(self):
-        assert str(self.b.clone('Urgent,Active')) == '11'
+        assert str(self.b.clone('Urgent')) == '01'
 
     def testRepr(self):
         assert eval(repr(self.b.clone('Urgent,Active')), {'BitString': univ.BitString}) == self.b.clone(
             'Urgent,Active'), 'repr() fails'
 
     def testTag(self):
-        assert univ.BitString().getTagSet() == tag.TagSet(
+        assert univ.BitString().tagSet == tag.TagSet(
             (),
             tag.Tag(tag.tagClassUniversal, tag.tagFormatSimple, 0x03)
         )
@@ -385,6 +398,13 @@ class BitStringTestCase(unittest.TestCase):
     def testAsInteger(self):
         assert self.b.clone('11000000011001').asInteger() == 12313
         assert self.b.clone('1100110011011111').asInteger() == 52447
+
+    def testStaticDef(self):
+
+        class BitString(univ.BitString):
+            pass
+
+        assert BitString('11000000011001').asInteger() == 12313
 
 
 class OctetStringWithUnicodeMixIn(object):
@@ -451,17 +471,17 @@ class OctetStringWithUnicodeMixIn(object):
            assert list(reversed(univ.OctetString(self.encodedPythonString))) == list(reversed(self.encodedPythonString))
 
 
-class OctetStringWithAsciiTestCase(OctetStringWithUnicodeMixIn, unittest.TestCase):
+class OctetStringWithAsciiTestCase(OctetStringWithUnicodeMixIn, BaseTestCase):
     initializer = (97, 102)
     encoding = 'us-ascii'
 
 
-class OctetStringWithUtf8TestCase(OctetStringWithUnicodeMixIn, unittest.TestCase):
+class OctetStringWithUtf8TestCase(OctetStringWithUnicodeMixIn, BaseTestCase):
     initializer = (208, 176, 208, 177, 208, 178)
     encoding = 'utf-8'
 
 
-class OctetStringWithUtf16TestCase(OctetStringWithUnicodeMixIn, unittest.TestCase):
+class OctetStringWithUtf16TestCase(OctetStringWithUnicodeMixIn, BaseTestCase):
     initializer = (4, 48, 4, 49, 4, 50)
     encoding = 'utf-16-be'
 
@@ -470,12 +490,12 @@ if sys.version_info[0] > 2:
 
     # Somehow comparison of UTF-32 encoded strings does not work in Py2
 
-    class OctetStringWithUtf32TestCase(OctetStringWithUnicodeMixIn, unittest.TestCase):
+    class OctetStringWithUtf32TestCase(OctetStringWithUnicodeMixIn, BaseTestCase):
         initializer = (0, 0, 4, 48, 0, 0, 4, 49, 0, 0, 4, 50)
         encoding = 'utf-32-be'
 
 
-class OctetStringTestCase(unittest.TestCase):
+class OctetStringTestCase(BaseTestCase):
 
     def testBinDefault(self):
 
@@ -512,13 +532,20 @@ class OctetStringTestCase(unittest.TestCase):
             assert 0, 'empty OctetString() not reported'
 
     def testTag(self):
-        assert univ.OctetString().getTagSet() == tag.TagSet(
+        assert univ.OctetString().tagSet == tag.TagSet(
             (),
             tag.Tag(tag.tagClassUniversal, tag.tagFormatSimple, 0x04)
         )
 
+    def testStaticDef(self):
 
-class Null(unittest.TestCase):
+        class OctetString(univ.OctetString):
+            pass
+
+        assert OctetString(hexValue="FA9823C43E43510DE3422") == ints2octs((250, 152, 35, 196, 62, 67, 81, 13, 227, 66, 32))
+
+
+class Null(BaseTestCase):
     def testStr(self):
         assert str(univ.Null('')) == '', 'str() fails'
 
@@ -526,7 +553,7 @@ class Null(unittest.TestCase):
         assert eval(repr(univ.Null()), {'Null': univ.Null}) == univ.Null(), 'repr() fails'
 
     def testTag(self):
-        assert univ.Null().getTagSet() == tag.TagSet(
+        assert univ.Null().tagSet == tag.TagSet(
             (),
             tag.Tag(tag.tagClassUniversal, tag.tagFormatSimple, 0x05)
         )
@@ -539,8 +566,15 @@ class Null(unittest.TestCase):
         else:
             assert 0, 'constraint fail'
 
+    def testStaticDef(self):
 
-class RealTestCase(unittest.TestCase):
+        class Null(univ.Null):
+            pass
+
+        assert not Null()
+
+
+class RealTestCase(BaseTestCase):
     def testFloat4BinEnc(self):
         assert univ.Real((0.25, 2, 3)) == 2.0, 'float initializer for binary encoding fails'
 
@@ -635,10 +669,10 @@ class RealTestCase(unittest.TestCase):
         assert univ.Real(float('inf')) == float('inf'), 'prettyIn() fails'
 
     def testPlusInf(self):
-        assert univ.Real('inf').isPlusInfinity(), 'isPlusInfinity failed'
+        assert univ.Real('inf').isPlusInf, 'isPlusInfinity failed'
 
     def testMinusInf(self):
-        assert univ.Real('-inf').isMinusInfinity(), 'isMinusInfinity failed'
+        assert univ.Real('-inf').isMinusInf, 'isMinusInfinity failed'
 
     def testPos(self):
         assert +univ.Real(1.0) == 1.0, '__pos__() fails'
@@ -660,13 +694,20 @@ class RealTestCase(unittest.TestCase):
             assert math.trunc(univ.Real(1.1)) == 1.0, '__trunc__() fails'
 
     def testTag(self):
-        assert univ.Real().getTagSet() == tag.TagSet(
+        assert univ.Real().tagSet == tag.TagSet(
             (),
             tag.Tag(tag.tagClassUniversal, tag.tagFormatSimple, 0x09)
         )
 
+    def testStaticDef(self):
 
-class ObjectIdentifier(unittest.TestCase):
+        class Real(univ.Real):
+            pass
+
+        assert Real(1.0) == 1.0
+
+
+class ObjectIdentifier(BaseTestCase):
     def testStr(self):
         assert str(univ.ObjectIdentifier((1, 3, 6))) == '1.3.6', 'str() fails'
 
@@ -708,7 +749,7 @@ class ObjectIdentifier(unittest.TestCase):
         assert univ.ObjectIdentifier(s) == (1, 3, 6), 'unicode init fails'
 
     def testTag(self):
-        assert univ.ObjectIdentifier().getTagSet() == tag.TagSet(
+        assert univ.ObjectIdentifier().tagSet == tag.TagSet(
             (),
             tag.Tag(tag.tagClassUniversal, tag.tagFormatSimple, 0x06)
         )
@@ -718,9 +759,17 @@ class ObjectIdentifier(unittest.TestCase):
         assert 1234 in s
         assert 4321 not in s
 
+    def testStaticDef(self):
 
-class SequenceOf(unittest.TestCase):
+        class ObjectIdentifier(univ.ObjectIdentifier):
+            pass
+
+        assert str(ObjectIdentifier((1, 3, 6))) == '1.3.6'
+
+
+class SequenceOf(BaseTestCase):
     def setUp(self):
+        BaseTestCase.setUp(self)
         self.s1 = univ.SequenceOf(
             componentType=univ.OctetString('')
         )
@@ -728,11 +777,12 @@ class SequenceOf(unittest.TestCase):
 
     def testRepr(self):
         assert eval(repr(self.s1.clone().setComponents('a', 'b')),
-                    {'SequenceOf': univ.SequenceOf, 'OctetString': univ.OctetString}) == self.s1.clone().setComponents(
+                    {'SequenceOf': univ.SequenceOf,
+                     'OctetString': univ.OctetString}) == self.s1.clone().setComponents(
             'a', 'b'), 'repr() fails'
 
     def testTag(self):
-        assert self.s1.getTagSet() == tag.TagSet(
+        assert self.s1.tagSet == tag.TagSet(
             (),
             tag.Tag(tag.tagClassUniversal, tag.tagFormatConstructed, 0x10)
         ), 'wrong tagSet'
@@ -817,7 +867,7 @@ class SequenceOf(unittest.TestCase):
             assert 0, 'size spec fails'
 
     def testGetComponentTagMap(self):
-        assert self.s1.getComponentTagMap().getPosMap() == {
+        assert self.s1.componentType.tagMap.presentTypes == {
             univ.OctetString.tagSet: univ.OctetString('')
         }
 
@@ -845,6 +895,37 @@ class SequenceOf(unittest.TestCase):
     def testSetComponents(self):
         assert self.s1.clone().setComponents('abc', 'def') == \
                self.s1.setComponentByPosition(0, 'abc').setComponentByPosition(1, 'def')
+
+    def testGetItem(self):
+        s = self.s1.clone()
+        s.append('xxx')
+        assert s[0]
+
+        try:
+            s[2]
+
+        except IndexError:
+            pass
+
+        else:
+            assert False, 'IndexError not raised'
+
+        # this is a deviation from standart sequence protocol
+        assert not s[1]
+
+    def testSetItem(self):
+        s = self.s1.clone()
+        s.append('xxx')
+
+        try:
+
+            s[2] = 'xxx'
+
+        except IndexError:
+            pass
+
+        else:
+            assert False, 'IndexError not raised'
 
     def testAppend(self):
         self.s1.clear()
@@ -886,24 +967,56 @@ class SequenceOf(unittest.TestCase):
         self.s1.sort()
         assert list(self.s1) == [str2octs('a'), str2octs('b')]
 
+    def testStaticDef(self):
 
-class Sequence(unittest.TestCase):
+        class SequenceOf(univ.SequenceOf):
+            componentType = univ.OctetString('')
+
+        s = SequenceOf()
+        s[0] = 'abc'
+        assert len(s) == 1
+        assert s == [str2octs('abc')]
+
+    def testLegacyInitializer(self):
+        n = univ.SequenceOf(
+            componentType=univ.OctetString()
+        )
+        o = univ.SequenceOf(
+            univ.OctetString()  # this is the old way
+        )
+
+        assert n.isSameTypeWith(o) and o.isSameTypeWith(n)
+
+        n[0] = 'fox'
+        o[0] = 'fox'
+
+        assert n == o
+
+class Sequence(BaseTestCase):
     def setUp(self):
-        self.s1 = univ.Sequence(componentType=namedtype.NamedTypes(
-            namedtype.NamedType('name', univ.OctetString('')),
-            namedtype.OptionalNamedType('nick', univ.OctetString('')),
-            namedtype.DefaultedNamedType('age', univ.Integer(34))
-        ))
+        BaseTestCase.setUp(self)
+        self.s1 = univ.Sequence(
+            componentType=namedtype.NamedTypes(
+                namedtype.NamedType('name', univ.OctetString('')),
+                namedtype.OptionalNamedType('nick', univ.OctetString('')),
+                namedtype.DefaultedNamedType('age', univ.Integer(34))
+            )
+        )
 
     def testRepr(self):
-        assert eval(repr(self.s1.clone().setComponents('a', 'b')),
-                    {'Sequence': univ.Sequence, 'OctetString': univ.OctetString, 'Integer': univ.Integer,
-                     'NamedTypes': namedtype.NamedTypes, 'NamedType': namedtype.NamedType,
-                     'OptionalNamedType': namedtype.OptionalNamedType,
-                     'DefaultedNamedType': namedtype.DefaultedNamedType}) == self.s1.clone().setComponents('a', 'b'), 'repr() fails'
+        assert eval(
+            repr(self.s1.clone().setComponents('a', 'b')),
+            {'Sequence': univ.Sequence,
+             'OctetString': univ.OctetString,
+             'Integer': univ.Integer,
+             'NamedTypes': namedtype.NamedTypes,
+             'NamedType': namedtype.NamedType,
+             'OptionalNamedType': namedtype.OptionalNamedType,
+             'DefaultedNamedType': namedtype.DefaultedNamedType}
+        ) == self.s1.clone().setComponents('a', 'b'), 'repr() fails'
 
     def testTag(self):
-        assert self.s1.getTagSet() == tag.TagSet(
+        assert self.s1.tagSet == tag.TagSet(
             (),
             tag.Tag(tag.tagClassUniversal, tag.tagFormatConstructed, 0x10)
         ), 'wrong tagSet'
@@ -921,25 +1034,18 @@ class Sequence(unittest.TestCase):
         assert '<missing>' not in self.s1
 
     def testGetNearPosition(self):
-        assert self.s1.getComponentTagMapNearPosition(1).getPosMap() == {
+        assert self.s1.componentType.getTagMapNearPosition(1).presentTypes == {
             univ.OctetString.tagSet: univ.OctetString(''),
             univ.Integer.tagSet: univ.Integer(34)
         }
-        assert self.s1.getComponentPositionNearType(
+        assert self.s1.componentType.getPositionNearType(
             univ.OctetString.tagSet, 1
         ) == 1
 
-    def testGetDefaultComponentByPosition(self):
-        self.s1.clear()
-        assert self.s1.getDefaultComponentByPosition(0) is None
-        assert self.s1.getDefaultComponentByPosition(2) == univ.Integer(34)
-
     def testSetDefaultComponents(self):
         self.s1.clear()
-        assert self.s1.getComponentByPosition(2) is None
         self.s1.setComponentByPosition(0, univ.OctetString('Ping'))
         self.s1.setComponentByPosition(1, univ.OctetString('Pong'))
-        self.s1.setDefaultComponents()
         assert self.s1.getComponentByPosition(2) == 34
 
     def testClone(self):
@@ -996,6 +1102,54 @@ class Sequence(unittest.TestCase):
         assert s[0] == univ.OctetString('')
         assert s[2] == univ.Integer(34)
 
+    def testGetItem(self):
+        s = self.s1.clone()
+        s['name'] = 'xxx'
+        assert s['name']
+        assert s[0]
+
+        try:
+            s['xxx']
+
+        except KeyError:
+            pass
+
+        else:
+            assert False, 'KeyError not raised'
+
+        try:
+            s[100]
+
+        except IndexError:
+            pass
+
+        else:
+            assert False, 'IndexError not raised'
+
+    def testSetItem(self):
+        s = self.s1.clone()
+        s['name'] = 'xxx'
+
+        try:
+
+            s['xxx'] = 'xxx'
+
+        except KeyError:
+            pass
+
+        else:
+            assert False, 'KeyError not raised'
+
+        try:
+
+            s[100] = 'xxx'
+
+        except IndexError:
+            pass
+
+        else:
+            assert False, 'IndexError not raised'
+
     def testIter(self):
         assert list(self.s1) == ['name', 'nick', 'age']
 
@@ -1019,7 +1173,7 @@ class Sequence(unittest.TestCase):
 
     def testUpdate(self):
         self.s1.clear()
-        assert list(self.s1.values()) == [None, None, None]
+        assert list(self.s1.values()) == [str2octs(''), str2octs(''), 34]
         self.s1.update(**{'name': 'abc', 'nick': 'def', 'age': 123})
         assert list(self.s1.items()) == [(x[0], str2octs(x[1])) for x in [('name', 'abc'), ('nick', 'def')]] + [('age', 123)]
         self.s1.update(('name', 'ABC'))
@@ -1027,13 +1181,108 @@ class Sequence(unittest.TestCase):
         self.s1.update(name='CBA')
         assert list(self.s1.items()) == [(x[0], str2octs(x[1])) for x in [('name', 'CBA'), ('nick', 'def')]] + [('age', 123)]
 
+    def testStaticDef(self):
 
-class SetOf(unittest.TestCase):
+        class Sequence(univ.Sequence):
+            componentType = namedtype.NamedTypes(
+                namedtype.NamedType('name', univ.OctetString('')),
+                namedtype.OptionalNamedType('nick', univ.OctetString('')),
+                namedtype.DefaultedNamedType('age', univ.Integer(34))
+            )
+
+        s = Sequence()
+        s['name'] = 'abc'
+        assert s['name'] == str2octs('abc')
+
+
+class SequenceWithoutSchema(BaseTestCase):
+
+    def testGetItem(self):
+        s = univ.Sequence()
+        s.setComponentByPosition(0, univ.OctetString('abc'))
+        s[0] = 'abc'
+        assert s['field-0']
+        assert s[0]
+
+        try:
+            s['field-1']
+
+        except KeyError:
+            pass
+
+        else:
+            assert False, 'KeyError not raised'
+
+    def testSetItem(self):
+        s = univ.Sequence()
+        s.setComponentByPosition(0, univ.OctetString('abc'))
+        s['field-0'] = 'xxx'
+
+        try:
+
+            s['field-1'] = 'xxx'
+
+        except KeyError:
+            pass
+
+        else:
+            assert False, 'KeyError not raised'
+
+    def testIter(self):
+        s = univ.Sequence()
+        s.setComponentByPosition(0, univ.OctetString('abc'))
+        s.setComponentByPosition(1, univ.Integer(123))
+        assert list(s) == ['field-0', 'field-1']
+
+    def testKeys(self):
+        s = univ.Sequence()
+        s.setComponentByPosition(0, univ.OctetString('abc'))
+        s.setComponentByPosition(1, univ.Integer(123))
+        assert list(s.keys()) == ['field-0', 'field-1']
+
+    def testValues(self):
+        s = univ.Sequence()
+        s.setComponentByPosition(0, univ.OctetString('abc'))
+        s.setComponentByPosition(1, univ.Integer(123))
+        assert list(s.values()) == [str2octs('abc'), 123]
+
+    def testItems(self):
+        s = univ.Sequence()
+        s.setComponentByPosition(0, univ.OctetString('abc'))
+        s.setComponentByPosition(1, univ.Integer(123))
+        assert list(s.items()) == [('field-0', str2octs('abc')), ('field-1', 123)]
+
+    def testUpdate(self):
+        s = univ.Sequence()
+        assert not s
+        s.setComponentByPosition(0, univ.OctetString('abc'))
+        s.setComponentByPosition(1, univ.Integer(123))
+        assert s
+        assert list(s.keys()) == ['field-0', 'field-1']
+        assert list(s.values()) == [str2octs('abc'), 123]
+        assert list(s.items()) == [('field-0', str2octs('abc')), ('field-1', 123)]
+        s['field-0'] = univ.OctetString('def')
+        assert list(s.values()) == [str2octs('def'), 123]
+        s['field-1'] = univ.OctetString('ghi')
+        assert list(s.values()) == [str2octs('def'), str2octs('ghi')]
+        try:
+            s['field-2'] = univ.OctetString('xxx')
+        except KeyError:
+            pass
+        else:
+            assert False, 'unknown field at schema-less object tolerated'
+        assert 'field-0' in s
+        s.clear()
+        assert 'field-0' not in s
+
+
+class SetOf(BaseTestCase):
     def setUp(self):
+        BaseTestCase.setUp(self)
         self.s1 = univ.SetOf(componentType=univ.OctetString(''))
 
     def testTag(self):
-        assert self.s1.getTagSet() == tag.TagSet(
+        assert self.s1.tagSet == tag.TagSet(
             (),
             tag.Tag(tag.tagClassUniversal, tag.tagFormatConstructed, 0x11)
         ), 'wrong tagSet'
@@ -1044,18 +1293,32 @@ class SetOf(unittest.TestCase):
         self.s1.setComponentByPosition(0, self.s1[0].clone('cba'))
         assert self.s1[0] == str2octs('cba'), 'set by idx fails'
 
+    def testStaticDef(self):
 
-class Set(unittest.TestCase):
+        class SetOf(univ.SequenceOf):
+            componentType = univ.OctetString('')
+
+        s = SetOf()
+        s[0] = 'abc'
+        assert len(s) == 1
+        assert s == [str2octs('abc')]
+
+
+class Set(BaseTestCase):
     def setUp(self):
-        self.s1 = univ.Set(componentType=namedtype.NamedTypes(
-            namedtype.NamedType('name', univ.OctetString('')),
-            namedtype.OptionalNamedType('null', univ.Null('')),
-            namedtype.DefaultedNamedType('age', univ.Integer(34))
-        ))
+        BaseTestCase.setUp(self)
+
+        self.s1 = univ.Set(
+            componentType=namedtype.NamedTypes(
+                namedtype.NamedType('name', univ.OctetString('')),
+                namedtype.OptionalNamedType('null', univ.Null('')),
+                namedtype.DefaultedNamedType('age', univ.Integer(34))
+            )
+        )
         self.s2 = self.s1.clone()
 
     def testTag(self):
-        assert self.s1.getTagSet() == tag.TagSet(
+        assert self.s1.tagSet == tag.TagSet(
             (),
             tag.Tag(tag.tagClassUniversal, tag.tagFormatConstructed, 0x11)
         ), 'wrong tagSet'
@@ -1073,21 +1336,19 @@ class Set(unittest.TestCase):
         ) == str2octs('abc'), 'set by name fails'
 
     def testGetTagMap(self):
-        assert self.s1.getTagMap().getPosMap() == {
+        assert self.s1.tagMap.presentTypes == {
             univ.Set.tagSet: univ.Set()
         }
 
     def testGetComponentTagMap(self):
-        assert self.s1.getComponentTagMap().getPosMap() == {
+        assert self.s1.componentType.tagMapUnique.presentTypes == {
             univ.OctetString.tagSet: univ.OctetString(''),
             univ.Null.tagSet: univ.Null(''),
             univ.Integer.tagSet: univ.Integer(34)
         }
 
     def testGetPositionByType(self):
-        assert self.s1.getComponentPositionByType(
-            univ.Null().getTagSet()
-        ) == 1
+        assert self.s1.componentType.getPositionByType(univ.Null().tagSet) == 1
 
     def testSetToDefault(self):
         self.s1.setComponentByName('name', univ.noValue)
@@ -1096,20 +1357,39 @@ class Set(unittest.TestCase):
     def testIter(self):
         assert list(self.s1) == ['name', 'null', 'age']
 
+    def testStaticDef(self):
 
-class Choice(unittest.TestCase):
+        class Set(univ.Set):
+            componentType = namedtype.NamedTypes(
+                namedtype.NamedType('name', univ.OctetString('')),
+                namedtype.OptionalNamedType('nick', univ.OctetString('')),
+                namedtype.DefaultedNamedType('age', univ.Integer(34))
+            )
+
+        s = Set()
+        s['name'] = 'abc'
+        assert s['name'] == str2octs('abc')
+
+
+class Choice(BaseTestCase):
     def setUp(self):
-        innerComp = univ.Choice(componentType=namedtype.NamedTypes(
-            namedtype.NamedType('count', univ.Integer()),
-            namedtype.NamedType('flag', univ.Boolean())
-        ))
-        self.s1 = univ.Choice(componentType=namedtype.NamedTypes(
-            namedtype.NamedType('name', univ.OctetString()),
-            namedtype.NamedType('sex', innerComp)
-        ))
+        BaseTestCase.setUp(self)
+
+        innerComp = univ.Choice(
+            componentType=namedtype.NamedTypes(
+                namedtype.NamedType('count', univ.Integer()),
+                namedtype.NamedType('flag', univ.Boolean())
+            )
+        )
+        self.s1 = univ.Choice(
+            componentType=namedtype.NamedTypes(
+                namedtype.NamedType('name', univ.OctetString()),
+                namedtype.NamedType('sex', innerComp)
+            )
+        )
 
     def testTag(self):
-        assert self.s1.getTagSet() == tag.TagSet(), 'wrong tagSet'
+        assert self.s1.tagSet == tag.TagSet(), 'wrong tagSet'
 
     def testRepr(self):
         assert eval(repr(self.s1.clone().setComponents('a')),
@@ -1196,6 +1476,25 @@ class Choice(unittest.TestCase):
         s = self.s1.clone()
         s.setComponentByName('sex', univ.noValue)
         assert s['sex'] is not univ.noValue
+
+    def testStaticDef(self):
+
+        class InnerChoice(univ.Choice):
+            componentType = namedtype.NamedTypes(
+                namedtype.NamedType('count', univ.Integer()),
+                namedtype.NamedType('flag', univ.Boolean())
+            )
+
+        class OuterChoice(univ.Choice):
+            componentType = namedtype.NamedTypes(
+                namedtype.NamedType('name', univ.OctetString()),
+                namedtype.NamedType('sex', InnerChoice())
+            )
+
+        c = OuterChoice()
+
+        c.setComponentByType(univ.OctetString.tagSet, 'abc')
+        assert c.getName() == 'name'
 
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])

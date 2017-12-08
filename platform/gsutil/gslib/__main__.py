@@ -75,7 +75,6 @@ from gslib.util import GetBotoConfigFileList
 from gslib.util import GetCertsFile
 from gslib.util import GetCleanupFiles
 from gslib.util import GetGsutilClientIdAndSecret
-from gslib.util import GsutilStreamHandler
 from gslib.util import ProxyInfoFromEnvironmentVar
 from gslib.util import UTF8
 from gslib.sig_handling import GetCaughtSignals
@@ -188,7 +187,7 @@ def _ConfigureLogging(level=logging.INFO):
   log_format = '%(levelname)s %(asctime)s %(filename)s] %(message)s'
   date_format = '%m%d %H:%M:%S.%f'
   formatter = GsutilFormatter(fmt=log_format, datefmt=date_format)
-  handler = GsutilStreamHandler()
+  handler = logging.StreamHandler()
   handler.setFormatter(formatter)
   root_logger = logging.getLogger()
   root_logger.addHandler(handler)
@@ -234,8 +233,8 @@ def main():
   global debug
   global test_exception_traces
 
-  if not (2, 6) <= sys.version_info[:3] < (3,):
-    raise CommandException('gsutil requires python 2.6 or 2.7.')
+  if not (2, 7) <= sys.version_info[:3] < (3,):
+    raise CommandException('gsutil requires python 2.7.')
 
   # In gsutil 4.0 and beyond, we don't use the boto library for the JSON
   # API. However, we still store gsutil configuration data in the .boto
@@ -256,6 +255,7 @@ def main():
   trace_token = None
   perf_trace_token = None
   test_exception_traces = False
+  user_project = None
 
   # If user enters no commands just print the usage info.
   if len(sys.argv) == 1:
@@ -275,7 +275,7 @@ def main():
 
   try:
     try:
-      opts, args = getopt.getopt(sys.argv[1:], 'dDvo:h:mq',
+      opts, args = getopt.getopt(sys.argv[1:], 'dDvo:h:u:mq',
                                  ['debug', 'detailedDebug', 'version', 'option',
                                   'help', 'header', 'multithreaded', 'quiet',
                                   'testexceptiontraces', 'trace-token=',
@@ -306,6 +306,8 @@ def main():
         parallel_operations = True
       elif o in ('-q', '--quiet'):
         quiet = True
+      elif o == '-u':
+        user_project = a
       elif o in ('-v', '--version'):
         version = True
       elif o == '--perf-trace-token':
@@ -369,10 +371,6 @@ def main():
 
     _CheckAndWarnForProxyDifferences()
 
-    if not test_exception_traces:
-      # Disable warning for tests, as it interferes with test stderr parsing.
-      _CheckAndWarnForPython26()
-
     if os.environ.get('_ARGCOMPLETE', '0') == '1':
       return _PerformTabCompletion(command_runner)
 
@@ -380,19 +378,9 @@ def main():
         command_runner, command_name, args=args[1:], headers=headers,
         debug_level=debug, trace_token=trace_token,
         parallel_operations=parallel_operations,
-        perf_trace_token=perf_trace_token)
+        perf_trace_token=perf_trace_token, user_project=user_project)
   finally:
     _Cleanup()
-
-
-def _CheckAndWarnForPython26():
-  if (2, 6) == sys.version_info[:2]:
-    sys.stderr.write('\n'.join(textwrap.wrap(
-        'Warning: You are running Python 2.6, which stopped receiving '
-        'security patches as of October 2013. gsutil will stop supporting '
-        'Python 2.6 on September 1, 2016. Please update your Python '
-        'installation to 2.7 to ensure compatibility with future gsutil '
-        'versions.\n')))
 
 
 def _CheckAndWarnForProxyDifferences():
@@ -555,7 +543,8 @@ def _CheckAndHandleCredentialException(e, args):
 
 def _RunNamedCommandAndHandleExceptions(
     command_runner, command_name, args=None, headers=None, debug_level=0,
-    trace_token=None, parallel_operations=False, perf_trace_token=None):
+    trace_token=None, parallel_operations=False, perf_trace_token=None,
+    user_project=None):
   """Runs the command and handles common exceptions."""
   # pylint: disable=g-import-not-at-top
   from gslib.util import GetConfigFilePaths
@@ -574,7 +563,8 @@ def _RunNamedCommandAndHandleExceptions(
                                           debug_level, trace_token,
                                           parallel_operations,
                                           perf_trace_token=perf_trace_token,
-                                          collect_analytics=True)
+                                          collect_analytics=True,
+                                          user_project=user_project)
   except AttributeError as e:
     if str(e).find('secret_access_key') != -1:
       _OutputAndExit(

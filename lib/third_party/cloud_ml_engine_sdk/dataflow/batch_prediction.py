@@ -216,8 +216,7 @@ class PredictionDoFn(beam.DoFn):
         assert self._model_state.model_dir == model_dir
 
       # Try to load it.
-      if (self._model_state.model.is_single_string_input() or
-          self._model_state.model.need_preprocess()):
+      if self._model_state.model.is_single_string_input():
         loaded_data = element
       else:
         loaded_data = [json.loads(d) for d in element]

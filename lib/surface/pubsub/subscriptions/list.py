@@ -37,6 +37,7 @@ class List(base.ListCommand):
             ackDeadlineSeconds:label=ACK_DEADLINE
           )
         """)
+    parser.display_info.AddUriFunc(util.SubscriptionUriFunc)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -66,7 +67,7 @@ class List(base.ListCommand):
     try:
       while True:
         list_subscriptions_req = msgs.PubsubProjectsSubscriptionsListRequest(
-            project=util.ProjectFormat(),
+            project=util.ParseProject().RelativeName(),
             pageToken=page_token,
             pageSize=page_size)
 
@@ -89,9 +90,9 @@ def SubscriptionDict(subscription):
   """Returns a subscription dict with additional fields."""
   result = resource_projector.MakeSerializable(subscription)
   result['type'] = 'PUSH' if subscription.pushConfig.pushEndpoint else 'PULL'
-  subscription_info = util.SubscriptionIdentifier(subscription.name)
-  result['projectId'] = subscription_info.project.project_name
-  result['subscriptionId'] = subscription_info.resource_name
-  topic_info = util.TopicIdentifier(subscription.topic)
-  result['topicId'] = topic_info.resource_name
+  subscription_ref = util.ParseSubscription(subscription.name)
+  result['projectId'] = subscription_ref.projectsId
+  result['subscriptionId'] = subscription_ref.subscriptionsId
+  topic_info = util.ParseTopic(subscription.topic)
+  result['topicId'] = topic_info.topicsId
   return result

@@ -41,6 +41,7 @@ class List(base.ListCommand):
             expireTime:label=EXPIRE_TIME
             )
         """)
+    parser.display_info.AddUriFunc(util.SnapshotUriFunc)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -70,7 +71,7 @@ class List(base.ListCommand):
     try:
       while True:
         list_snapshots_req = msgs.PubsubProjectsSnapshotsListRequest(
-            project=util.ProjectFormat(),
+            project=util.ParseProject().RelativeName(),
             pageToken=page_token,
             pageSize=page_size)
 
@@ -92,10 +93,10 @@ class List(base.ListCommand):
 def SnapshotDict(snapshot):
   """Returns a snapshot dict with additional fields."""
   result = resource_projector.MakeSerializable(snapshot)
-  snapshot_info = util.SnapshotIdentifier(snapshot.name)
-  result['projectId'] = snapshot_info.project.project_name
-  result['snapshotId'] = snapshot_info.resource_name
-  topic_info = util.TopicIdentifier(snapshot.topic)
-  result['topicId'] = topic_info.resource_name
+  snapshot_ref = util.ParseSnapshot(snapshot.name)
+  result['projectId'] = snapshot_ref.projectsId
+  result['snapshotId'] = snapshot_ref.snapshotsId
+  topic_ref = util.ParseTopic(snapshot.topic)
+  result['topicId'] = topic_ref.topicsId
   result['expireTime'] = snapshot.expireTime
   return result

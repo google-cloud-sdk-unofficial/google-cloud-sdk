@@ -24,6 +24,11 @@ from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Deprecate(
+    is_removed=False,
+    warning=('This command is deprecated. Use `gcloud beta functions logs '
+             'read` instead.'))
+@base.Hidden
 class GetLogs(base.ListCommand):
   """Show logs produced by functions.
 

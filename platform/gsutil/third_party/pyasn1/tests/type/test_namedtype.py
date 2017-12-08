@@ -5,17 +5,22 @@
 # License: http://pyasn1.sf.net/license.html
 #
 import sys
+
 try:
     import unittest2 as unittest
+
 except ImportError:
     import unittest
+
+from tests.base import BaseTestCase
 
 from pyasn1.type import namedtype, univ
 from pyasn1.error import PyAsn1Error
 
 
-class NamedTypeCaseBase(unittest.TestCase):
+class NamedTypeCaseBase(BaseTestCase):
     def setUp(self):
+        BaseTestCase.setUp(self)
         self.e = namedtype.NamedType('age', univ.Integer(0))
 
     def testIter(self):
@@ -26,8 +31,10 @@ class NamedTypeCaseBase(unittest.TestCase):
         assert eval(repr(self.e), {'NamedType': namedtype.NamedType, 'Integer': univ.Integer}) == self.e, 'repr() fails'
 
 
-class NamedTypesCaseBase(unittest.TestCase):
+class NamedTypesCaseBase(BaseTestCase):
     def setUp(self):
+        BaseTestCase.setUp(self)
+
         self.e = namedtype.NamedTypes(
             namedtype.NamedType('first-name', univ.OctetString('')),
             namedtype.OptionalNamedType('age', univ.Integer(0)),
@@ -35,9 +42,15 @@ class NamedTypesCaseBase(unittest.TestCase):
         )
 
     def testRepr(self):
-        assert eval(repr(self.e), {'NamedTypes': namedtype.NamedTypes, 'NamedType': namedtype.NamedType,
-                                   'OptionalNamedType': namedtype.OptionalNamedType, 'Integer': univ.Integer,
-                                   'OctetString': univ.OctetString}) == self.e, 'repr() fails'
+        assert eval(
+            repr(self.e), {
+                'NamedTypes': namedtype.NamedTypes,
+                'NamedType': namedtype.NamedType,
+                'OptionalNamedType': namedtype.OptionalNamedType,
+                'Integer': univ.Integer,
+                'OctetString': univ.OctetString
+            }
+        ) == self.e, 'repr() fails'
 
     def testContains(self):
         assert 'first-name' in self.e
@@ -63,36 +76,36 @@ class NamedTypesCaseBase(unittest.TestCase):
             'getPositionByName() fails'
 
     def testGetTypesNearPosition(self):
-        assert self.e.getTagMapNearPosition(0).getPosMap() == {
+        assert self.e.getTagMapNearPosition(0).presentTypes == {
             univ.OctetString.tagSet: univ.OctetString('')
         }
-        assert self.e.getTagMapNearPosition(1).getPosMap() == {
+        assert self.e.getTagMapNearPosition(1).presentTypes == {
             univ.Integer.tagSet: univ.Integer(0),
             univ.OctetString.tagSet: univ.OctetString('')
         }
-        assert self.e.getTagMapNearPosition(2).getPosMap() == {
+        assert self.e.getTagMapNearPosition(2).presentTypes == {
             univ.OctetString.tagSet: univ.OctetString('')
         }
 
     def testGetTagMap(self):
-        assert self.e.getTagMap().getPosMap() == {
+        assert self.e.tagMap.presentTypes == {
             univ.OctetString.tagSet: univ.OctetString(''),
             univ.Integer.tagSet: univ.Integer(0)
         }
 
     def testStrTagMap(self):
-        assert 'TagMap' in str(self.e.getTagMap())
-        assert 'OctetString' in str(self.e.getTagMap())
-        assert 'Integer' in str(self.e.getTagMap())
+        assert 'TagMap' in str(self.e.tagMap)
+        assert 'OctetString' in str(self.e.tagMap)
+        assert 'Integer' in str(self.e.tagMap)
 
     def testReprTagMap(self):
-        assert 'TagMap' in repr(self.e.getTagMap())
-        assert 'OctetString' in repr(self.e.getTagMap())
-        assert 'Integer' in repr(self.e.getTagMap())
+        assert 'TagMap' in repr(self.e.tagMap)
+        assert 'OctetString' in repr(self.e.tagMap)
+        assert 'Integer' in repr(self.e.tagMap)
 
     def testGetTagMapWithDups(self):
         try:
-            self.e.getTagMap(1)
+            self.e.tagMapUnique[0]
         except PyAsn1Error:
             pass
         else:
@@ -104,8 +117,10 @@ class NamedTypesCaseBase(unittest.TestCase):
         assert self.e.getPositionNearType(univ.OctetString.tagSet, 2) == 2
 
 
-class OrderedNamedTypesCaseBase(unittest.TestCase):
+class OrderedNamedTypesCaseBase(BaseTestCase):
     def setUp(self):
+        BaseTestCase.setUp(self)
+
         self.e = namedtype.NamedTypes(
             namedtype.NamedType('first-name', univ.OctetString('')),
             namedtype.NamedType('age', univ.Integer(0))
@@ -114,6 +129,16 @@ class OrderedNamedTypesCaseBase(unittest.TestCase):
     def testGetTypeByPosition(self):
         assert self.e.getTypeByPosition(0) == univ.OctetString(''), \
             'getTypeByPosition() fails'
+
+
+class DuplicateNamedTypesCaseBase(BaseTestCase):
+    def testDuplicateDefaultTags(self):
+        nt = namedtype.NamedTypes(
+            namedtype.NamedType('first-name', univ.Any()),
+            namedtype.NamedType('age', univ.Any())
+        )
+
+        assert isinstance(nt.tagMap, namedtype.NamedTypes.PostponedError)
 
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])

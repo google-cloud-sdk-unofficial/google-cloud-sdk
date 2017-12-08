@@ -209,10 +209,11 @@ def _EnsureFileExists(filename):
 def _GceMetadataRequest(relative_url, use_metadata_ip=False):
     """Request the given url from the GCE metadata service."""
     if use_metadata_ip:
-        base_url = 'http://169.254.169.254/'
+        base_url = os.environ.get('GCE_METADATA_IP', '169.254.169.254')
     else:
-        base_url = 'http://metadata.google.internal/'
-    url = base_url + 'computeMetadata/v1/' + relative_url
+        base_url = os.environ.get(
+            'GCE_METADATA_ROOT', 'metadata.google.internal')
+    url = 'http://' + base_url + '/computeMetadata/v1/' + relative_url
     # Extra header requirement can be found here:
     # https://developers.google.com/compute/docs/metadata
     headers = {'Metadata-Flavor': 'Google'}
@@ -302,6 +303,11 @@ class GceAssertionCredentials(gce.AppAssertionCredentials):
                             if (creds['scopes'] in
                                     (None, cached_creds['scopes'])):
                                 scopes = cached_creds['scopes']
+                except KeyboardInterrupt:
+                    raise
+                except:  # pylint: disable=bare-except
+                    # Treat exceptions as a cache miss.
+                    pass
                 finally:
                     cache_file.unlock_and_close()
         return scopes
@@ -331,10 +337,16 @@ class GceAssertionCredentials(gce.AppAssertionCredentials):
                         # If it's not locked, the locking process will
                         # write the same data to the file, so just
                         # continue.
+                except KeyboardInterrupt:
+                    raise
+                except:  # pylint: disable=bare-except
+                    # Treat exceptions as a cache miss.
+                    pass
                 finally:
                     cache_file.unlock_and_close()
 
     def _ScopesFromMetadataServer(self, scopes):
+        """Returns instance scopes based on GCE metadata server."""
         if not util.DetectGce():
             raise exceptions.ResourceUnavailableError(
                 'GCE credentials requested outside a GCE instance')
@@ -367,6 +379,7 @@ class GceAssertionCredentials(gce.AppAssertionCredentials):
         return util.NormalizeScopes(scope.strip()
                                     for scope in response.readlines())
 
+    # pylint: disable=arguments-differ
     def _refresh(self, do_request):
         """Refresh self.access_token.
 
@@ -497,6 +510,7 @@ class GaeAssertionCredentials(oauth2client.client.AssertionCredentials):
 
 
 def _GetRunFlowFlags(args=None):
+    """Retrieves command line flags based on gflags module."""
     # There's one rare situation where gsutil will not have argparse
     # available, but doesn't need anything depending on argparse anyway,
     # since they're bringing their own credentials. So we just allow this
@@ -591,6 +605,7 @@ def _GetUserinfoUrl(credentials):
 def _GetServiceAccountCredentials(
         client_info, service_account_name=None, service_account_keyfile=None,
         service_account_json_keyfile=None, **unused_kwds):
+    """Returns ServiceAccountCredentials from give file."""
     if ((service_account_name and not service_account_keyfile) or
             (service_account_keyfile and not service_account_name)):
         raise exceptions.CredentialsError(
@@ -623,6 +638,7 @@ def _GetGceServiceAccount(client_info, **unused_kwds):
 def _GetApplicationDefaultCredentials(
         client_info, skip_application_default_credentials=False,
         **unused_kwds):
+    """Returns ADC with right scopes."""
     scopes = client_info['scope'].split()
     if skip_application_default_credentials:
         return None
@@ -641,6 +657,8 @@ def _GetApplicationDefaultCredentials(
     # cloud-platform, our scopes are a subset of cloud scopes, and the
     # ADC will work.
     cp = 'https://www.googleapis.com/auth/cloud-platform'
+    if credentials is None:
+        return None
     if not isinstance(credentials, gc) or cp in scopes:
-        return credentials
+        return credentials.create_scoped(scopes)
     return None

@@ -16,6 +16,8 @@
 Exports data from a Cloud SQL instance to a Google Cloud Storage bucket as
 a MySQL dump file.
 """
+# TODO(b/67459595): Deprecate this command when `sql export` goes to GA.
+
 
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations

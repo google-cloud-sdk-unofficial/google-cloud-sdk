@@ -19,6 +19,7 @@ from googlecloudsdk.command_lib.tasks import constants
 from googlecloudsdk.command_lib.tasks import flags
 from googlecloudsdk.command_lib.tasks import parsers
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 
 
 class Delete(base.DeleteCommand):
@@ -31,6 +32,10 @@ class Delete(base.DeleteCommand):
   def Run(self, args):
     queues_client = queues.Queues()
     queue_ref = parsers.ParseQueue(args.queue)
-    log.status.Print(constants.QUEUE_MANAGEMENT_WARNING)
+    log.warn(constants.QUEUE_MANAGEMENT_WARNING)
+    console_io.PromptContinue(
+        cancel_on_no=True,
+        prompt_string='Are you sure you want to delete: [{}]'.format(
+            queue_ref.RelativeName()))
     queues_client.Delete(queue_ref)
     log.DeletedResource(queue_ref.Name(), 'queue')

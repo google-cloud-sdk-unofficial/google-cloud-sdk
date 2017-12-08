@@ -221,7 +221,7 @@ class Create(base.CreateCommand):
     _AddAdditionalZonesFlag(parser)
     flags.AddAddonsFlags(
         parser, hide_addons_flag=True, deprecate_disable_addons_flag=False)
-    flags.AddClusterAutoscalingFlags(parser, hidden=True)
+    flags.AddClusterAutoscalingFlags(parser)
     flags.AddEnableAutoRepairFlag(parser, suppressed=True)
     flags.AddEnableKubernetesAlphaFlag(parser, suppressed=True)
     flags.AddEnableLegacyAuthorizationFlag(parser, hidden=True)
@@ -326,7 +326,10 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    _AddAdditionalZonesFlag(parser)
+    group = parser.add_mutually_exclusive_group()
+    _AddAdditionalZonesFlag(group, deprecated=True)
+    flags.AddNodeLocationsFlag(group)
+
     flags.AddAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddClusterScopesFlag(parser)
@@ -346,6 +349,7 @@ class CreateBeta(Create):
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
+    ops.node_locations = args.node_locations
     ops.min_cpu_platform = args.min_cpu_platform
     return ops
 
@@ -359,6 +363,7 @@ class CreateAlpha(Create):
     _Args(parser)
     group = parser.add_mutually_exclusive_group()
     _AddAdditionalZonesFlag(group, deprecated=True)
+    flags.AddNodeLocationsFlag(group)
 
     flags.AddAcceleratorArgs(parser)
     flags.AddAddonsFlags(parser)
@@ -377,7 +382,6 @@ class CreateAlpha(Create):
     flags.AddMinCpuPlatformFlag(parser)
     flags.AddWorkloadMetadataFromNodeFlag(parser, hidden=True)
     flags.AddNetworkPolicyFlags(parser, hidden=False)
-    flags.AddNodeLocationsFlag(group)
     flags.AddNodeTaintsFlag(parser)
     flags.AddPreemptibleFlag(parser)
     flags.AddServiceAccountFlag(parser)

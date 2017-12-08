@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Cloud Pub/Sub subscriptions create command."""
-
 from apitools.base.py import exceptions as api_ex
 
 from googlecloudsdk.api_lib.util import exceptions
@@ -94,8 +93,7 @@ def _Run(cmd, args, field_adder):
     'pubsub.projects.subscriptions'.
 
   Raises:
-    An HttpException if there was a problem calling the
-    API subscriptions.Create command.
+    util.RequestFailedError: if any of the requests to the API failed.
   """
   msgs = cmd.context['pubsub_msgs']
   pubsub = cmd.context['pubsub']
@@ -105,11 +103,12 @@ def _Run(cmd, args, field_adder):
     topic_project = projects_util.ParseProject(args.topic_project).Name()
   topic_name = args.topic
 
+  failed = []
   for subscription_name in args.subscription:
-    name = util.SubscriptionFormat(subscription_name)
+    subscription_path = util.ParseSubscription(subscription_name).RelativeName()
     subscription = msgs.Subscription(
-        name=name,
-        topic=util.TopicFormat(topic_name, topic_project),
+        name=subscription_path,
+        topic=util.ParseTopic(topic_name, topic_project).RelativeName(),
         ackDeadlineSeconds=args.ack_deadline)
     if args.push_endpoint:
       subscription.pushConfig = msgs.PushConfig(
@@ -117,19 +116,22 @@ def _Run(cmd, args, field_adder):
 
     field_adder(subscription, args)
 
-    # TODO(b/32275310): Conform to gcloud error handling guidelines.
     try:
       result = pubsub.projects_subscriptions.Create(subscription)
-      failed = None
     except api_ex.HttpError as error:
-      result = subscription
       exc = exceptions.HttpException(error)
-      failed = exc.payload.status_message
+      log.CreatedResource(subscription_path, kind='subscription',
+                          failed=exc.payload.status_message)
+      failed.append(subscription_name)
+      continue
 
-    result = util.SubscriptionDisplayDict(result, failed)
-    log.CreatedResource(name, kind='subscription', failed=failed)
+    result = util.SubscriptionDisplayDict(result)
+    log.CreatedResource(subscription_path, kind='subscription')
 
     yield result
+
+  if failed:
+    raise util.RequestsFailedError(failed, 'create')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -158,8 +160,7 @@ class CreateBeta(base.CreateCommand):
       'pubsub.projects.subscriptions'.
 
     Raises:
-      An HttpException if there was a problem calling the
-      API subscriptions.Create command.
+      util.RequestFailedError: if any of the requests to the API failed.
     """
     for result in _Run(self, args, lambda x, y: None):
       yield result
@@ -202,8 +203,7 @@ class CreateAlpha(base.CreateCommand):
       'pubsub.projects.subscriptions'.
 
     Raises:
-      An HttpException if there was a problem calling the
-      API subscriptions.Create command.
+      util.RequestFailedError: if any of the requests to the API failed.
     """
     for result in _Run(self, args, self._AddFields):
       yield result

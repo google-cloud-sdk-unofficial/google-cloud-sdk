@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Cloud Pub/Sub snapshots create command."""
-
 from apitools.base.py import exceptions as api_ex
 
 from googlecloudsdk.api_lib.util import exceptions
@@ -67,6 +66,9 @@ class Create(base.CreateCommand):
       A serialized object (dict) describing the results of the operation.
       This description fits the Resource described in the ResourceRegistry under
       'pubsub.projects.snapshots'.
+
+    Raises:
+      util.RequestFailedError: if any of the requests to the API failed.
     """
     msgs = self.context['pubsub_msgs']
     pubsub = self.context['pubsub']
@@ -77,23 +79,27 @@ class Create(base.CreateCommand):
           args.subscription_project).Name()
     subscription_name = args.subscription
 
+    failed = []
     for snapshot_name in args.snapshot:
-      snapshot_path = util.SnapshotFormat(snapshot_name)
+      snapshot_path = util.ParseSnapshot(snapshot_name).RelativeName()
       create_req = msgs.PubsubProjectsSnapshotsCreateRequest(
           createSnapshotRequest=msgs.CreateSnapshotRequest(
-              subscription=util.SubscriptionFormat(
-                  subscription_name, subscription_project)),
+              subscription=util.ParseSubscription(
+                  subscription_name, subscription_project).RelativeName()),
           name=snapshot_path)
 
-      # TODO(b/32275310): Conform to gcloud error handling guidelines.
       try:
         result = pubsub.projects_snapshots.Create(create_req)
-        failed = None
       except api_ex.HttpError as error:
-        result = msgs.Snapshot(name=snapshot_path)
         exc = exceptions.HttpException(error)
-        failed = exc.payload.status_message
+        log.CreatedResource(snapshot_path, kind='snapshot',
+                            failed=exc.payload.status_message)
+        failed.append(snapshot_name)
+        continue
 
-      result = util.SnapshotDisplayDict(result, failed)
-      log.CreatedResource(snapshot_path, kind='snapshot', failed=failed)
+      result = util.SnapshotDisplayDict(result)
+      log.CreatedResource(snapshot_path, kind='snapshot')
       yield result
+
+    if failed:
+      raise util.RequestsFailedError(failed, 'create')

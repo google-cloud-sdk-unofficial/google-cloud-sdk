@@ -116,13 +116,13 @@ class Processor(object):
 
 
 class Preprocessor(object):
-  """Interface for processing instances one-by-one before prediction."""
+  """Interface for processing a list of instances before prediction."""
 
-  def preprocess(self, instance):
+  def preprocess(self, instances):
     """The preprocessing function.
 
     Args:
-      instance: a single instance in the instances provided to the predict()
+      instances: a list of instances, as provided to the predict()
         method.
 
     Returns:
@@ -132,13 +132,13 @@ class Preprocessor(object):
 
 
 class Postprocessor(object):
-  """Interface for processing instances one-by-one after prediction."""
+  """Interface for processing a list of instances after prediction."""
 
-  def postprocess(self, instance):
+  def postprocess(self, instances):
     """The postprocessing function.
 
     Args:
-      instance: a single instance in the instances outputted by the predict()
+      instances: a list of instances, as provided to the predict()
         method.
 
     Returns:

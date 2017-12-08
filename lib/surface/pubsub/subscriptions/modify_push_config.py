@@ -45,7 +45,7 @@ class ModifyPushConfig(base.Command):
     msgs = self.context['pubsub_msgs']
     pubsub = self.context['pubsub']
 
-    subscription = util.SubscriptionFormat(args.subscription)
+    subscription = util.ParseSubscription(args.subscription).RelativeName()
     mod_req = msgs.PubsubProjectsSubscriptionsModifyPushConfigRequest(
         modifyPushConfigRequest=msgs.ModifyPushConfigRequest(
             pushConfig=msgs.PushConfig(pushEndpoint=args.push_endpoint)),

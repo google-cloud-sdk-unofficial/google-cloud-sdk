@@ -59,7 +59,7 @@ class Pull(base.ListCommand):
     msgs = self.context['pubsub_msgs']
     pubsub = self.context['pubsub']
 
-    subscription = util.SubscriptionFormat(args.subscription)
+    subscription = util.ParseSubscription(args.subscription).RelativeName()
     pull_req = msgs.PubsubProjectsSubscriptionsPullRequest(
         pullRequest=msgs.PullRequest(
             maxMessages=args.max_messages, returnImmediately=True),

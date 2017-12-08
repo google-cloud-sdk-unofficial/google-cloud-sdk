@@ -39,9 +39,9 @@ def howto_install_setuptools():
     print("""
    Error: You need setuptools Python package!
 
-   It's very easy to install it, just type (as root on Linux):
+   It's very easy to install it, just type:
 
-   wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py
+   wget https://bootstrap.pypa.io/ez_setup.py
    python ez_setup.py
 
    Then you could make eggs from this package.
@@ -112,6 +112,9 @@ class PyTest(Command):
 
         unittest.TextTestRunner(verbosity=2).run(suite)
 
-params['cmdclass'] = {'test': PyTest}
+params['cmdclass'] = {
+    'test': PyTest,
+    'tests': PyTest,
+}
 
 setup(**params)

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Cloud Pub/Sub subscription delete command."""
-
 from apitools.base.py import exceptions as api_ex
 
 from googlecloudsdk.api_lib.util import exceptions
@@ -42,23 +41,32 @@ class Delete(base.DeleteCommand):
       A serialized object (dict) describing the results of the operation.
       This description fits the Resource described in the ResourceRegistry under
       'pubsub.projects.subscriptions'.
+
+    Raises:
+      util.RequestFailedError: if any of the requests to the API failed.
     """
     msgs = self.context['pubsub_msgs']
     pubsub = self.context['pubsub']
 
+    failed = []
     for subscription_name in args.subscription:
-      subscription = msgs.Subscription(
-          name=util.SubscriptionFormat(subscription_name))
+      subscription_path = util.ParseSubscription(
+          subscription_name).RelativeName()
+      subscription = msgs.Subscription(name=subscription_path)
       delete_req = msgs.PubsubProjectsSubscriptionsDeleteRequest(
-          subscription=util.SubscriptionFormat(subscription.name))
-
+          subscription=subscription_path)
       try:
         pubsub.projects_subscriptions.Delete(delete_req)
-        failed = None
       except api_ex.HttpError as error:
         exc = exceptions.HttpException(error)
-        failed = exc.payload.status_message
+        log.CreatedResource(subscription_path, kind='subscription',
+                            failed=exc.payload.status_message)
+        failed.append(subscription_name)
+        continue
 
-      result = util.SubscriptionDisplayDict(subscription, failed)
-      log.DeletedResource(subscription.name, kind='subscription', failed=failed)
+      result = util.SubscriptionDisplayDict(subscription)
+      log.DeletedResource(subscription_path, kind='subscription')
       yield result
+
+    if failed:
+      raise util.RequestsFailedError(failed, 'delete')

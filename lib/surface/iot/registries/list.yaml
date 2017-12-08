@@ -1,0 +1,23 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List device registries.
+    DESCRIPTION: List device registries.
+
+  request:
+    collection: cloudiot.projects.locations.registries
+
+  arguments:
+    resource:
+      help_text: The location you want to list the registries for.
+      response_id_field: name
+      params:
+        - _COMMON_: args.region
+
+  output:
+    format: |
+      table(
+          name.scope("registries"):label=ID,
+          name.scope("locations").segment(0):label=LOCATION,
+          mqttConfig.mqttEnabledState:label=MQTT_ENABLED
+      )

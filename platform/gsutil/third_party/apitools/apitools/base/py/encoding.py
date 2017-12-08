@@ -20,9 +20,6 @@ import base64
 import collections
 import datetime
 import json
-import logging
-import os
-import sys
 
 import six
 
@@ -117,6 +114,18 @@ def DictToMessage(d, message_type):
 def MessageToDict(message):
     """Convert the given message to a dictionary."""
     return json.loads(MessageToJson(message))
+
+
+def DictToProtoMap(properties, additional_property_type, sort_items=False):
+    """Convert the given dictionary to an AdditionalProperty message."""
+    items = properties.items()
+    if sort_items:
+        items = sorted(items)
+    map_ = []
+    for key, value in items:
+        map_.append(additional_property_type.AdditionalProperty(
+            key=key, value=value))
+    return additional_property_type(additional_properties=map_)
 
 
 def PyValueToMessage(message_type, value):
@@ -230,8 +239,7 @@ def _GetField(message, field_path):
 
 def _SetField(dictblob, field_path, value):
     for field in field_path[:-1]:
-        dictblob[field] = {}
-        dictblob = dictblob[field]
+        dictblob = dictblob.setdefault(field, {})
     dictblob[field_path[-1]] = value
 
 
@@ -277,16 +285,9 @@ class _ProtoJsonApiTools(protojson.ProtoJson):
         if message_type in _CUSTOM_MESSAGE_CODECS:
             return _CUSTOM_MESSAGE_CODECS[
                 message_type].decoder(encoded_message)
-        # We turn off the default logging in protorpc. We may want to
-        # remove this later.
-        old_level = logging.getLogger().level
-        logging.getLogger().setLevel(logging.ERROR)
-        try:
-            result = _DecodeCustomFieldNames(message_type, encoded_message)
-            result = super(_ProtoJsonApiTools, self).decode_message(
-                message_type, result)
-        finally:
-            logging.getLogger().setLevel(old_level)
+        result = _DecodeCustomFieldNames(message_type, encoded_message)
+        result = super(_ProtoJsonApiTools, self).decode_message(
+            message_type, result)
         result = _ProcessUnknownEnums(result, encoded_message)
         result = _ProcessUnknownMessages(result, encoded_message)
         return _DecodeUnknownFields(result, encoded_message)
@@ -413,6 +414,7 @@ def _DecodeUnknownMessages(message, encoded_message, pair_type):
 def _DecodeUnrecognizedFields(message, pair_type):
     """Process unrecognized fields in message."""
     new_values = []
+    codec = _ProtoJsonApiTools.Get()
     for unknown_field in message.all_unrecognized_fields():
         # TODO(craigcitro): Consider validating the variant if
         # the assignment below doesn't take care of it. It may
@@ -422,11 +424,15 @@ def _DecodeUnrecognizedFields(message, pair_type):
         value_type = pair_type.field_by_name('value')
         if isinstance(value_type, messages.MessageField):
             decoded_value = DictToMessage(value, pair_type.value.message_type)
-        elif isinstance(value_type, messages.EnumField):
-            decoded_value = pair_type.value.type(value)
         else:
-            decoded_value = value
-        new_pair = pair_type(key=str(unknown_field), value=decoded_value)
+            decoded_value = codec.decode_field(
+                pair_type.value, value)
+        try:
+            new_pair_key = str(unknown_field)
+        except UnicodeEncodeError:
+            new_pair_key = protojson.ProtoJson().decode_field(
+                pair_type.key, unknown_field)
+        new_pair = pair_type(key=new_pair_key, value=decoded_value)
         new_values.append(new_pair)
     return new_values
 
@@ -442,13 +448,12 @@ def _EncodeUnknownFields(message):
         raise exceptions.InvalidUserInputError(
             'Invalid pairs field %s' % pairs_field)
     pairs_type = pairs_field.message_type
-    value_variant = pairs_type.field_by_name('value').variant
+    value_field = pairs_type.field_by_name('value')
+    value_variant = value_field.variant
     pairs = getattr(message, source)
+    codec = _ProtoJsonApiTools.Get()
     for pair in pairs:
-        if value_variant == messages.Variant.MESSAGE:
-            encoded_value = MessageToDict(pair.value)
-        else:
-            encoded_value = pair.value
+        encoded_value = codec.encode_field(value_field, pair.value)
         result.set_unrecognized_field(pair.key, encoded_value, value_variant)
     setattr(result, source, [])
     return result
@@ -545,30 +550,8 @@ _JSON_ENUM_MAPPINGS = {}
 _JSON_FIELD_MAPPINGS = {}
 
 
-def _GetTypeKey(message_type, package):
-    """Get the prefix for this message type in mapping dicts."""
-    key = message_type.definition_name()
-    if package and key.startswith(package + '.'):
-        module_name = message_type.__module__
-        # We normalize '__main__' to something unique, if possible.
-        if module_name == '__main__':
-            try:
-                file_name = sys.modules[module_name].__file__
-            except (AttributeError, KeyError):
-                pass
-            else:
-                base_name = os.path.basename(file_name)
-                split_name = os.path.splitext(base_name)
-                if len(split_name) == 1:
-                    module_name = unicode(base_name)
-                else:
-                    module_name = u'.'.join(split_name[:-1])
-        key = module_name + '.' + key.partition('.')[2]
-    return key
-
-
 def AddCustomJsonEnumMapping(enum_type, python_name, json_name,
-                             package=''):
+                             package=None):  # pylint: disable=unused-argument
     """Add a custom wire encoding for a given enum value.
 
     This is primarily used in generated code, to handle enum values
@@ -578,24 +561,21 @@ def AddCustomJsonEnumMapping(enum_type, python_name, json_name,
       enum_type: (messages.Enum) An enum type
       python_name: (basestring) Python name for this value.
       json_name: (basestring) JSON name to be used on the wire.
-      package: (basestring, optional) Package prefix for this enum, if
-          present. We strip this off the enum name in order to generate
-          unique keys.
+      package: (NoneType, optional) No effect, exists for legacy compatibility.
     """
     if not issubclass(enum_type, messages.Enum):
         raise exceptions.TypecheckError(
             'Cannot set JSON enum mapping for non-enum "%s"' % enum_type)
-    enum_name = _GetTypeKey(enum_type, package)
     if python_name not in enum_type.names():
         raise exceptions.InvalidDataError(
             'Enum value %s not a value for type %s' % (python_name, enum_type))
-    field_mappings = _JSON_ENUM_MAPPINGS.setdefault(enum_name, {})
+    field_mappings = _JSON_ENUM_MAPPINGS.setdefault(enum_type, {})
     _CheckForExistingMappings('enum', enum_type, python_name, json_name)
     field_mappings[python_name] = json_name
 
 
 def AddCustomJsonFieldMapping(message_type, python_name, json_name,
-                              package=''):
+                              package=None):  # pylint: disable=unused-argument
     """Add a custom wire encoding for a given message field.
 
     This is primarily used in generated code, to handle enum values
@@ -605,36 +585,33 @@ def AddCustomJsonFieldMapping(message_type, python_name, json_name,
       message_type: (messages.Message) A message type
       python_name: (basestring) Python name for this value.
       json_name: (basestring) JSON name to be used on the wire.
-      package: (basestring, optional) Package prefix for this message, if
-          present. We strip this off the message name in order to generate
-          unique keys.
+      package: (NoneType, optional) No effect, exists for legacy compatibility.
     """
     if not issubclass(message_type, messages.Message):
         raise exceptions.TypecheckError(
             'Cannot set JSON field mapping for '
             'non-message "%s"' % message_type)
-    message_name = _GetTypeKey(message_type, package)
     try:
         _ = message_type.field_by_name(python_name)
     except KeyError:
         raise exceptions.InvalidDataError(
             'Field %s not recognized for type %s' % (
                 python_name, message_type))
-    field_mappings = _JSON_FIELD_MAPPINGS.setdefault(message_name, {})
+    field_mappings = _JSON_FIELD_MAPPINGS.setdefault(message_type, {})
     _CheckForExistingMappings('field', message_type, python_name, json_name)
     field_mappings[python_name] = json_name
 
 
 def GetCustomJsonEnumMapping(enum_type, python_name=None, json_name=None):
     """Return the appropriate remapping for the given enum, or None."""
-    return _FetchRemapping(enum_type.definition_name(), 'enum',
+    return _FetchRemapping(enum_type, 'enum',
                            python_name=python_name, json_name=json_name,
                            mappings=_JSON_ENUM_MAPPINGS)
 
 
 def GetCustomJsonFieldMapping(message_type, python_name=None, json_name=None):
     """Return the appropriate remapping for the given field, or None."""
-    return _FetchRemapping(message_type.definition_name(), 'field',
+    return _FetchRemapping(message_type, 'field',
                            python_name=python_name, json_name=json_name,
                            mappings=_JSON_FIELD_MAPPINGS)
 
@@ -681,8 +658,8 @@ def _CheckForExistingMappings(mapping_type, message_type,
 
 
 def _EncodeCustomFieldNames(message, encoded_value):
-    message_name = type(message).definition_name()
-    field_remappings = list(_JSON_FIELD_MAPPINGS.get(message_name, {}).items())
+    field_remappings = list(_JSON_FIELD_MAPPINGS.get(type(message), {})
+                            .items())
     if field_remappings:
         decoded_value = json.loads(encoded_value)
         for python_name, json_name in field_remappings:
@@ -693,8 +670,7 @@ def _EncodeCustomFieldNames(message, encoded_value):
 
 
 def _DecodeCustomFieldNames(message_type, encoded_message):
-    message_name = message_type.definition_name()
-    field_remappings = _JSON_FIELD_MAPPINGS.get(message_name, {})
+    field_remappings = _JSON_FIELD_MAPPINGS.get(message_type, {})
     if field_remappings:
         decoded_message = json.loads(encoded_message)
         for python_name, json_name in list(field_remappings.items()):

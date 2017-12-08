@@ -189,7 +189,7 @@ class SshGA(base.Command):
         raise ssh_utils.NetworkError()
 
     if self._use_internal_ip:
-      ssh_helper.PreliminarylyVerifyInstance(instance.id, remote, identity_file,
+      ssh_helper.PreliminarilyVerifyInstance(instance.id, remote, identity_file,
                                              options)
 
     return_code = cmd.Run(ssh_helper.env, force_connect=True)

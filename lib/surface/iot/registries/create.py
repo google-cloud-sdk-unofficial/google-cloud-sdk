@@ -20,14 +20,13 @@ from googlecloudsdk.command_lib.iot import util
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a new device registry."""
 
   @staticmethod
   def Args(parser):
-    noun = 'device registry'
-    flags.GetIdFlag(noun, 'to create', 'REGISTRY_ID').AddToParser(parser)
-    resource_args.AddRegionResourceArg(parser, 'to create the registry in')
+    resource_args.AddRegistryResourceArg(parser, 'to create')
     flags.AddDeviceRegistrySettingsFlagsToParser(parser)
     flags.AddDeviceRegistryCredentialFlagsToParser(
         parser, credentials_surface=False)
@@ -35,7 +34,9 @@ class Create(base.CreateCommand):
   def Run(self, args):
     client = registries.RegistriesClient()
 
-    location_ref = args.CONCEPTS.region.Parse()
+    registry_ref = args.CONCEPTS.registry.Parse()
+    location_ref = registry_ref.Parent()
+
     mqtt_state = util.ParseEnableMqttConfig(args.enable_mqtt_config,
                                             client=client)
     http_state = util.ParseEnableHttpConfig(args.enable_http_config,
@@ -48,11 +49,11 @@ class Create(base.CreateCommand):
       credentials.append(util.ParseRegistryCredential(args.public_key_path))
 
     response = client.Create(
-        location_ref, args.id,
+        location_ref, registry_ref.registriesId,
         credentials=credentials,
         event_pubsub_topic=event_pubsub_topic_ref,
         state_pubsub_topic=state_pubsub_topic_ref,
         mqtt_enabled_state=mqtt_state,
         http_enabled_state=http_state)
-    log.CreatedResource(args.id, 'registry')
+    log.CreatedResource(registry_ref.registriesId, 'registry')
     return response

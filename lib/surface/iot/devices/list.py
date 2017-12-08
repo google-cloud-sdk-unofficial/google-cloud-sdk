@@ -19,6 +19,7 @@ from googlecloudsdk.command_lib.iot import resource_args
 from googlecloudsdk.command_lib.iot import util
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List devices."""
 

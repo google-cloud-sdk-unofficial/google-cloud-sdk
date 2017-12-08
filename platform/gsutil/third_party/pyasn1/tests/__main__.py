@@ -13,7 +13,8 @@ except ImportError:
 suite = unittest.TestLoader().loadTestsFromNames(
     ['tests.test_debug.suite',
      'tests.type.__main__.suite',
-     'tests.codec.__main__.suite']
+     'tests.codec.__main__.suite',
+     'tests.compat.__main__.suite']
 )
 
 

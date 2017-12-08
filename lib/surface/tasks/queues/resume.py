@@ -31,6 +31,6 @@ class Resume(base.Command):
   def Run(self, args):
     queues_client = queues.Queues()
     queue_ref = parsers.ParseQueue(args.queue)
-    log.status.Print(constants.QUEUE_MANAGEMENT_WARNING)
+    log.warn(constants.QUEUE_MANAGEMENT_WARNING)
     queues_client.Resume(queue_ref)
     log.status.Print('Resumed queue [{}].'.format(queue_ref.Name()))

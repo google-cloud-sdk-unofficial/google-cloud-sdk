@@ -27,6 +27,7 @@ table(
 """
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List device registries."""
 

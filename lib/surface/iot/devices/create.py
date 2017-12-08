@@ -20,22 +20,22 @@ from googlecloudsdk.command_lib.iot import util
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a new device."""
 
   @staticmethod
   def Args(parser):
-    resource_args.AddRegistryResourceArg(parser,
-                                         'in which to create the device',
-                                         positional=False)
-    flags.GetIdFlag('device', 'to create').AddToParser(parser)
+    resource_args.AddDeviceResourceArg(parser, 'to create')
     flags.AddDeviceFlagsToParser(parser)
     flags.AddDeviceCredentialFlagsToParser(parser)
 
   def Run(self, args):
     client = devices.DevicesClient()
 
-    registry_ref = args.CONCEPTS.registry.Parse()
+    device_ref = args.CONCEPTS.device.Parse()
+    registry_ref = device_ref.Parent()
+
     # Defaults are set here because right now with nested groups, help text
     # isn't being generated correctly.
     args_blocked = False if args.blocked is None else args.blocked
@@ -47,10 +47,10 @@ class Create(base.CreateCommand):
                                   client.messages)
 
     response = client.Create(
-        registry_ref, args.id,
+        registry_ref, device_ref.devicesId,
         blocked=blocked,
         credentials=credentials,
         metadata=metadata
     )
-    log.CreatedResource(args.id, 'device')
+    log.CreatedResource(device_ref.devicesId, 'device')
     return response

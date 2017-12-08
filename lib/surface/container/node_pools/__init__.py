@@ -19,7 +19,7 @@ from googlecloudsdk.command_lib.container import container_command_util
 from googlecloudsdk.command_lib.container import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class NodePools(base.Group):
   """Create and delete operations for Google Container Engine node pools."""
 
@@ -50,8 +50,8 @@ class NodePools(base.Group):
     return context
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class NodePoolsAlpha(NodePools):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class NodePoolsAlphaBeta(NodePools):
   """Create and delete operations for Google Container Engine node pools."""
 
   @staticmethod

@@ -1,6 +1,7 @@
 
 ASN.1 library for Python
 ------------------------
+[![PyPI](https://img.shields.io/pypi/v/pyasn1.svg?maxAge=2592000)](https://pypi.python.org/pypi/pyasn1)
 [![Python Versions](https://img.shields.io/pypi/pyversions/pyasn1.svg)](https://pypi.python.org/pypi/pyasn1/)
 [![Build status](https://travis-ci.org/etingof/pyasn1.svg?branch=master)](https://secure.travis-ci.org/etingof/pyasn1)
 [![Coverage Status](https://img.shields.io/codecov/c/github/etingof/pyasn1.svg)](https://codecov.io/github/etingof/pyasn1)
@@ -17,6 +18,7 @@ Features
 
 * Generic implementation of ASN.1 types (X.208)
 * Standards compliant BER/CER/DER codecs
+* Dumps/loads ASN.1 structures from Python types
 * 100% Python, works with Python 2.4 up to Python 3.6
 * MT-safe
 * Contributed ASN.1 compiler [Asn1ate](https://github.com/kimgr/asn1ate)
@@ -178,6 +180,5 @@ post your question [on Stack Overflow](http://stackoverflow.com/questions/ask)
 or try browsing pyasn1 
 [mailing list archives](https://sourceforge.net/p/pyasn1/mailman/pyasn1-users/).
 
-Copyright (c) 2005-2017, [Ilya Etingof](http://etingof@gmail.com).
+Copyright (c) 2005-2017, [Ilya Etingof](mailto:etingof@gmail.com).
 All rights reserved.
-

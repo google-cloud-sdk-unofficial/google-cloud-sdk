@@ -1,0 +1,9 @@
+args:
+  region:
+    api_field: locationsId
+    arg_name: region
+    help_text: The region.
+  registry:
+    api_field: registriesId
+    arg_name: registry
+    help_text: The registry.

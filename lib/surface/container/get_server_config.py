@@ -21,7 +21,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetServerConfig(base.Command):
   """Get Container Engine server config."""
 
@@ -51,12 +51,12 @@ class GetServerConfig(base.Command):
     return adapter.GetServerConfig(project_id, location)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class GetServerConfigAlpha(GetServerConfig):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class GetServerConfigAlphaBeta(GetServerConfig):
   """Get Container Engine server config."""
 
   def __init__(self, *args, **kwargs):
-    super(GetServerConfigAlpha, self).__init__(*args, **kwargs)
+    super(GetServerConfigAlphaBeta, self).__init__(*args, **kwargs)
     self.location_get = container_command_util.GetZoneOrRegion
 
   @staticmethod

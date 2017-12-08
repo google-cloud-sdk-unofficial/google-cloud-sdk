@@ -1,0 +1,74 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Create a new device registry.
+    DESCRIPTION: Create a new device registry.
+
+  request:
+    collection: cloudiot.projects.locations.registries
+
+  arguments:
+    resource:
+      help_text: The registry you want to create.
+      params:
+        - _COMMON_: args.region
+        - _COMMON_: args.registry
+          api_field: deviceRegistry.id
+
+    mutex_groups:
+      - params:
+        - api_field: deviceRegistry.eventNotificationConfigs.pubsubTopicName
+          arg_name: pubsub-topic
+          type: googlecloudsdk.command_lib.util.hooks.types:Resource:collection=pubsub.projects.topics
+          processor: googlecloudsdk.command_lib.util.hooks.processors:RelativeName
+          hidden: True
+          help_text: |
+            The Google Cloud Pub/Sub topic on which to forward messages,
+            such as telemetry events.
+          deprecated:
+            warn: >
+              Flag {flag_name} is deprecated. Use --event-pubsub-topic
+              instead.
+
+        - api_field: deviceRegistry.eventNotificationConfigs.pubsubTopicName
+          arg_name: event-pubsub-topic
+          type: googlecloudsdk.command_lib.util.hooks.types:Resource:collection=pubsub.projects.topics
+          processor: googlecloudsdk.command_lib.util.hooks.processors:RelativeName
+          help_text: |
+            The Google Cloud Pub/Sub topic on which to forward messages, such
+            as telemetry events.
+
+    params:
+      - api_field: deviceRegistry.mqttConfig.mqttEnabledState
+        arg_name: enable-mqtt-config
+        help_text: Whether to allow MQTT connections to this device registry.
+        action: store_true
+        default: True
+        choices:
+          True: MQTT_ENABLED
+          False: MQTT_DISABLED
+
+      - api_field: deviceRegistry.httpConfig.httpEnabledState
+        arg_name: enable-http-config
+        help_text: Whether to allow device connections to the HTTP bridge.
+        action: store_true
+        default: True
+        choices:
+          True: HTTP_ENABLED
+          False: HTTP_DISABLED
+
+      - api_field: deviceRegistry.stateNotificationConfig.pubsubTopicName
+        arg_name: state-pubsub-topic
+        type: googlecloudsdk.command_lib.util.hooks.types:Resource:collection=pubsub.projects.topics
+        processor: googlecloudsdk.command_lib.util.hooks.processors:RelativeName
+        help_text: A Google Cloud Pub/Sub topic name for state notifications.
+
+      - api_field: deviceRegistry.credentials
+        arg_name: public-key-path
+        repeated: False
+        processor: googlecloudsdk.command_lib.iot.util:ParseRegistryCredential
+        help_text: |
+          Path to a file containing an X.509v3 certificate
+          ([RFC5280](https://www.ietf.org/rfc/rfc5280.txt)), encoded in base64,
+          and wrapped by `-----BEGIN CERTIFICATE-----` and
+          `-----END CERTIFICATE-----`.

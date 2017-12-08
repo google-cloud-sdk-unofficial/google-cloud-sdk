@@ -70,8 +70,8 @@ class SeekAlpha(base.Command):
     msgs = self.context['pubsub_msgs']
     pubsub = self.context['pubsub']
 
-    subscription_path = util.SubscriptionFormat(args.subscription)
-    result = {'subscriptionId': subscription_path}
+    subscription = util.ParseSubscription(args.subscription).RelativeName()
+    result = {'subscriptionId': subscription}
 
     seek_req = msgs.SeekRequest()
     if args.snapshot:
@@ -80,7 +80,8 @@ class SeekAlpha(base.Command):
             projects_util.ParseProject(args.snapshot_project).Name())
       else:
         snapshot_project = ''
-      seek_req.snapshot = util.SnapshotFormat(args.snapshot, snapshot_project)
+      seek_req.snapshot = util.ParseSnapshot(
+          args.snapshot, snapshot_project).RelativeName()
       result['snapshotId'] = seek_req.snapshot
     else:
       seek_req.time = args.time.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
@@ -88,6 +89,6 @@ class SeekAlpha(base.Command):
 
     pubsub.projects_subscriptions.Seek(
         msgs.PubsubProjectsSubscriptionsSeekRequest(
-            seekRequest=seek_req, subscription=subscription_path))
+            seekRequest=seek_req, subscription=subscription))
 
     return result

@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Clusters(base.Group):
   """Deploy and teardown Google Container Engine clusters.
 
@@ -61,8 +61,8 @@ class Clusters(base.Group):
     return context
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ClustersAlpha(Clusters):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ClustersAlphaBeta(Clusters):
   """Deploy and teardown Google Container Engine clusters.
 
   The gcloud container clusters command group lets you deploy and teardown

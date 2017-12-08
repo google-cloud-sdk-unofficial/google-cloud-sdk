@@ -1,0 +1,16 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Show details about a device.
+    DESCRIPTION: Show details about a device.
+
+  request:
+    collection: cloudiot.projects.locations.registries.devices
+
+  arguments:
+    resource:
+      help_text: The device you want to describe.
+      params:
+        - _COMMON_: args.region
+        - _COMMON_: args.registry
+        - _COMMON_: args.device

@@ -16,8 +16,10 @@ from googlecloudsdk.api_lib.cloudiot import devices
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iot import resource_args
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete a device."""
 
@@ -30,6 +32,9 @@ class Delete(base.DeleteCommand):
 
     device_ref = args.CONCEPTS.device.Parse()
 
+    console_io.PromptContinue(
+        'You are about to delete device: [{}]'.format(device_ref.Name()),
+        throw_if_unattended=True, cancel_on_no=True)
     response = client.Delete(device_ref)
     log.DeletedResource(device_ref.Name(), 'device')
     return response

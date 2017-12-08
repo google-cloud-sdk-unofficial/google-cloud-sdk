@@ -15,7 +15,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden  # Hidden until we actually roll this out
 class GcloudignoreHelp(base.TopicCommand):
   r"""Reference for `.gcloudignore` files.
 
@@ -33,7 +32,8 @@ class GcloudignoreHelp(base.TopicCommand):
 
   The following `gcloud` commands respect the `.gcloudignore` file:
 
-  * Currently, no gcloud commands respect the .gcloudignore file.
+  * Currently beta command `gcloud functions deploy` respects the .gcloudignore
+    file.
 
   ## SYNTAX
 

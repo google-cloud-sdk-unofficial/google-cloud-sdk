@@ -41,6 +41,11 @@ class List(base.ListCommand):
           """,
   }
 
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat('yaml')
+    parser.display_info.AddUriFunc(util.TopicUriFunc)
+
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -65,7 +70,7 @@ class List(base.ListCommand):
 
     while True:
       list_topics_request = msgs.PubsubProjectsTopicsListRequest(
-          project=util.ProjectFormat(),
+          project=util.ParseProject().RelativeName(),
           pageToken=page_token,
           pageSize=page_size)
 
@@ -83,8 +88,8 @@ class List(base.ListCommand):
 
 def TopicDict(topic):
   topic_dict = resource_projector.MakeSerializable(topic)
-  topic_info = util.TopicIdentifier(topic.name)
+  topic_ref = util.ParseTopic(topic.name)
   topic_dict['topic'] = topic.name
-  topic_dict['topicId'] = topic_info.resource_name
+  topic_dict['topicId'] = topic_ref.topicsId
   del topic_dict['name']
   return topic_dict

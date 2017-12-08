@@ -95,7 +95,7 @@ https://cloud.google.com/pubsub/docs/publisher#publish
     result = pubsub.projects_topics.Publish(
         msgs.PubsubProjectsTopicsPublishRequest(
             publishRequest=msgs.PublishRequest(messages=[message]),
-            topic=util.TopicFormat(topic_name)))
+            topic=util.ParseTopic(topic_name).RelativeName()))
 
     if not result.messageIds:
       # If we got a result with empty messageIds, then we've got a problem.

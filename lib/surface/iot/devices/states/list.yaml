@@ -1,0 +1,30 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List states for a device.
+    DESCRIPTION: |
+      This command lists all available states in the history of the device.
+      Up to 10 are kept; you may restrict the output to fewer via the `--limit`
+      flag.
+
+  request:
+    collection: cloudiot.projects.locations.registries.devices.states
+    modify_request_hooks:
+      - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetFieldFromArg:api_field=numStates,arg_name=limit
+
+  arguments:
+    resource:
+      help_text: The registry you want to list the devices for.
+      params:
+        -  api_field: locationsId
+           arg_name: region
+           help_text: The region.
+        -  api_field: registriesId
+           arg_name: registry
+           help_text: The registry.
+        -  api_field: devicesId
+           arg_name: device
+           help_text: The device.
+
+  output:
+    format: table(updateTime)

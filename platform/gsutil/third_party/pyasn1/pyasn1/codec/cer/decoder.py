@@ -15,8 +15,10 @@ __all__ = ['decode']
 class BooleanDecoder(decoder.AbstractSimpleDecoder):
     protoComponent = univ.Boolean(0)
 
-    def valueDecoder(self, fullSubstrate, substrate, asn1Spec, tagSet, length,
-                     state, decodeFun, substrateFun):
+    def valueDecoder(self, substrate, asn1Spec,
+                     tagSet=None, length=None, state=None,
+                     decodeFun=None, substrateFun=None,
+                     **options):
         head, tail = substrate[:length], substrate[length:]
         if not head or length != 1:
             raise error.PyAsn1Error('Not single-octet Boolean payload')
@@ -45,7 +47,14 @@ tagMap.update(
      univ.Real.tagSet: RealDecoder()}
 )
 
-typeMap = decoder.typeMap
+typeMap = decoder.typeMap.copy()
+
+# Put in non-ambiguous types for faster codec lookup
+for typeDecoder in tagMap.values():
+    if typeDecoder.protoComponent is not None:
+        typeId = typeDecoder.protoComponent.__class__.typeId
+        if typeId is not None and typeId not in typeMap:
+            typeMap[typeId] = typeDecoder
 
 
 class Decoder(decoder.Decoder):

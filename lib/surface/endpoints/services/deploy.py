@@ -324,8 +324,42 @@ class _BaseDeploy(object):
       log.status.Print('To manage your API, go to: ' + management_url)
 
 
-# TODO(b/65455903) When restoring the GA command, find out if PushAdvisor
-# needs to be included. If so, merge this back into _BaseDeploy.
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Deploy(_BaseDeploy, base.Command):
+  # pylint: disable=line-too-long
+  """Deploys a service configuration for the given service name.
+
+     This command is used to deploy a service configuration for a service
+     to Google Service Management. As input, it takes one or more paths
+     to service configurations that should be uploaded. These configuration
+     files can be Proto Descriptors, Open API (Swagger) specifications,
+     or Google Service Configuration files in JSON or YAML formats.
+
+     If a service name is present in multiple configuration files (given
+     in the `host` field in OpenAPI specifications or the `name` field in
+     Google Service Configuration files), the first one will take precedence.
+
+     This command will block until deployment is complete unless the
+     `--async` flag is passed.
+
+     ## EXAMPLES
+     To deploy a single Open API service configuration, run:
+
+       $ {command} ~/my_app/openapi.json
+
+     To run the deployment asynchronously (non-blocking), run:
+
+       $ {command} ~/my_app/openapi.json --async
+
+     To deploy a service config with a Proto, run:
+
+       $ {command} ~/my_app/service-config.yaml ~/my_app/service-protos.pb
+  """
+  # pylint: enable=line-too-long
+
+
+# TODO(b/65455903) Once PushAdvisor is ready to be included by default,
+# merge this back into _BaseDeploy and rename it to Deploy.
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class DeployBetaAlpha(_BaseDeploy, base.Command):
   # pylint: disable=line-too-long

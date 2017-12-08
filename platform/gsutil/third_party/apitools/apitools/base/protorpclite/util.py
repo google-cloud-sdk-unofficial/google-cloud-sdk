@@ -130,6 +130,7 @@ def positional(max_positional_args):
         has no arguments with default values.
     """
     def positional_decorator(wrapped):
+        """Creates a function wraper to enforce number of arguments."""
         @functools.wraps(wrapped)
         def positional_wrapper(*args, **kwargs):
             if len(args) > max_positional_args:
@@ -188,8 +189,7 @@ def get_package_for_module(module):
                 split_name = os.path.splitext(base_name)
                 if len(split_name) == 1:
                     return six.text_type(base_name)
-                else:
-                    return u'.'.join(split_name[:-1])
+                return u'.'.join(split_name[:-1])
 
         return six.text_type(module.__name__)
 

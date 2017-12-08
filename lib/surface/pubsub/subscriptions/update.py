@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Cloud Pub/Sub subscriptions update command."""
-
-from apitools.base.py import exceptions as api_ex
-
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -97,6 +94,7 @@ class UpdateAlpha(base.UpdateCommand):
               ' "s", "m", "h", and "d" for seconds, minutes, hours, and days,'
               ' respectively.  If the unit is omitted, seconds is assumed.'))
 
+  @exceptions.CatchHTTPErrorRaiseHTTPException()
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -116,7 +114,7 @@ class UpdateAlpha(base.UpdateCommand):
     msgs = self.context['pubsub_msgs']
     pubsub = self.context['pubsub']
 
-    name = util.SubscriptionFormat(args.subscription)
+    name = util.ParseSubscription(args.subscription).RelativeName()
 
     mask = []
     subscription = msgs.Subscription(name=name)
@@ -139,17 +137,8 @@ class UpdateAlpha(base.UpdateCommand):
             subscription=subscription,
             updateMask=','.join(mask)),
         name=name)
+    result = pubsub.projects_subscriptions.Patch(patch_req)
 
-    # TODO(b/32275310): Conform to gcloud error handling guidelines.  This is
-    # currently consistent with the rest of the gcloud pubsub commands.
-    try:
-      result = pubsub.projects_subscriptions.Patch(patch_req)
-      failed = None
-    except api_ex.HttpError as error:
-      result = subscription
-      exc = exceptions.HttpException(error)
-      failed = exc.payload.status_message
-
-    result = util.SubscriptionDisplayDict(result, failed)
-    log.UpdatedResource(name, kind='subscription', failed=failed)
+    result = util.SubscriptionDisplayDict(result)
+    log.UpdatedResource(name, kind='subscription')
     return result

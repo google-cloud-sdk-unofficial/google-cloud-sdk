@@ -38,7 +38,6 @@ done is a boolean value and supports = and != operators.\
 '''
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   # pylint: disable=line-too-long
   """List operations for a project.
@@ -48,19 +47,19 @@ class List(base.ListCommand):
 
      ## EXAMPLES
      To list all operations for a service named
-     `api.endpoints.proj.appspot.com`, run:
+     `api.endpoints.proj.cloud.goog`, run:
 
-       $ {command} --service api.endpoints.proj.appspot.com
+       $ {command} --service api.endpoints.proj.cloud.goog
 
      To list only operations which are complete, add the `--filter` argument
      with a status filter:
 
-       $ {command} --service api.endpoints.proj.appspot.com --filter 'done = true'
+       $ {command} --service api.endpoints.proj.cloud.goog --filter 'done = true'
 
      To list only operations begun after a certain point in time, add the
      `--filter` argument with an ISO 8601 datetime startTime filter:
 
-       $ {command} --service api.endpoints.proj.appspot.com --filter 'startTime >= "2017-02-01"'
+       $ {command} --service api.endpoints.proj.cloud.goog --filter 'startTime >= "2017-02-01"'
   """
   # pylint: enable=line-too-long
 

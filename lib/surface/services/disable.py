@@ -21,7 +21,6 @@ from googlecloudsdk.command_lib.services import common_flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Disable(base.SilentCommand):
   # pylint: disable=line-too-long
   """Disable a service for consumption for a project.
