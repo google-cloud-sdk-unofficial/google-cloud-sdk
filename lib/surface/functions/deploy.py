@@ -140,7 +140,11 @@ class Deploy(base.Command):
 
   def _CreateZipFile(self, tmp_dir, args):
     zip_file_name = os.path.join(tmp_dir, 'fun.zip')
-    archive.MakeZipFromDir(zip_file_name, args.source)
+    try:
+      archive.MakeZipFromDir(zip_file_name, args.source)
+    except ValueError as e:
+      raise exceptions.FunctionsError('Error creating a ZIP archive'
+                                      ' with the source code: ' + str(e))
     return zip_file_name
 
   def _PrepareFunctionWithoutSources(self, name, args):

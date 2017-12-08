@@ -26,16 +26,18 @@ class Delete(base.Command):
   """Delete a Project."""
 
   detailed_help = {
-      'brief': 'Delete a Project.',
+      'brief': 'Delete a project.',
       'DESCRIPTION': textwrap.dedent("""\
-          This command deletes the Project with the given Project ID.
+          Deletes the project with the given project ID.
 
-          This call can fail for the following reasons:
-              * There is no project with the given ID.
+          This command can fail for the following reasons:
+              * The project specified does not exist.
+              * The active account does not have Owner permissions for
+                the given project.
     """),
       'EXAMPLES': textwrap.dedent("""\
-          The following command will delete the Project with identifier
-          'example-foo-bar-1'
+          The following command deletes the project with the ID
+          `example-foo-bar-1`:
 
             $ {command} example-foo-bar-1
     """),
@@ -46,7 +48,7 @@ class Delete(base.Command):
     parser.add_argument('id', metavar='PROJECT_ID',
                         completion_resource='cloudresourcemanager.projects',
                         list_command_path='projects',
-                        help='The ID for the project you want to delete.')
+                        help='ID for the project you want to delete.')
 
   @util.HandleHttpError
   def Run(self, args):

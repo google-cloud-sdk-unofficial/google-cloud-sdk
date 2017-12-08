@@ -46,7 +46,7 @@ class Activate(base.SilentCommand):
     """Adds args for this command."""
     configuration_arg = parser.add_argument(
         'configuration_name',
-        help='Configuration name to activate')
+        help='Name of the configuration to activate')
     configuration_arg.completer = completers.NamedConfigCompleter
 
   def Run(self, args):

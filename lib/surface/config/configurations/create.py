@@ -41,7 +41,7 @@ class Create(base.SilentCommand):
     """Adds args for this command."""
     parser.add_argument(
         'configuration_name',
-        help='Configuration name to create')
+        help='Name of the configuration to create')
 
   def Run(self, args):
     named_configs.CreateNamedConfig(args.configuration_name)

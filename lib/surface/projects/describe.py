@@ -24,18 +24,18 @@ class Describe(base.Command):
   """Show metadata for a Project."""
 
   detailed_help = {
-      'brief': 'Show metadata for a Project.',
+      'brief': 'Show metadata for a project.',
       'DESCRIPTION': textwrap.dedent("""\
-          This command shows metadata for a Project, given a valid Project ID.
+          Shows metadata for a project, given a valid project ID.
 
-          This call can fail for the following reasons:
+          This command can fail for the following reasons:
               * The project specified does not exist.
-              * The active user does not have permission to access the given
+              * The active account does not have permission to access the given
                 project.
     """),
       'EXAMPLES': textwrap.dedent("""\
-          The following command will print metadata for a Project with
-          identifier 'example-foo-bar-1'
+          The following command prints metadata for a project with the
+          ID `example-foo-bar-1`:
 
             $ {command} example-foo-bar-1
     """),
@@ -46,7 +46,7 @@ class Describe(base.Command):
     parser.add_argument('id', metavar='PROJECT_ID',
                         completion_resource='cloudresourcemanager.projects',
                         list_command_path='projects',
-                        help='The ID for the project you want to describe.')
+                        help='ID for the project you want to describe.')
 
   @util.HandleHttpError
   def Run(self, args):

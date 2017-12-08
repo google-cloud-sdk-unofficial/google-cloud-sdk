@@ -19,8 +19,9 @@ import os
 import shutil
 import tempfile
 
+from gae_ext_runtime import ext_runtime
+
 from googlecloudsdk.api_lib.app import yaml_parsing
-from googlecloudsdk.api_lib.app.ext_runtimes import fingerprinting
 from googlecloudsdk.api_lib.app.runtimes import fingerprinter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
@@ -109,8 +110,8 @@ class GenConfig(base.Command):
 
     fingerprinter.GenerateConfigs(
         args.source_dir,
-        fingerprinting.Params(appinfo=config, custom=args.custom,
-                              runtime=args.runtime),
+        ext_runtime.Params(appinfo=config, custom=args.custom,
+                           runtime=args.runtime),
         config_filename)
 
     # If the user has a config file, make sure that they're using a custom

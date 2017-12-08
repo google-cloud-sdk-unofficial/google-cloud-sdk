@@ -5,7 +5,7 @@
 
 .SH "NAME"
 .HP
-gcloud config unset \- erase Google Cloud SDK properties
+gcloud config unset \- unset a Cloud SDK property
 
 
 
@@ -16,8 +16,9 @@ gcloud config unset \- erase Google Cloud SDK properties
 
 .SH "DESCRIPTION"
 
-Unset a property to be as if it were never defined in the first place. You may
-optionally use the \-\-scope flag to specify a configuration file to update.
+By default, unsets the property in your active configuration only. Use the
+\f5\-\-installation\fR flag to unset the property across all configurations. See
+\f5gcloud topic configurations\fR for more information.
 
 
 

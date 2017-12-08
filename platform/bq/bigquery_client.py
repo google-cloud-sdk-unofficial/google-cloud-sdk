@@ -191,7 +191,7 @@ class BigqueryError(Exception):
     if job_ref:
       message = 'Error processing %r: %s' % (job_ref, error.get('message'))
     else:
-      message = error.get('message')
+      message = error.get('message') or ''
     # We don't want to repeat the "main" error message.
     new_errors = [err for err in error_ls if err != error]
     if new_errors:

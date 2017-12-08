@@ -32,11 +32,11 @@ class Describe(base.Command):
           configurations.
           """,
       'EXAMPLES': """\
-          To describe esisting named configuration, run:
+          To describe existing named configuration, run:
 
             $ {command} my_config
 
-          This is similar in content to:
+          This is similar to:
 
             $ gcloud config configurations activate my_config
 
@@ -49,7 +49,7 @@ class Describe(base.Command):
     """Adds args for this command."""
     configuration_arg = parser.add_argument(
         'configuration_name',
-        help='Configuration name to descrive')
+        help='Name of the configuration to describe')
     configuration_arg.completer = completers.NamedConfigCompleter
     parser.add_argument(
         '--all', action='store_true',

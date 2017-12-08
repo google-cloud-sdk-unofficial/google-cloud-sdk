@@ -24,7 +24,7 @@ from oauth2client import client
 
 @base.Hidden
 class AccessToken(base.Command):
-  """A command that prints the access token for the current account."""
+  """Print an access token for the active account."""
 
   @staticmethod
   def Args(parser):

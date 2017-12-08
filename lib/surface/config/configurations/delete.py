@@ -35,15 +35,15 @@ class Delete(base.SilentCommand):
           configurations.
           """,
       'EXAMPLES': """\
-          To delete named configuration, run:
+          To delete a named configuration, run:
 
             $ {command} my_config
 
-          To delete several configurations, run:
+          To delete more than one configuration, run:
 
             $ {command} my_config1 my_config2
 
-          To list get a list of existing configurations, run:
+          To list existing configurations, run:
 
             $ gcloud config configurations list
           """,
@@ -55,8 +55,8 @@ class Delete(base.SilentCommand):
     configuration_arg = parser.add_argument(
         'configuration_names',
         nargs='+',
-        help=('Configuration names to delete, '
-              'can not be currently active configuration.'))
+        help=('Name of the configuration to delete. '
+              'Cannot be currently active configuration.'))
     configuration_arg.completer = completers.NamedConfigCompleter
 
   def Run(self, args):

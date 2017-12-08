@@ -24,20 +24,20 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base.Command):
-  """List all active Projects.
+  """List projects accessible by the active account.
 
-  *{command}* lists all active Projects (ID and title), for the active
-  user's credentials, in alphabetical order by Project title.
-  Projects which have been deleted or are pending deletion will not be
-  included.
+  Lists all active projects, where the active account has Owner, Editor or
+  Viewer permissions. Projects are listed in alphabetical order by project name.
+  Projects that have been deleted or are pending deletion are not included.
 
-  You can specify the maximum number of Projects to list with the 'limit' flag.
+  You can specify the maximum number of projects to list using the `--limit`
+  flag.
   """
 
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""\
-          The following command will list a maximum of 5 Projects, out of all
-          of the active user's active Projects, sorted alphabetically by title.
+          The following command lists a maximum of five projects sorted
+          alphabetically by name:
 
             $ {command} --limit=5
       """),

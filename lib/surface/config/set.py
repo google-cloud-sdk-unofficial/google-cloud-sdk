@@ -40,10 +40,11 @@ DETAILED_HELP = {
 
 
 class Set(base.Command):
-  """Edit Google Cloud SDK properties.
+  """Set a Cloud SDK property.
 
-  Set the value for an option, so that Cloud SDK tools can use them as
-  configuration.
+  By default, sets the property in your active configuration only. Use the
+  `--installation` flag to set the property across all configurations. See
+  `gcloud topic configurations` for more information.
   """
 
   detailed_help = DETAILED_HELP

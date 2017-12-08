@@ -22,18 +22,24 @@ from googlecloudsdk.core.credentials import store as c_store
 
 
 class Revoke(base.Command):
-  """Revoke authorization for credentials.
+  """Revoke access credentials for an account.
 
-  Revoke credentials. If no account is provided, the currently active account is
-  used.
+  Revokes credentials for the specified user accounts or service accounts.
+  When you revoke the credentials, they are removed from the local machine. If
+  no account is specified, this command revokes credentials for the currently
+  active account.
+
+  You can revoke credentials when you want to disallow access by gcloud and
+  other Cloud SDK tools using a specified account. You don't need to revoke
+  credentials to switch between accounts.
   """
 
   @staticmethod
   def Args(parser):
     parser.add_argument('accounts', nargs='*',
-                        help='Accounts whose credentials shall be revoked.')
+                        help='Accounts whose credentials are to be revoked.')
     parser.add_argument('--all', action='store_true',
-                        help='Revoke all known credentials.')
+                        help='Revoke credentials for all accounts.')
 
   @c_exc.RaiseToolExceptionInsteadOf(c_store.Error)
   def Run(self, args):

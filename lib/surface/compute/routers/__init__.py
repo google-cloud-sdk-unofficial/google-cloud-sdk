@@ -16,7 +16,7 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Routers(base.Group):
   """List, create, and delete Google Compute Engine routers."""
 

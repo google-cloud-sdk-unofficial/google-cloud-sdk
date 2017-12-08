@@ -26,6 +26,18 @@ _THIRD_PARTY_DIR = os.path.join(os.path.dirname(__file__), 'third_party')
 if os.path.isdir(_THIRD_PARTY_DIR):
   sys.path.insert(0, _THIRD_PARTY_DIR)
 
+# This strange import below ensures that the correct 'google' is imported. We
+# reload after sys.path are updated, so we know if will find our
+# google before any other.
+# pylint:disable=g-import-not-at-top
+if 'google' in sys.modules:
+  import google
+  if 'reload' in __builtins__:
+    reload(google)
+  else:
+    import imp
+    imp.reload(google)
+
 
 import apiclient
 import httplib2
@@ -1011,6 +1023,7 @@ def _CreateExternalTableDefinition(source_format, source_uris, schema):
       For CSV files, specify 'CSV'.
       For newline-delimited JSON, specify 'NEWLINE_DELIMITED_JSON'.
       For Cloud Datastore backup, specify 'DATASTORE_BACKUP'
+      For Avro files, specify 'AVRO'
     source_uris: Comma separated list of URIs that contain data for this table.
     schema: Either an inline schema or path to a schema file.
 
@@ -1019,7 +1032,8 @@ def _CreateExternalTableDefinition(source_format, source_uris, schema):
     format with the most common options set.
   """
   try:
-    supported_formats = ['CSV', 'NEWLINE_DELIMITED_JSON', 'DATASTORE_BACKUP']
+    supported_formats = ['CSV', 'NEWLINE_DELIMITED_JSON', 'DATASTORE_BACKUP',
+                         'AVRO']
 
     if source_format not in supported_formats:
       raise app.UsageError(('%s is not a supported format.') % source_format)
@@ -1056,11 +1070,12 @@ class _MakeExternalTableDefinition(BigqueryCmd):
     flags.DEFINE_enum(
         'source_format',
         'CSV',
-        ['CSV', 'NEWLINE_DELIMITED_JSON', 'DATASTORE_BACKUP'],
+        ['CSV', 'NEWLINE_DELIMITED_JSON', 'DATASTORE_BACKUP', 'AVRO'],
         'Format of source data. Options include:'
         '\n CSV'
         '\n NEWLINE_DELIMITED_JSON'
-        '\n DATASTORE_BACKUP',
+        '\n DATASTORE_BACKUP'
+        '\n AVRO',
         flag_values=fv)
 
   def RunWithArgs(self, source_uris, schema=None):

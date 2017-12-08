@@ -23,19 +23,21 @@ from googlecloudsdk.core import log
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Update(base.Command):
-  """Update new Project."""
+  """Update the name of a Project."""
 
   detailed_help = {
-      'brief': 'Update a Project.',
+      'brief': 'Update a project.',
       'DESCRIPTION': textwrap.dedent("""\
-          This command updates the given Project with new values.
+          Updates the given project with new name.
 
-          This call can fail for the following reasons:
+          This command can fail for the following reasons:
               * There is no project with the given ID.
+              * The active account does not have Owner or Editor permissions for
+                the given project.
     """),
       'EXAMPLES': textwrap.dedent("""\
-          The following command will update a Project with identifier
-          'example-foo-bar-1' to have name "Foo Bar and Grill"
+          The following command updates a project with the ID
+          `example-foo-bar-1` to have the name "Foo Bar and Grill":
 
             $ {command} example-foo-bar-1 --name="Foo Bar and Grill"
     """),
@@ -46,9 +48,9 @@ class Update(base.Command):
     parser.add_argument('id', metavar='PROJECT_ID',
                         completion_resource='cloudresourcemanager.projects',
                         list_command_path='projects',
-                        help='The ID for the project you want to update.')
+                        help='ID for the project you want to update.')
     parser.add_argument('--name', required=True,
-                        help='The new name for the project.')
+                        help='New name for the project.')
 
   @util.HandleHttpError
   def Run(self, args):

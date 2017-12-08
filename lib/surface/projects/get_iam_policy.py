@@ -22,15 +22,15 @@ from googlecloudsdk.calliope import base
 class GetIamPolicy(base.Command):
   """Get IAM policy for a Project.
 
-  This command gets the IAM policy for a Project, given a Project ID.
+  Gets the IAM policy for a project, given a project ID.
   """
 
   detailed_help = {
-      'brief': 'Get IAM policy for a Project.',
+      'brief': 'Get IAM policy for a project.',
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\
-          The following command will print IAM policy for a Project with
-          identifier 'example-project-id-1'
+          The following command prints the IAM policy for a project with
+          the ID `example-project-id-1`:
 
             $ {command} example-project-id-1
           """,
@@ -41,8 +41,7 @@ class GetIamPolicy(base.Command):
     parser.add_argument('id', metavar='PROJECT_ID',
                         completion_resource='cloudresourcemanager.projects',
                         list_command_path='projects',
-                        help='The ID for the project you want to get '
-                             'IAM policy.')
+                        help='ID for the project whose policy you want to get.')
 
   @util.HandleHttpError
   def Run(self, args):

@@ -26,8 +26,8 @@ from googlecloudsdk.core.iam import iam_util
 class AddIamPolicyBinding(base.Command):
   """Add IAM policy binding for a project.
 
-  This command adds a policy binding to the IAM policy of a Project,
-  given a Project ID and the binding.
+  Adds a policy binding to the IAM policy of a project,
+  given a project ID and the binding.
   """
 
   detailed_help = iam_util.GetDetailedHelpForAddIamPolicyBinding(
@@ -38,8 +38,7 @@ class AddIamPolicyBinding(base.Command):
     parser.add_argument('id', metavar='PROJECT_ID',
                         completion_resource='cloudresourcemanager.projects',
                         list_command_path='projects',
-                        help='The ID for the project you want to update IAM '
-                             'policy.')
+                        help='ID for the project you want to update')
     iam_util.AddArgsForAddIamPolicyBinding(parser)
 
   @util.HandleHttpError

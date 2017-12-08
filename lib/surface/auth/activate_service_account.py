@@ -29,30 +29,35 @@ from oauth2client import client
 
 
 class ActivateServiceAccount(base.Command):
-  """Get credentials via the private key for a service account.
+  """Authorize access to Google Cloud Platform using a service account.
 
-  Get credentials for a service account, using a .json file or a .p12 file
-  for the private key.
-  Password is only applicable for .p12 file.
-  If --project is set, set the default project.
+  Obtains access credentials for the service account using a .json (preferred)
+  or .p12 file that contains a private authorization key. You obtain the key
+  file from the Cloud Platform console (https://console.cloud.google.com). For
+  .p12 files, a password is required. This password is displayed in the console
+  when you create the key. If you specify a project using the `--project` flag,
+  the project is set in your active configuration.
+
+  Any previously active credentials will still be retained,
+  they will just no longer be the active credentials.
   """
 
   @staticmethod
   def Args(parser):
     """Set args for serviceauth."""
     parser.add_argument('account', nargs='?',
-                        help='The email for the service account.')
+                        help='E-mail address of the service account.')
     parser.add_argument('--key-file',
-                        help=('Path to the service accounts private key.'),
+                        help=('Path to the private key file.'),
                         required=True)
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--password-file',
                        help=('Path to a file containing the password for the '
                              'service account private key '
-                             '(only for .p12 file).'))
+                             '(only for a .p12 file).'))
     group.add_argument('--prompt-for-password', action='store_true',
                        help=('Prompt for the password for the service account '
-                             'private key (only for .p12 file).'))
+                             'private key (only for a .p12 file).'))
 
   def Run(self, args):
     """Create service account credentials."""

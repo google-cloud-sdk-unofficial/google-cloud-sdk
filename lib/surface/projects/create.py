@@ -26,16 +26,18 @@ class Create(base.Command):
   """Create a new Project."""
 
   detailed_help = {
-      'brief': 'Create a new Project.',
+      'brief': 'Create a new project.',
       'DESCRIPTION': textwrap.dedent("""\
-          This command creates a new Project with the given Project ID.
+          Creates a new project with the given project ID.
 
-          This call can fail for the following reasons:
-              * The project ID is not available.
+          This command can fail for the following reasons:
+              * The project specified does not exist.
+              * The active account does not have permission to access the given
+                project.
     """),
       'EXAMPLES': textwrap.dedent("""\
-          The following command will create a Project with identifier
-          'example-foo-bar-1'
+          The following command creates a project with the ID
+          `example-foo-bar-1`:
 
             $ {command} example-foo-bar-1
     """),
@@ -44,9 +46,9 @@ class Create(base.Command):
   @staticmethod
   def Args(parser):
     parser.add_argument('id', metavar='PROJECT_ID',
-                        help='The ID for the project you want to create.')
+                        help='ID for the project you want to create.')
     parser.add_argument('--name',
-                        help='The name for the project you want to create.')
+                        help='Name for the project you want to create.')
 
   @util.HandleHttpError
   def Run(self, args):

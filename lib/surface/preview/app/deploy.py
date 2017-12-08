@@ -19,6 +19,8 @@ import argparse
 import json
 import os
 
+from gae_ext_runtime import ext_runtime
+
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import appengine_client
 from googlecloudsdk.api_lib.app import cloud_storage
@@ -30,7 +32,6 @@ from googlecloudsdk.api_lib.app import service_util
 from googlecloudsdk.api_lib.app import util
 from googlecloudsdk.api_lib.app import version_util
 from googlecloudsdk.api_lib.app import yaml_parsing
-from googlecloudsdk.api_lib.app.ext_runtimes import fingerprinting
 from googlecloudsdk.api_lib.app.runtimes import fingerprinter
 from googlecloudsdk.api_lib.source import context_util
 from googlecloudsdk.calliope import actions
@@ -397,7 +398,7 @@ class Deploy(base.Command):
             'directory does not contain an App Engine module, please answer '
             '"no").', cancel_on_no=True)
         # This generates the app.yaml AND the Dockerfile (and related files).
-        params = fingerprinting.Params(deploy=True)
+        params = ext_runtime.Params(deploy=True)
         configurator = fingerprinter.IdentifyDirectory(os.getcwd(),
                                                        params=params)
         config_cleanup = configurator.GenerateConfigs()

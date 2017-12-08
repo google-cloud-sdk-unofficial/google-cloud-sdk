@@ -155,7 +155,7 @@ _BaseCreate.detailed_help = {
     }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateGA(_BaseCreate, base_classes.BaseAsyncCreator):
   """Create a VPN tunnel."""
 
@@ -212,8 +212,8 @@ class CreateGA(_BaseCreate, base_classes.BaseAsyncCreator):
     return [request]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(_BaseCreate, base_classes.BaseAsyncCreator):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class CreateBeta(_BaseCreate, base_classes.BaseAsyncCreator):
   """Create a VPN tunnel."""
 
   @staticmethod

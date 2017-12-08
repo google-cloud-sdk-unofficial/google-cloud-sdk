@@ -27,10 +27,12 @@ class BadConfigListInvocation(exceptions.Error):
 
 
 class List(base.Command):
-  """View Google Cloud SDK properties.
+  """View Cloud SDK properties.
 
-  List all currently available Cloud SDK properties associated with your current
-  workspace or global configuration.
+  Lists all properties in your active configuration. These include the
+  account used to authorize access to the Cloud Platform, the current Cloud
+  Platform project, and the default Compute Engine region and zone, if set. See
+  `gcloud topic configurations` for more information.
   """
 
   detailed_help = {

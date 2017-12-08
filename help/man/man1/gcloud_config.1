@@ -5,7 +5,7 @@
 
 .SH "NAME"
 .HP
-gcloud config \- view and edit Google Cloud SDK properties
+gcloud config \- view and edit Cloud SDK properties
 
 
 
@@ -16,10 +16,20 @@ gcloud config \- view and edit Google Cloud SDK properties
 
 .SH "DESCRIPTION"
 
-Configuration properties are used to modify the behavior of gcloud and other
-Cloud SDK commands. Most behavior can be controlled via the use of flags, but
-setting properties provides a way to maintain the same settings across command
-executions.
+A configuration is a set of properties that govern the behavior of gcloud and
+other tools in the Cloud SDK. The SDK provides a configuration named
+\f5default\fR whose initial properties are set when you run the \f5gcloud
+init\fR command. You can create any number of additional named configurations
+using \f5gcloud init\fR or \f5gcloud config configurations create\fR, and switch
+between configurations using \f5gcloud config configurations activate\fR.
+
+gcloud supports several flags that have the same effect as properties in a
+configuration (for example, gcloud supports both the \f5\-\-project\fR flag and
+\f5project\fR property). Properties differ from flags in that flags affect
+command behavior on a per\-invocation basis. Properties allow you to maintain
+the same settings across command executions.
+
+For more information on configurations, see \f5gcloud topic configurations\fR.
 
 
 
@@ -46,17 +56,17 @@ Manage the set of gcloud named configurations.
 
 \fBlist\fR
 .RS 2m
-View Google Cloud SDK properties.
+View Cloud SDK properties.
 
 .RE
 \fBset\fR
 .RS 2m
-Edit Google Cloud SDK properties.
+Set a Cloud SDK property.
 
 .RE
 \fBunset\fR
 .RS 2m
-Erase Google Cloud SDK properties.
+Unset a Cloud SDK property.
 
 
 .RE

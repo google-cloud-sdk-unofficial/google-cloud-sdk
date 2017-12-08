@@ -38,10 +38,11 @@ DETAILED_HELP = {
 
 
 class Unset(base.Command):
-  """Erase Google Cloud SDK properties.
+  """Unset a Cloud SDK property.
 
-  Unset a property to be as if it were never defined in the first place. You
-  may optionally use the --scope flag to specify a configuration file to update.
+  By default, unsets the property in your active configuration only. Use the
+  `--installation` flag to unset the property across all configurations. See
+  `gcloud topic configurations` for more information.
   """
 
   detailed_help = DETAILED_HELP

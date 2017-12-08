@@ -20,7 +20,7 @@ from googlecloudsdk.core.console import console_io
 
 
 class List(base.Command):
-  """Lists available named configurations."""
+  """Lists existing named configurations."""
 
   detailed_help = {
       'DESCRIPTION': """\

@@ -15,6 +15,8 @@
 """The command to list installed/available gcloud components."""
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
+from googlecloudsdk.core.resource import resource_printer_base
 
 
 class List(base.SilentCommand):
@@ -54,6 +56,47 @@ class List(base.SilentCommand):
         '--show-versions', required=False, action='store_true',
         help='Show installed and available versions of all components.')
 
+  def Format(self, args):
+    attributes = [
+        'box',
+        'legend=" "',
+        'empty-legend="No updates."',
+        'title="Components"'
+        ]
+    columns = [
+        'state.name:label=Status',
+        'name:label=Name',
+        ]
+    if args.show_versions:
+      columns.extend([
+          'current_version_string:label=Installed:align=right',
+          'latest_version_string:label=Latest:align=right',
+          ])
+    columns.extend([
+        'id:label=ID',
+        'size.size(zero="",min=1048576):label=Size:align=right',
+        ])
+    return 'table[{attributes}]({columns})'.format(
+        attributes=','.join(attributes), columns=','.join(columns))
+
   def Run(self, args):
     """Runs the list command."""
-    self.group.update_manager.List(show_versions=args.show_versions)
+    result = self.group.update_manager.List()
+    (to_print, current_version, latest_version) = result
+    if not to_print:
+      raise StopIteration
+
+    for c in to_print:
+      yield c
+    yield resource_printer_base.FinishMarker()
+
+    log.status.write("""\
+To install or remove components at your current SDK version [{current}], run:
+  $ gcloud components install COMPONENT_ID
+  $ gcloud components remove COMPONENT_ID
+
+To update your SDK installation to the latest version [{latest}], run:
+  $ gcloud components update
+
+""".format(current=current_version, latest=latest_version))
+    log.status.flush()

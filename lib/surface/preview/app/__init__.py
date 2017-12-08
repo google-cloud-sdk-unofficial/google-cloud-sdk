@@ -54,7 +54,7 @@ class Appengine(base.Group):
       'EXAMPLES': """\
           To run your app locally in the development application server, run:
 
-            $ {command} run DEPLOYABLES
+            $ dev_appserver.py DEPLOYABLES
 
           To create a new deployment of one or more modules, run:
 

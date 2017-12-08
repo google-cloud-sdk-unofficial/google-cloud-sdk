@@ -15,9 +15,9 @@
 """The auth command gets tokens via oauth2."""
 
 import argparse
-import os
 import textwrap
 
+from googlecloudsdk.api_lib.auth import util as auth_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core import config
@@ -27,19 +27,7 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.credentials import devshell as c_devshell
 from googlecloudsdk.core.credentials import gce as c_gce
 from googlecloudsdk.core.credentials import store as c_store
-from googlecloudsdk.core.util import platforms
 from oauth2client import client
-
-
-# A list of results for webbrowser.get().name that indicate we should not
-# attempt to open a web browser for the user.
-_WEBBROWSER_NAMES_BLACKLIST = [
-    'www-browser',
-]
-
-# These are environment variables that can indicate a running compositor on
-# Linux.
-_DISPLAY_VARIABLES = ['DISPLAY', 'WAYLAND_DISPLAY', 'MIR_SOCKET']
 
 
 
@@ -50,6 +38,11 @@ class Login(base.Command):
   flow. If valid credentials for an account are already available from a prior
   authorization, the account is set to active without rerunning the flow. Use
   `gcloud auth list` to view credentialed accounts.
+
+  Deprecated behavior: This command also saves the credentials for
+  Application Default Credentials. This behavior has been taken over by
+  'gcloud auth application-default login', so prefer to use that command
+  instead for that purpose.
   """
 
   @staticmethod
@@ -98,8 +91,8 @@ class Login(base.Command):
         return None
     elif c_gce.Metadata().connected:
       message = textwrap.dedent("""
-          You are running on a GCE VM. It is recommended that you use
-          service accounts for authentication.
+          You are running on a Google Compute Engine virtual machine.
+          It is recommended that you use service accounts for authentication.
 
           You can run:
 
@@ -125,7 +118,8 @@ class Login(base.Command):
                             args.brief)
 
     # No valid creds, do the web flow.
-    creds = self.DoWebFlow(args.launch_browser)
+    launch_browser = auth_util.ShouldLaunchBrowser(args.launch_browser)
+    creds = self.DoInstalledAppBrowserFlow(launch_browser)
     web_flow_account = creds.id_token['email']
     if account and account.lower() != web_flow_account.lower():
       raise c_exc.ToolException(
@@ -168,28 +162,9 @@ class Login(base.Command):
               account=account, project=properties.VALUES.core.project.Get()))
     return creds
 
-  def DoWebFlow(self, launch_browser):
+  def DoInstalledAppBrowserFlow(self, launch_browser):
     """Launches a browser to get credentials."""
-    # pylint:disable=g-import-not-at-top, Import when needed for performance.
-    import webbrowser
     try:
-      # Sometimes it's not possible to launch the web browser. This often
-      # happens when people ssh into other machines.
-      if launch_browser:
-        if c_gce.Metadata().connected:
-          launch_browser = False
-        current_os = platforms.OperatingSystem.Current()
-        if (current_os is platforms.OperatingSystem.LINUX and
-            not any(os.getenv(var) for var in _DISPLAY_VARIABLES)):
-          launch_browser = False
-        try:
-          browser = webbrowser.get()
-          if (hasattr(browser, 'name')
-              and browser.name in _WEBBROWSER_NAMES_BLACKLIST):
-            launch_browser = False
-        except webbrowser.Error:
-          launch_browser = False
-
       return c_store.AcquireFromWebFlow(launch_browser=launch_browser)
     except c_store.FlowError:
       msg = 'There was a problem with web authentication.'

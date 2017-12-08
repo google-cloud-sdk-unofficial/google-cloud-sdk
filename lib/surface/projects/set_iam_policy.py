@@ -21,19 +21,19 @@ from googlecloudsdk.core.iam import iam_util
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SetIamPolicy(base.Command):
-  """Set IAM policy for a Project.
+  """Set IAM policy for a project.
 
-  This command sets the IAM policy for a Project, given a Project ID and a
-  file that contains the JSON encoded IAM policy.
+  Sets the IAM policy for a project, given a project ID and a file that
+  contains the JSON-encoded IAM policy.
   """
 
   detailed_help = {
-      'brief': 'Set IAM policy for a Project.',
+      'brief': 'Set IAM policy for a project.',
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\
-          The following command will read an IAM policy defined in a JSON file
-          'policy.json' and set it for a Project with identifier
-          'example-project-id-1'
+          The following command reads an IAM policy defined in a JSON file
+          `policy.json` and sets it for a project with the ID
+          `example-project-id-1`:
 
             $ {command} example-project-id-1 policy.json
           """,
@@ -44,7 +44,7 @@ class SetIamPolicy(base.Command):
     parser.add_argument('id', metavar='PROJECT_ID',
                         completion_resource='cloudresourcemanager.projects',
                         list_command_path='projects',
-                        help='The ID for the project you want to set '
+                        help='ID for the project you want to set '
                              'IAM policy.')
     parser.add_argument('policy_file', help='JSON file with the IAM policy')
 

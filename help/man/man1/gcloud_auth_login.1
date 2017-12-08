@@ -21,6 +21,11 @@ flow. If valid credentials for an account are already available from a prior
 authorization, the account is set to active without rerunning the flow. Use
 \f5gcloud auth list\fR to view credentialed accounts.
 
+Deprecated behavior: This command also saves the credentials for Application
+Default Credentials. This behavior has been taken over by 'gcloud auth
+application\-default login', so prefer to use that command instead for that
+purpose.
+
 
 
 .SH "POSITIONAL ARGUMENTS"

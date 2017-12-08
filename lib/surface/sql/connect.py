@@ -101,6 +101,15 @@ def _GetClientIP(instance_ref, sql_client, acl_name):
 class Connect(base.Command):
   """Connects to a Cloud SQL instance."""
 
+  detailed_help = {
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
+          To connect to a Cloud SQL instance, run:
+
+            $ {command} my-instance --user=root
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command.

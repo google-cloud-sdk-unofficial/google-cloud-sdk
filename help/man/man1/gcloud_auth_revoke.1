@@ -5,7 +5,7 @@
 
 .SH "NAME"
 .HP
-gcloud auth revoke \- revoke authorization for credentials
+gcloud auth revoke \- revoke access credentials for an account
 
 
 
@@ -16,8 +16,14 @@ gcloud auth revoke \- revoke authorization for credentials
 
 .SH "DESCRIPTION"
 
-Revoke credentials. If no account is provided, the currently active account is
-used.
+Revokes credentials for the specified user accounts or service accounts. When
+you revoke the credentials, they are removed from the local machine. If no
+account is specified, this command revokes credentials for the currently active
+account.
+
+You can revoke credentials when you want to disallow access by gcloud and other
+Cloud SDK tools using a specified account. You don't need to revoke credentials
+to switch between accounts.
 
 
 
@@ -25,7 +31,7 @@ used.
 
 [\fIACCOUNTS\fR ...]
 .RS 2m
-Accounts whose credentials shall be revoked.
+Accounts whose credentials are to be revoked.
 
 
 .RE
@@ -34,7 +40,7 @@ Accounts whose credentials shall be revoked.
 
 \fB\-\-all\fR
 .RS 2m
-Revoke all known credentials.
+Revoke credentials for all accounts.
 
 
 .RE

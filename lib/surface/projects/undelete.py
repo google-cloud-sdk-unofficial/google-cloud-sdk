@@ -25,16 +25,18 @@ class Undelete(base.Command):
   """Undelete a Project."""
 
   detailed_help = {
-      'brief': 'Undelete a Project.',
+      'brief': 'Undelete a project.',
       'DESCRIPTION': textwrap.dedent("""\
-          This command undeletes the Project with the given Project ID.
+          Undeletes the project with the given Project ID.
 
-          This call can fail for the following reasons:
+          This command can fail for the following reasons:
               * There is no project with the given ID.
+              * The active account does not have Owner or Editor permissions for
+                the given project.
     """),
       'EXAMPLES': textwrap.dedent("""\
-          The following command will undelete the Project with identifier
-          'example-foo-bar-1'
+          The following command undeletes the project with the ID
+          `example-foo-bar-1`:
 
             $ {command} example-foo-bar-1
     """),
@@ -43,7 +45,7 @@ class Undelete(base.Command):
   @staticmethod
   def Args(parser):
     parser.add_argument('id', metavar='PROJECT_ID',
-                        help='The ID for the project you want to undelete.')
+                        help='ID for the project you want to undelete.')
 
   @util.HandleHttpError
   def Run(self, args):
