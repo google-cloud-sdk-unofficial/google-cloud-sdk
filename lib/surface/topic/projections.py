@@ -53,9 +53,6 @@ class Projections(base.Command):
 
             (name, status.time.foo().bar())
 
-          In the descriptions below the argument *r* is the implicit resource
-          data value. *r* is not specified in transform calls.
-
           {transform_registry}
 
           ### Key Attributes

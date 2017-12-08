@@ -26,15 +26,15 @@ _THIRD_PARTY_DIR = os.path.join(os.path.dirname(__file__), 'third_party')
 if os.path.isdir(_THIRD_PARTY_DIR):
   sys.path.insert(0, _THIRD_PARTY_DIR)
 
-# This strange import below ensures that the correct 'google' is imported. We
-# reload after sys.path are updated, so we know if will find our
-# google before any other.
+# This strange import below ensures that the correct 'google' is imported.
+# We reload after sys.path is updated, so we know if will find our google
+# before any other.
 # pylint:disable=g-import-not-at-top
 if 'google' in sys.modules:
   import google
-  if 'reload' in __builtins__:
+  try:
     reload(google)
-  else:
+  except NameError:
     import imp
     imp.reload(google)
 
@@ -43,9 +43,14 @@ import apiclient
 import httplib2
 import oauth2client
 import oauth2client.client
+# TODO(user): Remove when all installation of oauth2client have been updated
+# to export oauth2client.contrib.gce.
+try:
+  from oauth2client.contrib.gce import AppAssertionCredentials
+except ImportError:
+  from oauth2client.gce import AppAssertionCredentials
 import oauth2client.devshell
 import oauth2client.file
-import oauth2client.gce
 import oauth2client.tools
 import yaml
 
@@ -74,7 +79,7 @@ JobIdGeneratorFingerprint = bigquery_client.JobIdGeneratorFingerprint
 # pylint: enable=g-bad-name
 
 
-_VERSION_NUMBER = '2.0.22'
+_VERSION_NUMBER = '2.0.24'
 _CLIENT_USER_AGENT = 'Cloud SDK Command Line Tool' + _VERSION_NUMBER
 _GDRIVE_SCOPE = 'https://www.googleapis.com/auth/drive'
 _CLIENT_SCOPE = 'https://www.googleapis.com/auth/bigquery'
@@ -184,11 +189,11 @@ def _UseServiceAccount():
 
 def _GetServiceAccountCredentialsFromFlags(storage):  # pylint: disable=unused-argument
   client_scope = [_CLIENT_SCOPE]
-  if FLAGS.enable_gdrive:
+  if FLAGS.enable_gdrive is None or FLAGS.enable_gdrive:
     client_scope.append(_GDRIVE_SCOPE)
 
   if FLAGS.use_gce_service_account:
-    return oauth2client.gce.AppAssertionCredentials(client_scope)
+    return AppAssertionCredentials(client_scope)
 
   if not oauth2client.client.HAS_OPENSSL:
     raise app.UsageError(
@@ -225,7 +230,7 @@ def _GetCredentialsFromOAuthFlow(storage):
     print 'Running in headless mode, exiting.'
     sys.exit(1)
   client_info = _CLIENT_INFO.copy()
-  if FLAGS.enable_gdrive:
+  if FLAGS.enable_gdrive is None or FLAGS.enable_gdrive:
     client_info['scope'] = list(client_info['scope'])
     client_info['scope'].append(_GDRIVE_SCOPE)
   while True:
@@ -932,11 +937,13 @@ class _Load(BigqueryCmd):
         'source_format', None,
         ['CSV',
          'NEWLINE_DELIMITED_JSON',
-         'DATASTORE_BACKUP'],
+         'DATASTORE_BACKUP',
+         'AVRO'],
         'Format of source data. Options include:'
         '\n CSV'
         '\n NEWLINE_DELIMITED_JSON'
-        '\n DATASTORE_BACKUP',
+        '\n DATASTORE_BACKUP'
+        '\n AVRO',
         flag_values=fv)
     flags.DEFINE_list(
         'projection_fields', [],
@@ -1039,14 +1046,11 @@ def _CreateExternalTableDefinition(source_format, source_uris, schema):
       raise app.UsageError(('%s is not a supported format.') % source_format)
     external_table_def = {'sourceFormat': source_format}
 
+    external_table_def['autodetect'] = True
+
     if external_table_def['sourceFormat'] == 'CSV':
       external_table_def['csvOptions'] = yaml.load("""
           {
-              "allowJaggedRows": false,
-              "fieldDelimiter": ",",
-              "allowQuotedNewlines": false,
-              "quote": '"',
-              "skipLeadingRows": 0,
               "encoding": "UTF-8"
           }
       """)
@@ -1326,15 +1330,15 @@ def _GetExternalDataConfig(file_path_or_simple_spec):
     else:
       raise app.UsageError(error_msg)
 
-    parts = format_and_uri.split('=')
-    if len(parts) == 1:
+    separator_pos = format_and_uri.find('=')
+    if separator_pos < 0:
       # Format is not specified
-      uri = parts[0]
-    elif len(parts) == 2:
-      if parts[0]:
-        source_format = parts[0]
-      uri = parts[1]
+      uri = format_and_uri
     else:
+      source_format = format_and_uri[0:separator_pos]
+      uri = format_and_uri[separator_pos+1:]
+
+    if not uri:
       raise app.UsageError(error_msg)
 
     return _CreateExternalTableDefinition(source_format, uri, schema)
@@ -1958,12 +1962,16 @@ class _Update(BigqueryCmd):
       view_udf_resources = None
       if self.view_udf_resource:
         view_udf_resources = _ParseUdfResources(self.view_udf_resource)
-      client.UpdateTable(reference, schema=schema,
-                         description=self.description,
-                         expiration=expiration,
-                         view_query=query_arg,
-                         view_udf_resources=view_udf_resources,
-                         external_data_config=external_data_config)
+      client.UpdateTable(
+          reference,
+          schema=schema,
+          description=self.description,
+          expiration=expiration,
+          view_query=query_arg,
+          view_udf_resources=view_udf_resources,
+          external_data_config=external_data_config
+      )
+
       print "%s '%s' successfully updated." % (object_name, reference,)
 
 

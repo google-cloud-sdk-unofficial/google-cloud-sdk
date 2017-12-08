@@ -1539,10 +1539,16 @@ class BigqueryClient(object):
       if not ignore_existing:
         raise
 
-  def UpdateTable(self, reference, schema=None,
-                  description=None, friendly_name=None, expiration=None,
-                  view_query=None, external_data_config=None,
-                  view_udf_resources=None):
+  def UpdateTable(self,
+                  reference,
+                  schema=None,
+                  description=None,
+                  friendly_name=None,
+                  expiration=None,
+                  view_query=None,
+                  external_data_config=None,
+                  view_udf_resources=None
+                 ):
     """Updates a table.
 
     Args:

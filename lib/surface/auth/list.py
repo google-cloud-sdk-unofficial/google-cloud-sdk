@@ -17,7 +17,6 @@
 import textwrap
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
@@ -50,15 +49,6 @@ class List(base.Command):
     accounts = c_store.AvailableAccounts()
 
     active_account = properties.VALUES.core.account.Get()
-
-    if args.account:
-      # TODO(user) Remove error after Sept. 13, 2015.
-      raise exceptions.Error(
-          'The behavior of ``gcloud auth list --account has changed. '
-          'Please use ``--filter-account'' to filter the output of '
-          '``auth list''.  Elsewhere in gcloud ``--account'' sets the '
-          'currently active account and this behavior will become available '
-          'to ``auth list'' in a future gcloud release.')
 
     if args.filter_account:
       if args.filter_account in accounts:

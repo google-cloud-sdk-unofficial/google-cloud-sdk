@@ -16,20 +16,11 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RoutersAlpha(base.Group):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class Routers(base.Group):
   """List, create, and delete Google Compute Engine routers."""
 
 
-RoutersAlpha.detailed_help = {
+Routers.detailed_help = {
     'brief': 'List, create, and delete Google Compute Engine routers',
 }
-
-
-# TODO(b/25394160): Merge these group classes and remove the hidden tag.
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class RoutersBeta(base.Group):
-  """List, create, and delete Google Compute Engine routers."""
-
-RoutersBeta.detailed_help = RoutersAlpha.detailed_help

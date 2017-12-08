@@ -55,7 +55,7 @@ InstancesAddTags.detailed_help = {
         *{command}* is used to add tags to Google Compute Engine virtual
         machine instances. For example, running:
 
-          $ {command} example-instance --tags tag-1 tag-2
+          $ {command} example-instance --tags tag-1,tag-2
 
         will add tags ``tag-1'' and ``tag-2'' to 'example-instance'.
 

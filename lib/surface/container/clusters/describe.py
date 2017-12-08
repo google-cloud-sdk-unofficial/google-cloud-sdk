@@ -16,7 +16,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from surface.container.clusters.upgrade import UpgradeHelpText
 from surface.container.clusters.upgrade import VersionVerifier
-from googlecloudsdk.third_party.py27 import py27_collections as collections
 
 
 class Describe(base.Command):
@@ -43,20 +42,22 @@ class Describe(base.Command):
       Some value that we want to have printed later.
     """
     adapter = self.context['api_adapter']
-    describe_info = collections.namedtuple('describe_info', ['cluster', 'text'])
-    text = None
+    self._upgrade_hint = None
     vv = VersionVerifier()
     c = adapter.GetCluster(adapter.ParseCluster(args.name))
     ver_status = vv.Compare(c.currentMasterVersion, c.currentNodeVersion)
+
     if ver_status == VersionVerifier.UPGRADE_AVAILABLE:
-      text = UpgradeHelpText.UPGRADE_AVAILABLE
+      self._upgrade_hint = UpgradeHelpText.UPGRADE_AVAILABLE
     elif ver_status == VersionVerifier.SUPPORT_ENDING:
-      text = UpgradeHelpText.SUPPORT_ENDING
+      self._upgrade_hint = UpgradeHelpText.SUPPORT_ENDING
     elif ver_status == VersionVerifier.UNSUPPORTED:
-      text = UpgradeHelpText.UNSUPPORTED
+      self._upgrade_hint = UpgradeHelpText.UNSUPPORTED
+
     if ver_status != VersionVerifier.UP_TO_DATE:
-      text += UpgradeHelpText.UPGRADE_COMMAND.format(name=c.name)
-    return describe_info(c, text)
+      self._upgrade_hint += UpgradeHelpText.UPGRADE_COMMAND.format(name=c.name)
+
+    return c
 
   def Display(self, args, result):
     """This method is called to print the result of the Run() method.
@@ -65,6 +66,6 @@ class Describe(base.Command):
       args: The arguments that command was run with.
       result: The value returned from the Run() method.
     """
-    self.format(result.cluster)
-    if result.text:
-      log.status.Print(result.text)
+    self.format(result)
+    if self._upgrade_hint:
+      log.status.Print(self._upgrade_hint)

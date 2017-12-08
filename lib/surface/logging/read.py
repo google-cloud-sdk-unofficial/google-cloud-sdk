@@ -121,7 +121,7 @@ Read.detailed_help = {
     'EXAMPLES': """\
         To read log entries from Google Cloud Compute, run:
 
-          $ {command} "monitoredResource.type=gce_instance"
+          $ {command} "resource.type=gce_instance"
 
         To read log entries with severity ERROR or higher, run:
 

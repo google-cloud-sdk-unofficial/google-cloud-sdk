@@ -59,7 +59,7 @@ flags.DEFINE_string(
     'job_id', None,
     'A unique job_id to use for the request. If not specified, this client '
     'will generate a job_id. Applies only to commands that launch jobs, '
-    'such as cp, extract, link, load, and query.')
+    'such as cp, extract, load, and query.')
 flags.DEFINE_boolean(
     'fingerprint_job_id', False,
     'Whether to use a job id that is derived from a fingerprint of the job '

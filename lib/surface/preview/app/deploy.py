@@ -23,6 +23,7 @@ from gae_ext_runtime import ext_runtime
 
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import appengine_client
+from googlecloudsdk.api_lib.app import cloud_endpoints
 from googlecloudsdk.api_lib.app import cloud_storage
 from googlecloudsdk.api_lib.app import deploy_app_command_util
 from googlecloudsdk.api_lib.app import deploy_command_util
@@ -415,6 +416,20 @@ class Deploy(base.Command):
         log.status.Print('\nCreated [{0}] in the current directory.\n'.format(
             DEFAULT_DEPLOYABLE))
       app_config = yaml_parsing.AppConfigSet([DEFAULT_DEPLOYABLE])
+
+    # If the app has enabled Endpoints API Management features, pass
+    # control to the cloud_endpoints handler.
+    for _, module in app_config.Modules().items():
+      if module and module.parsed and module.parsed.beta_settings:
+        bs = module.parsed.beta_settings
+        use_endpoints = bs.get('use_endpoints_api_management', '').lower()
+        if (use_endpoints in ('true', '1', 'yes') and
+            bs.get('endpoints_swagger_spec_file')):
+          cloud_endpoints.PushServiceConfig(
+              bs.get('endpoints_swagger_spec_file'),
+              project,
+              apis.GetClientInstance('servicemanagement', 'v1', self.Http()),
+              apis.GetMessagesModule('servicemanagement', 'v1'))
 
     remote_build = True
     docker_build_property = properties.VALUES.app.docker_build.Get()

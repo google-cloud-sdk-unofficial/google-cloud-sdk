@@ -20,7 +20,6 @@ from googlecloudsdk.core import properties
 from surface.container.clusters.upgrade import UpgradeHelpText
 from surface.container.clusters.upgrade import VersionVerifier
 from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
-from googlecloudsdk.third_party.py27 import py27_collections as collections
 
 
 class List(base.Command):
@@ -59,8 +58,7 @@ class List(base.Command):
       upgrade_available = False
       support_ending = False
       unsupported = False
-      text = ''
-      list_info = collections.namedtuple('list_info', ['clusters', 'text'])
+      self._upgrade_hint = ''
       vv = VersionVerifier()
       for c in clusters.clusters:
         ver_status = vv.Compare(c.currentMasterVersion, c.currentNodeVersion)
@@ -75,14 +73,14 @@ class List(base.Command):
           unsupported = True
 
       if upgrade_available:
-        text += UpgradeHelpText.UPGRADE_AVAILABLE
+        self._upgrade_hint += UpgradeHelpText.UPGRADE_AVAILABLE
       if support_ending:
-        text += UpgradeHelpText.SUPPORT_ENDING
+        self._upgrade_hint += UpgradeHelpText.SUPPORT_ENDING
       if unsupported:
-        text += UpgradeHelpText.UNSUPPORTED
-      if text:
-        text += UpgradeHelpText.UPGRADE_COMMAND.format(name='NAME')
-      return list_info(clusters, text)
+        self._upgrade_hint += UpgradeHelpText.UNSUPPORTED
+      if self._upgrade_hint:
+        self._upgrade_hint += UpgradeHelpText.UPGRADE_COMMAND.format(name='NAME')
+      return clusters
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(util.GetError(error))
 
@@ -93,6 +91,6 @@ class List(base.Command):
       args: The arguments that command was run with.
       result: The value returned from the Run() method.
     """
-    self.context['api_adapter'].PrintClusters(result.clusters.clusters)
-    if result.text:
-      log.status.Print(result.text)
+    self.context['api_adapter'].PrintClusters(result.clusters)
+    if self._upgrade_hint:
+      log.status.Print(self._upgrade_hint)

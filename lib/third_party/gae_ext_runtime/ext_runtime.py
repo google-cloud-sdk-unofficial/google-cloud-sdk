@@ -703,6 +703,3 @@ class ExternalizedRuntime(object):
         notify('All config files already exist, not generating anything.')
 
       return cleaner
-    else:
-      raise InvalidRuntimeDefinition('Runtime definition contains no '
-                                     'generate_configs section.')

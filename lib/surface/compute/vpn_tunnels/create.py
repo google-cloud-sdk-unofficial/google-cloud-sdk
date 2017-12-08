@@ -219,11 +219,9 @@ class CreateBeta(_BaseCreate, base_classes.BaseAsyncCreator):
   @staticmethod
   def Args(parser):
     CreateGA.Args(parser)
-    # TODO(b/25394160): Unhide the help.
-    unused_help = 'The Router to use for dynamic routing.'
     parser.add_argument(
         '--router',
-        help=argparse.SUPPRESS)
+        help='The Router to use for dynamic routing.')
 
   def CreateRequests(self, args):
     """Builds API requests to construct VPN Tunnels."""
