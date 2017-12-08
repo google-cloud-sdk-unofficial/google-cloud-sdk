@@ -53,10 +53,9 @@ class SnapshotsRemoveLabels(base.UpdateCommand):
         for label in snapshot.labels.additionalProperties:
           remove_labels[label.key] = label.value
 
-    replacement = labels_util.UpdateLabels(
-        snapshot.labels,
+    replacement = labels_util.Diff(subtractions=remove_labels).Apply(
         messages.GlobalSetLabelsRequest.LabelsValue,
-        remove_labels=remove_labels)
+        snapshot.labels)
     if not replacement:
       return snapshot
 

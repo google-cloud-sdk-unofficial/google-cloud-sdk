@@ -14,8 +14,6 @@
 """List project repositories."""
 from googlecloudsdk.api_lib.source.repos import sourcerepo
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA,
@@ -48,10 +46,7 @@ class List(base.ListCommand):
 
   def Run(self, args):
     """Run the list command."""
-    res = resources.REGISTRY.Parse(
-        None,
-        params={'projectsId': properties.VALUES.core.project.GetOrFail},
-        collection='sourcerepo.projects')
+    res = sourcerepo.GetDefaultProject()
     source_handler = sourcerepo.Source()
     return source_handler.ListRepos(
         res, limit=args.limit, page_size=args.page_size)

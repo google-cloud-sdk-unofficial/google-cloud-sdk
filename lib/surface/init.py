@@ -78,7 +78,6 @@ class Init(base.Command):
 
   def Run(self, args):
     """Allows user to select configuration, and initialize it."""
-
     if args.obsolete_project_arg:
       raise c_exc.InvalidArgumentException(
           args.obsolete_project_arg,
@@ -114,6 +113,12 @@ class Init(base.Command):
                            'command:\n')
           log.status.write('  gcloud info --run-diagnostics\n\n')
           return
+
+    # User project quota is now the global default, but this command calls
+    # legacy APIs where it should be disabled. It must happen after the config
+    # settings are persisted so this temporary value doesn't get persisted as
+    # well.
+    base.DisableUserProjectQuota()
 
     if not self._PickAccount(args.console_only, preselected=args.account):
       return

@@ -14,15 +14,7 @@
 """Command group for Machine Learning."""
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
 
 
-class MlAlpha(base.Group):
+class Ml(base.Group):
   """Use Google Cloud machine learning capabilities."""
-
-  def Filter(self, unused_context, unused_args):
-    if not properties.VALUES.billing.quota_project.IsExplicitlySet():
-      # Explicitly enable the new quota header for commands only if the
-      # user doesn't have a preference specifically set.
-      properties.VALUES.billing.quota_project.Set(
-          properties.VALUES.billing.CURRENT_PROJECT)

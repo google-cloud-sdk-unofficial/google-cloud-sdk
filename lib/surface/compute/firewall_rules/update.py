@@ -20,6 +20,7 @@ from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute.firewall_rules import flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class UpdateFirewall(base.UpdateCommand):
   """Update a firewall rule.
 
@@ -30,6 +31,7 @@ class UpdateFirewall(base.UpdateCommand):
   """
   with_egress_firewall = True
   with_service_account = True
+  with_disabled = False
 
   FIREWALL_RULE_ARG = None
 
@@ -41,7 +43,8 @@ class UpdateFirewall(base.UpdateCommand):
         parser,
         for_update=True,
         with_egress_support=cls.with_egress_firewall,
-        with_service_account=cls.with_service_account)
+        with_service_account=cls.with_service_account,
+        with_disabled=cls.with_disabled)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=True)
 
   def ValidateArgument(self, messages, args):
@@ -60,6 +63,8 @@ class UpdateFirewall(base.UpdateCommand):
       args_unset = args_unset and all(
           x is None
           for x in (args.source_service_accounts, args.target_service_accounts))
+    if self.with_disabled:
+      args_unset = args_unset and args.disabled is None
     if args_unset:
       raise calliope_exceptions.ToolException(
           'At least one property must be modified.')
@@ -213,4 +218,24 @@ class UpdateFirewall(base.UpdateCommand):
         targetTags=target_tags,
         sourceServiceAccounts=source_service_accounts,
         targetServiceAccounts=target_service_accounts)
+    return new_firewall
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaUpdateFirewall(UpdateFirewall):
+  """Update a firewall rule.
+
+  *{command}* is used to update firewall rules that allow/deny
+  incoming/outgoing traffic. The firewall rule will only be updated for
+  arguments that are specifically passed. Other attributes will remain
+  unaffected.
+  """
+  with_disabled = True
+
+  def Modify(self, client, args, existing, cleared_fields):
+    new_firewall = super(AlphaUpdateFirewall, self).Modify(
+        client, args, existing, cleared_fields)
+
+    if args.disabled is not None:
+      new_firewall.disabled = args.disabled
     return new_firewall

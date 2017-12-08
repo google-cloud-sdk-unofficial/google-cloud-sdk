@@ -48,9 +48,8 @@ class SetClusterSelector(base.UpdateCommand):
     workflow_template = dataproc.GetRegionsWorkflowTemplate(
         template, args.version)
 
-    labels = labels_util.UpdateLabels(
-        None, dataproc.messages.ClusterSelector.ClusterLabelsValue,
-        args.cluster_labels, None)
+    labels = labels_util.Diff(additions=args.cluster_labels).Apply(
+        dataproc.messages.ClusterSelector.ClusterLabelsValue)
 
     cluster_selector = dataproc.messages.ClusterSelector(
         clusterLabels=labels, zone=properties.VALUES.compute.zone.GetOrFail())

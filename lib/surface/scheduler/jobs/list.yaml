@@ -1,0 +1,31 @@
+- help_text:
+    brief: List jobs.
+    DESCRIPTION: List jobs.
+
+  request:
+    collection: cloudscheduler.projects.locations.jobs
+
+  arguments:
+    resource:
+      help_text: The location you want to list the devices for.
+      response_id_field: name
+      params:
+        - _COMMON_: args.location
+
+  output:
+      format: |
+          table(
+              name.basename():label=ID,
+              name.segment(-3):label=LOCATION,
+              format(
+                  "{0} ({1})",
+                  schedule.schedule,
+                  schedule.timezone
+              ):label="SCHEDULE (TZ)",
+              format(
+                  "{0}{1}",
+                  pubsubTarget.yesno(yes="Pub/Sub", no=""),
+                  appEngineHttpTarget.yesno(yes="App Engine", no="")
+              ):label=TARGET_TYPE,
+              jobState:label=STATE
+          )

@@ -106,12 +106,11 @@ class PredictionDoFn(beam.DoFn):
   class _ModelState(object):
     """Atomic representation of the in-memory state of the model."""
 
-    def __init__(self, model_dir, tags, signature_name, skip_preprocessing):
+    def __init__(self, model_dir, tags, skip_preprocessing):
       self.model_dir = model_dir
 
-      session, signature = mlprediction.load_model(
-          model_dir, tags=tags, signature_name=signature_name)
-      client = mlprediction.SessionClient(session, signature)
+      session, signature_map = mlprediction.load_model(model_dir, tags=tags)
+      client = mlprediction.SessionClient(session, signature_map)
       self.model = mlprediction.create_model(
           client, model_dir, skip_preprocessing=skip_preprocessing)
 
@@ -208,8 +207,7 @@ class PredictionDoFn(beam.DoFn):
             self._thread_local.model_state.model_dir != model_dir):
           start = datetime.datetime.now()
           self._thread_local.model_state = self._ModelState(
-              model_dir, self._tag_list, self._signature_name,
-              self._skip_preprocessing)
+              model_dir, self._tag_list, self._skip_preprocessing)
           self._model_load_seconds_distribution.update(
               int((datetime.datetime.now() - start).total_seconds()))
         self._model_state = self._thread_local.model_state
@@ -217,16 +215,25 @@ class PredictionDoFn(beam.DoFn):
         assert self._model_state.model_dir == model_dir
 
       # Try to load it.
-      if self._model_state.model.is_single_string_input():
+      if self._signature_name in self._model_state.model.signature_map:
+        # Even though predict() checks the signature in TensorFlowModel,
+        # we need to duplicate this check here to determine the single string
+        # input case.
+        signature = self._model_state.model.signature_map[self._signature_name]
+      else:
+        raise mlprediction.PredictionError(
+            mlprediction.PredictionError.INVALID_INPUTS,
+            "No signature found for signature key %s." % self._signature_name)
+      if self._model_state.model.is_single_string_input(signature):
         loaded_data = element
       else:
         loaded_data = [json.loads(d) for d in element]
       instances = mlprediction.decode_base64(loaded_data)
-      inputs, predictions = self._model_state.model.predict(instances)
+      inputs, predictions = self._model_state.model.predict(
+          instances, signature_name=self._signature_name)
       predictions = list(predictions)
       predictions = mlprediction.encode_base64(
-          predictions,
-          self._model_state.model.signature.outputs)
+          predictions, signature.outputs)
 
       if self._aggregator_dict:
         aggr = self._aggregator_dict.get(

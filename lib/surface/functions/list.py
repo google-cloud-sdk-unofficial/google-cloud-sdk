@@ -44,7 +44,8 @@ class List(base.ListCommand):
         type=arg_parsers.ArgList(min_length=1),
         default=[])
     parser.display_info.AddFormat(
-        'table(name.basename(), status, trigger():label=TRIGGER)')
+        'table(name.basename(), status, trigger():label=TRIGGER, '
+        'name.scope("locations").segment(0):label=REGION)')
 
   def Run(self, args):
     client = util.GetApiClientInstance()

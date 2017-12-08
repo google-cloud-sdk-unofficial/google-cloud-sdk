@@ -96,7 +96,7 @@ class Import(base.Command):
 
     console_io.PromptContinue(
         message='Data from {0} will be imported to {1}.'.format(
-            args.uri[0], args.instance),
+            args.uri, args.instance),
         default=True,
         cancel_on_no=True)
 

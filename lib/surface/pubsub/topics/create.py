@@ -57,9 +57,8 @@ class Create(base.CreateCommand):
     """
     client = topics.TopicsClient()
 
-    labels = labels_util.UpdateLabels(
-        None, client.messages.Topic.LabelsValue,
-        update_labels=labels_util.GetUpdateLabelsDictFromArgs(args))
+    labels = labels_util.Diff.FromCreateArgs(args).Apply(
+        client.messages.Topic.LabelsValue)
 
     failed = []
     for topic_name in args.topic:

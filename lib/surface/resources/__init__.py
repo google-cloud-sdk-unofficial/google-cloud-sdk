@@ -24,3 +24,7 @@ class Resources(base.Group):
   The {command} group allows you to list and search the Google Cloud resources
   that you have access to.
   """
+
+  def Filter(self, context, args):
+    del context, args
+    base.DisableUserProjectQuota()

@@ -56,16 +56,13 @@ class UpdateAlpha(base.UpdateCommand):
     parser.display_info.AddFormat(command_lib_util.LIST_FORMAT)
 
   def Run(self, args):
-    update_labels = labels_util.GetUpdateLabelsDictFromArgs(args)
-    remove_labels = labels_util.GetRemoveLabelsListFromArgs(args)
-    if args.name is None and update_labels is None and remove_labels is None:
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    if args.name is None and not labels_diff.MayHaveUpdates():
       raise ArgumentError('At least one of --name, --update-labels or '
                           '--remove-labels must be specified.')
     project_ref = command_lib_util.ParseProject(args.id)
-    result = projects_api.Update(project_ref,
-                                 name=args.name,
-                                 update_labels=update_labels,
-                                 remove_labels=remove_labels)
+    result = projects_api.Update(project_ref, name=args.name,
+                                 labels_diff=labels_diff)
     log.UpdatedResource(project_ref)
     return result
 

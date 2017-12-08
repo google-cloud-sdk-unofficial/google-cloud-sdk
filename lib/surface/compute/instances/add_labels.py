@@ -47,10 +47,8 @@ class InstancesAddLabels(base.UpdateCommand):
     instance = client.instances.Get(
         messages.ComputeInstancesGetRequest(**instance_ref.AsDict()))
 
-    replacement = labels_util.UpdateLabels(
-        instance.labels,
-        messages.InstancesSetLabelsRequest.LabelsValue,
-        update_labels=add_labels)
+    replacement = labels_util.Diff(additions=add_labels).Apply(
+        messages.InstancesSetLabelsRequest.LabelsValue, instance.labels)
 
     if not replacement:
       return instance

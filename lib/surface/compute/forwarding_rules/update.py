@@ -87,9 +87,8 @@ class Update(base.UpdateCommand):
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
 
-    update_labels = labels_util.GetUpdateLabelsDictFromArgs(args)
-    remove_labels = labels_util.GetRemoveLabelsListFromArgs(args)
-    if update_labels is None and remove_labels is None:
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    if not labels_diff.MayHaveUpdates():
       raise calliope_exceptions.RequiredArgumentException(
           'LABELS', 'At least one of --update-labels or '
           '--remove-labels must be specified.')
@@ -105,11 +104,7 @@ class Update(base.UpdateCommand):
               **forwarding_rule_ref.AsDict()))
       labels_value = messages.RegionSetLabelsRequest.LabelsValue
 
-    replacement = labels_util.UpdateLabels(
-        forwarding_rule.labels,
-        labels_value,
-        update_labels=update_labels,
-        remove_labels=remove_labels)
+    replacement = labels_diff.Apply(labels_value, forwarding_rule.labels)
 
     if not replacement:
       return forwarding_rule
@@ -199,10 +194,8 @@ class UpdateAlpha(Update):
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
 
-    update_labels = labels_util.GetUpdateLabelsDictFromArgs(args)
-    remove_labels = labels_util.GetRemoveLabelsListFromArgs(args)
-    if (update_labels is None and remove_labels is None and
-        args.network_tier is None):
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    if not labels_diff.MayHaveUpdates() and args.network_tier is None:
       raise calliope_exceptions.ToolException(
           'At least one property must be specified.')
 
@@ -225,11 +218,7 @@ class UpdateAlpha(Update):
     forwarding_rule = objects[0]
 
     forwarding_rule_replacement = self.Modify(messages, args, forwarding_rule)
-    label_replacement = labels_util.UpdateLabels(
-        forwarding_rule.labels,
-        labels_value,
-        update_labels=update_labels,
-        remove_labels=remove_labels)
+    label_replacement = labels_diff.Apply(labels_value, forwarding_rule.labels)
 
     # Create requests.
     requests = []

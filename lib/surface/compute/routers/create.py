@@ -107,13 +107,13 @@ class CreateAlpha(base.CreateCommand):
         bgp=messages.RouterBgp(asn=args.asn))
 
     if router_utils.HasReplaceAdvertisementFlags(args):
-      mode, groups, prefixes = router_utils.ParseAdvertisements(
+      mode, groups, ranges = router_utils.ParseAdvertisements(
           messages=messages, resource_class=messages.RouterBgp, args=args)
 
       attrs = {
           'advertiseMode': mode,
           'advertisedGroups': groups,
-          'advertisedPrefixs': prefixes,
+          'advertisedIpRanges': ranges,
       }
 
       for attr, value in attrs.iteritems():

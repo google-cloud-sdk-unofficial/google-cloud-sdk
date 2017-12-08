@@ -54,10 +54,9 @@ class InstancesRemoveLabels(base.UpdateCommand):
         for label in instance.labels.additionalProperties:
           remove_labels[label.key] = label.value
 
-    replacement = labels_util.UpdateLabels(
-        instance.labels,
+    replacement = labels_util.Diff(subtractions=remove_labels).Apply(
         messages.InstancesSetLabelsRequest.LabelsValue,
-        remove_labels=remove_labels)
+        instance.labels)
     request = messages.ComputeInstancesSetLabelsRequest(
         project=instance_ref.project,
         instance=instance_ref.instance,

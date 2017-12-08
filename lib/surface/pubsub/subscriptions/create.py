@@ -63,9 +63,8 @@ class CreateBeta(base.CreateCommand):
     if retention_duration:
       retention_duration = util.FormatDuration(retention_duration)
 
-    labels = labels_util.UpdateLabels(
-        None, client.messages.Subscription.LabelsValue,
-        update_labels=labels_util.GetUpdateLabelsDictFromArgs(args))
+    labels = labels_util.Diff.FromCreateArgs(args).Apply(
+        client.messages.Subscription.LabelsValue)
 
     failed = []
     for subscription_name in args.subscription:

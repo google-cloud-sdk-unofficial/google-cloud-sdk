@@ -18,3 +18,7 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Billing(base.Group):
   """Manage billing accounts and associate them with projects."""
+
+  def Filter(self, context, args):
+    del context, args
+    base.DisableUserProjectQuota()

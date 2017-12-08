@@ -117,20 +117,28 @@ class Update(base.UpdateCommand):
         lifecycle_config.idleDeleteTtl = str(args.max_idle) + 's'
         changed_fields.append('config.lifecycle_config.idle_delete_ttl')
         changed_config = True
+      if args.no_max_age:
+        lifecycle_config.autoDeleteTtl = None
+        changed_fields.append('config.lifecycle_config.auto_delete_ttl')
+        changed_config = True
+      if args.no_max_idle:
+        lifecycle_config.idleDeleteTtl = None
+        changed_fields.append('config.lifecycle_config.idle_delete_ttl')
+        changed_config = True
       if changed_config:
         cluster_config.lifecycleConfig = lifecycle_config
         has_changes = True
 
     # Update labels if the user requested it
     labels = None
-    if args.update_labels or args.remove_labels:
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    if labels_diff.MayHaveUpdates():
       has_changes = True
       changed_fields.append('labels')
 
       # We need to fetch cluster first so we know what the labels look like. The
-      # labels_util.UpdateLabels will fill out the proto for us with all the
-      # updates and removals, but first we need to provide the current state
-      # of the labels
+      # labels_util will fill out the proto for us with all the updates and
+      # removals, but first we need to provide the current state of the labels
       get_cluster_request = (
           dataproc.messages.DataprocProjectsRegionsClustersGetRequest(
               projectId=cluster_ref.projectId,
@@ -138,11 +146,8 @@ class Update(base.UpdateCommand):
               clusterName=cluster_ref.clusterName))
       current_cluster = dataproc.client.projects_regions_clusters.Get(
           get_cluster_request)
-      labels = labels_util.UpdateLabels(
-          current_cluster.labels,
-          dataproc.messages.Cluster.LabelsValue,
-          args.update_labels,
-          args.remove_labels)
+      labels = labels_diff.Apply(
+          dataproc.messages.Cluster.LabelsValue, current_cluster.labels)
 
     if not has_changes:
       raise exceptions.ArgumentError(
@@ -235,12 +240,21 @@ class UpdateBeta(Update):
             decommission), and the maximum allowed timeout is 1 day.
             """)
 
-    parser.add_argument(
+    idle_delete_group = parser.add_mutually_exclusive_group()
+    idle_delete_group.add_argument(
         '--max-idle',
         type=arg_parsers.Duration(),
         help="""\
         The duration before cluster is auto-deleted after last job completes,
         such as "30m", "2h" or "1d".
+        """,
+        hidden=True)
+    idle_delete_group.add_argument(
+        '--no-max-idle',
+        action='store_true',
+        help="""\
+        Cancel the cluster scheduled deletion which executes after a sepecified
+        cluster idle period.
         """,
         hidden=True)
 
@@ -253,12 +267,20 @@ class UpdateBeta(Update):
         "2h" or "1d".
         """,
         hidden=True)
-
     auto_delete_group.add_argument(
         '--expiration-time',
         type=arg_parsers.Datetime.Parse,
         help="""\
         The time when cluster will be auto-deleted, such as
         "2017-08-29T18:52:51.142Z"
+        """,
+        hidden=True)
+    auto_delete_group.add_argument(
+        '--no-max-age',
+        action='store_true',
+        help="""\
+        Cancel the cluster scheduled deletion which executes at a specific time
+        or after a fixed specific period. In other words, it cancel the cluster
+        scheduled deletion set by both --max-age and --expiration-time flags.
         """,
         hidden=True)

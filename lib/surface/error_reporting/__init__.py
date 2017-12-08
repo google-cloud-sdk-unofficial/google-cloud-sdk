@@ -14,11 +14,8 @@
 
 """The super-group for the Error Reporting CLI."""
 
-import argparse
-from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -36,6 +33,7 @@ class ErrorReporting(base.Group):
     Returns:
       The updated context.
     """
+    base.DisableUserProjectQuota()
     context['clouderrorreporting_client_v1beta1'] = apis.GetClientInstance(
         'clouderrorreporting', 'v1beta1')
     context['clouderrorreporting_messages_v1beta1'] = apis.GetMessagesModule(

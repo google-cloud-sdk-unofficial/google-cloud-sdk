@@ -20,8 +20,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.command_lib.source import flags
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 _ERROR_FORMAT = ('ResponseError: status=[{status_description}], '
@@ -74,10 +72,7 @@ class Create(base.CreateCommand):
       ToolException: on project initialization errors, on missing billing
         account, and when the repo name is already in use.
     """
-    res = resources.REGISTRY.Parse(
-        args.repository_name,
-        params={'projectsId': properties.VALUES.core.project.GetOrFail},
-        collection='sourcerepo.projects.repos')
+    res = sourcerepo.ParseRepo(args.repository_name)
     # check that the name does not have forbidden characters.
     # we'd like to do this by putting the validator in the flag type, but
     # we cannot for now because it needs to work on the parsed name.

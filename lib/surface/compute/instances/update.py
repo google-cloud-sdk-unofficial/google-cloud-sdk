@@ -62,21 +62,19 @@ class Update(base.UpdateCommand):
         args, holder.resources,
         scope_lister=flags.GetInstanceZoneScopeLister(holder.client))
 
-    update_labels = labels_util.GetUpdateLabelsDictFromArgs(args)
-    remove_labels = labels_util.GetRemoveLabelsListFromArgs(args)
-
     result = None
 
     labels_operation_ref = None
     min_cpu_platform_operation_ref = None
     deletion_protection_operation_ref = None
 
-    if update_labels or remove_labels:
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    if labels_diff.MayHaveUpdates():
       instance = client.instances.Get(
           messages.ComputeInstancesGetRequest(**instance_ref.AsDict()))
       result = instance
       labels_operation_ref = self._GetLabelsOperationRef(
-          update_labels, remove_labels, instance, instance_ref, holder)
+          labels_diff, instance, instance_ref, holder)
     if hasattr(args, 'min_cpu_platform') and args.min_cpu_platform is not None:
       min_cpu_platform_operation_ref = self._GetMinCpuPlatformOperationRef(
           args.min_cpu_platform, instance_ref, holder)
@@ -99,16 +97,13 @@ class Update(base.UpdateCommand):
         instance_ref.Name(), args.deletion_protection) or result
     return result
 
-  def _GetLabelsOperationRef(self, update_labels, remove_labels, instance,
-                             instance_ref, holder):
+  def _GetLabelsOperationRef(self, labels_diff, instance, instance_ref, holder):
     client = holder.client.apitools_client
     messages = holder.client.messages
 
-    replacement = labels_util.UpdateLabels(
-        instance.labels,
+    replacement = labels_diff.Apply(
         messages.InstancesSetLabelsRequest.LabelsValue,
-        update_labels=update_labels,
-        remove_labels=remove_labels)
+        instance.labels)
 
     if replacement:
       request = messages.ComputeInstancesSetLabelsRequest(

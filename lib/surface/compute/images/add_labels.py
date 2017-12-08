@@ -50,10 +50,8 @@ class ImagesAddLabels(base.UpdateCommand):
     image = client.images.Get(
         messages.ComputeImagesGetRequest(**image_ref.AsDict()))
 
-    replacement = labels_util.UpdateLabels(
-        image.labels,
-        messages.GlobalSetLabelsRequest.LabelsValue,
-        update_labels=add_labels)
+    replacement = labels_util.Diff(additions=add_labels).Apply(
+        messages.GlobalSetLabelsRequest.LabelsValue, image.labels)
 
     if not replacement:
       return image

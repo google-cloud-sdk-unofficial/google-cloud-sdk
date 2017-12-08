@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """The main command group for cloud source command group."""
 
 from googlecloudsdk.api_lib.source import source
@@ -39,7 +38,6 @@ class Source(base.Group):
     Returns:
       The updated context.
     """
+    base.DisableUserProjectQuota()
     source.Source.SetResourceParser(resources.REGISTRY)
     source.Source.SetApiEndpoint()
-    sourcerepo.Source.SetResourceParser(resources.REGISTRY)
-    sourcerepo.Source.SetApiEndpoint()

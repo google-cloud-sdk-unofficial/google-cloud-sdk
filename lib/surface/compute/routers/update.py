@@ -52,7 +52,7 @@ class UpdateAlpha(base.UpdateCommand):
     existing_mode = replacement.bgp.advertiseMode
 
     if router_utils.HasReplaceAdvertisementFlags(args):
-      mode, groups, prefixes = router_utils.ParseAdvertisements(
+      mode, groups, ranges = router_utils.ParseAdvertisements(
           messages=messages, resource_class=messages.RouterBgp, args=args)
 
       router_utils.PromptIfSwitchToDefaultMode(
@@ -64,7 +64,7 @@ class UpdateAlpha(base.UpdateCommand):
       attrs = {
           'advertiseMode': mode,
           'advertisedGroups': groups,
-          'advertisedPrefixs': prefixes,
+          'advertisedIpRanges': ranges,
       }
 
       for attr, value in attrs.items():
@@ -98,7 +98,7 @@ class UpdateAlpha(base.UpdateCommand):
       if args.add_advertisement_ranges:
         ip_ranges_to_add = routers_utils.ParseIpRanges(
             messages=messages, ip_ranges=args.add_advertisement_ranges)
-        replacement.bgp.advertisedPrefixs.extend(ip_ranges_to_add)
+        replacement.bgp.advertisedIpRanges.extend(ip_ranges_to_add)
 
       if args.remove_advertisement_ranges:
         router_utils.RemoveIpRangesFromAdvertisements(
@@ -111,8 +111,8 @@ class UpdateAlpha(base.UpdateCommand):
     cleared_fields = []
     if not replacement.bgp.advertisedGroups:
       cleared_fields.append('bgp.advertisedGroups')
-    if not replacement.bgp.advertisedPrefixs:
-      cleared_fields.append('bgp.advertisedPrefixs')
+    if not replacement.bgp.advertisedIpRanges:
+      cleared_fields.append('bgp.advertisedIpRanges')
 
     with holder.client.apitools_client.IncludeFields(cleared_fields):
       request_type = messages.ComputeRoutersPatchRequest

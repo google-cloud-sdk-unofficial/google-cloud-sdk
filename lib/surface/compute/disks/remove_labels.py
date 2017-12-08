@@ -71,12 +71,11 @@ class RemoveLabels(base.UpdateCommand):
         for label in disk.labels.additionalProperties:
           remove_labels[label.key] = label.value
 
+    labels_diff = labels_util.Diff(subtractions=remove_labels)
     if disk_ref.Collection() == 'compute.disks':
       operation_collection = 'compute.zoneOperations'
-      replacement = labels_util.UpdateLabels(
-          disk.labels,
-          messages.ZoneSetLabelsRequest.LabelsValue,
-          remove_labels=remove_labels)
+      replacement = labels_diff.Apply(messages.ZoneSetLabelsRequest.LabelsValue,
+                                      disk.labels)
       request = messages.ComputeDisksSetLabelsRequest(
           project=disk_ref.project,
           resource=disk_ref.disk,
@@ -86,10 +85,8 @@ class RemoveLabels(base.UpdateCommand):
               labels=replacement))
     else:
       operation_collection = 'compute.regionOperations'
-      replacement = labels_util.UpdateLabels(
-          disk.labels,
-          messages.RegionSetLabelsRequest.LabelsValue,
-          remove_labels=remove_labels)
+      replacement = labels_diff.Apply(
+          messages.RegionSetLabelsRequest.LabelsValue, disk.labels)
       request = messages.ComputeRegionDisksSetLabelsRequest(
           project=disk_ref.project,
           resource=disk_ref.disk,

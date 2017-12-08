@@ -29,3 +29,7 @@ from googlecloudsdk.calliope import base
 class Genomics(base.Group):
   """Manage Genomics resources using version 1 of the API."""
 
+  def Filter(self, context, args):
+    del context, args
+    base.DisableUserProjectQuota()
+

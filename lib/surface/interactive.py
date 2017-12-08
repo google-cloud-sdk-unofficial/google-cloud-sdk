@@ -29,7 +29,7 @@ from googlecloudsdk.core.document_renderers import render_document
 _FEATURES = """
 * auto-completion for *gcloud* commands, flags and resource arguments
 * support for other CLIs including *bq*, *gsutil* and *kubectl*
-* state preserved across commands: *cd*, local and environment variables
+* state preservation across commands: *cd*, local and environment variables
 """
 
 _SPLASH = """
@@ -93,7 +93,7 @@ class Interactive(base.Command):
   *Command Input*::
 
   Commands are typed, completed and edited in this section. The default prompt
-  is "$ ". If a context has been set then its tokens are prepopulated before
+  is "$ ". If a context has been set, then its tokens are prepopulated before
   the cursor.
 
   *Active Help*::
@@ -103,7 +103,7 @@ class Interactive(base.Command):
 
   *Status Display*::
 
-  Contains the current *gcloud* project and user.
+  Current *gcloud* project and user information displayed in this section.
 
   *Function Keys*::
 
@@ -128,16 +128,16 @@ class Interactive(base.Command):
   command line being entered at the prompt.
 
   *^C*:::
-  If a command is currently running then that command is interrupted, usually
-  causing the command to terminate. Otherwise ^C clears the current command
-  line.
+  If a command is currently running, then that command is interrupted. This
+  terminates the command. Otherwise, if no command is running, ^C clears the
+  current command line.
 
   *^D*:::
   Exits when entered as the first character at the command prompt. You can
   also run the *exit* command at the prompt.
 
   *^W*:::
-  If a command is not currently running then the last word on the command line
+  If a command is not currently running, then the last word on the command line
   is deleted. This is handy for "walking back" partial completions.
 
   ### Command history
@@ -172,15 +172,42 @@ class Interactive(base.Command):
   settings.
   {properties}
 
+  ### CLI Trees
+
+  *{command}* uses CLI tree data files for typeahead, command line completion
+  and help snippet generation. A few CLI trees are installed with their
+  respective Cloud SDK components: *gcloud* (core component), *bq*, *gsutil*,
+  and *kubectl*.
+
+  By default, CLI trees for other commands are JSON files generated on demand
+  from their *man*(1) or *man7.org* man pages. They are cached in the *cli*
+  subdirectory of the global config directory:
+
+    $(gcloud info --format="value(config.paths.global_config_dir)")/cli
+
+  The generated trees are a close approximation. You can construct your own,
+  especially for hierarchical CLIs like *git*(1) that are hard to extract
+  from man pages. See `$ gcloud topic cli-trees` for details.
+
+  Run this command to list the current CLI trees in your project:
+
+      $ gcloud meta cli-trees list
+
+  ## EXAMPLES
+
+  Run *{command}* with the command context set to "gcloud ":
+
+      {command} --context="gcloud "
+
   ## NOTES
 
   Although the goal is to provide the same experience across all platforms,
   the underlying open-source libraries are biased in this decreasing order:
-  *linux*, *macos*, *Windows*. As the alpha implementation matures the platform
-  differences will subside.
+  *linux*, *macos*, *Windows*. As the alpha implementation matures, the
+  platform differences will subside.
 
-  For a *bash*(1) experience on *Windows* install *git*(1) and the *git*
-  (MinGW) *bash* will be used.
+  On *Windows* install *git*(1) for a *bash*(1) experience. *{command}*
+  will then use the *git* (MinGW) *bash* instead of *cmd.exe*.
 
   Please run *$ gcloud feedback* to report bugs or request new features.
   """
@@ -225,4 +252,4 @@ class Interactive(base.Command):
         prompt=args.prompt,
         suggest=args.suggest,
     )
-    application.main(cli=self._cli_power_users_only, args=args, config=config)
+    application.main(args=args, config=config)

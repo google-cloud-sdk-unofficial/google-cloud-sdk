@@ -81,7 +81,6 @@ class DeployBeta(base.SilentCommand):
     return deploy_util.RunDeploy(
         args,
         api_client,
-        enable_endpoints=True,
         use_beta_stager=True,
         runtime_builder_strategy=runtime_builder_strategy,
         parallel_build=True)

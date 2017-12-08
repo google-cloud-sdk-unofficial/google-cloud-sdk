@@ -48,15 +48,11 @@ class Update(base.UpdateCommand):
     client = topics.TopicsClient()
     topic_ref = util.ParseTopic(args.topic)
 
-    update_labels = labels_util.GetUpdateLabelsDictFromArgs(args)
-    remove_labels = labels_util.GetRemoveLabelsListFromArgs(args)
-    if update_labels or remove_labels:
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    if labels_diff.MayHaveUpdates():
       original_topic = client.Get(topic_ref)
-      labels = labels_util.UpdateLabels(
-          original_topic.labels,
-          client.messages.Topic.LabelsValue,
-          update_labels=update_labels,
-          remove_labels=remove_labels)
+      labels = labels_diff.Apply(
+          client.messages.Topic.LabelsValue, original_topic.labels)
     else:
       labels = None
     result = client.Patch(topic_ref, labels=labels)

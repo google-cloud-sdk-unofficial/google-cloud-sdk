@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.container import container_command_util
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.command_lib.container import messages
 from googlecloudsdk.core import log
@@ -185,8 +186,10 @@ class Update(base.UpdateCommand):
     flags.AddRemoveLabelsFlag(group, suppressed=True)
     flags.AddNetworkPolicyFlags(group, hidden=True)
     flags.AddLoggingServiceFlag(group, hidden=True)
-    flags.AddEnableAuditLoggingFlag(group, hidden=True)
     flags.AddMaintenanceWindowFlag(group, hidden=True, add_unset_text=True)
+
+  def ParseUpdateOptions(self, args, locations):
+    return container_command_util.ParseUpdateOptionsBase(args, locations)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -322,23 +325,11 @@ class Update(base.UpdateCommand):
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     else:
-      enable_master_authorized_networks = args.enable_master_authorized_networks
-
       if args.enable_legacy_authorization is not None:
         op_ref = adapter.SetLegacyAuthorization(
             cluster_ref, args.enable_legacy_authorization)
       else:
-        options = api_adapter.UpdateClusterOptions(
-            monitoring_service=args.monitoring_service,
-            disable_addons=args.disable_addons,
-            enable_autoscaling=args.enable_autoscaling,
-            min_nodes=args.min_nodes,
-            max_nodes=args.max_nodes,
-            node_pool=args.node_pool,
-            locations=locations,
-            enable_master_authorized_networks=enable_master_authorized_networks,
-            master_authorized_networks=args.master_authorized_networks,
-            enable_audit_logging=args.enable_audit_logging)
+        options = self.ParseUpdateOptions(args, locations)
         op_ref = adapter.UpdateCluster(cluster_ref, options)
 
     if not args.async:
@@ -376,7 +367,6 @@ class UpdateBeta(Update):
     flags.AddRemoveLabelsFlag(group)
     flags.AddNetworkPolicyFlags(group)
     flags.AddLoggingServiceFlag(group)
-    flags.AddEnableAuditLoggingFlag(group, hidden=True)
     flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
 
 
@@ -401,5 +391,14 @@ class UpdateAlpha(Update):
     flags.AddRemoveLabelsFlag(group)
     flags.AddNetworkPolicyFlags(group, hidden=False)
     flags.AddLoggingServiceFlag(group)
-    flags.AddEnableAuditLoggingFlag(group, hidden=True)
+    flags.AddAutoprovisioningFlags(parser, group, hidden=True)
     flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
+
+  def ParseUpdateOptions(self, args, locations):
+    opts = container_command_util.ParseUpdateOptionsBase(args, locations)
+    opts.enable_autoprovisioning = args.enable_autoprovisioning
+    opts.min_cpu = args.min_cpu
+    opts.max_cpu = args.max_cpu
+    opts.min_memory = args.min_memory
+    opts.max_memory = args.max_memory
+    return opts

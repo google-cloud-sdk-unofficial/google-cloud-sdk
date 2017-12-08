@@ -14,8 +14,6 @@
 """Describe Google Cloud Platform git repository."""
 from googlecloudsdk.api_lib.source.repos import sourcerepo
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA,
@@ -53,9 +51,6 @@ class Describe(base.DescribeCommand):
     Raises:
       ToolException: on project initialization errors.
     """
-    res = resources.REGISTRY.Parse(
-        args.repository_name,
-        params={'projectsId': properties.VALUES.core.project.GetOrFail},
-        collection='sourcerepo.projects.repos')
+    res = sourcerepo.ParseRepo(args.repository_name)
     sourcerepo_handler = sourcerepo.Source()
     return sourcerepo_handler.GetRepo(res)

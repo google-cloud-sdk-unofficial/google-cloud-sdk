@@ -14,8 +14,6 @@
 """Gets the IAM policy for the repository."""
 from googlecloudsdk.api_lib.source.repos import sourcerepo
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA,
@@ -50,9 +48,6 @@ class GetIamPolicy(base.ListCommand):
     Raises:
       ToolException: on project initialization errors.
     """
-    res = resources.REGISTRY.Parse(
-        args.repository_name,
-        params={'projectsId': properties.VALUES.core.project.GetOrFail},
-        collection='sourcerepo.projects.repos')
+    res = sourcerepo.ParseRepo(args.repository_name)
     source = sourcerepo.Source()
     return source.GetIamPolicy(res)

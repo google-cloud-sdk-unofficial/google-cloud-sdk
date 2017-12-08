@@ -45,4 +45,4 @@ class Shell(base.Command):
     if not args.quiet:
       render_document.RenderDocument(fin=StringIO.StringIO(_SPLASH))
     config = configuration.Config(context='gcloud ')
-    application.main(cli=self._cli_power_users_only, args=args, config=config)
+    application.main(args=args, config=config)

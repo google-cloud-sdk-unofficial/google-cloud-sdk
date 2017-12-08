@@ -1,4 +1,4 @@
-# Copyright 2015 Google Inc. All Rights Reserved.
+# Copyright 2017 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,26 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Resource definitions for cloud platform apis."""
-
-import enum
-
-
-BASE_URL = 'https://serviceuser.googleapis.com/v1/'
+"""Command group for Cloud Scheduler jobs."""
+from googlecloudsdk.calliope import base
 
 
-class Collections(enum.Enum):
-  """Collections for all supported apis."""
-
-  OPERATIONS = (
-      'operations',
-      'operations/{operationsId}',
-      {},
-      [u'operationsId']
-  )
-
-  def __init__(self, collection_name, path, flat_paths, params):
-    self.collection_name = collection_name
-    self.path = path
-    self.flat_paths = flat_paths
-    self.params = params
+class Jobs(base.Group):
+  """Manage Cloud Scheduler jobs."""

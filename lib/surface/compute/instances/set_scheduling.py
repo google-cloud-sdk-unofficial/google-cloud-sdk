@@ -26,8 +26,8 @@ class SetSchedulingInstances(base.SilentCommand):
   Engine virtual machines.
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     parser.add_argument(
         '--restart-on-failure',
         action='store_true',
@@ -37,7 +37,8 @@ class SetSchedulingInstances(base.SilentCommand):
         Engine.  This does not affect terminations performed by the user.
         """)
 
-    flags.AddMaintenancePolicyArgs(parser)
+    is_alpha = cls.ReleaseTrack() in [base.ReleaseTrack.ALPHA]
+    flags.AddMaintenancePolicyArgs(parser, deprecate=is_alpha)
     flags.INSTANCE_ARG.AddArgument(parser)
 
   def Run(self, args):

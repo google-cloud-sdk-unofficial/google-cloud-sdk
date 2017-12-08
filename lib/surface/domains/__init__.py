@@ -41,3 +41,7 @@ class Domains(base.Group):
             $ {command} list-user-verified
           """
   }
+
+  def Filter(self, context, args):
+    del context, args
+    base.DisableUserProjectQuota()

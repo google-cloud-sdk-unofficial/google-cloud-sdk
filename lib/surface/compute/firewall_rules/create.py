@@ -21,12 +21,14 @@ from googlecloudsdk.command_lib.compute.networks import flags as network_flags
 from googlecloudsdk.core.console import progress_tracker
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a Google Compute Engine firewall rule.
 
   *{command}* is used to create firewall rules to allow/deny
   incoming/outgoing traffic.
   """
+  with_disabled = False
 
   FIREWALL_RULE_ARG = None
   NETWORK_ARG = None
@@ -42,7 +44,8 @@ class Create(base.CreateCommand):
         parser,
         for_update=False,
         with_egress_support=True,
-        with_service_account=True)
+        with_service_account=True,
+        with_disabled=cls.with_disabled)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=False)
 
   def _CreateFirewall(self, holder, args):
@@ -112,3 +115,20 @@ class Create(base.CreateCommand):
     with progress_tracker.ProgressTracker('Creating firewall'):
       return client.MakeRequests([(client.apitools_client.firewalls, 'Insert',
                                    request)])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaCreate(Create):
+  """Create a Google Compute Engine firewall rule.
+
+  *{command}* is used to create firewall rules to allow/deny
+  incoming/outgoing traffic.
+  """
+  with_disabled = True
+
+  def _CreateFirewall(self, holder, args):
+    firewall, project = super(AlphaCreate, self)._CreateFirewall(holder, args)
+    if args.disabled is not None:
+      firewall.disabled = args.disabled
+
+    return firewall, project

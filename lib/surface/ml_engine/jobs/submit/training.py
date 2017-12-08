@@ -31,7 +31,7 @@ def _AddSubmitTrainingArgs(parser):
   flags.STAGING_BUCKET.AddToParser(parser)
   flags.GetJobDirFlag(upload_help=True).AddToParser(parser)
   flags.GetUserArgs(local=False).AddToParser(parser)
-  flags.SCALE_TIER.AddToParser(parser)
+  jobs_util.ScaleTierFlagMap().choice_arg.AddToParser(parser)
   flags.RUNTIME_VERSION.AddToParser(parser)
 
   sync_group = parser.add_mutually_exclusive_group()
@@ -62,13 +62,16 @@ class Train(base.Command):
 
   def Run(self, args):
     stream_logs = jobs_util.GetStreamLogs(args.async, args.stream_logs)
+    scale_tier = jobs_util.ScaleTierFlagMap().GetEnumForChoice(args.scale_tier)
+    scale_tier_name = scale_tier.name if scale_tier else None
     job = jobs_util.SubmitTraining(
-        jobs.JobsClient(), args.job,
+        jobs.JobsClient(),
+        args.job,
         job_dir=args.job_dir,
         staging_bucket=args.staging_bucket,
         packages=args.packages,
         package_path=args.package_path,
-        scale_tier=args.scale_tier,
+        scale_tier=scale_tier_name,
         config=args.config,
         module_name=args.module_name,
         runtime_version=args.runtime_version,

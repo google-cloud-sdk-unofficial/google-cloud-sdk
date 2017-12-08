@@ -31,7 +31,7 @@ class Pull(base.ListCommand):
       table[box](
         message.data.decode(base64),
         message.messageId,
-        message.attributes.list(separator=' '),
+        message.attributes.list(separator='\n'),
         ackId.if(NOT auto_ack)
       )
     """)

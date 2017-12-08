@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.instances import flags as instances_flag
 from googlecloudsdk.core import log
 
 
-def _Args(parser):
+def _Args(parser, release_track):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
@@ -37,7 +37,8 @@ def _Args(parser):
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(parser, instances=False)
   instances_flags.AddMachineTypeArgs(parser)
-  instances_flags.AddMaintenancePolicyArgs(parser)
+  deprecate_maintenance_policy = release_track in [base.ReleaseTrack.ALPHA]
+  instances_flags.AddMaintenancePolicyArgs(parser, deprecate_maintenance_policy)
   instances_flags.AddNoRestartOnFailureArgs(parser)
   instances_flags.AddPreemptibleVmArgs(parser)
   instances_flags.AddServiceAccountAndScopeArgs(parser, False)
@@ -69,7 +70,7 @@ class CreateWithContainer(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    _Args(parser)
+    _Args(parser, base.ReleaseTrack.BETA)
 
   def _ValidateBetaArgs(self, args):
     instances_flags.ValidateKonletArgs(args)
@@ -241,7 +242,7 @@ class CreateWithContainerAlpha(CreateWithContainer):
 
   @staticmethod
   def Args(parser):
-    _Args(parser)
+    _Args(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddNetworkTierArgs(parser, instance=True)
 
   def _GetNetworkInterface(self, args, client, holder):

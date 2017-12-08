@@ -16,7 +16,6 @@
 
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
 
 
 _WARNING = ('The `service-management` command group has been replaced by '
@@ -50,7 +49,9 @@ class ServiceManagement(base.Group):
     Returns:
       The updated context.
     """
-
+    # Don't ever take this off. Use gcloud quota so that you can enable APIs
+    # on your own project before you have API access on that project.
+    base.DisableUserProjectQuota()
     context['servicemanagement-v1'] = apis.GetClientInstance(
         'servicemanagement', 'v1')
     context['servicemanagement-v1-messages'] = apis.GetMessagesModule(

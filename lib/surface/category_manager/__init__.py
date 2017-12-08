@@ -25,5 +25,6 @@ class DataPolEAP(base.Group):
   data objects in cloud storage.
   """
 
-  def __init__(self):
-    pass
+  def Filter(self, context, args):
+    del context, args
+    base.DisableUserProjectQuota()

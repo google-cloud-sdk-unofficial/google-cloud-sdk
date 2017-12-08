@@ -17,8 +17,6 @@ from googlecloudsdk.api_lib.source.repos import sourcerepo
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 from googlecloudsdk.core.credentials import store as c_store
 
 
@@ -80,20 +78,13 @@ class CloneGA(base.Command):
     Args:
       args: argparse.Namespace, the arguments this command is run with.
 
-    Raises:
-      ToolException: on project initialization errors.
-      RepoCreationError: on repo creation errors.
-
     Returns:
       The path to the new git repository.
     """
     # Ensure that we're logged in.
     c_store.Load()
 
-    res = resources.REGISTRY.Parse(
-        args.src,
-        params={'projectsId': properties.VALUES.core.project.GetOrFail},
-        collection='sourcerepo.projects.repos')
+    res = sourcerepo.ParseRepo(args.src)
     source_handler = sourcerepo.Source()
 
     repo = source_handler.GetRepo(res)

@@ -64,10 +64,9 @@ class SnapshotsAddLabels(base.UpdateCommand):
     snapshot = client.snapshots.Get(
         messages.ComputeSnapshotsGetRequest(**snapshot_ref.AsDict()))
 
-    replacement = labels_util.UpdateLabels(
-        snapshot.labels,
+    replacement = labels_util.Diff(additions=add_labels).Apply(
         messages.GlobalSetLabelsRequest.LabelsValue,
-        update_labels=add_labels)
+        snapshot.labels)
 
     if not replacement:
       return snapshot

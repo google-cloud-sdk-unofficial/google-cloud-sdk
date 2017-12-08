@@ -63,9 +63,8 @@ class Update(base.UpdateCommand):
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
 
-    update_labels = labels_util.GetUpdateLabelsDictFromArgs(args)
-    remove_labels = labels_util.GetRemoveLabelsListFromArgs(args)
-    if update_labels is None and remove_labels is None:
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    if not labels_diff.MayHaveUpdates():
       raise calliope_exceptions.RequiredArgumentException(
           'LABELS', 'At least one of --update-labels or '
           '--remove-labels must be specified.')
@@ -81,11 +80,7 @@ class Update(base.UpdateCommand):
               **address_ref.AsDict()))
       labels_value = messages.RegionSetLabelsRequest.LabelsValue
 
-    replacement = labels_util.UpdateLabels(
-        address.labels,
-        labels_value,
-        update_labels=update_labels,
-        remove_labels=remove_labels)
+    replacement = labels_diff.Apply(labels_value, address.labels)
 
     if not replacement:
       return address

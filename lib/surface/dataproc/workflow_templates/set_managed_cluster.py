@@ -143,9 +143,8 @@ class SetManagedCluster(base.UpdateCommand):
         args, dataproc, template.projectsId, compute_resources,
         use_accelerators, use_auto_delete_ttl)
 
-    labels = labels_util.UpdateLabels(
-        None, dataproc.messages.ManagedCluster.LabelsValue,
-        labels_util.GetUpdateLabelsDictFromArgs(args), None)
+    labels = labels_util.Diff.FromCreateArgs(args).Apply(
+        dataproc.messages.ManagedCluster.LabelsValue)
 
     managed_cluster = dataproc.messages.ManagedCluster(
         clusterName=cluster_name, config=cluster_config, labels=labels)

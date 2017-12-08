@@ -365,9 +365,11 @@ class Deploy(base.Command):
     if timeout_sec:
       function.timeout = str(timeout_sec) + 's'
     if trigger_http:
+      function.eventTrigger = None
       function.httpsTrigger = messages.HttpsTrigger()
     elif trigger_params:
       function.eventTrigger = self._EventTrigger(**trigger_params)
+      function.httpsTrigger = None
     if retry:
       function.eventTrigger.failurePolicy = messages.FailurePolicy()
       function.eventTrigger.failurePolicy.retry = messages.Retry()
@@ -436,9 +438,10 @@ class Deploy(base.Command):
     # Set information about deplouyment tool.
     labels_to_update = args.update_labels or {}
     labels_to_update['deployment-tool'] = 'cli-gcloud'
-    updated_labels = labels_util.UpdateLabels(
-        base_function.labels, messages.CloudFunction.LabelsValue,
-        update_labels=labels_to_update, remove_labels=args.remove_labels)
+    labels_diff = labels_util.Diff(additions=labels_to_update,
+                                   subtractions=args.remove_labels)
+    updated_labels = labels_diff.Apply(messages.CloudFunction.LabelsValue,
+                                       base_function.labels)
     if updated_labels is not None:
       base_function.labels = updated_labels
 

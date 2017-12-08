@@ -1,0 +1,13 @@
+- help_text:
+    brief: Delete a job.
+    DESCRIPTION: Delete a job.
+
+  request:
+    collection: cloudscheduler.projects.locations.jobs
+
+  arguments:
+    resource:
+      help_text: The job you want to delete.
+      params:
+        - _COMMON_: args.location
+        - _COMMON_: args.job

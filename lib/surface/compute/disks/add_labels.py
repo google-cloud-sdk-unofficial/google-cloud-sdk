@@ -66,10 +66,8 @@ class AddLabels(base.UpdateCommand):
 
     if disk_ref.Collection() == 'compute.disks':
       operation_collection = 'compute.zoneOperations'
-      replacement = labels_util.UpdateLabels(
-          disk.labels,
-          messages.ZoneSetLabelsRequest.LabelsValue,
-          update_labels=add_labels)
+      replacement = labels_util.Diff(additions=add_labels).Apply(
+          messages.ZoneSetLabelsRequest.LabelsValue, disk.labels)
       request = messages.ComputeDisksSetLabelsRequest(
           project=disk_ref.project,
           resource=disk_ref.disk,
@@ -79,10 +77,8 @@ class AddLabels(base.UpdateCommand):
               labels=replacement))
     else:
       operation_collection = 'compute.regionOperations'
-      replacement = labels_util.UpdateLabels(
-          disk.labels,
-          messages.RegionSetLabelsRequest.LabelsValue,
-          update_labels=add_labels)
+      replacement = labels_util.Diff(additions=add_labels).Apply(
+          messages.RegionSetLabelsRequest.LabelsValue, disk.labels)
       request = messages.ComputeRegionDisksSetLabelsRequest(
           project=disk_ref.project,
           resource=disk_ref.disk,

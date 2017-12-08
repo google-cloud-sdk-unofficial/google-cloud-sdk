@@ -47,6 +47,10 @@ def _Args(parser, release_track):
     # Deprecated as of Aug 2017.
     flags.MakeForceCreateArg().AddToParser(parser)
 
+  # Alpha Args
+  if release_track == base.ReleaseTrack.ALPHA:
+    flags.AddCreatingImageFromSnapshotArgs(parser, sources_group)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
@@ -54,12 +58,10 @@ class Create(base.CreateCommand):
 
   _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = False
 
-  _GUEST_OS_FEATURES = image_utils.GUEST_OS_FEATURES
-
   @classmethod
   def Args(cls, parser):
     _Args(parser, cls.ReleaseTrack())
-    flags.AddGuestOsFeaturesArg(parser, cls._GUEST_OS_FEATURES)
+    image_utils.AddGuestOsFeaturesArg(parser, cls.ReleaseTrack())
 
   def Run(self, args):
     """Returns a list of requests necessary for adding images."""
@@ -124,6 +126,14 @@ class Create(base.CreateCommand):
       image.sourceDisk = source_disk_ref.SelfLink()
       image.sourceDiskEncryptionKey = csek_utils.MaybeLookupKeyMessage(
           csek_keys, source_disk_ref, client.apitools_client)
+    elif hasattr(args, 'source_snapshot') and args.source_snapshot:
+      source_snapshot_ref = flags.SOURCE_SNAPSHOT_ARG.ResolveAsResource(
+          args,
+          holder.resources,
+          scope_lister=compute_flags.GetDefaultScopeLister(client))
+      image.sourceSnapshot = source_snapshot_ref.SelfLink()
+      image.sourceSnapshotEncryptionKey = csek_utils.MaybeLookupKeyMessage(
+          csek_keys, source_snapshot_ref, client.apitools_client)
 
     if args.licenses:
       image.licenses = args.licenses
@@ -165,31 +175,30 @@ class CreateBeta(Create):
   # alpha/beta, *not* GA.
   _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = True
 
-  _GUEST_OS_FEATURES = image_utils.GUEST_OS_FEATURES_BETA
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
 
-  _GUEST_OS_FEATURES = image_utils.GUEST_OS_FEATURES_ALPHA
-
   @classmethod
   def Args(cls, parser):
     _Args(parser, cls.ReleaseTrack())
-    flags.AddGuestOsFeaturesArg(parser, cls._GUEST_OS_FEATURES)
+    image_utils.AddGuestOsFeaturesArg(parser, cls.ReleaseTrack())
     kms_utils.AddKmsKeyArgs(parser, resource_type='image')
 
 
 Create.detailed_help = {
-    'brief': 'Create Google Compute Engine images',
-    'DESCRIPTION': """\
+    'brief':
+        'Create Google Compute Engine images',
+    'DESCRIPTION':
+        """\
         *{command}* is used to create custom disk images.
         The resulting image can be provided during instance or disk creation
         so that the instance attached to the resulting disks has access
         to a known set of software or files from the image.
 
         Images can be created from gzipped compressed tarball containing raw
-        disk data or from existing disks in any zone.
+        disk data, existing disks in any zone, existing images, and existing
+        snapshots inside the same project.
 
         Images are global resources, so they can be used across zones and
         projects.

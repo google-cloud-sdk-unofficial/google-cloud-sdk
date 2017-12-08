@@ -83,7 +83,8 @@ def _CommonArgs(parser,
       support_network_tier=support_network_tier)
   instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
-  instances_flags.AddMaintenancePolicyArgs(parser)
+  deprecate_maintenance_policy = release_track in [base.ReleaseTrack.ALPHA]
+  instances_flags.AddMaintenancePolicyArgs(parser, deprecate_maintenance_policy)
   instances_flags.AddNoRestartOnFailureArgs(parser)
   instances_flags.AddPreemptibleVmArgs(parser)
   instances_flags.AddServiceAccountAndScopeArgs(parser, False)

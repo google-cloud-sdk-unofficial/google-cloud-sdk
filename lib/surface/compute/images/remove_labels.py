@@ -55,10 +55,9 @@ class ImagesRemoveLabels(base.UpdateCommand):
         for label in image.labels.additionalProperties:
           remove_labels[label.key] = label.value
 
-    replacement = labels_util.UpdateLabels(
-        image.labels,
+    replacement = labels_util.Diff(subtractions=remove_labels).Apply(
         messages.GlobalSetLabelsRequest.LabelsValue,
-        remove_labels=remove_labels)
+        image.labels)
     request = messages.ComputeImagesSetLabelsRequest(
         project=image_ref.project,
         resource=image_ref.image,

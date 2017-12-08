@@ -100,7 +100,7 @@ class UpdateBgpPeerAlpha(base.UpdateCommand):
     peer = _UpdateBgpPeer(replacement, args)
 
     if router_utils.HasReplaceAdvertisementFlags(args):
-      mode, groups, prefixes = router_utils.ParseAdvertisements(
+      mode, groups, ranges = router_utils.ParseAdvertisements(
           messages=messages, resource_class=messages.RouterBgpPeer, args=args)
 
       router_utils.PromptIfSwitchToDefaultMode(
@@ -112,7 +112,7 @@ class UpdateBgpPeerAlpha(base.UpdateCommand):
       attrs = {
           'advertiseMode': mode,
           'advertisedGroups': groups,
-          'advertisedPrefixs': prefixes,
+          'advertisedIpRanges': ranges,
       }
 
       for attr, value in attrs.items():
@@ -146,7 +146,7 @@ class UpdateBgpPeerAlpha(base.UpdateCommand):
       if args.add_advertisement_ranges:
         ip_ranges_to_add = routers_utils.ParseIpRanges(
             messages=messages, ip_ranges=args.add_advertisement_ranges)
-        peer.advertisedPrefixs.extend(ip_ranges_to_add)
+        peer.advertisedIpRanges.extend(ip_ranges_to_add)
 
       if args.remove_advertisement_ranges:
         router_utils.RemoveIpRangesFromAdvertisements(

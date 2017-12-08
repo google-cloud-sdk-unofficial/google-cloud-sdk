@@ -39,9 +39,8 @@ class Create(base.CreateCommand):
 
     workflow_template = messages.WorkflowTemplate(
         id=args.template, name=template_ref.RelativeName())
-    labels = labels_util.UpdateLabels(
-        None, messages.WorkflowTemplate.LabelsValue,
-        labels_util.GetUpdateLabelsDictFromArgs(args), None)
+    labels = labels_util.Diff.FromCreateArgs(args).Apply(
+        messages.WorkflowTemplate.LabelsValue)
     workflow_template.labels = labels
 
     request = messages.DataprocProjectsRegionsWorkflowTemplatesCreateRequest(

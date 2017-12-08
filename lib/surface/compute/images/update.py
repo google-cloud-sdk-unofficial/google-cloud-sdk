@@ -67,11 +67,8 @@ class Update(base.UpdateCommand):
     image = client.images.Get(
         messages.ComputeImagesGetRequest(**image_ref.AsDict()))
 
-    replacement = labels_util.UpdateLabels(
-        image.labels,
-        messages.GlobalSetLabelsRequest.LabelsValue,
-        update_labels=update_labels,
-        remove_labels=remove_labels)
+    replacement = labels_util.Diff(update_labels, remove_labels).Apply(
+        messages.GlobalSetLabelsRequest.LabelsValue, image.labels)
 
     if not replacement:
       return image

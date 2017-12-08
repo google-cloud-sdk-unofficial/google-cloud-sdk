@@ -1,0 +1,104 @@
+- help_text:
+    brief: Create a Cloud Scheduler job with an App Engine target.
+    DESCRIPTION: Create a Cloud Scheduler job with an App Engine target.
+
+  request:
+    collection: cloudscheduler.projects.locations.jobs
+    method: create
+    modify_request_hooks:
+      - googlecloudsdk.command_lib.scheduler.util:ModifyCreateJobRequest
+
+  arguments:
+    resource:
+      help_text: The ID of the job to create.
+      params:
+        - _COMMON_: args.location
+        - _COMMON_: args.job
+          api_field: job.name
+    params:
+      - _COMMON_: args.schedule
+      - _COMMON_: args.timezone
+      - api_field: job.appEngineHttpTarget.retryConfig.retryCount
+        arg_name: max-attempts
+        default: 0
+        help_text: |
+          Int, the number of times to retry the request if it fails or times
+          out. Must be in range 0-5 inclusive.
+      - api_field: job.appEngineHttpTarget.retryConfig.jobAgeLimit
+        arg_name: max-retry-duration
+        type: googlecloudsdk.core.util.times:ParseDuration
+        processor: googlecloudsdk.core.util.times:FormatDurationForJson
+        help_text: |
+          The time limit for retrying a failed task, measured from when the task
+          was first run. If specified with `--max-attempts`, the task will be
+          retried until both limits are reached. Default is 0 (which means
+          unlimited)
+      - api_field: job.appEngineHttpTarget.retryConfig.minBackoffSeconds
+        arg_name: min-backoff
+        type: googlecloudsdk.core.util.times:ParseDuration
+        processor: googlecloudsdk.core.util.times:FormatDurationForJson
+        default: 0.1s
+        help_text: |
+          Duration, the minimum amount of time to wait before retrying a task
+          after it fails. Ex. `10s` (default is `0.1s`).
+      - api_field: job.appEngineHttpTarget.retryConfig.maxBackoffSeconds
+        arg_name: max-backoff
+        default: 1h
+        type: googlecloudsdk.core.util.times:ParseDuration
+        processor: googlecloudsdk.core.util.times:FormatDurationForJson
+        help_text: |
+          Duration, the maximum amount of time to wait before retrying a task
+          after it fails. Ex. `10s` (default is `1h`).
+      - api_field: job.appEngineHttpTarget.retryConfig.maxDoublings
+        arg_name: max-doublings
+        default: 16
+        help_text: |
+          Int, the maximum number of times that the interval between failed job
+          retries will be doubled before the increase becomes constant.
+      - api_field: job.appEngineHttpTarget.relativeUrl
+        arg_name: relative-url
+        default: /
+        type: googlecloudsdk.calliope.arg_parsers:RegexpValidator:pattern=^/.*,description=Must begin with [/].)
+        help_text: |
+          String, relative URL to use for the request (beginning with "/").
+      - api_field: job.appEngineHttpTarget.httpMethod
+        arg_name: http-method
+        default: post
+        choices:
+          post: POST
+          head: HEAD
+          get: GET
+          put: PUT
+          delete: DELETE
+        help_text: |
+          HTTP method to use for the request.
+      - api_field: job.appEngineHttpTarget.appEngineRouting.version
+        arg_name: version
+        help_text: |
+          String, ID of the App Engine version to which to send the request.
+      - api_field: job.appEngineHttpTarget.appEngineRouting.service
+        arg_name: service
+        help_text: |
+          String, ID of the App Engine service to which to send the request.
+      - api_field: job.appEngineHttpTarget.headers
+        arg_name: header
+        type: googlecloudsdk.command_lib.scheduler.util:HeaderType
+        action: googlecloudsdk.calliope.arg_parsers:UpdateAction
+        processor: googlecloudsdk.command_lib.scheduler.util:HeaderProcessor
+        help_text: |
+          "KEY: VALUE" pair, HTTP header to include in the request. *May be
+          repeated*. Example:
+          `--header 'User-Agent: Browser' --header 'Accept:  text/plain'`
+    mutex_groups:
+      - params:
+        - api_field: job.appEngineHttpTarget.payload
+          arg_name: payload
+          help_text: |
+            String, a data payload to be included as the body of the HTTP request.
+            May only be given with compatible HTTP methods (PUT or POST).
+        - api_field: job.appEngineHttpTarget.payload
+          arg_name: payload-from-file
+          type: "googlecloudsdk.calliope.arg_parsers:BufferedFileInput:"
+          help_text: |
+            String, a data payload to be included as the body of the HTTP request.
+            May only be given with compatible HTTP methods (PUT or POST).

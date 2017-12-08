@@ -15,8 +15,6 @@
 from googlecloudsdk.api_lib.source.repos import sourcerepo
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA,
@@ -58,10 +56,7 @@ class SetIamPolicy(base.UpdateCommand):
     Raises:
       ToolException: on project initialization errors.
     """
-    res = resources.REGISTRY.Parse(
-        args.name,
-        params={'projectsId': properties.VALUES.core.project.GetOrFail},
-        collection='sourcerepo.projects.repos')
+    res = sourcerepo.ParseRepo(args.name)
     source = sourcerepo.Source()
     policy = iam_util.ParseYamlorJsonPolicyFile(args.policy_file,
                                                 source.messages.Policy)

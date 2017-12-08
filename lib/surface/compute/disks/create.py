@@ -140,6 +140,20 @@ class Create(base.Command):
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
 
+  def ParseGuestOsFeaturesToMessages(self, args, client_messages):
+    """Parse GuestOS features.
+
+    Subclasses may override it to customize parsing.
+
+    Args:
+      args: The argument namespace
+      client_messages: base_classes.ComputeApiHolder.client.messages instance
+
+    Returns:
+      List of guest os feature messages.
+    """
+    return []
+
   def ValidateAndParseDiskRefs(self, args, compute_holder):
     """Validate flags and parse disks references.
 
@@ -284,6 +298,9 @@ class Create(base.Command):
               [source_image_uri, snapshot_uri], client.apitools_client))
     # end of alpha/beta features.
 
+    guest_os_feature_messages = self.ParseGuestOsFeaturesToMessages(
+        args, client.messages)
+
     requests = []
     for disk_ref in disk_refs:
       type_uri = self.GetDiskTypeUri(args, disk_ref, compute_holder)
@@ -318,6 +335,9 @@ class Create(base.Command):
           sourceSnapshot=snapshot_uri,
           type=type_uri,
           **kwargs)
+
+      if guest_os_feature_messages:
+        disk.guestOsFeatures = guest_os_feature_messages
 
       if disk_ref.Collection() == 'compute.disks':
         request = client.messages.ComputeDisksInsertRequest(
@@ -378,8 +398,20 @@ class CreateAlpha(Create):
               'creating regional disk.'),
         hidden=True)
 
+    image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.ALPHA)
     kms_utils.AddKmsKeyArgs(parser, resource_type='disk')
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
+
+  def ParseGuestOsFeaturesToMessages(self, args, client_messages):
+    guest_os_feature_messages = []
+    if args.guest_os_features:
+      for feature in args.guest_os_features:
+        gf_type = client_messages.GuestOsFeature.TypeValueValuesEnum(feature)
+        guest_os_feature = client_messages.GuestOsFeature()
+        guest_os_feature.type = gf_type
+        guest_os_feature_messages.append(guest_os_feature)
+
+    return guest_os_feature_messages
 
   def ValidateAndParseDiskRefs(self, args, compute_holder):
     if args.replica_zones is None and args.region is not None:

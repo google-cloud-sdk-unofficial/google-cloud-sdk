@@ -42,3 +42,7 @@ class Datastore(base.Group):
 
     $ {command} cleanup-indexes index.yaml
   """
+
+  def Filter(self, context, args):
+    del context, args
+    base.DisableUserProjectQuota()

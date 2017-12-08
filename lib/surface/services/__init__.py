@@ -14,9 +14,7 @@
 
 """The command group for the Services V1 CLI."""
 
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
 
 
 class Services(base.Group):
@@ -39,3 +37,9 @@ class Services(base.Group):
 
     $ {command} disable --help
   """
+
+  def Filter(self, context, args):
+    del context, args
+    # Don't ever take this off. Use gcloud quota so that you can enable APIs
+    # on your own project before you have API access on that project.
+    base.DisableUserProjectQuota()

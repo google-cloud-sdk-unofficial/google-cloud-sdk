@@ -296,10 +296,13 @@ class Create(base.CreateCommand):
       if message:
         console_io.PromptContinue(message=message, cancel_on_no=True)
 
-      console_io.PromptContinue(
-          message=constants.KUBERNETES_REGIONAL_CHARGES_PROMPT,
-          throw_if_unattended=True,
-          cancel_on_no=True)
+      # TODO(b/68496825): Remove this completely after regional clusters beta
+      # launch.
+      if self._release_track == base.ReleaseTrack.ALPHA:
+        console_io.PromptContinue(
+            message=constants.KUBERNETES_REGIONAL_CHARGES_PROMPT,
+            throw_if_unattended=True,
+            cancel_on_no=True)
 
     if options.enable_autorepair is not None:
       log.status.Print(messages.AutoUpdateUpgradeRepairMessage(
@@ -387,7 +390,6 @@ class CreateAlpha(Create):
     flags.AddAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddClusterScopesFlag(parser)
-    flags.AddEnableAuditLoggingFlag(parser, hidden=True)
     flags.AddEnableAutoRepairFlag(parser)
     flags.AddEnableBinAuthzFlag(parser, hidden=True)
     flags.AddEnableKubernetesAlphaFlag(parser)
@@ -401,6 +403,7 @@ class CreateAlpha(Create):
     flags.AddWorkloadMetadataFromNodeFlag(parser, hidden=True)
     flags.AddNetworkPolicyFlags(parser, hidden=False)
     flags.AddEnableSharedNetworkFlag(parser, hidden=True)
+    flags.AddAutoprovisioningFlags(parser, hidden=True)
     flags.AddNodeTaintsFlag(parser)
     flags.AddPreemptibleFlag(parser)
     flags.AddServiceAccountFlag(parser)
@@ -409,7 +412,11 @@ class CreateAlpha(Create):
     ops = ParseCreateOptionsBase(args)
     ops.accelerators = args.accelerator
     ops.node_locations = args.node_locations
-    ops.enable_audit_logging = args.enable_audit_logging
+    ops.enable_autoprovisioning = args.enable_autoprovisioning
+    ops.min_cpu = args.min_cpu
+    ops.max_cpu = args.max_cpu
+    ops.min_memory = args.min_memory
+    ops.max_memory = args.max_memory
     ops.enable_binauthz = args.enable_binauthz
     ops.min_cpu_platform = args.min_cpu_platform
     ops.workload_metadata_from_node = args.workload_metadata_from_node

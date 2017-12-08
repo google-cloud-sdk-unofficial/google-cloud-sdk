@@ -18,6 +18,7 @@ import sys
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
+from googlecloudsdk.api_lib.cloudresourcemanager import projects_util
 from googlecloudsdk.api_lib.resource_manager import operations
 from googlecloudsdk.api_lib.service_management import enable_api as services_enable_api
 from googlecloudsdk.api_lib.service_management import services_util
@@ -110,13 +111,15 @@ class Create(base.CreateCommand):
       raise exceptions.RequiredArgumentException(
           'PROJECT_ID', 'an id must be provided for the new project')
     project_ref = command_lib_util.ParseProject(project_id)
+    labels = labels_util.Diff.FromCreateArgs(args).Apply(
+        projects_util.GetMessages().Project.LabelsValue)
     try:
       create_op = projects_api.Create(
           project_ref,
           display_name=args.name,
           parent=projects_api.ParentNameToResourceId(
               flags.GetParentFromFlags(args)),
-          update_labels=labels_util.GetUpdateLabelsDictFromArgs(args))
+          labels=labels)
     except apitools_exceptions.HttpConflictError:
       msg = ('Project creation failed. The project ID you specified is '
              'already in use by another project. Please try an alternative '

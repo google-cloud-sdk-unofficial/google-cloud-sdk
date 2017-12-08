@@ -45,7 +45,7 @@ class CreateFromContainer(base.CreateCommand):
     instances_flags.AddAddressArgs(
         parser, multiple_network_interface_cards=False, instances=True)
     instances_flags.AddMachineTypeArgs(parser)
-    instances_flags.AddMaintenancePolicyArgs(parser)
+    instances_flags.AddMaintenancePolicyArgs(parser, deprecate=True)
     instances_flags.AddNoRestartOnFailureArgs(parser)
     instances_flags.AddPreemptibleVmArgs(parser)
     instances_flags.AddServiceAccountAndScopeArgs(parser, False)

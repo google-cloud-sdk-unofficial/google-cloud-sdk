@@ -15,10 +15,10 @@
 """Lists the installed gcloud interactive CLI trees."""
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import cli_tree
+from googlecloudsdk.command_lib.meta import list_cli_trees
 
 
-class ListCliTrees(base.Command):
+class List(base.Command):
   """List the installed gcloud interactive CLI trees.
 
   This command lists all CLI trees found in the Cloud SDK installation and
@@ -41,7 +41,8 @@ class ListCliTrees(base.Command):
         '--directory',
         help='Insert this directory into the list of directories to search.')
     parser.display_info.AddFormat(
-        'table[box](command:sort=1, cli_version, version, path, error)')
+        'table[box](command:sort=1, cli_version:label=CLI, version:label=VER, '
+        'path, error)')
 
   def Run(self, args):
-    return cli_tree.ListAll(directory=args.directory)
+    return list_cli_trees.ListAll(directory=args.directory)

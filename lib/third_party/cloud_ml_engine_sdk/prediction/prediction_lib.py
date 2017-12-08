@@ -58,6 +58,10 @@ PREPROCESS_KEY = "preprocess"
 POSTPROCESS_KEY = "postprocess"
 FROM_MODEL_KEY = "from_model_path"
 
+# Additional TF keyword arguments
+SIGNATURE_KEY = "signature_name"
+
+# Stats
 ENGINE = "Prediction-Engine"
 FRAMEWORK = "Framework"
 PREPROCESS_TIME = "Prediction-Preprocess-Time"
@@ -324,8 +328,8 @@ def canonicalize_single_tensor_input(instances, tensor_name):
   return instances
 
 
-class BaseModel(object):
-  """The base definition of a Model interface.
+class BaseModel(Model):
+  """The base definition of an internal Model interface.
   """
 
   def __init__(self, client):
@@ -337,12 +341,13 @@ class BaseModel(object):
     self._client = client
     self._user_processor = None
 
-  def preprocess(self, instances, stats=None):
+  def preprocess(self, instances, stats=None, **kwargs):
     """Runs the preprocessing function on the instances.
 
     Args:
       instances: list of instances as provided to the predict() method.
       stats: Stats object for recording timing information.
+      **kwargs: Additional keyword arguments for preprocessing.
 
     Returns:
       A new list of preprocessed instances. Each instance is as described
@@ -350,35 +355,49 @@ class BaseModel(object):
     """
     pass
 
-  def postprocess(self, predicted_output, original_input=None, stats=None):
+  def postprocess(self, predicted_output, original_input=None, stats=None,
+                  **kwargs):
     """Runs the postprocessing function on the instances.
 
     Args:
       predicted_output: list of instances returned by the predict() method on
         preprocessed instances.
-       original_input: List of instances, before any pre-processing was applied.
+      original_input: List of instances, before any pre-processing was applied.
       stats: Stats object for recording timing information.
+      **kwargs: Additional keyword arguments for postprocessing.
 
     Returns:
       A new list of postprocessed instances.
     """
     pass
 
-  def predict(self, instances, stats=None):
+  def predict(self, instances, stats=None, **kwargs):
     """Runs preprocessing, predict, and postprocessing on the input."""
 
     stats = stats or Stats()
+    self._validate_kwargs(kwargs)
 
     with stats.time(PREPROCESS_TIME):
-      preprocessed = self.preprocess(instances, stats)
+      preprocessed = self.preprocess(instances, stats=stats, **kwargs)
     with stats.time(ENGINE_RUN_TIME):
-      predicted_outputs = self._client.predict(preprocessed, stats)
+      predicted_outputs = self._client.predict(
+          preprocessed, stats=stats, **kwargs)
     with stats.time(POSTPROCESS_TIME):
       postprocessed = self.postprocess(
-          predicted_outputs, original_input=instances, stats=stats)
+          predicted_outputs, original_input=instances, stats=stats, **kwargs)
     return instances, postprocessed
 
-  def signature(self):
+  def _validate_kwargs(self, kwargs):
+    """Validates and sets defaults for extra predict keyword arguments.
+
+    Modifies the keyword args dictionary in-place. Keyword args will be included
+    into pre/post-processing and the client predict method.
+    Can raise Exception to error out of request on bad keyword args.
+    If no additional args are required, pass.
+
+    Args:
+      kwargs: Dictionary (str->str) of keyword arguments to check.
+    """
     pass
 
 
@@ -387,19 +406,16 @@ class BaseModel(object):
 def load_model(
     model_path,
     tags=(tag_constants.SERVING,),
-    signature_name=signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY,
     config=None):
   """Loads the model at the specified path.
 
   Args:
     model_path: the path to either session_bundle or SavedModel
     tags: the tags that determines the model to load.
-    signature_name: the string used as the key to signature map to locate the
-                   serving signature.
     config: tf.ConfigProto containing session configuration options.
 
   Returns:
-    A pair of (Session, SignatureDef) objects.
+    A pair of (Session, map<string, SignatureDef>) objects.
 
   Raises:
     PredictionError: if the model could not be loaded.
@@ -408,10 +424,10 @@ def load_model(
     try:
       session = tf_session.Session(target="", graph=None, config=config)
       meta_graph = loader.load(session, tags=list(tags), export_dir=model_path)
-    except Exception:  # pylint: disable=broad-except
+    except Exception as e:  # pylint: disable=broad-except
       raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL,
                             "Failed to load the model due to bad model data."
-                            " tags: %s" % tags)
+                            " tags: %s\n%s" % (list(tags), str(e)))
   else:
     raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL,
                           "Cloud ML only supports TF 1.0 or above and models "
@@ -420,40 +436,25 @@ def load_model(
   if session is None:
     raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL,
                           "Failed to create session when loading the model")
-  signature = _get_signature_from_meta_graph(
-      session.graph, meta_graph, signature_name)
 
-  return session, signature
-
-
-def _get_signature_from_meta_graph(
-    graph, meta_graph,
-    signature_name=signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY):
-  """Returns the SignatureDef in meta_graph update dtypes using graph."""
   if not meta_graph.signature_def:
     raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL,
                           "MetaGraph must have at least one signature_def.")
 
-  named_key = "serving_default_from_named"
-  if len(meta_graph.signature_def) > 1:
-    logging.warning("MetaGraph has multiple signatures %d. Support for "
-                    "multiple signatures is limited. By default we select "
-                    "named signatures.", len(meta_graph.signature_def))
-  if named_key in meta_graph.signature_def:
-    return meta_graph.signature_def[named_key]
+  # Remove invalid signatures from the signature map.
+  invalid_signatures = []
+  for signature_name in meta_graph.signature_def:
+    try:
+      signature = meta_graph.signature_def[signature_name]
+      _update_dtypes(session.graph, signature.inputs)
+      _update_dtypes(session.graph, signature.outputs)
+    except ValueError as e:
+      logging.warn("Error updating signature %s: %s", signature_name, str(e))
+      invalid_signatures.append(signature_name)
+  for signature_name in invalid_signatures:
+    del meta_graph.signature_def[signature_name]
 
-  if signature_name not in meta_graph.signature_def:
-    raise PredictionError(
-        PredictionError.FAILED_TO_LOAD_MODEL,
-        "No signature found for signature key %s." % signature_name)
-
-  signature = meta_graph.signature_def[signature_name]
-  # Signatures often omit the dtype and shape information. Looks those up if
-  # necessary.
-  _update_dtypes(graph, signature.inputs)
-  _update_dtypes(graph, signature.outputs)
-
-  return signature
+  return session, meta_graph.signature_def
 
 
 def _update_dtypes(graph, interface):
@@ -484,35 +485,46 @@ def _update_dtypes(graph, interface):
 class SessionClient(object):
   """A client for Prediction that uses Session.run."""
 
-  def __init__(self, session, signature):
+  def __init__(self, session, signature_map):
     self._session = session
-    self._signature = signature
+    self._signature_map = signature_map
 
-    # TensorFlow requires a bonefide list for the fetches. To regenerating the
-    # list every prediction, we cache the list of output tensor names.
-    self._output_tensors = [v.name for v in self._signature.outputs.values()]
+    # TensorFlow requires a list of tensor names for the fetches. To avoid
+    # regenerating the list every prediction, we cache the list of output
+    # tensor names.
+    self._output_tensors_map = {
+        signature_name:
+        [v.name for v in signature_map[signature_name].outputs.values()]
+        for signature_name in signature_map}
 
   @property
-  def signature(self):
-    return self._signature
+  def signature_map(self):
+    return self._signature_map
 
-  def predict(self, inputs, stats):
+  def predict(self, inputs, stats=None,
+              signature_name=(signature_constants.
+                              DEFAULT_SERVING_SIGNATURE_DEF_KEY),
+              **unused_kwargs):
     """Produces predictions for the given inputs.
 
     Args:
       inputs: a dict mapping input names to values
       stats: Stats object for recording timing information.
+      signature_name: name of SignatureDef to use in this prediction
+      **unused_kwargs: placeholder, pre/postprocess may have additional args
 
     Returns:
       A dict mapping output names to output values, similar to the input
       dict.
     """
+    stats = stats or Stats()
     stats[ENGINE] = "SessionRun"
     stats[FRAMEWORK] = "TENSORFLOW"
 
     with stats.time(UNALIAS_TIME):
       try:
-        unaliased = {self.signature.inputs[key].name: val
+        signature = self._signature_map[signature_name]
+        unaliased = {signature.inputs[key].name: val
                      for key, val in inputs.iteritems()}
       except Exception as e:
         raise PredictionError(PredictionError.INVALID_INPUTS,
@@ -522,15 +534,16 @@ class SessionClient(object):
       try:
         # TODO(b/33849399): measure the actual session.run() time, even in the
         # case of ModelServer.
-        outputs = self._session.run(fetches=self._output_tensors,
-                                    feed_dict=unaliased)
+        outputs = self._session.run(
+            fetches=self._output_tensors_map[signature_name],
+            feed_dict=unaliased)
       except Exception as e:
         logging.error("Exception during running the graph: " + str(e))
         raise PredictionError(PredictionError.FAILED_TO_RUN_MODEL,
                               "Exception during running the graph: " + str(e))
 
     with stats.time(ALIAS_TIME):
-      return dict(zip(self._signature.outputs.iterkeys(), outputs))
+      return dict(zip(signature.outputs.iterkeys(), outputs))
 
 
 def create_model(client, model_path, **kwargs):
@@ -627,7 +640,6 @@ def _validate_model_class(user_class):
     PredictionError: for any of the following:
       (1) the user model class does not have the correct method signatures for
       the predict method
-      (2) the user model class does not implement the signature method
   """
   user_class_name = type(user_class).__name__
   # Can't use isinstance() because the user doesn't have access to our Model
@@ -637,11 +649,6 @@ def _validate_model_class(user_class):
     raise PredictionError(PredictionError.INVALID_USER_CODE,
                           "The provided model class, %s, is missing the "
                           "required predict method." % user_class_name)
-  # Check that the signature method is implemented
-  if not hasattr(user_class, "signature"):
-    raise PredictionError(PredictionError.INVALID_USER_CODE,
-                          "The provided model class, %s, is missing the "
-                          "required signature property." % user_class_name)
   # Check the predict method has the correct number of arguments
   user_signature = inspect.getargspec(user_class.predict)[0]
   model_signature = inspect.getargspec(Model.predict)[0]
@@ -664,9 +671,11 @@ def _new_processor_class(model_path=None):
     user_postprocess_fn = getattr(user_processor_cls, POSTPROCESS_KEY, None)
     user_from_model_path_fn = getattr(user_processor_cls, FROM_MODEL_KEY, None)
 
-    _validate_fn_signature(user_preprocess_fn, ["self", "instances"],
+    _validate_fn_signature(user_preprocess_fn,
+                           ["self", "instances"],
                            PREPROCESS_KEY, user_processor_cls.__name__)
-    _validate_fn_signature(user_postprocess_fn, ["self", "instances"],
+    _validate_fn_signature(user_postprocess_fn,
+                           ["self", "instances"],
                            POSTPROCESS_KEY, user_processor_cls.__name__)
     _validate_fn_signature(user_from_model_path_fn, ["cls", "model_path"],
                            FROM_MODEL_KEY, user_processor_cls.__name__)
@@ -689,7 +698,7 @@ def _validate_fn_signature(fn, required_arg_names, expected_fn_name, cls_name):
       raise PredictionError(
           PredictionError.INVALID_USER_CODE,
           "The provided %s function in the Processor class "
-          "has an invalid signature. It should take %s as arguments but"
+          "has an invalid signature. It should take %s as arguments but "
           "takes %s" %
           (fn.__name__, required_arg_names, inspect.getargspec(fn).args))
 
@@ -707,7 +716,7 @@ class TensorFlowModel(BaseModel):
     """Constructs a TensorFlowModel.
 
     Args:
-      client: An instance of ModelServerClient for performing prediction.
+      client: An instance of ModelServerClient or SessionClient.
       preprocess_fn: a function to run on each instance before calling predict,
           if this parameter is not None. See class docstring.
       postprocess_fn: a function to run on each instance after calling predict,
@@ -717,7 +726,7 @@ class TensorFlowModel(BaseModel):
     self._preprocess_fn = preprocess_fn
     self._postprocess_fn = postprocess_fn
 
-  def _get_columns(self, instances, stats):
+  def _get_columns(self, instances, stats, signature):
     """Columnarize the instances, appending input_name, if necessary.
 
     Instances are the same instances passed to the predict() method. Since
@@ -731,6 +740,7 @@ class TensorFlowModel(BaseModel):
     Args:
       instances: the list of instances as provided to the predict() method.
       stats: Stats object for recording timing information.
+      signature: SignatureDef for the current request.
 
     Returns:
       A dictionary mapping input names to their values.
@@ -741,7 +751,7 @@ class TensorFlowModel(BaseModel):
     with stats.time(COLUMNARIZE_TIME):
       columns = columnarize(instances)
       for k, v in columns.iteritems():
-        if k not in self._client.signature.inputs.keys():
+        if k not in signature.inputs.keys():
           raise PredictionError(
               PredictionError.INVALID_INPUTS,
               "Unexpected tensor name: %s" % k)
@@ -754,38 +764,46 @@ class TensorFlowModel(BaseModel):
     return columns
 
   # TODO(b/34686738): can this be removed?
-  def is_single_input(self):
+  def is_single_input(self, signature):
     """Returns True if the graph only has one input tensor."""
-    return len(self._client.signature.inputs) == 1
+    return len(signature.inputs) == 1
 
   # TODO(b/34686738): can this be removed?
-  def is_single_string_input(self):
+  def is_single_string_input(self, signature):
     """Returns True if the graph only has one string input tensor."""
-    if self.is_single_input():
-      dtype = self._client.signature.inputs.values()[0].dtype
+    if self.is_single_input(signature):
+      dtype = signature.inputs.values()[0].dtype
       return dtype == dtypes.string.as_datatype_enum
     return False
 
-  def preprocess(self, instances, stats):
-    preprocessed = self._canonicalize_input(instances)
+  def preprocess(self, instances, stats=None,
+                 signature_name=(signature_constants.
+                                 DEFAULT_SERVING_SIGNATURE_DEF_KEY),
+                 **kwargs):
+    signature = self._client.signature_map[signature_name]
+    preprocessed = self._canonicalize_input(instances, signature)
     if self._preprocess_fn:
       try:
-        preprocessed = self._preprocess_fn(preprocessed)
+        preprocessed = self._preprocess_fn(preprocessed, **kwargs)
       except Exception as e:
         logging.error("Exception during preprocessing: " + str(e))
         raise PredictionError(PredictionError.INVALID_INPUTS,
                               "Exception during preprocessing: " + str(e))
-    return self._get_columns(preprocessed, stats)
+    return self._get_columns(preprocessed, stats, signature)
 
-  def _canonicalize_input(self, instances):
+  def _canonicalize_input(self, instances, signature):
     """Preprocess single-input instances to be dicts if they aren't already."""
     # The instances should be already (b64-) decoded here.
-    if not self.is_single_input():
+    if not self.is_single_input(signature):
       return instances
-    tensor_name = self._client.signature.inputs.keys()[0]
+
+    tensor_name = signature.inputs.keys()[0]
     return canonicalize_single_tensor_input(instances, tensor_name)
 
-  def postprocess(self, predicted_output, original_input=None, stats=None):
+  def postprocess(self, predicted_output, original_input=None, stats=None,
+                  signature_name=(signature_constants.
+                                  DEFAULT_SERVING_SIGNATURE_DEF_KEY),
+                  **kwargs):
     """Performs the necessary transformations on the prediction results.
 
     The transformations include rowifying the predicted results, and also
@@ -797,11 +815,13 @@ class TensorFlowModel(BaseModel):
         preprocessed instances.
       original_input: List of instances, before any pre-processing was applied.
       stats: Stats object for recording timing information.
+      signature_name: name of SignatureDef to use in this prediction
+      **kwargs: Additional keyword arguments for postprocessing
 
     Returns:
       A list which is a dict mapping output alias to the output.
     """
-    stats = stats or Stats()
+    signature = self._client.signature_map[signature_name]
     with stats.time(ROWIFY_TIME):
       # When returned element only contains one result (batch size == 1),
       # tensorflow's session.run() will return a scalar directly instead of a
@@ -827,7 +847,8 @@ class TensorFlowModel(BaseModel):
     postprocessed_outputs = list(postprocessed_outputs)
     if self._postprocess_fn:
       try:
-        postprocessed_outputs = self._postprocess_fn(postprocessed_outputs)
+        postprocessed_outputs = self._postprocess_fn(postprocessed_outputs,
+                                                     **kwargs)
       except Exception as e:
         logging.error("Exception during postprocessing: %s", e)
         raise PredictionError(PredictionError.INVALID_INPUTS,
@@ -836,7 +857,7 @@ class TensorFlowModel(BaseModel):
     with stats.time(ENCODE_TIME):
       try:
         postprocessed_outputs = encode_base64(postprocessed_outputs,
-                                              self._client.signature.outputs)
+                                              signature.outputs)
       except PredictionError as e:
         logging.error("Encode base64 failed: %s", e)
         raise PredictionError(PredictionError.INVALID_OUTPUTS,
@@ -854,12 +875,6 @@ class TensorFlowModel(BaseModel):
 
       return postprocessed_outputs
 
-  # TODO(b/34686738): use signatures instead; remove this method.
-  def outputs_type_map(self):
-    """Returns a map from tensor alias to tensor type."""
-    return {alias: dtypes.DType(info.dtype)
-            for alias, info in self._client.signature.outputs.iteritems()}
-
   # TODO(b/34686738). Seems like this should be split into helper methods:
   #   default_preprocess_fn(model_path, skip_preprocessing) and
   #   default_model_and_preprocessor.
@@ -875,8 +890,26 @@ class TensorFlowModel(BaseModel):
       return cls(client)
 
   @property
-  def signature(self):
-    return self._client.signature
+  def signature_map(self):
+    return self._client.signature_map
+
+  def _validate_kwargs(self, kwargs):
+    """Validates and sets defaults for extra client keyword arguments.
+
+    Args:
+      kwargs: Dictionary of keyword args to check. Will guarantee valid:
+        "signature_name": selects TF signature for inputs/outputs
+
+    Raises:
+      PredictionError: if any keyword args are invalid
+    """
+    if SIGNATURE_KEY not in kwargs:
+      kwargs[SIGNATURE_KEY] = (
+          signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY)
+    if kwargs[SIGNATURE_KEY] not in self._client.signature_map:
+      raise PredictionError(
+          PredictionError.INVALID_INPUTS,
+          "No signature found for signature key %s." % kwargs[SIGNATURE_KEY])
 
 
 class SklearnModel(BaseModel):
@@ -895,13 +928,14 @@ class SklearnModel(BaseModel):
     else:
       self._postprocess = self._null_processor
 
-  def preprocess(self, instances, stats=None):
+  def preprocess(self, instances, stats=None, **kwargs):
     # TODO(b/67383676) Consider changing this to a more generic type.
-    return self._preprocess(np.array(instances))
+    return self._preprocess(np.array(instances), **kwargs)
 
-  def postprocess(self, predicted_outputs, original_input=None, stats=None):
+  def postprocess(self, predicted_outputs, original_input=None, stats=None,
+                  **kwargs):
     # TODO(b/67383676) Consider changing this to a more generic type.
-    post_processed = self._postprocess(predicted_outputs)
+    post_processed = self._postprocess(predicted_outputs, **kwargs)
     if isinstance(post_processed, np.ndarray):
       return post_processed.tolist()
     if isinstance(post_processed, list):
@@ -913,12 +947,8 @@ class SklearnModel(BaseModel):
         "a numpy ndarray or a list."
         % self._postprocess.__name__)
 
-  def _null_processor(self, instances):
+  def _null_processor(self, instances, **unused_kwargs):
     return instances
-
-  @property
-  def signature(self):
-    return None
 
 
 class XGBoostModel(SklearnModel):
@@ -988,9 +1018,10 @@ def local_predict(
     instances=None):
   """Run a prediction locally."""
   instances = decode_base64(instances)
-  client = SessionClient(*load_model(model_dir, tags, signature_name))
+  client = SessionClient(*load_model(model_dir, tags))
   model = create_model(client, model_dir)
-  _, predictions = model.predict(instances)
+  _, predictions = model.predict(instances, signature_name=signature_name)
   predictions = list(predictions)
-  predictions = encode_base64(predictions, model.signature.outputs)
+  predictions = encode_base64(predictions,
+                              model.signature_map[signature_name].outputs)
   return {"predictions": predictions}

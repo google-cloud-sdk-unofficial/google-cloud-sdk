@@ -16,7 +16,6 @@
 
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
 
 
 class Endpoints(base.Group):
@@ -42,7 +41,7 @@ class Endpoints(base.Group):
     Returns:
       The updated context.
     """
-
+    base.DisableUserProjectQuota()
     context['servicemanagement-v1'] = apis.GetClientInstance(
         'servicemanagement', 'v1')
     context['servicemanagement-v1-messages'] = apis.GetMessagesModule(

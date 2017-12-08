@@ -23,10 +23,13 @@ for this command tree.  You can implement methods in this class to override some
 of the default behavior.
 """
 
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Pubsub(base.Group):
   """Manage Cloud Pub/Sub topics and subscriptions."""
+
+  def Filter(self, context, args):
+    del context, args
+    base.DisableUserProjectQuota()

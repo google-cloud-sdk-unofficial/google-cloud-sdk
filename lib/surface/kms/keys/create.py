@@ -93,9 +93,8 @@ class Create(base.CreateCommand):
             # TODO(b/35914817): Find a better way to get the enum value by name.
             purpose=getattr(messages.CryptoKey.PurposeValueValuesEnum,
                             PURPOSE_MAP[args.purpose]),
-            labels=labels_util.UpdateLabels(
-                None, messages.CryptoKey.LabelsValue,
-                update_labels=labels_util.GetUpdateLabelsDictFromArgs(args))),)
+            labels=labels_util.Diff.FromCreateArgs(args).Apply(
+                messages.CryptoKey.LabelsValue)))
 
     flags.SetNextRotationTime(args, req.cryptoKey)
     flags.SetRotationPeriod(args, req.cryptoKey)

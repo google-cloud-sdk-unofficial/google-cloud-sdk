@@ -25,7 +25,7 @@ def _GetCliTreeGeneratorList():
                           generate_cli_trees.GENERATORS.keys()))
 
 
-class UpdateCliTrees(base.Command):
+class Update(base.Command):
   """Updates gcloud CLI command trees in the installation directory.
 
   A CLI tree is a module or JSON file that describes a command and its
@@ -53,9 +53,15 @@ class UpdateCliTrees(base.Command):
         '--directory',
         help=('Update this directory instead of the default installation '
               'directory.'))
+    parser.add_argument(
+        '--force',
+        action='store_true',
+        help=('Force existing CLI trees to be out of date. This causes them '
+              'to be regenerated.'))
 
   def Run(self, args):
     generate_cli_trees.UpdateCliTrees(cli=self._cli_power_users_only,
                                       commands=args.commands,
                                       directory=args.directory,
+                                      force=args.force,
                                       verbose=not args.quiet)

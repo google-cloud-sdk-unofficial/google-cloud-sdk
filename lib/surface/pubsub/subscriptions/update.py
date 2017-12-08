@@ -60,15 +60,12 @@ class UpdateAlpha(base.UpdateCommand):
     client = subscriptions.SubscriptionsClient()
     subscription_ref = util.ParseSubscription(args.subscription)
 
-    update_labels = labels_util.GetUpdateLabelsDictFromArgs(args)
-    remove_labels = labels_util.GetRemoveLabelsListFromArgs(args)
-    if update_labels or remove_labels:
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    if labels_diff.MayHaveUpdates():
       original_subscription = client.Get(subscription_ref)
-      labels = labels_util.UpdateLabels(
-          original_subscription.labels,
+      labels = labels_diff.Apply(
           client.messages.Subscription.LabelsValue,
-          update_labels=update_labels,
-          remove_labels=remove_labels)
+          original_subscription.labels)
     else:
       labels = None
     result = client.Patch(
