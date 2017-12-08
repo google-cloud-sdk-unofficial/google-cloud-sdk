@@ -152,10 +152,6 @@ class DeprecateImages(base_classes.NoOutputAsyncMutator):
           'If the state is set to [ACTIVE] then none of [--delete-on], '
           '[--delete-in], [--obsolete-on], [--obsolete-in], or [--replacement] '
           'may be provided.')
-    elif not args.replacement and args.state != 'ACTIVE':
-      raise calliope_exceptions.ToolException(
-          '[--replacement] is required when deprecation, obsoletion or '
-          'deletion status is set or scheduled.')
 
     # Determine the date and time to deprecate for each flag set.
     current_time = datetime.datetime.now()

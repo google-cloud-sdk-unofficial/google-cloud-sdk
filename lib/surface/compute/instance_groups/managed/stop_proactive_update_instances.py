@@ -15,26 +15,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
-
-
-def _AddArgs(parser, multizonal):
-  """Adds args."""
-  parser.add_argument('name', help='Managed instance group name.')
-  if multizonal:
-    scope_parser = parser.add_mutually_exclusive_group()
-    flags.AddRegionFlag(
-        scope_parser,
-        resource_type='instance group manager',
-        operation_type='stop proactive update instances',
-        explanation=flags.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
-    flags.AddZoneFlag(scope_parser,
-                      resource_type='instance group manager',
-                      operation_type='stop proactive update instances',
-                      explanation=flags.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
-  else:
-    flags.AddZoneFlag(parser,
-                      resource_type='instance group manager',
-                      operation_type='stop proactive update instances')
+from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -43,7 +24,7 @@ class StopUpdateInstancesAlpha(base_classes.BaseAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, multizonal=False)
+    instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG.AddArgument(parser)
 
   @property
   def method(self):
@@ -58,12 +39,18 @@ class StopUpdateInstancesAlpha(base_classes.BaseAsyncMutator):
     return 'instanceGroupManagers'
 
   def CreateRequests(self, args):
-    group_ref = self.CreateZonalReference(args.name, args.zone)
+    resource_arg = instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG
+    default_scope = flags.ScopeEnum.ZONE
+    scope_lister = flags.GetDefaultScopeLister(
+        self.compute_client, self.project)
+    igm_ref = resource_arg.ResolveAsResource(
+        args, self.resources, default_scope=default_scope,
+        scope_lister=scope_lister)
     service = self.compute.instanceGroupManagers
     request = (self.messages.ComputeInstanceGroupManagersPatchRequest(
         project=self.project,
-        zone=group_ref.zone,
-        instanceGroupManager=group_ref.Name(),
+        zone=igm_ref.zone,
+        instanceGroupManager=igm_ref.Name(),
         instanceGroupManagerResource=(self.messages.InstanceGroupManager(
             updatePolicy=self.messages.InstanceGroupManagerUpdatePolicy(type=(
                 self.messages.InstanceGroupManagerUpdatePolicy

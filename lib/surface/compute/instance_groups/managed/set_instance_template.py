@@ -15,35 +15,17 @@
 """Command for setting instance template of managed instance group."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
-def _AddArgs(parser, multizonal):
+def _AddArgs(parser):
   """Adds args."""
-  parser.add_argument('name', help='Managed instance group name.')
   parser.add_argument(
       '--template',
       required=True,
       help=('Compute Engine instance template resource to be used.'))
-  if multizonal:
-    scope_parser = parser.add_mutually_exclusive_group()
-    flags.AddRegionFlag(
-        scope_parser,
-        resource_type='instance group manager',
-        operation_type='set instance template',
-        explanation=flags.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
-    flags.AddZoneFlag(
-        scope_parser,
-        resource_type='instance group manager',
-        operation_type='set instance template',
-        explanation=flags.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
-  else:
-    flags.AddZoneFlag(
-        parser,
-        resource_type='instance group manager',
-        operation_type='set instance template')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -52,7 +34,8 @@ class SetInstanceTemplate(base_classes.BaseAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, multizonal=False)
+    _AddArgs(parser=parser)
+    instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG.AddArgument(parser)
 
   @property
   def method(self):
@@ -69,17 +52,21 @@ class SetInstanceTemplate(base_classes.BaseAsyncMutator):
   def CreateRequests(self, args):
     template_ref = self.CreateGlobalReference(
         args.template, resource_type='instanceTemplates')
-    ref = self.CreateZonalReference(args.name, args.zone)
+    igm_ref = (instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG.
+               ResolveAsResource)(
+                   args, self.resources, default_scope=flags.ScopeEnum.ZONE,
+                   scope_lister=flags.GetDefaultScopeLister(
+                       self.compute_client, self.project))
     request = (
         self.messages.ComputeInstanceGroupManagersSetInstanceTemplateRequest(
-            instanceGroupManager=ref.Name(),
+            instanceGroupManager=igm_ref.Name(),
             instanceGroupManagersSetInstanceTemplateRequest=(
                 self.messages.InstanceGroupManagersSetInstanceTemplateRequest(
                     instanceTemplate=template_ref.SelfLink(),
                 )
             ),
             project=self.project,
-            zone=ref.zone,)
+            zone=igm_ref.zone,)
     )
     return [request]
 
@@ -90,41 +77,45 @@ class SetInstanceTemplateAlpha(SetInstanceTemplate):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, multizonal=True)
+    _AddArgs(parser=parser)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser)
 
   def CreateRequests(self, args):
-    group_ref = instance_groups_utils.CreateInstanceGroupReference(
-        scope_prompter=self, compute=self.compute, resources=self.resources,
-        name=args.name, region=args.region, zone=args.zone)
+    igm_ref = (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
+               ResolveAsResource)(
+                   args, self.resources, default_scope=flags.ScopeEnum.ZONE,
+                   scope_lister=flags.GetDefaultScopeLister(
+                       self.compute_client, self.project))
     template_ref = self.CreateGlobalReference(
         args.template, resource_type='instanceTemplates')
 
-    if group_ref.Collection() == 'compute.instanceGroupManagers':
+    if igm_ref.Collection() == 'compute.instanceGroupManagers':
       service = self.compute.instanceGroupManagers
       request = (
           self.messages.ComputeInstanceGroupManagersSetInstanceTemplateRequest(
-              instanceGroupManager=group_ref.Name(),
+              instanceGroupManager=igm_ref.Name(),
               instanceGroupManagersSetInstanceTemplateRequest=(
                   self.messages.InstanceGroupManagersSetInstanceTemplateRequest(
                       instanceTemplate=template_ref.SelfLink(),
                   )
               ),
               project=self.project,
-              zone=group_ref.zone,)
+              zone=igm_ref.zone,)
       )
     else:
       service = self.compute.regionInstanceGroupManagers
       request = (
           self.messages.
           ComputeRegionInstanceGroupManagersSetInstanceTemplateRequest(
-              instanceGroupManager=group_ref.Name(),
+              instanceGroupManager=igm_ref.Name(),
               regionInstanceGroupManagersSetTemplateRequest=(
                   self.messages.RegionInstanceGroupManagersSetTemplateRequest(
                       instanceTemplate=template_ref.SelfLink(),
                   )
               ),
               project=self.project,
-              region=group_ref.region,)
+              region=igm_ref.region,)
       )
 
     return [(service, self.method, request)]

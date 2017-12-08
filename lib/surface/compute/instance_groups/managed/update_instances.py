@@ -19,13 +19,13 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 from googlecloudsdk.command_lib.compute.managed_instance_groups import update_instances_utils
 from googlecloudsdk.core.util import times
 
 
-def _AddArgs(parser, multizonal):
+def _AddArgs(parser):
   """Adds args."""
-  parser.add_argument('name', help='Managed instance group name.')
   parser.add_argument('--type',
                       choices={
                           'opportunistic': 'Replace instances when needed.',
@@ -71,7 +71,8 @@ def _AddArgs(parser, multizonal):
                       category=base.COMMONLY_USED_FLAGS,
                       help=('Original instance template resource to be used. '
                             'Each version has the following format: '
-                            'template=TEMPLATE,[target-size=FIXED_OR_PERCENT]'))
+                            'template=TEMPLATE,[target-size=FIXED_OR_PERCENT]'),
+                      metavar='VERSION_ORIGINAL')
   parser.add_argument('--version-new',
                       type=arg_parsers.ArgDict(spec={
                           'template': str,
@@ -80,27 +81,12 @@ def _AddArgs(parser, multizonal):
                       category=base.COMMONLY_USED_FLAGS,
                       help=('New instance template resource to be used. '
                             'Each version has the following format: '
-                            'template=TEMPLATE,[target-size=FIXED_OR_PERCENT]'))
+                            'template=TEMPLATE,[target-size=FIXED_OR_PERCENT]'),
+                      metavar='VERSION_NEW')
   parser.add_argument('--force',
                       action='store_true',
                       help=('If set, accepts any original or new version '
                             'configurations without validation.'))
-
-  if multizonal:
-    scope_parser = parser.add_mutually_exclusive_group()
-    flags.AddRegionFlag(
-        scope_parser,
-        resource_type='instance group manager',
-        operation_type='update instances',
-        explanation=flags.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
-    flags.AddZoneFlag(scope_parser,
-                      resource_type='instance group manager',
-                      operation_type='update instances',
-                      explanation=flags.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
-  else:
-    flags.AddZoneFlag(parser,
-                      resource_type='instance group manager',
-                      operation_type='update instances')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -109,7 +95,8 @@ class UpdateInstancesAlpha(base_classes.BaseAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, multizonal=False)
+    _AddArgs(parser=parser)
+    instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG.AddArgument(parser)
 
   @property
   def method(self):
@@ -124,7 +111,13 @@ class UpdateInstancesAlpha(base_classes.BaseAsyncMutator):
     return 'instanceGroupManagers'
 
   def CreateRequests(self, args):
-    igm_ref = self.CreateZonalReference(args.name, args.zone)
+    resource_arg = instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG
+    default_scope = flags.ScopeEnum.ZONE
+    scope_lister = flags.GetDefaultScopeLister(
+        self.compute_client, self.project)
+    igm_ref = resource_arg.ResolveAsResource(
+        args, self.resources, default_scope=default_scope,
+        scope_lister=scope_lister)
 
     update_instances_utils.ValidateUpdateInstancesArgs(args)
     update_policy_type = update_instances_utils.ParseUpdatePolicyType(

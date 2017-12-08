@@ -29,7 +29,8 @@ class Create(base_classes.BaseAsyncCreator):
   @classmethod
   def Args(cls, parser):
     cls.SUBNETWORK_ARG = flags.SubnetworkArgument()
-    cls.NETWORK_ARG = network_flags.NetworkArgumentForSubnetwork()
+    cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
+        'The network to which the subnetwork belongs.')
     cls.SUBNETWORK_ARG.AddArgument(parser)
     cls.NETWORK_ARG.AddArgument(parser)
 

@@ -15,40 +15,12 @@
 """Command for deleting managed instance group."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
 from googlecloudsdk.api_lib.compute import path_simplifier
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
-
-
-def _AddArgs(parser, multizonal):
-  """Adds args."""
-  parser.add_argument(
-      'names',
-      metavar='NAME',
-      nargs='+',
-      completion_resource='compute.instanceGroupManagers',
-      list_command_path=None,
-      help='The resources to delete.')
-  if multizonal:
-    scope_parser = parser.add_mutually_exclusive_group()
-    flags.AddRegionFlag(
-        scope_parser,
-        resource_type='resources',
-        operation_type='delete',
-        explanation=flags.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
-    flags.AddZoneFlag(
-        scope_parser,
-        resource_type='resources',
-        operation_type='delete',
-        explanation=flags.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
-  else:
-    flags.AddZoneFlag(
-        parser,
-        resource_type='resources',
-        operation_type='delete')
+from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -57,7 +29,7 @@ class Delete(base_classes.ZonalDeleter):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, multizonal=False)
+    instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGERS_ARG.AddArgument(parser)
 
   @property
   def service(self):
@@ -91,7 +63,10 @@ class Delete(base_classes.ZonalDeleter):
         project=self.project)
     requests = []
     for autoscaler in autoscalers_to_delete:
-      as_ref = self.CreateZonalReference(autoscaler.name, autoscaler.zone)
+      as_ref = self.resources.Parse(
+          autoscaler.name, collection='compute.autoscalers',
+          params={'zone': autoscaler.zone})
+
       request = self.messages.ComputeAutoscalersDeleteRequest(
           project=self.project)
       request.zone = as_ref.zone
@@ -118,7 +93,8 @@ class DeleteAlpha(base_classes.BaseAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, multizonal=True)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGERS_ARG.AddArgument(
+        parser)
 
   @property
   def service(self):
@@ -192,16 +168,19 @@ class DeleteAlpha(base_classes.BaseAsyncMutator):
   def CreateRequests(self, args):
     """Returns a list of delete messages for instance group managers."""
     # pylint:disable=too-many-function-args
-    refs = instance_groups_utils.CreateInstanceGroupReferences(
-        scope_prompter=self, compute=self.compute, resources=self.resources,
-        names=args.names, zone=args.zone, region=args.region)
-    scope_name = self._GetCommonScopeNameForRefs(refs)
+    igm_refs = (
+        instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGERS_ARG.
+        ResolveAsResource)(
+            args, self.resources, default_scope=flags.ScopeEnum.ZONE,
+            scope_lister=flags.GetDefaultScopeLister(
+                self.compute_client, self.project))
+    scope_name = self._GetCommonScopeNameForRefs(igm_refs)
 
     utils.PromptForDeletion(
-        refs, scope_name=scope_name, prompt_title=None)
+        igm_refs, scope_name=scope_name, prompt_title=None)
 
     requests = []
-    for ref in refs:
+    for ref in igm_refs:
       if ref.Collection() == 'compute.instanceGroupManagers':
         service = self.compute.instanceGroupManagers
         request = service.GetRequestType(self.method)(

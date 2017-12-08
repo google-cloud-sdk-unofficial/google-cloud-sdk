@@ -20,7 +20,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import util as projects_util
 from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core import log
-from googlecloudsdk.core import resources
 
 
 class Create(base.CreateCommand):
@@ -86,12 +85,9 @@ class Create(base.CreateCommand):
     topic_project = ''
     if args.topic_project:
       topic_project = projects_util.ParseProject(args.topic_project).Name()
-    topic_name = resources.REGISTRY.Parse(
-        args.topic, collection=util.TOPICS_COLLECTION).Name()
+    topic_name = args.topic
 
     for subscription_name in args.subscription:
-      subscription_name = resources.REGISTRY.Parse(
-          subscription_name, collection=util.SUBSCRIPTIONS_COLLECTION).Name()
       subscription = msgs.Subscription(
           name=util.SubscriptionFormat(subscription_name),
           topic=util.TopicFormat(topic_name, topic_project),

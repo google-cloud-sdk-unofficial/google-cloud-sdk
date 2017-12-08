@@ -53,7 +53,7 @@ class Diagnose(base.Command):
           message='Waiting for cluster diagnose operation')
       response = operation.response
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.FormatHttpError(error))
+      raise exceptions.HttpException(error)
 
     if not response:
       raise exceptions.ToolException('Operation is missing response')

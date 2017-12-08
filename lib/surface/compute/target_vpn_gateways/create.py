@@ -14,7 +14,9 @@
 """Command for creating target VPN Gateways."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.networks import flags as network_flags
+from googlecloudsdk.command_lib.compute.target_vpn_gateways import flags
 
 
 class Create(base_classes.BaseAsyncCreator):
@@ -24,31 +26,25 @@ class Create(base_classes.BaseAsyncCreator):
   # be set outside the class definition.
   detailed_help = None
 
-  @staticmethod
-  def Args(parser):
+  NETWORK_ARG = None
+  TARGET_VPN_GATEWAY_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
     """Adds arguments to the supplied parser."""
+    cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
+        'A reference to a network in this project',
+        detailed_help="""\
+        A reference to a network in this project to
+        contain the VPN Gateway.
+        """)
+    cls.NETWORK_ARG.AddArgument(parser)
+    cls.TARGET_VPN_GATEWAY_ARG = flags.TargetVpnGatewayArgument()
+    cls.TARGET_VPN_GATEWAY_ARG.AddArgument(parser, operation_type='create')
 
     parser.add_argument(
         '--description',
         help='An optional, textual description for the target VPN Gateway.')
-
-    network = parser.add_argument(
-        '--network',
-        required=True,
-        help='A reference to a network in this project')
-    network.detailed_help = """\
-       A reference to a network in this project to
-       contain the VPN Gateway.
-       """
-
-    flags.AddRegionFlag(
-        parser,
-        resource_type='Target VPN Gatway',
-        operation_type='create')
-
-    parser.add_argument(
-        'name',
-        help='The name of the target VPN Gateway.')
 
   @property
   def service(self):
@@ -73,18 +69,16 @@ class Create(base_classes.BaseAsyncCreator):
       by the compute API.
     """
 
-    target_vpn_gateway_ref = self.CreateRegionalReference(
-        args.name, args.region, resource_type='targetVpnGateways')
-    network_ref = self.CreateGlobalReference(
-        args.network, resource_type='networks')
-    # Get a reference to the region name in the gateway. N.B. This could have
-    # been passed as part of args.region or resolved via a prompt.
-    region_ref = self.CreateGlobalReference(
-        target_vpn_gateway_ref.region, resource_type='regions')
+    target_vpn_gateway_ref = self.TARGET_VPN_GATEWAY_ARG.ResolveAsResource(
+        args,
+        self.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
+                                                         self.project))
+    network_ref = self.NETWORK_ARG.ResolveAsResource(args, self.resources)
 
     request = self.messages.ComputeTargetVpnGatewaysInsertRequest(
         project=self.project,
-        region=region_ref.Name(),
+        region=target_vpn_gateway_ref.region,
         targetVpnGateway=self.messages.TargetVpnGateway(
             description=args.description,
             name=target_vpn_gateway_ref.Name(),

@@ -76,7 +76,7 @@ class Rollback(base.Command):
             'could not initiate rollback of [{0}]'.format(ref))
 
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(updater_util.GetError(error))
+      raise exceptions.HttpException(error)
 
 Rollback.detailed_help = {
     'brief': 'Rolls back an existing update.',

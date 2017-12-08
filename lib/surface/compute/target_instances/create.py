@@ -15,31 +15,29 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
-from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.instances import (flags as
+                                                          instances_flags)
+from googlecloudsdk.command_lib.compute.target_instances import flags
 
 
 class Create(base_classes.BaseAsyncCreator):
   """Create a target instance for handling traffic from a forwarding rule."""
 
-  @staticmethod
-  def Args(parser):
+  INSTANCE_ARG = None
+  TARGET_INSTANCE_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.INSTANCE_ARG = instances_flags.InstanceArgumentForTargetInstance()
+    cls.INSTANCE_ARG.AddArgument(parser)
+    cls.TARGET_INSTANCE_ARG = flags.TargetInstanceArgument()
+    cls.TARGET_INSTANCE_ARG.AddArgument(
+        parser, operation_type='create the target instance in')
+
     parser.add_argument(
         '--description',
         help='An optional, textual description of the target instance.')
-    parser.add_argument(
-        '--instance',
-        required=True,
-        help=('The name of the virtual machine instance that will handle the '
-              'traffic.'))
-
-    flags.AddZoneFlag(
-        parser,
-        resource_type='instance',
-        operation_type='to create the target instance in')
-
-    parser.add_argument(
-        'name',
-        help='The name of the target instance.')
 
   @property
   def service(self):
@@ -54,12 +52,17 @@ class Create(base_classes.BaseAsyncCreator):
     return 'targetInstances'
 
   def CreateRequests(self, args):
-    instance_ref = self.CreateZonalReference(
-        args.instance, args.zone, resource_type='instances')
 
-    target_instance_ref = self.CreateZonalReference(
-        args.name, instance_ref.zone,
-        resource_type='targetInstances')
+    target_instance_ref = self.TARGET_INSTANCE_ARG.ResolveAsResource(
+        args,
+        self.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
+                                                         self.project))
+
+    if target_instance_ref.zone and not args.instance_zone:
+      args.instance_zone = target_instance_ref.zone
+
+    instance_ref = self.INSTANCE_ARG.ResolveAsResource(args, self.resources)
 
     if target_instance_ref.zone != instance_ref.zone:
       raise calliope_exceptions.ToolException(

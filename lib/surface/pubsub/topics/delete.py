@@ -19,7 +19,6 @@ from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core import log
-from googlecloudsdk.core import resources
 
 
 class Delete(base.DeleteCommand):
@@ -49,8 +48,6 @@ class Delete(base.DeleteCommand):
     pubsub = self.context['pubsub']
 
     for topic_name in args.topic:
-      topic_name = resources.REGISTRY.Parse(
-          topic_name, collection=self.Collection()).Name()
       topic = msgs.Topic(name=util.TopicFormat(topic_name))
       delete_req = msgs.PubsubProjectsTopicsDeleteRequest(
           topic=util.TopicFormat(topic.name))

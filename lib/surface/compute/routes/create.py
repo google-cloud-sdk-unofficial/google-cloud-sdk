@@ -207,7 +207,9 @@ class Create(base_classes.BaseAsyncCreator):
 
   @classmethod
   def Args(cls, parser):
-    cls.NETWORK_ARG = network_flags.NetworkArgumentForRoute(required=False)
+    cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
+        'Specifies the network to which the route will be applied.',
+        required=False)
     cls.INSTANCE_ARG = instance_flags.InstanceArgumentForRoute(required=False)
     cls.VPN_TUNNEL_ARG = vpn_flags.VpnTunnelArgumentForRoute(required=False)
     cls.ROUTE_ARG = flags.RouteArgument()

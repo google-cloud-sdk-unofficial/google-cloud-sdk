@@ -11,7 +11,7 @@ gcloud dataproc jobs submit spark \- submit a Java or Scala Spark job to a clust
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud dataproc jobs submit spark\fR \fB\-\-cluster\fR=\fICLUSTER\fR [\fB\-\-archives\fR=[\fIARCHIVE\fR,...]] [\fB\-\-async\fR] [\fB\-\-bucket\fR=\fIBUCKET\fR] [\fB\-\-class\fR=\fIMAIN_CLASS\fR] [\fB\-\-driver\-log\-levels\fR=[\fIPACKAGE\fR=\fILEVEL\fR,...]] [\fB\-\-files\fR=[\fIFILE\fR,...]] [\fB\-\-jar\fR=\fIMAIN_JAR\fR] [\fB\-\-jars\fR=[\fIJAR\fR,...]] [\fB\-\-properties\fR=[\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR] [\-\-\ \fIIMPLEMENTATION\-ARGS\fR\ ...]
+\f5gcloud dataproc jobs submit spark\fR \fB\-\-cluster\fR=\fICLUSTER\fR [\fB\-\-archives\fR=[\fIARCHIVE\fR,...]] [\fB\-\-async\fR] [\fB\-\-bucket\fR=\fIBUCKET\fR] [\fB\-\-class\fR=\fIMAIN_CLASS\fR] [\fB\-\-driver\-log\-levels\fR=[\fIPACKAGE\fR=\fILEVEL\fR,...]] [\fB\-\-files\fR=[\fIFILE\fR,...]] [\fB\-\-jar\fR=\fIMAIN_JAR\fR] [\fB\-\-jars\fR=[\fIJAR\fR,...]] [\fB\-\-properties\fR=[\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR] [\-\-\ \fIJOB_ARGS\fR\ ...]
 
 
 
@@ -23,14 +23,14 @@ Submit a Java or Scala Spark job to a cluster.
 
 .SH "POSITIONAL ARGUMENTS"
 
-[\-\- \fIIMPLEMENTATION\-ARGS\fR ...]
+[\-\- \fIJOB_ARGS\fR ...]
 .RS 2m
 The arguments to pass to the driver.
 
 The '\-\-' argument must be specified between gcloud specific args on the left
-and IMPLEMENTATION\-ARGS on the right. IMPORTANT: previously, commands allowed
-the omission of the \-\-, and unparsed arguments were treated as implementation
-args. This usage is being deprecated and will be removed in March 2017.
+and JOB_ARGS on the right. IMPORTANT: previously, commands allowed the omission
+of the \-\-, and unparsed arguments were treated as implementation args. This
+usage is being deprecated and will be removed in March 2017.
 
 
 .RE

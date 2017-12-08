@@ -19,7 +19,11 @@ import re
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.routers import flags as router_flags
+from googlecloudsdk.command_lib.compute.target_vpn_gateways import (
+    flags as target_vpn_gateway_flags)
+from googlecloudsdk.command_lib.compute.vpn_tunnels import flags
 
 
 _PRINTABLE_CHARS_PATTERN = r'[ -~]+'
@@ -66,9 +70,20 @@ class _BaseCreate(object):
   # be set outside the class definition.
   detailed_help = None
 
-  @staticmethod
-  def Args(parser):
+  ROUTER_ARG = None
+  TARGET_VPN_GATEWAY_ARG = None
+  VPN_TUNNEL_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
     """Adds arguments to the supplied parser."""
+
+    cls.ROUTER_ARG = router_flags.RouterArgumentForVpnTunnel(required=False)
+    cls.TARGET_VPN_GATEWAY_ARG = (
+        target_vpn_gateway_flags.TargetVpnGatewayArgumentForVpnTunnel())
+    cls.TARGET_VPN_GATEWAY_ARG.AddArgument(parser)
+    cls.VPN_TUNNEL_ARG = flags.VpnTunnelArgument()
+    cls.VPN_TUNNEL_ARG.AddArgument(parser, operation_type='create')
 
     parser.add_argument(
         '--description',
@@ -95,11 +110,6 @@ class _BaseCreate(object):
         'A shared secret consisting of printable characters.  Valid '
         'arguments match the regular expression ' +
         _PRINTABLE_CHARS_PATTERN)
-
-    parser.add_argument(
-        '--target-vpn-gateway',
-        required=True,
-        help='A reference to a target vpn gateway')
 
     parser.add_argument(
         '--ike-networks',
@@ -134,15 +144,6 @@ class _BaseCreate(object):
     parser.add_argument(
         '--router',
         help='The Router to use for dynamic routing.')
-
-    flags.AddRegionFlag(
-        parser,
-        resource_type='VPN Tunnel',
-        operation_type='create')
-
-    parser.add_argument(
-        'name',
-        help='The name of the VPN tunnel.')
 
   @property
   def service(self):
@@ -181,37 +182,20 @@ class CreateGA(_BaseCreate, base_classes.BaseAsyncCreator):
           '--ike-networks',
           'It has been renamed to --local-traffic-selector.')
 
-    vpn_tunnel_ref = self.CreateRegionalReference(
-        args.name, args.region, resource_type='vpnTunnels')
+    vpn_tunnel_ref = self.VPN_TUNNEL_ARG.ResolveAsResource(
+        args,
+        self.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
+                                                         self.project))
 
-    # The below is a hack.  The code below ensures that the following two
-    # properties hold:
-    #   1) scope prompting occurs at most once for the vpn tunnel and gateway
-    #   2) if the user gives exactly one of the vpn tunnel and gateway as a URL
-    #        and one as short name we do still check --region or prompt as
-    #        usual.
-    #
-    # TODO(user) Change the semantics of the scope prompter so that a
-    # single prompt can set the region for resources of multiple types with a
-    # single user prompt.  See b/18313268.
-
-    # requested by args or prompt?
-    if args.region:
-      requested_region = args.region
-    elif not args.name.startswith('https://'):
-      requested_region = vpn_tunnel_ref.region
-    else:
-      requested_region = None
-
-    target_vpn_gateway_ref = self.CreateRegionalReference(
-        args.target_vpn_gateway, requested_region,
-        resource_type='targetVpnGateways')
+    args.target_vpn_gateway_region = vpn_tunnel_ref.region
+    target_vpn_gateway_ref = self.TARGET_VPN_GATEWAY_ARG.ResolveAsResource(
+        args, self.resources)
 
     router_link = None
     if args.router is not None:
-      router_ref = self.CreateRegionalReference(
-          args.router, requested_region,
-          resource_type='routers')
+      args.router_region = vpn_tunnel_ref.region
+      router_ref = self.ROUTER_ARG.ResolveAsResource(args, self.resources)
       router_link = router_ref.SelfLink()
 
     request = self.messages.ComputeVpnTunnelsInsertRequest(

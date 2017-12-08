@@ -27,13 +27,12 @@ class Create(base.CreateCommand):
   detailed_help = {
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\
-          To create an endpoint in Service Registry
+          To create an endpoint in Service Registry:
 
-            $ {command} my_endpoint --target my_service.my_domain:8080
-                --networks NETWORK_URL
+            $ {command} my_endpoint --target my_service.my_domain:8080 --networks NETWORK_URL
 
           For additional targets, just repeat the address flag, and to see
-          more options use
+          more options use:
 
             $ {command} --help
           """,

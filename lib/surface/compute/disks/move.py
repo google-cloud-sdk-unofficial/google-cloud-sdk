@@ -91,6 +91,7 @@ Move.detailed_help = {
         command instead.
 
         For example, running:
+
            $ gcloud compute disks move example-disk-1 --zone us-central1-b --destination-zone us-central1-f
 
         will move the disk called example-disk-1, currently running in

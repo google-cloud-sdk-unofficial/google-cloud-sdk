@@ -15,7 +15,6 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
-from googlecloudsdk.core import resources
 
 
 class Ack(base.Command):
@@ -52,11 +51,9 @@ class Ack(base.Command):
     msgs = self.context['pubsub_msgs']
     pubsub = self.context['pubsub']
 
-    subscription = resources.REGISTRY.Parse(
-        args.subscription, collection=util.SUBSCRIPTIONS_COLLECTION)
     ack_req = msgs.PubsubProjectsSubscriptionsAcknowledgeRequest(
         acknowledgeRequest=msgs.AcknowledgeRequest(ackIds=args.ackid),
-        subscription=util.SubscriptionFormat(subscription.Name()))
+        subscription=util.SubscriptionFormat(args.subscription))
 
     pubsub.projects_subscriptions.Acknowledge(ack_req)
 

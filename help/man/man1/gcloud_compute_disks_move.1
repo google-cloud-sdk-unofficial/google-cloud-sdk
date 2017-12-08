@@ -22,10 +22,11 @@ volume from one zone to another. You cannot move a disk if it is attached to a
 running or stopped instance; use the gcloud compute instances move command
 instead.
 
-For example, running:.RS 2m
+For example, running:
+
+.RS 2m
 $ gcloud compute disks move example\-disk\-1 \-\-zone us\-central1\-b \e
    \-\-destination\-zone us\-central1\-f
-
 .RE
 
 will move the disk called example\-disk\-1, currently running in

@@ -14,6 +14,7 @@
 """Command to set scopes for an instance resource."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
@@ -22,7 +23,7 @@ from googlecloudsdk.command_lib.compute.instances import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SetIamPolicy(base_classes.BaseAsyncMutator):
+class SetScopes(base_classes.NoOutputAsyncMutator):
   """Set scopes and service account for a Google Compute Engine instance."""
 
   def __init__(self, *args, **kwargs):
@@ -94,13 +95,17 @@ class SetIamPolicy(base_classes.BaseAsyncMutator):
       return args.service_account
     return self._original_email(instance_ref)
 
-  def _scopes(self, args, instance_ref):
+  def _unprocessed_scopes(self, args, instance_ref):
     """Return scopes to set for the instance."""
     if args.no_scopes:
       return []
     if args.scopes:
       return args.scopes
     return self._original_scopes(instance_ref)
+
+  def _scopes(self, args, instance_ref):
+    return [constants.SCOPES.get(scope, scope)
+            for scope in self._unprocessed_scopes(args, instance_ref)]
 
   def CreateRequests(self, args):
     flags.ValidateServiceAccountAndScopeArgs(args)

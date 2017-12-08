@@ -174,20 +174,6 @@ def GenerateApiMap(base_dir, root_dir, api_config):
     tpl.render_context(ctx)
 
 
-def _GetPathParams(path):
-  """Extract parameters from path."""
-  parts = path.split('/')
-  params = []
-  for part in parts:
-    if part.startswith('{') and part.endswith('}'):
-      part = part[1:-1]
-      if part.startswith('+'):
-        params.append(part[1:])
-      else:
-        params.append(part)
-  return params
-
-
 def _ExtractResources(api_name, api_version, base_url, infos):
   """Extract resource definitions from discovery doc."""
   collections = []
@@ -223,7 +209,7 @@ def _ExtractResources(api_name, api_version, base_url, infos):
               url_api_name, api_version, url, collection_name,
               request_type, path,
               {_DEFAULT_PATH_NAME: flat_path} if flat_path else {},
-              _GetPathParams(path))
+              resource_util.GetParamsFromPath(path))
           collections.append(collection_info)
     else:
       subresource_collections = _ExtractResources(

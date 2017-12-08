@@ -20,7 +20,7 @@ from googlecloudsdk.calliope import exceptions
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetDefaultServiceAccount(base_classes.NoOutputAsyncMutator):
-  """Set the usage reporting bucket for a project."""
+  """Set the default service account on the project."""
 
   @staticmethod
   def Args(parser):
@@ -35,8 +35,7 @@ class SetDefaultServiceAccount(base_classes.NoOutputAsyncMutator):
         To set the default service account to
         example@project.iam.gserviceaccount.com:
 
-          $ {command}
-            --service-account example@project.iam.gserviceaccount.com
+          $ {command} --service-account example@project.iam.gserviceaccount.com
         """
     no_service_account = accounts_group.add_argument(
         '--no-service-account',
@@ -91,7 +90,6 @@ class SetDefaultServiceAccount(base_classes.NoOutputAsyncMutator):
 
 
 SetDefaultServiceAccount.detailed_help = {
-    'brief': 'Sets the default service account on the project.',
     'DESCRIPTION': """\
         *{command}* is used to configure the default service account on project.
 
@@ -101,8 +99,8 @@ SetDefaultServiceAccount.detailed_help = {
 
         For example,
 
-        $ {command} --email=example@developers.gserviceaccount.com
-        $ gcloud compute instances create instance-name
+          $ {command} --email=example@developers.gserviceaccount.com
+          $ gcloud compute instances create instance-name
 
         will set the project's default service account as
         example@developers.gserviceaccount.com. The instance created will have
@@ -112,7 +110,6 @@ SetDefaultServiceAccount.detailed_help = {
 
         To remove the default service account from the project, issue the command:
 
-          $ gcloud compute project-info set-default-service-account
-            --no-service-account
+          $ gcloud compute project-info set-default-service-account --no-service-account
         """,
 }

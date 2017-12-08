@@ -15,6 +15,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instance_groups import flags
 
 
@@ -36,12 +37,14 @@ class SetNamedPorts(base_classes.NoOutputAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    flags.AddGroupArg(parser)
+    flags.ZONAL_INSTANCE_GROUP_ARG.AddArgument(parser)
     flags.AddNamedPortsArgs(parser)
-    flags.AddScopeArgs(parser=parser, multizonal=False)
 
   def CreateRequests(self, args):
-    group_ref = self.CreateZonalReference(args.group, args.zone)
+    group_ref = flags.ZONAL_INSTANCE_GROUP_ARG.ResolveAsResource(
+        args, self.resources, default_scope=compute_flags.ScopeEnum.ZONE,
+        scope_lister=compute_flags.GetDefaultScopeLister(
+            self.compute_client, self.project))
     ports = instance_groups_utils.ValidateAndParseNamedPortsArgs(
         self.messages, args.named_ports)
     # service should be always zonal
@@ -68,16 +71,14 @@ class SetNamedPortsAlpha(base_classes.NoOutputAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    flags.AddGroupArg(parser)
+    flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(parser)
     flags.AddNamedPortsArgs(parser)
-    flags.AddScopeArgs(parser=parser, multizonal=True)
 
   def CreateRequests(self, args):
-    group_ref = instance_groups_utils.CreateInstanceGroupReference(
-        scope_prompter=self, compute=self.compute, resources=self.resources,
-        name=args.group, region=args.region, zone=args.zone,
-        zonal_resource_type='instanceGroups',
-        regional_resource_type='regionInstanceGroups')
+    group_ref = flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
+        args, self.resources, default_scope=compute_flags.ScopeEnum.ZONE,
+        scope_lister=compute_flags.GetDefaultScopeLister(
+            self.compute_client, self.project))
     ports = instance_groups_utils.ValidateAndParseNamedPortsArgs(
         self.messages, args.named_ports)
     # service could be zonal or regional

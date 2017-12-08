@@ -66,7 +66,7 @@ class Export(base.Command):
     try:
       zone = dns.managedZones.Get(zone_ref.Request())
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetErrorMessage(error))
+      raise exceptions.HttpException(error)
 
     # Get all the record-sets.
     record_sets = []

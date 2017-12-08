@@ -19,7 +19,6 @@ import datetime
 from apitools.base.protorpclite import util as protorpc_util
 from apitools.base.py import exceptions as apitools_exceptions
 
-from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import network
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
@@ -66,7 +65,7 @@ def _WhitelistClientIP(instance_ref, sql_client, sql_messages, resources):
   try:
     original = sql_client.instances.Get(instance_ref.Request())
   except apitools_exceptions.HttpError as error:
-    raise exceptions.HttpException(errors.GetErrorMessage(error))
+    raise exceptions.HttpException(error)
 
   original.settings.ipConfiguration.authorizedNetworks.append(user_acl)
   patch_request = sql_messages.SqlInstancesPatchRequest(

@@ -22,10 +22,11 @@ virtual machine from one zone to another. Moving a virtual machine may incur
 downtime if the guest OS must be shutdown in order to quiesce disk volumes prior
 to snapshotting.
 
-For example, running:.RS 2m
+For example, running:
+
+.RS 2m
 $ gcloud compute instances move example\-instance\-1 \e
    \-\-zone us\-central1\-b \-\-destination\-zone us\-central1\-f
-
 .RE
 
 will move the instance called example\-instance\-1, currently running in

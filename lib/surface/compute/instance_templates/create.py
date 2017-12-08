@@ -24,10 +24,12 @@ from googlecloudsdk.command_lib.compute.instance_templates import flags as insta
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 
 
-def _CommonArgs(parser, multiple_network_interface_cards):
+def _CommonArgs(parser, multiple_network_interface_cards, release_track):
   """Common arguments used in Alpha, Beta, and GA."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser)
+  if release_track in [base.ReleaseTrack.ALPHA]:
+    instances_flags.AddCreateDiskArgs(parser)
   instances_flags.AddLocalSsdArgs(parser)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(
@@ -72,7 +74,8 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser, multiple_network_interface_cards=False)
+    _CommonArgs(parser, multiple_network_interface_cards=False,
+                release_track=base.ReleaseTrack.GA)
 
   @property
   def service(self):
@@ -149,7 +152,9 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
     create_boot_disk = not instance_utils.UseExistingBootDisk(args.disk or [])
     if create_boot_disk:
       image_uri, _ = self.ExpandImageFlag(
-          args,
+          image=args.image,
+          image_family=args.image_family,
+          image_project=args.image_project,
           return_image_resource=True)
     else:
       image_uri = None
@@ -162,6 +167,10 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
     persistent_disks = (
         instance_template_utils.CreatePersistentAttachedDiskMessages(
             self.messages, args.disk or []))
+
+    persistent_create_disks = (
+        instance_template_utils.CreatePersistentCreateDiskMessages(
+            self, self.messages, getattr(args, 'create_disk', [])))
 
     if create_boot_disk:
       boot_disk_list = [
@@ -180,7 +189,9 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander):
             self, x.get('device-name'), x.get('interface'))
         for x in args.local_ssd or []]
 
-    disks = boot_disk_list + persistent_disks + local_ssds
+    disks = (
+        boot_disk_list + persistent_disks + persistent_create_disks + local_ssds
+    )
 
     machine_type = instance_utils.InterpretMachineType(
         machine_type=args.machine_type,
@@ -222,6 +233,11 @@ class CreateBeta(Create):
   instances in any zone.
   """
 
+  @classmethod
+  def Args(cls, parser):
+    _CommonArgs(parser, multiple_network_interface_cards=True,
+                release_track=base.ReleaseTrack.BETA)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
@@ -240,4 +256,5 @@ class CreateAlpha(Create):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser, multiple_network_interface_cards=True)
+    _CommonArgs(parser, multiple_network_interface_cards=True,
+                release_track=base.ReleaseTrack.ALPHA)

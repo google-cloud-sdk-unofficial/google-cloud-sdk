@@ -13,36 +13,10 @@
 # limitations under the License.
 """Command for stopping autoscaling of a managed instance group."""
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
-
-
-def _AddArgs(parser, multizonal):
-  """Adds args."""
-  parser.add_argument(
-      'name',
-      metavar='NAME',
-      completion_resource='compute.instanceGroupManagers',
-      help='Managed instance group which will no longer be autoscaled.')
-  if multizonal:
-    scope_parser = parser.add_mutually_exclusive_group()
-    flags.AddRegionFlag(
-        scope_parser,
-        resource_type='resources',
-        operation_type='delete',
-        explanation=flags.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
-    flags.AddZoneFlag(
-        scope_parser,
-        resource_type='resources',
-        operation_type='delete',
-        explanation=flags.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
-  else:
-    flags.AddZoneFlag(
-        parser,
-        resource_type='resources',
-        operation_type='delete')
+from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
 def _IsZonalGroup(ref):
@@ -68,11 +42,16 @@ class StopAutoscaling(base_classes.BaseAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, multizonal=False)
+    instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG.AddArgument(parser)
 
   def CreateGroupReference(self, args):
-    return self.CreateZonalReference(
-        args.name, args.zone, resource_type='instanceGroupManagers')
+    resource_arg = instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG
+    default_scope = flags.ScopeEnum.ZONE
+    scope_lister = flags.GetDefaultScopeLister(
+        self.compute_client, self.project)
+    return resource_arg.ResolveAsResource(
+        args, self.resources, default_scope=default_scope,
+        scope_lister=scope_lister)
 
   def GetAutoscalerServiceForGroup(self, group_ref):
     return self.compute.autoscalers
@@ -120,12 +99,17 @@ class StopAutoscalingAlpha(StopAutoscaling):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, multizonal=True)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser)
 
   def CreateGroupReference(self, args):
-    return instance_groups_utils.CreateInstanceGroupReference(
-        scope_prompter=self, compute=self.compute, resources=self.resources,
-        name=args.name, region=args.region, zone=args.zone)
+    resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
+    default_scope = flags.ScopeEnum.ZONE
+    scope_lister = flags.GetDefaultScopeLister(
+        self.compute_client, self.project)
+    return resource_arg.ResolveAsResource(
+        args, self.resources, default_scope=default_scope,
+        scope_lister=scope_lister)
 
   def GetAutoscalerServiceForGroup(self, group_ref):
     if _IsZonalGroup(group_ref):

@@ -56,7 +56,8 @@ COPY . /app/
 
 # Install required gems if Gemfile.lock is present.
 RUN if test -f Gemfile.lock; then \\
-      bundle install --deployment && rbenv rehash; \\
+      bundle install --deployment --without="development test" \\
+      && rbenv rehash; \\
     fi
 
 # Temporary. Will be moved to base image later.

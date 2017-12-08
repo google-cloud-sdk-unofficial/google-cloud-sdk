@@ -92,7 +92,7 @@ class Docker(base.Command):
         'unix:///path/to/socket.')
 
     parser.add_argument(
-        'implementation_args', nargs=argparse.REMAINDER, default=[],
+        'docker_args', nargs=argparse.REMAINDER, default=[],
         help='Arguments to pass to docker.')
 
   def Run(self, args):
@@ -122,10 +122,10 @@ class Docker(base.Command):
 
     # TODO(user): reconcile with the 'gcloud app' docker stuff,
     # which should be using a gcloud config property.
-    implementation_args = (args.implementation_args if not args.docker_host else
-                           ['-H', args.docker_host] + args.implementation_args)
+    docker_args = (args.docker_args if not args.docker_host else
+                   ['-H', args.docker_host] + args.docker_args)
 
-    result = docker.Execute(implementation_args)
+    result = docker.Execute(docker_args)
     # Explicitly avoid displaying an error message that might
     # distract from the docker error message already displayed.
     if result:

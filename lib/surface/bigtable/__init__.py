@@ -23,7 +23,11 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Bigtable(base.Group):
-  """Manage your Cloud Bigtable storage."""
+  """Manage your Cloud Bigtable storage.
+
+  DEPRECATED: Please use 'gcloud beta bigtable' for all functions.
+  'gcloud alpha bigtable' will be removed in an upcoming release.
+  """
 
   def Filter(self, context, args):
     """Modify the context that will be given to this group's commands when run.

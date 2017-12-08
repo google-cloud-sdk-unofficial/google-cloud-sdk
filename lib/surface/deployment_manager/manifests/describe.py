@@ -80,7 +80,7 @@ class Describe(base.DescribeCommand):
             )
         )
       except apitools_exceptions.HttpError as error:
-        raise exceptions.HttpException(dm_v2_util.GetError(error))
+        raise exceptions.HttpException(error)
 
       manifest = dm_v2_util.ExtractManifestName(deployment)
       if manifest:

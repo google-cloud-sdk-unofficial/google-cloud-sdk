@@ -14,10 +14,11 @@
 """Command for configuring autoscaling of a managed instance group."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
 def _IsZonalGroup(ref):
@@ -46,7 +47,8 @@ class SetAutoscaling(base_classes.BaseAsyncMutator):
   @staticmethod
   def Args(parser):
     managed_instance_groups_utils.AddAutoscalerArgs(
-        parser=parser, multizonal_enabled=False, queue_scaling_enabled=False)
+        parser=parser, queue_scaling_enabled=False)
+    instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG.AddArgument(parser)
 
   def CreateGroupReference(self, args):
     return self.CreateZonalReference(
@@ -112,12 +114,18 @@ class SetAutoscalingBeta(SetAutoscaling):
   @staticmethod
   def Args(parser):
     managed_instance_groups_utils.AddAutoscalerArgs(
-        parser=parser, multizonal_enabled=True, queue_scaling_enabled=False)
+        parser=parser, queue_scaling_enabled=False)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser)
 
   def CreateGroupReference(self, args):
-    return instance_groups_utils.CreateInstanceGroupReference(
-        scope_prompter=self, compute=self.compute, resources=self.resources,
-        name=args.name, region=args.region, zone=args.zone)
+    resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
+    default_scope = flags.ScopeEnum.ZONE
+    scope_lister = flags.GetDefaultScopeLister(
+        self.compute_client, self.project)
+    return resource_arg.ResolveAsResource(
+        args, self.resources, default_scope=default_scope,
+        scope_lister=scope_lister)
 
   def GetAutoscalerServiceForGroup(self, group_ref):
     if _IsZonalGroup(group_ref):
@@ -181,7 +189,9 @@ class SetAutoscalingAlpha(SetAutoscalingBeta):
   @staticmethod
   def Args(parser):
     managed_instance_groups_utils.AddAutoscalerArgs(
-        parser=parser, multizonal_enabled=True, queue_scaling_enabled=True)
+        parser=parser, queue_scaling_enabled=True)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser)
 
 
 SetAutoscaling.detailed_help = {

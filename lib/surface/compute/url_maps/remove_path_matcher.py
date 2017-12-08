@@ -89,7 +89,6 @@ class RemovePathMatcher(base_classes.ReadWriteCommand):
 
 
 RemovePathMatcher.detailed_help = {
-    'brief': 'Remove a path matcher from a URL map',
     'DESCRIPTION': """\
         *{command}* is used to remove a path matcher from a URL
          map. When a path matcher is removed, all host rules that

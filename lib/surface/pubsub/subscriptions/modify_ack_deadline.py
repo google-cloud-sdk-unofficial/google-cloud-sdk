@@ -15,7 +15,6 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
-from googlecloudsdk.core import resources
 
 
 class ModifyAckDeadline(base.Command):
@@ -58,8 +57,7 @@ class ModifyAckDeadline(base.Command):
     msgs = self.context['pubsub_msgs']
     pubsub = self.context['pubsub']
 
-    subscription = util.SubscriptionFormat(resources.REGISTRY.Parse(
-        args.subscription, collection=util.SUBSCRIPTIONS_COLLECTION).Name())
+    subscription = util.SubscriptionFormat(args.subscription)
     mod_req = msgs.PubsubProjectsSubscriptionsModifyAckDeadlineRequest(
         modifyAckDeadlineRequest=msgs.ModifyAckDeadlineRequest(
             ackDeadlineSeconds=args.ack_deadline,

@@ -3,7 +3,6 @@
 import abc
 import binascii
 import cStringIO
-import gzip
 import hashlib
 import httplib
 import json
@@ -227,16 +226,17 @@ _EMPTY_LAYER_TAR_ID = (
 class AppendLayer(DockerImage):
   """Appends a new layer on top of a base image.
 
-  This augments a base docker image with new files from a tarball,
+  This augments a base docker image with new files from a gzipped tarball,
   adds environment variables and exposes a port.
   """
 
-  def __init__(self, base, tar, port, *envs):
-    """Creates a new layer on top of a base one with optional tar, port or envs.
+  def __init__(self, base, tar_gz, port, *envs):
+    """Creates a new layer on top of a base with optional tar.gz, port or envs.
 
     Args:
       base: a base DockerImage for a new layer.
-      tar: an optional tarball passed as a string with filesystem changeset.
+      tar_gz: an optional gzipped tarball passed as a string with filesystem
+          changeset.
       port: an optional port to be exposed, passed as a string. For example:
           '8080/tcp'.
       *envs: environment variables passed as strings in the format:
@@ -244,20 +244,10 @@ class AppendLayer(DockerImage):
     """
     self._base = base
 
-    if tar is None:
+    if tar_gz is None:
       self._blob_sum = _EMPTY_LAYER_TAR_ID
     else:
-      # gzip this tarball
-      buf = cStringIO.StringIO()
-      f = gzip.GzipFile(mode='wb', fileobj=buf)
-      try:
-        # TODO(user): Expects the tarball as a string, consider
-        # accepting tarfile.TarInfo instead.
-        f.write(tar)
-      finally:
-        f.close()
-
-      self._blob = buf.getvalue()
+      self._blob = tar_gz
       self._blob_sum = 'sha256:' + hashlib.sha256(self._blob).hexdigest()
 
     unsigned_manifest, unused_signatures = util.DetachSignatures(
@@ -268,15 +258,15 @@ class AppendLayer(DockerImage):
     v1_compat['parent'] = v1_compat['id']
     v1_compat['id'] = binascii.hexlify(os.urandom(32))
 
-    config = v1_compat.get('config', {})
+    config = v1_compat.get('config', {}) or {}
     envs = list(envs)
     if envs:
       env_keys = [env.split('=')[0] for env in envs]
-      old_envs = config.get('Env', [])
+      old_envs = config.get('Env', []) or []
       old_envs = [env for env in old_envs if env.split('=')[0] not in env_keys]
       config['Env'] = old_envs + envs
     if port is not None:
-      old_ports = config.get('ExposedPorts', {})
+      old_ports = config.get('ExposedPorts', {}) or {}
       old_ports[port] = {}
       config['ExposedPorts'] = old_ports
     v1_compat['config'] = config

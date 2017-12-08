@@ -128,7 +128,7 @@ class Start(base.Command):
             'could not start [{0}]'.format(operation.targetLink))
 
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(updater_util.GetError(error))
+      raise exceptions.HttpException(error)
 
   def _PrepareUpdate(self, args):
     """Creates an update object based on user-provided flags.

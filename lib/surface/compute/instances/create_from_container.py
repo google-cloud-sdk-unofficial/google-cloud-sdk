@@ -34,6 +34,7 @@ class CreateFromContainer(base_classes.BaseAsyncCreator,
     """Register parser args."""
     metadata_utils.AddMetadataArgs(parser)
     instances_flags.AddDiskArgs(parser)
+    instances_flags.AddCreateDiskArgs(parser)
     instances_flags.AddLocalSsdArgs(parser)
     instances_flags.AddCanIpForwardArgs(parser)
     instances_flags.AddAddressArgs(parser, instances=True)
@@ -151,6 +152,10 @@ class CreateFromContainer(base_classes.BaseAsyncCreator,
         instance_utils.CreatePersistentAttachedDiskMessages(
             self, self.compute_client, None, args.disk or [],
             instance_ref))
+    persistent_create_disks = (
+        instance_utils.CreatePersistentCreateDiskMessages(
+            self, self.compute_client, self.resources, None,
+            getattr(args, 'create_disk', []), instance_ref))
     local_ssds = [
         instance_utils.CreateLocalSsdMessage(
             self, x.get('device-name'), x.get('interface'), instance_ref.zone)
@@ -165,7 +170,8 @@ class CreateFromContainer(base_classes.BaseAsyncCreator,
         image_uri=image_uri,
         instance_ref=instance_ref,
         csek_keys=None)
-    return [boot_disk] + persistent_disks + local_ssds
+    return (
+        [boot_disk] + persistent_disks + persistent_create_disks + local_ssds)
 
 
 CreateFromContainer.detailed_help = {

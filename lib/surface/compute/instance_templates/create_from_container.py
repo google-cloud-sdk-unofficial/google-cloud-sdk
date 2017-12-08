@@ -33,6 +33,7 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
   def Args(parser):
     metadata_utils.AddMetadataArgs(parser)
     instances_flags.AddDiskArgs(parser)
+    instances_flags.AddCreateDiskArgs(parser)
     instances_flags.AddLocalSsdArgs(parser)
     instances_flags.AddCanIpForwardArgs(parser)
     instances_flags.AddAddressArgs(parser, instances=False)
@@ -165,11 +166,15 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
             disk_auto_delete=args.boot_disk_auto_delete,
             disk_size_gb=boot_disk_size_gb,
             image_uri=image_uri)]
+    persistent_create_disks = (
+        instance_template_utils.CreatePersistentCreateDiskMessages(
+            self, self.messages, getattr(args, 'create_disk', [])))
     local_ssds = [
         instance_utils.CreateLocalSsdMessage(
             self, x.get('device-name'), x.get('interface'))
         for x in args.local_ssd or []]
-    return boot_disk_list + persistent_disks + local_ssds
+    return (boot_disk_list + persistent_disks +
+            persistent_create_disks + local_ssds)
 
 
 CreateFromContainer.detailed_help = {

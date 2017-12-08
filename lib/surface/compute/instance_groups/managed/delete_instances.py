@@ -18,34 +18,17 @@ from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
-def _AddArgs(parser, multizonal):
+def _AddArgs(parser):
   """Adds args."""
-  parser.add_argument('name', help='Managed instance group name.')
   parser.add_argument(
       '--instances',
       type=arg_parsers.ArgList(min_length=1),
       metavar='INSTANCE',
       required=True,
       help='Names of instances to delete.')
-  if multizonal:
-    scope_parser = parser.add_mutually_exclusive_group()
-    flags.AddRegionFlag(
-        scope_parser,
-        resource_type='instance group manager',
-        operation_type='delete instances',
-        explanation=flags.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
-    flags.AddZoneFlag(
-        scope_parser,
-        resource_type='instance group manager',
-        operation_type='delete instances',
-        explanation=flags.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
-  else:
-    flags.AddZoneFlag(
-        parser,
-        resource_type='instance group manager',
-        operation_type='delete instances')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -54,7 +37,8 @@ class DeleteInstances(base_classes.BaseAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, multizonal=False)
+    _AddArgs(parser=parser)
+    instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG.AddArgument(parser)
 
   @property
   def method(self):
@@ -69,22 +53,25 @@ class DeleteInstances(base_classes.BaseAsyncMutator):
     return 'instanceGroupManagers'
 
   def CreateRequests(self, args):
-    ref = self.CreateZonalReference(args.name, args.zone)
-    instances_ref = self.CreateZonalReferences(
-        args.instances,
-        ref.zone,
-        resource_type='instances')
-    instances = [instance_ref.SelfLink() for instance_ref in instances_ref]
+    resource_arg = instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG
+    default_scope = flags.ScopeEnum.ZONE
+    scope_lister = flags.GetDefaultScopeLister(
+        self.compute_client, self.project)
+    igm_ref = resource_arg.ResolveAsResource(
+        args, self.resources, default_scope=default_scope,
+        scope_lister=scope_lister)
+    instances = instance_groups_utils.CreateInstanceReferences(
+        self.resources, self.compute_client, igm_ref, args.instances)
     return [(self.method,
              self.messages.ComputeInstanceGroupManagersDeleteInstancesRequest(
-                 instanceGroupManager=ref.Name(),
+                 instanceGroupManager=igm_ref.Name(),
                  instanceGroupManagersDeleteInstancesRequest=(
                      self.messages.InstanceGroupManagersDeleteInstancesRequest(
                          instances=instances,
                      )
                  ),
                  project=self.project,
-                 zone=ref.zone,
+                 zone=igm_ref.zone,
              ))]
 
 
@@ -94,35 +81,41 @@ class DeleteInstancesAlpha(DeleteInstances):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, multizonal=True)
+    _AddArgs(parser=parser)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser)
 
   def CreateRequests(self, args):
-    group_ref = instance_groups_utils.CreateInstanceGroupReference(
-        scope_prompter=self, compute=self.compute, resources=self.resources,
-        name=args.name, region=args.region, zone=args.zone)
+    resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
+    default_scope = flags.ScopeEnum.ZONE
+    scope_lister = flags.GetDefaultScopeLister(
+        self.compute_client, self.project)
+    igm_ref = resource_arg.ResolveAsResource(
+        args, self.resources, default_scope=default_scope,
+        scope_lister=scope_lister)
     instances = instance_groups_utils.CreateInstanceReferences(
-        self, self.compute_client, group_ref, args.instances)
+        self.resources, self.compute_client, igm_ref, args.instances)
 
-    if group_ref.Collection() == 'compute.instanceGroupManagers':
+    if igm_ref.Collection() == 'compute.instanceGroupManagers':
       service = self.compute.instanceGroupManagers
       request = (
           self.messages.
           ComputeInstanceGroupManagersDeleteInstancesRequest(
-              instanceGroupManager=group_ref.Name(),
+              instanceGroupManager=igm_ref.Name(),
               instanceGroupManagersDeleteInstancesRequest=(
                   self.messages.InstanceGroupManagersDeleteInstancesRequest(
                       instances=instances,
                   )
               ),
               project=self.project,
-              zone=group_ref.zone,
+              zone=igm_ref.zone,
           ))
     else:
       service = self.compute.regionInstanceGroupManagers
       request = (
           self.messages.
           ComputeRegionInstanceGroupManagersDeleteInstancesRequest(
-              instanceGroupManager=group_ref.Name(),
+              instanceGroupManager=igm_ref.Name(),
               regionInstanceGroupManagersDeleteInstancesRequest=(
                   self.messages.
                   RegionInstanceGroupManagersDeleteInstancesRequest(
@@ -130,7 +123,7 @@ class DeleteInstancesAlpha(DeleteInstances):
                   )
               ),
               project=self.project,
-              region=group_ref.region,
+              region=igm_ref.region,
           ))
 
     return [(service, self.method, request)]

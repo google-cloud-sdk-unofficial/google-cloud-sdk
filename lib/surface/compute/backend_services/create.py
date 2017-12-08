@@ -136,6 +136,7 @@ class CreateAlpha(CreateGA):
 
     # These are in beta
     flags.AddLoadBalancingScheme(parser)
+    flags.AddIap(parser)
 
   def CreateGlobalRequests(self, args):
     if args.load_balancing_scheme == 'INTERNAL':
@@ -155,6 +156,9 @@ class CreateAlpha(CreateGA):
               args.session_affinity))
     if args.affinity_cookie_ttl is not None:
       backend_service.affinityCookieTtlSec = args.affinity_cookie_ttl
+
+    if args.iap:
+      backend_service.iaap = backend_services_utils.GetIAP(args, self.messages)
 
     request = self.messages.ComputeBackendServicesInsertRequest(
         backendService=backend_service,

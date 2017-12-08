@@ -17,6 +17,5 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 class Metrics(base.Group):
   """Manages logs-based metrics."""

@@ -14,16 +14,15 @@
 """Command for setting target pools of managed instance group."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
-def _AddArgs(parser, multizonal):
+def _AddArgs(parser):
   """Add args."""
-  parser.add_argument('name', help='Managed instance group name.')
   parser.add_argument(
       '--target-pools',
       required=True,
@@ -32,23 +31,6 @@ def _AddArgs(parser, multizonal):
       help=('Compute Engine Target Pools to add the instances to. '
             'Target Pools must be specified by name or by URL. Example: '
             '--target-pool target-pool-1,target-pool-2.'))
-  if multizonal:
-    scope_parser = parser.add_mutually_exclusive_group()
-    flags.AddRegionFlag(
-        scope_parser,
-        resource_type='instance group manager',
-        operation_type='set target pools',
-        explanation=flags.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
-    flags.AddZoneFlag(
-        scope_parser,
-        resource_type='instance group manager',
-        operation_type='set target pools',
-        explanation=flags.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
-  else:
-    flags.AddZoneFlag(
-        parser,
-        resource_type='instance group manager',
-        operation_type='set target pools')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -57,7 +39,8 @@ class SetTargetPools(base_classes.BaseAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, multizonal=False)
+    _AddArgs(parser=parser)
+    instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG.AddArgument(parser)
 
   @property
   def method(self):
@@ -72,10 +55,20 @@ class SetTargetPools(base_classes.BaseAsyncMutator):
     return 'instanceGroupManagers'
 
   def CreateRequests(self, args):
-    ref = self.CreateZonalReference(args.name, args.zone)
+    resource_arg = instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG
+    default_scope = flags.ScopeEnum.ZONE
+    scope_lister = flags.GetDefaultScopeLister(
+        self.compute_client, self.project)
+    ref = resource_arg.ResolveAsResource(
+        args, self.resources, default_scope=default_scope,
+        scope_lister=scope_lister)
     region = utils.ZoneNameToRegionName(ref.zone)
-    pool_refs = self.CreateRegionalReferences(
-        args.target_pools, region, resource_type='targetPools')
+    pool_refs = []
+    for target_pool in args.target_pools:
+      pool_refs.append(self.resources.Parse(
+          target_pool, collection='compute.targetPools',
+          params={'region': region}))
+
     pools = [pool_ref.SelfLink() for pool_ref in pool_refs]
     request = (
         self.messages.ComputeInstanceGroupManagersSetTargetPoolsRequest(
@@ -97,20 +90,29 @@ class SetTargetPoolsAlpha(SetTargetPools):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, multizonal=True)
+    _AddArgs(parser=parser)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser)
 
   def CreateRequests(self, args):
-    group_ref = instance_groups_utils.CreateInstanceGroupReference(
-        scope_prompter=self, compute=self.compute, resources=self.resources,
-        name=args.name, region=args.region, zone=args.zone)
+    resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
+    default_scope = flags.ScopeEnum.ZONE
+    scope_lister = flags.GetDefaultScopeLister(
+        self.compute_client, self.project)
+    group_ref = resource_arg.ResolveAsResource(
+        args, self.resources, default_scope=default_scope,
+        scope_lister=scope_lister)
 
     if group_ref.Collection() == 'compute.instanceGroupManagers':
       region = utils.ZoneNameToRegionName(group_ref.zone)
     else:
       region = group_ref.region
 
-    pool_refs = self.CreateRegionalReferences(
-        args.target_pools, region, resource_type='targetPools')
+    pool_refs = []
+    for target_pool in args.target_pools:
+      pool_refs.append(self.resources.Parse(
+          target_pool, collection='compute.targetPools',
+          params={'region': region}))
     pools = [pool_ref.SelfLink() for pool_ref in pool_refs]
 
     if group_ref.Collection() == 'compute.instanceGroupManagers':

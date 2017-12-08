@@ -16,7 +16,6 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as sdk_ex
 from googlecloudsdk.command_lib.pubsub import util
-from googlecloudsdk.core import resources
 from googlecloudsdk.core.resource import resource_projector
 
 MAX_ATTRIBUTES = 100
@@ -79,8 +78,7 @@ class Publish(base.Command):
                                   ' You must specify either a MESSAGE_BODY,'
                                   ' one or more ATTRIBUTE, or both.'))
 
-    topic_name = resources.REGISTRY.Parse(
-        args.topic, collection=util.TOPICS_COLLECTION).Name()
+    topic_name = args.topic
 
     message = msgs.PubsubMessage(
         data=args.message_body,

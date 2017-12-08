@@ -93,6 +93,7 @@ Move.detailed_help = {
         prior to snapshotting.
 
         For example, running:
+
            $ gcloud compute instances move example-instance-1 --zone us-central1-b --destination-zone us-central1-f
 
         will move the instance called example-instance-1, currently running in

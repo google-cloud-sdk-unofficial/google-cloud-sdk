@@ -25,15 +25,19 @@ from googlecloudsdk.third_party.appengine.tools import context_util
 
 @base.Hidden
 class GenRepoInfoFile(base.Command):
-  """Determines repository information and generates a file representation.
+  """[DEPRECATED] Saves repository information in a file.
 
-  The generated file is an opaque blob representing which source revision the
+  DEPRECATED, use `gcloud beta debug source gen-repo-info-file` instead.  The
+  generated file is an opaque blob representing which source revision the
   application was built at, and which Google-hosted repository this revision
   will be pushed to.
   """
 
   detailed_help = {
       'DESCRIPTION': """\
+          DEPRECATED, use `gcloud beta debug source gen-repo-info-file`
+          instead.
+
           This command generates two files, {old_name} and
           {contexts_filename}, containing information on the source revision
           and remote repository associated with the given source directory.
@@ -82,6 +86,8 @@ class GenRepoInfoFile(base.Command):
             'includes a directory path.'))
 
   def Run(self, args):
+    log.warn('This command is deprecated. Please use '
+             '`gcloud beta source debug gen-repo-info-file` instead.')
     contexts = context_util.CalculateExtendedSourceContexts(
         args.source_directory)
 

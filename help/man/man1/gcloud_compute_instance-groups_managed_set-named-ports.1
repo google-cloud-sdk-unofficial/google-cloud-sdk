@@ -11,7 +11,7 @@ gcloud compute instance\-groups managed set\-named\-ports \- sets the list of na
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instance\-groups managed set\-named\-ports\fR \fIGROUP\fR \fB\-\-named\-ports\fR=[\fINAME\fR:\fIPORT\fR,...] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instance\-groups managed set\-named\-ports\fR \fINAME\fR \fB\-\-named\-ports\fR=[\fINAME\fR:\fIPORT\fR,...] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -29,7 +29,7 @@ named ports for all instances in an instance group.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fIGROUP\fR
+\fINAME\fR
 .RS 2m
 The name of the instance group.
 
@@ -58,8 +58,8 @@ $ gcloud compute instance\-groups managed set\-named\-ports \e
 
 \fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
-The zone of the instance group to set named ports for. If not specified, you
-will be prompted to select a zone.
+The zone of the instance group to operate on. If not specified, you will be
+prompted to select a zone.
 
 To avoid prompting when this flag is omitted, you can set the
 \f5\fIcompute/zone\fR\fR property:

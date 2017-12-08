@@ -51,10 +51,13 @@ DETAILED_HELP = {
 }
 
 
-def _CommonArgs(parser, multiple_network_interface_cards):
+def _CommonArgs(parser, multiple_network_interface_cards,
+                release_track):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser)
+  if release_track in [base.ReleaseTrack.ALPHA]:
+    instances_flags.AddCreateDiskArgs(parser)
   instances_flags.AddLocalSsdArgs(parser)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(
@@ -88,7 +91,8 @@ class Create(base_classes.BaseAsyncCreator,
 
   @classmethod
   def Args(cls, parser):
-    _CommonArgs(parser, multiple_network_interface_cards=False)
+    _CommonArgs(parser, multiple_network_interface_cards=False,
+                release_track=base.ReleaseTrack.GA)
 
   @property
   def service(self):
@@ -176,7 +180,11 @@ class Create(base_classes.BaseAsyncCreator,
 
     create_boot_disk = not instance_utils.UseExistingBootDisk(args.disk or [])
     if create_boot_disk:
-      image_uri, _ = self.ExpandImageFlag(args, return_image_resource=False)
+      image_uri, _ = self.ExpandImageFlag(
+          image=args.image,
+          image_family=args.image_family,
+          image_project=args.image_project,
+          return_image_resource=False)
     else:
       image_uri = None
 
@@ -194,6 +202,14 @@ class Create(base_classes.BaseAsyncCreator,
       persistent_disks, boot_disk_ref = (
           instance_utils.CreatePersistentAttachedDiskMessages(
               self, self.compute_client, self.csek_keys, args.disk or [],
+              instance_ref))
+      persistent_create_disks = (
+          instance_utils.CreatePersistentCreateDiskMessages(
+              self,
+              self.compute_client,
+              self.resources,
+              self.csek_keys,
+              getattr(args, 'create_disk', []),
               instance_ref))
       local_ssds = [
           instance_utils.CreateLocalSsdMessage(
@@ -214,7 +230,8 @@ class Create(base_classes.BaseAsyncCreator,
         persistent_disks = [boot_disk] + persistent_disks
       else:
         existing_boot_disks[boot_disk_ref.zone] = boot_disk_ref
-      disks_messages.append(persistent_disks + local_ssds)
+      disks_messages.append(persistent_disks + persistent_create_disks +
+                            local_ssds)
 
     requests = []
     for instance_ref, machine_type_uri, disks in zip(
@@ -242,6 +259,11 @@ class Create(base_classes.BaseAsyncCreator,
 class CreateBeta(Create):
   """Create Google Compute Engine virtual machine instances."""
 
+  @classmethod
+  def Args(cls, parser):
+    _CommonArgs(parser, multiple_network_interface_cards=False,
+                release_track=base.ReleaseTrack.BETA)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
@@ -249,7 +271,8 @@ class CreateAlpha(Create):
 
   @classmethod
   def Args(cls, parser):
-    _CommonArgs(parser, multiple_network_interface_cards=True)
+    _CommonArgs(parser, multiple_network_interface_cards=True,
+                release_track=base.ReleaseTrack.ALPHA)
 
 
 Create.detailed_help = DETAILED_HELP

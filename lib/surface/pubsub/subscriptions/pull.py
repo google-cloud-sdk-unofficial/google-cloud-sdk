@@ -15,7 +15,6 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
-from googlecloudsdk.core import resources
 
 
 class Pull(base.ListCommand):
@@ -55,10 +54,7 @@ class Pull(base.ListCommand):
     msgs = self.context['pubsub_msgs']
     pubsub = self.context['pubsub']
 
-    subscription = util.SubscriptionFormat(
-        resources.REGISTRY.Parse(
-            args.subscription,
-            collection=util.SUBSCRIPTIONS_COLLECTION).Name())
+    subscription = util.SubscriptionFormat(args.subscription)
     pull_req = msgs.PubsubProjectsSubscriptionsPullRequest(
         pullRequest=msgs.PullRequest(
             maxMessages=args.max_messages, returnImmediately=True),

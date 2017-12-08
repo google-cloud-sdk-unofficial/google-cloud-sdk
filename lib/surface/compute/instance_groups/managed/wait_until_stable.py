@@ -14,41 +14,27 @@
 """Command for waiting until managed instance group becomes stable."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import time_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 from googlecloudsdk.command_lib.compute.instance_groups.managed import wait_info
 from googlecloudsdk.core import log
 
 
 def _AddArgs(parser, multizonal):
   """Adds args."""
-  parser.add_argument('name',
-                      help='Name of the managed instance group.')
   parser.add_argument('--timeout',
                       type=int,
                       help='Timeout in seconds for waiting '
                       'for group becoming stable.')
   if multizonal:
-    scope_parser = parser.add_mutually_exclusive_group()
-    flags.AddRegionFlag(
-        scope_parser,
-        resource_type='managed instance group',
-        operation_type='wait until stable',
-        explanation=flags.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
-    flags.AddZoneFlag(
-        scope_parser,
-        resource_type='managed instance group',
-        operation_type='wait until stable',
-        explanation=flags.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser)
   else:
-    flags.AddZoneFlag(
-        parser,
-        resource_type='managed instance group',
-        operation_type='wait until stable')
+    instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG.AddArgument(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -70,7 +56,11 @@ class WaitUntilStable(base_classes.BaseCommand):
     return 'instanceGroupManagers'
 
   def CreateGroupReference(self, args):
-    return self.CreateZonalReference(args.name, args.zone)
+    return (instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG
+            .ResolveAsResource)(
+                args, self.resources, default_scope=flags.ScopeEnum.ZONE,
+                scope_lister=flags.GetDefaultScopeLister(
+                    self.compute_client, self.project))
 
   def Run(self, args):
     start = time_utils.CurrentTimeSec()
@@ -121,9 +111,11 @@ class WaitUntilStableBeta(WaitUntilStable):
     _AddArgs(parser=parser, multizonal=True)
 
   def CreateGroupReference(self, args):
-    return instance_groups_utils.CreateInstanceGroupReference(
-        scope_prompter=self, compute=self.compute, resources=self.resources,
-        name=args.name, region=args.region, zone=args.zone)
+    return (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
+            ResolveAsResource)(
+                args, self.resources, default_scope=flags.ScopeEnum.ZONE,
+                scope_lister=flags.GetDefaultScopeLister(
+                    self.compute_client, self.project))
 
   def GetRequestForGroup(self, group_ref):
     if group_ref.Collection() == 'compute.regionInstanceGroupManagers':

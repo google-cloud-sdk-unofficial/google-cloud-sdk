@@ -15,38 +15,21 @@
 """Command for setting size of managed instance group."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 from googlecloudsdk.core import exceptions
 
 
-def _AddArgs(parser, multizonal, creation_retries):
+def _AddArgs(parser, creation_retries):
   """Adds args."""
-  parser.add_argument('name', help='Managed instance group name.')
   parser.add_argument(
       '--size',
       required=True,
       type=int,
       help=('Target number of instances in managed instance group.'))
-  if multizonal:
-    scope_parser = parser.add_mutually_exclusive_group()
-    flags.AddRegionFlag(
-        scope_parser,
-        resource_type='instance group manager',
-        operation_type='resize',
-        explanation=flags.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
-    flags.AddZoneFlag(
-        scope_parser,
-        resource_type='instance group manager',
-        operation_type='resize',
-        explanation=flags.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
-  else:
-    flags.AddZoneFlag(
-        parser,
-        resource_type='instance group manager',
-        operation_type='resize')
+
   if creation_retries:
     parser.add_argument('--creation-retries', action='store_true', default=True,
                         help='When instance creation fails retry it.')
@@ -58,7 +41,8 @@ class Resize(base_classes.BaseAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, multizonal=False, creation_retries=False)
+    _AddArgs(parser=parser, creation_retries=False)
+    instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG.AddArgument(parser)
 
   @property
   def method(self):
@@ -73,10 +57,14 @@ class Resize(base_classes.BaseAsyncMutator):
     return 'instanceGroupManagers'
 
   def CreateGroupReference(self, args):
-    return self.CreateZonalReference(args.name, args.zone)
+    return (instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG.
+            ResolveAsResource)(
+                args, self.resources, default_scope=flags.ScopeEnum.ZONE,
+                scope_lister=flags.GetDefaultScopeLister(
+                    self.compute_client, self.project))
 
   def CreateRequests(self, args):
-    ref = self.CreateZonalReference(args.name, args.zone)
+    ref = self.CreateGroupReference(args)
     return [(self.method,
              self.messages.ComputeInstanceGroupManagersResizeRequest(
                  instanceGroupManager=ref.Name(),
@@ -95,12 +83,16 @@ class ResizeBeta(Resize):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, multizonal=True, creation_retries=True)
+    _AddArgs(parser=parser, creation_retries=True)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser)
 
   def CreateGroupReference(self, args):
-    return instance_groups_utils.CreateInstanceGroupReference(
-        scope_prompter=self, compute=self.compute, resources=self.resources,
-        name=args.name, region=args.region, zone=args.zone)
+    return (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
+            ResolveAsResource)(
+                args, self.resources, default_scope=flags.ScopeEnum.ZONE,
+                scope_lister=flags.GetDefaultScopeLister(
+                    self.compute_client, self.project))
 
   def CreateRequests(self, args):
     group_ref = self.CreateGroupReference(args)

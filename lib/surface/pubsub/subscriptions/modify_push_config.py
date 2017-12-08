@@ -15,7 +15,6 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
-from googlecloudsdk.core import resources
 
 
 class ModifyPushConfig(base.Command):
@@ -49,9 +48,7 @@ class ModifyPushConfig(base.Command):
     msgs = self.context['pubsub_msgs']
     pubsub = self.context['pubsub']
 
-    subscription = util.SubscriptionFormat(
-        resources.REGISTRY.Parse(
-            args.subscription, collection=util.SUBSCRIPTIONS_COLLECTION).Name())
+    subscription = util.SubscriptionFormat(args.subscription)
     mod_req = msgs.PubsubProjectsSubscriptionsModifyPushConfigRequest(
         modifyPushConfigRequest=msgs.ModifyPushConfigRequest(
             pushConfig=msgs.PushConfig(pushEndpoint=args.push_endpoint)),

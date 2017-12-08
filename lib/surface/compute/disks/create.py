@@ -168,7 +168,10 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander,
 
     if from_image:
       source_image_uri, _ = self.ExpandImageFlag(
-          args, return_image_resource=False)
+          image=args.image,
+          image_family=args.image_family,
+          image_project=args.image_project,
+          return_image_resource=False)
     else:
       source_image_uri = None
 

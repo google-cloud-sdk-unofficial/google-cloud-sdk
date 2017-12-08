@@ -34,7 +34,6 @@ class Delete(base_classes.GlobalDeleter):
 Delete.detailed_help = {
     'brief': 'Delete Google Compute Engine snapshots',
     'DESCRIPTION': """\
-        *{command}* deletes one or more Google Compute Engine
-         snapshots.
+        *{command}* deletes one or more Google Compute Engine snapshots.
         """,
 }

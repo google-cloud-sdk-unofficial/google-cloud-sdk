@@ -30,13 +30,12 @@ class Update(base.UpdateCommand):
 
   ## EXAMPLES
 
-  To update an endpoint in Service Registry
+  To update an endpoint in Service Registry:
 
-    $ {command} ENDPOINT_NAME --target ADDRESS:PORT
-        --networks NETWORK_URL
+    $ {command} ENDPOINT_NAME --target ADDRESS:PORT --networks NETWORK_URL
 
   For additional addresses, just repeat the --address flag, and to see
-  more options be sure to use
+  more options be sure to use:
 
     $ {command} --help
   """

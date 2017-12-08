@@ -19,7 +19,6 @@ from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core import log
-from googlecloudsdk.core import resources
 
 
 class Create(base.CreateCommand):
@@ -50,8 +49,7 @@ class Create(base.CreateCommand):
     pubsub = self.context['pubsub']
 
     for topic in args.topic:
-      topic_name = resources.REGISTRY.Parse(
-          topic, collection=util.TOPICS_COLLECTION).Name()
+      topic_name = topic
       topic = msgs.Topic(name=util.TopicFormat(topic_name))
 
       try:

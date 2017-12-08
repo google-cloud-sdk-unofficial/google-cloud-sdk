@@ -71,7 +71,7 @@ class List(base.ListCommand):
           item.instanceGroupManager = item.instanceGroup
         yield item
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(updater_util.GetError(error))
+      raise exceptions.HttpException(error)
 
   def Collection(self):
     return 'replicapoolupdater.rollingUpdates'

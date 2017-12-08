@@ -17,9 +17,9 @@ gcloud sql instances clone \- clones a Cloud SQL instance
 
 .SH "DESCRIPTION"
 
-Creates a clone of the Cloud SQL instance. The source and the destination
-instances must be in the same project. The clone once created will be an
-independent Cloud SQL instance.
+\fBgcloud sql instances clone\fR creates a clone of the Cloud SQL instance. The
+source and the destination instances must be in the same project. The clone once
+created will be an independent Cloud SQL instance.
 
 The binary log coordinates, if specified, act as the point up to which the
 source instance is cloned. If not specified, the source instance is cloned up to
@@ -76,8 +76,15 @@ Run \fB$ gcloud help\fR for a description of flags available to all commands.
 
 .SH "EXAMPLES"
 
-$gcloud sql instances clone myproject:instance\-foo myproject:instance\-bar OR.RS 2m
-$gcloud sql instances clone myproject:instance\-foo myproject:instance\-bar
-      \-\-bin\-log\-file\-name mysql\-bin.000020 \-\-bin\-log\-position 170
+To clone a source instance to the most recent binary log coordintes:
 
+.RS 2m
+$ gcloud sql instances clone instance\-foo instance\-bar
+.RE
+
+or to clone at specific binary log coordintes:
+
+.RS 2m
+$ gcloud sql instances clone instance\-foo instance\-bar \e
+    \-\-bin\-log\-file\-name mysql\-bin.000020 \-\-bin\-log\-position 170
 .RE

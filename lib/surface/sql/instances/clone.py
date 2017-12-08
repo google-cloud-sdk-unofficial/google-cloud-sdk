@@ -21,27 +21,32 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import remote_completion
 
 
+_DETAILED_HELP = """
+
+  *{command}* creates a clone of the Cloud SQL instance. The source and the
+  destination instances must be in the same project. The clone once created
+  will be an independent Cloud SQL instance.
+
+  The binary log coordinates, if specified, act as the point up to which the
+  source instance is cloned. If not specified, the source instance is
+  cloned up to the most recent binary log coordintes at the time the command is
+  executed.
+
+  ## EXAMPLES
+
+  To clone a source instance to the most recent binary log coordintes:
+
+    $ {command} instance-foo instance-bar
+
+  or to clone at specific binary log coordintes:
+
+    $ {command} instance-foo instance-bar --bin-log-file-name mysql-bin.000020 --bin-log-position 170
+"""
+
+
 class _BaseClone(object):
+  # pylint: disable=line-too-long
   """Clones a Cloud SQL instance."""
-
-  detailed_help = {
-      'DESCRIPTION': """\
-Creates a clone of the Cloud SQL instance. The source and the destination
-instances must be in the same project. The clone once created will be
-an independent Cloud SQL instance.
-
-The binary log coordinates, if specified, act as the point up to which the
-source instance is cloned. If not specified, the source instance is
-cloned up to the most recent binary log coordintes at the time the command is
-executed.
-""",
-      'EXAMPLES': """\
-  ${command} myproject:instance-foo myproject:instance-bar
-OR
-  ${command} myproject:instance-foo myproject:instance-bar
-        --bin-log-file-name mysql-bin.000020 --bin-log-position 170
-""",
-  }
 
   @staticmethod
   def Args(parser):
@@ -189,6 +194,9 @@ class Clone(_BaseClone, base.Command):
     return self.ListFormat(args)
 
 
+Clone.__doc__ += _DETAILED_HELP
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CloneBeta(_BaseClone, base.Command):
   """Clones a Cloud SQL instance."""
@@ -251,3 +259,7 @@ class CloneBeta(_BaseClone, base.Command):
 
   def Format(self, args):
     return self.ListFormat(args)
+
+
+CloneBeta.__doc__ += _DETAILED_HELP
+

@@ -18,6 +18,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Functions(base.Group):
+class Logs(base.Group):
   """Manages Google Cloud Functions logs access."""
   pass

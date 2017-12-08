@@ -54,26 +54,17 @@ Don't wait for the operation to complete. Use \fB\-\-no\-async\fR to disable.
 .RE
 \fB\-\-cluster\-version\fR=\fICLUSTER_VERSION\fR
 .RS 2m
-The Kubernetes release version to which to upgrade the cluster's nodes. Omit to
-upgrade the nodes to the version the cluster's Kubernetes master is running.
+The Kubernetes release version to which to upgrade the cluster's nodes.
 
 If provided, the \-\-cluster\-version must be no greater than the cluster
 master's minor version (x.\fBX\fR.x), and must be a latest patch version
 (x.x.\fBX\fR).
 
-You can find the current master version by running
-
-.RS 2m
-$ gcloud container clusters describe <cluster> | grep MasterVersion
-.RE
-
-You can find the list of allowed node versions for upgrades by running
+You can find the list of allowed versions for upgrades by running:
 
 .RS 2m
 $ gcloud container get\-server\-config
 .RE
-
-and looking at the returned "validNodeVersions".
 
 .RE
 \fB\-\-image\-type\fR=\fIIMAGE_TYPE\fR

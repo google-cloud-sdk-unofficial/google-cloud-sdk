@@ -145,6 +145,7 @@ class UpdateGA(base_classes.ReadWriteCommand):
   def ValidateArgs(self, args):
     if not any([
         args.affinity_cookie_ttl is not None,
+        args.connection_draining_timeout,
         args.description is not None,
         args.enable_cdn is not None,
         args.health_checks,
@@ -189,6 +190,7 @@ class UpdateAlpha(UpdateGA):
     flags.AddEnableCdn(parser, default=None)
     flags.AddSessionAffinity(parser, internal_lb=True)
     flags.AddAffinityCookieTtl(parser)
+    flags.AddIap(parser)
 
   def Modify(self, args, existing):
     replacement = super(UpdateAlpha, self).Modify(args, existing)
@@ -196,6 +198,11 @@ class UpdateAlpha(UpdateGA):
     if args.connection_draining_timeout is not None:
       replacement.connectionDraining = self.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
+
+    if args.iap:
+      replacement.iaap = backend_services_utils.GetIAP(
+          args, self.messages,
+          existing_iap_settings=getattr(existing, 'iaap', None))
 
     return replacement
 
@@ -213,6 +220,7 @@ class UpdateAlpha(UpdateGA):
         args.timeout is not None,
         getattr(args, 'health_checks', None),
         getattr(args, 'https_health_checks', None),
+        getattr(args, 'iap', None),
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
 

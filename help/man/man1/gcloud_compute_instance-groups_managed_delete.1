@@ -11,7 +11,7 @@ gcloud compute instance\-groups managed delete \- delete Google Compute Engine m
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instance\-groups managed delete\fR \fINAME\fR [\fINAME\fR\ ...] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute instance\-groups managed delete\fR \fINAMES\fR [\fINAMES\fR\ ...] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -24,9 +24,9 @@ Compute Engine managed instance groups.
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR [\fINAME\fR ...]
+\fINAMES\fR [\fINAMES\fR ...]
 .RS 2m
-The resources to delete.
+The names of the managed instance groups.
 
 
 .RE
@@ -35,8 +35,8 @@ The resources to delete.
 
 \fB\-\-zone\fR=\fIZONE\fR
 .RS 2m
-The zone of the resources to delete. If not specified, you will be prompted to
-select a zone.
+The zone of the managed instance group to operate on. If not specified, you will
+be prompted to select a zone.
 
 To avoid prompting when this flag is omitted, you can set the
 \f5\fIcompute/zone\fR\fR property:

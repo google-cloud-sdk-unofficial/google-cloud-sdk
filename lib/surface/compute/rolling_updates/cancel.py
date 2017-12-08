@@ -75,7 +75,7 @@ class Cancel(base.Command):
         raise exceptions.ToolException('could not cancel [{0}]'.format(ref))
 
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(updater_util.GetError(error))
+      raise exceptions.HttpException(error)
 
 Cancel.detailed_help = {
     'brief': 'Cancels an existing update.',

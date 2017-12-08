@@ -72,4 +72,4 @@ class ListInstanceUpdates(base.ListCommand):
       return list_pager.YieldFromList(
           client.rollingUpdates, request, method='ListInstanceUpdates')
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(updater_util.GetError(error))
+      raise exceptions.HttpException(error)

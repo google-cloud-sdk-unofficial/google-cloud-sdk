@@ -17,5 +17,6 @@
 from googlecloudsdk.calliope import base
 
 
+@base.Hidden
 class ApiKeys(base.Group):
   """Manage API keys for Google Cloud Platform projects."""

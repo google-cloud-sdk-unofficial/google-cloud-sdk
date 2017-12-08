@@ -18,35 +18,17 @@ from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
-def _AddArgs(parser, multizonal):
+def _AddArgs(parser):
   """Adds args."""
-  parser.add_argument('name',
-                      help='The managed instance group name.')
   parser.add_argument(
       '--instances',
       type=arg_parsers.ArgList(min_length=1),
       metavar='INSTANCE',
       required=True,
       help='Names of instances to abandon.')
-  if multizonal:
-    scope_parser = parser.add_mutually_exclusive_group()
-    flags.AddRegionFlag(
-        scope_parser,
-        resource_type='instance group',
-        operation_type='abandon instances',
-        explanation=flags.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
-    flags.AddZoneFlag(
-        scope_parser,
-        resource_type='instance group manager',
-        operation_type='abandon instances',
-        explanation=flags.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
-  else:
-    flags.AddZoneFlag(
-        parser,
-        resource_type='instance group manager',
-        operation_type='abandon instances')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -55,7 +37,8 @@ class AbandonInstances(base_classes.BaseAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, multizonal=False)
+    _AddArgs(parser=parser)
+    instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG.AddArgument(parser)
 
   @property
   def method(self):
@@ -70,22 +53,25 @@ class AbandonInstances(base_classes.BaseAsyncMutator):
     return 'instanceGroupManagers'
 
   def CreateRequests(self, args):
-    zone_ref = self.CreateZonalReference(args.name, args.zone)
-    instance_refs = self.CreateZonalReferences(
-        args.instances,
-        zone_ref.zone,
-        resource_type='instances')
-    instances = [instance_ref.SelfLink() for instance_ref in instance_refs]
+    resource_arg = instance_groups_flags.ZONAL_INSTANCE_GROUP_MANAGER_ARG
+    default_scope = flags.ScopeEnum.ZONE
+    scope_lister = flags.GetDefaultScopeLister(
+        self.compute_client, self.project)
+    igm_ref = resource_arg.ResolveAsResource(
+        args, self.resources, default_scope=default_scope,
+        scope_lister=scope_lister)
+    instances = instance_groups_utils.CreateInstanceReferences(
+        self.resources, self.compute_client, igm_ref, args.instances)
     return [(self.method,
              self.messages.ComputeInstanceGroupManagersAbandonInstancesRequest(
-                 instanceGroupManager=zone_ref.Name(),
+                 instanceGroupManager=igm_ref.Name(),
                  instanceGroupManagersAbandonInstancesRequest=(
                      self.messages.InstanceGroupManagersAbandonInstancesRequest(
                          instances=instances,
                      )
                  ),
                  project=self.project,
-                 zone=zone_ref.zone,
+                 zone=igm_ref.zone,
              ),),]
 
 
@@ -95,7 +81,9 @@ class AbandonInstancesAlpha(base_classes.BaseAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, multizonal=True)
+    _AddArgs(parser=parser)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser)
 
   @property
   def method(self):
@@ -110,32 +98,36 @@ class AbandonInstancesAlpha(base_classes.BaseAsyncMutator):
     return 'instanceGroupManagers'
 
   def CreateRequests(self, args):
-    group_ref = instance_groups_utils.CreateInstanceGroupReference(
-        scope_prompter=self, compute=self.compute, resources=self.resources,
-        name=args.name, region=args.region, zone=args.zone)
+    resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
+    default_scope = flags.ScopeEnum.ZONE
+    scope_lister = flags.GetDefaultScopeLister(
+        self.compute_client, self.project)
+    igm_ref = resource_arg.ResolveAsResource(
+        args, self.resources, default_scope=default_scope,
+        scope_lister=scope_lister)
     instances = instance_groups_utils.CreateInstanceReferences(
-        self, self.compute_client, group_ref, args.instances)
+        self.resources, self.compute_client, igm_ref, args.instances)
 
-    if group_ref.Collection() == 'compute.instanceGroupManagers':
+    if igm_ref.Collection() == 'compute.instanceGroupManagers':
       service = self.compute.instanceGroupManagers
       request = (
           self.messages.
           ComputeInstanceGroupManagersAbandonInstancesRequest(
-              instanceGroupManager=group_ref.Name(),
+              instanceGroupManager=igm_ref.Name(),
               instanceGroupManagersAbandonInstancesRequest=(
                   self.messages.InstanceGroupManagersAbandonInstancesRequest(
                       instances=instances,
                   )
               ),
               project=self.project,
-              zone=group_ref.zone,
+              zone=igm_ref.zone,
           ))
     else:
       service = self.compute.regionInstanceGroupManagers
       request = (
           self.messages.
           ComputeRegionInstanceGroupManagersAbandonInstancesRequest(
-              instanceGroupManager=group_ref.Name(),
+              instanceGroupManager=igm_ref.Name(),
               regionInstanceGroupManagersAbandonInstancesRequest=(
                   self.messages.
                   RegionInstanceGroupManagersAbandonInstancesRequest(
@@ -143,7 +135,7 @@ class AbandonInstancesAlpha(base_classes.BaseAsyncMutator):
                   )
               ),
               project=self.project,
-              region=group_ref.region,
+              region=igm_ref.region,
           ))
 
     return [(service, self.method, request)]

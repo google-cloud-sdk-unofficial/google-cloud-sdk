@@ -166,9 +166,6 @@ Alias,URI
       'as low as 100 nodes per pool on initial create.'.format(
           nodes=api_adapter.MAX_NODES_PER_POOL))
   parser.add_argument(
-      '--cluster-version',
-      help=argparse.SUPPRESS)
-  parser.add_argument(
       '--tags',
       help=argparse.SUPPRESS,
       type=arg_parsers.ArgList(min_length=1),
@@ -187,6 +184,7 @@ class Create(base.CreateCommand):
     flags.AddLocalSSDFlag(parser, suppressed=True)
     flags.AddEnableKubernetesAlphaFlag(parser, suppressed=True)
     flags.AddNodeLabelsFlag(parser, suppressed=True)
+    flags.AddClusterVersionFlag(parser, 'master and nodes', True)
 
   def ParseCreateOptions(self, args):
     if not args.scopes:
@@ -290,6 +288,7 @@ class CreateBeta(Create):
     flags.AddLocalSSDFlag(parser)
     flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddNodeLabelsFlag(parser, suppressed=False)
+    flags.AddClusterVersionFlag(parser, 'master and nodes')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -303,3 +302,4 @@ class CreateAlpha(Create):
     flags.AddLocalSSDFlag(parser)
     flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddNodeLabelsFlag(parser, suppressed=False)
+    flags.AddClusterVersionFlag(parser, 'master and nodes')

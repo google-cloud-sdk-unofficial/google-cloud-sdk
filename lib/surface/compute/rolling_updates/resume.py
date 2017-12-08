@@ -84,4 +84,4 @@ class Resume(base.Command):
         raise exceptions.ToolException('could not resume [{0}]'.format(ref))
 
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(updater_util.GetError(error))
+      raise exceptions.HttpException(error)
