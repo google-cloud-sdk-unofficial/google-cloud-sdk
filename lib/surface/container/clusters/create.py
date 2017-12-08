@@ -54,7 +54,6 @@ def _Args(parser):
       '--additional-zones',
       type=arg_parsers.ArgList(min_length=1),
       metavar='ZONE',
-      action=arg_parsers.FloatingListValuesCatcher(),
       help="""\
 The set of additional zones in which the specified node footprint should be
 replicated. All zones must be in the same region as the cluster's primary zone.
@@ -104,7 +103,6 @@ Multiple locations can be specified, separated by commas. For example:
       '--scopes',
       type=arg_parsers.ArgList(min_length=1),
       metavar='SCOPE',
-      action=arg_parsers.FloatingListValuesCatcher(),
       help="""\
 Specifies scopes for the node instances. The project's default
 service account is used. Examples:
@@ -174,8 +172,8 @@ Alias,URI
       '--tags',
       help=argparse.SUPPRESS,
       type=arg_parsers.ArgList(min_length=1),
-      metavar='TAGS',
-      action=arg_parsers.FloatingListValuesCatcher())
+      metavar='TAGS')
+  flags.AddImageTypeFlag(parser, 'cluster')
 
 
 NO_CERTS_ERROR_FMT = '''\
@@ -192,7 +190,6 @@ class Create(base.Command):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddImageTypeFlag(parser, 'cluster', suppressed=True)
     flags.AddClusterAutoscalingFlags(parser, suppressed=True)
     flags.AddLocalSSDFlag(parser, suppressed=True)
 
@@ -290,7 +287,6 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddImageTypeFlag(parser, 'cluster')
     flags.AddClusterAutoscalingFlags(parser, suppressed=True)
     flags.AddLocalSSDFlag(parser)
 
@@ -302,6 +298,5 @@ class CreateAlpha(Create):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddImageTypeFlag(parser, 'cluster')
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDFlag(parser)

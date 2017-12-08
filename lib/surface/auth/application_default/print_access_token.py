@@ -39,7 +39,6 @@ class PrintAccessToken(base.Command):
     parser.add_argument(
         '--scopes',
         type=arg_parsers.ArgList(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
         help='The names of the scopes to print an access token for.')
 
   @c_exc.RaiseToolExceptionInsteadOf(c_store.Error)

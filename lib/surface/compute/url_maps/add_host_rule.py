@@ -29,7 +29,6 @@ class AddHostRule(base_classes.ReadWriteCommand):
     hosts = parser.add_argument(
         '--hosts',
         type=arg_parsers.ArgList(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
         metavar='HOST',
         required=True,
         help='The set of hosts to match requests against.')

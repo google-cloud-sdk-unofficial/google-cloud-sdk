@@ -46,7 +46,6 @@ def _AddArgs(parser, multizonal):
   parser.add_argument(
       '--target-pool',
       type=arg_parsers.ArgList(),
-      action=arg_parsers.FloatingListValuesCatcher(),
       metavar='TARGET_POOL',
       help=('Specifies any target pools you want the instances of this '
             'managed instance group to be part of.'))

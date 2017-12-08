@@ -12,308 +12,16 @@ from apitools.base.py import extra_types
 package = 'ml'
 
 
-class GoogleCloudMlV1alpha2Analysis(_messages.Message):
-  """Represents analysis of a trained model.
+class GoogleCloudMlV1alpha3CreateVersionRequest(_messages.Message):
+  """Uploads the provided trained model version to Cloud Machine Learning.
 
   Fields:
-    classification: The analysis of a classification model.
-    regression: The analysis of a regression model.
+    parent: The name of the model.
+    version: The version details.
   """
 
-  classification = _messages.MessageField('GoogleCloudMlV1alpha2ClassificationAnalysis', 1)
-  regression = _messages.MessageField('GoogleCloudMlV1alpha2RegressionAnalysis', 2)
-
-
-class GoogleCloudMlV1alpha2ClassificationAnalysis(_messages.Message):
-  """Represents the analysis of a trained classification model.
-
-  Fields:
-    error: The error rate of a classification model.
-  """
-
-  error = _messages.FloatField(1)
-
-
-class GoogleCloudMlV1alpha2ClassificationConfig(_messages.Message):
-  """Represents the definition of a classification model.
-
-  Fields:
-    tensorflowGraph: Options for classification using a custom TensorFlow
-      graph.
-  """
-
-  tensorflowGraph = _messages.MessageField('GoogleCloudMlV1alpha2TensorFlowGraph', 1)
-
-
-class GoogleCloudMlV1alpha2DataSet(_messages.Message):
-  """Represents data to be used within training and prediction.
-
-  Fields:
-    files: A dataset comprised of a set of individual files or objects within
-      Cloud Storage.
-    inline: A dataset comprised of a set of individual instances inlined. The
-      number of instances is limited based on constraints of individual
-      methods.
-  """
-
-  files = _messages.MessageField('GoogleCloudMlV1alpha2StorageData', 1)
-  inline = _messages.MessageField('GoogleCloudMlV1alpha2InlineData', 2)
-
-
-class GoogleCloudMlV1alpha2EvaluationJob(_messages.Message):
-  """Represents a specification for an evaluation job.
-
-  Fields:
-    evalData: The data to evaluate over.
-    outputUri: The storage location of a folder to write out the evaluation
-      outputs.
-  """
-
-  evalData = _messages.MessageField('GoogleCloudMlV1alpha2DataSet', 1)
-  outputUri = _messages.StringField(2)
-
-
-class GoogleCloudMlV1alpha2InlineData(_messages.Message):
-  """Represents inlined data.
-
-  Fields:
-    instances: The list of data instances.
-  """
-
-  instances = _messages.StringField(1, repeated=True)
-
-
-class GoogleCloudMlV1alpha2JobResult(_messages.Message):
-  """Represents the results of a training, prediction or evaluation job.
-
-  Fields:
-    analysis: The analysis of a trained model for training or evaluation jobs.
-    outputFiles: The list of generated output files.
-  """
-
-  analysis = _messages.MessageField('GoogleCloudMlV1alpha2Analysis', 1)
-  outputFiles = _messages.StringField(2, repeated=True)
-
-
-class GoogleCloudMlV1alpha2ModelSpec(_messages.Message):
-  """Represents the specification of a model.
-
-  Fields:
-    classification: The configuration for classification models.
-    regression: The configuration for regression models.
-  """
-
-  classification = _messages.MessageField('GoogleCloudMlV1alpha2ClassificationConfig', 1)
-  regression = _messages.MessageField('GoogleCloudMlV1alpha2RegressionConfig', 2)
-
-
-class GoogleCloudMlV1alpha2PredictionJob(_messages.Message):
-  """Represents a specification for a prediction job.
-
-  Fields:
-    labelsPerInstance: The number of labels to predict per instance. This
-      applies only to classification models, and defaults to 1, i.e., produce
-      only the label with highest confidence score. If this is set to -1, all
-      labels are included in the output.
-    outputUri: The storage location of a folder to write out the predictions.
-    predictData: The dataset to predict over.
-  """
-
-  labelsPerInstance = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  outputUri = _messages.StringField(2)
-  predictData = _messages.MessageField('GoogleCloudMlV1alpha2DataSet', 3)
-
-
-class GoogleCloudMlV1alpha2RegressionAnalysis(_messages.Message):
-  """Represents the analysis of a trained regression model.
-
-  Fields:
-    error: The root mean squared error of a regression model.
-  """
-
-  error = _messages.FloatField(1)
-
-
-class GoogleCloudMlV1alpha2RegressionConfig(_messages.Message):
-  """Represents the definition of a regression model.
-
-  Fields:
-    tensorflowGraph: Options for regression using a custom TensorFlow graph.
-  """
-
-  tensorflowGraph = _messages.MessageField('GoogleCloudMlV1alpha2TensorFlowGraph', 1)
-
-
-class GoogleCloudMlV1alpha2StorageData(_messages.Message):
-  """Represents reference to data stored in Cloud Storage. Each object is
-  interpreted as a file.
-
-  Fields:
-    uris: The list of Cloud Storage URIs formatted as a complete URI such as
-      Format: gs://bucket/path/to/data/file.
-  """
-
-  uris = _messages.StringField(1, repeated=True)
-
-
-class GoogleCloudMlV1alpha2SubmitEvaluationJobMetadata(_messages.Message):
-  """Represents the metadata on the operation resulting from
-  SubmitEvaluationJob.
-
-  Fields:
-    createTime: When the job was submitted.
-    endTime: When the job processing completed.
-    isCancellationRequested: Whether the cancellation of the job has been
-      requested.
-    job: The specification of the job.
-    model: The name of the model.
-    operationType: The type of this operation: 'evaluation'.
-    startTime: When the job processing started.
-    version: The name of the model version.
-  """
-
-  createTime = _messages.StringField(1)
-  endTime = _messages.StringField(2)
-  isCancellationRequested = _messages.BooleanField(3)
-  job = _messages.MessageField('GoogleCloudMlV1alpha2EvaluationJob', 4)
-  model = _messages.StringField(5)
-  operationType = _messages.StringField(6)
-  startTime = _messages.StringField(7)
-  version = _messages.StringField(8)
-
-
-class GoogleCloudMlV1alpha2SubmitPredictionJobMetadata(_messages.Message):
-  """Represents the metadata on the operation resulting from
-  SubmitPredictionJob.
-
-  Fields:
-    createTime: When the job was submitted.
-    endTime: When the job processing completed.
-    isCancellationRequested: Whether the cancellation of the job has been
-      requested.
-    job: The specification of the job.
-    model: The name of the model.
-    operationType: The type of this operation: 'prediction'.
-    startTime: When the job processing started.
-    version: The name of the model version.
-  """
-
-  createTime = _messages.StringField(1)
-  endTime = _messages.StringField(2)
-  isCancellationRequested = _messages.BooleanField(3)
-  job = _messages.MessageField('GoogleCloudMlV1alpha2PredictionJob', 4)
-  model = _messages.StringField(5)
-  operationType = _messages.StringField(6)
-  startTime = _messages.StringField(7)
-  version = _messages.StringField(8)
-
-
-class GoogleCloudMlV1alpha2SubmitTrainingJobMetadata(_messages.Message):
-  """Represents the metadata on the operation resulting from
-  SubmitTrainingJob.
-
-  Fields:
-    createTime: When the job was submitted.
-    endTime: When the job processing completed.
-    isCancellationRequested: Whether the cancellation of the job has been
-      requested.
-    job: The specification of the job.
-    model: The name of the model.
-    operationType: The type of this operation: 'training'.
-    startTime: When the job processing started.
-    version: The name of the model version.
-  """
-
-  createTime = _messages.StringField(1)
-  endTime = _messages.StringField(2)
-  isCancellationRequested = _messages.BooleanField(3)
-  job = _messages.MessageField('GoogleCloudMlV1alpha2TrainingJob', 4)
-  model = _messages.StringField(5)
-  operationType = _messages.StringField(6)
-  startTime = _messages.StringField(7)
-  version = _messages.StringField(8)
-
-
-class GoogleCloudMlV1alpha2TensorFlowGraph(_messages.Message):
-  """Represents options for using TensorFlow graph-based classification or
-  regression.
-
-  Fields:
-    graphUri: The Cloud Storage location of the serialized graph definition.
-      The file must represent TensorFlowGraphDefinition message in JSON
-      format.
-    session: The training session to use.
-  """
-
-  graphUri = _messages.StringField(1)
-  session = _messages.MessageField('GoogleCloudMlV1alpha2TensorFlowSession', 2)
-
-
-class GoogleCloudMlV1alpha2TensorFlowSession(_messages.Message):
-  """Represents the settings used to run a TensorFlow session.
-
-  Enums:
-    ModelToKeepValueValuesEnum: Specifies which model should be kept at the
-      end of the training: the model from the latest training step or the
-      model with the minimum evaluation error observed during training.
-      Defaults to the model from the latest step.
-
-  Fields:
-    batchSize: The number of data instances to read or process in each
-      iteration step. This parameter is used to balance how quickly the model
-      can be trained. Altering this parameter often requires altering learning
-      rate. Decreasing batch size may require a decrease in learning rate, and
-      vice-versa. Powers of two are recommended, because they can yield in
-      optimizations. Typical values are between 32 and 256. This defaults to
-      64.
-    enableAcceleration: Whether the session should attempt to use additional
-      hardware capabilities to accelerate the execution of the graph.
-    modelToKeep: Specifies which model should be kept at the end of the
-      training: the model from the latest training step or the model with the
-      minimum evaluation error observed during training. Defaults to the model
-      from the latest step.
-    replicas: The number of replicas of the graph that should run in parallel
-      over the data.
-    steps: The number of steps to iterate over during the execution of the
-      graph.
-  """
-
-  class ModelToKeepValueValuesEnum(_messages.Enum):
-    """Specifies which model should be kept at the end of the training: the
-    model from the latest training step or the model with the minimum
-    evaluation error observed during training. Defaults to the model from the
-    latest step.
-
-    Values:
-      LATEST: The latest model.
-      MIN_ERROR: The model with the minimum evaluation error.
-    """
-    LATEST = 0
-    MIN_ERROR = 1
-
-  batchSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  enableAcceleration = _messages.BooleanField(2)
-  modelToKeep = _messages.EnumField('ModelToKeepValueValuesEnum', 3)
-  replicas = _messages.IntegerField(4, variant=_messages.Variant.INT32)
-  steps = _messages.IntegerField(5, variant=_messages.Variant.INT32)
-
-
-class GoogleCloudMlV1alpha2TrainingJob(_messages.Message):
-  """Represents a specification for a training job.
-
-  Fields:
-    evalData: The data to use for evaluating the model during training.
-    model: The specification of the model to train.
-    outputUri: The storage location of a folder to write out the training
-      outputs, such as a model analysis, a training event log, predictions on
-      the eval dataset and others.
-    trainData: The data to use for training the model.
-  """
-
-  evalData = _messages.MessageField('GoogleCloudMlV1alpha2DataSet', 1)
-  model = _messages.MessageField('GoogleCloudMlV1alpha2ModelSpec', 2)
-  outputUri = _messages.StringField(3)
-  trainData = _messages.MessageField('GoogleCloudMlV1alpha2DataSet', 4)
+  parent = _messages.StringField(1)
+  version = _messages.MessageField('GoogleCloudMlV1alpha3Version', 2)
 
 
 class GoogleCloudMlV1alpha3GetConfigResponse(_messages.Message):
@@ -322,9 +30,11 @@ class GoogleCloudMlV1alpha3GetConfigResponse(_messages.Message):
   Fields:
     serviceAccount: The service account Cloud ML uses to access resources in
       the project.
+    serviceAccountProject: Project number associated with 'service_account'.
   """
 
   serviceAccount = _messages.StringField(1)
+  serviceAccountProject = _messages.IntegerField(2)
 
 
 class GoogleCloudMlV1alpha3GetHyperparametersRequest(_messages.Message):
@@ -472,17 +182,21 @@ class GoogleCloudMlV1alpha3JobMetadata(_messages.Message):
 
   Fields:
     createTime: When the job was submitted.
+    createVersionRequest: The create version job request recorded. The create
+      version job request recorded.
     endTime: When the job processing was completed.
     isCancellationRequested: Whether the cancellation of this job has been
       requested.
     jobState: The detailed state of a job.
     predictionRequest: The prediction job request recorded.
+    predictionResult: The current prediction job result.
     startTime: When the job processing was started.
     statusMetricsSnapshot: Progress report. A set of key-value pairs that
       convey the current state of the job.
     statusMetricsSnapshotTime: The time at which the 'status' field was
       populated.
     trainingRequest: The training job request recorded.
+    trainingResult: The current training job result.
   """
 
   class JobStateValueValuesEnum(_messages.Enum):
@@ -533,14 +247,17 @@ class GoogleCloudMlV1alpha3JobMetadata(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   createTime = _messages.StringField(1)
-  endTime = _messages.StringField(2)
-  isCancellationRequested = _messages.BooleanField(3)
-  jobState = _messages.EnumField('JobStateValueValuesEnum', 4)
-  predictionRequest = _messages.MessageField('GoogleCloudMlV1alpha3SubmitPredictionJobRequest', 5)
-  startTime = _messages.StringField(6)
-  statusMetricsSnapshot = _messages.MessageField('StatusMetricsSnapshotValue', 7)
-  statusMetricsSnapshotTime = _messages.StringField(8)
-  trainingRequest = _messages.MessageField('GoogleCloudMlV1alpha3SubmitTrainingJobRequest', 9)
+  createVersionRequest = _messages.MessageField('GoogleCloudMlV1alpha3CreateVersionRequest', 2)
+  endTime = _messages.StringField(3)
+  isCancellationRequested = _messages.BooleanField(4)
+  jobState = _messages.EnumField('JobStateValueValuesEnum', 5)
+  predictionRequest = _messages.MessageField('GoogleCloudMlV1alpha3SubmitPredictionJobRequest', 6)
+  predictionResult = _messages.MessageField('GoogleCloudMlV1alpha3PredictionJobResult', 7)
+  startTime = _messages.StringField(8)
+  statusMetricsSnapshot = _messages.MessageField('StatusMetricsSnapshotValue', 9)
+  statusMetricsSnapshotTime = _messages.StringField(10)
+  trainingRequest = _messages.MessageField('GoogleCloudMlV1alpha3SubmitTrainingJobRequest', 11)
+  trainingResult = _messages.MessageField('GoogleCloudMlV1alpha3TrainingJobResult', 12)
 
 
 class GoogleCloudMlV1alpha3ListModelsResponse(_messages.Message):
@@ -928,6 +645,45 @@ class GoogleCloudMlV1alpha3WorkerSpec(_messages.Message):
 
   replicaCount = _messages.IntegerField(1, variant=_messages.Variant.UINT64)
   resources = _messages.MessageField('GoogleCloudMlV1alpha3ResourceSpec', 2)
+
+
+class GoogleCloudMlV1beta1OperationMetadata(_messages.Message):
+  """Represents the metadata of the longrunning.Operation.
+
+  Fields:
+    createTime: When the operation was submitted.
+    endTime: When the operation processing was completed.
+    isCancellationRequested: Whether the cancellation of this operation has
+      been requested.
+    startTime: When the operation processing was started.
+  """
+
+  createTime = _messages.StringField(1)
+  endTime = _messages.StringField(2)
+  isCancellationRequested = _messages.BooleanField(3)
+  startTime = _messages.StringField(4)
+
+
+class GoogleCloudMlV1beta1Version(_messages.Message):
+  """Represents a version of the model.
+
+  Fields:
+    createTime: Output only. The creation time of the version.
+    deploymentUri: Required. Google Cloud Storage object containing the model
+      graph, weights and additional metadata at the moment when the version is
+      created.
+    description: Optional. The description of the model version.
+    isDefault: Output only. Whether the version is default within the model.
+    lastUseTime: Output only. The last usage time of the version.
+    name: Required.The user-specified name of the model version.
+  """
+
+  createTime = _messages.StringField(1)
+  deploymentUri = _messages.StringField(2)
+  description = _messages.StringField(3)
+  isDefault = _messages.BooleanField(4)
+  lastUseTime = _messages.StringField(5)
+  name = _messages.StringField(6)
 
 
 class GoogleLongrunningListOperationsResponse(_messages.Message):
@@ -1384,6 +1140,24 @@ class MlProjectsReportMetricRequest(_messages.Message):
   """
 
   googleCloudMlV1alpha3ReportMetricRequest = _messages.MessageField('GoogleCloudMlV1alpha3ReportMetricRequest', 1)
+  projectsId = _messages.StringField(2, required=True)
+
+
+class MlProjectsSubmitPredictionJobRequest(_messages.Message):
+  """A MlProjectsSubmitPredictionJobRequest object.
+
+  Fields:
+    googleCloudMlV1alpha3SubmitPredictionJobRequest: A
+      GoogleCloudMlV1alpha3SubmitPredictionJobRequest resource to be passed as
+      the request body.
+    projectsId: Part of `parent`. The name of the model against which
+      prediction should be performed. It is of the form:
+      /projects/project_id/models/model_name/versions/version_id. The version
+      information may be omitted, in which case prediction is performed
+      against the default version.
+  """
+
+  googleCloudMlV1alpha3SubmitPredictionJobRequest = _messages.MessageField('GoogleCloudMlV1alpha3SubmitPredictionJobRequest', 1)
   projectsId = _messages.StringField(2, required=True)
 
 

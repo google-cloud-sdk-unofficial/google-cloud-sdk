@@ -16,15 +16,12 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as exceptions
-from googlecloudsdk.core import apis
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class SwitchMode(base_classes.NoOutputAsyncMutator):
   """Switch network mode."""
-
-  messages = apis.GetMessagesModule('compute', 'alpha')
 
   @staticmethod
   def Args(parser):
@@ -66,6 +63,7 @@ class SwitchMode(base_classes.NoOutputAsyncMutator):
         project=self.project)
 
     return [request]
+
 
 SwitchMode.detailed_help = {
     'brief': 'Switch the mode of a Google Compute Engine network',

@@ -24,6 +24,11 @@ from googlecloudsdk.core import properties
 class GetCredentials(base.Command):
   """Fetch credentials for a running cluster.
 
+  Updates a kubeconfig file with appropriate credentials to point
+  kubectl at a Container Engine Cluster. By default, credentials
+  are written to HOME/.kube/config. You can provide an alternate
+  path by setting the KUBECONFIG environment variable.
+
   See [](https://cloud.google.com/container-engine/docs/kubectl) for
   kubectl documentation.
   """

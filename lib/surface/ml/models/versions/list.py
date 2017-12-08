@@ -13,6 +13,7 @@
 # limitations under the License.
 """ml models versions list command."""
 
+from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml import flags
@@ -45,11 +46,9 @@ class List(base.ListCommand):
     client = apis.GetClientInstance('ml', 'v1alpha3')
     msgs = apis.GetMessagesModule('ml', 'v1alpha3')
     res = resources.REGISTRY.Parse(args.model, collection='ml.projects.models')
-    # TODO(user): switch to list_pager when API adds pagination support
-    # return list_pager.YieldFromList(client.projects_models_versions,
-    #                                 req,
-    #                                 field='versions',
-    #                                 batch_size_attribute='pageSize')
     req = msgs.MlProjectsModelsVersionsListRequest(
         projectsId=res.projectsId, modelsId=res.Name())
-    return client.projects_models_versions.List(req).versions
+    return list_pager.YieldFromList(client.projects_models_versions,
+                                    req,
+                                    field='versions',
+                                    batch_size_attribute='pageSize')

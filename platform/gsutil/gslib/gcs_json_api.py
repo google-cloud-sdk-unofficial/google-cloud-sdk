@@ -62,7 +62,7 @@ from gslib.gcs_json_media import UploadCallbackConnectionClassFactory
 from gslib.gcs_json_media import WrapDownloadHttpRequest
 from gslib.gcs_json_media import WrapUploadHttpRequest
 from gslib.no_op_credentials import NoOpCredentials
-from gslib.progress_callback import ProgressCallbackWithBackoff
+from gslib.progress_callback import ProgressCallbackWithTimeout
 from gslib.project_id import PopulateProjectId
 from gslib.third_party.storage_apitools import storage_v1_client as apitools_client
 from gslib.third_party.storage_apitools import storage_v1_messages as apitools_messages
@@ -86,8 +86,9 @@ from gslib.util import GetNewHttp
 from gslib.util import GetNumRetries
 from gslib.util import GetPrintableExceptionString
 from gslib.util import JsonResumableChunkSizeDefined
+from gslib.util import LogAndHandleRetries
 from gslib.util import NUM_OBJECTS_PER_LIST_PAGE
-from gslib.util import WarnAfterManyRetriesHandler
+
 
 import httplib2
 import oauth2client
@@ -255,9 +256,11 @@ class GcsJsonApi(CloudApi):
         log_response=log_response, credentials=self.credentials,
         version=self.api_version, default_global_params=self.global_params,
         additional_http_headers=additional_http_headers)
+
     self.api_client.max_retry_wait = self.max_retry_wait
     self.api_client.num_retries = self.num_retries
-    self.api_client.retry_func = WarnAfterManyRetriesHandler
+    self.api_client.retry_func = LogAndHandleRetries(
+        status_queue=self.status_queue)
 
     if no_op_credentials:
       # This API key is not secret and is used to identify gsutil during
@@ -296,6 +299,61 @@ class GcsJsonApi(CloudApi):
       raise ArgumentException(
           'gsutil client error: customerEncryption must be included when '
           'requesting potentially encrypted fields %s' % _ENCRYPTED_HASHES_SET)
+
+  def GetBucketIamPolicy(self, bucket_name, provider=None):
+    apitools_request = apitools_messages.StorageBucketsGetIamPolicyRequest(
+        bucket=bucket_name)
+    global_params = apitools_messages.StandardQueryParameters()
+    try:
+      return self.api_client.buckets.GetIamPolicy(
+          apitools_request,
+          global_params=global_params)
+    except TRANSLATABLE_APITOOLS_EXCEPTIONS as e:
+      self._TranslateExceptionAndRaise(e, bucket_name=bucket_name)
+
+  def GetObjectIamPolicy(self, bucket_name, object_name,
+                         generation, provider=None):
+    if generation is not None:
+      generation = long(generation)
+    apitools_request = apitools_messages.StorageObjectsGetIamPolicyRequest(
+        bucket=bucket_name, object=object_name, generation=generation)
+    global_params = apitools_messages.StandardQueryParameters()
+    try:
+      return self.api_client.objects.GetIamPolicy(
+          apitools_request,
+          global_params=global_params)
+    except TRANSLATABLE_APITOOLS_EXCEPTIONS as e:
+      self._TranslateExceptionAndRaise(
+          e, bucket_name=bucket_name, object_name=object_name,
+          generation=generation)
+
+  def SetObjectIamPolicy(self, bucket_name, object_name, policy,
+                         generation=None, provider=None):
+    if generation is not None:
+      generation = long(generation)
+    api_request = apitools_messages.StorageObjectsSetIamPolicyRequest(
+        bucket=bucket_name, object=object_name, generation=generation,
+        policy=policy)
+    global_params = apitools_messages.StandardQueryParameters()
+    try:
+      return self.api_client.objects.SetIamPolicy(
+          api_request,
+          global_params=global_params)
+    except TRANSLATABLE_APITOOLS_EXCEPTIONS as e:
+      self._TranslateExceptionAndRaise(
+          e, bucket_name=bucket_name, object_name=object_name)
+
+  def SetBucketIamPolicy(self, bucket_name, policy, provider=None):
+    apitools_request = apitools_messages.StorageBucketsSetIamPolicyRequest(
+        bucket=bucket_name,
+        policy=policy)
+    global_params = apitools_messages.StandardQueryParameters()
+    try:
+      return self.api_client.buckets.SetIamPolicy(
+          apitools_request,
+          global_params=global_params)
+    except TRANSLATABLE_APITOOLS_EXCEPTIONS as e:
+      self._TranslateExceptionAndRaise(e, bucket_name=bucket_name)
 
   def GetBucket(self, bucket_name, provider=None, fields=None):
     """See CloudApi class for function doc strings."""
@@ -813,10 +871,11 @@ class GcsJsonApi(CloudApi):
         bucket=bucket_name, object=object_name, generation=generation)
 
     # Disable retries in apitools. We will handle them explicitly for
-    # resumable downloads; one-shot downloads are not retriable as we do
+    # resumable downloads; one-shot downloads are not retryable as we do
     # not track how many bytes were written to the stream.
-    apitools_download.retry_func = (
-        apitools_http_wrapper.RethrowExceptionHandler)
+    apitools_download.retry_func = LogAndHandleRetries(
+        is_data_transfer=True,
+        status_queue=self.status_queue)
 
     try:
       if download_strategy == CloudApi.DownloadStrategy.RESUMABLE:
@@ -1104,8 +1163,9 @@ class GcsJsonApi(CloudApi):
               upload=apitools_upload,
               global_params=global_params)
       # Disable retries in apitools. We will handle them explicitly here.
-      apitools_upload.retry_func = (
-          apitools_http_wrapper.RethrowExceptionHandler)
+      apitools_upload.retry_func = LogAndHandleRetries(
+          is_data_transfer=True,
+          status_queue=self.status_queue)
 
       # Disable apitools' default print callbacks.
       def _NoOpCallback(unused_response, unused_upload_object):
@@ -1291,7 +1351,7 @@ class GcsJsonApi(CloudApi):
     crypto_headers = self._RewriteCryptoHeadersFromTuples(
         decryption_tuple=decryption_tuple, encryption_tuple=encryption_tuple)
 
-    progress_cb_with_backoff = None
+    progress_cb_with_timeout = None
     try:
       last_bytes_written = 0L
       while True:
@@ -1311,11 +1371,11 @@ class GcsJsonApi(CloudApi):
           rewrite_response = self.api_client.objects.Rewrite(
               apitools_request, global_params=global_params)
         bytes_written = long(rewrite_response.totalBytesRewritten)
-        if progress_callback and not progress_cb_with_backoff:
-          progress_cb_with_backoff = ProgressCallbackWithBackoff(
+        if progress_callback and not progress_cb_with_timeout:
+          progress_cb_with_timeout = ProgressCallbackWithTimeout(
               long(rewrite_response.objectSize), progress_callback)
-        if progress_cb_with_backoff:
-          progress_cb_with_backoff.Progress(
+        if progress_cb_with_timeout:
+          progress_cb_with_timeout.Progress(
               bytes_written - last_bytes_written)
 
         if rewrite_response.done:

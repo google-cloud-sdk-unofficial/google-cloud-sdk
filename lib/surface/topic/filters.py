@@ -20,12 +20,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core.resource import resource_topics
 
 
-class Filters(base.Command):
+class Filters(base.TopicCommand):
   """Resource filters supplementary help."""
-
-  def Run(self, args):
-    self.cli.Execute(args.command_path[1:] + ['--document=style=topic'])
-    return None
 
   detailed_help = {
 

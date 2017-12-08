@@ -47,22 +47,11 @@ class Disable(base.Command, base_classes.BaseServiceManagementCommand):
     Returns:
       The response from the consumer settings API call.
     """
-    # Shorten the patch request name for better readability
-    patch_request = (self.services_messages
-                     .ServicemanagementServicesProjectSettingsPatchRequest)
-
-    usage_settings = self.services_messages.UsageSettings(
-        consumerEnableStatus=(self.services_messages.UsageSettings
-                              .ConsumerEnableStatusValueValuesEnum.DISABLED))
-
-    project_settings = self.services_messages.ProjectSettings(
-        usageSettings=usage_settings)
-
-    request = patch_request(
+    request = self.services_messages.ServicemanagementServicesDisableRequest(
         serviceName=args.service,
-        consumerProjectId=self.project,
-        projectSettings=project_settings,
-        updateMask='usage_settings.consumer_enable_status')
-
-    operation = self.services_client.services_projectSettings.Patch(request)
+        disableServiceRequest=self.services_messages.DisableServiceRequest(
+            consumerId='project:' + self.project
+        )
+    )
+    operation = self.services_client.services.Disable(request)
     services_util.ProcessOperationResult(operation, args.async)

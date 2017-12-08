@@ -17,6 +17,7 @@ It's an alias for the instance-groups set-named-ports command.
 """
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
+from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instance_groups import flags
 
 
@@ -38,10 +39,15 @@ class SetNamedPorts(base_classes.NoOutputAsyncMutator):
   @staticmethod
   def Args(parser):
     flags.AddNamedPortsArgs(parser)
-    flags.AddScopeArgs(parser=parser, multizonal=False)
+    flags.ZONAL_INSTANCE_GROUP_ARG.AddArgument(parser)
 
   def CreateRequests(self, args):
-    group_ref = self.CreateZonalReference(args.group, args.zone)
+    group_ref = (
+        flags.ZONAL_INSTANCE_GROUP_ARG.ResolveAsResource(
+            args, self.resources,
+            default_scope=compute_flags.ScopeEnum.ZONE,
+            scope_lister=compute_flags.GetDefaultScopeLister(
+                self.compute_client, self.project)))
     ports = instance_groups_utils.ValidateAndParseNamedPortsArgs(
         self.messages, args.named_ports)
     # service should be always zonal

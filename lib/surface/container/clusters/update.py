@@ -67,7 +67,6 @@ def _AddMutuallyExclusiveArgs(mutex_group):
           api_adapter.HPA: _ParseAddonDisabled,
       }),
       dest='disable_addons',
-      action=arg_parsers.FloatingListValuesCatcher(),
       metavar='ADDON=ENABLED|DISABLED',
       help='''Cluster addons to enable or disable. Options are
 {hpa}=ENABLED|DISABLED
@@ -80,7 +79,6 @@ def _AddAdditionalZonesArg(mutex_group):
       '--additional-zones',
       type=arg_parsers.ArgList(),
       metavar='ZONE',
-      action=arg_parsers.FloatingListValuesCatcher(),
       help="""\
 The set of additional zones in which the cluster's node footprint should be
 replicated. All zones must be in the same region as the cluster's primary zone.

@@ -94,7 +94,6 @@ def _Args(parser):
       '--scopes',
       type=arg_parsers.ArgList(min_length=1),
       metavar='SCOPE',
-      action=arg_parsers.FloatingListValuesCatcher(),
       help="""\
 Specifies scopes for the node instances. The project's default
 service account is used. Examples:
@@ -120,8 +119,8 @@ Alias,URI
       '--tags',
       help=argparse.SUPPRESS,
       type=arg_parsers.ArgList(min_length=1),
-      metavar='TAGS',
-      action=arg_parsers.FloatingListValuesCatcher())
+      metavar='TAGS')
+  flags.AddImageTypeFlag(parser, 'node pool')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -131,7 +130,6 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddImageTypeFlag(parser, 'node pool', suppressed=False)
     flags.AddClusterAutoscalingFlags(parser, suppressed=True)
     flags.AddLocalSSDFlag(parser, suppressed=True)
 
@@ -199,7 +197,6 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddImageTypeFlag(parser, 'node pool')
     flags.AddClusterAutoscalingFlags(parser, suppressed=True)
     flags.AddLocalSSDFlag(parser)
 
@@ -211,7 +208,6 @@ class CreateAlpha(Create):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddImageTypeFlag(parser, 'node pool')
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDFlag(parser)
 

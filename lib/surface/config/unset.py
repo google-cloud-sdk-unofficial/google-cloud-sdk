@@ -28,7 +28,7 @@ class Unset(base.Command):
   `--installation` flag to unset the property across all configurations. See
   `gcloud topic configurations` for more information.
 
-  ## AVAIABLE PROPERTIES
+  ## AVAILABLE PROPERTIES
 
   {properties}
 

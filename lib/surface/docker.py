@@ -73,7 +73,6 @@ class Docker(base.Command):
         '--server', '-s',
         type=arg_parsers.ArgList(min_length=1),
         metavar='SERVER',
-        action=arg_parsers.FloatingListValuesCatcher(),
         help='The address of the Google Cloud Registry.',
         required=False,
         default=_DEFAULT_REGISTRIES)

@@ -19,6 +19,8 @@ from __future__ import absolute_import
 import Queue
 import threading
 
+ZERO_TASKS_TO_DO_ARGUMENT = ('There were no', 'tasks to do')
+
 
 # Timeout for puts/gets to the global status queue, in seconds.
 STATUS_QUEUE_OP_TIMEOUT = 5
@@ -26,6 +28,11 @@ STATUS_QUEUE_OP_TIMEOUT = 5
 # Maximum time to wait (join) on the SeekAheadThread after the ProducerThread
 # completes, in seconds.
 SEEK_AHEAD_JOIN_TIMEOUT = 60
+
+# Maximum time to wait (join) on the UIThread after the Apply
+# completes, in seconds.
+UI_JOIN_TIMEOUT = 60
+
 
 class AtomicDict(object):
   """Thread-safe (and optionally process-safe) dictionary protected by a lock.

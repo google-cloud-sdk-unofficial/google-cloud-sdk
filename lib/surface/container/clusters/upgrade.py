@@ -114,6 +114,7 @@ def _Args(parser):
       ' time as the master.',
       action='store_true')
   flags.AddClustersWaitAndAsyncFlags(parser)
+  flags.AddImageTypeFlag(parser, 'cluster/node pool')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -123,7 +124,6 @@ class Upgrade(base.Command):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddImageTypeFlag(parser, 'cluster/node pool', True)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -226,7 +226,6 @@ class UpgradeBeta(Upgrade):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddImageTypeFlag(parser, 'cluster/node pool', False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -236,4 +235,3 @@ class UpgradeAlpha(Upgrade):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddImageTypeFlag(parser, 'cluster/node pool', False)

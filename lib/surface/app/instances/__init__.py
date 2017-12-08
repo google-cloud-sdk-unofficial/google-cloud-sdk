@@ -21,6 +21,9 @@ class Instances(base.Group):
 
   This set of commands can be used to view and manage your existing App Engine
   instances.
+
+  For more information on App Engine instances, see:
+  https://cloud.google.com/appengine/docs/python/an-overview-of-app-engine
   """
 
   detailed_help = {

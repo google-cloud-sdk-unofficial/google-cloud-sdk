@@ -69,7 +69,6 @@ def _Args(parser, include_alpha_targets, include_beta_targets):
             'port ranges will be forwarded.'),
       type=arg_parsers.ArgList(
           min_length=1, element_type=arg_parsers.Range.Parse),
-      action=arg_parsers.FloatingListValuesCatcher(),
       default=[])
 
   ports.detailed_help = """\

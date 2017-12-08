@@ -27,6 +27,7 @@ import codecs
 from collections import namedtuple
 import copy
 import getopt
+import json
 import logging
 import multiprocessing
 import os
@@ -55,7 +56,8 @@ from gslib.name_expansion import SeekAheadNameExpansionIterator
 from gslib.parallelism_framework_util import AtomicDict
 from gslib.parallelism_framework_util import PutToQueueWithTimeout
 from gslib.parallelism_framework_util import SEEK_AHEAD_JOIN_TIMEOUT
-from gslib.parallelism_framework_util import STATUS_QUEUE_OP_TIMEOUT
+from gslib.parallelism_framework_util import UI_JOIN_TIMEOUT
+from gslib.parallelism_framework_util import ZERO_TASKS_TO_DO_ARGUMENT
 from gslib.plurality_checkable_iterator import PluralityCheckableIterator
 from gslib.seek_ahead_thread import SeekAheadThread
 from gslib.sig_handling import ChildProcessSignalHandler
@@ -65,8 +67,14 @@ from gslib.sig_handling import MultithreadedMainSignalHandler
 from gslib.sig_handling import RegisterSignalHandler
 from gslib.storage_url import StorageUrlFromString
 from gslib.third_party.storage_apitools import storage_v1_messages as apitools_messages
+from gslib.thread_message import FinalMessage
+from gslib.thread_message import MetadataMessage
+from gslib.thread_message import ProducerThreadMessage
 from gslib.translation_helper import AclTranslation
 from gslib.translation_helper import PRIVATE_DEFAULT_OBJ_ACL
+from gslib.ui_controller import MainThreadUIQueue
+from gslib.ui_controller import UIController
+from gslib.ui_controller import UIThread
 from gslib.util import CheckMultiprocessingAvailableAndInit
 from gslib.util import GetConfigFilePath
 from gslib.util import GsutilStreamHandler
@@ -74,15 +82,14 @@ from gslib.util import HaveFileUrls
 from gslib.util import HaveProviderUrls
 from gslib.util import IS_WINDOWS
 from gslib.util import NO_MAX
+from gslib.util import RsyncDiffToApply
 from gslib.util import UrlsAreForSingleProvider
 from gslib.util import UTF8
+
 from gslib.wildcard_iterator import CreateWildcardIterator
 
+
 OFFER_GSUTIL_M_SUGGESTION_THRESHOLD = 5
-
-
-def _DefaultExceptionHandler(cls, e):
-  cls.logger.exception(e)
 
 
 def CreateGsutilLogger(command_name):
@@ -109,6 +116,10 @@ def CreateGsutilLogger(command_name):
   if not log.handlers:
     log.addHandler(log_handler)
   return log
+
+
+def _DefaultExceptionHandler(cls, e):
+  cls.logger.exception(e)
 
 
 def _UrlArgChecker(command_instance, url):
@@ -175,8 +186,6 @@ def _GetTaskEstimationThreshold():
 # causing problems with infinite recursion, and it can be increased if needed.
 MAX_RECURSIVE_DEPTH = 5
 
-ZERO_TASKS_TO_DO_ARGUMENT = ('There were no', 'tasks to do')
-
 # Map from deprecated aliases to the current command and subcommands that
 # provide the same behavior.
 # TODO: Remove this map and deprecate old commands on 9/9/14.
@@ -206,7 +215,7 @@ global total_tasks, call_completed_map, global_return_values_map
 global need_pool_or_done_cond, caller_id_finished_count, new_pool_needed
 global current_max_recursive_level, shared_vars_map, shared_vars_list_map
 global class_map, worker_checking_level_lock, failure_count
-global glob_status_queue
+global glob_status_queue, ui_controller
 
 
 def InitializeMultiprocessingVariables():
@@ -534,7 +543,11 @@ class Command(HelpProvider):
     self.all_versions = False
     self.command_alias_used = command_alias_used
     self.seek_ahead_gsutil_api = None
-
+    # pylint: disable=global-variable-not-assigned
+    # pylint: disable=global-variable-undefined
+    global ui_controller
+    # pylint: enable=global-variable-undefined
+    # pylint: enable=global-variable-not-assigned
     # Global instance of a threaded logger object.
     self.logger = CreateGsutilLogger(self.command_name)
     if logging_filters:
@@ -544,6 +557,12 @@ class Command(HelpProvider):
     if self.command_spec is None:
       raise CommandException('"%s" command implementation is missing a '
                              'command_spec definition.' % self.command_name)
+
+    quiet_mode = not self.logger.isEnabledFor(logging.INFO)
+    ui_controller = UIController(
+        quiet_mode=quiet_mode,
+        dump_status_messages_file=boto.config.get(
+            'GSUtil', 'dump_status_messages_file', None))
 
     # Parse and validate args.
     self.args = self._TranslateDeprecatedAliases(args)
@@ -576,9 +595,10 @@ class Command(HelpProvider):
     self.project_id = None
     self.gsutil_api = CloudApiDelegator(
         self.bucket_storage_uri_class, self.gsutil_api_map,
-        self.logger, _MainThreadUIQueue(self.logger), debug=self.debug,
-        trace_token=self.trace_token, perf_trace_token=self.perf_trace_token)
-
+        self.logger,
+        MainThreadUIQueue(sys.stderr, ui_controller),
+        debug=self.debug, trace_token=self.trace_token,
+        perf_trace_token=self.perf_trace_token)
     # Cross-platform path to run gsutil binary.
     self.gsutil_cmd = ''
     # If running on Windows, invoke python interpreter explicitly.
@@ -809,6 +829,8 @@ class Command(HelpProvider):
     else:
       # Normal Cloud API path. acl_arg is a JSON ACL or a canned ACL.
       self._SetAclGsutilApi(url, gsutil_api)
+    PutToQueueWithTimeout(gsutil_api.status_queue,
+                          MetadataMessage(message_time=time.time()))
 
   def _SetAclXmlPassthrough(self, url, gsutil_api):
     """Sets the ACL for the URL provided using the XML passthrough functions.
@@ -1215,9 +1237,15 @@ class Command(HelpProvider):
     consumer_pool = _ConsumerPool(processes, task_queue)
     consumer_pools.append(consumer_pool)
 
+  class ParallelOverrideReason(object):
+    """Enum class to describe purpose of overriding parallel operations."""
+    SLICE = 'slice'
+    SPEED = 'speed'
+    PERFDIAG = 'perfdiag'
+
   def Apply(self, func, args_iterator, exception_handler,
             shared_attrs=None, arg_checker=_UrlArgChecker,
-            parallel_operations_override=False, process_count=None,
+            parallel_operations_override=None, process_count=None,
             thread_count=None, should_return_results=False,
             fail_on_error=False, seek_ahead_iterator=None):
     """Calls _Parallel/SequentialApply based on multiprocessing availability.
@@ -1231,12 +1259,14 @@ class Command(HelpProvider):
       arg_checker: Used to determine whether we should process the current
                    argument or simply skip it. Also handles any logging that
                    is specific to a particular type of argument.
-      parallel_operations_override: Used to override self.parallel_operations.
-                                    This allows the caller to safely override
-                                    the top-level flag for a single call.
+      parallel_operations_override: A string (see ParallelOverrideReason)
+                                    describing the reason to override
+                                    self.parallel_operations. This allows the
+                                    caller to safely override the top-level flag
+                                    for a single call.
       process_count: The number of processes to use. If not specified, then
                      the configured default will be used.
-      thread_count: The number of threads per process. If not speficied, then
+      thread_count: The number of threads per process. If not specified, then
                     the configured default will be used..
       should_return_results: If true, then return the results of all successful
                              calls to func in a list.
@@ -1296,10 +1326,11 @@ class Command(HelpProvider):
     usable_processes_count = (process_count if self.multiprocessing_is_available
                               else 1)
     if thread_count * usable_processes_count > 1:
-      self._ParallelApply(func, args_iterator, exception_handler, caller_id,
-                          arg_checker, usable_processes_count, thread_count,
-                          should_return_results, fail_on_error,
-                          seek_ahead_iterator=seek_ahead_iterator)
+      self._ParallelApply(
+          func, args_iterator, exception_handler, caller_id, arg_checker,
+          usable_processes_count, thread_count, should_return_results,
+          fail_on_error, seek_ahead_iterator=seek_ahead_iterator,
+          parallel_operations_override=parallel_operations_override)
     else:
       self._SequentialApply(func, args_iterator, exception_handler, caller_id,
                             arg_checker, should_return_results, fail_on_error)
@@ -1317,7 +1348,7 @@ class Command(HelpProvider):
       return global_return_values_map.get(caller_id)
 
   def _MaybeSuggestGsutilDashM(self):
-    """Outputs a sugestion to the user to use gsutil -m."""
+    """Outputs a suggestion to the user to use gsutil -m."""
     if not (boto.config.getint('GSUtil', 'parallel_process_count', 0) == 1 and
             boto.config.getint('GSUtil', 'parallel_thread_count', 0) == 1):
       self.logger.info('\n' + textwrap.fill(
@@ -1379,6 +1410,9 @@ class Command(HelpProvider):
       # start and it scrolled off-screen.
       self._MaybeSuggestGsutilDashM()
 
+    PutToQueueWithTimeout(self.gsutil_api.status_queue,
+                          FinalMessage(time.time()))
+
     # If the final iterated argument results in an exception, and that
     # exception modifies shared_attrs, we need to publish the results.
     worker_thread.shared_vars_updater.Update(caller_id, self)
@@ -1387,7 +1421,8 @@ class Command(HelpProvider):
   def _ParallelApply(self, func, args_iterator, exception_handler, caller_id,
                      arg_checker, process_count, thread_count,
                      should_return_results, fail_on_error,
-                     seek_ahead_iterator=None):
+                     seek_ahead_iterator=None,
+                     parallel_operations_override=None):
     r"""Dispatches input arguments across a thread/process pool.
 
     Pools are composed of parallel OS processes and/or Python threads,
@@ -1431,7 +1466,7 @@ class Command(HelpProvider):
     # This is initialized in Initialize(Multiprocessing|Threading)Variables
     # pylint: disable=global-variable-not-assigned
     # pylint: disable=global-variable-undefined
-    global glob_status_queue
+    global glob_status_queue, ui_controller
     # pylint: enable=global-variable-not-assigned
     # pylint: enable=global-variable-undefined
     is_main_thread = self.recursive_apply_level == 0
@@ -1509,12 +1544,14 @@ class Command(HelpProvider):
     producer_thread = ProducerThread(
         copy.copy(self), args_iterator, caller_id, func, task_queue,
         should_return_results, exception_handler, arg_checker,
-        fail_on_error, seek_ahead_iterator=seek_ahead_iterator)
+        fail_on_error, seek_ahead_iterator=seek_ahead_iterator,
+        status_queue=(glob_status_queue if is_main_thread else None))
 
     # Start the UI thread that is responsible for displaying operation status
-    # (aggregrated across processes and threads) to the user.
+    # (aggregated across processes and threads) to the user.
+    ui_thread = None
     if is_main_thread:
-      _UIThread(glob_status_queue, self.logger)
+      ui_thread = UIThread(glob_status_queue, sys.stderr, ui_controller)
 
     if process_count > 1:
       # Wait here until either:
@@ -1552,6 +1589,7 @@ class Command(HelpProvider):
     # terminate.
     if is_main_thread:
       PutToQueueWithTimeout(glob_status_queue, ZERO_TASKS_TO_DO_ARGUMENT)
+      ui_thread.join(timeout=UI_JOIN_TIMEOUT)
 
     # We encountered an exception from the producer thread before any arguments
     # were enqueued, but it wouldn't have been propagated, so we'll now
@@ -1565,6 +1603,8 @@ class Command(HelpProvider):
     if producer_thread.iterator_exception and fail_on_error:
       # pylint: disable=raising-bad-type
       raise producer_thread.iterator_exception
+    if is_main_thread and not parallel_operations_override:
+      PutToQueueWithTimeout(glob_status_queue, FinalMessage(time.time()))
 
   def _ApplyThreads(self, thread_count, process_count, recursive_apply_level,
                     status_queue, is_blocking_call=False, task_queue=None):
@@ -1658,59 +1698,6 @@ class Command(HelpProvider):
 
 # Below here lie classes and functions related to controlling the flow of tasks
 # between various threads and processes.
-
-
-class _MainThreadUIQueue(object):
-  """Handles status display and processing in the main thread / master process.
-
-  This class emulates a queue to cover main-thread activity before or after
-  Apply, as well as for the single-threaded, single-process case, i.e.,
-  _SequentialApply. When multiple threads or processes are used, during calls
-  to Apply the main thread is waiting for work to complete, and this queue
-  should remain unused until Apply returns.
-
-  Presently, this class just prints strings that it receives verbatim; in the
-  future, typed status messages can be defined for processing.
-  """
-
-  def __init__(self, logger):
-    self.logger = logger
-
-  def put(self, status_item, timeout=None):  # pylint: disable=invalid-name
-    if self.logger.isEnabledFor(logging.INFO):
-      sys.stderr.write(status_item)
-
-
-class _UIThread(threading.Thread):
-  """Responsible for centralized printing across multiple processes/threads.
-
-  This class pulls status messages that are posted to the centralized status
-  queue and coordinates displaying status and progress to the user. It is
-  used only during calls to _ParallelApply, which in turn is called only when
-  multiple threads and/or processes are used.
-
-  Presently, this thread just prints strings that it receives verbatim; in the
-  future, typed status messages can be defined for processing.
-  """
-
-  def __init__(self, status_queue, logger):
-    super(_UIThread, self).__init__()
-    self.status_queue = status_queue
-    self.logger = logger
-    self.start()
-
-  def run(self):
-    while True:
-      try:
-        status_item = self.status_queue.get(timeout=STATUS_QUEUE_OP_TIMEOUT)
-      except Queue.Empty:
-        continue
-      if status_item == ZERO_TASKS_TO_DO_ARGUMENT:
-        break
-      if self.logger.isEnabledFor(logging.INFO):
-        sys.stderr.write(str(status_item))
-
-
 class _ConsumerPool(object):
 
   def __init__(self, processes, task_queue):
@@ -1777,7 +1764,7 @@ class ProducerThread(threading.Thread):
 
   def __init__(self, cls, args_iterator, caller_id, func, task_queue,
                should_return_results, exception_handler, arg_checker,
-               fail_on_error, seek_ahead_iterator=None):
+               fail_on_error, seek_ahead_iterator=None, status_queue=None):
     """Initializes the producer thread.
 
     Args:
@@ -1801,6 +1788,12 @@ class ProducerThread(threading.Thread):
       seek_ahead_iterator: If present, a seek-ahead iterator that will
           provide an approximation of the total number of tasks and bytes that
           will be iterated by the ProducerThread.
+      status_queue: status_queue to inform task_queue estimation. Only
+          valid when calling from the main thread, else None. Even if this is
+          the main thread, the status_queue will only properly work if args
+          is a collection of NameExpansionResults, which is the type that gives
+          us initial information about files to be processed. Otherwise,
+          nothing will be added to the queue.
     """
     super(ProducerThread, self).__init__()
     self.func = func
@@ -1817,6 +1810,7 @@ class ProducerThread(threading.Thread):
     self.unknown_exception = None
     self.iterator_exception = None
     self.seek_ahead_iterator = seek_ahead_iterator
+    self.status_queue = status_queue
     self.start()
 
   def run(self):
@@ -1827,7 +1821,9 @@ class ProducerThread(threading.Thread):
     seek_ahead_thread = None
     seek_ahead_thread_cancel_event = None
     seek_ahead_thread_considered = False
+    args = None
     try:
+      total_size = 0
       args_iterator = iter(self.args_iterator)
       while True:
         try:
@@ -1851,6 +1847,23 @@ class ProducerThread(threading.Thread):
 
         if self.arg_checker(self.cls, args):
           num_tasks += 1
+          if self.status_queue:
+            if not num_tasks%100:
+              # Time to update the total number of tasks.
+              if (isinstance(args, NameExpansionResult) or
+                  isinstance(args, RsyncDiffToApply)):
+                PutToQueueWithTimeout(
+                    self.status_queue, ProducerThreadMessage(num_tasks,
+                                                             total_size,
+                                                             time.time()))
+            if isinstance(args, NameExpansionResult):
+              if args.expanded_result:
+                json_expanded_result = json.loads(args.expanded_result)
+                if 'size' in json_expanded_result:
+                  total_size += int(json_expanded_result['size'])
+            elif isinstance(args, RsyncDiffToApply):
+              if args.copy_size:
+                total_size += int(args.copy_size)
 
           if not seek_ahead_thread_considered:
             if task_estimation_threshold is None:
@@ -1906,6 +1919,15 @@ class ProducerThread(threading.Thread):
         # is overloaded. Because the put uses a timeout, it should never block
         # command termination or signal handling.
         seek_ahead_thread.join(timeout=SEEK_AHEAD_JOIN_TIMEOUT)
+      # Send a final ProducerThread message that definitively states
+      # the amount of actual work performed.
+      if (self.status_queue and (isinstance(args, NameExpansionResult) or
+                                 isinstance(args, RsyncDiffToApply))):
+        PutToQueueWithTimeout(
+            self.status_queue, ProducerThreadMessage(num_tasks,
+                                                     total_size,
+                                                     time.time(),
+                                                     finished=True))
 
       # It's possible that the workers finished before we updated total_tasks,
       # so we need to check here as well.
@@ -1969,6 +1991,9 @@ class WorkerThread(threading.Thread):
     self.cached_classes = {}
     self.shared_vars_updater = _SharedVariablesUpdater()
 
+    # Note that thread_gsutil_api is not initialized in the sequential
+    # case; task functions should use util.GetCloudApiInstance to
+    # retrieve the main thread's CloudApiDelegator in that case.
     self.thread_gsutil_api = None
     if bucket_storage_uri_class and gsutil_api_map:
       self.thread_gsutil_api = CloudApiDelegator(
@@ -2099,6 +2124,7 @@ def _NotifyIfDone(caller_id, num_done):
 # pylint: disable=global-variable-not-assigned,global-variable-undefined
 def ShutDownGsutil():
   """Shut down all processes in consumer pools in preparation for exiting."""
+  global glob_status_queue
   for q in queues:
     try:
       q.cancel_join_thread()
@@ -2106,6 +2132,10 @@ def ShutDownGsutil():
       pass
   for consumer_pool in consumer_pools:
     consumer_pool.ShutDown()
+  try:
+    glob_status_queue.cancel_join_thread()
+  except:  # pylint: disable=bare-except
+    pass
 
 
 def _IncrementFailureCount():
@@ -2146,3 +2176,4 @@ def ResetFailureCount():
   except NameError:  # If it wasn't initialized, Apply() wasn't called.
     pass
 # pylint: enable=global-variable-not-assigned,global-variable-undefined
+

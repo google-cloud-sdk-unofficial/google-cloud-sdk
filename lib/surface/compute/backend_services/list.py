@@ -43,7 +43,7 @@ class ListAlpha(base_classes.GlobalRegionalLister):
 
   @property
   def aggregation_service(self):
-    return None  # Force global
+    return self.compute.backendServices
 
   @property
   def global_service(self):

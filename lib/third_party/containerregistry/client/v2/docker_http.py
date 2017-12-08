@@ -2,6 +2,7 @@
 
 import httplib
 import json
+import re
 import urllib
 
 from containerregistry.client import docker_creds
@@ -106,7 +107,7 @@ class Transport(object):
   request.
 
   Args:
-     name: docker_name.Repository, the structured name of the docker image
+     name: docker_name.Registry, the structured name of the docker resource
            being referenced.
      creds: docker_creds.Basic, the basic authentication credentials to use for
             authentication challenge exchanges.
@@ -115,8 +116,8 @@ class Transport(object):
   """
 
   def __init__(self, name, creds, transport, action):
-    if not isinstance(name, docker_name.Repository):
-      raise ValueError('Expected docker_name.Repository for "name"')
+    if not isinstance(name, docker_name.Registry):
+      raise ValueError('Expected docker_name.Registry for "name"')
     self._name = name
     self._basic_creds = creds
     self._transport = transport
@@ -174,9 +175,7 @@ class Transport(object):
 
   def _Scope(self):
     """Construct the resource scope to pass to a v2 auth endpoint."""
-    return 'repository:{repository}:{action}'.format(
-        repository=self._name.repository,
-        action=self._action)
+    return self._name.scope(self._action)
 
   def _Refresh(self):
     """Refreshes the Bearer token credentials underlying this transport.
@@ -271,6 +270,48 @@ class Transport(object):
       raise V2DiagnosticException(resp, content)
 
     return resp, content
+
+  def PaginatedRequest(self,
+                       url,
+                       accepted_codes=None,
+                       method=None,
+                       body=None,
+                       content_type=None):
+    """Wrapper around Request that follows Link headers if they exist.
+
+    Args:
+      url: str, the URL to which to talk
+      accepted_codes: the list of acceptable http status codes
+      method: str, the HTTP method to use (defaults to GET/PUT depending on
+              whether body is provided)
+      body: str, the body to pass into the PUT request (or None for GET)
+      content_type: str, the mime-type of the request (or None for JSON)
+
+    Yields:
+      The return value of calling Request for each page of results.
+
+    """
+    next_page = url
+
+    while next_page:
+      resp, content = self.Request(next_page, accepted_codes, method,
+                                   body, content_type)
+      yield resp, content
+
+      next_page = ParseNextLinkHeader(resp)
+
+
+def ParseNextLinkHeader(resp):
+  """Returns "next" link from RFC 5988 Link header or None if not present."""
+  link = resp.get('link')
+  if not link:
+    return None
+
+  m = re.match(r'.*<(.+)>;\s*rel="next".*', link)
+  if not m:
+    return None
+
+  return m.group(1)
 
 
 def Scheme(endpoint):

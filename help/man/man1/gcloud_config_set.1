@@ -55,7 +55,7 @@ Run \fB$ gcloud help\fR for a description of flags available to all commands.
 
 
 
-.SH "AVAIABLE PROPERTIES"
+.SH "AVAILABLE PROPERTIES"
 
 \fIcore\fR
 .RS 2m
@@ -106,7 +106,8 @@ available in the log files.
 .RE
 \fBmax_log_days\fR
 .RS 2m
-Maximum number of days to retain log files before deleting.If unset, defaults to
+Maximum number of days to retain log files before deleting. If set to 0, turns
+off log garbage collection and does not delete log files. If unset, defaults to
 30.
 
 

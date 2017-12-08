@@ -27,7 +27,6 @@ def _AddArgs(parser, multizonal):
   parser.add_argument(
       '--instances',
       type=arg_parsers.ArgList(min_length=1),
-      action=arg_parsers.FloatingListValuesCatcher(),
       metavar='INSTANCE',
       required=True,
       help='Names of instances to recreate.')

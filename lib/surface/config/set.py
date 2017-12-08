@@ -29,7 +29,7 @@ class Set(base.Command):
   `--installation` flag to set the property across all configurations. See
   `gcloud topic configurations` for more information.
 
-  ## AVAIABLE PROPERTIES
+  ## AVAILABLE PROPERTIES
 
   {properties}
 

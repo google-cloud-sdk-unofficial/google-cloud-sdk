@@ -21,19 +21,64 @@ import os
 import pkgutil
 import posixpath
 import re
+import sys
 import tempfile
 import unittest
 import urlparse
 
 import boto
 import crcmod
+from gslib.cloud_api import ResumableDownloadException
+from gslib.cloud_api import ResumableUploadException
 from gslib.encryption_helper import Base64Sha256FromBase64EncryptionKey
+from gslib.posix_util import GetDefaultMode
 import gslib.tests as gslib_tests
+from gslib.util import IS_WINDOWS
+from gslib.util import LazyWrapper
+from gslib.util import MakeHumanReadable
 from gslib.util import UsingCrcmodExtension
 
 if not hasattr(unittest.TestCase, 'assertIsNone'):
   # external dependency unittest2 required for Python <= 2.6
   import unittest2 as unittest  # pylint: disable=g-import-not-at-top
+
+# pylint: disable=g-import-not-at-top, g-long-lambda
+if not IS_WINDOWS:
+  import grp
+  import pwd
+  USER_ID = os.getuid()
+  USER_NAME = pwd.getpwuid(USER_ID).pw_name
+  PRIMARY_GID = pwd.getpwuid(USER_ID).pw_gid
+
+  # Get a list of all groups on the system where the current username is listed
+  # as a member of the group in the gr_mem group attribute. Make this a list of
+  # all group IDs and cast as a set for more efficient lookup times.
+  USER_GROUPS = LazyWrapper(
+      lambda: set([PRIMARY_GID] +
+                  [g.gr_gid for g in grp.getgrall()
+                   if USER_NAME in g.gr_mem]))
+  # Select a group for the current user that is not the user's primary group. If
+  # the length of the user's groups is 1, then we must use the primary group.
+  # Otherwise put all of the user's groups (except the primary group) in a list,
+  # and use the first element. This guarantees us a group that is not the user's
+  # primary group (unless the user is only a member of one group).
+  NON_PRIMARY_GID = LazyWrapper(lambda: (PRIMARY_GID if len(USER_GROUPS) == 1
+                                         else [g for g in list(USER_GROUPS)
+                                               if g != PRIMARY_GID][0]))
+
+  DEFAULT_MODE = int(GetDefaultMode(), 8)
+
+  # Get a list of all groups on the system which are not necessarily sorted by
+  # GID, then sort them and take the last element and add one to the GID to get
+  # a GID that is guaranteed not to be on the current system.
+  INVALID_GID = LazyWrapper(lambda: sorted([group.gr_gid for group
+                                            in grp.getgrall()])[-1] + 1)
+
+  # Take the current user's UID and increment it by one, this counts as an
+  # invalid UID, as the metric used is if the UID matches the current user's,
+  # exactly.
+  INVALID_UID = LazyWrapper(lambda: sorted([user.pw_uid for user
+                                            in pwd.getpwall()])[-1] + 1)
 
 # 256-bit base64 encryption keys used for testing AES256 customer-supplied
 # encryption. These are public and open-source, so don't ever use them for
@@ -77,6 +122,49 @@ RUN_S3_TESTS = False
 USE_MULTIREGIONAL_BUCKETS = False
 
 PARALLEL_COMPOSITE_UPLOAD_TEST_CONFIG = '/tmp/.boto.parallel_upload_test_config'
+
+ORPHANED_FILE = ('This sync will orphan file(s), please fix their permissions '
+                 'before trying again.')
+
+POSIX_MODE_ERROR = 'Mode for %s won\'t allow read access.'
+POSIX_GID_ERROR = 'GID for %s doesn\'t exist on current system.'
+POSIX_UID_ERROR = 'UID for %s doesn\'t exist on current system.'
+POSIX_INSUFFICIENT_ACCESS_ERROR = 'Insufficient access with uid/gid/mode for %s'
+
+
+def BuildErrorRegex(obj, err_str):
+  """Builds a regex to match a file name for a file that would be orphaned.
+
+  Args:
+    obj: Object uri.
+    err_str: The error string to search for.
+
+  Returns:
+    A regex that will match the file name and with the error text for a file
+    that would be orphaned.
+  """
+  return re.compile(err_str % ObjectToURI(obj))
+
+
+def TailSet(start_point, listing):
+  """Returns set of object name tails.
+
+  Tails can be compared between source and dest, past the point at which the
+  command was done. For example if test ran {cp,mv,rsync}
+  gs://bucket1/dir gs://bucket2/dir2, the tails for listings from bucket1
+  would start after "dir", while the tails for listings from bucket2 would
+  start after "dir2".
+
+  Args:
+    start_point: The target of the cp command, e.g., for the above command it
+                 would be gs://bucket1/dir for the bucket1 listing results and
+                 gs://bucket2/dir2 for the bucket2 listing results.
+    listing: The listing over which to compute tail.
+
+  Returns:
+    Object name tails.
+  """
+  return set(l[len(start_point):] for l in listing.strip().split('\n'))
 
 
 def _HasS3Credentials():
@@ -480,3 +568,66 @@ def WorkingDirectory(new_working_directory):
   finally:
     if new_working_directory and prev_working_directory:
       os.chdir(prev_working_directory)
+
+
+# Custom test callbacks must be pickleable, and therefore at global scope.
+class HaltingCopyCallbackHandler(object):
+  """Test callback handler for intentionally stopping a resumable transfer."""
+
+  def __init__(self, is_upload, halt_at_byte):
+    self._is_upload = is_upload
+    self._halt_at_byte = halt_at_byte
+
+  # pylint: disable=invalid-name
+  def call(self, total_bytes_transferred, total_size):
+    """Forcibly exits if the transfer has passed the halting point."""
+    if total_bytes_transferred >= self._halt_at_byte:
+      sys.stderr.write(
+          'Halting transfer after byte %s. %s/%s transferred.\r\n' % (
+              self._halt_at_byte, MakeHumanReadable(total_bytes_transferred),
+              MakeHumanReadable(total_size)))
+      if self._is_upload:
+        raise ResumableUploadException('Artifically halting upload.')
+      else:
+        raise ResumableDownloadException('Artifically halting download.')
+
+
+class HaltOneComponentCopyCallbackHandler(object):
+  """Test callback handler for stopping part of a sliced download."""
+
+  def __init__(self, halt_at_byte):
+    self._last_progress_byte = None
+    self._halt_at_byte = halt_at_byte
+
+  # pylint: disable=invalid-name
+  # pylint: disable=unused-argument
+  def call(self, current_progress_byte, total_size_unused):
+    """Forcibly exits if the passed the halting point since the last call."""
+    if (self._last_progress_byte is not None and
+        self._last_progress_byte < self._halt_at_byte < current_progress_byte):
+      sys.stderr.write('Halting transfer.\r\n')
+      raise ResumableDownloadException('Artifically halting download.')
+    self._last_progress_byte = current_progress_byte
+
+
+class TestParams(object):
+  """Allows easier organization of test parameters.
+
+  This class allows grouping of test parameters, which include args and kwargs
+  to be used, as well as the expected result based on those arguments.
+
+  For example, to test an Add function, one might do:
+
+  params = TestParams(args=(1, 2, 3), expected=6)
+  self.assertEqual(Add(*(params.args)), params.expected)
+  """
+
+  def __init__(self, args=None, kwargs=None, expected=None):
+    self.args = tuple() if args is None else args
+    self.kwargs = dict() if kwargs is None else kwargs
+    self.expected = expected
+
+    if not isinstance(args, (tuple, list)):
+      raise TypeError('TestParam args must be a tuple or list.')
+    if not isinstance(self.kwargs, dict):
+      raise TypeError('TestParam kwargs must be a dict.')

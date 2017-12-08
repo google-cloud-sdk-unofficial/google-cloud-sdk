@@ -64,7 +64,6 @@ class Login(base.Command):
     parser.add_argument(
         '--scopes',
         type=arg_parsers.ArgList(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
         help='The names of the scopes to authorize for.')
 
   def Format(self, unused_args):

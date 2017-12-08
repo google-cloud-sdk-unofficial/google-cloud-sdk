@@ -34,7 +34,6 @@ def _Args(parser):
   parser.add_argument(
       '--path-rules',
       type=arg_parsers.ArgDict(min_length=1),
-      action=arg_parsers.FloatingListValuesCatcher(),
       default={},
       metavar='PATH=SERVICE',
       help='Rules for mapping request paths to services.')
@@ -43,7 +42,6 @@ def _Args(parser):
   host_rule.add_argument(
       '--new-hosts',
       type=arg_parsers.ArgList(min_length=1),
-      action=arg_parsers.FloatingListValuesCatcher(),
       metavar='NEW_HOST',
       help=('If specified, a new host rule with the given hosts is created '
             'and the path matcher is tied to the new host rule.'))
@@ -239,14 +237,12 @@ class AddPathMatcherAlpha(AddPathMatcherGA):
 
     parser.add_argument('--backend-service-path-rules',
                         type=arg_parsers.ArgDict(min_length=1),
-                        action=arg_parsers.FloatingListValuesCatcher(),
                         default={},
                         metavar='PATH=SERVICE',
                         help='Rules for mapping request paths to services.')
     parser.add_argument(
         '--backend-bucket-path-rules',
         type=arg_parsers.ArgDict(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
         default={},
         metavar='PATH=BUCKET',
         help='Rules for mapping request paths to backend buckets.')

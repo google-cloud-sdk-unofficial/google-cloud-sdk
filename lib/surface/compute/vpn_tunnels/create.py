@@ -108,13 +108,11 @@ class _BaseCreate(object):
     parser.add_argument(
         '--ike-networks',
         type=arg_parsers.ArgList(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
         help=argparse.SUPPRESS)
 
     parser.add_argument(
         '--local-traffic-selector',
         type=arg_parsers.ArgList(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
         metavar='CIDR',
         help=('Traffic selector is an agreement between IKE peers to permit '
               'traffic through a tunnel if the traffic matches a specified pair'
@@ -127,7 +125,6 @@ class _BaseCreate(object):
     parser.add_argument(
         '--remote-traffic-selector',
         type=arg_parsers.ArgList(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
         metavar='CIDR',
         help=('Traffic selector is an agreement between IKE peers to permit '
               'traffic through a tunnel if the traffic matches a specified pair'

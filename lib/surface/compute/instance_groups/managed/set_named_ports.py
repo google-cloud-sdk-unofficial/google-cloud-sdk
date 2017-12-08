@@ -39,6 +39,7 @@ class SetNamedPorts(base_classes.NoOutputAsyncMutator):
 
   @staticmethod
   def Args(parser):
+    flags.AddGroupArg(parser)
     flags.AddNamedPortsArgs(parser)
     flags.AddScopeArgs(parser=parser, multizonal=False)
 
@@ -70,6 +71,7 @@ class SetNamedPortsAlpha(base_classes.NoOutputAsyncMutator):
 
   @staticmethod
   def Args(parser):
+    flags.AddGroupArg(parser)
     flags.AddNamedPortsArgs(parser)
     flags.AddScopeArgs(parser=parser, multizonal=True)
 

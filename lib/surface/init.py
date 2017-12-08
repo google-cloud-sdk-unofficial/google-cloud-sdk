@@ -22,6 +22,7 @@ import types
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
+from googlecloudsdk.calliope import usage_text
 from googlecloudsdk.core import config
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
@@ -121,7 +122,7 @@ class Init(base.Command):
 
     self._CreateBotoConfig()
 
-    self._Summarize()
+    self._Summarize(configuration_name)
 
   def _PickAccount(self, console_only, preselected=None):
     """Checks if current credentials are valid, if not runs auth login.
@@ -296,7 +297,8 @@ class Init(base.Command):
         idx = console_io.PromptChoice(
             choices,
             message='Pick cloud project to use: ',
-            allow_freeform=True)
+            allow_freeform=True,
+            freeform_suggester=usage_text.TextChoiceSuggester())
         if idx is None:
           return None
         project_id = projects[idx].projectId
@@ -383,7 +385,7 @@ https://console.developers.google.com/apis page.
                                     [default_region])
     SetProperty('region', default_region, ['compute', 'regions', 'list'])
 
-  def _Summarize(self):
+  def _Summarize(self, configuration_name):
     log.status.Print('Your Google Cloud SDK is configured and ready to use!\n')
 
     log.status.Print(
@@ -409,9 +411,9 @@ https://console.developers.google.com/apis page.
         'Run `gcloud help config` to learn how to change individual settings\n')
 
     log.status.Print(
-        'This gcloud configuration is called [default]. You can create '
+        'This gcloud configuration is called [{config}]. You can create '
         'additional configurations if you work with multiple accounts and/or '
-        'projects.')
+        'projects.'.format(config=configuration_name))
     log.status.Print('Run `gcloud topic configurations` to learn more.\n')
 
     log.status.Print('Some things to try next:\n')

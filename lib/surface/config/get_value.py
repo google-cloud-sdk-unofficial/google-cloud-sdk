@@ -27,7 +27,7 @@ class GetValue(base.Command):
 
   {command} prints the property value from your active configuration only.
 
-  ## AVAIABLE PROPERTIES
+  ## AVAILABLE PROPERTIES
 
   {properties}
 

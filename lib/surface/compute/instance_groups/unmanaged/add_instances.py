@@ -17,6 +17,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
 class AddInstances(base_classes.NoOutputAsyncMutator):
@@ -24,24 +25,15 @@ class AddInstances(base_classes.NoOutputAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        'name',
-        help='The name of the unmanaged instance group.')
-
+    instance_groups_flags.ZONAL_INSTANCE_GROUP_ARG.AddArgument(parser)
     parser.add_argument(
         '--instances',
         required=True,
         type=arg_parsers.ArgList(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
         metavar='INSTANCE',
         help='A list of names of instances to add to the instance group. '
         'These must exist beforehand and must live in the same zone as '
         'the instance group.')
-
-    flags.AddZoneFlag(
-        parser,
-        resource_type='unmanaged instance group',
-        operation_type='add instances to')
 
   @property
   def service(self):
@@ -56,12 +48,19 @@ class AddInstances(base_classes.NoOutputAsyncMutator):
     return 'instanceGroups'
 
   def CreateRequests(self, args):
-    group_ref = self.CreateZonalReference(args.name, args.zone)
+    group_ref = (
+        instance_groups_flags.ZONAL_INSTANCE_GROUP_ARG.ResolveAsResource(
+            args, self.resources,
+            default_scope=None,
+            scope_lister=flags.GetDefaultScopeLister(
+                self.compute_client, self.project)))
 
-    instance_references = [
-        self.CreateZonalReference(
-            instance_name, group_ref.zone, resource_type='instances')
-        for instance_name in args.instances]
+    instance_references = []
+    for instance in args.instances:
+      ref = self.resources.Parse(
+          instance, params={'zone': group_ref.zone},
+          collection='compute.instances')
+      instance_references.append(ref)
 
     instance_groups_utils.ValidateInstanceInZone(instance_references,
                                                  group_ref.zone)

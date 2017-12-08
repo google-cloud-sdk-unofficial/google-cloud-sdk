@@ -28,7 +28,6 @@ class RemoveInstances(base_classes.NoOutputAsyncMutator):
     parser.add_argument(
         '--instances',
         type=arg_parsers.ArgList(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
         help='Specifies a list of instances to remove from the target pool.',
         completion_resource='compute.instances',
         metavar='INSTANCE',

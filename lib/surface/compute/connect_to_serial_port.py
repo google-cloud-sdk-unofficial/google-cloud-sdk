@@ -89,7 +89,6 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
         '--extra-args',
         help=('Extra key-value pairs to pass to the connection.'),
         type=arg_parsers.ArgDict(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
         default={},
         metavar='KEY=VALUE')
     extra_args.detailed_help = """\

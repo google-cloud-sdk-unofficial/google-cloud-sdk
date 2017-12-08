@@ -27,7 +27,6 @@ class RemoveTags(base_classes.InstanceTagsMutatorMixin,
     tags = tags_group.add_argument(
         '--tags',
         type=arg_parsers.ArgList(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
         help='Tags to remove from the instance.',
         metavar='TAG')
     tags.detailed_help = """\

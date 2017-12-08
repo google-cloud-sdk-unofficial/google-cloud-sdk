@@ -20,12 +20,8 @@ from googlecloudsdk.calliope import base
 # NOTE: If the name of this topic is modified, please make sure to update all
 # references to it in error messages and other help messages as there are no
 # tests to catch such changes.
-class Escaping(base.Command):
+class Escaping(base.TopicCommand):
   """List/dictionary-type argument escaping supplementary help."""
-
-  def Run(self, args):
-    self.cli.Execute(args.command_path[1:] + ['--document=style=topic'])
-    return None
 
   detailed_help = {
 

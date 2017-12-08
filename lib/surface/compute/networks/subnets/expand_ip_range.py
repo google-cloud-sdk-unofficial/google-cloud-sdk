@@ -19,16 +19,13 @@ from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as exceptions
 from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.core import apis
 from googlecloudsdk.core.console import console_io
 import ipaddr
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ExpandIpRange(base_classes.NoOutputAsyncMutator):
   """Expand IP range of a subnetwork."""
-
-  messages = apis.GetMessagesModule('compute', 'alpha')
 
   @staticmethod
   def Args(parser):
@@ -137,6 +134,7 @@ class ExpandIpRange(base_classes.NoOutputAsyncMutator):
 
     resources = list(lister.ProcessResults(objects, field_selector=None))
     return resources[0] if resources else None
+
 
 ExpandIpRange.detailed_help = {
     'brief': 'Expand the IP range of a Google Compute Engine subnetwork',

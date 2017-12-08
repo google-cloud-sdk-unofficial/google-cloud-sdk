@@ -90,6 +90,7 @@ which have completed.
          self.global_service.GetRequestType('AggregatedList')(
              filter=filter_expr,
              maxResults=max_results,
+             orderBy='creationTimestamp desc',
              project=project))
     ]
     return request_helper.MakeRequests(requests=requests,
@@ -99,7 +100,6 @@ which have completed.
                                        custom_get_requests=None)
 
   def Run(self, args):
-    args.sort_by = '~insertTime'
     args.names = []
     args.regexp = None
     args.uri = None

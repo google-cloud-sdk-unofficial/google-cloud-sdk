@@ -32,6 +32,24 @@ from gslib.util import Retry
 class TestRm(testcase.GsUtilIntegrationTestCase):
   """Integration tests for rm command."""
 
+  def _CleanRmUiOutputBeforeChecking(self, stderr):
+    """Excludes everything coming from the UI to avoid assert errors.
+
+    Args:
+      stderr: The cumulative stderr output.
+    Returns:
+      The cumulative stderr output without the expected UI output.
+    """
+    ui_output_pattern = '[^\n\r]*objects][^\n\r]*[\n\r]'
+    final_message_pattern = 'Operation completed over[^\n]*'
+    ui_spinner_list = ['\\\r', '|\r', '/\r', '-\r']
+    ui_lines_list = (re.findall(ui_output_pattern, stderr) +
+                     re.findall(final_message_pattern, stderr) +
+                     ui_spinner_list)
+    for ui_line in ui_lines_list:
+      stderr = stderr.replace(ui_line, '')
+    return stderr
+
   def _RunRemoveCommandAndCheck(self, command_and_args, objects_to_remove=None,
                                 buckets_to_remove=None, stdin=None):
     """Tests a remove command in the presence of eventual listing consistency.
@@ -64,10 +82,24 @@ class TestRm(testcase.GsUtilIntegrationTestCase):
       object_strings.append('Removing %s...' % object_to_remove)
     expected_stderr_lines = set(object_strings + bucket_strings)
 
-    if not self.multiregional_buckets:
+    if not self.multiregional_buckets and self.default_provider == 'gs':
       stderr = self.RunGsUtil(command_and_args, return_stderr=True,
                               expected_status=None, stdin=stdin)
-      self.assertEqual(set(stderr.splitlines()), expected_stderr_lines)
+      num_objects = len(object_strings)
+      # Asserting for operation completion
+      if '-q' not in command_and_args:
+        if '-m' in command_and_args:
+          self.assertIn('[%d/%d objects]' % (num_objects, num_objects),
+                        stderr)
+        else:
+          self.assertIn('[%d objects]' % num_objects,
+                        stderr)
+
+      stderr = self._CleanRmUiOutputBeforeChecking(stderr)
+      stderr_set = set(stderr.splitlines())
+      if '' in stderr_set:
+        stderr_set.remove('')  # Avoid groups represented by an empty string.
+      self.assertEqual(stderr_set, expected_stderr_lines)
     else:
       cumulative_stderr_lines = set()
 
@@ -76,6 +108,7 @@ class TestRm(testcase.GsUtilIntegrationTestCase):
         """Runs/retries the command updating+checking cumulative output."""
         stderr = self.RunGsUtil(command_and_args, return_stderr=True,
                                 expected_status=None, stdin=stdin)
+        stderr = self._CleanRmUiOutputBeforeChecking(stderr)
         update_lines = True
         # Retry 404's and 409's due to eventual listing consistency, but don't
         # add the output to the set.

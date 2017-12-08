@@ -50,7 +50,30 @@ def _check_digest(digest):
   _check_element('digest', digest, _DIGEST_CHARS, 7 + 64, 7 + 64)
 
 
-class Repository(object):
+class Registry(object):
+  """Stores a docker registry name in a structured form."""
+
+  def __init__(self, name):
+    if not name:
+      raise BadNameException('A Docker registry name must be specified')
+
+    self._registry = name
+
+  @property
+  def registry(self):
+    return self._registry
+
+  def __str__(self):
+    return self.registry
+
+  def scope(self, action):
+    # The only resource under 'registry' is 'catalog'. http://goo.gl/N9cN9Z
+    return 'registry:{resource}:{action}'.format(
+        resource='catalog',
+        action=action)
+
+
+class Repository(Registry):
   """Stores a docker repository name in a structured form."""
 
   def __init__(self, name):
@@ -60,7 +83,7 @@ class Repository(object):
     parts = name.split('/', 1)
     if len(parts) != 2:
       raise self._validation_exception(name)
-    self._registry = parts[0]
+    super(Repository, self).__init__(parts[0])
 
     self._repository = parts[1]
     _check_repository(self._repository)
@@ -70,16 +93,17 @@ class Repository(object):
                             'registry/repository, saw: %s' % name)
 
   @property
-  def registry(self):
-    return self._registry
-
-  @property
   def repository(self):
     return self._repository
 
   def __str__(self):
     return '{registry}/{repository}'.format(
         registry=self.registry, repository=self.repository)
+
+  def scope(self, action):
+    return 'repository:{resource}:{action}'.format(
+        resource=self._repository,
+        action=action)
 
 
 class Tag(Repository):

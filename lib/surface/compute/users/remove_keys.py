@@ -32,7 +32,6 @@ class RemoveKeys(base_classes.NoOutputAsyncMutator,
     parser.add_argument(
         '--fingerprints',
         type=arg_parsers.ArgList(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
         metavar='FINGERPRINT',
         help='The fingerprints of the public keys to remove from the user.')
 

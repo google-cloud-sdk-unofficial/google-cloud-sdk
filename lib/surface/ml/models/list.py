@@ -13,6 +13,7 @@
 # limitations under the License.
 """ml models list command."""
 
+from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import apis
@@ -40,9 +41,8 @@ class List(base.ListCommand):
     msgs = apis.GetMessagesModule('ml', 'v1alpha3')
     req = msgs.MlProjectsModelsListRequest(
         projectsId=properties.VALUES.core.project.Get())
-    # TODO(user): switch to list_pager when API adds pagination support
-    # return list_pager.YieldFromList(client.projects_models,
-    #                                 req,
-    #                                 field='models',
-    #                                 batch_size_attribute='pageSize')
-    return client.projects_models.List(req).models
+    return list_pager.YieldFromList(
+        client.projects_models,
+        req,
+        field='models',
+        batch_size_attribute='pageSize')

@@ -28,7 +28,6 @@ class InstancesAddTags(base_classes.InstanceTagsMutatorMixin,
         '--tags',
         required=True,
         type=arg_parsers.ArgList(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
         help='A list of tags to attach to the instance.',
         metavar='TAG')
     tags.detailed_help = """\

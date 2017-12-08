@@ -20,7 +20,12 @@ class Services(base.Group):
   """View and manage your App Engine services.
 
   This set of commands can be used to view and manage your existing App Engine
-  services. To create new deployments, use `{parent_command} deploy`.
+  services.
+
+  To create new deployments, use `{parent_command} deploy`.
+
+  For more information on App Engine services, see:
+  https://cloud.google.com/appengine/docs/python/an-overview-of-app-engine
   """
 
   detailed_help = {

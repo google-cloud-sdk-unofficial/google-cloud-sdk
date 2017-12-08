@@ -55,7 +55,6 @@ class _BaseExport(object):
         type=arg_parsers.ArgList(min_length=1),
         metavar='DATABASE',
         required=False,
-        action=arg_parsers.FloatingListValuesCatcher(),
         help='Database (for example, guestbook) from which the export is made.'
         ' If unspecified, all databases are exported.')
     parser.add_argument(
@@ -64,7 +63,6 @@ class _BaseExport(object):
         type=arg_parsers.ArgList(min_length=1),
         metavar='TABLE',
         required=False,
-        action=arg_parsers.FloatingListValuesCatcher(),
         help='Tables to export from the specified database. If you specify '
         'tables, specify one and only one database.')
 

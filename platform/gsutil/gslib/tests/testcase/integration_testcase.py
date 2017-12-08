@@ -32,10 +32,16 @@ from boto.s3.deletemarker import DeleteMarker
 from boto.storage_uri import BucketStorageUri
 
 import gslib
+from gslib.boto_translation import BotoTranslation
 from gslib.cloud_api import CryptoTuple
 from gslib.encryption_helper import Base64Sha256FromBase64EncryptionKey
 from gslib.gcs_json_api import GcsJsonApi
 from gslib.hashing_helper import Base64ToHexHash
+from gslib.posix_util import ATIME_ATTR
+from gslib.posix_util import GID_ATTR
+from gslib.posix_util import MODE_ATTR
+from gslib.posix_util import MTIME_ATTR
+from gslib.posix_util import UID_ATTR
 from gslib.project_id import GOOG_PROJ_ID_HDR
 from gslib.project_id import PopulateProjectId
 from gslib.tests.testcase import base
@@ -50,7 +56,6 @@ import gslib.third_party.storage_apitools.storage_v1_messages as apitools_messag
 from gslib.util import CreateCustomMetadata
 from gslib.util import DiscardMessagesQueue
 from gslib.util import IS_WINDOWS
-from gslib.util import MTIME_ATTR
 from gslib.util import Retry
 from gslib.util import UTF8
 
@@ -119,6 +124,8 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
     # Instantiate a JSON API for use by the current integration test.
     self.json_api = GcsJsonApi(BucketStorageUri, logging.getLogger(),
                                DiscardMessagesQueue(), 'gs')
+    self.xml_api = BotoTranslation(BucketStorageUri, logging.getLogger(),
+                                   DiscardMessagesQueue, self.default_provider)
 
     self.multiregional_buckets = util.USE_MULTIREGIONAL_BUCKETS
 
@@ -170,6 +177,72 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
         bucket_list = self._ListBucket(bucket_uri)
       bucket_uri.delete_bucket()
       self.bucket_uris.pop()
+
+  def _SetObjectCustomMetadataAttribute(self, provider, bucket_name,
+                                        object_name, attr_name, attr_value):
+    """Sets a custom metadata attribute for an object.
+
+    Args:
+      provider: Provider string for the bucket, ex. 'gs' or 's3.
+      bucket_name: The name of the bucket the object is in.
+      object_name: The name of the object itself.
+      attr_name: The name of the custom metadata attribute to set.
+      attr_value: The value of the custom metadata attribute to set.
+
+    Returns:
+      None
+    """
+    obj_metadata = apitools_messages.Object()
+    obj_metadata.metadata = CreateCustomMetadata({attr_name: attr_value})
+    if provider == 'gs':
+      self.json_api.PatchObjectMetadata(bucket_name, object_name, obj_metadata,
+                                        provider=provider)
+    else:
+      self.xml_api.PatchObjectMetadata(bucket_name, object_name, obj_metadata,
+                                       provider=provider)
+
+  def SetPOSIXMetadata(self, provider, bucket_name, object_name, atime=None,
+                       mtime=None, uid=None, gid=None, mode=None):
+    """Sets POSIX metadata for the object."""
+    obj_metadata = apitools_messages.Object()
+    obj_metadata.metadata = apitools_messages.Object.MetadataValue(
+        additionalProperties=[])
+    if atime is not None:
+      CreateCustomMetadata(entries={ATIME_ATTR: atime},
+                           custom_metadata=obj_metadata.metadata)
+    if mode is not None:
+      CreateCustomMetadata(entries={MODE_ATTR: mode},
+                           custom_metadata=obj_metadata.metadata)
+    if mtime is not None:
+      CreateCustomMetadata(entries={MTIME_ATTR: mtime},
+                           custom_metadata=obj_metadata.metadata)
+    if uid is not None:
+      CreateCustomMetadata(entries={UID_ATTR: uid},
+                           custom_metadata=obj_metadata.metadata)
+    if gid is not None:
+      CreateCustomMetadata(entries={GID_ATTR: gid},
+                           custom_metadata=obj_metadata.metadata)
+    if provider == 'gs':
+      self.json_api.PatchObjectMetadata(bucket_name, object_name, obj_metadata,
+                                        provider=provider)
+    else:
+      self.xml_api.PatchObjectMetadata(bucket_name, object_name, obj_metadata,
+                                       provider=provider)
+
+  def ClearPOSIXMetadata(self, obj):
+    """Uses the setmeta command to clear POSIX attributes from user metadata.
+
+    Args:
+      obj: The object to clear POSIX metadata for.
+    """
+    provider_meta_string = 'goog' if obj.scheme == 'gs' else 'amz'
+    self.RunGsUtil(['setmeta',
+                    '-h', 'x-%s-meta-%s' % (provider_meta_string, ATIME_ATTR),
+                    '-h', 'x-%s-meta-%s' % (provider_meta_string, MTIME_ATTR),
+                    '-h', 'x-%s-meta-%s' % (provider_meta_string, UID_ATTR),
+                    '-h', 'x-%s-meta-%s' % (provider_meta_string, GID_ATTR),
+                    '-h', 'x-%s-meta-%s' % (provider_meta_string, MODE_ATTR),
+                    suri(obj)])
 
   def _ServiceAccountCredentialsPresent(self):
     # TODO: Currently, service accounts cannot be project owners (unless
@@ -325,7 +398,8 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
     return bucket_uri
 
   def CreateObject(self, bucket_uri=None, object_name=None, contents=None,
-                   prefer_json_api=False, encryption_key=None, mtime=None):
+                   prefer_json_api=False, encryption_key=None, mode=None,
+                   mtime=None, uid=None, gid=None):
     """Creates a test object.
 
     Args:
@@ -339,9 +413,13 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
       prefer_json_api: If true, use the JSON creation functions where possible.
       encryption_key: AES256 encryption key to use when creating the object,
           if any.
+      mode: The POSIX mode for the object. Must be a base-8 3-digit integer
+            represented as a string.
       mtime: The modification time of the file in POSIX time (seconds since
              UTC 1970-01-01). If not specified, this defaults to the current
              system time.
+      uid: A POSIX user ID.
+      gid: A POSIX group ID.
 
     Returns:
       A StorageUri for the created object.
@@ -375,8 +453,12 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
     key_uri = bucket_uri.clone_replace_name(object_name)
     if contents is not None:
       key_uri.set_contents_from_string(contents)
-    if mtime is not None:
-      key_uri.set_metadata({MTIME_ATTR: mtime}, {}, True)
+    custom_metadata_present = (mode is not None or mtime is not None
+                               or uid is not None or gid is not None)
+    if custom_metadata_present:
+      self.SetPOSIXMetadata(bucket_uri.scheme, bucket_uri.bucket_name,
+                            object_name, atime=None, mtime=mtime,
+                            uid=uid, gid=gid, mode=mode)
     return key_uri
 
   def CreateBucketJson(self, bucket_name=None, test_objects=0,
@@ -454,8 +536,9 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
                                       object_metadata, provider='gs',
                                       encryption_tuple=encryption_tuple)
 
-  def RunGsUtil(self, cmd, return_status=False, return_stdout=False,
-                return_stderr=False, expected_status=0, stdin=None):
+  def RunGsUtil(self, cmd, return_status=False,
+                return_stdout=False, return_stderr=False,
+                expected_status=0, stdin=None, env_vars=None):
     """Runs the gsutil command.
 
     Args:
@@ -467,6 +550,8 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
                        0. If the return code is a different value, an exception
                        is raised.
       stdin: A string of data to pipe to the process as standard input.
+      env_vars: A dictionary of variables to extend the subprocess's os.environ
+                with.
 
     Returns:
       A tuple containing the desired return values specified by the return_*
@@ -477,8 +562,11 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
            cmd)
     if IS_WINDOWS:
       cmd = [sys.executable] + cmd
+    env = os.environ.copy()
+    if env_vars:
+      env.update(env_vars)
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                         stdin=subprocess.PIPE)
+                         stdin=subprocess.PIPE, env=env)
     (stdout, stderr) = p.communicate(stdin)
     status = p.returncode
 
@@ -570,3 +658,82 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
       # gsutil process is really anonymous.
       with SetEnvironmentForTest({'DEVSHELL_CLIENT_PORT': None}):
         yield
+
+  def _VerifyLocalMode(self, path, expected_mode):
+    """Verifies the mode of the file specified at path.
+
+    Args:
+      path: The path of the file on the local file system.
+      expected_mode: The expected mode as a 3-digit base-8 number.
+
+    Returns:
+      None
+    """
+    self.assertEqual(expected_mode, int(oct(os.stat(path).st_mode)[-3:], 8))
+
+  def _VerifyLocalUid(self, path, expected_uid):
+    """Verifies the uid of the file specified at path.
+
+    Args:
+      path: The path of the file on the local file system.
+      expected_uid: The expected uid of the file.
+
+    Returns:
+      None
+    """
+    self.assertEqual(expected_uid, os.stat(path).st_uid)
+
+  def _VerifyLocalGid(self, path, expected_gid):
+    """Verifies the gid of the file specified at path.
+
+    Args:
+      path: The path of the file on the local file system.
+      expected_gid: The expected gid of the file.
+
+    Returns:
+      None
+    """
+    self.assertEqual(expected_gid, os.stat(path).st_gid)
+
+  def VerifyLocalPOSIXPermissions(self, path, gid=None, uid=None, mode=None):
+    """Verifies the uid, gid, and mode of the file specified at path.
+
+    Will only check the attribute if the corresponding method parameter is not
+    None.
+
+    Args:
+      path: The path of the file on the local file system.
+      gid: The expected gid of the file.
+      uid: The expected uid of the file.
+      mode: The expected mode of the file.
+
+    Returns:
+      None
+    """
+    if gid is not None:
+      self._VerifyLocalGid(path, gid)
+    if uid is not None:
+      self._VerifyLocalUid(path, uid)
+    if mode is not None:
+      self._VerifyLocalMode(path, mode)
+
+  def FlatListDir(self, directory):
+    """Perform a flat listing over directory.
+
+    Args:
+      directory: The directory to list
+
+    Returns:
+      Listings with path separators canonicalized to '/', to make assertions
+      easier for Linux vs Windows.
+    """
+    result = []
+    for dirpath, _, filenames in os.walk(directory):
+      for f in filenames:
+        result.append(os.path.join(dirpath, f))
+    return '\n'.join(result).replace('\\', '/')
+
+  def FlatListBucket(self, bucket_url_string):
+    """Perform a flat listing over bucket_url_string."""
+    return self.RunGsUtil(['ls', suri(bucket_url_string, '**')],
+                          return_stdout=True)

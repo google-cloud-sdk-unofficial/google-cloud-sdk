@@ -60,7 +60,6 @@ class _BasePatch(object):
         type=arg_parsers.ArgList(min_length=1),
         metavar='APP',
         required=False,
-        action=arg_parsers.FloatingListValuesCatcher(),
         help='A list of App Engine app IDs that can access this instance.')
     gae_apps_group.add_argument(
         '--clear-gae-apps',
@@ -74,7 +73,6 @@ class _BasePatch(object):
         type=arg_parsers.ArgList(min_length=1),
         metavar='NETWORK',
         required=False,
-        action=arg_parsers.FloatingListValuesCatcher(),
         help='The list of external networks that are allowed to connect to the '
         'instance. Specified in CIDR notation, also known as \'slash\' '
         'notation (e.g. 192.168.100.0/24).')
@@ -101,7 +99,6 @@ class _BasePatch(object):
         type=arg_parsers.ArgDict(min_length=1),
         metavar='FLAG=VALUE',
         required=False,
-        action=arg_parsers.FloatingListValuesCatcher(),
         help='A comma-separated list of database flags to set on the instance. '
         'Use an equals sign to separate flag name and value. Flags without '
         'values, like skip_grant_tables, can be written out without a value '
@@ -333,7 +330,11 @@ class PatchBeta(_BasePatch, base.Command):
     cleared_fields = self._GetConfirmedClearedFields(args, patch_instance)
 
     with sql_client.IncludeFields(cleared_fields):
-      result_operation = sql_client.instances.Patch(patch_instance)
+      result_operation = sql_client.instances.Patch(
+          sql_messages.SqlInstancesPatchRequest(
+              databaseInstance=patch_instance,
+              project=instance_ref.project,
+              instance=instance_ref.instance))
 
     operation_ref = resources.Create(
         'sql.operations',

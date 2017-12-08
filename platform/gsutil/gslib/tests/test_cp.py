@@ -38,8 +38,6 @@ from boto.exception import StorageResponseError
 from boto.storage_uri import BucketStorageUri
 import crcmod
 
-from gslib.cloud_api import ResumableDownloadException
-from gslib.cloud_api import ResumableUploadException
 from gslib.cloud_api import ResumableUploadStartOverException
 from gslib.commands.config import DEFAULT_SLICED_OBJECT_DOWNLOAD_THRESHOLD
 from gslib.copy_helper import GetTrackerFilePath
@@ -52,6 +50,9 @@ from gslib.hashing_helper import CalculateB64EncodedMd5FromContents
 from gslib.hashing_helper import CalculateMd5FromContents
 from gslib.parallel_tracker_file import ObjectFromTracker
 from gslib.parallel_tracker_file import WriteParallelUploadTrackerFile
+from gslib.posix_util import GID_ATTR
+from gslib.posix_util import MODE_ATTR
+from gslib.posix_util import UID_ATTR
 from gslib.storage_url import StorageUrlFromString
 from gslib.tests.rewrite_helper import EnsureRewriteResumeCallbackHandler
 from gslib.tests.rewrite_helper import HaltingRewriteCallbackHandler
@@ -59,12 +60,21 @@ from gslib.tests.rewrite_helper import RewriteHaltException
 import gslib.tests.testcase as testcase
 from gslib.tests.testcase.base import NotParallelizable
 from gslib.tests.testcase.integration_testcase import SkipForS3
+from gslib.tests.util import BuildErrorRegex
 from gslib.tests.util import GenerationFromURI as urigen
+from gslib.tests.util import HaltingCopyCallbackHandler
+from gslib.tests.util import HaltOneComponentCopyCallbackHandler
 from gslib.tests.util import HAS_GS_PORT
 from gslib.tests.util import HAS_S3_CREDS
 from gslib.tests.util import ObjectToURI as suri
+from gslib.tests.util import ORPHANED_FILE
+from gslib.tests.util import POSIX_GID_ERROR
+from gslib.tests.util import POSIX_INSUFFICIENT_ACCESS_ERROR
+from gslib.tests.util import POSIX_MODE_ERROR
+from gslib.tests.util import POSIX_UID_ERROR
 from gslib.tests.util import SequentialAndParallelTransfer
 from gslib.tests.util import SetBotoConfigForTest
+from gslib.tests.util import TailSet
 from gslib.tests.util import TEST_ENCRYPTION_KEY1
 from gslib.tests.util import TEST_ENCRYPTION_KEY1_SHA256_B64
 from gslib.tests.util import TEST_ENCRYPTION_KEY2
@@ -74,6 +84,7 @@ from gslib.third_party.storage_apitools import storage_v1_messages as apitools_m
 from gslib.tracker_file import DeleteTrackerFile
 from gslib.tracker_file import GetRewriteTrackerFilePath
 from gslib.tracker_file import GetSlicedDownloadTrackerFilePaths
+from gslib.ui_controller import BytesToFixedWidthString
 from gslib.util import DiscardMessagesQueue
 from gslib.util import EIGHT_MIB
 from gslib.util import HumanReadableToBytes
@@ -86,27 +97,142 @@ from gslib.util import START_CALLBACK_PER_BYTES
 from gslib.util import UsingCrcmodExtension
 from gslib.util import UTF8
 
+# These POSIX-specific variables aren't defined for Windows.
+# pylint: disable=g-import-not-at-top
+if not IS_WINDOWS:
+  from gslib.tests.util import DEFAULT_MODE
+  from gslib.tests.util import INVALID_GID
+  from gslib.tests.util import INVALID_UID
+  from gslib.tests.util import NON_PRIMARY_GID
+  from gslib.tests.util import PRIMARY_GID
+  from gslib.tests.util import USER_ID
+# pylint: enable=g-import-not-at-top
 
-# Custom test callbacks must be pickleable, and therefore at global scope.
-class _HaltingCopyCallbackHandler(object):
-  """Test callback handler for intentionally stopping a resumable transfer."""
 
-  def __init__(self, is_upload, halt_at_byte):
-    self._is_upload = is_upload
-    self._halt_at_byte = halt_at_byte
+def TestCpMvPOSIXErrors(cls, bucket_uri, obj, tmpdir, is_cp=True):
+  """Helper function for preserve_posix_errors tests in test_cp and test_mv.
 
-  # pylint: disable=invalid-name
-  def call(self, total_bytes_transferred, total_size):
-    """Forcibly exits if the transfer has passed the halting point."""
-    if total_bytes_transferred >= self._halt_at_byte:
-      sys.stderr.write(
-          'Halting transfer after byte %s. %s/%s transferred.\r\n' % (
-              self._halt_at_byte, MakeHumanReadable(total_bytes_transferred),
-              MakeHumanReadable(total_size)))
-      if self._is_upload:
-        raise ResumableUploadException('Artifically halting upload.')
-      else:
-        raise ResumableDownloadException('Artifically halting download.')
+  Args:
+    cls: An instance of either TestCp or TestMv.
+    bucket_uri: The uri of the bucket that the object is in.
+    obj: The object to run the tests on.
+    tmpdir: The local file path to cp to.
+    is_cp: Whether or not the calling test suite is cp or mv.
+  """
+  error = 'error'
+  # A dict of test_name: attrs_dict.
+  # attrs_dict holds the different attributes that we want for the object in a
+  # specific test.
+  test_params = {'test1': {MODE_ATTR: '333', error: POSIX_MODE_ERROR},
+                 'test2': {GID_ATTR: INVALID_GID(), error: POSIX_GID_ERROR},
+                 'test3': {GID_ATTR: INVALID_GID(), MODE_ATTR: '420',
+                           error: POSIX_GID_ERROR},
+                 'test4': {UID_ATTR: INVALID_UID(), error: POSIX_UID_ERROR},
+                 'test5': {UID_ATTR: INVALID_UID(), MODE_ATTR: '530',
+                           error: POSIX_UID_ERROR},
+                 'test6': {UID_ATTR: INVALID_UID(), GID_ATTR: INVALID_GID(),
+                           error: POSIX_UID_ERROR},
+                 'test7': {UID_ATTR: INVALID_UID(), GID_ATTR: INVALID_GID(),
+                           MODE_ATTR: '640', error: POSIX_UID_ERROR},
+                 'test8': {UID_ATTR: INVALID_UID(), GID_ATTR: PRIMARY_GID,
+                           error: POSIX_UID_ERROR},
+                 'test9': {UID_ATTR: INVALID_UID(), GID_ATTR: NON_PRIMARY_GID(),
+                           error: POSIX_UID_ERROR},
+                 'test10': {UID_ATTR: INVALID_UID(), GID_ATTR: PRIMARY_GID,
+                            MODE_ATTR: '640', error: POSIX_UID_ERROR},
+                 'test11': {UID_ATTR: INVALID_UID(),
+                            GID_ATTR: NON_PRIMARY_GID(),
+                            MODE_ATTR: '640', error: POSIX_UID_ERROR},
+                 'test12': {UID_ATTR: USER_ID, GID_ATTR: INVALID_GID(),
+                            error: POSIX_GID_ERROR},
+                 'test13': {UID_ATTR: USER_ID, GID_ATTR: INVALID_GID(),
+                            MODE_ATTR: '640', error: POSIX_GID_ERROR},
+                 'test14': {GID_ATTR: PRIMARY_GID, MODE_ATTR: '240',
+                            error: POSIX_INSUFFICIENT_ACCESS_ERROR}}
+  # The first variable below can be used to help debug the test if there is a
+  # problem.
+  for _, attrs_dict in test_params.iteritems():
+    cls.ClearPOSIXMetadata(obj)
+    # Attributes default to None if they are not in attrs_dict.
+    uid = attrs_dict.get(UID_ATTR)
+    gid = attrs_dict.get(GID_ATTR)
+    mode = attrs_dict.get(MODE_ATTR)
+    cls.SetPOSIXMetadata(cls.default_provider, bucket_uri.bucket_name,
+                         obj.object_name, uid=uid, gid=gid, mode=mode)
+    stderr = cls.RunGsUtil(['cp' if is_cp else 'mv', '-P',
+                            suri(bucket_uri, obj.object_name), tmpdir],
+                           expected_status=1, return_stderr=True)
+    cls.assertIn(ORPHANED_FILE, stderr, '%s not found in stderr\n%s'
+                 % (ORPHANED_FILE, stderr))
+    error_regex = BuildErrorRegex(obj, attrs_dict.get(error))
+    cls.assertTrue(error_regex.search(stderr), 'Could not find a match for %s'
+                   '\n\nin stderr:\n%s' % (error_regex.pattern, stderr))
+    listing1 = TailSet(suri(bucket_uri), cls.FlatListBucket(bucket_uri))
+    listing2 = TailSet(tmpdir, cls.FlatListDir(tmpdir))
+    # Bucket should have un-altered content.
+    cls.assertEquals(listing1, set(['/%s' % obj.object_name]))
+    # Dir should have un-altered content.
+    cls.assertEquals(listing2, set(['']))
+
+
+def TestCpMvPOSIXNoErrors(cls, bucket_uri, tmpdir, is_cp=True):
+  """Helper function for preserve_posix_no_erros tests in test_cp and text_mv.
+
+  Args:
+    cls: An instance of either TestCp or TestMv.
+    bucket_uri: The uri of the bucket that the object is in.
+    tmpdir: The local file path to cp to.
+    is_cp: Whether or not the calling test suite is cp or mv.
+  """
+  test_params = {'obj1': {GID_ATTR: PRIMARY_GID},
+                 'obj2': {GID_ATTR: NON_PRIMARY_GID()},
+                 'obj3': {GID_ATTR: PRIMARY_GID, MODE_ATTR: '440'},
+                 'obj4': {GID_ATTR: NON_PRIMARY_GID(), MODE_ATTR: '444'},
+                 'obj5': {UID_ATTR: USER_ID},
+                 'obj6': {UID_ATTR: USER_ID, MODE_ATTR: '420'},
+                 'obj7': {UID_ATTR: USER_ID, GID_ATTR: PRIMARY_GID},
+                 'obj8': {UID_ATTR: USER_ID, GID_ATTR: NON_PRIMARY_GID()},
+                 'obj9': {UID_ATTR: USER_ID, GID_ATTR: PRIMARY_GID,
+                          MODE_ATTR: '433'},
+                 'obj10': {UID_ATTR: USER_ID, GID_ATTR: NON_PRIMARY_GID(),
+                           MODE_ATTR: '442'}}
+  for obj_name, attrs_dict in test_params.iteritems():
+    uid = attrs_dict.get(UID_ATTR)
+    gid = attrs_dict.get(GID_ATTR)
+    mode = attrs_dict.get(MODE_ATTR)
+    cls.CreateObject(bucket_uri=bucket_uri, object_name=obj_name,
+                     contents=obj_name, uid=uid, gid=gid, mode=mode)
+  for obj_name in test_params.iterkeys():
+    # Move objects one at a time to avoid listing consistency.
+    cls.RunGsUtil(['cp' if is_cp else 'mv', '-P', suri(bucket_uri, obj_name),
+                   tmpdir])
+  listing = TailSet(tmpdir, cls.FlatListDir(tmpdir))
+  cls.assertEquals(listing, set(['/obj1', '/obj2', '/obj3', '/obj4', '/obj5',
+                                 '/obj6', '/obj7', '/obj8', '/obj9', '/obj10']))
+  cls.VerifyLocalPOSIXPermissions(os.path.join(tmpdir, 'obj1'),
+                                  gid=PRIMARY_GID, mode=DEFAULT_MODE)
+  cls.VerifyLocalPOSIXPermissions(os.path.join(tmpdir, 'obj2'),
+                                  gid=NON_PRIMARY_GID(), mode=DEFAULT_MODE)
+  cls.VerifyLocalPOSIXPermissions(os.path.join(tmpdir, 'obj3'),
+                                  gid=PRIMARY_GID, mode=0o440)
+  cls.VerifyLocalPOSIXPermissions(os.path.join(tmpdir, 'obj4'),
+                                  gid=NON_PRIMARY_GID(), mode=0o444)
+  cls.VerifyLocalPOSIXPermissions(os.path.join(tmpdir, 'obj5'),
+                                  uid=USER_ID, gid=PRIMARY_GID,
+                                  mode=DEFAULT_MODE)
+  cls.VerifyLocalPOSIXPermissions(os.path.join(tmpdir, 'obj6'),
+                                  uid=USER_ID, gid=PRIMARY_GID, mode=0o420)
+  cls.VerifyLocalPOSIXPermissions(os.path.join(tmpdir, 'obj7'),
+                                  uid=USER_ID, gid=PRIMARY_GID,
+                                  mode=DEFAULT_MODE)
+  cls.VerifyLocalPOSIXPermissions(os.path.join(tmpdir, 'obj8'),
+                                  uid=USER_ID, gid=NON_PRIMARY_GID(),
+                                  mode=DEFAULT_MODE)
+  cls.VerifyLocalPOSIXPermissions(os.path.join(tmpdir, 'obj9'),
+                                  uid=USER_ID, gid=PRIMARY_GID, mode=0o433)
+  cls.VerifyLocalPOSIXPermissions(os.path.join(tmpdir, 'obj10'),
+                                  uid=USER_ID, gid=NON_PRIMARY_GID(),
+                                  mode=0o442)
 
 
 class _JSONForceHTTPErrorCopyCallbackHandler(object):
@@ -156,24 +282,6 @@ class _XMLResumableUploadStartOverCopyCallbackHandler(object):
       raise boto.exception.ResumableUploadException(
           'Forcing upload start over',
           ResumableTransferDisposition.START_OVER)
-
-
-class _HaltOneComponentCopyCallbackHandler(object):
-  """Test callback handler for stopping part of a sliced download."""
-
-  def __init__(self, halt_at_byte):
-    self._last_progress_byte = None
-    self._halt_at_byte = halt_at_byte
-
-  # pylint: disable=invalid-name
-  # pylint: disable=unused-argument
-  def call(self, current_progress_byte, total_size_unused):
-    """Forcibly exits if the passed the halting point since the last call."""
-    if (self._last_progress_byte is not None and
-        self._last_progress_byte < self._halt_at_byte < current_progress_byte):
-      sys.stderr.write('Halting transfer.\r\n')
-      raise ResumableDownloadException('Artifically halting download.')
-    self._last_progress_byte = current_progress_byte
 
 
 class _DeleteBucketThenStartOverCopyCallbackHandler(object):
@@ -859,7 +967,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
                                 contents='a' * self.halt_size)
     boto_config_for_test = ('GSUtil', 'resumable_threshold', str(ONE_KIB))
     test_callback_file = self.CreateTempFile(
-        contents=pickle.dumps(_HaltingCopyCallbackHandler(False, 5)))
+        contents=pickle.dumps(HaltingCopyCallbackHandler(False, 5)))
     with SetBotoConfigForTest([boto_config_for_test]):
       stderr = self.RunGsUtil(['cp', '--testcallbackfile', test_callback_file,
                                '-D', suri(key_uri), suri(bucket2_uri)],
@@ -1463,7 +1571,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
         ('GSUtil', 'resumable_threshold', str(ONE_KIB)),
         ('GSUtil', 'encryption_key', TEST_ENCRYPTION_KEY1)]
     test_callback_file = self.CreateTempFile(
-        contents=pickle.dumps(_HaltingCopyCallbackHandler(True, 5)))
+        contents=pickle.dumps(HaltingCopyCallbackHandler(True, 5)))
 
     with SetBotoConfigForTest(boto_config_for_test):
       stderr = self.RunGsUtil(['cp', '--testcallbackfile', test_callback_file,
@@ -1494,7 +1602,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
         ('GSUtil', 'resumable_threshold', str(ONE_KIB)),
         ('GSUtil', 'encryption_key', TEST_ENCRYPTION_KEY1)]
     test_callback_file = self.CreateTempFile(
-        contents=pickle.dumps(_HaltingCopyCallbackHandler(True, 5)))
+        contents=pickle.dumps(HaltingCopyCallbackHandler(True, 5)))
 
     with SetBotoConfigForTest(boto_config_for_test):
       stderr = self.RunGsUtil(['cp', '--testcallbackfile', test_callback_file,
@@ -1531,7 +1639,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
         ('GSUtil', 'resumable_threshold', str(ONE_KIB)),
         ('GSUtil', 'encryption_key', TEST_ENCRYPTION_KEY1)]
     test_callback_file = self.CreateTempFile(
-        contents=pickle.dumps(_HaltingCopyCallbackHandler(True, 5)))
+        contents=pickle.dumps(HaltingCopyCallbackHandler(True, 5)))
 
     with SetBotoConfigForTest(boto_config_for_test):
       stderr = self.RunGsUtil(['cp', '--testcallbackfile', test_callback_file,
@@ -1567,7 +1675,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     fpath = self.CreateTempFile(contents='a' * self.halt_size)
     boto_config_for_test = ('GSUtil', 'resumable_threshold', str(ONE_KIB))
     test_callback_file = self.CreateTempFile(
-        contents=pickle.dumps(_HaltingCopyCallbackHandler(True, 5)))
+        contents=pickle.dumps(HaltingCopyCallbackHandler(True, 5)))
 
     with SetBotoConfigForTest([boto_config_for_test]):
       stderr = self.RunGsUtil(['cp', '--testcallbackfile', test_callback_file,
@@ -1645,7 +1753,8 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
   @SkipForS3('No resumable upload support for S3.')
   def test_cp_progress_callbacks(self):
     bucket_uri = self.CreateBucket()
-    final_progress_callback = '1 MiB/1 MiB    \r\n'
+    final_size_string = BytesToFixedWidthString(1024**2)
+    final_progress_callback = final_size_string+'/'+final_size_string
     fpath = self.CreateTempFile(contents='a'*ONE_MIB, file_name='foo')
     boto_config_for_test = ('GSUtil', 'resumable_threshold', str(ONE_KIB))
     with SetBotoConfigForTest([boto_config_for_test]):
@@ -1682,7 +1791,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
           StorageUrlFromString(suri(bucket_uri, 'foo')),
           TrackerFileType.UPLOAD, self.test_api)
       test_callback_file = self.CreateTempFile(
-          contents=pickle.dumps(_HaltingCopyCallbackHandler(True, 5)))
+          contents=pickle.dumps(HaltingCopyCallbackHandler(True, 5)))
       try:
         stderr = self.RunGsUtil(['cp', '--testcallbackfile', test_callback_file,
                                  fpath, suri(bucket_uri, 'foo')],
@@ -1704,7 +1813,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     fpath = self.CreateTempFile(file_name='foo', tmpdir=tmp_dir,
                                 contents='a' * self.halt_size)
     test_callback_file = self.CreateTempFile(
-        contents=pickle.dumps(_HaltingCopyCallbackHandler(True, 5)))
+        contents=pickle.dumps(HaltingCopyCallbackHandler(True, 5)))
 
     boto_config_for_test = ('GSUtil', 'resumable_threshold', str(ONE_KIB))
     with SetBotoConfigForTest([boto_config_for_test]):
@@ -1731,8 +1840,8 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     fpath = self.CreateTempFile(file_name='foo', tmpdir=tmp_dir,
                                 contents='a' * ONE_KIB * 512)
     test_callback_file = self.CreateTempFile(
-        contents=pickle.dumps(_HaltingCopyCallbackHandler(True,
-                                                          int(ONE_KIB) * 384)))
+        contents=pickle.dumps(HaltingCopyCallbackHandler(True,
+                                                         int(ONE_KIB) * 384)))
     resumable_threshold_for_test = (
         'GSUtil', 'resumable_threshold', str(ONE_KIB))
     resumable_chunk_size_for_test = (
@@ -1760,8 +1869,8 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     fpath = self.CreateTempFile(file_name='foo', tmpdir=tmp_dir,
                                 contents='a' * ONE_KIB * 512)
     test_callback_file = self.CreateTempFile(
-        contents=pickle.dumps(_HaltingCopyCallbackHandler(True,
-                                                          int(ONE_KIB) * 384)))
+        contents=pickle.dumps(HaltingCopyCallbackHandler(True,
+                                                         int(ONE_KIB) * 384)))
     resumable_threshold_for_test = (
         'GSUtil', 'resumable_threshold', str(ONE_KIB))
     resumable_chunk_size_for_test = (
@@ -1965,7 +2074,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
                                    encryption_key=encryption_key)
     fpath = self.CreateTempFile()
     test_callback_file = self.CreateTempFile(
-        contents=pickle.dumps(_HaltingCopyCallbackHandler(False, 5)))
+        contents=pickle.dumps(HaltingCopyCallbackHandler(False, 5)))
 
     with SetBotoConfigForTest(boto_config):
       stderr = self.RunGsUtil(['cp', '--testcallbackfile', test_callback_file,
@@ -2010,7 +2119,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
                                    encryption_key=TEST_ENCRYPTION_KEY1)
     fpath = self.CreateTempFile()
     test_callback_file = self.CreateTempFile(
-        contents=pickle.dumps(_HaltingCopyCallbackHandler(False, 5)))
+        contents=pickle.dumps(HaltingCopyCallbackHandler(False, 5)))
 
     boto_config_for_test = [
         ('GSUtil', 'resumable_threshold', str(ONE_KIB)),
@@ -2056,7 +2165,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
                                    contents='abc' * self.halt_size)
     fpath = self.CreateTempFile()
     test_callback_file = self.CreateTempFile(
-        contents=pickle.dumps(_HaltingCopyCallbackHandler(False, 5)))
+        contents=pickle.dumps(HaltingCopyCallbackHandler(False, 5)))
     boto_config_for_test = ('GSUtil', 'resumable_threshold', str(ONE_KIB))
     with SetBotoConfigForTest([boto_config_for_test]):
       # This will create a tracker file with an ETag.
@@ -2086,7 +2195,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     fpath = self.CreateTempFile()
 
     test_callback_file = self.CreateTempFile(
-        contents=pickle.dumps(_HaltingCopyCallbackHandler(False, 5)))
+        contents=pickle.dumps(HaltingCopyCallbackHandler(False, 5)))
 
     boto_config_for_test = [
         ('GSUtil', 'resumable_threshold', str(self.halt_size)),
@@ -2117,7 +2226,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     object_uri = self.CreateObject(bucket_uri=bucket_uri, object_name='foo',
                                    contents='a' * self.halt_size)
     test_callback_file = self.CreateTempFile(
-        contents=pickle.dumps(_HaltingCopyCallbackHandler(False, 5)))
+        contents=pickle.dumps(HaltingCopyCallbackHandler(False, 5)))
     boto_config_for_test = ('GSUtil', 'resumable_threshold', str(ONE_KIB))
     with SetBotoConfigForTest([boto_config_for_test]):
       stderr = self.RunGsUtil(['cp', '--testcallbackfile', test_callback_file,
@@ -2263,7 +2372,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     object_uri = self.CreateObject()
     random.seed(0)
     contents = str([random.choice(string.ascii_letters)
-                    for _ in xrange(ONE_KIB * 128)])
+                    for _ in xrange(self.halt_size)])
     random.seed()  # Reset the seed for any other tests.
     fpath1 = self.CreateTempFile(file_name='unzipped.txt', contents=contents)
     self.RunGsUtil(['cp', '-z', 'txt', suri(fpath1), suri(object_uri)])
@@ -2286,7 +2395,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
                             'object size in the test.')
     fpath2 = self.CreateTempFile()
     test_callback_file = self.CreateTempFile(
-        contents=pickle.dumps(_HaltingCopyCallbackHandler(False, 5)))
+        contents=pickle.dumps(HaltingCopyCallbackHandler(False, 5)))
 
     boto_config_for_test = ('GSUtil', 'resumable_threshold', str(ONE_KIB))
     with SetBotoConfigForTest([boto_config_for_test]):
@@ -2332,7 +2441,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
                                    contents=contents)
     fpath = self.CreateTempFile()
     test_callback_file = self.CreateTempFile(
-        contents=pickle.dumps(_HaltingCopyCallbackHandler(False, 5)))
+        contents=pickle.dumps(HaltingCopyCallbackHandler(False, 5)))
 
     boto_config_for_test = [('GSUtil', 'resumable_threshold', str(ONE_KIB)),
                             ('GSUtil', 'check_hashes', 'never')]
@@ -2403,7 +2512,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
                                    contents='abcd' * self.halt_size)
     fpath = self.CreateTempFile()
     test_callback_file = self.CreateTempFile(
-        contents=pickle.dumps(_HaltingCopyCallbackHandler(False, 5)))
+        contents=pickle.dumps(HaltingCopyCallbackHandler(False, 5)))
 
     boto_config_for_test = [
         ('GSUtil', 'resumable_threshold', str(self.halt_size*5)),
@@ -2445,7 +2554,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
                                    contents='abc' * self.halt_size)
     fpath = self.CreateTempFile()
     test_callback_file = self.CreateTempFile(
-        contents=pickle.dumps(_HaltingCopyCallbackHandler(False, 5)))
+        contents=pickle.dumps(HaltingCopyCallbackHandler(False, 5)))
 
     boto_config_for_test = [
         ('GSUtil', 'resumable_threshold', str(self.halt_size)),
@@ -2488,7 +2597,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
                                    contents='abc' * self.halt_size)
     fpath = self.CreateTempFile()
     test_callback_file = self.CreateTempFile(
-        contents=pickle.dumps(_HaltOneComponentCopyCallbackHandler(5)))
+        contents=pickle.dumps(HaltOneComponentCopyCallbackHandler(5)))
 
     boto_config_for_test = [
         ('GSUtil', 'resumable_threshold', str(self.halt_size)),
@@ -2532,7 +2641,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
                                    contents='abc' * self.halt_size)
     fpath = self.CreateTempFile(contents='')
     test_callback_file = self.CreateTempFile(
-        contents=pickle.dumps(_HaltingCopyCallbackHandler(False, 5)))
+        contents=pickle.dumps(HaltingCopyCallbackHandler(False, 5)))
 
     boto_config_for_test = [
         ('GSUtil', 'resumable_threshold', str(self.halt_size)),
@@ -2588,7 +2697,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
                                    contents='abcd' * self.halt_size)
     fpath = self.CreateTempFile()
     test_callback_file = self.CreateTempFile(
-        contents=pickle.dumps(_HaltingCopyCallbackHandler(False, 5)))
+        contents=pickle.dumps(HaltingCopyCallbackHandler(False, 5)))
 
     boto_config_for_test = [
         ('GSUtil', 'resumable_threshold', str(self.halt_size)),
@@ -2631,7 +2740,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
                                    contents='abcd' * self.halt_size)
     fpath = self.CreateTempFile()
     test_callback_file = self.CreateTempFile(
-        contents=pickle.dumps(_HaltingCopyCallbackHandler(False, 5)))
+        contents=pickle.dumps(HaltingCopyCallbackHandler(False, 5)))
 
     boto_config_for_test = [
         ('GSUtil', 'resumable_threshold', str(self.halt_size)),

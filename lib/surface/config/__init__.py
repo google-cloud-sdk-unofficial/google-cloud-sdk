@@ -42,7 +42,7 @@ class Config(base.Group):
 
   For more information on configurations, see `gcloud topic configurations`.
 
-  ## AVAIABLE PROPERTIES
+  ## AVAILABLE PROPERTIES
 
   {properties}
   """

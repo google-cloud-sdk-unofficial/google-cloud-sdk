@@ -29,7 +29,6 @@ class Create(base_classes.BaseAsyncMutator):
         '--addresses',
         metavar='ADDRESS',
         type=arg_parsers.ArgList(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
         help='Ephemeral IP addresses to promote to reserved status.')
     addresses.detailed_help = """\
         Ephemeral IP addresses to promote to reserved status. Only addresses

@@ -77,7 +77,6 @@ def _Args(parser):
   tags = parser.add_argument(
       '--tags',
       type=arg_parsers.ArgList(min_length=1),
-      action=arg_parsers.FloatingListValuesCatcher(),
       default=[],
       metavar='TAG',
       help='Identifies the set of instances that this route will apply to.')

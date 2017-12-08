@@ -18,7 +18,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-class TestingArgFiles(base.Command):
+class TestingArgFiles(base.TopicCommand):
   """Supplementary help for named configurations.
 
   gcloud properties can be stored in *named configurations*, which
@@ -103,7 +103,3 @@ class TestingArgFiles(base.Command):
   """
 
   detailed_help = {'properties': properties.VALUES.GetHelpString()}
-
-  def Run(self, args):
-    self.cli.Execute(args.command_path[1:] + ['--document=style=topic'])
-    return None

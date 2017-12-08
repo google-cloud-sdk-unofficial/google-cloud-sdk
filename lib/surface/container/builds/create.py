@@ -17,7 +17,6 @@ import os.path
 
 from apitools.base.py import encoding
 
-from googlecloudsdk.api_lib.app import cloud_build
 from googlecloudsdk.api_lib.cloudbuild import config
 from googlecloudsdk.api_lib.cloudbuild import logs as cb_logs
 from googlecloudsdk.api_lib.cloudbuild import snapshot
@@ -30,6 +29,9 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_transform
 from googlecloudsdk.core.util import times
+
+
+_ALLOWED_SOURCE_EXT = ['.zip', '.tgz', '.gz']
 
 
 class Create(base.Command):
@@ -46,7 +48,7 @@ class Create(base.Command):
     parser.add_argument(
         'source',
         help='The source directory on local disk or tarball in Google Cloud '
-             'Storage to use for this build.',
+             'Storage or disk to use for this build.',
     )
     parser.add_argument(
         '--gcs-source-staging-dir',
@@ -125,10 +127,15 @@ class Create(base.Command):
     if build_config.timeout is None:
       build_config.timeout = timeout_str
 
+    suffix = '.tgz'
+    if args.source.startswith('gs://') or os.path.isfile(args.source):
+      _, suffix = os.path.splitext(args.source)
+
     # Next, stage the source to Cloud Storage.
-    staged_object = '{stamp}_{tag_ish}.tgz'.format(
+    staged_object = '{stamp}_{tag_ish}{suffix}'.format(
         stamp=times.GetTimeStampFromDateTime(times.Now()),
         tag_ish='_'.join(build_config.images or 'null').replace('/', '_'),
+        suffix=suffix,
     )
     gcs_source_staging_dir = registry.Parse(
         args.gcs_source_staging_dir, collection='storage.objects')
@@ -173,9 +180,24 @@ class Create(base.Command):
                 generation=staged_source_obj.generation,
             ))
       elif os.path.isfile(args.source):
-        raise c_exceptions.BadFileException(
-            '[{src}] is a local file, must be a local directory or a tarball '
-            'in Google Cloud Storage'.format(src=args.source))
+        unused_root, ext = os.path.splitext(args.source)
+        if ext not in _ALLOWED_SOURCE_EXT:
+          raise c_exceptions.BadFileException(
+              'Local file [{src}] is none of '+_ALLOWED_SOURCE_EXT.join(', '))
+        log.status.write(
+            'Uploading local file [{src}] to '
+            '[gs://{bucket}/{object}]\n'.format(
+                src=args.source,
+                bucket=gcs_source_staging.bucket,
+                object=gcs_source_staging.object,
+            ))
+        staged_source_obj = gcs_client.Upload(args.source, gcs_source_staging)
+        build_config.source = messages.Source(
+            storageSource=messages.StorageSource(
+                bucket=staged_source_obj.bucket,
+                object=staged_source_obj.name,
+                generation=staged_source_obj.generation,
+            ))
 
     gcs_log_dir = registry.Parse(
         args.gcs_log_dir, collection='storage.objects')
@@ -201,10 +223,11 @@ class Create(base.Command):
         id=build.id)
 
     log.CreatedResource(build_ref)
-    log_url = cloud_build.CLOUDBUILD_LOGS_URI_TEMPLATE.format(
-        project_id=build.projectId,
-        build_id=build.id)
-    log.status.write('Logs are permanently available at [%s]\n' % log_url)
+    if build.logUrl:
+      log.status.write('Logs are permanently available at [{log_url}]\n'.format(
+          log_url=build.logUrl))
+    else:
+      log.status.write('Logs are available in the Cloud Console.\n')
 
     # If the command is run --async, we just print out a reference to the build.
     if args.async:

@@ -29,16 +29,14 @@ class List(base.ListCommand):
 
   You can specify the maximum number of projects to list using the `--limit`
   flag.
+
+  ## EXAMPLES
+
+  The following command lists a maximum of five projects sorted alphabetically
+  by name:
+
+    $ {command} --limit=5
   """
-
-  detailed_help = {
-      'EXAMPLES': """
-          The following command lists a maximum of five projects sorted
-          alphabetically by name:
-
-            $ {command} --limit=5
-      """,
-  }
 
   def Collection(self):
     return command_lib_util.PROJECTS_COLLECTION

@@ -537,6 +537,33 @@ to use different resource name schemes, such as `users/*/operations`.
         supports_download=False,
     )
 
+    def SubmitPredictionJob(self, request, global_params=None):
+      """Performs batch prediction on the files specified in the request.
+JobMetadata and will contain PredictionJobResult when completed.
+
+      Args:
+        request: (MlProjectsSubmitPredictionJobRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('SubmitPredictionJob')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SubmitPredictionJob.method_config = lambda: base_api.ApiMethodInfo(
+        http_method=u'POST',
+        method_id=u'ml.projects.submitPredictionJob',
+        ordered_params=[u'projectsId'],
+        path_params=[u'projectsId'],
+        query_params=[],
+        relative_path=u'v1alpha3/projects/{projectsId}:submitPredictionJob',
+        request_field=u'googleCloudMlV1alpha3SubmitPredictionJobRequest',
+        request_type_name=u'MlProjectsSubmitPredictionJobRequest',
+        response_type_name=u'GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
     def SubmitTrainingJob(self, request, global_params=None):
       """Create a training job. The resulting operation contains.
 JobMetadata and will contain JobResult when completed.

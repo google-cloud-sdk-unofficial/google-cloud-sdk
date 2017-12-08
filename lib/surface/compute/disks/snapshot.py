@@ -43,7 +43,6 @@ def _CommonArgs(parser):
   snapshot_names = parser.add_argument(
       '--snapshot-names',
       type=arg_parsers.ArgList(min_length=1),
-      action=arg_parsers.FloatingListValuesCatcher(),
       metavar='SNAPSHOT_NAME',
       help='Names to assign to the snapshots.')
   snapshot_names.detailed_help = """\

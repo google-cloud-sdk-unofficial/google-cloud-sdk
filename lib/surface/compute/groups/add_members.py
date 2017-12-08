@@ -38,7 +38,6 @@ class AddMembers(base_classes.NoOutputAsyncMutator,
         metavar='USERNAME',
         required=True,
         type=arg_parsers.ArgList(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
         help='The names or fully-qualified URLs of the users to add.')
 
   @property

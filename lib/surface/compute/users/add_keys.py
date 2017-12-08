@@ -38,7 +38,6 @@ class AddKeys(base_classes.NoOutputAsyncMutator):
         '--public-key-files',
         required=True,
         type=arg_parsers.ArgList(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
         metavar='LOCAL_FILE_PATH',
         help='The path to a public-key file.')
 

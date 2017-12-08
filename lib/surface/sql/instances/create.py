@@ -62,7 +62,6 @@ class _BaseCreate(object):
         '--authorized-gae-apps',
         type=arg_parsers.ArgList(min_length=1),
         metavar='APP',
-        action=arg_parsers.FloatingListValuesCatcher(),
         required=False,
         default=[],
         help='List of App Engine app IDs that can access this instance.')
@@ -70,7 +69,6 @@ class _BaseCreate(object):
         '--authorized-networks',
         type=arg_parsers.ArgList(min_length=1),
         metavar='NETWORK',
-        action=arg_parsers.FloatingListValuesCatcher(),
         required=False,
         default=[],
         help='The list of external networks that are allowed to connect to the'
@@ -162,7 +160,6 @@ class _BaseCreate(object):
         type=arg_parsers.ArgDict(min_length=1),
         metavar='FLAG=VALUE',
         required=False,
-        action=arg_parsers.FloatingListValuesCatcher(),
         help='A comma-separated list of database flags to set on the instance. '
         'Use an equals sign to separate flag name and value. Flags without '
         'values, like skip_grant_tables, can be written out without a value '

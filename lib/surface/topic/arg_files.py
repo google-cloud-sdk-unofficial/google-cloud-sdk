@@ -17,12 +17,8 @@
 from googlecloudsdk.calliope import base
 
 
-class TestingArgFiles(base.Command):
+class TestingArgFiles(base.TopicCommand):
   """Supplementary help for arg-files to be used with *gcloud test*."""
-
-  def Run(self, args):
-    self.cli.Execute(args.command_path[1:] + ['--document=style=topic'])
-    return None
 
   detailed_help = {
 

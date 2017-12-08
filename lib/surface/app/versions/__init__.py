@@ -20,14 +20,16 @@ class Versions(base.Group):
   """View and manage your App Engine versions.
 
   This set of commands can be used to view and manage your existing App Engine
-  versions. To create new deployments, use `{parent_command} deploy`.
+  versions.
+
+  To create new deployments, use `{parent_command} deploy`.
+
+  For more information on App Engine versions, see:
+  https://cloud.google.com/appengine/docs/python/an-overview-of-app-engine
+
+  ## EXAMPLES
+
+  To list your deployed versions, run:
+
+    $ {command} list
   """
-
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To list your deployed versions, run:
-
-            $ {command} list
-      """,
-  }

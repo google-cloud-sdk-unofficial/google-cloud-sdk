@@ -19,12 +19,8 @@ import textwrap
 from googlecloudsdk.calliope import base
 
 
-class Keys(base.Command):
+class Keys(base.TopicCommand):
   """Resource keys supplementary help."""
-
-  def Run(self, args):
-    self.cli.Execute(args.command_path[1:] + ['--document=style=topic'])
-    return None
 
   detailed_help = {
 

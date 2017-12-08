@@ -28,7 +28,6 @@ def _AddArgs(parser, multizonal):
       '--target-pools',
       required=True,
       type=arg_parsers.ArgList(min_length=0),
-      action=arg_parsers.FloatingListValuesCatcher(),
       metavar='TARGET_POOL',
       help=('Compute Engine Target Pools to add the instances to. '
             'Target Pools must be specified by name or by URL. Example: '

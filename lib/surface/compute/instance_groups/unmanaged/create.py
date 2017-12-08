@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import zone_utils
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
 class Create(base_classes.BaseAsyncCreator, zone_utils.ZoneResourceFetcher):
@@ -24,20 +25,11 @@ class Create(base_classes.BaseAsyncCreator, zone_utils.ZoneResourceFetcher):
 
   @staticmethod
   def Args(parser):
+    instance_groups_flags.ZONAL_INSTANCE_GROUP_ARG.AddArgument(parser)
     parser.add_argument(
         '--description',
         help=('Specifies a textual description for the '
               'unmanaged instance group.'))
-
-    parser.add_argument(
-        'name',
-        metavar='NAME',
-        help='The name of the unmanaged instance group to create.')
-
-    flags.AddZoneFlag(
-        parser,
-        resource_type='unmanaged instance group',
-        operation_type='create')
 
   @property
   def service(self):
@@ -60,7 +52,12 @@ class Create(base_classes.BaseAsyncCreator, zone_utils.ZoneResourceFetcher):
     Returns:
       request: a ComputeInstanceGroupsInsertRequest message object
     """
-    group_ref = self.CreateZonalReference(args.name, args.zone)
+    group_ref = (
+        instance_groups_flags.ZONAL_INSTANCE_GROUP_ARG.ResolveAsResource(
+            args, self.resources,
+            default_scope=flags.ScopeEnum.ZONE,
+            scope_lister=flags.GetDefaultScopeLister(
+                self.compute_client, self.project)))
     self.WarnForZonalCreation([group_ref])
 
     request = self.messages.ComputeInstanceGroupsInsertRequest(

@@ -32,16 +32,14 @@ def AddFlags(parser, is_ga):
         help=('If provided, only zonal resources are shown. '
               'If arguments are provided, only resources from the given '
               'zones are shown.'),
-        type=arg_parsers.ArgList(),
-        action=arg_parsers.FloatingListValuesCatcher(switch_value=[]))
+        type=arg_parsers.ArgList())
     scope.add_argument(
         '--regions',
         metavar='REGION',
         help=('If provided, only regional resources are shown. '
               'If arguments are provided, only resources from the given '
               'regions are shown.'),
-        type=arg_parsers.ArgList(),
-        action=arg_parsers.FloatingListValuesCatcher(switch_value=[]))
+        type=arg_parsers.ArgList())
     scope.add_argument(
         '--global',
         action='store_true',
@@ -54,16 +52,14 @@ def AddFlags(parser, is_ga):
         help=('If arguments are provided, only resources from the given '
               'zones are shown. If no arguments are provided all zonal '
               'operations are shown.'),
-        type=arg_parsers.ArgList(),
-        action=arg_parsers.FloatingListValuesCatcher(switch_value=[]))
+        type=arg_parsers.ArgList())
     parser.add_argument(
         '--regions',
         metavar='REGION',
         help=('If arguments are provided, only resources from the given '
               'regions are shown. If no arguments are provided all regional '
               'operations are shown.'),
-        type=arg_parsers.ArgList(),
-        action=arg_parsers.FloatingListValuesCatcher(switch_value=[]))
+        type=arg_parsers.ArgList())
     parser.add_argument(
         '--global',
         action='store_true',
