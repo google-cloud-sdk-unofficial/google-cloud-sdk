@@ -13,7 +13,6 @@
 # limitations under the License.
 """Dataflow pipeline for batch prediction in Cloud ML."""
 import json
-import os
 import apache_beam as beam
 from apache_beam.io.textio import WriteToText
 import batch_prediction
@@ -21,29 +20,29 @@ from google.cloud.ml.dataflow.io.multifiles_source import ReadFromMultiFilesText
 from google.cloud.ml.dataflow.io.multifiles_source import ReadFromMultiFilesTFRecord
 from google.cloud.ml.dataflow.io.multifiles_source import ReadFromMultiFilesTFRecordGZip
 
+FILE_LIST_SEPARATOR = ","
 OUTPUT_RESULTS_FILES_BASENAME_ = "prediction.results"
-
-
 OUTPUT_ERRORS_FILES_BASENAME_ = "prediction.errors_stats"
 
 
-def run(p, args, aggregator_dict, cloud_logger=None):
+def run(p, args, aggregator_dict):
   """Run the pipeline with the args and dataflow pipeline option."""
   # Create a PCollection for model directory.
   model_dir = p | "Create Model Directory" >> beam.Create([args.model_dir])
 
   input_file_format = args.input_file_format.lower()
+  input_file_patterns = args.input_file_patterns
 
   # Setup reader.
   if input_file_format == "text":
     reader = p | "READ_TEXT_FILES" >> ReadFromMultiFilesText(
-        args.input_file_patterns)
+        input_file_patterns)
   elif input_file_format == "tfrecord":
     reader = p | "READ_TF_FILES" >> ReadFromMultiFilesTFRecord(
-        args.input_file_patterns)
+        input_file_patterns)
   elif input_file_format == "tfrecord_gzip":
     reader = p | "READ_TFGZIP_FILES" >> ReadFromMultiFilesTFRecordGZip(
-        args.input_file_patterns)
+        input_file_patterns)
 
   # Setup the whole pipeline.
   results, errors = (reader
@@ -51,17 +50,18 @@ def run(p, args, aggregator_dict, cloud_logger=None):
                          beam.pvalue.AsSingleton(model_dir),
                          batch_size=args.batch_size,
                          aggregator_dict=aggregator_dict,
-                         cloud_logger=cloud_logger))
+                         user_project_id=args.user_project_id,
+                         user_job_id=args.user_job_id))
 
   # Convert predictions to JSON and then write to output files.
   _ = (results
        | "TO_JSON" >> beam.Map(json.dumps)
        | "WRITE_PREDICTION_RESULTS" >> WriteToText(
-           os.path.join(args.output_location, OUTPUT_RESULTS_FILES_BASENAME_)))
+           args.output_result_prefix))
   # Write prediction errors counts to output files.
   _ = (errors
        | "GROUP_BY_ERROR_TYPE" >> beam.combiners.Count.PerKey()
        | "WRITE_ERRORS" >> WriteToText(
-           os.path.join(args.output_location, OUTPUT_ERRORS_FILES_BASENAME_)))
+           args.output_error_prefix))
 
   return p.run()

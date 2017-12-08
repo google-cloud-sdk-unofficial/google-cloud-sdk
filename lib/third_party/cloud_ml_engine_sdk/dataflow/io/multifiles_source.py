@@ -123,9 +123,8 @@ class _MultiTextSource(MultiFilesSource):
   """Multiple files source for Text source."""
   # TODO(user): Currently liquid sharding is performed on source boundaries.
   # For text files, a more complicated RangeTracker can be implemented to
-  # support liquid sharding within sub-sources if needed. For example,
-  # something like:
-  # https://cs.corp.google.com/piper///depot/google3/third_party/py/apache_beam/io/concat_source.py?rcl=155838866&l=95
+  # support liquid sharding within sub-sources if needed. See ConcatRangeTracker
+  # in concat_source.py for reference.
 
   def create_source(self, file_pattern, min_bundle_size=0,
                     compression_type=CompressionTypes.AUTO,

@@ -20,8 +20,8 @@ gcloud compute addresses create \- reserve IP addresses
 \fBgcloud compute addresses create\fR is used to reserve one or more IP
 addresses. Once an IP address is reserved, it will be associated with the
 project until it is released using 'gcloud compute addresses delete'. Ephemeral
-IP addresses that are in use by resources in the project, can be reserved using
-the \f5\fI\-\-addresses\fR\fR flag.
+IP addresses that are in use by resources in the project can be reserved using
+the \f5\-\-addresses\fR flag.
 
 
 
@@ -30,7 +30,7 @@ the \f5\fI\-\-addresses\fR\fR flag.
 .RS 2m
 .TP 2m
 [\fINAME\fR ...]
-The address names to operate on.
+The names of the addresss.
 
 
 .RE
@@ -66,11 +66,11 @@ At most one of these may be specified:
 .RS 2m
 .TP 2m
 \fB\-\-global\fR
-If provided, it is assumed the address name is global.
+If provided, it is assumed the address is global.
 
 .TP 2m
 \fB\-\-region\fR=\fIREGION\fR
-The region of the address name to operate on. Overrides the default
+The region of the address to operate on. Overrides the default
 \fBcompute/region\fR property value for this command invocation.
 
 
@@ -88,7 +88,7 @@ help\fR for details.
 
 .SH "EXAMPLES"
 
-To reserve three IP addresses in the \f5\fIus\-central1\fR\fR region, run:
+To reserve three IP addresses in the \f5us\-central1\fR region, run:
 
 .RS 2m
 $ gcloud compute addresses create ADDRESS\-1 ADDRESS\-2 ADDRESS\-3 \e
@@ -96,8 +96,7 @@ $ gcloud compute addresses create ADDRESS\-1 ADDRESS\-2 ADDRESS\-3 \e
 .RE
 
 To reserve ephemeral IP addresses 162.222.181.198 and 23.251.146.189 which are
-being used by virtual machine instances in the \f5\fIus\-central1\fR\fR region,
-run:
+being used by virtual machine instances in the \f5us\-central1\fR region, run:
 
 .RS 2m
 $ gcloud compute addresses create \e

@@ -310,12 +310,10 @@ class Patch(base.UpdateCommand):
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='sql.instances')
 
-    console_io.PromptContinue(
-        message='When adding a new IP address to authorized networks, include '
-        'existing authorized IP addresses. Any existing authorized IP '
-        'address not included will be de-authorized.',
-        default=True,
-        cancel_on_no=True)
+    # If --authorized-networks is used, confirm that the user knows the networks
+    # will get overwritten.
+    if args.authorized_networks:
+      instances.InstancesV1Beta4.PrintAndConfirmAuthorizedNetworksOverwrite()
 
     original_instance_resource = sql_client.instances.Get(
         sql_messages.SqlInstancesGetRequest(

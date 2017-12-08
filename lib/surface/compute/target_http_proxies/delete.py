@@ -13,27 +13,40 @@
 # limitations under the License.
 """Command for deleting target HTTP proxies."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.target_http_proxies import flags
 
 
-class Delete(base_classes.GlobalDeleter):
-  """Delete target HTTP proxies."""
+class Delete(base.DeleteCommand):
+  """Delete target HTTP proxies.
+
+  *{command}* deletes one or more target HTTP proxies.
+  """
+
+  TARGET_HTTP_PROXY_ARG = None
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalDeleter.Args(parser, 'compute.targetHttpProxies')
+    Delete.TARGET_HTTP_PROXY_ARG = flags.TargetHttpProxyArgument(plural=True)
+    Delete.TARGET_HTTP_PROXY_ARG.AddArgument(parser, operation_type='delete')
 
-  @property
-  def service(self):
-    return self.compute.targetHttpProxies
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'targetHttpProxies'
+    target_http_proxy_refs = Delete.TARGET_HTTP_PROXY_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+    utils.PromptForDeletion(target_http_proxy_refs)
 
-Delete.detailed_help = {
-    'brief': 'Delete target HTTP proxies',
-    'DESCRIPTION': """\
-        *{command}* deletes one or more target HTTP proxies.
-        """,
-}
+    requests = []
+    for target_http_proxy_ref in target_http_proxy_refs:
+      requests.append((client.apitools_client.targetHttpProxies, 'Delete',
+                       client.messages.ComputeTargetHttpProxiesDeleteRequest(
+                           **target_http_proxy_ref.AsDict())))
+
+    return client.MakeRequests(requests)

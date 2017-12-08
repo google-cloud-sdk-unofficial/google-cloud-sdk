@@ -39,13 +39,13 @@ class Start(base.Command):
     parser.add_argument(
         '--host-port',
         required=False,
-        type=arg_parsers.HostPort.Parse,
+        type=lambda arg: arg_parsers.HostPort.Parse(arg, ipv6_enabled=True),
         help='The host:port to which the emulator should be bound.')
 
   # Override
   def Run(self, args):
     if not args.host_port:
       args.host_port = arg_parsers.HostPort.Parse(util.GetHostPort(
-          bigtable_util.BIGTABLE))
+          bigtable_util.BIGTABLE), ipv6_enabled=True)
 
     bigtable_util.Start(args)

@@ -16,27 +16,13 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import networks_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
+from googlecloudsdk.core.resource import resource_projector
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class DeleteBeta(base_classes.BaseAsyncMutator):
+class DeleteBeta(base.DeleteCommand):
   """Delete a Google Compute Engine network peering."""
-
-  @property
-  def service(self):
-    return self.compute.networks
-
-  @property
-  def method(self):
-    return 'RemovePeering'
-
-  @property
-  def resource_type(self):
-    return 'peerings'
-
-  def ComputeDynamicProperties(self, args, items):
-    self._network_name = args.name
-    return networks_utils.AddMode(items)
 
   @staticmethod
   def Args(parser):
@@ -51,13 +37,19 @@ class DeleteBeta(base_classes.BaseAsyncMutator):
         help='The name of the network in the current project containing the '
              'peering.')
 
-  def CreateRequests(self, args):
-    """Returns the request necessary for deleting the peering."""
+  def Run(self, args):
+    """Issues the request necessary for deleting the peering."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-    request = self.messages.ComputeNetworksRemovePeeringRequest(
+    request = client.messages.ComputeNetworksRemovePeeringRequest(
         network=args.network,
-        networksRemovePeeringRequest=self.messages.NetworksRemovePeeringRequest(
-            name=args.name),
-        project=self.project)
+        networksRemovePeeringRequest=(
+            client.messages.NetworksRemovePeeringRequest(name=args.name)),
+        project=properties.VALUES.core.project.GetOrFail())
 
-    return [request]
+    response = client.MakeRequests([(client.apitools_client.networks,
+                                     'RemovePeering', request)])
+
+    return networks_utils.AddMode(
+        [resource_projector.MakeSerializable(m) for m in response])

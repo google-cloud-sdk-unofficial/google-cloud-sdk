@@ -19,8 +19,7 @@ from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
-from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
+from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import log
 
 
@@ -32,7 +31,7 @@ class InstancesRemoveMetadata(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    instances_flags.INSTANCE_ARG.AddArgument(
+    flags.INSTANCE_ARG.AddArgument(
         parser, operation_type='set metadata on')
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
@@ -47,8 +46,8 @@ class InstancesRemoveMetadata(base.UpdateCommand):
         help='The keys of the entries to remove.')
 
   def CreateReference(self, client, resources, args):
-    return instances_flags.INSTANCE_ARG.ResolveAsResource(
-        args, resources, scope_lister=flags.GetDefaultScopeLister(client))
+    return flags.INSTANCE_ARG.ResolveAsResource(
+        args, resources, scope_lister=flags.GetInstanceZoneScopeLister(client))
 
   def GetGetRequest(self, client, instance_ref):
     return (client.apitools_client.instances,

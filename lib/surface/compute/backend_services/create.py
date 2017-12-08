@@ -70,8 +70,21 @@ def AddIapFlag(parser):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class CreateGA(base_classes.BaseAsyncMutator):
-  """Create a backend service."""
+class CreateGA(base.CreateCommand):
+  """Create a backend service.
+
+  *{command}* is used to create backend services. Backend
+  services define groups of backends that can receive
+  traffic. Each backend group has parameters that define the
+  group's capacity (e.g. max CPU utilization, max queries per
+  second, ...). URL maps define which requests are sent to which
+  backend services.
+
+  Backend services created through this command will start out
+  without any backend groups. To add backend groups, use 'gcloud
+  compute backend-services add-backend' or 'gcloud compute
+  backend-services edit'.
+  """
 
   HEALTH_CHECK_ARG = None
   HTTP_HEALTH_CHECK_ARG = None
@@ -79,6 +92,7 @@ class CreateGA(base_classes.BaseAsyncMutator):
 
   @classmethod
   def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddDescription(parser)
     cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument()
@@ -103,127 +117,128 @@ class CreateGA(base_classes.BaseAsyncMutator):
     flags.AddCacheKeyQueryStringList(parser)
     AddIapFlag(parser)
 
-  @property
-  def method(self):
-    return 'Insert'
-
-  def _CreateBackendService(self, args, backend_services_ref):
-    health_checks = flags.GetHealthCheckUris(args, self, self.resources)
+  def _CreateBackendService(self, holder, args, backend_services_ref):
+    health_checks = flags.GetHealthCheckUris(args, self, holder.resources)
     if not health_checks:
       raise exceptions.ToolException('At least one health check required.')
 
     enable_cdn = True if args.enable_cdn else None
 
-    return self.messages.BackendService(
+    return holder.client.messages.BackendService(
         description=args.description,
         name=backend_services_ref.Name(),
         healthChecks=health_checks,
         port=_ResolvePort(args),
         portName=_ResolvePortName(args),
-        protocol=_ResolveProtocol(self.messages, args),
+        protocol=_ResolveProtocol(holder.client.messages, args),
         timeoutSec=args.timeout,
         enableCDN=enable_cdn)
 
-  def CreateGlobalRequests(self, args, backend_services_ref):
+  def CreateGlobalRequests(self, holder, args, backend_services_ref):
     if args.load_balancing_scheme == 'INTERNAL':
       raise exceptions.ToolException(
           'Must specify --region for internal load balancer.')
-    backend_service = self._CreateBackendService(args, backend_services_ref)
+    backend_service = self._CreateBackendService(holder, args,
+                                                 backend_services_ref)
+
+    client = holder.client
 
     if args.connection_draining_timeout is not None:
-      backend_service.connectionDraining = self.messages.ConnectionDraining(
+      backend_service.connectionDraining = client.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
 
     if args.session_affinity is not None:
       backend_service.sessionAffinity = (
-          self.messages.BackendService.SessionAffinityValueValuesEnum(
+          client.messages.BackendService.SessionAffinityValueValuesEnum(
               args.session_affinity))
     if args.session_affinity is not None:
       backend_service.affinityCookieTtlSec = args.affinity_cookie_ttl
 
     backend_services_utils.ApplyCdnPolicyArgs(
-        self, args, backend_service, is_update=False)
+        client, args, backend_service, is_update=False)
 
-    self._ApplyIapArgs(args.iap, backend_service)
+    self._ApplyIapArgs(client.messages, args.iap, backend_service)
 
-    request = self.messages.ComputeBackendServicesInsertRequest(
+    request = client.messages.ComputeBackendServicesInsertRequest(
         backendService=backend_service,
-        project=self.project)
+        project=backend_services_ref.project)
 
-    return [request]
+    return [(client.apitools_client.backendServices, 'Insert', request)]
 
-  def CreateRegionalRequests(self, args, backend_services_ref):
-    backend_service = self._CreateRegionBackendService(args,
+  def CreateRegionalRequests(self, holder, args, backend_services_ref):
+    backend_service = self._CreateRegionBackendService(holder, args,
                                                        backend_services_ref)
+    client = holder.client
     if args.connection_draining_timeout is not None:
-      backend_service.connectionDraining = self.messages.ConnectionDraining(
+      backend_service.connectionDraining = client.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
 
-    request = self.messages.ComputeRegionBackendServicesInsertRequest(
+    request = client.messages.ComputeRegionBackendServicesInsertRequest(
         backendService=backend_service,
         region=backend_services_ref.region,
         project=backend_services_ref.project)
 
-    return [request]
+    return [(client.apitools_client.regionBackendServices, 'Insert', request)]
 
-  def _CreateRegionBackendService(self, args, backend_services_ref):
-    health_checks = flags.GetHealthCheckUris(args, self, self.resources)
+  def _CreateRegionBackendService(self, holder, args, backend_services_ref):
+    health_checks = flags.GetHealthCheckUris(args, self, holder.resources)
     if not health_checks:
       raise exceptions.ToolException('At least one health check required.')
 
-    return self.messages.BackendService(
+    messages = holder.client.messages
+
+    return messages.BackendService(
         description=args.description,
         name=backend_services_ref.Name(),
         healthChecks=health_checks,
         loadBalancingScheme=(
-            self.messages.BackendService.LoadBalancingSchemeValueValuesEnum(
+            messages.BackendService.LoadBalancingSchemeValueValuesEnum(
                 args.load_balancing_scheme)),
-        protocol=_ResolveProtocol(self.messages, args, default='TCP'),
+        protocol=_ResolveProtocol(messages, args, default='TCP'),
         timeoutSec=args.timeout)
 
-  def _ApplyIapArgs(self, iap_arg, backend_service):
+  def _ApplyIapArgs(self, messages, iap_arg, backend_service):
     if iap_arg is not None:
       backend_service.iap = backend_services_utils.GetIAP(iap_arg,
-                                                          self.messages)
+                                                          messages)
       if backend_service.iap.enabled:
         log.warning(backend_services_utils.IapBestPracticesNotice())
       if (backend_service.iap.enabled and backend_service.protocol is not
-          self.messages.BackendService.ProtocolValueValuesEnum.HTTPS):
+          messages.BackendService.ProtocolValueValuesEnum.HTTPS):
         log.warning(backend_services_utils.IapHttpWarning())
 
-  def CreateRequests(self, args):
+  def Run(self, args):
+    """Issues request necessary to create Backend Service."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
     ref = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
         args,
-        self.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client))
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
     if ref.Collection() == 'compute.backendServices':
-      self.global_request = True
+      requests = self.CreateGlobalRequests(holder, args, ref)
     elif ref.Collection() == 'compute.regionBackendServices':
-      self.global_request = False
+      requests = self.CreateRegionalRequests(holder, args, ref)
 
-    if self.global_request:
-      return self.CreateGlobalRequests(args, ref)
-    else:
-      return self.CreateRegionalRequests(args, ref)
-
-  def DeprecatedFormat(self, args):
-    return self.ListFormat(args)
-
-  @property
-  def resource_type(self):
-    return 'backendServices'
-
-  @property
-  def service(self):
-    if self.global_request:
-      return self.compute.backendServices
-    else:
-      return self.compute.regionBackendServices
+    return client.MakeRequests(requests)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateGA):
-  """Create a backend service."""
+  """Create a backend service.
+
+  *{command}* is used to create backend services. Backend
+  services define groups of backends that can receive
+  traffic. Each backend group has parameters that define the
+  group's capacity (e.g. max CPU utilization, max queries per
+  second, ...). URL maps define which requests are sent to which
+  backend services.
+
+  Backend services created through this command will start out
+  without any backend groups. To add backend groups, use 'gcloud
+  compute backend-services add-backend' or 'gcloud compute
+  backend-services edit'.
+  """
 
   HEALTH_CHECK_ARG = None
   HTTP_HEALTH_CHECK_ARG = None
@@ -231,6 +246,7 @@ class CreateAlpha(CreateGA):
 
   @classmethod
   def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddDescription(parser)
     cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument()
@@ -255,37 +271,40 @@ class CreateAlpha(CreateGA):
     flags.AddLoadBalancingScheme(parser)
     AddIapFlag(parser)
 
-  def CreateGlobalRequests(self, args, backend_services_ref):
+  def CreateGlobalRequests(self, holder, args, backend_services_ref):
     if args.load_balancing_scheme == 'INTERNAL':
       raise exceptions.ToolException(
           'Must specify --region for internal load balancer.')
-    backend_service = self._CreateBackendService(args, backend_services_ref)
+    backend_service = self._CreateBackendService(holder, args,
+                                                 backend_services_ref)
+
+    client = holder.client
     if args.connection_draining_timeout is not None:
-      backend_service.connectionDraining = self.messages.ConnectionDraining(
-          drainingTimeoutSec=args.connection_draining_timeout)
+      backend_service.connectionDraining = (client.messages.ConnectionDraining(
+          drainingTimeoutSec=args.connection_draining_timeout))
 
     if args.enable_cdn:
       backend_service.enableCDN = args.enable_cdn
 
     backend_services_utils.ApplyCdnPolicyArgs(
-        self, args, backend_service, is_update=False)
+        client, args, backend_service, is_update=False)
 
     if args.session_affinity is not None:
       backend_service.sessionAffinity = (
-          self.messages.BackendService.SessionAffinityValueValuesEnum(
+          client.messages.BackendService.SessionAffinityValueValuesEnum(
               args.session_affinity))
     if args.affinity_cookie_ttl is not None:
       backend_service.affinityCookieTtlSec = args.affinity_cookie_ttl
 
-    self._ApplyIapArgs(args.iap, backend_service)
+    self._ApplyIapArgs(client.messages, args.iap, backend_service)
 
-    request = self.messages.ComputeBackendServicesInsertRequest(
+    request = client.messages.ComputeBackendServicesInsertRequest(
         backendService=backend_service,
-        project=self.project)
+        project=backend_services_ref.project)
 
-    return [request]
+    return [(client.apitools_client.backendServices, 'Insert', request)]
 
-  def CreateRegionalRequests(self, args, backend_services_ref):
+  def CreateRegionalRequests(self, holder, args, backend_services_ref):
     if (not args.cache_key_include_host or
         not args.cache_key_include_protocol or
         not args.cache_key_include_query_string or
@@ -293,38 +312,55 @@ class CreateAlpha(CreateGA):
         args.cache_key_query_string_whitelist is not None):
       raise exceptions.ToolException(
           'Custom cache key flags cannot be used for regional requests.')
-    backend_service = self._CreateRegionBackendService(args,
+    backend_service = self._CreateRegionBackendService(holder, args,
                                                        backend_services_ref)
+    client = holder.client
+
     if args.connection_draining_timeout is not None:
-      backend_service.connectionDraining = self.messages.ConnectionDraining(
+      backend_service.connectionDraining = client.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
 
-    request = self.messages.ComputeRegionBackendServicesInsertRequest(
+    request = client.messages.ComputeRegionBackendServicesInsertRequest(
         backendService=backend_service,
         region=backend_services_ref.region,
         project=backend_services_ref.project)
 
-    return [request]
+    return [(client.apitools_client.regionBackendServices, 'Insert', request)]
 
-  def _CreateRegionBackendService(self, args, backend_services_ref):
-    health_checks = flags.GetHealthCheckUris(args, self, self.resources)
+  def _CreateRegionBackendService(self, holder, args, backend_services_ref):
+    health_checks = flags.GetHealthCheckUris(args, self, holder.resources)
     if not health_checks:
       raise exceptions.ToolException('At least one health check required.')
 
-    return self.messages.BackendService(
+    messages = holder.client.messages
+
+    return messages.BackendService(
         description=args.description,
         name=backend_services_ref.Name(),
         healthChecks=health_checks,
         loadBalancingScheme=(
-            self.messages.BackendService.LoadBalancingSchemeValueValuesEnum(
+            messages.BackendService.LoadBalancingSchemeValueValuesEnum(
                 args.load_balancing_scheme)),
-        protocol=_ResolveProtocol(self.messages, args, default='TCP'),
+        protocol=_ResolveProtocol(messages, args, default='TCP'),
         timeoutSec=args.timeout)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(CreateGA):
-  """Create a backend service."""
+  """Create a backend service.
+
+  *{command}* is used to create backend services. Backend
+  services define groups of backends that can receive
+  traffic. Each backend group has parameters that define the
+  group's capacity (e.g. max CPU utilization, max queries per
+  second, ...). URL maps define which requests are sent to which
+  backend services.
+
+  Backend services created through this command will start out
+  without any backend groups. To add backend groups, use 'gcloud
+  compute backend-services add-backend' or 'gcloud compute
+  backend-services edit'.
+  """
 
   HEALTH_CHECK_ARG = None
   HTTP_HEALTH_CHECK_ARG = None
@@ -332,6 +368,7 @@ class CreateBeta(CreateGA):
 
   @classmethod
   def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddDescription(parser)
     cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument()
@@ -356,77 +393,65 @@ class CreateBeta(CreateGA):
     flags.AddCacheKeyQueryStringList(parser)
     AddIapFlag(parser)
 
-  def CreateGlobalRequests(self, args, backend_services_ref):
+  def CreateGlobalRequests(self, holder, args, backend_services_ref):
     if args.load_balancing_scheme == 'INTERNAL':
       raise exceptions.ToolException(
           'Must specify --region for internal load balancer.')
-    backend_service = self._CreateBackendService(args, backend_services_ref)
+    backend_service = self._CreateBackendService(holder, args,
+                                                 backend_services_ref)
+
+    client = holder.client
 
     if args.connection_draining_timeout is not None:
-      backend_service.connectionDraining = self.messages.ConnectionDraining(
+      backend_service.connectionDraining = client.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
     if args.session_affinity is not None:
       backend_service.sessionAffinity = (
-          self.messages.BackendService.SessionAffinityValueValuesEnum(
+          client.messages.BackendService.SessionAffinityValueValuesEnum(
               args.session_affinity))
     if args.session_affinity is not None:
       backend_service.affinityCookieTtlSec = args.affinity_cookie_ttl
 
     backend_services_utils.ApplyCdnPolicyArgs(
-        self, args, backend_service, is_update=False)
+        client, args, backend_service, is_update=False)
 
-    self._ApplyIapArgs(args.iap, backend_service)
+    self._ApplyIapArgs(client.messages, args.iap, backend_service)
 
-    request = self.messages.ComputeBackendServicesInsertRequest(
+    request = client.messages.ComputeBackendServicesInsertRequest(
         backendService=backend_service,
-        project=self.project)
+        project=backend_services_ref.project)
 
-    return [request]
+    return [(client.apitools_client.backendServices, 'Insert', request)]
 
-  def CreateRegionalRequests(self, args, backend_services_ref):
-    backend_service = self._CreateRegionBackendService(args,
+  def CreateRegionalRequests(self, holder, args, backend_services_ref):
+    backend_service = self._CreateRegionBackendService(holder, args,
                                                        backend_services_ref)
+    client = holder.client
+
     if args.connection_draining_timeout is not None:
-      backend_service.connectionDraining = self.messages.ConnectionDraining(
+      backend_service.connectionDraining = client.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
 
-    request = self.messages.ComputeRegionBackendServicesInsertRequest(
+    request = client.messages.ComputeRegionBackendServicesInsertRequest(
         backendService=backend_service,
         region=backend_services_ref.region,
         project=backend_services_ref.project)
 
-    return [request]
+    return [(client.apitools_client.regionBackendServices, 'Insert', request)]
 
-  def _CreateRegionBackendService(self, args, backend_services_ref):
-    health_checks = flags.GetHealthCheckUris(args, self, self.resources)
+  def _CreateRegionBackendService(self, holder, args, backend_services_ref):
+    health_checks = flags.GetHealthCheckUris(args, self, holder.resources)
     if not health_checks:
       raise exceptions.ToolException('At least one health check required.')
 
-    return self.messages.BackendService(
+    messages = holder.client.messages
+
+    return messages.BackendService(
         description=args.description,
         name=backend_services_ref.Name(),
         healthChecks=health_checks,
         loadBalancingScheme=(
-            self.messages.BackendService.LoadBalancingSchemeValueValuesEnum(
+            messages.BackendService.LoadBalancingSchemeValueValuesEnum(
                 args.load_balancing_scheme)),
-        protocol=_ResolveProtocol(self.messages, args, default='TCP'),
+        protocol=_ResolveProtocol(messages, args, default='TCP'),
         timeoutSec=args.timeout)
-
-
-CreateGA.detailed_help = {
-    'DESCRIPTION': """
-        *{command}* is used to create backend services. Backend
-        services define groups of backends that can receive
-        traffic. Each backend group has parameters that define the
-        group's capacity (e.g., max CPU utilization, max queries per
-        second, ...). URL maps define which requests are sent to which
-        backend services.
-
-        Backend services created through this command will start out
-        without any backend groups. To add backend groups, use 'gcloud
-        compute backend-services add-backend' or 'gcloud compute
-        backend-services edit'.
-        """,
-}
-CreateAlpha.detailed_help = CreateGA.detailed_help
-CreateBeta.detailed_help = CreateGA.detailed_help

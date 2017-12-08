@@ -13,13 +13,14 @@
 # limitations under the License.
 """Command for deleting forwarding rules."""
 
-from googlecloudsdk.api_lib.compute import forwarding_rules_utils
+from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.forwarding_rules import flags
 
 
-class Delete(forwarding_rules_utils.ForwardingRulesMutator):
+class Delete(base.DeleteCommand):
   """Delete forwarding rules.
 
   *{command}* deletes one or more Google Compute Engine forwarding rules.
@@ -32,32 +33,32 @@ class Delete(forwarding_rules_utils.ForwardingRulesMutator):
     cls.FORWARDING_RULES_ARG = flags.ForwardingRuleArgumentPlural()
     cls.FORWARDING_RULES_ARG.AddArgument(parser)
 
-  @property
-  def method(self):
-    return 'Delete'
+  def Run(self, args):
+    """Issues requests necessary to delete Forwarding Rules."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  def CreateRequests(self, args):
-    """Overrides."""
     forwarding_rule_refs = self.FORWARDING_RULES_ARG.ResolveAsResource(
         args,
-        self.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
-                                                         self.project))
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
     utils.PromptForDeletion(forwarding_rule_refs)
 
     requests = []
     for forwarding_rule_ref in forwarding_rule_refs:
-      self.global_request = getattr(forwarding_rule_ref, 'region', None) is None
-      if self.global_request:
-        request = self.messages.ComputeGlobalForwardingRulesDeleteRequest(
+      if forwarding_rule_ref.Collection() == 'compute.globalForwardingRules':
+        request = client.messages.ComputeGlobalForwardingRulesDeleteRequest(
             forwardingRule=forwarding_rule_ref.Name(),
-            project=self.project,)
+            project=forwarding_rule_ref.project)
+        requests.append((client.apitools_client.globalForwardingRules, 'Delete',
+                         request))
       else:
-        request = self.messages.ComputeForwardingRulesDeleteRequest(
+        request = client.messages.ComputeForwardingRulesDeleteRequest(
             forwardingRule=forwarding_rule_ref.Name(),
-            project=self.project,
-            region=forwarding_rule_ref.region,)
-      requests.append(request)
+            project=forwarding_rule_ref.project,
+            region=forwarding_rule_ref.region)
+        requests.append((client.apitools_client.forwardingRules, 'Delete',
+                         request))
 
-    return requests
+    return client.MakeRequests(requests)

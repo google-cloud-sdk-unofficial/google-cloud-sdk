@@ -16,48 +16,44 @@
 
 from googlecloudsdk.api_lib.compute import backend_services_utils
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
-class Describe(base_classes.MultiScopeDescriber):
+class Describe(base.DescribeCommand):
   """Describe a backend service."""
-
-  SCOPES = [base_classes.ScopeType.regional_scope,
-            base_classes.ScopeType.global_scope]
 
   @staticmethod
   def Args(parser):
-    base_classes.MultiScopeDescriber.AddScopeArgs(
-        parser, 'backendServices', Describe.SCOPES)
+    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
+        parser, operation_type='describe')
 
-  def CreateReference(self, args):
+  def Run(self, args):
+    """Issues request necessary to describe the backend service."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
     (backend_services_utils.
      IsDefaultRegionalBackendServicePropertyNoneWarnOtherwise())
-    return super(Describe, self).CreateReference(args)
+    backend_service_ref = (
+        flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
+            args,
+            holder.resources,
+            scope_lister=compute_flags.GetDefaultScopeLister(client)))
 
-  @property
-  def global_service(self):
-    return self.compute.backendServices
+    if backend_service_ref.Collection() == 'compute.backendServices':
+      service = client.apitools_client.backendServices
+      request = client.messages.ComputeBackendServicesGetRequest(
+          **backend_service_ref.AsDict())
+    elif backend_service_ref.Collection() == 'compute.regionBackendServices':
+      service = client.apitools_client.regionBackendServices
+      request = client.messages.ComputeRegionBackendServicesGetRequest(
+          **backend_service_ref.AsDict())
 
-  @property
-  def regional_service(self):
-    return self.compute.regionBackendServices
-
-  @property
-  def zonal_service(self):
-    return None
-
-  @property
-  def global_resource_type(self):
-    return 'backendServices'
-
-  @property
-  def regional_resource_type(self):
-    return 'regionBackendServices'
-
-  @property
-  def zonal_resource_type(self):
-    return None
+    return client.MakeRequests([(service, 'Get', request)])[0]
 
 
 Describe.detailed_help = base_classes.GetMultiScopeDescriberHelp(
-    'backend service', Describe.SCOPES)
+    'backend service', [base_classes.ScopeType.regional_scope,
+                        base_classes.ScopeType.global_scope])

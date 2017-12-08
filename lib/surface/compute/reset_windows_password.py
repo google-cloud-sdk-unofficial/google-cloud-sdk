@@ -23,7 +23,6 @@ from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.api_lib.compute import openssl_encryption_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.command_lib.util import gaia
 from googlecloudsdk.command_lib.util import time_util
@@ -151,7 +150,8 @@ class ResetWindowsPassword(base.UpdateCommand):
 
   def CreateReference(self, client, resources, args):
     return instance_flags.INSTANCE_ARG.ResolveAsResource(
-        args, resources, scope_lister=flags.GetDefaultScopeLister(client))
+        args, resources,
+        scope_lister=instance_flags.GetInstanceZoneScopeLister(client))
 
   def Modify(self, client, existing):
     new_object = encoding.CopyProtoMessage(existing)
@@ -318,9 +318,9 @@ class ResetWindowsPassword(base.UpdateCommand):
     else:
       user = gaia.MapGaiaEmailToDefaultAccountName(email)
 
-    if args.name == user:
+    if args.instance_name == user:
       raise utils.InvalidUserError(
-          MACHINE_USERNAME_SAME_ERROR.format(user, args.name))
+          MACHINE_USERNAME_SAME_ERROR.format(user, args.instance_name))
 
     # Warn user (This warning doesn't show for non-interactive sessions).
     message = RESET_PASSWORD_WARNING.format(user)
@@ -332,7 +332,7 @@ class ResetWindowsPassword(base.UpdateCommand):
         cancel_on_no=True)
 
     log.status.Print('Resetting and retrieving password for [{0}] on [{1}]'
-                     .format(user, args.name))
+                     .format(user, args.instance_name))
 
     # Get Encryption Keys.
     key = crypt.GetKeyPair()

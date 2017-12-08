@@ -11,7 +11,7 @@ gcloud compute instances attach\-disk \- attach a disk to an instance
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances attach\-disk\fR \fINAME\fR \fB\-\-disk\fR=\fIDISK\fR [\fB\-\-csek\-key\-file\fR=\fIFILE\fR] [\fB\-\-device\-name\fR=\fIDEVICE_NAME\fR] [\fB\-\-mode\fR=\fIMODE\fR;\ default="rw"] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
+\f5gcloud compute instances attach\-disk\fR \fIINSTANCE_NAME\fR \fB\-\-disk\fR=\fIDISK\fR [\fB\-\-csek\-key\-file\fR=\fIFILE\fR] [\fB\-\-device\-name\fR=\fIDEVICE_NAME\fR] [\fB\-\-mode\fR=\fIMODE\fR;\ default="rw"] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -34,7 +34,7 @@ attaches the disk named 'DISK' to the instance named 'example\-instance' in zone
 
 .RS 2m
 .TP 2m
-\fINAME\fR
+\fIINSTANCE_NAME\fR
 The name of the instance.
 
 
@@ -85,8 +85,10 @@ one instance.
 .sp
 .TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
-The zone of the instance to operate on. If not specified, you will be prompted
-to select a zone.
+The zone of the instance to operate on. If not specified, you may be prompted to
+select a zone. \f5gcloud\fR will attempt to identify the zone by searching for
+resources in your project. If the zone cannot be determined, you will then be
+prompted with all Google Cloud Platform zones.
 
 To avoid prompting when this flag is omitted, you can set the
 \f5\fIcompute/zone\fR\fR property:

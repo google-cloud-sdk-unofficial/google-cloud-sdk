@@ -58,10 +58,10 @@ def _Args(parser):
   parser.add_argument(
       '--container',
       help="""\
-          The name of a container inside of the virtual machine instance to
-          connect to. This only applies to virtual machines that are using
-          a Google container virtual machine image. For more information,
-          see [](https://cloud.google.com/compute/docs/containers)
+          The name or ID of a container inside of the virtual machine instance
+          to connect to. This only applies to virtual machines that are using
+          a Google Container-Optimized virtual machine image. For more
+          information, see [](https://cloud.google.com/compute/docs/containers)
           """)
 
   parser.add_argument(
@@ -118,7 +118,8 @@ class SshGA(ssh_utils.BaseSSHCLICommand):
     instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
         [instance_name], compute_scope.ScopeEnum.ZONE, args.zone,
         self.resources,
-        scope_lister=flags.GetDefaultScopeLister(self.compute_client))[0]
+        scope_lister=instance_flags.GetInstanceZoneScopeLister(
+            self.compute_client))[0]
     instance = self.GetInstance(instance_ref)
     if self._use_internal_ip:
       ip_address = ssh_utils.GetInternalIPAddress(instance)

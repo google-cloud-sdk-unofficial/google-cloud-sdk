@@ -21,6 +21,15 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+def _GetUriFunction(resource):
+  return resources.REGISTRY.Parse(
+      resource.name,
+      params={
+          'projectsId': properties.VALUES.core.project.GetOrFail,
+      },
+      collection='bigtableadmin.projects.instances.clusters').SelfLink()
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListClusters(base.ListCommand):
   """List existing Bigtable clusters."""
@@ -40,6 +49,7 @@ class ListClusters(base.ListCommand):
             state
           )
         """)
+    parser.display_info.AddUriFunc(_GetUriFunction)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

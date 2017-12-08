@@ -13,6 +13,7 @@
 # limitations under the License.
 """Command for creating forwarding rules."""
 
+from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import forwarding_rules_utils as utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -43,7 +44,7 @@ def _Args(parser, include_beta, include_alpha=False):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Create(utils.ForwardingRulesTargetMutator):
+class Create(base.CreateCommand):
   """Create a forwarding rule to direct network traffic to a load balancer."""
 
   FORWARDING_RULE_ARG = None
@@ -55,45 +56,46 @@ class Create(utils.ForwardingRulesTargetMutator):
     flags.ADDRESS_ARG.AddArgument(parser)
     cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
-  @property
-  def method(self):
-    return 'Insert'
-
-  def ConstructProtocol(self, args):
+  def ConstructProtocol(self, messages, args):
     if args.ip_protocol:
-      return self.messages.ForwardingRule.IPProtocolValueValuesEnum(
+      return messages.ForwardingRule.IPProtocolValueValuesEnum(
           args.ip_protocol)
     else:
       return
 
-  def CreateRequests(self, args):
-    """Overrides."""
+  def Run(self, args):
+    """Issues requests necessary to create Forwarding Rules."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
     forwarding_rule_ref = self.FORWARDING_RULE_ARG.ResolveAsResource(
         args,
-        self.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
-                                                         self.project))
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
     if forwarding_rule_ref.Collection() == 'compute.globalForwardingRules':
-      self.global_request = True
-      return self._CreateGlobalRequests(args, forwarding_rule_ref)
-    else:
-      self.global_request = False
-      return self._CreateRegionalRequests(args, forwarding_rule_ref)
+      requests = self._CreateGlobalRequests(client, holder.resources, args,
+                                            forwarding_rule_ref)
+    elif forwarding_rule_ref.Collection() == 'compute.forwardingRules':
+      requests = self._CreateRegionalRequests(client, holder.resources, args,
+                                              forwarding_rule_ref)
 
-  def _CreateGlobalRequests(self, args, forwarding_rule_ref):
+    return client.MakeRequests(requests)
+
+  def _CreateGlobalRequests(self, client, resources, args, forwarding_rule_ref):
     """Create a globally scoped request."""
     port_range = _ResolvePortRange(args.port_range, args.ports)
     if not port_range:
       raise exceptions.ToolException(
           '[--ports] is required for global forwarding rules.')
-    target_ref = self.GetGlobalTarget(args)
-    protocol = self.ConstructProtocol(args)
+    target_ref = utils.GetGlobalTarget(resources, args)
+    protocol = self.ConstructProtocol(client.messages, args)
 
-    address = self._ResolveAddress(
-        args, compute_flags.compute_scope.ScopeEnum.GLOBAL, forwarding_rule_ref)
+    address = self._ResolveAddress(resources, args,
+                                   compute_flags.compute_scope.ScopeEnum.GLOBAL,
+                                   forwarding_rule_ref)
 
-    forwarding_rule = self.messages.ForwardingRule(
+    forwarding_rule = client.messages.ForwardingRule(
         description=args.description,
         name=forwarding_rule_ref.Name(),
         IPAddress=address,
@@ -102,33 +104,36 @@ class Create(utils.ForwardingRulesTargetMutator):
         target=target_ref.SelfLink())
     if args.load_balancing_scheme == 'INTERNAL':
       forwarding_rule.loadBalancingScheme = (
-          self.messages.ForwardingRule
+          client.messages.ForwardingRule
           .LoadBalancingSchemeValueValuesEnum.INTERNAL)
 
-    request = self.messages.ComputeGlobalForwardingRulesInsertRequest(
+    request = client.messages.ComputeGlobalForwardingRulesInsertRequest(
         forwardingRule=forwarding_rule,
-        project=self.project)
+        project=forwarding_rule_ref.project)
 
-    return [request]
+    return [(client.apitools_client.globalForwardingRules, 'Insert', request)]
 
-  def _CreateRegionalRequests(self, args, forwarding_rule_ref):
+  def _CreateRegionalRequests(self, client, resources, args,
+                              forwarding_rule_ref):
     """Create a regionally scoped request."""
-    target_ref, region_ref = self.GetRegionalTarget(args, forwarding_rule_ref)
+    target_ref, region_ref = utils.GetRegionalTarget(client, resources, args,
+                                                     forwarding_rule_ref)
     if not args.region and region_ref:
       args.region = region_ref
-    protocol = self.ConstructProtocol(args)
+    protocol = self.ConstructProtocol(client.messages, args)
 
-    address = self._ResolveAddress(
-        args, compute_flags.compute_scope.ScopeEnum.REGION, forwarding_rule_ref)
+    address = self._ResolveAddress(resources, args,
+                                   compute_flags.compute_scope.ScopeEnum.REGION,
+                                   forwarding_rule_ref)
 
-    forwarding_rule = self.messages.ForwardingRule(
+    forwarding_rule = client.messages.ForwardingRule(
         description=args.description,
         name=forwarding_rule_ref.Name(),
         IPAddress=address,
         IPProtocol=protocol)
     if args.load_balancing_scheme == 'INTERNAL':
       forwarding_rule.loadBalancingScheme = (
-          self.messages.ForwardingRule
+          client.messages.ForwardingRule
           .LoadBalancingSchemeValueValuesEnum.INTERNAL)
 
     if target_ref.Collection() == 'compute.regionBackendServices':
@@ -141,24 +146,24 @@ class Create(utils.ForwardingRulesTargetMutator):
         if not args.subnet_region:
           args.subnet_region = forwarding_rule_ref.region
         forwarding_rule.subnetwork = flags.SUBNET_ARG.ResolveAsResource(
-            args, self.resources).SelfLink()
+            args, resources).SelfLink()
       if args.network is not None:
         forwarding_rule.network = flags.NETWORK_ARG.ResolveAsResource(
-            args, self.resources).SelfLink()
+            args, resources).SelfLink()
     else:
       forwarding_rule.portRange = (
           _ResolvePortRange(args.port_range, args.ports))
       forwarding_rule.target = target_ref.SelfLink()
     if hasattr(args, 'service_label'):
       forwarding_rule.serviceLabel = args.service_label
-    request = self.messages.ComputeForwardingRulesInsertRequest(
+    request = client.messages.ComputeForwardingRulesInsertRequest(
         forwardingRule=forwarding_rule,
-        project=self.project,
+        project=forwarding_rule_ref.project,
         region=forwarding_rule_ref.region)
 
-    return [request]
+    return [(client.apitools_client.forwardingRules, 'Insert', request)]
 
-  def _ResolveAddress(self, args, scope, forwarding_rule_ref):
+  def _ResolveAddress(self, resources, args, scope, forwarding_rule_ref):
     # Address takes either an ip address or an address resource. If parsing as
     # an IP address fails, then we resolve as a resource.
     address = args.address
@@ -173,7 +178,7 @@ class Create(utils.ForwardingRulesTargetMutator):
             if forwarding_rule_ref.Collection() == 'compute.forwardingRules':
               args.address_region = forwarding_rule_ref.region
         address_ref = flags.ADDRESS_ARG.ResolveAsResource(
-            args, self.resources,
+            args, resources,
             default_scope=scope)
         address = address_ref.SelfLink()
 
@@ -191,25 +196,26 @@ class CreateBeta(Create):
     flags.AddAddressesAndIPVersions(parser, required=False)
     cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
-  def _CreateGlobalRequests(self, args, forwarding_rule_ref):
+  def _CreateGlobalRequests(self, client, resources, args, forwarding_rule_ref):
     """Create a globally scoped request."""
     port_range = _ResolvePortRange(args.port_range, args.ports)
     if not port_range:
       raise exceptions.ToolException(
           '[--ports] is required for global forwarding rules.')
-    target_ref = self.GetGlobalTarget(args)
-    protocol = self.ConstructProtocol(args)
+    target_ref = utils.GetGlobalTarget(resources, args)
+    protocol = self.ConstructProtocol(client.messages, args)
 
     if args.address is None or args.ip_version:
-      ip_version = self.messages.ForwardingRule.IpVersionValueValuesEnum(
+      ip_version = client.messages.ForwardingRule.IpVersionValueValuesEnum(
           args.ip_version or 'IPV4')
     else:
       ip_version = None
 
-    address = self._ResolveAddress(
-        args, compute_flags.compute_scope.ScopeEnum.GLOBAL, forwarding_rule_ref)
+    address = self._ResolveAddress(resources, args,
+                                   compute_flags.compute_scope.ScopeEnum.GLOBAL,
+                                   forwarding_rule_ref)
 
-    forwarding_rule = self.messages.ForwardingRule(
+    forwarding_rule = client.messages.ForwardingRule(
         description=args.description,
         name=forwarding_rule_ref.Name(),
         IPAddress=address,
@@ -219,14 +225,14 @@ class CreateBeta(Create):
         ipVersion=ip_version)
     if args.load_balancing_scheme == 'INTERNAL':
       forwarding_rule.loadBalancingScheme = (
-          self.messages.ForwardingRule
+          client.messages.ForwardingRule
           .LoadBalancingSchemeValueValuesEnum.INTERNAL)
 
-    request = self.messages.ComputeGlobalForwardingRulesInsertRequest(
+    request = client.messages.ComputeGlobalForwardingRulesInsertRequest(
         forwardingRule=forwarding_rule,
-        project=self.project)
+        project=forwarding_rule_ref.project)
 
-    return [request]
+    return [(client.apitools_client.globalForwardingRules, 'Insert', request)]
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -240,33 +246,34 @@ class CreateAlpha(Create):
     flags.AddAddressesAndIPVersions(parser, required=False)
     cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
-  def ConstructNetworkTier(self, args):
+  def ConstructNetworkTier(self, messages, args):
     if args.network_tier:
-      return self.messages.ForwardingRule.NetworkTierValueValuesEnum(
+      return messages.ForwardingRule.NetworkTierValueValuesEnum(
           args.network_tier)
     else:
       return
 
-  def _CreateGlobalRequests(self, args, forwarding_rule_ref):
+  def _CreateGlobalRequests(self, client, resources, args, forwarding_rule_ref):
     """Create a globally scoped request."""
     port_range = _ResolvePortRange(args.port_range, args.ports)
     if not port_range:
       raise exceptions.ToolException(
           '[--ports] is required for global forwarding rules.')
-    target_ref = self.GetGlobalTarget(args)
-    protocol = self.ConstructProtocol(args)
-    network_tier = self.ConstructNetworkTier(args)
+    target_ref = utils.GetGlobalTarget(resources, args)
+    protocol = self.ConstructProtocol(client.messages, args)
+    network_tier = self.ConstructNetworkTier(client.messages, args)
 
     if args.address is None or args.ip_version:
-      ip_version = self.messages.ForwardingRule.IpVersionValueValuesEnum(
+      ip_version = client.messages.ForwardingRule.IpVersionValueValuesEnum(
           args.ip_version or 'IPV4')
     else:
       ip_version = None
 
-    address = self._ResolveAddress(
-        args, compute_flags.compute_scope.ScopeEnum.GLOBAL, forwarding_rule_ref)
+    address = self._ResolveAddress(resources, args,
+                                   compute_flags.compute_scope.ScopeEnum.GLOBAL,
+                                   forwarding_rule_ref)
 
-    forwarding_rule = self.messages.ForwardingRule(
+    forwarding_rule = client.messages.ForwardingRule(
         description=args.description,
         name=forwarding_rule_ref.Name(),
         IPAddress=address,
@@ -277,27 +284,30 @@ class CreateAlpha(Create):
         networkTier=network_tier)
     if args.load_balancing_scheme == 'INTERNAL':
       forwarding_rule.loadBalancingScheme = (
-          self.messages.ForwardingRule
+          client.messages.ForwardingRule
           .LoadBalancingSchemeValueValuesEnum.INTERNAL)
 
-    request = self.messages.ComputeGlobalForwardingRulesInsertRequest(
+    request = client.messages.ComputeGlobalForwardingRulesInsertRequest(
         forwardingRule=forwarding_rule,
-        project=self.project)
+        project=forwarding_rule_ref.project)
 
-    return [request]
+    return [(client.apitools_client.globalForwardingRules, 'Insert', request)]
 
-  def _CreateRegionalRequests(self, args, forwarding_rule_ref):
+  def _CreateRegionalRequests(self, client, resources, args,
+                              forwarding_rule_ref):
     """Create a regionally scoped request."""
-    target_ref, region_ref = self.GetRegionalTarget(args, forwarding_rule_ref)
+    target_ref, region_ref = utils.GetRegionalTarget(client, resources, args,
+                                                     forwarding_rule_ref)
     if not args.region and region_ref:
       args.region = region_ref
-    protocol = self.ConstructProtocol(args)
-    network_tier = self.ConstructNetworkTier(args)
+    protocol = self.ConstructProtocol(client.messages, args)
+    network_tier = self.ConstructNetworkTier(client.messages, args)
 
-    address = self._ResolveAddress(
-        args, compute_flags.compute_scope.ScopeEnum.REGION, forwarding_rule_ref)
+    address = self._ResolveAddress(resources, args,
+                                   compute_flags.compute_scope.ScopeEnum.REGION,
+                                   forwarding_rule_ref)
 
-    forwarding_rule = self.messages.ForwardingRule(
+    forwarding_rule = client.messages.ForwardingRule(
         description=args.description,
         name=forwarding_rule_ref.Name(),
         IPAddress=address,
@@ -305,7 +315,7 @@ class CreateAlpha(Create):
         networkTier=network_tier)
     if args.load_balancing_scheme == 'INTERNAL':
       forwarding_rule.loadBalancingScheme = (
-          self.messages.ForwardingRule
+          client.messages.ForwardingRule
           .LoadBalancingSchemeValueValuesEnum.INTERNAL)
 
     if (target_ref.Collection() == 'compute.regionBackendServices'
@@ -323,22 +333,22 @@ class CreateAlpha(Create):
         if not args.subnet_region:
           args.subnet_region = forwarding_rule_ref.region
         forwarding_rule.subnetwork = flags.SUBNET_ARG.ResolveAsResource(
-            args, self.resources).SelfLink()
+            args, resources).SelfLink()
       if args.network is not None:
         forwarding_rule.network = flags.NETWORK_ARG.ResolveAsResource(
-            args, self.resources).SelfLink()
+            args, resources).SelfLink()
     else:
       forwarding_rule.portRange = (
           _ResolvePortRange(args.port_range, args.ports))
       forwarding_rule.target = target_ref.SelfLink()
     if hasattr(args, 'service_label'):
       forwarding_rule.serviceLabel = args.service_label
-    request = self.messages.ComputeForwardingRulesInsertRequest(
+    request = client.messages.ComputeForwardingRulesInsertRequest(
         forwardingRule=forwarding_rule,
-        project=self.project,
+        project=forwarding_rule_ref.project,
         region=forwarding_rule_ref.region)
 
-    return [request]
+    return [(client.apitools_client.forwardingRules, 'Insert', request)]
 
 
 Create.detailed_help = {

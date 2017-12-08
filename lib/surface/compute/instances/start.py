@@ -17,15 +17,14 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import csek_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import resources
 
 
 def _CommonArgs(parser):
   """Add parser arguments common to all tracks."""
-  instance_flags.INSTANCES_ARG.AddArgument(parser)
+  flags.INSTANCES_ARG.AddArgument(parser)
   csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
 
 
@@ -64,9 +63,9 @@ class Start(base.SilentCommand):
 
     csek_key_file = args.csek_key_file
     request_list = []
-    instance_refs = instance_flags.INSTANCES_ARG.ResolveAsResource(
-        args, holder.resources, scope_lister=flags.GetDefaultScopeLister(
-            client))
+    instance_refs = flags.INSTANCES_ARG.ResolveAsResource(
+        args, holder.resources,
+        scope_lister=flags.GetInstanceZoneScopeLister(client))
     if csek_key_file:
       instances = self.GetInstances(client, instance_refs)
     else:

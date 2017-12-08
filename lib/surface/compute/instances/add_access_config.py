@@ -16,8 +16,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags as compute_flags
-from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.command_lib.compute.instances import flags
 
 
 DETAILED_HELP = {
@@ -50,12 +49,12 @@ def _Args(parser, support_public_dns, support_network_tier):
       project and not be in use by another resource.
       """)
 
-  instance_flags.AddNetworkInterfaceArgs(parser)
+  flags.AddNetworkInterfaceArgs(parser)
   if support_public_dns:
-    instance_flags.AddPublicDnsArgs(parser, instance=False)
+    flags.AddPublicDnsArgs(parser, instance=False)
   if support_network_tier:
-    instance_flags.AddNetworkTierArgs(parser, instance=False)
-  instance_flags.INSTANCE_ARG.AddArgument(parser)
+    flags.AddNetworkTierArgs(parser, instance=False)
+  flags.INSTANCE_ARG.AddArgument(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
@@ -76,10 +75,10 @@ class AddAccessConfigInstances(base.SilentCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
+    instance_ref = flags.INSTANCE_ARG.ResolveAsResource(
         args,
         holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
+        scope_lister=flags.GetInstanceZoneScopeLister(client))
 
     access_config = client.messages.AccessConfig(
         name=args.access_config_name,
@@ -87,7 +86,7 @@ class AddAccessConfigInstances(base.SilentCommand):
         type=client.messages.AccessConfig.TypeValueValuesEnum.ONE_TO_ONE_NAT)
 
     if self._support_public_dns:
-      instance_flags.ValidatePublicDnsFlags(args)
+      flags.ValidatePublicDnsFlags(args)
 
       if args.no_public_dns is True:
         access_config.setPublicDns = False

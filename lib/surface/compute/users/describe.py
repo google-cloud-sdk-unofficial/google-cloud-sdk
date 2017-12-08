@@ -13,66 +13,51 @@
 # limitations under the License.
 """Command for describing users."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.users import utils as user_utils
 from googlecloudsdk.command_lib.util import gaia
 from googlecloudsdk.core import properties
 
 
-class Describe(base_classes.BaseAsyncMutator):
+class Describe(base.DescribeCommand):
   """Describe a Google Compute Engine user.
 
   *{command}* displays all data associated with a Google Compute
   Engine user in a project.
+
+  ## EXAMPLES
+  To describe a user, run:
+
+    $ {command} example-user
+
+  To describe the default user mapped from the currently authenticated
+  Google account email, run:
+
+    $ {command}
   """
 
   @staticmethod
   def Args(parser):
     user_utils.AddUserArgument(parser, 'describe')
 
-  @property
-  def service(self):
-    return self.clouduseraccounts.users
-
-  @property
-  def method(self):
-    return 'Get'
-
-  @property
-  def resource_type(self):
-    return 'users'
-
-  @property
-  def messages(self):
-    return self.clouduseraccounts.MESSAGES_MODULE
-
-  def CreateRequests(self, args):
-    """Returns a list of requests necessary for describing users."""
+  def Run(self, args):
+    """Issues requests necessary for describing users."""
+    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    holder = base_classes.ComputeUserAccountsApiHolder(self.ReleaseTrack())
+    client = holder.client
 
     user = args.name
     if not user:
-      user = gaia.GetDefaultAccountName(self.http)
+      user = gaia.GetDefaultAccountName(
+          compute_holder.client.apitools_client.http)
 
-    user_ref = self.clouduseraccounts_resources.Parse(
+    user_ref = holder.resources.Parse(
         user,
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='clouduseraccounts.users')
 
-    request = self.messages.ClouduseraccountsUsersGetRequest(
-        project=self.project,
+    request = client.MESSAGES_MODULE.ClouduseraccountsUsersGetRequest(
+        project=user_ref.project,
         user=user_ref.Name())
 
-    return [request]
-
-
-Describe.detailed_help = {
-    'EXAMPLES': """\
-        To describe a user, run:
-
-          $ {command} example-user
-
-        To describe the default user mapped from the currently authenticated
-        Google account email, run:
-
-          $ {command}
-        """,
-}
+    return compute_holder.client.MakeRequests([(client.users, 'Get', request)])

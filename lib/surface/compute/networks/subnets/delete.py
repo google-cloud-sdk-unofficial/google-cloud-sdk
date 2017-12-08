@@ -14,29 +14,42 @@
 """Command for deleting subnetworks."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.networks.subnets import flags
 
 
-class Delete(base_classes.RegionalDeleter):
-  """Delete Google Compute Engine subnetworks."""
+class Delete(base.DeleteCommand):
+  """Delete Google Compute Engine subnetworks.
+
+  *{command}* deletes one or more Google Compute Engine
+  subnetworks. Subnetworks can only be deleted when no other resources
+  (e.g., virtual machine instances) refer to them.
+  """
+
+  SUBNET_ARG = None
 
   @staticmethod
   def Args(parser):
-    base_classes.RegionalDeleter.Args(parser, 'compute.subnetworks')
+    Delete.SUBNET_ARG = flags.SubnetworkArgument(plural=True)
+    Delete.SUBNET_ARG.AddArgument(parser, operation_type='delete')
 
-  @property
-  def service(self):
-    return self.compute.subnetworks
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'subnetworks'
+    subnet_refs = Delete.SUBNET_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+    utils.PromptForDeletion(subnet_refs, 'region')
 
-Delete.detailed_help = {
-    'brief': 'Delete Google Compute Engine subnetworks',
-    'DESCRIPTION': """\
-        *{command}* deletes one or more Google Compute Engine
-        subnetworks. Subnetworks can only be deleted when no other resources
-        (e.g., virtual machine instances) refer to them.
-        """,
-}
+    requests = []
+    for subnet_ref in subnet_refs:
+      requests.append((client.apitools_client.subnetworks, 'Delete',
+                       client.messages.ComputeSubnetworksDeleteRequest(
+                           **subnet_ref.AsDict())))
+
+    return client.MakeRequests(requests)

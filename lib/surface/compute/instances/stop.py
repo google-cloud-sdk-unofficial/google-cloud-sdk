@@ -16,8 +16,7 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.command_lib.compute.instances import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
@@ -26,7 +25,7 @@ class Stop(base.SilentCommand):
 
   @staticmethod
   def Args(parser):
-    instance_flags.INSTANCES_ARG.AddArgument(parser)
+    flags.INSTANCES_ARG.AddArgument(parser)
     parser.add_argument(
         '--discard-local-ssd',
         action='store_true',
@@ -42,9 +41,9 @@ class Stop(base.SilentCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    instance_refs = instance_flags.INSTANCES_ARG.ResolveAsResource(
-        args, holder.resources, scope_lister=flags.GetDefaultScopeLister(
-            client))
+    instance_refs = flags.INSTANCES_ARG.ResolveAsResource(
+        args, holder.resources,
+        scope_lister=flags.GetInstanceZoneScopeLister(client))
     return client.MakeRequests(
         [(client.apitools_client.instances, 'Stop', self._CreateStopRequest(
             client, instance_ref, args.discard_local_ssd))

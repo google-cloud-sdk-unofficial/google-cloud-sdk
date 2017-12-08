@@ -18,8 +18,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.command_lib.compute.instances import flags
 
 
 class DeleteAccessConfig(base.SilentCommand):
@@ -31,7 +30,7 @@ class DeleteAccessConfig(base.SilentCommand):
 
   @staticmethod
   def Args(parser):
-    instance_flags.INSTANCE_ARG.AddArgument(parser)
+    flags.INSTANCE_ARG.AddArgument(parser)
     parser.add_argument(
         '--access-config-name',
         default=constants.DEFAULT_ACCESS_CONFIG_NAME,
@@ -54,9 +53,9 @@ class DeleteAccessConfig(base.SilentCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
-        args, holder.resources, scope_lister=flags.GetDefaultScopeLister(
-            client))
+    instance_ref = flags.INSTANCE_ARG.ResolveAsResource(
+        args, holder.resources,
+        scope_lister=flags.GetInstanceZoneScopeLister(client))
 
     request = client.messages.ComputeInstancesDeleteAccessConfigRequest(
         accessConfig=args.access_config_name,

@@ -16,8 +16,7 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.command_lib.compute.instances import flags
 
 
 class Reset(base.SilentCommand):
@@ -29,15 +28,15 @@ class Reset(base.SilentCommand):
 
   @staticmethod
   def Args(parser):
-    instance_flags.INSTANCES_ARG.AddArgument(parser)
+    flags.INSTANCES_ARG.AddArgument(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    instance_refs = instance_flags.INSTANCES_ARG.ResolveAsResource(
-        args, holder.resources, scope_lister=flags.GetDefaultScopeLister(
-            client))
+    instance_refs = flags.INSTANCES_ARG.ResolveAsResource(
+        args, holder.resources,
+        scope_lister=flags.GetInstanceZoneScopeLister(client))
     request_list = []
     for instance_ref in instance_refs:
       request = client.messages.ComputeInstancesResetRequest(

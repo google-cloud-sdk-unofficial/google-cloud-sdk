@@ -13,29 +13,42 @@
 # limitations under the License.
 """Command for deleting firewall rules."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.firewall_rules import flags
 
 
-class Delete(base_classes.GlobalDeleter):
-  """Delete Google Compute Engine firewall rules."""
+class Delete(base.DeleteCommand):
+  """Delete Google Compute Engine firewall rules.
+
+  *{command}* deletes one or more Google Compute Engine firewall
+  rules.
+  """
+
+  FIREWALL_ARG = None
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalDeleter.Args(parser, 'compute.firewalls',
-                                    command='compute.firewall-rules')
+    Delete.FIREWALL_ARG = flags.FirewallRuleArgument(
+        plural=True, operation_type='delete')
+    Delete.FIREWALL_ARG.AddArgument(parser, operation_type='delete')
 
-  @property
-  def service(self):
-    return self.compute.firewalls
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'firewalls'
+    firewall_refs = Delete.FIREWALL_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+    utils.PromptForDeletion(firewall_refs)
 
-Delete.detailed_help = {
-    'brief': 'Delete Google Compute Engine firewall rules',
-    'DESCRIPTION': """\
-        *{command}* deletes one or more Google Compute Engine firewall
-         rules.
-        """,
-}
+    requests = []
+    for firewall_ref in firewall_refs:
+      requests.append((client.apitools_client.firewalls, 'Delete',
+                       client.messages.ComputeFirewallsDeleteRequest(
+                           **firewall_ref.AsDict())))
+
+    return client.MakeRequests(requests)

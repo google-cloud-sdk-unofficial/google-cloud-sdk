@@ -14,11 +14,24 @@
 """Command for deleting groups."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-class Delete(base_classes.BaseAsyncMutator):
-  """Delete Google Compute Engine groups."""
+class Delete(base.Command):
+  """Delete Google Compute Engine groups.
+
+  *{command}* deletes one or more Google Compute Engine groups.
+
+  ## EXAMPLES
+  To delete a group, run:
+
+    $ {command} example-group
+
+  To delete multiple groups, run:
+
+    $ {command} example-group-1 example-group-2
+  """
 
   @staticmethod
   def Args(parser):
@@ -28,24 +41,12 @@ class Delete(base_classes.BaseAsyncMutator):
         nargs='+',
         help='The names of the groups to delete.')
 
-  @property
-  def service(self):
-    return self.clouduseraccounts.groups
+  def Run(self, args):
+    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    holder = base_classes.ComputeUserAccountsApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'Delete'
-
-  @property
-  def resource_type(self):
-    return 'groups'
-
-  @property
-  def messages(self):
-    return self.clouduseraccounts.MESSAGES_MODULE
-
-  def CreateRequests(self, args):
-    group_refs = [self.clouduseraccounts_resources.Parse(
+    group_refs = [holder.resources.Parse(
         group,
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='clouduseraccounts.groups') for group in args.names]
@@ -54,25 +55,9 @@ class Delete(base_classes.BaseAsyncMutator):
 
     requests = []
     for group_ref in group_refs:
-      request = self.messages.ClouduseraccountsGroupsDeleteRequest(
-          project=self.project,
+      request = client.MESSAGES_MODULE.ClouduseraccountsGroupsDeleteRequest(
+          project=group_ref.project,
           groupName=group_ref.Name())
-      requests.append(request)
+      requests.append((client.groups, 'Delete', request))
 
-    return requests
-
-Delete.detailed_help = {
-    'brief': 'Delete Google Compute Engine groups',
-    'DESCRIPTION': """\
-        *{command}* deletes one or more Google Compute Engine groups.
-        """,
-    'EXAMPLES': """\
-        To delete a group, run:
-
-          $ {command} example-group
-
-        To delete multiple groups, run:
-
-          $ {command} example-group-1 example-group-2
-        """,
-}
+    return compute_holder.client.MakeRequests(requests)

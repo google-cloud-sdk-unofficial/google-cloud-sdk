@@ -18,7 +18,9 @@ gcloud container node\-pools delete \- delete an existing node pool in a running
 .SH "DESCRIPTION"
 
 \fBgcloud container node\-pools delete\fR deletes a node pool from a Google
-Container Engine cluster.
+Container Engine cluster. This command does not gracefully drain the nodes prior
+to deleting them. Use "kubectl drain NODE_NAME" to drain each node to have
+containers running on these nodes terminate gracefully.
 
 
 

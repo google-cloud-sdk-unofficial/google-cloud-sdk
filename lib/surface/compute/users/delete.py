@@ -17,11 +17,24 @@ from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute.users import client as users_client
+from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-class Delete(base_classes.BaseAsyncMutator):
-  """Delete Google Compute Engine users."""
+class Delete(base.DeleteCommand):
+  """Delete Google Compute Engine users.
+
+  *{command}* deletes one or more Google Compute Engine users.
+
+  ## EXAMPLES
+  To delete one or more users by name, run:
+
+    $ {command} example-user-1 example-user-2
+
+  To delete all users for one or more owners, run:
+
+    $ {command} example-owner-1@gmail.com example-owner-2@gmail.com --owners
+  """
 
   @staticmethod
   def Args(parser):
@@ -37,34 +50,19 @@ class Delete(base_classes.BaseAsyncMutator):
         nargs='+',
         help='The names of the users to delete.')
 
-  @property
-  def service(self):
-    return self.clouduseraccounts.users
-
-  @property
-  def method(self):
-    return 'Delete'
-
-  @property
-  def resource_type(self):
-    return 'users'
-
-  @property
-  def messages(self):
-    return self.clouduseraccounts.MESSAGES_MODULE
-
-  def GetOwnerAccounts(self, owners):
+  def GetOwnerAccounts(self, compute_client, client, owners):
     """Look up all users on the current project owned by the list of owners."""
     requests = []
     for owner in owners:
-      requests += lister.FormatListRequests(self.service, self.project,
-                                            None, None,
-                                            'owner eq ' + owner)
+      requests += lister.FormatListRequests(
+          client.users,
+          properties.VALUES.core.project.GetOrFail(), None, None,
+          'owner eq ' + owner)
     errors = []
     responses = request_helper.MakeRequests(
         requests=requests,
-        http=self.http,
-        batch_url=self.batch_url,
+        http=compute_client.apitools_client.http,
+        batch_url=compute_client.batch_url,
         errors=errors)
 
     if errors:
@@ -72,14 +70,18 @@ class Delete(base_classes.BaseAsyncMutator):
           'Could not get users for owners:'))
     return [response.name for response in responses]
 
-  def CreateRequests(self, args):
+  def Run(self, args):
+    """Issues requests necessary for deleting users."""
+    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    holder = base_classes.ComputeUserAccountsApiHolder(self.ReleaseTrack())
+    client = holder.client
 
     if args.owners:
-      names = self.GetOwnerAccounts(args.names)
+      names = self.GetOwnerAccounts(compute_holder.client, client, args.names)
     else:
       names = args.names
 
-    user_refs = [self.clouduseraccounts_resources.Parse(
+    user_refs = [holder.resources.Parse(
         user,
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='clouduseraccounts.users') for user in names]
@@ -88,24 +90,9 @@ class Delete(base_classes.BaseAsyncMutator):
 
     requests = []
     for user_ref in user_refs:
-      request = self.messages.ClouduseraccountsUsersDeleteRequest(
-          project=self.project,
+      request = client.MESSAGES_MODULE.ClouduseraccountsUsersDeleteRequest(
+          project=user_ref.project,
           user=user_ref.Name())
-      requests.append(request)
-    return requests
+      requests.append((client.users, 'Delete', request))
 
-Delete.detailed_help = {
-    'brief': 'Delete Google Compute Engine users',
-    'DESCRIPTION': """\
-        *{command}* deletes one or more Google Compute Engine users.
-        """,
-    'EXAMPLES': """\
-        To delete one or more users by name, run:
-
-          $ {command} example-user-1 example-user-2
-
-        To delete all users for one or more owners, run:
-
-          $ {command} example-owner-1@gmail.com example-owner-2@gmail.com --owners
-        """,
-}
+    return compute_holder.client.MakeRequests(requests)

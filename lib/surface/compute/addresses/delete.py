@@ -15,13 +15,17 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.addresses import flags
 
 
-class Delete(base_classes.BaseAsyncMutator):
-  """Release reserved IP addresses."""
+class Delete(base.DeleteCommand):
+  """Release reserved IP addresses.
+
+  *{command}* releases one or more Google Compute Engine IP addresses.
+  """
 
   ADDRESSES_ARG = None
 
@@ -30,71 +34,34 @@ class Delete(base_classes.BaseAsyncMutator):
     cls.ADDRESSES_ARG = flags.AddressArgument(required=True)
     cls.ADDRESSES_ARG.AddArgument(parser)
 
-  @property
-  def service(self):
-    if self.global_request:
-      return self.compute.globalAddresses
-    else:
-      return self.compute.addresses
+  def Run(self, args):
+    """Issues requests necessary to delete Addresses."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'addresses'
-
-  @property
-  def method(self):
-    return 'Delete'
-
-  def CreateRequests(self, args):
-    """Overrides."""
     address_refs = self.ADDRESSES_ARG.ResolveAsResource(
-        args, self.resources,
+        args, holder.resources,
         default_scope=compute_scope.ScopeEnum.REGION,
-        scope_lister=compute_flags.GetDefaultScopeLister(
-            self.compute_client, self.project))
-
-    self.global_request = getattr(address_refs[0], 'region', None) is None
-
-    if self.global_request:
-      return self._CreateGlobalRequests(address_refs)
-
-    return self._CreateRegionalRequests(address_refs)
-
-  def _CreateGlobalRequests(self, address_refs):
-    """Create a globally scoped request."""
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
     # TODO(b/36056502): In the future we should support concurrently deleting
     # both region and global addresses
     utils.PromptForDeletion(address_refs)
     requests = []
     for address_ref in address_refs:
-      request = self.messages.ComputeGlobalAddressesDeleteRequest(
-          address=address_ref.Name(),
-          project=self.project,
-      )
-      requests.append(request)
+      if address_ref.Collection() == 'compute.globalAddresses':
+        request = client.messages.ComputeGlobalAddressesDeleteRequest(
+            address=address_ref.Name(),
+            project=address_ref.project,
+        )
+        requests.append((client.apitools_client.globalAddresses, 'Delete',
+                         request))
+      elif address_ref.Collection() == 'compute.addresses':
+        request = client.messages.ComputeAddressesDeleteRequest(
+            address=address_ref.Name(),
+            project=address_ref.project,
+            region=address_ref.region,
+        )
+        requests.append((client.apitools_client.addresses, 'Delete', request))
 
-    return requests
-
-  def _CreateRegionalRequests(self, address_refs):
-    """Create a regionally scoped request."""
-
-    utils.PromptForDeletion(address_refs, scope_name='region')
-    requests = []
-    for address_ref in address_refs:
-      request = self.messages.ComputeAddressesDeleteRequest(
-          address=address_ref.Name(),
-          project=self.project,
-          region=address_ref.region,
-      )
-      requests.append(request)
-
-    return requests
-
-
-Delete.detailed_help = {
-    'brief': 'Release reserved IP addresses',
-    'DESCRIPTION': """\
-        *{command}* releases one or more Google Compute Engine IP addresses.
-        """,
-}
+    return client.MakeRequests(requests)

@@ -14,7 +14,6 @@
 """Command for describing instances."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instances import flags
 
 
@@ -36,7 +35,7 @@ class Describe(base.DescribeCommand):
     instance_ref = flags.INSTANCE_ARG.ResolveAsResource(
         args,
         holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
+        scope_lister=flags.GetInstanceZoneScopeLister(client))
 
     request = client.messages.ComputeInstancesGetRequest(
         **instance_ref.AsDict())

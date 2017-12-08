@@ -11,7 +11,7 @@ gcloud compute instances add\-metadata \- add or update instance metadata
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances add\-metadata\fR \fINAME\fR [\fB\-\-metadata\fR=\fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-metadata\-from\-file\fR=\fIKEY\fR=\fILOCAL_FILE_PATH\fR,[\fIKEY\fR=\fILOCAL_FILE_PATH\fR,...]] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
+\f5gcloud compute instances add\-metadata\fR \fIINSTANCE_NAME\fR [\fB\-\-metadata\fR=\fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-metadata\-from\-file\fR=\fIKEY\fR=\fILOCAL_FILE_PATH\fR,[\fIKEY\fR=\fILOCAL_FILE_PATH\fR,...]] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -43,7 +43,7 @@ https://cloud.google.com/compute/docs/storing\-retrieving\-metadata#querying_cus
 
 .RS 2m
 .TP 2m
-\fINAME\fR
+\fIINSTANCE_NAME\fR
 The name of the instance.
 
 
@@ -99,8 +99,10 @@ At least one of [\-\-metadata] or [\-\-metadata\-from\-file] is required.
 .RS 2m
 .TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
-The zone of the instance to set metadata on. If not specified, you will be
-prompted to select a zone.
+The zone of the instance to set metadata on. If not specified, you may be
+prompted to select a zone. \f5gcloud\fR will attempt to identify the zone by
+searching for resources in your project. If the zone cannot be determined, you
+will then be prompted with all Google Cloud Platform zones.
 
 To avoid prompting when this flag is omitted, you can set the
 \f5\fIcompute/zone\fR\fR property:

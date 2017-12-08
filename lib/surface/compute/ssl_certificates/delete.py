@@ -13,25 +13,42 @@
 # limitations under the License.
 """Command for deleting SSL certificates."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.ssl_certificates import flags
 
 
-class Delete(base_classes.GlobalDeleter):
-  """Delete Google Compute Engine SSL certificates."""
+class Delete(base.DeleteCommand):
+  """Delete Google Compute Engine SSL certificates.
 
-  @property
-  def service(self):
-    return self.compute.sslCertificates
+  *{command}* deletes one or more Google Compute Engine SSL certificates.
+  SSL certificates can only be deleted when no other resources (e.g.,
+  target HTTPS proxies) refer to them.
+  """
 
-  @property
-  def resource_type(self):
-    return 'sslCertificates'
+  SSL_CERTIFICATE_ARG = None
 
+  @staticmethod
+  def Args(parser):
+    Delete.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument(plural=True)
+    Delete.SSL_CERTIFICATE_ARG.AddArgument(parser, operation_type='delete')
 
-Delete.detailed_help = {
-    'brief': 'Delete Google Compute Engine SSL certificates',
-    'DESCRIPTION': """\
-        *{command}* deletes one or more Google Compute Engine SSL certificates.
-        SSL certificates can only be deleted when no other resources (e.g.,
-        target HTTPS proxies) refer to them.
-        """,
-}
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    ssl_certificate_refs = Delete.SSL_CERTIFICATE_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+
+    utils.PromptForDeletion(ssl_certificate_refs)
+
+    requests = []
+    for ssl_certificate_ref in ssl_certificate_refs:
+      requests.append((client.apitools_client.sslCertificates, 'Delete',
+                       client.messages.ComputeSslCertificatesDeleteRequest(
+                           **ssl_certificate_ref.AsDict())))
+
+    return client.MakeRequests(requests)

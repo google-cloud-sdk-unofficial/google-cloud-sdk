@@ -141,10 +141,10 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCommand):
                  'fails, please try again. If the problem persists, try '
                  'updating gcloud and connecting again.'
                  .format(SERIAL_PORT_GATEWAY, HOST_KEY_URL))
-
     instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
         [remote.host], compute_scope.ScopeEnum.ZONE, args.zone, self.resources,
-        scope_lister=flags.GetDefaultScopeLister(self.compute_client))[0]
+        scope_lister=instance_flags.GetInstanceZoneScopeLister(
+            self.compute_client))[0]
     instance = self.GetInstance(instance_ref)
 
     # Determine the serial user, host tuple (remote)

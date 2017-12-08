@@ -639,6 +639,10 @@ class DefaultModel(Model, Servable):
     preprocess_fn = None
     return cls(client, preprocess_fn)
 
+  @property
+  def signature(self):
+    return self._client.signature
+
 
 def decode_base64(data):
   if isinstance(data, list):
@@ -652,7 +656,7 @@ def decode_base64(data):
     return data
 
 
-def encode_base64(instances, type_map):
+def encode_base64(instances, outputs_map):
   """Encodes binary data in a JSON-friendly way."""
   if not isinstance(instances, list):
     raise ValueError("only lists allowed in output; got %s" %
@@ -663,11 +667,12 @@ def encode_base64(instances, type_map):
 
   first_value = instances[0]
   if not isinstance(first_value, dict):
-    if len(type_map) != 1:
+    if len(outputs_map) != 1:
       return ValueError("The first instance was a string, but there are "
                         "more than one output tensor, so dict expected.")
     # Only string tensors whose name ends in _bytes needs encoding.
-    tensor_name, tensor_type = type_map.items()[0]
+    tensor_name, tensor_info = outputs_map.items()[0]
+    tensor_type = tensor_info.dtype
     if tensor_type == dtypes.string and tensor_name.endswith("_bytes"):
       instances = _encode_str_tensor(instances)
     return instances
@@ -675,7 +680,8 @@ def encode_base64(instances, type_map):
   encoded_data = []
   for instance in instances:
     encoded_instance = {}
-    for tensor_name, tensor_type in type_map.iteritems():
+    for tensor_name, tensor_info in outputs_map.iteritems():
+      tensor_type = tensor_info.dtype
       tensor_data = instance[tensor_name]
       if tensor_type == dtypes.string and tensor_name.endswith("_bytes"):
         tensor_data = _encode_str_tensor(tensor_data)
@@ -697,5 +703,5 @@ def local_predict(model_dir=None, instances=None):
   model = create_model(client, model_dir)
   _, predictions = model.predict(instances)
   predictions = list(predictions)
-  predictions = encode_base64(predictions, model.outputs_type_map())
+  predictions = encode_base64(predictions, model.signature.outputs)
   return {"predictions": predictions}

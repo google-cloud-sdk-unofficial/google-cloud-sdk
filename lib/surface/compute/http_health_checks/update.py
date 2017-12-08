@@ -15,8 +15,10 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.http_health_checks import flags
+from googlecloudsdk.core import log
 
 THRESHOLD_UPPER_BOUND = 10
 THRESHOLD_LOWER_BOUND = 1
@@ -26,8 +28,13 @@ CHECK_INTERVAL_UPPER_BOUND_SEC = 300
 CHECK_INTERVAL_LOWER_BOUND_SEC = 1
 
 
-class Update(base_classes.ReadWriteCommand):
-  """Update an HTTP health check."""
+class Update(base.UpdateCommand):
+  """Update an HTTP health check.
+
+  *{command}* is used to update an existing HTTP health check. Only
+  arguments passed in will be updated on the health check. Other
+  attributes will remain unaffected.
+  """
 
   HTTP_HEALTH_CHECKS_ARG = None
 
@@ -110,28 +117,28 @@ class Update(base_classes.ReadWriteCommand):
   def resource_type(self):
     return 'httpHealthChecks'
 
-  def CreateReference(self, args):
+  def CreateReference(self, resources, args):
     return self.HTTP_HEALTH_CHECKS_ARG.ResolveAsResource(
-        args, self.resources)
+        args, resources)
 
-  def GetGetRequest(self, args):
+  def GetGetRequest(self, client, http_health_check_ref):
     """Returns a request for fetching the existing HTTP health check."""
-    return (self.service,
+    return (client.apitools_client.httpHealthChecks,
             'Get',
-            self.messages.ComputeHttpHealthChecksGetRequest(
-                httpHealthCheck=self.ref.Name(),
-                project=self.project))
+            client.messages.ComputeHttpHealthChecksGetRequest(
+                httpHealthCheck=http_health_check_ref.Name(),
+                project=http_health_check_ref.project))
 
-  def GetSetRequest(self, args, replacement, existing):
+  def GetSetRequest(self, client, http_health_check_ref, replacement):
     """Returns a request for updated the HTTP health check."""
-    return (self.service,
+    return (client.apitools_client.httpHealthChecks,
             'Update',
-            self.messages.ComputeHttpHealthChecksUpdateRequest(
-                httpHealthCheck=self.ref.Name(),
+            client.messages.ComputeHttpHealthChecksUpdateRequest(
+                httpHealthCheck=http_health_check_ref.Name(),
                 httpHealthCheckResource=replacement,
-                project=self.project))
+                project=http_health_check_ref.project))
 
-  def Modify(self, args, existing_check):
+  def Modify(self, client, args, existing_check):
     """Returns a modified HttpHealthCheck message."""
     # Description and Host are the only attributes that can be cleared by
     # passing in an empty string (but we don't want to set it to an empty
@@ -150,7 +157,7 @@ class Update(base_classes.ReadWriteCommand):
     else:
       host = None
 
-    new_health_check = self.messages.HttpHealthCheck(
+    new_health_check = client.messages.HttpHealthCheck(
         name=existing_check.name,
         host=host,
         port=args.port or existing_check.port,
@@ -167,6 +174,9 @@ class Update(base_classes.ReadWriteCommand):
     return new_health_check
 
   def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
     if (args.check_interval is not None
         and (args.check_interval < CHECK_INTERVAL_LOWER_BOUND_SEC
              or args.check_interval > CHECK_INTERVAL_UPPER_BOUND_SEC)):
@@ -211,14 +221,21 @@ class Update(base_classes.ReadWriteCommand):
     if args.description is None and args.host is None and args_unset:
       raise exceptions.ToolException('At least one property must be modified.')
 
-    return super(Update, self).Run(args)
+    http_health_check_ref = self.CreateReference(holder.resources, args)
+    get_request = self.GetGetRequest(client, http_health_check_ref)
 
+    objects = client.MakeRequests([get_request])
 
-Update.detailed_help = {
-    'brief': ('Update an HTTP health check'),
-    'DESCRIPTION': """\
-        *{command}* is used to update an existing HTTP health check. Only
-        arguments passed in will be updated on the health check. Other
-        attributes will remain unaffected.
-        """,
-}
+    new_object = self.Modify(client, args, objects[0])
+
+    # If existing object is equal to the proposed object or if
+    # Modify() returns None, then there is no work to be done, so we
+    # print the resource and return.
+    if objects[0] == new_object:
+      log.status.Print(
+          'No change requested; skipping update for [{0}].'.format(
+              objects[0].name))
+      return objects
+
+    return client.MakeRequests(
+        [self.GetSetRequest(client, http_health_check_ref, new_object)])

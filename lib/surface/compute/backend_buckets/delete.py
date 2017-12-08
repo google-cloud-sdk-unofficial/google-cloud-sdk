@@ -13,22 +13,40 @@
 # limitations under the License.
 """Command for deleting backend buckets."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.backend_buckets import flags
 
 
-class Delete(base_classes.GlobalDeleter):
+class Delete(base.DeleteCommand):
   """Delete backend buckets.
 
-    *{command}* deletes one or more backend buckets.
+  *{command}* deletes one or more backend buckets.
   """
+
+  BACKEND_BUCKET_ARG = None
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalDeleter.Args(parser, 'compute.backendBuckets')
+    Delete.BACKEND_BUCKET_ARG = flags.BackendBucketArgument(plural=True)
+    Delete.BACKEND_BUCKET_ARG.AddArgument(parser, operation_type='delete')
 
-  @property
-  def service(self):
-    return self.compute.backendBuckets
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'backendBuckets'
+    backend_bucket_refs = Delete.BACKEND_BUCKET_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+
+    utils.PromptForDeletion(backend_bucket_refs)
+
+    requests = []
+    for backend_bucket_ref in backend_bucket_refs:
+      requests.append((client.apitools_client.backendBuckets, 'Delete',
+                       client.messages.ComputeBackendBucketsDeleteRequest(
+                           **backend_bucket_ref.AsDict())))
+
+    return client.MakeRequests(requests)

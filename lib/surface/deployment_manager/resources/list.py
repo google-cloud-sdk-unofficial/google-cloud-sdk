@@ -49,9 +49,15 @@ class List(base.ListCommand):
           allowed.
     """
     dm_v2_util.SIMPLE_LIST_FLAG.AddToParser(parser)
-
-  def Collection(self):
-    return 'deploymentmanager.resources'
+    parser.display_info.AddFormat("""
+          table(
+            name,
+            type,
+            update.state.yesno(no="COMPLETED"),
+            update.error.errors.group(code),
+            update.intent
+          )
+    """)
 
   def Run(self, args):
     """Run 'resources list'.

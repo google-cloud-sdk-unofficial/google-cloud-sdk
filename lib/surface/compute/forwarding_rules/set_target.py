@@ -13,6 +13,7 @@
 # limitations under the License.
 """Command for modifying the target of forwarding rules."""
 
+from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import forwarding_rules_utils as utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
@@ -20,7 +21,7 @@ from googlecloudsdk.command_lib.compute.forwarding_rules import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Set(utils.ForwardingRulesTargetMutator):
+class Set(base.UpdateCommand):
   """Modify a forwarding rule to direct network traffic to a new target."""
 
   FORWARDING_RULE_ARG = None
@@ -31,53 +32,56 @@ class Set(utils.ForwardingRulesTargetMutator):
     flags.AddUpdateArgs(parser, include_beta=False)
     cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
-  @property
-  def method(self):
-    return 'SetTarget'
+  def Run(self, args):
+    """Issues requests necessary to set target on Forwarding Rule."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  def CreateRequests(self, args):
-    """Overrides."""
     forwarding_rule_ref = self.FORWARDING_RULE_ARG.ResolveAsResource(
         args,
-        self.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(self.compute_client,
-                                                         self.project))
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-    self.global_request = getattr(forwarding_rule_ref, 'region', None) is None
-    if self.global_request:
-      return self.CreateGlobalRequests(forwarding_rule_ref, args)
-    else:
-      return self.CreateRegionalRequests(forwarding_rule_ref, args)
+    if forwarding_rule_ref.Collection() == 'compute.globalForwardingRules':
+      requests = self.CreateGlobalRequests(client, holder.resources,
+                                           forwarding_rule_ref, args)
+    elif forwarding_rule_ref.Collection() == 'compute.forwardingRules':
+      requests = self.CreateRegionalRequests(client, holder.resources,
+                                             forwarding_rule_ref, args)
 
-  def CreateGlobalRequests(self, forwarding_rule_ref, args):
+    return client.MakeRequests(requests)
+
+  def CreateGlobalRequests(self, client, resources, forwarding_rule_ref, args):
     """Create a globally scoped request."""
-    target_ref = self.GetGlobalTarget(args)
+    target_ref = utils.GetGlobalTarget(resources, args)
 
-    request = self.messages.ComputeGlobalForwardingRulesSetTargetRequest(
+    request = client.messages.ComputeGlobalForwardingRulesSetTargetRequest(
         forwardingRule=forwarding_rule_ref.Name(),
-        project=self.project,
-        targetReference=self.messages.TargetReference(
+        project=forwarding_rule_ref.project,
+        targetReference=client.messages.TargetReference(
             target=target_ref.SelfLink(),
         ),
     )
 
-    return [request]
+    return [(client.apitools_client.globalForwardingRules, 'SetTarget',
+             request)]
 
-  def CreateRegionalRequests(self, forwarding_rule_ref, args):
+  def CreateRegionalRequests(self, client, resources, forwarding_rule_ref,
+                             args):
     """Create a regionally scoped request."""
-    target_ref, _ = self.GetRegionalTarget(
-        args, forwarding_rule_ref=forwarding_rule_ref)
+    target_ref, _ = utils.GetRegionalTarget(
+        client, resources, args, forwarding_rule_ref=forwarding_rule_ref)
 
-    request = self.messages.ComputeForwardingRulesSetTargetRequest(
+    request = client.messages.ComputeForwardingRulesSetTargetRequest(
         forwardingRule=forwarding_rule_ref.Name(),
-        project=self.project,
+        project=forwarding_rule_ref.project,
         region=forwarding_rule_ref.region,
-        targetReference=self.messages.TargetReference(
+        targetReference=client.messages.TargetReference(
             target=target_ref.SelfLink(),
         ),
     )
 
-    return [request]
+    return [(client.apitools_client.forwardingRules, 'SetTarget', request)]
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -103,8 +107,6 @@ class SetAlpha(Set):
 
 
 Set.detailed_help = {
-    'brief': ('Modify a forwarding rule to direct network traffic to a new '
-              'target'),
     'DESCRIPTION': ("""\
         *{{command}}* is used to set a new target for a forwarding
         rule. {overview}
@@ -116,8 +118,6 @@ Set.detailed_help = {
 }
 
 SetBeta.detailed_help = {
-    'brief': ('Modify a forwarding rule to direct network traffic to a new '
-              'target'),
     'DESCRIPTION': ("""\
         *{{command}}* is used to set a new target for a forwarding
         rule. {overview}

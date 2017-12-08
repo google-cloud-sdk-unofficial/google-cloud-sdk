@@ -11,7 +11,7 @@ gcloud compute instances set\-disk\-auto\-delete \- set auto\-delete behavior fo
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances set\-disk\-auto\-delete\fR \fINAME\fR (\fB\-\-device\-name\fR=\fIDEVICE_NAME\fR\ |\ \fB\-\-disk\fR=\fIDISK\fR) [\fB\-\-no\-auto\-delete\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
+\f5gcloud compute instances set\-disk\-auto\-delete\fR \fIINSTANCE_NAME\fR (\fB\-\-device\-name\fR=\fIDEVICE_NAME\fR\ |\ \fB\-\-disk\fR=\fIDISK\fR) [\fB\-\-no\-auto\-delete\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -28,7 +28,7 @@ instance it is attached to is deleted.
 
 .RS 2m
 .TP 2m
-\fINAME\fR
+\fIINSTANCE_NAME\fR
 The name of the instance.
 
 
@@ -68,8 +68,10 @@ Enables auto\-delete for the given disk. Enabled by default, use
 
 .TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
-The zone of the instance to operate on. If not specified, you will be prompted
-to select a zone.
+The zone of the instance to operate on. If not specified, you may be prompted to
+select a zone. \f5gcloud\fR will attempt to identify the zone by searching for
+resources in your project. If the zone cannot be determined, you will then be
+prompted with all Google Cloud Platform zones.
 
 To avoid prompting when this flag is omitted, you can set the
 \f5\fIcompute/zone\fR\fR property:

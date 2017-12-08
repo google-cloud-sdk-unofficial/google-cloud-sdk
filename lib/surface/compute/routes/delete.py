@@ -13,27 +13,41 @@
 # limitations under the License.
 """Command for deleting routes."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.routes import flags
 
 
-class Delete(base_classes.GlobalDeleter):
-  """Delete routes."""
+class Delete(base.DeleteCommand):
+  """Delete routes.
+
+  *{command}* deletes one or more Google Compute Engine routes.
+  """
+
+  ROUTE_ARG = None
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalDeleter.Args(parser, 'compute.routes')
+    Delete.ROUTE_ARG = flags.RouteArgument(plural=True)
+    Delete.ROUTE_ARG.AddArgument(parser, operation_type='delete')
 
-  @property
-  def service(self):
-    return self.compute.routes
+  def Run(self, args):
+    """Issues requests necessary to delete Routes."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'routes'
+    route_refs = Delete.ROUTE_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+    utils.PromptForDeletion(route_refs)
 
-Delete.detailed_help = {
-    'brief': 'Delete routes',
-    'DESCRIPTION': """\
-        *{command}* deletes one or more Google Compute Engine routes.
-        """,
-}
+    requests = []
+    for route_ref in route_refs:
+      requests.append((client.apitools_client.routes, 'Delete',
+                       client.messages.ComputeRoutesDeleteRequest(
+                           **route_ref.AsDict())))
+
+    return client.MakeRequests(requests)

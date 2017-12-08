@@ -17,8 +17,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core.console import console_io
 
 
@@ -74,7 +73,7 @@ class Delete(base.DeleteCommand):
         [](https://cloud.google.com/compute/docs/disks/persistent-disks#updateautodelete)
         """)
 
-    instance_flags.INSTANCES_ARG.AddArgument(parser)
+    flags.INSTANCES_ARG.AddArgument(parser)
 
   def GetInstances(self, refs, client):
     """Fetches instance objects corresponding to the given references."""
@@ -138,9 +137,9 @@ class Delete(base.DeleteCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    refs = instance_flags.INSTANCES_ARG.ResolveAsResource(
-        args, holder.resources, scope_lister=flags.GetDefaultScopeLister(
-            client))
+    refs = flags.INSTANCES_ARG.ResolveAsResource(
+        args, holder.resources,
+        scope_lister=flags.GetInstanceZoneScopeLister(client))
     msg = _INSTANCE_DELETE_PROMPT
     if args.keep_disks != 'all':
       msg += ' ' + _INSTANCE_DELETE_PROMPT_DISK_ADDENDUM

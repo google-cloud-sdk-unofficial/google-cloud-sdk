@@ -25,15 +25,18 @@ class Describe(base.DescribeCommand):
   project.
   """
 
+  BACKEND_BUCKET_ARG = None
+
   @staticmethod
   def Args(parser):
-    flags.BACKEND_BUCKET_ARG.AddArgument(parser, operation_type='describe')
+    Describe.BACKEND_BUCKET_ARG = flags.BackendBucketArgument()
+    Describe.BACKEND_BUCKET_ARG.AddArgument(parser, operation_type='describe')
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    backend_bucket_ref = flags.BACKEND_BUCKET_ARG.ResolveAsResource(
+    backend_bucket_ref = Describe.BACKEND_BUCKET_ARG.ResolveAsResource(
         args,
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(client))

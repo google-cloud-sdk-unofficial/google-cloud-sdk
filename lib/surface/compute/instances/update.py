@@ -17,8 +17,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
+from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.command_lib.util import labels_util
 
 
@@ -46,18 +45,18 @@ class Update(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    instances_flags.INSTANCE_ARG.AddArgument(parser)
+    flags.INSTANCE_ARG.AddArgument(parser)
     labels_util.AddUpdateLabelsFlags(parser)
-    instances_flags.AddMinCpuPlatformArgs(parser, Update.ReleaseTrack())
+    flags.AddMinCpuPlatformArgs(parser, Update.ReleaseTrack())
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
     messages = holder.client.messages
 
-    instance_ref = instances_flags.INSTANCE_ARG.ResolveAsResource(
+    instance_ref = flags.INSTANCE_ARG.ResolveAsResource(
         args, holder.resources,
-        scope_lister=flags.GetDefaultScopeLister(holder.client))
+        scope_lister=flags.GetInstanceZoneScopeLister(holder.client))
 
     update_labels = labels_util.GetUpdateLabelsDictFromArgs(args)
     remove_labels = labels_util.GetRemoveLabelsListFromArgs(args)

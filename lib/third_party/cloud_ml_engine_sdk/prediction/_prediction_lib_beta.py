@@ -695,6 +695,10 @@ class DefaultModel(Model):
           preprocess_fn = feature_producer.preprocess
     return cls(client, preprocess_fn)
 
+  @property
+  def signature(self):
+    return self._client.signature
+
 
 # TODO(b/34686738): remove this.
 Model = DefaultModel
@@ -728,6 +732,8 @@ def encode_base64(instances, type_map):
                         "more than one output tensor, so dict expected.")
     # Only string tensors whose name ends in _bytes needs encoding.
     tensor_name, tensor_type = type_map.items()[0]
+    if isinstance(tensor_type, meta_graph_pb2.TensorInfo):
+      tensor_type = tensor_type.dtype
     if tensor_type == dtypes.string and tensor_name.endswith("_bytes"):
       instances = _encode_str_tensor(instances)
     return instances
@@ -736,6 +742,8 @@ def encode_base64(instances, type_map):
   for instance in instances:
     encoded_instance = {}
     for tensor_name, tensor_type in type_map.iteritems():
+      if isinstance(tensor_type, meta_graph_pb2.TensorInfo):
+        tensor_type = tensor_type.dtype
       tensor_data = instance[tensor_name]
       if tensor_type == dtypes.string and tensor_name.endswith("_bytes"):
         tensor_data = _encode_str_tensor(tensor_data)

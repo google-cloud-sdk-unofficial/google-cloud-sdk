@@ -27,10 +27,12 @@ class Create(base.CreateCommand):
   maps define which requests are sent to which backend buckets.
   """
 
+  BACKEND_BUCKET_ARG = None
+
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(backend_buckets_flags.DEFAULT_LIST_FORMAT)
-    backend_buckets_utils.AddUpdatableArgs(parser)
+    backend_buckets_utils.AddUpdatableArgs(Create, parser)
     backend_buckets_flags.REQUIRED_GCS_BUCKET_ARG.AddArgument(parser)
 
   def Run(self, args):
@@ -38,9 +40,8 @@ class Create(base.CreateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    backend_buckets_ref = (
-        backend_buckets_flags.BACKEND_BUCKET_ARG.ResolveAsResource(
-            args, holder.resources))
+    backend_buckets_ref = Create.BACKEND_BUCKET_ARG.ResolveAsResource(
+        args, holder.resources)
 
     enable_cdn = args.enable_cdn or False
 

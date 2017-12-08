@@ -30,15 +30,6 @@ from googlecloudsdk.core import log
 
 # Number of seconds (approximately) to wait for create operation to complete.
 OPERATION_TIMEOUT = 20 * 60  # 20 mins
-OPERATION_FORMAT = """
-  table(
-    name,
-    operationType:label=TYPE,
-    status,
-    targetLink.basename():label=TARGET,
-    error.errors.group(code)
-  )
-"""
 
 
 @base.UnicodeIsSupported
@@ -114,11 +105,7 @@ class Create(base.CreateCommand):
         default=False,
         action='store_true')
 
-  def Collection(self):
-    return 'deploymentmanager.resources_and_outputs'
-
-  def DeprecatedFormat(self, args):
-    return self.ListFormat(args)
+    parser.display_info.AddFormat(flags.RESOURCES_AND_OUTPUTS_FORMAT)
 
   def Epilog(self, resources_were_displayed):
     """Called after resources are displayed if the default format was used.
@@ -147,6 +134,10 @@ class Create(base.CreateCommand):
       ConfigError: Config file could not be read or parsed, or the
           deployment creation operation encountered an error.
     """
+    if ((not args.IsSpecified('format')) and
+        (args.async or getattr(args, 'automatic_rollback', False))):
+      args.format = flags.OPERATION_FORMAT
+
     deployment = dm_base.GetMessages().Deployment(
         name=args.deployment_name,  # TODO(b/37913150): Use resource parser.
         target=importer.BuildTargetConfig(
@@ -263,12 +254,6 @@ class CreateALPHA(Create):
   @staticmethod
   def Args(parser):
     Create.Args(parser, version=base.ReleaseTrack.ALPHA)
-
-  def DeprecatedFormat(self, args):
-    if args.automatic_rollback:
-      return OPERATION_FORMAT
-    else:
-      return super(CreateALPHA, self).DeprecatedFormat(args)
 
   def _HandleOperationError(self, error, args, operation, project):
     if args.automatic_rollback:

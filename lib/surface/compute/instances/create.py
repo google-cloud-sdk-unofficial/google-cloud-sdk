@@ -99,7 +99,7 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
       '--description',
       help='Specifies a textual description of the instances.')
 
-  instances_flags.INSTANCES_ARG.AddArgument(parser)
+  instances_flags.INSTANCES_ARG_FOR_CREATE.AddArgument(parser)
 
   csek_utils.AddCsekKeyArgs(parser)
 

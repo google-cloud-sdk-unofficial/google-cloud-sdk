@@ -28,10 +28,7 @@ sys.path.append(os.path.join(
 from gae_ext_runtime import comm
 
 def find_go_files(path):
-    """Return list of '*.go' files under directory 'path'.
-
-    Note that os.walk by default performs a top-down search, so files higher in
-    the directory tree appear before others.
+    """Return list of '*.go' files in directory 'path', listed non-recursively.
 
     Args:
         path: (str) Application path.
@@ -41,9 +38,9 @@ def find_go_files(path):
         dir.
     """
     go_files = []
-    for root, _, filenames in os.walk(path):
-        for filename in fnmatch.filter(filenames, '*.go'):
-            go_files.append(os.path.join(root, filename))
+    root, _, filenames = next(os.walk(path))
+    for filename in fnmatch.filter(filenames, '*.go'):
+        go_files.append(os.path.join(root, filename))
     return go_files
 
 
@@ -80,7 +77,7 @@ def main(args):
 
     comm.info('Checking for Go.')
 
-    # Test #1 - are there any '*.go' files at or below 'path'?
+    # Test #1 - are there any '*.go' files at 'path'?
     go_files = find_go_files(path)
     if not go_files:
         return 1

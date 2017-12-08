@@ -20,6 +20,10 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+def _GetUriFunction(resource):
+  return util.GetInstanceRef(resource.name).SelfLink()
+
+
 class ListInstances(base.ListCommand):
   """List existing Bigtable instances."""
 
@@ -33,6 +37,7 @@ class ListInstances(base.ListCommand):
             state
           )
         """)
+    parser.display_info.AddUriFunc(_GetUriFunction)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

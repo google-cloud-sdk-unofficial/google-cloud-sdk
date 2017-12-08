@@ -17,8 +17,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import log
 
 
@@ -34,8 +33,8 @@ class SetMinCpuPlatform(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    instance_flags.INSTANCE_ARG.AddArgument(parser)
-    instance_flags.AddMinCpuPlatformArgs(
+    flags.INSTANCE_ARG.AddArgument(parser)
+    flags.AddMinCpuPlatformArgs(
         parser, base.ReleaseTrack.ALPHA, required=True)
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -43,10 +42,10 @@ class SetMinCpuPlatform(base.UpdateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
+    instance_ref = flags.INSTANCE_ARG.ResolveAsResource(
         args,
         holder.resources,
-        scope_lister=flags.GetDefaultScopeLister(client))
+        scope_lister=flags.GetInstanceZoneScopeLister(client))
 
     embedded_request = client.messages.InstancesSetMinCpuPlatformRequest(
         minCpuPlatform=args.min_cpu_platform or None)

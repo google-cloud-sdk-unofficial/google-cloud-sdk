@@ -56,13 +56,23 @@ class Describe(base.DescribeCommand):
           allowed.
     """
     flags.AddDeploymentNameFlag(parser)
-
-  def Collection(self):
-    return 'deploymentmanager.deployments_and_resources_and_outputs'
-
-  def DeprecatedFormat(self, args):
-    """No need to list the id fields by default."""
-    return self.ListFormat(args)
+    parser.display_info.AddFormat("""
+              table(
+                deployment:format='default(name, id, description, fingerprint,
+                insertTime, manifest.basename(), labels, operation.operationType,
+                operation.name, operation.progress, operation.status,
+                operation.user, operation.endTime, operation.startTime,
+                operation.error, update)',
+                resources:format='table(
+                  name:label=NAME,
+                  type:label=TYPE,
+                  update.state.yesno(no="COMPLETED"),
+                  update.intent)',
+              outputs:format='table(
+                name:label=OUTPUTS,
+                finalValue:label=VALUE)'
+             )
+    """)
 
   def Run(self, args):
     """Run 'deployments describe'.

@@ -13,24 +13,42 @@
 # limitations under the License.
 """Command for deleting HTTPS health checks."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.https_health_checks import flags
 
 
-class Delete(base_classes.GlobalDeleter):
-  """Delete HTTPS health checks."""
+class Delete(base.DeleteCommand):
+  """Delete HTTPS health checks.
 
-  @property
-  def service(self):
-    return self.compute.httpsHealthChecks
+  *{command}* deletes one or more Google Compute Engine
+  HTTPS health checks.
+  """
 
-  @property
-  def resource_type(self):
-    return 'httpsHealthChecks'
+  HTTPS_HEALTH_CHECK_ARG = None
 
+  @staticmethod
+  def Args(parser):
+    Delete.HTTPS_HEALTH_CHECK_ARG = flags.HttpsHealthCheckArgument(plural=True)
+    Delete.HTTPS_HEALTH_CHECK_ARG.AddArgument(parser, operation_type='delete')
 
-Delete.detailed_help = {
-    'brief': 'Delete HTTPS health checks',
-    'DESCRIPTION': """\
-        *{command}* deletes one or more Google Compute Engine
-        HTTPS health checks.
-        """,
-}
+  def Run(self, args):
+    """Issues requests necessary to delete HTTPS Health Checks."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    https_health_check_refs = Delete.HTTPS_HEALTH_CHECK_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+
+    utils.PromptForDeletion(https_health_check_refs)
+
+    requests = []
+    for https_health_check_ref in https_health_check_refs:
+      requests.append((client.apitools_client.httpsHealthChecks, 'Delete',
+                       client.messages.ComputeHttpsHealthChecksDeleteRequest(
+                           **https_health_check_ref.AsDict())))
+
+    return client.MakeRequests(requests)

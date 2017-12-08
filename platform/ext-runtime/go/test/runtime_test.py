@@ -54,6 +54,14 @@ class RuntimeTests(testutil.TestBase):
             '.dockerignore',
             self.read_runtime_def_file('data',  'dockerignore'))
 
+    def test_go_files_in_subdirs(self):
+        """Test go runtime does not recognize go files in subdirectories."""
+        subdir_path = os.mkdir(os.path.join(self.temp_path, 'subdir'))
+        self.write_file(os.path.join('subdir', 'foo.go'),
+                        'package main\nfunc main')
+        self.assertEqual(None, self.generate_configs())
+        self.assertFalse(os.path.exists(self.full_path('app.yaml')))
+
     def test_go_genfiles_with_go(self):
         """Test generate_config_data with single .go file."""
         self.write_file('foo.go', 'package main\nfunc main')

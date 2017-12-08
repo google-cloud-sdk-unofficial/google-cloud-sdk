@@ -50,6 +50,7 @@ class List(base.ListCommand):
     """
     parser.add_argument('--deployment', help='Deployment name.', required=True)
     dm_v2_util.SIMPLE_LIST_FLAG.AddToParser(parser)
+    parser.display_info.AddFormat('table(name, id, insertTime)')
 
   def Run(self, args):
     """Run 'manifests list'.
@@ -72,6 +73,3 @@ class List(base.ListCommand):
     return dm_v2_util.YieldWithHttpExceptions(list_pager.YieldFromList(
         dm_base.GetClient().manifests, request, field='manifests',
         limit=args.limit, batch_size=args.page_size))
-
-  def DeprecatedFormat(self, unused_args):
-    return 'table(name, id, insertTime)'

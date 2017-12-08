@@ -13,29 +13,42 @@
 # limitations under the License.
 """Command for deleting networks."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.networks import flags
 
 
-class Delete(base_classes.GlobalDeleter):
-  """Delete Google Compute Engine networks."""
+class Delete(base.DeleteCommand):
+  """Delete Google Compute Engine networks.
+
+  *{command}* deletes one or more Google Compute Engine
+  networks. Networks can only be deleted when no other resources
+  (e.g., virtual machine instances) refer to them.
+  """
+
+  NETWORK_ARG = None
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalDeleter.Args(parser, 'compute.networks')
+    Delete.NETWORK_ARG = flags.NetworkArgument(plural=True)
+    Delete.NETWORK_ARG.AddArgument(parser, operation_type='delete')
 
-  @property
-  def service(self):
-    return self.compute.networks
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'networks'
+    network_refs = Delete.NETWORK_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+    utils.PromptForDeletion(network_refs)
 
-Delete.detailed_help = {
-    'brief': 'Delete Google Compute Engine networks',
-    'DESCRIPTION': """\
-        *{command}* deletes one or more Google Compute Engine
-        networks. Networks can only be deleted when no other resources
-        (e.g., virtual machine instances) refer to them.
-        """,
-}
+    requests = []
+    for network_ref in network_refs:
+      requests.append((client.apitools_client.networks, 'Delete',
+                       client.messages.ComputeNetworksDeleteRequest(
+                           **network_ref.AsDict())))
+
+    return client.MakeRequests(requests)

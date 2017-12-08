@@ -48,6 +48,11 @@ class Model(object):
     """
     raise NotImplementedError()
 
+  @property
+  def signature(self):
+    """Returns the SignatureDef for this model."""
+    raise NotImplementedError()
+
 
 class PredictionClient(object):
   """A client for Prediction.

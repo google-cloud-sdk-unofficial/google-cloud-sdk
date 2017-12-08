@@ -15,16 +15,21 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import batch_helper
-from googlecloudsdk.api_lib.compute import lister
-from googlecloudsdk.api_lib.compute import property_selector
-from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.core import log
 
 
-class InvalidateCdnCacheGA(base_classes.NoOutputMutator):
-  """Invalidate specified objects for a URL map in Cloud CDN caches."""
+class InvalidateCdnCacheGA(base.SilentCommand):
+  """Invalidate specified objects for a URL map in Cloud CDN caches.
+
+  *{command}* requests that Cloud CDN stop using cached content for
+  resources at a particular URL path or set of URL paths.
+
+  *{command}* may succeed even if no content is cached for some or all
+  URLs with the given path.
+  """
 
   URL_MAP_ARG = None
 
@@ -72,75 +77,46 @@ class InvalidateCdnCacheGA(base_classes.NoOutputMutator):
         action='store_true',
         help='Do not wait for the operation to complete.',)
 
-  @property
-  def method(self):
-    return 'InvalidateCache'
-
-  @property
-  def service(self):
-    return self.compute.urlMaps
-
-  def CreateRequests(self, args):
+  def CreateRequests(self, holder, args):
     """Returns a list of requests necessary for cache invalidations."""
-    url_map_ref = self.URL_MAP_ARG.ResolveAsResource(args, self.resources)
-    cache_invalidation_rule = self.messages.CacheInvalidationRule(
+    url_map_ref = self.URL_MAP_ARG.ResolveAsResource(args, holder.resources)
+    cache_invalidation_rule = holder.client.messages.CacheInvalidationRule(
         path=args.path)
     if args.host is not None:
       cache_invalidation_rule.host = args.host
-    request = self.messages.ComputeUrlMapsInvalidateCacheRequest(
-        project=self.project,
+    request = holder.client.messages.ComputeUrlMapsInvalidateCacheRequest(
+        project=url_map_ref.project,
         urlMap=url_map_ref.Name(),
         cacheInvalidationRule=cache_invalidation_rule)
 
     return [request]
 
   def Run(self, args):
-    request_protobufs = self.CreateRequests(args)
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    request_protobufs = self.CreateRequests(holder, args)
     requests = []
     for request in request_protobufs:
-      requests.append((self.service, self.method, request))
+      requests.append((client.apitools_client.urlMaps, 'InvalidateCache',
+                       request))
 
-    errors = []
     if args.async:
-      resources, new_errors = batch_helper.MakeRequests(
+      resources, errors = batch_helper.MakeRequests(
           requests=requests,
-          http=self.http,
-          batch_url=self.batch_url)
-      if not new_errors:
+          http=client.apitools_client.http,
+          batch_url=client.batch_url)
+      if not errors:
         for invalidation_operation in resources:
           log.status.write('Invalidation pending for [{0}]\n'.format(
               invalidation_operation.targetLink))
           log.status.write('Monitor its progress at [{0}]\n'.format(
               invalidation_operation.selfLink))
-      errors.extend(new_errors)
+      else:
+        utils.RaiseToolException(errors)
     else:
       # We want to run through the generator that MakeRequests returns in order
       # to actually make the requests.
-      resources = list(request_helper.MakeRequests(
-          requests=requests,
-          http=self.http,
-          batch_url=self.batch_url,
-          errors=errors))
-
-    resources = lister.ProcessResults(
-        resources=resources,
-        field_selector=property_selector.PropertySelector(
-            properties=None,
-            transformations=self.transformations))
-
-    if errors:
-      utils.RaiseToolException(errors)
+      resources = client.MakeRequests(requests)
 
     return resources
-
-
-InvalidateCdnCacheGA.detailed_help = {
-    'brief': 'Invalidate specified objects for a URL map in Cloud CDN caches',
-    'DESCRIPTION': """
-        *{command}* requests that Cloud CDN stop using cached content for
-        resources at a particular URL path or set of URL paths.
-
-        *{command}* may succeed even if no content is cached for some or all
-        URLs with the given path.
-        """,
-}

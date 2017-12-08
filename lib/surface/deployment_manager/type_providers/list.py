@@ -37,6 +37,11 @@ class List(base.ListCommand):
           """,
   }
 
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(
+        'table(name, insertTime.date(format="%Y-%m-%d"):label=INSERT_DATE)')
+
   def Run(self, args):
     """Run 'type-providers list'.
 
@@ -61,8 +66,3 @@ class List(base.ListCommand):
                                  field='typeProviders',
                                  batch_size=args.page_size,
                                  limit=args.limit))
-
-  def DeprecatedFormat(self, unused_args):
-    return ('table(name,'
-            'insertTime.date(format="%Y-%m-%d"):label=INSERT_DATE)')
-

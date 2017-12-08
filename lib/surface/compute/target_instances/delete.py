@@ -13,29 +13,43 @@
 # limitations under the License.
 """Command for deleting target instances."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.target_instances import flags
 
 
-class Delete(base_classes.ZonalDeleter):
-  """Delete target instances."""
+class Delete(base.DeleteCommand):
+  """Delete target instances.
+
+  *{command}* deletes one or more Google Compute Engine target
+  instances. Target instances can be deleted only if they are
+  not being used by any other resources like forwarding rules.
+  """
+
+  TARGET_INSTANCE_ARG = None
 
   @staticmethod
   def Args(parser):
-    base_classes.ZonalDeleter.Args(parser, 'compute.targetInstances')
+    Delete.TARGET_INSTANCE_ARG = flags.TargetInstanceArgument(plural=True)
+    Delete.TARGET_INSTANCE_ARG.AddArgument(parser, operation_type='delete')
 
-  @property
-  def service(self):
-    return self.compute.targetInstances
+  def Run(self, args):
+    """Issues requests necessary to delete Target Instances."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'targetInstances'
+    target_instance_refs = Delete.TARGET_INSTANCE_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+    utils.PromptForDeletion(target_instance_refs, 'zone')
 
-Delete.detailed_help = {
-    'brief': 'Delete target instances',
-    'DESCRIPTION': """\
-        *{command}* deletes one or more Google Compute Engine target
-        instances. Target instances can be deleted only if they are
-        not being used by any other resources like forwarding rules.
-        """,
-}
+    requests = []
+    for target_instance_ref in target_instance_refs:
+      requests.append((client.apitools_client.targetInstances, 'Delete',
+                       client.messages.ComputeTargetInstancesDeleteRequest(
+                           **target_instance_ref.AsDict())))
+
+    return client.MakeRequests(requests)

@@ -13,28 +13,41 @@
 # limitations under the License.
 """Command for deleting target vpn gateways."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.target_vpn_gateways import flags
 
 
-class Delete(base_classes.RegionalDeleter):
-  """Delete target vpn gateways."""
+class Delete(base.DeleteCommand):
+  """Delete target vpn gateways.
 
-  # Placeholder to indicate that a detailed_help field exists and should
-  # be set outside the class definition.
-  detailed_help = None
+  *{command}* deletes one or more Google Compute Engine target vpn
+  gateways.
+  """
 
-  @property
-  def service(self):
-    return self.compute.targetVpnGateways
+  TARGET_VPN_GATEWAY_ARG = None
 
-  @property
-  def resource_type(self):
-    return 'targetVpnGateways'
+  @staticmethod
+  def Args(parser):
+    Delete.TARGET_VPN_GATEWAY_ARG = flags.TargetVpnGatewayArgument(plural=True)
+    Delete.TARGET_VPN_GATEWAY_ARG.AddArgument(parser, operation_type='delete')
 
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-Delete.detailed_help = {
-    'brief': 'Delete target vpn gateways',
-    'DESCRIPTION': """\
-        *{command}* deletes one or more Google Compute Engine target vpn
-        gateways.
-        """,
-}
+    target_vpn_gateway_refs = Delete.TARGET_VPN_GATEWAY_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+
+    utils.PromptForDeletion(target_vpn_gateway_refs, 'region')
+
+    requests = []
+    for target_vpn_gateway_ref in target_vpn_gateway_refs:
+      requests.append((client.apitools_client.targetVpnGateways, 'Delete',
+                       client.messages.ComputeTargetVpnGatewaysDeleteRequest(
+                           **target_vpn_gateway_ref.AsDict())))
+
+    return client.MakeRequests(requests)

@@ -47,6 +47,7 @@ class List(base.ListCommand):
   def Args(parser):
     base.SORT_BY_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
+    parser.display_info.AddFormat('table(name)')
 
   def Run(self, args):
     """Run 'types list'.
@@ -68,9 +69,6 @@ class List(base.ListCommand):
         list_pager.YieldFromList(dm_base.GetClient().types, request,
                                  field='types', batch_size=args.page_size,
                                  limit=args.limit))
-
-  def Collection(self):
-    return 'deploymentmanager.types'
 
   def Epilog(self, resources_were_displayed):
     if not resources_were_displayed:
@@ -123,6 +121,8 @@ class ListALPHA(base.ListCommand):
     parser.add_argument('--provider', help='Type provider name.')
     parser.add_argument('--provider-project',
                         help='Project id with types you want to see.')
+    parser.display_info.AddFormat(
+        'yaml(provider:sort=1, error, types.map().format("{0}", name))')
 
   def Run(self, args):
     """Run 'types list'.
@@ -212,6 +212,3 @@ class ListALPHA(base.ListCommand):
           yield {'types': [],
                  'provider': project + '/' + type_provider,
                  'error': error.message}
-
-  def DeprecatedFormat(self, args):
-    return 'yaml(provider:sort=1, error, types.map().format("{0}", name))'

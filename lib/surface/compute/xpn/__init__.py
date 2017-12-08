@@ -11,11 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Commands for configuring cross-project networking (XPN)."""
+"""Commands for configuring shared VPC network (XPN)."""
 
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Xpn(base.Group):
-  """Configure cross-project networking (XPN)."""
+  """Configure shared VPC network (XPN)."""

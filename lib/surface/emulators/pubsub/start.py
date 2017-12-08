@@ -46,7 +46,7 @@ class Start(base.Command):
   def Run(self, args):
     if not args.host_port:
       args.host_port = arg_parsers.HostPort.Parse(util.GetHostPort(
-          pubsub_util.PUBSUB))
+          pubsub_util.PUBSUB), ipv6_enabled=True)
 
     with pubsub_util.Start(args) as pubsub_process:
       util.WriteEnvYaml(pubsub_util.GetEnv(args), args.data_dir)

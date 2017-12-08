@@ -129,11 +129,7 @@ class Update(base.UpdateCommand):
         parser, dm_base.GetMessages().DeploymentmanagerDeploymentsUpdateRequest)
     flags.AddFingerprintFlag(parser)
 
-  def Collection(self):
-    return 'deploymentmanager.resources_and_outputs'
-
-  def DeprecatedFormat(self, args):
-    return self.ListFormat(args)
+    parser.display_info.AddFormat(flags.RESOURCES_AND_OUTPUTS_FORMAT)
 
   def Epilog(self, resources_were_displayed):
     """Called after resources are displayed if the default format was used.
@@ -160,6 +156,9 @@ class Update(base.UpdateCommand):
       HttpException: An http error response was received while executing api
           request.
     """
+    if not args.IsSpecified('format') and args.async:
+      args.format = flags.OPERATION_FORMAT
+
     deployment = dm_base.GetMessages().Deployment(
         name=args.deployment_name,
     )

@@ -12,32 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for creating network peerings."""
+from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import networks_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateBeta(base_classes.BaseAsyncMutator):
+class CreateBeta(base.Command):
   """Create a Google Compute Engine network peering."""
-
-  @property
-  def service(self):
-    return self.compute.networks
-
-  @property
-  def method(self):
-    return 'AddPeering'
-
-  @property
-  def resource_type(self):
-    return 'peerings'
-
-  def ComputeDynamicProperties(self, args, items):
-    self._network_name = args.name
-    return networks_utils.AddMode(items)
 
   @staticmethod
   def Args(parser):
@@ -72,19 +58,28 @@ class CreateBeta(base_classes.BaseAsyncMutator):
              'peering.  Note that a backend error will be returned if this is '
              'not set.')
 
-  def CreateRequests(self, args):
-    """Returns the request necessary for adding the peering."""
+  def Run(self, args):
+    """Issues the request necessary for adding the peering."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
     peer_network_ref = resources.REGISTRY.Parse(
         args.peer_network,
-        params={'project': args.peer_project or self.project},
+        params={
+            'project':
+                args.peer_project or properties.VALUES.core.project.GetOrFail
+        },
         collection='compute.networks')
 
-    request = self.messages.ComputeNetworksAddPeeringRequest(
+    request = client.messages.ComputeNetworksAddPeeringRequest(
         network=args.network,
-        networksAddPeeringRequest=self.messages.NetworksAddPeeringRequest(
+        networksAddPeeringRequest=client.messages.NetworksAddPeeringRequest(
             autoCreateRoutes=args.auto_create_routes,
             name=args.name,
             peerNetwork=peer_network_ref.RelativeName()),
-        project=self.project)
-    return [request]
+        project=properties.VALUES.core.project.GetOrFail())
+
+    response = client.MakeRequests([(client.apitools_client.networks,
+                                     'AddPeering', request)])
+
+    return networks_utils.AddMode([encoding.MessageToDict(m) for m in response])

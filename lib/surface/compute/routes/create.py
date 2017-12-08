@@ -170,7 +170,8 @@ class Create(base.CreateCommand):
       next_hop_instance_uri = self.INSTANCE_ARG.ResolveAsResource(
           args,
           holder.resources,
-          scope_lister=compute_flags.GetDefaultScopeLister(client)).SelfLink()
+          scope_lister=instance_flags.GetInstanceZoneScopeLister(
+              client)).SelfLink()
     else:
       if args.next_hop_instance_zone:
         raise exceptions.ToolException(

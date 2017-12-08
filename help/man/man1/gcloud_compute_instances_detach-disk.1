@@ -11,7 +11,7 @@ gcloud compute instances detach\-disk \- detach disks from Compute Engine virtua
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances detach\-disk\fR \fINAME\fR (\fB\-\-device\-name\fR=\fIDEVICE_NAME\fR\ |\ \fB\-\-disk\fR=\fIDISK\fR) [\fB\-\-zone\fR=\fIZONE\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
+\f5gcloud compute instances detach\-disk\fR \fIINSTANCE_NAME\fR (\fB\-\-device\-name\fR=\fIDEVICE_NAME\fR\ |\ \fB\-\-disk\fR=\fIDISK\fR) [\fB\-\-zone\fR=\fIZONE\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -34,7 +34,7 @@ $ sudo umount /dev/disk/by\-id/google\-DEVICE_NAME
 
 .RS 2m
 .TP 2m
-\fINAME\fR
+\fIINSTANCE_NAME\fR
 The name of the instance.
 
 
@@ -69,8 +69,10 @@ by persistent disk name, then you must not specify its device name using the
 .RS 2m
 .TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
-The zone of the instance to operate on. If not specified, you will be prompted
-to select a zone.
+The zone of the instance to operate on. If not specified, you may be prompted to
+select a zone. \f5gcloud\fR will attempt to identify the zone by searching for
+resources in your project. If the zone cannot be determined, you will then be
+prompted with all Google Cloud Platform zones.
 
 To avoid prompting when this flag is omitted, you can set the
 \f5\fIcompute/zone\fR\fR property:

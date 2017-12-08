@@ -18,6 +18,7 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.deployment_manager import dm_v2_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.deployment_manager import dm_base
+from googlecloudsdk.command_lib.deployment_manager import flags
 
 
 class List(base.ListCommand):
@@ -48,9 +49,7 @@ class List(base.ListCommand):
           allowed.
     """
     dm_v2_util.SIMPLE_LIST_FLAG.AddToParser(parser)
-
-  def Collection(self):
-    return 'deploymentmanager.operations'
+    parser.display_info.AddFormat(flags.OPERATION_FORMAT)
 
   def Run(self, args):
     """Run 'operations list'.

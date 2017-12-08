@@ -16,8 +16,7 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.command_lib.compute.instances import flags
 
 
 class SetSchedulingInstances(base.SilentCommand):
@@ -38,17 +37,17 @@ class SetSchedulingInstances(base.SilentCommand):
         Engine.  This does not affect terminations performed by the user.
         """)
 
-    instance_flags.AddMaintenancePolicyArgs(parser)
-    instance_flags.INSTANCE_ARG.AddArgument(parser)
+    flags.AddMaintenancePolicyArgs(parser)
+    flags.INSTANCE_ARG.AddArgument(parser)
 
   def Run(self, args):
     """Issues request necessary for setting scheduling options."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
-        args, holder.resources, scope_lister=flags.GetDefaultScopeLister(
-            client))
+    instance_ref = flags.INSTANCE_ARG.ResolveAsResource(
+        args, holder.resources,
+        scope_lister=flags.GetInstanceZoneScopeLister(client))
 
     scheduling_options = client.messages.Scheduling()
 

@@ -14,29 +14,43 @@
 
 """Command for deleting Google Compute Engine routers."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.routers import flags
 
 
-class Delete(base_classes.RegionalDeleter):
-  """Delete Google Compute Engine routers."""
+class Delete(base.DeleteCommand):
+  """Delete Google Compute Engine routers.
+
+  *{command}* deletes one or more Google Compute Engine
+  routers. Routers can only be deleted when no other resources
+  (e.g., virtual machine instances) refer to them.
+  """
+
+  ROUTER_ARG = None
 
   @staticmethod
   def Args(parser):
-    base_classes.RegionalDeleter.Args(parser, 'compute.routers')
+    Delete.ROUTER_ARG = flags.RouterArgument(plural=True)
+    Delete.ROUTER_ARG.AddArgument(parser, operation_type='delete')
 
-  @property
-  def service(self):
-    return self.compute.routers
+  def Run(self, args):
+    """Issues requests necessary to delete Routers."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'routers'
+    router_refs = Delete.ROUTER_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+    utils.PromptForDeletion(router_refs, 'region')
 
-Delete.detailed_help = {
-    'brief': 'Delete Google Compute Engine routers',
-    'DESCRIPTION': """\
-        *{command}* deletes one or more Google Compute Engine
-        routers. Routers can only be deleted when no other resources
-        (e.g., virtual machine instances) refer to them.
-        """,
-}
+    requests = []
+    for router_ref in router_refs:
+      requests.append((client.apitools_client.routers, 'Delete',
+                       client.messages.ComputeRoutersDeleteRequest(
+                           **router_ref.AsDict())))
+
+    return client.MakeRequests(requests)

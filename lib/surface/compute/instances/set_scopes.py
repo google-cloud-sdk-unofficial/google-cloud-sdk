@@ -16,7 +16,6 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instances import exceptions
 from googlecloudsdk.command_lib.compute.instances import flags
@@ -111,7 +110,7 @@ class SetScopes(base.SilentCommand):
     instance_ref = flags.INSTANCE_ARG.ResolveAsResource(
         args, compute_holder.resources,
         default_scope=compute_scope.ScopeEnum.ZONE,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
+        scope_lister=flags.GetInstanceZoneScopeLister(client))
 
     email = self._email(args, instance_ref, client)
     scopes = self._scopes(args, instance_ref, client)

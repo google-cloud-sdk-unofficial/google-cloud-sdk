@@ -11,7 +11,7 @@ gcloud compute instances stop \- stop a virtual machine instance
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances stop\fR \fINAMES\fR [\fINAMES\fR\ ...] [\fB\-\-discard\-local\-ssd\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
+\f5gcloud compute instances stop\fR \fIINSTANCE_NAMES\fR [\fIINSTANCE_NAMES\fR\ ...] [\fB\-\-discard\-local\-ssd\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -28,7 +28,7 @@ SSD is not supported and will result in an API error.
 
 .RS 2m
 .TP 2m
-\fINAMES\fR [\fINAMES\fR ...]
+\fIINSTANCE_NAMES\fR [\fIINSTANCE_NAMES\fR ...]
 The names of the instances.
 
 
@@ -44,8 +44,10 @@ If provided, local SSD data is discarded.
 
 .TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
-The zone of the instance to operate on. If not specified, you will be prompted
-to select a zone.
+The zone of the instance to operate on. If not specified, you may be prompted to
+select a zone. \f5gcloud\fR will attempt to identify the zone by searching for
+resources in your project. If the zone cannot be determined, you will then be
+prompted with all Google Cloud Platform zones.
 
 To avoid prompting when this flag is omitted, you can set the
 \f5\fIcompute/zone\fR\fR property:

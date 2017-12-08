@@ -21,9 +21,9 @@ from googlecloudsdk.calliope import base
 class NetworkProfiles(base.Group):
   """Explore network profiles available for testing.
 
-  A network traffic profile consists of a set of parameters to emulate
-  network conditions when running a test. The network shaping parameters
-  are:
+  A network traffic profile consists of a set of parameters to emulate network
+  conditions when running a test. This feature only works on physical devices.
+  The network shaping parameters are:
 
   - *RULE*: Where to apply traffic shaping. The UP rule shapes the
     connection from the device to the internet. The DOWN rule shapes the

@@ -17,8 +17,7 @@ from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import log
 
 
@@ -41,7 +40,7 @@ class RemoveTags(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    instance_flags.INSTANCE_ARG.AddArgument(
+    flags.INSTANCE_ARG.AddArgument(
         parser, operation_type='set tags on')
 
     tags_group = parser.add_mutually_exclusive_group(required=True)
@@ -60,8 +59,8 @@ class RemoveTags(base.UpdateCommand):
         help='Remove all tags from the instance.')
 
   def CreateReference(self, client, resources, args):
-    return instance_flags.INSTANCE_ARG.ResolveAsResource(
-        args, resources, scope_lister=flags.GetDefaultScopeLister(client))
+    return flags.INSTANCE_ARG.ResolveAsResource(
+        args, resources, scope_lister=flags.GetInstanceZoneScopeLister(client))
 
   def GetGetRequest(self, client, instance_ref):
     return (client.apitools_client.instances,

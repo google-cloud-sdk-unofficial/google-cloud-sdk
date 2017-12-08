@@ -13,22 +13,41 @@
 # limitations under the License.
 """Command for deleting URL maps."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.url_maps import flags
 
 
-class Delete(base_classes.GlobalDeleter):
+class Delete(base.DeleteCommand):
   """Delete URL maps.
 
   *{command}* deletes one or more URL maps.
   """
 
+  URL_MAP_ARG = None
+
   @staticmethod
   def Args(parser):
-    base_classes.GlobalDeleter.Args(parser, 'compute.urlMaps')
+    Delete.URL_MAP_ARG = flags.UrlMapArgument(plural=True)
+    Delete.URL_MAP_ARG.AddArgument(parser, operation_type='delete')
 
-  @property
-  def service(self):
-    return self.compute.urlMaps
+  def Run(self, args):
+    """Issues requests necessary to delete URL maps."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'urlMaps'
+    url_map_refs = Delete.URL_MAP_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+
+    utils.PromptForDeletion(url_map_refs)
+
+    requests = []
+    for url_map_ref in url_map_refs:
+      requests.append((client.apitools_client.urlMaps, 'Delete',
+                       client.messages.ComputeUrlMapsDeleteRequest(
+                           **url_map_ref.AsDict())))
+
+    return client.MakeRequests(requests)

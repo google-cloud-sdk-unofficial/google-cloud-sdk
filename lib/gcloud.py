@@ -27,19 +27,19 @@ if os.path.isdir(_THIRD_PARTY_DIR):
 
 
 def main():
-  try:
-    if '_ARGCOMPLETE' in os.environ:
+
+  if '_ARGCOMPLETE' in os.environ:
+    try:
       # pylint:disable=g-import-not-at-top
       import googlecloudsdk.command_lib.static_completion.lookup as lookup
       lookup.Complete(_GCLOUD_PY_DIR)
       return
-  # pylint:disable=broad-except
-  except Exception:
-    # Users do not expect to see errors during completion!
-    pass
+    except Exception:  # pylint:disable=broad-except, hide completion errors
+      if os.environ.get('_ARGCOMPLETE_TRACE') == 'static':
+        raise
 
-  # pylint:disable=g-import-not-at-top
   try:
+    # pylint:disable=g-import-not-at-top
     import googlecloudsdk.gcloud_main
   except ImportError as err:
     # We DON'T want to suggest `gcloud components reinstall` here (ex. as

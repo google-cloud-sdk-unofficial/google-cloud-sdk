@@ -47,9 +47,7 @@ class Describe(base.DescribeCommand):
     parser.add_argument('--provider',
                         help='Type provider name or its self-link.',
                         required=True)
-
-  def DeprecatedFormat(self, unused_args):
-    return 'yaml(type_info)'
+    parser.display_info.AddFormat('yaml(type_info)')
 
   def Run(self, args):
     """Runs 'types describe'.

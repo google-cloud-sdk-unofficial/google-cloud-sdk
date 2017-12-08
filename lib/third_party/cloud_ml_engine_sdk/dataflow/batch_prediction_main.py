@@ -62,113 +62,102 @@ options, specify the pipeline configuration on the command line:
   --temp_location gs://YOUR_TEMPORARY_DIRECTORY
   --num_workers NUM_WORKERS_TO_USE
 """
-import argparse
 import logging
-import sys
 
 import apache_beam as beam
 # pylint: disable=g-import-not-at-top
 # TODO(user): Remove after Dataflow 0.4.5 SDK is released.
 try:
-  try:
-    from apache_beam.options.pipeline_options import PipelineOptions
-  except ImportError:
-    from apache_beam.utils.pipeline_options import PipelineOptions
+  from apache_beam.options.pipeline_options import PipelineOptions
 except ImportError:
   from apache_beam.utils.options import PipelineOptions
 
 from google.cloud.ml.dataflow import _aggregators as aggregators
-from google.cloud.ml.dataflow import _cloud_logging_client as cloud_logging_client
 from google.cloud.ml.dataflow import batch_prediction_pipeline
 # pylint: enable=g-import-not-at-top
 
 FILE_FORMAT_SUPPORTED = ["text", "tfrecord", "tfrecord_gzip"]
-LOG_NAME = "worker"
+FILE_LIST_SEPARATOR = ","
 
 
-def _parse_args():
+class BatchPredictionOptions(PipelineOptions):
   """Parse the command line arguments."""
-  parser = argparse.ArgumentParser()
-  # TODO(user): consider to use "action=append"-style argparse flag.
-  parser.add_argument(
-      "--input_file_patterns",
-      dest="input_file_patterns",
-      required=True,
-      help=("The input data files or file patterns for batch prediction. Use "
-            "%s to separate multiple files/patterns" %
-            batch_prediction_pipeline.FILE_LIST_SEPARATOR))
 
-  parser.add_argument(
-      "--input_file_format",
-      dest="input_file_format",
-      default="text",
-      choices=FILE_FORMAT_SUPPORTED,
-      help=("The input file format for batch prediction. "
-            "Supported format: %s" % FILE_FORMAT_SUPPORTED))
+  @classmethod
+  def _add_argparse_args(cls, parser):
+    parser.add_argument(
+        "--input_file_format",
+        dest="input_file_format",
+        default="text",
+        choices=FILE_FORMAT_SUPPORTED,
+        help=("The input file format for batch prediction. "
+              "Supported formats: %s" % FILE_FORMAT_SUPPORTED))
 
-  parser.add_argument(
-      "--output_location",
-      dest="output_location",
-      required=True,
-      help="Output path to save the prediction results.")
+    # TODO(user): consider to use "action=append"-style argparse flag.
+    parser.add_value_provider_argument(
+        "--input_file_patterns",
+        dest="input_file_patterns",
+        help=("The input data files or file patterns for batch prediction. Use "
+              "%s to separate multiple files/patterns" % FILE_LIST_SEPARATOR))
 
-  parser.add_argument(
-      "--model_dir",
-      dest="model_dir",
-      required=True,
-      help=("The path to the model where the tensorflow meta graph "
-            "proto and checkpoint files are saved. Normally, it is "
-            "the exported directory by session_bundle library."))
+    parser.add_value_provider_argument(
+        "--output_result_prefix",
+        dest="output_result_prefix",
+        help="Output path to save the prediction results.")
 
-  parser.add_argument(
-      "--batch_size",
-      dest="batch_size",
-      type=int,
-      default=64,
-      help=("Number of records in one batch in the input data. All items in "
-            "the same batch would be fed into tf session together thereby only "
-            "one Session.Run() is invoked for one batch. If the batch_size "
-            "has been embedded in the graph, the flag must match that value. "
-            "If the first dim of the input tensors is None, this means any "
-            "batch size value can be used. Thereby one can specify any int "
-            "value to this flag. If no batch size is specified in the graph, "
-            "the flag must take value of 1. Otherwise, the program will "
-            "issue an error that shapes doesn't match."))
+    parser.add_value_provider_argument(
+        "--output_error_prefix",
+        dest="output_error_prefix",
+        help="Output path to save the prediction errors.")
 
-  parser.add_argument(
-      "--user_project_id",
-      dest="user_project_id",
-      help="User's project id. It can be a different project from the one "
-           "run the Dataflow job. The logs are sent to this project.")
+    parser.add_value_provider_argument(
+        "--model_dir",
+        dest="model_dir",
+        help=("The path to the model where the tensorflow meta graph "
+              "proto and checkpoint files are saved. Normally, it is "
+              "the exported directory by session_bundle library."))
 
-  parser.add_argument(
-      "--user_job_id",
-      dest="user_job_id",
-      help=("User's CloudML job id. It is not the job id of the Dataflow job. "
-            "The logs are sent to user job project with job id as its label."))
+    parser.add_value_provider_argument(
+        "--batch_size",
+        dest="batch_size",
+        type=int,
+        default=64,
+        help=("Number of records in one batch in the input data. All items in "
+              "the same batch would be fed into tf session together so only "
+              "one Session.Run() is invoked for one batch. If the batch_size "
+              "has been embedded in the graph, the flag must match that value. "
+              "If the first dim of the input tensors is None, this means any "
+              "batch size value can be used. Thereby one can specify any int "
+              "value to this flag. If no batch size is specified in the graph, "
+              "the flag must take value of 1. Otherwise, the program will "
+              "issue an error that shapes doesn't match."))
 
-  known_args, pipeline_args = parser.parse_known_args(sys.argv[1:])
-  pipeline_options = PipelineOptions(flags=pipeline_args)
+    parser.add_value_provider_argument(
+        "--user_project_id",
+        dest="user_project_id",
+        help=("User's CloudML project id. It is not the project id of the "
+              "Dataflow job. The logs are sent to user job project in "
+              "Stackdriver with job id as its label."))
 
-  return known_args, pipeline_options
+    parser.add_value_provider_argument(
+        "--user_job_id",
+        dest="user_job_id",
+        help=("User's CloudML job id. It is not the job id of the Dataflow job."
+              " The logs are sent to user job project in Stackdriver with job"
+              " id as its label."))
 
 
 if __name__ == "__main__":
   logging.getLogger().setLevel(logging.INFO)
-  dataflow_args, dataflow_pipeline_options = _parse_args()
-  logging.info("Dataflow option:%s",
+  dataflow_pipeline_options = PipelineOptions()
+  logging.info("Dataflow option: %s",
                dataflow_pipeline_options.get_all_options())
   # Create the pipeline
   p = beam.Pipeline(options=dataflow_pipeline_options)
   # Create a dict of aggregators.
   aggregator_dict = aggregators.CreateAggregatorsDict()
-  # Create a cloud logging client.
-  cloud_logger = None
-  if dataflow_args.user_project_id and dataflow_args.user_job_id:
-    cloud_logger = cloud_logging_client.MLCloudLoggingClient.create(
-        dataflow_args.user_project_id,
-        dataflow_args.user_job_id,
-        LOG_NAME,
-        "jsonPayload")
   # Actually start the pipeline
-  batch_prediction_pipeline.run(p, dataflow_args, aggregator_dict, cloud_logger)
+  result = batch_prediction_pipeline.run(
+      p,
+      dataflow_pipeline_options.view_as(BatchPredictionOptions),
+      aggregator_dict)

@@ -49,9 +49,16 @@ class List(base.ListCommand):
           allowed.
     """
     dm_v2_util.SIMPLE_LIST_FLAG.AddToParser(parser)
-
-  def Collection(self):
-    return 'deploymentmanager.deployments'
+    parser.display_info.AddFormat("""
+          table(
+            name,
+            operation.operationType:label=LAST_OPERATION_TYPE,
+            operation.status,
+            description,
+            manifest.basename(),
+            operation.error.errors.group(code)
+          )
+    """)
 
   def Run(self, args):
     """Run 'deployments list'.

@@ -14,8 +14,7 @@
 """Command for suspending an instance."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.command_lib.compute.instances import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -36,7 +35,7 @@ class Suspend(base.SilentCommand):
 
   @staticmethod
   def Args(parser):
-    instance_flags.INSTANCES_ARG.AddArgument(parser)
+    flags.INSTANCES_ARG.AddArgument(parser)
     parser.add_argument(
         '--discard-local-ssd',
         action='store_true',
@@ -54,10 +53,10 @@ class Suspend(base.SilentCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    instance_refs = instance_flags.INSTANCES_ARG.ResolveAsResource(
+    instance_refs = flags.INSTANCES_ARG.ResolveAsResource(
         args,
         holder.resources,
-        scope_lister=flags.GetDefaultScopeLister(client))
+        scope_lister=flags.GetInstanceZoneScopeLister(client))
 
     requests = []
     for instance_ref in instance_refs:

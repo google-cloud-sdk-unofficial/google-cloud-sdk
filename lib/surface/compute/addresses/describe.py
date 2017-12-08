@@ -13,43 +13,50 @@
 # limitations under the License.
 """Command for describing addresses."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.addresses import flags
 
 
-class Describe(base_classes.GlobalRegionalDescriber):
-  """Display detailed information about an address."""
+class Describe(base.DescribeCommand):
+  """Display detailed information about an address.
+
+  *{command}* displays all data associated with an address in a project.
+
+  ## EXAMPLES
+  To get details about a global address, run:
+
+    $ {command} ADDRESS --global
+
+  To get details about a regional address, run:
+
+    $ {command} ADDRESS --region us-central1
+  """
+
+  ADDRESS_ARG = None
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalRegionalDescriber.Args(parser, 'addresses')
+    Describe.ADDRESS_ARG = flags.AddressArgument(plural=False)
+    Describe.ADDRESS_ARG.AddArgument(parser, operation_type='describe')
 
-  @property
-  def global_service(self):
-    return self.compute.globalAddresses
+  def Run(self, args):
+    """Issues request necessary to describe the Addresses."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def regional_service(self):
-    return self.compute.addresses
+    address_ref = Describe.ADDRESS_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-  @property
-  def global_resource_type(self):
-    return 'globalAddresses'
+    if address_ref.Collection() == 'compute.addresses':
+      service = client.apitools_client.addresses
+      request = client.messages.ComputeAddressesGetRequest(
+          **address_ref.AsDict())
+    elif address_ref.Collection() == 'compute.globalAddresses':
+      service = client.apitools_client.globalAddresses
+      request = client.messages.ComputeGlobalAddressesGetRequest(
+          **address_ref.AsDict())
 
-  @property
-  def regional_resource_type(self):
-    return 'addresses'
-
-Describe.detailed_help = {
-    'brief': 'Display detailed information about an address',
-    'DESCRIPTION': """\
-        *{command}* displays all data associated with an address in a project.
-        """,
-    'EXAMPLES': """\
-        To get details about a global address, run:
-
-          $ {command} ADDRESS --global
-
-        To get details about a regional address, run:
-
-          $ {command} ADDRESS --region us-central1
-        """,
-}
+    return client.MakeRequests([(service, 'Get', request)])[0]

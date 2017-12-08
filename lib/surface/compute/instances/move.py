@@ -17,8 +17,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
@@ -28,7 +27,7 @@ class Move(base.SilentCommand):
 
   @staticmethod
   def Args(parser):
-    instance_flags.INSTANCE_ARG.AddArgument(parser)
+    flags.INSTANCE_ARG.AddArgument(parser)
 
     parser.add_argument(
         '--destination-zone',
@@ -40,9 +39,9 @@ class Move(base.SilentCommand):
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    target_instance = instance_flags.INSTANCE_ARG.ResolveAsResource(
+    target_instance = flags.INSTANCE_ARG.ResolveAsResource(
         args, holder.resources,
-        scope_lister=flags.GetDefaultScopeLister(holder.client))
+        scope_lister=flags.GetInstanceZoneScopeLister(holder.client))
     destination_zone = holder.resources.Parse(
         args.destination_zone,
         params={'project': target_instance.project},

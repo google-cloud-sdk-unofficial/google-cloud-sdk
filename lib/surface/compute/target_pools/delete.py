@@ -13,27 +13,41 @@
 # limitations under the License.
 """Command for deleting target pools."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.target_pools import flags
 
 
-class Delete(base_classes.RegionalDeleter):
-  """Delete target pools."""
+class Delete(base.DeleteCommand):
+  """Delete target pools.
+
+  *{command}* deletes one or more Google Compute Engine target pools.
+  """
+
+  TARGET_POOL_ARG = None
 
   @staticmethod
   def Args(parser):
-    base_classes.RegionalDeleter.Args(parser, 'compute.targetPools')
+    Delete.TARGET_POOL_ARG = flags.TargetPoolArgument(
+        help_suffix=None, plural=True)
+    Delete.TARGET_POOL_ARG.AddArgument(parser, operation_type='delete')
 
-  @property
-  def service(self):
-    return self.compute.targetPools
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'targetPools'
+    target_pool_refs = Delete.TARGET_POOL_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+    utils.PromptForDeletion(target_pool_refs, 'region')
 
-Delete.detailed_help = {
-    'brief': 'Delete target pools',
-    'DESCRIPTION': """\
-        *{command}* deletes one or more Google Compute Engine target pools.
-        """,
-}
+    requests = []
+    for target_pool_ref in target_pool_refs:
+      requests.append((client.apitools_client.targetPools, 'Delete',
+                       client.messages.ComputeTargetPoolsDeleteRequest(
+                           **target_pool_ref.AsDict())))
+
+    return client.MakeRequests(requests)

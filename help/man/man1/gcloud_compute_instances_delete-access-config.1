@@ -11,7 +11,7 @@ gcloud compute instances delete\-access\-config \- delete an access configuratio
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances delete\-access\-config\fR \fINAME\fR [\fB\-\-access\-config\-name\fR=\fIACCESS_CONFIG_NAME\fR;\ default="external\-nat"] [\fB\-\-network\-interface\fR=\fINETWORK_INTERFACE\fR;\ default="nic0"] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
+\f5gcloud compute instances delete\-access\-config\fR \fIINSTANCE_NAME\fR [\fB\-\-access\-config\-name\fR=\fIACCESS_CONFIG_NAME\fR;\ default="external\-nat"] [\fB\-\-network\-interface\fR=\fINETWORK_INTERFACE\fR;\ default="nic0"] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -27,7 +27,7 @@ machines.
 
 .RS 2m
 .TP 2m
-\fINAME\fR
+\fIINSTANCE_NAME\fR
 The name of the instance.
 
 
@@ -50,8 +50,10 @@ default.
 
 .TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
-The zone of the instance to operate on. If not specified, you will be prompted
-to select a zone.
+The zone of the instance to operate on. If not specified, you may be prompted to
+select a zone. \f5gcloud\fR will attempt to identify the zone by searching for
+resources in your project. If the zone cannot be determined, you will then be
+prompted with all Google Cloud Platform zones.
 
 To avoid prompting when this flag is omitted, you can set the
 \f5\fIcompute/zone\fR\fR property:

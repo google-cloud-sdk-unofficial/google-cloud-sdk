@@ -81,6 +81,9 @@ class UpdateBgpPeerAlpha(base.UpdateCommand):
     router_utils.AddCustomAdvertisementArgs(parser, 'peer')
 
   def Run(self, args):
+    # Manually ensure replace/incremental flags are mutually exclusive.
+    router_utils.CheckIncompatibleFlagsOrRaise(args)
+
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     messages = holder.client.messages
     service = holder.client.apitools_client.routers
@@ -91,27 +94,64 @@ class UpdateBgpPeerAlpha(base.UpdateCommand):
     existing = service.Get(request_type(**ref.AsDict()))
     replacement = copy.deepcopy(existing)
 
+    # Retrieve specified peer and update base fields.
     peer = _UpdateBgpPeer(replacement, args)
 
-    mode, groups, prefixes = router_utils.ParseAdvertisements(
-        messages=messages, resource_class=messages.RouterBgpPeer, args=args)
+    if router_utils.HasReplaceAdvertisementFlags(args):
+      mode, groups, prefixes = router_utils.ParseAdvertisements(
+          messages=messages, resource_class=messages.RouterBgpPeer, args=args)
 
-    existing_mode = peer.advertiseMode
-    router_utils.PromptIfSwitchToDefaultMode(
-        messages=messages,
-        resource_class=messages.RouterBgpPeer,
-        existing_mode=existing_mode,
-        new_mode=mode)
+      router_utils.PromptIfSwitchToDefaultMode(
+          messages=messages,
+          resource_class=messages.RouterBgpPeer,
+          existing_mode=peer.advertiseMode,
+          new_mode=mode)
 
-    attrs = {
-        'advertiseMode': mode,
-        'advertisedGroups': groups,
-        'advertisedPrefixs': prefixes,
-    }
+      attrs = {
+          'advertiseMode': mode,
+          'advertisedGroups': groups,
+          'advertisedPrefixs': prefixes,
+      }
 
-    for attr, value in attrs.items():
-      if value is not None:
-        setattr(peer, attr, value)
+      for attr, value in attrs.items():
+        if value is not None:
+          setattr(peer, attr, value)
+
+    if router_utils.HasIncrementalAdvertisementFlags(args):
+      # This operation should only be run on custom mode peers.
+      router_utils.ValidateCustomMode(
+          messages=messages,
+          resource_class=messages.RouterBgpPeer,
+          resource=peer)
+
+      # These arguments are guaranteed to be mutually exclusive in args.
+      if args.add_advertisement_groups:
+        groups_to_add = router_utils.ParseGroups(
+            resource_class=messages.RouterBgpPeer,
+            groups=args.add_advertisement_groups)
+        peer.advertisedGroups.extend(groups_to_add)
+
+      if args.remove_advertisement_groups:
+        groups_to_remove = router_utils.ParseGroups(
+            resource_class=messages.RouterBgpPeer,
+            groups=args.remove_advertisement_groups)
+        router_utils.RemoveGroupsFromAdvertisements(
+            messages=messages,
+            resource_class=messages.RouterBgpPeer,
+            resource=peer,
+            groups=groups_to_remove)
+
+      if args.add_advertisement_ranges:
+        ip_ranges_to_add = router_utils.ParseIpRanges(
+            messages=messages, ip_ranges=args.add_advertisement_ranges)
+        peer.advertisedPrefixs.extend(ip_ranges_to_add)
+
+      if args.remove_advertisement_ranges:
+        router_utils.RemoveIpRangesFromAdvertisements(
+            messages=messages,
+            resource_class=messages.RouterBgpPeer,
+            resource=peer,
+            ip_ranges=args.remove_advertisement_ranges)
 
     request_type = messages.ComputeRoutersPatchRequest
     resource = service.Patch(
@@ -125,7 +165,7 @@ class UpdateBgpPeerAlpha(base.UpdateCommand):
 
 
 def _UpdateBgpPeer(resource, args):
-  """Updates common attributes of a BGP peer based on flag arguments."""
+  """Updates base attributes of a BGP peer based on flag arguments."""
 
   peer = router_utils.FindBgpPeerOrRaise(resource, args.peer_name)
 

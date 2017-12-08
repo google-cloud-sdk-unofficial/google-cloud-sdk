@@ -11,7 +11,7 @@ gcloud compute instances set\-machine\-type \- set machine type for Google Compu
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute instances set\-machine\-type\fR \fINAME\fR [\fB\-\-custom\-cpu\fR=\fICUSTOM_CPU\fR] [\fB\-\-custom\-memory\fR=\fICUSTOM_MEMORY\fR] [\fB\-\-machine\-type\fR=\fIMACHINE_TYPE\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
+\f5gcloud compute instances set\-machine\-type\fR \fIINSTANCE_NAME\fR [\fB\-\-custom\-cpu\fR=\fICUSTOM_CPU\fR] [\fB\-\-custom\-memory\fR=\fICUSTOM_MEMORY\fR] [\fB\-\-machine\-type\fR=\fIMACHINE_TYPE\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGCLOUD_WIDE_FLAG\ ...\fR]
 
 
 
@@ -42,7 +42,7 @@ machine types.
 
 .RS 2m
 .TP 2m
-\fINAME\fR
+\fIINSTANCE_NAME\fR
 The name of the instance.
 
 
@@ -74,8 +74,10 @@ machine types, run 'gcloud compute machine\-types list'. Either this flag,
 
 .TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
-The zone of the instance to operate on. If not specified, you will be prompted
-to select a zone.
+The zone of the instance to operate on. If not specified, you may be prompted to
+select a zone. \f5gcloud\fR will attempt to identify the zone by searching for
+resources in your project. If the zone cannot be determined, you will then be
+prompted with all Google Cloud Platform zones.
 
 To avoid prompting when this flag is omitted, you can set the
 \f5\fIcompute/zone\fR\fR property:

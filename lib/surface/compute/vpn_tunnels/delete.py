@@ -13,27 +13,40 @@
 # limitations under the License.
 """Command for deleting vpn tunnels."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.vpn_tunnels import flags
 
 
-class Delete(base_classes.RegionalDeleter):
-  """Delete vpn tunnels."""
+class Delete(base.DeleteCommand):
+  """Delete vpn tunnels.
 
-  # Placeholder to indicate that a detailed_help field exists and should
-  # be set outside the class definition.
-  detailed_help = None
+  *{command}* deletes one or more Google Compute Engine vpn tunnels.
+  """
 
-  @property
-  def service(self):
-    return self.compute.vpnTunnels
+  VPN_TUNNEL_ARG = None
 
-  @property
-  def resource_type(self):
-    return 'vpnTunnels'
+  @staticmethod
+  def Args(parser):
+    Delete.VPN_TUNNEL_ARG = flags.VpnTunnelArgument(plural=True)
+    Delete.VPN_TUNNEL_ARG.AddArgument(parser, operation_type='delete')
 
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-Delete.detailed_help = {
-    'brief': 'Delete vpn tunnels',
-    'DESCRIPTION': """\
-        *{command}* deletes one or more Google Compute Engine vpn tunnels.
-        """,
-}
+    vpn_tunnel_refs = Delete.VPN_TUNNEL_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+
+    utils.PromptForDeletion(vpn_tunnel_refs, 'region')
+
+    requests = []
+    for vpn_tunnel_ref in vpn_tunnel_refs:
+      requests.append((client.apitools_client.vpnTunnels, 'Delete',
+                       client.messages.ComputeVpnTunnelsDeleteRequest(
+                           **vpn_tunnel_ref.AsDict())))
+
+    return client.MakeRequests(requests)

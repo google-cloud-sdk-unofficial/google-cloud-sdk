@@ -13,14 +13,20 @@
 # limitations under the License.
 """Command for describing groups."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-class Describe(base_classes.BaseAsyncMutator):
+class Describe(base.Command):
   """Describe a Google Compute Engine group.
 
   *{command}* displays all data associated with a Google Compute
   Engine group in a project.
+
+  ## EXAMPLES
+  To describe a user, run:
+
+    $ {command} example-user
   """
 
   @staticmethod
@@ -30,41 +36,19 @@ class Describe(base_classes.BaseAsyncMutator):
         metavar='NAME',
         help='The name of the group to describe.')
 
-  @property
-  def service(self):
-    return self.clouduseraccounts.groups
+  def Run(self, args):
+    """Issues requests necessary for describing groups."""
+    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    holder = base_classes.ComputeUserAccountsApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def method(self):
-    return 'Get'
-
-  @property
-  def resource_type(self):
-    return 'groups'
-
-  @property
-  def messages(self):
-    return self.clouduseraccounts.MESSAGES_MODULE
-
-  def CreateRequests(self, args):
-    """Returns a list of requests necessary for describing groups."""
-
-    group_ref = self.clouduseraccounts_resources.Parse(
+    group_ref = holder.resources.Parse(
         args.name,
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='clouduseraccounts.groups')
 
-    request = self.messages.ClouduseraccountsGroupsGetRequest(
-        project=self.project,
+    request = client.MESSAGES_MODULE.ClouduseraccountsGroupsGetRequest(
+        project=group_ref.project,
         groupName=group_ref.Name())
 
-    return [request]
-
-
-Describe.detailed_help = {
-    'EXAMPLES': """\
-        To describe a user, run:
-
-          $ {command} example-user
-        """,
-}
+    return compute_holder.client.MakeRequests([(client.groups, 'Get', request)])

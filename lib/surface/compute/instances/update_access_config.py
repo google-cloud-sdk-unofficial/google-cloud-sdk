@@ -17,8 +17,7 @@ from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.command_lib.compute import flags as compute_flags
-from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import log
 
 
@@ -32,18 +31,18 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    instance_flags.INSTANCE_ARG.AddArgument(parser)
-    instance_flags.AddNetworkInterfaceArgs(parser)
-    instance_flags.AddPublicDnsArgs(parser, instance=False)
-    instance_flags.AddNetworkTierArgs(parser, instance=False)
+    flags.INSTANCE_ARG.AddArgument(parser)
+    flags.AddNetworkInterfaceArgs(parser)
+    flags.AddPublicDnsArgs(parser, instance=False)
+    flags.AddNetworkTierArgs(parser, instance=False)
 
   def CreateReference(self, client, resources, args):
-    instance_flags.ValidatePublicDnsFlags(args)
+    flags.ValidatePublicDnsFlags(args)
 
-    return instance_flags.INSTANCE_ARG.ResolveAsResource(
+    return flags.INSTANCE_ARG.ResolveAsResource(
         args,
         resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
+        scope_lister=flags.GetInstanceZoneScopeLister(client))
 
   def GetGetRequest(self, client, instance_ref):
     return (client.apitools_client.instances,

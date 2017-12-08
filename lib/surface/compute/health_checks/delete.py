@@ -13,28 +13,41 @@
 # limitations under the License.
 """Command for deleting health checks."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.health_checks import flags
 
 
-class Delete(base_classes.GlobalDeleter):
-  """Delete health checks."""
+class Delete(base.DeleteCommand):
+  """Delete health checks.
+
+  *{command}* deletes one or more Google Compute Engine
+  health checks.
+  """
+
+  HEALTH_CHECK_ARG = None
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalDeleter.Args(parser, 'compute.healthChecks')
+    Delete.HEALTH_CHECK_ARG = flags.HealthCheckArgument('', plural=True)
+    Delete.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='delete')
 
-  @property
-  def service(self):
-    return self.compute.healthChecks
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-  @property
-  def resource_type(self):
-    return 'healthChecks'
+    health_check_refs = Delete.HEALTH_CHECK_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+    utils.PromptForDeletion(health_check_refs)
 
-Delete.detailed_help = {
-    'brief': 'Delete health checks',
-    'DESCRIPTION': """\
-        *{command}* deletes one or more Google Compute Engine
-        health checks.
-        """,
-}
+    requests = []
+    for health_check_ref in health_check_refs:
+      requests.append((client.apitools_client.healthChecks, 'Delete',
+                       client.messages.ComputeHealthChecksDeleteRequest(
+                           **health_check_ref.AsDict())))
+
+    return client.MakeRequests(requests)

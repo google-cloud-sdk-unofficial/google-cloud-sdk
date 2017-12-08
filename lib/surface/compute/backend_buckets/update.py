@@ -13,53 +13,48 @@
 # limitations under the License.
 """Commands for updating backend buckets."""
 
-import copy
+from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import backend_buckets_utils
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_buckets_flags
+from googlecloudsdk.core import log
 
 
-class Update(base_classes.ReadWriteCommand):
-  """Update a backend bucket."""
+class Update(base.UpdateCommand):
+  """Update a backend bucket.
+
+  *{command}* is used to update backend buckets.
+  """
+
+  BACKEND_BUCKET_ARG = None
 
   @staticmethod
   def Args(parser):
-    backend_buckets_utils.AddUpdatableArgs(parser)
+    backend_buckets_utils.AddUpdatableArgs(Update, parser)
     backend_buckets_flags.GCS_BUCKET_ARG.AddArgument(parser)
 
-  @property
-  def service(self):
-    return self.compute.backendBuckets
-
-  @property
-  def resource_type(self):
-    return 'backendBuckets'
-
-  def CreateReference(self, args):
-    return backend_buckets_flags.BACKEND_BUCKET_ARG.ResolveAsResource(
-        args, self.resources)
-
-  def GetGetRequest(self, args):
+  def GetGetRequest(self, client, backend_bucket_ref):
     return (
-        self.service,
+        client.apitools_client.backendBuckets,
         'Get',
-        self.messages.ComputeBackendBucketsGetRequest(
-            project=self.project,
-            backendBucket=self.ref.Name()))
+        client.messages.ComputeBackendBucketsGetRequest(
+            project=backend_bucket_ref.project,
+            backendBucket=backend_bucket_ref.Name()))
 
-  def GetSetRequest(self, args, replacement, _):
+  def GetSetRequest(self, client, backend_bucket_ref, replacement):
     return (
-        self.service,
+        client.apitools_client.backendBuckets,
         'Update',
-        self.messages.ComputeBackendBucketsUpdateRequest(
-            project=self.project,
-            backendBucket=self.ref.Name(),
+        client.messages.ComputeBackendBucketsUpdateRequest(
+            project=backend_bucket_ref.project,
+            backendBucket=backend_bucket_ref.Name(),
             backendBucketResource=replacement))
 
   def Modify(self, args, existing):
-    replacement = copy.deepcopy(existing)
+    replacement = encoding.CopyProtoMessage(existing)
 
     if args.description:
       replacement.description = args.description
@@ -82,12 +77,25 @@ class Update(base_classes.ReadWriteCommand):
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
 
-    return super(Update, self).Run(args)
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
+    backend_bucket_ref = Update.BACKEND_BUCKET_ARG.ResolveAsResource(
+        args, holder.resources)
+    get_request = self.GetGetRequest(client, backend_bucket_ref)
 
-Update.detailed_help = {
-    'brief': 'Update a backend bucket',
-    'DESCRIPTION': """
-        *{command}* is used to update backend buckets.
-        """,
-}
+    objects = client.MakeRequests([get_request])
+
+    new_object = self.Modify(args, objects[0])
+
+    # If existing object is equal to the proposed object or if
+    # Modify() returns None, then there is no work to be done, so we
+    # print the resource and return.
+    if objects[0] == new_object:
+      log.status.Print(
+          'No change requested; skipping update for [{0}].'.format(
+              objects[0].name))
+      return objects
+
+    return client.MakeRequests(
+        [self.GetSetRequest(client, backend_bucket_ref, new_object)])

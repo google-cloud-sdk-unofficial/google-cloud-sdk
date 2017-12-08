@@ -17,9 +17,8 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import csek_utils
 from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scopes
-from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.command_lib.compute.instances import flags
 
 MODE_OPTIONS = {
     'ro': 'Read-only.',
@@ -43,7 +42,7 @@ DETAILED_HELP = {
 def _CommonArgs(parser):
   """Add parser arguments common to all tracks."""
 
-  instance_flags.INSTANCE_ARG.AddArgument(parser)
+  flags.INSTANCE_ARG.AddArgument(parser)
 
   parser.add_argument(
       '--device-name',
@@ -86,9 +85,9 @@ class AttachDisk(base.SilentCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
-        args, holder.resources, scope_lister=flags.GetDefaultScopeLister(
-            client))
+    instance_ref = flags.INSTANCE_ARG.ResolveAsResource(
+        args, holder.resources,
+        scope_lister=flags.GetInstanceZoneScopeLister(client))
 
     disk_ref = self.ParseDiskRef(holder.resources, args, instance_ref)
 
@@ -127,7 +126,7 @@ class AttachDiskAlpha(AttachDisk):
 
   @staticmethod
   def Args(parser):
-    instance_flags.AddDiskScopeFlag(parser)
+    flags.AddDiskScopeFlag(parser)
     parser.add_argument(
         '--force-attach',
         default=False,

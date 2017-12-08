@@ -24,16 +24,20 @@ import traceback
 
 
 import apache_beam as beam
+from apache_beam.options.value_provider import StaticValueProvider
+from apache_beam.options.value_provider import ValueProvider
 from apache_beam.transforms import window
 from apache_beam.utils.windowed_value import WindowedValue
 
 from google.cloud.ml import prediction as mlprediction
 from google.cloud.ml.dataflow import _aggregators as aggregators
+from google.cloud.ml.dataflow import _cloud_logging_client as cloud_logging_client
 
 BASE64_JSON_ATTR_ = "b64"
 BASE64_TENSOR_NAME_SUFFIX_ = "_bytes"
 DEFAULT_BATCH_SIZE = 1000  # 1K instances per batch when evaluating models.
 LOG_SIZE_LIMIT = 1000  # 1K bytes for the input field in log entries.
+LOG_NAME = "worker"
 
 
 class EmitAsBatchDoFn(beam.DoFn):
@@ -46,6 +50,10 @@ class EmitAsBatchDoFn(beam.DoFn):
       desired_batch_size: the desired size we want to buffer the records before
         emitting.
     """
+    # TODO(user): Remove the "if" section when the direct use of
+    # EmitAsBatchDoFn() is retired from ml_transform.
+    if isinstance(desired_batch_size, int):
+      desired_batch_size = StaticValueProvider(int, desired_batch_size)
     self._desired_batch_size = desired_batch_size
     self._batch = []
 
@@ -70,7 +78,7 @@ class EmitAsBatchDoFn(beam.DoFn):
       pass
 
     self._batch.append(element)
-    if len(self._batch) >= self._desired_batch_size:
+    if len(self._batch) >= self._desired_batch_size.get():
       yield self._flush_batch()
 
   def finish_bundle(self, context=None):
@@ -108,15 +116,20 @@ class PredictionDoFn(beam.DoFn):
   # all initialization detection.
   _thread_local = threading.local()
 
-  def __init__(self, aggregator_dict=None, cloud_logger=None,
+  def __init__(self,
+               aggregator_dict=None,
+               user_project_id="",
+               user_job_id="",
                skip_preprocessing=False,
-               target="", config=None):
+               target="",
+               config=None):
     """Constructor of Prediction beam.DoFn class.
 
     Args:
       aggregator_dict: A dict of aggregators containing maps from counter name
                        to the aggregator.
-      cloud_logger: The cloud logging client to send logs to.
+      user_project_id: A string. The project to which the logs will be sent.
+      user_job_id:     A string. The job to which the logs will be sent.
       skip_preprocessing: bool whether to skip preprocessing even when
                           the metadata.yaml/metadata.json file exists.
       target: The execution engine to connect to. See target in tf.Session(). In
@@ -129,15 +142,32 @@ class PredictionDoFn(beam.DoFn):
                  checkpoint files to restore the session.
     """
     self._target = target
+
+    # TODO(user): Remove the "if" section when the direct use of
+    # PredictionDoFn() is retired from ml_transform.
+    if isinstance(user_project_id, basestring):
+      user_project_id = StaticValueProvider(str, user_project_id)
+    if isinstance(user_job_id, basestring):
+      user_job_id = StaticValueProvider(str, user_job_id)
+
+    self._user_project_id = user_project_id
+    self._user_job_id = user_job_id
     self._skip_preprocessing = skip_preprocessing
     self._config = config
     self._aggregator_dict = aggregator_dict
-    self._cloud_logger = cloud_logger
     self._model_state = None
+    self._cloud_logger = None
 
     # Metrics.
     self._model_load_seconds_distribution = beam.metrics.Metrics.distribution(
         self.__class__, "model_load_seconds")
+
+  def start_bundle(self):
+    user_project_id = self._user_project_id.get()
+    user_job_id = self._user_job_id.get()
+    if user_project_id and user_job_id:
+      self._cloud_logger = cloud_logging_client.MLCloudLoggingClient.create(
+          user_project_id, user_job_id, LOG_NAME, "jsonPayload")
 
   def _create_snippet(self, input_data):
     """Truncate the input data to create a snippet."""
@@ -157,6 +187,9 @@ class PredictionDoFn(beam.DoFn):
       pass
 
     try:
+      if isinstance(model_dir, ValueProvider):
+        model_dir = model_dir.get()
+
       if self._model_state is None:
         if (getattr(self._thread_local, "model_state", None) is None or
             self._thread_local.model_state.model_dir != model_dir):
@@ -180,7 +213,7 @@ class PredictionDoFn(beam.DoFn):
       predictions = list(predictions)
       predictions = mlprediction.encode_base64(
           predictions,
-          self._model_state.model.outputs_type_map())
+          self._model_state.model.signature.outputs)
 
       if self._aggregator_dict:
         aggr = self._aggregator_dict.get(
@@ -197,17 +230,15 @@ class PredictionDoFn(beam.DoFn):
       if self._cloud_logger:
         # TODO(user): consider to write a sink to buffer the logging events. It
         # also eliminates the restarting/duplicated running issue.
-        self._cloud_logger.write_error_message(
-            e.error_message, self._create_snippet(element))
+        self._cloud_logger.write_error_message(e.error_message,
+                                               self._create_snippet(element))
       # reraise failure to load model as permanent exception to end dataflow job
       if e.error_code == mlprediction.PredictionError.FAILED_TO_LOAD_MODEL:
         raise beam.utils.retry.PermanentException(e.error_message)
       try:
-        yield beam.pvalue.TaggedOutput(
-            "errors", (e.error_message, element))
+        yield beam.pvalue.TaggedOutput("errors", (e.error_message, element))
       except AttributeError:
-        yield beam.pvalue.SideOutputValue("errors",
-                                          (e.error_message, element))
+        yield beam.pvalue.SideOutputValue("errors", (e.error_message, element))
 
     except Exception as e:  # pylint: disable=broad-except
       logging.error("Got an unknown exception: [%s].", traceback.format_exc())
@@ -215,11 +246,9 @@ class PredictionDoFn(beam.DoFn):
         self._cloud_logger.write_error_message(
             str(e), self._create_snippet(element))
       try:
-        yield beam.pvalue.TaggedOutput(
-            "errors", (str(e), element))
+        yield beam.pvalue.TaggedOutput("errors", (str(e), element))
       except AttributeError:
-        yield beam.pvalue.SideOutputValue("errors",
-                                          (str(e), element))
+        yield beam.pvalue.SideOutputValue("errors", (str(e), element))
 
 
 class BatchPredict(beam.PTransform):
@@ -234,7 +263,8 @@ class BatchPredict(beam.PTransform):
                model_dir,
                batch_size=DEFAULT_BATCH_SIZE,
                aggregator_dict=None,
-               cloud_logger=None,
+               user_project_id="",
+               user_job_id="",
                target="",
                config=None,
                return_input=False,
@@ -244,12 +274,16 @@ class BatchPredict(beam.PTransform):
     Args:
       model_dir: a Pvalue singleton of model directory that contains model
                  graph and model parameter files.
-      batch_size: the number of records in one batch.  All the instances in the
-                  same batch would be fed into tf session together thereby only
-                  on Session.Run() is invoked for one batch.
+      batch_size: the number of records in one batch or a ValueProvider of
+                  integer.  All the instances in the same batch would be fed
+                  into tf session together thereby only on Session.Run() is
+                  invoked for one batch.
       aggregator_dict: A dict of aggregators containing maps from counter name
                  to the aggregator.
-      cloud_logger: cloud logging client to send log to cloud logging.
+      user_project_id: A string or a ValueProvider of string.
+                       The project to which the logs will be sent.
+      user_job_id: A string or a ValueProvider of string. The job to which
+                   the logs will be sent.
       target: The execution engine to connect to. Optional. See target in
               tf.Session()
       config: A ConfigProto proto with configuration options. Optional. See
@@ -259,9 +293,33 @@ class BatchPredict(beam.PTransform):
       **kwargs: Other named arguments, e.g. label, passed to base PTransform.
     """
     super(BatchPredict, self).__init__(**kwargs)
+
+    if not isinstance(batch_size, (int, ValueProvider)):
+      raise TypeError("%s: batch_size must be of type int"
+                      " or ValueProvider; got %r instead"
+                      % (self.__class__.__name__, batch_size))
+    if isinstance(batch_size, int):
+      batch_size = StaticValueProvider(int, batch_size)
     self._batch_size = batch_size
+
     self._aggregator_dict = aggregator_dict
-    self._cloud_logger = cloud_logger
+
+    if not isinstance(user_project_id, (basestring, ValueProvider)):
+      raise TypeError("%s: user_project_id must be of type string"
+                      " or ValueProvider; got %r instead"
+                      % (self.__class__.__name__, user_project_id))
+    if isinstance(user_project_id, basestring):
+      user_project_id = StaticValueProvider(str, user_project_id)
+    self._user_project_id = user_project_id
+
+    if not isinstance(user_job_id, (basestring, ValueProvider)):
+      raise TypeError("%s: user_job_id must be of type string"
+                      " or ValueProvider; got %r instead"
+                      % (self.__class__.__name__, user_job_id))
+    if isinstance(user_job_id, basestring):
+      user_job_id = StaticValueProvider(str, user_job_id)
+    self._user_job_id = user_job_id
+
     self._target = target
     self._config = config
     self._model_dir = model_dir
@@ -281,14 +339,15 @@ class BatchPredict(beam.PTransform):
       A PCollection of prediction records and errors
     """
     result = (data | "Batch" >> beam.ParDo(EmitAsBatchDoFn(self._batch_size))
-              | "Prediction" >> beam.ParDo(PredictionDoFn(
-                  self._aggregator_dict,
-                  self._cloud_logger,
-                  skip_preprocessing=False,
-                  target=self._target,
-                  config=self._config),
-                                           self._model_dir).with_outputs(
-                                               "errors", main="main"))
+              | "Prediction" >> beam.ParDo(
+                  PredictionDoFn(
+                      self._aggregator_dict,
+                      self._user_project_id,
+                      self._user_job_id,
+                      skip_preprocessing=False,
+                      target=self._target,
+                      config=self._config), self._model_dir).with_outputs(
+                          "errors", main="main"))
     input_output, errors = result.main, result.errors
     if self._return_input:
       output_data = input_output

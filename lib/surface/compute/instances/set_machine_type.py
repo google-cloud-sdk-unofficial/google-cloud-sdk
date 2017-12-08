@@ -18,21 +18,20 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
-from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
+from googlecloudsdk.command_lib.compute.instances import flags
 
 
 def _CommonArgs(parser, release_track):
   """Register parser args common to all tracks."""
-  instance_flags.INSTANCE_ARG.AddArgument(parser)
-  instance_flags.AddMachineTypeArgs(
+  flags.INSTANCE_ARG.AddArgument(parser)
+  flags.AddMachineTypeArgs(
       parser,
       unspecified_help=(
           ' Either this flag, --custom-cpu, or --custom-memory must be '
           'specified.'))
-  instance_flags.AddCustomMachineTypeArgs(parser)
+  flags.AddCustomMachineTypeArgs(parser)
   if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-    instance_flags.AddExtendedMachineTypeArgs(parser)
+    flags.AddExtendedMachineTypeArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
@@ -58,9 +57,9 @@ class SetMachineType(base.SilentCommand):
 
     self._ValidateMachineTypePresence(args)
 
-    instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
-        args, holder.resources, scope_lister=flags.GetDefaultScopeLister(
-            client))
+    instance_ref = flags.INSTANCE_ARG.ResolveAsResource(
+        args, holder.resources,
+        scope_lister=flags.GetInstanceZoneScopeLister(client))
 
     machine_type = instance_utils.InterpretMachineType(
         machine_type=args.machine_type,
