@@ -39,7 +39,13 @@ suggesting cloning a source repository
 Most users will run gcloud init to get started with gcloud. Subsequent gcloud
 init invocations can be use to create new gcloud configurations or to
 reinitialize existing configurations. See \f5gcloud topic configurations\fR for
-additional information.
+additional information about configurations.
+
+Properties set by \f5gcloud init\fR are local and persistent. They are not
+affected by remote changes to your project. For instance, your configuration's
+default Compute Engine zone will remain stable, even if you or another user
+changes the project default zone in the Developer Console website. You can
+resync your configuration at any time by rerunning \f5gcloud init\fR.
 
 
 

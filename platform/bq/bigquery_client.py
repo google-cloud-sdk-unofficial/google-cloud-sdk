@@ -2462,7 +2462,7 @@ class ApiClientHelper(object):
 
   class Reference(collections.Mapping):
     """Base class for Reference objects returned by apiclient."""
-    _required_fields = set()
+    _required_fields = frozenset()
     _format_str = ''
 
     def __init__(self, **kwds):
@@ -2490,6 +2490,9 @@ class ApiClientHelper(object):
         return self.__dict__[key]
       raise KeyError(key)
 
+    def __hash__(self):
+      return hash(str(self))
+
     def __len__(self):
       return len(self._required_fields)
 
@@ -2505,7 +2508,7 @@ class ApiClientHelper(object):
                  for name in self._required_fields)
 
   class JobReference(Reference):
-    _required_fields = set(('projectId', 'jobId'))
+    _required_fields = frozenset(('projectId', 'jobId'))
     _format_str = '%(projectId)s:%(jobId)s'
     typename = 'job'
 
@@ -2514,7 +2517,7 @@ class ApiClientHelper(object):
           projectId=self.projectId)
 
   class ProjectReference(Reference):
-    _required_fields = set(('projectId',))
+    _required_fields = frozenset(('projectId',))
     _format_str = '%(projectId)s'
     typename = 'project'
 
@@ -2527,7 +2530,7 @@ class ApiClientHelper(object):
           projectId=self.projectId, datasetId=dataset_id, tableId=table_id)
 
   class DatasetReference(Reference):
-    _required_fields = set(('projectId', 'datasetId'))
+    _required_fields = frozenset(('projectId', 'datasetId'))
     _format_str = '%(projectId)s:%(datasetId)s'
     typename = 'dataset'
 
@@ -2540,7 +2543,7 @@ class ApiClientHelper(object):
           projectId=self.projectId, datasetId=self.datasetId, tableId=table_id)
 
   class TableReference(Reference):
-    _required_fields = set(('projectId', 'datasetId', 'tableId'))
+    _required_fields = frozenset(('projectId', 'datasetId', 'tableId'))
     _format_str = '%(projectId)s:%(datasetId)s.%(tableId)s'
     typename = 'table'
 
