@@ -18,6 +18,7 @@ import textwrap
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core.util import files
 
 
 class SignBlob(base_classes.BaseIamCommand):
@@ -63,7 +64,9 @@ class SignBlob(base_classes.BaseIamCommand):
             signBlobRequest=self.messages.SignBlobRequest(
                 bytesToSign=self.ReadFile(args.input))))
 
-    self.WriteFile(args.output, response.signature)
+    files.WriteFileOrStdoutContents(
+        args.output, content=response.signature, binary=True)
+
     log.status.Print(
         'signed blob [{0}] as [{1}] for [{2}] using key [{3}]'.format(
             args.input, args.output, args.iam_account, response.keyId))

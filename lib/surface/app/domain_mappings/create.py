@@ -15,12 +15,13 @@
 
 from googlecloudsdk.api_lib.app.api import appengine_domains_api_client as api_client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.app import domains_util
 from googlecloudsdk.command_lib.app import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Create(base.CreateCommand):
   """Creates a domain mapping."""
 
   detailed_help = {
@@ -42,10 +43,30 @@ class CreateBeta(base.CreateCommand):
     parser.display_info.AddFormat('default(id, resourceRecords)')
 
   def Run(self, args):
-    client = api_client.GetApiClientForTrack(
-        self.ReleaseTrack())
-    mapping = client.CreateDomainMapping(args.domain,
-                                         args.certificate_id)
+    return self.Create(args)
+
+  def Create(self, args, enable_certificate_management=False):
+    client = api_client.GetApiClientForTrack(self.ReleaseTrack())
+
+    if enable_certificate_management:
+      domains_util.ValidateCertificateArgs(
+          args.certificate_id, args.certificate_management)
+
+      if not args.certificate_management:
+        if not args.certificate_id:
+          args.certificate_management = 'AUTOMATIC'
+        else:
+          args.certificate_management = 'MANUAL'
+
+      management_type = domains_util.ParseCertificateManagement(
+          client.messages, args.certificate_management)
+
+      mapping = client.CreateDomainMapping(args.domain,
+                                           args.certificate_id,
+                                           management_type)
+    else:
+      mapping = client.CreateDomainMapping(args.domain,
+                                           args.certificate_id)
     log.CreatedResource(args.domain)
 
     log.status.Print(
@@ -54,8 +75,9 @@ class CreateBeta(base.CreateCommand):
     return mapping
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.BETA)
+class CreateBeta(Create):
   """Creates a domain mapping."""
 
   detailed_help = {
@@ -63,38 +85,29 @@ class CreateAlpha(CreateBeta):
           '{description}',
       'EXAMPLES':
           """\
-          To create a new App Engine new domain mapping, run:
+          To create a new App Engine new domain mapping with an automatically
+          managed certificate, run:
 
-              $ {command} '*.example.com' \
-                    --certificate-id=1234
+              $ {command} '*.example.com'
 
-          To create a domain with an automatically managed certificate, run:
+          To create a domain with a manually managed certificate, run:
 
-              $ {command} 'example.com'
+              $ {command} 'example.com' \
+                  --certificate-management=MANUAL --certificate-id=1234
 
           Note: managed certificates do not support wildcard domain mappings.
 
           To create a domain with no associated certificate, run:
 
               $ {command} '*.example.com' \
-                    --no-managed-certificate
+                  --certificate-management=MANUAL
           """,
   }
 
   @staticmethod
   def Args(parser):
-    super(CreateAlpha, CreateAlpha).Args(parser)
-    flags.AddNoManagedCertificateFlag(parser)
+    super(CreateBeta, CreateBeta).Args(parser)
+    flags.AddCertificateManagementFlag(parser)
 
   def Run(self, args):
-    client = api_client.GetApiClientForTrack(
-        self.ReleaseTrack())
-    mapping = client.CreateDomainMapping(args.domain,
-                                         args.certificate_id,
-                                         args.no_managed_certificate)
-    log.CreatedResource(args.domain)
-
-    log.status.Print(
-        'Please add the following entries to your domain registrar.'
-        ' DNS changes can require up to 24 hours to take effect.')
-    return mapping
+    return self.Create(args, enable_certificate_management=True)

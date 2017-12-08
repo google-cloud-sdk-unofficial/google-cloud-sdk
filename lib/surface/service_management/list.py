@@ -18,6 +18,14 @@ from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import resources
+
+
+def _GetUriFromResource(resource):
+  """Returns the URI for resource."""
+  return resources.REGISTRY.ParseRelativeName(
+      'services/' + resource.serviceName,
+      collection=services_util.SERVICES_COLLECTION).SelfLink()
 
 
 class List(base.ListCommand):
@@ -77,15 +85,13 @@ class List(base.ListCommand):
                                   'has already enabled. Or use one of '
                                   '--enabled or --produced.'))
 
-    # Remove unneeded list-related flags from parser
-    base.URI_FLAG.RemoveFromParser(parser)
-
     parser.display_info.AddFormat("""
           table(
             serviceName:label=NAME,
             serviceConfig.title
           )
         """)
+    parser.display_info.AddUriFunc(_GetUriFromResource)
 
   def Run(self, args):
     """Run 'service-management list'.

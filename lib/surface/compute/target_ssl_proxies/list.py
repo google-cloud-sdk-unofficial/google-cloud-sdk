@@ -32,7 +32,7 @@ class List(base.ListCommand):
         metavar='NAME',
         nargs='*',
         default=[],
-        completer=completers.DeprecatedInstancesCompleter,
+        completer=completers.InstancesCompleter,
         help=('If provided, show details for the specified names and/or URIs '
               'of resources.'))
 

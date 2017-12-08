@@ -114,7 +114,7 @@ def _CommonArgs(parser, source_snapshot_arg):
 
   parser.add_argument(
       '--type',
-      completer=completers.DeprecatedDiskTypesCompleter,
+      completer=completers.DiskTypesCompleter,
       help="""\
       Specifies the type of disk to create. To get a
       list of available disk types, run `gcloud compute disk-types list`.

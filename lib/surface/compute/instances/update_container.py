@@ -194,8 +194,7 @@ class UpdateContainer(base.UpdateCommand):
         docker format).
         - If # is first non-whitespace character in a line the line is ignored
         as a comment.
-        """,
-        hidden=True)
+        """)
 
     env_group.add_argument(
         '--remove-container-env',
@@ -263,25 +262,52 @@ class UpdateContainer(base.UpdateCommand):
             operation.selfLink, collection='compute.zoneOperations')
 
         operation_poller = poller.Poller(client.apitools_client.instances)
-        waiter.WaitFor(
+        set_metadata_waiter = waiter.WaitFor(
             operation_poller, operation_ref,
             'Updating specification of container [{0}]'.format(
                 instance_ref.Name()))
 
-        # restart the Virtual Machine
-        operation = client.apitools_client.instances.Reset(
-            client.messages.ComputeInstancesResetRequest(
-                **instance_ref.AsDict()))
-
-        operation_ref = holder.resources.Parse(
-            operation.selfLink, collection='compute.zoneOperations')
-
-        operation_poller = poller.Poller(client.apitools_client.instances)
-        return waiter.WaitFor(
-            operation_poller, operation_ref,
-            'Restarting instance [{0}]'.format(instance_ref.Name()))
+        if (instance.status ==
+            client.messages.Instance.StatusValueValuesEnum.TERMINATED):
+          return set_metadata_waiter
+        elif (instance.status ==
+              client.messages.Instance.StatusValueValuesEnum.SUSPENDED):
+          return self.StopVm(holder, instance_ref)
+        else:
+          self.StopVm(holder, instance_ref)
+          return self.StartVm(holder, instance_ref)
 
     raise containers_utils.NoGceContainerDeclarationMetadataKey()
+
+  def StopVm(self, holder, instance_ref):
+    """Stop the Virtual Machine."""
+    client = holder.client
+    operation = client.apitools_client.instances.Stop(
+        client.messages.ComputeInstancesStopRequest(
+            **instance_ref.AsDict()))
+
+    operation_ref = holder.resources.Parse(
+        operation.selfLink, collection='compute.zoneOperations')
+
+    operation_poller = poller.Poller(client.apitools_client.instances)
+    return waiter.WaitFor(
+        operation_poller, operation_ref,
+        'Stopping instance [{0}]'.format(instance_ref.Name()))
+
+  def StartVm(self, holder, instance_ref):
+    """Start the Virtual Machine."""
+    client = holder.client
+    operation = client.apitools_client.instances.Start(
+        client.messages.ComputeInstancesStartRequest(
+            **instance_ref.AsDict()))
+
+    operation_ref = holder.resources.Parse(
+        operation.selfLink, collection='compute.zoneOperations')
+
+    operation_poller = poller.Poller(client.apitools_client.instances)
+    return waiter.WaitFor(
+        operation_poller, operation_ref,
+        'Starting instance [{0}]'.format(instance_ref.Name()))
 
 
 @base.Hidden

@@ -21,7 +21,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import remote_completion
 
 _DETAILED_HELP = """
 
@@ -140,7 +139,7 @@ class Clone(base.CreateCommand):
           is not specified.
       HttpException: A http error response was received while executing api
           request.
-      ToolException: An error other than http error occured while executing the
+      ToolException: An error other than http error occurred while executing the
           command.
     """
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
@@ -179,8 +178,6 @@ class Clone(base.CreateCommand):
         sql_messages.SqlInstancesGetRequest(
             project=destination_instance_ref.project,
             instance=destination_instance_ref.instance))
-    cache = remote_completion.RemoteCompletion()
-    cache.AddToCache(destination_instance_ref.SelfLink())
     return rsource
 
 

@@ -54,7 +54,8 @@ class List(base.ListCommand):
     lister.AddBaseListerArgs(parser)
 
   def Run(self, args):
-    log.status.Print(flags.LIST_NOTICE)
+    if not args.IsSpecified('format'):
+      log.status.Print(flags.LIST_NOTICE)
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 

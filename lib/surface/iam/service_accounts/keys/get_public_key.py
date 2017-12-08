@@ -17,6 +17,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core.util import files
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -60,6 +61,8 @@ class GetPublicKey(base_classes.BaseIamCommand, base.Command):
         self.messages.IamProjectsServiceAccountsKeysGetRequest(
             name=iam_util.EmailAndKeyToResourceName(args.iam_account, args.key),
             publicKeyType=iam_util.PublicKeyTypeFromString(args.type)))
-    self.WriteFile(args.output_file, result.publicKeyData)
+    files.WriteFileOrStdoutContents(
+        args.output_file, content=result.publicKeyData, binary=True)
+
     log.status.Print('written key [{0}] for [{2}] as [{1}]'.format(
         args.key, args.output_file, args.iam_account))

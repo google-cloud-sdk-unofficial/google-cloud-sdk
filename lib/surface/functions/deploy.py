@@ -33,6 +33,9 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import files as file_utils
 
 _DEPLOY_WAIT_NOTICE = 'Deploying function (may take a while - up to 2 minutes)'
+_NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE = (
+    'Label keys starting with `deployment` are reserved for use by deployment '
+    'tools and cannot be specified manually.')
 
 
 def _FunctionArgs(parser):
@@ -64,7 +67,10 @@ def _FunctionArgs(parser):
             'failure.'),
       action='store_true',
   )
-  labels_util.AddUpdateLabelsFlags(parser)
+  labels_util.AddUpdateLabelsFlags(
+      parser,
+      extra_update_message=' ' + _NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE,
+      extra_remove_message=' ' + _NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE)
 
 
 def _SourceCodeArgs(parser):
@@ -392,9 +398,14 @@ class Deploy(base.Command):
     elif is_new_function or args.local_path or args.stage_bucket:
       # Do not change source of existing function unless instructed to.
       base_function.sourceArchiveUrl = self._PrepareSourcesOnGcs(args)
-    base_function.labels = labels_util.UpdateLabels(
+    # Set information about deplouyment tool.
+    labels_to_update = args.update_labels or {}
+    labels_to_update['deployment-tool'] = 'cli-gcloud'
+    updated_labels = labels_util.UpdateLabels(
         base_function.labels, messages.CloudFunction.LabelsValue,
-        update_labels=args.update_labels, remove_labels=args.remove_labels)
+        update_labels=labels_to_update, remove_labels=args.remove_labels)
+    if updated_labels is not None:
+      base_function.labels = updated_labels
 
   def _ValidateAfterCheckingFunctionsExistence(self, function, args):
     if not args.IsSpecified('stage_bucket') and (
@@ -423,6 +434,16 @@ class Deploy(base.Command):
           tmp_dir, local_path, args.include_ignored_files)
       return deploy_util.UploadFile(zip_file, args.name, args.stage_bucket)
 
+  def _ValidateUnpackedSourceSize(self, args):
+    ignore_regex = deploy_util.GetIgnoreFilesRegex(args.include_ignored_files)
+    path = deploy_util.GetLocalPath(args)
+    size_b = file_utils.GetTreeSizeBytes(path, ignore_regex)
+    size_limit_mb = 512
+    size_limit_b = size_limit_mb * 2 ** 20
+    if size_b > size_limit_b:
+      raise exceptions.OversizedDeployment(
+          str(size_b) + 'B', str(size_limit_b) + 'B')
+
   @util.CatchHTTPErrorRaiseHTTPException
   def _CreateFunction(self, location, function):
     client = util.GetApiClientInstance()
@@ -441,6 +462,18 @@ class Deploy(base.Command):
     operations.Wait(op, messages, client, _DEPLOY_WAIT_NOTICE)
     return self._GetExistingFunction(function.name)
 
+  def _ValidateLabelsFlagKeys(self, flag_name, keys):
+    for key in keys:
+      if key.startswith('deployment'):
+        raise calliope_exceptions.InvalidArgumentException(
+            flag_name, _NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE)
+
+  def _ValidateLabelsFlags(self, args):
+    if args.remove_labels:
+      self._ValidateLabelsFlagKeys('--remove-labels', args.remove_labels)
+    if args.update_labels:
+      self._ValidateLabelsFlagKeys('--update-labels', args.update_labels.keys())
+
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -454,6 +487,8 @@ class Deploy(base.Command):
     Raises:
       FunctionsError if command line parameters are not valid.
     """
+    self._ValidateLabelsFlags(args)
+    self._ValidateUnpackedSourceSize(args)
     trigger_params = deploy_util.DeduceAndCheckArgs(args)
     project = properties.VALUES.core.project.Get(required=True)
     location_ref = resources.REGISTRY.Parse(

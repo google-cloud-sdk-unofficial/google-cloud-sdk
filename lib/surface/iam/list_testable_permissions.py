@@ -45,7 +45,7 @@ class ListTestablePermissions(base_classes.BaseIamCommand):
   def Args(parser):
     parser.add_argument(
         'resource',
-        help=('The full resource name to get the tastable permissions for'))
+        help=('The full resource name to get the testable permissions for.'))
     base.FILTER_FLAG.AddToParser(parser)
 
   def Run(self, args):

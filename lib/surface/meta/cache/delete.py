@@ -34,6 +34,19 @@ class Delete(base.Command):
               'characters. If omitted then the entired cache is deleted.'))
 
   def Run(self, args):
+
+    def _RequireConfirmation(name):
+      """Prompt for cache deletion and return confirmation."""
+      console_io.PromptContinue(
+          message='The entire [{}] cache will be deleted.'.format(name),
+          cancel_on_no=True,
+          default=True)
+
+    if not args.tables and not args.IsSpecified('cache'):
+      _RequireConfirmation(args.cache)
+      cache_util.Delete()
+      return None
+
     with cache_util.GetCache(args.cache) as cache:
       log.info('cache name {}'.format(cache.name))
       if args.tables:
@@ -50,10 +63,8 @@ class Delete(base.Command):
           table = cache.Table(name)
           table.Delete()
         return None
-      console_io.PromptContinue(
-          message='The entire [{}] cache will be deleted.'.format(cache.name),
-          default=True,
-          cancel_on_no=True)
 
-    cache_util.GetCache(args.cache).Delete()
+      _RequireConfirmation(cache.name)
+      cache.Delete()
+
     return None

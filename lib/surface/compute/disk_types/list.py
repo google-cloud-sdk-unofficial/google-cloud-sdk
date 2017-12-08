@@ -63,7 +63,7 @@ class ListAlpha(base.ListCommand):
         metavar='NAME',
         nargs='*',
         default=[],
-        completer=completers.DeprecatedDiskTypesCompleter,
+        completer=completers.DiskTypesCompleter,
         help=('If provided, show details for the specified names and/or URIs '
               'of resources.'))
     parser.add_argument(

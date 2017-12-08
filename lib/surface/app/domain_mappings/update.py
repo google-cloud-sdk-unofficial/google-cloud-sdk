@@ -15,12 +15,13 @@
 
 from googlecloudsdk.api_lib.app.api import appengine_domains_api_client as api_client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.app import domains_util
 from googlecloudsdk.command_lib.app import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Update(base.UpdateCommand):
   """Updates a domain mapping."""
 
   detailed_help = {
@@ -47,27 +48,61 @@ class UpdateBeta(base.UpdateCommand):
 
   def Run(self, args):
     client = api_client.GetApiClientForTrack(self.ReleaseTrack())
-    mapping = client.UpdateDomainMapping(args.domain,
-                                         args.certificate_id,
+    mapping = client.UpdateDomainMapping(args.domain, args.certificate_id,
                                          args.no_certificate_id)
     log.UpdatedResource(args.domain)
     return mapping
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
-  """Updates a domain mapping with an Alpha client."""
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Updates a domain mapping."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To update an App Engine domain mapping, run:
+
+              $ {command} '*.example.com' \
+                  --certificate-id=1234
+
+          To remove a certificate from a domain:
+
+              $ {command} '*.example.com' \
+                  --no-certificate-id
+
+          To configure a new managed certificate:
+
+              $ {command} '*.example.com' \
+                  --certificate-management=AUTOMATIC
+          """,
+  }
 
   @staticmethod
   def Args(parser):
-    super(UpdateAlpha, UpdateAlpha).Args(parser)
-    flags.AddNoManagedCertificateFlag(parser)
+    super(UpdateBeta, UpdateBeta).Args(parser)
+    flags.AddCertificateManagementFlag(parser)
 
   def Run(self, args):
     client = api_client.GetApiClientForTrack(self.ReleaseTrack())
-    mapping = client.UpdateDomainMapping(args.domain,
-                                         args.certificate_id,
+
+    domains_util.ValidateCertificateArgsForUpdate(args.certificate_id,
+                                                  args.no_certificate_id,
+                                                  args.certificate_management)
+    if (not args.certificate_management and
+        (args.certificate_id or args.no_certificate_id)):
+      args.certificate_management = 'MANUAL'
+
+    if (args.certificate_management.upper() == 'MANUAL' and
+        not args.certificate_id and not args.no_certificate_id):
+      args.no_certificate_id = True
+
+    management_type = domains_util.ParseCertificateManagement(
+        client.messages, args.certificate_management)
+    mapping = client.UpdateDomainMapping(args.domain, args.certificate_id,
                                          args.no_certificate_id,
-                                         args.no_managed_certificate)
+                                         management_type)
     log.UpdatedResource(args.domain)
     return mapping

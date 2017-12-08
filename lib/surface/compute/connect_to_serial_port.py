@@ -79,7 +79,7 @@ class ConnectToSerialPort(base.Command):
 
     parser.add_argument(
         'user_host',
-        completer=completers.DeprecatedInstancesCompleter,
+        completer=completers.InstancesCompleter,
         metavar='[USER@]INSTANCE',
         help="""\
         Specifies the user/instance for the serial port connection.

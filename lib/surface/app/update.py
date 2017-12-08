@@ -35,7 +35,6 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Updates an App Engine application."""
 

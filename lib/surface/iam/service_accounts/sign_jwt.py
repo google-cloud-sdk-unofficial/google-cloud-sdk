@@ -17,6 +17,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core.util import files
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -61,7 +62,9 @@ class SignJwt(base_classes.BaseIamCommand):
             signJwtRequest=self.messages.SignJwtRequest(payload=self.ReadFile(
                 args.input))))
 
-    self.WriteFile(args.output, response.signedJwt)
+    files.WriteFileOrStdoutContents(
+        args.output, content=response.signedJwt, binary=True)
+
     log.status.Print(
         'signed jwt [{0}] as [{1}] for [{2}] using key [{3}]'.format(
             args.input, args.output, args.iam_account, response.keyId))

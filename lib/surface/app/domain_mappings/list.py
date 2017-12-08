@@ -17,8 +17,8 @@ from googlecloudsdk.api_lib.app.api import appengine_domains_api_client as api_c
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class List(base.ListCommand):
   """Lists domain mappings."""
 
   detailed_help = {
@@ -41,14 +41,13 @@ class ListBeta(base.ListCommand):
     parser.display_info.AddFormat("""
             table(
               id:sort=1,
-              ssl_settings.certificate_id:label=SSL_CERTIFICATE_ID
-            )
+              ssl_settings.certificate_id:label=SSL_CERTIFICATE_ID)
         """)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(ListBeta):
-  """Lists domain mappings Alpha."""
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ListBeta(List):
+  """Lists domain mappings."""
 
   def Run(self, args):
     client = api_client.GetApiClientForTrack(self.ReleaseTrack())
@@ -57,9 +56,9 @@ class ListAlpha(ListBeta):
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat("""
-            table(
-              id:sort=1,
-              ssl_settings.certificate_id:label=SSL_CERTIFICATE_ID,
-              ssl_settings.is_managed_certificate:label=IS_MANAGED_CERTIFICATE
-            )
+        table(
+          id:sort=1,
+          ssl_settings.certificate_id:label=SSL_CERTIFICATE_ID,
+          ssl_settings.sslManagementType:label=SSL_MANAGEMENT_TYPE,
+          ssl_settings.pending_managed_certificate_id:label=PENDING_AUTO_CERT)
         """)

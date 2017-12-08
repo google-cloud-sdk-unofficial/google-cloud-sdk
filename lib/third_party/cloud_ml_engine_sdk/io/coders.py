@@ -60,24 +60,6 @@ class ExampleProtoCoder(beam.coders.Coder):
     return example
 
 
-class FeatureVectorOrExampleCoder(beam.coders.Coder):
-  """FeatureVectorOrExampleCoder."""
-
-  def __init__(self):
-    # Not putting this import at file level to avoid circular dependency.
-    # TODO(user): Refactor to make sure that coders does not depend on
-    # ml.features.
-    # pylint: disable=g-import-not-at-top
-    from google.cloud.ml.features._transforms import FeatureVector
-    self._feature_vector = FeatureVector
-
-  def encode(self, feature_vector_compatible):
-    return self._feature_vector(feature_vector_compatible).SerializeToString()
-
-  def decode(self, serialized_str):
-    return self._feature_vector(serialized_str)
-
-
 class JsonCoder(beam.coders.Coder):
   """A coder to encode and decode JSON formatted data."""
 
@@ -200,49 +182,6 @@ class CsvCoder(beam.coders.Coder):
       A csv-formatted string. The order of the columns is given by column_names.
     """
     return self._encoder.encode_record(python_data)
-
-  @staticmethod
-  def from_feature_set(feature_set,
-                       headers,
-                       delimiter=',',
-                       has_target_columns=True,
-                       fail_on_error=True):
-    """From a feature set, produces a CsvCoder.
-
-    Args:
-      feature_set: A class containing FeatureColumn objects.
-      headers: Tuple of strings. Order must match the order in the file.
-      delimiter: A one-character string used to separate fields.
-      has_target_columns: bool. If true, builds a CsvCoder for a file that has
-          a target feature column. If false, any target columns found in
-          feature_set will be removed from headers.
-      fail_on_error: Whether to fail if a corrupt row is found. Default is True.
-
-    Returns:
-      A CsvCoder.
-    """
-    # pylint: disable=g-import-not-at-top
-    from google.cloud.ml.features import FeatureColumn
-    # pylint: enable=g-import-not-at-top
-    if not delimiter:
-      delimiter = ','
-    numeric_column_names = set()
-    feature_list = (feature_set.values()
-                    if isinstance(feature_set, dict)
-                    else type(feature_set).__dict__.iteritems())
-    for value in feature_list:
-      for columns in value if isinstance(value, (list, tuple)) else [value]:
-        # We want to handle the composite columns so repeat the step.
-        for column in (
-            columns if isinstance(columns, (list, tuple)) else [columns]):
-          if isinstance(column, FeatureColumn):
-            if column.value_type == 'target' and not has_target_columns:
-              headers = [col for col in headers if col != column.name]
-            elif column.is_numeric:
-              numeric_column_names.add(column.name)
-
-    return CsvCoder(headers, numeric_column_names, delimiter,
-                    decode_to_dict=False, fail_on_error=fail_on_error)
 
 
 class YamlCoder(beam.coders.Coder):

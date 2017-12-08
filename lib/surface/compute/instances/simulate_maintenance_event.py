@@ -41,7 +41,7 @@ class SimulateMaintenanceEvent(base.UpdateCommand):
     instance_refs = instance_flags.INSTANCES_ARG.ResolveAsResource(
         args,
         holder.resources,
-        scope_lister=flags.GetDefaultScopeLister(client))
+        scope_lister=flags.GetDefaultScopeLister(holder.client))
 
     requests = []
     for instance_ref in instance_refs:

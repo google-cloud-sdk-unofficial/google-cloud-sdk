@@ -68,7 +68,7 @@ def _Args(parser):
 
   parser.add_argument(
       'user_host',
-      completer=completers.DeprecatedInstancesCompleter,
+      completer=completers.InstancesCompleter,
       metavar='[USER@]INSTANCE',
       help="""\
       Specifies the instance to SSH into.

@@ -20,12 +20,12 @@ from containerregistry.client.v2_2 import docker_creds_
 setattr(x, 'docker_creds', docker_creds_)
 
 
+from containerregistry.client.v2_2 import docker_digest_
+setattr(x, 'docker_digest', docker_digest_)
+
+
 from containerregistry.client.v2_2 import docker_http_
 setattr(x, 'docker_http', docker_http_)
-
-
-from containerregistry.client.v2_2 import util_
-setattr(x, 'util', util_)
 
 
 from containerregistry.client.v2_2 import docker_image_
@@ -34,6 +34,10 @@ setattr(x, 'docker_image', docker_image_)
 
 from containerregistry.client.v2_2 import append_
 setattr(x, 'append', append_)
+
+
+from containerregistry.client.v2_2 import oci_compat_
+setattr(x, 'oci_compat', oci_compat_)
 
 
 from containerregistry.client.v2_2 import v2_compat_

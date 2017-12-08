@@ -53,11 +53,13 @@ class DeployGA(base.SilentCommand):
     runtime_builder_strategy = deploy_util.GetRuntimeBuilderStrategy(
         base.ReleaseTrack.GA)
     api_client = appengine_api_client.GetApiClientForTrack(self.ReleaseTrack())
+    use_service_management = deploy_util.ServiceManagementOption.IF_PROPERTY_SET
     return deploy_util.RunDeploy(
         args,
         api_client,
         runtime_builder_strategy=runtime_builder_strategy,
-        parallel_build=False)
+        parallel_build=False,
+        use_service_management=use_service_management)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -73,12 +75,14 @@ class DeployBeta(base.SilentCommand):
     api_client = appengine_api_client.GetApiClientForTrack(self.ReleaseTrack())
     runtime_builder_strategy = deploy_util.GetRuntimeBuilderStrategy(
         base.ReleaseTrack.BETA)
+    use_service_management = deploy_util.ServiceManagementOption.ALWAYS
     return deploy_util.RunDeploy(
         args,
         api_client,
         enable_endpoints=True,
         use_beta_stager=True,
         runtime_builder_strategy=runtime_builder_strategy,
+        use_service_management=use_service_management,
         parallel_build=True)
 
 

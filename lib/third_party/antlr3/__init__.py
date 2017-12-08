@@ -163,9 +163,9 @@ runtime_version_str = __version__
 runtime_version = version_str_to_tuple(runtime_version_str)
 
 
-from constants import *
-from dfa import *
-from exceptions import *
-from recognizers import *
-from streams import *
-from tokens import *
+from .constants import *
+from .dfa import *
+from .exceptions import *
+from .recognizers import *
+from .streams import *
+from .tokens import *

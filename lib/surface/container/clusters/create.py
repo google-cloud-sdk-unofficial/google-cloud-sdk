@@ -90,14 +90,6 @@ def _Args(parser):
       ''
       'Can not be used with the "--create-subnetwork" option.')
   parser.add_argument(
-      '--disable-addons',
-      type=arg_parsers.ArgList(
-          choices=[api_adapter.INGRESS, api_adapter.HPA,
-                   api_adapter.DASHBOARD]),
-      help='List of cluster addons to disable. Options are {0}'.format(
-          ', '.join(
-              [api_adapter.INGRESS, api_adapter.HPA, api_adapter.DASHBOARD])))
-  parser.add_argument(
       '--network',
       help='The Compute Engine Network that the cluster will connect to. '
       'Google Container Engine will use this network when creating routes '
@@ -175,6 +167,7 @@ def ParseCreateOptionsBase(args):
   enable_master_authorized_networks = args.enable_master_authorized_networks
   return api_adapter.CreateClusterOptions(
       additional_zones=args.additional_zones,
+      addons=args.addons,
       cluster_ipv4_cidr=cluster_ipv4_cidr,
       cluster_secondary_range_name=args.cluster_secondary_range_name,
       cluster_version=args.cluster_version,
@@ -225,6 +218,8 @@ class Create(base.CreateCommand):
   def Args(parser):
     _Args(parser)
     _AddAdditionalZonesFlag(parser)
+    flags.AddAddonsFlags(
+        parser, hide_addons_flag=True, deprecate_disable_addons_flag=False)
     flags.AddClusterAutoscalingFlags(parser, hidden=True)
     flags.AddEnableAutoRepairFlag(parser, suppressed=True)
     flags.AddEnableAutoUpgradeFlag(parser, suppressed=True)
@@ -332,7 +327,7 @@ class CreateBeta(Create):
   def Args(parser):
     _Args(parser)
     _AddAdditionalZonesFlag(parser)
-
+    flags.AddAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddClusterScopesFlag(parser)
     flags.AddEnableAutoRepairFlag(parser)
@@ -367,6 +362,7 @@ class CreateAlpha(Create):
     _AddAdditionalZonesFlag(group, deprecated=True)
 
     flags.AddAcceleratorArgs(parser)
+    flags.AddAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddClusterScopesFlag(parser)
     flags.AddEnableAuditLoggingFlag(parser, hidden=True)
@@ -380,6 +376,7 @@ class CreateAlpha(Create):
     flags.AddMaintenanceWindowFlag(parser, hidden=True)
     flags.AddMasterAuthorizedNetworksFlags(parser)
     flags.AddMinCpuPlatformFlag(parser, hidden=True)
+    flags.AddWorkloadMetadataFromNodeFlag(parser, hidden=True)
     flags.AddNetworkPolicyFlags(parser, hidden=False)
     flags.AddNodeLocationsFlag(group)
     flags.AddNodeTaintsFlag(parser, hidden=True)
@@ -392,4 +389,5 @@ class CreateAlpha(Create):
     ops.node_locations = args.node_locations
     ops.enable_audit_logging = args.enable_audit_logging
     ops.min_cpu_platform = args.min_cpu_platform
+    ops.workload_metadata_from_node = args.workload_metadata_from_node
     return ops

@@ -33,7 +33,7 @@ class Describe(base.DescribeCommand, dm_base.DmCommand):
 
           If you want to see information for a composite type you can use
 
-            $ {command} NAME --provider=composite --format='yaml(composite_type)'
+            $ {command} NAME --provider=composite --format='yaml[json-decode] (composite_type)'
           """,
   }
 
@@ -48,7 +48,7 @@ class Describe(base.DescribeCommand, dm_base.DmCommand):
     parser.add_argument('--provider',
                         help='Type provider name or its self-link.',
                         required=True)
-    parser.display_info.AddFormat('yaml(type_info)')
+    parser.display_info.AddFormat('yaml[json-decode](type_info)')
 
   def Run(self, args):
     """Runs 'types describe'.

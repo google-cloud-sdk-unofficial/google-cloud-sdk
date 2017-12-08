@@ -219,6 +219,7 @@ class CreateAlpha(Create):
     ops = ParseCreateNodePoolOptionsBase(args)
     ops.accelerators = args.accelerator
     ops.min_cpu_platform = args.min_cpu_platform
+    ops.workload_metadata_from_node = args.workload_metadata_from_node
     return ops
 
   @staticmethod
@@ -233,6 +234,7 @@ class CreateAlpha(Create):
     flags.AddAcceleratorArgs(parser)
     flags.AddNodePoolScopesFlag(parser)
     flags.AddMinCpuPlatformFlag(parser, for_node_pool=True, hidden=True)
+    flags.AddWorkloadMetadataFromNodeFlag(parser, hidden=True)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True, hidden=True)
 
 
