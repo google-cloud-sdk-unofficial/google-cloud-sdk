@@ -19,7 +19,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.resource import resource_printer_base
 
 
-class List(base.SilentCommand):
+class List(base.ListCommand):
   """List the status of all Cloud SDK components.
 
   List all components in the Cloud SDK and provide information such as whether
@@ -52,6 +52,8 @@ class List(base.SilentCommand):
 
   @staticmethod
   def Args(parser):
+    base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
     parser.add_argument(
         '--show-versions', required=False, action='store_true',
         help='Show installed and available versions of all components.')
@@ -82,7 +84,7 @@ class List(base.SilentCommand):
   def Run(self, args):
     """Runs the list command."""
     result = self.group.update_manager.List()
-    (to_print, current_version, latest_version) = result
+    (to_print, self._current_version, self._latest_version) = result
     if not to_print:
       raise StopIteration
 
@@ -90,6 +92,7 @@ class List(base.SilentCommand):
       yield c
     yield resource_printer_base.FinishMarker()
 
+  def Epilog(self):
     log.status.write("""\
 To install or remove components at your current SDK version [{current}], run:
   $ gcloud components install COMPONENT_ID
@@ -98,5 +101,4 @@ To install or remove components at your current SDK version [{current}], run:
 To update your SDK installation to the latest version [{latest}], run:
   $ gcloud components update
 
-""".format(current=current_version, latest=latest_version))
-    log.status.flush()
+""".format(current=self._current_version, latest=self._latest_version))

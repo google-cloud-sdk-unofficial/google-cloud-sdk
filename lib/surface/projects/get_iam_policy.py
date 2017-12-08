@@ -19,15 +19,13 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class GetIamPolicy(base.Command):
-  """Get IAM policy for a Project.
+class GetIamPolicy(base.ListCommand):
+  """Get IAM policy for a project.
 
   Gets the IAM policy for a project, given a project ID.
   """
 
   detailed_help = {
-      'brief': 'Get IAM policy for a project.',
-      'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           The following command prints the IAM policy for a project with
           the ID `example-project-id-1`:
@@ -57,12 +55,14 @@ class GetIamPolicy(base.Command):
     )
     return projects.projects.GetIamPolicy(policy_request)
 
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
+  def Format(self, unused_args):
+    return """\
+        table[box](
+          version,
+          etag.encode(base64),
+          bindings:format="table[no-heading](
+            role,
+            members:format=list
+          )"
+        )
     """
-    # pylint:disable=not-callable, self.format is callable.
-    self.format(result)

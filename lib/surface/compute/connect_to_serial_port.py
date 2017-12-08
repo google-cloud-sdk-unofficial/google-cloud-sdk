@@ -19,11 +19,11 @@ import getpass
 import sys
 
 from googlecloudsdk.api_lib.compute import ssh_utils
-from googlecloudsdk.api_lib.compute import utils
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.core import log
 
 SERIAL_PORT_GATEWAY = 'ssh-serialport.googleapis.com'
@@ -78,7 +78,7 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
         help=argparse.SUPPRESS,
         default=SERIAL_PORT_GATEWAY)
 
-    utils.AddZoneFlag(
+    flags.AddZoneFlag(
         parser,
         resource_type='instance',
         operation_type='connect to')

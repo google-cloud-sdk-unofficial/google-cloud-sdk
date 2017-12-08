@@ -14,7 +14,7 @@
 """Command for moving disks."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.command_lib.compute import flags
 
 
 class Move(base_classes.BaseAsyncMutator):
@@ -48,7 +48,7 @@ class Move(base_classes.BaseAsyncMutator):
         help='The zone to move the disk to.',
         completion_resource='compute.zones',
         required=True)
-    utils.AddZoneFlag(
+    flags.AddZoneFlag(
         parser,
         resource_type='disk',
         operation_type='move')

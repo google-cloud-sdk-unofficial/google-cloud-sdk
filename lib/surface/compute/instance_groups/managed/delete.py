@@ -11,14 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Command for deleting managed instance group."""
+
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
 from googlecloudsdk.api_lib.compute import path_simplifier
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags
 
 
 def _AddArgs(parser, multizonal):
@@ -32,18 +34,18 @@ def _AddArgs(parser, multizonal):
       help='The resources to delete.')
   if multizonal:
     scope_parser = parser.add_mutually_exclusive_group()
-    utils.AddRegionFlag(
+    flags.AddRegionFlag(
         scope_parser,
         resource_type='resources',
         operation_type='delete',
-        explanation=constants.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
-    utils.AddZoneFlag(
+        explanation=flags.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
+    flags.AddZoneFlag(
         scope_parser,
         resource_type='resources',
         operation_type='delete',
-        explanation=constants.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
+        explanation=flags.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
   else:
-    utils.AddZoneFlag(
+    flags.AddZoneFlag(
         parser,
         resource_type='resources',
         operation_type='delete')

@@ -23,18 +23,17 @@ from googlecloudsdk.core import log
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.Command):
-  """Update the name of a Project."""
+  """Update the name of a project.
+
+  Updates the given project with new name.
+
+  This command can fail for the following reasons:
+  * There is no project with the given ID.
+  * The active account does not have Owner or Editor permissions for the
+    given project.
+  """
 
   detailed_help = {
-      'brief': 'Update a project.',
-      'DESCRIPTION': textwrap.dedent("""\
-          Updates the given project with new name.
-
-          This command can fail for the following reasons:
-              * There is no project with the given ID.
-              * The active account does not have Owner or Editor permissions for
-                the given project.
-    """),
       'EXAMPLES': textwrap.dedent("""\
           The following command updates a project with the ID
           `example-foo-bar-1` to have the name "Foo Bar and Grill":

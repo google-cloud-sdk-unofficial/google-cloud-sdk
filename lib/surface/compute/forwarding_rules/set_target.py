@@ -15,6 +15,7 @@
 
 from googlecloudsdk.api_lib.compute import forwarding_rules_utils as utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.forwarding_rules import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
@@ -23,7 +24,8 @@ class Set(utils.ForwardingRulesTargetMutator):
 
   @staticmethod
   def Args(parser):
-    utils.ForwardingRulesTargetMutator.BaseArgs(parser, False)
+    flags.AddCommonFlags(parser)
+    flags.AddUpdateArgs(parser, include_alpha_targets=False)
 
   @property
   def method(self):
@@ -71,7 +73,8 @@ class SetAlpha(Set):
 
   @staticmethod
   def Args(parser):
-    utils.ForwardingRulesTargetMutator.BaseArgs(parser, True)
+    flags.AddCommonFlags(parser)
+    flags.AddUpdateArgs(parser, include_alpha_targets=True)
 
   def GetGlobalTarget(self, args):
     if args.target_ssl_proxy:
@@ -90,7 +93,7 @@ Set.detailed_help = {
         When creating a forwarding rule, exactly one of  ``--target-instance'',
         ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
         or ``--target-vpn-gateway'' must be specified.
-        """.format(overview=utils.FORWARDING_RULES_OVERVIEW)),
+        """.format(overview=flags.FORWARDING_RULES_OVERVIEW)),
 }
 
 SetAlpha.detailed_help = {
@@ -103,5 +106,5 @@ SetAlpha.detailed_help = {
         When creating a forwarding rule, exactly one of  ``--target-instance'',
         ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
         ``--target-ssl-proxy'', or ``--target-vpn-gateway'' must be specified.
-        """.format(overview=utils.FORWARDING_RULES_OVERVIEW)),
+        """.format(overview=flags.FORWARDING_RULES_OVERVIEW)),
 }

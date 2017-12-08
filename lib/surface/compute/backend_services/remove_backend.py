@@ -11,12 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Command for removing a backend from a backend service."""
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
-from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
@@ -36,11 +38,11 @@ def _AddArgs(parser, multizonal=False):
   scope_parser = parser
   if multizonal:
     scope_parser = parser.add_mutually_exclusive_group()
-    utils.AddRegionFlag(
+    flags.AddRegionFlag(
         scope_parser,
         resource_type='instance group',
         operation_type='remove from the backend service')
-  utils.AddZoneFlag(
+  flags.AddZoneFlag(
       parser,
       resource_type='instance group',
       operation_type='remove from the backend service')

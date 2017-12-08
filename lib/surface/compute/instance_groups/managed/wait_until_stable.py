@@ -14,12 +14,12 @@
 """Command for waiting until managed instance group becomes stable."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import time_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.core import log
 
 
@@ -33,18 +33,18 @@ def _AddArgs(parser, multizonal):
                       'for group becoming stable.')
   if multizonal:
     scope_parser = parser.add_mutually_exclusive_group()
-    utils.AddRegionFlag(
+    flags.AddRegionFlag(
         scope_parser,
         resource_type='managed instance group',
         operation_type='wait until stable',
-        explanation=constants.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
-    utils.AddZoneFlag(
+        explanation=flags.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
+    flags.AddZoneFlag(
         scope_parser,
         resource_type='managed instance group',
         operation_type='wait until stable',
-        explanation=constants.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
+        explanation=flags.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
   else:
-    utils.AddZoneFlag(
+    flags.AddZoneFlag(
         parser,
         resource_type='managed instance group',
         operation_type='wait until stable')

@@ -15,6 +15,7 @@
 
 from googlecloudsdk.api_lib.compute import forwarding_rules_utils
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.command_lib.compute.forwarding_rules import flags
 
 
 class Delete(forwarding_rules_utils.ForwardingRulesMutator):
@@ -22,7 +23,7 @@ class Delete(forwarding_rules_utils.ForwardingRulesMutator):
 
   @staticmethod
   def Args(parser):
-    forwarding_rules_utils.ForwardingRulesMutator.Args(parser)
+    flags.AddCommonFlags(parser)
 
     parser.add_argument(
         'names',

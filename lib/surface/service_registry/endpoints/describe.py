@@ -15,10 +15,9 @@
 """'endpoints describe' command."""
 
 from googlecloudsdk.api_lib.service_registry import arg_support
+from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import properties
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Describe(base.DescribeCommand):
@@ -42,6 +41,7 @@ class Describe(base.DescribeCommand):
     """
     arg_support.AddEndpointNameArg(parser)
 
+  @http_error_handler.HandleHttpErrors
   def Run(self, args):
     """Runs 'endpoints describe'.
 
@@ -61,14 +61,6 @@ class Describe(base.DescribeCommand):
     messages = self.context['serviceregistry_messages']
     project = properties.VALUES.core.project.Get(required=True)
 
-    try:
-      return client.endpoints.Get(
-          messages.ServiceregistryEndpointsGetRequest(
-              project=project, endpoint=args.endpoint_name))
-    except apitools_exceptions.HttpError as error:
-      if error.status_code == 404:
-        raise exceptions.InvalidArgumentException(
-            parameter_name='endpoint',
-            message='Could not find the endpoint [{0}]'.format(
-                args.endpoint_name))
-      raise exceptions.HttpException(error)
+    return client.endpoints.Get(
+        messages.ServiceregistryEndpointsGetRequest(
+            project=project, endpoint=args.endpoint_name))

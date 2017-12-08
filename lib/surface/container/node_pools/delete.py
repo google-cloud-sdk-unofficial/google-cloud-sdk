@@ -84,7 +84,7 @@ class Delete(base.Command):
     if args.wait:
       adapter.WaitForOperation(
           op_ref,
-          'Deleting node pool {0}'.format(pool_ref.clusterId),
+          'Deleting node pool {0}'.format(pool_ref.nodePoolId),
           timeout_s=args.timeout)
       log.DeletedResource(pool_ref)
 

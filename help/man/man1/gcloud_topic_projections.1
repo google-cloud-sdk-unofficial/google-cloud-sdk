@@ -336,13 +336,18 @@ Returns this value if the resource does not have an isoformat() attribute.
 Returns the length of the resource if it is non\-empty, 0 otherwise.
 
 .RE
-\fBlist\fR(undefined="", separator=",")
+\fBlist\fR(show="", undefined="", separator=",")
 .RS 2m
 Formats a dict or list into a compact comma separated list.
 
 
 The arguments are:
 
+\fB\f5show\fR\fR
+.RS 2m
+If show=\fBkeys\fR then list dict keys; if show=\fBvalues\fR then list dict
+values; otherwise list dict key=value pairs.
+.RE
 \fB\f5undefined\fR\fR
 .RS 2m
 Return this if the resource is empty.

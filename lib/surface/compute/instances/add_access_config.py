@@ -14,7 +14,7 @@
 """Command for adding access configs to virtual machine instances."""
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
-from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.command_lib.compute import flags
 
 
 class AddAccessConfigInstances(base_classes.NoOutputAsyncMutator):
@@ -63,7 +63,7 @@ class AddAccessConfigInstances(base_classes.NoOutputAsyncMutator):
         completion_resource='compute.instances',
         help='The name of the instance to add the access configuration to.')
 
-    utils.AddZoneFlag(
+    flags.AddZoneFlag(
         parser,
         resource_type='instance',
         operation_type='add an access config to')

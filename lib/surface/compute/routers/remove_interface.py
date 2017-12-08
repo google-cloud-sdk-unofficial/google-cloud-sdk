@@ -13,8 +13,9 @@
 # limitations under the License.
 
 """Command for removing an interface from a router."""
+
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
@@ -39,7 +40,7 @@ class RemoveBgpPeer(base_classes.ReadWriteCommand):
         required=True,
         help='The name of the interface being removed.')
 
-    utils.AddRegionFlag(
+    flags.AddRegionFlag(
         parser,
         resource_type='router',
         operation_type='update')

@@ -14,11 +14,11 @@
 """Command for setting target pools of managed instance group."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags
 
 
 def _AddArgs(parser, multizonal):
@@ -35,18 +35,18 @@ def _AddArgs(parser, multizonal):
             '--target-pool target-pool-1,target-pool-2.'))
   if multizonal:
     scope_parser = parser.add_mutually_exclusive_group()
-    utils.AddRegionFlag(
+    flags.AddRegionFlag(
         scope_parser,
         resource_type='instance group manager',
         operation_type='set target pools',
-        explanation=constants.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
-    utils.AddZoneFlag(
+        explanation=flags.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
+    flags.AddZoneFlag(
         scope_parser,
         resource_type='instance group manager',
         operation_type='set target pools',
-        explanation=constants.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
+        explanation=flags.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
   else:
-    utils.AddZoneFlag(
+    flags.AddZoneFlag(
         parser,
         resource_type='instance group manager',
         operation_type='set target pools')
@@ -145,7 +145,7 @@ class SetTargetPoolsAlpha(SetTargetPools,
 
 
 SetTargetPools.detailed_help = {
-    'brief': 'Set instance template for managed instance group.',
+    'brief': 'Set target pools of managed instance group.',
     'DESCRIPTION': """
         *{command}* sets the target pools for an existing managed instance group.
 Instances that are part of the managed instance group will be added to the

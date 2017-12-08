@@ -15,8 +15,8 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
-from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.command_lib.compute import flags
 
 
 class RemoveInstances(base_classes.NoOutputAsyncMutator):
@@ -36,7 +36,7 @@ class RemoveInstances(base_classes.NoOutputAsyncMutator):
         metavar='INSTANCE',
         help='The names of the instances to remove from the instance group.')
 
-    utils.AddZoneFlag(
+    flags.AddZoneFlag(
         parser,
         resource_type='unmanaged instance group',
         operation_type='remove instances from')

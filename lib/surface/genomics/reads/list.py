@@ -20,22 +20,8 @@ from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
-_COLUMNS = [
-    ('REFERENCE_NAME', 'alignment.position.referenceName'),
-    ('POSITION', 'alignment.position.position'),
-    ('REVERSE_STRAND', 'alignment.position.reverseStrand'),
-    ('FRAGMENT_NAME', 'fragmentName'),
-    ('SEQUENCE', 'alignedSequence'),
-]
-_PROJECTIONS = [
-    '{0}:label={1}'.format(field, col) for col, field in _COLUMNS
-]
-_API_FIELDS = ','.join(['nextPageToken'] + [
-    'alignments.' + f for _, f in _COLUMNS
-    ])
 
-
-class List(base.Command):
+class List(base.ListCommand):
   """Lists reads within a given read group set.
 
   Prints a table with summary information on reads in the read group set.
@@ -68,9 +54,10 @@ class List(base.Command):
                               'which overlapping reads should be returned. If '
                               'unspecified or 0, defaults to the length of '
                               'the reference.'))
-    parser.add_argument('--limit',
-                        type=int,
-                        help='The maximum number of reads to return.')
+    base.PAGE_SIZE_FLAG.SetDefault(parser, 512)
+
+  def Collection(self):
+    return 'genomics.alignments'
 
   @genomics_util.ReraiseHttpException
   def Run(self, args):
@@ -87,12 +74,12 @@ class List(base.Command):
 
     apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
     messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
-
-    # Filter down to just the displayed fields, if we know we're using the
-    # default format. This appears to only be the case when --format is unset.
-    global_params = None
-    if not args.format:
-      global_params = messages.StandardQueryParameters(fields=_API_FIELDS)
+    fields = genomics_util.GetQueryFields(self.GetReferencedKeyNames(args),
+                                          'alignments')
+    if fields:
+      global_params = messages.StandardQueryParameters(fields=fields)
+    else:
+      global_params = None
 
     pager = list_pager.YieldFromList(
         apitools_client.reads,
@@ -105,13 +92,6 @@ class List(base.Command):
         limit=args.limit,
         method='Search',
         batch_size_attribute='pageSize',
-        batch_size=args.limit,  # Use limit if any, else server default.
+        batch_size=args.page_size,
         field='alignments')
     return genomics_util.ReraiseHttpExceptionPager(pager)
-
-  def Format(self, unused_args):
-    """Returns a paginated box table layout format string."""
-    # page allows us to incrementally show results as they stream in, thereby
-    # giving the user incremental feedback if they've queried a large set of
-    # results.
-    return 'table[box,page=512]({0})'.format(','.join(_PROJECTIONS))

@@ -15,8 +15,8 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
-from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.command_lib.compute import flags
 
 
 class AddInstances(base_classes.NoOutputAsyncMutator):
@@ -38,7 +38,7 @@ class AddInstances(base_classes.NoOutputAsyncMutator):
         'These must exist beforehand and must live in the same zone as '
         'the instance group.')
 
-    utils.AddZoneFlag(
+    flags.AddZoneFlag(
         parser,
         resource_type='unmanaged instance group',
         operation_type='add instances to')

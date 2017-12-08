@@ -11,17 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to list all Project IDs associated with the active user."""
+"""Command to list all project IDs associated with the active user."""
 
 import textwrap
 from googlecloudsdk.api_lib.projects import projects_api
 from googlecloudsdk.api_lib.projects import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class List(base.ListCommand):
+class List(util.ProjectCommand, base.ListCommand):
   """List projects accessible by the active account.
 
   Lists all active projects, where the active account has Owner, Editor or
@@ -41,27 +40,11 @@ class List(base.ListCommand):
       """),
   }
 
-  @staticmethod
-  def ProjectIdToLink(item):
-    instance_ref = resources.Parse(item.projectId,
-                                   collection='cloudresourcemanager.projects')
-    return instance_ref.SelfLink()
-
-  def Collection(self):
-    return 'cloudresourcemanager.projects'
-
-  def GetUriFunc(self):
-    def _GetUri(resource):
-      ref = resources.Parse(resource.projectId,
-                            collection=self.Collection())
-      return ref.SelfLink()
-    return _GetUri
-
   @util.HandleHttpError
   def Run(self, args):
     """Run the list command."""
 
     projects_client = self.context['projects_client']
     messages = self.context['projects_messages']
-    return projects_api.List(client=projects_client, messages=messages,
-                             limit=args.limit)
+    # TODO(user): b/27946801 handle --limit,--page-size,--filter
+    return projects_api.List(client=projects_client, messages=messages)

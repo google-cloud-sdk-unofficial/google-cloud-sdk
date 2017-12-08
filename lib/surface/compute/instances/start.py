@@ -11,9 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Command for starting an instance."""
+
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.command_lib.compute import flags
 
 
 class Start(base_classes.NoOutputAsyncMutator):
@@ -25,7 +27,7 @@ class Start(base_classes.NoOutputAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    utils.AddZoneFlag(
+    flags.AddZoneFlag(
         parser,
         resource_type='instance',
         operation_type='start')

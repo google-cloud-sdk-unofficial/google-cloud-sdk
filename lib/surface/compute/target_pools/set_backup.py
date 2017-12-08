@@ -14,8 +14,8 @@
 """Command for setting a backup target pool."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.compute import flags
 
 
 class SetBackup(base_classes.NoOutputAsyncMutator):
@@ -32,7 +32,7 @@ class SetBackup(base_classes.NoOutputAsyncMutator):
               'backup pool is removed.'),
         required=True)
 
-    utils.AddRegionFlag(
+    flags.AddRegionFlag(
         parser,
         resource_type='target pool',
         operation_type='set a backup pool for')

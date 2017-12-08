@@ -131,11 +131,9 @@ class Run(base.Command):
     parser.add_argument(
         '--service-account-scopes',
         nargs='+',
-        default=['https://www.googleapis.com/auth/genomics',
-                 'https://www.googleapis.com/auth/compute',
-                 'https://www.googleapis.com/auth/devstorage.full_control'],
-        help='''List of scopes to be made available for this service
-             account. If unspecified, defaults to:
+        default=[],
+        help='''List of additional scopes to be made available for this service
+             account. The following scopes are always requested:
              https://www.googleapis.com/auth/genomics,
              https://www.googleapis.com/auth/compute, and
              https://www.googleapis.com/auth/devstorage.full_control''')

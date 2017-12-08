@@ -13,8 +13,9 @@
 # limitations under the License.
 
 """Command for adding a BGP peer to a router."""
+
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
@@ -52,7 +53,7 @@ class AddBgpPeer(base_classes.ReadWriteCommand):
              'the routes with lowest priority value win. 0 <= priority <= '
              '65535.')
 
-    utils.AddRegionFlag(
+    flags.AddRegionFlag(
         parser,
         resource_type='router',
         operation_type='update')

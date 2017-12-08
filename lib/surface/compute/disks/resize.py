@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.core.console import console_io
 
 CONTINUE_WITH_RESIZE_PROMPT = textwrap.dedent("""
@@ -66,7 +67,7 @@ class Resize(base_classes.BaseAsyncMutator):
         must be a multiple of 10 GB.
         """
 
-    utils.AddZoneFlag(
+    flags.AddZoneFlag(
         parser,
         resource_type='disks',
         operation_type='be resized')

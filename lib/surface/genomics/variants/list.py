@@ -21,32 +21,14 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.third_party.apitools.base.py import list_pager
 
-_COLUMNS = [
-    ('VARIANT_SET_ID', 'variantSetId'),
-    ('REFERENCE_NAME', 'referenceName'),
-    ('START', 'start'),
-    ('END', 'end'),
-    ('REFERENCE_BASES', 'referenceBases'),
-    ('ALTERNATE_BASES', 'alternateBases'),
-]
-_PROJECTIONS = [
-    '{0}:label={1}'.format(field, col) for col, field in _COLUMNS
-]
-_API_FIELDS = ','.join(['nextPageToken'] + [
-    'variants.' + f for _, f in _COLUMNS
-    ])
 
-
-class List(base.Command):
+class List(base.ListCommand):
   """Lists variants that match the search criteria.
   """
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    parser.add_argument('--limit',
-                        type=int,
-                        help='The maximum number of variants to return.')
     parser.add_argument('--limit-calls',
                         type=int,
                         help=('The maximum number of calls to return.'
@@ -79,6 +61,10 @@ class List(base.Command):
                               'which variants should be returned. If '
                               'unspecified or 0, defaults to the length of the '
                               'reference.'))
+    base.PAGE_SIZE_FLAG.SetDefault(parser, 512)
+
+  def Collection(self):
+    return 'genomics.variants'
 
   def RewriteError(self, msg):
     return (msg.replace('variantSetIds', '--variant-set-id')
@@ -98,17 +84,16 @@ class List(base.Command):
     Returns:
       A list of variants that meet the search criteria.
     """
-    genomics_util.ValidateLimitFlag(args.limit)
     genomics_util.ValidateLimitFlag(args.limit_calls, 'limit-calls')
 
     apitools_client = self.context[lib.GENOMICS_APITOOLS_CLIENT_KEY]
     messages = self.context[lib.GENOMICS_MESSAGES_MODULE_KEY]
-
-    # Filter down to just the displayed fields, if we know we're using the
-    # default format. This appears to only be the case when --format is unset.
-    global_params = None
-    if not args.format:
-      global_params = messages.StandardQueryParameters(fields=_API_FIELDS)
+    fields = genomics_util.GetQueryFields(self.GetReferencedKeyNames(args),
+                                          'variants')
+    if fields:
+      global_params = messages.StandardQueryParameters(fields=fields)
+    else:
+      global_params = None
 
     variant_set_id = [args.variant_set_id] if args.variant_set_id else []
     pager = list_pager.YieldFromList(
@@ -124,13 +109,6 @@ class List(base.Command):
         limit=args.limit,
         method='Search',
         batch_size_attribute='pageSize',
-        batch_size=args.limit,  # Use limit if any, else server default.
+        batch_size=args.page_size,
         field='variants')
     return genomics_util.ReraiseHttpExceptionPager(pager, self.RewriteError)
-
-  def Format(self, unused_args):
-    """Returns a paginated box table layout format string."""
-    # page allows us to incrementally show results as they stream in, thereby
-    # giving the user incremental feedback if they've queried a large set of
-    # results.
-    return 'table[box,page=512]({0})'.format(','.join(_PROJECTIONS))

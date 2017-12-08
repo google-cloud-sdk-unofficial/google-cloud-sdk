@@ -17,6 +17,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.compute import flags
 
 
 class RemoveInstances(base_classes.NoOutputAsyncMutator):
@@ -33,7 +34,7 @@ class RemoveInstances(base_classes.NoOutputAsyncMutator):
         metavar='INSTANCE',
         required=True)
 
-    utils.AddZoneFlag(
+    flags.AddZoneFlag(
         parser,
         resource_type='instances',
         operation_type='remove from the target pool')

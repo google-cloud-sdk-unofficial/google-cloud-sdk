@@ -21,6 +21,7 @@ from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.third_party.py27 import py27_collections as collections
 
 
@@ -45,7 +46,7 @@ def _CommonArgs(parser):
   instance_utils.AddCustomMachineTypeArgs(parser)
 
   instance_utils.AddNetworkArgs(parser)
-  utils.AddRegionFlag(
+  flags.AddRegionFlag(
       parser,
       resource_type='instance template',
       operation_type='create')

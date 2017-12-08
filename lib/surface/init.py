@@ -390,7 +390,8 @@ https://console.developers.google.com/apis page.
       gsutil_args = execution_utils.ArgsForCMDTool(gsutil_path,
                                                    *command_args)
     else:
-      gsutil_args = execution_utils.ArgsForShellTool(gsutil_path, *command_args)
+      gsutil_args = execution_utils.ArgsForExecutableTool(gsutil_path,
+                                                          *command_args)
 
     return_code = execution_utils.Exec(gsutil_args, no_exit=True,
                                        pipe_output_through_logger=True,
@@ -412,6 +413,7 @@ information about configuring Google Cloud Storage.
     self._RunCmd(['config', 'unset'], ['project'])
     self._RunCmd(['config', 'unset'], ['compute/zone'])
     self._RunCmd(['config', 'unset'], ['compute/region'])
+    properties.PropertiesFile.Invalidate()
 
   def _RunCmd(self, cmd, params=None, disable_user_output=True):
     if not self.cli.IsValidCommand(cmd):

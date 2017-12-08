@@ -14,7 +14,7 @@
 """Command for moving instances."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.command_lib.compute import flags
 
 
 class Move(base_classes.NoOutputAsyncMutator):
@@ -48,7 +48,7 @@ class Move(base_classes.NoOutputAsyncMutator):
         completion_resource='compute.zones',
         help='The zone to move the instance to.',
         required=True)
-    utils.AddZoneFlag(
+    flags.AddZoneFlag(
         parser,
         resource_type='instance',
         operation_type='move')

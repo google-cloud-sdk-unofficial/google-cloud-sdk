@@ -13,8 +13,10 @@
 # limitations under the License.
 
 """Command for updating an interface on a router."""
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
@@ -62,7 +64,7 @@ class UpdateInterface(base_classes.ReadWriteCommand):
         # TODO(user): better help
         help='The mask for network used for the server IP address.')
 
-    utils.AddRegionFlag(
+    flags.AddRegionFlag(
         parser,
         resource_type='router',
         operation_type='update')

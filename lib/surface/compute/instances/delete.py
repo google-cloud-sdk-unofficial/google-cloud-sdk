@@ -17,6 +17,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.core.console import console_io
 
 AUTO_DELETE_OVERRIDE_CHOICES = ['boot', 'data', 'all']
@@ -68,7 +69,7 @@ class Delete(base_classes.ZonalDeleter):
         completion_resource='compute.instances',
         help='The names of the instances to delete.')
 
-    utils.AddZoneFlag(
+    flags.AddZoneFlag(
         parser, resource_type='instances', operation_type='delete')
 
   @property

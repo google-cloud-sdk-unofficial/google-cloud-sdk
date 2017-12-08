@@ -47,7 +47,7 @@ class Create(base.Command):
     parser.add_argument(
         '--metadata',
         type=arg_parsers.ArgDict(min_length=1),
-        action=arg_parsers.FloatingListValuesCatcher(),
+        action='append',
         default=None,
         help=('Metadata to be made available to the guest operating system '
               'running on the instances'),
@@ -245,8 +245,9 @@ Alias,URI
       gce_cluster_config.tags = args.tags
 
     if args.metadata:
+      flat_metadata = dict((k, v) for d in args.metadata for k, v in d.items())
       gce_cluster_config.metadata = encoding.DictToMessage(
-          args.metadata, messages.GceClusterConfig.MetadataValue)
+          flat_metadata, messages.GceClusterConfig.MetadataValue)
 
     cluster_config = messages.ClusterConfig(
         configBucket=args.bucket,

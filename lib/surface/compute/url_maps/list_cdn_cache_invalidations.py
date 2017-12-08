@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command for listing cache invalidations."""
+"""Command for listing Cloud CDN cache invalidations."""
 
 import sys
 
@@ -24,9 +24,17 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListCacheInvalidations(base_classes.BaseLister):
-  """List cache invalidations for a URL map."""
+  """List Cloud CDN cache invalidations for a URL map."""
+
+  detailed_help = {
+      'DESCRIPTION': """\
+List Cloud CDN cache invalidations for a URL map. A cache invalidation instructs
+Cloud CDN to stop using cached content. You can list invalidations to check
+which have completed.
+""",
+  }
 
   @staticmethod
   def Args(parser):
@@ -70,7 +78,7 @@ class ListCacheInvalidations(base_classes.BaseLister):
           error_message='Could not fetch resource:')
     urlmap_id = objects[0].id
     # Here we use multiple filter expressions, which is a beta feature. Should
-    # be ok, since ListCacheInvalidations is an alpha feature.
+    # be ok, since ListCacheInvalidations is a beta feature.
     filter_expr = ('(operationType eq invalidateCache) (targetId eq '
                    '{urlmap_id})').format(urlmap_id=urlmap_id)
     max_results = args.limit or constants.MAX_RESULTS_PER_PAGE

@@ -11,13 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Command for creating routes."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.core import properties
 
 
@@ -117,14 +118,14 @@ def _Args(parser):
       action=actions.StoreProperty(properties.VALUES.compute.zone))
   next_hop_instance_zone.detailed_help = ("""\
       The zone of the next hop instance.
-      """ + constants.ZONE_PROPERTY_EXPLANATION)
+      """ + flags.ZONE_PROPERTY_EXPLANATION)
 
   next_hop_vpn_tunnel_region = parser.add_argument(
       '--next-hop-vpn-tunnel-region',
       help='The region of the next hop vpn tunnel.')
   next_hop_vpn_tunnel_region.detailed_help = ("""\
      The region of the next hop vpn tunnel.
-     """ + constants.REGION_PROPERTY_EXPLANATION)
+     """ + flags.REGION_PROPERTY_EXPLANATION)
 
   parser.add_argument(
       'name',

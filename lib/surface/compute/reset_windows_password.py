@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.compute import openssl_encryption_utils
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import time_utils
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
@@ -116,7 +117,7 @@ class ResetWindowsPassword(base_classes.ReadWriteCommand):
         'instance',
         help='The name of the Windows instance to reset the password for.')
 
-    utils.AddZoneFlag(
+    flags.AddZoneFlag(
         parser,
         resource_type='instance',
         operation_type='reset password for')

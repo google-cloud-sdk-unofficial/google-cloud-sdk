@@ -48,7 +48,7 @@ class RuntimeTestCase(testutil.TestBase):
         app_yaml = self.file_contents('app.yaml')
         self.assertIn('runtime: php\n', app_yaml)
         self.assertIn('vm: true\n', app_yaml)
-        self.assertIn('env_variables:\n  DOCUMENT_ROOT: app\n', app_yaml)
+        self.assertIn('runtime_config:\n  document_root: .\n', app_yaml)
 
         self.assertFalse(os.path.exists(self.full_path('Dockerfile')))
         self.assertFalse(os.path.exists(self.full_path('.dockerignore')))
@@ -56,9 +56,7 @@ class RuntimeTestCase(testutil.TestBase):
 
     def test_generate_custom_runtime(self):
         self.write_file('index.php', 'index')
-        config = testutil.AppInfoFake(runtime='php',
-                env_variables={'DOCUMENT_ROOT': 'app'})
-        cleaner = self.generate_configs(custom=True, appinfo=config)
+        cleaner = self.generate_configs(custom=True)
 
         dockerfile = self.file_contents('Dockerfile')
         self.assertEqual(dockerfile, textwrap.dedent('''\
@@ -68,23 +66,22 @@ class RuntimeTestCase(testutil.TestBase):
 
             # The Docker image will configure the document root according to this
             # environment variable.
-            ENV DOCUMENT_ROOT app
+            ENV DOCUMENT_ROOT /app
             '''))
 
         dockerignore = self.file_contents('.dockerignore')
-        self.assertIn('.dockerignore\n', dockerignore)
-        self.assertIn('Dockerfile\n', dockerignore)
-        self.assertIn('.git\n', dockerignore)
-        self.assertIn('.hg\n', dockerignore)
-        self.assertIn('.svn\n', dockerignore)
-        self.assertIn('vendor/\n', dockerignore)
+        self.assertEqual(dockerignore, textwrap.dedent('''\
+            Dockerfile
+            .git
+            .hg
+            .svn
+            vendor/
+            '''))
         cleaner()
 
     def test_generate_with_deploy(self):
         self.write_file('index.php', 'index')
-        config = testutil.AppInfoFake(runtime='custom',
-                env_variables={'DOCUMENT_ROOT': 'app'})
-        cleaner = self.generate_configs(deploy=True, appinfo=config)
+        cleaner = self.generate_configs(deploy=True)
 
         dockerfile = self.file_contents('Dockerfile')
         self.assertEqual(dockerfile, textwrap.dedent('''\
@@ -94,16 +91,44 @@ class RuntimeTestCase(testutil.TestBase):
 
             # The Docker image will configure the document root according to this
             # environment variable.
-            ENV DOCUMENT_ROOT app
+            ENV DOCUMENT_ROOT /app
             '''))
 
         dockerignore = self.file_contents('.dockerignore')
-        self.assertIn('.dockerignore\n', dockerignore)
-        self.assertIn('Dockerfile\n', dockerignore)
-        self.assertIn('.git\n', dockerignore)
-        self.assertIn('.hg\n', dockerignore)
-        self.assertIn('.svn\n', dockerignore)
-        self.assertIn('vendor/\n', dockerignore)
+        self.assertEqual(dockerignore, textwrap.dedent('''\
+            Dockerfile
+            .git
+            .hg
+            .svn
+            vendor/
+            '''))
+        cleaner()
+
+    def test_generate_with_existing_appinfo(self):
+        self.write_file('index.php', 'index')
+        appinfo = testutil.AppInfoFake(
+                runtime_config={'document_root': 'wordpress'})
+        cleaner = self.generate_configs(deploy=True, appinfo=appinfo)
+
+        dockerfile = self.file_contents('Dockerfile')
+        self.assertEqual(dockerfile, textwrap.dedent('''\
+            # Dockerfile extending the generic PHP image with application files for a
+            # single application.
+            FROM gcr.io/php-mvm-a/php-nginx:latest
+
+            # The Docker image will configure the document root according to this
+            # environment variable.
+            ENV DOCUMENT_ROOT /app/wordpress
+            '''))
+
+        dockerignore = self.file_contents('.dockerignore')
+        self.assertEqual(dockerignore, textwrap.dedent('''\
+            Dockerfile
+            .git
+            .hg
+            .svn
+            vendor/
+            '''))
         cleaner()
 
 if __name__ == '__main__':

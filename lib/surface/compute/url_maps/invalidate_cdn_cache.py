@@ -23,9 +23,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class InvalidateCache(base_classes.BaseCommand):
-  """Invalidate specified cached objects for a URL map."""
+  """Invalidate specified objects for a URL map in Cloud CDN caches."""
 
   @staticmethod
   def Args(parser):
@@ -129,11 +129,10 @@ class InvalidateCache(base_classes.BaseCommand):
 
 
 InvalidateCache.detailed_help = {
-    'brief': 'Invalidate specified cached objects for a URL map',
+    'brief': 'Invalidate specified objects for a URL map in Cloud CDN caches',
     'DESCRIPTION': """
-        *{command}* is used to request that Google's caches revalidate the
-        resources at a particular URL path or set of URL paths on their next
-        access.
+        *{command}* requests that Cloud CDN stop using cached content for
+        resources at a particular URL path or set of URL paths.
 
         *{command}* may succeed even if no content is cached for some or all
         URLs with the given path.

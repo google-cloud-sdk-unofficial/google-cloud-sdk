@@ -11,12 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Command for setting instance template of managed instance group."""
+
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import instance_groups_utils
-from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags
 
 
 def _AddArgs(parser, multizonal):
@@ -28,18 +29,18 @@ def _AddArgs(parser, multizonal):
       help=('Compute Engine instance template resource to be used.'))
   if multizonal:
     scope_parser = parser.add_mutually_exclusive_group()
-    utils.AddRegionFlag(
+    flags.AddRegionFlag(
         scope_parser,
         resource_type='instance group manager',
         operation_type='set instance template',
-        explanation=constants.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
-    utils.AddZoneFlag(
+        explanation=flags.REGION_PROPERTY_EXPLANATION_NO_DEFAULT)
+    flags.AddZoneFlag(
         scope_parser,
         resource_type='instance group manager',
         operation_type='set instance template',
-        explanation=constants.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
+        explanation=flags.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT)
   else:
-    utils.AddZoneFlag(
+    flags.AddZoneFlag(
         parser,
         resource_type='instance group manager',
         operation_type='set instance template')

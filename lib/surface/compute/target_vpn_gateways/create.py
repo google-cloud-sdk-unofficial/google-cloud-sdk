@@ -14,7 +14,7 @@
 """Command for creating target VPN Gateways."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.command_lib.compute import flags
 
 
 class Create(base_classes.BaseAsyncCreator):
@@ -41,7 +41,7 @@ class Create(base_classes.BaseAsyncCreator):
        contain the VPN Gateway.
        """
 
-    utils.AddRegionFlag(
+    flags.AddRegionFlag(
         parser,
         resource_type='Target VPN Gatway',
         operation_type='create')

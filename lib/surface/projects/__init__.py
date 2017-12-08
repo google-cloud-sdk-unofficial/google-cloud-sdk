@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The command group for the Projects CLI."""
+"""The command group for the projects CLI."""
 
 from googlecloudsdk.api_lib.projects import util
 from googlecloudsdk.calliope import base
@@ -21,9 +21,9 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Projects(base.Group):
-  """Manage your Projects.
+  """Manage your projects.
 
-  Commands to get information about your Google Developer Projects.
+  Commands to get information about your Google Developer projects.
   """
 
   def Filter(self, context, _):
@@ -35,9 +35,9 @@ class Projects(base.Group):
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ProjectsAlpha(base.Group):
-  """Manage your Projects.
+  """Manage your projects.
 
-  Commands to get information about your Google Developer Projects.
+  Commands to get information about your Google Developer projects.
   """
 
   def Filter(self, context, _):

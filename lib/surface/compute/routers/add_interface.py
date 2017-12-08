@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
@@ -46,7 +47,7 @@ class AddInterface(base_classes.ReadWriteCommand):
         # TODO(user): better help
         help='The mask for network used for the server IP address.')
 
-    utils.AddRegionFlag(
+    flags.AddRegionFlag(
         parser,
         resource_type='router',
         operation_type='update')

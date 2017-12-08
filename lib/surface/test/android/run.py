@@ -46,7 +46,6 @@ class Run(base.ListCommand):
           - *instrumentation*: runs automated unit or integration tests written
             using a testing framework. Google Cloud Test Lab initially supports
             the Espresso and Robotium testing frameworks for Android.
-          - *monkey*: runs an Android UI/Application Exerciser Monkey test.
 
           The type of test to run can be specified with the *--type* flag,
           although the type can often be inferred from other flags.
@@ -65,10 +64,10 @@ class Run(base.ListCommand):
 
             $ {command} --app APP_APK --timeout 100s
 
-          To invoke a monkey test against a virtual Nexus9 device in
+          To invoke a robo test against a virtual Nexus9 device in
           landscape orientation, run:
 
-            $ {command} --type monkey --app APP_APK --device-id Nexus9 --orientation landscape
+            $ {command} --app APP_APK --device-id Nexus9 --orientation landscape
 
           To invoke an instrumentation test (Espresso or Robotium) against a
           physical Nexus 4 device (DEVICE_ID: mako) which is running Android API
@@ -83,7 +82,7 @@ class Run(base.ListCommand):
           To run a series of 5-minute robo tests against a comprehensive matrix
           of virtual and physical devices, OS versions and locales, run:
 
-            $ {command} --app APP_APK --timeout 5m --device-ids mako,shamu,Nexus5,Nexus6,k3g --os-version-ids 17,18,19,21,22 --locales de,en_US,en_GB,es,fr,it,ru,zh
+            $ {command} --app APP_APK --timeout 5m --device-ids mako,Nexus5,Nexus6,g3,zeroflte --os-version-ids 17,18,19,21,22 --locales de,en_US,en_GB,es,fr,it,ru,zh
 
           To run an instrumentation test against the default test environment,
           but using a specific Google Cloud Storage bucket to hold the raw test
@@ -120,7 +119,6 @@ class Run(base.ListCommand):
     arg_util.AddSharedCommandArgs(parser)
     arg_util.AddMatrixArgs(parser)
     arg_util.AddInstrumentationTestArgs(parser)
-    arg_util.AddMonkeyTestArgs(parser)
     arg_util.AddRoboTestArgs(parser)
 
   def Run(self, args):

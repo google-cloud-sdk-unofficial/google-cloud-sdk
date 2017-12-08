@@ -11,10 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Command for creating subnetworks."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.command_lib.compute import flags
 
 
 class Create(base_classes.BaseAsyncCreator):
@@ -36,7 +37,7 @@ class Create(base_classes.BaseAsyncCreator):
         required=True,
         help='The IP space allocated to this subnetwork in CIDR format.')
 
-    utils.AddRegionFlag(
+    flags.AddRegionFlag(
         parser,
         resource_type='subnetwork',
         operation_type='create')

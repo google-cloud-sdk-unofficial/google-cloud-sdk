@@ -20,19 +20,17 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class Describe(base.Command):
-  """Show metadata for a Project."""
+class Describe(util.ProjectCommand, base.DescribeCommand):
+  """Show metadata for a project.
+
+  Shows metadata for a project given a valid project ID.
+
+  This command can fail for the following reasons:
+  * The project specified does not exist.
+  * The active account does not have permission to access the given project.
+  """
 
   detailed_help = {
-      'brief': 'Show metadata for a project.',
-      'DESCRIPTION': textwrap.dedent("""\
-          Shows metadata for a project, given a valid project ID.
-
-          This command can fail for the following reasons:
-              * The project specified does not exist.
-              * The active account does not have permission to access the given
-                project.
-    """),
       'EXAMPLES': textwrap.dedent("""\
           The following command prints metadata for a project with the
           ID `example-foo-bar-1`:
@@ -55,13 +53,3 @@ class Describe(base.Command):
     project_ref = resources.Parse(args.id,
                                   collection='cloudresourcemanager.projects')
     return projects.projects.Get(project_ref.Request())
-
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    # pylint:disable=not-callable, self.format is callable.
-    self.format(result)

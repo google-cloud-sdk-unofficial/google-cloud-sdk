@@ -14,10 +14,10 @@
 """Command for creating images."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -60,7 +60,7 @@ class Create(base_classes.BaseAsyncCreator):
         help='The zone of the disk specified by --source-disk.')
     source_disk_zone.detailed_help = ("""\
         The zone of the disk specified by --source-disk.
-        """ + constants.ZONE_PROPERTY_EXPLANATION)
+        """ + flags.ZONE_PROPERTY_EXPLANATION)
 
     parser.add_argument(
         'name',

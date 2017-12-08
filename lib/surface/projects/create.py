@@ -17,24 +17,21 @@
 import textwrap
 from googlecloudsdk.api_lib.projects import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import list_printer
 from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.Command):
-  """Create a new Project."""
+class Create(util.ProjectCommand, base.CreateCommand):
+  """Create a new project.
+
+  Creates a new project with the given project ID.
+
+  This command can fail for the following reasons:
+  * The project specified does not exist.
+  * The active account does not have permission to access the given project.
+  """
 
   detailed_help = {
-      'brief': 'Create a new project.',
-      'DESCRIPTION': textwrap.dedent("""\
-          Creates a new project with the given project ID.
-
-          This command can fail for the following reasons:
-              * The project specified does not exist.
-              * The active account does not have permission to access the given
-                project.
-    """),
       'EXAMPLES': textwrap.dedent("""\
           The following command creates a project with the ID
           `example-foo-bar-1`:
@@ -48,7 +45,8 @@ class Create(base.Command):
     parser.add_argument('id', metavar='PROJECT_ID',
                         help='ID for the project you want to create.')
     parser.add_argument('--name',
-                        help='Name for the project you want to create.')
+                        help='Name for the project you want to create. '
+                             'If not specified, will use project id as name.')
 
   @util.HandleHttpError
   def Run(self, args):
@@ -61,15 +59,6 @@ class Create(base.Command):
     result = projects.projects.Create(
         messages.Project(
             projectId=project_ref.Name(),
-            name=args.name))
+            name=args.name if args.name else project_ref.Name()))
     log.CreatedResource(project_ref)
     return result
-
-  def Display(self, args, result):
-    """This method is called to print the result of the Run() method.
-
-    Args:
-      args: The arguments that command was run with.
-      result: The value returned from the Run() method.
-    """
-    list_printer.PrintResourceList('cloudresourcemanager.projects', [result])

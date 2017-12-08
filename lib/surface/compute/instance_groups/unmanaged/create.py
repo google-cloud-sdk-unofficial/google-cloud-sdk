@@ -11,10 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Command for creating unmanaged instance groups."""
+
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute import zone_utils
+from googlecloudsdk.command_lib.compute import flags
 
 
 class Create(base_classes.BaseAsyncCreator, zone_utils.ZoneResourceFetcher):
@@ -32,7 +34,7 @@ class Create(base_classes.BaseAsyncCreator, zone_utils.ZoneResourceFetcher):
         metavar='NAME',
         help='The name of the unmanaged instance group to create.')
 
-    utils.AddZoneFlag(
+    flags.AddZoneFlag(
         parser,
         resource_type='unmanaged instance group',
         operation_type='create')

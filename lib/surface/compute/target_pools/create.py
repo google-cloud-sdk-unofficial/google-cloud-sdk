@@ -14,8 +14,8 @@
 """Command for creating target pools."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.third_party.apis.compute.v1 import compute_v1_messages
 
 
@@ -93,7 +93,7 @@ class Create(base_classes.BaseAsyncCreator):
         check.
         """
 
-    utils.AddRegionFlag(
+    flags.AddRegionFlag(
         parser,
         resource_type='target pool',
         operation_type='create')

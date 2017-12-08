@@ -13,9 +13,7 @@
 # limitations under the License.
 """Command for creating backend services.
 
-   There are separate alpha, beta, and GA command classes in this file.  The
-   key differences are that each track passes different message modules for
-   inferring options to --balancing-mode.
+   There are separate alpha, beta, and GA command classes in this file.
 """
 
 from googlecloudsdk.api_lib.compute import backend_services_utils
@@ -129,12 +127,12 @@ class CreateAlpha(CreateGA):
     enable_cdn = parser.add_argument(
         '--enable-cdn',
         action='store_true',
-        default=None,  # Tri-valued, None => don't change the setting.
-        help='Enable cloud CDN.')
+        default=None,  # Tri-valued, None => don't include enableCDN property.
+        help='Enable Cloud CDN.')
     enable_cdn.detailed_help = """\
         Enable Cloud CDN for the backend service. Cloud CDN can cache HTTP
         responses from a backend service at the edge of the network, close to
-        users.
+        users. Cloud CDN is disabled by default.
         """
 
     health_checks = parser.add_argument(
@@ -205,6 +203,28 @@ class CreateBeta(CreateGA):
   @staticmethod
   def Args(parser):
     _Args(parser, compute_beta_messages)
+
+    enable_cdn = parser.add_argument(
+        '--enable-cdn',
+        action='store_true',
+        default=None,  # Tri-valued, None => don't include enableCDN property.
+        help='Enable Cloud CDN.')
+    enable_cdn.detailed_help = """\
+        Enable Cloud CDN for the backend service. Cloud CDN can cache HTTP
+        responses from a backend service at the edge of the network, close to
+        users. Cloud CDN is disabled by default.
+        """
+
+  def CreateRequests(self, args):
+    kwargs = self._CommonBackendServiceKwargs(args)
+    if args.enable_cdn is not None:
+      kwargs['enableCDN'] = args.enable_cdn
+
+    request = self.messages.ComputeBackendServicesInsertRequest(
+        backendService=self.messages.BackendService(**kwargs),
+        project=self.project)
+
+    return [request]
 
 
 CreateGA.detailed_help = {

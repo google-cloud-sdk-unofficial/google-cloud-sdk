@@ -14,8 +14,8 @@
 """Command for creating target instances."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.compute import flags
 
 
 class Create(base_classes.BaseAsyncCreator):
@@ -32,7 +32,7 @@ class Create(base_classes.BaseAsyncCreator):
         help=('The name of the virtual machine instance that will handle the '
               'traffic.'))
 
-    utils.AddZoneFlag(
+    flags.AddZoneFlag(
         parser,
         resource_type='instance',
         operation_type='to create the target instance in')

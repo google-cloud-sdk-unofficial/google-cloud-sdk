@@ -18,6 +18,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import apis
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resolvers
+from googlecloudsdk.core import resources
 from googlecloudsdk.core.credentials import store
 
 
@@ -54,4 +56,10 @@ class ServiceRegistry(base.Group):
         'serviceregistry', 'beta')
     context['serviceregistry_messages'] = apis.GetMessagesModule(
         'serviceregistry', 'beta')
+
+    project = properties.VALUES.core.project
+    resolver = resolvers.FromProperty(project)
+    resources.SetParamDefault('serviceregistry', None, 'project', resolver)
+    context['serviceregistry_resources'] = resources
+
     return context

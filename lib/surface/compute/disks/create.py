@@ -21,6 +21,7 @@ from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute import zone_utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags
 
 
 DETAILED_HELP = {
@@ -138,7 +139,7 @@ def _CommonArgs(parser):
       disk-types list'. The default disk type is pd-standard.
       """
 
-  utils.AddZoneFlag(
+  flags.AddZoneFlag(
       parser,
       resource_type='disks',
       operation_type='create')

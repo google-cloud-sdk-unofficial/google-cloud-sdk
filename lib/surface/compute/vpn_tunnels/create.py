@@ -17,10 +17,10 @@ import argparse
 import re
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import flags
 
 
 _PRINTABLE_CHARS_PATTERN = r'[ -~]+'
@@ -125,7 +125,7 @@ class _BaseCreate(object):
               'of CIDR formatted strings. '
               'Example: 192.168.0.0/16,10.0.0.0/24.'))
 
-    utils.AddRegionFlag(
+    flags.AddRegionFlag(
         parser,
         resource_type='VPN Tunnel',
         operation_type='create')

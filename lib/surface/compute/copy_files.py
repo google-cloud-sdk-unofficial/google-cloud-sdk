@@ -15,10 +15,10 @@
 """Implements the command for copying files from and to virtual machines."""
 import logging
 
-from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import ssh_utils
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.third_party.py27 import py27_collections as collections
 
@@ -47,7 +47,7 @@ class CopyFiles(ssh_utils.BaseSSHCLICommand):
         help='Specifies a destination for the source files.',
         metavar='[[USER@]INSTANCE:]DEST')
 
-    # TODO(user): Use utils.AddZoneFlag when copy_files supports URIs
+    # TODO(user): Use flags.AddZoneFlag when copy_files supports URIs
     zone = parser.add_argument(
         '--zone',
         help='The zone of the instance to copy files to/from.',
@@ -55,7 +55,7 @@ class CopyFiles(ssh_utils.BaseSSHCLICommand):
     zone.detailed_help = (
         ('The zone of the instance to copy files to/from. If omitted, '
          'you will be prompted to select a zone.\n\n') +
-        constants.ZONE_PROPERTY_EXPLANATION)
+        flags.ZONE_PROPERTY_EXPLANATION)
 
   def Run(self, args):
     super(CopyFiles, self).Run(args)

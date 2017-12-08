@@ -22,19 +22,17 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class Delete(base.Command):
-  """Delete a Project."""
+class Delete(util.ProjectCommand, base.DeleteCommand):
+  """Delete a project.
+
+  Deletes the project with the given project ID.
+
+  This command can fail for the following reasons:
+  * The project specified does not exist.
+  * The active account does not have Owner permissions for the given project.
+  """
 
   detailed_help = {
-      'brief': 'Delete a project.',
-      'DESCRIPTION': textwrap.dedent("""\
-          Deletes the project with the given project ID.
-
-          This command can fail for the following reasons:
-              * The project specified does not exist.
-              * The active account does not have Owner permissions for
-                the given project.
-    """),
       'EXAMPLES': textwrap.dedent("""\
           The following command deletes the project with the ID
           `example-foo-bar-1`:
@@ -59,8 +57,8 @@ class Delete(base.Command):
                                   collection='cloudresourcemanager.projects')
     if not console_io.PromptContinue('Your project will be deleted.'):
       return None
-    result = projects.projects.Delete(
+    projects.projects.Delete(
         messages.CloudresourcemanagerProjectsDeleteRequest(
             projectId=project_ref.Name()))
     log.DeletedResource(project_ref)
-    return result
+    return util.DeletedResource(project_ref.Name())

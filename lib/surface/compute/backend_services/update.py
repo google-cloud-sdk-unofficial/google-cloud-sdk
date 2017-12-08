@@ -13,10 +13,7 @@
 # limitations under the License.
 """Commands for updating backend services.
 
-   There are separate alpha, beta, and GA command classes in this file.  The
-   key differences are that each track passes different message modules for
-   inferring options to --balancing-mode, and to enable or disable support for
-   https load balancing.
+   There are separate alpha, beta, and GA command classes in this file.
 """
 
 from googlecloudsdk.api_lib.compute import backend_services_utils
@@ -228,6 +225,40 @@ class UpdateBeta(UpdateGA):
   @staticmethod
   def Args(parser):
     _Args(parser, compute_beta_messages)
+
+    enable_cdn = parser.add_argument(
+        '--enable-cdn',
+        action='store_true',
+        default=None,  # Tri-valued, None => don't change the setting.
+        help='Enable cloud CDN.')
+    enable_cdn.detailed_help = """\
+        Enable Cloud CDN for the backend service. Cloud CDN can cache HTTP
+        responses from a backend service at the edge of the network, close to
+        users.
+        """
+
+  def Modify(self, args, existing):
+    replacement = super(UpdateBeta, self).Modify(args, existing)
+
+    if args.enable_cdn is not None:
+      replacement.enableCDN = args.enable_cdn
+
+    return replacement
+
+  def Run(self, args):
+    if not any([
+        args.protocol,
+        args.description is not None,
+        args.http_health_checks,
+        args.https_health_checks,
+        args.timeout is not None,
+        args.port,
+        args.port_name,
+        args.enable_cdn is not None,
+    ]):
+      raise exceptions.ToolException('At least one property must be modified.')
+
+    return super(UpdateGA, self).Run(args)
 
 
 UpdateGA.detailed_help = {

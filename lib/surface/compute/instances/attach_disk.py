@@ -15,8 +15,8 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import csek_utils
-from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags
 
 MODE_OPTIONS = ['ro', 'rw']
 
@@ -64,7 +64,7 @@ def _CommonArgs(parser):
       more than one instance.
       """
 
-  utils.AddZoneFlag(
+  flags.AddZoneFlag(
       parser,
       resource_type='instance',
       operation_type='attach a disk to')

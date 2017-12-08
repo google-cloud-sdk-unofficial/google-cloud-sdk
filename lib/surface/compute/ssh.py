@@ -17,9 +17,9 @@ import sys
 
 from googlecloudsdk.api_lib.compute import gaia_utils
 from googlecloudsdk.api_lib.compute import ssh_utils
-from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import flags
 
 
 def _Args(parser):
@@ -85,7 +85,7 @@ def _Args(parser):
         $ {command} example-instance --zone us-central1-a -- -vvv -L 80:%INSTANCE%:80
       """
 
-  utils.AddZoneFlag(
+  flags.AddZoneFlag(
       parser,
       resource_type='instance',
       operation_type='connect to')

@@ -13,8 +13,9 @@
 # limitations under the License.
 
 """Command for creating routers."""
+
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.command_lib.compute import flags
 
 
 class Create(base_classes.BaseAsyncCreator):
@@ -38,7 +39,7 @@ class Create(base_classes.BaseAsyncCreator):
         # TODO(user): improve this help
         help='The BGP asn for this router')
 
-    utils.AddRegionFlag(
+    flags.AddRegionFlag(
         parser,
         resource_type='router',
         operation_type='create')

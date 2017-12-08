@@ -11,10 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Command for setting whether to auto-delete a disk."""
+
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
@@ -23,7 +25,7 @@ class SetDiskAutoDelete(base_classes.ReadWriteCommand):
 
   @staticmethod
   def Args(parser):
-    utils.AddZoneFlag(
+    flags.AddZoneFlag(
         parser,
         resource_type='instance',
         operation_type='configure disk auto-delete for')

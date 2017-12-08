@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute import zone_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.third_party.py27 import py27_collections as collections
 
 DISK_METAVAR = (
@@ -83,7 +84,7 @@ def _CommonArgs(parser):
       nargs='+',
       help='The names of the instances to create.')
 
-  utils.AddZoneFlag(
+  flags.AddZoneFlag(
       parser,
       resource_type='instances',
       operation_type='create')

@@ -11,9 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Command for adding health checks to target pools."""
+
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.command_lib.compute import flags
 
 
 class AddHealthChecks(base_classes.NoOutputAsyncMutator):
@@ -38,7 +40,7 @@ class AddHealthChecks(base_classes.NoOutputAsyncMutator):
         completion_resource='httpHealthCheck',
         required=True)
 
-    utils.AddRegionFlag(
+    flags.AddRegionFlag(
         parser,
         resource_type='target pool',
         operation_type='add health checks to')

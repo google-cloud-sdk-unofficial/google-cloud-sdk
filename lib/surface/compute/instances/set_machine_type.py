@@ -11,11 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Command for setting machine type for virtual machine instances."""
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_utils
-from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.command_lib.compute import flags
 
 
 class SetMachineType(base_classes.NoOutputAsyncMutator):
@@ -33,7 +34,7 @@ class SetMachineType(base_classes.NoOutputAsyncMutator):
     instance_utils.AddMachineTypeArgs(parser)
     instance_utils.AddCustomMachineTypeArgs(parser)
 
-    utils.AddZoneFlag(
+    flags.AddZoneFlag(
         parser,
         resource_type='instance',
         operation_type='change the machine type for')

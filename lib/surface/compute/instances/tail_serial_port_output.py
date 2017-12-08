@@ -17,9 +17,9 @@ import time
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import request_helper
-from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 
@@ -36,7 +36,7 @@ class TailSerialPortOutputAlpha(base_classes.BaseCommand):
 
   @staticmethod
   def Args(parser):
-    utils.AddZoneFlag(
+    flags.AddZoneFlag(
         parser,
         resource_type='instance',
         operation_type='get serial port output for')

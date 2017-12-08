@@ -21,19 +21,18 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class Undelete(base.Command):
-  """Undelete a Project."""
+class Undelete(util.ProjectCommand, base.CreateCommand):
+  """Undelete a project.
+
+  Undeletes the project with the given project ID.
+
+  This command can fail for the following reasons:
+  * There is no project with the given ID.
+  * The active account does not have Owner or Editor permissions for the
+    given project.
+  """
 
   detailed_help = {
-      'brief': 'Undelete a project.',
-      'DESCRIPTION': textwrap.dedent("""\
-          Undeletes the project with the given Project ID.
-
-          This command can fail for the following reasons:
-              * There is no project with the given ID.
-              * The active account does not have Owner or Editor permissions for
-                the given project.
-    """),
       'EXAMPLES': textwrap.dedent("""\
           The following command undeletes the project with the ID
           `example-foo-bar-1`:
@@ -54,8 +53,8 @@ class Undelete(base.Command):
     resources = self.context['projects_resources']
     project_ref = resources.Parse(args.id,
                                   collection='cloudresourcemanager.projects')
-    result = projects.projects.Undelete(
+    projects.projects.Undelete(
         messages.CloudresourcemanagerProjectsUndeleteRequest(
             projectId=project_ref.Name()))
     log.status.write('Undeleted [{r}].\n'.format(r=project_ref))
-    return result
+    return util.DeletedResource(project_ref.Name())

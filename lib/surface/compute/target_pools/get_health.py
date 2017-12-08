@@ -11,10 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Command for getting a target pool's health."""
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.command_lib.compute import flags
 
 
 class GetHealth(base_classes.BaseCommand):
@@ -24,7 +27,7 @@ class GetHealth(base_classes.BaseCommand):
   def Args(parser):
     base_classes.AddFieldsFlag(parser, 'targetPoolInstanceHealth')
 
-    utils.AddRegionFlag(
+    flags.AddRegionFlag(
         parser,
         resource_type='target pool',
         operation_type='get health information for')
