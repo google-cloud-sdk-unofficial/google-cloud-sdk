@@ -19,7 +19,8 @@ from googlecloudsdk.calliope import exceptions as exceptions
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class SwitchMode(base_classes.NoOutputAsyncMutator):
   """Switch network mode."""
 

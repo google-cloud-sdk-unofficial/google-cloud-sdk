@@ -21,7 +21,6 @@ import sys
 from googlecloudsdk.api_lib.compute import ssh_utils
 
 from googlecloudsdk.calliope import arg_parsers
-from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
@@ -40,9 +39,10 @@ DEFAULT_HOST_KEY = ('ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDkOOCaBZVTxzvjJ7+7'
                     'lwcwO1ulpVB0sTIdB7Bu+YPuo1XSuL2n3tXA9n9S+7kQCoyuXodeBpJo'
                     'JxzdJeoQXAepLrLA7nl6jRiYZyic0WJeSJm7vmvl1VDAGkyXloNEhBnv'
                     'oQFQl5aCwcS8UQnzzwMDflQ+JgsynYN08dLIRGcwkJe9')
+SERIAL_PORT_HELP = ('https://cloud.google.com/compute/docs/'
+                    'instances/interacting-with-serial-console')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
   """Class for connecting through a gateway to the interactive serial port."""
 
@@ -70,7 +70,7 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
         help='Specifies the user/instance for the serial port connection',
         metavar='[USER@]INSTANCE')
     user_host.detailed_help = """\
-        Specifies the user/instance to for the serial port connection.
+        Specifies the user/instance for the serial port connection.
 
         ``USER'' specifies the username to authenticate as. If omitted,
         the current OS user is selected.
@@ -82,6 +82,8 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
               'Can be 1-4, default is 1.'),
         type=arg_parsers.BoundedInt(1, 4))
     port.detailed_help = """\
+        The number of the requested serial port. Can be 1-4, default is 1.
+
         Instances can support up to four serial ports. By default, this
         command will connect to the first serial port. Setting this flag
         will connect to the requested serial port.
@@ -95,8 +97,9 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
         metavar='KEY=VALUE')
     extra_args.detailed_help = """\
         Optional arguments can be passed to the serial port connection by
-        passing key-value pairs to this flag.
-        """
+        passing key-value pairs to this flag, such as max-connections=N or
+        replay-lines=N. See {0} for additional options.
+        """.format(SERIAL_PORT_HELP)
 
     parser.add_argument(
         '--serial-port-gateway',
@@ -180,11 +183,13 @@ class ConnectToSerialPort(ssh_utils.BaseSSHCLICommand):
 
     # Don't wait for the instance to become SSHable. We are not connecting to
     # the instance itself through SSH, so the instance doesn't need to have
-    # fully booted to connect to the serial port.
+    # fully booted to connect to the serial port. Also, ignore exit code 255,
+    # since the normal way to terminate the serial port connection is ~. and
+    # that causes ssh to exit with 255.
     return_code = self.ActuallyRun(
         args, ssh_args, user, instance, instance_ref.project,
         strict_error_checking=False, use_account_service=False,
-        wait_for_sshable=False)
+        wait_for_sshable=False, ignore_ssh_errors=True)
     if return_code:
       sys.exit(return_code)
 

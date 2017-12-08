@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """'functions deploy' command."""
-import argparse
 import httplib
 import os
 import random
@@ -29,7 +28,6 @@ from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions.deploy import util as deploy_util
-from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import archive
@@ -57,9 +55,6 @@ class Deploy(base.Command):
       """
     path_group = parser.add_mutually_exclusive_group()
     path_group.add_argument(
-        '--source',
-        help=argparse.SUPPRESS)
-    path_group.add_argument(
         '--local-path',
         help=('Path to local directory with source code. Required with '
               '--stage-bucket flag.'))
@@ -69,10 +64,6 @@ class Deploy(base.Command):
               'Repositories, when you specify this parameter --source-url flag '
               'is required.'))
     source_group = parser.add_mutually_exclusive_group()
-    source_group.add_argument(
-        '--bucket',
-        help=argparse.SUPPRESS,
-        type=util.ValidateAndStandarizeBucketUriOrRaise)
     source_group.add_argument(
         '--stage-bucket',
         help=('Name of Google Cloud Storage bucket in which source code will '
@@ -121,23 +112,6 @@ class Deploy(base.Command):
               'Defaults to 60 seconds.'),
         type=arg_parsers.Duration(lower_bound='1s'))
     trigger_group = parser.add_mutually_exclusive_group(required=True)
-    # TODO(b/32655988) This functionality is deprecated
-    trigger_group.add_argument(
-        '--trigger-topic',
-        help=('Name of Pub/Sub topic. Every message published in this topic '
-              'will trigger function execution with message contents passed as '
-              'input data.'),
-        type=util.ValidatePubsubTopicNameOrRaise)
-    trigger_group.add_argument(
-        '--trigger-gs-uri',
-        help=argparse.SUPPRESS,
-        type=util.ValidateAndStandarizeBucketUriOrRaise)
-    # TODO(b/32655988) This functionality is deprecated
-    trigger_group.add_argument(
-        '--trigger-bucket',
-        help=('Google Cloud Storage bucket name. Every change in files in this '
-              'bucket will trigger function execution.'),
-        type=util.ValidateAndStandarizeBucketUriOrRaise)
     trigger_http = trigger_group.add_argument(
         '--trigger-http', action='store_true',
         help='Associates an HTTP endpoint with this function.')
@@ -245,21 +219,6 @@ class Deploy(base.Command):
     """
     messages = self.context['functions_messages']
     function = messages.CloudFunction()
-    # TODO(b/32655988) This functionality is deprecated
-    if args.trigger_topic:
-      log.warn('--trigger-topic flag is deprecated and will be removed. Use '
-               '--trigger-provider cloud.pubsub --trigger-event topic.publish '
-               'instead.')
-      project = properties.VALUES.core.project.Get(required=True)
-      function.pubsubTrigger = 'projects/{0}/topics/{1}'.format(
-          project, args.trigger_topic)
-    trigger_bucket = args.trigger_bucket or args.trigger_gs_uri
-    # TODO(b/32655988) This functionality is deprecated
-    if trigger_bucket is not None:
-      log.warn('--trigger-bucket is deprecated and will be removed. Use'
-               '--trigger-provider cloud.storage --trigger-event object.change '
-               'instead.')
-      function.gcsTrigger = trigger_bucket
     if args.trigger_http:
       function.httpsTrigger = messages.HTTPSTrigger()
     if event_trigger_args is not None:
@@ -295,7 +254,7 @@ class Deploy(base.Command):
                                                    event_trigger_args)
     if args.source_url:
       messages = self.context['functions_messages']
-      source_path = args.source or args.source_path
+      source_path = args.source_path
       function.sourceRepository = messages.SourceRepository(
           tag=args.source_tag, branch=args.source_branch,
           revision=args.source_revision, repositoryUrl=args.source_url,
@@ -309,7 +268,7 @@ class Deploy(base.Command):
 
   def _PrepareSourcesOnGcs(self, args):
     remote_zip_file = self._GenerateRemoteZipFileName(args)
-    stage_bucket = args.bucket or args.stage_bucket
+    stage_bucket = args.stage_bucket
     gcs_url = storage.BuildRemoteDestination(stage_bucket, remote_zip_file)
     with file_utils.TemporaryDirectory() as tmp_dir:
       zip_file = self._CreateZipFile(tmp_dir, args)

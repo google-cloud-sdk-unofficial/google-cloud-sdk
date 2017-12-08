@@ -17,8 +17,22 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.ml import flags
 from googlecloudsdk.command_lib.ml import jobs as jobs_prep
+from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.resource import resource_printer
+
+
+_POLLING_INTERVAL = 10
+_FOLLOW_UP_MESSAGE = """\
+You may view the status of your job with the command
+
+  $ gcloud beta ml jobs describe {job_id}
+
+or continue streaming the logs with the command
+
+  $ gcloud beta ml jobs stream-logs {job_id}\
+"""
 
 
 class BetaTrain(base.Command):
@@ -43,8 +57,15 @@ class BetaTrain(base.Command):
 
   If --package-path /my/code/path/trainer is specified and there is a
   setup.py file at /my/code/path/setup.py then that file will be invoked
-  with [sdist] and the generated tar files will be uploaded to Cloud Storage.
+  with `sdist` and the generated tar files will be uploaded to Cloud Storage.
   Otherwise a temporary setup.py file will be generated for the build.
+
+  By default, this command blocks until the job finishes, streaming the logs in
+  the meantime. If the job succeeds, the command exits zero; otherwise, it exits
+  non-zero. To avoid blocking, pass the `--async` flag.
+
+  For more information, see:
+  https://cloud.google.com/ml/docs/concepts/training-overview
   """
 
   @staticmethod
@@ -54,11 +75,15 @@ class BetaTrain(base.Command):
     flags.PACKAGE_PATH.AddToParser(parser)
     flags.PACKAGES.AddToParser(parser)
     flags.MODULE_NAME.AddToParser(parser)
-    compute_flags.AddRegionFlag(
-        parser, 'machine learning training job', 'submit')
+    compute_flags.AddRegionFlag(parser, 'machine learning training job',
+                                'submit')
     flags.CONFIG.AddToParser(parser)
     flags.GetStagingBucket(required=True).AddToParser(parser)
     flags.USER_ARGS.AddToParser(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
+
+  def Format(self, args):
+    return None
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -75,7 +100,7 @@ class BetaTrain(base.Command):
 
     region = properties.VALUES.compute.region.Get(required=True)
     uris = jobs_prep.RunSetupAndUpload(
-        args.packages, args.staging_bucket, args.package_path)
+        args.packages, args.staging_bucket, args.package_path, args.job)
     log.debug('Using {0} as trainer uris'.format(uris))
     job = jobs.BuildTrainingJob(
         path=args.config,
@@ -84,4 +109,31 @@ class BetaTrain(base.Command):
         trainer_uri=uris,
         region=region,
         user_args=args.user_args)
-    return jobs.Create(job)
+
+    job = jobs.Create(job)
+    if args.async:
+      log.status.Print('Job [{}] submitted successfully.'.format(job.jobId))
+      log.status.Print(_FOLLOW_UP_MESSAGE.format(job_id=job.jobId))
+      return job
+
+    log_fetcher = jobs.LogFetcher(job_id=job.jobId,
+                                  polling_interval=_POLLING_INTERVAL,
+                                  allow_multiline_logs=False)
+
+    printer = resource_printer.Printer(jobs.LogFetcher.LOG_FORMAT, out=log.err)
+    def _CtrlCHandler(signal, frame):
+      del signal, frame  # Unused
+      raise KeyboardInterrupt
+    with execution_utils.CtrlCSection(_CtrlCHandler):
+      try:
+        printer.Print(log_fetcher.YieldLogs())
+      except KeyboardInterrupt:
+        log.status.Print('Received keyboard interrupt.')
+        log.status.Print(_FOLLOW_UP_MESSAGE.format(job_id=job.jobId))
+
+    job = jobs.Get(job.jobId)
+    # If the job itself failed, we will return a failure status.
+    if job.state is not job.StateValueValuesEnum.SUCCEEDED:
+      self.exit_code = 1
+
+    return job

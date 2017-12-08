@@ -130,7 +130,7 @@ class BadListsChecker(Checker):
 
   def _ForEvery(self, cmd_or_group):
     for flag in cmd_or_group.GetSpecificFlags():
-      if flag.nargs not in [None, 0, 1, '?']:
+      if flag.nargs not in [None, 0, 1]:
         self._issues.append(LintError(
             name=BadListsChecker.name,
             command=cmd_or_group,

@@ -22,6 +22,8 @@ from googlecloudsdk.command_lib.dataflow import job_utils
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Drain(base.Command):
   """Drains all jobs that match the command line arguments.
 

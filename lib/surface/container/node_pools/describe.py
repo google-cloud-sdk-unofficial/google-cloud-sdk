@@ -16,10 +16,9 @@
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.container import util
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import properties
+from googlecloudsdk.command_lib.container import flags
 
 
 class Describe(base.DescribeCommand):
@@ -37,11 +36,8 @@ class Describe(base.DescribeCommand):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
           to capture some information, but behaves like an ArgumentParser.
     """
-    parser.add_argument('name', help='The name of the node pool.')
-    parser.add_argument(
-        '--cluster',
-        help='The name of the cluster.',
-        action=actions.StoreProperty(properties.VALUES.container.cluster))
+    flags.AddNodePoolNameArg(parser, 'The name of the node pool.')
+    flags.AddNodePoolClusterFlag(parser, 'The name of the cluster.')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

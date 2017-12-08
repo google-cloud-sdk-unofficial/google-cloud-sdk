@@ -27,6 +27,7 @@ class Update(base_classes.ReadWriteCommand):
   @staticmethod
   def Args(parser):
     health_checks_utils.AddHttpRelatedUpdateArgs(parser)
+    health_checks_utils.AddHttpRelatedResponseArg(parser)
     health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'HTTP2')
 
   @property
@@ -68,8 +69,8 @@ class Update(base_classes.ReadWriteCommand):
           'update http2 subcommand applied to health check with protocol ' +
           existing_check.type.name)
 
-    # Description, PortName, and Host are the only attributes that can be
-    # cleared by passing in an empty string (but we don't want to set it to
+    # Description, PortName, Response and Host are the only attributes that can
+    # be cleared by passing in an empty string (but we don't want to set it to
     # an empty string).
     if args.description:
       description = args.description
@@ -92,6 +93,13 @@ class Update(base_classes.ReadWriteCommand):
     else:
       port_name = None
 
+    if args.response:
+      response = args.response
+    elif args.response is None:
+      response = existing_check.http2HealthCheck.response
+    else:
+      response = None
+
     proxy_header = existing_check.http2HealthCheck.proxyHeader
     if args.proxy_header is not None:
       proxy_header = self.messages.HTTP2HealthCheck.ProxyHeaderValueValuesEnum(
@@ -106,7 +114,8 @@ class Update(base_classes.ReadWriteCommand):
             portName=port_name,
             requestPath=(args.request_path or
                          existing_check.http2HealthCheck.requestPath),
-            proxyHeader=proxy_header),
+            proxyHeader=proxy_header,
+            response=response),
         checkIntervalSec=(args.check_interval or
                           existing_check.checkIntervalSec),
         timeoutSec=args.timeout or existing_check.timeoutSec,
@@ -128,7 +137,7 @@ class Update(base_classes.ReadWriteCommand):
                       or args.unhealthy_threshold
                       or args.proxy_header)
     if (args.description is None and args.host is None and
-        args.port_name is None and args_unset):
+        args.response is None and args.port_name is None and args_unset):
       raise exceptions.ToolException('At least one property must be modified.')
 
     return super(Update, self).Run(args)

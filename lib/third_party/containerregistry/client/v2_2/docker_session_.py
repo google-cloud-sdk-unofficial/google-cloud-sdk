@@ -17,8 +17,18 @@ from containerregistry.client.v2_2 import util
 import httplib2  # pylint: disable=unused-import
 
 
+def _tag_or_digest(
+    name
+):
+  if isinstance(name, docker_name.Tag):
+    return name.tag
+  else:
+    assert isinstance(name, docker_name.Digest)
+    return name.digest
+
+
 class Push(object):
-  """Push encapsulates a Registry v2 Docker push session."""
+  """Push encapsulates a Registry v2.2 Docker push session."""
 
   def __init__(
       self,
@@ -43,7 +53,6 @@ class Push(object):
     Raises:
       ValueError: an incorrectly typed argument was supplied.
     """
-    # TODO(user): Add support for pushing by manifest
     self._name = name
     self._transport = docker_http.Transport(
         name, creds, transport, docker_http.PUSH)
@@ -196,15 +205,8 @@ class Push(object):
     self._transport.Request(
         '{base_url}/manifests/{tag_or_digest}'.format(
             base_url=self._base_url(),
-            tag_or_digest=self._name.tag),
-        method='PUT',
-        # TODO(user): This should be:
-        #   util.Rename(self._name, image.manifest())
-        # Technically the Docker folks have agreed that clients should
-        # never validate the embedded names in a manifest, however, that
-        # does not mean that DockerHub and other v2 registries won't check
-        # this.
-        body=image.manifest(),
+            tag_or_digest=_tag_or_digest(self._name)),
+        method='PUT', body=image.manifest(),
         content_type=docker_http.MANIFEST_SCHEMA2_MIME,
         accepted_codes=[httplib.OK, httplib.ACCEPTED])
 
@@ -255,11 +257,14 @@ class Push(object):
     # If the manifest (by digest) exists, then avoid N layer existence
     # checks (they must exist).
     if self._manifest_exists(image):
-      manifest_digest = util.Digest(image.manifest())
-      if self._remote_tag_digest() == manifest_digest:
-        logging.info('Tag points to the right manifest, skipping push.')
-        return
-      logging.info('Manifest exists, skipping blob uploads and pushing tag.')
+      if isinstance(self._name, docker_name.Tag):
+        manifest_digest = util.Digest(image.manifest())
+        if self._remote_tag_digest() == manifest_digest:
+          logging.info('Tag points to the right manifest, skipping push.')
+          return
+        logging.info('Manifest exists, skipping blob uploads and pushing tag.')
+      else:
+        logging.info('Manifest exists, skipping upload.')
     elif self._threads == 1:
       for digest in image.blob_set():
         self._upload_one(image, digest)
@@ -301,18 +306,12 @@ def Delete(
   docker_transport = docker_http.Transport(
       name, creds, transport, docker_http.DELETE)
 
-  if isinstance(name, docker_name.Tag):
-    entity = name.tag
-  else:
-    assert isinstance(name, docker_name.Digest)
-    entity = name.digest
-
   resp, unused_content = docker_transport.Request(
       '{scheme}://{registry}/v2/{repository}/manifests/{entity}'.format(
           scheme=docker_http.Scheme(name.registry),
           registry=name.registry,
           repository=name.repository,
-          entity=entity),
+          entity=_tag_or_digest(name)),
       method='DELETE',
       accepted_codes=[httplib.OK])
 

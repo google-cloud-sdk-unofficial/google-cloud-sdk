@@ -15,6 +15,7 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import csek_utils
+from googlecloudsdk.api_lib.compute import image_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -29,8 +30,10 @@ class Create(base_classes.BaseAsyncCreator):
 
   _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = False
 
-  @staticmethod
-  def Args(parser):
+  _GUEST_OS_FEATURES = image_utils.GUEST_OS_FEATURES
+
+  @classmethod
+  def Args(cls, parser):
     parser.add_argument(
         '--description',
         help=('An optional, textual description for the image being created.'))
@@ -59,6 +62,14 @@ class Create(base_classes.BaseAsyncCreator):
         '--licenses',
         type=arg_parsers.ArgList(),
         help='Comma-separated list of URIs to license resources.')
+
+    if cls._GUEST_OS_FEATURES:
+      parser.add_argument(
+          '--guest-os-features',
+          metavar='GUEST_OS_FEATURE',
+          type=arg_parsers.ArgList(element_type=lambda x: x.upper(),
+                                   choices=cls._GUEST_OS_FEATURES),
+          help=('One or more features supported by the OS in the image.'))
 
     parser.add_argument(
         'name',
@@ -130,6 +141,16 @@ class Create(base_classes.BaseAsyncCreator):
     if args.licenses:
       image.licenses = args.licenses
 
+    guest_os_features = getattr(args, 'guest_os_features', [])
+    if guest_os_features:
+      guest_os_feature_messages = []
+      for feature in guest_os_features:
+        gf_type = self.messages.GuestOsFeature.TypeValueValuesEnum(feature)
+        guest_os_feature = self.messages.GuestOsFeature()
+        guest_os_feature.type = gf_type
+        guest_os_feature_messages.append(guest_os_feature)
+      image.guestOsFeatures = guest_os_feature_messages
+
     request = self.messages.ComputeImagesInsertRequest(
         image=image,
         project=self.project)
@@ -137,12 +158,20 @@ class Create(base_classes.BaseAsyncCreator):
     return [request]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
 
   # Used in CreateRequests. We only want to allow RSA key wrapping in
   # alpha/beta, *not* GA.
   _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = True
+
+  _GUEST_OS_FEATURES = image_utils.GUEST_OS_FEATURES_BETA
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+
+  _GUEST_OS_FEATURES = image_utils.GUEST_OS_FEATURES_ALPHA
 
 
 Create.detailed_help = {
@@ -165,3 +194,4 @@ Create.detailed_help = {
 }
 
 CreateBeta.detailed_help = Create.detailed_help
+CreateAlpha.detailed_help = Create.detailed_help

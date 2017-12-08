@@ -106,7 +106,6 @@ class ResetWindowsPassword(base_classes.ReadWriteCommand):
 
     user = parser.add_argument(
         '--user',
-        nargs='?',
         help='Specifies the username to reset a password for.')
     user.detailed_help = """\
         ``USER'' specifies the username to get the password for.

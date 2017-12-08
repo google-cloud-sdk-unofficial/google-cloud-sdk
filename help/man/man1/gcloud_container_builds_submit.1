@@ -11,7 +11,7 @@ gcloud container builds submit \- submit a build using the Google Container Buil
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud container builds submit\fR \fISOURCE\fR (\fB\-\-config\fR=\fICONFIG\fR\ |\ \fB\-\-tag\fR=\fITAG\fR,\ \fB\-t\fR\ \fITAG\fR) [\fB\-\-async\fR] [\fB\-\-gcs\-log\-dir\fR=\fIGCS_LOG_DIR\fR] [\fB\-\-gcs\-source\-staging\-dir\fR=\fIGCS_SOURCE_STAGING_DIR\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud container builds submit\fR \fISOURCE\fR (\fB\-\-config\fR=\fICONFIG\fR\ |\ \fB\-\-tag\fR=\fITAG\fR,\ \fB\-t\fR\ \fITAG\fR) [\fB\-\-async\fR] [\fB\-\-gcs\-log\-dir\fR=\fIGCS_LOG_DIR\fR] [\fB\-\-gcs\-source\-staging\-dir\fR=\fIGCS_SOURCE_STAGING_DIR\fR] [\fB\-\-timeout\fR=\fITIMEOUT\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -71,6 +71,12 @@ used.
 Directory in Google Cloud Storage to stage a copy of the source used for the
 build. If the bucket does not exist, it will be created. If not set,
 gs://<project id>\fRcloudbuild/source is used.
+
+.TP 2m
+\fB\-\-timeout\fR=\fITIMEOUT\fR
+Maximum time a build can last before it is failed as "TIMEOUT", written as a
+duration (eg "2h15m5s" is two hours, fifteen minutes, and five seconds). If no
+unit is specified, seconds is assumed (eg "10" is 10 seconds).
 
 
 .RE

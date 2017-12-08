@@ -13,22 +13,43 @@
 # limitations under the License.
 """Command for deleting target SSL proxies."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.target_ssl_proxies import flags
 
 
-class Delete(base_classes.GlobalDeleter):
+class Delete(base.DeleteCommand):
   """Delete target SSL proxy."""
+
+  TARGET_SSL_PROXY_ARG = None
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalDeleter.Args(parser, 'compute.targetSslProxies')
+    Delete.TARGET_SSL_PROXY_ARG = flags.TargetSslProxyArgument(plural=True)
+    Delete.TARGET_SSL_PROXY_ARG.AddArgument(parser)
 
-  @property
-  def service(self):
-    return self.compute.targetSslProxies
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    refs = self.TARGET_SSL_PROXY_ARG.ResolveAsResource(args, holder.resources)
+    utils.PromptForDeletion(refs)
 
-  @property
-  def resource_type(self):
-    return 'targetSslProxies'
+    client = holder.client.apitools_client
+    messages = holder.client.messages
+
+    requests = []
+    for ref in refs:
+      requests.append(
+          (client.targetSslProxies,
+           'Delete',
+           messages.ComputeTargetSslProxiesDeleteRequest(
+               project=ref.project, targetSslProxy=ref.Name())))
+
+    errors = []
+    resources = holder.client.MakeRequests(requests, errors)
+
+    if errors:
+      utils.RaiseToolException(errors)
+    return resources
 
 
 Delete.detailed_help = {

@@ -19,6 +19,8 @@ import argparse
 from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.dataproc import base_classes
+from googlecloudsdk.api_lib.dataproc import exceptions
+from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
@@ -49,6 +51,8 @@ class Spark(base_classes.JobSubmitter):
   def Args(parser):
     super(Spark, Spark).Args(parser)
     SparkBase.Args(parser)
+    driver_group = parser.add_argument_group()
+    util.AddJvmDriverFlags(driver_group)
 
   def ConfigureJob(self, job, args):
     SparkBase.ConfigureJob(
@@ -87,6 +91,8 @@ class SparkBeta(base_classes.JobSubmitterBeta):
   def Args(parser):
     super(SparkBeta, SparkBeta).Args(parser)
     SparkBase.Args(parser)
+    driver_group = parser.add_mutually_exclusive_group(required=True)
+    util.AddJvmDriverFlags(driver_group)
 
   def ConfigureJob(self, job, args):
     SparkBase.ConfigureJob(
@@ -108,16 +114,6 @@ class SparkBase(object):
   @staticmethod
   def Args(parser):
     """Parses command-line arguments specific to submitting Spark jobs."""
-
-    parser.add_argument(
-        '--jar',
-        dest='main_jar',
-        help='The HCFS URI of jar file containing the driver jar.')
-    parser.add_argument(
-        '--class',
-        dest='main_class',
-        help=('The class containing the main method of the driver. Must be in a'
-              ' provided jar or jar that is already on the classpath'))
     parser.add_argument(
         '--jars',
         type=arg_parsers.ArgList(),
@@ -158,14 +154,16 @@ class SparkBase(object):
   @staticmethod
   def GetFilesByType(args):
     """Returns a dict of files by their type (jars, archives, etc.)."""
-
     # TODO(user): Move arg manipulation elsewhere.
+    # TODO(user): Remove with GA flags 2017-04-01 (b/33298024).
     if not args.main_class and not args.main_jar:
-      raise ValueError('Must either specify --class or JAR.')
+      raise exceptions.ArgumentError('Must either specify --class or JAR.')
     if args.main_class and args.main_jar:
-      log.info(
-          'Both main jar and class specified. Passing main jar as an additional'
-          ' jar')
+      log.warn(
+          'You must specify exactly one of --jar and --class. '
+          'This will be strictly enforced in April 2017. '
+          "Use 'gcloud beta dataproc jobs submit spark' to see new behavior.")
+      log.info('Passing main jar as an additional jar.')
       args.jars.append(args.main_jar)
       args.main_jar = None
 

@@ -50,8 +50,4 @@ class StreamLogs(base.Command):
     Returns:
       Some value that we want to have printed later.
     """
-    return 'value({fields})'.format(fields=','.join(
-        ['severity:label=SEVERITY',
-         'timestamp.date("%Y-%m-%d %H:%M:%S %z",tz="LOCAL"):label=TIMESTAMP',
-         'task_name:label=TASK_NAME', 'trial_id:label=TRIAL_ID',
-         'message:label=MESSAGE']))
+    return jobs.LogFetcher.LOG_FORMAT

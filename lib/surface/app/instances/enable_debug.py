@@ -14,10 +14,9 @@
 
 """The `app instances enable-debug` command."""
 
-import operator
-
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import instances_util
+from googlecloudsdk.api_lib.app import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import flags
 from googlecloudsdk.core import resources
@@ -42,7 +41,7 @@ class EnableDebug(base.Command):
       'EXAMPLES': """\
           To enable debug mode for a particular instance, run:
 
-              $ {command} --service=service --version=version gae-default-v1-nwz0
+              $ {command} --service=s1 --version=v1 i1
 
           To enable debug mode for an instance chosen interactively, run:
 
@@ -78,11 +77,9 @@ class EnableDebug(base.Command):
 
   def Run(self, args):
     api_client = appengine_api_client.GetApiClient()
-    all_instances = api_client.GetAllInstances(args.service, args.version)
-    # Only VM instances can be placed in debug mode for now.
-    all_instances = filter(operator.attrgetter('instance.vmName'),
-                           all_instances)
-
+    all_instances = api_client.GetAllInstances(
+        args.service, args.version,
+        version_filter=lambda v: util.Environment.IsFlexible(v.environment))
     try:
       res = resources.REGISTRY.Parse(args.instance)
     except Exception:  # pylint:disable=broad-except

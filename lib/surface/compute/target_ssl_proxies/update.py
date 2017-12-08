@@ -14,7 +14,9 @@
 """Command for updating target SSL proxies."""
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import health_checks_utils
+from googlecloudsdk.api_lib.compute import target_proxies_utils
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.backend_services import (
     flags as backend_service_flags)
@@ -23,7 +25,7 @@ from googlecloudsdk.command_lib.compute.ssl_certificates import (
 from googlecloudsdk.command_lib.compute.target_ssl_proxies import flags
 
 
-class Update(base_classes.NoOutputAsyncMutator):
+class Update(base.SilentCommand):
   """Update a target SSL proxy."""
 
   BACKEND_SERVICE_ARG = None
@@ -32,7 +34,7 @@ class Update(base_classes.NoOutputAsyncMutator):
 
   @classmethod
   def Args(cls, parser):
-    health_checks_utils.AddProxyHeaderRelatedUpdateArgs(parser)
+    target_proxies_utils.AddProxyHeaderRelatedUpdateArgs(parser)
 
     cls.BACKEND_SERVICE_ARG = (
         backend_service_flags.BackendServiceArgumentForTargetSslProxy(
@@ -45,66 +47,65 @@ class Update(base_classes.NoOutputAsyncMutator):
     cls.TARGET_SSL_PROXY_ARG = flags.TargetSslProxyArgument()
     cls.TARGET_SSL_PROXY_ARG.AddArgument(parser)
 
-  @property
-  def service(self):
-    return self.compute.targetSslProxies
-
-  @property
-  def method(self):
-    pass
-
-  @property
-  def resource_type(self):
-    return 'targetHttpProxies'
-
-  def CreateRequests(self, args):
-
+  def Run(self, args):
     if not (args.ssl_certificate or args.proxy_header or args.backend_service):
       raise exceptions.ToolException(
           'You must specify at least one of [--ssl-certificate], '
           '[--backend-service] or [--proxy-header].')
 
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     requests = []
     target_ssl_proxy_ref = self.TARGET_SSL_PROXY_ARG.ResolveAsResource(
-        args, self.resources)
+        args, holder.resources)
+
+    client = holder.client.apitools_client
+    messages = holder.client.messages
 
     if args.ssl_certificate:
       ssl_certificate_ref = self.SSL_CERTIFICATE_ARG.ResolveAsResource(
-          args, self.resources)
+          args, holder.resources)
       requests.append(
-          ('SetSslCertificates',
-           self.messages.ComputeTargetSslProxiesSetSslCertificatesRequest(
-               project=self.project,
+          (client.targetSslProxies,
+           'SetSslCertificates',
+           messages.ComputeTargetSslProxiesSetSslCertificatesRequest(
+               project=target_ssl_proxy_ref.project,
                targetSslProxy=target_ssl_proxy_ref.Name(),
                targetSslProxiesSetSslCertificatesRequest=(
-                   self.messages.TargetSslProxiesSetSslCertificatesRequest(
+                   messages.TargetSslProxiesSetSslCertificatesRequest(
                        sslCertificates=[ssl_certificate_ref.SelfLink()])))))
 
     if args.backend_service:
       backend_service_ref = self.BACKEND_SERVICE_ARG.ResolveAsResource(
-          args, self.resources)
+          args, holder.resources)
       requests.append(
-          ('SetBackendService',
-           self.messages.ComputeTargetSslProxiesSetBackendServiceRequest(
-               project=self.project,
+          (client.targetSslProxies,
+           'SetBackendService',
+           messages.ComputeTargetSslProxiesSetBackendServiceRequest(
+               project=target_ssl_proxy_ref.project,
                targetSslProxy=target_ssl_proxy_ref.Name(),
                targetSslProxiesSetBackendServiceRequest=(
-                   self.messages.TargetSslProxiesSetBackendServiceRequest(
+                   messages.TargetSslProxiesSetBackendServiceRequest(
                        service=backend_service_ref.SelfLink())))))
 
     if args.proxy_header:
-      proxy_header = (self.messages.TargetSslProxiesSetProxyHeaderRequest.
+      proxy_header = (messages.TargetSslProxiesSetProxyHeaderRequest.
                       ProxyHeaderValueValuesEnum(args.proxy_header))
       requests.append(
-          ('SetProxyHeader',
-           self.messages.ComputeTargetSslProxiesSetProxyHeaderRequest(
-               project=self.project,
+          (client.targetSslProxies,
+           'SetProxyHeader',
+           messages.ComputeTargetSslProxiesSetProxyHeaderRequest(
+               project=target_ssl_proxy_ref.project,
                targetSslProxy=target_ssl_proxy_ref.Name(),
                targetSslProxiesSetProxyHeaderRequest=(
-                   self.messages.TargetSslProxiesSetProxyHeaderRequest(
+                   messages.TargetSslProxiesSetProxyHeaderRequest(
                        proxyHeader=proxy_header)))))
 
-    return requests
+    errors = []
+    resources = holder.client.MakeRequests(requests, errors)
+
+    if errors:
+      utils.RaiseToolException(errors)
+    return resources
 
 
 Update.detailed_help = {

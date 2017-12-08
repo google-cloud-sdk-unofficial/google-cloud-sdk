@@ -97,15 +97,15 @@ class PigBase(object):
   @staticmethod
   def Args(parser):
     """Performs command-line argument parsing specific to Pig."""
-
-    parser.add_argument(
+    driver = parser.add_mutually_exclusive_group(required=True)
+    driver.add_argument(
         '--execute', '-e',
         metavar='QUERY',
         dest='queries',
         action='append',
         default=[],
         help='A Pig query to execute as part of the job.')
-    parser.add_argument(
+    driver.add_argument(
         '--file', '-f',
         help='HCFS URI of file containing Pig script to execute as the job.')
     parser.add_argument(
@@ -138,12 +138,6 @@ class PigBase(object):
 
   @staticmethod
   def GetFilesByType(args):
-    # TODO(user): Replace with argument group.
-    if not args.queries and not args.file:
-      raise ValueError('Must either specify --execute or --file.')
-    if args.queries and args.file:
-      raise ValueError('Cannot specify both --execute and --file.')
-
     return {
         'jars': args.jars,
         'file': args.file}

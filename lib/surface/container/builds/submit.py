@@ -23,9 +23,11 @@ from googlecloudsdk.api_lib.cloudbuild import logs as cb_logs
 from googlecloudsdk.api_lib.cloudbuild import snapshot
 from googlecloudsdk.api_lib.storage import storage_api
 from googlecloudsdk.api_lib.storage import storage_util
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.core import exceptions as core_exceptions
+from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_transform
@@ -43,7 +45,10 @@ class FailedBuildException(core_exceptions.Error):
         'build completed with status "{status}"'.format(status=status))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA)
 class Submit(base.CreateCommand):
   """Submit a build using the Google Container Builder service."""
 
@@ -72,6 +77,14 @@ class Submit(base.CreateCommand):
         help='Directory in Google Cloud Storage to hold build logs. If the '
              'bucket does not exist, it will be created. If not set, '
              'gs://<project id>_cloudbuild/logs is used.',
+    )
+    parser.add_argument(
+        '--timeout',
+        help='Maximum time a build can last before it is failed as "TIMEOUT", '
+             'written as a duration (eg "2h15m5s" is two hours, fifteen '
+             'minutes, and five seconds). If no unit is specified, seconds is '
+             'assumed (eg "10" is 10 seconds).',
+        action=actions.StoreProperty(properties.VALUES.container.build_timeout),
     )
     build_config = parser.add_mutually_exclusive_group(required=True)
     build_config.add_argument(
@@ -123,8 +136,15 @@ class Submit(base.CreateCommand):
 
     # First, create the build request.
     build_timeout = properties.VALUES.container.build_timeout.Get()
+
     if build_timeout is not None:
-      timeout_str = build_timeout + 's'
+      try:
+        # A bare number is interpreted as seconds.
+        build_timeout_secs = int(build_timeout)
+      except ValueError:
+        build_timeout_duration = times.ParseDuration(build_timeout)
+        build_timeout_secs = int(build_timeout_duration.total_seconds)
+      timeout_str = str(build_timeout_secs) + 's'
     else:
       timeout_str = None
 
@@ -222,9 +242,9 @@ class Submit(base.CreateCommand):
         source_snapshot = snapshot.Snapshot(args.source)
         size_str = resource_transform.TransformSize(
             source_snapshot.uncompressed_size)
-        log.status.write(
+        log.status.Print(
             'Creating temporary tarball archive of {num_files} file(s)'
-            ' totalling {size} before compression.\n'.format(
+            ' totalling {size} before compression.'.format(
                 num_files=len(source_snapshot.files),
                 size=size_str))
         staged_source_obj = source_snapshot.CopyTarballToGCS(
@@ -240,9 +260,9 @@ class Submit(base.CreateCommand):
         if ext not in _ALLOWED_SOURCE_EXT:
           raise c_exceptions.BadFileException(
               'Local file [{src}] is none of '+', '.join(_ALLOWED_SOURCE_EXT))
-        log.status.write(
+        log.status.Print(
             'Uploading local file [{src}] to '
-            '[gs://{bucket}/{object}]\n'.format(
+            '[gs://{bucket}/{object}].'.format(
                 src=args.source,
                 bucket=gcs_source_staging.bucket,
                 object=gcs_source_staging.object,
@@ -283,17 +303,31 @@ class Submit(base.CreateCommand):
 
     log.CreatedResource(build_ref)
     if build.logUrl:
-      log.status.write('Logs are permanently available at [{log_url}]\n'.format(
+      log.status.Print('Logs are permanently available at [{log_url}].'.format(
           log_url=build.logUrl))
     else:
-      log.status.write('Logs are available in the Cloud Console.\n')
+      log.status.Print('Logs are available in the Cloud Console.')
 
     # If the command is run --async, we just print out a reference to the build.
     if args.async:
       return build
 
+    def _CancelBuildHandler(unused_signal_number, unused_stack_frame):
+      log.status.Print('Cancelling...')
+      client.projects_builds.Cancel(
+          messages.CloudbuildProjectsBuildsCancelRequest(
+              projectId=build_ref.projectId,
+              id=build_ref.id))
+      log.status.Print('Cancelled [{r}].'.format(r=str(build_ref)))
+
     # Otherwise, logs are streamed from GCS.
-    build = cb_logs.CloudBuildClient(client, messages).Stream(build_ref)
+    with execution_utils.CtrlCSection(_CancelBuildHandler):
+      build = cb_logs.CloudBuildClient(client, messages).Stream(build_ref)
+
+    if build.status == messages.Build.StatusValueValuesEnum.TIMEOUT:
+      log.status.Print(
+          'Your build timed out. Use the [--timeout=DURATION] flag to change '
+          'the timeout threshold.')
 
     if build.status != messages.Build.StatusValueValuesEnum.SUCCESS:
       raise FailedBuildException(build.status)

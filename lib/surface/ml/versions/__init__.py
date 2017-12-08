@@ -17,5 +17,14 @@ from googlecloudsdk.calliope import base
 
 
 class Versions(base.Group):
-  """Cloud ML Versions commands."""
+  """Cloud ML Versions commands.
+
+     A version is an implementation of a model. Each version is a trained
+     TensorFlow graph that solves the problem posed by the model. You use
+     version identifiers to track iterations of your model.
+
+     When you communicate with Cloud ML services, you use the combination of
+     the model, version, and currently project to identify a specific model
+     implementation that is deployed in the cloud.
+  """
   pass

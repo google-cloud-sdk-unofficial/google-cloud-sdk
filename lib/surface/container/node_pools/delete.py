@@ -19,11 +19,10 @@ import argparse
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.container import util
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
@@ -52,10 +51,7 @@ class Delete(base.DeleteCommand):
           to capture some information, but behaves like an ArgumentParser.
     """
     # TODO(b/28639250): Support remote completion when the SDK supports it.
-    parser.add_argument(
-        'name',
-        metavar='NAME',
-        help='The name of the node pool to delete.')
+    flags.AddNodePoolNameArg(parser, 'The name of the node pool to delete.')
     parser.add_argument(
         '--timeout',
         type=int,
@@ -67,10 +63,9 @@ class Delete(base.DeleteCommand):
         default=True,
         help='Poll the operation for completion after issuing a delete '
         'request.')
-    parser.add_argument(
-        '--cluster',
-        help='The cluster from which to delete the node pool.',
-        action=actions.StoreProperty(properties.VALUES.container.cluster))
+    flags.AddNodePoolClusterFlag(
+        parser,
+        'The cluster from which to delete the node pool.')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

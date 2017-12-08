@@ -18,7 +18,7 @@ from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Describe(base.Command):
   """Display all data about an existing service."""
 

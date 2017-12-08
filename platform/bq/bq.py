@@ -90,7 +90,6 @@ _CLIENT_ID = '32555940559.apps.googleusercontent.com'
 _CLIENT_INFO = {
     'client_id': _CLIENT_ID,
     'client_secret': 'ZmssLNjJy2998hD4CTg2ejr2',
-    'scope': [_CLIENT_SCOPE],
     'user_agent': _CLIENT_USER_AGENT,
     }
 _BIGQUERY_TOS_MESSAGE = (
@@ -208,9 +207,7 @@ def _UseServiceAccount():
 
 
 def _GetServiceAccountCredentialsFromFlags(storage):  # pylint: disable=unused-argument
-  client_scope = [_CLIENT_SCOPE]
-  if FLAGS.enable_gdrive is None or FLAGS.enable_gdrive:
-    client_scope.append(_GDRIVE_SCOPE)
+  client_scope = _GetClientScopeFromFlags()
 
   if FLAGS.use_gce_service_account:
     return AppAssertionCredentials(client_scope)
@@ -250,9 +247,7 @@ def _GetCredentialsFromOAuthFlow(storage):
     print 'Running in headless mode, exiting.'
     sys.exit(1)
   client_info = _CLIENT_INFO.copy()
-  if FLAGS.enable_gdrive is None or FLAGS.enable_gdrive:
-    client_info['scope'] = list(client_info['scope'])
-    client_info['scope'].append(_GDRIVE_SCOPE)
+  client_info['scope'] = list(_GetClientScopeFromFlags())
   while True:
     # If authorization fails, we want to retry, rather than let this
     # cascade up and get caught elsewhere. If users want out of the
@@ -296,12 +291,13 @@ def _GetApplicationDefaultCredentialFromFile(filename):
         token_uri=oauth2client.client.GOOGLE_TOKEN_URI,
         user_agent=_CLIENT_USER_AGENT)
   else:  # Service account
+    client_scope = _GetClientScopeFromFlags()
     return oauth2client.service_account._ServiceAccountCredentials(  # pylint: disable=protected-access
         service_account_id=credentials['client_id'],
         service_account_email=credentials['client_email'],
         private_key_id=credentials['private_key_id'],
         private_key_pkcs8_text=credentials['private_key'],
-        scopes=[_CLIENT_SCOPE],
+        scopes=client_scope,
         user_agent=_CLIENT_USER_AGENT)
 
 
@@ -337,6 +333,14 @@ oauth2client.service_account._ServiceAccountCredentials.to_json = (
 oauth2client.service_account._ServiceAccountCredentials.from_json = (
     _ServiceAccountCredentialsFromJson)
 # pylint: enable=protected-access
+
+
+def _GetClientScopeFromFlags():
+  """Returns auth scopes based on user supplied flags."""
+  client_scope = [_CLIENT_SCOPE]
+  if FLAGS.enable_gdrive is None or FLAGS.enable_gdrive:
+    client_scope.append(_GDRIVE_SCOPE)
+  return client_scope
 
 
 def _GetCredentialsFromFlags():
@@ -917,11 +921,16 @@ class BigqueryCmd(NewCmd):
     response = []
     retcode = 1
 
+    # pragma pylint: disable=line-too-long
     contact_us_msg = (
-        'Please file a bug report in our public issue tracker:\n'
+        'Please file a bug report in our '
+        'public '
+        'issue tracker:\n'
         '  https://code.google.com/p/google-bigquery/issues/list\n'
-        'Please include a brief description of the steps that led to this '
-        'issue, as well as the following information: \n\n')
+        'Please include a brief description of '
+        'the steps that led to this issue, as well as '
+        'any rows that can be made public from '
+        'the following information: \n\n')
     error_details = (
         '========================================\n'
         '== Platform ==\n'

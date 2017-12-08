@@ -29,6 +29,9 @@ ROOT = comm.RuntimeDefinitionRoot(ROOT_DIR)
 
 class FakeExecutionEnvironment(ext_runtime.DefaultExecutionEnvironment):
 
+    def CanPrompt(self):
+        return True
+
     def PromptResponse(self, message):
         return 'my_entrypoint'
 
@@ -359,7 +362,8 @@ class RuntimeTests(testutil.TestBase):
             runtime='python',
             entrypoint='run_me_some_python!',
             runtime_config=dict(python_version='invalid_version'))
-        self.assertIsNone(self.generate_config_data(appinfo=config))
+        self.assertRaises(testutil.InvalidRuntime,
+                          self.generate_config_data, appinfo=config)
 
     def test_python_custom_runtime(self):
         self.write_file('test.py', 'test file')

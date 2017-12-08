@@ -19,7 +19,13 @@ from googlecloudsdk.command_lib.ml import predict_utilities
 
 
 class Predict(base.Command):
-  """Run Cloud ML online prediction."""
+  """Run Cloud ML online prediction.
+
+     `{command}` runs a Cloud ML online prediction with the given instances.
+     This command will only accept up to 100 instances at one time. If you are
+     predicting on more instances, you should use batch prediction via
+     $ gcloud beta ml jobs submit prediction.
+  """
 
   @staticmethod
   def Args(parser):
@@ -47,6 +53,8 @@ class Predict(base.Command):
             {"images": [0.0, ..., 0.1], "key": 3}
             {"images": [0.0, ..., 0.1], "key": 2}
             ...
+
+        This flag accepts "-" for stdin.
         """
     text_flag.detailed_help = """
         Path to a local file from which instances are read.
@@ -57,7 +65,27 @@ class Predict(base.Command):
             107,4.9,2.5,4.5,1.7
             100,5.7,2.8,4.1,1.3
             ...
+
+        This flag accepts "-" for stdin.
         """
+
+  def Format(self, args):
+    if not self.predictions:
+      return None
+
+    # predictions is guaranteed by API contract to be a list of similarly shaped
+    # objects, but we don't know ahead of time what those objects look like.
+    elif isinstance(self.predictions[0], dict):
+      keys = ', '.join(sorted(self.predictions[0].keys()))
+      return """
+          table(
+              predictions:format="table(
+                  {}
+              )"
+          )""".format(keys)
+
+    else:
+      return 'table[no-heading](predictions)'
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -81,5 +109,8 @@ class Predict(base.Command):
       input_file = args.text_instances
     instances = predict_utilities.ReadInstances(input_file, data_format)
 
-    return predict.Predict(
+    results = predict.Predict(
         model_name=args.model, version_name=args.version, instances=instances)
+    # Hack to make the results available to Format() method
+    self.predictions = results['predictions']
+    return results

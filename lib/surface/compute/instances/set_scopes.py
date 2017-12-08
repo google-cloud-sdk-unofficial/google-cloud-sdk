@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.compute.instances import exceptions
 from googlecloudsdk.command_lib.compute.instances import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SetScopes(base_classes.NoOutputAsyncMutator):
   """Set scopes and service account for a Google Compute Engine instance."""
 

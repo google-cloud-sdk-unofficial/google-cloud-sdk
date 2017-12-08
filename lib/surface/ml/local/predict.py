@@ -79,7 +79,12 @@ class InvalidReturnValueError(core_exceptions.Error):
 
 
 class Predict(base.Command):
-  """Run prediction locally."""
+  """Run prediction locally.
+
+     *{command}* runs a prediction locally with the given instances. It requires
+     the TensorFlow SDK be installed locally. Only Debian based systems are
+     supported at this time.
+  """
 
   @staticmethod
   def Args(parser):
@@ -103,6 +108,8 @@ class Predict(base.Command):
             {"images": [0.0, ..., 0.1], "key": 3}
             {"images": [0.0, ..., 0.1], "key": 2}
             ...
+
+        This flag accepts "-" for stdin.
         """
     text_flag.detailed_help = """
         Path to a local file from which instances are read.
@@ -113,6 +120,8 @@ class Predict(base.Command):
             107,4.9,2.5,4.5,1.7
             100,5.7,2.8,4.1,1.3
             ...
+
+        This flag accepts "-" for stdin.
         """
 
   def Run(self, args):

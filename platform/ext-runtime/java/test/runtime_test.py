@@ -29,7 +29,7 @@ from gae_ext_runtime import testutil
 from gae_ext_runtime import ext_runtime
 
 # Augment the path with our library directory.
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0])))
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.join(ROOT_DIR, 'lib'))
 
 import constants

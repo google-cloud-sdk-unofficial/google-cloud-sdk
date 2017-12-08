@@ -18,12 +18,17 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import csek_utils
 from googlecloudsdk.api_lib.compute import image_utils
 from googlecloudsdk.api_lib.compute import instance_utils
+from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.api_lib.compute import metadata_utils
+from googlecloudsdk.api_lib.compute import property_selector
+from googlecloudsdk.api_lib.compute import resource_specs
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute import zone_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
+from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 DETAILED_HELP = {
     'DESCRIPTION': """\
@@ -86,11 +91,18 @@ def _CommonArgs(parser, multiple_network_interface_cards, release_track,
   csek_utils.AddCsekKeyArgs(parser)
 
 
+# TODO(b/33434068) Refactor away ImageExpander and ZoneResourceFetcher
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Create(base_classes.BaseAsyncCreator,
+class Create(base.CreateCommand,
              image_utils.ImageExpander,
              zone_utils.ZoneResourceFetcher):
   """Create Google Compute Engine virtual machine instances."""
+
+  def __init__(self, *args, **kwargs):
+    super(Create, self).__init__(*args, **kwargs)
+
+    self.__resource_spec = None
+    self._compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
 
   @classmethod
   def Args(cls, parser):
@@ -99,18 +111,61 @@ class Create(base_classes.BaseAsyncCreator,
                 support_alias_ip_ranges=False)
 
   @property
-  def service(self):
-    return self.compute.instances
-
-  @property
-  def method(self):
-    return 'Insert'
-
-  @property
   def resource_type(self):
     return 'instances'
 
-  def CreateRequests(self, args):
+  @property
+  def compute_client(self):
+    return self._compute_holder.client
+
+  @property
+  def messages(self):
+    return self.compute_client.messages
+
+  @property
+  def compute(self):
+    return self.compute_client.apitools_client
+
+  @property
+  def project(self):
+    return properties.VALUES.core.project.Get(required=True)
+
+  @property
+  def resources(self):
+    return self._compute_holder.resources
+
+  # absence of any of these properties triggers exception in tests
+  @property
+  def http(self):
+    return self.compute.http
+
+  @property
+  def batch_url(self):
+    return self.compute_client.batch_url
+
+  @property
+  def _resource_spec(self):
+    if self.__resource_spec is None:
+      # Constructing the spec can be potentially expensive (e.g.,
+      # generating the set of valid fields from the protobuf message),
+      self.__resource_spec = resource_specs.GetSpec(
+          self.resource_type, self.messages, self.compute_client.api_version)
+    return self.__resource_spec
+
+  @property
+  def transformations(self):
+    if self._resource_spec:
+      return self._resource_spec.transformations
+    else:
+      return None
+
+  def Collection(self):
+    return 'compute.instances'
+
+  def Format(self, args):
+    return self.ListFormat(args)
+
+  def _CreateRequests(self, args):
     instances_flags.ValidateDiskFlags(args)
     instances_flags.ValidateLocalSsdFlags(args)
     instances_flags.ValidateNicFlags(args)
@@ -126,10 +181,6 @@ class Create(base_classes.BaseAsyncCreator,
         maintenance_policy=args.maintenance_policy,
         preemptible=args.preemptible,
         restart_on_failure=args.restart_on_failure)
-
-    service_accounts = instance_utils.CreateServiceAccountMessages(
-        messages=self.messages,
-        scopes=([] if args.no_scopes else args.scopes))
 
     if args.tags:
       tags = self.messages.Tags(items=args.tags)
@@ -246,9 +297,35 @@ class Create(base_classes.BaseAsyncCreator,
       disks_messages.append(persistent_disks + persistent_create_disks +
                             local_ssds)
 
+    project_to_sa = {}
     requests = []
     for instance_ref, machine_type_uri, disks in zip(
         instance_refs, machine_type_uris, disks_messages):
+      if instance_ref.project not in project_to_sa:
+        scopes = None
+        if not args.no_scopes and not args.scopes:
+          # User didn't provide any input on scopes. If project has no default
+          # service account then we want to create a VM with no scopes
+          request = (self.compute.projects,
+                     'Get',
+                     self.messages.ComputeProjectsGetRequest(
+                         project=instance_ref.project))
+          errors = []
+          result = self.compute_client.MakeRequests([request], errors)
+          if not errors:
+            if not result[0].defaultServiceAccount:
+              scopes = []
+              log.status.Print(
+                  'There is no default service account for project {}. '
+                  'Instance {} will not have scopes.'.format(
+                      instance_ref.project, instance_ref.Name))
+        if scopes is None:
+          scopes = [] if args.no_scopes else args.scopes
+
+        service_accounts = instance_utils.CreateServiceAccountMessages(
+            messages=self.messages,
+            scopes=scopes)
+        project_to_sa[instance_ref.project] = service_accounts
       request = self.messages.ComputeInstancesInsertRequest(
           instance=self.messages.Instance(
               canIpForward=args.can_ip_forward,
@@ -258,11 +335,11 @@ class Create(base_classes.BaseAsyncCreator,
               metadata=metadata,
               name=instance_ref.Name(),
               networkInterfaces=network_interfaces,
-              serviceAccounts=service_accounts,
+              serviceAccounts=project_to_sa[instance_ref.project],
               scheduling=scheduling,
               tags=tags,
           ),
-          project=self.project,
+          project=instance_ref.project,
           zone=instance_ref.zone)
 
       sole_tenancy_host_arg = getattr(args, 'sole_tenancy_host', None)
@@ -271,8 +348,25 @@ class Create(base_classes.BaseAsyncCreator,
             sole_tenancy_host_arg, collection='compute.hosts',
             params={'zone': instance_ref.zone})
         request.instance.host = sole_tenancy_host_ref.SelfLink()
-      requests.append(request)
+      requests.append((self.compute.instances, 'Insert', request))
     return requests
+
+  def Run(self, args):
+    errors = []
+    requests = self._CreateRequests(args)
+    resource_list = self.compute_client.MakeRequests(requests, errors)
+
+    # changes machine type uri to just machine type name
+    resource_list = lister.ProcessResults(
+        resources=resource_list,
+        field_selector=property_selector.PropertySelector(
+            properties=None,
+            transformations=self.transformations))
+
+    if errors:
+      utils.RaiseToolException(errors)
+
+    return resource_list
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

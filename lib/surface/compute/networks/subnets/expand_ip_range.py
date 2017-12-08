@@ -23,7 +23,8 @@ from googlecloudsdk.core.console import console_io
 import ipaddr
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class ExpandIpRange(base_classes.NoOutputAsyncMutator):
   """Expand IP range of a subnetwork."""
 

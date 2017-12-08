@@ -18,7 +18,6 @@ import datetime
 import random
 import string
 
-from googlecloudsdk.api_lib.test import android_args
 from googlecloudsdk.api_lib.test import arg_util
 from googlecloudsdk.api_lib.test import ctrl_c_handler
 from googlecloudsdk.api_lib.test import exit_code
@@ -28,6 +27,8 @@ from googlecloudsdk.api_lib.test import results_bucket
 from googlecloudsdk.api_lib.test import results_summary
 from googlecloudsdk.api_lib.test import tool_results
 from googlecloudsdk.api_lib.test import util
+from googlecloudsdk.api_lib.test.android import arg_manager
+from googlecloudsdk.api_lib.test.android import matrix_creator
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
@@ -136,7 +137,7 @@ class Run(base.ListCommand):
         - a URL string pointing to the user's results in ToolResults or GCS.
     """
     device_catalog = util.GetAndroidCatalog(self.context)
-    android_args.AndroidArgsManager(device_catalog).Prepare(args)
+    arg_manager.AndroidArgsManager(device_catalog).Prepare(args)
 
     project = util.GetProject()
     tr_client = self.context['toolresults_client']
@@ -156,7 +157,7 @@ class Run(base.ListCommand):
     tr_history_picker = history_picker.ToolResultsHistoryPicker(
         project, tr_client, tr_messages)
     history_id = tr_history_picker.FindToolResultsHistoryId(args)
-    matrix = matrix_ops.CreateMatrix(
+    matrix = matrix_creator.CreateMatrix(
         args, self.context, history_id, bucket_ops.gcs_results_root)
     monitor = matrix_ops.MatrixMonitor(
         matrix.testMatrixId, args.type, self.context)

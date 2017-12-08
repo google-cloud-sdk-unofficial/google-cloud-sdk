@@ -15,6 +15,7 @@
 """List cluster command."""
 from apitools.base.py import list_pager
 
+from googlecloudsdk.api_lib.dataproc import constants
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
@@ -35,6 +36,7 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     base.URI_FLAG.RemoveFromParser(parser)
+    base.PAGE_SIZE_FLAG.SetDefault(parser, constants.DEFAULT_PAGE_SIZE)
 
   def Collection(self):
     return 'dataproc.clusters'
@@ -46,8 +48,7 @@ class List(base.ListCommand):
     project = properties.VALUES.core.project.Get(required=True)
     region = self.context['dataproc_region']
 
-    request = messages.DataprocProjectsRegionsClustersListRequest(
-        projectId=project, region=region)
+    request = self.GetRequest(messages, project, region, args)
 
     return list_pager.YieldFromList(
         client.projects_regions_clusters,
@@ -55,6 +56,11 @@ class List(base.ListCommand):
         limit=args.limit, field='clusters',
         batch_size=args.page_size,
         batch_size_attribute='pageSize')
+
+  @staticmethod
+  def GetRequest(messages, project, region, args):
+    return messages.DataprocProjectsRegionsClustersListRequest(
+        projectId=project, region=region)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -96,13 +102,8 @@ class ListBeta(List):
     $ {command} --filter='status.state = ACTIVE labels.env = staging AND labels.starred = *'
   """
 
-  def Run(self, args):
-    client = self.context['dataproc_client']
-    messages = self.context['dataproc_messages']
-
-    project = properties.VALUES.core.project.Get(required=True)
-    region = self.context['dataproc_region']
-
+  @staticmethod
+  def GetRequest(messages, project, region, args):
     # Explicitly null out args.filter if present because by default args.filter
     # also acts as a postfilter to the things coming back from the backend
     backend_filter = None
@@ -110,7 +111,5 @@ class ListBeta(List):
       backend_filter = args.filter
       args.filter = None
 
-    request = messages.DataprocProjectsRegionsClustersListRequest(
+    return messages.DataprocProjectsRegionsClustersListRequest(
         projectId=project, region=region, filter=backend_filter)
-    response = client.projects_regions_clusters.List(request)
-    return response.clusters

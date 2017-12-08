@@ -19,7 +19,11 @@ from googlecloudsdk.command_lib.ml import flags
 
 
 class CancelBeta(base.Command):
-  """Cancel a running Cloud ML job."""
+  """Cancel a running Cloud ML job.
+
+     *{command}* cancels a running Cloud ML job. If the job is already finished,
+     the command will be a no-op and exit successfully.
+  """
 
   @staticmethod
   def Args(parser):

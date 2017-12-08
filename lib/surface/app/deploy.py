@@ -50,7 +50,7 @@ class DeployGA(base.SilentCommand):
     deploy_util.ArgsDeploy(parser)
 
   def Run(self, args):
-    return deploy_util.RunDeploy(args, app_create=True)
+    return deploy_util.RunDeploy(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -64,7 +64,7 @@ class DeployBeta(base.SilentCommand):
 
   def Run(self, args):
     return deploy_util.RunDeploy(args, enable_endpoints=True,
-                                 app_create=True, use_beta_stager=True)
+                                 use_beta_stager=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.PREVIEW)

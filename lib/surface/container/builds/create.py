@@ -18,6 +18,7 @@ from googlecloudsdk.calliope import base
 from surface.container.builds import submit
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(submit.Submit):
   """Create a build using the Google Container Builder service."""

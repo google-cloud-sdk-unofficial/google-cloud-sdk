@@ -97,15 +97,15 @@ class SparkSqlBase(object):
   @staticmethod
   def Args(parser):
     """Parses command-line arguments specific to submitting SparkSql jobs."""
-
-    parser.add_argument(
+    driver = parser.add_mutually_exclusive_group(required=True)
+    driver.add_argument(
         '--execute', '-e',
         metavar='QUERY',
         dest='queries',
         action='append',
         default=[],
         help='A Spark SQL query to execute as part of the job.')
-    parser.add_argument(
+    driver.add_argument(
         '--file', '-f',
         help=('HCFS URI of file containing Spark SQL script to execute as '
               'the job.'))
@@ -135,12 +135,6 @@ class SparkSqlBase(object):
 
   @staticmethod
   def GetFilesByType(args):
-    # TODO(user): Replace with argument group.
-    if not args.queries and not args.file:
-      raise ValueError('Must either specify --execute or --file.')
-    if args.queries and args.file:
-      raise ValueError('Cannot specify both --execute and --file.')
-
     return {
         'jars': args.jars,
         'file': args.file}

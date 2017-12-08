@@ -24,6 +24,7 @@ class Create(base_classes.BaseAsyncCreator):
   @staticmethod
   def Args(parser):
     health_checks_utils.AddHttpRelatedCreationArgs(parser)
+    health_checks_utils.AddHttpRelatedResponseArg(parser)
     health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'HTTP2')
 
   @property
@@ -55,7 +56,8 @@ class Create(base_classes.BaseAsyncCreator):
                 port=args.port,
                 portName=args.port_name,
                 requestPath=args.request_path,
-                proxyHeader=proxy_header),
+                proxyHeader=proxy_header,
+                response=args.response),
             checkIntervalSec=args.check_interval,
             timeoutSec=args.timeout,
             healthyThreshold=args.healthy_threshold,

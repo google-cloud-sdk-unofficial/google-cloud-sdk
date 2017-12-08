@@ -13,23 +13,38 @@
 # limitations under the License.
 """Command for describing target SSL proxies."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.target_ssl_proxies import flags
 
 
-class Describe(base_classes.GlobalDescriber):
+class Describe(base.DescribeCommand):
   """Display detailed information about a target SSL proxy."""
+
+  TARGET_SSL_PROXY_ARG = None
 
   @staticmethod
   def Args(parser):
-    base_classes.GlobalDescriber.Args(
-        parser, 'compute.targetSslProxies')
+    Describe.TARGET_SSL_PROXY_ARG = flags.TargetSslProxyArgument()
+    Describe.TARGET_SSL_PROXY_ARG.AddArgument(parser)
 
-  @property
-  def service(self):
-    return self.compute.targetSslProxies
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    ref = self.TARGET_SSL_PROXY_ARG.ResolveAsResource(args, holder.resources)
 
-  @property
-  def resource_type(self):
-    return 'targetSslProxies'
+    client = holder.client.apitools_client
+    messages = holder.client.messages
+
+    request = messages.ComputeTargetSslProxiesGetRequest(
+        project=ref.project, targetSslProxy=ref.Name())
+
+    errors = []
+    resources = holder.client.MakeRequests(
+        [(client.targetSslProxies, 'Get', request)], errors)
+
+    if errors:
+      utils.RaiseToolException(errors)
+    return resources[0]
 
 
 Describe.detailed_help = {

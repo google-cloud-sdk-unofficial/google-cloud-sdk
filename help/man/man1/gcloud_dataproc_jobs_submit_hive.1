@@ -11,7 +11,7 @@ gcloud dataproc jobs submit hive \- submit a Hive job to a cluster
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud dataproc jobs submit hive\fR \fB\-\-cluster\fR=\fICLUSTER\fR [\fB\-\-async\fR] [\fB\-\-bucket\fR=\fIBUCKET\fR] [\fB\-\-continue\-on\-failure\fR] [\fB\-\-execute\fR=\fIQUERY\fR,\ \fB\-e\fR\ \fIQUERY\fR] [\fB\-\-file\fR=\fIFILE\fR,\ \fB\-f\fR\ \fIFILE\fR] [\fB\-\-jars\fR=[\fIJAR\fR,...]] [\fB\-\-params\fR=[\fIPARAM\fR=\fIVALUE\fR,...]] [\fB\-\-properties\fR=[\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud dataproc jobs submit hive\fR \fB\-\-cluster\fR=\fICLUSTER\fR (\fB\-\-execute\fR=\fIQUERY\fR,\ \fB\-e\fR\ \fIQUERY\fR\ |\ \fB\-\-file\fR=\fIFILE\fR,\ \fB\-f\fR\ \fIFILE\fR) [\fB\-\-async\fR] [\fB\-\-bucket\fR=\fIBUCKET\fR] [\fB\-\-continue\-on\-failure\fR] [\fB\-\-jars\fR=[\fIJAR\fR,...]] [\fB\-\-params\fR=[\fIPARAM\fR=\fIVALUE\fR,...]] [\fB\-\-properties\fR=[\fIPROPERTY\fR=\fIVALUE\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -27,6 +27,19 @@ Submit a Hive job to a cluster.
 .TP 2m
 \fB\-\-cluster\fR=\fICLUSTER\fR
 The Dataproc cluster to submit the job to.
+
+.RE
+.sp
+Exactly one of these must be specified:
+
+.RS 2m
+.TP 2m
+\fB\-\-execute\fR=\fIQUERY\fR, \fB\-e\fR \fIQUERY\fR
+A Hive query to execute as part of the job.
+
+.TP 2m
+\fB\-\-file\fR=\fIFILE\fR, \fB\-f\fR \fIFILE\fR
+HCFS URI of file containing Hive script to execute as the job.
 
 
 .RE
@@ -47,14 +60,6 @@ bucket.
 .TP 2m
 \fB\-\-continue\-on\-failure\fR
 Whether to continue if a single query fails.
-
-.TP 2m
-\fB\-\-execute\fR=\fIQUERY\fR, \fB\-e\fR \fIQUERY\fR
-A Hive query to execute as part of the job.
-
-.TP 2m
-\fB\-\-file\fR=\fIFILE\fR, \fB\-f\fR \fIFILE\fR
-HCFS URI of file containing Hive script to execute as the job.
 
 .TP 2m
 \fB\-\-jars\fR=[\fIJAR\fR,...]

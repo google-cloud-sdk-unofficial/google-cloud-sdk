@@ -19,7 +19,11 @@ from googlecloudsdk.command_lib.ml import flags
 
 
 class BetaSetDefault(base.DescribeCommand):
-  """Sets an existing Cloud ML version as the default for its model."""
+  """Sets an existing Cloud ML version as the default for its model.
+
+     *{command}* sets an existing Cloud ML version as the default for its model.
+     Only one version may be the default for a given version.
+  """
 
   @staticmethod
   def Args(parser):

@@ -19,7 +19,6 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.service_management import services_util
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import log
 
 
 class List(base.ListCommand):
@@ -54,9 +53,6 @@ class List(base.ListCommand):
 
     request = messages.ServicemanagementServicesConfigsListRequest(
         serviceName=args.service)
-
-    log.status.Print('Available configuration versions for service \'%s\':'
-                     % args.service)
 
     return list_pager.YieldFromList(
         client.services_configs,

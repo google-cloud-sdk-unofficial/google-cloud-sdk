@@ -23,6 +23,10 @@ import unittest
 from gae_ext_runtime import ext_runtime
 
 
+class InvalidRuntime(Exception):
+    """Raised when the runtime directory is doesn't match the runtime."""
+
+
 class AppInfoFake(dict):
     """Serves as a fake for an AppInfo object."""
 
@@ -98,7 +102,7 @@ class TestBase(unittest.TestCase):
         """
         configurator = self.maybe_get_configurator(params, **kwargs)
         if not configurator:
-          return None
+            return None
 
         configurator.Prebuild()
 
@@ -116,11 +120,16 @@ class TestBase(unittest.TestCase):
                 check ext_runtime.Params() for full details)
 
         Returns:
-            list(ext_runtime.GeneratedFile) Returns list of generated files.
+            ([ext_runtime.GeneratedFile, ...]) Returns list of generated files.
+
+        Raises:
+            InvalidRuntime: Couldn't detect a matching runtime.
         """
         configurator = self.maybe_get_configurator(params, **kwargs)
         if not configurator:
-          return None
+            raise InvalidRuntime('Runtime defined in {} did not detect '
+                                 'code in {}'.format(self.runtime_def_root,
+                                                     self.temp_path))
 
         configurator.Prebuild()
 

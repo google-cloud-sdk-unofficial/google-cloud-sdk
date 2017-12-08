@@ -57,5 +57,8 @@ class Cancel(base.Command):
         messages.CloudbuildProjectsBuildsCancelRequest(
             projectId=build_ref.projectId,
             id=build_ref.id))
-    log.status.write('Canceled [{r}].\n'.format(r=str(build_ref)))
+    log.status.write('Cancelled [{r}].\n'.format(r=str(build_ref)))
     return canceled_build
+
+  def Format(self, args):
+    return None

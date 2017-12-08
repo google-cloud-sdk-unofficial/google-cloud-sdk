@@ -20,6 +20,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataflow import job_utils
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Outputs the Job object resulting from the Get API.
 

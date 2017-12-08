@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import flags
+from googlecloudsdk.command_lib.container import messages
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -184,6 +185,8 @@ class Create(base.CreateCommand):
     flags.AddEnableKubernetesAlphaFlag(parser, suppressed=True)
     flags.AddClusterVersionFlag(parser, 'master and nodes', True)
     flags.AddPreemptibleFlag(parser, suppressed=True)
+    flags.AddEnableAutoRepairFlag(parser, suppressed=True)
+    flags.AddEnableAutoUpgradeFlag(parser, suppressed=True)
 
   def ParseCreateOptions(self, args):
     if not args.scopes:
@@ -214,7 +217,9 @@ class Create(base.CreateCommand):
         min_nodes=args.min_nodes,
         image_type=args.image_type,
         max_nodes_per_pool=args.max_nodes_per_pool,
-        preemptible=args.preemptible)
+        preemptible=args.preemptible,
+        enable_autorepair=args.enable_autorepair,
+        enable_autoupgrade=args.enable_autoupgrade)
 
   def Collection(self):
     return 'container.projects.zones.clusters'
@@ -248,6 +253,14 @@ class Create(base.CreateCommand):
       console_io.PromptContinue(message=constants.KUBERNETES_ALPHA_PROMPT,
                                 throw_if_unattended=True,
                                 cancel_on_no=True)
+
+    if options.enable_autorepair is not None:
+      log.status.Print(messages.AutoUpdateUpgradeRepairMessage(
+          options.enable_autorepair, 'autorepair'))
+
+    if options.enable_autoupgrade is not None:
+      log.status.Print(messages.AutoUpdateUpgradeRepairMessage(
+          options.enable_autoupgrade, 'autoupgrade'))
 
     operation = None
     try:
@@ -289,6 +302,8 @@ class CreateBeta(Create):
     flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddClusterVersionFlag(parser, 'master and nodes')
     flags.AddPreemptibleFlag(parser)
+    flags.AddEnableAutoRepairFlag(parser, suppressed=True)
+    flags.AddEnableAutoUpgradeFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -303,3 +318,5 @@ class CreateAlpha(Create):
     flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddClusterVersionFlag(parser, 'master and nodes')
     flags.AddPreemptibleFlag(parser)
+    flags.AddEnableAutoRepairFlag(parser, suppressed=True)
+    flags.AddEnableAutoUpgradeFlag(parser)
